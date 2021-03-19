@@ -307,13 +307,6 @@ class ComputedStyle : public ComputedStyleBase,
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
 
   CORE_EXPORT static scoped_refptr<ComputedStyle> Create();
-  static scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
-      const ComputedStyle& parent_style,
-      EDisplay);
-  static scoped_refptr<ComputedStyle>
-  CreateInheritedDisplayContentsStyleIfNeeded(
-      const ComputedStyle& parent_style,
-      const ComputedStyle& layout_parent_style);
   CORE_EXPORT static scoped_refptr<ComputedStyle> Clone(const ComputedStyle&);
   CORE_EXPORT static const ComputedStyle& InitialStyle();
 
@@ -2545,6 +2538,12 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasBackground() const {
     Color color = VisitedDependentColor(GetCSSPropertyBackgroundColor());
     if (color.Alpha())
+      return true;
+    // When background color animation is running on the compositor thread, we
+    // need to trigger repaint even if the background is transparent to collect
+    // artifacts in order to run the animation on the compositor.
+    if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+        HasCurrentBackgroundColorAnimation())
       return true;
     return HasBackgroundImage();
   }

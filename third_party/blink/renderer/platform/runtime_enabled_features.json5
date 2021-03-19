@@ -431,10 +431,6 @@
       name: "ConversionMeasurementInfraSupport",
     },
     {
-      name: "CookieDeprecationMessages",
-      status: "experimental",
-    },
-    {
       name: "CookiesWithoutSameSiteMustBeSecure",
       status: "test",
     },
@@ -947,6 +943,9 @@
       // In-development features for the File System Access API.
       name: "FileSystemAccessAPIExperimental",
       status: "experimental",
+    },
+    {
+      name: "FledgeInterestGroups",
     },
     {
       name: "FocuslessSpatialNavigation",

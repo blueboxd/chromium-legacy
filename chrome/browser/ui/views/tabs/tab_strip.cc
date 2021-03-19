@@ -152,6 +152,8 @@ class TabSlotAnimationDelegate : public gfx::AnimationDelegate {
   ~TabSlotAnimationDelegate() override;
 
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
  protected:
   TabStrip* tab_strip() { return tab_strip_; }
@@ -169,13 +171,26 @@ TabSlotAnimationDelegate::TabSlotAnimationDelegate(
     OnAnimationProgressedCallback on_animation_progressed)
     : tab_strip_(tab_strip),
       slot_view_(slot_view),
-      on_animation_progressed_(on_animation_progressed) {}
+      on_animation_progressed_(on_animation_progressed) {
+  slot_view_->set_animating(true);
+}
 
 TabSlotAnimationDelegate::~TabSlotAnimationDelegate() = default;
 
 void TabSlotAnimationDelegate::AnimationProgressed(
     const gfx::Animation* animation) {
   on_animation_progressed_.Run(slot_view());
+}
+
+void TabSlotAnimationDelegate::AnimationEnded(const gfx::Animation* animation) {
+  slot_view_->set_animating(false);
+  AnimationProgressed(animation);
+  slot_view_->Layout();
+}
+
+void TabSlotAnimationDelegate::AnimationCanceled(
+    const gfx::Animation* animation) {
+  AnimationEnded(animation);
 }
 
 // Animation delegate used when a dragged tab is released. When done sets the
@@ -206,7 +221,7 @@ ResetDraggingStateDelegate::~ResetDraggingStateDelegate() = default;
 void ResetDraggingStateDelegate::AnimationEnded(
     const gfx::Animation* animation) {
   static_cast<Tab*>(slot_view())->set_dragging(false);
-  AnimationProgressed(animation);
+  TabSlotAnimationDelegate::AnimationEnded(animation);
 }
 
 void ResetDraggingStateDelegate::AnimationCanceled(
@@ -1591,7 +1606,7 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // If the tab would be clipped by the trailing edge of the strip, even if the
   // tabstrip were resized to its greatest possible width, it shouldn't be
   // visible.
-  const int right_edge = tab->bounds().right();
+  int right_edge = tab->bounds().right();
   const int tabstrip_right = tab->dragging()
                                  ? drag_context_->GetTabDragAreaWidth()
                                  : GetAvailableWidthForTabStrip();
@@ -1622,7 +1637,10 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
     return true;
 
   // We need to check what would happen if the active tab were to move to this
-  // tab or before.
+  // tab or before. If animating, we want to use the target bounds in this
+  // calculation.
+  if (IsAnimating())
+    right_edge = bounds_animator_.GetTargetBounds(tab).right();
   return (right_edge + GetActiveTabWidth() - GetInactiveTabWidth()) <=
          tabstrip_right;
 }

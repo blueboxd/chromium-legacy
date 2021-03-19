@@ -241,7 +241,7 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
     return *result;
 
   MinMaxSizes sizes;
-  bool depends_on_percentage_block_size = false;
+  bool depends_on_block_constraints = false;
 
   const TextDirection direction = Style().Direction();
   LayoutUnit float_left_inline_size = input.float_left_inline_size;
@@ -364,8 +364,7 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
         child_result.sizes.min_size + margins.InlineSum();
     sizes.min_size = std::max(sizes.min_size, min_inline_contribution);
 
-    depends_on_percentage_block_size |=
-        child_result.depends_on_percentage_block_size;
+    depends_on_block_constraints |= child_result.depends_on_block_constraints;
 
     // Anything that isn't a float will create a new "line" resetting the float
     // size trackers.
@@ -379,7 +378,7 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
   DCHECK_LE(sizes.min_size, sizes.max_size) << Node().ToString();
 
   sizes += BorderScrollbarPadding().InlineSum();
-  return MinMaxSizesResult(sizes, depends_on_percentage_block_size);
+  return MinMaxSizesResult(sizes, depends_on_block_constraints);
 }
 
 LogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
@@ -879,7 +878,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   border_box_size.block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(),
       previously_consumed_block_size + intrinsic_block_size_,
-      border_box_size.inline_size);
+      border_box_size.inline_size, Node().ShouldBeConsideredAsReplaced());
   container_builder_.SetFragmentsTotalBlockSize(border_box_size.block_size);
 
   // If our BFC block-offset is still unknown, we check:
@@ -1392,7 +1391,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
         ConstraintSpace(), Node(), BorderScrollbarPadding(), bsp_block_sum);
     block_size = ComputeBlockSizeForFragment(
         ConstraintSpace(), Style(), BorderPadding(), block_size,
-        container_builder_.InitialBorderBoxSize().inline_size);
+        container_builder_.InitialBorderBoxSize().inline_size,
+        Node().ShouldBeConsideredAsReplaced());
     block_size -= bsp_block_sum;
     logical_offset =
         CenterBlockChild(logical_offset, block_size, fragment.BlockSize());

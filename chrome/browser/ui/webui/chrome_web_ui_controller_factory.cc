@@ -736,11 +736,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUICertificateManagerHost)
     return &NewWebUI<chromeos::CertificateManagerDialogUI>;
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kConnectivityDiagnosticsWebUi) &&
-      url.host_piece() == chromeos::kChromeUIConnectivityDiagnosticsHost) {
+  if (url.host_piece() == chromeos::kChromeUIConnectivityDiagnosticsHost)
     return &NewWebUI<chromeos::ConnectivityDiagnosticsUI>;
-  }
   if (url.host_piece() == chrome::kChromeUICrostiniInstallerHost)
     return &NewWebUI<chromeos::CrostiniInstallerUI>;
   if (url.host_piece() == chrome::kChromeUICrostiniUpgraderHost)
@@ -773,10 +770,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chromeos::kChromeUIPrintManagementHost)
     return &NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>;
-  if (base::FeatureList::IsEnabled(chromeos::features::kScanningUI) &&
-      url.host_piece() == chromeos::kChromeUIScanningAppHost) {
+  if (url.host_piece() == chromeos::kChromeUIScanningAppHost)
     return &NewWebUI<chromeos::ScanningUI>;
-  }
   if (base::FeatureList::IsEnabled(chromeos::features::kMediaApp)) {
     if (url.host_piece() == chromeos::kChromeUIMediaAppHost)
       return &NewComponentUI<chromeos::MediaAppUI, ChromeMediaAppUIDelegate>;

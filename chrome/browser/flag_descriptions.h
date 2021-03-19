@@ -318,9 +318,6 @@ extern const char kDynamicColorGamutDescription[];
 extern const char kCompositedLayerBordersName[];
 extern const char kCompositedLayerBordersDescription[];
 
-extern const char kCookieDeprecationMessagesName[];
-extern const char kCookieDeprecationMessagesDescription[];
-
 extern const char kCooperativeSchedulingName[];
 extern const char kCooperativeSchedulingDescription[];
 
@@ -1128,6 +1125,12 @@ extern const char kPercentBasedScrollingDescription[];
 
 extern const char kPermissionChipName[];
 extern const char kPermissionChipDescription[];
+
+extern const char kPermissionChipGestureSensitiveName[];
+extern const char kPermissionChipGestureSensitiveDescription[];
+
+extern const char kPermissionChipRequestTypeSensitiveName[];
+extern const char kPermissionChipRequestTypeSensitiveDescription[];
 
 extern const char kPermissionPredictionsName[];
 extern const char kPermissionPredictionsDescription[];
@@ -2208,9 +2211,6 @@ extern const char kAppServiceExternalProtocolDescription[];
 extern const char kArcCustomTabsExperimentName[];
 extern const char kArcCustomTabsExperimentDescription[];
 
-extern const char kArcDocumentsProviderName[];
-extern const char kArcDocumentsProviderDescription[];
-
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];
 
@@ -2267,9 +2267,6 @@ extern const char kCellularUseAttachApnDescription[];
 
 extern const char kCellularUseExternalEuiccName[];
 extern const char kCellularUseExternalEuiccDescription[];
-
-extern const char kConnectivityDiagnosticsWebUiName[];
-extern const char kConnectivityDiagnosticsWebUiDescription[];
 
 extern const char kContextualNudgesName[];
 extern const char kContextualNudgesDescription[];
@@ -2732,9 +2729,6 @@ extern const char kScalableStatusAreaDescription[];
 
 extern const char kScanAppMediaLinkName[];
 extern const char kScanAppMediaLinkDescription[];
-
-extern const char kScanningUIName[];
-extern const char kScanningUIDescription[];
 
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];

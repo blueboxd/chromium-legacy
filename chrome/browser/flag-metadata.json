@@ -160,11 +160,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "arc-documents-provider",
-    "owners": [ "fukino" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "arc-enable-usap",
     "owners": [ "camurcu" ],
     "expiry_milestone": 92
@@ -572,7 +567,7 @@
     "name": "chromeos-direct-video-decoder",
     "owners": [ "chromeos-gfx-video@google.com" ],
     // TODO(b/159825227): remove when the "old" video decoder is fully launched.
-    "expiry_milestone": 90
+    "expiry_milestone": 99
   },
   {
     "name": "chromeos-sharing-hub",
@@ -637,11 +632,6 @@
     "name": "compute-pressure",
     "owners": [ "pwnall", "oyiptong" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "connectivity-diagnostics-webui",
-    "owners": [ "tbegin", "stevenjb" ],
-    "expiry_milestone": 90
   },
   {
     "name": "content-languages-in-language-picker",
@@ -759,11 +749,6 @@
     "name": "conversion-measurement-debug-mode",
     "owners": [ "//content/browser/conversions/OWNERS" ],
     "expiry_milestone": 93
-  },
-  {
-    "name": "cookie-deprecation-messages",
-    "owners": [ "bingler", "chlily", "aarontag" ],
-    "expiry_milestone": 90
   },
   {
     "name": "copy-link-to-text",
@@ -2495,8 +2480,8 @@
   },
   {
     "name": "enable-unsafe-fast-js-calls",
-    "owners": [ "mslekova", "enga" ],
-    "expiry_milestone": 90
+    "owners": [ "mslekova", "enga", "v8-fast-api@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "enable-unsafe-webgpu",
@@ -2559,7 +2544,7 @@
   {
     "name": "enable-web-bluetooth-new-permissions-backend",
     "owners": [ "web-bluetooth@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "enable-web-payments-experimental-features",
@@ -2953,12 +2938,12 @@
   },
   {
     "name": "form-controls-dark-mode",
-    "owners": [ "sasebree@microsoft.com", "masonfreed", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
+    "owners": [ "sasebree@microsoft.com", "masonf", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
     "expiry_milestone": 92
   },
   {
     "name": "form-controls-refresh",
-    "owners": [ "iopopesc@microsoft.com", "masonfreed", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
+    "owners": [ "iopopesc@microsoft.com", "masonf", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
     "expiry_milestone": 92
   },
   {
@@ -4139,7 +4124,17 @@
   {
     "name": "permission-chip",
     "owners": [ "bsep", "engedy", "olesiamarukhno" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 94
+  },
+  {
+    "name": "permission-chip-gesture",
+    "owners": [ "bsep", "engedy", "olesiamarukhno" ],
+    "expiry_milestone": 94
+  },
+  {
+    "name": "permission-chip-request-type",
+    "owners": [ "bsep", "engedy", "olesiamarukhno" ],
+    "expiry_milestone": 94
   },
   {
     "name": "permission-predictions",
@@ -4531,11 +4526,6 @@
     "name": "scan-app-media-link",
     "owners": [ "gavinwill", "jschettler" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "scanning-ui",
-    "owners": [ "jschettler", "bmgordon" ],
-    "expiry_milestone": 90
   },
   {
     "name": "scheduler-configuration",
@@ -5070,7 +5060,7 @@
   {
     "name": "use-hdr-transfer-function",
     "owners": [ "mcasas", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 99
   },
   {
     "name": "use-js-error-page",

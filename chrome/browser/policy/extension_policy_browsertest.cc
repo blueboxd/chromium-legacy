@@ -85,6 +85,7 @@
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #endif
 
+using extensions::mojom::ManifestLocation;
 using testing::AtLeast;
 using testing::Sequence;
 
@@ -268,12 +269,6 @@ class ExtensionPolicyTest : public PolicyTest {
   }
 
   const web_app::AppId InstallWebApp() {
-    // Waits for the shadow bookmark app to be installed to avoid extension
-    // system races.
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-        content::NotificationService::AllSources());
-
     std::unique_ptr<WebApplicationInfo> web_application =
         std::make_unique<WebApplicationInfo>();
     web_application->title = base::ASCIIToUTF16("Web App");
@@ -291,7 +286,6 @@ class ExtensionPolicyTest : public PolicyTest {
             }));
     loop.Run();
 
-    observer.Wait();
 
     return return_app_id;
   }
@@ -304,7 +298,7 @@ class ExtensionPolicyTest : public PolicyTest {
 
     scoped_refptr<extensions::CrxInstaller> installer =
         extensions::CrxInstaller::CreateSilent(extension_service());
-    installer->set_install_source(extensions::Manifest::EXTERNAL_COMPONENT);
+    installer->set_install_source(ManifestLocation::kExternalComponent);
     installer->set_creation_flags(
         extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
 
@@ -972,7 +966,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
                 ->enabled_extensions()
                 .GetByID(kGoodCrxId)
                 ->location(),
-            extensions::Manifest::INTERNAL);
+            ManifestLocation::kInternal);
 
   // The user is allowed to disable the added extension.
   EXPECT_TRUE(extension_service()->IsExtensionEnabled(kGoodCrxId));
@@ -997,8 +991,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // The user is not allowed to uninstall force-installed extensions.
   UninstallExtension(kGoodCrxId, /*expect_success=*/false);
-  EXPECT_EQ(extension->location(),
-            extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  EXPECT_EQ(extension->location(), ManifestLocation::kExternalPolicyDownload);
 
   // Remove the force installed policy.
   policies.Erase(policy::key::kExtensionInstallForcelist);

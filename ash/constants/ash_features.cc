@@ -178,10 +178,6 @@ const base::Feature kCellularUseExternalEuicc{
 const base::Feature kChildSpecificSignin{"ChildSpecificSignin",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables using the new Connectivity Diagnostics WebUI app.
-const base::Feature kConnectivityDiagnosticsWebUi{
-    "ConnectivityDiagnosticsWebUi", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, options page for each input method will be opened in ChromeOS
 // settings. Otherwise it will be opened in a new web page in Chrome browser.
 const base::Feature kImeOptionsInSettings{"ImeOptionsInSettings",
@@ -606,9 +602,6 @@ const base::Feature kReleaseNotesSuggestionChip{
 // Enables or disables showing a link to the Media app in the Scan app.
 const base::Feature kScanAppMediaLink{"ScanAppMediaLink",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables a scanning UI on Chrome OS.
-const base::Feature kScanningUI{"ScanningUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables long kill timeout for session manager daemon. When
 // enabled, session manager daemon waits for a longer time (e.g. 12s) for chrome

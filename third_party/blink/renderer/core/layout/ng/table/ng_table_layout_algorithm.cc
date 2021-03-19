@@ -534,7 +534,7 @@ MinMaxSizesResult NGTableLayoutAlgorithm::ComputeMinMaxSizes(
   }
   DCHECK_LE(min_max.min_size, min_max.max_size);
   return MinMaxSizesResult{min_max,
-                           /* depends_on_percentage_block_size */ false};
+                           /* depends_on_block_constraints */ false};
 }
 
 void NGTableLayoutAlgorithm::ComputeRows(
@@ -575,7 +575,7 @@ void NGTableLayoutAlgorithm::ComputeRows(
 
   const LayoutUnit css_table_block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), table_border_padding, intrinsic_block_size,
-      table_grid_inline_size,
+      table_grid_inline_size, Node().ShouldBeConsideredAsReplaced(),
       /* available_block_size_adjustment */ captions_block_size);
 
   // In quirks mode, empty tables ignore any specified block-size.

@@ -180,11 +180,6 @@ const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
 const base::Feature kConversionMeasurement{"ConversionMeasurement",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Show messages in DevTools about upcoming deprecations that would affect
-// sent/received cookies.
-const base::Feature kCookieDeprecationMessages{
-    "CookieDeprecationMessages", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Blink cooperative scheduling.
 const base::Feature kCooperativeScheduling{"CooperativeScheduling",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -265,6 +260,10 @@ const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
 // Controls whether Client Hints are guarded by Permissions Policy.
 const base::Feature kFeaturePolicyForClientHints{
     "FeaturePolicyForClientHints", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables FLEDGE implementation. See https://crbug.com/1186444.
+const base::Feature kFledgeInterestGroups{"FledgeInterestGroups",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this

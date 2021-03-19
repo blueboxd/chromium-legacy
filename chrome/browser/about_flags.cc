@@ -1811,7 +1811,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"omnibox_focused_on_new_tab", "true"},
     {"home_button_on_grid_tab_switcher", "true"},
     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
-    {"hide_switch_when_no_incognito_tabs", "true"}};
+    {"hide_switch_when_no_incognito_tabs", "true"},
+    {"show_tabs_in_mru_order", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
@@ -1824,7 +1825,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
      {"show_last_active_tab_only", "true"},
      {"omnibox_focused_on_new_tab", "true"},
      {"home_button_on_grid_tab_switcher", "true"},
-     {"new_home_surface_from_home_button", "hide_tab_switcher_only"}};
+     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
+     {"show_tabs_in_mru_order", "true"}};
 
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
@@ -4090,9 +4092,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcCustomTabsExperimentName,
      flag_descriptions::kArcCustomTabsExperimentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kCustomTabsExperimentFeature)},
-    {"arc-documents-provider", flag_descriptions::kArcDocumentsProviderName,
-     flag_descriptions::kArcDocumentsProviderDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kEnableDocumentsProviderInFilesAppFeature)},
     {"arc-enable-usap", flag_descriptions::kArcEnableUsapName,
      flag_descriptions::kArcEnableUsapDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableUsap)},
@@ -5899,11 +5898,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kGesturePropertiesDBusService)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"cookie-deprecation-messages",
-     flag_descriptions::kCookieDeprecationMessagesName,
-     flag_descriptions::kCookieDeprecationMessagesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kCookieDeprecationMessages)},
-
     {"ev-details-in-page-info", flag_descriptions::kEvDetailsInPageInfoName,
      flag_descriptions::kEvDetailsInPageInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEvDetailsInPageInfo)},
@@ -6489,9 +6483,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"scan-app-media-link", flag_descriptions::kScanAppMediaLinkName,
      flag_descriptions::kScanAppMediaLinkDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppMediaLink)},
-    {"scanning-ui", flag_descriptions::kScanningUIName,
-     flag_descriptions::kScanningUIDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kScanningUI)},
     {"avatar-toolbar-button", flag_descriptions::kAvatarToolbarButtonName,
      flag_descriptions::kAvatarToolbarButtonDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAvatarToolbarButton)},
@@ -6593,6 +6584,17 @@ const FeatureEntry kFeatureEntries[] = {
     {"permission-chip", flag_descriptions::kPermissionChipName,
      flag_descriptions::kPermissionChipDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(permissions::features::kPermissionChip)},
+    {"permission-chip-gesture",
+     flag_descriptions::kPermissionChipGestureSensitiveName,
+     flag_descriptions::kPermissionChipGestureSensitiveDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         permissions::features::kPermissionChipGestureSensitive)},
+    {"permission-chip-request-type",
+     flag_descriptions::kPermissionChipRequestTypeSensitiveName,
+     flag_descriptions::kPermissionChipRequestTypeSensitiveDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         permissions::features::kPermissionChipRequestTypeSensitive)},
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"dice-web-signin-interception",
@@ -6936,13 +6938,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInsertKeyToggleModeDescription,
      kOsWin | kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(blink::features::kInsertKeyToggleMode)},
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"connectivity-diagnostics-webui",
-     flag_descriptions::kConnectivityDiagnosticsWebUiName,
-     flag_descriptions::kConnectivityDiagnosticsWebUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kConnectivityDiagnosticsWebUi)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_ANDROID)
     {"enable-autofill-password-account-indicator-footer",
@@ -7293,7 +7288,7 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
 
   if (!strcmp(kLacrosSupportInternalName, entry.internal_name) ||
       !strcmp(kLacrosStabilityInternalName, entry.internal_name)) {
-    if (!crosapi::browser_util::IsLacrosAllowed(channel)) {
+    if (!crosapi::browser_util::IsLacrosAllowedToBeEnabled(channel)) {
       return true;
     }
   }

@@ -189,7 +189,7 @@ vars = {
   'checkout_reclient': False,
 
   # reclient CIPD package version
-  'reclient_version': 're_client_version:0.23.0.edbb281',
+  'reclient_version': 're_client_version:0.24.0.c22ef22',
 
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
@@ -208,7 +208,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4f0f4e2a3c5ad9dc7312774da5197e0179c30863',
+  'v8_revision': '43315277e45e866e927722377d36b04ca3c1014b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -216,7 +216,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f201c9d2bf829d9d70e3cda0a149dc3b243520eb',
+  'angle_revision': 'b717952ee77647ff7fc2fa31a1b9dfc344228dca',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -283,7 +283,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '8df069bd3c338b19ed893e9c6181e4c0b61d9cc2',
+  'devtools_frontend_revision': 'c030bfaa8fac24866633f69816860e96b5ad85e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -371,7 +371,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'c93be42a4007e6fc16ea085f5b47ea50aa9134a8',
+  'libcxxabi_revision':    '4e078437d00810ef55f668244049c5ff937bc4bb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -696,7 +696,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'i0GHnYjbnrO5uPFUhN_LTY-OldhEXfimO5qHglFC5fwC',
+          'version': 'HrObtBeHuh5R3OZF1qqHNjQl38HI9tJTa3qDEcySZVoC',
       },
     ],
     'condition': 'checkout_android',
@@ -909,7 +909,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9c61e9c91226d54640c770a90496dc03869d379f',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e27e2430520d03e5aafb513a73b77e3746054b92',
       'condition': 'checkout_chromeos',
   },
 
@@ -929,7 +929,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2737963b46b333e8db51f433b56af53fc17cfdc8',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9757ad58837498ee2d8e4a33deb2c91af19d6cf1',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1301,7 +1301,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '634775413f4126fd4771143f45d3ca30e18b0fa2',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f22dda154476440b55903604748f82246303c56c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1379,7 +1379,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'fU_J9KtzLrfiXhqpf_1eV01gy30M641raluN5uaKPNAC'
+              'version': 'ASZAw9q3qc9gzTTRn-mGL72ir5Z_qIi5GvZGRBYa4sMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1426,7 +1426,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'p8MxOkeoVbwFeWnyTIOV5apfrUkcEo5Mq0bGVQtF82IC',
+              'version': 'TNGssqzExjlZ_AG4P92Hje4YYbM8o_TMSLQeRxrAB-8C',
           },
       ],
       'condition': 'checkout_android',
@@ -1575,7 +1575,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'NQmBkXHpEXJthTy0c6iuXDk1UgYDyQ7Fm649E7P38bAC',
+          'version': 'tEy0lJoalTuggzrX-B7ZyklLHH34kagQt1s3f03s8aUC',
         },
       ],
       'dep_type': 'cipd',
@@ -1609,7 +1609,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@541fd7da45daa34f7008eff2e9fd380360d49429',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0c6583a194dd76533d38a1c52da176aee6a4ec0b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1617,7 +1617,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'PTweRYwjxuVhQ68MR1GPXTbQt97-rWOPHlOnoJiOUjMC',
+        'version': 'o9GqtEifaYwdNlq0ymD7vHlW4ce76Qknjpd535QA5h8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1628,7 +1628,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'gE5wrFvnrNeqzC53KW7-_NUKMXCrfCv6ijKhNIP8ArIC',
+        'version': 'f7i34h84uyi2orAw29q8IZtYTQUFy8gCKmz2B2_8_HQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1639,7 +1639,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'xExuCHB8tqptYTkZGw-QYr6Q_2Y0zcToGTBOLZu1eD0C',
+        'version': 'KCL9HGdf54bUkIBmxev4hOCIK4OLNXW-PmSznmxN6J4C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -3672,7 +3672,8 @@ hooks = [
     'condition': 'llvm_force_head_revision',
     'action': ['python', 'src/tools/clang/scripts/build.py',
                '--llvm-force-head-revision',
-               '--with-android={checkout_android}'],
+               '--with-android={checkout_android}',
+               '--with-fuchsia={checkout_fuchsia}'],
   },
   {
     # This is supposed to support the same set of platforms as 'clang' above.

@@ -28,6 +28,7 @@ DriveFileProvider::DriveFileProvider(Profile* profile)
           drive::DriveIntegrationServiceFactory::GetForProfile(profile)) {
   DCHECK(profile_);
   DCHECK(drive_service_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 DriveFileProvider::~DriveFileProvider() = default;
@@ -37,6 +38,8 @@ ash::AppListSearchResultType DriveFileProvider::ResultType() {
 }
 
 void DriveFileProvider::Start(const std::u16string& query) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Clear results and cancel any outgoing requests.
   ClearResultsSilently();
   weak_factory_.InvalidateWeakPtrs();
@@ -64,6 +67,8 @@ void DriveFileProvider::Start(const std::u16string& query) {
 
 void DriveFileProvider::SetSearchResults(drive::FileError error,
                                          std::vector<base::FilePath> paths) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (error != drive::FileError::FILE_ERROR_OK) {
     // TODO(crbug.com/1154513): Log error histogram.
     return;
@@ -80,13 +85,22 @@ void DriveFileProvider::SetSearchResults(drive::FileError error,
 
 std::unique_ptr<FileResult> DriveFileProvider::MakeResult(
     const base::FilePath& path) {
+  // Strip leading separators so that the path can be reparented.
+  // TODO(crbug.com/1154513): Remove this step once the drive backend returns
+  // results in relative path format.
+  DCHECK(!path.value().empty());
+  const base::FilePath relative_path =
+      !path.value().empty() && base::FilePath::IsSeparator(path.value()[0])
+          ? base::FilePath(path.value().substr(1))
+          : path;
+
   // Reparent the file path into the user's DriveFS mount.
-  DCHECK(!path.IsAbsolute());
+  DCHECK(!relative_path.IsAbsolute());
   const base::FilePath& reparented_path =
-      drive_service_->GetMountPointPath().Append(path.value());
+      drive_service_->GetMountPointPath().Append(relative_path.value());
 
   const double relevance =
-      CalculateFilenameRelevance(last_tokenized_query_, path);
+      CalculateFilenameRelevance(last_tokenized_query_, relative_path);
 
   return std::make_unique<FileResult>(kDriveFileSchema, reparented_path,
                                       ash::AppListSearchResultType::kDriveFile,

@@ -646,6 +646,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>The display type used to ask for an EGLDisplay.</summary>
 </histogram>
 
+<histogram name="GPU.EnsureWorkVisibleDuration" units="microseconds"
+    expires_after="2022-04-01">
+  <owner>alemate@chromium.org</owner>
+  <owner>magchen@chromium.org</owner>
+  <owner>oshima@chromium.org</owner>
+  <summary>
+    Records the duration of EnsureWorkVisible GPU call. Since it's blocking UI
+    thread we want to measure it, and this histogram must be active as long as
+    this call is still blocking.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution.
+  </summary>
+</histogram>
+
 <histogram name="GPU.Error" enum="GLError" expires_after="2020-06-28">
   <owner>zmo@chromium.org</owner>
   <owner>vmiura@chromium.org</owner>
@@ -1123,6 +1139,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     running. If the schedulers is working properly, for a high priority task,
     this metric should be minimal. Only recorded for clients with high
     resolution clocks.
+  </summary>
+</histogram>
+
+<histogram name="GPU.Scheduler.ThreadSuspendedTime" units="microseconds"
+    expires_after="2022-03-31">
+  <owner>berlu@chromium.org</owner>
+  <owner>chrome-gpu-metrics@google.com</owner>
+  <summary>
+    Records the wall time taken between calls to schedule the task run and the
+    actual run of the task. Ideally this should always be as close to 0 as
+    possible. Only recorded for clients with high resolution clocks.
   </summary>
 </histogram>
 

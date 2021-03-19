@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -57,6 +58,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -88,6 +90,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -1346,6 +1349,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisableIf.Build(sdk_is_less_than = N, message = "crbug.com/1185009")
     public void testShow_SingleAsHomepage_ResetScrollPosition() {
         // clang-format on
         if (!mImmediateReturn) {
@@ -1536,6 +1540,7 @@ public class StartSurfaceTest {
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @FlakyTest(message = "https://crbug.com/1185984")
     public void testShow_SingleAsHomepage_BackButtonOnCarouselTabSwitcher() {
         // clang-format on
         if (!mImmediateReturn) {
@@ -2049,6 +2054,144 @@ public class StartSurfaceTest {
                 .check(matches(withEffectiveVisibility(VISIBLE)));
         onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
                 .check(matches(withEffectiveVisibility(GONE)));
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"StartSurface"})
+    @DisableIf.Build(sdk_is_less_than = N, supported_abis_includes = "x86")
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_tabs_in_mru_order/true"})
+    public void testShow_SingleAsHomepage_ShowTabsInMRUOrder() throws ExecutionException {
+        // clang-format on
+        if (!mImmediateReturn) {
+            pressHomePageButton();
+        }
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        CriteriaHelper.pollUiThread(
+                () -> cta.getLayoutManager() != null && cta.getLayoutManager().overviewVisible());
+        waitForTabModel();
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        onViewWaiting(withId(R.id.logo));
+        Tab tab1 = cta.getCurrentTabModel().getTabAt(0);
+
+        // Launches the first site in MV tiles.
+        LinearLayout tilesLayout =
+                cta.findViewById(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tilesLayout.getChildAt(0).performClick());
+        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        Tab tab2 = cta.getActivityTab();
+        // Verifies that the titles of the two Tabs are different.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertNotEquals(tab1.getTitle(), tab2.getTitle()); });
+
+        // Returns to the Start surface.
+        OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
+                mActivityTestRule.getActivity().getLayoutManager(), true, false);
+        pressHomePageButton();
+        overviewModeWatcher.waitForBehavior();
+        waitForView(allOf(
+                withParent(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container)),
+                withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)));
+
+        RecyclerView recyclerView = mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.tab_ui.R.id.tab_list_view);
+        assertEquals(2, recyclerView.getChildCount());
+        // Verifies that the tabs are shown in MRU order: the first card in the carousel Tab
+        // switcher is the last created Tab by tapping the MV tile; the second card is the Tab
+        // created or restored in setup().
+        RecyclerView.ViewHolder firstViewHolder = recyclerView.findViewHolderForAdapterPosition(0);
+        TextView title1 =
+                firstViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> Assert.assertEquals(tab2.getTitle(), title1.getText()));
+
+        RecyclerView.ViewHolder secondViewHolder = recyclerView.findViewHolderForAdapterPosition(1);
+        TextView title2 =
+                secondViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> Assert.assertEquals(tab1.getTitle(), title2.getText()));
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"StartSurface"})
+    @DisableIf.Build(sdk_is_less_than = N, supported_abis_includes = "x86")
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_tabs_in_mru_order/true"})
+    public void testShow_TabSwitcher_ShowTabsInMRUOrder() throws ExecutionException {
+        // clang-format on
+        tabSwitcher_ShowTabsInMRUOrderImpl();
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"StartSurface"})
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS +
+        "/single/show_tabs_in_mru_order/true/show_last_active_tab_only/true"})
+    public void testShowV2_TabSwitcher_ShowTabsInMRUOrder() throws ExecutionException {
+        // clang-format on
+        tabSwitcher_ShowTabsInMRUOrderImpl();
+    }
+
+    private void tabSwitcher_ShowTabsInMRUOrderImpl() throws ExecutionException {
+        if (!mImmediateReturn) {
+            pressHomePageButton();
+        }
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        CriteriaHelper.pollUiThread(
+                () -> cta.getLayoutManager() != null && cta.getLayoutManager().overviewVisible());
+        waitForTabModel();
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        onViewWaiting(withId(R.id.logo));
+        Tab tab1 = cta.getCurrentTabModel().getTabAt(0);
+
+        // Launches the first site in MV tiles.
+        LinearLayout tilesLayout =
+                cta.findViewById(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tilesLayout.getChildAt(0).performClick());
+        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        Tab tab2 = cta.getActivityTab();
+
+        // Verifies that the titles of the two Tabs are different.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertNotEquals(tab1.getTitle(), tab2.getTitle()); });
+
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
+        // Enter the Tab switcher.
+        TabUiTestHelper.enterTabSwitcher(cta);
+        waitForView(allOf(withParent(withId(R.id.secondary_tasks_surface_view)),
+                withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)));
+
+        ViewGroup secondaryTaskSurface =
+                mActivityTestRule.getActivity().findViewById(R.id.secondary_tasks_surface_view);
+        RecyclerView recyclerView =
+                secondaryTaskSurface.findViewById(org.chromium.chrome.tab_ui.R.id.tab_list_view);
+        assertEquals(2, recyclerView.getChildCount());
+        // Verifies that the tabs are shown in MRU order: the first card in the Tab switcher is the
+        // last created Tab by tapping the MV tile; the second card is the Tab created or restored
+        // in setup().
+        RecyclerView.ViewHolder firstViewHolder = recyclerView.findViewHolderForAdapterPosition(0);
+        TextView title1 =
+                firstViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> Assert.assertEquals(tab2.getTitle(), title1.getText()));
+
+        RecyclerView.ViewHolder secondViewHolder = recyclerView.findViewHolderForAdapterPosition(1);
+        TextView title2 =
+                secondViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> Assert.assertEquals(tab1.getTitle(), title2.getText()));
     }
 
     private void scrollToolbar() {

@@ -50,13 +50,6 @@ const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Enables app activity reporting for child user.
-// Requires |kPerAppTimeLimits| to be enabled.
-const base::Feature kAppActivityReporting{"AppActivityReporting",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if !defined(OS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceAdaptiveIcon{"AppServiceAdaptiveIcon",
@@ -677,10 +670,6 @@ const base::Feature kOomIntervention{"OomIntervention",
 // user. Requires |kParentAccessCode| to be enabled.
 const base::Feature kParentAccessCodeForOnlineLogin{
     "ParentAccessCodeForOnlineLogin", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables enforcement of per-app time limits for child user.
-const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Keep a client-side log of when websites access permission-gated capabilities
@@ -841,6 +830,11 @@ const base::Feature kSmbFs{"SmbFs", base::FEATURE_ENABLED_BY_DEFAULT};
 // website.
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables receiving and sending bookmark apps creation through APPS
+// sync. Will be removed in M92 https://crbug.com/1185374.
+const base::Feature kSyncBookmarkApps{"SyncBookmarkApps",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables chrome://sys-internals.

@@ -2682,12 +2682,10 @@ crbug.com/626703 [ Win10 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webmessaging/without-ports/011.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.zero.worker.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Failure Timeout ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable [ Failure Timeout ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b [ Failure Timeout ]
-crbug.com/626703 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-writing-mode-000.html [ Failure ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Failure Timeout ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable&parent=b&child=i [ Failure Timeout ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&child=b [ Failure Timeout ]
@@ -3881,7 +3879,6 @@ crbug.com/746128 [ Mac ] media/controls/video-enter-exit-fullscreen-without-hove
 
 # Tests failing when enabling new modern media controls
 crbug.com/831942 media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]
-crbug.com/831957 compositing/video/video-controls-layer-creation-squashing.html [ Failure Pass ]
 crbug.com/832157 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-rendering-after-controls-added.html [ Skip ]
 crbug.com/832169 media/media-controls-fit-properly-while-zoomed.html [ Failure Pass ]
 crbug.com/832447 media/controls/controls-page-zoom-in.html [ Failure Pass ]

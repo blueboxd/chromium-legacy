@@ -81,7 +81,8 @@ scoped_refptr<const NGLayoutResult> NGMathOperatorLayoutAlgorithm::Layout() {
   LayoutUnit intrinsic_block_size = ascent + descent;
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
-      container_builder_.InitialBorderBoxSize().inline_size);
+      container_builder_.InitialBorderBoxSize().inline_size,
+      Node().ShouldBeConsideredAsReplaced());
   container_builder_.SetBaseline(ascent);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
@@ -103,7 +104,7 @@ MinMaxSizesResult NGMathOperatorLayoutAlgorithm::ComputeMinMaxSizes(
   sizes.Encompass(LayoutUnit(metrics.advance));
 
   sizes += BorderScrollbarPadding().InlineSum();
-  return MinMaxSizesResult(sizes, /* depends_on_percentage_block_size */ false);
+  return MinMaxSizesResult(sizes, /* depends_on_block_constraints */ false);
 }
 
 UChar32 NGMathOperatorLayoutAlgorithm::GetBaseCodePoint() const {

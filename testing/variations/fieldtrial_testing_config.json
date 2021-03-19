@@ -4434,6 +4434,7 @@
                 {
                     "name": "DesktopExperiments",
                     "params": {
+                        "EntitySuggestionsReduceLatencyDecoderTimeout": "30000",
                         "EntitySuggestionsReduceLatencyDecoderWakeup": "true",
                         "MaxZeroSuggestMatches": "10",
                         "OmniboxMaxURLMatches": "7",
@@ -7578,6 +7579,21 @@
                     },
                     "enable_features": [
                         "WebViewZeroCopyVideo"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebviewAccelerateSmallCanvases": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebviewAccelerateSmallCanvases"
                     ]
                 }
             ]

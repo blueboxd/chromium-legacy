@@ -118,6 +118,11 @@ class BASE_EXPORT MessagePumpKqueue : public MessagePump,
                            FdWatchController* controller,
                            FdWatcher* delegate);
 
+  // Exposed for testing.
+  bool is_ludicrous_timer_slack_enabled() const {
+    return is_ludicrous_timer_slack_enabled_;
+  }
+
  private:
   // Called by the watch controller implementations to stop watching the
   // respective types of handles.
@@ -159,6 +164,13 @@ class BASE_EXPORT MessagePumpKqueue : public MessagePump,
 
   // Whether the pump has been Quit() or not.
   bool keep_running_ = true;
+
+  // Cache flag for ease of testing.
+  const bool is_ludicrous_timer_slack_enabled_;
+
+  // The currently scheduled wakeup, if any. If no wakeup is scheduled,
+  // contains base::TimeTicks::Max().
+  base::TimeTicks scheduled_wakeup_time_{base::TimeTicks::Max()};
 
   // The number of events scheduled on the |kqueue_|. There is always at least
   // 1, for the |wakeup_| port (or |port_set_|).

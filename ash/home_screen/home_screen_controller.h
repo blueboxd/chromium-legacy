@@ -25,10 +25,10 @@ class ThroughputTracker;
 
 namespace ash {
 
-class HomeScreenDelegate;
-
 // HomeScreenController provides functionality to control the home launcher -
 // the tablet mode app list.
+// NOTE: This class is being folded into AppListControllerImpl. Its tests live
+// in ash/app_list/app_list_controller_impl_unittest.cc.
 class ASH_EXPORT HomeScreenController : public OverviewObserver,
                                         public SplitViewObserver,
                                         public WallpaperControllerObserver {
@@ -44,12 +44,10 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // nothing to do because the given display was already "home".
   bool GoHome(int64_t display_id);
 
-  // Sets the delegate for home screen animations.
-  void SetDelegate(HomeScreenDelegate* delegate);
-
   // Called when a window starts/ends dragging. If the home screen is shown, we
   // should hide it during dragging a window and reshow it when the drag ends.
   void OnWindowDragStarted();
+
   // If |animate| is true, scale-in-to-show home screen if home screen should
   // be shown after drag ends.
   void OnWindowDragEnded(bool animate);
@@ -81,8 +79,6 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
                                SplitViewController::State state) override;
 
-  HomeScreenDelegate* delegate() { return delegate_; }
-
  private:
   // OverviewObserver:
   void OnOverviewModeStarting() override;
@@ -113,11 +109,8 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // Whether we're currently in a window dragging process.
   bool in_window_dragging_ = false;
 
-  // Not owned.
-  HomeScreenDelegate* delegate_ = nullptr;
-
   // Presenter that manages home screen animations.
-  HomeScreenPresenter home_screen_presenter_{this};
+  HomeScreenPresenter home_screen_presenter_;
 
   // The last overview mode exit type - cached when the overview exit starts, so
   // it can be used to decide how to update home screen  when overview mode exit

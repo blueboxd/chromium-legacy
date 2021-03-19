@@ -1748,15 +1748,13 @@ bool WebLocalFrameImpl::CapturePaintPreview(const gfx::Rect& bounds,
   bool success = false;
   {
     Document::PaintPreviewScope paint_preview(*GetFrame()->GetDocument());
-    ResourceCacheValidationSuppressor validation_suppressor(
-        GetFrame()->GetDocument()->Fetcher());
-    GetFrame()->View()->ForceLayoutForPagination(float_bounds, float_bounds, 1);
+    GetFrame()->StartPaintPreview();
     PaintPreviewContext* paint_preview_context =
         MakeGarbageCollected<PaintPreviewContext>(GetFrame());
     success = paint_preview_context->Capture(canvas, float_bounds,
                                              include_linked_destinations);
+    GetFrame()->EndPaintPreview();
   }
-  GetFrame()->EndPrinting();
   return success;
 }
 
@@ -2336,8 +2334,7 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
       is_client_redirect ? ClientRedirectPolicy::kClientRedirect
                          : ClientRedirectPolicy::kNotClientRedirect,
       has_transient_user_activation, nullptr, /* origin_document */
-      false,                                  /* has_event */
-      std::move(extra_data));
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, std::move(extra_data));
 }
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
@@ -2617,6 +2614,10 @@ bool WebLocalFrameImpl::IsAllowedToDownload() const {
   return (GetFrame()->Loader().PendingEffectiveSandboxFlags() &
           network::mojom::blink::WebSandboxFlags::kDownloads) ==
          network::mojom::blink::WebSandboxFlags::kNone;
+}
+
+bool WebLocalFrameImpl::IsCrossOriginToMainFrame() const {
+  return GetFrame()->IsCrossOriginToMainFrame();
 }
 
 void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {

@@ -38,6 +38,28 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="System" summary="System voice transcription."/>
 </variants>
 
+<variants name="WebContentsObserverMethods">
+  <variant name="DidChangeVisibleSecurityState"/>
+  <variant name="DidFinishLoad"/>
+  <variant name="DidFinishNavigation"/>
+  <variant name="DidFirstVisuallyNonEmptyPaint"/>
+  <variant name="DidRedirectNavigation"/>
+  <variant name="DidStartLoading"/>
+  <variant name="DidStartNavigation"/>
+  <variant name="DidStopLoading"/>
+  <variant name="DocumentAvailableInMainFrame"/>
+  <variant name="DOMContentLoaded"/>
+  <variant name="LoadProgressChanged"/>
+  <variant name="NavigationEntryChanged"/>
+  <variant name="NavigationEntryCommitted"/>
+  <variant name="NavigationEntryDeleted"/>
+  <variant name="OnVisibilityChanged"/>
+  <variant name="RenderFrameCreated"/>
+  <variant name="RenderFrameDeleted"/>
+  <variant name="RenderViewReady"/>
+  <variant name="TitleWasSet"/>
+</variants>
+
 <histogram name="AccountManager.AccountAdditionResultStatus"
     enum="AccountManagerAccountAdditionResultStatus" expires_after="2022-02-01">
   <owner>sinhak@chromium.org</owner>
@@ -7400,7 +7422,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2021-08-09">
   <owner>battre@chromium.org</owner>
   <owner>gab@chromium.org</owner>
-  <summary>CPU time used to serialize preferences into a JSON string.</summary>
+  <summary>
+    CPU time used in the foreground thread (usually UI thread) to serialize the
+    data to be written into an important file (e.g. serialize JSON string for
+    preferences). For users of ImportantFileWriter that leverage background
+    serialization (e.g. bookmarks), it excludes the time spent on the background
+    thread, and only logs the time spent on the foreground thread.
+  </summary>
 </histogram>
 
 <histogram name="ImportantFile.TempFileFailures" enum="TempFileFailure"
@@ -17916,6 +17944,17 @@ regressions. -->
   <summary>Records the result of WebAppUrlLoader::PrepareForLoad().</summary>
 </histogram>
 
+<histogram name="WebContentsObserver.{Method}" units="ms"
+    expires_after="2021-09-15">
+  <owner>cduvall@chromium.org</owner>
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Measures the time it takes to call all observers of the WebContents observer
+    method {Method}. Logged every time the method is called.
+  </summary>
+  <token key="Method" variants="WebContentsObserverMethods"/>
+</histogram>
+
 <histogram name="WebContextFetcher.Time.RunJavaScript" units="ms"
     expires_after="2021-11-01">
   <owner>benwgold@chromium.org</owner>
@@ -18239,6 +18278,25 @@ regressions. -->
   <summary>
     Tracks actions with the &quot;All Sites&quot; page in website settings
     starting in M82.
+  </summary>
+</histogram>
+
+<histogram name="WebsiteSettings.Discoverability.Action"
+    enum="WebsiteSettingsDiscoverabilityAction" expires_after="M94">
+  <owner>eokoyomon@chromium.org</owner>
+  <owner>dullweber@chromium.org</owner>
+  <summary>
+    Tracks actions related to page info when discoverability has been activated.
+  </summary>
+</histogram>
+
+<histogram name="WebsiteSettings.Discoverability.TimeToOpen" units="ms"
+    expires_after="M94">
+  <owner>eokoyomon@chromium.org</owner>
+  <owner>dullweber@chromium.org</owner>
+  <summary>
+    Records the amount of time the discoverability icon is shown in the omnibox
+    before the user clicks into page info.
   </summary>
 </histogram>
 

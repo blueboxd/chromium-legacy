@@ -495,11 +495,6 @@ const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and study "
     "layer compositing.";
 
-const char kCookieDeprecationMessagesName[] = "Cookie deprecation messages";
-const char kCookieDeprecationMessagesDescription[] =
-    "Show messages in DevTools about upcoming deprecations that would affect "
-    "sent/received cookies.";
-
 const char kCooperativeSchedulingName[] = "Cooperative Scheduling";
 const char kCooperativeSchedulingDescription[] =
     "Enables cooperative scheduling in Blink.";
@@ -1915,6 +1910,19 @@ const char kPermissionChipName[] = "Permissions Chip Experiment";
 const char kPermissionChipDescription[] =
     "Enables an experimental permission prompt that uses a chip in the location"
     " bar.";
+
+const char kPermissionChipGestureSensitiveName[] =
+    "Gesture-sensitive Permissions Chip";
+const char kPermissionChipGestureSensitiveDescription[] =
+    "If the Permissions Chip Experiment is enabled, controls whether or not "
+    "the chip should be more prominent when the request is associated with a "
+    "gesture.";
+
+const char kPermissionChipRequestTypeSensitiveName[] =
+    "Request-type-sensitive Permissions Chip";
+const char kPermissionChipRequestTypeSensitiveDescription[] =
+    "If the Permissions Chip Experiment is enabled, controls whether or not "
+    "the chip should be more or less prominent depending on the request type.";
 
 const char kPermissionPredictionsName[] = "Permission Predictions";
 const char kPermissionPredictionsDescription[] =
@@ -3801,10 +3809,6 @@ const char kArcCustomTabsExperimentDescription[] =
     "Allow Android apps to use Custom Tabs."
     "This feature only works on the Canary and Dev channels.";
 
-const char kArcDocumentsProviderName[] = "ARC DocumentsProvider integration";
-const char kArcDocumentsProviderDescription[] =
-    "Enables DocumentsProvider integration in Chrome OS Files app.";
-
 const char kArcFilePickerExperimentName[] =
     "Enable file picker experiment for ARC";
 const char kArcFilePickerExperimentDescription[] =
@@ -3910,11 +3914,6 @@ const char kCellularUseExternalEuiccName[] = "Use external Euicc";
 const char kCellularUseExternalEuiccDescription[] =
     "When enabled Cellular Setup and Settings UI will use the first available "
     "external Euicc.";
-
-const char kConnectivityDiagnosticsWebUiName[] =
-    "Connectivity Diagnostics WebUI";
-const char kConnectivityDiagnosticsWebUiDescription[] =
-    "Use the WebUI version of the Connectivity Diagnostics App";
 
 const char kContextualNudgesName[] =
     "Contextual nudges for user gesture education";
@@ -4648,11 +4647,6 @@ const char kScanAppMediaLinkName[] = "Show Media app link in Scan app";
 const char kScanAppMediaLinkDescription[] =
     "Enables showing a link in the Scan app to open scanned images in the Media"
     " app.";
-
-const char kScanningUIName[] = "Scanning UI";
-const char kScanningUIDescription[] =
-    "An experimental UI that allows users to interact with a connected "
-    "scanner.";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =

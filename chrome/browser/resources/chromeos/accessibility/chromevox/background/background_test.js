@@ -1657,15 +1657,20 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresLabels', function() {
     <p>before</p>
     <p id="label">label</p>
     <a href="#next" id="lebal">lebal</a>
+    <h2 id="headingLabel">headingLabel</h2>
     <p>after</p>
-    <button aria-labelledby="label"></button>
+    <button aria-labelledby="label headingLabel"></button>
   `,
       function(root) {
         mockFeedback.expectSpeech('before')
             .call(doCmd('nextObject'))
             .expectSpeech('lebal', 'Link')
             .call(doCmd('nextObject'))
+            .expectSpeech('headingLabel', 'Heading 2')
+            .call(doCmd('nextObject'))
             .expectSpeech('after')
+            .call(doCmd('previousObject'))
+            .expectSpeech('headingLabel', 'Heading 2')
             .call(doCmd('previousObject'))
             .expectSpeech('lebal', 'Link')
             .call(doCmd('previousObject'))
@@ -1673,9 +1678,11 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresLabels', function() {
             .call(doCmd('nextObject'))
             .expectSpeech('lebal', 'Link')
             .call(doCmd('nextObject'))
+            .expectSpeech('headingLabel', 'Heading 2')
+            .call(doCmd('nextObject'))
             .expectSpeech('after')
             .call(doCmd('nextObject'))
-            .expectSpeech('label', 'lebal', 'Button')
+            .expectSpeech('label headingLabel', 'Button')
             .call(doCmd('nextObject'))
             .expectEarcon(Earcon.WRAP)
             .call(doCmd('nextObject'))
@@ -2378,6 +2385,8 @@ TEST_F('ChromeVoxBackgroundTest', 'PhoneticsAndCommands', function() {
 
 TEST_F('ChromeVoxBackgroundTest', 'ToggleDarkScreen', function() {
   const mockFeedback = this.createMockFeedback();
+  // Pretend we've already accepted the confirmation dialog once.
+  localStorage['acceptDarkenScreen'] = 'true';
   this.runWithLoadedTree('<div>Unimportant web content</div>', function() {
     mockFeedback.call(doCmd('toggleDarkScreen'))
         .expectSpeech('Darken screen')

@@ -439,6 +439,13 @@ def main():
   parser.add_argument('--with-android', type=gn_arg, nargs='?', const=True,
                       help='build the Android ASan runtime (linux only)',
                       default=sys.platform.startswith('linux'))
+  parser.add_argument('--with-fuchsia',
+                      type=gn_arg,
+                      nargs='?',
+                      const=True,
+                      help='build the Fuchsia runtimes (linux and mac only)',
+                      default=sys.platform.startswith('linux')
+                      or sys.platform.startswith('darwin'))
   parser.add_argument('--without-android', action='store_false',
                       help='don\'t build Android ASan runtime (linux only)',
                       dest='with_android')
@@ -458,10 +465,6 @@ def main():
     print('https://www.chromium.org/developers/how-tos/android-build-instructions')
     print('for how to install the NDK, or pass --without-android.')
     return 1
-
-  if args.llvm_force_head_revision:
-    # Don't build fuchsia runtime on ToT bots at all.
-    args.with_fuchsia = False
 
   if args.with_fuchsia and not os.path.exists(FUCHSIA_SDK_DIR):
     print('Fuchsia SDK not found at ' + FUCHSIA_SDK_DIR)

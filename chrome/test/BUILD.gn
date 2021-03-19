@@ -1523,6 +1523,7 @@ if (!is_android) {
       "../browser/ui/views/tabs/tab_search_button_browsertest.cc",
       "../browser/ui/views/tabs/tab_strip_browsertest.cc",
       "../browser/ui/views/toolbar/avatar_toolbar_button_browsertest.cc",
+      "../browser/ui/views/toolbar/chrome_labs_browsertest.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_browsertest.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_minimal_ui_test.cc",
       "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
@@ -5640,15 +5641,20 @@ test("unit_tests") {
     } else {
       sources += [
         "../browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_unittest.cc",
-        "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc",
-        "../browser/extensions/api/messaging/native_messaging_launch_from_native_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc",
       ]
 
       deps += [ "//components/enterprise:test_support" ]
     }
+    if (!is_chromeos_ash && !is_chromeos_lacros) {
+      sources += [
+        "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
+        "../browser/extensions/api/messaging/native_messaging_launch_from_native_unittest.cc",
+      ]
+    }
   }
+
   if (use_aura) {
     deps += [
       "//ui/aura:test_support",
@@ -5990,7 +5996,7 @@ test("unit_tests") {
       "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_unittest.mm",
       "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
       "../browser/ui/cocoa/screentime/history_bridge_unittest.cc",
-      "../browser/ui/cocoa/screentime/screentime_tab_helper_unittest.cc",
+      "../browser/ui/cocoa/screentime/screentime_tab_helper_unittest.mm",
       "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
       "../browser/ui/cocoa/tab_menu_bridge_unittest.mm",
       "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",
@@ -6084,6 +6090,7 @@ test("unit_tests") {
       "../browser/media/webrtc/native_desktop_media_list_unittest.cc",
       "../browser/metrics/upgrade_metrics_provider_unittest.cc",
       "../browser/password_manager/multi_profile_credentials_filter_unittest.cc",
+      "../browser/policy/cbcm_invalidations_initializer_unittest.cc",
       "../browser/policy/chrome_browser_cloud_management_register_watcher_unittest.cc",
       "../browser/profiles/profile_activity_metrics_recorder_unittest.cc",
       "../browser/signin/force_signin_verifier_unittest.cc",

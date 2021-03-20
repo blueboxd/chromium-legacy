@@ -386,10 +386,6 @@
       status: "stable"
     },
     {
-      name: "CompositingOptimizations",
-      status: "stable"
-    },
-    {
       name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
@@ -1149,6 +1145,7 @@
     },
     {
       name: "LayoutNGGrid",
+      implied_by: ["CSSContainerQueries"],
     },
     {
       name: "LayoutNGLayoutOverflow",
@@ -1336,7 +1333,7 @@
     },
     {
       name: "ModuleServiceWorker",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MojoJS",

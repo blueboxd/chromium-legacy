@@ -1147,9 +1147,6 @@ extern const char kPrintServerScalingDescription[];
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];
 
-extern const char kPrivacyReorderedAndroidName[];
-extern const char kPrivacyReorderedAndroidDescription[];
-
 extern const char kPrivacySandboxSettingsName[];
 extern const char kPrivacySandboxSettingsDescription[];
 
@@ -1669,9 +1666,6 @@ extern const char kContextualSearchForceCaptionDescription[];
 
 extern const char kContextualSearchLiteralSearchTapName[];
 extern const char kContextualSearchLiteralSearchTapDescription[];
-
-extern const char kContextualSearchLongpressPanelHelpName[];
-extern const char kContextualSearchLongpressPanelHelpDescription[];
 
 extern const char kContextualSearchLongpressResolveName[];
 extern const char kContextualSearchLongpressResolveDescription[];

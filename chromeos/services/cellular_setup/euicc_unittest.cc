@@ -52,6 +52,11 @@ class EuiccTest : public ESimTestBase {
     SetupEuicc();
   }
 
+  void TearDown() override {
+    HermesProfileClient::Get()->GetTestInterface()->SetConnectedAfterEnable(
+        /*connected_after_enable=*/false);
+  }
+
   InstallResultPair InstallProfileFromActivationCode(
       const mojo::Remote<mojom::Euicc>& euicc,
       const std::string& activation_code,
@@ -169,6 +174,23 @@ TEST_F(EuiccTest, InstallProfileFromActivationCode) {
       "Network.Cellular.ESim.ProfileDownload.ActivationCode.Latency", 1);
 }
 
+TEST_F(EuiccTest, InstallProfileAlreadyConnected) {
+  mojo::Remote<mojom::Euicc> euicc = GetEuiccForEid(ESimTestBase::kTestEid);
+  ASSERT_TRUE(euicc.is_bound());
+
+  HermesProfileClient::Get()->GetTestInterface()->SetConnectedAfterEnable(
+      /*connected_after_enable=*/true);
+
+  InstallResultPair result_pair = InstallProfileFromActivationCode(
+      euicc,
+      HermesEuiccClient::Get()
+          ->GetTestInterface()
+          ->GenerateFakeActivationCode(),
+      /*confirmation_code=*/std::string(), /*wait_for_connect=*/false,
+      /*fail_connect=*/false);
+  EXPECT_EQ(mojom::ProfileInstallResult::kSuccess, result_pair.first);
+}
+
 TEST_F(EuiccTest, InstallPendingProfileFromActivationCode) {
   mojo::Remote<mojom::Euicc> euicc = GetEuiccForEid(ESimTestBase::kTestEid);
   ASSERT_TRUE(euicc.is_bound());
@@ -209,9 +231,22 @@ TEST_F(EuiccTest, RequestPendingProfiles) {
             RequestPendingProfiles(euicc));
   EXPECT_EQ(0u, observer()->profile_list_change_calls().size());
 
+  base::HistogramTester histogram_tester;
+
+  const uint64_t profile_discovery_latency = 3000;
+  HermesEuiccClient::Get()->GetTestInterface()->SetInteractiveDelay(
+      base::TimeDelta::FromMilliseconds(profile_discovery_latency));
+
   // Verify that successful request returns correct status code.
   EXPECT_EQ(mojom::ESimOperationResult::kSuccess,
             RequestPendingProfiles(euicc));
+
+  histogram_tester.ExpectTimeBucketCount(
+      "Network.Cellular.ESim.ProfileDiscovery.Latency",
+      base::TimeDelta::FromMilliseconds(profile_discovery_latency), 1);
+
+  histogram_tester.ExpectTotalCount(
+      "Network.Cellular.ESim.ProfileDiscovery.Latency", 1);
 }
 
 TEST_F(EuiccTest, GetEidQRCode) {

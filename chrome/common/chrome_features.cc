@@ -702,11 +702,6 @@ const base::Feature kPrerenderFallbackToPreconnect{
 const base::Feature kPrivacyAdvisor{"PrivacyAdvisor",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
-const base::Feature kPrivacyReorderedAndroid{"PrivacyReorderedAndroid",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Enables the privacy sandbox settings page.
 const base::Feature kPrivacySandboxSettings{"PrivacySandboxSettings",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -925,11 +920,13 @@ const base::Feature kWebTimeLimits{"WebTimeLimits",
 // UIs implemented with web technologies.
 const base::Feature kWebUIDarkMode {
   "WebUIDarkMode",
-#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID) || \
+    BUILDFLAG(IS_CHROMEOS_ASH)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID)
+#endif  // defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID) ||
+        // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

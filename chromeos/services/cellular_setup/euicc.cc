@@ -16,6 +16,7 @@
 #include "chromeos/network/cellular_inhibitor.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/cellular_setup/esim_manager.h"
 #include "chromeos/services/cellular_setup/esim_mojo_utils.h"
 #include "chromeos/services/cellular_setup/esim_profile.h"
@@ -53,6 +54,24 @@ CreateTimedInstallProfileCallback(
       std::move(callback), base::Time::Now());
 }
 
+// Measures the time from which this function is called to when |callback|
+// is expected to run. The measured time difference should capture the time it
+// took for a profile discovery request to complete.
+Euicc::RequestPendingProfilesCallback CreateTimedRequestPendingProfilesCallback(
+    Euicc::RequestPendingProfilesCallback callback) {
+  return base::BindOnce(
+      [](Euicc::RequestPendingProfilesCallback callback,
+         base::Time installation_start_time,
+         mojom::ESimOperationResult result) -> void {
+        std::move(callback).Run(result);
+        if (result != mojom::ESimOperationResult::kSuccess)
+          return;
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Network.Cellular.ESim.ProfileDiscovery.Latency",
+            base::Time::Now() - installation_start_time);
+      },
+      std::move(callback), base::Time::Now());
+}
 }  // namespace
 
 Euicc::Euicc(const dbus::ObjectPath& path, ESimManager* esim_manager)
@@ -123,8 +142,9 @@ void Euicc::RequestPendingProfiles(RequestPendingProfilesCallback callback) {
   NET_LOG(EVENT) << "Requesting Pending profiles";
   esim_manager_->cellular_inhibitor()->InhibitCellularScanning(
       CellularInhibitor::InhibitReason::kRefreshingProfileList,
-      base::BindOnce(&Euicc::PerformRequestPendingProfiles,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(
+          &Euicc::PerformRequestPendingProfiles, weak_ptr_factory_.GetWeakPtr(),
+          CreateTimedRequestPendingProfilesCallback(std::move(callback))));
 }
 
 void Euicc::GetEidQRCode(GetEidQRCodeCallback callback) {
@@ -255,6 +275,20 @@ void Euicc::OnProfileInstallResult(
 
 void Euicc::OnNewProfileEnableSuccess(const dbus::ObjectPath& profile_path,
                                       const std::string& service_path) {
+  const NetworkState* network_state =
+      esim_manager_->network_state_handler()->GetNetworkState(service_path);
+  if (!network_state) {
+    OnNewProfileConnectFailure(profile_path,
+                               NetworkConnectionHandler::kErrorNotFound,
+                               /*error_data=*/nullptr);
+    return;
+  }
+
+  if (network_state->IsConnectingOrConnected()) {
+    OnNewProfileConnectSuccess(profile_path);
+    return;
+  }
+
   esim_manager_->network_connection_handler()->ConnectToNetwork(
       service_path,
       base::BindOnce(&Euicc::OnNewProfileConnectSuccess,

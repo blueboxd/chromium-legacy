@@ -2235,13 +2235,11 @@ std::u16string BrowserView::GetWindowTitle() const {
   if (contents) {
     auto* helper = RecentlyAudibleHelper::FromWebContents(contents);
     if (helper && helper->WasRecentlyAudible()) {
-      title =
-          contents->IsAudioMuted()
-              ? l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_MUTING_MAC, title,
-                                           base::WideToUTF16(L"\U0001F507"))
-              : title = l10n_util::GetStringFUTF16(
-                    IDS_WINDOW_AUDIO_PLAYING_MAC, title,
-                    base::WideToUTF16(L"\U0001F50A"));
+      title = contents->IsAudioMuted()
+                  ? l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_MUTING_MAC,
+                                               title, u"\U0001F507")
+                  : title = l10n_util::GetStringFUTF16(
+                        IDS_WINDOW_AUDIO_PLAYING_MAC, title, u"\U0001F50A");
     }
   }
 #endif
@@ -2899,12 +2897,6 @@ void BrowserView::ViewHierarchyChanged(
 }
 
 void BrowserView::AddedToWidget() {
-  // BrowserView may be added to a widget more than once if the user changes
-  // themes after starting the browser. Do not re-initialize BrowserView in
-  // this case.
-  if (initialized_)
-    return;
-
   views::ClientView::AddedToWidget();
 
   widget_observation_.Observe(GetWidget());

@@ -3865,22 +3865,30 @@ Unknown properties are collapsed to zero. -->
 <enum name="ArmCpuPart">
   <summary>
     Defines a subset of ARM CPU (implementer, part-number) pairs composed as a
-    20-bit number. This is a non-exhaustive enumeration.
+    20-bit number. This is a non-exhaustive enumeration. See
+    https://goto.google.com/cyqss for details.
   </summary>
-  <int value="269320" label="ARM Cortex-A8"/>
-  <int value="269321" label="ARM Cortex-A9"/>
-  <int value="269326" label="ARM Cortex-A17"/>
-  <int value="269327" label="ARM Cortex-A15"/>
-  <int value="269335" label="ARM Cortex-R7"/>
-  <int value="269336" label="ARM Cortex-R8"/>
-  <int value="269575" label="ARM Cortex-A57"/>
-  <int value="269576" label="ARM Cortex-A72"/>
-  <int value="269577" label="ARM Cortex-A73"/>
-  <int value="269578" label="ARM Cortex-A75"/>
-  <int value="269579" label="ARM Cortex-A76"/>
-  <int value="269580" label="ARM Neoverse N1"/>
-  <int value="269581" label="ARM Cortex-A77"/>
-  <int value="269633" label="ARM Cortex-A78"/>
+  <int value="269319" label="ARM Cortex-A7"/>
+  <int value="269320" label="ARM Cortex-A8 *"/>
+  <int value="269321" label="ARM Cortex-A9 *"/>
+  <int value="269326" label="ARM Cortex-A17 *"/>
+  <int value="269327" label="ARM Cortex-A15 *"/>
+  <int value="269335" label="ARM Cortex-R7 *"/>
+  <int value="269336" label="ARM Cortex-R8 *"/>
+  <int value="269571" label="ARM Cortex-A53"/>
+  <int value="269573" label="ARM Cortex-A55"/>
+  <int value="269575" label="ARM Cortex-A57 *"/>
+  <int value="269576" label="ARM Cortex-A72 *"/>
+  <int value="269577" label="ARM Cortex-A73 *"/>
+  <int value="269578" label="ARM Cortex-A75 *"/>
+  <int value="269579" label="ARM Cortex-A76 *"/>
+  <int value="269580" label="ARM Neoverse N1 *"/>
+  <int value="269581" label="ARM Cortex-A77 *"/>
+  <int value="269633" label="ARM Cortex-A78 *"/>
+  <int value="332305" label="Qualcomm Snapdragon 820 **"/>
+  <int value="333825" label="Qualcomm Kyro 260/280 Silver *"/>
+  <int value="333827" label="Qualcomm Kryo 385 Silver *"/>
+  <int value="333829" label="Qualcomm Kryo 485 Silver *"/>
 </enum>
 
 <enum name="AshAutoNightLightNotificationState">
@@ -52860,6 +52868,20 @@ Called by update_use_counter_css.py.-->
   <int value="8" label="Unsupported attachment type"/>
 </enum>
 
+<enum name="NearbyShareUpgradedMedium">
+  <int value="0" label="Unknown upgraded medium"/>
+  <int value="1" label="mDNS"/>
+  <int value="2" label="Bluetooth"/>
+  <int value="3" label="WiFi hotspot"/>
+  <int value="4" label="BLE"/>
+  <int value="5" label="WiFi LAN"/>
+  <int value="6" label="WiFi Aware"/>
+  <int value="7" label="NFC"/>
+  <int value="8" label="WiFi Direct"/>
+  <int value="9" label="WebRTC"/>
+  <int value="10" label="No upgrade"/>
+</enum>
+
 <enum name="NearbyShareVisibility">
   <int value="0" label="Unknown"/>
   <int value="1" label="No one"/>
@@ -62231,6 +62253,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="kLowEndDevice"/>
   <int value="3" label="kCrossOriginRedirect"/>
   <int value="4" label="kCrossOriginNavigation"/>
+  <int value="5" label="kInvalidSchemeRedirect"/>
+  <int value="6" label="kInvalidSchemeNavigation"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
@@ -66790,6 +66814,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="111" label="IDC_CONTENT_CLIPBOARD_HISTORY_MENU"/>
   <int value="112" label="IDC_CONTENT_CONTEXT_COPYLINKTOTEXT"/>
   <int value="113" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE"/>
+  <int value="114" label="IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
@@ -77204,6 +77229,8 @@ Full version information for the fingerprint enum values:
   <int value="13" label="Show UI"/>
   <int value="14" label="Automatic translation, by link"/>
   <int value="15" label="Automatic translation, by user preference"/>
+  <int value="16" label="Show UI, from Href"/>
+  <int value="17" label="Automatic translation, by Href"/>
 </enum>
 
 <enum name="TranslateUIInteraction">

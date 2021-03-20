@@ -850,117 +850,103 @@ TEST_F(PersonalDataManagerTest, AddProfile_BasicInformation) {
 TEST_F(PersonalDataManagerTest, AddProfile_CrazyCharacters) {
   std::vector<AutofillProfile> profiles;
   AutofillProfile profile1;
-  profile1.SetRawInfo(
-      NAME_FIRST,
-      base::WideToUTF16(L"\u0623\u0648\u0628\u0627\u0645\u0627 "
-                        L"\u064a\u0639\u062a\u0630\u0631 "
-                        L"\u0647\u0627\u062a\u0641\u064a\u0627 "
-                        L"\u0644\u0645\u0648\u0638\u0641\u0629 "
-                        L"\u0633\u0648\u062f\u0627\u0621 "
-                        L"\u0627\u0633\u062a\u0642\u0627\u0644\u062a "
-                        L"\u0628\u0633\u0628\u0628 "
-                        L"\u062a\u0635\u0631\u064a\u062d\u0627\u062a "
-                        L"\u0645\u062c\u062a\u0632\u0623\u0629"));
-  profile1.SetRawInfo(NAME_MIDDLE, base::WideToUTF16(L"BANK\xcBERF\xc4LLE"));
+  profile1.SetRawInfo(NAME_FIRST,
+                      u"\u0623\u0648\u0628\u0627\u0645\u0627 "
+                      u"\u064a\u0639\u062a\u0630\u0631 "
+                      u"\u0647\u0627\u062a\u0641\u064a\u0627 "
+                      u"\u0644\u0645\u0648\u0638\u0641\u0629 "
+                      u"\u0633\u0648\u062f\u0627\u0621 "
+                      u"\u0627\u0633\u062a\u0642\u0627\u0644\u062a "
+                      u"\u0628\u0633\u0628\u0628 "
+                      u"\u062a\u0635\u0631\u064a\u062d\u0627\u062a "
+                      u"\u0645\u062c\u062a\u0632\u0623\u0629");
+  profile1.SetRawInfo(NAME_MIDDLE, u"BANK\xcBERF\xc4LLE");
   profile1.SetRawInfo(EMAIL_ADDRESS,
-                      base::WideToUTF16(L"\uacbd\uc81c \ub274\uc2a4 "
-                                        L"\ub354\ubcf4\uae30@google.com"));
-  profile1.SetRawInfo(
-      ADDRESS_HOME_LINE1,
-      base::WideToUTF16(L"\uad6d\uc815\uc6d0\xb7\uac80\ucc30, "
-                        L"\ub178\ubb34\ud604\uc815\ubd80 "
-                        L"\ub300\ubd81\uc811\ucd09 \ub2f4\ub2f9 "
-                        L"\uc778\uc0ac\ub4e4 \uc870\uc0ac"));
-  profile1.SetRawInfo(
-      ADDRESS_HOME_CITY,
-      base::WideToUTF16(L"\u653f\u5e9c\u4e0d\u6392\u9664\u7acb\u6cd5"
-                        L"\u898f\u7ba1\u5c0e\u904a"));
-  profile1.SetRawInfo(ADDRESS_HOME_ZIP, base::WideToUTF16(L"YOHO_54676"));
-  profile1.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
-                      base::WideToUTF16(L"861088828000"));
-  profile1.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
-                   base::WideToUTF16(L"India"), "en-US");
+                      u"\uacbd\uc81c \ub274\uc2a4 "
+                      u"\ub354\ubcf4\uae30@google.com");
+  profile1.SetRawInfo(ADDRESS_HOME_LINE1,
+                      u"\uad6d\uc815\uc6d0\xb7\uac80\ucc30, "
+                      u"\ub178\ubb34\ud604\uc815\ubd80 "
+                      u"\ub300\ubd81\uc811\ucd09 \ub2f4\ub2f9 "
+                      u"\uc778\uc0ac\ub4e4 \uc870\uc0ac");
+  profile1.SetRawInfo(ADDRESS_HOME_CITY,
+                      u"\u653f\u5e9c\u4e0d\u6392\u9664\u7acb\u6cd5"
+                      u"\u898f\u7ba1\u5c0e\u904a");
+  profile1.SetRawInfo(ADDRESS_HOME_ZIP, u"YOHO_54676");
+  profile1.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"861088828000");
+  profile1.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), u"India", "en-US");
   profile1.FinalizeAfterImport();
   profiles.push_back(profile1);
 
   AutofillProfile profile2;
   profile2.SetRawInfo(NAME_FIRST,
-                      base::WideToUTF16(L"\u4e0a\u6d77\u5e02\u91d1\u5c71\u533a "
-                                        L"\u677e\u9690\u9547\u4ead\u67ab\u516c"
-                                        L"\u8def1915\u53f7"));
-  profile2.SetRawInfo(NAME_LAST, base::WideToUTF16(L"aguantó"));
-  profile2.SetRawInfo(ADDRESS_HOME_ZIP, base::WideToUTF16(L"HOME 94043"));
+                      u"\u4e0a\u6d77\u5e02\u91d1\u5c71\u533a "
+                      u"\u677e\u9690\u9547\u4ead\u67ab\u516c"
+                      u"\u8def1915\u53f7");
+  profile2.SetRawInfo(NAME_LAST, u"aguantó");
+  profile2.SetRawInfo(ADDRESS_HOME_ZIP, u"HOME 94043");
   profile2.FinalizeAfterImport();
   profiles.push_back(profile2);
 
   AutofillProfile profile3;
-  profile3.SetRawInfo(EMAIL_ADDRESS, base::WideToUTF16(L"sue@example.com"));
-  profile3.SetRawInfo(COMPANY_NAME, base::WideToUTF16(L"Company X"));
+  profile3.SetRawInfo(EMAIL_ADDRESS, u"sue@example.com");
+  profile3.SetRawInfo(COMPANY_NAME, u"Company X");
   profile3.FinalizeAfterImport();
   profiles.push_back(profile3);
 
   AutofillProfile profile4;
-  profile4.SetRawInfo(NAME_FIRST, base::WideToUTF16(L"Joe 3254"));
-  profile4.SetRawInfo(NAME_LAST,
-                      base::WideToUTF16(L"\u8bb0\u8d262\u5e74\u591a"));
-  profile4.SetRawInfo(
-      ADDRESS_HOME_ZIP,
-      base::WideToUTF16(L"\uff08\u90ae\u7f16\uff1a201504\uff09"));
-  profile4.SetRawInfo(EMAIL_ADDRESS,
-                      base::WideToUTF16(L"télévision@example.com"));
-  profile4.SetRawInfo(
-      COMPANY_NAME,
-      base::WideToUTF16(L"\u0907\u0932\u0947\u0915\u093f\u091f\u094d"
-                        L"\u0930\u0928\u093f\u0915\u094d\u0938, "
-                        L"\u0905\u092a\u094b\u0932\u094b "
-                        L"\u091f\u093e\u092f\u0930\u094d\u0938 "
-                        L"\u0906\u0926\u093f"));
+  profile4.SetRawInfo(NAME_FIRST, u"Joe 3254");
+  profile4.SetRawInfo(NAME_LAST, u"\u8bb0\u8d262\u5e74\u591a");
+  profile4.SetRawInfo(ADDRESS_HOME_ZIP,
+                      u"\uff08\u90ae\u7f16\uff1a201504\uff09");
+  profile4.SetRawInfo(EMAIL_ADDRESS, u"télévision@example.com");
+  profile4.SetRawInfo(COMPANY_NAME,
+                      u"\u0907\u0932\u0947\u0915\u093f\u091f\u094d"
+                      u"\u0930\u0928\u093f\u0915\u094d\u0938, "
+                      u"\u0905\u092a\u094b\u0932\u094b "
+                      u"\u091f\u093e\u092f\u0930\u094d\u0938 "
+                      u"\u0906\u0926\u093f");
   profile4.FinalizeAfterImport();
   profiles.push_back(profile4);
 
   AutofillProfile profile5;
-  profile5.SetRawInfo(NAME_FIRST, base::WideToUTF16(L"Larry"));
-  profile5.SetRawInfo(
-      NAME_LAST, base::WideToUTF16(L"\u0938\u094d\u091f\u093e\u0902\u092a "
-                                   L"\u0921\u094d\u092f\u0942\u091f\u0940"));
-  profile5.SetRawInfo(ADDRESS_HOME_ZIP,
-                      base::WideToUTF16(L"111111111111110000GOOGLE"));
-  profile5.SetRawInfo(EMAIL_ADDRESS, base::WideToUTF16(L"page@000000.com"));
-  profile5.SetRawInfo(COMPANY_NAME, base::WideToUTF16(L"Google"));
+  profile5.SetRawInfo(NAME_FIRST, u"Larry");
+  profile5.SetRawInfo(NAME_LAST,
+                      u"\u0938\u094d\u091f\u093e\u0902\u092a "
+                      u"\u0921\u094d\u092f\u0942\u091f\u0940");
+  profile5.SetRawInfo(ADDRESS_HOME_ZIP, u"111111111111110000GOOGLE");
+  profile5.SetRawInfo(EMAIL_ADDRESS, u"page@000000.com");
+  profile5.SetRawInfo(COMPANY_NAME, u"Google");
   profile5.FinalizeAfterImport();
   profiles.push_back(profile5);
 
   AutofillProfile profile6;
   profile6.SetRawInfo(NAME_FIRST,
-                      base::WideToUTF16(L"\u4e0a\u6d77\u5e02\u91d1\u5c71\u533a "
-                                        L"\u677e\u9690\u9547\u4ead\u67ab\u516c"
-                                        L"\u8def1915\u53f7"));
-  profile6.SetRawInfo(
-      NAME_LAST,
-      base::WideToUTF16(L"\u0646\u062c\u0627\u0645\u064a\u0646\u0627 "
-                        L"\u062f\u0639\u0645\u0647\u0627 "
-                        L"\u0644\u0644\u0631\u0626\u064a\u0633 "
-                        L"\u0627\u0644\u0633\u0648\u062f\u0627\u0646"
-                        L"\u064a \u0639\u0645\u0631 "
-                        L"\u0627\u0644\u0628\u0634\u064a\u0631"));
-  profile6.SetRawInfo(ADDRESS_HOME_ZIP, base::WideToUTF16(L"HOME 94043"));
+                      u"\u4e0a\u6d77\u5e02\u91d1\u5c71\u533a "
+                      u"\u677e\u9690\u9547\u4ead\u67ab\u516c"
+                      u"\u8def1915\u53f7");
+  profile6.SetRawInfo(NAME_LAST,
+                      u"\u0646\u062c\u0627\u0645\u064a\u0646\u0627 "
+                      u"\u062f\u0639\u0645\u0647\u0627 "
+                      u"\u0644\u0644\u0631\u0626\u064a\u0633 "
+                      u"\u0627\u0644\u0633\u0648\u062f\u0627\u0646"
+                      u"\u064a \u0639\u0645\u0631 "
+                      u"\u0627\u0644\u0628\u0634\u064a\u0631");
+  profile6.SetRawInfo(ADDRESS_HOME_ZIP, u"HOME 94043");
   profile6.FinalizeAfterImport();
   profiles.push_back(profile6);
 
   AutofillProfile profile7;
-  profile7.SetRawInfo(NAME_FIRST,
-                      base::WideToUTF16(L"&$%$$$ TESTO *&*&^&^& MOKO"));
-  profile7.SetRawInfo(NAME_MIDDLE, base::WideToUTF16(L"WOHOOOO$$$$$$$$****"));
-  profile7.SetRawInfo(EMAIL_ADDRESS, base::WideToUTF16(L"yuvu@example.com"));
-  profile7.SetRawInfo(ADDRESS_HOME_LINE1,
-                      base::WideToUTF16(L"34544, anderson ST.(120230)"));
-  profile7.SetRawInfo(ADDRESS_HOME_CITY, base::WideToUTF16(L"Sunnyvale"));
-  profile7.SetRawInfo(ADDRESS_HOME_STATE, base::WideToUTF16(L"CA"));
-  profile7.SetRawInfo(ADDRESS_HOME_ZIP, base::WideToUTF16(L"94086"));
-  profile7.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
-                      base::WideToUTF16(L"15466784565"));
-  profile7.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
-                   base::WideToUTF16(L"United States"), "en-US");
+  profile7.SetRawInfo(NAME_FIRST, u"&$%$$$ TESTO *&*&^&^& MOKO");
+  profile7.SetRawInfo(NAME_MIDDLE, u"WOHOOOO$$$$$$$$****");
+  profile7.SetRawInfo(EMAIL_ADDRESS, u"yuvu@example.com");
+  profile7.SetRawInfo(ADDRESS_HOME_LINE1, u"34544, anderson ST.(120230)");
+  profile7.SetRawInfo(ADDRESS_HOME_CITY, u"Sunnyvale");
+  profile7.SetRawInfo(ADDRESS_HOME_STATE, u"CA");
+  profile7.SetRawInfo(ADDRESS_HOME_ZIP, u"94086");
+  profile7.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"15466784565");
+  profile7.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY), u"United States",
+                   "en-US");
   profile7.FinalizeAfterImport();
   profiles.push_back(profile7);
 
@@ -1223,51 +1209,47 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_CrazyCharacters) {
   std::vector<CreditCard> cards;
   CreditCard card1;
   card1.SetRawInfo(CREDIT_CARD_NAME_FULL,
-                   base::WideToUTF16(L"\u751f\u6d3b\u5f88\u6709\u89c4\u5f8b "
-                                     L"\u4ee5\u73a9\u4e3a\u4e3b"));
-  card1.SetRawInfo(CREDIT_CARD_NUMBER, base::WideToUTF16(L"6011111111111117"));
-  card1.SetRawInfo(CREDIT_CARD_EXP_MONTH, base::WideToUTF16(L"12"));
-  card1.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, base::WideToUTF16(L"2011"));
+                   u"\u751f\u6d3b\u5f88\u6709\u89c4\u5f8b "
+                   u"\u4ee5\u73a9\u4e3a\u4e3b");
+  card1.SetRawInfo(CREDIT_CARD_NUMBER, u"6011111111111117");
+  card1.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"12");
+  card1.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2011");
   cards.push_back(card1);
 
   CreditCard card2;
-  card2.SetRawInfo(CREDIT_CARD_NAME_FULL, base::WideToUTF16(L"John Williams"));
-  card2.SetRawInfo(CREDIT_CARD_NUMBER, base::WideToUTF16(L"WokoAwesome12345"));
-  card2.SetRawInfo(CREDIT_CARD_EXP_MONTH, base::WideToUTF16(L"10"));
-  card2.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, base::WideToUTF16(L"2015"));
+  card2.SetRawInfo(CREDIT_CARD_NAME_FULL, u"John Williams");
+  card2.SetRawInfo(CREDIT_CARD_NUMBER, u"WokoAwesome12345");
+  card2.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"10");
+  card2.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2015");
   cards.push_back(card2);
 
   CreditCard card3;
-  card3.SetRawInfo(
-      CREDIT_CARD_NAME_FULL,
-      base::WideToUTF16(L"\u0623\u062d\u0645\u062f\u064a "
-                        L"\u0646\u062c\u0627\u062f "
-                        L"\u0644\u0645\u062d\u0627\u0648\u0644\u0647 "
-                        L"\u0627\u063a\u062a\u064a\u0627\u0644 "
-                        L"\u0641\u064a \u0645\u062f\u064a\u0646\u0629 "
-                        L"\u0647\u0645\u062f\u0627\u0646 "));
-  card3.SetRawInfo(
-      CREDIT_CARD_NUMBER,
-      base::WideToUTF16(L"\u092a\u0941\u0928\u0930\u094d\u091c\u0940"
-                        L"\u0935\u093f\u0924 \u0939\u094b\u0917\u093e "
-                        L"\u0928\u093e\u0932\u0902\u0926\u093e"));
-  card3.SetRawInfo(CREDIT_CARD_EXP_MONTH, base::WideToUTF16(L"10"));
-  card3.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, base::WideToUTF16(L"2015"));
+  card3.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                   u"\u0623\u062d\u0645\u062f\u064a "
+                   u"\u0646\u062c\u0627\u062f "
+                   u"\u0644\u0645\u062d\u0627\u0648\u0644\u0647 "
+                   u"\u0627\u063a\u062a\u064a\u0627\u0644 "
+                   u"\u0641\u064a \u0645\u062f\u064a\u0646\u0629 "
+                   u"\u0647\u0645\u062f\u0627\u0646 ");
+  card3.SetRawInfo(CREDIT_CARD_NUMBER,
+                   u"\u092a\u0941\u0928\u0930\u094d\u091c\u0940"
+                   u"\u0935\u093f\u0924 \u0939\u094b\u0917\u093e "
+                   u"\u0928\u093e\u0932\u0902\u0926\u093e");
+  card3.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"10");
+  card3.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2015");
   cards.push_back(card3);
 
   CreditCard card4;
-  card4.SetRawInfo(
-      CREDIT_CARD_NAME_FULL,
-      base::WideToUTF16(L"\u039d\u03ad\u03b5\u03c2 "
-                        L"\u03c3\u03c5\u03b3\u03c7\u03c9\u03bd\u03b5"
-                        L"\u03cd\u03c3\u03b5\u03b9\u03c2 "
-                        L"\u03ba\u03b1\u03b9 "
-                        L"\u03ba\u03b1\u03c4\u03b1\u03c1\u03b3\u03ae"
-                        L"\u03c3\u03b5\u03b9\u03c2"));
-  card4.SetRawInfo(CREDIT_CARD_NUMBER,
-                   base::WideToUTF16(L"00000000000000000000000"));
-  card4.SetRawInfo(CREDIT_CARD_EXP_MONTH, base::WideToUTF16(L"01"));
-  card4.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, base::WideToUTF16(L"2016"));
+  card4.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                   u"\u039d\u03ad\u03b5\u03c2 "
+                   u"\u03c3\u03c5\u03b3\u03c7\u03c9\u03bd\u03b5"
+                   u"\u03cd\u03c3\u03b5\u03b9\u03c2 "
+                   u"\u03ba\u03b1\u03b9 "
+                   u"\u03ba\u03b1\u03c4\u03b1\u03c1\u03b3\u03ae"
+                   u"\u03c3\u03b5\u03b9\u03c2");
+  card4.SetRawInfo(CREDIT_CARD_NUMBER, u"00000000000000000000000");
+  card4.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"01");
+  card4.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2016");
   cards.push_back(card4);
 
   personal_data_->SetCreditCards(&cards);

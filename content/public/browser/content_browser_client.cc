@@ -517,7 +517,7 @@ StoragePartitionId ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
     const GURL& site) {
   DCHECK(browser_context);
-  return StoragePartitionId();
+  return StoragePartitionId(browser_context);
 }
 
 StoragePartitionConfig ContentBrowserClient::GetStoragePartitionConfigForSite(
@@ -1095,7 +1095,7 @@ bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
 }
 
 void ContentBrowserClient::FetchRemoteSms(
-    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
     const url::Origin& origin,
     base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
                             base::Optional<std::string>,

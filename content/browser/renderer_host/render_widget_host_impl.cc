@@ -1357,6 +1357,11 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
   DCHECK_GE(mouse_event.GetType(), blink::WebInputEvent::Type::kMouseTypeFirst);
   DCHECK_LE(mouse_event.GetType(), blink::WebInputEvent::Type::kMouseTypeLast);
 
+  // This is used to auto-disable accessibility if we detect user input
+  // but no accessibility API usage.
+  if (mouse_event.GetType() == blink::WebInputEvent::Type::kMouseDown)
+    BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
+
   for (auto& mouse_event_callback : mouse_event_callbacks_) {
     if (mouse_event_callback.Run(mouse_event))
       return;
@@ -1443,6 +1448,12 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     const ui::LatencyInfo& latency) {
   TRACE_EVENT1("input", "RenderWidgetHostImpl::ForwardGestureEvent", "type",
                WebInputEvent::GetName(gesture_event.GetType()));
+
+  // This is used to auto-disable accessibility if we detect user input
+  // but no accessibility API usage.
+  if (gesture_event.GetType() == blink::WebInputEvent::Type::kGestureTapDown)
+    BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
+
   // Early out if necessary, prior to performing latency logic.
   if (IsIgnoringInputEvents())
     return;
@@ -1538,6 +1549,11 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
     const ui::LatencyInfo& latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardTouchEvent");
 
+  // This is used to auto-disable accessibility if we detect user input
+  // but no accessibility API usage.
+  if (touch_event.GetType() == blink::WebInputEvent::Type::kTouchStart)
+    BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
+
   // Always forward TouchEvents for touch stream consistency. They will be
   // ignored if appropriate in FilterInputEvent().
 
@@ -1570,6 +1586,13 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     std::vector<blink::mojom::EditCommandPtr> commands,
     bool* update_event) {
   DCHECK(WebInputEvent::IsKeyboardEventType(key_event.GetType()));
+
+  // This is used to auto-disable accessibility if we detect user input
+  // but no accessibility API usage.
+  if (key_event.GetType() == blink::WebInputEvent::Type::kRawKeyDown ||
+      key_event.GetType() == blink::WebInputEvent::Type::kKeyDown) {
+    BrowserAccessibilityStateImpl::GetInstance()->OnUserInputEvent();
+  }
 
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
   if (owner_delegate_ &&
@@ -1996,7 +2019,8 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   // not to change it during resizes.  This means that the RWHV::GetScreenInfo
   // returned might be stale wrt GetAllDisplays() below.  Fix this.
   // For now, just return the legacy screen info for mac.
-#if defined(OS_MAC)
+  // TODO(enne): http://crbug.com/1189526, disabled due to Windows crashes.
+#if defined(OS_MAC) || defined(OS_WIN)
   return blink::ScreenInfos(current_screen_info);
 #else
 

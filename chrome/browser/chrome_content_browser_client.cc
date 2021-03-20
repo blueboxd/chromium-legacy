@@ -1461,16 +1461,18 @@ ChromeContentBrowserClient::GetStoragePartitionIdForSite(
   // The partition ID for webview guest processes is the string value of its
   // SiteInstance URL - "chrome-guest://app_id/persist?partition".
   if (site.SchemeIs(content::kGuestScheme))
-    return content::StoragePartitionId(site.spec());
+    return content::StoragePartitionId(
+        site.spec(), GetStoragePartitionConfigForSite(browser_context, site));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // The partition ID for extensions with isolated storage is treated similarly
   // to the above.
   else if (extensions::util::IsExtensionSiteWithIsolatedStorage(
                site, browser_context))
-    return content::StoragePartitionId(site.spec());
+    return content::StoragePartitionId(
+        site.spec(), GetStoragePartitionConfigForSite(browser_context, site));
 #endif
 
-  return {};
+  return content::StoragePartitionId(browser_context);
 }
 
 content::StoragePartitionConfig
@@ -5646,13 +5648,13 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
 
 #if !defined(OS_ANDROID)
 void ChromeContentBrowserClient::FetchRemoteSms(
-    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
     const url::Origin& origin,
     base::OnceCallback<void(base::Optional<std::vector<url::Origin>>,
                             base::Optional<std::string>,
                             base::Optional<content::SmsFetchFailureType>)>
         callback) {
-  ::FetchRemoteSms(browser_context, origin, std::move(callback));
+  ::FetchRemoteSms(web_contents, origin, std::move(callback));
 }
 #endif
 

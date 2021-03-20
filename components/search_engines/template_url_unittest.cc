@@ -414,20 +414,19 @@ TEST_F(TemplateURLTest, URLRefTermToWide) {
     const char* encoded_search_term;
     const std::u16string expected_decoded_term;
   } to_wide_cases[] = {
-    {"hello+world", ASCIIToUTF16("hello world")},
-    // Test some big-5 input.
-    {"%a7A%A6%6e+to+you", base::WideToUTF16(L"\x4f60\x597d to you")},
-    // Test some UTF-8 input. We should fall back to this when the encoding
-    // doesn't look like big-5. We have a '5' in the middle, which is an invalid
-    // Big-5 trailing byte.
-    {"%e4%bd%a05%e5%a5%bd+to+you",
-        base::WideToUTF16(L"\x4f60\x35\x597d to you")},
-    // Undecodable input should stay escaped.
-    {"%91%01+abcd", base::WideToUTF16(L"%91%01 abcd")},
-    // Make sure we convert %2B to +.
-    {"C%2B%2B", ASCIIToUTF16("C++")},
-    // C%2B is escaped as C%252B, make sure we unescape it properly.
-    {"C%252B", ASCIIToUTF16("C%2B")},
+      {"hello+world", ASCIIToUTF16("hello world")},
+      // Test some big-5 input.
+      {"%a7A%A6%6e+to+you", u"\x4f60\x597d to you"},
+      // Test some UTF-8 input. We should fall back to this when the encoding
+      // doesn't look like big-5. We have a '5' in the middle, which is an
+      // invalid Big-5 trailing byte.
+      {"%e4%bd%a05%e5%a5%bd+to+you", u"\x4f60\x35\x597d to you"},
+      // Undecodable input should stay escaped.
+      {"%91%01+abcd", u"%91%01 abcd"},
+      // Make sure we convert %2B to +.
+      {"C%2B%2B", ASCIIToUTF16("C++")},
+      // C%2B is escaped as C%252B, make sure we unescape it properly.
+      {"C%252B", ASCIIToUTF16("C%2B")},
   };
 
   // Set one input encoding: big-5. This is so we can test fallback to UTF-8.
@@ -529,8 +528,8 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     const std::string url;
     const std::string expected_result;
   } test_data[] = {
-      {"BIG5", base::WideToUTF16(L"\x60BD"),
-       "http://foo/?{searchTerms}{inputEncoding}", "http://foo/?%B1~BIG5"},
+      {"BIG5", u"\x60BD", "http://foo/?{searchTerms}{inputEncoding}",
+       "http://foo/?%B1~BIG5"},
       {"UTF-8", ASCIIToUTF16("blah"),
        "http://foo/?{searchTerms}{inputEncoding}", "http://foo/?blahUTF-8"},
       {"Shift_JIS", base::UTF8ToUTF16("\xe3\x81\x82"),
@@ -1365,26 +1364,21 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromUTF8URL) {
            "%D0%B2%D1%83%D0%B9,+%D0%BC%D0%B8%D1%80!"),
       search_terms_data_, &result));
   EXPECT_EQ(
-      base::WideToUTF16(
-          L"\x0417\x0434\x0440\x0430\x0432\x0441\x0442\x0432\x0443\x0439, "
-          L"\x043C\x0438\x0440!"),
+      u"\x0417\x0434\x0440\x0430\x0432\x0441\x0442\x0432\x0443\x0439, "
+      u"\x043C\x0438\x0440!",
       result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://utf-8.ru/#q=%D0%B4%D0%B2%D0%B0+%D1%81%D0%BB%D0%BE%D0%B2"
            "%D0%B0"),
       search_terms_data_, &result));
-  EXPECT_EQ(
-      base::WideToUTF16(L"\x0434\x0432\x0430 \x0441\x043B\x043E\x0432\x0430"),
-      result);
+  EXPECT_EQ(u"\x0434\x0432\x0430 \x0441\x043B\x043E\x0432\x0430", result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://utf-8.ru/path/%D0%B1%D1%83%D0%BA%D0%B2%D1%8B%20%D0%90%20"
            "%D0%B8%20A"),
       search_terms_data_, &result));
-  EXPECT_EQ(
-      base::WideToUTF16(L"\x0431\x0443\x043A\x0432\x044B \x0410 \x0438 A"),
-      result);
+  EXPECT_EQ(u"\x0431\x0443\x043A\x0432\x044B \x0410 \x0438 A", result);
 }
 
 // Checks that the ExtractSearchTermsFromURL function works correctly
@@ -1404,24 +1398,19 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromNonUTF8URL) {
            "%EC%E8%F0!"),
       search_terms_data_, &result));
   EXPECT_EQ(
-      base::WideToUTF16(
-          L"\x0417\x0434\x0440\x0430\x0432\x0441\x0442\x0432\x0443\x0439, "
-          L"\x043C\x0438\x0440!"),
+      u"\x0417\x0434\x0440\x0430\x0432\x0441\x0442\x0432\x0443\x0439, "
+      u"\x043C\x0438\x0440!",
       result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://windows-1251.ru/#q=%E4%E2%E0+%F1%EB%EE%E2%E0"),
       search_terms_data_, &result));
-  EXPECT_EQ(
-      base::WideToUTF16(L"\x0434\x0432\x0430 \x0441\x043B\x043E\x0432\x0430"),
-      result);
+  EXPECT_EQ(u"\x0434\x0432\x0430 \x0441\x043B\x043E\x0432\x0430", result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://windows-1251.ru/path/%E1%F3%EA%E2%FB%20%C0%20%E8%20A"),
       search_terms_data_, &result));
-  EXPECT_EQ(
-      base::WideToUTF16(L"\x0431\x0443\x043A\x0432\x044B \x0410 \x0438 A"),
-      result);
+  EXPECT_EQ(u"\x0431\x0443\x043A\x0432\x044B \x0410 \x0438 A", result);
 }
 
 // Checks that the ExtractSearchTermsFromURL function strips constant
@@ -1573,8 +1562,8 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInUTF8URL) {
   TemplateURL url(data);
 
   // Russian text which will be encoded with UTF-8.
-  TemplateURLRef::SearchTermsArgs search_terms(base::WideToUTF16(
-      L"\x0442\x0435\x043A\x0441\x0442"));
+  TemplateURLRef::SearchTermsArgs search_terms(
+      u"\x0442\x0435\x043A\x0441\x0442");
   GURL result;
 
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
@@ -1608,8 +1597,8 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInNonUTF8URL) {
   TemplateURL url(data);
 
   // Russian text which will be encoded with Windows-1251.
-  TemplateURLRef::SearchTermsArgs search_terms(base::WideToUTF16(
-      L"\x0442\x0435\x043A\x0441\x0442"));
+  TemplateURLRef::SearchTermsArgs search_terms(
+      u"\x0442\x0435\x043A\x0441\x0442");
   GURL result;
 
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(

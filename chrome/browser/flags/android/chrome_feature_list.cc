@@ -105,7 +105,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kNetworkServiceInProcess,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
-    &features::kPrivacyReorderedAndroid,
     &features::kPrivacySandboxSettings,
     &features::kPrioritizeBootstrapTasks,
     &features::kQuietNotificationPrompts,
@@ -175,7 +174,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchForceCaption,
     &kContextualSearchLegacyHttpPolicy,
     &kContextualSearchLiteralSearchTap,
-    &kContextualSearchLongpressPanelHelp,
     &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
@@ -476,9 +474,6 @@ const base::Feature kContextualSearchLegacyHttpPolicy{
 
 const base::Feature kContextualSearchLiteralSearchTap{
     "ContextualSearchLiteralSearchTap", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContextualSearchLongpressPanelHelp{
-    "ContextualSearchLongpressPanelHelp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchLongpressResolve{
     "ContextualSearchLongpressResolve", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -402,23 +402,21 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
                 kFormatUrlOmitNothing, net::UnescapeRule::NONE, &parsed,
                 nullptr, nullptr);
   EXPECT_EQ(
-      WideToUTF16(L"http://%E3%82%B0:%E3%83%BC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
-                  L"/%E3%82%B0/?q=%E3%82%B0#%E3%82%B0"),
+      u"http://%E3%82%B0:%E3%83%BC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
+      u"/%E3%82%B0/?q=%E3%82%B0#%E3%82%B0",
       formatted);
-  EXPECT_EQ(WideToUTF16(L"%E3%82%B0"),
-      formatted.substr(parsed.username.begin, parsed.username.len));
-  EXPECT_EQ(WideToUTF16(L"%E3%83%BC"),
-      formatted.substr(parsed.password.begin, parsed.password.len));
-  EXPECT_EQ(WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB.jp"),
-      formatted.substr(parsed.host.begin, parsed.host.len));
-  EXPECT_EQ(WideToUTF16(L"8080"),
-      formatted.substr(parsed.port.begin, parsed.port.len));
-  EXPECT_EQ(WideToUTF16(L"/%E3%82%B0/"),
-      formatted.substr(parsed.path.begin, parsed.path.len));
-  EXPECT_EQ(WideToUTF16(L"q=%E3%82%B0"),
-      formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"%E3%82%B0"),
-            formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(u"%E3%82%B0",
+            formatted.substr(parsed.username.begin, parsed.username.len));
+  EXPECT_EQ(u"%E3%83%BC",
+            formatted.substr(parsed.password.begin, parsed.password.len));
+  EXPECT_EQ(u"\x30B0\x30FC\x30B0\x30EB.jp",
+            formatted.substr(parsed.host.begin, parsed.host.len));
+  EXPECT_EQ(u"8080", formatted.substr(parsed.port.begin, parsed.port.len));
+  EXPECT_EQ(u"/%E3%82%B0/",
+            formatted.substr(parsed.path.begin, parsed.path.len));
+  EXPECT_EQ(u"q=%E3%82%B0",
+            formatted.substr(parsed.query.begin, parsed.query.len));
+  EXPECT_EQ(u"%E3%82%B0", formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // Unescape case.
   formatted =
@@ -426,23 +424,21 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
                      "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),
                 kFormatUrlOmitNothing, net::UnescapeRule::NORMAL, &parsed,
                 nullptr, nullptr);
-  EXPECT_EQ(WideToUTF16(L"http://\x30B0:\x30FC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
-                        L"/\x30B0/?q=\x30B0#\x30B0"),
-            formatted);
-  EXPECT_EQ(WideToUTF16(L"\x30B0"),
-      formatted.substr(parsed.username.begin, parsed.username.len));
-  EXPECT_EQ(WideToUTF16(L"\x30FC"),
-      formatted.substr(parsed.password.begin, parsed.password.len));
-  EXPECT_EQ(WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB.jp"),
-      formatted.substr(parsed.host.begin, parsed.host.len));
-  EXPECT_EQ(WideToUTF16(L"8080"),
-      formatted.substr(parsed.port.begin, parsed.port.len));
-  EXPECT_EQ(WideToUTF16(L"/\x30B0/"),
-      formatted.substr(parsed.path.begin, parsed.path.len));
-  EXPECT_EQ(WideToUTF16(L"q=\x30B0"),
-      formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"\x30B0"),
-            formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(
+      u"http://\x30B0:\x30FC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
+      u"/\x30B0/?q=\x30B0#\x30B0",
+      formatted);
+  EXPECT_EQ(u"\x30B0",
+            formatted.substr(parsed.username.begin, parsed.username.len));
+  EXPECT_EQ(u"\x30FC",
+            formatted.substr(parsed.password.begin, parsed.password.len));
+  EXPECT_EQ(u"\x30B0\x30FC\x30B0\x30EB.jp",
+            formatted.substr(parsed.host.begin, parsed.host.len));
+  EXPECT_EQ(u"8080", formatted.substr(parsed.port.begin, parsed.port.len));
+  EXPECT_EQ(u"/\x30B0/", formatted.substr(parsed.path.begin, parsed.path.len));
+  EXPECT_EQ(u"q=\x30B0",
+            formatted.substr(parsed.query.begin, parsed.query.len));
+  EXPECT_EQ(u"\x30B0", formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // Omit_username_password + unescape case.
   formatted =
@@ -450,87 +446,68 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
                      "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),
                 kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL,
                 &parsed, nullptr, nullptr);
-  EXPECT_EQ(WideToUTF16(L"http://\x30B0\x30FC\x30B0\x30EB.jp:8080"
-                        L"/\x30B0/?q=\x30B0#\x30B0"),
-            formatted);
+  EXPECT_EQ(
+      u"http://\x30B0\x30FC\x30B0\x30EB.jp:8080"
+      u"/\x30B0/?q=\x30B0#\x30B0",
+      formatted);
   EXPECT_FALSE(parsed.username.is_valid());
   EXPECT_FALSE(parsed.password.is_valid());
-  EXPECT_EQ(WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB.jp"),
-      formatted.substr(parsed.host.begin, parsed.host.len));
-  EXPECT_EQ(WideToUTF16(L"8080"),
-      formatted.substr(parsed.port.begin, parsed.port.len));
-  EXPECT_EQ(WideToUTF16(L"/\x30B0/"),
-      formatted.substr(parsed.path.begin, parsed.path.len));
-  EXPECT_EQ(WideToUTF16(L"q=\x30B0"),
-      formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"\x30B0"),
-            formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(u"\x30B0\x30FC\x30B0\x30EB.jp",
+            formatted.substr(parsed.host.begin, parsed.host.len));
+  EXPECT_EQ(u"8080", formatted.substr(parsed.port.begin, parsed.port.len));
+  EXPECT_EQ(u"/\x30B0/", formatted.substr(parsed.path.begin, parsed.path.len));
+  EXPECT_EQ(u"q=\x30B0",
+            formatted.substr(parsed.query.begin, parsed.query.len));
+  EXPECT_EQ(u"\x30B0", formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // View-source case.
   formatted =
       FormatUrl(GURL("view-source:http://user:passwd@host:81/path?query#ref"),
                 kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL,
                 &parsed, nullptr, nullptr);
-  EXPECT_EQ(WideToUTF16(L"view-source:http://host:81/path?query#ref"),
-      formatted);
-  EXPECT_EQ(WideToUTF16(L"view-source:http"),
-      formatted.substr(parsed.scheme.begin, parsed.scheme.len));
+  EXPECT_EQ(u"view-source:http://host:81/path?query#ref", formatted);
+  EXPECT_EQ(u"view-source:http",
+            formatted.substr(parsed.scheme.begin, parsed.scheme.len));
   EXPECT_FALSE(parsed.username.is_valid());
   EXPECT_FALSE(parsed.password.is_valid());
-  EXPECT_EQ(WideToUTF16(L"host"),
-      formatted.substr(parsed.host.begin, parsed.host.len));
-  EXPECT_EQ(WideToUTF16(L"81"),
-      formatted.substr(parsed.port.begin, parsed.port.len));
-  EXPECT_EQ(WideToUTF16(L"/path"),
-      formatted.substr(parsed.path.begin, parsed.path.len));
-  EXPECT_EQ(WideToUTF16(L"query"),
-      formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"ref"),
-      formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(u"host", formatted.substr(parsed.host.begin, parsed.host.len));
+  EXPECT_EQ(u"81", formatted.substr(parsed.port.begin, parsed.port.len));
+  EXPECT_EQ(u"/path", formatted.substr(parsed.path.begin, parsed.path.len));
+  EXPECT_EQ(u"query", formatted.substr(parsed.query.begin, parsed.query.len));
+  EXPECT_EQ(u"ref", formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http case.
   formatted = FormatUrl(GURL("http://host:8000/a?b=c#d"), kFormatUrlOmitHTTP,
                         net::UnescapeRule::NORMAL, &parsed, nullptr, nullptr);
-  EXPECT_EQ(WideToUTF16(L"host:8000/a?b=c#d"), formatted);
+  EXPECT_EQ(u"host:8000/a?b=c#d", formatted);
   EXPECT_FALSE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
   EXPECT_FALSE(parsed.password.is_valid());
-  EXPECT_EQ(WideToUTF16(L"host"),
-      formatted.substr(parsed.host.begin, parsed.host.len));
-  EXPECT_EQ(WideToUTF16(L"8000"),
-      formatted.substr(parsed.port.begin, parsed.port.len));
-  EXPECT_EQ(WideToUTF16(L"/a"),
-      formatted.substr(parsed.path.begin, parsed.path.len));
-  EXPECT_EQ(WideToUTF16(L"b=c"),
-      formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"d"),
-      formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(u"host", formatted.substr(parsed.host.begin, parsed.host.len));
+  EXPECT_EQ(u"8000", formatted.substr(parsed.port.begin, parsed.port.len));
+  EXPECT_EQ(u"/a", formatted.substr(parsed.path.begin, parsed.path.len));
+  EXPECT_EQ(u"b=c", formatted.substr(parsed.query.begin, parsed.query.len));
+  EXPECT_EQ(u"d", formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http starts with ftp case.
   formatted = FormatUrl(GURL("http://ftp.host:8000/a?b=c#d"),
                         kFormatUrlOmitHTTP, net::UnescapeRule::NORMAL, &parsed,
                         nullptr, nullptr);
-  EXPECT_EQ(WideToUTF16(L"http://ftp.host:8000/a?b=c#d"), formatted);
+  EXPECT_EQ(u"http://ftp.host:8000/a?b=c#d", formatted);
   EXPECT_TRUE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
   EXPECT_FALSE(parsed.password.is_valid());
-  EXPECT_EQ(WideToUTF16(L"http"),
-      formatted.substr(parsed.scheme.begin, parsed.scheme.len));
-  EXPECT_EQ(WideToUTF16(L"ftp.host"),
-      formatted.substr(parsed.host.begin, parsed.host.len));
-  EXPECT_EQ(WideToUTF16(L"8000"),
-      formatted.substr(parsed.port.begin, parsed.port.len));
-  EXPECT_EQ(WideToUTF16(L"/a"),
-      formatted.substr(parsed.path.begin, parsed.path.len));
-  EXPECT_EQ(WideToUTF16(L"b=c"),
-      formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"d"),
-      formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(u"http", formatted.substr(parsed.scheme.begin, parsed.scheme.len));
+  EXPECT_EQ(u"ftp.host", formatted.substr(parsed.host.begin, parsed.host.len));
+  EXPECT_EQ(u"8000", formatted.substr(parsed.port.begin, parsed.port.len));
+  EXPECT_EQ(u"/a", formatted.substr(parsed.path.begin, parsed.path.len));
+  EXPECT_EQ(u"b=c", formatted.substr(parsed.query.begin, parsed.query.len));
+  EXPECT_EQ(u"d", formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // omit http starts with 'f' case.
   formatted = FormatUrl(GURL("http://f/"), kFormatUrlOmitHTTP,
                         net::UnescapeRule::NORMAL, &parsed, nullptr, nullptr);
-  EXPECT_EQ(WideToUTF16(L"f/"), formatted);
+  EXPECT_EQ(u"f/", formatted);
   EXPECT_FALSE(parsed.scheme.is_valid());
   EXPECT_FALSE(parsed.username.is_valid());
   EXPECT_FALSE(parsed.password.is_valid());
@@ -538,10 +515,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
   EXPECT_TRUE(parsed.path.is_valid());
   EXPECT_FALSE(parsed.query.is_valid());
   EXPECT_FALSE(parsed.ref.is_valid());
-  EXPECT_EQ(WideToUTF16(L"f"),
-      formatted.substr(parsed.host.begin, parsed.host.len));
-  EXPECT_EQ(WideToUTF16(L"/"),
-      formatted.substr(parsed.path.begin, parsed.path.len));
+  EXPECT_EQ(u"f", formatted.substr(parsed.host.begin, parsed.host.len));
+  EXPECT_EQ(u"/", formatted.substr(parsed.path.begin, parsed.path.len));
 }
 
 // Make sure that calling FormatUrl on a GURL and then converting back to a GURL

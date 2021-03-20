@@ -238,6 +238,10 @@ public class GamepadList {
 
     private static boolean isGamepadDevice(InputDevice inputDevice) {
         if (inputDevice == null) return false;
+
+        // The fingerprint sensor is a SOURCE_JOYSTICK but is not a gamepad.
+        if (inputDevice.getName().equals("uinput-fpc")) return false;
+
         return ((inputDevice.getSources() & InputDevice.SOURCE_JOYSTICK)
                 == InputDevice.SOURCE_JOYSTICK);
     }
@@ -272,6 +276,8 @@ public class GamepadList {
             case KeyEvent.KEYCODE_DPAD_DOWN:
             case KeyEvent.KEYCODE_DPAD_LEFT:
             case KeyEvent.KEYCODE_DPAD_RIGHT:
+            // Xbox Series X maps the Share button as KEYCODE_MEDIA_RECORD.
+            case KeyEvent.KEYCODE_MEDIA_RECORD:
                 return true;
             default:
                 return KeyEvent.isGamepadButton(keyCode);

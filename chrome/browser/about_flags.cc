@@ -2771,11 +2771,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchLiteralSearchTapDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLiteralSearchTap)},
-    {"contextual-search-longpress-panel-help",
-     flag_descriptions::kContextualSearchLongpressPanelHelpName,
-     flag_descriptions::kContextualSearchLongpressPanelHelpDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLongpressPanelHelp)},
     {"contextual-search-longpress-resolve",
      flag_descriptions::kContextualSearchLongpressResolveName,
      flag_descriptions::kContextualSearchLongpressResolveDescription,
@@ -5825,13 +5820,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSmartDimNewMlAgentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSmartDimNewMlAgent)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if defined(OS_ANDROID)
-    {"privacy-reordered-android",
-     flag_descriptions::kPrivacyReorderedAndroidName,
-     flag_descriptions::kPrivacyReorderedAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kPrivacyReorderedAndroid)},
-#endif
 
     {"privacy-sandbox-settings", flag_descriptions::kPrivacySandboxSettingsName,
      flag_descriptions::kPrivacySandboxSettingsDescription,

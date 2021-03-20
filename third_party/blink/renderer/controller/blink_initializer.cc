@@ -225,7 +225,7 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
 #endif
 
   binders.Add(ConvertToBaseRepeatingCallback(
-                  CrossThreadBindRepeating(&BlinkLeakDetector::Create)),
+                  CrossThreadBindRepeating(&BlinkLeakDetector::Bind)),
               main_thread->GetTaskRunner());
 
   binders.Add(ConvertToBaseRepeatingCallback(
@@ -233,7 +233,7 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
               main_thread->GetTaskRunner());
 
   binders.Add(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-                  &V8DetailedMemoryReporterImpl::Create)),
+                  &V8DetailedMemoryReporterImpl::Bind)),
               main_thread->GetTaskRunner());
 }
 

@@ -283,8 +283,6 @@ public abstract class ChromeFeatureList {
             "ContextualSearchLiteralSearchTap";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
             "ContextualSearchMlTapSuppression";
-    public static final String CONTEXTUAL_SEARCH_LONGPRESS_PANEL_HELP =
-            "ContextualSearchLongpressPanelHelp";
     public static final String CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE =
             "ContextualSearchLongpressResolve";
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
@@ -395,7 +393,6 @@ public abstract class ChromeFeatureList {
             "PrefetchNotificationSchedulingIntegration";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
     public static final String PRIVACY_SANDBOX_SETTINGS = "PrivacySandboxSettings";
-    public static final String PRIVACY_REORDERED_ANDROID = "PrivacyReorderedAndroid";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
     public static final String PWA_INSTALL_USE_BOTTOMSHEET = "PwaInstallUseBottomSheet";
     public static final String QUERY_TILES_GEO_FILTER = "QueryTilesGeoFilter";

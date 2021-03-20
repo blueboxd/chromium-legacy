@@ -1949,11 +1949,6 @@ const char kPrivacyAdvisorName[] = "Privacy Advisor";
 const char kPrivacyAdvisorDescription[] =
     "Provides contextual entry points for adjusting privacy settings";
 
-const char kPrivacyReorderedAndroidName[] =
-    "Reorder settings in Privacy on Android";
-const char kPrivacyReorderedAndroidDescription[] =
-    "Reorder settings in the Privacy settings page for better user experience.";
-
 const char kPrivacySandboxSettingsName[] = "Privacy Sandbox Settings";
 const char kPrivacySandboxSettingsDescription[] =
     "Enables privacy sandbox settings. Requires at least one of the Privacy "
@@ -2019,7 +2014,8 @@ const char kRewriteLevelDBOnDeletionDescription[] =
 
 const char kRestrictGamepadAccessName[] = "Restrict gamepad access";
 const char kRestrictGamepadAccessDescription[] =
-    "Enables Feature Policy and Secure Context restrictions on the Gamepad API";
+    "Enables Permissions Policy and Secure Context restrictions on the Gamepad "
+    "API";
 
 const char kMBIModeName[] = "MBI Scheduling Mode";
 const char kMBIModeDescription[] =
@@ -2845,14 +2841,6 @@ const char kContextualSearchLiteralSearchTapDescription[] =
     "a literal search. This is intended to be used in conjunction with the "
     "long-press resolve feature to allow both gestures to trigger a form of "
     "Touch to Search.";
-
-const char kContextualSearchLongpressPanelHelpName[] =
-    "Contextual Search long-press In-Panel-Help";
-const char kContextualSearchLongpressPanelHelpDescription[] =
-    "Adds a help section that appears directly within the panel that promotes "
-    "using the longpress gesture instead of the tap gesture. This is intended "
-    "to be used in conjunction with the long-press resolve feature to help "
-    "users transition to the other gesture.";
 
 const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
@@ -4533,9 +4521,7 @@ const char kLacrosStabilityMoreStableDescription[] =
 
 const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =
-    "Support for the experimental lacros-chrome browser. This disables "
-    "the existing Chrome OS multiple sign-in. Please use Lacros multi-profile "
-    "instead.";
+    "Support for the experimental lacros-chrome browser.";
 
 const char kLacrosWebAppsName[] = " Lacros web apps";
 const char kLacrosWebAppsDescription[] = "Support web apps in Lacros browser.";

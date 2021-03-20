@@ -4,10 +4,10 @@
 
 #include "content/browser/accessibility/browser_accessibility.h"
 
-#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/test_browser_accessibility_delegate.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_position.h"
 
@@ -25,7 +25,7 @@ class BrowserAccessibilityTest : public testing::Test {
  private:
   void SetUp() override;
 
-  base::test::TaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };
 
@@ -757,8 +757,7 @@ TEST_F(BrowserAccessibilityTest, GetAuthorUniqueId) {
       browser_accessibility_manager->GetRoot();
   ASSERT_NE(nullptr, root_accessible);
 
-  ASSERT_EQ(base::WideToUTF16(L"my_html_id"),
-            root_accessible->GetAuthorUniqueId());
+  ASSERT_EQ(u"my_html_id", root_accessible->GetAuthorUniqueId());
 }
 
 TEST_F(BrowserAccessibilityTest, NextWordPositionWithHypertext) {

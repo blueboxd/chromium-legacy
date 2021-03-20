@@ -360,21 +360,6 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
   auto result = mojom::NetworkStateProperties::New();
   result->type = type;
   result->connectable = network->connectable();
-  if (type == mojom::NetworkType::kCellular) {
-    // Ensure that a cellular network that has a locked sim state or is scanning
-    // is not connectable.
-    const DeviceState* device =
-        network_state_handler->GetDeviceState(network->device_path());
-    if (!device) {
-      // When a device is removed or SIM is replaced, the Shill Service may
-      // outlive the Device. Such services are not connectable.
-      NET_LOG(DEBUG) << "Cellular device is not available: "
-                     << network->device_path();
-      result->connectable = false;
-    } else if (device->IsSimLocked() || device->scanning()) {
-      result->connectable = false;
-    }
-  }
   result->connect_requested = network->connect_requested();
   bool technology_enabled = network->Matches(NetworkTypePattern::VPN()) ||
                             network_state_handler->IsTechnologyEnabled(
@@ -1999,12 +1984,6 @@ void CrosNetworkConfig::GetDeviceStateList(
     if (technology_state == mojom::DeviceStateType::kUnavailable) {
       NET_LOG(ERROR) << "Device state unavailable: " << device->name();
       continue;
-    }
-    if (device->type() == shill::kTypeCellular &&
-        technology_state == mojom::DeviceStateType::kEnabled &&
-        cellular_inhibitor_ &&
-        cellular_inhibitor_->GetInhibitReason().has_value()) {
-      technology_state = mojom::DeviceStateType::kInhibited;
     }
     mojom::DeviceStatePropertiesPtr mojo_device =
         DeviceStateToMojo(device, cellular_inhibitor_, technology_state);

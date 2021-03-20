@@ -86,6 +86,7 @@ extern const char kChromeUIFaviconHost[];
 extern const char kChromeUIFaviconURL[];
 extern const char kChromeUIFavicon2Host[];
 extern const char kChromeUIFeedbackHost[];
+extern const char kChromeUIFeedbackURL[];
 extern const char kChromeUIFileiconURL[];
 extern const char kChromeUIFlagsHost[];
 extern const char kChromeUIFlagsURL[];
@@ -336,6 +337,8 @@ extern const char kChromeUISandboxHost[];
     (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 extern const char kChromeUIBrowserSwitchHost[];
 extern const char kChromeUIBrowserSwitchURL[];
+extern const char kChromeUIEnterpriseProfileWelcomeHost[];
+extern const char kChromeUIEnterpriseProfileWelcomeURL[];
 extern const char kChromeUIProfileCustomizationHost[];
 extern const char kChromeUIProfileCustomizationURL[];
 extern const char kChromeUIProfilePickerHost[];

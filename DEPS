@@ -67,6 +67,11 @@ vars = {
   # TODO(ehmaldonado): Remove this once the bug in gclient is fixed.
   'checkout_android': False,
 
+  # By default, don't check out Fuchsia. Will be overridden by gclient
+  # variables.
+  # TODO(ehmaldonado): Remove this once the bug in gclient is fixed.
+  'checkout_fuchsia': False,
+
   # Pull in Android prebuilts build tools so we can create Java xrefs
   'checkout_android_prebuilts_build_tools': False,
 
@@ -175,7 +180,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:4eef77dde582d6065203e3249dd80477391a7dd6',
+  'luci_go': 'git_revision:92739fd8ab1f99ef55abfba4162eedb89fddfb7b',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -204,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '79adde4046c16aafbec00c433792b8c158e1d4a5',
+  'skia_revision': 'bf9c63b760fb6fe4022c4b1ac53efd826d63f379',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '66377e9eee38ae5d2bec601ec40a6e7e792169bf',
+  'v8_revision': '6092f990f654f2d7a4534ee8c5bbb5c4fb800bdc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -216,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd5bc8a27abec7e86ea555f816e6dfa3947a2ffa5',
+  'angle_revision': '135385a1ae86bf857be37475f927dcf78c9476b4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -224,7 +229,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '34cbd9296c60d1c583035e02efe4dd8fc8ebe2c8',
+  'pdfium_revision': '58700ed0fd5338cb778d7c3e675ba6334c8b9862',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -275,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7caeed04db1c5cf0ef6a6ba6351286a33a9a4aff',
+  'catapult_revision': '873d111102b9a564c45d674d33d854af19359625',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -283,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4899ca4fe2363682922b665d6c79380aabbc80ef',
+  'devtools_frontend_revision': '030c9b9eef9e589269bd0a2c906f430cc670ad5f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -323,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '682f32af32aea8e40775ec56b4e25ab7aaea1c28',
+  'dawn_revision': '853b5d765e715fc11ea28c1d3754e48d38c283b1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -363,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '9970ec63ca8b53a61a459bc403784e5993476ad5',
+  'tint_revision': 'bb5617f21ab4c387027a4cf32211fda97dade43b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -696,7 +701,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'ca1HWEUKUSZ02lNu-SjKwDXg4GV1_n21tA7GZhgC94cC',
+          'version': '2F-wzH5JW9Pn_j1DfaH5UP8dFCqCMwvu8_2mU5WfZbIC',
       },
     ],
     'condition': 'checkout_android',
@@ -1537,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '24074a989202ff1cb17659450b5b757c6f8d991c',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '490c1503d92696894e9c88c2a40a24ed78abe0a8',
+    Var('webrtc_git') + '/src.git' + '@' + '2bab0efee4d9d163841b6d060c690c381e1768ac',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1609,7 +1614,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7729032fd647fcddfa4d7793f138b0f41a0b7f3f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@17284d9138954aff8d0adc40045ee5ee9701061c',
     'condition': 'checkout_src_internal',
   },
 
@@ -3672,7 +3677,8 @@ hooks = [
     'condition': 'llvm_force_head_revision',
     'action': ['python', 'src/tools/clang/scripts/build.py',
                '--llvm-force-head-revision',
-               '--with-android={checkout_android}'],
+               '--with-android={checkout_android}',
+               '--with-fuchsia={checkout_fuchsia}'],
   },
   {
     # This is supposed to support the same set of platforms as 'clang' above.

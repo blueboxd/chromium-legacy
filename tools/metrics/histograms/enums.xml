@@ -3180,7 +3180,7 @@ Unknown properties are collapsed to zero. -->
   <int value="27" label="Omnibox, Search Suggest"/>
   <int value="28" label="Omnibox, Personalized Suggestion"/>
   <int value="29" label="Zero State Local File"/>
-  <int value="30" label="Drive Quick Access"/>
+  <int value="30" label="Zero State Drive File"/>
   <int value="31" label="Assistant"/>
   <int value="32" label="OS Settings"/>
   <int value="33" label="Plugin VM App"/>
@@ -42687,6 +42687,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="11" label="Disabled by Feature Flag"/>
   <int value="12" label="AGSA Version Not Supported"/>
   <int value="13" label="Disabled on Incognito"/>
+  <int value="14" label="Disabled on Tablet"/>
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue">

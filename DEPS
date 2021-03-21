@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'bf9c63b760fb6fe4022c4b1ac53efd826d63f379',
+  'skia_revision': '26265d2fea39b3d6613a533d9777937eb5551750',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '135385a1ae86bf857be37475f927dcf78c9476b4',
+  'angle_revision': '90cf278c36871437c89b8f88d62e6a538b51501d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '853b5d765e715fc11ea28c1d3754e48d38c283b1',
+  'dawn_revision': '6b80743d3f5bb389665590585c43eeb9cfa70a34',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': 'bb5617f21ab4c387027a4cf32211fda97dade43b',
+  'tint_revision': '00e823ec04d96f7dee56ea0643724d121f7822a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -701,7 +701,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '2F-wzH5JW9Pn_j1DfaH5UP8dFCqCMwvu8_2mU5WfZbIC',
+          'version': '7kwFQ4-kBf3t5Djewk55PoVDzmyuONWGZd5lkk-KUGEC',
       },
     ],
     'condition': 'checkout_android',
@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '24074a989202ff1cb17659450b5b757c6f8d991c',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '2bab0efee4d9d163841b6d060c690c381e1768ac',
+    Var('webrtc_git') + '/src.git' + '@' + '8bf1cd1c665a538a366bce4770acbb990b025388',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1580,7 +1580,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'KZVLiA04HD08dNEVs7uTXrhqXrqMkoSjuzT7r6hHU10C',
+          'version': 'TaFFUVTtXW6qEeSs9j-uXwlDSA9aSek1WWirwzNFlx4C',
         },
       ],
       'dep_type': 'cipd',
@@ -1590,7 +1590,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '4LHAw3NBVIqTVPbCP4jJmFh1p4t1Y2i2IE5Oyh3xgOYC',
+          'version': '2-Pib9B85r8HVtqlNi-E8LsHHvh2XGPNWI_pNIdZREwC',
         },
       ],
       'dep_type': 'cipd',
@@ -1600,7 +1600,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'ZbwCqnunt7FrAMYn1MWmaYwPeVgBmRQaUpxVDhVJDWQC',
+          'version': 'zWbyJRMnwIID6gS9WlVEamtdkqGPGR2aftzB7fSqlqsC',
         },
       ],
       'dep_type': 'cipd',
@@ -1633,7 +1633,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'NzjVcyiGjxkQK619SsF4tAwR9CYKo9Z0q3uNsGUwXRQC',
+        'version': 'rVhEqrJVDXnxvlHJOU7GUu0gmdElxeMkF4hxRXPsaJUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1644,7 +1644,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'iFR7yW0vND9zv6S3K99Zw6tiYhADCFCfK6dZjWtEscIC',
+        'version': 'pJicAADTi0Vfodn0UPeGnaW_v4kAiHHBZvm82B0mVXAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

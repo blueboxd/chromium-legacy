@@ -180,7 +180,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:92739fd8ab1f99ef55abfba4162eedb89fddfb7b',
+  'luci_go': 'git_revision:e567b4580a0854199f30444e583c17ee65abcc10',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '501ca219f6da609a72a83f37dc3567c14538153f',
+  'skia_revision': '61d694d08ff140a37773e1db52a6d17de071d18a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '6092f990f654f2d7a4534ee8c5bbb5c4fb800bdc',
+  'v8_revision': '61720414aea2dd70312d1b68606e5514f0e0427e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '90cf278c36871437c89b8f88d62e6a538b51501d',
+  'angle_revision': '7e9b497c984da71243ff0da15b999353fed42475',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '02d384884a4f26dffbaf79d14129a34f3f04d460',
+  'devtools_frontend_revision': '068b01dc6fac2343045da703607f6fb87183bc7e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '8ac6a481a3ea9939a37e01713cd0875d2d191965',
+  'dawn_revision': '5e121c935033f26aece2590ff4710dbf36e77bdd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'tint_revision': '00e823ec04d96f7dee56ea0643724d121f7822a7',
+  'tint_revision': '4daddd1759c6d061dd0c8d0043d41f8c1717a82b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -701,7 +701,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '7kwFQ4-kBf3t5Djewk55PoVDzmyuONWGZd5lkk-KUGEC',
+          'version': 'qVuvMdiLCD8N4Fl_eGCJnsGXwtgHVnJEdUbokvTqvssC',
       },
     ],
     'condition': 'checkout_android',
@@ -934,7 +934,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e58ece5f83ece5ddfd7f3ca5eebc3a887f6bcbdb',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '392c407b551a98190b2431947469bca505e5bc50',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1306,7 +1306,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '024ea24c78533030a3faec9a5583af3175f07712',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b54a945057f0d4b92c45a562361ad9d8db76ed68',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1580,7 +1580,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'TaFFUVTtXW6qEeSs9j-uXwlDSA9aSek1WWirwzNFlx4C',
+          'version': 'PFAC9ipfkYe6ZljRb8758leyPy7Jw6Dhl2dtHp0IsMYC',
         },
       ],
       'dep_type': 'cipd',
@@ -1590,7 +1590,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '2-Pib9B85r8HVtqlNi-E8LsHHvh2XGPNWI_pNIdZREwC',
+          'version': '3Z3zEAwtATXaw6OCunrkLRtBDiMoKW34b_yeMZ82eocC',
         },
       ],
       'dep_type': 'cipd',
@@ -1600,7 +1600,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'zWbyJRMnwIID6gS9WlVEamtdkqGPGR2aftzB7fSqlqsC',
+          'version': 'Ht0L_bool7JJxm1K8Y4MzgKRlPhoIYiVaHruwzqROMEC',
         },
       ],
       'dep_type': 'cipd',
@@ -3662,6 +3662,17 @@ hooks = [
     'action': ['python', 'src/build/mac_toolchain.py'],
   },
   {
+    # Update the Fuchsia SDK if necessary.
+    'name': 'Download Fuchsia SDK',
+    'pattern': '.',
+    'condition': 'checkout_fuchsia',
+    'action': [
+      'python',
+      'src/build/fuchsia/update_sdk.py',
+      '--default-bucket={fuchsia_sdk_bucket}',
+    ],
+  },
+  {
     # Update the prebuilt clang toolchain.
     # Note: On Win, this should run after win_toolchain, as it may use it.
     'name': 'clang',
@@ -4228,17 +4239,6 @@ hooks = [
     'condition': 'checkout_android',
     'action': [ 'python',
                 'src/build/android/download_doclava.py',
-    ],
-  },
-
-  {
-    'name': 'Download Fuchsia SDK',
-    'pattern': '.',
-    'condition': 'checkout_fuchsia',
-    'action': [
-      'python',
-      'src/build/fuchsia/update_sdk.py',
-      '--default-bucket={fuchsia_sdk_bucket}',
     ],
   },
 

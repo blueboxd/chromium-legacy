@@ -604,6 +604,9 @@ extern const char kEnableSRPIsolatedPrerenderProbingDescription[];
 extern const char kEnableSRPIsolatedPrerendersNSPName[];
 extern const char kEnableSRPIsolatedPrerendersNSPDescription[];
 
+extern const char kReduceHorizontalFlingVelocityName[];
+extern const char kReduceHorizontalFlingVelocityDescription[];
+
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];
@@ -2930,6 +2933,11 @@ extern const char kEnableEphemeralGuestProfilesOnDesktopName[];
 extern const char kEnableEphemeralGuestProfilesOnDesktopDescription[];
 #endif  // defined(OS_WIN) || (defined(OS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_MAC)
+
+#if defined(OS_LINUX) && defined(USE_OZONE)
+extern const char kUseOzonePlatformName[];
+extern const char kUseOzonePlatformDescription[];
+#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
 // Feature flags --------------------------------------------------------------
 

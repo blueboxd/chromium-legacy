@@ -542,7 +542,37 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, LinkRelPrerender_Duplicate) {
   EXPECT_EQ(GetRequestCount(kPrerenderingUrl2), 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, NonHttpUrl) {
+// Tests that non-http(s) schemes are disallowed for prerendering.
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, HttpToBlobUrl) {
+  base::HistogramTester histogram_tester;
+
+  const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Generate a Blob page and obtain a URL for the Blob page.
+  const char kCreateBlobUrlScript[] =
+      "URL.createObjectURL("
+      "new Blob([\"<h1>hello blob</h1>\"], { type: 'text/html' }));";
+  const std::string blob_url =
+      EvalJs(shell()->web_contents(), kCreateBlobUrlScript).ExtractString();
+  const GURL blob_gurl(blob_url);
+
+  // Add <link rel=prerender> that will prerender the Blob page.
+  PrerenderHostRegistryObserver observer(GetPrerenderHostRegistry());
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     JsReplace("add_prerender($1)", blob_url)));
+  observer.WaitForTrigger(blob_gurl);
+
+  // A prerender host for the URL should not be registered.
+  PrerenderHostRegistry& registry = GetPrerenderHostRegistry();
+  EXPECT_FALSE(registry.FindHostByUrlForTesting(blob_gurl));
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kInvalidSchemeNavigation, 1);
+}
+
+// Tests that non-http(s) schemes are disallowed for prerendering.
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, BlobUrlToBlobUrl) {
   base::HistogramTester histogram_tester;
 
   // Navigate to an initial page.
@@ -921,16 +951,10 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, PrerenderIframe) {
   TestHostPrerenderingState(GetUrl("/page_with_iframe.html"));
 }
 
-// crbug.com/1189980
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderBlankIframe DISABLED_PrerenderBlankIframe
-#else
-#define MAYBE_PrerenderBlankIframe PrerenderBlankIframe
-#endif
-
 // Blank <iframe> is a special case. Tests that the blank iframe knows the
 // prerendering state as well.
-IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, MAYBE_PrerenderBlankIframe) {
+// TODO(https://crbug.com/1185965): This test is disabled for flakiness.
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, DISABLED_PrerenderBlankIframe) {
   TestHostPrerenderingState(GetUrl("/page_with_blank_iframe.html"));
 }
 
@@ -1640,6 +1664,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, LowEndDevice) {
 
 IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
                        IsInactiveAndDisallowActivationCancelsPrerendering) {
+  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html");
 
@@ -1674,6 +1699,9 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
   // should issue a request again.
   NavigatePrimaryPage(kPrerenderingUrl);
   EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 2);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kDestroyed, 1);
 }
 
 class PrerenderWithBackForwardCacheTest : public PrerenderBrowserTest {

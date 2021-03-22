@@ -5162,6 +5162,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppReinstallZeroState)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+    {"reduce-horizontal-fling-velocity",
+     flag_descriptions::kReduceHorizontalFlingVelocityName,
+     flag_descriptions::kReduceHorizontalFlingVelocityDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kReduceHorizontalFlingVelocity)},
+
     {"enable-resampling-input-events",
      flag_descriptions::kEnableResamplingInputEventsName,
      flag_descriptions::kEnableResamplingInputEventsDescription, kOsAll,
@@ -7208,6 +7213,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBluetoothSessionizedMetricsName,
      flag_descriptions::kBluetoothSessionizedMetricsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(metrics::structured::kBluetoothSessionizedMetrics)},
+#endif
+
+#if defined(OS_LINUX) && defined(USE_OZONE)
+    {"use-ozone-platform", flag_descriptions::kUseOzonePlatformName,
+     flag_descriptions::kUseOzonePlatformDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(features::kUseOzonePlatform)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

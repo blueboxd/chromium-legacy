@@ -860,7 +860,7 @@
   {
     "name": "debug-packed-apps",
     "owners": [ "benwells", "raymes" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 100
   },
   {
     "name": "decode-jpeg-images-to-yuv",
@@ -1984,8 +1984,8 @@
   },
   {
     "name": "enable-media-foundation-video-capture",
-    "owners": [ "armax", "guidou" ],
-    "expiry_milestone": 90
+    "owners": [ "agpalak", "guidou" ],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-media-internals",
@@ -4340,6 +4340,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "reduce-horizontal-fling-velocity",
+    "owners": [ "flackr", "input-dev" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "reengagement-notification",
     "owners": [ "dtrainor", "xingliu" ],
     "expiry_milestone": 90
@@ -4429,8 +4434,8 @@
   },
   {
     "name": "run-video-capture-service-in-browser",
-    "owners": [ "armax", "guidou" ],
-    "expiry_milestone": 90
+    "owners": [ "agpalak", "guidou" ],
+    "expiry_milestone": 95
   },
   {
     "name": "safe-browsing-client-side-detection-android",
@@ -5073,6 +5078,11 @@
     "name": "use-of-hash-affiliation-fetcher",
     "owners": [ "vsemeniuk", "vasilii"],
     "expiry_milestone": 90
+  },
+  {
+    "name": "use-ozone-platform",
+    "owners": [ "rjkroege", "thomasanderson", "msisov@igalia.com", "nickdiego@igalia.com", "adunaev@igalia.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "use-search-click-for-right-click",

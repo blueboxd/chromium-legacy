@@ -9404,6 +9404,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="8" label="Device needs more space to use Borealis DLC"/>
   <int value="9" label="DLC faced an unknown error"/>
   <int value="10" label="Device is offline"/>
+  <int value="11" label="DLC couldn't find an image at the correct version"/>
 </enum>
 
 <enum name="BorealisStartupResult">
@@ -30273,7 +30274,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2293" label="CSSSelectorWebkitDatetimeEditText"/>
   <int value="2294" label="CSSSelectorWebkitDatetimeEditWeekField"/>
   <int value="2295" label="CSSSelectorWebkitDatetimeEditYearField"/>
-  <int value="2296" label="CSSSelectorWebkitDetailsMarker"/>
+  <int value="2296" label="OBSOLETE_CSSSelectorWebkitDetailsMarker"/>
   <int value="2297" label="CSSSelectorWebkitFileUploadButton"/>
   <int value="2298" label="CSSSelectorWebkitInnerSpinButton"/>
   <int value="2299" label="CSSSelectorWebkitInputPlaceholder"/>
@@ -43743,6 +43744,7 @@ from previous Chrome versions.
   <int value="-2003354337"
       label="enable-search-button-in-omnibox-for-str-or-iip"/>
   <int value="-2002461806" label="ShoppingAssist:enabled"/>
+  <int value="-2002453030" label="UseOzonePlatform:disabled"/>
   <int value="-2001869199" label="ShillSandboxing:enabled"/>
   <int value="-2000567059" label="SimplifyHttpsIndicator:enabled"/>
   <int value="-1999892428" label="force-ui-direction"/>
@@ -44731,6 +44733,7 @@ from previous Chrome versions.
   <int value="-1164858657" label="CrostiniUsbAllowUnsupported:disabled"/>
   <int value="-1163777157" label="ContextualSearchSimplifiedServer:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
+  <int value="-1162636562" label="ReduceHorizontalFlingVelocity:disabled"/>
   <int value="-1161409696" label="MediaRemotingEncrypted:enabled"/>
   <int value="-1161384421" label="ContextualSuggestionsAboveArticles:enabled"/>
   <int value="-1160941363" label="AffiliationBasedMatching:disabled"/>
@@ -45548,6 +45551,7 @@ from previous Chrome versions.
   <int value="-405380243" label="enable-encryption-migration"/>
   <int value="-403701720" label="DirectActions:enabled"/>
   <int value="-403649153" label="WebViewBrotliSupport:disabled"/>
+  <int value="-402700953" label="UseOzonePlatform:enabled"/>
   <int value="-402038055"
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:enabled"/>
   <int value="-401170566"
@@ -47527,6 +47531,7 @@ from previous Chrome versions.
   <int value="1398333721" label="ForceEnableDevicesPage:disabled"/>
   <int value="1399950951" label="AutofillTokenPrefixMatching:disabled"/>
   <int value="1403195370" label="ArcCupsApi:enabled"/>
+  <int value="1404726271" label="ReduceHorizontalFlingVelocity:enabled"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
   <int value="1406046556" label="enable-slimming-paint-v175"/>
   <int value="1406354320" label="MacViewsWebUIDialogs:enabled"/>

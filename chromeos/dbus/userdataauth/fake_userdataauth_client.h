@@ -29,6 +29,26 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
       chromeos::WaitForServiceToBeAvailableCallback callback) override;
   void IsMounted(const ::user_data_auth::IsMountedRequest& request,
                  IsMountedCallback callback) override;
+  void Unmount(const ::user_data_auth::UnmountRequest& request,
+               UnmountCallback callback) override;
+  void Mount(const ::user_data_auth::MountRequest& request,
+             MountCallback callback) override;
+  void Remove(const ::user_data_auth::RemoveRequest& request,
+              RemoveCallback callback) override;
+  void Rename(const ::user_data_auth::RenameRequest& request,
+              RenameCallback callback) override;
+  void GetKeyData(const ::user_data_auth::GetKeyDataRequest& request,
+                  GetKeyDataCallback callback) override;
+  void CheckKey(const ::user_data_auth::CheckKeyRequest& request,
+                CheckKeyCallback callback) override;
+  void AddKey(const ::user_data_auth::AddKeyRequest& request,
+              AddKeyCallback callback) override;
+  void RemoveKey(const ::user_data_auth::RemoveKeyRequest& request,
+                 RemoveKeyCallback callback) override;
+  void MassRemoveKeys(const ::user_data_auth::MassRemoveKeysRequest& request,
+                      MassRemoveKeysCallback callback) override;
+  void MigrateKey(const ::user_data_auth::MigrateKeyRequest& request,
+                  MigrateKeyCallback callback) override;
 };
 
 }  // namespace chromeos

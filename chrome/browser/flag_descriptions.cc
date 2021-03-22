@@ -1012,6 +1012,12 @@ const char kEnablePixelCanvasRecordingDescription[] =
     "with the pixel and improves text rendering. This should be enabled when a "
     "device is using fractional scale factor.";
 
+const char kReduceHorizontalFlingVelocityName[] =
+    "Reduce horizontal fling velocity";
+const char kReduceHorizontalFlingVelocityDescription[] =
+    "Reduces the velocity of horizontal flings to 20\% of their original"
+    "velocity.";
+
 const char kEnableResamplingInputEventsName[] =
     "Enable resampling input events";
 const char kEnableResamplingInputEventsDescription[] =
@@ -4975,6 +4981,12 @@ const char kEnableEphemeralGuestProfilesOnDesktopDescription[] =
     "Enables ephemeral Guest profiles on Windows, Linux, and Mac.";
 #endif  // defined(OS_WIN) || (defined(OS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_MAC)
+
+#if defined(OS_LINUX) && defined(USE_OZONE)
+const char kUseOzonePlatformName[] = "Use ozone.";
+const char kUseOzonePlatformDescription[] =
+    "Use the Ozone/X11 platform implementation on X11.";
+#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
 // Feature flags --------------------------------------------------------------
 

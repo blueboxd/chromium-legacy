@@ -676,21 +676,6 @@
             ]
         }
     ],
-    "AsyncDns": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AsyncDns"
-                    ]
-                }
-            ]
-        }
-    ],
     "AudioServiceSandboxLinux": [
         {
             "platforms": [
@@ -4190,40 +4175,6 @@
                     "enable_features": [
                         "MBIMode"
                     ]
-                }
-            ]
-        }
-    ],
-    "NTPPopularSites": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UsePopularSitesSuggestions"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "UsePopularSitesSuggestions"
-                    ]
-                },
-                {
-                    "name": "EnabledShortNamesHoldbackControl",
-                    "params": {
-                        "version": "5_shortname"
-                    }
-                },
-                {
-                    "name": "EnabledShortNamesHoldback",
-                    "params": {
-                        "version": "5_shortname-control"
-                    }
                 }
             ]
         }

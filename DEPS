@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fcd3ae3684996fd64a0333bb0e09e175739b46fb',
+  'skia_revision': '501ca219f6da609a72a83f37dc3567c14538153f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '873d111102b9a564c45d674d33d854af19359625',
+  'catapult_revision': '999f35f30e7ed72d640fea1b86f74d54a41896ed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -328,11 +328,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '6b80743d3f5bb389665590585c43eeb9cfa70a34',
+  'dawn_revision': '8ac6a481a3ea9939a37e01713cd0875d2d191965',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '5111790e59dc91b13e47fc7742b57ee29897b139',
+  'quiche_revision': '4cf427b9d36e39c637571dd11d1412dc518b526b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '24074a989202ff1cb17659450b5b757c6f8d991c',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8bf1cd1c665a538a366bce4770acbb990b025388',
+    Var('webrtc_git') + '/src.git' + '@' + 'c73257651b221585798dc46ec539f94f332500b6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1644,7 +1644,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'pJicAADTi0Vfodn0UPeGnaW_v4kAiHHBZvm82B0mVXAC',
+        'version': 'q0Hg70fKRsBR6xSaHz5viPqDwlfF-dIeCgw5UxMj-QYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

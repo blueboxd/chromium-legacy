@@ -198,12 +198,12 @@ const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
 // Use DLC instead of component updater for managing the Termina image if set
 // (and component updater instead of DLC if not).
 const base::Feature kCrostiniUseDlc{"CrostiniUseDlc",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // DLC Service is available for use on the board, prerequisite for the UseDlc
 // flag.
 const base::Feature kCrostiniEnableDlc{"CrostiniEnableDlc",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables using Cryptauth's GetDevicesActivityStatus API.
 const base::Feature kCryptAuthV2DeviceActivityStatus{
@@ -488,6 +488,10 @@ const base::Feature kMediaAppHandlesRaw{"MediaAppHandlesRaw",
 const base::Feature kMediaAppPdfInInk{"MediaAppPdfInInk",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether to show the new Video controls UI in the ChromeOS media app.
+const base::Feature kMediaAppVideoControls{"MediaAppVideoControls",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables support for multilingual assistive typing on Chrome OS.
 const base::Feature kMultilingualTyping{"MultilingualTyping",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -621,16 +625,6 @@ const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{
     "SmartDimExperimentalComponent", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Uses the smart dim component updater to provide smart dim model and
-// preprocessor configuration.
-const base::Feature kSmartDimNewMlAgent{"SmartDimNewMlAgent",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Uses the V3 (~2019-05 era) Smart Dim model instead of the default V2
-// (~2018-11) model.
-const base::Feature kSmartDimModelV3{"SmartDimModelV3",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This feature:
 // - Creates a new "Sync your settings" section in Chrome OS settings

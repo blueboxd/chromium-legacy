@@ -213,6 +213,8 @@ extern const base::Feature kMediaAppHandlesRaw;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMediaAppPdfInInk;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kMediaAppVideoControls;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMinimumChromeVersion;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMultilingualTyping;
@@ -283,10 +285,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShowPlayInDemoMode;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSmartDimExperimentalComponent;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kSmartDimNewMlAgent;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kSmartDimModelV3;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSplitSettingsSync;
 COMPONENT_EXPORT(ASH_CONSTANTS)

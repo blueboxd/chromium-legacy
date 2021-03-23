@@ -152,7 +152,7 @@
   {
     "name": "app-service-external-protocol",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 96
   },
   {
     "name": "arc-custom-tabs-experiment",
@@ -409,8 +409,8 @@
   },
   {
     "name": "autofill-use-renderer-ids",
-    "owners": [ "kazinova" ],
-    "expiry_milestone": 91
+    "owners": [ "kazinova@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "avatar-toolbar-button",
@@ -939,7 +939,7 @@
   },
   {
     "name": "detect-form-submission-on-form-clear",
-    "owners": [ "kazinova", "jdoerrie"],
+    "owners": [ "kazinova@google.com", "jdoerrie"],
     "expiry_milestone": 93
   },
   {
@@ -1959,7 +1959,7 @@
   },
   {
     "name": "enable-manual-password-generation",
-    "owners": [ "kazinova" ],
+    "owners": [ "kazinova@google.com" ],
     "expiry_milestone": 93
   },
   {
@@ -3178,7 +3178,7 @@
   {
     "name": "intent-handling-sharing",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 93
   },
   {
     "name": "intent-picker-pwa-persistence",
@@ -3374,6 +3374,11 @@
   },
   {
     "name": "media-app-annotation",
+    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "expiry_milestone": 93
+  },
+  {
+    "name": "media-app-display-exif",
     "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
     "expiry_milestone": 93
   },
@@ -4450,15 +4455,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "safe-browsing-enhanced-protection-message-in-interstitials",
-    "owners": [
-      "vakh",
-      "xinghuilu",
-      "chrome-safebrowsing-core@google.com"
-    ],
-    "expiry_milestone": 89
-  },
-  {
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
     "expiry_milestone": 90
@@ -4470,15 +4466,6 @@
       "chrome-safebrowsing-core@google.com"
     ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "safe-browsing-security-section-ui-android",
-    "owners": [
-      "vakh",
-      "xinghuilu",
-      "chrome-safebrowsing-core@google.com"
-    ],
-    "expiry_milestone": 90
   },
   {
     "name": "safety-check-chrome-cleaner-child",

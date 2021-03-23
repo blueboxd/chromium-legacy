@@ -1206,10 +1206,6 @@ extern const char kPrinterStatusDescription[];
 extern const char kPrinterStatusDialogName[];
 extern const char kPrinterStatusDialogDescription[];
 
-extern const char kSafeBrowsingEnhancedProtectionMessageInInterstitialsName[];
-extern const char
-    kSafeBrowsingEnhancedProtectionMessageInInterstitialsDescription[];
-
 extern const char kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointName[];
 extern const char
     kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointDescription[];
@@ -1883,9 +1879,6 @@ extern const char kSafeBrowsingEnhancedProtectionAndroidDescription[];
 
 extern const char kEnhancedProtectionPromoAndroidName[];
 extern const char kEnhancedProtectionPromoAndroidDescription[];
-
-extern const char kSafeBrowsingSectionUiAndroidName[];
-extern const char kSafeBrowsingSectionUiAndroidDescription[];
 
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
@@ -2675,6 +2668,9 @@ extern const char kMediaAppDescription[];
 
 extern const char kMediaAppAnnotationName[];
 extern const char kMediaAppAnnotationDescription[];
+
+extern const char kMediaAppDisplayExifName[];
+extern const char kMediaAppDisplayExifDescription[];
 
 extern const char kMediaAppPdfInInkName[];
 extern const char kMediaAppPdfInInkDescription[];

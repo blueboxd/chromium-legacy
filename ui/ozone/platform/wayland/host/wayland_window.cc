@@ -87,48 +87,56 @@ void WaylandWindow::OnWindowLostCapture() {
 
 void WaylandWindow::UpdateBufferScale(bool update_bounds) {
   DCHECK(connection_->wayland_output_manager());
-  const auto* screen = connection_->wayland_output_manager()->wayland_screen();
 
-  // The client might not create screen at all.
-  if (!screen)
-    return;
-
-  const auto widget = GetWidget();
-
-  int32_t new_scale = 0;
-  if (parent_window_) {
-    new_scale = parent_window_->buffer_scale();
-    ui_scale_ = parent_window_->ui_scale_;
-  } else {
-    const auto display = (widget == gfx::kNullAcceleratedWidget)
-                             ? screen->GetPrimaryDisplay()
-                             : screen->GetDisplayForAcceleratedWidget(widget);
-    new_scale = connection_->wayland_output_manager()
-                    ->GetOutput(display.id())
-                    ->scale_factor();
-
-    if (display::Display::HasForceDeviceScaleFactor())
-      ui_scale_ = display::Display::GetForcedDeviceScaleFactor();
-    else
-      ui_scale_ = display.device_scale_factor();
+  auto preferred_outputs_id = GetPreferredEnteredOutputId();
+  if (preferred_outputs_id == 0) {
+    // If non of the output are entered, use primary output. This is what
+    // WaylandScreen returns back to ScreenOzone.
+    auto* primary_output =
+        connection_->wayland_output_manager()->GetPrimaryOutput();
+    // We don't know our primary output - WaylandScreen hasn't been created
+    // yet.
+    if (!primary_output)
+      return;
+    preferred_outputs_id = primary_output->output_id();
   }
+
+  auto* output =
+      connection_->wayland_output_manager()->GetOutput(preferred_outputs_id);
+  // Sanity check. WaylandConnection always waits for at least one output to
+  // become ready. See WaylandConnection::Initialize.
+  DCHECK(output);
+  int32_t new_scale = output->scale_factor();
+  ui_scale_ = output->GetUIScaleFactor();
+
   int32_t old_scale = buffer_scale();
   root_surface_->SetBufferScale(new_scale, update_bounds);
   // We need to keep DIP size of the window the same whenever the scale changes.
   if (update_bounds)
     SetBoundsDip(gfx::ScaleToRoundedRect(bounds_px_, 1.0 / old_scale));
+
+  // Propagate update to the child windows
+  if (child_window_)
+    child_window_->UpdateBufferScale(update_bounds);
 }
 
 gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
   return accelerated_widget_;
 }
 
-uint32_t WaylandWindow::GetPreferredEnteredOutputId() const {
-  // It can be either a window that hasn't entered any outputs yet or a child
-  // window that doesn't store entered outputs. Instead, WaylandScreen takes the
-  // window's parent window and uses its preferred output.
+uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
+  // Child windows don't store entered outputs. Instead, take the window's
+  // root parent window and use its preferred output.
+  if (parent_window_)
+    return GetRootParentWindow()->GetPreferredEnteredOutputId();
+
+  // It can be either a toplevel window that hasn't entered any outputs yet, or
+  // still a non toplevel window that doesn't have a parent (for example, a
+  // wl_surface that is being dragged).
   if (entered_outputs_.empty())
     return 0;
+
+  DCHECK_EQ(PlatformWindowType::kWindow, type());
 
   // A window can be located on two or more displays. Thus, return the id of the
   // output that has the biggest scale factor. Otherwise, use the very first one

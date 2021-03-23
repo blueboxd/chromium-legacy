@@ -780,10 +780,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectCounter);
   }
-  bool IsDetailsMarker() const {
-    NOT_DESTROYED();
-    return IsOfType(kLayoutObjectDetailsMarker);
-  }
   bool IsEmbeddedObject() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectEmbeddedObject);
@@ -1234,6 +1230,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsSVGFilterPrimitive() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectSVGFilterPrimitive);
+  }
+  bool IsNGSVGText() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectNGSVGText);
   }
 
   // FIXME: Those belong into a SVG specific base-class for all layoutObjects
@@ -3411,7 +3411,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectCanvas,
     kLayoutObjectCounter,
     kLayoutObjectCustomScrollbarPart,
-    kLayoutObjectDetailsMarker,
     kLayoutObjectEmbeddedObject,
     kLayoutObjectFieldset,
     kLayoutObjectFileUploadControl,
@@ -3465,6 +3464,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectView,
     kLayoutObjectWidget,
 
+    kLayoutObjectNGSVGText,
     kLayoutObjectSVG, /* Keep by itself? */
     kLayoutObjectSVGContainer,
     kLayoutObjectSVGFilterPrimitive,

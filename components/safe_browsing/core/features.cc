@@ -58,10 +58,6 @@ const base::Feature kDownloadRequestWithToken{
 const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnhancedProtectionMessageInInterstitials{
-    "SafeBrowsingEnhancedProtectionMessageInInterstitials",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kLimitedListSizeForIOS{"SafeBrowsingLimitedListSizeForIOS",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -102,7 +98,7 @@ const base::Feature kRealTimeUrlLookupEnabledForEnterprise{
 
 const base::Feature kRealTimeUrlLookupEnterpriseGaEndpoint{
     "SafeBrowsingkRealTimeUrlLookupEnterpriseGaEndpoint",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabledWithToken{
     "SafeBrowsingRealTimeUrlLookupEnabledWithToken",
@@ -116,9 +112,6 @@ const base::Feature kSafeBrowsingRemoveCookies{
 
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
-
-const base::Feature kSafeBrowsingSectionUIAndroid{
-    "SafeBrowsingSecuritySectionUIAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -153,7 +146,6 @@ constexpr struct {
     {&kDelayedWarnings, true},
     {&kDownloadRequestWithToken, true},
     {&kEnhancedProtection, true},
-    {&kEnhancedProtectionMessageInInterstitials, true},
     {&kLimitedListSizeForIOS, true},
     {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionReferringAppEnabledAndroid, true},
@@ -164,7 +156,6 @@ constexpr struct {
     {&kRealTimeUrlLookupEnterpriseGaEndpoint, true},
     {&kRealTimeUrlLookupEnabledWithToken, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
-    {&kSafeBrowsingSectionUIAndroid, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

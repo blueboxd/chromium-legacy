@@ -406,31 +406,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, LoginFailed) {
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
-// Disabled due to flakiness: https://crbug.com/1030579.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DISABLED_Redirects) {
-  NavigateToFile("/password/password_form.html");
-
-  // Fill a form and submit through a <input type="submit"> button. The form
-  // points to a redirection page.
-  NavigationObserver observer1(WebContents());
-  std::string fill_and_submit =
-      "document.getElementById('username_redirect').value = 'temp';"
-      "document.getElementById('password_redirect').value = 'random';"
-      "document.getElementById('submit_redirect').click()";
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
-  observer1.Wait();
-  BubbleObserver bubble_observer(WebContents());
-  EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
-
-  // The redirection page now redirects via Javascript. We check that the
-  // bubble stays.
-  NavigationObserver observer2(WebContents());
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
-      RenderFrameHost(), "window.location.href = 'done.html';"));
-  observer2.Wait();
-  EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
-}
-
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        PromptForSubmitUsingJavaScript) {
   NavigateToFile("/password/password_form.html");
@@ -811,16 +786,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForFetchSubmit) {
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
-// Flaky on chromeos: http://crbug.com/870372
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_PromptForFetchSubmitWithoutNavigation \
-  DISABLED_PromptForFetchSubmitWithoutNavigation
-#else
-#define MAYBE_PromptForFetchSubmitWithoutNavigation \
-  PromptForFetchSubmitWithoutNavigation
-#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       MAYBE_PromptForFetchSubmitWithoutNavigation) {
+                       PromptForFetchSubmitWithoutNavigation) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Need to pay attention for a message that XHR has finished since there
@@ -848,16 +815,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
-// Flaky on chromeos: http://crbug.com/870372
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_PromptForFetchSubmitWithoutNavigation_SignupForm \
-  DISABLED_PromptForFetchSubmitWithoutNavigation_SignupForm
-#else
-#define MAYBE_PromptForFetchSubmitWithoutNavigation_SignupForm \
-  PromptForFetchSubmitWithoutNavigation_SignupForm
-#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       MAYBE_PromptForFetchSubmitWithoutNavigation_SignupForm) {
+                       PromptForFetchSubmitWithoutNavigation_SignupForm) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Need to pay attention for a message that Fetch has finished since there
@@ -954,15 +913,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptIfLinkClicked) {
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
-// Disabled due to flakiness on windows.
-#if defined(OS_WIN)
-#define MAYBE_VerifyPasswordGenerationUpload \
-  DISABLED_VerifyPasswordGenerationUpload
-#else
-#define MAYBE_VerifyPasswordGenerationUpload VerifyPasswordGenerationUpload
-#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       MAYBE_VerifyPasswordGenerationUpload) {
+                       VerifyPasswordGenerationUpload) {
   // Disable Autofill requesting access to AddressBook data. This causes
   // the test to hang on Mac.
   autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
@@ -1132,9 +1084,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
-// TODO(crbug.com/949908) The test is flaky (crashing) on all platforms.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       DISABLED_DeleteFrameBeforeSubmit) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
   NavigateToFile("/password/multi_frames.html");
 
   NavigationObserver observer(WebContents());

@@ -5839,21 +5839,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnhancedProtectionPromoAndroidName,
      flag_descriptions::kEnhancedProtectionPromoAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEnhancedProtectionPromoCard)},
-
-    {"safe-browsing-security-section-ui-android",
-     flag_descriptions::kSafeBrowsingSectionUiAndroidName,
-     flag_descriptions::kSafeBrowsingSectionUiAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingSectionUIAndroid)},
 #endif
-
-    {"safe-browsing-enhanced-protection-message-in-interstitials",
-     flag_descriptions::
-         kSafeBrowsingEnhancedProtectionMessageInInterstitialsName,
-     flag_descriptions::
-         kSafeBrowsingEnhancedProtectionMessageInInterstitialsDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         safe_browsing::kEnhancedProtectionMessageInInterstitials)},
 
     {"safe-browsing-real-time-url-lookup-enterprise-ga-endpoint",
      flag_descriptions::kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointName,
@@ -6288,6 +6274,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kMediaApp)},
     {"media-app-annotation", flag_descriptions::kMediaAppAnnotationName,
      flag_descriptions::kMediaAppAnnotationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kMediaAppAnnotation)},
+    {"media-app-display-exif", flag_descriptions::kMediaAppDisplayExifName,
+     flag_descriptions::kMediaAppDisplayExifDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppAnnotation)},
     {"media-app-pdf-in-ink", flag_descriptions::kMediaAppPdfInInkName,
      flag_descriptions::kMediaAppPdfInInkDescription, kOsCrOS,

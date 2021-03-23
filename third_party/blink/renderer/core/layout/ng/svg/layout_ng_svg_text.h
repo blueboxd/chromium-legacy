@@ -14,16 +14,36 @@ class LayoutNGSVGText final : public LayoutNGBlockFlowMixin<LayoutSVGBlock> {
  public:
   explicit LayoutNGSVGText(Element* element);
 
+  void SubtreeStructureChanged(LayoutInvalidationReasonForTracing);
+  void SetNeedsTextMetricsUpdate() {
+    NOT_DESTROYED();
+    needs_text_metrics_update_ = true;
+  }
+
  private:
   // LayoutObject override:
   const char* GetName() const override;
   bool IsOfType(LayoutObjectType type) const override;
+  bool IsChildAllowed(LayoutObject* child, const ComputedStyle&) const override;
+  void AddChild(LayoutObject* child, LayoutObject* before_child) override;
+  void RemoveChild(LayoutObject* child) override;
 
   // LayoutBox override:
   bool CreatesNewFormattingContext() const override;
 
   // LayoutBlock override:
   void UpdateBlockLayout(bool relayout_children) override;
+
+  void UpdateFont();
+
+  bool needs_text_metrics_update_ : 1;
+};
+
+template <>
+struct DowncastTraits<LayoutNGSVGText> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsNGSVGText();
+  }
 };
 
 }  // namespace blink

@@ -240,7 +240,9 @@ crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 # These tests require BFCache, which is currently disabled by default on Desktop.
 # Keep this in sync with VirtualTestSuites.
 crbug.com/1171298 http/tests/inspector-protocol/bfcache/* [ Skip ]
+crbug.com/1171298 http/tests/devtools/bfcache/* [ Skip ]
 crbug.com/1171298 virtual/bfcache/http/tests/inspector-protocol/bfcache/* [ Pass ]
+crbug.com/1171298 virtual/bfcache/http/tests/devtools/bfcache/* [ Pass ]
 
 # Ref test with very minor differences. We need fuzzy matching for our ref tests,
 # or upstream this to WPT.
@@ -1026,6 +1028,9 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-at-outer-bound
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-009.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-010.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/spanner-fragmentation-011.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/file-upload-as-multicol.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/newmulticol/hide-box-vertical-lr.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/span/vertical-lr.html [ Pass ]
@@ -3369,6 +3374,10 @@ crbug.com/829028 external/wpt/css/css-multicol/nested-at-outer-boundary-as-field
 crbug.com/829028 external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-001.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-009.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-010.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-011.html [ Failure ]
+crbug.com/1191124 external/wpt/css/css-multicol/spanner-fragmentation-012.html [ Failure ]
 
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-007.tentative.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-008.tentative.html [ Failure ]
@@ -3858,6 +3867,8 @@ crbug.com/791529 external/wpt/css/css-variables/variable-transitions-value-befor
 crbug.com/718155 fullscreen/full-screen-restrictions.html [ Failure Timeout ]
 
 crbug.com/852645 gamepad/full-screen-gamepad.html [ Timeout ]
+
+crbug.com/1191123 gamepad/gamepad-polling-access.html [ Failure Pass ]
 
 # Feature Policy changes same-origin allowpaymentrequest behaviour, tests need updating
 crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
@@ -5637,6 +5648,8 @@ crbug.com/1181886 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.h
 
 # Temporarily disabled to unblock a WebRTC roll
 crbug.com/webrtc/12499 external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+crbug.com/968203 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
+crbug.com/968203 external/wpt/webrtc-stats/getStats-remote-candidate-address.html [ Pass Failure ]
 
 # Sheriff 2021-02-25
 crbug.com/1182673 [ Win7 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Timeout ]

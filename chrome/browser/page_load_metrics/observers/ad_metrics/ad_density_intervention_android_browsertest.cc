@@ -13,13 +13,13 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/page_load_metrics/browser/observers/ad_metrics/ad_intervention_browser_test_utils.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -32,47 +32,6 @@ namespace {
 
 const char kAdsInterventionRecordedHistogram[] =
     "SubresourceFilter.PageLoad.AdsInterventionTriggered";
-
-// Gets the body height of the document embedded in |web_contents|.
-int GetDocumentHeight(content::WebContents* web_contents) {
-  return EvalJs(web_contents, "document.body.scrollHeight").ExtractInt();
-}
-
-// Scales the rect by the web content's render widget host's device scale
-// factor.
-gfx::Rect ScaleRectByDeviceScaleFactor(const gfx::Rect& rect,
-                                       content::WebContents* web_contents) {
-  blink::ScreenInfo screen_info;
-  web_contents->GetRenderWidgetHostView()->GetScreenInfo(&screen_info);
-  return gfx::ScaleToRoundedRect(rect, screen_info.device_scale_factor);
-}
-
-void CreateAndWaitForIframeAtRect(
-    content::WebContents* web_contents,
-    page_load_metrics::PageLoadMetricsTestWaiter* waiter,
-    net::EmbeddedTestServer* embedded_test_server,
-    const gfx::Rect& rect) {
-  // The intersections returned by the renderer are scaled to the device's
-  // scale factor.
-  gfx::Rect scaled_rect = ScaleRectByDeviceScaleFactor(rect, web_contents);
-
-  // The renderer propagates values scaled by the device scale factor.
-  // Wait on these values.
-  waiter->AddMainFrameIntersectionExpectation(scaled_rect);
-
-  // Create the frame with b.com as origin to not get caught by
-  // restricted ad tagging.
-  EXPECT_TRUE(ExecJs(
-      web_contents,
-      content::JsReplace(
-          "let frame = createAdIframeAtRect($1, $2, $3, $4); "
-          "frame.src = $5",
-          rect.x(), rect.y(), rect.width(), rect.height(),
-          embedded_test_server->GetURL("b.com", "/ads_observer/pixel.png")
-              .spec())));
-
-  waiter->Wait();
-}
 
 }  // namespace
 

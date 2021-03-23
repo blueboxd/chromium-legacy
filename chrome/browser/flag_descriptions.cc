@@ -2054,14 +2054,6 @@ const char kPrinterStatusDialogDescription[] =
     "Enables printer status icons and labels for saved printers on the Print "
     "Preview destination dialog";
 
-const char kSafeBrowsingEnhancedProtectionMessageInInterstitialsName[] =
-    "Show enhanced protection message in security interstitials.";
-
-const char kSafeBrowsingEnhancedProtectionMessageInInterstitialsDescription[] =
-    "If enabled, the Safe Browsing interstitials and the SSL interstitials "
-    "will include an enhanced protection message when users are not in "
-    "enhanced protection mode.";
-
 const char kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointName[] =
     "Use the new GA endpoint to perform enterprise real time URL check.";
 
@@ -3246,12 +3238,6 @@ const char kEnhancedProtectionPromoAndroidName[] =
 const char kEnhancedProtectionPromoAndroidDescription[] =
     "Enable enhanced protection promo card for users that have not signed up "
     "for enhanced protection.";
-
-const char kSafeBrowsingSectionUiAndroidName[] =
-    "Safe Browsing Section on Android";
-const char kSafeBrowsingSectionUiAndroidDescription[] =
-    "Add a settings page for configuring Safe Browsing settings. The new Safe "
-    "Browsing page is under Settings > Privacy and security";
 
 const char kSafeBrowsingUseLocalBlacklistsV2Name[] =
     "Use local Safe Browsing blacklists";
@@ -4558,6 +4544,10 @@ const char kMediaAppDescription[] =
 const char kMediaAppAnnotationName[] = "Media App Annotation";
 const char kMediaAppAnnotationDescription[] =
     "Enables image annotation in chrome://media-app";
+
+const char kMediaAppDisplayExifName[] = "Media App Display Exif";
+const char kMediaAppDisplayExifDescription[] =
+    "Enables displaying EXIF metadata in chrome://media-app";
 
 const char kMediaAppPdfInInkName[] = "Media App Pdf in Ink";
 const char kMediaAppPdfInInkDescription[] =

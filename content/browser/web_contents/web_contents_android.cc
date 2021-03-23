@@ -37,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/android/window_android.h"
@@ -94,16 +95,28 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
     bool is_root) {
   ScopedJavaLocalRef<jstring> j_text =
       ConvertUTF16ToJavaString(env, node->text);
+
+  // The (fake) Android java class name.
   ScopedJavaLocalRef<jstring> j_class =
       ConvertUTF8ToJavaString(env, node->class_name);
+
+  // HTML/CSS attributes.
   ScopedJavaLocalRef<jstring> j_html_tag =
       ConvertUTF8ToJavaString(env, node->html_tag);
+  ScopedJavaLocalRef<jstring> j_html_id =
+      ConvertUTF8ToJavaString(env, node->html_id);
+  ScopedJavaLocalRef<jstring> j_html_class =
+      ConvertUTF8ToJavaString(env, node->html_class);
+  ScopedJavaLocalRef<jstring> j_css_display =
+      ConvertUTF8ToJavaString(env, node->css_display);
+
   ScopedJavaLocalRef<jobject> j_node =
       Java_WebContentsImpl_createAccessibilitySnapshotNode(
           env, node->rect.x(), node->rect.y(), node->rect.width(),
           node->rect.height(), is_root, j_text, node->color, node->bgcolor,
           node->text_size, node->bold, node->italic, node->underline,
-          node->line_through, j_class, j_html_tag);
+          node->line_through, j_class, j_html_tag, j_html_id, j_html_class,
+          j_css_display);
 
   if (node->selection.has_value()) {
     Java_WebContentsImpl_setAccessibilitySnapshotSelection(
@@ -117,21 +130,6 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
             env, tree, tree->nodes[child].get(), false));
   }
   return j_node;
-}
-
-// Walks over the AXTreeUpdate and creates a light weight snapshot.
-void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                            const ui::AXTreeUpdate& result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (result.nodes.empty()) {
-    Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback);
-    return;
-  }
-  std::unique_ptr<ui::AssistantTree> assistant_tree =
-      ui::CreateAssistantTree(result);
-  ScopedJavaLocalRef<jobject> j_root = JNI_WebContentsImpl_CreateJavaAXSnapshot(
-      env, assistant_tree.get(), assistant_tree->nodes.front().get(), true);
-  Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
 }
 
 }  // namespace
@@ -649,6 +647,21 @@ void WebContentsAndroid::RequestSmartClipExtract(
       gfx::Rect(x, y, width, height));
 }
 
+void WebContentsAndroid::AXTreeSnapshotCallback(
+    const ScopedJavaGlobalRef<jobject>& callback,
+    const ui::AXTreeUpdate& result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (result.nodes.empty()) {
+    Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback);
+    return;
+  }
+  std::unique_ptr<ui::AssistantTree> assistant_tree =
+      ui::CreateAssistantTree(result);
+  ScopedJavaLocalRef<jobject> j_root = JNI_WebContentsImpl_CreateJavaAXSnapshot(
+      env, assistant_tree.get(), assistant_tree->nodes.front().get(), true);
+  Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
+}
+
 void WebContentsAndroid::RequestAccessibilitySnapshot(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -663,7 +676,8 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(
   // don't come back within 3.0 seconds.
   static_cast<WebContentsImpl*>(web_contents_)
       ->RequestAXTreeSnapshot(
-          base::BindOnce(&AXTreeSnapshotCallback, j_callback),
+          base::BindOnce(&WebContentsAndroid::AXTreeSnapshotCallback,
+                         weak_factory_.GetWeakPtr(), j_callback),
           ui::kAXModeComplete,
           /* exclude_offscreen= */ false,
           /* max_nodes= */ 5000,

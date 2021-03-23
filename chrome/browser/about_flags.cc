@@ -53,6 +53,7 @@
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/site_isolation/about_flags.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/unexpire_flags.h"
 #include "chrome/browser/unexpire_flags_gen.h"
@@ -172,7 +173,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "storage/browser/quota/quota_features.h"
-#include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 #include "third_party/blink/public/common/switches.h"
@@ -3463,7 +3463,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"isolate-origins", flag_descriptions::kIsolateOriginsName,
      flag_descriptions::kIsolateOriginsDescription, kOsAll,
      ORIGIN_LIST_VALUE_TYPE(switches::kIsolateOrigins, "")},
-    {"site-isolation-trial-opt-out",
+    {about_flags::kSiteIsolationTrialOptOutInternalName,
      flag_descriptions::kSiteIsolationOptOutName,
      flag_descriptions::kSiteIsolationOptOutDescription, kOsAll,
      MULTI_VALUE_TYPE(kSiteIsolationOptOutChoices)},
@@ -5238,13 +5238,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktopDemo)},
 
-    {"happiness-tracking-surveys-for-desktop-migration",
-     flag_descriptions::kHappinessTrackingSurveysForDesktopMigrationName,
-     flag_descriptions::kHappinessTrackingSurveysForDesktopMigrationDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         features::kHappinessTrackingSurveysForDesktopMigration)},
-
     {"happiness-tracking-surveys-for-desktop-settings",
      flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsName,
      flag_descriptions::kHappinessTrackingSurveysForDesktopSettingsDescription,
@@ -5261,10 +5254,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
-     flag_descriptions::kUseMultiloginEndpointDescription,
-     kOsMac | kOsWin | kOsLinux, FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
-
     {"enable-new-profile-picker", flag_descriptions::kNewProfilePickerName,
      flag_descriptions::kNewProfilePickerDescription,
      kOsMac | kOsWin | kOsLinux,
@@ -7374,24 +7363,6 @@ std::vector<std::string> RegisterAllFeatureVariationParameters(
       ->RegisterAllFeatureVariationParameters(flags_storage, feature_list);
 }
 
-bool AreSwitchesIdenticalToCurrentCommandLine(
-    const base::CommandLine& new_cmdline,
-    const base::CommandLine& active_cmdline,
-    std::set<base::CommandLine::StringType>* out_difference) {
-  const char* extra_flag_sentinel_begin_flag_name = nullptr;
-  const char* extra_flag_sentinel_end_flag_name = nullptr;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Put the flags between --policy-switches--begin and --policy-switches-end on
-  // ChromeOS.
-  extra_flag_sentinel_begin_flag_name =
-      chromeos::switches::kPolicySwitchesBegin;
-  extra_flag_sentinel_end_flag_name = chromeos::switches::kPolicySwitchesEnd;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  return flags_ui::FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
-      new_cmdline, active_cmdline, out_difference,
-      extra_flag_sentinel_begin_flag_name, extra_flag_sentinel_end_flag_name);
-}
-
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            flags_ui::FlagAccess access,
                            base::ListValue* supported_entries,
@@ -7444,13 +7415,13 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
   FlagsStateSingleton::GetFlagsState()->ResetAllFlags(flags_storage);
 }
 
-void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage) {
+void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage,
+                         const std::string& histogram_name) {
   std::set<std::string> switches;
   std::set<std::string> features;
   FlagsStateSingleton::GetFlagsState()->GetSwitchesAndFeaturesFromFlags(
       flags_storage, &switches, &features);
-  flags_ui::ReportAboutFlagsHistogram("Launch.FlagsAtStartup", switches,
-                                      features);
+  flags_ui::ReportAboutFlagsHistogram(histogram_name, switches, features);
 }
 
 namespace testing {

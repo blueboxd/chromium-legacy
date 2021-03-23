@@ -77,16 +77,8 @@ inline scoped_refptr<const NGLayoutResult> LayoutBlockChild(
     const NGEarlyBreak* early_break,
     NGBlockNode* node) {
   const NGEarlyBreak* early_break_in_child = nullptr;
-  if (UNLIKELY(early_break && early_break->Type() == NGEarlyBreak::kBlock &&
-               early_break->BlockNode() == *node)) {
-    // We're entering a child that we know that we're going to break inside, and
-    // even where to break. Look inside, and pass the inner breakpoint to
-    // layout.
-    early_break_in_child = early_break->BreakInside();
-    // If there's no break inside, we should already have broken before this
-    // child.
-    DCHECK(early_break_in_child);
-  }
+  if (UNLIKELY(early_break))
+    early_break_in_child = EnterEarlyBreakInChild(*node, *early_break);
   return node->Layout(space, To<NGBlockBreakToken>(break_token),
                       early_break_in_child);
 }
@@ -217,8 +209,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       ignore_line_clamp_(false),
       is_line_clamp_context_(params.space.IsLineClampContext()),
       lines_until_clamp_(params.space.LinesUntilClamp()),
-      exclusion_space_(params.space.ExclusionSpace()),
-      early_break_(params.early_break) {
+      exclusion_space_(params.space.ExclusionSpace()) {
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), ChildAvailableSize());
   replaced_child_percentage_size_ = CalculateReplacedChildPercentageSize(
@@ -235,7 +226,7 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
 }
 
 MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& input) const {
+    const MinMaxSizesFloatInput& float_input) const {
   if (auto result =
           CalculateMinMaxSizesIgnoringChildren(node_, BorderScrollbarPadding()))
     return *result;
@@ -244,8 +235,8 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
   bool depends_on_block_constraints = false;
 
   const TextDirection direction = Style().Direction();
-  LayoutUnit float_left_inline_size = input.float_left_inline_size;
-  LayoutUnit float_right_inline_size = input.float_right_inline_size;
+  LayoutUnit float_left_inline_size = float_input.float_left_inline_size;
+  LayoutUnit float_right_inline_size = float_input.float_right_inline_size;
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
@@ -280,11 +271,19 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
         float_right_inline_size = LayoutUnit();
     }
 
-    MinMaxSizesInput child_input(input.percentage_resolution_block_size);
+    MinMaxSizesFloatInput child_float_input;
     if (child.IsInline() || child.IsAnonymousBlock()) {
-      child_input.float_left_inline_size = float_left_inline_size;
-      child_input.float_right_inline_size = float_right_inline_size;
+      child_float_input.float_left_inline_size = float_left_inline_size;
+      child_float_input.float_right_inline_size = float_right_inline_size;
     }
+
+    NGMinMaxConstraintSpaceBuilder builder(ConstraintSpace(), Style(), child,
+                                           child_is_new_fc);
+    builder.SetAvailableBlockSize(ChildAvailableSize().block_size);
+    builder.SetPercentageResolutionBlockSize(child_percentage_size_.block_size);
+    builder.SetReplacedPercentageResolutionBlockSize(
+        replaced_child_percentage_size_.block_size);
+    const auto space = builder.ToConstraintSpace();
 
     MinMaxSizesResult child_result;
     if (child.IsInline()) {
@@ -295,10 +294,10 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
       child_result = To<NGInlineNode>(child).ComputeMinMaxSizes(
-          Style().GetWritingMode(), child_input);
+          Style().GetWritingMode(), space, child_float_input);
     } else {
       child_result = ComputeMinAndMaxContentContribution(
-          Style(), To<NGBlockNode>(child), child_input);
+          Style(), To<NGBlockNode>(child), space, child_float_input);
     }
     DCHECK_LE(child_result.sizes.min_size, child_result.sizes.max_size)
         << child.ToString();
@@ -417,9 +416,9 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (UNLIKELY(result->Status() == NGLayoutResult::kNeedsEarlierBreak)) {
     // If we found a good break somewhere inside this block, re-layout and break
     // at that location.
-    DCHECK(!early_break_);
     DCHECK(result->GetEarlyBreak());
-    return RelayoutAndBreakEarlier(*result->GetEarlyBreak());
+    return RelayoutAndBreakEarlier<NGBlockLayoutAlgorithm>(
+        *result->GetEarlyBreak());
   } else if (UNLIKELY(result->Status() ==
                       NGLayoutResult::
                           kNeedsRelayoutWithNoForcedTruncateAtLineClamp)) {
@@ -451,22 +450,6 @@ NGBlockLayoutAlgorithm::LayoutWithItemsBuilder(
   container_builder_.SetItemsBuilder(nullptr);
   context->SetItemsBuilder(nullptr);
   return result;
-}
-
-NOINLINE scoped_refptr<const NGLayoutResult>
-NGBlockLayoutAlgorithm::RelayoutAndBreakEarlier(
-    const NGEarlyBreak& breakpoint) {
-  NGLayoutAlgorithmParams params(Node(),
-                                 container_builder_.InitialFragmentGeometry(),
-                                 ConstraintSpace(), BreakToken(), &breakpoint);
-  NGBlockLayoutAlgorithm algorithm_with_break(params);
-  NGBoxFragmentBuilder& new_builder = algorithm_with_break.container_builder_;
-  new_builder.SetBoxType(container_builder_.BoxType());
-  // We're not going to run out of space in the next layout pass, since we're
-  // breaking earlier, so no space shortage will be detected. Repeat what we
-  // found in this pass.
-  new_builder.PropagateSpaceShortage(container_builder_.MinimalSpaceShortage());
-  return algorithm_with_break.Layout();
 }
 
 NOINLINE scoped_refptr<const NGLayoutResult>
@@ -2345,12 +2328,6 @@ NGBreakStatus NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
   // If the BFC offset is unknown, there's nowhere to break, since there's no
   // non-empty child content yet (as that would have resolved the BFC offset).
   DCHECK(container_builder_.BfcBlockOffset());
-
-  // If we already know where to insert the break, we already know that it's not
-  // going to be here, since that's something we check before entering layout of
-  // a child.
-  if (early_break_)
-    return NGBreakStatus::kContinue;
 
   LayoutUnit fragmentainer_block_offset =
       ConstraintSpace().FragmentainerOffsetAtBfc() + bfc_block_offset;

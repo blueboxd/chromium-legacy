@@ -60,7 +60,6 @@
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/ime/ime_controller_impl.h"
@@ -72,6 +71,7 @@
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/marker/marker_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/media/media_notification_controller_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
@@ -668,10 +668,6 @@ Shell::~Shell() {
   shelf_controller_->Shutdown();
   shelf_config_->Shutdown();
 
-  // Destroy |home_screen_controller_| before |app_list_controller_| since
-  // the former delegates to the latter.
-  home_screen_controller_.reset();
-
   // Destroy |app_list_controller_| earlier than |tablet_mode_controller_| since
   // the former may use the latter before destruction.
   app_list_controller_.reset();
@@ -760,6 +756,7 @@ Shell::~Shell() {
   // Alphabetical. TODO(oshima): sort.
   autoclick_controller_.reset();
   magnification_controller_.reset();
+  marker_controller_.reset();
   tooltip_controller_.reset();
   event_client_.reset();
   toplevel_window_event_handler_.reset();
@@ -1160,11 +1157,9 @@ void Shell::Init(
         std::make_unique<AmbientController>(std::move(fingerprint));
   }
 
-  home_screen_controller_ = std::make_unique<HomeScreenController>();
-
-  // |tablet_mode_controller_| |mru_window_tracker_|,
-  // |assistant_controller_| and |home_screen_controller_| are put before
-  // |app_list_controller_| as they are used in its constructor.
+  // |tablet_mode_controller_| |mru_window_tracker_|, and
+  // |assistant_controller_| are put before |app_list_controller_| as they are
+  // used in its constructor.
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
@@ -1284,6 +1279,7 @@ void Shell::Init(
   }
 
   if (chromeos::features::IsProjectorEnabled()) {
+    marker_controller_ = std::make_unique<MarkerController>();
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
   }
 

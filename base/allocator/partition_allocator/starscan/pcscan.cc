@@ -24,6 +24,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_page.h"
+#include "base/allocator/partition_allocator/thread_cache.h"
 #include "base/compiler_specific.h"
 #include "base/cpu.h"
 #include "base/debug/alias.h"
@@ -38,7 +39,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
-#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_X86_64)
@@ -152,10 +152,11 @@ static_assert(kSuperPageSize >= sizeof(QuarantineCardTable),
 
 ThreadSafePartitionRoot& PCScanMetadataAllocator() {
   static base::NoDestructor<ThreadSafePartitionRoot> allocator{
-      PartitionOptions{PartitionOptions::Alignment::kRegular,
+      PartitionOptions{PartitionOptions::AlignedAlloc::kDisallowed,
                        PartitionOptions::ThreadCache::kDisabled,
                        PartitionOptions::Quarantine::kDisallowed,
-                       PartitionOptions::RefCount::kDisabled}};
+                       PartitionOptions::Cookies::kAllowed,
+                       PartitionOptions::RefCount::kDisallowed}};
   return *allocator;
 }
 
@@ -359,9 +360,7 @@ class StatsCollector final {
  private:
   using MetadataString =
       std::basic_string<char, std::char_traits<char>, MetadataAllocator<char>>;
-#if BUILDFLAG(ENABLE_BASE_TRACING)
   static constexpr char kTraceCategory[] = "partition_alloc";
-#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
   static constexpr const char* ToTracingString(ScannerId id) {
     switch (id) {
@@ -443,12 +442,13 @@ class StatsCollector final {
     // First, report traces and accumulate each trace scope to report UMA hists.
     for (const auto& tid_and_events : event_map.get_underlying_map_unsafe()) {
       const PlatformThreadId tid = tid_and_events.first;
+      // TRACE_EVENT_* macros below drop most parameters when tracing is
+      // disabled at compile time.
       ignore_result(tid);
       const auto& events = tid_and_events.second;
       PA_DCHECK(accumulated_events.size() == events.size());
       for (size_t id = 0; id < events.size(); ++id) {
         const auto& event = events[id];
-#if BUILDFLAG(ENABLE_BASE_TRACING)
         TRACE_EVENT_BEGIN(
             kTraceCategory,
             perfetto::StaticString(
@@ -456,7 +456,6 @@ class StatsCollector final {
             perfetto::ThreadTrack::ForThread(tid), event.start_time);
         TRACE_EVENT_END(kTraceCategory, perfetto::ThreadTrack::ForThread(tid),
                         event.end_time);
-#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
         accumulated_events[id] += (event.end_time - event.start_time);
       }
     }
@@ -1334,6 +1333,14 @@ void PCScanTask::SweepQuarantine() {
   }
 
   stats_.IncreaseSweptSize(swept_bytes);
+
+#if defined(PA_THREAD_CACHE_SUPPORTED)
+  // Sweeping potentially frees into the current thread's thread cache. Purge
+  // releases the cache back to the global allocator.
+  auto* current_thread_tcache = ThreadCache::Get();
+  if (ThreadCache::IsValid(current_thread_tcache))
+    current_thread_tcache->Purge();
+#endif  // defined(PA_THREAD_CACHE_SUPPORTED)
 }
 
 void PCScanTask::FinishScanner() {
@@ -1355,11 +1362,13 @@ void PCScanTask::FinishScanner() {
 }
 
 void PCScanTask::RunFromMutator() {
+#if !PCSCAN_DISABLE_SAFEPOINTS
   // Unfortunately, some functions can still allocate while scanning (e.g. trace
   // scopes). Therefore we have to guard against recursive scanning.
   if (UNLIKELY(ReentrantScannerGuard::is_entered()))
     return;
   ReentrantScannerGuard reentrancy_guard;
+#endif
   StatsCollector::MutatorScope overall_scope(
       stats_, StatsCollector::MutatorId::kOverall);
   {
@@ -1387,11 +1396,13 @@ void PCScanTask::RunFromMutator() {
 }
 
 void PCScanTask::RunFromScanner() {
+#if !PCSCAN_DISABLE_SAFEPOINTS
   // Unfortunately, some functions can still allocate while scanning (e.g. trace
   // scopes). Therefore we have to guard against recursive scanning.
   if (UNLIKELY(ReentrantScannerGuard::is_entered()))
     return;
   ReentrantScannerGuard reentrancy_guard;
+#endif
   {
     StatsCollector::ScannerScope overall_scope(
         stats_, StatsCollector::ScannerId::kOverall);
@@ -1549,12 +1560,14 @@ void PCScan::PerformScanIfNeeded(InvocationMode invocation_mode) {
 }
 
 void PCScan::JoinScan() {
+#if !PCSCAN_DISABLE_SAFEPOINTS
   auto& internal = PCScanInternal::Instance();
   // Current task can be destroyed by the scanner.
   // TODO(bikineev): This should actually be something like
   // std::atomic_shared_ptr.
   if (auto current_task = internal.current_pcscan_task())
     current_task->RunFromMutator();
+#endif
 }
 
 void PCScan::FinishScanForTesting() {

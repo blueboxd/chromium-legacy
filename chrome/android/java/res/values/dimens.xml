@@ -295,10 +295,6 @@
     <!-- NTP Feed dimensions -->
     <dimen name="feed_header_menu_max_width">225dp</dimen>
 
-    <!-- Web Feed dimensions -->
-    <dimen name="web_feed_icon_size">24dp</dimen>
-    <dimen name="web_feed_monogram_text_size">14dp</dimen>
-
     <!-- Explore sites page -->
     <dimen name="explore_sites_category_padding_vertical">20dp</dimen>
     <dimen name="explore_sites_category_padding_horizontal">12dp</dimen>
@@ -442,7 +438,6 @@
     <dimen name="navigation_bubble_text_end_padding">8dp</dimen>
     <dimen name="navigation_sheet_content_top_padding">18dp</dimen>
     <dimen name="navigation_sheet_content_bottom_padding">4dp</dimen>
-    <dimen name="navigation_sheet_content_wrap_padding">12dp</dimen>
     <dimen name="navigation_sheet_peek_height">120dp</dimen>
 
     <!-- RadioButtonWithDescriptionLayout dimensions -->

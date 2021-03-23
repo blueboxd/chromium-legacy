@@ -218,9 +218,6 @@ crbug.com/1136231 [ linux ] conformance/extensions/s3tc-and-rgtc.html [ Failure 
 crbug.com/1136205 [ chromeos ] conformance/textures/misc/video-rotation.html [ Skip ]
 crbug.com/1136205 [ fuchsia ] conformance/textures/misc/video-rotation.html [ Skip ]
 
-# This test needs looser tolerances on some Windows platforms.
-crbug.com/1136205 [ win ] conformance/textures/misc/video-rotation.html [ Failure ]
-
 # Failing on most platforms. Only runs with passthrough.
 crbug.com/1175371 [ android ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ chromeos ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
@@ -719,6 +716,7 @@ crbug.com/1178518 [ android android-nexus-6 android-chromium ] conformance/textu
 crbug.com/1175223 [ android android-pixel-4 angle-opengles passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1175226 [ android android-pixel-4 no-passthrough no-swiftshader-gl ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1179432 [ android android-pixel-4 no-passthrough ] conformance/rendering/polygon-offset.html [ RetryOnFailure ]
+crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 # Misc failures
 crbug.com/angleproject/2988 [ android angle-opengles ] conformance/context/context-size-change.html [ Failure ]
@@ -969,3 +967,4 @@ crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/web
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
+crbug.com/1190853 [ mac angle-swiftshader passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]

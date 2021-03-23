@@ -259,45 +259,6 @@ bool NGFlexLayoutAlgorithm::AspectRatioProvidesMainSize(
           WillChildCrossSizeBeContainerCrossSize(child));
 }
 
-// This function is used to handle two requirements from the spec.
-// (1) Calculating flex base size; case 3E at
-// https://drafts.csswg.org/css-flexbox/#algo-main-item : If a cross size is
-// needed to determine the main size (e.g. when the flex item’s main size is
-// in its block axis) and the flex item’s cross size is auto and not
-// definite, in this calculation use fit-content as the flex item’s cross size.
-// The flex base size is the item’s resulting main size.
-// (2) Cross size determination after main size has been calculated.
-// https://drafts.csswg.org/css-flexbox/#algo-cross-item : Determine the
-// hypothetical cross size of each item by performing layout with the used main
-// size and the available space, treating auto as fit-content.
-bool NGFlexLayoutAlgorithm::ShouldItemShrinkToFit(
-    const NGBlockNode& child) const {
-  if (MainAxisIsInlineAxis(child)) {
-    // In this case, the cross size is in the item's block axis. The item's
-    // block size is never needed to determine its inline size so don't use
-    // fit-content.
-    return false;
-  }
-  if (!child.Style().LogicalWidth().IsAuto()) {
-    DCHECK(!DoesItemCrossSizeComputeToAuto(child));
-    // The cross size (item's inline size) is already specified, so don't use
-    // fit-content.
-    return false;
-  }
-  DCHECK(DoesItemCrossSizeComputeToAuto(child));
-  // If execution reaches here, the item's inline size is its cross size and
-  // computes to auto. In that situation, we only don't use fit-content if the
-  // item qualifies for the first case in
-  // https://drafts.csswg.org/css-flexbox/#definite-sizes :
-  // 1. If a single-line flex container has a definite cross size, the outer
-  // cross size of any stretched flex items is the flex container’s inner cross
-  // size (clamped to the flex item’s min and max cross size) and is considered
-  // definite.
-  if (WillChildCrossSizeBeContainerCrossSize(child))
-    return false;
-  return true;
-}
-
 bool NGFlexLayoutAlgorithm::WillChildCrossSizeBeContainerCrossSize(
     const NGBlockNode& child) const {
   return !algorithm_.IsMultiline() && is_cross_size_definite_ &&
@@ -333,9 +294,10 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
   space_builder.SetCacheSlot(NGCacheSlot::kMeasure);
   space_builder.SetIsPaintedAtomically(true);
 
-  if (!ShouldItemShrinkToFit(flex_item)) {
-    space_builder.SetStretchInlineSizeIfAuto(true);
-    if (WillChildCrossSizeBeContainerCrossSize(flex_item) && !is_column_)
+  if (WillChildCrossSizeBeContainerCrossSize(flex_item)) {
+    if (is_column_)
+      space_builder.SetStretchInlineSizeIfAuto(true);
+    else
       space_builder.SetStretchBlockSizeIfAuto(true);
   }
 
@@ -544,10 +506,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         // We want the child's intrinsic inline sizes in its writing mode, so
         // pass child's writing mode as the first parameter, which is nominally
         // |container_writing_mode|.
-        NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
-        MinMaxSizesInput input(ChildAvailableSize().block_size);
+        const auto child_space = BuildSpaceForIntrinsicBlockSize(child);
         min_max_sizes = child.ComputeMinMaxSizes(child_style.GetWritingMode(),
-                                                 type, input, &child_space);
+                                                 type, child_space);
       }
       return *min_max_sizes;
     };
@@ -837,29 +798,15 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     // TODO(dgrogan): This should probably apply to column flexboxes also,
     // but that's not what legacy does.
     if (child.IsTable() && !is_column_) {
-      const NGConstraintSpace* ortho_child_space = nullptr;
-      NGConstraintSpace child_space;
-      if (UNLIKELY(!IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
-                                          child_style.GetWritingMode()))) {
-        // BuildSpaceForIntrinsicBlockSize sets an indefinite percentage block
-        // size for column flexboxes, which is maybe not what we want for
-        // calculating the intrinsic min/max content sizes of an orthogonal
-        // item, but because control flow only enters this block for row
-        // flexboxes, it doesn't matter. If/when we fix the proximate above
-        // TODO, this will need closer investigation.
-        child_space = BuildSpaceForIntrinsicBlockSize(child);
-        ortho_child_space = &child_space;
-      }
-      MinMaxSizes table_intrinsic_widths =
+      const auto child_space = BuildSpaceForIntrinsicBlockSize(child);
+      const MinMaxSizes table_intrinsic_sizes =
           child
-              .ComputeMinMaxSizes(
-                  ConstraintSpace().GetWritingMode(), MinMaxSizesType::kContent,
-                  MinMaxSizesInput(child_percentage_size_.block_size),
-                  ortho_child_space)
+              .ComputeMinMaxSizes(ConstraintSpace().GetWritingMode(),
+                                  MinMaxSizesType::kContent, child_space)
               .sizes;
 
       min_max_sizes_in_main_axis_direction.Encompass(
-          table_intrinsic_widths.min_size);
+          table_intrinsic_sizes.min_size);
     }
 
     min_max_sizes_in_main_axis_direction -= main_axis_border_padding;
@@ -1063,13 +1010,6 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
       space_builder.SetAvailableSize(available_size);
       space_builder.SetPercentageResolutionSize(child_percentage_size_);
       space_builder.SetReplacedPercentageResolutionSize(child_percentage_size_);
-
-      // https://drafts.csswg.org/css-flexbox/#algo-cross-item
-      // Determine the hypothetical cross size of each item by performing layout
-      // with the used main size and the available space, treating auto as
-      // fit-content.
-      if (!ShouldItemShrinkToFit(flex_item.ng_input_node_))
-        space_builder.SetStretchInlineSizeIfAuto(true);
 
       // For a button child, we need the baseline type same as the container's
       // baseline type for UseCounter. For example, if the container's display
@@ -1376,7 +1316,7 @@ void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(
 }
 
 MinMaxSizesResult NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& child_input) const {
+    const MinMaxSizesFloatInput&) const {
   if (auto result = CalculateMinMaxSizesIgnoringChildren(
           Node(), BorderScrollbarPadding()))
     return *result;
@@ -1392,8 +1332,18 @@ MinMaxSizesResult NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
       continue;
     number_of_items++;
 
+    NGMinMaxConstraintSpaceBuilder builder(ConstraintSpace(), Style(), child,
+                                           /* is_new_fc */ true);
+    builder.SetAvailableBlockSize(ChildAvailableSize().block_size);
+    builder.SetPercentageResolutionBlockSize(child_percentage_size_.block_size);
+    builder.SetReplacedPercentageResolutionBlockSize(
+        child_percentage_size_.block_size);
+    if (WillChildCrossSizeBeContainerCrossSize(child) && !is_column_)
+      builder.SetStretchBlockSizeIfAuto(true);
+    const auto space = builder.ToConstraintSpace();
+
     MinMaxSizesResult child_result =
-        ComputeMinAndMaxContentContribution(Style(), child, child_input);
+        ComputeMinAndMaxContentContribution(Style(), child, space);
     NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
     child_result.sizes += child_margins.InlineSum();
 

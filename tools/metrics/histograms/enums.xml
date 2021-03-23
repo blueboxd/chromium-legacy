@@ -6843,6 +6843,7 @@ others/histograms.xml -->
   <int value="23" label="Query Tile task"/>
   <int value="24" label="Feedv2 refresh task"/>
   <int value="25" label="Download later task"/>
+  <int value="27" label="WebView Component Updater schedule task"/>
 </enum>
 
 <enum name="BackgroundTracingState">
@@ -17271,6 +17272,16 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="9" label="Failed no hw overlay support (deprecated)"/>
   <int value="10" label="Failed quad has rounded corners"/>
   <int value="11" label="Failed read by backdrop filters"/>
+</enum>
+
+<enum name="DebugScenario">
+<!-- Generated from content/common/debug_utils.h.
+Called by update_debug_scenarios.py.-->
+
+<!-- For more details about the meaning of each value in this enum,
+     please refer to content/common/debug_utils.h. -->
+
+  <int value="1" label="kDebugSameDocNavigationDocIdMismatch"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -31931,6 +31942,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3857" label="V8Navigator_RunAdAuction_Method"/>
   <int value="3858" label="XHRJSONEncodingDetection"/>
   <int value="3859" label="WorkerControlledByServiceWorkerOutOfScope"/>
+  <int value="3860" label="XRPlaneDetection"/>
+  <int value="3861" label="XRFrameDetectedPlanes"/>
+  <int value="3862" label="XRImageTracking"/>
+  <int value="3863" label="XRSessionGetTrackedImageScores"/>
+  <int value="3864" label="XRFrameGetImageTrackingResults"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -49871,6 +49887,7 @@ Called by update_use_counter_css.py.-->
   <int value="693" label="border-end-start-radius"/>
   <int value="694" label="border-end-end-radius"/>
   <int value="695" label="accent-color"/>
+  <int value="696" label="size-adjust"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -52834,6 +52851,18 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Response Malformed"/>
   <int value="7" label="Internal Server Error"/>
   <int value="8" label="Unknown"/>
+</enum>
+
+<enum name="NearbyShareOnboardingEntryPoint">
+  <int value="0" label="Settings"/>
+  <int value="1" label="Tray icon/label"/>
+  <int value="2" label="Share Sheet"/>
+</enum>
+
+<enum name="NearbyShareOnboardingFinalState">
+  <int value="0" label="Cancelled on Device Name Page"/>
+  <int value="1" label="Candelled on Set Visibility Page"/>
+  <int value="2" label="Onboarding Complete"/>
 </enum>
 
 <enum name="NearbyShareServiceStatusCode">

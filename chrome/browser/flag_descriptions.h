@@ -918,9 +918,6 @@ extern const char kNotificationSchedulerImmediateBackgroundTaskDescription[];
 extern const char kNotificationsSystemFlagName[];
 extern const char kNotificationsSystemFlagDescription[];
 
-extern const char kUseMultiloginEndpointName[];
-extern const char kUseMultiloginEndpointDescription[];
-
 extern const char kOmniboxAdaptiveSuggestionsCountName[];
 extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 
@@ -2044,9 +2041,6 @@ extern const char kHappinessTrackingSurveysForDesktopSettingsDescription[];
 extern const char kHappinessTrackingSurveysForDesktopSettingsPrivacyName[];
 extern const char
     kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription[];
-
-extern const char kHappinessTrackingSurveysForDesktopMigrationName[];
-extern const char kHappinessTrackingSurveysForDesktopMigrationDescription[];
 
 extern const char kKernelnextVMsName[];
 extern const char kKernelnextVMsDescription[];

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback_helpers.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "components/feed/core/v2/api_test/feed_api_test.h"
@@ -1107,7 +1108,7 @@ TEST_F(FeedApiTest, ReadNetworkResponse) {
             schedule.refresh_offsets);
 
   // The stream's user attributes are set, so activity logging is enabled.
-  EXPECT_TRUE(stream_->IsActivityLoggingEnabled());
+  EXPECT_TRUE(stream_->IsActivityLoggingEnabled(kForYouStream));
   EXPECT_EQ(1, prefetch_service_.NewSuggestionsAvailableCallCount());
 }
 
@@ -1175,7 +1176,7 @@ TEST_F(FeedApiTest, ClearAllWipesAllState) {
 
   EXPECT_EQ("{\n}\n\n", DumpStoreState());
   EXPECT_EQ("", stream_->GetMetadata().consistency_token());
-  EXPECT_FALSE(stream_->IsActivityLoggingEnabled());
+  EXPECT_FALSE(stream_->IsActivityLoggingEnabled(kForYouStream));
 }
 
 TEST_F(FeedApiTest, StorePendingAction) {
@@ -1261,40 +1262,6 @@ TEST_F(FeedApiTest, ActionsUploadWithoutConditionsWhenFeatureDisabled) {
   EXPECT_EQ(2, network_.GetActionRequestSent()->feed_actions_size());
 }
 
-TEST_F(FeedApiTest, LoadStreamUpdateNoticeCardFulfillmentHistogram) {
-  base::HistogramTester histograms;
-
-  // Trigger a stream refresh that updates the histogram.
-  {
-    auto model_state = MakeTypicalInitialModelState();
-    model_state->stream_data.set_privacy_notice_fulfilled(false);
-    response_translator_.InjectResponse(std::move(model_state));
-
-    refresh_scheduler_.Clear();
-    stream_->ExecuteRefreshTask(RefreshTaskId::kRefreshForYouFeed);
-    WaitForIdleTaskQueue();
-  }
-
-  UnloadModel(kForYouStream);
-
-  // Trigger another stream refresh that updates the histogram.
-  {
-    auto model_state = MakeTypicalInitialModelState();
-    model_state->stream_data.set_privacy_notice_fulfilled(true);
-    response_translator_.InjectResponse(std::move(model_state));
-
-    refresh_scheduler_.Clear();
-    stream_->ExecuteRefreshTask(RefreshTaskId::kRefreshForYouFeed);
-    WaitForIdleTaskQueue();
-  }
-
-  // Verify that the notice card fulfillment histogram was properly recorded.
-  histograms.ExpectBucketCount("ContentSuggestions.Feed.NoticeCardFulfilled2",
-                               0, 1);
-  histograms.ExpectBucketCount("ContentSuggestions.Feed.NoticeCardFulfilled2",
-                               1, 1);
-}
-
 TEST_F(FeedApiTest, LoadStreamFromNetworkUploadsActions) {
   stream_->UploadAction(MakeFeedAction(99ul), false, base::DoNothing());
   WaitForIdleTaskQueue();
@@ -1366,11 +1333,11 @@ TEST_F(FeedApiTest, LoadMoreUploadsActions) {
 }
 
 TEST_F(FeedApiTest, LoadMoreUpdatesIsActivityLoggingEnabled) {
-  EXPECT_FALSE(stream_->IsActivityLoggingEnabled());
+  EXPECT_FALSE(stream_->IsActivityLoggingEnabled(kForYouStream));
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
-  EXPECT_TRUE(stream_->IsActivityLoggingEnabled());
+  EXPECT_TRUE(stream_->IsActivityLoggingEnabled(kForYouStream));
 
   int page = 2;
   for (bool signed_in : {true, false}) {
@@ -1383,7 +1350,7 @@ TEST_F(FeedApiTest, LoadMoreUpdatesIsActivityLoggingEnabled) {
         stream_->LoadMore(surface, callback.Bind());
         WaitForIdleTaskQueue();
         EXPECT_EQ(
-            stream_->IsActivityLoggingEnabled(),
+            stream_->IsActivityLoggingEnabled(kForYouStream),
             (signed_in && waa_on) ||
                 (!signed_in && GetFeedConfig().send_signed_out_session_logs))
             << "signed_in=" << signed_in << " waa_on=" << waa_on

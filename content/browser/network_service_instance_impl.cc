@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
@@ -200,8 +201,8 @@ void BindNetworkChangeManagerReceiver(
   GetNetworkService()->GetNetworkChangeManager(std::move(receiver));
 }
 
-base::CallbackList<void()>& GetCrashHandlersList() {
-  static base::NoDestructor<base::CallbackList<void()>> s_list;
+base::RepeatingClosureList& GetCrashHandlersList() {
+  static base::NoDestructor<base::RepeatingClosureList> s_list;
   return *s_list;
 }
 
@@ -328,11 +329,10 @@ network::mojom::NetworkService* GetNetworkService() {
         } else {
           if (service_was_bound)
             LOG(ERROR) << "Network service crashed, restarting service.";
-          ServiceProcessHost::Launch(
-              std::move(receiver),
-              ServiceProcessHost::Options()
-                  .WithDisplayName(base::UTF8ToUTF16("Network Service"))
-                  .Pass());
+          ServiceProcessHost::Launch(std::move(receiver),
+                                     ServiceProcessHost::Options()
+                                         .WithDisplayName(u"Network Service")
+                                         .Pass());
         }
       } else {
         // This should only be reached in unit tests.

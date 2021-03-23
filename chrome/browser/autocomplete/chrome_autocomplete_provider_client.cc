@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -533,8 +534,7 @@ TabAndroid* ChromeAutocompleteProviderClient::GetTabOpenWithURL(
       url, *input, GetTemplateURLService(), std::u16string());
 
   std::vector<TabModel*> tab_models;
-  for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
-    TabModel* model = *it;
+  for (TabModel* model : TabModelList::models()) {
     if (profile_ != model->GetProfile())
       continue;
 

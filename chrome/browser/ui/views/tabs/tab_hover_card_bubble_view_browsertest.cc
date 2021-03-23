@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_hover_card_metrics.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -60,7 +61,9 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
   }
 
   int GetHoverCardsSeenCount() {
-    return tab_strip()->hover_card_controller_->GetCardsSeenCountForTesting();
+    return tab_strip()
+        ->hover_card_controller_->metrics_for_testing()
+        ->cards_seen_count();
   }
 
   void MouseExitTabStrip() {
@@ -205,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
                        MAYBE_WidgetVisibleOnTabFocusFromKeyboardAccelerator) {
   TabRendererData new_tab_data = TabRendererData();
-  new_tab_data.title = base::UTF8ToUTF16("Test Tab 2");
+  new_tab_data.title = u"Test Tab 2";
   new_tab_data.last_committed_url =
       GURL("http://example.com/this/should/not/be/seen");
   tab_strip()->AddTabAt(1, new_tab_data, false);
@@ -254,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
                        MAYBE_WidgetDataUpdate) {
   TabRendererData new_tab_data = TabRendererData();
-  new_tab_data.title = base::UTF8ToUTF16("Test Tab 2");
+  new_tab_data.title = u"Test Tab 2";
   new_tab_data.last_committed_url =
       GURL("http://example.com/this/should/not/be/seen");
   tab_strip()->AddTabAt(1, new_tab_data, false);

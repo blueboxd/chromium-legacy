@@ -18,7 +18,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
@@ -1615,7 +1614,7 @@ TEST_F(OverviewSessionTest, DragWindowShadow) {
 // Test that a label is created under the window on entering overview mode.
 TEST_F(OverviewSessionTest, CreateLabelUnderWindow) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(300, 500)));
-  const std::u16string window_title = base::UTF8ToUTF16("My window");
+  const std::u16string window_title = u"My window";
   window->SetTitle(window_title);
   ToggleOverview();
   OverviewItem* window_item = GetOverviewItemsForRoot(0).back().get();
@@ -1626,7 +1625,7 @@ TEST_F(OverviewSessionTest, CreateLabelUnderWindow) {
   EXPECT_EQ(window_title, label->GetText());
 
   // Update the window title and check that the label is updated, too.
-  const std::u16string updated_title = base::UTF8ToUTF16("Updated title");
+  const std::u16string updated_title = u"Updated title";
   window->SetTitle(updated_title);
   EXPECT_EQ(updated_title, label->GetText());
 
@@ -3068,7 +3067,7 @@ TEST_F(OverviewSessionTest, TapOnBackgroundGoToHome) {
   WindowState* window_state = WindowState::Get(window.get());
 
   EXPECT_FALSE(window_state->IsMinimized());
-  EXPECT_FALSE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsHomeScreenVisible());
   ToggleOverview();
   EXPECT_TRUE(InOverviewSession());
 
@@ -3084,7 +3083,7 @@ TEST_F(OverviewSessionTest, TapOnBackgroundGoToHome) {
 
   EXPECT_FALSE(InOverviewSession());
   EXPECT_TRUE(window_state->IsMinimized());
-  EXPECT_TRUE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+  EXPECT_TRUE(Shell::Get()->app_list_controller()->IsHomeScreenVisible());
 }
 
 // Tests that in tablet mode, tapping on the background in split view mode will
@@ -3096,7 +3095,7 @@ TEST_F(OverviewSessionTest, TapOnBackgroundInSplitView) {
 
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
-  EXPECT_FALSE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsHomeScreenVisible());
   ToggleOverview();
   EXPECT_TRUE(InOverviewSession());
 
@@ -3108,7 +3107,7 @@ TEST_F(OverviewSessionTest, TapOnBackgroundInSplitView) {
   GetEventGenerator()->GestureTapAt(gfx::Point(10, 10));
 
   EXPECT_TRUE(InOverviewSession());
-  EXPECT_FALSE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsHomeScreenVisible());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 }
 

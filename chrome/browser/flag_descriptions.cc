@@ -1524,10 +1524,6 @@ const char kUpdateHoverAtBeginFrameDescription[] =
     "Recompute hover state at BeginFrame for layout and scroll based mouse "
     "moves, rather than old timing-based mechanism.";
 
-const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
-const char kUseMultiloginEndpointDescription[] =
-    "Use Gaia OAuth multilogin for identity consistency.";
-
 const char kOmniboxAdaptiveSuggestionsCountName[] =
     "Adaptive Omnibox Suggestions count";
 const char kOmniboxAdaptiveSuggestionsCountDescription[] =
@@ -3522,11 +3518,6 @@ const char kHappinessTrackingSurveysForDesktopSettingsPrivacyName[] =
 const char kHappinessTrackingSurveysForDesktopSettingsPrivacyDescription[] =
     "Enable showing Happiness Tracking Surveys for Privacy Settings to users "
     "on Desktop";
-
-const char kHappinessTrackingSurveysForDesktopMigrationName[] =
-    "Happiness Tracking Surveys migration";
-const char kHappinessTrackingSurveysForDesktopMigrationDescription[] =
-    "Enable the latest version of Happiness Tracking Surveys.";
 
 const char kKernelnextVMsName[] = "Enable VMs on experimental kernels.";
 const char kKernelnextVMsDescription[] =

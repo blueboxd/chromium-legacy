@@ -141,7 +141,6 @@ static void AddExternalClearKey(
 #if BUILDFLAG(ENABLE_WIDEVINE)
 static SupportedCodecs GetSupportedCodecs(
     const std::vector<media::VideoCodec>& supported_video_codecs,
-    bool supports_vp9_profile2,
     bool is_secure) {
   SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
@@ -168,8 +167,7 @@ static SupportedCodecs GetSupportedCodecs(
         break;
       case media::VideoCodec::kCodecVP9:
         supported_codecs |= media::EME_CODEC_VP9_PROFILE0;
-        if (supports_vp9_profile2)
-          supported_codecs |= media::EME_CODEC_VP9_PROFILE2;
+        supported_codecs |= media::EME_CODEC_VP9_PROFILE2;
         break;
       case media::VideoCodec::kCodecAV1:
         supported_codecs |= media::EME_CODEC_AV1;
@@ -262,17 +260,9 @@ static void AddWidevine(
 
   // Codecs and encryption schemes.
   auto codecs = GetSupportedCodecs(capability->video_codecs,
-                                   capability->supports_vp9_profile2,
                                    /*is_secure=*/false);
   const auto& encryption_schemes = capability->encryption_schemes;
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  const bool hw_supports_vp9_profile2 = true;
-#else
-  // TODO(xhwang): Investigate whether hardware VP9 profile 2 is supported.
-  const bool hw_supports_vp9_profile2 = false;
-#endif
   auto hw_secure_codecs = GetSupportedCodecs(capability->hw_secure_video_codecs,
-                                             hw_supports_vp9_profile2,
                                              /*is_secure=*/true);
   const auto& hw_secure_encryption_schemes =
       capability->hw_secure_encryption_schemes;
@@ -307,13 +297,6 @@ static void AddWidevine(
   auto persistent_license_support =
       GetPersistentLicenseSupport(cdm_supports_persistent_license);
 
-  // TODO(xhwang): Check more conditions as needed.
-  auto persistent_usage_record_support =
-      base::Contains(capability->session_types,
-                     media::CdmSessionType::kPersistentUsageRecord)
-          ? EmeSessionTypeSupport::SUPPORTED
-          : EmeSessionTypeSupport::NOT_SUPPORTED;
-
   // Others.
   auto persistent_state_support = EmeFeatureSupport::REQUESTABLE;
   auto distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
@@ -324,8 +307,8 @@ static void AddWidevine(
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs, encryption_schemes, hw_secure_codecs,
       hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
-      persistent_license_support, persistent_usage_record_support,
-      persistent_state_support, distinctive_identifier_support));
+      persistent_license_support, persistent_state_support,
+      distinctive_identifier_support));
 }
 #endif  // BUILDFLAG(ENABLE_WIDEVINE)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

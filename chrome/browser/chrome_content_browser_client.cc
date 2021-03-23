@@ -911,6 +911,13 @@ blink::mojom::AutoplayPolicy GetAutoplayPolicyForWebContents(
     result = UnifiedAutoplayConfig::ShouldBlockAutoplay(profile)
                  ? blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired
                  : blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
+  } else if (web_contents->GetMainFrame()->IsFeatureEnabled(
+                 blink::mojom::PermissionsPolicyFeature::kAutoplay) &&
+             IsAutoplayAllowedByPolicy(web_contents->GetOuterWebContents(),
+                                       prefs)) {
+    // If the domain policy allows autoplay and has delegated that to an iframe,
+    // allow autoplay within the iframe. Only allow a nesting of single depth.
+    result = blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
   }
 #endif  // !defined(OS_ANDROID)
   return result;
@@ -4766,8 +4773,10 @@ void ChromeContentBrowserClient::
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile);
-  // The test below matches what's done by ShouldServiceRequestIOThread in
-  // local_ntp_source.cc.
+  // The test below matches when a remote 3P NTP is loaded. The effective
+  // URL is chrome-search://remote-ntp. This is to allow the use of the NTP
+  // public api and to embed most-visited tiles
+  // (chrome-search://most-visited/title.html).
   if (instant_service->IsInstantProcess(render_process_id)) {
     factories->emplace(
         chrome::kChromeSearchScheme,

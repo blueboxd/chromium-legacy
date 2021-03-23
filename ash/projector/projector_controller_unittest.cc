@@ -32,7 +32,7 @@ using testing::ElementsAre;
 
 void NotifyControllerForFinalSpeechResult(ProjectorControllerImpl* controller) {
   controller->OnTranscription(
-      base::UTF8ToUTF16("transcript text 1"),
+      u"transcript text 1",
       base::TimeDelta::FromMilliseconds(0) /* audio_start_time */,
       base::TimeDelta::FromMilliseconds(3000) /* audio_end_time */,
       {{base::TimeDelta::FromMilliseconds(1000),
@@ -44,7 +44,7 @@ void NotifyControllerForFinalSpeechResult(ProjectorControllerImpl* controller) {
 void NotifyControllerForPartialSpeechResult(
     ProjectorControllerImpl* controller) {
   controller->OnTranscription(
-      base::UTF8ToUTF16("transcript partial text 1"),
+      u"transcript partial text 1",
       base::TimeDelta::FromMilliseconds(0) /* audio_start_time */,
       base::TimeDelta::FromMilliseconds(3000) /* audio_end_time */,
       {{base::TimeDelta::FromMilliseconds(1000),
@@ -169,6 +169,18 @@ TEST_F(ProjectorControllerTest, OnSpeechRecognitionAvailable) {
 
   controller_->OnSpeechRecognitionAvailable(false);
   EXPECT_FALSE(controller_->IsEligible());
+}
+
+TEST_F(ProjectorControllerTest, OnLaserPointerPressed) {
+  // Verify that |OnLaserPointerPressed| in |ProjectorUiController| is called.
+  EXPECT_CALL(*mock_ui_controller_, OnLaserPointerPressed());
+  controller_->OnLaserPointerPressed();
+}
+
+TEST_F(ProjectorControllerTest, OnMarkerPressed) {
+  // Verify that |OnMarkerPressed| in |ProjectorUiController| is called.
+  EXPECT_CALL(*mock_ui_controller_, OnMarkerPressed());
+  controller_->OnMarkerPressed();
 }
 
 }  // namespace ash

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/geo/alternative_state_name_map_updater.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -98,7 +99,7 @@ TEST_F(AlternativeStateNameMapUpdaterTest, EntryAddedToStateMap) {
       AlternativeStateNameMap::StateName(ASCIIToUTF16("Bayern")),
       AlternativeStateNameMap::StateName(ASCIIToUTF16("B.Y")),
       AlternativeStateNameMap::StateName(ASCIIToUTF16("Bav-aria")),
-      AlternativeStateNameMap::StateName(UTF8ToUTF16("amapá")),
+      AlternativeStateNameMap::StateName(u"amapá"),
       AlternativeStateNameMap::StateName(ASCIIToUTF16("Broen")),
       AlternativeStateNameMap::StateName(ASCIIToUTF16("Bavaria is in Germany")),
       AlternativeStateNameMap::StateName(ASCIIToUTF16("BA is in Germany"))};
@@ -189,7 +190,7 @@ TEST_F(AlternativeStateNameMapUpdaterTest, TestLoadStatesDataUTF8) {
   base::Optional<StateEntry> entry1 =
       AlternativeStateNameMap::GetInstance()->GetEntry(
           AlternativeStateNameMap::CountryCode("ES"),
-          AlternativeStateNameMap::StateName(UTF8ToUTF16("Paraná")));
+          AlternativeStateNameMap::StateName(u"Paraná"));
   EXPECT_NE(entry1, base::nullopt);
   EXPECT_EQ(entry1->canonical_name(), "Paraná");
   EXPECT_THAT(entry1->abbreviations(),
@@ -200,7 +201,7 @@ TEST_F(AlternativeStateNameMapUpdaterTest, TestLoadStatesDataUTF8) {
   base::Optional<StateEntry> entry2 =
       AlternativeStateNameMap::GetInstance()->GetEntry(
           AlternativeStateNameMap::CountryCode("ES"),
-          AlternativeStateNameMap::StateName(UTF8ToUTF16("Parana")));
+          AlternativeStateNameMap::StateName(u"Parana"));
   EXPECT_NE(entry2, base::nullopt);
   EXPECT_EQ(entry2->canonical_name(), "Paraná");
   EXPECT_THAT(entry2->abbreviations(),
@@ -241,7 +242,7 @@ TEST_F(AlternativeStateNameMapUpdaterTest,
   base::Optional<StateEntry> entry1 =
       AlternativeStateNameMap::GetInstance()->GetEntry(
           AlternativeStateNameMap::CountryCode("ES"),
-          AlternativeStateNameMap::StateName(UTF8ToUTF16("Paraná")));
+          AlternativeStateNameMap::StateName(u"Paraná"));
   EXPECT_NE(entry1, base::nullopt);
   EXPECT_EQ(entry1->canonical_name(), "Paraná");
   EXPECT_THAT(entry1->abbreviations(),
@@ -252,7 +253,7 @@ TEST_F(AlternativeStateNameMapUpdaterTest,
   base::Optional<StateEntry> entry2 =
       AlternativeStateNameMap::GetInstance()->GetEntry(
           AlternativeStateNameMap::CountryCode("DE"),
-          AlternativeStateNameMap::StateName(UTF8ToUTF16("Bavaria")));
+          AlternativeStateNameMap::StateName(u"Bavaria"));
   EXPECT_NE(entry2, base::nullopt);
   EXPECT_EQ(entry2->canonical_name(), "Bavaria");
   EXPECT_THAT(entry2->abbreviations(),

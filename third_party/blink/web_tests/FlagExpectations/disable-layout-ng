@@ -58,6 +58,11 @@ crbug.com/591099 external/wpt/css/CSS2/normal-flow/min-height-separates-margin.h
 crbug.com/591099 external/wpt/css/CSS2/text/white-space-mixed-003.xht [ Failure ]
 
 ### external/wpt/css/css-flexbox/
+crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-001.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-002.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-003.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-004.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-005.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/dynamic-baseline-change.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/dynamic-baseline-change-nested.html [ Failure ]
 crbug.com/1132627 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
@@ -954,6 +959,7 @@ crbug.com/591099 external/wpt/css/css-flexbox/abspos/position-absolute-015.html 
 
 ### external/wpt/css/css-grid/
 crbug.com/591099 external/wpt/css/css-grid/grid-items/percentage-size-indefinite-replaced.html [ Failure ]
+crbug.com/667785 external/wpt/css/css-grid/table-grid-item-005.html [ Failure ]
 
 ### external/wpt/css/css-pseudo/
 crbug.com/591099 external/wpt/css/css-pseudo/active-selection-011.html [ Failure ]

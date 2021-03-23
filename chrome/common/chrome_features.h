@@ -290,9 +290,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktopDemo;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kHappinessTrackingSurveysForDesktopMigration;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSurveysForDesktopSettings;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -560,6 +557,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSmbFs;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSoundContentSetting;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSyncBookmarkApps;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)

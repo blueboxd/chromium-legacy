@@ -54,7 +54,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_handler.h"
-#include "chrome/browser/ui/search/local_ntp_test_utils.h"
+#include "chrome/browser/ui/search/ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -530,23 +530,9 @@ enum class ProfileMode {
 class ExtensionWebRequestApiAuthRequiredTest
     : public ExtensionWebRequestApiTest,
       public testing::WithParamInterface<ProfileMode> {
- public:
-  int GetBrowserTestFlags() {
-    switch (GetParam()) {
-      case ProfileMode::kUserProfile:
-        return kFlagNone;
-      case ProfileMode::kIncognito:
-        return kFlagEnableIncognito;
-    }
-  }
-
-  int GetApiTestFlags() {
-    switch (GetParam()) {
-      case ProfileMode::kUserProfile:
-        return kFlagNone;
-      case ProfileMode::kIncognito:
-        return kFlagUseIncognito;
-    }
+ protected:
+  bool GetEnableIncognito() const {
+    return GetParam() == ProfileMode::kIncognito;
   }
 };
 
@@ -558,9 +544,11 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Pass "debug" as a custom arg to debug test flakiness.
-  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required.html", "debug", GetBrowserTestFlags(),
-      GetApiTestFlags()))
+  ASSERT_TRUE(RunExtensionTest({.name = "webrequest",
+                                .page_url = "test_auth_required.html",
+                                .custom_arg = "debug",
+                                .open_in_incognito = GetEnableIncognito()},
+                               {.allow_in_incognito = GetEnableIncognito()}))
       << message_;
 }
 
@@ -573,9 +561,11 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Pass "debug" as a custom arg to debug test flakiness.
-  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required_async.html", "debug",
-      GetBrowserTestFlags(), GetApiTestFlags()))
+  ASSERT_TRUE(RunExtensionTest({.name = "webrequest",
+                                .page_url = "test_auth_required_async.html",
+                                .custom_arg = "debug",
+                                .open_in_incognito = GetEnableIncognito()},
+                               {.allow_in_incognito = GetEnableIncognito()}))
       << message_;
 }
 
@@ -586,9 +576,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required_parallel.html", nullptr,
-      GetBrowserTestFlags(), GetApiTestFlags()))
+  ASSERT_TRUE(RunExtensionTest({.name = "webrequest",
+                                .page_url = "test_auth_required_parallel.html",
+                                .open_in_incognito = GetEnableIncognito()},
+                               {.allow_in_incognito = GetEnableIncognito()}))
       << message_;
 }
 
@@ -646,8 +637,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestRedirectsWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionSubtestWithArg("webrequest", "test_redirects.html",
-                                         "useExtraHeaders"))
+  ASSERT_TRUE(RunExtensionTest({.name = "webrequest",
+                                .page_url = "test_redirects.html",
+                                .custom_arg = "useExtraHeaders"}))
       << message_;
 }
 
@@ -670,8 +662,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   std::string config_string;
   base::JSONWriter::Write(custom_args, &config_string);
-  ASSERT_TRUE(RunExtensionSubtestWithArg(
-      "webrequest", "test_redirects_from_secure.html", config_string.c_str()))
+  ASSERT_TRUE(RunExtensionTest({.name = "webrequest",
+                                .page_url = "test_redirects_from_secure.html",
+                                .custom_arg = config_string.c_str()}))
       << message_;
 }
 
@@ -686,8 +679,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestSubresourceRedirectsWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionSubtestWithArg(
-      "webrequest", "test_subresource_redirects.html", "useExtraHeaders"))
+  ASSERT_TRUE(RunExtensionTest({.name = "webrequest",
+                                .page_url = "test_subresource_redirects.html",
+                                .custom_arg = "useExtraHeaders"}))
       << message_;
 }
 
@@ -1868,7 +1862,7 @@ class NTPInterceptionWebRequestAPITest : public ExtensionApiTest {
     ASSERT_TRUE(https_test_server_.Start());
 
     GURL ntp_url = https_test_server_.GetURL("/fake_ntp.html");
-    local_ntp_test_utils::SetUserSelectedDefaultSearchProvider(
+    ntp_test_utils::SetUserSelectedDefaultSearchProvider(
         profile(), https_test_server_.base_url().spec(), ntp_url.spec());
   }
 
@@ -2049,7 +2043,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPInterceptionWebRequestAPITest,
 
   ASSERT_FALSE(GetAndResetOneGoogleBarRequestSeen());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_EQ(local_ntp_test_utils::GetFinalNtpUrl(browser()->profile()),
+  ASSERT_EQ(ntp_test_utils::GetFinalNtpUrl(browser()->profile()),
             browser()
                 ->tab_strip_model()
                 ->GetActiveWebContents()

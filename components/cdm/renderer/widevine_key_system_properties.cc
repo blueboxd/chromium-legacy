@@ -52,7 +52,6 @@ WidevineKeySystemProperties::WidevineKeySystemProperties(
     Robustness max_audio_robustness,
     Robustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
-    media::EmeSessionTypeSupport persistent_release_message_support,
     media::EmeFeatureSupport persistent_state_support,
     media::EmeFeatureSupport distinctive_identifier_support)
     : codecs_(codecs),
@@ -62,7 +61,6 @@ WidevineKeySystemProperties::WidevineKeySystemProperties(
       max_audio_robustness_(max_audio_robustness),
       max_video_robustness_(max_video_robustness),
       persistent_license_support_(persistent_license_support),
-      persistent_release_message_support_(persistent_release_message_support),
       persistent_state_support_(persistent_state_support),
       distinctive_identifier_support_(distinctive_identifier_support) {}
 
@@ -101,27 +99,13 @@ EmeConfigRule WidevineKeySystemProperties::GetEncryptionSchemeConfigRule(
     return EmeConfigRule::NOT_SUPPORTED;
 }
 
-static SupportedCodecs OverrideAv1SupportIfNeeded(SupportedCodecs codecs) {
-  auto result = codecs;
-
-  // Enable AV1 if force-support is enabled.
-  if (base::FeatureList::IsEnabled(media::kWidevineAv1ForceSupportForTesting))
-    result |= media::EME_CODEC_AV1;
-
-  // Disable AV1 if the master switch kWidevineAv1 is disabled.
-  if (!base::FeatureList::IsEnabled(media::kWidevineAv1))
-    result &= ~media::EME_CODEC_AV1;
-
-  return result;
-}
-
 SupportedCodecs WidevineKeySystemProperties::GetSupportedCodecs() const {
-  return OverrideAv1SupportIfNeeded(codecs_);
+  return codecs_;
 }
 
 SupportedCodecs WidevineKeySystemProperties::GetSupportedHwSecureCodecs()
     const {
-  return OverrideAv1SupportIfNeeded(hw_secure_codecs_);
+  return hw_secure_codecs_;
 }
 
 EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
@@ -191,11 +175,6 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
 EmeSessionTypeSupport
 WidevineKeySystemProperties::GetPersistentLicenseSessionSupport() const {
   return persistent_license_support_;
-}
-
-EmeSessionTypeSupport
-WidevineKeySystemProperties::GetPersistentUsageRecordSessionSupport() const {
-  return persistent_release_message_support_;
 }
 
 EmeFeatureSupport WidevineKeySystemProperties::GetPersistentStateSupport()

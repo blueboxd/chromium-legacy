@@ -459,12 +459,6 @@ const base::Feature kHaTSDesktopDevToolsIssuesCSP{
 const base::Feature kHaTSDesktopDevToolsLayoutPanel{
     "HaTSDesktopDevToolsLayoutPanel", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the migration of Happiness Tracking Surveys on Desktop (to the latest
-// version).
-const base::Feature kHappinessTrackingSurveysForDesktopMigration{
-    "HappinessTrackingSurveysForDesktopMigration",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // Settings.
 const base::Feature kHappinessTrackingSurveysForDesktopSettings{
@@ -825,6 +819,11 @@ const base::Feature kSmbFs{"SmbFs", base::FEATURE_ENABLED_BY_DEFAULT};
 // website.
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables receiving and sending bookmark apps creation through APPS
+// sync. Will be removed in M92 https://crbug.com/1185374.
+const base::Feature kSyncBookmarkApps{"SyncBookmarkApps",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables chrome://sys-internals.

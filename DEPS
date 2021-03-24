@@ -929,7 +929,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'def15a8f1276d81b13e6b55a26d8cf5e2fda443f',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '8f58f2395f17c1769bd9f0c65c31ad023482c03f',
       'condition': 'checkout_linux',
   },
 
@@ -1600,7 +1600,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'fwkj-e5q2nkAsnWQBdgNljl1GPJH1sc8H1lTMEJ8eDMC',
+          'version': '77UQ9Zx-irz8MxBwN3CtYielGQtPthCIaWzlOONC8_MC',
         },
       ],
       'dep_type': 'cipd',

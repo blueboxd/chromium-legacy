@@ -18,6 +18,7 @@
 #include "content/public/test/test_web_contents_factory.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/menu_button.h"
 
@@ -200,9 +201,9 @@ TEST_F(ToolbarActionViewUnitTest, MAYBE_BasicToolbarActionViewTest) {
   TestToolbarActionViewDelegate* view_delegate = action_view_delegate();
 
   // Configure the test controller and delegate.
-  std::u16string name = base::ASCIIToUTF16("name");
+  std::u16string name = u"name";
   view_controller->SetAccessibleName(name);
-  std::u16string tooltip = base::ASCIIToUTF16("tooltip");
+  std::u16string tooltip = u"tooltip";
   view_controller->SetTooltip(tooltip);
   content::WebContents* web_contents =
       web_contents_factory.CreateWebContents(&profile);

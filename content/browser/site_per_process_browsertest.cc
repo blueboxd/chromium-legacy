@@ -5031,7 +5031,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SubframePostMessage) {
 
   // Send a postMessage from second, cross-site frame to its parent.  Expect
   // parent to send a reply to the frame.
-  std::u16string expected_title(base::ASCIIToUTF16("subframe-msg"));
+  std::u16string expected_title(u"subframe-msg");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   PostMessageAndWaitForReply(root->child_at(1), "postToParent('subframe-msg')",
                              "\"done-subframe2\"");
@@ -5568,7 +5568,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // parent by sending a postMessage to subframe's parent.opener.
   EXPECT_EQ(true, EvalJs(popup_root->child_at(0), "!!parent.opener;"));
 
-  std::u16string expected_title = base::ASCIIToUTF16("msg");
+  std::u16string expected_title = u"msg";
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_EQ(true, EvalJs(popup_root->child_at(0),
                          "postToOpenerOfParent('msg','*');"));
@@ -5673,7 +5673,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                    "parent.frames['subframe2'].opener && "
                    "    parent.frames['subframe2'].opener === parent.opener;"));
 
-  std::u16string expected_title = base::ASCIIToUTF16("msg");
+  std::u16string expected_title = u"msg";
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_EQ(true, EvalJs(popup_root->child_at(0),
                          "postToOpenerOfSibling('subframe2', 'msg', '*');"));
@@ -13956,6 +13956,31 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
 
   SetBrowserClientForTesting(old_client);
 }
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
+                       CheckForceEnableZoomValue) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("foo.com", "/title1.html")));
+  EXPECT_FALSE(GetTouchActionForceEnableZoom(
+      web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()));
+
+  EnableForceZoomContentClient new_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+  new_client.set_old_client(old_client);
+
+  web_contents()->OnWebPreferencesChanged();
+
+  EXPECT_TRUE(GetTouchActionForceEnableZoom(
+      web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()));
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("bar.com", "/title2.html")));
+
+  EXPECT_TRUE(GetTouchActionForceEnableZoom(
+      web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget()));
+  SetBrowserClientForTesting(old_client);
+}
+
 #endif  // defined(OS_ANDROID)
 
 // Flaky on every platform, failing most of the time on Android.

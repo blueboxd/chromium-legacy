@@ -270,8 +270,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
 
   // Expect to commit 'Á '.
   ASSERT_EQ(text_input_client.composition_history().size(), 2U);
-  EXPECT_EQ(text_input_client.composition_history()[0].text,
-            base::ASCIIToUTF16("A"));
+  EXPECT_EQ(text_input_client.composition_history()[0].text, u"A");
   EXPECT_EQ(text_input_client.composition_history()[1].text,
             base::UTF8ToUTF16(u8"\u00c1"));
   ASSERT_EQ(text_input_client.insert_text_history().size(), 1U);
@@ -296,11 +295,9 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, VietnameseTelex_Reset) {
 
   // Expect to commit 's'.
   ASSERT_EQ(text_input_client.composition_history().size(), 1U);
-  EXPECT_EQ(text_input_client.composition_history()[0].text,
-            base::ASCIIToUTF16("a"));
+  EXPECT_EQ(text_input_client.composition_history()[0].text, u"a");
   ASSERT_EQ(text_input_client.insert_text_history().size(), 1U);
-  EXPECT_EQ(text_input_client.insert_text_history()[0],
-            base::ASCIIToUTF16("s"));
+  EXPECT_EQ(text_input_client.insert_text_history()[0], u"s");
 
   SetFocus(nullptr);
 }
@@ -685,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
       },
       false);
 
-  engine_->OnAutocorrect("typed", "corrected", 0);
+  engine_->OnAutocorrect(u"typed", u"corrected", 0);
 
   EXPECT_FALSE(engine_->GetAutocorrectRange().is_empty());
 
@@ -714,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(prefix_text);
 
-  engine_->OnAutocorrect("typed", "corrected", 0);
+  engine_->OnAutocorrect(u"typed", u"corrected", 0);
 
   auto* controller =
       ((input_method::
@@ -749,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, RevertsAutocorrect) {
                 .surrounding_text,
             corrected_text);
 
-  engine_->OnAutocorrect("typed", "corrected", 6);
+  engine_->OnAutocorrect(u"typed", u"corrected", 6);
 
   // Move cursor into the corrected word, sending VKEY_LEFT fails, so use JS.
   content::WebContents* tab =
@@ -790,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
                 .surrounding_text,
             corrected_text);
 
-  engine_->OnAutocorrect("typed", "corrected", 0);
+  engine_->OnAutocorrect(u"typed", u"corrected", 0);
   // Move cursor into the corrected word, sending VKEY_LEFT fails, so use JS.
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -833,7 +830,7 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
 
   histogram_tester.ExpectBucketCount("InputMethod.Assistive.Coverage",
                                      AssistiveType::kAutocorrectWindowShown, 0);
-  engine_->OnAutocorrect("typed", "corrected", 0);
+  engine_->OnAutocorrect(u"typed", u"corrected", 0);
   histogram_tester.ExpectBucketCount("InputMethod.Assistive.Coverage",
                                      AssistiveType::kAutocorrectUnderlined, 1);
 

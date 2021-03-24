@@ -25,6 +25,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_cursor.h"
@@ -463,7 +464,7 @@ class X11DragDropClientTest : public ViewsTestBase {
 
   int StartDragAndDrop() {
     auto data(std::make_unique<ui::OSExchangeData>());
-    data->SetString(base::ASCIIToUTF16("Test"));
+    data->SetString(u"Test");
     SkBitmap drag_bitmap;
     drag_bitmap.allocN32Pixels(10, 10);
     drag_bitmap.eraseARGB(0xFF, 0, 0, 0);

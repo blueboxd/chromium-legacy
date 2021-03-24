@@ -1291,6 +1291,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "impl": "3"
+                    },
                     "enable_features": [
                         "CertDualVerificationTrial"
                     ]
@@ -1306,6 +1309,10 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "cachesize": "512",
+                        "impl": "3"
+                    },
                     "enable_features": [
                         "CertVerifierBuiltin"
                     ]
@@ -3970,21 +3977,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MacSystemMediaPermissionsInfoUI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MacV2GPUSandbox": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MacV2GPUSandbox"
                     ]
                 }
             ]
@@ -7487,6 +7479,23 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebRtcThermalResource"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebUIJavaScriptErrorReporting": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210311",
+                    "enable_features": [
+                        "SendWebUIJavaScriptErrorReports"
                     ]
                 }
             ]

@@ -90,8 +90,8 @@ void OnSodaResponse(const char* serialized_proto,
 }  // namespace
 
 SpeechRecognitionRecognizerImpl::~SpeechRecognitionRecognizerImpl() {
-  soda_client_.reset();
   RecordDuration();
+  soda_client_.reset();
 }
 
 void SpeechRecognitionRecognizerImpl::Create(
@@ -108,11 +108,7 @@ void SpeechRecognitionRecognizerImpl::Create(
 }
 
 bool SpeechRecognitionRecognizerImpl::IsMultichannelSupported() {
-  if (base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)) {
-    return true;
-  } else {
-    return false;
-  }
+  return false;
 }
 
 void SpeechRecognitionRecognizerImpl::OnRecognitionEvent(
@@ -143,18 +139,18 @@ SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(
       media::BindToCurrentLoop(base::BindRepeating(
           &SpeechRecognitionRecognizerImpl::OnLanguageIdentificationEvent,
           weak_factory_.GetWeakPtr()));
+  // On Chrome OS Ash, soda_client_ is not used, so don't try to create it
+  // here because it exists at a different location. Instead,
+  // CrosSpeechRecognitionRecognizerImpl has its own CrosSodaClient.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   enable_soda_ = base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption);
+#endif
   if (enable_soda_) {
-    // On Chrome OS, soda_client_ is not used, so don't try to create it here
-    // because it exists at a different location.
-    // Instead, CrosSpeechRecognitionRecognizerImpl has its own CrosSodaClient.
-#if !defined(OS_CHROMEOS)
     DCHECK(base::PathExists(binary_path));
     soda_client_ = std::make_unique<::soda::SodaClient>(binary_path);
     if (!soda_client_->BinaryLoadedSuccessfully()) {
       OnSpeechRecognitionError();
     }
-#endif
   } else {
     cloud_client_ = std::make_unique<CloudSpeechRecognitionClient>(
         recognition_event_callback(),

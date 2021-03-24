@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_FILE_SYSTEM_BOX_API_CALL_FLOW_H_
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 
@@ -120,6 +121,12 @@ class BoxWholeFileUploadApiCallFlow : public BoxApiCallFlow {
                              std::unique_ptr<std::string> body) override;
 
  private:
+  // Try to delete a local file and return true if and only if the file existed
+  // and was successfully deleted
+  // TODO(https://crbugs.com/1190891): Move to shared FSConnector code when we
+  // support other partners
+  static bool DeleteIfExists(base::FilePath file_path);
+
   // Post a task to ThreadPool to read the local file, forward the
   // parameters from Start() into OnFileRead(), which is the callback that then
   // kicks off OAuth2CallFlow::Start() after file content is read.
@@ -156,7 +163,7 @@ class BoxWholeFileUploadApiCallFlow : public BoxApiCallFlow {
 
   // Callback from the controller to report success.
   TaskCallback callback_;
-  base::WeakPtrFactory<BoxWholeFileUploadApiCallFlow> factory_{this};
+  base::WeakPtrFactory<BoxWholeFileUploadApiCallFlow> weak_factory_{this};
 };
 
 // Helper for starting an upload session to designated Chrome downloads folder
@@ -169,7 +176,7 @@ class BoxCreateUploadSessionApiCallFlow : public BoxApiCallFlow {
   BoxCreateUploadSessionApiCallFlow(TaskCallback callback,
                                     const std::string& folder_id,
                                     const size_t file_size,
-                                    const std::string& file_name);
+                                    const base::FilePath& file_name);
   ~BoxCreateUploadSessionApiCallFlow() override;
 
  protected:
@@ -189,12 +196,26 @@ class BoxCreateUploadSessionApiCallFlow : public BoxApiCallFlow {
   TaskCallback callback_;
   const std::string folder_id_;
   const size_t file_size_;
-  const std::string file_name_;
-  base::WeakPtrFactory<BoxCreateUploadSessionApiCallFlow> factory_{this};
+  const base::FilePath file_name_;
+
+  base::WeakPtrFactory<BoxCreateUploadSessionApiCallFlow> weak_factory_{this};
+};
+
+// Base helper for API requests related to chunked file uploads. Since
+// BoxCreateUploadSessionApiCallFlow gives all relevant endpoints for an upload
+// session in its response, the subsequent steps can take each endpoint as
+// constructor argument and just return in CreateApiCallUrl() without
+// formatting.
+class BoxChunkedUploadBaseApiCallFlow : public BoxApiCallFlow {
+ protected:
+  explicit BoxChunkedUploadBaseApiCallFlow(const GURL endpoint);
+  // BoxApiCallFlow interface.
+  GURL CreateApiCallUrl() final;
+  const GURL endpoint_;
 };
 
 // Helper for uploading a part of the file to Box.
-class BoxPartFileUploadApiCallFlow : public BoxApiCallFlow {
+class BoxPartFileUploadApiCallFlow : public BoxChunkedUploadBaseApiCallFlow {
  public:
   // Additional callback arg is: uploaded file part info in API request response
   // that needs to be attached in CommitUploadSession request.
@@ -205,7 +226,7 @@ class BoxPartFileUploadApiCallFlow : public BoxApiCallFlow {
   // only on success.
   using TaskCallback = base::OnceCallback<void(bool, int, base::Value)>;
   BoxPartFileUploadApiCallFlow(TaskCallback callback,
-                               const std::string& upload_endpoint,
+                               const std::string& session_endpoint,
                                const std::string& file_part_content,
                                const size_t byte_from,
                                const size_t byte_to,
@@ -217,7 +238,6 @@ class BoxPartFileUploadApiCallFlow : public BoxApiCallFlow {
 
  protected:
   // BoxApiCallFlow interface.
-  GURL CreateApiCallUrl() override;
   net::HttpRequestHeaders CreateApiCallHeaders() override;
   std::string CreateApiCallBody() override;
   std::string CreateApiCallBodyContentType() override;
@@ -231,28 +251,50 @@ class BoxPartFileUploadApiCallFlow : public BoxApiCallFlow {
 
  private:
   void OnJsonParsed(data_decoder::DataDecoder::ValueOrError result);
-
   TaskCallback callback_;
-  const GURL upload_endpoint_;
   const std::string& part_content_;
   const std::string content_range_;
   const std::string sha_digest_;
-  base::WeakPtrFactory<BoxPartFileUploadApiCallFlow> factory_{this};
+  base::WeakPtrFactory<BoxPartFileUploadApiCallFlow> weak_factory_{this};
 };
 
 // Helper for committing an upload session once all the parts are uploaded
 // successfully.
-class BoxCommitUploadSessionApiCallFlow : public BoxApiCallFlow {
+class BoxAbortUploadSessionApiCallFlow
+    : public BoxChunkedUploadBaseApiCallFlow {
  public:
+  BoxAbortUploadSessionApiCallFlow(TaskCallback callback,
+                                   const std::string& session_endpoint);
+  ~BoxAbortUploadSessionApiCallFlow() override;
+
+ protected:
+  // BoxApiCallFlow interface.
+  std::string GetRequestTypeForBody(const std::string& body) override;
+  bool IsExpectedSuccessCode(int code) const override;
+  void ProcessApiCallSuccess(const network::mojom::URLResponseHead* head,
+                             std::unique_ptr<std::string> body) override;
+  void ProcessApiCallFailure(int net_error,
+                             const network::mojom::URLResponseHead* head,
+                             std::unique_ptr<std::string> body) override;
+
+ private:
+  TaskCallback callback_;
+};
+
+// Helper for committing an upload session once all the parts are uploaded
+// successfully.
+class BoxCommitUploadSessionApiCallFlow
+    : public BoxChunkedUploadBaseApiCallFlow {
+ public:
+  using TaskCallback = base::OnceCallback<void(bool, int, base::TimeDelta)>;
   BoxCommitUploadSessionApiCallFlow(TaskCallback callback,
-                                    const std::string& commit_endpoint,
+                                    const std::string& session_endpoint,
                                     const base::Value& parts,
                                     const std::string digest);
   ~BoxCommitUploadSessionApiCallFlow() override;
 
  protected:
   // BoxApiCallFlow interface.
-  GURL CreateApiCallUrl() override;
   net::HttpRequestHeaders CreateApiCallHeaders() override;
   std::string CreateApiCallBody() override;
   bool IsExpectedSuccessCode(int code) const override;
@@ -264,10 +306,10 @@ class BoxCommitUploadSessionApiCallFlow : public BoxApiCallFlow {
 
  private:
   TaskCallback callback_;
-  const std::string commit_endpoint_;
+  const GURL commit_endpoint_;
   const base::Value upload_session_parts_;
   const std::string sha_digest_;
-  base::WeakPtrFactory<BoxCommitUploadSessionApiCallFlow> factory_{this};
+  base::TimeDelta retry_after_;
 };
 
 }  // namespace enterprise_connectors

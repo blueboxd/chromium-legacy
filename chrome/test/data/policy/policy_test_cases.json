@@ -2636,13 +2636,7 @@
   },
 
   "RunAllFlashInAllowMode": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {"RunAllFlashInAllowMode": true},
-        "prefs": { "plugins.run_all_flash_in_allow_mode": {}}
-      }
-    ]
+    "note": "This policy has been removed since Chrome 88."
   },
 
   "BookmarkBarEnabled": {
@@ -6741,19 +6735,7 @@
   },
 
   "PluginVmLicenseKey": {
-    "os": ["chromeos"],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "PluginVmLicenseKey": "LICENSE_KEY"
-        },
-        "prefs": {
-          "cros.device.plugin_vm_license_key": {
-            "location": "cros_setting"
-          }
-        }
-      }
-    ]
+    "note": "This policy has been removed since Chrome 91."
   },
 
   "ParentAccessCodeConfig": {

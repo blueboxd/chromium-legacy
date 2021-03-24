@@ -417,7 +417,7 @@ void BrowserTestBase::SetUp() {
 
       // Mark the channel as blocking.
       int flags = fcntl(socket_fd.get(), F_GETFL);
-      PCHECK(flags != -1);
+      PCHECK(flags != -1) << "Ash is probably not running. Perhaps it crashed?";
       fcntl(socket_fd.get(), F_SETFL, flags & ~O_NONBLOCK);
 
       uint8_t buf[32];
@@ -887,12 +887,6 @@ void BrowserTestBase::EnablePixelOutput(float force_device_scale_factor) {
 
 void BrowserTestBase::UseSoftwareCompositing() {
   use_software_compositing_ = true;
-}
-
-bool BrowserTestBase::UsingSoftwareGL() const {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  return cmd->GetSwitchValueASCII(switches::kUseGL) ==
-         gl::GetGLImplementationGLName(gl::GetSoftwareGLImplementation());
 }
 
 void BrowserTestBase::SetInitialWebContents(WebContents* web_contents) {

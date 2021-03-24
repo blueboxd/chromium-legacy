@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   }
 
   // Ensure that the userChoice promise resolves.
-  const std::u16string title = base::ASCIIToUTF16("Got userChoice: accepted");
+  const std::u16string title = u"Got userChoice: accepted";
   content::TitleWatcher watcher(web_contents, title);
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
 
@@ -146,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   }
 
   // Ensure that the appinstalled event fires.
-  const std::u16string title =
-      base::ASCIIToUTF16("Got appinstalled: listener, attr");
+  const std::u16string title = u"Got appinstalled: listener, attr";
   content::TitleWatcher watcher(web_contents, title);
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
 }
@@ -258,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
-                       PolicyAppInstalled_NoPrompt) {
+                       PolicyAppInstalled_Prompt) {
   TestAppBannerManagerDesktop* manager =
       TestAppBannerManagerDesktop::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
@@ -277,12 +276,12 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 
     ui_test_utils::NavigateToURL(browser(), GetBannerURL());
     run_loop.Run();
-    EXPECT_EQ(State::COMPLETE, manager->state());
+    EXPECT_EQ(State::PENDING_PROMPT, manager->state());
   }
 
-  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kNoAlreadyInstalled,
+  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kPromotable,
             manager->GetInstallableWebAppCheckResultForTesting());
-  EXPECT_FALSE(manager->IsPromptAvailableForTesting());
+  EXPECT_TRUE(manager->IsPromptAvailableForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
@@ -391,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   }
 
   // Ensure that the userChoice promise resolves.
-  const std::u16string title = base::ASCIIToUTF16("Got userChoice: accepted");
+  const std::u16string title = u"Got userChoice: accepted";
   content::TitleWatcher watcher(web_contents, title);
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
 
@@ -400,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
-                       PolicyAppInstalled_NoPrompt_DisplayOverride) {
+                       PolicyAppInstalled_Prompt_DisplayOverride) {
   TestAppBannerManagerDesktop* manager =
       TestAppBannerManagerDesktop::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
@@ -420,12 +419,12 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 
     ui_test_utils::NavigateToURL(browser(), GetBannerURL());
     run_loop.Run();
-    EXPECT_EQ(State::COMPLETE, manager->state());
+    EXPECT_EQ(State::PENDING_PROMPT, manager->state());
   }
 
-  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kNoAlreadyInstalled,
+  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kPromotable,
             manager->GetInstallableWebAppCheckResultForTesting());
-  EXPECT_FALSE(manager->IsPromptAvailableForTesting());
+  EXPECT_TRUE(manager->IsPromptAvailableForTesting());
 }
 
 }  // namespace webapps

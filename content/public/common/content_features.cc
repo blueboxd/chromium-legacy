@@ -719,7 +719,7 @@ const base::Feature kSubresourceWebBundles{"SubresourceWebBundles",
 // is not same origin with the main frame.
 const base::Feature kSuppressDifferentOriginSubframeJSDialogs{
     "SuppressDifferentOriginSubframeJSDialogs",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Dispatch touch events to "SyntheticGestureController" for events from
 // Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
@@ -969,9 +969,6 @@ const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
 
 const base::Feature kMacSyscallSandbox{"MacSyscallSandbox",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kMacV2GPUSandbox{"MacV2GPUSandbox",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables retrying to obtain list of available cameras on Macbooks after
 // restarting the video capture service if a previous attempt delivered zero

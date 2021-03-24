@@ -1712,11 +1712,6 @@ if (!is_android) {
       deps += [ "//ui/ozone" ]
     }
 
-    if (is_mac) {
-      sources +=
-          [ "../browser/metrics/power/power_metrics_provider_mac_unittest.cc" ]
-    }
-
     if (is_chromeos_ash) {
       data += [
         # TODO(GYP): figure out which of these things are
@@ -2408,6 +2403,7 @@ if (!is_android) {
         sources += [ "../browser/ui/views/extensions/extension_install_dialog_view_supervised_browsertest.cc" ]
       }
       deps += [
+        "//ui/base/dragdrop:types",
         "//ui/views",
         "//url",
       ]
@@ -2466,6 +2462,8 @@ if (!is_android) {
         "../browser/ash/arc/auth/arc_auth_service_browsertest.cc",
         "../browser/ash/arc/auth/arc_robot_auth_code_fetcher_browsertest.cc",
         "../browser/ash/arc/enterprise/cert_store/cert_store_service_browsertest.cc",
+        "../browser/ash/arc/intent_helper/arc_settings_service_browsertest.cc",
+        "../browser/ash/arc/intent_helper/custom_tab_session_impl_browsertest.cc",
         "../browser/ash/attestation/attestation_policy_browsertest.cc",
         "../browser/ash/lock_screen_apps/note_taking_browsertest.cc",
         "../browser/ash/login/accessibility_browsertest.cc",
@@ -2627,8 +2625,6 @@ if (!is_android) {
         "../browser/ash/web_applications/system_web_app_integration_test.cc",
         "../browser/ash/web_applications/system_web_app_integration_test.h",
         "../browser/chrome_main_browsertest.cc",
-        "../browser/chromeos/arc/intent_helper/arc_settings_service_browsertest.cc",
-        "../browser/chromeos/arc/intent_helper/custom_tab_session_impl_browsertest.cc",
         "../browser/chromeos/arc/session/arc_session_manager_browsertest.cc",
         "../browser/chromeos/arc/user_session/arc_user_session_service_browsertest.cc",
         "../browser/chromeos/base/locale_util_browsertest.cc",
@@ -3551,6 +3547,7 @@ test("unit_tests") {
     "../browser/custom_handlers/test_protocol_handler_registry_delegate.h",
     "../browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_unittest.cc",
     "../browser/download/chrome_download_manager_delegate_unittest.cc",
+    "../browser/download/deferred_client_wrapper_unittest.cc",
     "../browser/download/download_history_unittest.cc",
     "../browser/download/download_item_model_unittest.cc",
     "../browser/download/download_offline_content_provider_unittest.cc",
@@ -4682,6 +4679,7 @@ test("unit_tests") {
       "../browser/ui/global_media_controls/media_notification_device_provider_impl_unittest.cc",
       "../browser/ui/global_media_controls/media_notification_service_unittest.cc",
       "../browser/ui/global_media_controls/media_toolbar_button_controller_unittest.cc",
+      "../browser/ui/global_media_controls/presentation_request_notification_producer_unittest.cc",
       "../browser/ui/hid/hid_chooser_controller_unittest.cc",
       "../browser/ui/manifest_web_app_browser_controller_unittest.cc",
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
@@ -6116,6 +6114,7 @@ test("unit_tests") {
       "//components/media_router/browser:test_support",
       "//components/web_modal:test_support",
       "//content/test:test_support",
+      "//ui/base/dragdrop:types",
       "//ui/views",
       "//ui/views:test_support",
       "//ui/web_dialogs:test_support",
@@ -6729,7 +6728,10 @@ if (!is_android) {
 
     if (use_aura) {
       sources += [ "../browser/ui/views/drag_and_drop_interactive_uitest.cc" ]
-      deps += [ "//ui/aura:aura_interactive_ui_tests" ]
+      deps += [
+        "//ui/aura:aura_interactive_ui_tests",
+        "//ui/base/dragdrop:types",
+      ]
     } else {
       sources -= [
         "base/interactive_test_utils_aura.cc",
@@ -6782,6 +6784,7 @@ if (!is_android) {
         "../browser/ui/views/user_education/feature_promo_snooze_interactive_uitest.cc",
       ]
       deps += [
+        "//ui/base/dragdrop:types",
         "//ui/base/dragdrop/mojom",
         "//ui/views",
         "//ui/views:test_support",

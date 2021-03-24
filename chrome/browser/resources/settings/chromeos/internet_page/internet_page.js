@@ -155,6 +155,12 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    showSimLockDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * eSIM network used in internet detail menu.
      * @private {chromeos.networkConfig.mojom.NetworkStateProperties}
@@ -183,6 +189,12 @@ Polymer({
         chromeos.settings.mojom.Setting.kMobileOnOff,
       ]),
     },
+
+    /** @private */
+    errorToastMessage_: {
+      type: String,
+      value: '',
+    },
   },
 
   /**
@@ -201,7 +213,8 @@ Polymer({
     'show-known-networks': 'onShowKnownNetworks_',
     'show-networks': 'onShowNetworks_',
     'show-esim-profile-rename-dialog': 'onShowESimProfileRenameDialog_',
-    'show-esim-remove-profile-dialog': 'onShowESimRemoveProfileDialog_'
+    'show-esim-remove-profile-dialog': 'onShowESimRemoveProfileDialog_',
+    'show-error-toast': 'onShowErrorToast_',
   },
 
   /** @private  {?settings.InternetPageBrowserProxy} */
@@ -275,6 +288,10 @@ Polymer({
         this.cellularSetupDialogPageName_ =
             cellularSetup.CellularSetupPageName.PSIM_FLOW_UI;
       }
+
+      this.showSimLockDialog_ = !!queryParams.get('showSimLockDialog') &&
+          this.subpageType_ === mojom.NetworkType.kCellular &&
+          loadTimeData.getBoolean('updatedCellularActivationUi');
     } else if (route === settings.routes.KNOWN_NETWORKS) {
       // Handle direct navigation to the known networks page,
       // e.g. chrome://settings/internet/knownNetworks?type=WiFi
@@ -381,8 +398,25 @@ Polymer({
       this.showCellularSetupDialog_ = true;
       this.cellularSetupDialogPageName_ = event.detail.pageName;
     } else {
-      this.$.errorToast.show();
+      this.showErrorToast_(this.i18n('eSimNoConnectionErrorToast'));
     }
+  },
+
+  /**
+   * @param {!CustomEvent<string>} event
+   * @private
+   */
+  onShowErrorToast_(event) {
+    this.showErrorToast_(event.detail);
+  },
+
+  /**
+   * @param {string} message
+   * @private
+   */
+  showErrorToast_(message) {
+    this.errorToastMessage_ = message;
+    this.$.errorToast.show();
   },
 
   /** @private */

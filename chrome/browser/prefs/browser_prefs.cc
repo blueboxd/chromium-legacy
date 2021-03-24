@@ -260,10 +260,10 @@
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
+#include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager.h"
-#include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/child_accounts/family_user_chrome_activity_metrics.h"
 #include "chrome/browser/chromeos/child_accounts/family_user_metrics_service.h"
 #include "chrome/browser/chromeos/child_accounts/family_user_session_metrics.h"
@@ -555,6 +555,11 @@ const char kPinnedExtensionsMigrationComplete[] =
     "extensions.pinned_extension_migration";
 #endif
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+// Deprecated 03/2021
+const char kRunAllFlashInAllowMode[] = "plugins.run_all_flash_in_allow_mode";
+#endif
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -666,6 +671,10 @@ void RegisterProfilePrefsForMigration(
       enterprise_connectors::kDeviceTrustPrivateKeyPref, std::string());
   registry->RegisterStringPref(enterprise_connectors::kDeviceTrustPublicKeyPref,
                                std::string());
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  registry->RegisterBooleanPref(kRunAllFlashInAllowMode, false);
 #endif
 }
 
@@ -1355,6 +1364,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 03/2021
   profile_prefs->ClearPref(enterprise_connectors::kDeviceTrustPrivateKeyPref);
   profile_prefs->ClearPref(enterprise_connectors::kDeviceTrustPublicKeyPref);
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Added 03/2021
+  profile_prefs->ClearPref(kRunAllFlashInAllowMode);
 #endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

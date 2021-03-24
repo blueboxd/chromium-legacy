@@ -1194,9 +1194,6 @@ extern const char kRestrictGamepadAccessDescription[];
 extern const char kMBIModeName[];
 extern const char kMBIModeDescription[];
 
-extern const char kDelayCompetingLowPriorityRequestsName[];
-extern const char kDelayCompetingLowPriorityRequestsDescription[];
-
 extern const char kIntensiveWakeUpThrottlingName[];
 extern const char kIntensiveWakeUpThrottlingDescription[];
 
@@ -2155,9 +2152,6 @@ extern const char kImmersiveFullscreenDescription[];
 
 extern const char kMacSyscallSandboxName[];
 extern const char kMacSyscallSandboxDescription[];
-
-extern const char kMacV2GPUSandboxName[];
-extern const char kMacV2GPUSandboxDescription[];
 
 extern const char kMetalName[];
 extern const char kMetalDescription[];

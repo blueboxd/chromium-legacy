@@ -106,12 +106,12 @@ void AutofillDriverIOS::PropagateAutofillPredictions(
 
 void AutofillDriverIOS::HandleParsedForms(
     const std::vector<const FormData*>& forms) {
-  const std::map<FormRendererId, std::unique_ptr<FormStructure>>& map =
+  const std::map<FormGlobalId, std::unique_ptr<FormStructure>>& map =
       autofill_manager_.form_structures();
   std::vector<FormStructure*> form_structures;
   form_structures.reserve(forms.size());
   for (const FormData* form : forms) {
-    auto it = map.find(form->unique_renderer_id);
+    auto it = map.find(form->global_id());
     if (it != map.end())
       form_structures.push_back(it->second.get());
   }
@@ -134,6 +134,7 @@ void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
 }
 
 void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
+    const FieldGlobalId& field,
     const std::u16string& value) {}
 
 void AutofillDriverIOS::RendererShouldClearFilledSection() {}
@@ -142,12 +143,15 @@ void AutofillDriverIOS::RendererShouldClearPreviewedForm() {
 }
 
 void AutofillDriverIOS::RendererShouldFillFieldWithValue(
+    const FieldGlobalId& field,
     const std::u16string& value) {}
 
 void AutofillDriverIOS::RendererShouldPreviewFieldWithValue(
+    const FieldGlobalId& field,
     const std::u16string& value) {}
 
 void AutofillDriverIOS::RendererShouldSetSuggestionAvailability(
+    const FieldGlobalId& field,
     const mojom::AutofillState state) {}
 
 void AutofillDriverIOS::PopupHidden() {

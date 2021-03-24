@@ -148,11 +148,12 @@ bool ShouldShowPermission(const PageInfo::PermissionInfo& info,
       return true;
   }
 
+  const bool is_incognito = web_contents->GetBrowserContext()->IsOffTheRecord();
 #if defined(OS_ANDROID)
   // Special geolocation DSE settings apply only on Android, so make sure it
   // gets checked there regardless of default setting on Desktop.
   // DSE settings don't apply to incognito mode.
-  if (info.type == ContentSettingsType::GEOLOCATION && !info.is_incognito)
+  if (info.type == ContentSettingsType::GEOLOCATION && !is_incognito)
     return true;
 
   // The File System write permission is desktop only at the moment.
@@ -195,12 +196,12 @@ bool ShouldShowPermission(const PageInfo::PermissionInfo& info,
   if (info.type == ContentSettingsType::BLUETOOTH_GUARD &&
       base::FeatureList::IsEnabled(
           features::kWebBluetoothNewPermissionsBackend) &&
-      !PageInfo::IsPermissionFactoryDefault(info)) {
+      !PageInfo::IsPermissionFactoryDefault(info, is_incognito)) {
     return true;
   }
 
   // Show the content setting when it has a non-default value.
-  if (!PageInfo::IsPermissionFactoryDefault(info))
+  if (!PageInfo::IsPermissionFactoryDefault(info, is_incognito))
     return true;
 
   return false;
@@ -368,7 +369,8 @@ PageInfo::~PageInfo() {
 }
 
 // static
-bool PageInfo::IsPermissionFactoryDefault(const PermissionInfo& info) {
+bool PageInfo::IsPermissionFactoryDefault(const PermissionInfo& info,
+                                          bool is_incognito) {
   const ContentSetting factory_default_setting =
       content_settings::ContentSettingsRegistry::GetInstance()
           ->Get(info.type)
@@ -377,7 +379,7 @@ bool PageInfo::IsPermissionFactoryDefault(const PermissionInfo& info) {
   // Settings that are granted in regular mode get reduced to ASK in incognito
   // mode. These settings should not be displayed either.
   const bool is_incognito_default =
-      info.is_incognito && info.setting == CONTENT_SETTING_ASK &&
+      is_incognito && info.setting == CONTENT_SETTING_ASK &&
       factory_default_setting == CONTENT_SETTING_ASK;
 
   return info.source == content_settings::SETTING_SOURCE_USER &&
@@ -588,19 +590,61 @@ void PageInfo::OpenSiteSettingsView() {
 #endif
 }
 
-void PageInfo::OnChangePasswordButtonPressed(
-    content::WebContents* web_contents) {
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  delegate_->OnUserActionOnPasswordUi(
-      web_contents, safe_browsing::WarningAction::CHANGE_PASSWORD);
+void PageInfo::OpenCookiesDialog() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  if (!web_contents() || web_contents()->IsBeingDestroyed())
+    return;
+
+  delegate_->OpenCookiesDialog();
+  RecordPageInfoAction(PAGE_INFO_COOKIES_DIALOG_OPENED);
 #endif
 }
 
-void PageInfo::OnWhitelistPasswordReuseButtonPressed(
-    content::WebContents* web_contents) {
+void PageInfo::OpenCertificateDialog(net::X509Certificate* certificate) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  if (!web_contents() || web_contents()->IsBeingDestroyed())
+    return;
+
+  gfx::NativeWindow top_window = web_contents()->GetTopLevelNativeWindow();
+  if (certificate && top_window) {
+    delegate_->OpenCertificateDialog(certificate);
+    RecordPageInfoAction(PAGE_INFO_CERTIFICATE_DIALOG_OPENED);
+  }
+#endif
+}
+
+void PageInfo::OpenSafetyTipHelpCenterPage() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  delegate_->OpenSafetyTipHelpCenterPage();
+#endif
+}
+
+void PageInfo::OpenConnectionHelpCenterPage(const ui::Event& event) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  delegate_->OpenConnectionHelpCenterPage(event);
+  RecordPageInfoAction(PAGE_INFO_CONNECTION_HELP_OPENED);
+#endif
+}
+
+void PageInfo::OnChangePasswordButtonPressed() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   delegate_->OnUserActionOnPasswordUi(
-      web_contents, safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
+      safe_browsing::WarningAction::CHANGE_PASSWORD);
+#endif
+}
+
+void PageInfo::OnWhitelistPasswordReuseButtonPressed() {
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  delegate_->OnUserActionOnPasswordUi(
+      safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif
 }
 
@@ -725,7 +769,7 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
     }
 
     if (visible_security_state.cert_status & net::CERT_STATUS_NON_UNIQUE_NAME) {
-      identity_status_description_android_ += ASCIIToUTF16("\n\n");
+      identity_status_description_android_ += u"\n\n";
       identity_status_description_android_ +=
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
     }
@@ -834,7 +878,7 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
         visible_security_state.connection_status);
     const char* ssl_version_str;
     net::SSLVersionToString(&ssl_version_str, ssl_version);
-    site_connection_details_ += ASCIIToUTF16("\n\n");
+    site_connection_details_ += u"\n\n";
     site_connection_details_ += l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION, ASCIIToUTF16(ssl_version_str));
 
@@ -843,7 +887,7 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
     net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                  &is_tls13, cipher_suite);
 
-    site_connection_details_ += ASCIIToUTF16("\n\n");
+    site_connection_details_ += u"\n\n";
     if (is_aead) {
       if (is_tls13) {
         // For TLS 1.3 ciphers, report the group (historically, curve) as the
@@ -904,8 +948,6 @@ void PageInfo::PresentSitePermissions() {
     }
 
     permission_info.source = info.source;
-    permission_info.is_incognito =
-        web_contents()->GetBrowserContext()->IsOffTheRecord();
     permission_info.is_one_time =
         (info.session_model == content_settings::SessionModel::OneTime);
 

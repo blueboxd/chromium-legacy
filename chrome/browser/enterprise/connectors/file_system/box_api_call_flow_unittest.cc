@@ -513,7 +513,8 @@ class BoxCreateUploadSessionApiCallFlowTest
         base::BindOnce(&BoxCreateUploadSessionApiCallFlowTest::OnResponse,
                        factory_.GetWeakPtr()),
         /*folder_id = */ "13579", /*file_size = */ 60 * 1024 * 1024,
-        /*file_name = */ "box_chunked_file_upload_test.txt");
+        /*file_name = */
+        base::FilePath{FILE_PATH_LITERAL("box_chunked_upload_test.txt")});
   }
 
   void OnResponse(bool success,
@@ -556,6 +557,13 @@ TEST_F(BoxCreateUploadSessionApiCallFlowTest, IsExpectedSuccessCode) {
   ASSERT_FALSE(flow_->IsExpectedSuccessCode(409));
 }
 
+TEST_F(BoxCreateUploadSessionApiCallFlowTest, CreateApiCallBody) {
+  std::string body = flow_->CreateApiCallBody();
+  std::string expected_body(R"({"file_name":"box_chunked_upload_test.txt")");
+  expected_body += R"(,"file_size":62914560,"folder_id":"13579"})";
+  ASSERT_EQ(body, expected_body);
+}
+
 TEST_F(BoxCreateUploadSessionApiCallFlowTest, ProcessApiCallSuccess) {
   auto http_head = network::CreateURLResponseHead(net::HTTP_CREATED);
 
@@ -571,8 +579,8 @@ TEST_F(BoxCreateUploadSessionApiCallFlowTest, ProcessApiCallSuccess) {
 
   ASSERT_EQ(response_code_, net::HTTP_CREATED);
   ASSERT_TRUE(processed_success_);
-  EXPECT_EQ(session_upload_endpoint_, kFileSystemBoxChunkedUploadPartUploadUrl);
-  EXPECT_EQ(session_abort_endpoint_, kFileSystemBoxChunkedUploadAbortUrl);
+  EXPECT_EQ(session_upload_endpoint_, kFileSystemBoxChunkedUploadSessionUrl);
+  EXPECT_EQ(session_abort_endpoint_, kFileSystemBoxChunkedUploadSessionUrl);
   EXPECT_EQ(session_commit_endpoint_, kFileSystemBoxChunkedUploadCommitUrl);
 }
 
@@ -667,8 +675,8 @@ class BoxPartFileUploadApiCallFlowTest
     flow_ = std::make_unique<BoxPartFileUploadApiCallFlowForTest>(
         base::BindOnce(&BoxPartFileUploadApiCallFlowTest::OnResponse,
                        factory_.GetWeakPtr()),
-        upload_endpoint_, file_content_, 0, file_content_.size(),
-        file_content_.size());
+        kFileSystemBoxChunkedUploadSessionUrl, file_content_, 0,
+        file_content_.size(), file_content_.size());
   }
 
   void OnResponse(bool success, int response_code, base::Value) {
@@ -678,7 +686,6 @@ class BoxPartFileUploadApiCallFlowTest
       std::move(quit_closure_).Run();
   }
 
-  const std::string upload_endpoint_ = "https://provider.com/upload/id=12345";
   const std::string file_content_;
   const std::string expected_sha_;
   const std::string expected_content_range_;
@@ -690,7 +697,7 @@ class BoxPartFileUploadApiCallFlowTest
 };
 
 TEST_F(BoxPartFileUploadApiCallFlowTest, CreateApiCallUrl) {
-  ASSERT_EQ(flow_->CreateApiCallUrl(), upload_endpoint_);
+  ASSERT_EQ(flow_->CreateApiCallUrl(), kFileSystemBoxChunkedUploadSessionUrl);
 }
 
 TEST_F(BoxPartFileUploadApiCallFlowTest, CreateApiCallHeaders) {
@@ -774,6 +781,77 @@ TEST_F(BoxPartFileUploadApiCallFlowTest, ProcessApiCallFailure) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// AbortUploadSession
+////////////////////////////////////////////////////////////////////////////////
+class BoxAbortUploadSessionApiCallFlowForTest
+    : public BoxAbortUploadSessionApiCallFlow {
+ public:
+  using BoxAbortUploadSessionApiCallFlow::BoxAbortUploadSessionApiCallFlow;
+  using BoxAbortUploadSessionApiCallFlow::CreateApiCallBody;
+  using BoxAbortUploadSessionApiCallFlow::CreateApiCallUrl;
+  using BoxAbortUploadSessionApiCallFlow::GetRequestTypeForBody;
+  using BoxAbortUploadSessionApiCallFlow::IsExpectedSuccessCode;
+  using BoxAbortUploadSessionApiCallFlow::ProcessApiCallFailure;
+  using BoxAbortUploadSessionApiCallFlow::ProcessApiCallSuccess;
+};
+
+class BoxAbortUploadSessionApiCallFlowTest
+    : public BoxApiCallFlowTest<BoxAbortUploadSessionApiCallFlowForTest> {
+  void SetUp() override {
+    flow_ = std::make_unique<BoxAbortUploadSessionApiCallFlowForTest>(
+        base::BindOnce(&BoxAbortUploadSessionApiCallFlowTest::OnResponse,
+                       factory_.GetWeakPtr()),
+        kFileSystemBoxChunkedUploadSessionUrl);
+  }
+
+  void OnResponse(bool success, int response_code) {
+    processed_success_ = success;
+    response_code_ = response_code;
+  }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::OnceClosure quit_closure_;
+  base::WeakPtrFactory<BoxAbortUploadSessionApiCallFlowTest> factory_{this};
+};
+
+TEST_F(BoxAbortUploadSessionApiCallFlowTest, CreateApiCallUrl) {
+  ASSERT_EQ(flow_->CreateApiCallUrl(), kFileSystemBoxChunkedUploadSessionUrl);
+}
+
+TEST_F(BoxAbortUploadSessionApiCallFlowTest, CreateApiCallBody) {
+  ASSERT_TRUE(flow_->CreateApiCallBody().empty());
+}
+
+TEST_F(BoxAbortUploadSessionApiCallFlowTest, GetRequestTypeForBody) {
+  ASSERT_EQ(flow_->GetRequestTypeForBody(std::string()), "DELETE");
+}
+
+TEST_F(BoxAbortUploadSessionApiCallFlowTest, IsExpectedSuccessCode) {
+  ASSERT_TRUE(flow_->IsExpectedSuccessCode(204));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(200));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(400));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(404));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(409));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(412));
+}
+
+TEST_F(BoxAbortUploadSessionApiCallFlowTest, ProcessApiCallSuccess) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_NO_CONTENT);
+  flow_->ProcessApiCallSuccess(http_head.get(), {});
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(processed_success_);
+  ASSERT_EQ(response_code_, net::HTTP_NO_CONTENT);
+}
+
+TEST_F(BoxAbortUploadSessionApiCallFlowTest, ProcessApiCallFailure) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_CONFLICT);
+  flow_->ProcessApiCallFailure(net::OK, http_head.get(), {});
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(processed_success_);
+  ASSERT_EQ(response_code_, net::HTTP_CONFLICT);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // CommitUploadSession
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -822,15 +900,19 @@ class BoxCommitUploadSessionApiCallFlowTest
         kFileSystemBoxChunkedUploadSha);
   }
 
-  void OnResponse(bool success, int response_code) {
+  void OnResponse(bool success,
+                  int response_code,
+                  base::TimeDelta retry_after) {
     processed_success_ = success;
     response_code_ = response_code;
+    retry_after_ = retry_after;
     if (quit_closure_)
       std::move(quit_closure_).Run();
   }
 
   base::Value upload_session_parts_;
   std::string expected_body_;
+  base::TimeDelta retry_after_;
 
   base::test::TaskEnvironment task_environment_;
   base::OnceClosure quit_closure_;
@@ -868,22 +950,26 @@ TEST_F(BoxCommitUploadSessionApiCallFlowTest, ProcessApiCallFailure) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(processed_success_);
   ASSERT_EQ(response_code_, net::HTTP_CONFLICT);
+  ASSERT_EQ(retry_after_, base::TimeDelta());
 }
 
-class ProcessApiCallSuccessTest
-    : public BoxCommitUploadSessionApiCallFlowTest,
-      public testing::WithParamInterface<net::HttpStatusCode> {};
-
-TEST_P(ProcessApiCallSuccessTest, SuccessCodes) {
-  auto http_head = network::CreateURLResponseHead(GetParam());
+TEST_F(BoxCommitUploadSessionApiCallFlowTest, ProcessApiCallSuccess_Retry) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_ACCEPTED);
+  http_head->headers->AddHeader("Retry-After", "120");
   flow_->ProcessApiCallSuccess(http_head.get(), {});
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(processed_success_);
-  ASSERT_EQ(response_code_, GetParam());
+  ASSERT_EQ(response_code_, net::HTTP_ACCEPTED);
+  ASSERT_EQ(retry_after_, base::TimeDelta::FromSeconds(120));
 }
 
-INSTANTIATE_TEST_CASE_P(BoxCommitUploadSessionApiCallFlow,
-                        ProcessApiCallSuccessTest,
-                        testing::Values(net::HTTP_CREATED, net::HTTP_ACCEPTED));
+TEST_F(BoxCommitUploadSessionApiCallFlowTest, ProcessApiCallSuccess_Created) {
+  auto http_head = network::CreateURLResponseHead(net::HTTP_CREATED);
+  flow_->ProcessApiCallSuccess(http_head.get(), {});
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(processed_success_);
+  ASSERT_EQ(response_code_, net::HTTP_CREATED);
+  ASSERT_EQ(retry_after_, base::TimeDelta::FromSeconds(0));
+}
 
 }  // namespace enterprise_connectors

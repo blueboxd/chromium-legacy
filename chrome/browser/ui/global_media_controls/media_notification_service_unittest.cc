@@ -265,8 +265,8 @@ class MediaNotificationServiceTest : public ChromeRenderViewHostTestHarness {
     ASSERT_NE(sessions().end(), item_itr);
 
     media_session::MediaMetadata metadata;
-    metadata.title = base::ASCIIToUTF16("title");
-    metadata.artist = base::ASCIIToUTF16("artist");
+    metadata.title = u"title";
+    metadata.artist = u"artist";
     item_itr->second.item()->MediaSessionMetadataChanged(std::move(metadata));
   }
 
@@ -435,6 +435,11 @@ class MediaNotificationServiceTest : public ChromeRenderViewHostTestHarness {
         id.ToString());
   }
 
+  PresentationRequestNotificationProducer*
+  GetPresentationRequestNotificationProducer() {
+    return service_->presentation_request_notification_producer_.get();
+  }
+
   MockMediaNotificationServiceObserver& observer() { return observer_; }
 
   MediaNotificationService* service() { return service_.get(); }
@@ -456,10 +461,9 @@ class MediaNotificationServiceTest : public ChromeRenderViewHostTestHarness {
 class MediaNotificationServiceCastTest : public MediaNotificationServiceTest {
  public:
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {media_router::kGlobalMediaControlsCastStartStop,
-         media::kGlobalMediaControlsOverlayControls},
-        {});
+    feature_list_.InitAndEnableFeature(
+        media_router::kGlobalMediaControlsCastStartStop);
+
     presentation_manager_ =
         std::make_unique<MockWebContentsPresentationManager>();
     media_router::WebContentsPresentationManager::SetTestInstance(

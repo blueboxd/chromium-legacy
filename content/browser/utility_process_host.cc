@@ -68,7 +68,7 @@ UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
       child_flags_(ChildProcessHost::CHILD_NORMAL),
 #endif
       started_(false),
-      name_(base::ASCIIToUTF16("utility process")),
+      name_(u"utility process"),
       client_(std::move(client)) {
   process_.reset(new BrowserChildProcessHostImpl(
       PROCESS_TYPE_UTILITY, this, ChildProcessHost::IpcMode::kNormal));
@@ -257,6 +257,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kUseMockCertVerifierForTesting,
       switches::kMockCertVerifierDefaultResultForTesting,
       switches::kUtilityStartupDialog,
+      switches::kUseANGLE,
       switches::kUseGL,
       switches::kV,
       switches::kVModule,

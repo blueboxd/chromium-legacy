@@ -179,9 +179,9 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
   DCHECK_LT(max_tokens_, size_t{64});
 
   if (concept_data->FindKey("tokenize_each_character")->GetBool()) {
-    tokenize_characters_ = base::ASCIIToUTF16("");
+    tokenize_characters_ = u"";
   } else {
-    tokenize_characters_ = base::ASCIIToUTF16(" -");
+    tokenize_characters_ = u" -";
   }
 
   const auto& dictionary = concept_data->FindKey("dictionary")->GetList();
@@ -217,6 +217,10 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
         pedal_value.FindDictKey("omnibox_ui_strings");
     if (ui_strings) {
       pedal->second->SetLabelStrings(*ui_strings);
+    }
+    const std::string* url = pedal_value.FindStringKey("url");
+    if (!url->empty()) {
+      pedal->second->SetNavigationUrl(GURL(*url));
     }
     for (const auto& group_value : pedal_value.FindKey("groups")->GetList()) {
       pedal->second->AddSynonymGroup(LoadSynonymGroup(group_value));

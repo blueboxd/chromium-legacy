@@ -14,6 +14,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/platform_window/platform_window.h"
@@ -225,7 +226,7 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
 
   int StartDragAndDrop(int operation) {
     auto data = std::make_unique<ui::OSExchangeData>();
-    data->SetString(base::ASCIIToUTF16("Test"));
+    data->SetString(u"Test");
     SkBitmap drag_bitmap;
     drag_bitmap.allocN32Pixels(10, 10);
     drag_bitmap.eraseARGB(0xFF, 0, 0, 0);
@@ -328,7 +329,7 @@ TEST_F(DesktopDragDropClientOzoneTest, ReceiveDrag) {
   dragdrop_delegate_->SetOperation(operation);
 
   // Set the data which will be delivered.
-  const std::u16string sample_data = base::ASCIIToUTF16("ReceiveDrag");
+  const std::u16string sample_data = u"ReceiveDrag";
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
   data->SetString(sample_data);
@@ -366,7 +367,7 @@ TEST_F(DesktopDragDropClientOzoneTest, TargetDestroyedDuringDrag) {
   dragdrop_delegate_->SetOperation(DragOperation::kMove);
 
   // Set the data which will be delivered.
-  const std::u16string sample_data = base::ASCIIToUTF16("ReceiveDrag");
+  const std::u16string sample_data = u"ReceiveDrag";
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
   data->SetString(sample_data);

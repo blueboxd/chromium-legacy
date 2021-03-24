@@ -229,9 +229,6 @@ FYI_BUILDERS = {
                 '--experimental-tbmv3-metrics',
                 '--device=custom',
                 '--custom-device-target=internal.astro_target',
-                # TODO(rohpavone): Remove this to enable other stories once
-                # script has stabilized.
-                '--story-filter=load:chrome:blank',
             ],
             'type':
             TEST_TYPES.TELEMETRY,
@@ -921,6 +918,23 @@ BUILDERS = {
         'platform': 'linux',
         'perf_processor': True,
     },
+    'chromecast-linux-builder-perf': {
+        'additional_compile_targets': ['cast_shell'],
+        'tests': [
+            {
+                'name': 'resource_sizes_chromecast',
+                'isolate': 'resource_sizes_chromecast',
+                'type': TEST_TYPES.GENERIC,
+            },
+        ],
+        'dimension': {
+            'cpu': 'x86-64',
+            'os': 'Ubuntu-16.04',
+            'pool': 'chrome.tests',
+        },
+        'perf_trigger':
+        False,
+    },
     'chromeos-amd64-generic-lacros-builder-perf': {
         'additional_compile_targets': ['chrome'],
         'tests': [
@@ -1089,6 +1103,17 @@ OTHER_BENCHMARKS.update({
     BenchmarkMetadata(
         emails='heiserya@chromium.org, johnchen@chromium.org',
         component='Build',
+        documentation_url=(
+            'https://chromium.googlesource.com/chromium/'
+            'src/+/HEAD/tools/binary_size/README.md#resource_sizes_py'),
+    ),
+})
+
+OTHER_BENCHMARKS.update({
+    'resource_sizes_chromecast':
+    BenchmarkMetadata(
+        emails='juke@chromium.org, eliribble@chromium.org',
+        component='Chromecast',
         documentation_url=(
             'https://chromium.googlesource.com/chromium/'
             'src/+/HEAD/tools/binary_size/README.md#resource_sizes_py'),

@@ -1380,6 +1380,8 @@ static_library("ui") {
       "webui/favicon_source.h",
       "webui/feedback/feedback_dialog.cc",
       "webui/feedback/feedback_dialog.h",
+      "webui/feedback/feedback_handler.cc",
+      "webui/feedback/feedback_handler.h",
       "webui/feedback/feedback_ui.cc",
       "webui/feedback/feedback_ui.h",
       "webui/help/version_updater.h",
@@ -1625,6 +1627,7 @@ static_library("ui") {
       "//third_party/blink/public/common:headers",
       "//third_party/libaddressinput",
       "//third_party/libaddressinput:strings",
+      "//ui/base/dragdrop:types",
       "//ui/base/dragdrop/mojom",
       "//ui/events",
     ]
@@ -4346,6 +4349,7 @@ static_library("ui") {
       "//components/ui_devtools/views",
       "//device/vr/buildflags:buildflags",
       "//services/media_session/public/mojom",
+      "//ui/base/dragdrop:types",
       "//ui/gfx/geometry",
       "//ui/views:buildflags",
     ]
@@ -4920,11 +4924,14 @@ static_library("test_support") {
       "tabs/tab_ukm_test_helper.h",
       "test/test_confirm_bubble_model.cc",
       "test/test_confirm_bubble_model.h",
+      "views/global_media_controls/test_helper.cc",
+      "views/global_media_controls/test_helper.h",
       "webui/help/test_version_updater.cc",
       "webui/help/test_version_updater.h",
     ]
     deps += [
       "//chrome/test:test_support_ui",
+      "//components/media_message_center:media_message_center",
       "//components/signin/core/browser",
       "//components/signin/public/identity_manager",
       "//components/ukm:test_support",

@@ -198,7 +198,7 @@ void MakeBitmapOpaque(SkPixmap* pixmap) {
 void ParseBookmarkClipboardFormat(const std::u16string& bookmark,
                                   std::u16string* title,
                                   std::string* url) {
-  const std::u16string kDelim = base::ASCIIToUTF16("\r\n");
+  const std::u16string kDelim = u"\r\n";
 
   const size_t title_end = bookmark.find_first_of(kDelim);
   if (title)
@@ -849,13 +849,6 @@ SkBitmap ClipboardWin::ReadImageInternal(ClipboardBuffer buffer) const {
   BITMAPINFO* bitmap = static_cast<BITMAPINFO*>(::GetClipboardData(CF_DIB));
   if (!bitmap)
     return SkBitmap();
-
-  // Image is too large, and may cause an allocation failure.
-  // See https://crbug.com/1164680.
-  constexpr int kMaxImageSize = 1 << 9;  // 1 GB
-  if (bitmap->bmiHeader.biSize > kMaxImageSize)
-    return SkBitmap();
-
   int color_table_length = 0;
 
   // For more information on BITMAPINFOHEADER and biBitCount definition,

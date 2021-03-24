@@ -31947,6 +31947,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3862" label="XRImageTracking"/>
   <int value="3863" label="XRSessionGetTrackedImageScores"/>
   <int value="3864" label="XRFrameGetImageTrackingResults"/>
+  <int value="3865" label="OpenWebDatabaseThirdPartyContext"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32317,6 +32318,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="1" label="Google Sans Regular"/>
   <int value="2" label="Google Sans Medium"/>
   <int value="3" label="Google Sans Bold"/>
+  <int value="4" label="Noto Color Emoji Compat"/>
 </enum>
 
 <enum name="FetchFontResult">
@@ -41667,6 +41669,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Key not supported"/>
   <int value="7" label="Section not supported"/>
   <int value="8" label="Krb5 failed to parse"/>
+  <int value="9" label="Too many nested groups"/>
 </enum>
 
 <enum name="KerberosEncryptionTypes">
@@ -70547,6 +70550,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="Other internal error"/>
   <int value="6" label="Encryption error"/>
   <int value="7" label="Commit timeout"/>
+  <int value="8" label="Request is cancelled"/>
 </enum>
 
 <enum name="SharingVapidKeyCreationResult">

@@ -1206,6 +1206,7 @@
         'mixins': [
           '11-x86-emulator',
           'emulator-4-cores',
+          'enable_resultdb',
           'linux-xenial',
           'x86-64',
         ],
@@ -1886,9 +1887,6 @@
         },
       },
       'ToTFuchsiaOfficial': {
-        'additional_compile_targets': [
-          'all',
-        ],
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_arm64_isolated_scripts',
@@ -2830,6 +2828,21 @@
           'enable_resultdb',
           'walleye',
         ],
+      },
+      'chromeos-amd64-generic-rel-dchecks': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'browser_config': 'cros-chrome',
+        'mixins': [
+          'chromeos-amd64-generic',
+        ],
+        'os_type': 'chromeos',
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
+          'gtest_tests': 'chromeos_vm_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
       },
       'fuchsia-code-coverage': {
         'test_suites': {

@@ -2024,12 +2024,6 @@ const char kMBIModeDescription[] =
     "Enables independent agent cluster scheduling, via the "
     "AgentSchedulingGroup infrastructure.";
 
-const char kDelayCompetingLowPriorityRequestsName[] =
-    "Delay Competing Low Priority Requests";
-const char kDelayCompetingLowPriorityRequestsDescription[] =
-    "Low priority requests will be delayed if they would otherwise compete "
-    "with a high priority request.";
-
 const char kIntensiveWakeUpThrottlingName[] =
     "Throttle Javascript timers in background.";
 const char kIntensiveWakeUpThrottlingDescription[] =
@@ -3714,10 +3708,6 @@ const char kImmersiveFullscreenDescription[] =
 const char kMacSyscallSandboxName[] = "Mac Syscall Filtering Sandbox";
 const char kMacSyscallSandboxDescription[] =
     "Controls whether the macOS sandbox filters syscalls.";
-
-const char kMacV2GPUSandboxName[] = "Mac V2 GPU Sandbox";
-const char kMacV2GPUSandboxDescription[] =
-    "Controls whether the GPU process on macOS uses the V1 or V2 sandbox.";
 
 const char kMetalName[] = "Metal";
 const char kMetalDescription[] =

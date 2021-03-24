@@ -14,7 +14,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "extensions/common/mojom/frame.mojom.h"
 #include "extensions/common/mojom/host_id.mojom-forward.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
@@ -69,8 +69,16 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
 
   using ScriptInjectionVector = std::vector<std::unique_ptr<ScriptInjection>>;
 
+  // Notifies that an injection has been finished or permission has been
+  // handled.
+  void OnInjectionStatusUpdated(ScriptInjection::InjectionStatus status,
+                                ScriptInjection* injection);
+
   // Notifies that an injection has been finished.
   void OnInjectionFinished(ScriptInjection* injection);
+
+  // Handle the GrantInjectionPermission extension message.
+  void OnPermitScriptInjectionHandled(ScriptInjection* injection);
 
   // UserScriptSetManager::Observer implementation.
   void OnUserScriptsUpdated(
@@ -95,9 +103,6 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
                    mojom::RunLocation run_location,
                    ScriptsRunInfo* scripts_run_info);
 
-  // Handle the GrantInjectionPermission extension message.
-  void HandlePermitScriptInjection(int64_t request_id);
-
   // The map of active web frames to their corresponding statuses. The
   // RunLocation of the frame corresponds to the last location that has ran.
   FrameStatusMap frame_statuses_;
@@ -121,8 +126,8 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   // Whether or not dom activity should be logged for scripts injected.
   bool activity_logging_enabled_ = false;
 
-  ScopedObserver<UserScriptSetManager, UserScriptSetManager::Observer>
-      user_script_set_manager_observer_;
+  base::ScopedObservation<UserScriptSetManager, UserScriptSetManager::Observer>
+      user_script_set_manager_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScriptInjectionManager);
 };

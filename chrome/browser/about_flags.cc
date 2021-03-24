@@ -4656,6 +4656,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
 
+    {"side-panel-prototype", flag_descriptions::kSidePanelPrototypeName,
+     flag_descriptions::kSidePanelPrototypeDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanelPrototype)},
+
     {"tab-outlines-in-low-contrast-themes",
      flag_descriptions::kTabOutlinesInLowContrastThemesName,
      flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,
@@ -6225,6 +6229,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"media-app-pdf-in-ink", flag_descriptions::kMediaAppPdfInInkName,
      flag_descriptions::kMediaAppPdfInInkDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppPdfInInk)},
+    {"media-app-video", flag_descriptions::kMediaAppVideoName,
+     flag_descriptions::kMediaAppVideoDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kVideoPlayerAppHidden)},
     {"release-notes-notification",
      flag_descriptions::kReleaseNotesNotificationName,
      flag_descriptions::kReleaseNotesNotificationDescription, kOsCrOS,

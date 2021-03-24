@@ -1616,6 +1616,9 @@
   <message name="IDS_NETWORK_LIST_SIM_CARD_LOCKED" desc="Text in the network list element when a Cellular network's SIM card is locked.">
     SIM card is locked
   </message>
+  <message name="IDS_NETWORK_LIST_UPDATED_CELLULAR_SIM_CARD_LOCKED" desc="Text in the network list element when a Cellular network's SIM card is locked. Used when updated cellular activation flag in on.">
+    Locked
+  </message>
   <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Text in the network list element when there is a network for the type, but it is not connected or connecting.">
     Not connected
   </message>
@@ -1705,6 +1708,12 @@
   </message>
   <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD" desc="Text for the button displayed for pending eSIM profiles that installs the profile when pressed.">
     Download
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_UNLOCK" desc="Text for the button displayed for locked cellular networks that opens a dialog to unlock the network when pressed ">
+    Unlock
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_UNLOCK_A11Y_LABEL" desc="A11Y label for button displayed for locked cellular networks that opens a dialog to unlock the network when pressed. Includes network name.">
+    <ph name="NETWORK_NAME">$1<ex>Cellular</ex></ph>, Unlock
   </message>
   <message name="IDS_NETWORK_LIST_ITEM_ADDING_PROFILE" desc="Loading text indicating that an eSIM profile is currently installing.">
     Adding Profile...
@@ -4835,6 +4844,24 @@
   <message name="IDS_CROSTINI_RECOVERY_RESTART_BUTTON" desc="Label for the dialog button when Linux will be restarted after a Chrome crash.">
     Restart Linux
   </message>
+
+  <!-- Crostini low disk space notification -->
+  <message name="IDS_CROSTINI_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are low on disk space.">
+    Linux is low on disk space
+  </message>
+  <message name="IDS_CROSTINI_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are low on disk space.">
+    Free up disk space or resize the Linux disk in Settings
+  </message>
+  <message name="IDS_CROSTINI_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are critically low on disk space.">
+    Linux disk space critically low
+  </message>
+  <message name="IDS_CROSTINI_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are critically low on disk space.">
+    Linux apps may become unresponsive.
+  </message>
+  <message name="IDS_CROSTINI_LOW_DISK_NOTIFICATION_BUTTON" desc="Button on the low disk notification to open storage management.">
+    Resize Linux disk
+  </message>
+
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
     Almost time for a break

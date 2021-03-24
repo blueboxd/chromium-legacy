@@ -43821,6 +43821,7 @@ from previous Chrome versions.
       label="enable-experimental-accessibility-switch-access"/>
   <int value="-1953145846" label="TargetEmbeddingLookalikes:disabled"/>
   <int value="-1953121360" label="EphemeralTab:disabled"/>
+  <int value="-1951046208" label="SidePanelPrototype:disabled"/>
   <int value="-1950469963" label="SeparatePointingStickSettings:enabled"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
@@ -46836,6 +46837,7 @@ from previous Chrome versions.
   <int value="740056959" label="ImeServiceConnectable:enabled"/>
   <int value="740619684" label="ExtensionsToolbarMenu:enabled"/>
   <int value="741219332" label="ShareByDefaultInCCT:enabled"/>
+  <int value="741760108" label="SidePanelPrototype:enabled"/>
   <int value="742083923" label="MimeHandlerViewInCrossProcessFrame:disabled"/>
   <int value="743714331" label="HelpAppLauncherSearch:enabled"/>
   <int value="744342941" label="SafetyCheckChromeCleanerChild:enabled"/>
@@ -46986,6 +46988,7 @@ from previous Chrome versions.
   <int value="902209599" label="ShelfHotseat:enabled"/>
   <int value="902839593" label="WebContentsForceDark:disabled"/>
   <int value="903267263" label="disable-offline-pages"/>
+  <int value="904159815" label="VideoPlayerAppHidden:disabled"/>
   <int value="904811479" label="query-tiles-enable-trending"/>
   <int value="907056713" label="DetectFormSubmissionOnFormClear:enabled"/>
   <int value="908302031"
@@ -47963,6 +47966,7 @@ from previous Chrome versions.
   <int value="1792609232" label="NTPShortcuts:enabled"/>
   <int value="1793023585"
       label="ClickToCallContextMenuForSelectedText:disabled"/>
+  <int value="1793434695" label="VideoPlayerAppHidden:enabled"/>
   <int value="1794057460" label="AutofillProfileClientValidation:enabled"/>
   <int value="1794586887"
       label="AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers:enabled"/>
@@ -63426,7 +63430,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
   <int value="9" label="The SAML sign-in flow stated (with unclear outcome)."/>
   <int value="10" label="The flow got aborted before successful sign-in."/>
-  <int value="11" label="The flow got aborted after successful sign-in."/>
+  <int value="11"
+      label="The flow got aborted after sign-in (not in enterprise welcome)."/>
+  <int value="12"
+      label="The flow got aborted after sign-in (in enterprise welcome)."/>
 </enum>
 
 <enum name="ProfileAllAccountsCategories">
@@ -64414,6 +64421,25 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Not required and not shown"/>
   <int value="3" label="Required but not shown - used grace"/>
   <int value="4" label="Required but not shown - grace exceeded"/>
+</enum>
+
+<enum name="PwaInstallPath">
+  <summary>The path taken by the user to reach install point for PWAs.</summary>
+  <int value="0" label="Unknown metric (error case)"/>
+  <int value="1" label="Install via Install modal (Ambient Badge)"/>
+  <int value="2" label="Install via Install modal (App menu)"/>
+  <int value="3" label="Install via Install modal (API)"/>
+  <int value="4" label="Install via BottomSheet (shown ambiently)"/>
+  <int value="5" label="Install via BottomSheet (App menu)"/>
+  <int value="6" label="Install via BottomSheet (API)"/>
+  <int value="7"
+      label="IPH shown, then install via Install modal (shown ambiently)"/>
+  <int value="8" label="IPH shown, then install via Install modal (App menu)"/>
+  <int value="9" label="IPH shown, then install via Install modal (API)"/>
+  <int value="10"
+      label="IPH shown, then install via BottomSheet (shown ambiently)"/>
+  <int value="11" label="IPH shown, then install via BottomSheet (App menu)"/>
+  <int value="12" label="IPH shown, then install via BottomSheet (API)"/>
 </enum>
 
 <enum name="QueryTilesGroupPruneReason">

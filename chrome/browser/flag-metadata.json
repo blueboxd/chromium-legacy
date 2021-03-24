@@ -1414,8 +1414,8 @@
   },
   {
     "name": "enable-close-all-tabs-confirmation",
-    "owners": [ "ewannpv. gambard" ],
-    "expiry_milestone": 90
+    "owners": [ "ewannpv", "gambard" ],
+    "expiry_milestone": 94
   },
   {
     "name": "enable-close-tab-suggestions",
@@ -3383,6 +3383,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "media-app-video",
+    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "media-history",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 88
@@ -4692,6 +4697,11 @@
   {
     "name" : "side-panel",
     "owners": [ "chrome-desktop-ui-sea@google.com", "pbos" ],
+    "expiry_milestone" : 92
+  },
+  {
+    "name" : "side-panel-prototype",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "johntlee" ],
     "expiry_milestone" : 92
   },
   {

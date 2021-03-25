@@ -186,7 +186,9 @@ class TabStrip : public views::View,
   // changes. This should be called when the result of
   // |TabStripController::GetGroupTitle(group)| or
   // |TabStripController::GetGroupColorId(group)| changes.
-  void OnGroupVisualsChanged(const tab_groups::TabGroupId& group);
+  void OnGroupVisualsChanged(const tab_groups::TabGroupId& group,
+                             const tab_groups::TabGroupVisualData* old_visuals,
+                             const tab_groups::TabGroupVisualData* new_visuals);
 
   // Handles animations relating to toggling the collapsed state of a group.
   void ToggleTabGroup(const tab_groups::TabGroupId& group,
@@ -364,7 +366,7 @@ class TabStrip : public views::View,
   friend class TabGroupEditorBubbleViewDialogBrowserTest;
   friend class TabHoverCardBubbleViewBrowserTest;
   friend class TabHoverCardBubbleViewInteractiveUiTest;
-  friend class TabStripTest;
+  friend class TabStripTestBase;
   friend class TabStripRegionViewTestBase;
 
   class TabContextMenuController : public views::ContextMenuController {

@@ -119,8 +119,10 @@ const base::Feature kNavigationPredictor {
 #endif
 };
 
+// This feature returns empty arrays for navigator.plugins and
+// navigator.mimeTypes. It is disabled for now, due to compat issues.
 const base::Feature kNavigatorPluginsEmpty{"NavigatorPluginsEmpty",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
@@ -567,9 +569,6 @@ const base::Feature kWebviewAccelerateSmallCanvases{
 // and modules. Needed for the experiment in http://crbug.com/1045052.
 const base::Feature kDiscardCodeCacheAfterFirstUse{
     "DiscardCodeCacheAfterFirstUse", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kBlockHTMLParserOnStyleSheets{
-    "BlockHTMLParserOnStyleSheets", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the new <link disabled> behavior.
 // TODO(crbug.com/1087043): Remove this once the feature has

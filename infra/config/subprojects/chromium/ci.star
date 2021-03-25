@@ -537,6 +537,10 @@ ci.android_builder(
     execution_timeout = 5 * time.hour,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    experiments = {
+        # TODO(crbug.com/1143122): remove this.
+        "luci.swarming.use_rbe_cas": 20,
+    },
 )
 
 ci.android_builder(
@@ -5808,48 +5812,52 @@ ci.win_builder(
 
 ci.win_builder(
     name = "Win7 (32) Tests",
+    builderless = True,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
         short_name = "32",
     ),
     main_console_view = "main",
-    os = os.WINDOWS_7,
+    os = os.WINDOWS_10,
     triggered_by = ["Win Builder"],
 )
 
 ci.win_builder(
     name = "Win7 Tests (1)",
+    builderless = True,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
         short_name = "32",
     ),
     main_console_view = "main",
-    os = os.WINDOWS_7,
+    os = os.WINDOWS_10,
     triggered_by = ["Win Builder"],
 )
 
 ci.win_builder(
     name = "Win7 Tests (dbg)(1)",
+    builderless = True,
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "debug|tester",
         short_name = "7",
     ),
     cq_mirrors_console_view = "mirrors",
-    os = os.WINDOWS_7,
+    os = os.WINDOWS_10,
     main_console_view = "main",
     triggered_by = ["ci/Win Builder (dbg)"],
 )
 
 ci.win_builder(
     name = "Win 7 Tests x64 (1)",
+    builderless = True,
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
         short_name = "64",
     ),
     cq_mirrors_console_view = "mirrors",
-    os = os.WINDOWS_7,
+    os = os.WINDOWS_10,
     main_console_view = "main",
     triggered_by = ["ci/Win x64 Builder"],
 )

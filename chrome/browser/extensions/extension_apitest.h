@@ -109,13 +109,6 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunExtensionSubtest(const std::string& extension_name,
                            const std::string& page_url) WARN_UNUSED_RESULT;
 
-  // Same as RunExtensionSubtest, except run with the specific |flags|
-  // (as defined in the Flags enum).
-  bool RunExtensionSubtest(const std::string& extension_name,
-                           const std::string& page_url,
-                           int browser_test_flags,
-                           int api_test_flags) WARN_UNUSED_RESULT;
-
   // Similar to RunExtensionTest, except used for running tests in platform app
   // shell windows.
   bool RunPlatformAppTest(const std::string& extension_name) WARN_UNUSED_RESULT;
@@ -124,19 +117,6 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // |customArg| to the test config object.
   bool RunPlatformAppTestWithArg(const std::string& extension_name,
                                  const char* custom_arg) WARN_UNUSED_RESULT;
-
-  // Similar to RunPlatformAppTest, with custom |flags| (as defined in the Flags
-  // enum). The kFlagLaunchPlatformApp flag is automatically added.
-  bool RunPlatformAppTestWithFlags(const std::string& extension_name,
-                                   int browser_test_flags,
-                                   int api_test_flags) WARN_UNUSED_RESULT;
-
-  // Similar to RunPlatformAppTestWithFlags above, except it has an additional
-  // string argument |customArg| to the test config object.
-  bool RunPlatformAppTestWithFlags(const std::string& extension_name,
-                                   const char* custom_arg,
-                                   int browser_test_flags,
-                                   int api_test_flags) WARN_UNUSED_RESULT;
 
   // Start the test server, and store details of its state. Those details
   // will be available to JavaScript tests using chrome.test.getConfig().

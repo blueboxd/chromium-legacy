@@ -45,9 +45,6 @@ extern const base::Feature kClientSideDetectionModelVersion;
 // protection users.
 extern const base::Feature kDownloadRequestWithToken;
 
-// Enable Chrome Safe Browsing enhanced protection.
-extern const base::Feature kEnhancedProtection;
-
 // Controls whether the limited list size experiment is enabled. This experiment
 // limits the number of entries stored in each Safe Browsing list.
 extern const base::Feature kLimitedListSizeForIOS;
@@ -57,6 +54,10 @@ extern const base::Feature kPasswordProtectionReferringAppEnabledAndroid;
 
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
+
+// Controls whether Chrome prompts Enhanced Safe Browsing users for deep
+// scanning.
+extern const base::Feature kPromptEsbForDeepScanning;
 
 // Controls whether we are performing enterprise download checks for users with
 // the appropriate policies enabled.

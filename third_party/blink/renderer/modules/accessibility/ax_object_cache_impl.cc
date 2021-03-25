@@ -213,7 +213,9 @@ bool CanIgnoreSpaceNextTo(LayoutObject* layout_object,
 }
 
 bool IsTextRelevantForAccessibility(const LayoutText& layout_text) {
-  DCHECK(layout_text.Parent());
+  if (!layout_text.Parent())
+    return false;
+
   Node* node = layout_text.GetNode();
   DCHECK(node);  // Anonymous text is processed earlier, doesn't reach here.
 
@@ -585,7 +587,13 @@ AXObject* AXObjectCacheImpl::Get(const LayoutObject* layout_object) {
     // but now it's in a locked subtree so we should remove the entry with its
     // layout object and replace it with an AXNodeObject created from the node
     // instead. Do this later at a safe time.
-    Invalidate(ax_id);
+    if (node) {
+      Invalidate(ax_id);
+    } else {
+      // Happens if pseudo content no longer relevant.
+      Remove(const_cast<LayoutObject*>(layout_object));
+      return nullptr;
+    }
   }
 
   AXObject* result = objects_.at(ax_id);
@@ -1107,7 +1115,7 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
   if (!obj)
     return;
 
-  ChildrenChanged(obj->CachedParentObject());
+  AXObject* parent = obj->CachedParentObject();
 
   obj->Detach();
   RemoveAXID(obj);
@@ -1118,6 +1126,8 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
   if (!objects_.Take(ax_id))
     return;
 
+  ChildrenChanged(parent);
+
   DCHECK_GE(objects_.size(), ids_in_use_.size());
 }
 
@@ -1126,18 +1136,23 @@ void AXObjectCacheImpl::Remove(AccessibleNode* accessible_node) {
     return;
 
   AXID ax_id = accessible_node_mapping_.at(accessible_node);
-  Remove(ax_id);
   accessible_node_mapping_.erase(accessible_node);
+
+  Remove(ax_id);
 }
 
-void AXObjectCacheImpl::Remove(LayoutObject* layout_object) {
+bool AXObjectCacheImpl::Remove(LayoutObject* layout_object) {
   if (!layout_object)
-    return;
+    return false;
 
   AXID ax_id = layout_object_mapping_.at(layout_object);
+  if (!ax_id)
+    return false;
 
-  Remove(ax_id);
   layout_object_mapping_.erase(layout_object);
+  Remove(ax_id);
+
+  return true;
 }
 
 void AXObjectCacheImpl::Remove(Node* node) {
@@ -1146,11 +1161,10 @@ void AXObjectCacheImpl::Remove(Node* node) {
 
   // This is all safe even if we didn't have a mapping.
   AXID ax_id = node_object_mapping_.at(node);
-  Remove(ax_id);
   node_object_mapping_.erase(node);
 
-  if (node->GetLayoutObject())
-    Remove(node->GetLayoutObject());
+  if (!Remove(node->GetLayoutObject()))
+    Remove(ax_id);
 }
 
 void AXObjectCacheImpl::Remove(AbstractInlineTextBox* inline_text_box) {
@@ -1158,8 +1172,9 @@ void AXObjectCacheImpl::Remove(AbstractInlineTextBox* inline_text_box) {
     return;
 
   AXID ax_id = inline_text_box_object_mapping_.at(inline_text_box);
-  Remove(ax_id);
   inline_text_box_object_mapping_.erase(inline_text_box);
+
+  Remove(ax_id);
 }
 
 AXID AXObjectCacheImpl::GenerateAXID() const {
@@ -1614,8 +1629,10 @@ void AXObjectCacheImpl::ChildrenChanged(const AXObject* obj) {
 }
 
 void AXObjectCacheImpl::ChildrenChanged(AXObject* obj) {
-  if (!obj)
+  if (!obj || obj->IsDetached())
     return;
+
+  obj->SetNeedsToUpdateChildren();
 
   Node* node = obj->GetNode();
   if (node && !nodes_with_pending_children_changed_.insert(node).is_new_entry)

@@ -26,6 +26,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/find_private.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
@@ -42,7 +43,6 @@ namespace chrome_pdf {
 
 class Graphics;
 class PDFiumEngine;
-class Thumbnail;
 class UrlLoader;
 
 class OutOfProcessInstance : public PdfViewPluginBase,
@@ -96,7 +96,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void FlushCallback(int32_t result);
 
   // PdfViewPluginBase:
-  void UpdateCursor(PP_CursorType_Dev cursor) override;
+  void UpdateCursor(ui::mojom::CursorType cursor_type) override;
   void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
@@ -156,6 +156,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
                                 AccessibilityPageObjects page_objects) override;
   void SetAccessibilityViewportInfo(
       const AccessibilityViewportInfo& viewport_info) override;
+  void UserMetricsRecordAction(const std::string& action) override;
 
  private:
   // Message handlers.
@@ -170,9 +171,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void SaveToFile(const std::string& token);
 
   void FormDidOpen(int32_t result);
-
-  void RecordDocumentMetrics();
-  void UserMetricsRecordAction(const std::string& action);
 
   // Must match SaveRequestType in chrome/browser/resources/pdf/constants.js.
   enum class SaveRequestType {
@@ -197,37 +195,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // Called after a preview page has loaded or failed to load.
   void LoadNextPreviewPage();
 
-  // Sends the thumbnail image data.
-  void SendThumbnail(const std::string& message_id, Thumbnail thumbnail);
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class PdfHasAttachment {
-    kNo = 0,
-    kYes = 1,
-    kMaxValue = kYes,
-  };
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class PdfIsTagged {
-    kNo = 0,
-    kYes = 1,
-    kMaxValue = kYes,
-  };
-
-  // Add a sample to an enumerated histogram and filter out print preview usage.
-  template <typename T>
-  void HistogramEnumeration(const char* name, T sample);
-
-  // Add a sample to a custom counts histogram and filter out print preview
-  // usage.
-  void HistogramCustomCounts(const char* name,
-                             int32_t sample,
-                             int32_t min,
-                             int32_t max,
-                             uint32_t bucket_count);
-
   // Callback to print without re-entrancy issues.
   void OnPrint(int32_t /*unused_but_required*/);
 
@@ -238,8 +205,8 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   // The Pepper image data that is in sync with mutable_image_data().
   pp::ImageData pepper_image_data_;
 
-  // The current cursor.
-  PP_CursorType_Dev cursor_ = PP_CURSORTYPE_POINTER;
+  // The current cursor type.
+  ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
 
   // True if the plugin is full-page.
   bool full_ = false;

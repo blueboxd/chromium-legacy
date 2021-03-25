@@ -491,6 +491,10 @@ crbug.com/148499 external/wpt/svg/extensibility/foreignObject/will-change-in-for
 
 crbug.com/819617 [ Linux ] virtual/text-antialias/descent-clip-in-scaled-page.html [ Failure ]
 
+# Sometimes still blurred on the edges.
+crbug.com/1169154 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
+crbug.com/1169154 [ Win ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/1142958 external/wpt/layout-instability/absolute-child-shift-with-parent-will-change.html [ Failure ]
@@ -1135,9 +1139,6 @@ crbug.com/1171616 external/wpt/css/css-tables/height-distribution/percentage-siz
 # Composited background painting leaves gaps.
 crbug.com/958381 fast/table/border-collapsing/composited-cell-collapsed-border.html [ Failure ]
 crbug.com/958381 fast/table/border-collapsing/composited-row-collapsed-border.html [ Failure ]
-crbug.com/958381 paint/invalidation/table/collapsed-border-cell-change-width-composited-cell.html [ Failure ]
-crbug.com/958381 paint/invalidation/table/collapsed-border-cell-change-width-composited-row.html [ Failure ]
-crbug.com/958381 paint/invalidation/table/collapsed-border-cell-change-width-composited-section.html [ Failure ]
 
 # Rowspanned cell overflows TD visible rect.
 crbug.com/958381 external/wpt/css/css-tables/visibility-collapse-rowspan-005.html [ Failure ]
@@ -1862,6 +1863,8 @@ crbug.com/752449 [ Mac10.14 ] external/wpt/css/css-fonts/matching/fixed-stretch-
 crbug.com/752449 [ Mac10.12 ] external/wpt/css/css-fonts/matching/stretch-distance-over-weight-distance.html [ Failure ]
 crbug.com/752449 [ Mac10.12 ] external/wpt/css/css-fonts/matching/style-ranges-over-weight-direction.html [ Failure ]
 
+crbug.com/1191718 external/wpt/css/css-fonts/size-adjust-text-decoration.tentative.html [ Failure ]
+
 # CSS Font Feature Resolution is not implemented yet
 crbug.com/450619 external/wpt/css/css-fonts/font-feature-resolution-001.html [ Failure ]
 crbug.com/450619 external/wpt/css/css-fonts/font-feature-resolution-002.html [ Failure ]
@@ -2556,8 +2559,6 @@ crbug.com/626703 external/wpt/websockets/cookies/003.html?wss&wpt_flags=https [ 
 crbug.com/626703 external/wpt/websockets/cookies/005.html?wss&wpt_flags=https [ Failure ]
 crbug.com/626703 external/wpt/websockets/cookies/007.html?wss&wpt_flags=https [ Failure ]
 crbug.com/626703 [ Mac ] virtual/threaded/external/wpt/css/css-scroll-snap/input/keyboard.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/background-color-transition-with-delay.html [ Failure ]
-crbug.com/626703 [ Mac10.14 ] virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/background-color-transition-with-delay.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Linux ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] wpt_internal/modal-close-watcher/basic.html [ Crash ]
@@ -2689,8 +2690,6 @@ crbug.com/626703 external/wpt/css/css-images/object-fit-none-svg-003i.html [ Fai
 crbug.com/626703 external/wpt/css/css-images/object-fit-fill-svg-002e.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
 crbug.com/1014091 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-1.html [ Failure ]
 crbug.com/1014091 external/wpt/shadow-dom/focus/focus-pseudo-on-shadow-host-2.html [ Failure ]
 crbug.com/1170337 [ Mac ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/2d.text.draw.fill.maxWidth.small.html [ Pass Timeout ]
@@ -5652,11 +5651,6 @@ crbug.com/1181740 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-t
 crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Pass Failure ]
 crbug.com/1181886 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html [ Pass Timeout ]
 
-# Temporarily disabled to unblock a WebRTC roll
-crbug.com/webrtc/12499 external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
-crbug.com/968203 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
-crbug.com/968203 external/wpt/webrtc-stats/getStats-remote-candidate-address.html [ Pass Failure ]
-
 # Sheriff 2021-02-25
 crbug.com/1182673 [ Win7 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Timeout ]
 crbug.com/1182675 [ Linux ] dom/attr/id-update-map-crash.html [ Pass Failure ]
@@ -5741,6 +5735,8 @@ crbug.com/1190905 [ Mac ] http/tests/devtools/indexeddb/live-update-indexeddb-li
 crbug.com/1190905 [ Linux ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
 crbug.com/1190905 [ Win ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
 
-# Sherif 2021-03-23
-crbug.com/1191548 [ Linux ] virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/background-color-transition-with-initially-transparent.html [ Pass Failure ]
+# Sheriff 2021-03-23
 crbug.com/1182689 [ Mac ] external/wpt/editing/run/delete.html?6001-last [ Failure ]
+
+# Sheriff 2021-03-24
+crbug.com/1192215 [ Linux ] external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Pass Failure ]

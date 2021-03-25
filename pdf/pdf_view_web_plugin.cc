@@ -13,6 +13,8 @@
 
 #include "base/check_op.h"
 #include "base/location.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -52,6 +54,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -122,6 +125,8 @@ bool PdfViewWebPlugin::Initialize(blink::WebPluginContainer* container) {
   for (size_t i = 0; i < initial_params_.attribute_names.size(); ++i) {
     if (initial_params_.attribute_names[i] == "stream-url") {
       stream_url = initial_params_.attribute_values[i].Utf8();
+    } else if (initial_params_.attribute_names[i] == "full-frame") {
+      set_full_frame(true);
     } else if (initial_params_.attribute_names[i] == "background-color") {
       SkColor background_color;
       if (!base::StringToUint(initial_params_.attribute_values[i].Utf8(),
@@ -232,7 +237,7 @@ void PdfViewWebPlugin::DidFinishLoading() {}
 
 void PdfViewWebPlugin::DidFailLoading(const blink::WebURLError& error) {}
 
-void PdfViewWebPlugin::UpdateCursor(PP_CursorType_Dev cursor) {}
+void PdfViewWebPlugin::UpdateCursor(ui::mojom::CursorType cursor_type) {}
 
 void PdfViewWebPlugin::UpdateTickMarks(
     const std::vector<gfx::Rect>& tickmarks) {}
@@ -435,6 +440,10 @@ void PdfViewWebPlugin::SetAccessibilityPageInfo(
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
     const AccessibilityViewportInfo& viewport_info) {
   NOTIMPLEMENTED();
+}
+
+void PdfViewWebPlugin::UserMetricsRecordAction(const std::string& action) {
+  base::RecordAction(base::UserMetricsAction(action.c_str()));
 }
 
 void PdfViewWebPlugin::OnViewportChanged(gfx::Rect view_rect,

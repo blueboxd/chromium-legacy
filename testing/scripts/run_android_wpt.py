@@ -119,9 +119,6 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     # Here we add all of the arguments required to run WPT tests on Android.
     rest_args.extend([self.options.wpt_path])
 
-    # TODO(crbug.com/1166741): We should be running WPT under Python 3.
-    rest_args.extend(["--py3"])
-
     # vpython has packages needed by wpt, so force it to skip the setup
     rest_args.extend(["--venv=" + SRC_DIR, "--skip-venv-setup"])
 
@@ -135,6 +132,8 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
       "--no-pause-after-test",
       "--no-capture-stdio",
       "--no-manifest-download",
+      "--binary-arg=--enable-blink-test-features",
+      "--binary-arg=--disable-field-trial-config",
     ])
     # if metadata was created then add the metadata directory
     # to the list of wpt arguments

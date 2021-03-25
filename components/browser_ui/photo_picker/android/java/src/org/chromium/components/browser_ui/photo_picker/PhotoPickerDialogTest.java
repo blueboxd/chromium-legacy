@@ -141,7 +141,6 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
 
     @After
     public void tearDown() throws Exception {
-        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> { return mDismissed; }));
         TestThreadUtils.runOnUiThreadBlocking(() -> { mWindowAndroid.destroy(); });
     }
 
@@ -330,6 +329,7 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
         TouchCommon.singleClickView(done);
         mOnActionCallback.waitForCallback(callCount, 1);
         Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> { return mDismissed; }));
     }
 
     private void clickCancel() throws Exception {
@@ -341,6 +341,7 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
         categoryView.onClick(cancel);
         mOnActionCallback.waitForCallback(callCount, 1);
         Assert.assertEquals(PhotoPickerAction.CANCEL, mLastActionRecorded);
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> { return mDismissed; }));
     }
 
     private void playVideo(Uri uri) throws Exception {
@@ -351,7 +352,10 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
     }
 
     private void dismissDialog() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.dismiss());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDialog.dismiss();
+            Assert.assertTrue(mDismissed);
+        });
     }
 
     /**
@@ -623,13 +627,16 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
         // Simulate an early configuration change for the photo grid.
         Configuration configuration = getActivity().getResources().getConfiguration();
         PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
-        categoryView.onConfigurationChanged(configuration);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { categoryView.onConfigurationChanged(configuration); });
 
         waitForDecoder();
 
         // Simulate an early configuration change for the video player (before showing).
-        PickerVideoPlayer videoPlayer = categoryView.getVideoPlayerForTesting();
-        videoPlayer.onConfigurationChanged(configuration);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PickerVideoPlayer videoPlayer = categoryView.getVideoPlayerForTesting();
+            videoPlayer.onConfigurationChanged(configuration);
+        });
 
         dismissDialog();
     }

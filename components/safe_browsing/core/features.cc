@@ -55,9 +55,6 @@ const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
 const base::Feature kDownloadRequestWithToken{
     "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kLimitedListSizeForIOS{"SafeBrowsingLimitedListSizeForIOS",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -65,7 +62,7 @@ const base::Feature kPasswordProtectionReferringAppEnabledAndroid{
     "SafeBrowsingPasswordProtectionReferringAppEnabledAndroid",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kPasswordProtectionForSignedInUsers{
+const base::Feature kPasswordProtectionForSignedInUsers {
   "SafeBrowsingPasswordProtectionForSignedInUsers",
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -73,6 +70,9 @@ const base::Feature kPasswordProtectionForSignedInUsers{
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+const base::Feature kPromptEsbForDeepScanning{
+    "SafeBrowsingPromptEsbForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingEnterpriseCsd{
     "SafeBrowsingEnterpriseCsd", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -137,7 +137,6 @@ constexpr struct {
     {&kClientSideDetectionForAndroid, true},
     {&kDelayedWarnings, true},
     {&kDownloadRequestWithToken, true},
-    {&kEnhancedProtection, true},
     {&kLimitedListSizeForIOS, true},
     {&kPasswordProtectionReferringAppEnabledAndroid, true},
     {&kPasswordProtectionForSignedInUsers, true},

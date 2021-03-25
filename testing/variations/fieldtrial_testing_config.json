@@ -1228,11 +1228,10 @@
             ]
         }
     ],
-    "CLSM90Improvements": [
+    "CPSS": [
         {
             "platforms": [
                 "android",
-                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -1241,9 +1240,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "CLSM90Improvements"
+                    "name": "Enabled_20210201",
+                    "enable_features": [
+                        "PermissionPredictions"
                     ]
                 }
             ]
@@ -1860,21 +1859,6 @@
             ]
         }
     ],
-    "ContextualSearchLongpressResolve": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ContextualSearchLongpressResolve",
-                    "enable_features": [
-                        "ContextualSearchLongpressResolve"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextualSearchTranslations": [
         {
             "platforms": [
@@ -1882,7 +1866,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Translations_20210224",
+                    "name": "Translations_20210322",
                     "params": {
                         "availability": "any",
                         "event_trigger": "name:translations_bubble_shown;comparator:<3;window:30;storage:180",
@@ -2356,6 +2340,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "TabGroupsCollapse"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopTabGroupsCollapseFreezing": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabGroupsCollapseFreezing"
                     ]
                 }
             ]
@@ -4691,6 +4694,29 @@
             ]
         }
     ],
+    "OptimizationHintsDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210323",
+                    "enable_features": [
+                        "OptimizationHints"
+                    ],
+                    "disable_features": [
+                        "OptimizationGuideModelDownloading",
+                        "OptimizationHintsFetching"
+                    ]
+                }
+            ]
+        }
+    ],
     "OptimizedRealtimeThreadingMac": [
         {
             "platforms": [
@@ -6523,6 +6549,29 @@
             ]
         }
     ],
+    "ToolbarMicIphAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledDefault",
+                    "params": {
+                        "availability": ">=14",
+                        "event_trigger": "name:mic_toolbar_iph_triggered;comparator:==0;window:90;storage:90",
+                        "event_used": "name:successful_voice_search;comparator:==0;window:14;storage:90",
+                        "generic_message": "true",
+                        "session_rate": "<1"
+                    },
+                    "enable_features": [
+                        "IPH_MicToolbar",
+                        "ToolbarMicIphAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
     "TopCat": [
         {
             "platforms": [
@@ -7067,6 +7116,21 @@
                     },
                     "enable_features": [
                         "VideoTutorials"
+                    ]
+                }
+            ]
+        }
+    ],
+    "VisualFeaturesInPasswordProtectionAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "VisualFeaturesInPasswordProtectionAndroid"
                     ]
                 }
             ]

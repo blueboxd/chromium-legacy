@@ -243,11 +243,20 @@ class PdfViewPluginBase : public PDFEngine::Client,
   virtual void SetAccessibilityViewportInfo(
       const AccessibilityViewportInfo& viewport_info) = 0;
 
-  constexpr bool IsSaveDataSizeValid(size_t size) {
+  static constexpr bool IsSaveDataSizeValid(size_t size) {
     return size > 0 && size <= kMaximumSavedFileSize;
   }
 
+  // Records metrics about the document metadata.
+  void RecordDocumentMetrics();
+
+  // Records user actions.
+  virtual void UserMetricsRecordAction(const std::string& action) = 0;
+
   void set_url(const std::string& url) { url_ = url; }
+
+  bool full_frame() const { return full_frame_; }
+  void set_full_frame(bool full_frame) { full_frame_ = full_frame; }
 
   SkBitmap& mutable_image_data() { return image_data_; }
 
@@ -276,12 +285,14 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   bool stop_scrolling() const { return stop_scrolling_; }
 
-  DocumentLoadState document_load_state() { return document_load_state_; }
+  DocumentLoadState document_load_state() const { return document_load_state_; }
   void set_document_load_state(DocumentLoadState state) {
     document_load_state_ = state;
   }
 
-  AccessibilityState accessibility_state() { return accessibility_state_; }
+  AccessibilityState accessibility_state() const {
+    return accessibility_state_;
+  }
 
   bool edit_mode() const { return edit_mode_; }
   void set_edit_mode(bool edit_mode) { edit_mode_ = edit_mode; }
@@ -319,11 +330,27 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Sends the thumbnail image data.
   void SendThumbnail(base::Value reply, Thumbnail thumbnail);
 
+  // Adds a sample to an enumerated histogram and filter out print preview
+  // usage.
+  template <typename T>
+  void HistogramEnumeration(const char* name, T sample);
+
+  // Adds a sample to a custom counts histogram and filter out print preview
+  // usage.
+  void HistogramCustomCounts(const char* name,
+                             int32_t sample,
+                             int32_t min,
+                             int32_t max,
+                             uint32_t bucket_count);
+
   std::unique_ptr<PDFiumEngine> engine_;
   PaintManager paint_manager_{this};
 
   // The URL of the PDF document.
   std::string url_;
+
+  // True if the plugin occupies the entire frame (not embedded).
+  bool full_frame_ = false;
 
   // Image data buffer for painting.
   SkBitmap image_data_;

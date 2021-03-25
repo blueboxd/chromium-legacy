@@ -2465,8 +2465,15 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.threaded_scrolling_enabled =
       !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
 
-  if (IsOverridingUserAgent())
-    prefs.viewport_meta_enabled = false;
+  if (IsOverridingUserAgent()) {
+#if defined(OS_ANDROID)
+    // Only ignore viewport meta tag when Request Desktop Site is used, but not
+    // in other situations where embedder changes to arbitrary mobile UA string.
+    if (renderer_preferences_.user_agent_override.ua_metadata_override &&
+        !renderer_preferences_.user_agent_override.ua_metadata_override->mobile)
+#endif
+      prefs.viewport_meta_enabled = false;
+  }
 
   prefs.main_frame_resizes_are_orientation_changes =
       command_line.HasSwitch(switches::kMainFrameResizesAreOrientationChanges);
@@ -7800,10 +7807,9 @@ gfx::Size WebContentsImpl::GetSize() {
 #endif  // !defined(OS_MAC)
 
 void WebContentsImpl::UpdateWindowControlsOverlay(
-    const gfx::Rect& bounding_rect,
-    const gfx::Insets& insets) {
+    const gfx::Rect& bounding_rect) {
   GetMainFrame()->GetAssociatedLocalMainFrame()->UpdateWindowControlsOverlay(
-      bounding_rect, insets);
+      bounding_rect);
 }
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {

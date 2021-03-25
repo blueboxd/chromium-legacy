@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
@@ -60,6 +59,7 @@
 #include "ppapi/cpp/var_dictionary.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -505,14 +505,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   CHECK(base::StartsWith(document_url_piece, kChromeExtension) ||
         is_print_preview_);
 
-  // Check if the plugin is full frame. This is passed in from JS.
-  for (uint32_t i = 0; i < argc; ++i) {
-    if (strcmp(argn[i], "full-frame") == 0) {
-      full_ = true;
-      break;
-    }
-  }
-
   // Allow the plugin to handle find requests.
   SetPluginToHandleFindRequests();
 
@@ -534,6 +526,8 @@ bool OutOfProcessInstance::Init(uint32_t argc,
       top_level_url = argv[i];
     } else if (strcmp(argn[i], "headers") == 0) {
       headers = argv[i];
+    } else if (strcmp(argn[i], "full-frame") == 0) {
+      set_full_frame(true);
     } else if (strcmp(argn[i], "background-color") == 0) {
       SkColor background_color;
       if (!base::StringToUint(argv[i], &background_color))
@@ -891,10 +885,10 @@ void OutOfProcessInstance::SetFormFieldInFocus(bool in_focus) {
                                          : PP_TEXTINPUT_TYPE_DEV_NONE);
 }
 
-void OutOfProcessInstance::UpdateCursor(PP_CursorType_Dev cursor) {
-  if (cursor == cursor_)
+void OutOfProcessInstance::UpdateCursor(ui::mojom::CursorType cursor_type) {
+  if (cursor_type == cursor_type_)
     return;
-  cursor_ = cursor;
+  cursor_type_ = cursor_type;
 
   const PPB_CursorControl_Dev* cursor_interface =
       reinterpret_cast<const PPB_CursorControl_Dev*>(
@@ -905,7 +899,8 @@ void OutOfProcessInstance::UpdateCursor(PP_CursorType_Dev cursor) {
     return;
   }
 
-  cursor_interface->SetCursor(pp_instance(), cursor_,
+  cursor_interface->SetCursor(pp_instance(),
+                              PPCursorTypeFromCursorType(cursor_type_),
                               pp::ImageData().pp_resource(), nullptr);
 }
 
@@ -1003,7 +998,7 @@ void OutOfProcessInstance::FormDidOpen(int32_t result) {
 }
 
 std::unique_ptr<UrlLoader> OutOfProcessInstance::CreateUrlLoader() {
-  if (full_) {
+  if (full_frame()) {
     if (!did_call_start_loading_) {
       did_call_start_loading_ = true;
       pp::PDF::DidStartLoading(this);
@@ -1071,7 +1066,7 @@ void OutOfProcessInstance::DocumentLoadComplete() {
   if (accessibility_state() == AccessibilityState::kPending)
     LoadAccessibility();
 
-  if (!full_)
+  if (!full_frame())
     return;
 
   if (did_call_start_loading_) {
@@ -1292,7 +1287,7 @@ void OutOfProcessInstance::DocumentHasUnsupportedFeature(
   }
 
   // Since we use an info bar, only do this for full frame plugins..
-  if (!full_)
+  if (!full_frame())
     return;
 
   if (told_browser_about_unsupported_feature_)
@@ -1466,20 +1461,6 @@ void OutOfProcessInstance::LoadNextPreviewPage() {
   }
 }
 
-void OutOfProcessInstance::RecordDocumentMetrics() {
-  const DocumentMetadata& document_metadata = engine()->GetDocumentMetadata();
-  HistogramEnumeration("PDF.Version", document_metadata.version);
-  HistogramCustomCounts("PDF.PageCount", document_metadata.page_count, 1,
-                        1000000, 50);
-  HistogramEnumeration("PDF.HasAttachment", document_metadata.has_attachments
-                                                ? PdfHasAttachment::kYes
-                                                : PdfHasAttachment::kNo);
-  HistogramEnumeration("PDF.IsTagged", document_metadata.tagged
-                                           ? PdfIsTagged::kYes
-                                           : PdfIsTagged::kNo);
-  HistogramEnumeration("PDF.FormType", document_metadata.form_type);
-}
-
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
   // TODO(raymes): Move this function to PPB_UMA_Private.
   pp::PDF::UserMetricsRecordAction(this, pp::Var(action));
@@ -1520,23 +1501,6 @@ bool OutOfProcessInstance::SendInputEventToEngine(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_UNDEFINED:
       return false;
   }
-}
-
-template <typename T>
-void OutOfProcessInstance::HistogramEnumeration(const char* name, T sample) {
-  if (IsPrintPreview())
-    return;
-  base::UmaHistogramEnumeration(name, sample);
-}
-
-void OutOfProcessInstance::HistogramCustomCounts(const char* name,
-                                                 int32_t sample,
-                                                 int32_t min,
-                                                 int32_t max,
-                                                 uint32_t bucket_count) {
-  if (IsPrintPreview())
-    return;
-  base::UmaHistogramCustomCounts(name, sample, min, max, bucket_count);
 }
 
 void OutOfProcessInstance::OnPrint(int32_t /*unused_but_required*/) {

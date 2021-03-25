@@ -73,8 +73,6 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             WPT_BINARY,
             "--venv=" + SRC_DIR,
             "--skip-venv-setup",
-            # TODO(crbug.com/1166741): We should be running WPT under Python 3.
-            "--py3",
             "run",
             "chrome"
         ] + self.options.test_list + [
@@ -84,6 +82,7 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             "--binary-arg=--enable-experimental-web-platform-features",
             "--binary-arg=--enable-blink-test-features",
             "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
+            "--binary-arg=--disable-field-trial-config",
             "--webdriver-binary=" + chromedriver,
             "--webdriver-arg=--enable-chrome-logs",
             "--headless",

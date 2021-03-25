@@ -102,6 +102,7 @@ class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
 
   void TearDown() override {
     coordinator_->RemoveObserver(&mock_observer_);
+    coordinator_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
@@ -189,6 +190,7 @@ class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
 
 TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
   std::map<std::string, std::string> input_script_params{
+      {"USER_EMAIL", "should.not.be.sent@chromium.org"},
       {"keyA", "valueA"},
       {"DEBUG_BUNDLE_ID", "bundle_id"},
       {"DEBUG_SOCKET_ID", "socket_id"},
@@ -232,10 +234,7 @@ TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
                           /* is_cct = */ true,
                           /* onboarding_shown = */ true,
                           /* is_direct_action = */ true,
-                          /* caller_account_hash = */
-                          "account_hash",
-                          /* initial_url = */ "https://www.example.com",
-                          /* username = */ "fake_username"));
+                          /* initial_url = */ "https://www.example.com"));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, StopOnBackendRequestFailed) {

@@ -75,7 +75,7 @@
 
 namespace content {
 
-using LifecycleState = RenderFrameHostImpl::LifecycleState;
+using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
 
 namespace {
 
@@ -696,6 +696,22 @@ bool RenderFrameHostManager::DeleteFromPendingList(
   return true;
 }
 
+// Prerender navigations match a prerender after calling
+// GetFrameHostForNavigation, which means we might create a speculative RFH and
+// then try to replace it with the prerendered RFH during activation. We can not
+// just reset this RFH in RestoreFromBackForwardCache as the RFH would be in an
+// invalid state for destruction. We need to properly clean up first. Hence this
+// method.
+// TODO(https://crbug.com/1190197): We should refactor prerender matching flow
+// to ensure that we do not create speculative RFHs for prerender activation.
+void RenderFrameHostManager::ActivatePrerender(
+    std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
+  DCHECK(blink::features::IsPrerenderMPArchEnabled());
+  if (speculative_render_frame_host_)
+    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+  RestoreFromBackForwardCache(std::move(entry));
+}
+
 void RenderFrameHostManager::RestoreFromBackForwardCache(
     std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
   TRACE_EVENT("navigation",
@@ -712,6 +728,11 @@ void RenderFrameHostManager::RestoreFromBackForwardCache(
   // and it would be clearer if we could not reuse speculative_render_frame_host
   // in the long run. For now, and to avoid complex edge cases, we simply reuse
   // it to preserve the understood logic in CommitPending.
+
+  // There should be no speculative RFH at this point. With BackForwardCache, it
+  // should have never been created, and with prerender activation, it should
+  // have been cleared out earlier.
+  DCHECK(!speculative_render_frame_host_);
   speculative_render_frame_host_ = std::move(entry->render_frame_host);
   bfcache_entry_to_restore_ = std::move(entry);
 }
@@ -825,7 +846,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // to show any UI changes) it is still allowed to navigate, fetch, load and
   // run documents in the background.
   if ((current_frame_host()->lifecycle_state() !=
-       LifecycleState::kPrerendering)) {
+       LifecycleStateImpl::kPrerendering)) {
     // Inactive frames should never be navigated. If this happens, log a
     // DumpWithoutCrashing to understand the root cause. See
     // https://crbug.com/926820 and https://crbug.com/927705.
@@ -2511,19 +2532,19 @@ RenderFrameHostManager::CreateRenderFrameHost(
   }
   CHECK(render_view_host);
 
-  // LifecycleState of newly created RenderFrameHost.
-  LifecycleState lifecycle_state;
+  // LifecycleStateImpl of newly created RenderFrameHost.
+  LifecycleStateImpl lifecycle_state;
 
   if (create_frame_case == CreateFrameCase::kCreateSpeculative) {
-    lifecycle_state = LifecycleState::kSpeculative;
+    lifecycle_state = LifecycleStateImpl::kSpeculative;
   } else {
     // For the creation of initial documents:
     // - We create RenderFrameHost in kPrerendering state in case of
     // prerendering frame tree.
     // - We create RenderFrameHost in kActive state in all other cases.
     lifecycle_state = frame_tree->is_prerendering()
-                          ? LifecycleState::kPrerendering
-                          : LifecycleState::kActive;
+                          ? LifecycleStateImpl::kPrerendering
+                          : LifecycleStateImpl::kActive;
   }
 
   return RenderFrameHostFactory::Create(
@@ -3113,12 +3134,12 @@ void RenderFrameHostManager::CommitPending(
 
   // If we navigate to an existing page (i.e. |pending_bfcache_entry| is not
   // null), check that |pending_rfh|'s old lifecycle state supports that.
-  RenderFrameHostImpl::LifecycleState prev_state =
+  RenderFrameHostImpl::LifecycleStateImpl prev_state =
       pending_rfh->lifecycle_state();
   DCHECK(!pending_bfcache_entry ||
-         prev_state == RenderFrameHostImpl::LifecycleState::kPrerendering ||
+         prev_state == RenderFrameHostImpl::LifecycleStateImpl::kPrerendering ||
          prev_state ==
-             RenderFrameHostImpl::LifecycleState::kInBackForwardCache);
+             RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache);
 
   // Swap in the new frame and make it active. Also ensure the FrameTree
   // stays in sync.
@@ -3143,13 +3164,14 @@ void RenderFrameHostManager::CommitPending(
     std::set<RenderViewHostImpl*> render_view_hosts_to_restore =
         std::move(pending_bfcache_entry->render_view_hosts);
     if (prev_state ==
-        RenderFrameHostImpl::LifecycleState::kInBackForwardCache) {
+        RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache) {
       for (RenderViewHostImpl* rvh : render_view_hosts_to_restore) {
         rvh->LeaveBackForwardCache(
             pending_bfcache_entry->page_restore_params.Clone());
       }
     } else {
-      DCHECK_EQ(prev_state, RenderFrameHostImpl::LifecycleState::kPrerendering);
+      DCHECK_EQ(prev_state,
+                RenderFrameHostImpl::LifecycleStateImpl::kPrerendering);
       current_frame_host()->ActivateForPrerendering();
     }
   }
@@ -3335,7 +3357,7 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
 
   // Swapping the current RenderFrameHost in a FrameTreeNode comes along with an
-  // update to its LifecycleState.
+  // update to its LifecycleStateImpl.
 
   // The lifecycle state of the old RenderFrameHost is either:
   // - kActive: starts unloading or enters the BackForwardCache.
@@ -3357,10 +3379,11 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   // user, unlike kActive state.
   if (render_frame_host_) {
     if (frame_tree->is_prerendering()) {
-      if (render_frame_host_->lifecycle_state() == LifecycleState::kSpeculative)
+      if (render_frame_host_->lifecycle_state() ==
+          LifecycleStateImpl::kSpeculative)
         render_frame_host_->SetLifecycleStateToPrerendering();
     } else {
-      if (render_frame_host_->lifecycle_state() != LifecycleState::kActive)
+      if (render_frame_host_->lifecycle_state() != LifecycleStateImpl::kActive)
         render_frame_host_->SetLifecycleStateToActive();
     }
   }

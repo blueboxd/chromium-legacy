@@ -569,6 +569,8 @@ class PCScanInternal final {
 
   void ClearRootsForTesting();  // IN-TEST
 
+  void ReinitForTesting();  // IN-TEST
+
  private:
   friend base::NoDestructor<PCScanInternal>;
 
@@ -594,10 +596,12 @@ void PCScanInternal::Roots::ClearForTesting() {
   current_ = 0;
 }
 
-PCScanInternal::PCScanInternal() : simd_support_(DetectSimdSupport()) {
+void CommitCardTable() {
 #if defined(PA_HAS_64_BITS_POINTERS)
   if (features::IsPartitionAllocGigaCageEnabled()) {
+    // First, make sure that GigaCage is initialized.
     PartitionAddressSpace::Init();
+    // Then, commit the card table.
     RecommitSystemPages(
         reinterpret_cast<void*>(PartitionAddressSpace::BRPPoolBase()),
         sizeof(QuarantineCardTable), PageReadWrite, PageUpdatePermissions);
@@ -617,6 +621,10 @@ void CommitQuarantineBitmaps(PCScan::Root& root) {
                           PageUpdatePermissions);
     }
   }
+}
+
+PCScanInternal::PCScanInternal() : simd_support_(DetectSimdSupport()) {
+  CommitCardTable();
 }
 
 void PCScanInternal::RegisterScannableRoot(Root* root) {
@@ -662,6 +670,10 @@ size_t PCScanInternal::CalculateTotalHeapSize() const {
 void PCScanInternal::ClearRootsForTesting() {
   scannable_roots_.ClearForTesting();     // IN-TEST
   nonscannable_roots_.ClearForTesting();  // IN-TEST
+}
+
+void PCScanInternal::ReinitForTesting() {
+  CommitCardTable();
 }
 
 class PCScanSnapshot final {
@@ -1484,7 +1496,7 @@ class PCScan::PCScanThread final {
   TaskHandle posted_task_;
 };
 
-constexpr size_t PCScan::QuarantineData::kQuarantineSizeMinLimit;
+constexpr intptr_t PCScan::QuarantineData::kQuarantineSizeMinLimit;
 
 void PCScan::QuarantineData::ResetAndAdvanceEpoch() {
   quarantine_size_ = limit_ - trigger_limit_.load(std::memory_order_relaxed);
@@ -1496,7 +1508,7 @@ void PCScan::QuarantineData::GrowLimitIfNeeded(size_t heap_size) {
   // |heap_size| includes the current quarantine size, we intentionally leave
   // some slack till hitting the limit.
   limit_ = std::max(kQuarantineSizeMinLimit,
-                    static_cast<size_t>(kQuarantineSizeFraction * heap_size));
+                    static_cast<intptr_t>(kQuarantineSizeFraction * heap_size));
   // Force a new scan on the next deallocation if the too many deallocations
   // accumulated during the current scan.
   const intptr_t old_trigger_limit =
@@ -1597,6 +1609,10 @@ void PCScan::SetProcessName(const char* process_name) {
 
 void PCScan::ClearRootsForTesting() {
   PCScanInternal::Instance().ClearRootsForTesting();  // IN-TEST
+}
+
+void PCScan::ReinitForTesting() {
+  PCScanInternal::Instance().ReinitForTesting();  // IN-TEST
 }
 
 PCScan PCScan::instance_ PA_CONSTINIT;

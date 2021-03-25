@@ -78,6 +78,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/allowlist_state.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/event_router.h"
@@ -433,7 +434,7 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   // The ProfileManager may be null in unit tests.
   if (g_browser_process->profile_manager())
-    profile_manager_observer_.Add(g_browser_process->profile_manager());
+    profile_manager_observation_.Observe(g_browser_process->profile_manager());
 
   UpgradeDetector::GetInstance()->AddObserver(this);
 
@@ -1670,6 +1671,12 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->AcknowledgeBlocklistedExtension(id);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.SilentInstall",
                               extension->location());
+  }
+
+  if (install_flags & kInstallFlagBypassedSafeBrowsingFriction) {
+    extension_prefs_->SetExtensionAllowlistAcknowledgeState(
+        id, ALLOWLIST_ACKNOWLEDGE_ENABLED_BY_USER);
+    extension_prefs_->SetExtensionAllowlistState(id, ALLOWLIST_NOT_ALLOWLISTED);
   }
 
   if (!registry_->GetInstalledExtension(extension->id())) {

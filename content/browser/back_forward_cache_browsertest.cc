@@ -69,6 +69,8 @@
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/echo.test-mojom.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -199,6 +201,28 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
 
   void DisableFeature(base::Feature feature) {
     disabled_features_.push_back(feature);
+  }
+
+  void SetUp() override {
+    // Fake the BluetoothAdapter to say it's present.
+    // Used in WebBluetooth test.
+    adapter_ =
+        base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
+    device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // In CHROMEOS build, even when |adapter_| object is released at TearDown()
+    // it causes the test to fail on exit with an error indicating |adapter_| is
+    // leaked.
+    testing::Mock::AllowLeak(adapter_.get());
+#endif
+
+    ContentBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    testing::Mock::VerifyAndClearExpectations(adapter_.get());
+    adapter_.reset();
+    ContentBrowserTest::TearDown();
   }
 
   void SetUpOnMainThread() override {
@@ -611,6 +635,8 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
   // Whether we should fail the test if a message arrived at the browser from a
   // renderer for a bfcached page.
   bool fail_for_unexpected_messages_while_cached_ = true;
+
+  scoped_refptr<device::MockBluetoothAdapter> adapter_;
 };
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -5471,9 +5497,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestSkipSameSiteUnload,
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 }
 
-// Sub-frame doesn't transition from LifecycleState::kInBackForwardCache to
-// LifecycleState::kRunningUnloadHandlers even when the sub-frame having unload
-// handlers is being evicted from BackForwardCache.
+// Sub-frame doesn't transition from LifecycleStateImpl::kInBackForwardCache to
+// LifecycleStateImpl::kRunningUnloadHandlers even when the sub-frame having
+// unload handlers is being evicted from BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeWithUnloadHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL main_url(embedded_test_server()->GetURL(
@@ -6028,6 +6054,43 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, NestedWebContents) {
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents}, {}, {},
       {}, FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebBluetooth) {
+  // The test requires a mock Bluetooth adapter to perform a
+  // WebBluetooth API call. To avoid conflicts with the default Bluetooth
+  // adapter, e.g. Windows adapter, which is configured during Bluetooth
+  // initialization, the mock adapter is configured in SetUp().
+
+  // WebBluetooth requires HTTPS.
+  ASSERT_TRUE(CreateHttpsServer()->Start());
+  GURL url(https_server()->GetURL("a.com", "/back_forward_cache/empty.html"));
+
+  ASSERT_TRUE(NavigateToURL(web_contents(), url));
+  BackForwardCacheDisabledTester tester;
+
+  EXPECT_EQ("device not found", EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.bluetooth.requestDevice({
+        filters: [
+          { services: [0x1802, 0x1803] },
+        ]
+      })
+      .then(() => resolve("device found"))
+      .catch(() => resolve("device not found"))
+    });
+  )"));
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      current_frame_host()->GetProcess()->GetID(),
+      current_frame_host()->GetRoutingID(), "WebBluetooth"));
+
+  ASSERT_TRUE(NavigateToURL(web_contents(),
+                            https_server()->GetURL("b.com", "/title1.html")));
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    {}, {}, {"WebBluetooth"}, FROM_HERE);
 }
 
 // Check the BackForwardCache is disabled when the WebUSB feature is used.
@@ -8162,38 +8225,38 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CheckIsCurrent) {
   EXPECT_FALSE(rfh_b->IsCurrent());
 }
 
-// Test that LifecycleState is updated correctly when page enters and restores
-// back from BackForwardCache.
+// Test that LifecycleStateImpl is updated correctly when page enters and
+// restores back from BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        CheckLifecycleStateTransition) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
 
-  // 1) Navigate to A and check the LifecycleState of A.
+  // 1) Navigate to A and check the LifecycleStateImpl of A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_a->lifecycle_state());
 
-  // 2) Navigate to B, now A enters BackForwardCache. Check the LifecycleState
-  // of both RenderFrameHost A and B.
+  // 2) Navigate to B, now A enters BackForwardCache. Check the
+  // LifecycleStateImpl of both RenderFrameHost A and B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   RenderFrameHostImpl* rfh_b = current_frame_host();
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kInBackForwardCache,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache,
             rfh_a->lifecycle_state());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_b->lifecycle_state());
 
-  // 3) Go back to A and check again the LifecycleState of both RenderFrameHost
-  // A and B.
+  // 3) Go back to A and check again the LifecycleStateImpl of both
+  // RenderFrameHost A and B.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kActive,
             rfh_a->lifecycle_state());
   EXPECT_TRUE(rfh_b->IsInBackForwardCache());
-  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kInBackForwardCache,
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache,
             rfh_b->lifecycle_state());
 }
 

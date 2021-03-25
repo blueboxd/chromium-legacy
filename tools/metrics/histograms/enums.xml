@@ -14903,6 +14903,22 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="9" label="Error: Allocator has become corrupted."/>
 </enum>
 
+<enum name="CredentialEditError">
+  <int value="0" label="Empty password"/>
+  <int value="1" label="Duplicate username"/>
+</enum>
+
+<enum name="CredentialEntryAction">
+  <int value="0" label="Deleted"/>
+  <int value="1" label="Copied username"/>
+  <int value="2" label="Unmasked password"/>
+  <int value="3" label="Masked password"/>
+  <int value="4" label="Copied password"/>
+  <int value="5" label="Edit username and save"/>
+  <int value="6" label="Edit password and save"/>
+  <int value="7" label="Edit username and password and save"/>
+</enum>
+
 <enum name="CredentialFilteredType">
   <int value="0" label="No sync credentials present"/>
   <int value="1" label="Sync credentials were removed"/>
@@ -43893,6 +43909,7 @@ from previous Chrome versions.
   <int value="-1899652563" label="ReportFeedUserActions:enabled"/>
   <int value="-1899409297"
       label="ProcessSharingWithStrictSiteInstances:disabled"/>
+  <int value="-1899342084" label="ArcGhostWindow:enabled"/>
   <int value="-1898386671" label="PasswordCheck:enabled"/>
   <int value="-1896871201" label="CrossOriginOpenerPolicyReporting:enabled"/>
   <int value="-1896733769" label="CheckOfflineCapability:disabled"/>
@@ -45274,6 +45291,7 @@ from previous Chrome versions.
   <int value="-700762821" label="RequestDesktopSiteForTablets:disabled"/>
   <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
   <int value="-699767107" label="enable-sync-app-list"/>
+  <int value="-699756444" label="ArcGhostWindow:disabled"/>
   <int value="-699198009" label="KeyboardShortcutViewer:enabled"/>
   <int value="-697887799"
       label="AutofillSaveCardDialogUnlabeledExpirationDate:disabled"/>
@@ -46643,6 +46661,7 @@ from previous Chrome versions.
   <int value="584661108"
       label="OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms:disabled"/>
   <int value="586021329" label="VibrateRequiresUserGesture:enabled"/>
+  <int value="587020527" label="UseSodaForLiveCaption:enabled"/>
   <int value="588333474" label="OfflineIndicator:disabled"/>
   <int value="589394614" label="OmniboxSuggestionButtonRow:enabled"/>
   <int value="589924262" label="CryptAuthV2DeviceActivityStatus:enabled"/>
@@ -46788,6 +46807,7 @@ from previous Chrome versions.
   <int value="701795774" label="WebAppEnableUrlHandlers:enabled"/>
   <int value="702060507" label="SafetyCheckWeakPasswords:disabled"/>
   <int value="703469777" label="AndroidNightModeTabReparenting:enabled"/>
+  <int value="703621694" label="UseSodaForLiveCaption:disabled"/>
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
   <int value="705411729" label="AccessiblePDFForm:disabled"/>
   <int value="705712478" label="EnablePalmOnToolTypePalm:disabled"/>
@@ -68803,6 +68823,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </obsolete>
   <int value="0" label="Settings"/>
   <int value="1" label="Launcher"/>
+</enum>
+
+<enum name="ScanCompleteAction">
+  <int value="0" label="Done button clicked"/>
+  <int value="1" label="Files app opened"/>
+  <int value="2" label="Media app opened"/>
 </enum>
 
 <enum name="ScanJobFailureReason">

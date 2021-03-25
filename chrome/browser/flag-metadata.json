@@ -170,6 +170,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "arc-ghost-window",
+    "owners": [ "sstan" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "arc-native-bridge-64bit-support-experiment",
     "owners": [ "jhorwich" ],
     // Used on ChromeOS to experimentally enable 64-bit ARC native-bridge
@@ -515,7 +520,7 @@
   {
     "name": "check-offline-capability",
     "owners": [ "asamidoi", "//content/browser/service_worker/OWNERS" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 93
   },
   {
     "name": "chrome-cleanup-scan-completed-notification",
@@ -1208,6 +1213,11 @@
   {
     "name": "enable-accessibility-live-caption",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "enable-accessibility-live-caption-soda",
+    "owners": [ "abigailbklein@google.com", "evliu@google.com", "robsc@chromium.org", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 95
   },
   {

@@ -71,7 +71,6 @@
 #include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/browser/media/audio_stream_monitor.h"
-#include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
@@ -220,7 +219,7 @@ constexpr auto kUpdateLoadStatesInterval =
 
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 
-using LifecycleState = RenderFrameHostImpl::LifecycleState;
+using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
 
 // TODO(crbug.com/1059903): Clean up after the initial investigation.
 constexpr base::Feature kCheckWebContentsAccessFromNonCurrentFrame{
@@ -6905,7 +6904,7 @@ WebContentsImpl::GetActiveTopLevelDocumentsInBrowsingContextGroup(
 
     // Filters out inactive documents.
     if (other_render_frame_host->lifecycle_state() !=
-        RenderFrameHostImpl::LifecycleState::kActive) {
+        RenderFrameHostImpl::LifecycleStateImpl::kActive) {
       continue;
     }
 
@@ -8587,8 +8586,8 @@ WebContentsImpl::GetRenderViewHostsIncludingBackForwardCached() {
 
 void WebContentsImpl::RenderFrameHostStateChanged(
     RenderFrameHostImpl* render_frame_host,
-    LifecycleState old_state,
-    LifecycleState new_state) {
+    LifecycleStateImpl old_state,
+    LifecycleStateImpl new_state) {
   OPTIONAL_TRACE_EVENT2("content",
                         "WebContentsImpl::RenderFrameHostStateChanged",
                         "render_frame_host", render_frame_host, "states",
@@ -8601,9 +8600,9 @@ void WebContentsImpl::RenderFrameHostStateChanged(
                           dict.Add("new", new_state);
                         });
   const bool was_in_back_forward_cache =
-      old_state == LifecycleState::kInBackForwardCache;
+      old_state == LifecycleStateImpl::kInBackForwardCache;
   const bool is_in_back_forward_cache =
-      new_state == LifecycleState::kInBackForwardCache;
+      new_state == LifecycleStateImpl::kInBackForwardCache;
   if (was_in_back_forward_cache != is_in_back_forward_cache) {
     observers_.NotifyObservers(
         &WebContentsObserver::FrameBackForwardCacheStateChanged,
@@ -8612,8 +8611,8 @@ void WebContentsImpl::RenderFrameHostStateChanged(
   if (render_frame_host->GetParent())
     return;
 
-  if (old_state == LifecycleState::kActive &&
-      new_state != LifecycleState::kActive) {
+  if (old_state == LifecycleStateImpl::kActive &&
+      new_state != LifecycleStateImpl::kActive) {
     // TODO(sreejakshetty): Remove this reset when ColorChooser becomes
     // per-frame.
     // Close the color chooser popup when RenderFrameHost changes state from

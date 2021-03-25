@@ -5073,6 +5073,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAccessibilityLiveCaptionName,
      flag_descriptions::kEnableAccessibilityLiveCaptionDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kLiveCaption)},
+    {"enable-accessibility-live-caption-soda",
+     flag_descriptions::kEnableAccessibilityLiveCaptionSodaName,
+     flag_descriptions::kEnableAccessibilityLiveCaptionSodaDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(media::kUseSodaForLiveCaption)},
 #endif  // !defined(OS_ANDROID)
 
     {"enable-accessibility-object-model",
@@ -5430,6 +5434,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppServiceExternalProtocolName,
      flag_descriptions::kAppServiceExternalProtocolDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceExternalProtocol)},
+
+    {"arc-ghost-window", flag_descriptions::kArcGhostWindowName,
+     flag_descriptions::kArcGhostWindowDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kArcGhostWindow)},
 
     {"arc-resize-lock", flag_descriptions::kArcResizeLockName,
      flag_descriptions::kArcResizeLockDescription, kOsCrOS,

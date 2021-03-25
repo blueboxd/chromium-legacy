@@ -2504,6 +2504,7 @@ static_library("browser") {
       "android/autofill_assistant/onboarding_coordinator_bridge.cc",
       "android/autofill_assistant/onboarding_fetcher_factory.cc",
       "android/autofill_assistant/onboarding_fetcher_factory.h",
+      "android/autofill_assistant/trigger_context_android.cc",
       "android/autofill_assistant/trigger_script_bridge_android.cc",
       "android/autofill_assistant/trigger_script_bridge_android.h",
       "android/autofill_assistant/ui_controller_android.cc",
@@ -4843,6 +4844,7 @@ static_library("browser") {
       "win/util_win_service.h",
     ]
     public_deps += [
+      "//build:branding_buildflags",
       "//chrome/services/util_win/public/mojom",
       "//ui/views",
       "//ui/views/controls/webview",

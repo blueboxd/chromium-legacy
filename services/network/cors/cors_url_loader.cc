@@ -252,11 +252,13 @@ void CorsURLLoader::ResumeReadingBodyFromNet() {
     network_loader_->ResumeReadingBodyFromNet();
 }
 
-void CorsURLLoader::OnReceiveEarlyHints(
-    network::mojom::EarlyHintsPtr early_hints) {
+void CorsURLLoader::OnReceiveEarlyHints(mojom::EarlyHintsPtr early_hints) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  forwarding_client_->OnReceiveEarlyHints(std::move(early_hints));
+
+  // Only forward Early Hints for navigation.
+  if (request_.mode == mojom::RequestMode::kNavigate)
+    forwarding_client_->OnReceiveEarlyHints(std::move(early_hints));
 }
 
 void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
@@ -551,6 +553,12 @@ void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   if (status.error_code == net::OK) {
     UMA_HISTOGRAM_BOOLEAN("NetworkService.CorsForcedOffForIsolatedWorldOrigin",
                           has_cors_been_affected_by_isolated_world_origin_);
+  }
+
+  if (devtools_observer_ && status.cors_error_status) {
+    devtools_observer_->OnCorsError(request_.devtools_request_id,
+                                    request_.request_initiator, request_.url,
+                                    *status.cors_error_status);
   }
 
   forwarding_client_->OnComplete(status);

@@ -859,7 +859,6 @@ if (!is_android) {
       "//content/test:test_support",
       "//crypto:platform",
       "//crypto:test_support",
-      "//device/bluetooth:mocks",
       "//device/fido:test_support",
       "//extensions/buildflags",
       "//google_apis:test_support",
@@ -2687,7 +2686,6 @@ if (!is_android) {
         "../browser/chromeos/file_manager/file_manager_jstest.cc",
         "../browser/chromeos/file_manager/file_manager_jstest_base.cc",
         "../browser/chromeos/file_manager/file_manager_jstest_base.h",
-        "../browser/chromeos/file_manager/file_manager_uitest.cc",
         "../browser/chromeos/file_manager/file_tasks_browsertest.cc",
         "../browser/chromeos/file_manager/gallery_browsertest.cc",
         "../browser/chromeos/file_manager/gallery_jstest.cc",
@@ -4461,6 +4459,7 @@ test("unit_tests") {
       "//components/messages/android:test_support",
       "//components/module_installer/android:module_installer_java",
       "//components/permissions/android:test_support",
+      "//components/signin/public/android:signin_java_test_support",
       "//content/public/android:content_java",
     ]
     if (use_v8_context_snapshot) {
@@ -7037,7 +7036,6 @@ if (is_android) {
     testonly = true
     deps = [
       "//base:base_java",
-      "//base:jni_java",
       "//chrome/android:chrome_all_java",
       "//chrome/browser/profiles/android:java",
       "//chrome/test/android:chrome_java_test_support",

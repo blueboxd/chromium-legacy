@@ -1965,6 +1965,9 @@ extern const char kAllowAllSitesToInitiateMirroringDescription[];
 extern const char kEnableAccessibilityLiveCaptionName[];
 extern const char kEnableAccessibilityLiveCaptionDescription[];
 
+extern const char kEnableAccessibilityLiveCaptionSodaName[];
+extern const char kEnableAccessibilityLiveCaptionSodaDescription[];
+
 extern const char kCastMediaRouteProviderName[];
 extern const char kCastMediaRouteProviderDescription[];
 
@@ -2680,6 +2683,9 @@ extern const char kReleaseNotesNotificationDescription[];
 
 extern const char kReleaseNotesNotificationAllChannelsName[];
 extern const char kReleaseNotesNotificationAllChannelsDescription[];
+
+extern const char kArcGhostWindowName[];
+extern const char kArcGhostWindowDescription[];
 
 extern const char kArcResizeLockName[];
 extern const char kArcResizeLockDescription[];

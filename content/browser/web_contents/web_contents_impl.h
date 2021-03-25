@@ -129,7 +129,6 @@ class
     TestWCDelegateForDialogsAndFullscreen;  // web_contents_impl_browsertest.cc
 class TestWebContents;
 class TextInputManager;
-class WebContentsAudioMuter;
 class WebContentsDelegate;
 class WebContentsImpl;
 class WebContentsView;
@@ -772,8 +771,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SavableResourceLinksError(RenderFrameHostImpl* source) override;
   void RenderFrameHostStateChanged(
       RenderFrameHostImpl* render_frame_host,
-      RenderFrameHostImpl::LifecycleState old_state,
-      RenderFrameHostImpl::LifecycleState new_state) override;
+      RenderFrameHostImpl::LifecycleStateImpl old_state,
+      RenderFrameHostImpl::LifecycleStateImpl new_state) override;
   void SetWindowRect(const gfx::Rect& new_bounds) override;
   std::vector<RenderFrameHostImpl*>
   GetActiveTopLevelDocumentsInBrowsingContextGroup(
@@ -1984,9 +1983,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Coordinates all the audio streams for this WebContents. Lazily initialized.
   base::Optional<ForwardingAudioStreamFactory> audio_stream_factory_;
-
-  // Created on-demand to mute all audio output from this WebContents.
-  std::unique_ptr<WebContentsAudioMuter> audio_muter_;
 
   size_t bluetooth_connected_device_count_ = 0;
   size_t bluetooth_scanning_sessions_count_ = 0;

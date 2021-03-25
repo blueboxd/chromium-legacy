@@ -60,6 +60,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_session.h"
@@ -78,7 +79,6 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
@@ -2202,11 +2202,11 @@ AutotestPrivateSetPluginVMPolicyFunction::Run() {
       api::autotest_private::SetPluginVMPolicy::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateSetPluginVMPolicyFunction " << params->image_url
-           << ", " << params->image_hash;
+           << ", " << params->image_hash << ", " << params->license_key;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   plugin_vm::SetFakePluginVmPolicy(profile, params->image_url,
-                                   params->image_hash);
+                                   params->image_hash, params->license_key);
 
   return RespondNow(NoArguments());
 }

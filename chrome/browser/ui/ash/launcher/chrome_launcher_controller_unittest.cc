@@ -45,11 +45,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -5079,13 +5079,7 @@ class ChromeLauncherControllerWebAppTest : public ChromeLauncherControllerTest {
   ~ChromeLauncherControllerWebAppTest() override = default;
 
   void MaybeStartWebAppProvider() override {
-    auto system_web_app_manager =
-        std::make_unique<web_app::TestSystemWebAppManager>(profile());
-
-    auto* provider = web_app::TestWebAppProvider::Get(profile());
-    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
-    provider->SetRunSubsystemStartupTasks(true);
-    provider->Start();
+    web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 };
 
@@ -5096,8 +5090,8 @@ TEST_F(ChromeLauncherControllerWebAppTest, WebAppPinRunUnpinClose) {
 
   InitLauncherController();
 
-  const web_app::AppId app_id =
-      web_app::InstallDummyWebApp(profile(), kWebAppName, GURL(kWebAppUrl));
+  const web_app::AppId app_id = web_app::test::InstallDummyWebApp(
+      profile(), kWebAppName, GURL(kWebAppUrl));
   base::RunLoop().RunUntilIdle();
 
   // The model should only contain the browser shortcut item.

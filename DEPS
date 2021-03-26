@@ -194,7 +194,7 @@ vars = {
   'checkout_reclient': False,
 
   # reclient CIPD package version
-  'reclient_version': 're_client_version:0.24.0.c22ef22',
+  'reclient_version': 're_client_version:0.25.0.5f9900f',
 
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '707d31578c65072e6b4979f9bd59174ac805591b',
+  'skia_revision': '497bdf9599081c33bedea94f90a8be9b4bde84f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '45ad336b9e794f24961e9d0b06ea21e748ca2d1e',
+  'v8_revision': 'ff6dfae2642d1e8d7ca616058d3d16561078bc06',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -225,7 +225,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'd4550ab8d3f0ba1ac26f5cd62f67be68a56b328f',
+  'swiftshader_revision': 'fb53aa2bb7dad9de683d963b5e5d30c40bbf16e1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1a232448d25eb1ecd17b566cf1073f0fd714d6ac',
+  'dawn_revision': '1257152485449816850604207ce189de6aa84db0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -701,7 +701,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '6AH7sBPAv7wq_nodCWSNT_ybKEqaHc3VWsDBwZ68s-QC',
+          'version': 'vU-uu8c_kFpNrh5M2tnikSLu0XEUk4LZaGDjFssInAwC',
       },
     ],
     'condition': 'checkout_android',
@@ -934,7 +934,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '392c407b551a98190b2431947469bca505e5bc50',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e0de6a88e5385ee9cd38d5e87f97456bbad8e7d2',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1384,7 +1384,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'T_v8z36hVtClZdI--UREcqogtXsjdf62oj2ae3H0JjMC'
+              'version': 'Q7BOLoBEKjKHVG4WYSf3qNuhySZ9nyW9T5qODWXbwLEC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1425,7 +1425,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'f8e389f3acdc2517562924239e2a188037393683',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '13ebb377c6ad763ca61d12dd6f88b1126bd0b911',
 
   'src/third_party/r8': {
       'packages': [
@@ -1614,7 +1614,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4dc23499e584685fdfb065356f60e611c7cb4eb1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b821403a2ecfaf00d272d09aaf18905eebbc2e9d',
     'condition': 'checkout_src_internal',
   },
 

@@ -29,6 +29,7 @@
 #include "net/base/escape.h"
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
+#include "pdf/content_restriction.h"
 #include "pdf/document_attachment_info.h"
 #include "pdf/document_metadata.h"
 #include "pdf/pdfium/pdfium_engine.h"
@@ -999,16 +1000,12 @@ void OutOfProcessInstance::FormDidOpen(int32_t result) {
 
 std::unique_ptr<UrlLoader> OutOfProcessInstance::CreateUrlLoader() {
   if (full_frame()) {
-    if (!did_call_start_loading_) {
-      did_call_start_loading_ = true;
-      pp::PDF::DidStartLoading(this);
-    }
+    DidStartLoading();
 
     // Disable save and print until the document is fully loaded, since they
     // would generate an incomplete document.  Need to do this each time we
     // call DidStartLoading since that resets the content restrictions.
-    pp::PDF::SetContentRestriction(
-        this, PP_CONTENT_RESTRICTION_SAVE | PP_CONTENT_RESTRICTION_PRINT);
+    SetContentRestrictions(kContentRestrictionSave | kContentRestrictionPrint);
   }
 
   return CreateUrlLoaderInternal();
@@ -1034,57 +1031,6 @@ OutOfProcessInstance::SearchString(const char16_t* string,
   memory.MemFree(pp_results);
 
   return results;
-}
-
-void OutOfProcessInstance::DocumentLoadComplete() {
-  // Clear focus state for OSK.
-  FormTextFieldFocusChange(false);
-
-  DCHECK_EQ(DocumentLoadState::kLoading, document_load_state());
-  set_document_load_state(DocumentLoadState::kComplete);
-  UserMetricsRecordAction("PDF.LoadSuccess");
-  RecordDocumentMetrics();
-
-  // Note: If we are in print preview mode the scroll location is retained
-  // across document loads so we don't want to scroll again and override it.
-  if (IsPrintPreview()) {
-    if (IsPreviewingPDF(print_preview_page_count_)) {
-      SendPrintPreviewLoadedNotification();
-    } else {
-      DCHECK_EQ(0, print_preview_loaded_page_count_);
-      print_preview_loaded_page_count_ = 1;
-      AppendBlankPrintPreviewPages();
-    }
-    OnGeometryChanged(0, 0);
-  }
-
-  SendAttachments();
-  SendBookmarks();
-  SendMetadata();
-  SendLoadingProgress(/*percentage=*/100);
-
-  if (accessibility_state() == AccessibilityState::kPending)
-    LoadAccessibility();
-
-  if (!full_frame())
-    return;
-
-  if (did_call_start_loading_) {
-    pp::PDF::DidStopLoading(this);
-    did_call_start_loading_ = false;
-  }
-
-  int content_restrictions =
-      PP_CONTENT_RESTRICTION_CUT | PP_CONTENT_RESTRICTION_PASTE;
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_COPY))
-    content_restrictions |= PP_CONTENT_RESTRICTION_COPY;
-
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-      !engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
-    content_restrictions |= PP_CONTENT_RESTRICTION_PRINT;
-  }
-
-  pp::PDF::SetContentRestriction(this, content_restrictions);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
@@ -1246,10 +1192,7 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   DCHECK_EQ(DocumentLoadState::kLoading, document_load_state());
   UserMetricsRecordAction("PDF.LoadFailure");
 
-  if (did_call_start_loading_) {
-    pp::PDF::DidStopLoading(this);
-    did_call_start_loading_ = false;
-  }
+  DidStopLoading();
 
   set_document_load_state(DocumentLoadState::kFailed);
   paint_manager().InvalidateRect(gfx::Rect(plugin_size()));
@@ -1459,6 +1402,39 @@ void OutOfProcessInstance::LoadNextPreviewPage() {
   if (print_preview_loaded_page_count_ == print_preview_page_count_) {
     SendPrintPreviewLoadedNotification();
   }
+}
+
+void OutOfProcessInstance::DidStartLoading() {
+  if (did_call_start_loading_)
+    return;
+
+  pp::PDF::DidStartLoading(this);
+  did_call_start_loading_ = true;
+}
+
+void OutOfProcessInstance::DidStopLoading() {
+  if (!did_call_start_loading_)
+    return;
+
+  pp::PDF::DidStopLoading(this);
+  did_call_start_loading_ = false;
+}
+
+void OutOfProcessInstance::OnPrintPreviewLoaded() {
+  // Scroll location is retained across document loads in print preview mode, so
+  // there's no need to override the scroll position by scrolling again.
+  if (IsPreviewingPDF(print_preview_page_count_)) {
+    SendPrintPreviewLoadedNotification();
+  } else {
+    DCHECK_EQ(0, print_preview_loaded_page_count_);
+    print_preview_loaded_page_count_ = 1;
+    AppendBlankPrintPreviewPages();
+  }
+  OnGeometryChanged(0, 0);
+}
+
+void OutOfProcessInstance::SetContentRestrictions(int content_restrictions) {
+  pp::PDF::SetContentRestriction(this, content_restrictions);
 }
 
 void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {

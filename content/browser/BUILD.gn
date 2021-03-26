@@ -916,6 +916,8 @@ source_set("browser") {
     "histogram_synchronizer.h",
     "histograms_internals_ui.cc",
     "histograms_internals_ui.h",
+    "histograms_monitor.cc",
+    "histograms_monitor.h",
     "idle/idle_manager_impl.cc",
     "idle/idle_manager_impl.h",
     "idle/idle_monitor.cc",
@@ -2742,6 +2744,8 @@ source_set("browser") {
       "../app_shim_remote_cocoa/render_widget_host_ns_view_host_helper.h",
       "../app_shim_remote_cocoa/render_widget_host_view_cocoa.h",
       "../app_shim_remote_cocoa/render_widget_host_view_cocoa.mm",
+      "../app_shim_remote_cocoa/sharing_service_picker.h",
+      "../app_shim_remote_cocoa/sharing_service_picker.mm",
       "../app_shim_remote_cocoa/web_contents_view_cocoa.h",
       "../app_shim_remote_cocoa/web_contents_view_cocoa.mm",
     ]

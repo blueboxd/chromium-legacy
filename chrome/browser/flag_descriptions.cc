@@ -78,6 +78,11 @@ const char kCOLRV1FontsName[] = "COLR v1 Fonts";
 const char kCOLRV1FontsDescription[] =
     "Display COLR v1 color gradient vector fonts.";
 
+extern const char kCSSContainerQueriesName[] = "Enable CSS Container Queries";
+extern const char kCSSContainerQueriesDescription[] =
+    "Enables support for @container, inline-size and block-size values for the "
+    "contain property, and the LayoutNG Grid implementation.";
+
 const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
 const char kConditionalTabStripAndroidDescription[] =
     "Allows users to access conditional tab strip.";
@@ -280,6 +285,12 @@ const char kAutofillEnableVirtualCardDescription[] =
     "When enabled, if all requirements are met, Autofill will offer to use "
     "virtual credit cards in form filling.";
 
+const char kAutofillParseMerchantPromoCodeFieldsName[] =
+    "Parse promo code fields in forms";
+const char kAutofillParseMerchantPromoCodeFieldsDescription[] =
+    "When enabled, Autofill will attempt to find merchant promo/coupon/gift "
+    "code fields when parsing forms.";
+
 const char kAutofillProfileClientValidationName[] =
     "Autofill Validates Profiles By Client";
 const char kAutofillProfileClientValidationDescription[] =
@@ -358,6 +369,11 @@ const char kChromeLabsName[] = "Chrome Labs";
 const char kChromeLabsDescription[] =
     "Access Chrome Labs through the toolbar menu to see featured user-facing "
     "experimental features.";
+
+const char kCompositeAfterPaintName[] = "Composite after paint";
+const char kCompositeAfterPaintDescription[] =
+    "A new algorithm to create compositing layers. "
+    "See http://bit.ly/composite-after-paint.";
 
 const char kComputePressureAPIName[] = "Compute Pressure API";
 const char kComputePressureAPIDescription[] =
@@ -4080,10 +4096,6 @@ const char kEnableAssistantMediaSessionIntegrationDescription[] =
 
 const char kEnableAssistantRoutinesName[] = "Assistant Routines";
 const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
-
-const char kEnableAssistantTimersV2Name[] = "Enable Assistant Timers V2";
-const char kEnableAssistantTimersV2Description[] =
-    "Enables v2 of Assistant timers.";
 
 const char kEnableAutoSelectName[] = "Auto Select";
 const char kEnableAutoSelectDescription[] =

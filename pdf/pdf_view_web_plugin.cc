@@ -276,10 +276,6 @@ PdfViewWebPlugin::SearchString(const char16_t* string,
   return {};
 }
 
-void PdfViewWebPlugin::DocumentLoadComplete() {
-  NOTIMPLEMENTED();
-}
-
 void PdfViewWebPlugin::DocumentLoadFailed() {
   NOTIMPLEMENTED();
 }
@@ -439,6 +435,22 @@ void PdfViewWebPlugin::SetAccessibilityPageInfo(
 // accessibility viewport information.
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
     const AccessibilityViewportInfo& viewport_info) {
+  NOTIMPLEMENTED();
+}
+
+void PdfViewWebPlugin::SetContentRestrictions(int content_restrictions) {
+  NOTIMPLEMENTED();
+}
+
+void PdfViewWebPlugin::DidStartLoading() {
+  NOTIMPLEMENTED();
+}
+
+void PdfViewWebPlugin::DidStopLoading() {
+  NOTIMPLEMENTED();
+}
+
+void PdfViewWebPlugin::OnPrintPreviewLoaded() {
   NOTIMPLEMENTED();
 }
 

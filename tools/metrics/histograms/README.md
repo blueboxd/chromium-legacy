@@ -607,9 +607,10 @@ does, then the parent directory's component is used.
 
 ### Cleaning Up Histogram Entries
 
-Do not delete histograms from histograms.xml. Instead, mark unused histograms as
-obsolete and annotate them with the date or milestone in the `<obsolete>` tag
-entry.
+Do not delete histograms from histograms.xml files or move them to
+obsolete_histograms.xml. Instead, mark unused histograms as obsolete and
+annotate them with the date or milestone in the `<obsolete>` tag entry. They
+will later get moved to obsolete_histograms.xml via tooling.
 
 If deprecating only some variants of a
 [patterned histogram](#Patterned-Histograms), mark each deprecated `<variant>`
@@ -648,7 +649,8 @@ the same type of data, with some minor variations. You can declare the metadata
 for these concisely using patterned histograms. For example:
 
 ```xml
-<histogram name="Pokemon.{Character}.EfficacyAgainst{OpponentType}" ...>
+<histogram name="Pokemon.{Character}.EfficacyAgainst{OpponentType}" 
+    units="multiplier" expires_after="M95">
   <owner>individual@chromium.org</owner>
   <owner>team@chromium.org</owner>
   <summary>
@@ -672,7 +674,8 @@ for these concisely using patterned histograms. For example:
 This example defines metadata for 12 (= 3 x 4) concrete histograms, such as
 
 ```xml
-<histogram name="Pokemon.Charizard.EfficacyAgainstWater" ...>
+<histogram name="Pokemon.Charizard.EfficacyAgainstWater"
+    units="multiplier" expires_after="M95">
   <owner>individual@chromium.org</owner>
   <owner>team@chromium.org</owner>
   <summary>

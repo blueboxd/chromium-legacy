@@ -74,6 +74,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
              const std::string& bcc,
              const std::string& subject,
              const std::string& body) override;
+  void DocumentLoadComplete() override;
   void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   SkColor GetBackgroundColor() override;
@@ -158,15 +159,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Consumes a token for saving the document.
   void ConsumeSaveToken(const std::string& token);
 
-  // Sends the attachments data.
-  void SendAttachments();
-
-  // Sends the bookmarks data.
-  void SendBookmarks();
-
-  // Send document metadata data.
-  void SendMetadata();
-
   // Sends the loading progress, where `percentage` represents the progress, or
   // -1 for loading error.
   void SendLoadingProgress(double percentage);
@@ -214,9 +206,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Sets the text input type for this plugin based on `in_focus`.
   virtual void SetFormFieldInFocus(bool in_focus) = 0;
 
-  // Starts loading accessibility information.
-  void LoadAccessibility();
-
   // Sets the accessibility information about the PDF document in the renderer.
   virtual void SetAccessibilityDocInfo(
       const AccessibilityDocInfo& doc_info) = 0;
@@ -247,8 +236,19 @@ class PdfViewPluginBase : public PDFEngine::Client,
     return size > 0 && size <= kMaximumSavedFileSize;
   }
 
-  // Records metrics about the document metadata.
-  void RecordDocumentMetrics();
+  // Disables browser commands because of restrictions on how the data is to be
+  // used (i.e. can't copy/print). `content_restrictions` should have its bits
+  // set by `chrome_pdf::ContentRestriction` enum values.
+  virtual void SetContentRestrictions(int content_restrictions) = 0;
+
+  // Sends start/stop loading notifications to the plugin's render frame.
+  // TODO(crbug.com/702993): Evaluate whether these methods are needed when the
+  // plugin is moved into a renderer process.
+  virtual void DidStartLoading() = 0;
+  virtual void DidStopLoading() = 0;
+
+  // Performs tasks necessary when the document is loaded in print preview mode.
+  virtual void OnPrintPreviewLoaded() = 0;
 
   // Records user actions.
   virtual void UserMetricsRecordAction(const std::string& action) = 0;
@@ -327,8 +327,23 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Callback to clear deferred invalidates after painting finishes.
   void ClearDeferredInvalidates(int32_t /*unused_but_required*/);
 
+  // Sends the attachments data.
+  void SendAttachments();
+
+  // Sends the bookmarks data.
+  void SendBookmarks();
+
+  // Send document metadata data.
+  void SendMetadata();
+
   // Sends the thumbnail image data.
   void SendThumbnail(base::Value reply, Thumbnail thumbnail);
+
+  // Starts loading accessibility information.
+  void LoadAccessibility();
+
+  // Records metrics about the document metadata.
+  void RecordDocumentMetrics();
 
   // Adds a sample to an enumerated histogram and filter out print preview
   // usage.

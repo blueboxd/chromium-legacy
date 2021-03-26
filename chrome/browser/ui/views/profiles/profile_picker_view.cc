@@ -114,6 +114,12 @@ void ShowCustomizationBubble(SkColor new_profile_color, Browser* browser) {
                                  ->GetAvatarToolbarButton();
   DCHECK(anchor_view);
 
+  // Don't show the customization bubble if a valid policy theme is set.
+  if (ThemeServiceFactory::GetForProfile(browser->profile())
+          ->UsingPolicyTheme()) {
+    return;
+  }
+
   if (ProfileCustomizationBubbleSyncController::CanThemeSyncStart(
           browser->profile())) {
     // For sync users, their profile color has not been applied yet. Call a
@@ -216,6 +222,7 @@ class SimpleBackButton : public ToolbarButton {
       : ToolbarButton(std::move(callback)) {
     SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                              ui::EF_MIDDLE_MOUSE_BUTTON);
+    SetVectorIcons(vector_icons::kBackArrowIcon, kBackArrowTouchIcon);
     SetTooltipText(l10n_util::GetStringUTF16(
         IDS_PROFILE_PICKER_BACK_BUTTON_SIGN_IN_LABEL));
     // Unlike toolbar buttons, this one should be focusable to make it
@@ -226,14 +233,6 @@ class SimpleBackButton : public ToolbarButton {
   SimpleBackButton(const SimpleBackButton&) = delete;
   SimpleBackButton& operator=(const SimpleBackButton&) = delete;
   ~SimpleBackButton() override = default;
-
-  // ToolbarButton:
-  void UpdateIcon() override {
-    const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-    const gfx::VectorIcon* image =
-        touch_ui ? &kBackArrowTouchIcon : &vector_icons::kBackArrowIcon;
-    UpdateIconsWithStandardColors(*image);
-  }
 };
 
 }  // namespace
@@ -781,8 +780,13 @@ void ProfilePickerView::SwitchToSyncConfirmationFinished() {
   // Initialize the WebUI page once we know it's committed.
   SyncConfirmationUI* sync_confirmation_ui = static_cast<SyncConfirmationUI*>(
       sign_in_->contents->GetWebUI()->GetController());
+
+  // The new profile theme may be overridden by an existing policy theme. This
+  // check ensures the correct theme is applied to the sync confirmation window.
+  auto* theme_service = ThemeServiceFactory::GetForProfile(sign_in_->profile);
   sync_confirmation_ui->InitializeMessageHandlerForCreationFlow(
-      sign_in_->profile_color);
+      theme_service->UsingPolicyTheme() ? theme_service->GetPolicyThemeColor()
+                                        : sign_in_->profile_color);
 }
 
 void ProfilePickerView::SwitchToProfileSwitch(

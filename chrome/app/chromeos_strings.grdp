@@ -316,7 +316,7 @@
     Insert SIM before proceeding
   </message>
   <message name="IDS_CELLULAR_SETUP_CELLULAR_SETUP_PAGE_ESIM_LABEL" desc="Label for electronic SIM (eSIM) setup flow card radio select button during cellular setup">
-    eSim setup
+    eSIM setup
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_MESSAGE" desc="Message displayed during loading page in eSIM setup flow when looking for eSIM profiles.">
     Looking for available profiles...
@@ -1708,6 +1708,9 @@
   </message>
   <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD" desc="Text for the button displayed for pending eSIM profiles that installs the profile when pressed.">
     Download
+  </message>
+  <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD_A11Y_LABEL" desc="A11Y label for the button displayed for pending eSIM profiles that installs the profile when pressed. Includes profile name">
+    Download, <ph name="PROFILE_NAME">$1<ex>Cellular</ex></ph>
   </message>
   <message name="IDS_NETWORK_LIST_ITEM_UNLOCK" desc="Text for the button displayed for locked cellular networks that opens a dialog to unlock the network when pressed ">
     Unlock

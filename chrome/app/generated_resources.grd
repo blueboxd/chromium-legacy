@@ -5575,6 +5575,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL" desc="The label for the color picker in the customization menu on the New Tab Page">
         Custom color
       </message>
+      <message name="IDS_NTP_THEME_MANAGED_DIALOG_TITLE" desc="Title text for the dialog informing users that their theme is managed when they try selecting a theme on the New Tab Page.">
+        Theme is set by your Organization
+      </message>
+      <message name="IDS_NTP_THEME_MANAGED_DIALOG_BODY" desc="Body text for the dialog informing users that their theme is managed when they try selecting a theme on the New Tab Page.">
+        Your administrator has set a default theme which cannot be changed.
+      </message>
       <message name="IDS_NTP_CUSTOMIZE_DEFAULT_LABEL" desc="The label for the Default theme in the customization menu on the New Tab Page">
         Default color
       </message>
@@ -11182,30 +11188,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         {NUM_EXTENSIONS, plural,
           =1 {Click to view the extension}
           other {Click to view these extensions}}
-      </message>
-    </if>
-
-    <if expr="is_macosx">
-      <!-- The Rosetta is required infobar -->
-      <message name="IDS_ROSETTA_REQUIRED_INFOBAR_TEXT"
-               desc="The infobar text when installation of Rosetta is required">
-        To play protected media on this page, you need to install Rosetta.
-      </message>
-      <message name="IDS_ROSETTA_REQUIRED_INFOBAR_LINK_TEXT"
-               desc="The learn more text when installation of Rosetta is required.">
-        Learn more
-      </message>
-      <message name="IDS_ROSETTA_REQUIRED_INFOBAR_BUTTON_TEXT"
-               desc="The button text when installation of Rosetta is required.">
-        Install Rosetta
-      </message>
-      <message name="IDS_ROSETTA_INSTALL_RESTART_DIALOG_NOW"
-                 desc="The 'restart now' button in the dialog once Rosetta is installed.">
-        Restart Now
-      </message>
-      <message name="IDS_ROSETTA_INSTALL_RESTART_DIALOG_LATER"
-                 desc="The 'restart later' button in the dialog once Rosetta is installed.">
-        Restart Later
       </message>
     </if>
 

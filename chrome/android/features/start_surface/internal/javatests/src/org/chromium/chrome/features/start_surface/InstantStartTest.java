@@ -10,11 +10,15 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -56,6 +60,7 @@ import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.BoundedMatcher;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Description;
@@ -169,6 +174,7 @@ public class InstantStartTest {
             + ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0";
     private static final int ARTICLE_SECTION_HEADER_POSITION = 0;
     private static final long MAX_TIMEOUT_MS = 30000L;
+    private static final String SHADOW_VIEW_TAG = "TabListViewShadow";
     private Bitmap mBitmap;
     private int mThumbnailFetchCount;
 
@@ -391,8 +397,7 @@ public class InstantStartTest {
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
         Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
 
-        CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
+        waitForOverviewVisible();
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())
@@ -421,8 +426,7 @@ public class InstantStartTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
 
-        CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
+        waitForOverviewVisible();
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())
@@ -469,8 +473,7 @@ public class InstantStartTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
 
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         TopToolbarCoordinator topToolbarCoordinator =
@@ -588,8 +591,7 @@ public class InstantStartTest {
     public void renderTabSwitcher_NoStateFile() throws IOException {
         // clang-format on
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
+        waitForOverviewVisible();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "tabSwitcher_empty");
     }
@@ -608,8 +610,7 @@ public class InstantStartTest {
         // clang-format on
         createCorruptedTabStateFile();
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
+        waitForOverviewVisible();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "tabSwitcher_empty");
     }
@@ -653,8 +654,7 @@ public class InstantStartTest {
 
         // Must be after createTabStateFile() to read these files.
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
+        waitForOverviewVisible();
         RecyclerView recyclerView =
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
         CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
@@ -701,8 +701,7 @@ public class InstantStartTest {
 
         // Must be after createTabStateFile() to read these files.
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
+        waitForOverviewVisible();
         RecyclerView recyclerView =
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
         CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
@@ -761,8 +760,7 @@ public class InstantStartTest {
         TabAttributeCache.setTitleForTesting(0, "Google");
 
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
         View surface =
                 mActivityTestRule.getActivity().findViewById(R.id.primary_tasks_surface_view);
@@ -986,8 +984,7 @@ public class InstantStartTest {
     public void renderSingleAsHomepage_NoTab_ScrollToolbarToTop() throws IOException {
         // clang-format on
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
         // Initializes native.
         startAndWaitNativeInitialization();
@@ -1007,7 +1004,7 @@ public class InstantStartTest {
         // The start surface toolbar should be scrolled up and not be displayed.
         onView(withId(R.id.tab_switcher_toolbar)).check(matches(not(isDisplayed())));
 
-        View surface = mActivityTestRule.getActivity().findViewById(R.id.toolbar);
+        View surface = mActivityTestRule.getActivity().findViewById(R.id.control_container);
         ChromeRenderTestRule.sanitize(surface);
         mRenderTestRule.render(surface, "singlePane_floatingTopToolbar");
 
@@ -1018,6 +1015,7 @@ public class InstantStartTest {
         // Clear the focus.
         TestThreadUtils.runOnUiThreadBlocking(urlBar::clearFocus);
         // Default search engine logo should still show.
+        surface = mActivityTestRule.getActivity().findViewById(R.id.control_container);
         ChromeRenderTestRule.sanitize(surface);
         mRenderTestRule.render(surface, "singlePane_floatingTopToolbar");
     }
@@ -1031,16 +1029,19 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    public void testShadowVisibility() throws IOException {
+    public void testShadowVisibility() {
         // clang-format on
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
-        int shadowVisibility =
-                mActivityTestRule.getActivity().findViewById(R.id.toolbar_shadow).getVisibility();
+        onView(withId(R.id.toolbar_shadow))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
 
-        Assert.assertEquals(View.INVISIBLE, shadowVisibility);
+        startAndWaitNativeInitialization();
+        waitForOverviewVisible();
+
+        onView(withId(R.id.toolbar_shadow))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
     }
 
     @Test
@@ -1053,10 +1054,16 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    public void testShadowVisibilityWithoutInstantStart() throws IOException {
+    public void testShadowVisibilityWithoutInstantStart() {
         // clang-format on
         startMainActivityFromLauncher();
         onViewWaiting(withId(R.id.toolbar_shadow)).check(matches(isDisplayed()));
+
+        startAndWaitNativeInitialization();
+        waitForOverviewVisible();
+
+        onView(withId(R.id.toolbar_shadow))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)));
     }
 
     @Test
@@ -1076,8 +1083,7 @@ public class InstantStartTest {
         TabAttributeCache.setTitleForTesting(0, "Google");
 
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
         // Initializes native.
         startAndWaitNativeInitialization();
@@ -1114,8 +1120,7 @@ public class InstantStartTest {
         mSuggestionsDeps.getFactory().mostVisitedSites = mostVisitedSites;
 
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
         // Initializes native.
         startAndWaitNativeInitialization();
@@ -1132,34 +1137,7 @@ public class InstantStartTest {
         });
         View surface =
                 mActivityTestRule.getActivity().findViewById(R.id.primary_tasks_surface_view);
-        mRenderTestRule.render(surface, "singlePane_landscape_FeedV2");
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"RenderTest"})
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
-            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
-            "force-fieldtrials=Study/Group",
-            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"+
-                    "/exclude_mv_tiles/false"})
-    public void renderSingleAsHomepage_MVTiles() throws IOException, InterruptedException {
-        // clang-format on
-        saveSiteSuggestionTilesToFile();
-        startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
-
-        View surface =
-                mActivityTestRule.getActivity().findViewById(R.id.primary_tasks_surface_view);
-
-        ViewUtils.onViewWaiting(
-                allOf(withId(R.id.tile_view_title), withText("0 EXPLORE_SITES"), isDisplayed()));
-        ChromeRenderTestRule.sanitize(surface);
-        mRenderTestRule.render(surface, "singlePane_MV_withTopSitesView");
+        mRenderTestRule.render(surface, "singlePane_landscape");
     }
 
     @Test
@@ -1179,8 +1157,7 @@ public class InstantStartTest {
     public void testSingleAsHomepage_Landscape_TabSize() throws IOException{
         // clang-format on
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
         // Initializes native.
         startAndWaitNativeInitialization();
@@ -1230,7 +1207,8 @@ public class InstantStartTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
+    @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
@@ -1239,7 +1217,7 @@ public class InstantStartTest {
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS +
                     "/start_surface_variation/single/exclude_mv_tiles/false"})
-    public void testExploreTopSites() throws InterruptedException {
+    public void testMVTilesWithExploreSitesView() throws InterruptedException, IOException {
         // clang-format on
         // When showing MV tiles pre-native, explore top sites view is already rendered with a
         // non-null icon. This test is for ensuring explore top sites view is built and clickable
@@ -1251,8 +1229,15 @@ public class InstantStartTest {
         mSuggestionsDeps.getFactory().mostVisitedSites = mostVisitedSites;
 
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
+
+        View surface =
+                mActivityTestRule.getActivity().findViewById(R.id.primary_tasks_surface_view);
+
+        ViewUtils.onViewWaiting(
+                allOf(withId(R.id.tile_view_title), withText("0 EXPLORE_SITES"), isDisplayed()));
+        ChromeRenderTestRule.sanitize(surface);
+        mRenderTestRule.render(surface, "singlePane_MV_withExploreSitesView");
 
         // Initializes native.
         startAndWaitNativeInitialization();
@@ -1301,13 +1286,11 @@ public class InstantStartTest {
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
     public void testScrollToSelectedTab() throws IOException {
         // clang-format on
-        createTabStateFile(new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, null, 9);
+        createTabStateFile(new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, null, 5);
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
+        waitForOverviewVisible();
         startAndWaitNativeInitialization();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
 
         // Note that onView(R.id.more_tabs).perform(click()) can not be used since it requires 90
         // percent of the view's area is displayed to the users. However, this view has negative
@@ -1331,8 +1314,19 @@ public class InstantStartTest {
                     Assert.assertTrue(v instanceof RecyclerView);
                     LinearLayoutManager layoutManager =
                             (LinearLayoutManager) ((RecyclerView) v).getLayoutManager();
-                    assertEquals(9, layoutManager.findLastVisibleItemPosition());
+                    assertEquals(7, layoutManager.findLastVisibleItemPosition());
                 });
+
+        // On tab switcher page, shadow is handled by TabListRecyclerView itself, so toolbar shadow
+        // shouldn't show.
+        onView(withId(R.id.toolbar_shadow)).check(matches(not(isDisplayed())));
+
+        // Scroll the tab list a little bit and shadow should show.
+        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.tasks_surface_body))))
+                .perform(swipeUp());
+        onView(allOf(withTagValue(is(SHADOW_VIEW_TAG)),
+                       isDescendantOfA(withId(R.id.tasks_surface_body))))
+                .check(matches(isDisplayed()));
     }
 
     @Test
@@ -1353,8 +1347,7 @@ public class InstantStartTest {
         TabAttributeCache.setTitleForTesting(0, "Google");
 
         startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        waitForOverviewVisible();
         ViewUtils.onViewWaiting(withId(R.id.tab_list_view));
         Assert.assertEquals(1, PseudoTab.getAllPseudoTabsFromStateFile().size());
     }
@@ -1447,7 +1440,8 @@ public class InstantStartTest {
 
     private void waitForTabModel() {
         CriteriaHelper.pollUiThread(
-                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
+                mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized,
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     private static List<Tile> createFakeSiteSuggestionTiles() {
@@ -1486,5 +1480,13 @@ public class InstantStartTest {
 
         // Wait util the file has been saved.
         latch.await();
+    }
+
+    private void waitForOverviewVisible() {
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

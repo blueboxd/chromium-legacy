@@ -1392,6 +1392,17 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Warning canceled"/>
 </enum>
 
+<enum name="AlpsDecoderError">
+  <int value="0" label="NoError"/>
+  <int value="1" label="FramingError"/>
+  <int value="2" label="ForbiddenFrame"/>
+  <int value="3" label="NotOnFrameBoundary"/>
+  <int value="4" label="SettingsWithAck"/>
+  <int value="5" label="AcceptChInvalidStream"/>
+  <int value="6" label="AcceptChWithFlags"/>
+  <int value="7" label="AcceptChMalformed"/>
+</enum>
+
 <enum name="AlsaSampleFormatType">
   <int value="-1" label="SND_PCM_FORMAT_UNKNOWN"/>
   <int value="0" label="SND_PCM_FORMAT_S8"/>
@@ -24007,6 +24018,7 @@ Called by update_document_policy_enum.py.-->
   <int value="837" label="SerialAllowAllPortsForUrls"/>
   <int value="838" label="SerialAllowUsbDevicesForUrls"/>
   <int value="839" label="ForcedLanguages"/>
+  <int value="840" label="BrowserThemeColor"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -26882,6 +26894,7 @@ Called by update_extension_histograms.py.-->
       label="LANGUAGESETTINGSPRIVATE_SETLANGUAGEALWAYSTRANSLATESTATE"/>
   <int value="1546" label="ACCESSIBILITY_PRIVATE_SHOWCONFIRMATIONDIALOG"/>
   <int value="1547" label="AUTOTESTPRIVATE_INSTALLBOREALIS"/>
+  <int value="1548" label="LANGUAGESETTINGSPRIVATE_SETTRANSLATETARGETLANGUAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34025,6 +34038,9 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="FreezingAttemptOutcome">
+  <obsolete>
+    Removed 03/2021.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Failure - Content doesn't exist"/>
   <int value="2" label="Failure - Page has notification permission"/>
@@ -35351,6 +35367,9 @@ Called by update_permissions_policy_enum.py.-->
   <int value="1936155204" label="gap.device_name"/>
   <int value="1940300093"
       label="Tacx trainer; 6e40fec2-b5a3-f393-e0a9-e50e24dcca9e"/>
+  <int value="1941001682"
+      label="LEGO Hub Boot Loader Characteristic;
+             00001626-1212-efde-1623-785feabcd123"/>
   <int value="1945497075"
       label="PocketLab; f000aa24-0452-4000-b000-000000000000"/>
   <int value="1954594648" label="temperature"/>
@@ -35412,6 +35431,8 @@ Called by update_permissions_policy_enum.py.-->
       label="PocketLab (from service 11);
              f000aa12-0452-4000-b000-000000000000"/>
   <int value="2125906618" label="gap.appearance"/>
+  <int value="2129421706"
+      label="LEGO Hub Characteristic; 00001624-1212-efde-1623-785feabcd123"/>
   <int value="2140490935" label="gatt.service_changed"/>
 </enum>
 
@@ -35491,6 +35512,9 @@ Called by update_permissions_policy_enum.py.-->
   <int value="91953454" label="fe7b"/>
   <int value="107684477"
       label="PocketLab; f000aa2d-0452-4000-b000-000000000000"/>
+  <int value="108999394"
+      label="LEGO Hub Boot Loader Service;
+             00001625-1212-efde-1623-785feabcd123"/>
   <int value="109066436" label="Printer; 18f0"/>
   <int value="117033282" label="fe1e"/>
   <int value="119232939" label="fe16"/>
@@ -35663,6 +35687,8 @@ Called by update_permissions_policy_enum.py.-->
       label="PocketLab; f000aa2a-0452-4000-b000-000000000000"/>
   <int value="869059214" label="next_dst_change"/>
   <int value="869682406" label="fe60"/>
+  <int value="873412183"
+      label="LEGO Hub Service; 00001623-1212-efde-1623-785feabcd123"/>
   <int value="876407493" label="location_and_navigation"/>
   <int value="878416856" label="fe85"/>
   <int value="879242624"
@@ -35752,6 +35778,8 @@ Called by update_permissions_policy_enum.py.-->
   <int value="1276692887" label="fe09"/>
   <int value="1280998251" label="blood_pressure"/>
   <int value="1289827687" label="fe7c"/>
+  <int value="1291799273"
+      label="littleBits; ded1c5a0-536c-11e6-beb8-9e71128cae77"/>
   <int value="1293391247" label="fea4"/>
   <int value="1295501517" label="fef3"/>
   <int value="1300474367" label="fe70"/>
@@ -39519,7 +39547,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="24" label="AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="25" label="GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID"/>
   <int value="26" label="SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE"/>
-  <int value="27" label="PEPPER_BROKER_INFOBAR_DELEGATE"/>
+  <int value="27" label="PEPPER_BROKER_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="28" label="PERMISSION_UPDATE_INFOBAR_DELEGATE_ANDROID"/>
   <int value="29"
       label="DURABLE_STORAGE_PERMISSION_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
@@ -39599,8 +39627,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="100" label="LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID"/>
   <int value="101" label="SYSTEM_INFOBAR_DELEGATE_MAC (Obsolete)"/>
   <int value="102" label="EXPERIMENTAL_INFOBAR_DELEGATE_LACROS"/>
-  <int value="103" label="ROSETTA_REQUIRED_INFOBAR_DELEGATE"/>
-  <int value="104" label="WEBID_PERMISSION_INFOBAR_DELEGATE"/>
+  <int value="103" label="ROSETTA_REQUIRED_INFOBAR_DELEGATE (Obsolete)"/>
+  <int value="104" label="WEBID_PERMISSION_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="105" label="AUTOFILL_OFFER_NOTIFICATION_INFOBAR_DELEGATE"/>
   <int value="106" label="AUTOFILL_ADDRESS_PROFILE_INFOBAR_DELEGATE_IOS"/>
 </enum>
@@ -43791,6 +43819,7 @@ from previous Chrome versions.
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
   <int value="-1996087238" label="kAutofillEnableOffersInDownstream:enabled"/>
   <int value="-1993730028" label="CrostiniPortForwarding:enabled"/>
+  <int value="-1992999120" label="composite-after-paint"/>
   <int value="-1990614981" label="StoragePressureUI:disabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1989134646" label="PhoneHubUseBle:disabled"/>
@@ -44602,6 +44631,7 @@ from previous Chrome versions.
   <int value="-1308102778" label="IPH_DesktopSnoozeFeature:disabled"/>
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
+  <int value="-1304401930" label="CSSContainerQueries:enabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1301804101"
@@ -45112,6 +45142,7 @@ from previous Chrome versions.
   <int value="-864205629" label="enable-offline-load-stale-cache"/>
   <int value="-863581676" label="BluetoothFixA2dpPacketSize:disabled"/>
   <int value="-861678473" label="disable-offer-upload-credit-cards"/>
+  <int value="-861524874" label="AutofillParseMerchantPromoCodeFields:enabled"/>
   <int value="-861343291" label="ChromeHome:disabled"/>
   <int value="-860578793" label="TabGridLayoutAndroid:disabled"/>
   <int value="-860534647" label="SiteDetails:enabled"/>
@@ -45351,6 +45382,7 @@ from previous Chrome versions.
   <int value="-642346675" label="DesktopPWAsAttentionBadgingCrOS:enabled"/>
   <int value="-641820371" label="EnableCustomMacPaperSizes:enabled"/>
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
+  <int value="-641423897" label="CompositeAfterPaint:disabled"/>
   <int value="-640191786" label="DesktopPWAsWithoutExtensions:enabled"/>
   <int value="-639070391" label="FreezeUserAgent:disabled"/>
   <int value="-639026783" label="disable-gpu-appcontainer"/>
@@ -45713,6 +45745,8 @@ from previous Chrome versions.
   <int value="-300542825" label="ChromeShareQRCode:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
+  <int value="-298629214"
+      label="AutofillParseMerchantPromoCodeFields:disabled"/>
   <int value="-298458993" label="SystemNotifications:enabled"/>
   <int value="-297716805"
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
@@ -46271,6 +46305,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
   <int value="223591010" label="CastMediaRouteProvider:enabled"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
+  <int value="224019823" label="CompositeAfterPaint:enabled"/>
   <int value="225610933" label="SystemLatinPhysicalTyping:enabled"/>
   <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
   <int value="229877058" label="ShelfScrollable:disabled"/>
@@ -47834,6 +47869,7 @@ from previous Chrome versions.
       label="AutofillAlwaysReturnCloudTokenizedCard:enabled"/>
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
+  <int value="1635695770" label="CSSContainerQueries:disabled"/>
   <int value="1635986352" label="ContextMenuSearchWithGoogleLens:enabled"/>
   <int value="1636721063"
       label="AutofillLocalCardMigrationShowFeedback:enabled"/>
@@ -57431,6 +57467,23 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OptimizationGuidePageContentAnnotationsStorageStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success">
+    The specific visit that we wanted to annotate content for was found in the
+    History Service and the content annotations for the visit were required to
+    be stored in the History Service.
+  </int>
+  <int value="2" label="No visits for URL found">
+    There were no visits found in the History Service for the URL that the
+    content annotations are associated with.
+  </int>
+  <int value="3" label="Specific visit for URL not found">
+    Visits for the URL the content annotations are for were found, but not the
+    specific visit we were annotating for.
+  </int>
+</enum>
+
 <enum name="OptimizationGuidePredictionManagerModelStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Model for target is available">
@@ -61009,6 +61062,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="Show notification access setup response"/>
 </enum>
 
+<enum name="PhoneHubNotificationAccessSetupStatus">
+  <int value="1" label="Connecting to phone"/>
+  <int value="2" label="Timed out connecting to phone"/>
+  <int value="3" label="Disconnected from phone before setup complete"/>
+  <int value="4" label="Sent message to phone; awaiting response"/>
+  <int value="5" label="Completed successfully"/>
+  <int value="6" label="Phone is prohibited from granting access"/>
+</enum>
+
 <enum name="PhoneHubNotificationInteraction">
   <int value="0" label="User sent an inline reply from notification"/>
   <int value="1" label="User dismissed notification"/>
@@ -61919,6 +61981,17 @@ Called by update_net_trust_anchors.py.-->
     Threshold parameter was not supplied or same as the default value. In either
     case, the default value was used.
   </int>
+</enum>
+
+<enum name="PowerMode">
+  <int value="0" label="kIdle"/>
+  <int value="1" label="kAudible"/>
+  <int value="2" label="kLoading"/>
+  <int value="3" label="kAnimation"/>
+  <int value="4" label="kResponse"/>
+  <int value="5" label="kOtherActivity"/>
+  <int value="6" label="kBackground"/>
+  <int value="7" label="kCharging"/>
 </enum>
 
 <enum name="PowerSupplyType">

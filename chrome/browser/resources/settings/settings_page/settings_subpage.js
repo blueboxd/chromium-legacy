@@ -9,13 +9,13 @@
  */
 
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import '//resources/cr_elements/cr_search_field/cr_search_field.m.js';
+import '//resources/cr_elements/cr_search_field/cr_search_field.js';
 import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../settings_shared_css.js';
 
-import {FindShortcutBehavior} from '//resources/cr_elements/find_shortcut_behavior.m.js';
+import {FindShortcutBehavior} from '//resources/cr_elements/find_shortcut_behavior.js';
 import {assert} from '//resources/js/assert.m.js';
 import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';

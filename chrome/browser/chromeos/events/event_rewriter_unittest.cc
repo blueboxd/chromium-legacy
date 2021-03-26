@@ -171,7 +171,7 @@ namespace chromeos {
 class EventRewriterTest : public ChromeAshTestBase {
  public:
   EventRewriterTest()
-      : fake_user_manager_(new chromeos::FakeChromeUserManager),
+      : fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
   ~EventRewriterTest() override {}
 
@@ -1870,57 +1870,78 @@ TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKey_Deprecated) {
   scoped_feature_list_.InitAndEnableFeature(
       ::features::kImprovedKeyboardShortcuts);
   TestNonAppleNonCustomLayoutKeyboardVariants({
-      // Search+Number should now have no effect.
+      // Search+Number should now have no effect but a notification will
+      // be shown the first time F1 to F10 is pressed.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_1, ui::DomCode::DIGIT1, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'1'>::Character},
        {ui::VKEY_1, ui::DomCode::DIGIT1, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'1'>::Character}},
+        ui::DomKey::Constant<'1'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_2, ui::DomCode::DIGIT2, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'2'>::Character},
        {ui::VKEY_2, ui::DomCode::DIGIT2, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'2'>::Character}},
+        ui::DomKey::Constant<'2'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_3, ui::DomCode::DIGIT3, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'3'>::Character},
        {ui::VKEY_3, ui::DomCode::DIGIT3, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'3'>::Character}},
+        ui::DomKey::Constant<'3'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_4, ui::DomCode::DIGIT4, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'4'>::Character},
        {ui::VKEY_4, ui::DomCode::DIGIT4, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'4'>::Character}},
+        ui::DomKey::Constant<'4'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_5, ui::DomCode::DIGIT5, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'5'>::Character},
        {ui::VKEY_5, ui::DomCode::DIGIT5, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'5'>::Character}},
+        ui::DomKey::Constant<'5'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_6, ui::DomCode::DIGIT6, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'6'>::Character},
        {ui::VKEY_6, ui::DomCode::DIGIT6, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'6'>::Character}},
+        ui::DomKey::Constant<'6'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_7, ui::DomCode::DIGIT7, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'7'>::Character},
        {ui::VKEY_7, ui::DomCode::DIGIT7, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'7'>::Character}},
+        ui::DomKey::Constant<'7'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_8, ui::DomCode::DIGIT8, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'8'>::Character},
        {ui::VKEY_8, ui::DomCode::DIGIT8, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'8'>::Character}},
+        ui::DomKey::Constant<'8'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_9, ui::DomCode::DIGIT9, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'9'>::Character},
        {ui::VKEY_9, ui::DomCode::DIGIT9, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'9'>::Character}},
+        ui::DomKey::Constant<'9'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_0, ui::DomCode::DIGIT0, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'0'>::Character},
        {ui::VKEY_0, ui::DomCode::DIGIT0, ui::EF_COMMAND_DOWN,
-        ui::DomKey::Constant<'0'>::Character}},
+        ui::DomKey::Constant<'0'>::Character},
+       kKeyboardDeviceId,
+       /*triggers_notification=*/true},
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_OEM_MINUS, ui::DomCode::MINUS, ui::EF_COMMAND_DOWN,
         ui::DomKey::Constant<'-'>::Character},
@@ -3519,7 +3540,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
  public:
   EventRewriterAshTest()
       : source_(&buffer_),
-        fake_user_manager_(new chromeos::FakeChromeUserManager),
+        fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
   ~EventRewriterAshTest() override {}
 
@@ -3592,7 +3613,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
   EventBuffer buffer_;
   TestEventSource source_;
 
-  chromeos::FakeChromeUserManager* fake_user_manager_;  // Not owned.
+  FakeChromeUserManager* fake_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
 

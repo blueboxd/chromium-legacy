@@ -72,7 +72,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -115,10 +115,15 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/wm_core_switches.h"
 
-using content::BrowserThread;
-
-namespace chromeos {
+namespace ash {
 namespace {
+
+// TODO(https://crbug.com/1164001): remove after the classes are migrated
+using ::chromeos::AuthErrorObserver;
+using ::chromeos::AuthErrorObserverFactory;
+using ::chromeos::EasyUnlockService;
+using ::chromeos::ProxyConfigServiceImpl;
+using ::content::BrowserThread;
 
 // A string pref that gets set when a device local account is removed but a
 // user is currently logged into that account, requiring the account's data to
@@ -166,12 +171,11 @@ bool GetUserLockAttributes(const user_manager::User* user,
     return false;
   PrefService* const prefs = profile->GetPrefs();
   if (can_lock) {
-    *can_lock =
-        user->can_lock() && prefs->GetBoolean(ash::prefs::kAllowScreenLock);
+    *can_lock = user->can_lock() && prefs->GetBoolean(prefs::kAllowScreenLock);
   }
   if (multi_profile_behavior) {
     *multi_profile_behavior =
-        prefs->GetString(prefs::kMultiProfileUserBehavior);
+        prefs->GetString(::prefs::kMultiProfileUserBehavior);
   }
   return true;
 }
@@ -290,7 +294,7 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kDeviceLocalAccountsWithSavedData);
   registry->RegisterStringPref(kDeviceLocalAccountPendingDataRemoval,
                                std::string());
-  registry->RegisterListPref(prefs::kReportingUsers);
+  registry->RegisterListPref(::prefs::kReportingUsers);
 
   SupervisedUserManager::RegisterLocalStatePrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
@@ -787,7 +791,7 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   // Initializes wallpaper after active_user_ is set.
-  WallpaperControllerClient::Get()->ShowUserWallpaper(
+  WallpaperControllerClientImpl::Get()->ShowUserWallpaper(
       user_manager::GuestAccountId());
 }
 
@@ -800,7 +804,7 @@ void ChromeUserManagerImpl::RegularUserLoggedIn(
   MaybeStartBluetoothLogging(account_id);
 
   GetUserImageManager(account_id)->UserLoggedIn(IsCurrentUserNew(), false);
-  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
+  WallpaperControllerClientImpl::Get()->ShowUserWallpaper(account_id);
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
@@ -813,7 +817,7 @@ void ChromeUserManagerImpl::RegularUserLoggedInAsEphemeral(
   ChromeUserManager::RegularUserLoggedInAsEphemeral(account_id, user_type);
 
   GetUserImageManager(account_id)->UserLoggedIn(IsCurrentUserNew(), false);
-  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
+  WallpaperControllerClientImpl::Get()->ShowUserWallpaper(account_id);
 }
 
 void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
@@ -831,7 +835,7 @@ void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
   // always fetched/cleared inside a user session), in the case the user-policy
   // controlled wallpaper was fetched/cleared but not updated in the login
   // screen, we need to update the wallpaper after the public user logged in.
-  WallpaperControllerClient::Get()->ShowUserWallpaper(user->GetAccountId());
+  WallpaperControllerClientImpl::Get()->ShowUserWallpaper(user->GetAccountId());
 
   SetPublicAccountDelegates();
 }
@@ -847,7 +851,7 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   const AccountId& kiosk_app_account_id = user->GetAccountId();
-  WallpaperControllerClient::Get()->ShowUserWallpaper(kiosk_app_account_id);
+  WallpaperControllerClientImpl::Get()->ShowUserWallpaper(kiosk_app_account_id);
 
   // TODO(bartfab): Add KioskAppUsers to the users_ list and keep metadata like
   // the kiosk_app_id in these objects, removing the need to re-parse the
@@ -900,7 +904,7 @@ void ChromeUserManagerImpl::DemoAccountLoggedIn() {
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
-  WallpaperControllerClient::Get()->ShowUserWallpaper(
+  WallpaperControllerClientImpl::Get()->ShowUserWallpaper(
       user_manager::DemoAccountId());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -933,11 +937,10 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
   // `known_user::RemovePrefs`. See https://crbug.com/778077.
   for (auto& handler : cloud_external_data_policy_handlers_)
     handler->RemoveForAccountId(account_id);
-  // TODO(tbarzic): Forward data removal request to ash::HammerDeviceHandler,
+  // TODO(tbarzic): Forward data removal request to HammerDeviceHandler,
   // instead of removing the prefs value here.
-  if (GetLocalState()->FindPreference(ash::prefs::kDetachableBaseDevices)) {
-    DictionaryPrefUpdate update(GetLocalState(),
-                                ash::prefs::kDetachableBaseDevices);
+  if (GetLocalState()->FindPreference(prefs::kDetachableBaseDevices)) {
+    DictionaryPrefUpdate update(GetLocalState(), prefs::kDetachableBaseDevices);
     update->RemoveKey(account_id.HasAccountIdKey()
                           ? account_id.GetAccountIdKey()
                           : account_id.GetUserEmail());
@@ -1166,7 +1169,7 @@ void ChromeUserManagerImpl::OnProfileAdded(Profile* profile) {
     // `kLoginExtensionApiLaunchExtensionId` is set.
     if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
         !profile->GetPrefs()
-             ->GetString(prefs::kLoginExtensionApiLaunchExtensionId)
+             ->GetString(::prefs::kLoginExtensionApiLaunchExtensionId)
              .empty()) {
       user->set_can_lock(true);
     }
@@ -1217,8 +1220,7 @@ void ChromeUserManagerImpl::NotifyUserAddedToSession(
 void ChromeUserManagerImpl::OnUserNotAllowed(const std::string& user_email) {
   LOG(ERROR) << "Shutdown session because a user is not allowed to be in the "
                 "current session";
-  ash::SessionController::Get()->ShowMultiprofilesSessionAbortedDialog(
-      user_email);
+  SessionController::Get()->ShowMultiprofilesSessionAbortedDialog(user_email);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::MULTIPROFILES_SESSION_ABORTED);
 }
@@ -1269,7 +1271,7 @@ void ChromeUserManagerImpl::SetUserAffiliation(
   if (user) {
     policy::BrowserPolicyConnectorChromeOS const* const connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    const bool is_affiliated = chromeos::IsUserAffiliated(
+    const bool is_affiliated = IsUserAffiliated(
         user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
         account_id.GetUserEmail());
     user->SetAffiliation(is_affiliated);
@@ -1286,7 +1288,7 @@ void ChromeUserManagerImpl::SetUserAffiliation(
 
 bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
   const base::ListValue& reporting_users =
-      *(GetLocalState()->GetList(prefs::kReportingUsers));
+      *(GetLocalState()->GetList(::prefs::kReportingUsers));
   base::Value user_id_value(FullyCanonicalize(user_id));
   return !(reporting_users.Find(user_id_value) == reporting_users.end());
 }
@@ -1321,19 +1323,19 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
   return IsManagedSessionEnabled(broker) &&
          (AreRiskyPoliciesUsed(broker) ||
           g_browser_process->local_state()->GetBoolean(
-              prefs::kManagedSessionUseFullLoginWarning) ||
+              ::prefs::kManagedSessionUseFullLoginWarning) ||
           PolicyHasWebTrustedAuthorityCertificate(broker) ||
           IsProxyUsed(GetLocalState()));
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
-  ListPrefUpdate users_update(GetLocalState(), prefs::kReportingUsers);
+  ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
   users_update->AppendIfNotPresent(
       std::make_unique<base::Value>(account_id.GetUserEmail()));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
-  ListPrefUpdate users_update(GetLocalState(), prefs::kReportingUsers);
+  ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
   users_update->Remove(
       base::Value(FullyCanonicalize(account_id.GetUserEmail())), NULL);
 }
@@ -1352,7 +1354,7 @@ void ChromeUserManagerImpl::AsyncRemoveCryptohome(
   cryptohome::AccountIdentifier account_id_proto;
   account_id_proto.set_account_id(cryptohome::Identification(account_id).id());
 
-  CryptohomeClient::Get()->RemoveEx(
+  chromeos::CryptohomeClient::Get()->RemoveEx(
       account_id_proto, base::BindOnce(&OnRemoveUserComplete, account_id));
 }
 
@@ -1440,4 +1442,4 @@ ChromeUserManagerImpl::CreateUserFromDeviceLocalAccount(
   return user;
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -363,6 +363,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "autofill-parse-merchant-promo-code-fields",
+    "owners": [ "jsaul@google.com", "payments-autofill-team@google.com" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "autofill-profile-client-validation",
     "owners": [ "parastoog" ],
     "expiry_milestone": 79
@@ -622,6 +627,11 @@
     "name": "commander",
     "owners": [ "lgrey" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "composite-after-paint",
+    "owners": [ "pdr", "wangxianzhu" ],
+    "expiry_milestone": 95
   },
   {
     "name": "composited-layer-borders",
@@ -1459,6 +1469,12 @@
     "name": "enable-conditional-tabstrip",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "enable-container-queries",
+    "owners": [ "andruud", "futhark" ],
+    // This flag is used to get developer feedback on the API.
+    "expiry_milestone": 97
   },
   {
     "name": "enable-cooperative-scheduling",
@@ -2704,8 +2720,8 @@
   },
   {
     "name": "enterprise-realtime-extension-request",
-    "owners": ["zmin", "pastarmovj"],
-    "expiry_milestone": 94
+    "owners": ["zmin", "parastoog"],
+    "expiry_milestone": 98
   },
   {
     "name": "enterprise-reporting-api-keychain-recreation",

@@ -22,6 +22,13 @@ const base::Feature kBlockingDownloadsInAdFrameWithoutUserActivation{
 const base::Feature kCOLRV1Fonts{"COLRV1Fonts",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable CSS Container Queries. Also implies LayoutNGGrid and CSSContainSize1D.
+const base::Feature kCSSContainerQueries{"CSSContainerQueries",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable defer commits to avoid flash of unstyled content, for same origin
 // navigation only.
 const base::Feature kPaintHolding{"PaintHolding",
@@ -158,7 +165,7 @@ const base::FeatureParam<Prerender2Implementation>::Option
         {Prerender2Implementation::kMPArch, "mparch"}};
 const base::FeatureParam<Prerender2Implementation>
     kPrerender2ImplementationParam{&kPrerender2, "implementation",
-                                   Prerender2Implementation::kWebContents,
+                                   Prerender2Implementation::kMPArch,
                                    &prerender2_implementation_options};
 
 // Enable importing ES Modules for service workers (ModuleServiceWorker).

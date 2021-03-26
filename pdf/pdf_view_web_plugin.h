@@ -79,7 +79,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
                                                bool case_sensitive) override;
-  void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
@@ -129,6 +128,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                 AccessibilityPageObjects page_objects) override;
   void SetAccessibilityViewportInfo(
       const AccessibilityViewportInfo& viewport_info) override;
+  void SetContentRestrictions(int content_restrictions) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void OnPrintPreviewLoaded() override;
   void UserMetricsRecordAction(const std::string& action) override;
 
  private:

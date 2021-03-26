@@ -3543,19 +3543,6 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = "Linux Builder (runsc-exp) (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "re",
-    ),
-    goma_backend = None,
-    reclient_instance = "rbe-chromium-gvisor-shadow",
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
-)
-
-ci.fyi_builder(
     name = "Linux TSan Builder (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -3598,6 +3585,22 @@ ci.fyi_builder(
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "TSAN Release (runsc-exp) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux tsan",
+        short_name = "rre",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-gvisor-shadow",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
@@ -5297,12 +5300,12 @@ ci.thin_tester(
 )
 
 ci.thin_tester(
-    name = "Mac10.13 Tests (dbg)",
+    name = "Mac10.15 Tests (dbg)",
     branch_selector = branches.STANDARD_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "debug",
-        short_name = "13",
+        short_name = "15",
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",

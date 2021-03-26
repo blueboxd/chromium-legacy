@@ -1542,6 +1542,17 @@ const FeatureEntry::FeatureVariation kNtpRepeatableQueriesVariations[] = {
 };
 #endif  // !defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kEnterpriseRealtimeExtensionRequestParam[] = {
+    {"with_erp", "false"},
+    {"with_erp", "true"}};
+const FeatureEntry::FeatureVariation
+    kEnterpriseRealtimeExtensionRequestVariation[] = {
+        {"with encrypted reporting pipeline",
+         kEnterpriseRealtimeExtensionRequestParam,
+         base::size(kEnterpriseRealtimeExtensionRequestParam), nullptr}};
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
     {language::kOverrideModelKey, language::kOverrideModelHeuristicValue},
@@ -2459,7 +2470,6 @@ const FeatureEntry::FeatureVariation kPasswordChangeFeatureVariations[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kAssistantBetterOnboardingInternalName[] =
     "enable-assistant-better-onboarding";
-constexpr char kAssistantTimersV2InternalName[] = "enable-assistant-timers-v2";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -2725,6 +2735,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"colr-v1-fonts", flag_descriptions::kCOLRV1FontsName,
      flag_descriptions::kCOLRV1FontsDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCOLRV1Fonts)},
+    {"enable-container-queries", flag_descriptions::kCSSContainerQueriesName,
+     flag_descriptions::kCSSContainerQueriesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCSSContainerQueries)},
 #if defined(OS_ANDROID)
     {"contextual-search-debug", flag_descriptions::kContextualSearchDebugName,
      flag_descriptions::kContextualSearchDebugDescription, kOsAndroid,
@@ -5328,11 +5341,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantBetterOnboardingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kAssistantBetterOnboarding)},
-
-    {kAssistantTimersV2InternalName,
-     flag_descriptions::kEnableAssistantTimersV2Name,
-     flag_descriptions::kEnableAssistantTimersV2Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantTimersV2)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
@@ -5715,7 +5723,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnterpriseRealtimeExtensionRequestName,
      flag_descriptions::kEnterpriseRealtimeExtensionRequestDescription,
      kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kEnterpriseRealtimeExtensionRequest)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         features::kEnterpriseRealtimeExtensionRequest,
+         kEnterpriseRealtimeExtensionRequestVariation,
+         "EnterpriseRealtimeExtensionRequest")},
 #endif  // !defined(OS_ANDROID)
 
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
@@ -7175,6 +7186,16 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseOzonePlatform)},
 #endif
 
+    {"composite-after-paint", flag_descriptions::kCompositeAfterPaintName,
+     flag_descriptions::kCompositeAfterPaintDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kCompositeAfterPaint)},
+    {"autofill-parse-merchant-promo-code-fields",
+     flag_descriptions::kAutofillParseMerchantPromoCodeFieldsName,
+     flag_descriptions::kAutofillParseMerchantPromoCodeFieldsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillParseMerchantPromoCodeFields)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -7242,8 +7263,7 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
   // The following flags are only available to teamfooders.
-  if (!strcmp(kAssistantBetterOnboardingInternalName, entry.internal_name) ||
-      !strcmp(kAssistantTimersV2InternalName, entry.internal_name)) {
+  if (!strcmp(kAssistantBetterOnboardingInternalName, entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
 

@@ -3683,6 +3683,10 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
       load_params->was_opener_suppressed = true;
       load_params->has_user_gesture = has_user_gesture;
       load_params->impression = params.impression;
+      load_params->override_user_agent =
+          new_contents_impl->should_override_user_agent_in_new_tabs_
+              ? NavigationController::UA_OVERRIDE_TRUE
+              : NavigationController::UA_OVERRIDE_FALSE;
 
       if (delegate_ && !is_guest &&
           !delegate_->ShouldResumeRequestsForCreatedWindow()) {
@@ -4392,6 +4396,14 @@ void WebContentsImpl::CollapseSelection() {
     return;
 
   input_handler->CollapseSelection();
+}
+
+void WebContentsImpl::ScrollToTopOfDocument() {
+  ExecuteEditCommand("ScrollToBeginningOfDocument", base::nullopt);
+}
+
+void WebContentsImpl::ScrollToBottomOfDocument() {
+  ExecuteEditCommand("ScrollToEndOfDocument", base::nullopt);
 }
 
 void WebContentsImpl::Replace(const std::u16string& word) {

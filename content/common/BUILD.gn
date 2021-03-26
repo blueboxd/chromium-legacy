@@ -297,7 +297,6 @@ source_set("common") {
       "mac/attributed_string_type_converters.mm",
       "mac/font_loader.h",
       "mac/font_loader.mm",
-      "sandbox_init_mac.cc",
     ]
     deps += [
       ":mac_helpers",
@@ -440,7 +439,6 @@ mojom("mojo_bindings") {
     "field_trial_recorder.mojom",
     "frame.mojom",
     "frame_messages.mojom",
-    "frame_proxy.mojom",
     "histogram_fetcher.mojom",
     "input/input_injector.mojom",
     "media/media_log_records.mojom",

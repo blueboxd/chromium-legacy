@@ -65,6 +65,21 @@
             ]
         }
     ],
+    "AndroidBindingManagementWaiveCpu": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BindingManagementWaiveCpu"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidBottomSheetPwaInstall": [
         {
             "platforms": [
@@ -3211,6 +3226,23 @@
             ]
         }
     ],
+    "GMSCoreEmoji": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GMSCoreEmoji"
+                    ]
+                }
+            ]
+        }
+    ],
     "GlobalMediaControlsForChromeOS": [
         {
             "platforms": [
@@ -4971,6 +5003,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PaymentRequestSkipToGPayIfNoCard"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PdfViewerDocumentProperties": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PdfViewerDocumentProperties"
                     ]
                 }
             ]

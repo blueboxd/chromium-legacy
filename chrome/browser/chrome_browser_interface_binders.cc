@@ -29,6 +29,7 @@
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/web_applications/draggable_region_host_impl.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
@@ -238,13 +239,6 @@
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/api/mime_handler.mojom.h"  // nogncheck
-#endif
-
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM_FAMILY)
-#include "chrome/browser/ui/cocoa/rosetta_required_infobar_delegate.h"
-#include "content/public/browser/frame_service_base.h"
-#include "media/mojo/mojom/cdm_infobar_service.mojom.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #endif
 
 namespace chrome {
@@ -501,39 +495,6 @@ void BindCaptionContextHandler(
 }
 #endif
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM_FAMILY)
-class CdmInfobarServiceImpl final
-    : public content::FrameServiceBase<media::mojom::CdmInfobarService> {
- public:
-  CdmInfobarServiceImpl(
-      content::RenderFrameHost* frame_host,
-      mojo::PendingReceiver<media::mojom::CdmInfobarService> receiver)
-      : FrameServiceBase(frame_host, std::move(receiver)) {}
-  CdmInfobarServiceImpl(const CdmInfobarServiceImpl&) = delete;
-  CdmInfobarServiceImpl& operator=(const CdmInfobarServiceImpl&) = delete;
-
- private:
-  void NotifyUnsupportedPlatform() final {
-    auto* web_contents =
-        content::WebContents::FromRenderFrameHost(render_frame_host());
-    if (!web_contents)
-      return;
-
-    if (RosettaRequiredInfoBarDelegate::ShouldShow())
-      RosettaRequiredInfoBarDelegate::Create(web_contents);
-  }
-};
-
-void BindCdmInfobarServiceReceiver(
-    content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<media::mojom::CdmInfobarService> receiver) {
-  // CdmInfobarServiceImpl owns itself. It will self-destruct when a mojo
-  // interface error occurs, the render frame host is deleted, or the render
-  // frame host navigates to a new document.
-  new CdmInfobarServiceImpl(frame_host, std::move(receiver));
-}
-#endif
-
 void PopulateChromeFrameBinders(
     mojo::BinderMapWithContext<content::RenderFrameHost*>* map,
     content::RenderFrameHost* render_frame_host) {
@@ -648,9 +609,12 @@ void PopulateChromeFrameBinders(
       base::BindRepeating(&BindCaptionContextHandler));
 #endif
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM_FAMILY)
-  map->Add<media::mojom::CdmInfobarService>(
-      base::BindRepeating(&BindCdmInfobarServiceReceiver));
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(features::kWebAppWindowControlsOverlay) &&
+      !render_frame_host->GetParent()) {
+    map->Add<chrome::mojom::DraggableRegions>(
+        base::BindRepeating(&DraggableRegionsHostImpl::CreateIfAllowed));
+  }
 #endif
 }
 

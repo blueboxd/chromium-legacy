@@ -81,7 +81,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -161,6 +161,7 @@ using extensions::UnloadedExtensionReason;
 using extensions::mojom::ManifestLocation;
 
 namespace {
+
 constexpr char kOfflineGmailUrl[] = "https://mail.google.com/mail/mu/u";
 constexpr char kGmailUrl[] = "https://mail.google.com/mail/u";
 constexpr char kGmailLaunchURL[] = "https://mail.google.com/mail/ca";
@@ -1115,7 +1116,7 @@ class ChromeLauncherControllerLacrosTest : public ChromeLauncherControllerTest {
   // testing::Test:
   void SetUp() override {
     // Checking to see if Lacros is allowed requires a user.
-    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
+    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     auto* fake_user_manager = user_manager.get();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(user_manager));
@@ -1279,14 +1280,14 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   void SetUp() override {
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::make_unique<chromeos::FakeChromeUserManager>());
+        std::make_unique<ash::FakeChromeUserManager>());
 
     // Initialize the rest.
     ChromeLauncherControllerTest::SetUp();
 
-    // Initialize WallpaperControllerClient.
+    // Initialize WallpaperControllerClientImpl.
     wallpaper_controller_client_ =
-        std::make_unique<WallpaperControllerClient>();
+        std::make_unique<WallpaperControllerClientImpl>();
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
 
     // Ensure there are multiple profiles. User 0 is created during setup.
@@ -1380,14 +1381,14 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
  private:
   typedef std::map<Profile*, std::string> ProfileToNameMap;
 
-  chromeos::FakeChromeUserManager* GetFakeUserManager() {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  ash::FakeChromeUserManager* GetFakeUserManager() {
+    return static_cast<ash::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
-  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
 
   TestWallpaperController test_wallpaper_controller_;
 
@@ -5079,7 +5080,13 @@ class ChromeLauncherControllerWebAppTest : public ChromeLauncherControllerTest {
   ~ChromeLauncherControllerWebAppTest() override = default;
 
   void MaybeStartWebAppProvider() override {
-    web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
+    auto system_web_app_manager =
+        std::make_unique<web_app::TestSystemWebAppManager>(profile());
+
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+    provider->SetRunSubsystemStartupTasks(true);
+    provider->Start();
   }
 };
 
@@ -5090,8 +5097,8 @@ TEST_F(ChromeLauncherControllerWebAppTest, WebAppPinRunUnpinClose) {
 
   InitLauncherController();
 
-  const web_app::AppId app_id = web_app::test::InstallDummyWebApp(
-      profile(), kWebAppName, GURL(kWebAppUrl));
+  const web_app::AppId app_id =
+      web_app::InstallDummyWebApp(profile(), kWebAppName, GURL(kWebAppUrl));
   base::RunLoop().RunUntilIdle();
 
   // The model should only contain the browser shortcut item.

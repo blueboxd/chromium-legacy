@@ -64,7 +64,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/session/arc_supervision_transition.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -172,7 +172,7 @@ class ProfileManagerTest : public testing::Test {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kTestType);
     wallpaper_controller_client_ =
-        std::make_unique<WallpaperControllerClient>();
+        std::make_unique<WallpaperControllerClientImpl>();
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
 
     // Have to manually reset the session type in between test runs because
@@ -266,10 +266,10 @@ class ProfileManagerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ScopedTestUserManager test_user_manager_;
+  ash::ScopedTestUserManager test_user_manager_;
   std::unique_ptr<base::AutoReset<extensions::mojom::FeatureSessionType>>
       session_type_;
-  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
   TestWallpaperController test_wallpaper_controller_;
 #endif
 
@@ -326,8 +326,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   constexpr char kTestUserGaiaId[] = "0123456789";
   const AccountId test_account_id(
       AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId));
-  chromeos::FakeChromeUserManager* user_manager =
-      new chromeos::FakeChromeUserManager();
+  auto* user_manager = new ash::FakeChromeUserManager();
   user_manager::ScopedUserManager enabler(base::WrapUnique(user_manager));
 
   const user_manager::User* active_user =
@@ -625,8 +624,8 @@ class ProfileManagerGuestTest : public ProfileManagerTest,
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  ash::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<ash::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 #endif

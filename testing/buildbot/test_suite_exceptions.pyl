@@ -263,14 +263,6 @@
           'shards': 25,
         },
       },
-      'Mac10.13 Tests (dbg)': {
-        'args': [
-          '--debug',
-        ],
-        'swarming': {
-          'shards': 25,
-        },
-      },
       'Mac10.15 Tests': {
         'swarming': {
           'dimension_sets': [
@@ -278,6 +270,14 @@
               'gpu': None,
             },
           ],
+          'shards': 25,
+        },
+      },
+      'Mac10.15 Tests (dbg)': {
+        'args': [
+          '--debug',
+        ],
+        'swarming': {
           'shards': 25,
         },
       },
@@ -574,7 +574,7 @@
           'shards': 30,
         },
       },
-      'Mac10.13 Tests (dbg)': {
+      'Mac10.15 Tests (dbg)': {
         # https://crbug.com/1152770
         'swarming': {
           'shards': 40,
@@ -1051,6 +1051,11 @@
         'swarming': {
           'shards': 2,
         },
+      },
+      'android-11-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.components_unittests.filter',
+        ],
       },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'swarming': {
@@ -2045,8 +2050,8 @@
       # Only run network service tests on Mac 10.12 for capacity reasons.
       'Mac10.11 Tests',
       'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
       'Mac10.15 Tests',
+      'Mac10.15 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -2081,8 +2086,8 @@
       # Only run network service tests on Mac 10.12 for capacity reasons.
       'Mac10.11 Tests',
       'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
       'Mac10.15 Tests',
+      'Mac10.15 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -2098,8 +2103,8 @@
       # Only run network service tests on Mac 10.12 for capacity reasons.
       'Mac10.11 Tests',
       'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
       'Mac10.15 Tests',
+      'Mac10.15 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -2114,8 +2119,8 @@
       # Only run network service tests on Mac 10.12 for capacity reasons.
       'Mac10.11 Tests',
       'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
       'Mac10.15 Tests',
+      'Mac10.15 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -2135,8 +2140,8 @@
       # Only run network service tests on Mac 10.12 for capacity reasons.
       'Mac10.11 Tests',
       'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
       'Mac10.15 Tests',
+      'Mac10.15 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -2278,7 +2283,7 @@
   },
   'performance_test_suite': {
     'modifications': {
-      'Mac10.13 Tests (dbg)': {
+      'Mac10.15 Tests (dbg)': {
         'args': [
           '--browser=debug',
         ],
@@ -2623,6 +2628,12 @@
         },
         'experiment_percentage': 100,
       },
+      'chromeos-eve-chrome': {
+        'args': [
+          # TODO(crbug.com/1191132): Re-enable.
+          '--skip=benchmarks.benchmark_smoke_unittest.BenchmarkSmokeTest.wasmpspdfkit',
+        ],
+      },
       'chromeos-kevin-chrome': {
         # TODO(crbug.com/1182948): Remove the experiment.
         'experiment_percentage': 100,
@@ -2650,8 +2661,8 @@
       # crbug.com/936540
       'Mac10.11 Tests',
       'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
       'Mac10.15 Tests',
+      'Mac10.15 Tests (dbg)',
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',

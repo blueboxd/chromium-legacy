@@ -83,6 +83,9 @@ extern const char kAriaElementReflectionDescription[];
 extern const char kCOLRV1FontsName[];
 extern const char kCOLRV1FontsDescription[];
 
+extern const char kCSSContainerQueriesName[];
+extern const char kCSSContainerQueriesDescription[];
+
 extern const char kContentLanguagesInLanguagePickerName[];
 extern const char kContentLanguagesInLanguagePickerDescription[];
 
@@ -174,6 +177,9 @@ extern const char kAutofillEnableToolbarStatusChipDescription[];
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
 
+extern const char kAutofillParseMerchantPromoCodeFieldsName[];
+extern const char kAutofillParseMerchantPromoCodeFieldsDescription[];
+
 extern const char kAutofillProfileClientValidationName[];
 extern const char kAutofillProfileClientValidationDescription[];
 
@@ -218,6 +224,9 @@ extern const char kCheckOfflineCapabilityDescription[];
 
 extern const char kChromeLabsName[];
 extern const char kChromeLabsDescription[];
+
+extern const char kCompositeAfterPaintName[];
+extern const char kCompositeAfterPaintDescription[];
 
 extern const char kComputePressureAPIName[];
 extern const char kComputePressureAPIDescription[];
@@ -2321,9 +2330,6 @@ extern const char kDoubleTapToZoomInTabletModeDescription[];
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
 
-extern const char kEnableAdvancedPpdAttributesName[];
-extern const char kEnableAdvancedPpdAttributesDescription[];
-
 extern const char kEnableAppDataSearchName[];
 extern const char kEnableAppDataSearchDescription[];
 
@@ -2356,9 +2362,6 @@ extern const char kEnableAssistantMediaSessionIntegrationDescription[];
 
 extern const char kEnableAssistantRoutinesName[];
 extern const char kEnableAssistantRoutinesDescription[];
-
-extern const char kEnableAssistantTimersV2Name[];
-extern const char kEnableAssistantTimersV2Description[];
 
 extern const char kEnableAutoSelectName[];
 extern const char kEnableAutoSelectDescription[];

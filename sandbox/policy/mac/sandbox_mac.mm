@@ -4,12 +4,40 @@
 
 #include "sandbox/policy/mac/sandbox_mac.h"
 
+#import <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include <CoreFoundation/CFTimeZone.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <sys/param.h>
 
+#include <algorithm>
+#include <iterator>
+#include <map>
 #include <string>
 
+#include "base/command_line.h"
+#include "base/compiler_specific.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
+#include "base/mac/mach_port_rendezvous.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/rand_util.h"
+#include "base/stl_util.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
+#include "sandbox/mac/sandbox_compiler.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/policy/mac/audio.sb.h"
@@ -24,6 +52,8 @@
 #include "sandbox/policy/mac/renderer.sb.h"
 #include "sandbox/policy/mac/speech_recognition.sb.h"
 #include "sandbox/policy/mac/utility.sb.h"
+#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/switches.h"
 
 namespace sandbox {
 namespace policy {

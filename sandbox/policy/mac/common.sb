@@ -35,6 +35,8 @@
     (define ipc-posix-shm* ipc-posix-shm))
 (if (not (defined? 'ipc-posix-shm-read*))
     (define ipc-posix-shm-read* ipc-posix-shm))
+(if (not (defined? 'ipc-posix-shm-read-data))
+    (define ipc-posix-shm-read-data ipc-posix-shm))
 (if (not (defined? 'ipc-posix-shm-write-data))
     (define ipc-posix-shm-write-data ipc-posix-shm))
 

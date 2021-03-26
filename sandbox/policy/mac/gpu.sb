@@ -8,7 +8,9 @@
 (debug deny)
 
 ; Allow cf prefs to work.
-(allow user-preference-read)
+(if (>= os-version 1009)
+  (allow user-preference-read)
+)
 
 ; Helper function to determine if a parameter is defined or not.
 (define (param-defined? str) (string? (param str)))
@@ -44,7 +46,9 @@
 ; Support for programmatically enabling verbose debugging.
 (if (param-true? enable-logging) (debug deny))
 
-(allow mach-lookup (global-name (param field-trial-server-name)))
+(if (>= os-version 1011)
+  (allow mach-lookup (global-name (param field-trial-server-name)))
+)
 
 ; Allow sending signals to self - https://crbug.com/20370
 (allow signal (target self))
@@ -57,9 +61,8 @@
     (subpath "/System/Library/Frameworks")
     (subpath "/System/Library/PrivateFrameworks")
     (subpath "/System/Library/CoreServices"))
-(if (>= os-version 1011)
-  (allow-cvms-blobs)
-)
+
+(allow-cvms-blobs)
 
 (allow ipc-posix-shm)
 
@@ -116,20 +119,19 @@
   (iokit-user-client-class "RootDomainUserClient")
 )
 
-; https://crbug.com/515280
-(if (param-true? elcap-or-later)
-  (allow file-read* (subpath "/System/Library/Extensions")))
-
-(if (>= os-version 1011)
- (allow iokit-set-properties
-  (require-all (iokit-connection "IODisplay")
-    (require-any (iokit-property "brightness")
-      (iokit-property "linear-brightness")
-      (iokit-property "commit")
-      (iokit-property "rgcs")
-      (iokit-property "ggcs")
-      (iokit-property "bgcs")
-))))
+(if (<= os-version 1008)
+  (allow iokit-set-properties)
+  ;else
+  (allow iokit-set-properties
+    (require-all (iokit-connection "IODisplay")
+      (require-any (iokit-property "brightness")
+        (iokit-property "linear-brightness")
+        (iokit-property "commit")
+        (iokit-property "rgcs")
+        (iokit-property "ggcs")
+        (iokit-property "bgcs")
+  )))
+)
 
 (allow ipc-posix-shm-read-data
   (ipc-posix-name "apple.shm.notification_center"))
@@ -143,13 +145,17 @@
     (xpc-service-name-regex #"\.apple-extension-service$")
 ))
 
-(allow sysctl-read
-  (sysctl-name "hw.busfrequency_max")
-  (sysctl-name "hw.cachelinesize")
-  (sysctl-name "hw.logicalcpu_max")
-  (sysctl-name "hw.memsize")
-  (sysctl-name "hw.model")
-  (sysctl-name "kern.osvariant_status")
+(if (<= os-version 1009)
+  (allow sysctl-read)
+	; else
+  (allow sysctl-read
+    (g "hw.busfrequency_max")
+    (sysctl-name "hw.cachelinesize")
+    (sysctl-name "hw.logicalcpu_max")
+    (sysctl-name "hw.memsize")
+    (sysctl-name "hw.model")
+    (sysctl-name "kern.osvariant_status")
+  )
 )
 
 (allow file-read-data

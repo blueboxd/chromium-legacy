@@ -280,7 +280,7 @@ template("apple_toolchain") {
       }
 
       # Specify explicit path for libtool.
-      libtool = mac_bin_path + "libtool"
+      libtool = invoker.bin_path + "libtool"
       command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]

@@ -36,7 +36,7 @@
   - 10.7ではOpenGLが古すぎるためGPUは利用できず、すべてソフトウェアレンダリングやソフトウェアデコードとなります
   - 10.8/10.9では描画に問題が出るため`--disable-gpu-compositing`オプションによってGPU Compotisitingが無効化されています
 - WebAuthn/FIDO2
-  - 10.7では `IOHIDFamily.kext` にパッチを当てる必要があります (TBW)
+  - 10.7ではUSBキーの利用に[パッチを当てた `IOHIDFamily.kext`](../../../IOHIDFamily-368.21)が必要です
 
 ## ビルド
 

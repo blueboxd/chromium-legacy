@@ -31,8 +31,8 @@ Basically equivalent to the [same version of original Chromium](https://chromest
 - GPU assists
   - on 10.7, due to old OpenGL version, disabled entirely by Chromium itself
   - on 10.8/10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
-- WebAuthn/FIDO2
-  - on 10.7, you need patch for `IOHIDFamily.kext` to use USB keys (TBW)
+- WebAuthn/FIDO2 (any USB devices?)
+   - on 10.7, you need [patched `IOHIDFamily.kext`](../../../IOHIDFamily-368.21) to use USB devices
 
 ## building
 

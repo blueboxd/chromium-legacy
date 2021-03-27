@@ -213,7 +213,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'dff9c1eb0dfd3c04d09f39de762957ac0c64b222',
+  'v8_revision': 'fafda67c78aa740aaab2aa3da2e91f46059788ad',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -391,7 +391,7 @@ vars = {
   'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:64b3b9401c1c3ed5f3c43c1cac00b91f83597ab8',
+  'gn_version': 'git_revision:b2e3d8622c1ce1bd853c7a11f62a739946669cdd',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -723,7 +723,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'GfBKxOxNEbPTGJHp9BgVqfeA1dUWeSmX2FbmuLHmue4C',
+          'version': 'g8SLuoOc1bCcY1mN-J9JLpK6ha0jgDwjWRJqsDwEtM4C',
       },
     ],
     'condition': 'checkout_android',
@@ -1406,7 +1406,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'Q7BOLoBEKjKHVG4WYSf3qNuhySZ9nyW9T5qODWXbwLEC'
+              'version': 'PQ5BA4WJfsqBSdlGRVmglasbA61vdJ1sHFa_R-euwHQC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1636,7 +1636,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d49b7b6b35a7fabc13147014672495f250eb6fb7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0e31162ff8153085349063b84df2a4f08c8fd11c',
     'condition': 'checkout_src_internal',
   },
 

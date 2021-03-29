@@ -140,6 +140,22 @@ LayoutUnit ComputeFloatAncestorInlineEndSize(const NGConstraintSpace& space,
   return inline_end_size;
 }
 
+// See NGLineBreaker::SplitTextByGlyphs().
+void CollectCharIndex(void* context,
+                      unsigned char_index,
+                      Glyph,
+                      FloatSize,
+                      float,
+                      bool,
+                      CanvasRotationInVertical,
+                      const SimpleFontData*) {
+  auto* index_list = static_cast<Vector<unsigned>*>(context);
+  wtf_size_t size = index_list->size();
+  if (size > 0 && index_list->at(size - 1) == char_index)
+    return;
+  index_list->push_back(char_index);
+}
+
 }  // namespace
 
 inline void NGLineBreaker::ClearNeedsLayout(const NGInlineItem& item) {
@@ -173,6 +189,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
     : line_opportunity_(line_opportunity),
       node_(node),
       mode_(mode),
+      is_svg_text_(node.IsSVGText()),
       is_first_formatted_line_((!break_token || (!break_token->ItemIndex() &&
                                                  !break_token->TextOffset())) &&
                                node.CanContainFirstFormattedLine()),
@@ -410,7 +427,7 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   const NGInlineItemResults& item_results = line_info->Results();
   DCHECK(item_results.IsEmpty());
 
-  if (node_.IsSVGText())
+  if (is_svg_text_)
     line_info->MutableResults()->ReserveCapacity(text_content_.length());
 
   if (item_index_) {
@@ -640,7 +657,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
          (item.Type() == NGInlineItem::kControl &&
           Text()[item.StartOffset()] == kTabulationCharacter));
   DCHECK(&shape_result);
-  DCHECK_EQ(auto_wrap_, item.Style()->AutoWrap());
+  DCHECK_EQ(auto_wrap_, !is_svg_text_ && item.Style()->AutoWrap());
 
   // If we're trailing, only trailing spaces can be included in this line.
   if (UNLIKELY(state_ == LineBreakState::kTrailing)) {
@@ -690,7 +707,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     position_ -= RemoveHyphen(line_info->MutableResults());
 
   NGInlineItemResult* item_result = nullptr;
-  if (!node_.IsSVGText()) {
+  if (!is_svg_text_) {
     item_result = AddItem(item, line_info);
     item_result->should_create_line_box = true;
   }
@@ -771,7 +788,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     return;
   }
 
-  if (node_.IsSVGText()) {
+  if (is_svg_text_) {
     SplitTextByGlyphs(item, line_info);
     return;
   }
@@ -811,15 +828,19 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
 void NGLineBreaker::SplitTextByGlyphs(const NGInlineItem& item,
                                       NGLineInfo* line_info) {
   DCHECK(RuntimeEnabledFeatures::SVGTextNGEnabled());
-  DCHECK(node_.IsSVGText());
+  DCHECK(is_svg_text_);
   DCHECK_EQ(offset_, item.StartOffset());
 
   const ShapeResult& shape = *item.TextShapeResult();
-  shape.EnsurePositionData();
-  do {
-    unsigned glyph_end = (offset_ + 1 == shape.EndIndex())
-                             ? shape.EndIndex()
-                             : shape.CachedNextSafeToBreakOffset(offset_ + 1);
+  Vector<unsigned> index_list;
+  index_list.ReserveCapacity(shape.NumGlyphs());
+  shape.ForEachGlyph(0, CollectCharIndex, &index_list);
+  if (shape.IsRtl())
+    index_list.Reverse();
+  wtf_size_t size = index_list.size();
+  for (wtf_size_t i = 0; i < size; ++i) {
+    DCHECK_EQ(offset_, index_list[i]);
+    unsigned glyph_end = i + 1 < size ? index_list[i + 1] : shape.EndIndex();
     NGInlineItemResult* result = AddItem(item, glyph_end, line_info);
     result->should_create_line_box = true;
     auto shape_result_view =
@@ -829,7 +850,7 @@ void NGLineBreaker::SplitTextByGlyphs(const NGInlineItem& item,
     result->shape_result = std::move(shape_result_view);
     offset_ = glyph_end;
     position_ += result->inline_size;
-  } while (offset_ < shape.EndIndex());
+  }
   trailing_whitespace_ = WhitespaceState::kUnknown;
   MoveToNextOf(item);
 }
@@ -2344,7 +2365,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
   if (&style == current_style_.get()) {
 #if DCHECK_IS_ON()
     // Check that cache fields are already setup correctly.
-    DCHECK_EQ(auto_wrap_, style.AutoWrap());
+    DCHECK_EQ(auto_wrap_, !is_svg_text_ && style.AutoWrap());
     if (auto_wrap_) {
       DCHECK_EQ(enable_soft_hyphen_, style.GetHyphens() != Hyphens::kNone);
       DCHECK_EQ(break_iterator_.Locale(), style.LocaleForLineBreakIterator());
@@ -2359,7 +2380,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
   current_style_ = &style;
 
   //  TODO(crbug.com/366553): SVG <text> should not be auto_wrap_ for now.
-  auto_wrap_ = !node_.IsSVGText() && style.AutoWrap();
+  auto_wrap_ = !is_svg_text_ && style.AutoWrap();
 
   if (auto_wrap_) {
     LineBreakType line_break_type;

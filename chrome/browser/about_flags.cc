@@ -3089,6 +3089,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"stylus-battery-status", flag_descriptions::kStylusBatteryStatusName,
      flag_descriptions::kStylusBatteryStatusDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kStylusBatteryStatus)},
+    {"wake-on-wifi-allowed", flag_descriptions::kWakeOnWifiAllowedName,
+     flag_descriptions::kWakeOnWifiAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kWakeOnWifiAllowed)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS)
@@ -6208,12 +6211,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-heavy-ad-intervention",
      flag_descriptions::kHeavyAdInterventionName,
      flag_descriptions::kHeavyAdInterventionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kHeavyAdIntervention)},
+     FEATURE_VALUE_TYPE(heavy_ad_intervention::features::kHeavyAdIntervention)},
 
     {"heavy-ad-privacy-mitigations",
      flag_descriptions::kHeavyAdPrivacyMitigationsName,
      flag_descriptions::kHeavyAdPrivacyMitigationsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kHeavyAdPrivacyMitigations)},
+     FEATURE_VALUE_TYPE(
+         heavy_ad_intervention::features::kHeavyAdPrivacyMitigations)},
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
     {"enable-ftp", flag_descriptions::kEnableFtpName,

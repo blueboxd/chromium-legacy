@@ -180,7 +180,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:e1c81c53ccd0366e8fff438f89030043343d4d6b',
+  'luci_go': 'git_revision:40e3c704aad0fceec04344d281ae333de04fd2a5',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd1de126c257b74d676ebdf1f11b7815b86d48500',
+  'skia_revision': '02f72022c58ad0d3655c139ee26fbd5b05574b6e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '246e3704f3f6607dacf22c24fb71b5d1e54ecc54',
+  'v8_revision': 'b1ee5564f86f79c4cba400778780d648d5d5ae43',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -229,7 +229,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '21c8586341999205105ec9a89680d8622fbabb81',
+  'pdfium_revision': 'a11d7fa5144a88cd7f0bd7cd05df3a90711d9c6c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '543c28e9b344ea2eee940e67ce707be0de1a8c07',
+  'devtools_frontend_revision': '9238c6307abf96b2f31d3197474be395515a394b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -723,7 +723,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'OiGVKcWTr34A_ymtO48wvij4e3o7aaKiI4lYDT4KfOMC',
+          'version': 'v-p1zbJ800vLETiv98_a04Og1z_1IR6Cph3aB-RvpO0C',
       },
     ],
     'condition': 'checkout_android',
@@ -1636,7 +1636,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@01c92aa8f2e80fd91d14250d66a578cec6eda1fb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9d5b0749e1c36915a8bf0a61c6ec1fe8fb75b6a4',
     'condition': 'checkout_src_internal',
   },
 
@@ -1644,7 +1644,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'o9GqtEifaYwdNlq0ymD7vHlW4ce76Qknjpd535QA5h8C',
+        'version': '1nItDYhYyrhWg4RAgQ5uCjojvZ20pmBLG0zZiuRWIf8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

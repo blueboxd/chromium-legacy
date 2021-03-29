@@ -13,6 +13,7 @@
 #include "content/browser/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -69,8 +70,8 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // Creates and starts a host. Returns the root frame tree node id of the
   // prerendered page, which can be used as the id of the host.
   int CreateAndStartHost(blink::mojom::PrerenderAttributesPtr attributes,
-                         WebContentsImpl& web_contents,
-                         const url::Origin& initiator_origin);
+                         const url::Origin& initiator_origin,
+                         RenderFrameHostImpl& initiator_render_frame_host);
 
   // For triggers.
   // Destroys the host registered for `frame_tree_node_id`.

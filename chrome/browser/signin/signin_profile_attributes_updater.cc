@@ -51,8 +51,8 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
     return;
   }
 
-  CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
+  CoreAccountInfo account_info =
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
 
   bool clear_profile = account_info.IsEmpty();
 
@@ -65,7 +65,6 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
   }
 
   if (clear_profile) {
-    entry->SetLocalAuthCredentials(std::string());
     entry->SetAuthInfo(std::string(), std::u16string(),
                        /*is_consented_primary_account=*/false);
     if (!signin_util::IsForceSigninEnabled())

@@ -420,7 +420,7 @@ const base::Feature kHelpAppSearchServiceIntegration{
 
 // Enable or disable IME decoder via Mojo connection on Chrome OS.
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable system emoji picker.
 const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",
@@ -707,6 +707,10 @@ const base::Feature kVirtualKeyboardMultipaste{
 // Enable or disable the camera/mic indicators/notifications for VMs.
 const base::Feature kVmCameraMicIndicatorsAndNotifications{
     "VmCameraMicIndicatorsAndNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether to allow enabling wake on WiFi features in shill.
+const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable new wallpaper experience in WebUI inside system settings.
 const base::Feature kWallpaperWebUI{"WallpaperWebUI",

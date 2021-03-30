@@ -60,6 +60,7 @@
 #include "components/viz/host/compositing_mode_reporter_impl.h"
 #include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
@@ -71,10 +72,10 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/histogram_synchronizer.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/media_keys_listener_manager_impl.h"
+#include "content/browser/metrics/histogram_synchronizer.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -368,9 +369,7 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::switches::MemoryPressureHandlingEnabled())
     monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
-#elif defined(OS_MAC) || defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    ((defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) &&       \
-     !BUILDFLAG(IS_CHROMECAST))
+#elif defined(OS_MAC) || defined(OS_WIN) || defined(OS_FUCHSIA)
   monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
 #endif
   // No memory monitor on other platforms...
@@ -748,6 +747,12 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   // Chrome Remote Desktop needs TransitionalURLLoaderFactoryOwner on ChromeOS.
   network::TransitionalURLLoaderFactoryOwner::DisallowUsageInProcess();
 #endif
+
+  {
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::Subsystem:BrowserAccessibilityStateImpl");
+    BrowserAccessibilityStateImpl::GetInstance()->InitBackgroundTasks();
+  }
 }
 
 int BrowserMainLoop::PreCreateThreads() {

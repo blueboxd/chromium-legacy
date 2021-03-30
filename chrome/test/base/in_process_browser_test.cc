@@ -27,6 +27,7 @@
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -78,6 +79,7 @@
 #if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
+#include "services/device/public/cpp/test/fake_geolocation_system_permission.h"
 #endif
 
 #if defined(OS_WIN)
@@ -167,6 +169,34 @@ void UnblockOnProfileCreation(base::RunLoop* run_loop,
     run_loop->Quit();
 }
 #endif
+
+#if defined(OS_MAC)
+class ChromeBrowserMainExtraPartsBrowserProcessInjection
+    : public ChromeBrowserMainExtraParts {
+ public:
+  ChromeBrowserMainExtraPartsBrowserProcessInjection() = default;
+
+  // ChromeBrowserMainExtraParts implementation
+  void PreMainMessageLoopStart() override {
+    // The real SystemGeolocationPermissionsManager initializes a
+    // CLLocationManager. It has been observed that when thousands of instances
+    // of this object are created, as happens when running browser tests, the
+    // CoreLocationAgent process uses lots of CPU. This makes test execution
+    // slower and causes jobs to time out. We therefore insert a fake.
+    auto fake_geolocation_manager =
+        std::make_unique<FakeSystemGeolocationPermissionsManager>();
+    fake_geolocation_manager->set_status(
+        device::LocationSystemPermissionStatus::kAllowed);
+    g_browser_process->platform_part()->SetGeolocationManagerForTesting(
+        std::move(fake_geolocation_manager));
+  }
+
+  ChromeBrowserMainExtraPartsBrowserProcessInjection(
+      const ChromeBrowserMainExtraPartsBrowserProcessInjection&) = delete;
+  ChromeBrowserMainExtraPartsBrowserProcessInjection& operator=(
+      const ChromeBrowserMainExtraPartsBrowserProcessInjection&) = delete;
+};
+#endif  // defined(OS_MAC)
 
 }  // namespace
 
@@ -329,14 +359,17 @@ void InProcessBrowserTest::SetUp() {
   // Using a screenshot for clamshell to tablet mode transitions makes the flow
   // async which we want to disable for most tests.
   ash::ShellTestApi::SetTabletControllerUseScreenshotForTest(false);
+
+  // Disable the notification delay timer used to prevent non system
+  // notifications from showing up right after login.
+  ash::ShellTestApi::SetUseLoginNotificationDelayForTest(false);
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Redirect the default download directory to a temporary directory.
   ASSERT_TRUE(default_download_dir_.CreateUniqueTempDir());
   CHECK(base::PathService::Override(chrome::DIR_DEFAULT_DOWNLOADS,
                                     default_download_dir_.GetPath()));
-
-  AfterStartupTaskUtils::DisableScheduleTaskDelayForTesting();
 
 #if defined(TOOLKIT_VIEWS)
   // Prevent hover cards from appearing when the mouse is over the tab. Tests
@@ -386,6 +419,14 @@ size_t InProcessBrowserTest::GetTestPreCount() {
   }
   return count;
 }
+
+#if defined(OS_MAC)
+void InProcessBrowserTest::CreatedBrowserMainParts(
+    content::BrowserMainParts* parts) {
+  static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
+      std::make_unique<ChromeBrowserMainExtraPartsBrowserProcessInjection>());
+}
+#endif
 
 void InProcessBrowserTest::SelectFirstBrowser() {
   const BrowserList* browser_list = BrowserList::GetInstance();

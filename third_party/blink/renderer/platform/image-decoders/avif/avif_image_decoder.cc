@@ -342,7 +342,6 @@ uint8_t AVIFImageDecoder::GetYUVBitDepth() const {
 void AVIFImageDecoder::DecodeToYUV() {
   DCHECK(image_planes_);
   DCHECK(CanDecodeToYUV());
-  DCHECK(IsAllDataReceived());
 
   if (Failed())
     return;
@@ -353,8 +352,10 @@ void AVIFImageDecoder::DecodeToYUV() {
   // libavif cannot decode to an external buffer. So we need to copy from
   // libavif's internal buffer to |image_planes_|.
   // TODO(crbug.com/1099825): Enhance libavif to decode to an external buffer.
-  if (DecodeImage(0) != AVIF_RESULT_OK) {
-    SetFailed();
+  auto ret = DecodeImage(0);
+  if (ret != AVIF_RESULT_OK) {
+    if (ret != AVIF_RESULT_WAITING_ON_IO)
+      SetFailed();
     return;
   }
 
@@ -830,13 +831,15 @@ bool AVIFImageDecoder::UpdateDemuxer() {
   // * Alpha channel is not supported.
   // * Multi-frame images (animations) are not supported. (The DecodeToYUV()
   //   method does not have an 'index' parameter.)
-  // * If ColorTransform() returns a non-null pointer, the decoder has to do a
-  //   color space conversion, so we don't decode to YUV.
-  allow_decode_to_yuv_ = avif_yuv_format_ != AVIF_PIXEL_FORMAT_YUV400 &&
-                         !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
-                         GetColorSpace(container).ToSkYUVColorSpace(
-                             container->depth, &yuv_color_space_) &&
-                         !ColorTransform();
+  allow_decode_to_yuv_ =
+      avif_yuv_format_ != AVIF_PIXEL_FORMAT_YUV400 && !decoder_->alphaPresent &&
+      decoded_frame_count_ == 1 &&
+      GetColorSpace(container).ToSkYUVColorSpace(container->depth,
+                                                 &yuv_color_space_) &&
+      // TODO(crbug.com/911246): Support color space transforms for YUV decodes.
+      !ColorTransform() &&
+      // TODO(crbug.com/943519): Support incremental YUV decoding.
+      IsAllDataReceived();
   return SetSize(container->width, container->height);
 }
 

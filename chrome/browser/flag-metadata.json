@@ -2449,7 +2449,7 @@
   {
     "name": "enable-tab-grid-layout",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-tab-groups",
@@ -3103,19 +3103,14 @@
     "expiry_milestone": 90
   },
   {
-    "name": "help-app",
-    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "help-app-launcher-search",
     "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 97
   },
   {
     "name": "help-app-search-service-integration",
     "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 94
   },
   {
     "name": "homepage-promo-card",
@@ -4222,11 +4217,6 @@
     "name": "prefetch-notification-scheduling-integration",
     "owners": [ "hesen" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "print-save-to-drive",
-    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 90
   },
   {
     "name": "print-server-scaling",

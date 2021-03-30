@@ -722,7 +722,28 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   web::NavigationContextImpl* context =
       [self.navigationStates contextForNavigation:navigation];
-  [self didReceiveRedirectForNavigation:context withURL:webViewURL];
+  if (!context)
+    return;
+
+  context->SetUrl(webViewURL);
+  web::NavigationItemImpl* item =
+      web::GetItemWithUniqueID(self.navigationManagerImpl, context);
+
+  // Associated item can be a pending item, previously discarded by another
+  // navigation. WKWebView allows multiple provisional navigations, while
+  // Navigation Manager has only one pending navigation.
+  if (item) {
+    if (!IsWKInternalUrl(webViewURL)) {
+      item->SetVirtualURL(webViewURL);
+      item->SetURL(webViewURL);
+    }
+    // Redirects (3xx response code), must change POST requests to GETs.
+    item->SetPostData(nil);
+    item->ResetHttpRequestHeaders();
+  }
+
+  self.userInteractionState->ResetLastTransferTime();
+  self.webStateImpl->OnNavigationRedirected(context);
 }
 
 - (void)webView:(WKWebView*)webView
@@ -854,21 +875,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
       !IsPlaceholderUrl(webViewURL))
     [self.delegate navigationHandlerDisplayWebView:self];
-
-  if (@available(iOS 11.3, *)) {
-    // On iOS 11.3 didReceiveServerRedirectForProvisionalNavigation: is not
-    // always called. So if URL was unexpectedly changed then it's probably
-    // because redirect callback was not called.
-    if (@available(iOS 12, *)) {
-      // rdar://37547029 was fixed on iOS 12.
-    } else if (context &&
-               (base::FeatureList::IsEnabled(
-                    web::features::kUseJSForErrorPage) ||
-                !context->IsPlaceholderNavigation()) &&
-               context->GetUrl() != webViewURL) {
-      [self didReceiveRedirectForNavigation:context withURL:webViewURL];
-    }
-  }
 
   // |context| will be nil if this navigation has been already committed and
   // finished.
@@ -1568,33 +1574,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                            contentLength, MIMEType);
 }
 
-// Updates URL for navigation context and navigation item.
-- (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
-                                withURL:(const GURL&)URL {
-  if (!context)
-    return;
-
-  context->SetUrl(URL);
-  web::NavigationItemImpl* item =
-      web::GetItemWithUniqueID(self.navigationManagerImpl, context);
-
-  // Associated item can be a pending item, previously discarded by another
-  // navigation. WKWebView allows multiple provisional navigations, while
-  // Navigation Manager has only one pending navigation.
-  if (item) {
-    if (!IsWKInternalUrl(URL)) {
-      item->SetVirtualURL(URL);
-      item->SetURL(URL);
-    }
-    // Redirects (3xx response code), must change POST requests to GETs.
-    item->SetPostData(nil);
-    item->ResetHttpRequestHeaders();
-  }
-
-  self.userInteractionState->ResetLastTransferTime();
-  self.webStateImpl->OnNavigationRedirected(context);
-}
-
 // WKNavigation objects are used as a weak key to store web::NavigationContext.
 // WKWebView manages WKNavigation lifetime and destroys them after the
 // navigation is finished. However for window opening navigations WKWebView
@@ -1689,98 +1668,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           credentialWithUser:user
                     password:password
                  persistence:NSURLCredentialPersistenceForSession]);
-}
-
-// Called when a load ends in an SSL error and certificate chain.
-- (void)handleSSLCertError:(NSError*)error
-             forNavigation:(WKNavigation*)navigation
-                   webView:(WKWebView*)webView {
-  CHECK(web::IsWKWebViewSSLCertError(error));
-
-  net::SSLInfo info;
-  web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
-
-  if (!info.cert) {
-    // |info.cert| can be null if certChain in NSError is empty or can not be
-    // parsed, in this case do not ask delegate if error should be allowed, it
-    // should not be.
-    [self handleLoadError:error
-            forNavigation:navigation
-                  webView:webView
-          provisionalLoad:YES];
-    return;
-  }
-
-  // Retrieve verification results from _certVerificationErrors cache to avoid
-  // unnecessary recalculations. Verification results are cached for the leaf
-  // cert, because the cert chain in |didReceiveAuthenticationChallenge:| is
-  // the OS constructed chain, while |chain| is the chain from the server.
-  NSArray* chain = error.userInfo[web::kNSErrorPeerCertificateChainKey];
-  NSURL* requestURL = error.userInfo[web::kNSErrorFailingURLKey];
-  NSString* host = requestURL.host;
-  scoped_refptr<net::X509Certificate> leafCert;
-  bool recoverable = false;
-  if (chain.count && host.length) {
-    // The complete cert chain may not be available, so the leaf cert is used
-    // as a key to retrieve _certVerificationErrors, as well as for storing the
-    // cert decision.
-    leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
-    if (leafCert) {
-      auto error = _certVerificationErrors->Get(
-          {leafCert, base::SysNSStringToUTF8(host)});
-      bool cacheHit = error != _certVerificationErrors->end();
-      if (cacheHit) {
-        recoverable = error->second.is_recoverable;
-        info.cert_status = error->second.status;
-      }
-      UMA_HISTOGRAM_BOOLEAN("WebController.CertVerificationErrorsCacheHit",
-                            cacheHit);
-    }
-  }
-
-  // If the current navigation item is in error state, update the error retry
-  // state machine to indicate that SSL interstitial error will be displayed to
-  // make sure subsequent back/forward navigation to this item starts with the
-  // correct error retry state.
-  web::NavigationContextImpl* context =
-      [self.navigationStates contextForNavigation:navigation];
-  if (context) {
-    // This NavigationContext will be destroyed, so return pending item
-    // ownership to NavigationManager. NavigationContext can only own pending
-    // item until the navigation has committed or aborted.
-    self.navigationManagerImpl->SetPendingItem(context->ReleaseItem());
-    web::NavigationItemImpl* item =
-        web::GetItemWithUniqueID(self.navigationManagerImpl, context);
-    if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-        item &&
-        item->error_retry_state_machine().state() ==
-            web::ErrorRetryState::kRetryFailedNavigationItem) {
-      item->error_retry_state_machine().SetDisplayingWebError();
-    }
-  }
-
-  // Ask web client if this cert error should be allowed.
-  web::GetWebClient()->AllowCertificateError(
-      self.webStateImpl, net::MapCertStatusToNetError(info.cert_status), info,
-      net::GURLWithNSURL(requestURL), recoverable, context->GetNavigationId(),
-      base::BindRepeating(^(bool proceed) {
-        if (proceed) {
-          DCHECK(recoverable);
-          [self.certVerificationController allowCert:leafCert
-                                             forHost:host
-                                              status:info.cert_status];
-          self.webStateImpl->GetSessionCertificatePolicyCacheImpl()
-              .RegisterAllowedCertificate(
-                  leafCert, base::SysNSStringToUTF8(host), info.cert_status);
-          // New navigation is a different navigation from the original one.
-          // The new navigation is always browser-initiated and happens when
-          // the browser allows to proceed with the load.
-          [self.delegate navigationHandler:self
-              loadCurrentURLWithRendererInitiatedNavigation:NO];
-        }
-      }));
-
-  [self loadCancelled];
 }
 
 // Called when a load ends in an error.

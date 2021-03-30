@@ -1778,7 +1778,6 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"home_button_on_grid_tab_switcher", "true"},
     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
     {"hide_switch_when_no_incognito_tabs", "true"},
-    {"show_tabs_in_mru_order", "true"},
     {"enable_tab_groups_continuation", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
@@ -1793,7 +1792,6 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
      {"omnibox_focused_on_new_tab", "true"},
      {"home_button_on_grid_tab_switcher", "true"},
      {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
-     {"show_tabs_in_mru_order", "true"},
      {"enable_tab_groups_continuation", "true"}};
 
 const FeatureEntry::FeatureParam
@@ -5650,10 +5648,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisplayAlignmentAssistanceName,
      flag_descriptions::kDisplayAlignmentAssistanceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDisplayAlignAssist)},
-
-    {"print-save-to-drive", flag_descriptions::kPrintSaveToDriveName,
-     flag_descriptions::kPrintSaveToDriveDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kPrintSaveToDrive)},
 
     {"diagnostics-app", flag_descriptions::kDiagnosticsAppName,
      flag_descriptions::kDiagnosticsAppDescription, kOsCrOS,

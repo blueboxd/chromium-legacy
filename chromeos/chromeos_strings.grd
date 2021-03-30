@@ -840,6 +840,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_DIAGNOSTICS_ROUTINE_REMAINING_MIN_FINAL_LARGE" desc="The text used to describe the status of running routine, specifically when a large routine is taking longer than expected.">
         Just a few more minutes...
       </message>
+      <message name="IDS_DIAGNOSTICS_CPU_BANNER_MESSAGE" desc="The text shown while a user is running their CPU test.">
+        Running a CPU test may affect your system performance
+      </message>
 
       <!-- Quick Answers -->
       <message name="IDS_QUICK_ANSWERS_DEFINITION_TITLE_TEXT" desc="The title text format string used for Quick Answers definition result card. The first placeholder contains the source query text and the second placeholder contains the phonetics.">
@@ -1046,6 +1049,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_ONC_CELLULAR_APN_ATTACH" desc="ONC Property label for APN-Attach APN that is required by some cellular network providers in order to connect">
         Attach APN
+      </message>
+      <message name="IDS_ONC_CELLULAR_APN_ATTACH_TOOLTIP_TEXT" desc="Text for help tooltip present in the Attach APN setting row informing users that the associated toggle may be required by some cellular network providers in order to connect">
+        Your carrier may require this option to connect to their network. Contact your carrier for details.
       </message>
       <message name="IDS_ONC_CELLULAR_SERVING_OPERATOR_NAME" desc="ONC Property label for Cellular.ServingOperator.Name">
         Operator

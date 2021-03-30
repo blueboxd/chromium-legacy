@@ -29,7 +29,6 @@
 #include "net/base/escape.h"
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
-#include "pdf/content_restriction.h"
 #include "pdf/document_attachment_info.h"
 #include "pdf/document_metadata.h"
 #include "pdf/pdfium/pdfium_engine.h"
@@ -998,19 +997,6 @@ void OutOfProcessInstance::FormDidOpen(int32_t result) {
   LOG_IF(ERROR, result != PP_OK) << "FormDidOpen failed: " << result;
 }
 
-std::unique_ptr<UrlLoader> OutOfProcessInstance::CreateUrlLoader() {
-  if (full_frame()) {
-    DidStartLoading();
-
-    // Disable save and print until the document is fully loaded, since they
-    // would generate an incomplete document.  Need to do this each time we
-    // call DidStartLoading since that resets the content restrictions.
-    SetContentRestrictions(kContentRestrictionSave | kContentRestrictionPrint);
-  }
-
-  return CreateUrlLoaderInternal();
-}
-
 std::vector<PDFEngine::Client::SearchStringResult>
 OutOfProcessInstance::SearchString(const char16_t* string,
                                    const char16_t* term,
@@ -1186,19 +1172,6 @@ void OutOfProcessInstance::PreviewDocumentLoadComplete() {
 
   ++print_preview_loaded_page_count_;
   LoadNextPreviewPage();
-}
-
-void OutOfProcessInstance::DocumentLoadFailed() {
-  DCHECK_EQ(DocumentLoadState::kLoading, document_load_state());
-  UserMetricsRecordAction("PDF.LoadFailure");
-
-  DidStopLoading();
-
-  set_document_load_state(DocumentLoadState::kFailed);
-  paint_manager().InvalidateRect(gfx::Rect(plugin_size()));
-
-  // Send a progress value of -1 to indicate a failure.
-  SendLoadingProgress(-1);
 }
 
 void OutOfProcessInstance::PreviewDocumentLoadFailed() {

@@ -539,7 +539,7 @@ ci.android_builder(
     tree_closing = True,
     experiments = {
         # TODO(crbug.com/1143122): remove this.
-        "luci.swarming.use_rbe_cas": 20,
+        "luci.swarming.use_rbe_cas": 50,
     },
 )
 
@@ -5295,6 +5295,17 @@ ci.thin_tester(
         short_name = "15",
     ),
     cq_mirrors_console_view = "mirrors",
+    main_console_view = "main",
+    triggered_by = ["ci/Mac Builder"],
+)
+
+ci.thin_tester(
+    name = "Mac11 Tests",
+    builder_group = "chromium.mac",
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+        short_name = "11",
+    ),
     main_console_view = "main",
     triggered_by = ["ci/Mac Builder"],
 )

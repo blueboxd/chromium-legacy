@@ -245,6 +245,19 @@ void PdfViewPluginBase::Email(const std::string& to,
   SendMessage(std::move(message));
 }
 
+std::unique_ptr<UrlLoader> PdfViewPluginBase::CreateUrlLoader() {
+  if (full_frame_) {
+    DidStartLoading();
+
+    // Disable save and print until the document is fully loaded, since they
+    // would generate an incomplete document. This needs to be done each time
+    // DidStartLoading() is called because that resets the content restrictions.
+    SetContentRestrictions(kContentRestrictionSave | kContentRestrictionPrint);
+  }
+
+  return CreateUrlLoaderInternal();
+}
+
 void PdfViewPluginBase::DocumentLoadComplete() {
   DCHECK_EQ(DocumentLoadState::kLoading, document_load_state_);
   document_load_state_ = DocumentLoadState::kComplete;
@@ -281,6 +294,20 @@ void PdfViewPluginBase::DocumentLoadComplete() {
   }
 
   SetContentRestrictions(content_restrictions);
+}
+
+void PdfViewPluginBase::DocumentLoadFailed() {
+  DCHECK_EQ(DocumentLoadState::kLoading, document_load_state_);
+  document_load_state_ = DocumentLoadState::kFailed;
+
+  UserMetricsRecordAction("PDF.LoadFailure");
+
+  // Send a progress value of -1 to indicate a failure.
+  SendLoadingProgress(-1);
+
+  DidStopLoading();
+
+  paint_manager_.InvalidateRect(gfx::Rect(plugin_size_));
 }
 
 void PdfViewPluginBase::DocumentLoadProgress(uint32_t available,

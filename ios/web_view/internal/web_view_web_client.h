@@ -32,13 +32,8 @@ class WebViewWebClient : public web::WebClient {
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
   std::u16string GetPluginNotSupportedText() const override;
-  void AllowCertificateError(web::WebState* web_state,
-                             int cert_error,
-                             const net::SSLInfo& ssl_info,
-                             const GURL& request_url,
-                             bool overridable,
-                             int64_t navigation_id,
-                             base::OnceCallback<void(bool)> callback) override;
+  bool IsLegacyTLSAllowedForHost(web::WebState* web_state,
+                                 const std::string& hostname) override;
   bool EnableLongPressAndForceTouchHandling() const override;
 
  private:

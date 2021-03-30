@@ -519,7 +519,6 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "MessagesForAndroidInfrastructure",
                         "MessagesForAndroidPasswords"
                     ]
                 }
@@ -3672,6 +3671,26 @@
             ]
         }
     ],
+    "InputTargetClientHighPriority": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InputTargetClientHighPriority"
+                    ]
+                }
+            ]
+        }
+    ],
     "IntentBlockExternalFormRedirectsNoGesture": [
         {
             "platforms": [
@@ -4893,6 +4912,22 @@
                     "name": "EnableQuic",
                     "enable_features": [
                         "UseParallelRequestsForQUIC"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PartitionAllocLargeThreadCacheSize": [
+        {
+            "platforms": [
+                "linux",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PartitionAllocLargeThreadCacheSize"
                     ]
                 }
             ]

@@ -2800,6 +2800,7 @@ if (!is_android) {
         "../browser/resources/chromeos/zip_archiver/test/zip_archiver_jstest.cc",
         "../browser/sessions/session_restore_browsertest_chromeos.cc",
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
+        "../browser/speech/on_device_speech_recognizer_browsertest.cc",
         "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
         "../browser/ui/app_list/app_service/app_service_app_item_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
@@ -5735,6 +5736,7 @@ test("unit_tests") {
       "../browser/safe_browsing/advanced_protection_status_manager_factory_unittest.cc",
       "../browser/safe_browsing/advanced_protection_status_manager_unittest.cc",
       "../browser/safe_browsing/chrome_enterprise_url_lookup_service_unittest.cc",
+      "../browser/safe_browsing/client_side_detection_host_delegate_unittest.cc",
       "../browser/safe_browsing/client_side_detection_host_unittest.cc",
       "../browser/safe_browsing/client_side_detection_service_factory_unittest.cc",
       "../browser/safe_browsing/client_side_detection_service_unittest.cc",
@@ -5940,6 +5942,10 @@ test("unit_tests") {
       "../browser/sessions/tab_loader_unittest.cc",
     ]
   }
+  if (enable_session_service && enable_app_session_service) {
+    sources += [ "../browser/sessions/app_session_service_unittest.cc" ]
+  }
+
   if (is_chromeos_ash) {
     deps += [
       "//chrome/browser/chromeos:unit_tests",
@@ -6434,6 +6440,7 @@ if (!is_android) {
       "//components/os_crypt:test_support",
       "//content/public/browser",
       "//extensions/buildflags",
+      "//services/device/public/cpp:test_support",
       "//skia",
       "//testing/gtest",
       "//third_party/libaddressinput",

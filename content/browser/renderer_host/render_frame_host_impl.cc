@@ -757,6 +757,8 @@ const char* LifecycleStateImplToString(
       return "Speculative";
     case LifecycleStateImpl::kPrerendering:
       return "Prerendering";
+    case LifecycleStateImpl::kPendingCommit:
+      return "PendingCommit";
     case LifecycleStateImpl::kActive:
       return "Active";
     case LifecycleStateImpl::kInBackForwardCache:
@@ -3064,8 +3066,25 @@ void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
 }
 
 void RenderFrameHostImpl::Detach() {
-  if (lifecycle_state() == LifecycleStateImpl::kSpeculative)
+  // Detach() can be called in both speculative and pending-commit states.
+  // - a speculative RenderFrameHost as a result of its associated Frame being
+  //   detached (i.e., the Frame in the renderer with a provisional_frame_ field
+  //   that points to `this`'s LocalFrame). We don't expect it to self-detach
+  //   otherwise.
+  // - a pending commit RenderFrameHost might detach itself due to unload events
+  //   running that remove it from the tree when swapping it in.
+  //
+  // In both cases speculative and pending-commit RenderFrameHosts, it's OK to
+  // early-return. The logical FrameTreeNode is going to be torn down as well,
+  // and the speculative / pending commit RenderFrameHost (which is still
+  // strongly owned by the RenderFrameHostManager via unique_ptr) will be torn
+  // down then. If we do proceed, this ends up with a use-after-free, since
+  // StartPendingDeletionOnSubtree() will ResetNavigationsForPendingDeletion(),
+  // which deletes `this`.
+  if (lifecycle_state() == LifecycleStateImpl::kSpeculative ||
+      lifecycle_state() == LifecycleStateImpl::kPendingCommit) {
     return;
+  }
 
   if (!parent_) {
     bad_message::ReceivedBadMessage(GetProcess(),
@@ -4597,10 +4616,14 @@ bool RenderFrameHostImpl::IsInactiveAndDisallowActivation() {
       CancelPrerendering();
       return true;
     case LifecycleStateImpl::kSpeculative:
-      // We do not expect speculative RenderFrameHosts to generate events that
-      // require an active/inactive check. Don't crash the browser process in
-      // case it comes from a compromised renderer, but kill the renderer to
-      // avoid further confusion.
+    case LifecycleStateImpl::kPendingCommit:
+      // We do not expect speculative or pending commit RenderFrameHosts to
+      // generate events that require an active/inactive check. Don't crash the
+      // browser process in case it comes from a compromised renderer, but kill
+      // the renderer to avoid further confusion.
+      // TODO(https://crbug.com/1191469): Understand the expected behaviour to
+      // disallow activation for kPendingCommit RenderFrameHosts and update
+      // accordingly.
       bad_message::ReceivedBadMessage(
           GetProcess(), bad_message::RFH_INACTIVE_CHECK_FROM_SPECULATIVE_RFH);
       return false;
@@ -8956,10 +8979,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     last_committed_cross_document_navigation_id_ =
         navigation_request->GetNavigationId();
 
-    if (lifecycle_state() != LifecycleStateImpl::kSpeculative &&
+    if (lifecycle_state() != LifecycleStateImpl::kPendingCommit &&
         !committed_speculative_rfh_before_navigation_commit_) {
-      // Clear all the user data associated with the non-speculative
-      // RenderFrameHost because the navigation has created a new document.
+      DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kSpeculative);
+      // Clear all the user data associated with the non-pending commit
+      // RenderFrameHosts because the navigation has created a new document.
       // Make sure the data doesn't get cleared for the cases when the
       // RenderFrameHost commits before the navigation commits. This happens
       // when the current RenderFrameHost crashes before navigating to a new
@@ -9754,14 +9778,11 @@ const std::string CalculateMethod(
 }
 
 bool DoBaseURLExpectationsMatch(const GURL& renderer_base_url,
-                                const net::Error& net_error_code) {
+                                bool is_error_page) {
   // base_url value is currently only used in the browser side to check if a
   // navigation results in an error page or not in
-  // NavigationRequest::DidCommitNavigation. This can be known by just checking
-  // for the net error code value instead, as all navigations that result in an
-  // error page should be known by the browser side before committing.
-  if (renderer_base_url == kUnreachableWebDataURL &&
-      net_error_code == net::OK) {
+  // NavigationRequest::DidCommitNavigation.
+  if (renderer_base_url == kUnreachableWebDataURL && !is_error_page) {
     return false;
   }
   // Note: base_url might be set in |params| in other cases (e.g. if a page has
@@ -9773,10 +9794,11 @@ bool DoBaseURLExpectationsMatch(const GURL& renderer_base_url,
 
 bool CalculateURLIsUnreachable(
     NavigationRequest* request,
+    bool is_error_page,
     bool is_loaded_from_load_data_with_base_url_and_unreachable_url) {
   // url_is_unreachable should only be true in two cases:
   // 1) The navigation is for an error page
-  if (request->GetNetErrorCode() != net::OK)
+  if (is_error_page)
     return true;
   // 2) This is a main frame navigation to a data: URL document with a base_url
   // (either an initial load or a same-document navigation).
@@ -9859,12 +9881,19 @@ void RenderFrameHostImpl::
   // - gesture
   // TODO(crbug.com/1131832): Verify more params.
   const GURL& browser_base_url = request->common_params().base_url_for_data_url;
+  // We can know if we're going to be in an error page after this navigation
+  // if the net error code is not net::OK, or if we're doing a same-document
+  // navigation on an error page (only possible for renderer-initiated
+  // navigations).
+  const bool is_error_page = (request->GetNetErrorCode() != net::OK ||
+                              (is_error_page_ && request->IsSameDocument()));
 
   const bool browser_url_is_unreachable = CalculateURLIsUnreachable(
-      request, is_loaded_from_load_data_with_base_url_and_unreachable_url_);
+      request, is_error_page,
+      is_loaded_from_load_data_with_base_url_and_unreachable_url_);
 
   const bool base_url_expectations_match =
-      DoBaseURLExpectationsMatch(params.base_url, request->GetNetErrorCode());
+      DoBaseURLExpectationsMatch(params.base_url, is_error_page);
 
   const bool is_same_document_navigation = !!same_document_params;
   const bool is_same_document_history_api_navigation =
@@ -10001,6 +10030,7 @@ void RenderFrameHostImpl::
                         !frame_tree_node_->IsMainFrame());
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_form_submission",
                         request->IsFormSubmission());
+  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_error_page", is_error_page);
   SCOPED_CRASH_KEY_NUMBER("VerifyDidCommit", "net_error",
                           request->GetNetErrorCode());
 
@@ -10342,6 +10372,15 @@ bool RenderFrameHostImpl::IsPendingDeletion() {
          lifecycle_state() == LifecycleStateImpl::kReadyToBeDeleted;
 }
 
+void RenderFrameHostImpl::SetLifecycleStateToPendingCommit() {
+  // Update the |lifecycle_state_| to kPendingCommit when navigation
+  // commits in the renderer process and this is when the speculative
+  // RenderFrameHost is associated with the navigation for the first time and is
+  // not considered speculative anymore.
+  DCHECK(children_.empty());
+  SetLifecycleState(LifecycleStateImpl::kPendingCommit);
+}
+
 void RenderFrameHostImpl::SetLifecycleStateToActive() {
   // If the RenderFrameHost is restored from BackForwardCache or is part of a
   // prerender activation, update states of all the children to kActive. This is
@@ -10361,10 +10400,10 @@ void RenderFrameHostImpl::SetLifecycleStateToActive() {
 
 void RenderFrameHostImpl::SetLifecycleStateToPrerendering() {
   // Update the |lifecycle_state_| to kPrerendering on navigation commit
-  // when a speculative RenderFrameHost is created for navigation inside
-  // prerendered frame tree. This should happen before activation.
+  // when a speculative RenderFrameHost is created for navigation is in pending
+  // commit state inside prerendered frame tree. This should happen before
+  // activation.
   DCHECK(frame_tree()->is_prerendering());
-  DCHECK_EQ(lifecycle_state(), LifecycleStateImpl::kSpeculative);
   DCHECK(children_.empty());
   SetLifecycleState(LifecycleStateImpl::kPrerendering);
 }
@@ -10384,7 +10423,11 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleStateImpl state) {
           // transitions happen to this state during its lifetime.
           StateTransitions<LifecycleStateImpl>({
               {LifecycleStateImpl::kSpeculative,
-               {LifecycleStateImpl::kActive, LifecycleStateImpl::kPrerendering,
+               {LifecycleStateImpl::kActive, LifecycleStateImpl::kPendingCommit,
+                LifecycleStateImpl::kReadyToBeDeleted}},
+
+              {LifecycleStateImpl::kPendingCommit,
+               {LifecycleStateImpl::kPrerendering, LifecycleStateImpl::kActive,
                 LifecycleStateImpl::kReadyToBeDeleted}},
 
               {LifecycleStateImpl::kPrerendering,
@@ -10654,18 +10697,22 @@ void RenderFrameHostImpl::OnDidRunContentWithCertificateErrors() {
   // disregard this message; there's no need to update the UI if the UI will
   // never be shown again.
   //
-  // We still process this message for speculative RenderFrameHosts. This can
+  // We still process this message for pending-commit RenderFrameHosts. This can
   // happen when a subframe's main resource has a certificate error. The
   // origin for the last committed navigation entry will get marked as having
   // run insecure content and that will carry over to the navigation entry for
-  // the speculative RFH when it commits.
+  // the pending-commit RenderFrameHost when it commits.
   //
   // Generally our approach for active content with certificate errors follows
   // our approach for mixed content (DidRunInsecureContent): when a page loads
   // active insecure content, such as a script or iframe, the top-level origin
   // gets marked as insecure and that applies to any navigation entry using the
   // same renderer process with that same top-level origin.
-  if (lifecycle_state() != LifecycleStateImpl::kSpeculative &&
+  //
+  // We shouldn't be receiving this message for speculative RenderFrameHosts
+  // i.e., before the renderer is told to commit the navigation.
+  DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kSpeculative);
+  if (lifecycle_state() != LifecycleStateImpl::kPendingCommit &&
       IsInactiveAndDisallowActivation()) {
     return;
   }

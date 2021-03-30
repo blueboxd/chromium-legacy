@@ -247,10 +247,52 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
   if (process_type == switches::kRendererProcess &&
       base::FeatureList::IsEnabled(
           base::features::kPartitionAllocLargeThreadCacheSize)) {
+#if defined(OS_ANDROID) && !defined(ARCH_CPU_64_BITS)
+    // Don't use a higher threshold on Android 32 bits, as long as memory usage
+    // is not carefully tuned. Only control the threshold here to avoid changing
+    // the rest of the code below.
+    // As of 2021, 64 bits Android devices are not memory constrained.
+    largest_cached_size_ = base::internal::ThreadCache::kDefaultSizeThreshold;
+#else
+    largest_cached_size_ = base::internal::ThreadCache::kLargeSizeThreshold;
     base::internal::ThreadCache::SetLargestCachedSize(
         base::internal::ThreadCache::kLargeSizeThreshold);
+#endif  // defined(OS_ANDROID) && !defined(ARCH_CPU_64_BITS)
   }
 
+#endif  // defined(PA_THREAD_CACHE_SUPPORTED) &&
+        // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+}
+
+void PartitionAllocSupport::OnForegrounded() {
+#if defined(PA_THREAD_CACHE_SUPPORTED) && \
+    BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  {
+    base::AutoLock scoped_lock(lock_);
+    if (established_process_type_ != switches::kRendererProcess)
+      return;
+  }
+
+  base::internal::ThreadCache::SetLargestCachedSize(largest_cached_size_);
+#endif  // defined(PA_THREAD_CACHE_SUPPORTED) &&
+        // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+}
+
+void PartitionAllocSupport::OnBackgrounded() {
+#if defined(PA_THREAD_CACHE_SUPPORTED) && \
+    BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  {
+    base::AutoLock scoped_lock(lock_);
+    if (established_process_type_ != switches::kRendererProcess)
+      return;
+  }
+
+  // Performance matters less for background renderers, don't pay the memory
+  // cost.
+  //
+  // TODO(lizeb): Consider forcing a one-off thread cache purge.
+  base::internal::ThreadCache::SetLargestCachedSize(
+      base::internal::ThreadCache::kDefaultSizeThreshold);
 #endif  // defined(PA_THREAD_CACHE_SUPPORTED) &&
         // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 }

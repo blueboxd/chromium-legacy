@@ -32,7 +32,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
@@ -86,6 +85,7 @@
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
+#include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/cookie_utils.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
@@ -1082,8 +1082,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       waiting_for_init_(renderer_initiated_creation_of_main_frame),
       push_messaging_manager_(
           nullptr,
-          base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
-              {ServiceWorkerContext::GetCoreThreadId()}))),
+          base::OnTaskRunnerDeleter(
+
+              BrowserThread::GetTaskRunnerForThread(
+                  ServiceWorkerContext::GetCoreThreadId()))),
       frame_token_(frame_token),
       keep_alive_handle_factory_(agent_scheduling_group_.GetProcess(),
                                  base::TimeDelta::FromSeconds(
@@ -1478,8 +1480,9 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
                      BackForwardCacheMetrics::NotRestoredReason::kTimeout));
 }
 
-void RenderFrameHostImpl::DisableBackForwardCache(base::StringPiece reason) {
-  back_forward_cache_disabled_reasons_.insert(reason.as_string());
+void RenderFrameHostImpl::DisableBackForwardCache(
+    BackForwardCache::DisabledReason reason) {
+  back_forward_cache_disabled_reasons_.insert(reason);
   MaybeEvictFromBackForwardCache();
 }
 
@@ -7821,7 +7824,9 @@ void RenderFrameHostImpl::CreatePaymentManager(
 
 void RenderFrameHostImpl::CreateWebBluetoothService(
     mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver) {
-  BackForwardCache::DisableForRenderFrameHost(this, "WebBluetooth");
+  BackForwardCache::DisableForRenderFrameHost(
+      this, BackForwardCacheDisable::DisabledReason(
+                BackForwardCacheDisable::DisabledReasonId::kWebBluetooth));
   // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
   // |receiver_| which may run the error handler. |receiver_| can't run the
   // error handler after it's destroyed so it can't run after the RFHI is
@@ -7854,7 +7859,9 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
 
 void RenderFrameHostImpl::CreateWebUsbService(
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
-  BackForwardCache::DisableForRenderFrameHost(this, "WebUSB");
+  BackForwardCache::DisableForRenderFrameHost(
+      this, BackForwardCacheDisable::DisabledReason(
+                BackForwardCacheDisable::DisabledReasonId::kWebUSB));
   GetContentClient()->browser()->CreateWebUsbService(this, std::move(receiver));
 }
 

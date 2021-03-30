@@ -29,6 +29,8 @@
 #include "extensions/common/url_pattern_set.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::mojom::APIPermissionID;
+
 namespace extensions {
 namespace permission_helper {
 
@@ -60,7 +62,7 @@ class PublicSessionPermissionHelper {
                                    PromptFactory prompt_factory);
 
   bool PermissionAllowedImpl(const Extension* extension,
-                             APIPermission::ID permission);
+                             APIPermissionID permission);
 
  private:
   void ResolvePermissionPrompt(const ExtensionInstallPrompt* prompt,
@@ -138,8 +140,9 @@ bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
   // Some permissions need prompting, setup the prompt and show it.
   APIPermissionSet new_apis;
   for (const auto& permission : unprompted_permissions) {
-    prompted_permission_set_.insert(permission.id());
-    new_apis.insert(permission.id());
+    prompted_permission_set_.insert(
+        static_cast<mojom::APIPermissionID>(permission.id()));
+    new_apis.insert(static_cast<mojom::APIPermissionID>(permission.id()));
   }
   auto permission_set = std::make_unique<PermissionSet>(
       std::move(new_apis), ManifestPermissionSet(), URLPatternSet(),
@@ -149,7 +152,7 @@ bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
   auto permissions_prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(
       ExtensionInstallPrompt::PERMISSIONS_PROMPT);
   // activeTab has no permission message by default, so one is added here.
-  if (unprompted_permissions.ContainsID(APIPermission::kActiveTab)) {
+  if (unprompted_permissions.ContainsID(APIPermissionID::kActiveTab)) {
     PermissionMessages messages;
     messages.push_back(PermissionMessage(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_CURRENT_HOST),
@@ -174,7 +177,7 @@ bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
 
 bool PublicSessionPermissionHelper::PermissionAllowedImpl(
     const Extension* extension,
-    APIPermission::ID permission) {
+    APIPermissionID permission) {
   DCHECK(profiles::ArePublicSessionRestrictionsEnabled());
   return !PermissionCheckNeeded(extension) ||
          allowed_permission_set_.ContainsID(permission);
@@ -188,8 +191,9 @@ void PublicSessionPermissionHelper::ResolvePermissionPrompt(
       prompt_result == ExtensionInstallPrompt::Result::ACCEPTED ?
           allowed_permission_set_ : denied_permission_set_;
   for (const auto& permission : unprompted_permissions) {
-    prompted_permission_set_.erase(permission.id());
-    add_to_set.insert(permission.id());
+    prompted_permission_set_.erase(
+        static_cast<mojom::APIPermissionID>(permission.id()));
+    add_to_set.insert(static_cast<mojom::APIPermissionID>(permission.id()));
   }
 
   // Here a list of callbacks to be invoked is created first from callbacks_,
@@ -223,7 +227,8 @@ PermissionIDSet PublicSessionPermissionHelper::FilterAllowedPermissions(
   PermissionIDSet allowed_permissions;
   for (auto iter = permissions.begin(); iter != permissions.end(); iter++) {
     if (allowed_permission_set_.ContainsID(*iter)) {
-      allowed_permissions.insert(iter->id());
+      allowed_permissions.insert(
+          static_cast<mojom::APIPermissionID>(iter->id()));
     }
   }
   return allowed_permissions;
@@ -262,8 +267,7 @@ bool HandlePermissionRequest(const Extension& extension,
       std::move(factory));
 }
 
-bool PermissionAllowed(const Extension* extension,
-                       APIPermission::ID permission) {
+bool PermissionAllowed(const Extension* extension, APIPermissionID permission) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return g_helpers.Get()[extension->id()].PermissionAllowedImpl(extension,
                                                                 permission);

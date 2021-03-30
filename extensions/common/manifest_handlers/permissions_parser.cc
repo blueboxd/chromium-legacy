@@ -470,10 +470,11 @@ void PermissionsParser::Finalize(Extension* extension) {
 
 // static
 void PermissionsParser::AddAPIPermission(Extension* extension,
-                                         APIPermission::ID permission) {
+                                         mojom::APIPermissionID permission) {
   DCHECK(extension->permissions_parser());
   extension->permissions_parser()
-      ->initial_required_permissions_->api_permissions.insert(permission);
+      ->initial_required_permissions_->api_permissions.insert(
+          static_cast<mojom::APIPermissionID>(permission));
 }
 
 // static
@@ -487,11 +488,11 @@ void PermissionsParser::AddAPIPermission(Extension* extension,
 
 // static
 bool PermissionsParser::HasAPIPermission(const Extension* extension,
-                                         APIPermission::ID permission) {
+                                         mojom::APIPermissionID permission) {
   DCHECK(extension->permissions_parser());
   return extension->permissions_parser()
              ->initial_required_permissions_->api_permissions.count(
-                 permission) > 0;
+                 static_cast<APIPermission::ID>(permission)) > 0;
 }
 
 // static

@@ -2040,6 +2040,7 @@ static_library("browser") {
     "//components/encrypted_messages",
     "//components/enterprise",
     "//components/enterprise/common/proto:connectors_proto",
+    "//components/enterprise/common/proto:extensions_workflow_events_proto",
     "//components/error_page/common",
     "//components/error_page/content/browser",
     "//components/favicon/content",
@@ -2062,6 +2063,7 @@ static_library("browser") {
     "//components/history/core/browser",
     "//components/history/core/common",
     "//components/history/metrics",
+    "//components/history_clusters/core",
     "//components/infobars/content",
     "//components/infobars/core",
     "//components/invalidation/impl",
@@ -2075,7 +2077,6 @@ static_library("browser") {
     "//components/leveldb_proto",
     "//components/lookalikes/core",
     "//components/lookalikes/core:features",
-    "//components/memories/core",
     "//components/metrics:call_stack_profile_collector",
     "//components/metrics:call_stack_profile_params",
     "//components/metrics:component_metrics",
@@ -2406,6 +2407,8 @@ static_library("browser") {
       "//chromeos/dbus/attestation:attestation_proto",
       "//chromeos/dbus/cryptohome",
       "//chromeos/dbus/power",
+      "//chromeos/dbus/userdataauth:userdataauth",
+      "//chromeos/dbus/userdataauth:userdataauth_proto",
       "//chromeos/services/device_sync/public/cpp:prefs",
       "//chromeos/services/multidevice_setup/public/cpp",
       "//chromeos/services/multidevice_setup/public/cpp:prefs",
@@ -3475,6 +3478,8 @@ static_library("browser") {
       "device_api/managed_configuration_api.h",
       "device_api/managed_configuration_api_factory.cc",
       "device_api/managed_configuration_api_factory.h",
+      "device_api/managed_configuration_service.cc",
+      "device_api/managed_configuration_service.h",
       "device_api/managed_configuration_store.cc",
       "device_api/managed_configuration_store.h",
       "device_identity/device_identity_provider.cc",
@@ -5176,17 +5181,17 @@ static_library("browser") {
     }
 
     if (use_x11) {
-      sources += [
-        "fullscreen_aurax11.cc",
-        "media/webrtc/window_icon_util_x11.cc",
-      ]
+      sources += [ "media/webrtc/window_icon_util_x11.cc" ]
     }
 
     if (use_ozone) {
-      sources += [
-        "fullscreen_ozone.cc",
-        "media/webrtc/window_icon_util_ozone.cc",
-      ]
+      sources += [ "media/webrtc/window_icon_util_ozone.cc" ]
+    }
+
+    if (is_linux) {
+      sources += [ "fullscreen_linux.cc" ]
+    } else if (use_ozone) {
+      sources += [ "fullscreen_ozone.cc" ]
     }
 
     if (rtc_use_pipewire) {

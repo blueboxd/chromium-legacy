@@ -22,12 +22,12 @@
 #include "chrome/browser/ash/borealis/borealis_features.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -784,7 +784,8 @@ TEST_F(CrostiniAppTest, EnableAndDisableCrostini) {
   EXPECT_THAT(GetAllApps(), testing::IsEmpty());
 }
 
-TEST_F(CrostiniAppTest, AppInstallation) {
+// TODO(https://crbug.com/1194138) Disabled due to flakiness.
+TEST_F(CrostiniAppTest, DISABLED_AppInstallation) {
   // Terminal app.
   EXPECT_EQ(1u, GetModelItemCount());
 

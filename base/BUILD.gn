@@ -209,6 +209,7 @@ component("base") {
     "allocator/allocator_check.h",
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
+    "as_const.h",
     "at_exit.cc",
     "at_exit.h",
     "atomic_ref_count.h",
@@ -2846,6 +2847,7 @@ if (build_base_unittests) {
     sources = [
       "allocator/partition_allocator/arm_bti_test_functions.h",
       "allocator/tcmalloc_unittest.cc",
+      "as_const_unittest.cc",
       "at_exit_unittest.cc",
       "atomicops_unittest.cc",
       "auto_reset_unittest.cc",
@@ -3529,7 +3531,7 @@ if (build_base_unittests) {
         "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       ]
 
-      additional_manifests =
+      additional_manifest_fragments =
           [ "//build/config/fuchsia/test/test_logger_capabilities.test-cmx" ]
     }
 
@@ -3771,7 +3773,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/ApiCompatibilityUtils.java",
       "android/java/src/org/chromium/base/ApkAssets.java",
       "android/java/src/org/chromium/base/ApplicationStatus.java",
-      "android/java/src/org/chromium/base/BuildConfig.java",
       "android/java/src/org/chromium/base/BuildInfo.java",
       "android/java/src/org/chromium/base/BundleUtils.java",
       "android/java/src/org/chromium/base/ByteArrayGenerator.java",
@@ -4004,7 +4005,6 @@ if (is_android) {
     deps = [
       ":base_java",
       ":jni_java",
-      "//testing/android/reporter:reporter_java",
       "//third_party/android_sdk:android_support_chromium_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",

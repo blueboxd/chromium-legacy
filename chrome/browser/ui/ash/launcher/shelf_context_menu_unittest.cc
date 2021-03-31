@@ -21,12 +21,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/ash/arc/icon_decode_request.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -111,7 +111,8 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_->Init();
 
-    web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
+    ConfigureWebAppProvider();
+    web_app::TestWebAppProvider::Get(profile())->Start();
 
     crostini_helper_ = std::make_unique<CrostiniTestHelper>(profile());
     crostini_helper_->ReInitializeAppServiceIntegration();
@@ -225,6 +226,15 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   }
 
  private:
+  void ConfigureWebAppProvider() {
+    auto system_web_app_manager =
+        std::make_unique<web_app::TestSystemWebAppManager>(profile());
+
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+    provider->SetRunSubsystemStartupTasks(true);
+  }
+
   base::test::ScopedCommandLine scoped_command_line_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniTestHelper> crostini_helper_;
@@ -700,8 +710,8 @@ TEST_F(ShelfContextMenuTest, WebApp) {
   constexpr char kWebAppName[] = "WebApp1";
 
   app_service_test().FlushMojoCalls();
-  const web_app::AppId app_id = web_app::test::InstallDummyWebApp(
-      profile(), kWebAppName, GURL(kWebAppUrl));
+  const web_app::AppId app_id =
+      web_app::InstallDummyWebApp(profile(), kWebAppName, GURL(kWebAppUrl));
 
   controller()->PinAppWithID(app_id);
   const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));

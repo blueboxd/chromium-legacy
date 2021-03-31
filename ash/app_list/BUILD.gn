@@ -7,17 +7,47 @@ import("//testing/test.gni")
 
 assert(is_chromeos)
 
-component("app_list") {
+source_set("app_list") {
   sources = [
-    "app_list_export.h",
+    "app_list_color_provider_impl.cc",
+    "app_list_color_provider_impl.h",
+    "app_list_controller_impl.cc",
+    "app_list_controller_impl.h",
     "app_list_metrics.cc",
     "app_list_metrics.h",
     "app_list_presenter_delegate.h",
+    "app_list_presenter_delegate_impl.cc",
+    "app_list_presenter_delegate_impl.h",
     "app_list_presenter_impl.cc",
     "app_list_presenter_impl.h",
     "app_list_util.cc",
     "app_list_util.h",
     "app_list_view_delegate.h",
+    "home_launcher_animation_info.h",
+    "model/app_list_folder_item.cc",
+    "model/app_list_folder_item.h",
+    "model/app_list_item.cc",
+    "model/app_list_item.h",
+    "model/app_list_item_list.cc",
+    "model/app_list_item_list.h",
+    "model/app_list_item_list_observer.cc",
+    "model/app_list_item_list_observer.h",
+    "model/app_list_item_observer.cc",
+    "model/app_list_item_observer.h",
+    "model/app_list_model.cc",
+    "model/app_list_model.h",
+    "model/app_list_model_observer.cc",
+    "model/app_list_model_observer.h",
+    "model/folder_image.cc",
+    "model/folder_image.h",
+    "model/search/search_box_model.cc",
+    "model/search/search_box_model.h",
+    "model/search/search_box_model_observer.h",
+    "model/search/search_model.cc",
+    "model/search/search_model.h",
+    "model/search/search_result.cc",
+    "model/search/search_result.h",
+    "model/search/search_result_observer.h",
     "paged_view_structure.cc",
     "paged_view_structure.h",
     "views/app_list_drag_and_drop_host.h",
@@ -100,7 +130,8 @@ component("app_list") {
     "views/top_icon_animation_view.h",
   ]
 
-  defines = [ "APP_LIST_IMPLEMENTATION" ]
+  # Needed because this source_set implements part of the "ash" component.
+  defines = [ "ASH_IMPLEMENTATION" ]
 
   deps = [
     "//ash/app_list/resources",
@@ -122,7 +153,11 @@ component("app_list") {
     "//chromeos/services/assistant/public/cpp",
     "//chromeos/ui/vector_icons",
     "//components/keyed_service/core",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/services/app_service/public/cpp:app_update",
     "//components/sync",
+    "//extensions/common:common_constants",
     "//mojo/public/cpp/bindings",
     "//skia",
     "//third_party/icu",
@@ -134,6 +169,7 @@ component("app_list") {
     "//ui/compositor",
     "//ui/compositor_extra",
     "//ui/display",
+    "//ui/display/manager",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -147,8 +183,6 @@ component("app_list") {
 
   # TODO(hejq): Remove this once app_list is migrated. http://crbug.com/733662
   public_deps = [
-    "//ash/app_list/model:app_list_model",
-    "//ash/app_list/model:search_model",
     "//ash/public/cpp",
     "//base",
     "//mojo/public/cpp/bindings",
@@ -161,7 +195,7 @@ component("app_list") {
   ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [
@@ -190,11 +224,19 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "app_list_controller_impl_unittest.cc",
+    "app_list_metrics_unittest.cc",
+    "app_list_presenter_delegate_unittest.cc",
+    "app_list_presenter_impl_unittest.cc",
+    "app_list_unittest.cc",
     "folder_image_unittest.cc",
+    "model/app_list_item_list_unittest.cc",
+    "model/app_list_model_unittest.cc",
     "views/app_list_main_view_unittest.cc",
     "views/app_list_menu_model_adapter_unittest.cc",
     "views/app_list_view_unittest.cc",
     "views/apps_grid_view_unittest.cc",
+    "views/assistant/assistant_page_view_unittest.cc",
     "views/folder_header_view_unittest.cc",
     "views/privacy_container_view_unittest.cc",
     "views/result_selection_controller_unittest.cc",
@@ -209,8 +251,13 @@ source_set("unit_tests") {
   deps = [
     ":app_list",
     ":test_support",
+    "//ash:test_support",
+    "//ash/assistant/model",
+    "//ash/assistant/ui",
+    "//ash/assistant/ui:constants",
     "//ash/constants",
     "//ash/keyboard/ui",
+    "//ash/keyboard/ui:test_support",
     "//ash/public/cpp",
     "//ash/public/cpp:test_support",
     "//ash/public/cpp/app_list/vector_icons",
@@ -223,12 +270,16 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",
+    "//ui/aura:test_support",
     "//ui/base",
     "//ui/compositor",
+    "//ui/display:display_manager_test_api",
     "//ui/events:test_support",
     "//ui/gfx:test_support",
     "//ui/gl:test_support",
+    "//ui/message_center",
     "//ui/resources",
+    "//ui/touch_selection",
     "//ui/views",
     "//ui/views:test_support",
   ]
@@ -236,19 +287,5 @@ source_set("unit_tests") {
   data_deps = [
     "//third_party/mesa_headers",
     "//ui/resources:ui_test_pak_data",
-  ]
-}
-
-# TODO(https://crbug.com/942564): Remove this binary from the bots and then
-# delete it.
-test("app_list_unittests") {
-  use_xvfb = use_xvfb_in_this_config
-
-  sources = [ "test/run_all_unittests.cc" ]
-
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//testing/gtest",
   ]
 }

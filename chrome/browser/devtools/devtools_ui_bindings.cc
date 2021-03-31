@@ -1535,9 +1535,10 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
         new base::DictionaryValue());
     extension_info->SetString("startPage", url.spec());
     extension_info->SetString("name", extension->name());
-    extension_info->SetBoolean("exposeExperimentalAPIs",
-                               extension->permissions_data()->HasAPIPermission(
-                                   extensions::APIPermission::kExperimental));
+    extension_info->SetBoolean(
+        "exposeExperimentalAPIs",
+        extension->permissions_data()->HasAPIPermission(
+            extensions::mojom::APIPermissionID::kExperimental));
     results.Append(std::move(extension_info));
   }
 
@@ -1568,11 +1569,12 @@ void DevToolsUIBindings::ShowSurvey(DispatchCallback callback,
     ShowSurveyCallback(std::move(callback), false);
     return;
   }
-  base::RepeatingCallback<void(const base::Value*)> on_survey =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   hats_service->LaunchSurvey(
-      trigger, base::BindOnce(ShowSurveyCallback, on_survey, true),
-      base::BindOnce(ShowSurveyCallback, on_survey, false));
+      trigger,
+      base::BindOnce(ShowSurveyCallback, std::move(split_callback.first), true),
+      base::BindOnce(ShowSurveyCallback, std::move(split_callback.second),
+                     false));
 }
 
 void DevToolsUIBindings::CanShowSurvey(DispatchCallback callback,

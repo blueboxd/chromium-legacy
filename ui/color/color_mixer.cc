@@ -11,8 +11,10 @@
 
 namespace ui {
 
-ColorMixer::ColorMixer(const ColorMixer* previous_mixer)
-    : previous_mixer_(previous_mixer) {}
+ColorMixer::ColorMixer(const ColorMixer* previous_mixer,
+                       MixerGetter input_mixer_getter)
+    : previous_mixer_(previous_mixer),
+      input_mixer_getter_(std::move(input_mixer_getter)) {}
 
 ColorMixer::ColorMixer(ColorMixer&&) noexcept = default;
 
@@ -37,7 +39,8 @@ SkColor ColorMixer::GetInputColor(ColorId id) const {
     const auto i = set.colors.find(id);
     if (i != set.colors.end()) {
       DVLOG(2) << "GetInputColor: ColorId " << ColorIdName(id)
-               << " found within ColorSet " << ColorSetIdName(set.id) << ".";
+               << " found within ColorSet " << ColorSetIdName(set.id)
+               << " Result Color: " << SkColorName(i->second) << ".";
       return i->second;
     }
   }
@@ -63,7 +66,8 @@ SkColor ColorMixer::GetOriginalColorFromSet(ColorId id,
     const auto j = i->colors.find(id);
     if (j != i->colors.end()) {
       DVLOG(2) << "GetOriginalColorFromSet: ColorId " << ColorIdName(id)
-               << " found within ColorSet " << ColorSetIdName(i->id) << ".";
+               << " found within ColorSet " << ColorSetIdName(i->id)
+               << " Result Color: " << SkColorName(j->second) << ".";
       return j->second;
     }
   }
@@ -84,7 +88,11 @@ SkColor ColorMixer::GetResultColor(ColorId id) const {
   DCHECK_COLOR_ID_VALID(id);
   const SkColor color = GetInputColor(id);
   const auto i = recipes_.find(id);
-  return (i == recipes_.end()) ? color : i->second.GenerateResult(color, *this);
+  const ColorMixer* const mixer =
+      input_mixer_getter_ ? input_mixer_getter_.Run() : nullptr;
+  return (i == recipes_.end())
+             ? color
+             : i->second.GenerateResult(color, *(mixer ? mixer : this));
 }
 
 ColorMixer::ColorSets::const_iterator ColorMixer::FindSetWithId(

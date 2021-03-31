@@ -122,6 +122,8 @@ static_library("test_support") {
     "../public/test/browser_test_utils.h",
     "../public/test/browsing_data_remover_test_util.cc",
     "../public/test/browsing_data_remover_test_util.h",
+    "../public/test/commit_message_delayer.cc",
+    "../public/test/commit_message_delayer.h",
     "../public/test/content_mock_cert_verifier.cc",
     "../public/test/content_mock_cert_verifier.h",
     "../public/test/content_test_suite_base.cc",
@@ -1762,6 +1764,7 @@ test("content_unittests") {
   defines = []
   sources = [
     "../browser/accessibility/browser_accessibility_manager_unittest.cc",
+    "../browser/accessibility/browser_accessibility_state_impl_unittest.cc",
     "../browser/accessibility/browser_accessibility_unittest.cc",
     "../browser/accessibility/one_shot_accessibility_tree_search_unittest.cc",
     "../browser/accessibility/touch_passthrough_manager_unittest.cc",

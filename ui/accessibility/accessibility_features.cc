@@ -77,6 +77,13 @@ bool IsAccessibilityFocusHighlightEnabled() {
   return base::FeatureList::IsEnabled(::features::kAccessibilityFocusHighlight);
 }
 
+const base::Feature kAutoDisableAccessibility{
+    "AutoDisableAccessibility", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAutoDisableAccessibilityEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAutoDisableAccessibility);
+}
+
 #if defined(OS_WIN)
 const base::Feature kIChromeAccessible{"IChromeAccessible",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -109,6 +116,14 @@ const base::Feature kMagnifierContinuousMouseFollowingModeSetting{
 bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kMagnifierContinuousMouseFollowingModeSetting);
+}
+
+const base::Feature kEnableSwitchAccessPointScanning{
+    "EnableSwitchAccessPointScanning", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsSwitchAccessPointScanningEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kEnableSwitchAccessPointScanning);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

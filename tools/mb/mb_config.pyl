@@ -123,7 +123,7 @@
       'android-nougat-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
       # running on CQ.
-      'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_google_expectations_native_coverage',
+      'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_google_expectations',
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
       'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
@@ -326,7 +326,7 @@
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-size': 'fuchsia_official_arm64_size',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
-      'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
+      'fuchsia-fyi-x64-rel': 'release_bot_fuchsia_official',
       'ios13-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios13-sdk-device': 'ios_device_release_static_bot_xctest',
       'ios13-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
@@ -472,7 +472,6 @@
       'GPU FYI Perf Android 64 Builder': 'gpu_fyi_tests_android_vulkan_ndk_release_trybot_dcheck_off_arm64',
       'GPU FYI Win Builder': 'gpu_fyi_tests_release_trybot_x86',
       'GPU FYI Win Builder (dbg)': 'gpu_fyi_tests_debug_trybot_x86',
-      'GPU FYI Win dEQP Builder': 'angle_deqp_release_trybot_x86',
       'GPU FYI Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Win x64 DX12 Vulkan Builder': 'gpu_fyi_tests_dx12vk_release_trybot',
@@ -859,8 +858,6 @@
       'linux_angle_deqp_rel_ng': 'angle_deqp_release_trybot',
       'mac-angle-chromium-try': 'gpu_tests_release_trybot_deterministic_mac',
       'mac-angle-try': 'angle_specific_release_trybot',
-      'win-angle-rel-32': 'gpu_fyi_tests_release_trybot_x86',
-      'win-angle-deqp-rel-32': 'angle_deqp_release_trybot_x86',
       'win-angle-chromium-x64-try': 'gpu_tests_release_trybot',
       'win-angle-chromium-x86-try': 'gpu_tests_release_trybot_x86',
       'win-angle-x64-try': 'angle_specific_release_trybot',
@@ -999,6 +996,7 @@
       'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
+      'linux-rel-reclient': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient',
       'linux-rel-rts': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-trusty-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-viz-rel': 'release_trybot',
@@ -1124,7 +1122,6 @@
 
     'tryserver.chromium.win': {
       'gpu-fyi-try-win7-amd-dbg-32': 'gpu_fyi_tests_debug_trybot_x86',
-      'gpu-fyi-try-win7-amd-dqp-32': 'angle_deqp_release_trybot_x86',
       'gpu-fyi-try-win7-amd-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
@@ -1431,10 +1428,9 @@
 
     # TODO(crbug/1182468) Remove these android coverage expectations after
     # existing CQ bot is running them.
-    'android_release_bot_arm64_webview_google_expectations_native_coverage': [
+    'android_release_bot_arm64_webview_google_expectations': [
       'android', 'release_bot', 'arm64', 'strip_debug_info',
       'webview_google', 'fail_on_android_expectations',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     # TODO(crbug/1182468) Remove these android coverage expectations after
@@ -2226,6 +2222,11 @@
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
+    'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient': [
+      'gpu_tests', 'release_trybot_reclient', 'no_symbols', 'use_dummy_lastchange',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation',
+    ],
+
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_invert_fieldtrials': [
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
       'invert_fieldtrials',
@@ -2336,7 +2337,7 @@
     ],
 
     'libfuzzer_asan_release_trybot': [
-      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer', 'skip_generate_fuzzer_owners',
     ],
 
     'libfuzzer_asan_clang_tot_release': [
@@ -2367,7 +2368,7 @@
     ],
 
     'libfuzzer_windows_asan_release_trybot': [
-      'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer', 'skip_generate_fuzzer_owners',
     ],
 
     'linux_cfm_release_bot': [
@@ -2588,6 +2589,10 @@
 
     'release_bot_fuchsia_arm64_cast': [
       'release_bot', 'fuchsia', 'arm64', 'cast', 'no_symbols',
+    ],
+
+    'release_bot_fuchsia_official': [
+      'release_bot', 'fuchsia', 'official_optimize',
     ],
 
     'release_bot_mac_strip_minimal_symbols': [
@@ -3403,6 +3408,10 @@
       'mixins': ['release_trybot', 'dcheck_off',],
     },
 
+    'release_trybot_reclient': {
+      'mixins': ['release_bot_reclient', 'minimal_symbols', 'dcheck_always_on'],
+    },
+
     'resource_allowlisting': {
       'gn_args': 'enable_resource_allowlist_generation=true',
     },
@@ -3429,6 +3438,10 @@
 
     'sk_dawn': {
       'gn_args': 'skia_use_dawn=true enable_skia_dawn_gtests=true',
+    },
+
+    'skip_generate_fuzzer_owners': {
+      'gn_args': 'generate_fuzzer_owners=false',
     },
 
     'stable_channel': {

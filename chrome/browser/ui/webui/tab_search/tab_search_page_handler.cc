@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/util/image_util.h"
+#include "chrome/common/webui_url_constants.h"
 #include "ui/base/l10n/time_format.h"
 
 namespace {
@@ -199,6 +201,8 @@ tab_search::mojom::ProfileDataPtr TabSearchPageHandler::CreateProfileData() {
   Browser* active_browser = chrome::FindLastActive();
   if (!active_browser)
     return profile_data;
+
+  std::set<std::string> tab_urls;
   for (auto* browser : *BrowserList::GetInstance()) {
     if (!ShouldTrackBrowser(browser))
       continue;
@@ -207,26 +211,30 @@ tab_search::mojom::ProfileDataPtr TabSearchPageHandler::CreateProfileData() {
     window->active = (browser == active_browser);
     window->height = browser->window()->GetContentsSize().height();
     for (int i = 0; i < tab_strip_model->count(); ++i) {
-      window->tabs.push_back(
-          GetTab(tab_strip_model, tab_strip_model->GetWebContentsAt(i), i));
+      tab_search::mojom::TabPtr tab =
+          GetTab(tab_strip_model, tab_strip_model->GetWebContentsAt(i), i);
+      tab_urls.insert(tab->url);
+      window->tabs.push_back(std::move(tab));
     }
     profile_data->windows.push_back(std::move(window));
   }
 
-  CreateRecentlyClosedTabs(profile_data->recently_closed_tabs);
+  CreateRecentlyClosedTabs(profile_data->recently_closed_tabs, tab_urls);
   DCHECK(profile_data->recently_closed_tabs.size() <=
          kMaxRecentlyClosedTabCount);
   return profile_data;
 }
 
 void TabSearchPageHandler::CreateRecentlyClosedTabs(
-    std::vector<tab_search::mojom::RecentlyClosedTabPtr>&
-        recently_closed_tabs) {
+    std::vector<tab_search::mojom::RecentlyClosedTabPtr>& recently_closed_tabs,
+    std::set<std::string>& tab_urls) {
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
   // TabRestoreService is only available for non off the record profiles.
   if (tab_restore_service) {
-    // Flatten tab restore service entries into tabs
+    GURL new_tab_page_url = GURL(chrome::kChromeUINewTabPageURL);
+    // Flatten tab restore service entries into tabs. Ignore any entries that
+    // match URLs that are currently open.
     for (auto& entry : tab_restore_service->entries()) {
       if (entry->type == sessions::TabRestoreService::Type::WINDOW) {
         sessions::TabRestoreService::Window* window =
@@ -234,7 +242,16 @@ void TabSearchPageHandler::CreateRecentlyClosedTabs(
         for (auto& tab : window->tabs) {
           if (tab->navigations.size() == 0)
             continue;
-          recently_closed_tabs.push_back(GetRecentlyClosedTab(tab.get()));
+          tab_search::mojom::RecentlyClosedTabPtr recently_closed_tab =
+              GetRecentlyClosedTab(tab.get());
+          // New tab page entries may exist inside a window and should be
+          // ignored.
+          if (recently_closed_tab->url == new_tab_page_url)
+            continue;
+          if (tab_urls.count(recently_closed_tab->url))
+            continue;
+          tab_urls.insert(recently_closed_tab->url);
+          recently_closed_tabs.push_back(std::move(recently_closed_tab));
           if (recently_closed_tabs.size() >= kMaxRecentlyClosedTabCount)
             return;
         }
@@ -243,7 +260,12 @@ void TabSearchPageHandler::CreateRecentlyClosedTabs(
             static_cast<sessions::TabRestoreService::Tab*>(entry.get());
         if (tab->navigations.size() == 0)
           continue;
-        recently_closed_tabs.push_back(GetRecentlyClosedTab(tab));
+        tab_search::mojom::RecentlyClosedTabPtr recently_closed_tab =
+            GetRecentlyClosedTab(tab);
+        if (tab_urls.count(recently_closed_tab->url))
+          continue;
+        tab_urls.insert(recently_closed_tab->url);
+        recently_closed_tabs.push_back(std::move(recently_closed_tab));
         if (recently_closed_tabs.size() >= kMaxRecentlyClosedTabCount)
           return;
       }

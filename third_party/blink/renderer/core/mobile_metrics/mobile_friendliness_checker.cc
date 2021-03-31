@@ -345,8 +345,12 @@ void MobileFriendlinessChecker::NotifyViewportUpdated(
     const ViewportDescription& viewport) {
   switch (viewport.type) {
     case ViewportDescription::Type::kUserAgentStyleSheet:
-      mobile_friendliness_.viewport_device_width = ViewportStatus::kNo;
-      mobile_friendliness_.allow_user_zoom = ViewportStatus::kYes;
+      if (mobile_friendliness_.viewport_device_width ==
+          ViewportStatus::kUnknown)
+        mobile_friendliness_.viewport_device_width = ViewportStatus::kNo;
+
+      if (mobile_friendliness_.allow_user_zoom == ViewportStatus::kUnknown)
+        mobile_friendliness_.allow_user_zoom = ViewportStatus::kYes;
       break;
     case ViewportDescription::Type::kViewportMeta:
       mobile_friendliness_.viewport_device_width =
@@ -409,6 +413,19 @@ void MobileFriendlinessChecker::ComputeSmallTextRatio(
   }
 }
 
+constexpr int kMaxAncestorCount = 5;
+bool CheckParentHasOverflowXHidden(const LayoutObject* obj) {
+  int ancestor_count = kMaxAncestorCount;
+  while (obj && ancestor_count > 0) {
+    const ComputedStyle* style = obj->Style();
+    if (style->OverflowX() == EOverflow::kHidden)
+      return true;
+    obj = obj->Parent();
+    --ancestor_count;
+  }
+  return false;
+}
+
 void MobileFriendlinessChecker::ComputeTextContentOutsideViewport(
     const LayoutObject& object) {
   int frame_width = frame_view_->GetPage()->GetVisualViewport().Size().Width();
@@ -424,12 +441,14 @@ void MobileFriendlinessChecker::ComputeTextContentOutsideViewport(
   if (const auto* text = DynamicTo<LayoutText>(object)) {
     const ComputedStyle* style = text->Style();
     if (style->Visibility() != EVisibility::kVisible ||
-        style->ContentVisibility() != EContentVisibility::kVisible)
+        style->ContentVisibility() != EContentVisibility::kVisible ||
+        CheckParentHasOverflowXHidden(&object))
       return;
     total_text_width = text->PhysicalRightOffset().ToInt();
   } else if (const auto* image = DynamicTo<LayoutImage>(object)) {
     const ComputedStyle* style = image->Style();
-    if (style->Visibility() != EVisibility::kVisible)
+    if (style->Visibility() != EVisibility::kVisible ||
+        CheckParentHasOverflowXHidden(&object))
       return;
     PhysicalRect rect = image->ReplacedContentRect();
     total_text_width = (rect.offset.left + rect.size.width).ToInt();

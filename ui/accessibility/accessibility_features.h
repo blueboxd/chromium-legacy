@@ -61,6 +61,13 @@ AX_BASE_EXPORT extern const base::Feature kAccessibilityFocusHighlight;
 // briefly whenever focus changes.
 AX_BASE_EXPORT bool IsAccessibilityFocusHighlightEnabled();
 
+AX_BASE_EXPORT extern const base::Feature kAutoDisableAccessibility;
+
+// Returns true if accessibility will be auto-disabled after a certain
+// number of user input events spanning a minimum amount of time with no
+// accessibility API usage in that time.
+AX_BASE_EXPORT bool IsAutoDisableAccessibilityEnabled();
+
 #if defined(OS_WIN)
 // Enables an experimental Chrome-specific accessibility COM API
 AX_BASE_EXPORT extern const base::Feature kIChromeAccessible;
@@ -93,6 +100,13 @@ AX_BASE_EXPORT extern const base::Feature
 // Returns true if the feature to allow choosing the new continuous mouse
 // following mode in Magnifier settings is enabled.
 AX_BASE_EXPORT bool IsMagnifierContinuousMouseFollowingModeSettingEnabled();
+
+// Enables ability to choose point scanning mode in switch access.
+AX_BASE_EXPORT extern const base::Feature kEnableSwitchAccessPointScanning;
+
+// Returns true if the feature to allow point scanning in switch access is
+// enabled.
+AX_BASE_EXPORT bool IsSwitchAccessPointScanningEnabled();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,

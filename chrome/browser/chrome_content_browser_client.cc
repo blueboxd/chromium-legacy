@@ -59,6 +59,7 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/device_api/device_service_impl.h"
+#include "chrome/browser/device_api/managed_configuration_service.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
@@ -1070,8 +1071,7 @@ bool URLHasExtensionPermission(extensions::ProcessMap* process_map,
   const Extension* extension =
       registry->enabled_extensions().GetExtensionOrAppByURL(url);
   return extension &&
-         extension->permissions_data()->HasAPIPermission(
-             static_cast<APIPermission::ID>(permission)) &&
+         extension->permissions_data()->HasAPIPermission(permission) &&
          process_map->Contains(extension->id(), render_process_id);
 }
 
@@ -5161,6 +5161,14 @@ void ChromeContentBrowserClient::CreateDeviceInfoService(
   DeviceServiceImpl::Create(render_frame_host, std::move(receiver));
 }
 
+void ChromeContentBrowserClient::CreateManagedConfigurationService(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::ManagedConfigurationService> receiver) {
+  DCHECK(render_frame_host);
+  ManagedConfigurationServiceImpl::Create(render_frame_host,
+                                          std::move(receiver));
+}
+
 content::SerialDelegate* ChromeContentBrowserClient::GetSerialDelegate() {
   if (!serial_delegate_)
     serial_delegate_ = std::make_unique<ChromeSerialDelegate>();
@@ -5490,8 +5498,6 @@ ChromeContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
 bool ChromeContentBrowserClient::ShouldSandboxAudioService() {
   return IsAudioServiceSandboxEnabled();
 }
-
-
 
 void ChromeContentBrowserClient::LogWebFeatureForCurrentPage(
     content::RenderFrameHost* render_frame_host,

@@ -1574,7 +1574,6 @@
     'machines': {
       'Linux ChromiumOS Full': {
         'additional_compile_targets': [
-          'app_list_unittests',
           'base_unittests',
           'browser_tests',
           'chromeos_unittests',
@@ -2653,15 +2652,6 @@
         'test_suites': {
           'scripts': 'chromium_mac_scripts',
         }
-      },
-      'Mac11.0 Tests': {
-        'mixins': [
-            'mac_11',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-        },
       },
       'Site Isolation Android': {
         'additional_compile_targets': [
@@ -4172,7 +4162,6 @@
       'GPU FYI Mac Builder (dbg)' : {},
       'GPU FYI Win Builder' : {},
       'GPU FYI Win Builder (dbg)' : {},
-      'GPU FYI Win dEQP Builder': {},
       'GPU FYI Win x64 Builder' : {},
       'GPU FYI Win x64 Builder (dbg)' : {},
       'GPU FYI Win x64 DX12 Vulkan Builder': {},
@@ -4778,22 +4767,6 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
-      # This tryserver doesn't actually exist; it's a separate
-      # configuration from the Win AMD bot on this waterfall because we
-      # don't have enough tryserver capacity to run all the tests from
-      # that bot on win-angle-rel-32.
-      'Win7 ANGLE Tryserver (AMD)': {
-        'os_type': 'win',
-        'browser_config': 'release',
-        'mixins': [
-          'limited_capacity_bot',
-          'win7_amd_r7_240',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_win_angle_amd_gtests',
-          'gpu_telemetry_tests': 'gpu_win_angle_amd_telemetry_tests',
-        },
-      },
       'Win7 FYI Debug (AMD)': {
         'os_type': 'win',
         'browser_config': 'debug',
@@ -4828,16 +4801,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win7_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
-        },
-      },
-      'Win7 FYI dEQP Release (AMD)': {
-        'os_type': 'win',
-        'mixins': [
-          'limited_capacity_bot',
-          'win7_amd_r7_240',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_win_amd_gtests',
         },
       },
       'Win7 FYI x64 Release (NVIDIA)': {
@@ -4896,7 +4859,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+          'isolated_scripts': 'fuchsia_arm64_isolated_scripts',
         },
         'mixins': [
           'arm64',
@@ -5188,7 +5151,7 @@
             'mac_11',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
+          'gtest_tests': 'chromium_mac_gtests_no_nacl',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },

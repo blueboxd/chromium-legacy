@@ -4,6 +4,8 @@ Tests property access on a cached DOMWindow after the associated frame is no lon
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 PASS childWindow.appHistory.onnavigate is null
+PASS childWindow.appHistory.onnavigateerror is null
+PASS childWindow.appHistory.onnavigatesuccess is null
 PASS childWindow.closed is true
 PASS childWindow.crossOriginIsolated is false
 PASS childWindow.defaultStatus is ''
@@ -170,10 +172,6 @@ PASS childWindow.pageXOffset is 0
 PASS childWindow.pageYOffset is 0
 PASS childWindow.performance.onresourcetimingbufferfull is null
 PASS childWindow.personalbar.visible is false
-PASS childWindow.scheduler.currentTaskSignal.aborted is false
-PASS childWindow.scheduler.currentTaskSignal.onabort is null
-PASS childWindow.scheduler.currentTaskSignal.onprioritychange is null
-PASS childWindow.scheduler.currentTaskSignal.priority is 'user-visible'
 PASS childWindow.screen.availHeight is 0
 PASS childWindow.screen.availLeft is 0
 PASS childWindow.screen.availTop is 0

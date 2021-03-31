@@ -4,4 +4,5 @@ include_rules = [
   # TODO(b/166325009): remove this rule.
   "+third_party/abseil-cpp/absl/base",
   "+third_party/abseil-cpp/absl/container",
+  "+third_party/abseil-cpp/absl/strings",
 ]

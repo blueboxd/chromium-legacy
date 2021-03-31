@@ -690,16 +690,6 @@ try_.chromium_angle_builder(
 )
 
 try_.chromium_angle_builder(
-    name = "win-angle-deqp-rel-32",
-    os = os.WINDOWS_ANY,
-)
-
-try_.chromium_angle_builder(
-    name = "win-angle-rel-32",
-    os = os.WINDOWS_ANY,
-)
-
-try_.chromium_angle_builder(
     name = "win-angle-x64-try",
     os = os.WINDOWS_ANY,
     executable = "recipe:angle_chromium_trybot",
@@ -1178,6 +1168,19 @@ try_.chromium_linux_builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
+    use_clang_coverage = True,
+)
+
+try_.chromium_linux_builder(
+    name = "linux-rel-reclient",
+    branch_selector = branches.STANDARD_MILESTONE,
+    builderless = not settings.is_main,
+    goma_jobs = goma.jobs.J150,
+    main_list_view = "try",
+    reclient_instance = "rbe-chromium-gvisor-shadow",
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
     use_clang_coverage = True,
 )
 

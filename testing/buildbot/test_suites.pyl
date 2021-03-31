@@ -1744,7 +1744,7 @@
         },
         'args': [
           '--sizes-path',
-          'fuchsia/release/size_tests/fyi_sizes.json',
+          'fuchsia/release/size_tests/fyi_sizes_smoketest.json',
         ],
       },
     },
@@ -4278,7 +4278,6 @@
 
     'linux_chromeos_specific_gtests': {
       # Chrome OS only.
-      'app_list_unittests': {},
       'ash_unittests': {},
       'aura_unittests': {},
       'chromeos_components_unittests': {},
@@ -4323,6 +4322,7 @@
       },
       'chromeos_unittests': {},
       'components_unittests': {},
+      'extensions_browsertests': {},
       'interactive_ui_tests': {
         'swarming': {
           'shards': 3,
@@ -6063,11 +6063,6 @@
       'gpu_angle_deqp_khr_gles3_vulkan_gtests',
     ],
 
-    'gpu_angle_deqp_win_amd_gtests': [
-      'gpu_angle_deqp_gles2_d3d11_gtests',
-      'gpu_angle_deqp_gles2_vulkan_gtests',
-    ],
-
     'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts': [
       'gpu_angle_perf_smoke_isolated_scripts',
       'gpu_command_buffer_perf_passthrough_isolated_scripts',
@@ -6659,12 +6654,6 @@
       'gpu_validating_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
-    ],
-
-    'gpu_win_angle_amd_gtests': [
-      'gpu_angle_end2end_with_retry_gtests',
-      'gpu_angle_unit_gtests',
-      'gpu_angle_white_box_gtests',
     ],
 
     'gpu_win_angle_amd_telemetry_tests': [

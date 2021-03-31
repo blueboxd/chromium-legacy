@@ -90,10 +90,10 @@
 #include "components/flags_ui/flags_ui_metrics.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/heavy_ad_intervention/heavy_ad_features.h"
+#include "components/history_clusters/core/memories_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/lookalikes/core/features.h"
-#include "components/memories/core/memories_features.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -1756,6 +1756,9 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceAlerts[] = {
     {"enable_price_tracking", "true"}};
 
+const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
+    {{"enable_tab_group_auto_creation", "false"}};
+
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
     {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
      base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
@@ -1767,6 +1770,8 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
     {"Price alerts", kTabGridLayoutAndroid_PriceAlerts,
      base::size(kTabGridLayoutAndroid_PriceAlerts), nullptr},
+    {"Without auto group", kTabGridLayoutAndroid_TabGroupAutoCreation,
+     base::size(kTabGridLayoutAndroid_TabGroupAutoCreation), nullptr},
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
@@ -2064,6 +2069,12 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 
 // Request Desktop Site on Tablet by default variations.
+const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets100[] = {
+    {"screen_width_dp", "100"},
+    {"enabled", "true"}};
+const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets600[] = {
+    {"screen_width_dp", "600"},
+    {"enabled", "true"}};
 const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets768[] = {
     {"screen_width_dp", "768"},
     {"enabled", "true"}};
@@ -2080,7 +2091,11 @@ const FeatureEntry::FeatureParam kRequestDesktopSiteForTablets1920[] = {
     {"screen_width_dp", "1920"},
     {"enabled", "true"}};
 const FeatureEntry::FeatureVariation kRequestDesktopSiteForTabletsVariations[] =
-    {{"for 768dp+ screens", kRequestDesktopSiteForTablets768,
+    {{"for 100dp+ screens", kRequestDesktopSiteForTablets100,
+      base::size(kRequestDesktopSiteForTablets100), nullptr},
+     {"for 600dp+ screens", kRequestDesktopSiteForTablets600,
+      base::size(kRequestDesktopSiteForTablets600), nullptr},
+     {"for 768dp+ screens", kRequestDesktopSiteForTablets768,
       base::size(kRequestDesktopSiteForTablets768), nullptr},
      {"for 960dp+ screens", kRequestDesktopSiteForTablets960,
       base::size(kRequestDesktopSiteForTablets960), nullptr},
@@ -4011,7 +4026,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-switch-access-point-scanning",
      flag_descriptions::kSwitchAccessPointScanningName,
      flag_descriptions::kSwitchAccessPointScanningDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(::switches::kEnableSwitchAccessPointScanning)},
+     FEATURE_VALUE_TYPE(features::kEnableSwitchAccessPointScanning)},
     {"enable-experimental-accessibility-switch-access-setup-guide",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessSetupGuideName,
      flag_descriptions::
@@ -4645,6 +4660,11 @@ const FeatureEntry kFeatureEntries[] = {
     {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
      flag_descriptions::kReadLaterDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(reading_list::switches::kReadLater)},
+
+    {"read-later-new-badge-promo",
+     flag_descriptions::kReadLaterNewBadgePromoName,
+     flag_descriptions::kReadLaterNewBadgePromoDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kReadLaterNewBadgePromo)},
 
 #ifdef OS_ANDROID
     {"read-later-reminder-notification",

@@ -111,12 +111,15 @@ void StorageQueue::Create(
     scoped_refptr<StorageQueue> storage_queue_;
   };
 
+  auto sequenced_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
+
   // Create StorageQueue object.
   // Cannot use base::MakeRefCounted<StorageQueue>, because constructor is
   // private.
-  scoped_refptr<StorageQueue> storage_queue =
-      base::WrapRefCounted(new StorageQueue(
-          options, std::move(async_start_upload_cb), encryption_module));
+  scoped_refptr<StorageQueue> storage_queue = base::WrapRefCounted(
+      new StorageQueue(std::move(sequenced_task_runner), options,
+                       std::move(async_start_upload_cb), encryption_module));
 
   // Asynchronously run initialization.
   Start<StorageQueueInitContext>(std::move(storage_queue),
@@ -124,24 +127,24 @@ void StorageQueue::Create(
 }
 
 StorageQueue::StorageQueue(
+    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
     const QueueOptions& options,
     AsyncStartUploaderCb async_start_upload_cb,
     scoped_refptr<EncryptionModuleInterface> encryption_module)
-    : options_(options),
+    : base::RefCountedDeleteOnSequence<StorageQueue>(sequenced_task_runner),
+      options_(options),
       async_start_upload_cb_(async_start_upload_cb),
       encryption_module_(encryption_module),
-      sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::TaskPriority::BEST_EFFORT, base::MayBlock()})) {
+      sequenced_task_runner_(std::move(sequenced_task_runner)) {
   DETACH_FROM_SEQUENCE(storage_queue_sequence_checker_);
   DCHECK(write_contexts_queue_.empty());
 }
 
 StorageQueue::~StorageQueue() {
-  // TODO(b/153364303): Should be
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
 
   // Stop upload timer.
-  upload_timer_.AbandonAndStop();
+  upload_timer_.Stop();
   // Make sure no pending writes is present.
   DCHECK(write_contexts_queue_.empty());
 
@@ -212,24 +215,10 @@ Status StorageQueue::Init() {
   return Status::StatusOK();
 }
 
-void StorageQueue::UpdateRecordDigest(WrappedRecord* wrapped_record) {
+base::Optional<std::string> StorageQueue::GetLastRecordDigest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
   // Attach last record digest, if present.
-  if (last_record_digest_.has_value()) {
-    *wrapped_record->mutable_last_record_digest() = last_record_digest_.value();
-  }
-
-  // Calculate new record digest.
-  {
-    std::string serialized_record;
-    wrapped_record->record().SerializeToString(&serialized_record);
-    *wrapped_record->mutable_record_digest() =
-        crypto::SHA256HashString(serialized_record);
-    DCHECK_EQ(wrapped_record->record_digest().size(), crypto::kSHA256Length);
-  }
-
-  // Store it in the record (for self-verification by the server).
-  last_record_digest_ = wrapped_record->record_digest();
+  return last_record_digest_;
 }
 
 StatusOr<int64_t> StorageQueue::AddDataFile(
@@ -431,6 +420,7 @@ StorageQueue::OpenNewWriteableFile() {
 
 Status StorageQueue::WriteHeaderAndBlock(
     base::StringPiece data,
+    base::StringPiece current_record_digest,
     scoped_refptr<StorageQueue::SingleFile> file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
   // Prepare header.
@@ -441,6 +431,8 @@ Status StorageQueue::WriteHeaderAndBlock(
   header.record_sequencing_id = next_sequencing_id_++;
   header.record_hash = base::PersistentHash(data.data(), data.size());
   header.record_size = data.size();
+  // Store last record digest.
+  last_record_digest_.emplace(current_record_digest);
   // Write to the last file, update sequencing id.
   auto open_status = file->Open(/*read_only=*/false);
   if (!open_status.ok()) {
@@ -485,7 +477,7 @@ Status StorageQueue::WriteHeaderAndBlock(
   return Status::StatusOK();
 }
 
-Status StorageQueue::WriteMetadata() {
+Status StorageQueue::WriteMetadata(base::StringPiece current_record_digest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
   // Synchronously write the metafile.
   ASSIGN_OR_RETURN(
@@ -497,9 +489,8 @@ Status StorageQueue::WriteMetadata() {
           /*size=*/0));
   RETURN_IF_ERROR(meta_file->Open(/*read_only=*/false));
   // Account for the metadata file size.
-  DCHECK(last_record_digest_.has_value());  // Must be set by now.
   if (!GetDiskResource()->Reserve(sizeof(generation_id_) +
-                                  last_record_digest_.value().size())) {
+                                  current_record_digest.size())) {
     return Status(
         error::RESOURCE_EXHAUSTED,
         base::StrCat({"Not enough disk space available to write into file=",
@@ -515,14 +506,14 @@ Status StorageQueue::WriteMetadata() {
                       " status=", append_result.status().ToString()}));
   }
   // Write last record digest.
-  append_result = meta_file->Append(last_record_digest_.value());
+  append_result = meta_file->Append(current_record_digest);
   if (!append_result.ok()) {
     return Status(
         error::RESOURCE_EXHAUSTED,
         base::StrCat({"Cannot write metafile=", meta_file->name(),
                       " status=", append_result.status().ToString()}));
   }
-  if (append_result.ValueOrDie() != last_record_digest_.value().size()) {
+  if (append_result.ValueOrDie() != current_record_digest.size()) {
     return Status(error::DATA_LOSS, base::StrCat({"Failure writing metafile=",
                                                   meta_file->name()}));
   }
@@ -603,7 +594,7 @@ Status StorageQueue::RestoreMetadata(
   }
   // Everything read successfully, set the queue up.
   generation_id_ = generation_id;
-  last_record_digest_ = std::string(read_result.ValueOrDie());
+  last_record_digest_.emplace(read_result.ValueOrDie());
   meta_file_ = std::move(meta_file);
   // Store used metadata file.
   used_files_set->emplace(meta_file_path);
@@ -738,6 +729,13 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
                    storage_queue->first_sequencing_id_));
     } else {
       sequencing_info_.set_sequencing_id(storage_queue->first_sequencing_id_);
+    }
+
+    // If there are no files in the queue, do nothing and return success right
+    // away. This can happen in case of key delivery request.
+    if (storage_queue->files_.empty()) {
+      Response(Status::StatusOK());
+      return;
     }
 
     // If the last file is not empty (has at least one record),
@@ -1116,8 +1114,32 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     WrappedRecord wrapped_record;
     *wrapped_record.mutable_record() = std::move(record_);
 
-    // Calculate and attach record digest.
-    storage_queue_->UpdateRecordDigest(&wrapped_record);
+    // Calculate new record digest and store it in the record
+    // (for self-verification by the server). Do not store it in the queue yet,
+    // because the record might fail to write.
+    {
+      std::string serialized_record;
+      wrapped_record.record().SerializeToString(&serialized_record);
+      current_record_digest_ = crypto::SHA256HashString(serialized_record);
+      DCHECK_EQ(current_record_digest_.size(), crypto::kSHA256Length);
+      *wrapped_record.mutable_record_digest() = current_record_digest_;
+    }
+
+    // Attach last record digest.
+    if (storage_queue_->write_contexts_queue_.empty()) {
+      // Queue is empty, copy |storage_queue_|->|last_record_digest_|
+      // into the record, if it exists.
+      const auto last_record_digest = storage_queue_->GetLastRecordDigest();
+      if (last_record_digest.has_value()) {
+        *wrapped_record.mutable_last_record_digest() =
+            last_record_digest.value();
+      }
+    } else {
+      // Copy previous record digest in the queue into the record.
+      *wrapped_record.mutable_last_record_digest() =
+          (*storage_queue_->write_contexts_queue_.rbegin())
+              ->current_record_digest_;
+    }
 
     // Add context to the end of the queue.
     in_contexts_queue_ = storage_queue_->write_contexts_queue_.insert(
@@ -1225,15 +1247,16 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     scoped_refptr<SingleFile> last_file = assign_result.ValueOrDie();
 
     // Writing metadata ahead of the data write.
-    Status write_result = storage_queue_->WriteMetadata();
+    Status write_result = storage_queue_->WriteMetadata(current_record_digest_);
     if (!write_result.ok()) {
       Response(write_result);
       return;
     }
 
-    // Write header and block.
-    write_result =
-        storage_queue_->WriteHeaderAndBlock(buffer_, std::move(last_file));
+    // Write header and block. Store current_record_digest_ with the queue,
+    // increment next_sequencing_id_
+    write_result = storage_queue_->WriteHeaderAndBlock(
+        buffer_, current_record_digest_, std::move(last_file));
     if (!write_result.ok()) {
       Response(write_result);
       return;
@@ -1250,6 +1273,9 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
   // We use it in order to detect whether the context is in the queue
   // and to remove it from the queue, when the time comes.
   std::list<WriteContext*>::iterator in_contexts_queue_;
+
+  // Digest of the current record.
+  std::string current_record_digest_;
 
   // Write buffer. When filled in (after encryption), |WriteRecord| can be
   // executed. Empty until encryption is done.

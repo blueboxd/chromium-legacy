@@ -108,8 +108,8 @@ GURL GetEffectiveDocumentURL(
 
   // Traverse the frame/window hierarchy to find the closest non-about:-page
   // with the same origin as the precursor and return its URL.
-  // Note: This can return the incorrect result, e.g. if a parent frame
-  // navigates a grandchild frame.
+  // TODO(https://crbug.com/1186321): This can return the incorrect result, e.g.
+  // if a parent frame navigates a grandchild frame to about:blank.
   blink::WebFrame* parent = frame;
   GURL parent_url;
   blink::WebDocument parent_document;
@@ -505,7 +505,7 @@ GURL ScriptContext::GetEffectiveDocumentURLForInjection(
 
 // Grants a set of content capabilities to this context.
 
-bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {
+bool ScriptContext::HasAPIPermission(mojom::APIPermissionID permission) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (effective_extension_.get()) {
     return effective_extension_->permissions_data()->HasAPIPermission(

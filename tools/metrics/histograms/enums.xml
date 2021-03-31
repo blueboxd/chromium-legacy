@@ -24047,6 +24047,7 @@ Called by update_document_policy_enum.py.-->
   <int value="839" label="ForcedLanguages"/>
   <int value="840" label="BrowserThemeColor"/>
   <int value="841" label="CECPQ2Enabled"/>
+  <int value="842" label="HeadlessMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27293,7 +27294,7 @@ Called by update_extension_histograms.py.-->
 </enum>
 
 <enum name="ExtensionPermission3">
-<!-- Generated from extensions/common/permissions/api_permission.h.
+<!-- Generated from extensions/common/mojom/api_permission_id.mojom.
 Called by update_extension_permission.py.-->
 
   <int value="0" label="kInvalid"/>
@@ -44069,6 +44070,7 @@ from previous Chrome versions.
   <int value="-1887862464" label="SpannableInlineAutocomplete:disabled"/>
   <int value="-1887053262"
       label="enable-zero-suggest-most-visited-without-serp"/>
+  <int value="-1886997564" label="EnableSwitchAccessPointScanning:enabled"/>
   <int value="-1886713568"
       label="AutofillGetPaymentsIdentityFromSync:disabled"/>
   <int value="-1885074774" label="ShelfScrollable:enabled"/>
@@ -44310,6 +44312,7 @@ from previous Chrome versions.
   <int value="-1662646099" label="NTPOfflinePageSuggestions:enabled"/>
   <int value="-1662447331" label="wake-on-packets"/>
   <int value="-1660972490" label="gpu-rasterization-msaa-sample-count"/>
+  <int value="-1660884825" label="ReadLaterNewBadgePromo:enabled"/>
   <int value="-1656179450" label="EnableOmniboxRichEntities:enabled"/>
   <int value="-1655535052" label="enable-pointer-events"/>
   <int value="-1654344175" label="disable-extension-info-dialog"/>
@@ -44411,6 +44414,7 @@ from previous Chrome versions.
   <int value="-1568737447" label="InsecureFormSubmissionInterstitial:enabled"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
   <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
+  <int value="-1565683260" label="EnableSwitchAccessPointScanning:disabled"/>
   <int value="-1564232131"
       label="OmniboxOnDeviceHeadProviderNonIncognito:enabled"/>
   <int value="-1562065709" label="ForceEnableDevicesPage:enabled"/>
@@ -48299,6 +48303,7 @@ from previous Chrome versions.
   <int value="1927218315" label="ShelfNewUi:disabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1927374573" label="EnterpriseRealtimeExtensionRequest:enabled"/>
+  <int value="1928944156" label="ReadLaterNewBadgePromo:disabled"/>
   <int value="1929535031" label="LanguageSettingsUpdate2:enabled"/>
   <int value="1929603041" label="HideShelfControlsInTabletMode:disabled"/>
   <int value="1930185502"
@@ -57816,6 +57821,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="26" label="Cellular: Add Network"/>
   <int value="27" label="Cellular: Remove Network eSIM Profile"/>
   <int value="28" label="Cellular: Rename Network eSIM Profile"/>
+  <int value="29" label="Wi-Fi: Hidden Network"/>
   <int value="100" label="Bluetooth: On/Off"/>
   <int value="101" label="Bluetooth: Connect To Device"/>
   <int value="102" label="Bluetooth: Disconnect From Device"/>

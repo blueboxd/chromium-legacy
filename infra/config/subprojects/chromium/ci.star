@@ -2997,6 +2997,24 @@ ci.fyi_builder(
         short_name = "rel",
     ),
     notifies = ["cr-fuchsia"],
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "cipd_archive_datas": [
+                {
+                    "yaml_files": [
+                        "gen/fuchsia/cipd/castrunner/castrunner.yaml",
+                    ],
+                    "refs": [
+                        "{%channel%}",
+                    ],
+                    "tags": {
+                        "version": "{%version%}",
+                    },
+                },
+            ],
+        },
+    },
 )
 
 ci.fyi_builder(
@@ -3905,16 +3923,6 @@ ci.fyi_mac_builder(
     os = None,
 )
 
-ci.thin_tester(
-    name = "Mac11.0 Tests",
-    builder_group = "chromium.fyi",
-    console_view_entry = consoles.console_view_entry(
-        category = "mac",
-        short_name = "11.0",
-    ),
-    triggered_by = ["Mac Builder Next"],
-)
-
 ci.fyi_mac_builder(
     name = "Mac deterministic",
     console_view_entry = consoles.console_view_entry(
@@ -4745,15 +4753,6 @@ ci.gpu_fyi_thin_tester(
 )
 
 ci.gpu_fyi_thin_tester(
-    name = "Win7 FYI dEQP Release (AMD)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|7|x86|AMD",
-        short_name = "dqp",
-    ),
-    triggered_by = ["GPU FYI Win dEQP Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
     name = "Win7 FYI x64 Release (NVIDIA)",
     console_view_entry = consoles.console_view_entry(
         category = "Windows|7|x64|Nvidia",
@@ -4774,14 +4773,6 @@ ci.gpu_fyi_windows_builder(
     name = "GPU FYI Win Builder (dbg)",
     console_view_entry = consoles.console_view_entry(
         category = "Windows|Builder|Debug",
-        short_name = "x86",
-    ),
-)
-
-ci.gpu_fyi_windows_builder(
-    name = "GPU FYI Win dEQP Builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|dEQP",
         short_name = "x86",
     ),
 )
@@ -5946,7 +5937,7 @@ ci.cipd_builder(
         luci.notifier(
             name = "rts-model-packager-notifier",
             on_occurrence = ["FAILURE", "INFRA_FAILURE"],
-            notify_emails = ["nodir@google.com"],
+            notify_emails = ["guterman@google.com", "nodir@google.com"],
         ),
     ],
 )

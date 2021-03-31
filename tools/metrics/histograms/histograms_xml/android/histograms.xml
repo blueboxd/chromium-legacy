@@ -1516,7 +1516,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.ModalDialog.SecurityFilteredTouchResult"
-    enum="SecurityFilteredTouchResult" expires_after="2021-04-01">
+    enum="SecurityFilteredTouchResult" expires_after="2022-04-01">
   <owner>pavely@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -2802,6 +2802,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Android.WebView.LoadDataWithBaseUrl.BaseUrl"
     enum="WebViewUrlScheme" expires_after="2021-05-05">
+  <obsolete>
+    Removed Mar 2021; we're not planning any short-term work in this area.
+  </obsolete>
   <owner>ntfschr@chromium.org</owner>
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -2825,7 +2828,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.LoadUrl.UrlScheme" enum="WebViewUrlScheme"
-    expires_after="2021-05-05">
+    expires_after="2022-03-29">
   <owner>ntfschr@chromium.org</owner>
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>

@@ -2274,17 +2274,15 @@
             ],
             "experiments": [
                 {
-                    "name": "ShoppingTasks_Enabled",
+                    "name": "ShoppingTasksRecipeTasksChromeCart_Enabled",
                     "params": {
                         "NtpModulesLoadTimeoutMillisecondsParam": "3000"
                     },
                     "enable_features": [
-                        "NtpModules",
-                        "NtpShoppingTasksModule"
-                    ],
-                    "disable_features": [
                         "NtpChromeCartModule",
-                        "NtpRecipeTasksModule"
+                        "NtpModules",
+                        "NtpRecipeTasksModule",
+                        "NtpShoppingTasksModule"
                     ]
                 }
             ]
@@ -3256,23 +3254,6 @@
                     },
                     "enable_features": [
                         "GlobalMediaControlsForChromeOS"
-                    ]
-                }
-            ]
-        }
-    ],
-    "GlobalMediaControlsPictureInPicture": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "GlobalMediaControlsPictureInPicture"
                     ]
                 }
             ]
@@ -4455,12 +4436,15 @@
                         "EntitySuggestionsReduceLatencyDecoderTimeout": "30000",
                         "EntitySuggestionsReduceLatencyDecoderWakeup": "true",
                         "MaxZeroSuggestMatches": "10",
+                        "OmniboxBookmarkPathsCounterfactual": "enabled",
+                        "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",
                         "OmniboxMaxURLMatches": "7",
                         "RichAutocompletionAutocompleteNonPrefixAll": "true",
                         "RichAutocompletionAutocompleteTitles": "true",
                         "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
+                        "OmniboxBookmarkPaths",
                         "OmniboxBubbleUrlSuggestions",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxEntitySuggestionsReduceLatency",
@@ -4472,6 +4456,7 @@
                         "OmniboxReactiveZeroSuggestionsOnNTPRealbox",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
+                        "OmniboxShortBookmarkSuggestionsByTotalInputLength",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QueryInOmnibox",
@@ -4854,6 +4839,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PageInfoV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageLoadMetricsTimerDelay": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "10MS",
+                    "params": {
+                        "BufferTimerDelayMillis": "10"
+                    },
+                    "enable_features": [
+                        "PageLoadMetricsTimerDelay"
                     ]
                 }
             ]

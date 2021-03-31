@@ -36,7 +36,7 @@
   {
     "name": "accessible-pdf-form",
     "owners": [ "ankk@microsoft.com", "mohitb@microsoft.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "account-id-migration",
@@ -667,7 +667,7 @@
   },
   {
     "name": "context-menu-google-lens-chip",
-    "owners": [ "yusuyoutube", "benwgold", "lens-chrome" ],
+    "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 90
   },
   {
@@ -677,22 +677,22 @@
   },
   {
     "name": "context-menu-search-and-shop-with-google-lens",
-    "owners": [ "yusuyoutube", "benwgold", "lens-chrome" ],
+    "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 90
   },
   {
     "name": "context-menu-search-with-google-lens",
-    "owners": [ "benwgold", "lens-chrome" ],
+    "owners": [ "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 90
   },
   {
     "name": "context-menu-shop-with-google-lens",
-    "owners": [ "yusuyoutube", "benwgold", "lens-chrome" ],
+    "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 90
   },
   {
     "name": "context-menu-translate-with-google-lens",
-    "owners": [ "juanmojica", "hakop", "benwgold", "lens-chrome" ],
+    "owners": [ "juanmojica@google.com", "hakop@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 90
   },
   {
@@ -1222,7 +1222,7 @@
   },
   {
     "name": "enable-accelerated-video-decode",
-    "owners": [ "videostack-eng@google.com" ],
+    "owners": [ "media-dev@chromium.org" ],
     "expiry_milestone": 90
   },
   {
@@ -2036,7 +2036,7 @@
   },
   {
     "name": "enable-media-internals",
-    "owners": [ "tmathmeyer", "videostack-eng@google.com" ],
+    "owners": [ "tmathmeyer", "media-dev@chromium.org" ],
     "expiry_milestone": 92
   },
   {
@@ -3353,7 +3353,7 @@
   },
   {
     "name": "lens-camera-assisted-search",
-    "owners": [ "yusuyoutube", "benwgold", "fgorski", "wylieb", "lens-chrome" ],
+    "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "fgorski", "wylieb", "lens-chrome@google.com" ],
     "expiry_milestone": 94
   },
   {
@@ -4351,6 +4351,11 @@
     "name": "read-later",
     "owners": [ "chrome-desktop-ui-sea@google.com", "corising" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "read-later-new-badge-promo",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "corising" ],
+    "expiry_milestone": 93
   },
   {
     "name": "read-later-reminder-notification",

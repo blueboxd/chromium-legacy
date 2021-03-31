@@ -17,6 +17,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
@@ -37,7 +38,7 @@ namespace reporting {
 // persistently. It allows to add whole data records as necessary,
 // flush previously collected records and confirm records up to certain
 // sequencing id to be eliminated.
-class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
+class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
  public:
   // Callback type for UploadInterface provider for this queue.
   using AsyncStartUploaderCb = base::RepeatingCallback<void(
@@ -112,7 +113,8 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   virtual ~StorageQueue();
 
  private:
-  friend class base::RefCountedThreadSafe<StorageQueue>;
+  friend class base::RefCountedDeleteOnSequence<StorageQueue>;
+  friend class base::DeleteHelper<StorageQueue>;
 
   // Private data structures for Read and Write (need access to the private
   // StorageQueue fields).
@@ -187,7 +189,8 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   };
 
   // Private constructor, to be called by Create factory method only.
-  StorageQueue(const QueueOptions& options,
+  StorageQueue(scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
+               const QueueOptions& options,
                AsyncStartUploaderCb async_start_upload_cb,
                scoped_refptr<EncryptionModuleInterface> encryption_module);
 
@@ -199,10 +202,8 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   // Helper methods: EnumerateDataFiles, ScanLastFile, RestoreMetadata.
   Status Init();
 
-  // Attaches last record digest to the given record (does not exist at a
-  // generation start). Calculates the given record digest and stores it
-  // as the last one for the next record.
-  void UpdateRecordDigest(WrappedRecord* wrapped_record);
+  // Retrieves last record digest (does not exist at a generation start).
+  base::Optional<std::string> GetLastRecordDigest() const;
 
   // Helper method for Init(): process single data file.
   // Return sequencing_id from <prefix>.<sequencing_id> file name, or Status
@@ -239,7 +240,7 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   // asynchronously deletes all other files with lower sequencing id
   // (multiple Writes can see the same files and attempt to delete them, and
   // that is not an error).
-  Status WriteMetadata();
+  Status WriteMetadata(base::StringPiece current_record_digest);
 
   // Helper method for Init(): locates file with metadata that matches the
   // last sequencing id and loads metadata from it.
@@ -255,8 +256,10 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   void DeleteOutdatedMetadata(int64_t sequencing_id_to_keep);
 
   // Helper method for Write(): composes record header and writes it to the
-  // file, followed by data.
+  // file, followed by data. Stores record digest in the queue, increments
+  // next sequencing id.
   Status WriteHeaderAndBlock(base::StringPiece data,
+                             base::StringPiece current_record_digest,
                              scoped_refptr<SingleFile> file);
 
   // Helper method for Upload: if the last file is not empty (has at least one

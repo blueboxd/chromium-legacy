@@ -20,6 +20,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
@@ -58,7 +59,6 @@
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -77,11 +77,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/dbus/userdataauth/fake_install_attributes_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -1155,7 +1155,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
   EXPECT_EQ(1,
-            FakeCryptohomeClient::Get()
+            FakeInstallAttributesClient::Get()
                 ->remove_firmware_management_parameters_from_tpm_call_count());
   EXPECT_EQ(1, FakeSessionManagerClient::Get()
                    ->clear_forced_re_enrollment_vpd_call_count());
@@ -1223,7 +1223,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(DeviceDisabledScreenView::kScreenId);
 
   EXPECT_EQ(0,
-            FakeCryptohomeClient::Get()
+            FakeInstallAttributesClient::Get()
                 ->remove_firmware_management_parameters_from_tpm_call_count());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()
                    ->clear_forced_re_enrollment_vpd_call_count());
@@ -1308,7 +1308,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     test::OobeJS().ExpectVisiblePath(kGuestSessionLink);
   }
   EXPECT_EQ(0,
-            FakeCryptohomeClient::Get()
+            FakeInstallAttributesClient::Get()
                 ->remove_firmware_management_parameters_from_tpm_call_count());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()
                    ->clear_forced_re_enrollment_vpd_call_count());
@@ -1423,7 +1423,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
     EXPECT_EQ(
-        0, FakeCryptohomeClient::Get()
+        0, FakeInstallAttributesClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
     EXPECT_EQ(0, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());
@@ -1440,7 +1440,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // that the sign-in screen is reached.
     OobeScreenWaiter(GetFirstSigninScreen()).Wait();
     EXPECT_EQ(
-        0, FakeCryptohomeClient::Get()
+        0, FakeInstallAttributesClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
     EXPECT_EQ(0, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());

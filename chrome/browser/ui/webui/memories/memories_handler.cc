@@ -10,7 +10,7 @@
 
 #include "chrome/browser/history_clusters/memories_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/memories/core/memories_service.h"
+#include "components/history_clusters/core/memories_service.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -74,7 +74,8 @@ void MemoriesHandler::SetPage(
 void MemoriesHandler::GetSampleMemories(const std::string& query,
                                         MemoriesResultCallback callback) {
 #if defined(OFFICIAL_BUILD)
-  std::move(callback).Run({});
+  auto memories_result_mojom = memories::mojom::MemoriesResult::New();
+  std::move(callback).Run(std::move(memories_result_mojom));
   return;
 #else
   // Query HistoryService for URLs containing |query|.
@@ -96,6 +97,11 @@ void MemoriesHandler::OnHistoryQueryResults(const std::string& query,
                                             MemoriesResultCallback callback,
                                             history::QueryResults results) {
   auto memories_result_mojom = memories::mojom::MemoriesResult::New();
+  if (results.empty()) {
+    std::move(callback).Run(std::move(memories_result_mojom));
+    return;
+  }
+
   memories_result_mojom->title = base::UTF8ToUTF16(query);
   memories_result_mojom->thumbnail_url = GetRandomlySizedThumbnailUrl();
 

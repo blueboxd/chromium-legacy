@@ -105,6 +105,13 @@ public final class ChromePreferenceKeys {
     public static final String CLIPBOARD_SHARED_URI = "Chrome.Clipboard.SharedUri";
 
     /**
+     * Save the timestamp of the last time that chrome-managed commerce subscriptions are
+     * initialized.
+     */
+    public static final String COMMERCE_SUBSCRIPTIONS_CHROME_MANAGED_TIMESTAMP =
+            "Chrome.CommerceSubscriptions.ChromeManagedTimestamp";
+
+    /**
      * Saves a counter of how many continuous feature sessions in which a user has dismissed
      * conditional tab strip.
      */
@@ -590,6 +597,16 @@ public final class ChromePreferenceKeys {
     public static final String OFFLINE_MEASUREMENTS_HTTP_PROBE_RESULTS_LIST =
             "Chrome.OfflineMeasurements.HttpProbeResultsList";
 
+    /**
+     * Comma separated list of the airplane mode and roaming state from the
+     * OfflineMeasurementsBackgroundTask. When possible, values will be recorded to UMA then
+     * cleared.
+     */
+    public static final String OFFLINE_MEASUREMENTS_IS_AIRPLANE_MODE_ENABLED_LIST =
+            "Chrome.OfflineMeasurements.IsAirplaneModeEnabledList";
+    public static final String OFFLINE_MEASUREMENTS_IS_ROAMING_LIST =
+            "Chrome.OfflineMeasurements.IsRoaming";
+
     /** The shared preference for the 'save card to device' checkbox status. */
     public static final String PAYMENTS_CHECK_SAVE_CARD_TO_DEVICE = "check_save_card_to_device";
 
@@ -928,6 +945,7 @@ public final class ChromePreferenceKeys {
                 AUTOFILL_ASSISTANT_PROACTIVE_HELP,
                 APPLICATION_OVERRIDE_LANGUAGE,
                 CLIPBOARD_SHARED_URI,
+                COMMERCE_SUBSCRIPTIONS_CHROME_MANAGED_TIMESTAMP,
                 CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER,
                 CONDITIONAL_TAB_STRIP_FEATURE_STATUS,
                 CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP,
@@ -969,6 +987,8 @@ public final class ChromePreferenceKeys {
                 OFFLINE_MEASUREMENTS_HTTP_PROBE_TIMEOUT_MS,
                 OFFLINE_MEASUREMENTS_HTTP_PROBE_URL,
                 OFFLINE_MEASUREMENTS_HTTP_PROBE_RESULTS_LIST,
+                OFFLINE_MEASUREMENTS_IS_AIRPLANE_MODE_ENABLED_LIST,
+                OFFLINE_MEASUREMENTS_IS_ROAMING_LIST,
                 OFFLINE_MEASUREMENTS_USER_AGENT_STRING,
                 OFFLINE_MEASUREMENTS_LAST_CHECK_MILLIS,
                 OFFLINE_MEASUREMENTS_TIME_BETWEEN_CHECKS_MILLIS_LIST,

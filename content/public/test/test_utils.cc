@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_utils.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -74,8 +75,8 @@ void DeferredQuitRunLoop(base::OnceClosure quit_task, int num_quit_deferrals) {
 // Monitors if any task is processed by the message loop.
 class TaskObserver : public base::TaskObserver {
  public:
-  TaskObserver() : processed_(false) {}
-  ~TaskObserver() override {}
+  TaskObserver() = default;
+  ~TaskObserver() override = default;
 
   // TaskObserver overrides.
   void WillProcessTask(const base::PendingTask& pending_task,
@@ -94,7 +95,7 @@ class TaskObserver : public base::TaskObserver {
   bool processed() const { return processed_; }
 
  private:
-  bool processed_;
+  bool processed_ = false;
   DISALLOW_COPY_AND_ASSIGN(TaskObserver);
 };
 
@@ -453,33 +454,31 @@ void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
 }
 
 RenderFrameDeletedObserver::RenderFrameDeletedObserver(RenderFrameHost* rfh)
-    : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-      process_id_(rfh->GetProcess()->GetID()),
-      routing_id_(rfh->GetRoutingID()),
-      deleted_(false) {}
+    : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)), rfh_(rfh) {
+  DCHECK(rfh);
+}
 
-RenderFrameDeletedObserver::~RenderFrameDeletedObserver() {}
+RenderFrameDeletedObserver::~RenderFrameDeletedObserver() = default;
 
 void RenderFrameDeletedObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetProcess()->GetID() == process_id_ &&
-      render_frame_host->GetRoutingID() == routing_id_) {
-    deleted_ = true;
+  if (render_frame_host == rfh_) {
+    rfh_ = nullptr;
 
     if (runner_.get())
       runner_->Quit();
   }
 }
 
-bool RenderFrameDeletedObserver::deleted() {
-  return deleted_;
+bool RenderFrameDeletedObserver::deleted() const {
+  return !rfh_;
 }
 
 void RenderFrameDeletedObserver::WaitUntilDeleted() {
-  if (deleted_)
+  if (deleted())
     return;
 
-  runner_.reset(new base::RunLoop());
+  runner_ = std::make_unique<base::RunLoop>();
   runner_->Run();
   runner_.reset();
 }
@@ -490,8 +489,7 @@ WebContentsDestroyedWatcher::WebContentsDestroyedWatcher(
   EXPECT_TRUE(web_contents != nullptr);
 }
 
-WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() {
-}
+WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() = default;
 
 void WebContentsDestroyedWatcher::Wait() {
   run_loop_.Run();
@@ -505,7 +503,7 @@ void WebContentsDestroyedWatcher::WebContentsDestroyed() {
 TestPageScaleObserver::TestPageScaleObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents) {}
 
-TestPageScaleObserver::~TestPageScaleObserver() {}
+TestPageScaleObserver::~TestPageScaleObserver() = default;
 
 void TestPageScaleObserver::OnPageScaleFactorChanged(float page_scale_factor) {
   last_scale_ = page_scale_factor;
@@ -536,7 +534,7 @@ EffectiveURLContentBrowserClient::EffectiveURLContentBrowserClient(
   AddTranslation(url_to_modify, url_to_return);
 }
 
-EffectiveURLContentBrowserClient::~EffectiveURLContentBrowserClient() {}
+EffectiveURLContentBrowserClient::~EffectiveURLContentBrowserClient() = default;
 
 void EffectiveURLContentBrowserClient::AddTranslation(
     const GURL& url_to_modify,

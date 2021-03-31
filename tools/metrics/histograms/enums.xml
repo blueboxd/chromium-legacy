@@ -44406,6 +44406,7 @@ from previous Chrome versions.
   <int value="-1575375861" label="enable-captive-portal-random-url"/>
   <int value="-1575131701" label="AppServiceAsh:disabled"/>
   <int value="-1573468162" label="ClientStorageAccessContextAuditing:enabled"/>
+  <int value="-1572898796" label="IncognitoDarkModeEnforcedForDesktop:enabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1571525676" label="FilesSWA:disabled"/>
@@ -45296,6 +45297,7 @@ from previous Chrome versions.
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
   <int value="-832780530" label="SecurePaymentConfirmationDebug:enabled"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
+  <int value="-831066457" label="IncognitoBrandConsistencyForDesktop:disabled"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
   <int value="-824199802" label="ContextualSearchSimplifiedServer:enabled"/>
   <int value="-823394398" label="TargetEmbeddingLookalikes:enabled"/>
@@ -46452,6 +46454,7 @@ from previous Chrome versions.
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="268535107"
       label="ash-new-touch-support-for-screen-magnification"/>
+  <int value="270038252" label="SignInProfileCreationEnterprise:disabled"/>
   <int value="270118291" label="SyncAutofillWalletOfferData:disabled"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="272108480" label="SmbFs:enabled"/>
@@ -46692,6 +46695,7 @@ from previous Chrome versions.
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="469999350" label="NotificationScheduleService:disabled"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
+  <int value="470708618" label="IncognitoDarkModeEnforcedForDesktop:disabled"/>
   <int value="471224152" label="WinUseHybridSpellChecker:enabled"/>
   <int value="471519375" label="NewOsSettingsSearch:disabled"/>
   <int value="471560693" label="webview-verbose-logging"/>
@@ -47830,6 +47834,7 @@ from previous Chrome versions.
   <int value="1488193175" label="ChromeOSAssistant:enabled"/>
   <int value="1488700164" label="password-import:disabled"/>
   <int value="1488998575" label="FillOnAccountSelectHttp:enabled"/>
+  <int value="1489282376" label="IncognitoBrandConsistencyForDesktop:enabled"/>
   <int value="1489915799" label="disable-permissions-blacklist"/>
   <int value="1490043732" label="enable-fill-on-account-select"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>
@@ -48107,6 +48112,7 @@ from previous Chrome versions.
   <int value="1750658031" label="OmniboxBookmarkPaths:enabled"/>
   <int value="1750693293" label="AutofillPreventMixedFormsFilling:enabled"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
+  <int value="1753732236" label="SignInProfileCreationEnterprise:enabled"/>
   <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>
   <int value="1757894817" label="PrinterStatusDialog:disabled"/>
   <int value="1758262950"
@@ -49340,6 +49346,7 @@ from previous Chrome versions.
   <int value="6" label="Passwords Accessory Sheet"/>
   <int value="7" label="Touch To Fill"/>
   <int value="8" label="Safe state bubble"/>
+  <int value="9" label="Password Breach Dialog"/>
 </enum>
 
 <enum name="ManifestFetchResultType">

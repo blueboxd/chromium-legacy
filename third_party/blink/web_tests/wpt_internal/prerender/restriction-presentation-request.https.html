@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <title>Same-origin prerendering cannot start presentation</title>
+<!-- This cannot be upstreamed as a WPT test because the spec (probably) will
+     require that no error is thrown until activation. -->
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/utils.js"></script>
@@ -21,9 +23,7 @@ promise_test(async t => {
   startPrerendering(`resources/presentation-request.html`);
 
   const result = await gotMessage;
-  assert_equals(result,
-    "Failed to execute 'start' on 'PresentationRequest': PresentationRequest::start() requires user gesture."
-    );
+  assert_equals(result, 'request failed');
 }, 'prerendering page cannot start presentation');
 
 </script>

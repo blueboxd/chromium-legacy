@@ -475,6 +475,10 @@ const base::Feature kHappinessTrackingSurveysForDesktopPrivacySandbox{
 const base::Feature kHappinessTrackingSurveysForDesktopSettings{
     "HappinessTrackingSurveysForDesktopSettings",
     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool>
+    kHappinessTrackingSurveysForDesktopSettingsPrivacyNoSandbox{
+        &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "no-sandbox",
+        false};
 
 // Enables or disables the Happiness Tracking System for Desktop Chrome
 // Privacy Settings.
@@ -525,9 +529,14 @@ const base::Feature kIncompatibleApplicationsWarning{
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 // When enabled, removes any theme or background customization done by the user
-// and also overrides any dark/light mode treatment on the Incognito UI.
+// on the Incognito UI.
 const base::Feature kIncognitoBrandConsistencyForDesktop{
     "IncognitoBrandConsistencyForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, enforces dark mode on Incognito UI and ignores any OS light
+// mode customization.
+const base::Feature kIncognitoDarkModeEnforcedForDesktop{
+    "IncognitoDarkModeEnforcedForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)

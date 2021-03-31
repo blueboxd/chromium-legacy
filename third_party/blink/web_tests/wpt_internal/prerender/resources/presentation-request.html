@@ -5,16 +5,16 @@
 
 assert_true(document.prerendering);
 
-async function startPresentationRequest(){
+async function startPresentationRequest() {
   const bc = new BroadcastChannel('prerender-channel');
   const presentationRequest = new PresentationRequest(
-  'https://example.com/presentation.html');
+      'https://example.com/presentation.html');
 
   try {
-    result = await presentationRequest.start();
+    const _ = await presentationRequest.start();
     bc.postMessage('unexpected success');
-  } catch (err){
-    bc.postMessage(err.message);
+  } catch (err) {
+    bc.postMessage('request failed');
   } finally {
     bc.close();
   }

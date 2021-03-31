@@ -120,10 +120,8 @@ export class VideoEncoderOptions {
     this.bitrateMultiplerText_.textContent = 'x' + multiplier;
     const bitrate = multiplier * resolution.area;
     this.bitrateText_.textContent = `${(bitrate / 1e6).toFixed(1)} Mbps`;
-    const level = h264.Levels.find(
-        (level) => h264.checkLevelLimits(level, fps, resolution) &&
-            h264.getMaxBitrate(profile, level) >= bitrate);
-    if (level === undefined) {
+    const level = h264.getMinimalLevel(profile, bitrate, fps, resolution);
+    if (level === null) {
       console.warn(
           `No available level for profile=${h264.getProfileName(profile)}, ` +
           `resolution=${resolution}, ` +
@@ -141,6 +139,7 @@ export class VideoEncoderOptions {
   updateBitrateRange_() {
     if (!this.enable_ || this.selectedProfile_ === null) {
       this.disableBitrateSlider_();
+      this.onChange_(null);
       return;
     }
     const fps = assertNumber(this.fps_);
@@ -155,6 +154,7 @@ export class VideoEncoderOptions {
           `resolution=${resolution}, ` +
           `fps=${fps}`);
       this.disableBitrateSlider_();
+      this.onChange_(null);
       return;
     }
     const maxBitrate = h264.getMaxBitrate(profile, maxLevel);

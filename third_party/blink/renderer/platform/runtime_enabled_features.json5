@@ -376,7 +376,7 @@
     },
     {
       name: "CompositeRelativeKeyframes",
-      // Controlled by base::Feature::kCompositeRelativeKeyframes.
+      status: "stable"
     },
     {
       name: "CompositeSVG",
@@ -904,6 +904,10 @@
       status: "experimental",
     },
     {
+      name: "FakeNoAllocDirectCallForTesting",
+      status: "test",
+    },
+    {
       name: "FeaturePolicyForClientHints",
       status: "stable",
     },
@@ -1189,12 +1193,6 @@
     {
       name: "LegacyWindowsDWriteFontFallback",
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
-    },
-    {
-      // TODO(crbug.com/1087043): Remove this once the feature has
-      // landed and no compat issues are reported.
-      name: "LinkDisabledNewSpecBehavior",
-      status: "stable",
     },
     {
       name:"ManualSlotting",

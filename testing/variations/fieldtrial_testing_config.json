@@ -4416,6 +4416,31 @@
                     "enable_features": [
                         "OmniboxAssistantVoiceSearch"
                     ]
+                },
+                {
+                    "name": "AlwaysMicWithAssistant",
+                    "params": {
+                        "colorful_mic": "false",
+                        "min_agsa_version": "12.8.4"
+                    },
+                    "enable_features": [
+                        "OmniboxAssistantVoiceSearch",
+                        "VoiceButtonInTopToolbar",
+                        "VoiceSearchAudioCapturePolicy"
+                    ]
+                },
+                {
+                    "name": "AlwaysMicWithoutAssistant",
+                    "params": {
+                        "min_agsa_version": "12.8.4"
+                    },
+                    "enable_features": [
+                        "VoiceButtonInTopToolbar",
+                        "VoiceSearchAudioCapturePolicy"
+                    ],
+                    "disable_features": [
+                        "OmniboxAssistantVoiceSearch"
+                    ]
                 }
             ]
         }
@@ -4445,7 +4470,6 @@
                     },
                     "enable_features": [
                         "OmniboxBookmarkPaths",
-                        "OmniboxBubbleUrlSuggestions",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
@@ -4648,25 +4672,6 @@
                     "enable_features": [
                         "SearchPrefetchService",
                         "SearchPrefetchServicePrefetching"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxRefinedFocusStateDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxRefinedFocusState"
                     ]
                 }
             ]
@@ -6585,25 +6590,6 @@
             ]
         }
     ],
-    "TabSearch": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TabSearch"
-                    ]
-                }
-            ]
-        }
-    ],
     "TabToGTSAnimation": [
         {
             "platforms": [
@@ -7264,24 +7250,6 @@
                     "name": "VizGLFastSolidColorDraw",
                     "enable_features": [
                         "FastSolidColorDraw"
-                    ]
-                }
-            ]
-        }
-    ],
-    "VoiceButtonInTopToolbar": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "minimum_width": "360"
-                    },
-                    "enable_features": [
-                        "VoiceButtonInTopToolbar"
                     ]
                 }
             ]

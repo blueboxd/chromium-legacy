@@ -165,6 +165,9 @@ extern const char kAutofillEnableGoogleIssuedCardDescription[];
 extern const char kAutofillEnableOfferNotificationName[];
 extern const char kAutofillEnableOfferNotificationDescription[];
 
+extern const char kAutofillEnableOfferNotificationCrossTabTrackingName[];
+extern const char kAutofillEnableOfferNotificationCrossTabTrackingDescription[];
+
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryName[];
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[];
 
@@ -176,6 +179,9 @@ extern const char kAutofillEnableToolbarStatusChipDescription[];
 
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
+
+extern const char kAutofillFixOfferInIncognitoName[];
+extern const char kAutofillFixOfferInIncognitoDescription[];
 
 extern const char kAutofillParseMerchantPromoCodeFieldsName[];
 extern const char kAutofillParseMerchantPromoCodeFieldsDescription[];
@@ -624,10 +630,6 @@ extern const char kEnableRestrictedWebApisDescription[];
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];
 
-extern const char kEnableTabSearchFlagId[];
-extern const char kEnableTabSearchName[];
-extern const char kEnableTabSearchDescription[];
-
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
 extern const char kEnableUseZoomForDsfChoiceDefault[];
@@ -1029,9 +1031,6 @@ extern const char kOmniboxMaxURLMatchesDescription[];
 
 extern const char kOmniboxDynamicMaxAutocompleteName[];
 extern const char kOmniboxDynamicMaxAutocompleteDescription[];
-
-extern const char kOmniboxBubbleUrlSuggestionsName[];
-extern const char kOmniboxBubbleUrlSuggestionsDescription[];
 
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
@@ -2192,6 +2191,9 @@ extern const char kAppServiceExternalProtocolDescription[];
 
 extern const char kArcCustomTabsExperimentName[];
 extern const char kArcCustomTabsExperimentDescription[];
+
+extern const char kArcDocumentsProviderUnknownSizeName[];
+extern const char kArcDocumentsProviderUnknownSizeDescription[];
 
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];

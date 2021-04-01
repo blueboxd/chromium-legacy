@@ -23,6 +23,7 @@
     "prefix": "threaded",
     "bases": ["compositing/visibility",
               "compositing/webgl",
+              "animations/stability",
               "external/wpt/animation-worklet",
               "external/wpt/css/css-animations",
               "external/wpt/css/css-scroll-snap",
@@ -287,6 +288,17 @@
     "args": ["--enable-blink-features=LayoutNGGrid"]
   },
   {
+    "prefix": "layout_ng_svg_text",
+    "bases": ["animations/svg",
+              "animations/svg-attribute-composition",
+              "animations/svg-attribute-interpolation",
+              "external/wpt/svg",
+              "http/tests/svg",
+              "paint/invalidation/svg",
+              "svg"],
+    "args": ["--enable-blink-features=SVGTextNG"]
+  },
+  {
     "prefix": "dark-mode-default",
     "bases": ["dark-mode/colors",
               "dark-mode/images"],
@@ -348,8 +360,21 @@
              "--disable-features=CompositorThreadedScrollbarScrolling"]
   },
   {
+    "prefix": "main-threaded-percent-based-scrolling",
+    "bases": ["fast/events/continuous-platform-wheelevent-in-scrolling-div.html",
+              "fast/events/mouse-wheel-main-frame-scroll.html",
+              "fast/events/scroll-in-scaled-page-with-overflow-hidden.html",
+              "fast/events/wheel/mouse-wheel-scroll-latching.html",
+              "fast/events/wheel/wheelevent-basic.html",
+              "fast/events/wheel/wheelevent-in-scrolling-div.html",
+              "fast/scrolling/percentage-mousewheel-scroll.html",
+              "fast/scrolling/percentage-mousewheel-scroll-on-iframe.html"],
+    "args": ["--enable-features=PercentBasedScrolling"]
+  },
+  {
     "prefix": "compositor-threaded-percent-based-scrolling",
     "bases": ["fast/scrolling/scrollbars",
+              "virtual/main-threaded-percent-based-scrolling",
               "virtual/percent-based-scrolling"],
     "args": ["--enable-features=PercentBasedScrolling",
              "--enable-threaded-compositing",
@@ -728,11 +753,6 @@
     "args": [ "--js-flags=--harmony-weak-refs" ]
   },
   {
-    "prefix": "link-disabled-old-behavior",
-    "bases": [ "external/wpt/css/cssom" ],
-    "args": ["--disable-features=LinkDisabledNewSpecBehavior"]
-  },
-  {
     "prefix": "document-domain-disabled-by-default",
     "bases": [
       "external/wpt/document-policy/experimental-features/document-domain"
@@ -939,5 +959,10 @@
     "prefix": "force-renderer-accessibility",
     "bases": ["accessibility/slot-poison.html"],
     "args": ["--force-renderer-accessibility"]
+  },
+  {
+    "prefix": "no-alloc-direct-call",
+    "bases": ["fast/canvas", "external/wpt/html/canvas"],
+    "args": ["--enable-fake-no-alloc-direct-call-for-testing"]
   }
 ]

@@ -982,7 +982,7 @@ PendingNavigation::PendingNavigation(
       navigation_client(std::move(navigation_client)) {}
 
 // static
-RenderFrameHost* RenderFrameHost::FromID(GlobalFrameRoutingId id) {
+RenderFrameHost* RenderFrameHost::FromID(const GlobalFrameRoutingId& id) {
   return RenderFrameHostImpl::FromID(id);
 }
 
@@ -1037,7 +1037,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromFrameToken(
 }
 
 // static
-RenderFrameHost* RenderFrameHost::FromAXTreeID(ui::AXTreeID ax_tree_id) {
+RenderFrameHost* RenderFrameHost::FromAXTreeID(const ui::AXTreeID& ax_tree_id) {
   return RenderFrameHostImpl::FromAXTreeID(ax_tree_id);
 }
 
@@ -1241,6 +1241,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  // The lifetime of this object has ended, so remove it from the id map before
+  // calling any delegates/observers, so that any calls to |FromID| no longer
+  // return |this|.
+  g_routing_id_frame_map.Get().erase(
+      GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
+
   // When a RenderFrameHostImpl is deleted, it may still contain children. This
   // can happen with the unload timer. It causes a RenderFrameHost to delete
   // itself even if it is still waiting for its children to complete their
@@ -1354,8 +1360,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   }
 
   GetAgentSchedulingGroup().RemoveRoute(routing_id_);
-  g_routing_id_frame_map.Get().erase(
-      GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
 
   // Null out the unload timer; in crash dumps this member will be null only if
   // the dtor has run.  (It may also be null in tests.)
@@ -1746,7 +1750,7 @@ void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>&&
         default_factory_receiver) {
   // By providing null |navigation_request| we will always use the last
   // committed Origin and ClientSecurityState (using GetPageUkmSourceId()
@@ -1853,7 +1857,7 @@ void RenderFrameHostImpl::AddMessageToConsole(
 void RenderFrameHostImpl::ExecuteJavaScriptMethod(
     const std::u16string& object_name,
     const std::u16string& method_name,
-    base::Value arguments,
+    base::Value&& arguments,
     JavaScriptResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(arguments.is_list());
@@ -3939,7 +3943,8 @@ void RenderFrameHostImpl::ReportInspectorIssue(
       this, std::move(info));
 }
 
-void RenderFrameHostImpl::WriteIntoTracedValue(perfetto::TracedValue context) {
+void RenderFrameHostImpl::WriteIntoTracedValue(
+    perfetto::TracedValue&& context) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("process", GetProcess());
   dict.Add("routing_id", GetRoutingID());

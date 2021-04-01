@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -2998,7 +2999,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
         &client_, std::move(recording));
     root_layer_->SetBounds(gfx::Size(50, 50));
 
-    recording.reset(new FakeRecordingSource);
+    recording = std::make_unique<FakeRecordingSource>();
     child_layer_ = FakePictureLayer::CreateWithRecordingSource(
         &client_, std::move(recording));
     child_layer_->SetBounds(gfx::Size(25, 25));
@@ -3019,6 +3020,8 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
     FakePictureLayerImpl* child_layer_impl = static_cast<FakePictureLayerImpl*>(
         host_impl->active_tree()->LayerById(child_layer_->id()));
     child_layer_impl->AddTilingUntilNextDraw(1.3f);
+    host_impl->active_tree()->set_needs_update_draw_properties();
+    host_impl->active_tree()->UpdateDrawProperties();
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -3049,8 +3052,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
         // back in so that we can compare
         // child_layer_impl->visible_drawable_content_rect() to the damage.
         child_layer_impl->AddTilingUntilNextDraw(1.3f);
-
-        EXPECT_EQ(gfx::Rect(25, 25), root_damage_rect);
+        EXPECT_EQ(gfx::Rect(26, 26), root_damage_rect);
         EXPECT_EQ(child_layer_impl->visible_drawable_content_rect(),
                   root_damage_rect);
         EXPECT_TRUE(child_layer_impl->visible_drawable_content_rect().Contains(

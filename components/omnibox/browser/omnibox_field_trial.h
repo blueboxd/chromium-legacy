@@ -397,6 +397,9 @@ bool IsPedalSuggestionsEnabled();
 // Returns true if the second batch of Pedals is enabled.
 bool IsPedalsBatch2Enabled();
 
+// Returns true if the default icon used for Pedal buttons should be colored.
+bool IsPedalsDefaultIconColored();
+
 // Returns true if the keyword button and suggestion button row features are
 // enabled.
 bool IsKeywordSearchButtonEnabled();
@@ -538,12 +541,6 @@ extern const char kUIMaxAutocompleteMatchesParam[];
 // URLs; otherwise show 8 suggestions.
 extern const char kDynamicMaxAutocompleteUrlCutoffParam[];
 extern const char kDynamicMaxAutocompleteIncreasedLimitParam[];
-
-// Parameters used for ranking.
-extern const char kBubbleUrlSuggestionsAbsoluteGapParam[];
-extern const char kBubbleUrlSuggestionsRelativeGapParam[];
-extern const char kBubbleUrlSuggestionsAbsoluteBufferParam[];
-extern const char kBubbleUrlSuggestionsRelativeBufferParam[];
 
 // Parameter names used by on device head provider.
 // These four parameters are shared by both non-incognito and incognito.

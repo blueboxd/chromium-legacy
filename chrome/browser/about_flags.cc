@@ -1419,38 +1419,6 @@ const FeatureEntry::FeatureVariation
             nullptr,
         }};
 
-const FeatureEntry::FeatureVariation kOmniboxBubbleUrlSuggestionsVariations[] =
-    {{
-         "Gap 200, Buffer 100",
-         (FeatureEntry::FeatureParam[]){
-             {"OmniboxBubbleUrlSuggestionsAbsoluteGap", "200"},
-             {"OmniboxBubbleUrlSuggestionsRelativeGap", "1"},
-             {"OmniboxBubbleUrlSuggestionsAbsoluteBuffer", "100"},
-             {"OmniboxBubbleUrlSuggestionsRelativeBuffer", "1"}},
-         4,
-         nullptr,
-     },
-     {
-         "Gap 200, Buffer 200",
-         (FeatureEntry::FeatureParam[]){
-             {"OmniboxBubbleUrlSuggestionsAbsoluteGap", "200"},
-             {"OmniboxBubbleUrlSuggestionsRelativeGap", "1"},
-             {"OmniboxBubbleUrlSuggestionsAbsoluteBuffer", "200"},
-             {"OmniboxBubbleUrlSuggestionsRelativeBuffer", "1"}},
-         4,
-         nullptr,
-     },
-     {
-         "Gap 400, Buffer 200",
-         (FeatureEntry::FeatureParam[]){
-             {"OmniboxBubbleUrlSuggestionsAbsoluteGap", "400"},
-             {"OmniboxBubbleUrlSuggestionsRelativeGap", "1"},
-             {"OmniboxBubbleUrlSuggestionsAbsoluteBuffer", "200"},
-             {"OmniboxBubbleUrlSuggestionsRelativeBuffer", "1"}},
-         4,
-         nullptr,
-     }};
-
 const FeatureEntry::FeatureParam kMinimumTabWidthSettingPinned[] = {
     {features::kMinimumTabWidthFeatureParameterName, "54"}};
 const FeatureEntry::FeatureParam kMinimumTabWidthSettingMedium[] = {
@@ -4092,6 +4060,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcCustomTabsExperimentName,
      flag_descriptions::kArcCustomTabsExperimentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kCustomTabsExperimentFeature)},
+    {"arc-documents-provider-unknown-size",
+     flag_descriptions::kArcDocumentsProviderUnknownSizeName,
+     flag_descriptions::kArcDocumentsProviderUnknownSizeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kDocumentsProviderUnknownSizeFeature)},
     {"arc-enable-usap", flag_descriptions::kArcEnableUsapName,
      flag_descriptions::kArcEnableUsapDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableUsap)},
@@ -4568,13 +4540,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDynamicMaxAutocompleteDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDynamicMaxAutocomplete,
                                     kOmniboxDynamicMaxAutocompleteVariations,
-                                    "OmniboxBundledExperimentV1")},
-
-    {"omnibox-bubble-url-suggestions",
-     flag_descriptions::kOmniboxBubbleUrlSuggestionsName,
-     flag_descriptions::kOmniboxBubbleUrlSuggestionsDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kBubbleUrlSuggestions,
-                                    kOmniboxBubbleUrlSuggestionsVariations,
                                     "OmniboxBundledExperimentV1")},
 
     {"omnibox-ui-swap-title-and-url",
@@ -6742,11 +6707,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContentSettingsRedesignDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kContentSettingsRedesign)},
 
-    {flag_descriptions::kEnableTabSearchFlagId,
-     flag_descriptions::kEnableTabSearchName,
-     flag_descriptions::kEnableTabSearchDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabSearch)},
-
 #if defined(OS_ANDROID)
     {"cpu-affinity-restrict-to-little-cores",
      flag_descriptions::kCpuAffinityRestrictToLittleCoresName,
@@ -7239,6 +7199,19 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillParseMerchantPromoCodeFields)},
+
+    {"autofill-enable-offer-notification-cross-tab-tracking",
+     flag_descriptions::kAutofillEnableOfferNotificationCrossTabTrackingName,
+     flag_descriptions::
+         kAutofillEnableOfferNotificationCrossTabTrackingDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableOfferNotificationCrossTabTracking)},
+
+    {"autofill-fix-offer-in-incognito",
+     flag_descriptions::kAutofillFixOfferInIncognitoName,
+     flag_descriptions::kAutofillFixOfferInIncognitoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillFixOfferInIncognito)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

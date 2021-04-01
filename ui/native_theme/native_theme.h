@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_canvas.h"
@@ -424,7 +425,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   void RemoveObserver(NativeThemeObserver* observer);
 
   // Notify observers of native theme changes.
-  virtual void NotifyObservers();
+  virtual void NotifyOnNativeThemeUpdated();
+
+  // Notify observers of caption style changes.
+  virtual void NotifyOnCaptionStyleUpdated();
 
   // Returns whether the user has an explicit contrast preference, i.e. whether
   // we are in forced colors mode or PreferredContrast is set.
@@ -568,6 +572,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
   bool forced_colors_ = false;
   PreferredColorScheme preferred_color_scheme_ = PreferredColorScheme::kLight;
   PreferredContrast preferred_contrast_ = PreferredContrast::kNoPreference;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

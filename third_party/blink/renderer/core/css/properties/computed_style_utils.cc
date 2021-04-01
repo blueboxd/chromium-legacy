@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 #include "third_party/blink/renderer/core/css/css_border_image.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
-#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -122,7 +122,7 @@ CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
       RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled()) {
     return CSSIdentifierValue::Create(color.GetColorKeyword());
   }
-  return cssvalue::CSSColorValue::Create(
+  return cssvalue::CSSColor::Create(
       color.Resolve(style.GetCurrentColor(), style.UsedColorScheme()).Rgb());
 }
 
@@ -2743,7 +2743,7 @@ const CSSValue* ComputedStyleUtils::ValueForStyleAutoColor(
     const StyleAutoColor& color,
     CSSValuePhase value_phase) {
   if (color.IsAutoColor()) {
-    return cssvalue::CSSColorValue::Create(
+    return cssvalue::CSSColor::Create(
         StyleColor::CurrentColor()
             .Resolve(style.GetCurrentColor(), style.UsedColorScheme())
             .Rgb());
@@ -2765,7 +2765,7 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
           To<CSSUnitValue>(style_value)->GetInternalUnit());
     case CSSStyleValue::StyleValueType::kUnsupportedColorType:
       return std::make_unique<CrossThreadColorValue>(
-          To<CSSUnsupportedColorValue>(style_value)->Value());
+          To<CSSUnsupportedColor>(style_value)->Value());
     case CSSStyleValue::StyleValueType::kUnparsedType:
       return std::make_unique<CrossThreadUnparsedValue>(
           To<CSSUnparsedValue>(style_value)->ToString().IsolatedCopy());

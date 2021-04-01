@@ -208,6 +208,15 @@
       },
     },
   },
+  'blink_unittests': {
+    'modifications': {
+      'fuchsia-code-coverage': {
+        'swarming': {
+          'shards': 30,
+        },
+      },
+    },
+  },
   'blink_web_tests': {
     'remove_from': [
       'Mac10.11 Tests',
@@ -802,6 +811,7 @@
   'chrome_public_smoke_test': {
     'remove_from': [
       'android-code-coverage-native', # Does not generate profraw data.
+      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
       # Runs on android-marshmallow-x86-rel already (crbug.com/1127110#c21)
       'android-marshmallow-arm64-rel',
     ],
@@ -811,6 +821,7 @@
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
       'android-lollipop-arm-rel', # https://crbug.com/1060245
+      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
 
       # Runs on android-marshmallow-x86-rel already (crbug.com/1127110)
       'android-marshmallow-arm64-rel',
@@ -925,6 +936,7 @@
       'ToTAndroidCFI',
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
+      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
     'modifications': {
       # Use "--remove-system-package" according to crbug.com/931947#c1
@@ -1267,6 +1279,7 @@
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
+      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
     'modifications': {
       'android-11-x86-fyi-rel': {
@@ -1781,6 +1794,15 @@
       'Fuchsia x64' # https://crbug.com/1058255
     ],
   },
+  'media_blink_unittests': {
+    'modifications': {
+      'fuchsia-code-coverage': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+  },
   'media_unittests': {
     'modifications': {
       'android-11-x86-fyi-rel': {
@@ -1813,6 +1835,7 @@
   'mojo_test_apk': {
     'remove_from': [
       'android-code-coverage-native', # Does not generate profraw data.
+      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
   },
   'mojo_unittests': {
@@ -2273,6 +2296,7 @@
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-rel-non-cq',
       'android-nougat-arm64-rel',
+      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
       'android-pie-arm64-rel',
       'android-pie-x86-rel',
       'android-11-x86-fyi-rel',
@@ -3114,6 +3138,7 @@
       'ToTAndroid',
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
+      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
 
       # On chromium.swarm, this should possibly be being run (or removed
       # from android-marshmallow-arm64-rel-swarming).

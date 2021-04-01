@@ -160,6 +160,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "arc-documents-provider-unknown-size",
+    "owners": [ "alexbn" ],
+    "expiry_milestone": 98
+  },
+  {
     "name": "arc-enable-usap",
     "owners": [ "camurcu" ],
     "expiry_milestone": 92
@@ -318,6 +323,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "autofill-enable-offer-notification-cross-tab-tracking",
+    "owners": [ "siyua" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "autofill-enable-offers-in-clank-keyboard-accessory",
     "owners": [ "siyua", "siashah@google.com" ],
     "expiry_milestone": 95
@@ -351,6 +361,11 @@
     "name": "autofill-enforce-min-required-fields-for-upload",
     "owners": [ "rogerm" ],
     "expiry_milestone": 73
+  },
+  {
+    "name": "autofill-fix-offer-in-incognito",
+    "owners": [ "siyua" ],
+    "expiry_milestone": 97
   },
   {
     "name": "autofill-ios-delay-between-fields",
@@ -2383,7 +2398,7 @@
   },
   {
     "name": "enable-storage-pressure-event",
-    "owners": [ "astavrakos@google.com", "jarrydg" ],
+    "owners": [ "jarrydg", "chrome-owp-storage@google.com" ],
     "expiry_milestone": 89
   },
   {
@@ -3105,7 +3120,7 @@
   {
     "name": "heavy-ad-privacy-mitigations",
     "owners": [ "johnidel", "jkarlin" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 97
   },
   {
     "name": "help-app-launcher-search",
@@ -4274,7 +4289,7 @@
   },
   {
     "name": "promo-browser-commands",
-    "owners": ["mahmadi", "chrome-desktop-ntp" ],
+    "owners": ["mahmadi", "chrome-desktop-ntp@google.com" ],
     "expiry_milestone": 90
   },
   {
@@ -4598,6 +4613,16 @@
   },
   {
     "name": "search-history-link",
+    "owners": [
+      "andzaytsev",
+      "harrisonsean",
+      "msramek",
+      "chrome-friendly-settings@google.com"
+    ],
+    "expiry_milestone": 99
+  },
+  {
+    "name": "search-history-link-ios",
     "owners": [
       "andzaytsev",
       "harrisonsean",

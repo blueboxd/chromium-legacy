@@ -45,9 +45,6 @@ extern const bool kOmniboxMaxURLMatchesEnabledByDefault;
 extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kDynamicMaxAutocomplete;
 
-// Ranking
-extern const base::Feature kBubbleUrlSuggestions;
-
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kClobberTriggersContextualWebZeroSuggest;
 extern const base::Feature kOmniboxLocalZeroSuggestAgeThreshold;
@@ -84,6 +81,7 @@ extern const base::Feature kOmniboxSearchReadyIncognito;
 extern const base::Feature kOmniboxSuggestionButtonRow;
 extern const base::Feature kOmniboxPedalSuggestions;
 extern const base::Feature kOmniboxPedalsBatch2;
+extern const base::Feature kOmniboxPedalsDefaultIconColored;
 extern const base::Feature kOmniboxKeywordSearchButton;
 extern const base::Feature kOmniboxRefinedFocusState;
 extern const base::Feature kWebUIOmniboxPopup;

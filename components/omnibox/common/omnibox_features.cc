@@ -166,13 +166,6 @@ const base::Feature kOmniboxMaxURLMatches{
 const base::Feature kDynamicMaxAutocomplete{"OmniboxDynamicMaxAutocomplete",
                                             enabled_by_default_desktop_only};
 
-// Feature used to enable bubbling URL suggestions above search suggestions
-// after grouping if 2 conditions are met:
-// 1) There must be a sufficient score gap between the adjacent searches.
-// 2) There must be a sufficient buffer between the URL and search scores.
-const base::Feature kBubbleUrlSuggestions{"OmniboxBubbleUrlSuggestions",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, when the user clears the whole omnibox text (i.e. via Backspace),
 // Chrome will request remote ZeroSuggest suggestions for the OTHER page
 // classification (contextual web).
@@ -330,13 +323,17 @@ const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
 const base::Feature kOmniboxPedalsBatch2{"OmniboxPedalsBatch2",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature that enables use of the colored version of the default Pedal icon.
+const base::Feature kOmniboxPedalsDefaultIconColored{
+    "OmniboxPedalsDefaultIconColored", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable the keyword search button.
 const base::Feature kOmniboxKeywordSearchButton{
     "OmniboxKeywordSearchButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables new UI changes indicating focus and hover states.
-const base::Feature kOmniboxRefinedFocusState{
-    "OmniboxRefinedFocusState", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOmniboxRefinedFocusState{"OmniboxRefinedFocusState",
+                                              enabled_by_default_desktop_only};
 
 // If enabled, uses WebUI to render the omnibox suggestions popup, similar to
 // how the NTP "realbox" is implemented.

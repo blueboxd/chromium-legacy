@@ -691,6 +691,11 @@ bool OmniboxFieldTrial::IsPedalsBatch2Enabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalsBatch2);
 }
 
+bool OmniboxFieldTrial::IsPedalsDefaultIconColored() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxPedalsDefaultIconColored);
+}
+
 bool OmniboxFieldTrial::IsKeywordSearchButtonEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxSuggestionButtonRow) &&
          base::FeatureList::IsEnabled(omnibox::kOmniboxKeywordSearchButton);
@@ -982,15 +987,6 @@ const char OmniboxFieldTrial::kDynamicMaxAutocompleteUrlCutoffParam[] =
     "OmniboxDynamicMaxAutocompleteUrlCutoff";
 const char OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam[] =
     "OmniboxDynamicMaxAutocompleteIncreasedLimit";
-
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsAbsoluteGapParam[] =
-    "OmniboxBubbleUrlSuggestionsAbsoluteGap";
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsRelativeGapParam[] =
-    "OmniboxBubbleUrlSuggestionsRelativeGap";
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsAbsoluteBufferParam[] =
-    "OmniboxBubbleUrlSuggestionsAbsoluteBuffer";
-const char OmniboxFieldTrial::kBubbleUrlSuggestionsRelativeBufferParam[] =
-    "OmniboxBubbleUrlSuggestionsRelativeBuffer";
 
 const char OmniboxFieldTrial::kOnDeviceHeadModelLocaleConstraint[] =
     "ForceModelLocaleConstraint";

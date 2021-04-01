@@ -652,7 +652,17 @@ try_.chromium_angle_builder(
 )
 
 try_.chromium_angle_builder(
+    name = "fuchsia-angle-try",
+    executable = "recipe:angle_chromium_trybot",
+)
+
+try_.chromium_angle_builder(
     name = "linux-angle-rel",
+)
+
+try_.chromium_angle_builder(
+    name = "linux-angle-chromium-try",
+    executable = "recipe:angle_chromium_trybot",
 )
 
 try_.chromium_angle_builder(
@@ -660,7 +670,17 @@ try_.chromium_angle_builder(
 )
 
 try_.chromium_angle_builder(
+    name = "linux-angle-try",
+    executable = "recipe:angle_chromium_trybot",
+)
+
+try_.chromium_angle_builder(
     name = "linux_angle_ozone_rel_ng",
+)
+
+try_.chromium_angle_builder(
+    name = "linux-ozone-angle-try",
+    executable = "recipe:angle_chromium_trybot",
 )
 
 try_.chromium_angle_builder(
@@ -1174,7 +1194,6 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = "linux-rel-reclient",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     goma_backend = None,
@@ -1487,6 +1506,14 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_builder(
     name = "mac_upload_clang",
+    builderless = False,
+    executable = "recipe:chromium_upload_clang",
+    execution_timeout = 6 * time.hour,
+    goma_backend = None,  # Does not use Goma.
+)
+
+try_.chromium_mac_builder(
+    name = "mac_upload_clang_arm",
     builderless = False,
     executable = "recipe:chromium_upload_clang",
     execution_timeout = 6 * time.hour,

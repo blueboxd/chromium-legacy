@@ -26924,6 +26924,7 @@ Called by update_extension_histograms.py.-->
   <int value="1546" label="ACCESSIBILITY_PRIVATE_SHOWCONFIRMATIONDIALOG"/>
   <int value="1547" label="AUTOTESTPRIVATE_INSTALLBOREALIS"/>
   <int value="1548" label="LANGUAGESETTINGSPRIVATE_SETTRANSLATETARGETLANGUAGE"/>
+  <int value="1549" label="LANGUAGESETTINGSPRIVATE_GETNEVERTRANSLATELANGUAGES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -27762,6 +27763,9 @@ Called by update_extension_permission.py.-->
 </enum>
 
 <enum name="FamilyInfoFetcherErrorCode">
+  <obsolete>
+    Deprecated in M91 after v2 EduCoexistence.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="OAuth2 token error"/>
   <int value="2" label="Network error"/>
@@ -32007,6 +32011,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3864" label="XRFrameGetImageTrackingResults"/>
   <int value="3865" label="OpenWebDatabaseThirdPartyContext"/>
   <int value="3866" label="PointerId"/>
+  <int value="3867" label="Transform3dScene"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34216,6 +34221,9 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="GaiaReAuthProofTokenStatus">
+  <obsolete>
+    Deprecated in M91 after v2 EduCoexistence.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Invalid Request"/>
   <int value="2" label="Invalid Grant"/>
@@ -44127,6 +44135,7 @@ from previous Chrome versions.
   <int value="-1844754731" label="Mash:disabled"/>
   <int value="-1843677118" label="TwoPanesStartSurfaceAndroid:disabled"/>
   <int value="-1842511843" label="DiceWebSigninInterception:enabled"/>
+  <int value="-1840821581" label="WebViewPowerSchedulerThrottleIdle:disabled"/>
   <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839540507" label="OneGoogleBarModalOverlays:enabled"/>
@@ -44184,6 +44193,8 @@ from previous Chrome versions.
   <int value="-1789139269" label="SmbFs:disabled"/>
   <int value="-1784831690" label="Bento:disabled"/>
   <int value="-1784788154" label="NewRemotePlaybackPipeline:disabled"/>
+  <int value="-1783790234"
+      label="AutofillEnableOfferNotificationCrossTabTracking:enabled"/>
   <int value="-1780306716"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
   <int value="-1779753607" label="VizDisplayCompositor:disabled"/>
@@ -44545,6 +44556,7 @@ from previous Chrome versions.
   <int value="-1466862366" label="TouchToFillAndroid:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
   <int value="-1466600231" label="WakeOnWifiAllowed:enabled"/>
+  <int value="-1466206556" label="ArcDocumentsProviderUnknownSize:enabled"/>
   <int value="-1465172796" label="CCTModule:disabled"/>
   <int value="-1464832541" label="EnableFuzzyAppSearch:disabled"/>
   <int value="-1463489219" label="OfflinePagesCTSuppressNotifications:enabled"/>
@@ -44685,6 +44697,7 @@ from previous Chrome versions.
   <int value="-1357008397" label="ContextualSuggestionsCarousel:disabled"/>
   <int value="-1356379431" label="GlobalMediaControlsOverlayControls:enabled"/>
   <int value="-1355886577" label="ReleaseNotesNotificationAllChannels:enabled"/>
+  <int value="-1355717940" label="WebViewPowerSchedulerThrottleIdle:enabled"/>
   <int value="-1353865639" label="InteractiveWindowCycleList:disabled"/>
   <int value="-1353714232" label="FilesTransferDetails:enabled"/>
   <int value="-1353195918" label="UseSkiaRenderer:enabled"/>
@@ -46420,6 +46433,7 @@ from previous Chrome versions.
   <int value="218890378" label="ManualSaving:disabled"/>
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
   <int value="221212638" label="StartSurfaceAndroid:enabled"/>
+  <int value="221707633" label="AutofillFixOfferInIncognito:disabled"/>
   <int value="222184258"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
   <int value="223591010" label="CastMediaRouteProvider:enabled"/>
@@ -47407,6 +47421,7 @@ from previous Chrome versions.
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1115635149" label="EnableUnifiedMultiDeviceSetup:enabled"/>
   <int value="1116593018" label="CaptureThumbnailOnLoadFinished:disabled"/>
+  <int value="1117270978" label="ArcDocumentsProviderUnknownSize:disabled"/>
   <int value="1117534750"
       label="ForceSecurePaymentConfirmationDialog:disabled"/>
   <int value="1117795262" label="BloatedRendererDetection:disabled"/>
@@ -47494,6 +47509,7 @@ from previous Chrome versions.
   <int value="1193385506" label="OmniboxLooseMaxLimitOnDedicatedRows:enabled"/>
   <int value="1194496204" label="NewWallpaperPicker:enabled"/>
   <int value="1194896796" label="PdfHonorJsContentSettings:disabled"/>
+  <int value="1194964049" label="AutofillFixOfferInIncognito:enabled"/>
   <int value="1195087468" label="ProminentDarkModeActiveTabTitle:enabled"/>
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
@@ -48140,6 +48156,8 @@ from previous Chrome versions.
   <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1783837132" label="enable-threaded-gpu-rasterization"/>
   <int value="1785093465" label="enable-document-passive-event-listeners"/>
+  <int value="1785274337"
+      label="AutofillEnableOfferNotificationCrossTabTracking:disabled"/>
   <int value="1786182939" label="ExoPointerLock:enabled"/>
   <int value="1786229999" label="disable-md-downloads"/>
   <int value="1786386775" label="TranslateCompactUI:disabled"/>
@@ -53101,6 +53119,18 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Media unavailable"/>
   <int value="8" label="Not enough space"/>
   <int value="9" label="Unsupported attachment type"/>
+  <int value="10" label="Decode advertisement failed"/>
+  <int value="11" label="Missing transfer update callback"/>
+  <int value="12" label="Missing share target"/>
+  <int value="13" label="Missing endpoint id"/>
+  <int value="14" label="Missing payloads"/>
+  <int value="15" label="Paired key verification failed"/>
+  <int value="16" label="Invalid introduction frame"/>
+  <int value="17" label="Incomplete payloads"/>
+  <int value="18" label="Failed to create share target"/>
+  <int value="19" label="Failed to initiate outgoing connection"/>
+  <int value="20" label="Failed to read outgoing connection response"/>
+  <int value="21" label="Unexpected disconnection"/>
 </enum>
 
 <enum name="NearbyShareTransferNotCompletedReason">
@@ -69524,6 +69554,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SecondaryAccountConsentLoggerResult">
+  <obsolete>
+    Deprecated in M91 after v2 EduCoexistence.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="OAuth2 token error"/>
   <int value="2" label="Network error"/>
@@ -70705,6 +70738,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Unknown"/>
   <int value="1" label="Context Menu"/>
   <int value="2" label="Share Button"/>
+  <int value="3" label="Share Sheet"/>
 </enum>
 
 <enum name="SharingClickToCallEntryPoint">
@@ -80526,15 +80560,29 @@ others/histograms.xml -->
 </enum>
 
 <enum name="WallpaperType">
-  <int value="0" label="Daily"/>
-  <int value="1" label="Customized"/>
+  <int value="0" label="Daily">
+    Surprise wallpaper from the user selected collection.
+  </int>
+  <int value="1" label="Customized">
+    Selected by user from their local disk.
+  </int>
   <int value="2" label="Default"/>
   <int value="3" label="Unknown (unused)"/>
-  <int value="4" label="Online"/>
-  <int value="5" label="Policy"/>
-  <int value="6" label="Third party"/>
-  <int value="7" label="Device policy"/>
-  <int value="8" label="One-shot"/>
+  <int value="4" label="Online">
+    Wallpaper chosen by the user from the list of IMAX wallpapers.
+  </int>
+  <int value="5" label="Policy">
+    Controlled by domain policy. Cannot be changed by user.
+  </int>
+  <int value="6" label="Third party">Set by third party app or extension.</int>
+  <int value="7" label="Device policy">
+    Device controlled wallpaper shown on the login screen if the device is
+    enterprise managed.
+  </int>
+  <int value="8" label="One-shot">
+    Wallpaper shown one-time only. It does not belong to a particular user and
+    is not saved. This is used to show a white background during OOBE.
+  </int>
 </enum>
 
 <enum name="WarmupStateOnLaunch">

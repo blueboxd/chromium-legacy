@@ -104,26 +104,22 @@ DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
 }
 
 std::u16string GetApplicationNameForProtocol(const GURL& url) {
-  typedef CFURLRef (*LSCopyDefaultApplicationURLForURLPtr)(CFURLRef, LSRolesMask, CFErrorRef  _Nullable *);
-  static const LSCopyDefaultApplicationURLForURLPtr LSCopyDefaultApplicationURLForURLFuncPtr =
-      reinterpret_cast<LSCopyDefaultApplicationURLForURLPtr>(dlsym(((void *) -2), "LSCopyDefaultApplicationURLForURL"));
-  if(LSCopyDefaultApplicationURLForURLFuncPtr) {
-    NSURL* ns_url = [NSURL URLWithString:
-        base::SysUTF8ToNSString(url.possibly_invalid_spec())];
-    base::ScopedCFTypeRef<CFErrorRef> out_err;
-    base::ScopedCFTypeRef<CFURLRef> openingApp(LSCopyDefaultApplicationURLForURLFuncPtr(
-        (CFURLRef)ns_url, kLSRolesAll, out_err.InitializeInto()));
-    if (out_err) {
-      // likely kLSApplicationNotFoundErr
-      return std::u16string();
-    }
-    NSString* appPath = [base::mac::CFToNSCast(openingApp.get()) path];
-    NSString* appDisplayName =
-        [[NSFileManager defaultManager] displayNameAtPath:appPath];
-    return base::SysNSStringToUTF16(appDisplayName);
-  } else {
+  NSURL* ns_url = [NSURL URLWithString:
+      base::SysUTF8ToNSString(url.possibly_invalid_spec())];
+  CFURLRef openingApp = NULL;
+  OSStatus status = LSGetApplicationForURL((CFURLRef)ns_url,
+                                           kLSRolesAll,
+                                           NULL,
+                                           &openingApp);
+  if (status != noErr) {
+    // likely kLSApplicationNotFoundErr
     return std::u16string();
   }
+  NSString* appPath = [(NSURL*)openingApp path];
+  CFRelease(openingApp);  // NOT A BUG; LSGetApplicationForURL retains for us
+  NSString* appDisplayName =
+        [[NSFileManager defaultManager] displayNameAtPath:appPath];
+    return base::SysNSStringToUTF16(appDisplayName);
 }
 
 // Attempt to determine if this instance of Chrome is the default browser and

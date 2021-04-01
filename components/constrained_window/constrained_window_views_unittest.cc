@@ -17,7 +17,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/border.h"
-#include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -26,6 +25,26 @@ using views::Widget;
 
 namespace constrained_window {
 namespace {
+
+class DialogContents : public views::DialogDelegateView {
+ public:
+  DialogContents() = default;
+  ~DialogContents() override = default;
+
+  void set_modal_type(ui::ModalType modal_type) { modal_type_ = modal_type; }
+
+  // DialogDelegateView:
+  views::View* GetContentsView() override { return this; }
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+
+  // WidgetDelegate:
+  ui::ModalType GetModalType() const override { return modal_type_; }
+
+ private:
+  ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
+
+  DISALLOW_COPY_AND_ASSIGN(DialogContents);
+};
 
 // Dummy client that returns a null modal dialog host and host view.
 class TestConstrainedWindowViewsClient
@@ -85,21 +104,18 @@ class ConstrainedWindowViewsTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
     views_delegate_weak->set_context(GetContext());
 
-    delegate_ = std::make_unique<views::DialogDelegate>();
-    auto contents = std::make_unique<views::StaticSizedView>();
-    contents_ = delegate_->SetContentsView(std::move(contents));
-
-    dialog_ = views::DialogDelegate::CreateDialogWidget(delegate_.get(),
-                                                        GetContext(), nullptr);
-    dialog_host_ = std::make_unique<web_modal::TestWebContentsModalDialogHost>(
-        dialog_->GetNativeView());
+    contents_ = new DialogContents;
+    dialog_ = views::DialogDelegate::CreateDialogWidget(
+        contents_, GetContext(), nullptr);
+    dialog_host_.reset(new web_modal::TestWebContentsModalDialogHost(
+        dialog_->GetNativeView()));
     dialog_host_->set_max_dialog_size(gfx::Size(5000, 5000));
 
     // Make sure the dialog size is dominated by the preferred size of the
     // contents.
     gfx::Size preferred_size = dialog()->GetRootView()->GetPreferredSize();
     preferred_size.Enlarge(500, 500);
-    contents_->SetPreferredSize(preferred_size);
+    contents()->SetPreferredSize(preferred_size);
   }
 
   void TearDown() override {
@@ -113,16 +129,14 @@ class ConstrainedWindowViewsTest : public views::ViewsTestBase {
     return dialog()->GetRootView()->GetBoundsInScreen().size();
   }
 
-  views::DialogDelegate* delegate() { return delegate_.get(); }
-  views::View* contents() { return contents_; }
+  DialogContents* contents() { return contents_; }
   web_modal::TestWebContentsModalDialogHost* dialog_host() {
     return dialog_host_.get();
   }
   Widget* dialog() { return dialog_; }
 
  private:
-  std::unique_ptr<views::DialogDelegate> delegate_;
-  views::View* contents_ = nullptr;
+  DialogContents* contents_ = nullptr;
   std::unique_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
   Widget* dialog_ = nullptr;
 
@@ -208,10 +222,9 @@ TEST_F(ConstrainedWindowViewsTest, MAYBE_NullModalParent) {
 
   SetConstrainedWindowViewsClient(
       std::make_unique<TestConstrainedWindowViewsClient>());
-  auto delegate = std::make_unique<views::DialogDelegate>();
-  delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
-  views::Widget* widget =
-      CreateBrowserModalDialogViews(delegate.get(), nullptr);
+  DialogContents* contents = new DialogContents;
+  contents->set_modal_type(ui::MODAL_TYPE_WINDOW);
+  views::Widget* widget = CreateBrowserModalDialogViews(contents, nullptr);
   widget->Show();
   EXPECT_TRUE(widget->IsVisible());
   widget->CloseNow();

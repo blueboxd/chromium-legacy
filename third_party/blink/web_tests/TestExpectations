@@ -5865,7 +5865,6 @@ crbug.com/1050039 [ Mac ] fast/events/onbeforeunload-focused-iframe.html [ Pass 
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/elements/styles-1/edit-value-url-with-color.js [ Skip ]
 crbug.com/1006759 http/tests/devtools/sources/css-outline-dialog.js [ Skip ]
-crbug.com/862450 http/tests/devtools/profiler/agents-disabled-check.js [ Pass Failure ]
 
 #Mixed content autoupgrades make these tests not applicable, since they check for mixed content audio/video
 crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag.https.html [ Failure ]
@@ -6664,3 +6663,21 @@ crbug.com/476553 virtual/scroll-unification/fast/events/pointerevents/multi-poin
 crbug.com/476553 virtual/scroll-unification/scrollbars/hidden-scrollbars-invisible.html [ Pass Failure Timeout Crash ]
 crbug.com/476553 virtual/scroll-unification/fast/scrolling/overflow-scrollability.html [ Pass Failure Timeout Crash ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-paragraph-end.html [ Pass Failure Timeout Crash ]
+
+# Sheriff 2021-04-01
+crbug.com/1167679 accessibility/aom-focus-action.html [ Pass Failure Timeout Crash ]
+# More failing tests because of enabling scroll unification flag
+crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-active-state-hidden-iframe.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/http/tests/misc/iframe-script-modify-attr.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification-synchronous_html_parser/external/wpt/dom/events/scrolling/overscroll-event-fired-to-scrolled-element.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/autoscroll-should-not-stop-on-keypress.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-scrolled.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/autoscroll-upwards-propagation-overflow-hidden-body.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/autoscroll-nonscrollable-iframe-in-scrollable-div.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-hover-clear.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/mouse-event-from-touch-source-device-event-sender.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/touch-gesture-fully-scrolled-iframe-propagates.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification/fast/events/mouse-event-buttons-attribute.html [ Pass Failure Timeout Crash ]
+crbug.com/476553 virtual/scroll-unification-unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Pass Failure Timeout Crash ]

@@ -928,6 +928,10 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
+  "gtk_unittests": {
+    "label": "//ui/gtk:gtk_unittests",
+    "type": "windowed_test_launcher",
+  },
   "gwp_asan_unittests": {
     "label": "//components/gwp_asan:gwp_asan_unittests",
     "type": "console_test_launcher",
@@ -1246,7 +1250,7 @@
   "mini_installer_tests": {
     "args": [
       "--isolated-script-test-output=${ISOLATED_OUTDIR}/results.json",
-      "../../chrome/test/mini_installer/test_installer.py",
+      "../../chrome/test/mini_installer/run_mini_installer_tests.py",
       "--output-dir=${ISOLATED_OUTDIR}",
     ],
     "label": "//chrome/test/mini_installer:mini_installer_tests",

@@ -1146,7 +1146,7 @@ NavigationRequest::NavigationRequest(
       initiator_frame_token_(begin_params_->initiator_frame_token),
       initiator_process_id_(initiator_process_id),
       was_opener_suppressed_(was_opener_suppressed),
-      coop_status_(frame_tree_node, common_params_->initiator_origin),
+      coop_status_(this),
       previous_page_ukm_source_id_(
           frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
@@ -2144,10 +2144,8 @@ void NavigationRequest::OnRequestRedirected(
   // browser process, we should use the computed origin instead of extracting it
   // from the response URL.
   const base::Optional<network::mojom::BlockedByResponseReason>
-      coop_requires_blocking = coop_status_.EnforceCOOP(
-          response_head_.get(), url::Origin::Create(common_params_->url),
-          common_params_->url, common_params_->referrer->url,
-          network_isolation_key);
+      coop_requires_blocking =
+          coop_status_.EnforceCOOP(response_head_.get(), network_isolation_key);
   if (coop_requires_blocking) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(*coop_requires_blocking),
@@ -2714,10 +2712,8 @@ void NavigationRequest::OnResponseStarted(
   // browser process, we should use the computed origin instead of extracting it
   // from the response URL.
   const base::Optional<network::mojom::BlockedByResponseReason>
-      coop_requires_blocking = coop_status_.EnforceCOOP(
-          response_head_.get(), url::Origin::Create(common_params_->url),
-          common_params_->url, common_params_->referrer->url,
-          network_isolation_key);
+      coop_requires_blocking =
+          coop_status_.EnforceCOOP(response_head_.get(), network_isolation_key);
   if (coop_requires_blocking) {
     // TODO(https://crbug.com/1172169): Investigate what must be done in case of
     // a download.
@@ -3066,6 +3062,26 @@ void NavigationRequest::OnRequestFailedInternal(
   net_error_ = static_cast<net::Error>(status.error_code);
   extended_error_code_ = status.extended_error_code;
   resolve_error_info_ = status.resolve_error_info;
+
+  // Abandon the prerender host if the request failed for the main frame
+  // navigation. The host may be already abandoned by other prerendering
+  // specific cancellation code path, i.e. PrerenderNavigationThrottle did it
+  // with a dedicated FinalStatus code. In such cases, following call does
+  // nothing.
+  if (IsInMainFrame() && frame_tree_node_->frame_tree()->is_prerendering()) {
+    auto final_status = PrerenderHost::FinalStatus::kNavigationRequestFailure;
+    if (net_error_ == net::Error::ERR_BLOCKED_BY_CSP) {
+      final_status = PrerenderHost::FinalStatus::kNavigationRequestBlockedByCsp;
+    }
+
+    auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
+        frame_tree_node_->current_frame_host()->GetStoragePartition());
+    PrerenderHostRegistry* prerender_host_registry =
+        storage_partition_impl->GetPrerenderHostRegistry();
+    prerender_host_registry->AbandonHostAsync(GetFrameTreeNodeId(),
+                                              final_status);
+    return;
+  }
 
   if (MaybeCancelFailedNavigation())
     return;
@@ -3686,6 +3702,8 @@ void NavigationRequest::CommitErrorPage(
   render_frame_host_->FailedNavigation(
       this, *common_params_, *commit_params_, has_stale_copy_in_cache_,
       net_error_, extended_error_code_, error_page_content);
+
+  SendDeferredConsoleMessages();
 }
 
 void NavigationRequest::AddOldPageInfoToCommitParamsIfNeeded() {
@@ -3908,17 +3926,7 @@ void NavigationRequest::CommitNavigation() {
   RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
       render_frame_host_->GetSiteInstance()->GetBrowserContext());
 
-  if (coop_status().header_ignored_due_to_insecure_context()) {
-    render_frame_host_->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError,
-        "The Cross-Origin-Opener-Policy header has been ignored, because the "
-        "origin was untrustworthy. It was defined either in the final response "
-        "or a redirect. Please deliver the response using the HTTPS protocol. "
-        "You can also use the 'localhost' origin instead. "
-        "See https://www.w3.org/TR/powerful-features/"
-        "#potentially-trustworthy-origin and "
-        "https://html.spec.whatwg.org/#the-cross-origin-opener-policy-header.");
-  }
+  SendDeferredConsoleMessages();
 }
 
 void NavigationRequest::CommitPageActivation() {
@@ -4485,7 +4493,7 @@ NavigationRequest::CheckCSPEmbeddedEnforcement() {
   std::string sanitized_blocked_url =
       GetRedirectChain().front().GetOrigin().spec();
   if (allow_csp_from && allow_csp_from->is_error_message()) {
-    GetParentFrame()->AddMessageToConsole(
+    AddDeferredConsoleMessage(
         blink::mojom::ConsoleMessageLevel::kError,
         base::StringPrintf("The value of the 'Allow-CSP-From' response header "
                            "returned by %s is invalid: %s",
@@ -4498,7 +4506,7 @@ NavigationRequest::CheckCSPEmbeddedEnforcement() {
     return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
   }
 
-  GetParentFrame()->AddMessageToConsole(
+  AddDeferredConsoleMessage(
       blink::mojom::ConsoleMessageLevel::kError,
       base::StringPrintf(
           "Refused to display '%s' in a frame. The embedder requires it to "
@@ -6182,6 +6190,23 @@ NavigationRequest::TakePrerenderNavigationEntry() {
 
 bool NavigationRequest::IsWaitingForBeforeUnload() {
   return state_ < WILL_START_NAVIGATION;
+}
+
+void NavigationRequest::AddDeferredConsoleMessage(
+    blink::mojom::ConsoleMessageLevel level,
+    std::string message) {
+  DCHECK_LE(state_, READY_TO_COMMIT);
+  console_messages_.push_back(ConsoleMessage{level, std::move(message)});
+}
+
+void NavigationRequest::SendDeferredConsoleMessages() {
+  for (auto& message : console_messages_) {
+    // TODO(https://crbug.com/721329): We should have a way of sending console
+    // messaged to devtools without going through the renderer.
+    render_frame_host_->AddMessageToConsole(message.level,
+                                            std::move(message.message));
+  }
+  console_messages_.clear();
 }
 
 }  // namespace content

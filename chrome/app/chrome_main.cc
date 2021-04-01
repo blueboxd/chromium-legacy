@@ -17,7 +17,6 @@
 #include "content/public/common/content_switches.h"
 #include "headless/public/headless_shell.h"
 #include "ui/gfx/switches.h"
-#include "sandbox/policy/switches.h"
 
 #if defined(OS_MAC)
 #include "chrome/app/chrome_main_mac.h"

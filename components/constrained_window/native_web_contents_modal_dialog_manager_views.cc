@@ -97,6 +97,7 @@ void NativeWebContentsModalDialogManagerViews::Show() {
         widget->GetNativeWindow()->parent()));
   }
 #endif
+  ShowWidget(widget);
   // |host_| may be null during tab drag on Views/Win32.
   //
   // TODO(https://crbug.com/1119431): This null check may be out of date.
@@ -128,6 +129,7 @@ void NativeWebContentsModalDialogManagerViews::Hide() {
   suspend.reset(new wm::SuspendChildWindowVisibilityAnimations(
       widget->GetNativeWindow()->parent()));
 #endif
+  HideWidget(widget);
   widget->Hide();
 }
 
@@ -198,6 +200,19 @@ void NativeWebContentsModalDialogManagerViews::HostChanged(
 
 gfx::NativeWindow NativeWebContentsModalDialogManagerViews::dialog() {
   return dialog_;
+}
+
+void NativeWebContentsModalDialogManagerViews::ShowWidget(
+    views::Widget* widget) {
+  // |host_| may be NULL during tab drag on Views/Win32.
+  if (host_)
+    constrained_window::UpdateWebContentsModalDialogPosition(widget, host_);
+  widget->Show();
+}
+
+void NativeWebContentsModalDialogManagerViews::HideWidget(
+    views::Widget* widget) {
+  widget->Hide();
 }
 
 views::Widget* NativeWebContentsModalDialogManagerViews::GetWidget(

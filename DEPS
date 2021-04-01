@@ -174,9 +174,6 @@ vars = {
   'checkout_simplechrome': '"{cros_boards}" != ""',
   'checkout_simplechrome_with_vms': '"{cros_boards_with_qemu_images}" != ""',
 
-  # ANGLE's deps are relative to the angle_root variable.
-  'angle_root': 'src/third_party/angle',
-
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
@@ -209,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '7f38a89654b26d905e35606e9134832d4137a175',
+  'skia_revision': '626b62e09fd4f9e5b59b259ade5728802af1a49a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '9709bf1d515c750dcb513cad5c95c0036a0a267d',
+  'v8_revision': 'b2a7ef26c8a03ea17710583ef9b6f25842673193',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -288,7 +285,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4ce401061f125986f7d13cb6d8d73c18a109b282',
+  'devtools_frontend_revision': 'e217d9bfc59bd0438a30e4a397a6c8a26b9a95e9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -731,7 +728,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'BBykRo8JAjna7uMiqw6E8ay9WLkXVSIZJvWNiRylz3kC',
+          'version': 'FjtUbuzIKGnj8q5_Ln9thr0MBSn_a8I2mpbyEKJmAa0C',
       },
     ],
     'condition': 'checkout_android',
@@ -1342,7 +1339,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ed369bb8e7e46ba9ea542f701860270ae57f592f',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd399a658eaff4504ee18436dd3f9e1542b3cd4b9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1553,7 +1550,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'cacedbfe87ea2d9fb235108933fe779bc2f9324f',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '340098b7d4f735690f433daafc5585ad6d3c51be',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fdd7f1064e25c028425b6a5b4d5c66b47da92ae4',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '679b8a9354aa0f8cba6e483c15bd6b9ef7adeff8',
@@ -1647,7 +1644,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'vQ2Hc5dg1dLMzsg2SyGOACnP-YoCDwiwU-NFYJppne4C',
+        'version': 'E44qWGahqJfotEyt9CLT_xmCcrl1CaFba-BqWl9wa6AC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1658,7 +1655,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'awddjfNT0zJNlDW8t6GGTFx-VgydUnjGZhozBAhmRPEC',
+        'version': 'fCm00oWxYqvePQH6dZqXk_GaZtfEU9P9wO7l1cDvufoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

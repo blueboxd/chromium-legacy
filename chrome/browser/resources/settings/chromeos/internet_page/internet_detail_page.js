@@ -31,15 +31,6 @@ Polymer({
     },
 
     /**
-     * When true, all inputs that allow state to be changed (e.g., toggles,
-     * inputs) are disabled.
-     */
-    disabled: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Whether network configuration properties sections should be shown. The
      * advanced section is not controlled by this property.
      * @private
@@ -245,6 +236,16 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('updatedCellularActivationUi');
       }
+    },
+
+    /**
+     * When true, all inputs that allow state to be changed (e.g., toggles,
+     * inputs) are disabled.
+     */
+    disabled_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeDisabled_(deviceState_.*)'
     },
 
     /** @private */
@@ -655,7 +656,9 @@ Polymer({
         a.managedNetworkAvailable === b.managedNetworkAvailable &&
         OncMojo.ipAddressMatch(a.ipv4Address, b.ipv4Address) &&
         OncMojo.ipAddressMatch(a.ipv6Address, b.ipv6Address) &&
-        OncMojo.simLockStatusMatch(a.simLockStatus, b.simLockStatus);
+        OncMojo.simLockStatusMatch(a.simLockStatus, b.simLockStatus) &&
+        OncMojo.simInfosMatch(a.simInfos, b.simInfos) &&
+        a.inhibitReason === b.inhibitReason;
   },
 
   /** @private */
@@ -714,6 +717,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
+    settings.recordSettingChange(
+        chromeos.settings.mojom.Setting.kWifiHidden,
+        {boolValue: !!this.hiddenPref_.value});
     const config = this.getDefaultConfigProperties_();
     config.typeConfig.wifi.hiddenSsid = this.hiddenPref_.value ?
         chromeos.networkConfig.mojom.HiddenSsidMode.kEnabled :
@@ -807,7 +813,7 @@ Polymer({
   },
 
   /**
-   * Updates auto-connect pref value.
+   * Updates hidden pref value.
    * @private
    */
   updateHiddenPref_() {
@@ -1312,7 +1318,7 @@ Polymer({
    * @private
    */
   disableForget_(managedProperties, vpnConfigAllowed) {
-    if (this.disabled || !managedProperties) {
+    if (this.disabled_ || !managedProperties) {
       return true;
     }
     return managedProperties.type ===
@@ -1327,7 +1333,7 @@ Polymer({
    * @private
    */
   disableConfigure_(managedProperties, vpnConfigAllowed) {
-    if (this.disabled || !managedProperties) {
+    if (this.disabled_ || !managedProperties) {
       return true;
     }
     if (managedProperties.type ===
@@ -1568,7 +1574,7 @@ Polymer({
    * @private
    */
   shouldConnectDisconnectButtonBeDisabled_() {
-    if (this.disabled) {
+    if (this.disabled_) {
       return true;
     }
     if (this.enableConnect_(
@@ -1973,7 +1979,7 @@ Polymer({
    * @private
    */
   shouldPreferNetworkToggleBeDisabled_() {
-    return this.disabled ||
+    return this.disabled_ ||
         this.isNetworkPolicyEnforced(this.managedProperties_.priority);
   },
 
@@ -2379,5 +2385,23 @@ Polymer({
       return true;
     }
     return isActiveSim(networkState, this.deviceState_);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeDisabled_() {
+    if (!this.isUpdatedCellularUiEnabled_) {
+      return false;
+    }
+    if (!this.deviceState_ ||
+        this.deviceState_.type !==
+            chromeos.networkConfig.mojom.NetworkType.kCellular) {
+      return false;
+    }
+    // If this is a cellular device and inhibited, state cannot be changed, so
+    // the page's inputs should be disabled.
+    return OncMojo.deviceIsInhibited(this.deviceState_);
   }
 });

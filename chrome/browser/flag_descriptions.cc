@@ -704,6 +704,11 @@ const char kDesktopPWAsAppIconShortcutsMenuDescription[] =
     "Enable installed PWAs to include a menu of shortcuts associated with the "
     "app icon in the taskbar on Windows, or the dock on macOS or Linux.";
 
+const char kDesktopPWAsAppIconShortcutsMenuUIName[] =
+    "Desktop PWAs app icon shortcuts menu UI";
+const char kDesktopPWAsAppIconShortcutsMenuUIDescription[] =
+    "Show web app shortcuts in the shelf context menu";
+
 const char kDesktopPWAsAttentionBadgingCrOSName[] =
     "Desktop PWAs Attention Badging";
 const char kDesktopPWAsAttentionBadgingCrOSDescription[] =
@@ -3008,6 +3013,9 @@ const char kInterestFeedV2Description[] =
 
 const char kInterestFeedV2HeartsName[] = "Interest Feed v2 Hearts";
 const char kInterestFeedV2HeartsDescription[] = "Enable hearts on Feedv2.";
+
+const char kInterestFeedV2AutoplayName[] = "Interest Feed v2 Autoplay";
+const char kInterestFeedV2AutoplayDescription[] = "Enable autoplay on Feedv2.";
 
 const char kFeedShareName[] = "Share from feed";
 const char kFeedShareDescription[] = "Allow feed articles to be shared.";

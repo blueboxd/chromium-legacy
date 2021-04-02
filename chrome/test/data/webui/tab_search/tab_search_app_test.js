@@ -8,7 +8,7 @@ import {ProfileData, Tab, TabSearchApiProxyImpl, TabSearchAppElement, TabSearchS
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 import {flushTasks, waitAfterNextRender} from '../../test_util.m.js';
 
-import {generateSampleDataFromSiteNames, SAMPLE_RECENTLY_CLOSED_DATA, SAMPLE_WINDOW_DATA, SAMPLE_WINDOW_HEIGHT, sampleData} from './tab_search_test_data.js';
+import {generateSampleDataFromSiteNames, generateSampleTabsFromSiteNames, SAMPLE_RECENTLY_CLOSED_DATA, SAMPLE_WINDOW_DATA, SAMPLE_WINDOW_HEIGHT, sampleData} from './tab_search_test_data.js';
 import {initLoadTimeDataWithDefaults} from './tab_search_test_helper.js';
 import {TestTabSearchApiProxy} from './test_tab_search_api_proxy.js';
 
@@ -70,6 +70,22 @@ suite('TabSearchAppTest', () => {
         .ensureAllDomItemsAvailable();
 
     assertEquals(8, queryRows().length);
+  });
+
+  test('Limit recently closed tabs to the default display count', async () => {
+    await setupTest(
+        {
+          windows: [{
+            active: true,
+            height: SAMPLE_WINDOW_HEIGHT,
+            tabs: generateSampleTabsFromSiteNames(['OpenTab1'], true),
+          }],
+          recentlyClosedTabs: generateSampleTabsFromSiteNames(
+              ['RecentlyClosedTab1', 'RecentlyClosedTab2'], false),
+        },
+        {recentlyClosedDefaultItemDisplayCount: 1});
+
+    assertEquals(2, queryRows().length);
   });
 
   test('Default tab selection when data is present', async () => {
@@ -447,21 +463,6 @@ suite('TabSearchAppTest', () => {
     assertEquals(1, testProxy.getCallCount('showUI'));
   });
 
-  test('Submit feeedback footer disabled by default', async () => {
-    await setupTest(sampleData());
-    assertTrue(
-        tabSearchApp.shadowRoot.querySelector('#feedback-footer') === null);
-  });
-
-  test('Click on Sumit Feedback footer triggers action', async () => {
-    await setupTest(sampleData(), {'submitFeedbackEnabled': true});
-
-    const feedbackButton = /** @type {!HTMLButtonElement} */
-        (tabSearchApp.shadowRoot.querySelector('#feedback-footer'));
-    feedbackButton.click();
-    await testProxy.whenCalled('showFeedbackPage');
-  });
-
   test('Sort by most recent active tabs', async () => {
     const tabs = [
       {
@@ -508,20 +509,19 @@ suite('TabSearchAppTest', () => {
   });
 
   test('Escape key triggers close UI API', async () => {
-    await setupTest(sampleData(), {'submitFeedbackEnabled': true});
+    await setupTest(sampleData());
 
     const elements = [
       tabSearchApp.shadowRoot.querySelector('#searchField'),
       tabSearchApp.shadowRoot.querySelector('#tabsList'),
       tabSearchApp.shadowRoot.querySelector('#tabsList')
           .querySelector('tab-search-item'),
-      tabSearchApp.shadowRoot.querySelector('#feedback-footer'),
     ];
 
     for (const element of elements) {
       keyDownOn(element, 0, [], 'Escape');
     }
 
-    assertEquals(4, testProxy.getCallCount('closeUI'));
+    assertEquals(3, testProxy.getCallCount('closeUI'));
   });
 });

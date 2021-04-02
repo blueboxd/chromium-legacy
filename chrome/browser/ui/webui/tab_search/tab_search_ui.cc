@@ -37,7 +37,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"searchTabs", IDS_TAB_SEARCH_SEARCH_TABS},
       {"noResultsFound", IDS_TAB_SEARCH_NO_RESULTS_FOUND},
       {"closeTab", IDS_TAB_SEARCH_CLOSE_TAB},
-      {"submitFeedback", IDS_TAB_SEARCH_SUBMIT_FEEDBACK},
       {"a11yTabClosed", IDS_TAB_SEARCH_A11Y_TAB_CLOSED},
       {"a11yFoundTab", IDS_TAB_SEARCH_A11Y_FOUND_TAB},
       {"a11yFoundTabs", IDS_TAB_SEARCH_A11Y_FOUND_TABS},
@@ -47,10 +46,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"recentlyClosedTabs", IDS_TAB_SEARCH_RECENTLY_CLOSED_TABS},
   };
   source->AddLocalizedStrings(kStrings);
-
-  source->AddBoolean(
-      "submitFeedbackEnabled",
-      base::FeatureList::IsEnabled(features::kTabSearchFeedback));
   source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
 
   // Add the configuration parameters for fuzzy search.
@@ -69,6 +64,10 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   source->AddBoolean("moveActiveTabToBottom",
                      features::kTabSearchMoveActiveTabToBottom.Get());
   source->AddLocalizedString("close", IDS_CLOSE);
+
+  source->AddInteger(
+      "recentlyClosedDefaultItemDisplayCount",
+      features::kTabSearchRecentlyClosedDefaultItemDisplayCount.Get());
 
   ui::Accelerator accelerator(ui::VKEY_A,
                               ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR);

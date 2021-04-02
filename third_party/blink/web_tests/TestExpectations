@@ -492,10 +492,6 @@ crbug.com/148499 external/wpt/svg/extensibility/foreignObject/will-change-in-for
 
 crbug.com/819617 [ Linux ] virtual/text-antialias/descent-clip-in-scaled-page.html [ Failure ]
 
-# Sometimes still blurred on the edges.
-crbug.com/1169154 [ Linux ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
-crbug.com/1169154 [ Win ] virtual/threaded/external/wpt/css/css-animations/nested-scale-animations.html [ Failure ]
-
 # ====== Paint team owned tests to here ======
 
 crbug.com/1142958 external/wpt/layout-instability/absolute-child-shift-with-parent-will-change.html [ Failure ]
@@ -761,8 +757,7 @@ crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Fai
 crbug.com/1155036 external/wpt/css/css-flexbox/contain-size-layout-abspos-flex-container-crash.html [ Crash Pass ]
 
 # Column flexboxes don't give tables the right height.
-crbug.com/1181403 external/wpt/css/css-flexbox/table-as-item-specified-height.html [ Failure ]
-crbug.com/1181403 external/wpt/css/css-flexbox/table-as-item-inflexible-in-column-2.html [ Failure ]
+
 crbug.com/1181403 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size-3.html [ Failure ]
 
 # These tests are in conflict with overflow-area-*, update them if our change is web compatible.

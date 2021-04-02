@@ -111,7 +111,7 @@ AppServiceAppWindowLauncherController::
 
   // We need to remove all Registry observers for added users.
   for (auto* profile : profile_list_) {
-    apps::AppServiceProxy* proxy =
+    apps::AppServiceProxyChromeOs* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
     proxy->InstanceRegistry().RemoveObserver(this);
   }
@@ -292,7 +292,7 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   // controller on window destroying. Controller will be closed onTaskDestroyed
   // event which is generated when actual task is destroyed.
   if (arc_tracker_ && arc::GetWindowTaskId(window) != arc::kNoTaskId) {
-    arc_tracker_->OnWindowDestroying(window);
+    arc_tracker_->HandleWindowDestroying(window);
     aura_window_to_app_window_.erase(window);
     return;
   }
@@ -702,7 +702,7 @@ void AppServiceAppWindowLauncherController::UserHasAppOnActiveDesktop(
       MultiUserWindowManagerHelper::GetInstance();
   aura::Window* other_window = nullptr;
   for (auto* it : profile_list_) {
-    apps::AppServiceProxy* proxy =
+    apps::AppServiceProxyChromeOs* proxy =
         apps::AppServiceProxyFactory::GetForProfile(it);
     if (proxy == proxy_)
       continue;

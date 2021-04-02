@@ -2433,6 +2433,7 @@
         'mixins': [
           'lollipop',
           'hammerhead',
+          'enable_resultdb',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
@@ -2443,6 +2444,9 @@
         'os_type': 'android',
       },
       'android-marshmallow-arm64-rel-swarming': {
+        'mixins': [
+          'enable_resultdb',
+        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
         },
@@ -2803,6 +2807,7 @@
           'gtest_tests': 'paeverywhere_android_gtests',
         },
         'mixins': [
+          'enable_resultdb',
           'walleye',
         ],
       },
@@ -2871,17 +2876,6 @@
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_arm64_isolated_scripts',
-        },
-        'mixins': [
-          'arm64',
-          'docker',
-          'linux-xenial',
-        ],
-      },
-      'fuchsia-fyi-arm64-size': {
-        'additional_compile_targets': [],
-        'test_suites': {
-          'isolated_scripts': 'fuchsia_sizes_tests',
         },
         'mixins': [
           'arm64',
@@ -3867,6 +3861,7 @@
         'mixins': [
           'marshmallow',
           'bullhead',
+          'enable_resultdb',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
@@ -4170,6 +4165,7 @@
         'os_type': 'lacros',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'linux_amd_rx_5500_xt',
         ],
         'test_suites': {

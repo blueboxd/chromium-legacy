@@ -25,7 +25,6 @@ import {Tab, Window} from './tab_search.mojom-webui.js';
 import {TabSearchApiProxy, TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
 import {TitleItem} from './title_item.js';
 
-
 // The minimum number of list items we allow viewing regardless of browser
 // height. Includes a half row that hints to the user the capability to scroll.
 /** @type {number} */
@@ -101,15 +100,16 @@ export class TabSearchAppElement extends PolymerElement {
       },
 
       /** @private {boolean} */
-      feedbackButtonEnabled_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('submitFeedbackEnabled'),
-      },
-
-      /** @private {boolean} */
       moveActiveTabToBottom_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('moveActiveTabToBottom'),
+      },
+
+      recentlyClosedDefaultItemDisplayCount_: {
+        type: Number,
+        value: () =>
+            /** @type {number} */ (
+                loadTimeData.getValue('recentlyClosedDefaultItemDisplayCount')),
       },
 
       /** @private */
@@ -223,15 +223,8 @@ export class TabSearchAppElement extends PolymerElement {
    * @private
    */
   listMaxHeight_(height) {
-    const footerHeight =
-        (this.feedbackButtonEnabled_ ?
-             /** @type {HTMLElement} */ (
-                 this.shadowRoot.getElementById('feedback-footer'))
-                 .offsetHeight :
-             0);
-
     return Math.max(
-        height - this.$.searchField.offsetHeight - footerHeight,
+        height - this.$.searchField.offsetHeight,
         Math.round(
             MINIMUM_AVAILABLE_HEIGHT_LIST_ITEM_COUNT *
             this.getStylePropertyPixelValue_('--mwb-item-height')));
@@ -351,16 +344,6 @@ export class TabSearchAppElement extends PolymerElement {
           length == 1 ? 'a11yFoundTab' : 'a11yFoundTabs', length);
     }
     return text;
-  }
-
-  /** @private */
-  onFeedbackClick_() {
-    this.apiProxy_.showFeedbackPage();
-  }
-
-  /** @private */
-  onFeedbackFocus_() {
-    /** @type {!InfiniteList} */ (this.$.tabsList).selected = NO_SELECTION;
   }
 
   /**
@@ -620,8 +603,12 @@ export class TabSearchAppElement extends PolymerElement {
 
     this.filteredOpenTabs_ =
         fuzzySearch(this.searchText_, openTabs, this.fuzzySearchOptions_);
-    this.filteredRecentlyClosedTabs_ = fuzzySearch(
+    const filteredRecentlyClosedTabs = fuzzySearch(
         this.searchText_, recentlyClosedTabs, this.fuzzySearchOptions_);
+    this.filteredRecentlyClosedTabs_ = this.searchText_.length ?
+        filteredRecentlyClosedTabs :
+        filteredRecentlyClosedTabs.slice(
+            0, this.recentlyClosedDefaultItemDisplayCount_);
     this.searchResultText_ = this.getA11ySearchResultText_();
   }
 

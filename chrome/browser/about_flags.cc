@@ -3821,6 +3821,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"feed-v2-hearts", flag_descriptions::kInterestFeedV2HeartsName,
      flag_descriptions::kInterestFeedV2HeartsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2Hearts)},
+    {"feed-v2-autoplay", flag_descriptions::kInterestFeedV2AutoplayName,
+     flag_descriptions::kInterestFeedV2AutoplayDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kInterestFeedV2Autoplay)},
     {"feed-share", flag_descriptions::kFeedShareName,
      flag_descriptions::kFeedShareDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kFeedShare)},
@@ -7220,6 +7223,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"sanitizer-api", flag_descriptions::kSanitizerApiName,
      flag_descriptions::kSanitizerApiDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kSanitizerAPI)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-desktop-pwas-app-icon-shortcuts-menu-ui",
+     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIName,
+     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsAppIconShortcutsMenuUI)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

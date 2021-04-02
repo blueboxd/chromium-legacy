@@ -14,6 +14,9 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -47,6 +50,9 @@
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "resultdb": {
+          "enable": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -92,6 +98,9 @@
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "angle_perftests",
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -347,7 +356,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -715,7 +725,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -7363,6 +7374,7 @@
               "pool": "chromium.tests.gpu.experimental"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -7383,8 +7395,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7422,8 +7433,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7461,8 +7471,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7500,8 +7509,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7543,8 +7551,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7586,7 +7593,6 @@
           "--no-xvfb",
           "--use-weston",
           "--weston-use-gl",
-          "--weston-debug-logging",
           "--git-revision=${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -7634,7 +7640,6 @@
           "--no-xvfb",
           "--use-weston",
           "--weston-use-gl",
-          "--weston-debug-logging",
           "--git-revision=${got_revision}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -7679,8 +7684,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7718,8 +7722,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7758,8 +7761,7 @@
           "--xvfb",
           "--no-xvfb",
           "--use-weston",
-          "--weston-use-gl",
-          "--weston-debug-logging"
+          "--weston-use-gl"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9289,7 +9291,8 @@
             }
           ],
           "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -10183,7 +10186,8 @@
             }
           ],
           "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -12076,7 +12080,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -24458,7 +24463,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -26247,7 +26253,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -26792,7 +26799,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -28367,7 +28375,8 @@
             }
           ],
           "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -29381,7 +29390,8 @@
             }
           ],
           "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -30426,7 +30436,8 @@
             }
           ],
           "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -31353,7 +31364,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -33253,7 +33265,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },
@@ -34422,7 +34435,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_perftests/"
       },

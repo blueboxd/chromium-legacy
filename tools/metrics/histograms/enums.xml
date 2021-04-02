@@ -13188,6 +13188,7 @@ Called by update_net_error_codes.py.-->
   <int value="70" label="Insecure private network requests"/>
   <int value="71" label="Font Access"/>
   <int value="74" label="Display Capture"/>
+  <int value="75" label="File Handling"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -14017,6 +14018,32 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Secure cookie, source scheme is not cryptographic"/>
   <int value="2" label="Not Secure cookie, source scheme is cryptographic"/>
   <int value="3" label="Not Secure cookie, source scheme is not cryptographic"/>
+</enum>
+
+<enum name="CookieSourceSchemeName">
+  <int value="0" label="Other Scheme"/>
+  <int value="1" label="About Blank URL"/>
+  <int value="2" label="About Srcdoc URL"/>
+  <int value="3" label="About Blank Path"/>
+  <int value="4" label="About Srcdoc Path"/>
+  <int value="5" label="About Scheme"/>
+  <int value="6" label="Blob Scheme"/>
+  <int value="7" label="Content Scheme"/>
+  <int value="8" label="Content ID Scheme"/>
+  <int value="9" label="Data Scheme"/>
+  <int value="10" label="File Scheme"/>
+  <int value="11" label="File System Scheme"/>
+  <int value="12" label="Ftp Scheme"/>
+  <int value="13" label="Http Scheme"/>
+  <int value="14" label="Https Scheme"/>
+  <int value="15" label="JavaScript Scheme"/>
+  <int value="16" label="MailTo Scheme"/>
+  <int value="17" label="Quic Transport Scheme"/>
+  <int value="18" label="Tel Scheme"/>
+  <int value="19" label="Urn Scheme"/>
+  <int value="20" label="Ws Scheme"/>
+  <int value="21" label="Wss Scheme"/>
+  <int value="22" label="Chrome Extension Scheme"/>
 </enum>
 
 <enum name="CookieStoreMatchType">
@@ -26926,6 +26953,7 @@ Called by update_extension_histograms.py.-->
   <int value="1547" label="AUTOTESTPRIVATE_INSTALLBOREALIS"/>
   <int value="1548" label="LANGUAGESETTINGSPRIVATE_SETTRANSLATETARGETLANGUAGE"/>
   <int value="1549" label="LANGUAGESETTINGSPRIVATE_GETNEVERTRANSLATELANGUAGES"/>
+  <int value="1550" label="ACTION_GETUSERSETTINGS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -32016,6 +32044,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3868" label="PrefersColorSchemeMediaFeature"/>
   <int value="3869" label="PrefersContrastMediaFeature"/>
   <int value="3870" label="ForcedColorsMediaFeature"/>
+  <int value="3871" label="PaymentRequestCSPViolation"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32163,6 +32192,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="2" label="Clicked on Learn more"/>
   <int value="3" label="Toggled the feed"/>
   <int value="4" label="Clicked on the feed menu button"/>
+  <int value="5" label="Clicked on autoplay"/>
 </enum>
 
 <enum name="FeedEngagementType">
@@ -32343,6 +32373,12 @@ Called by update_permissions_policy_enum.py.-->
 
 <enum name="FeedUserCommandType">
   <int value="0" label="Enum placerholder. See crbug/1179826"/>
+</enum>
+
+<enum name="FeedVideoPreviewsPreferenceUserActions">
+  <int value="0" label="Clicked on Never"/>
+  <int value="1" label="Clicked on Wi-Fi"/>
+  <int value="2" label="Clicked on Wi-Fi and mobile data"/>
 </enum>
 
 <enum name="FeedZeroStateShowReason">
@@ -43976,6 +44012,7 @@ from previous Chrome versions.
   <int value="-1962588488" label="SpeculativePreconnect:disabled"/>
   <int value="-1961931929" label="ContextualSuggestionsBottomSheet:enabled"/>
   <int value="-1961648833" label="show_summary"/>
+  <int value="-1961071650" label="InterestFeedV2Autoplay:disabled"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1959563554" label="ChromeOSAccountManager:enabled"/>
@@ -45029,6 +45066,7 @@ from previous Chrome versions.
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
   <int value="-1082053427"
       label="OmniboxUIExperimentElideToRegistrableDomain:disabled"/>
+  <int value="-1081705762" label="DesktopPWAsAppIconShortcutsMenuUI:disabled"/>
   <int value="-1081295536"
       label="ContextMenuSearchAndShopWithGoogleLens:enabled"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
@@ -45303,6 +45341,7 @@ from previous Chrome versions.
   <int value="-844786349" label="ClipboardHistoryNudgeSessionReset:enabled"/>
   <int value="-844537521" label="HttpFormWarning:disabled"/>
   <int value="-844381918" label="ArcNativeBridgeExperiment:disabled"/>
+  <int value="-844067635" label="InterestFeedV2Autoplay:enabled"/>
   <int value="-843496368" label="AutofillRejectCompanyBirthyear:disabled"/>
   <int value="-842438090" label="enable-md-feedback"/>
   <int value="-839664591" label="enable-web-authentication-testing-api"/>
@@ -47797,6 +47836,7 @@ from previous Chrome versions.
   <int value="1436454450" label="InterestFeedV2:disabled"/>
   <int value="1437413720" label="CooperativeScheduling:disabled"/>
   <int value="1440618113" label="EnableNetworkingInDiagnosticsApp:disabled"/>
+  <int value="1440881073" label="DesktopPWAsAppIconShortcutsMenuUI:enabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
   <int value="1441978318" label="WifiSyncAndroid:disabled"/>
   <int value="1442129147"
@@ -65641,6 +65681,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Other Device Tab"/>
   <int value="2" label="Restore Window"/>
   <int value="3" label="Show More"/>
+  <int value="4" label="Limit Recent Tab Action"/>
+  <int value="5" label="Restore Group"/>
 </enum>
 
 <enum name="RecommendAppsResponseParseResult">

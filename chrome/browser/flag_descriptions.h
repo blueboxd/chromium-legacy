@@ -431,6 +431,9 @@ extern const char kColorProviderRedirectionDescription[];
 extern const char kDesktopPWAsAppIconShortcutsMenuName[];
 extern const char kDesktopPWAsAppIconShortcutsMenuDescription[];
 
+extern const char kDesktopPWAsAppIconShortcutsMenuUIName[];
+extern const char kDesktopPWAsAppIconShortcutsMenuUIDescription[];
+
 extern const char kDesktopPWAsAttentionBadgingCrOSName[];
 extern const char kDesktopPWAsAttentionBadgingCrOSDescription[];
 extern const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[];
@@ -1741,6 +1744,9 @@ extern const char kInterestFeedV2Description[];
 
 extern const char kInterestFeedV2HeartsName[];
 extern const char kInterestFeedV2HeartsDescription[];
+
+extern const char kInterestFeedV2AutoplayName[];
+extern const char kInterestFeedV2AutoplayDescription[];
 
 extern const char kFeedShareName[];
 extern const char kFeedShareDescription[];

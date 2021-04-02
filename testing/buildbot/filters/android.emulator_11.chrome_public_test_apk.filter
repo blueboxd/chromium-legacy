@@ -57,3 +57,14 @@
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testRendererCrashOnSuspendedTab
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabAddedFromCustomTab
 -org.chromium.chrome.browser.usage_stats.TabSuspensionTest.testTabUnsuspendedInBackground
+
+# crbug.com/1195097
+-org.chromium.chrome.browser.permissions.RuntimePermissionTest.testDenyRuntimeDownload
+
+# crbug.com/1195124
+-org.chromium.chrome.browser.omnibox.OmniboxTest.testSecurityIconOnHTTPSFocusAndBack
+
+# crbug.com/1195129
+-org.chromium.chrome.browser.omnibox.suggestions.SwitchToTabTest.testSwitchToTabInSearchActivity
+-org.chromium.chrome.browser.omnibox.suggestions.SwitchToTabTest.testSwitchToTabSuggestionWhenIncognitoTabOnTop
+-org.chromium.chrome.browser.omnibox.suggestions.SwitchToTabTest.testSwitchToTabSuggestion

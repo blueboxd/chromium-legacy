@@ -22,6 +22,8 @@
   'basic_suites': {
     'android_ar_gtests': {
       'monochrome_public_test_ar_apk': {},
+      # Name is vr_*, but actually has AR tests.
+      'vr_android_unittests': {},
     },
     'android_ddready_vr_gtests': {
       'chrome_public_test_vr_apk-ddready-cardboard': {
@@ -2485,6 +2487,9 @@
             '--smoke-test-mode',
           ],
         },
+        'swarming': {
+          'shards': 2,
+        },
         'android_swarming': {
           'shards': 6,
         },
@@ -2651,7 +2656,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -2667,7 +2671,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3037,7 +3040,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'args': [
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
@@ -3056,7 +3058,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3073,7 +3074,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3089,7 +3089,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3117,7 +3116,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -3146,7 +3144,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -3175,7 +3172,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3413,7 +3409,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'args': [
           '--extra-browser-args=--use-cmd-decoder=validating',
@@ -3432,7 +3427,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3449,7 +3443,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3465,7 +3458,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3493,7 +3485,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -3522,7 +3513,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -3551,7 +3541,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3611,7 +3600,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3691,7 +3679,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3780,7 +3767,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'mixins': [
           'enable_resultdb',
@@ -3919,7 +3905,6 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
-          '--weston-debug-logging',
         ],
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
@@ -4621,19 +4606,6 @@
           'chrome-gold-service-account',
           'skia_gold_test',
         ],
-      },
-    },
-
-    'non_skia_renderer_gtests': {
-      'non_skia_renderer_content_browsertests': {
-        'args': [
-          '--disable-features=UseSkiaRenderer',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter',
-        ],
-        'swarming': {
-          'shards': 1,
-        },
-        'test': 'content_browsertests',
       },
     },
 
@@ -5749,7 +5721,6 @@
     #   'chromium_gtests',
     #   'chromium_gtests_for_devices_with_graphical_output',
     #   'linux_flavor_specific_chromium_gtests',
-    #   'non_skia_renderer_gtests',
     #   'system_webview_shell_instrumentation_tests', # Not an experimental test
     #   'vr_platform_specific_chromium_gtests',
     #   'weblayer_android_gtests',
@@ -5943,7 +5914,6 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'non_android_chromium_gtests_skia_gold',
-      'non_skia_renderer_gtests',
       'pixel_browser_tests_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',

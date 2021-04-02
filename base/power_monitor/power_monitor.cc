@@ -22,6 +22,9 @@ void PowerMonitor::Initialize(std::unique_ptr<PowerMonitorSource> source) {
   // initial state is propagated to observers, if needed.
   PowerMonitor::NotifyPowerStateChange(
       PowerMonitor::Source()->IsOnBatteryPower());
+
+  PowerMonitor::PowerMonitor::NotifyThermalStateChange(
+      PowerMonitor::Source()->GetCurrentThermalState());
 }
 
 bool PowerMonitor::IsInitialized() {
@@ -76,6 +79,16 @@ bool PowerMonitor::AddPowerStateObserverAndReturnOnBatteryState(
   return power_monitor->on_battery_power_;
 }
 
+// static
+PowerThermalObserver::DeviceThermalState
+PowerMonitor::AddPowerStateObserverAndReturnPowerThermalState(
+    PowerThermalObserver* obs) {
+  PowerMonitor* power_monitor = GetInstance();
+  AutoLock auto_lock(power_monitor->power_thermal_state_lock_);
+  power_monitor->thermal_state_observers_->AddObserver(obs);
+  return power_monitor->power_thermal_state_;
+}
+
 PowerMonitorSource* PowerMonitor::Source() {
   return GetInstance()->source_.get();
 }
@@ -98,6 +111,11 @@ void PowerMonitor::ShutdownForTesting() {
   {
     AutoLock auto_lock(power_monitor->on_battery_power_lock_);
     power_monitor->on_battery_power_ = false;
+  }
+  {
+    AutoLock auto_lock(power_monitor->power_thermal_state_lock_);
+    power_monitor->power_thermal_state_ =
+        PowerThermalObserver::DeviceThermalState::kUnknown;
   }
 }
 
@@ -171,8 +189,14 @@ void PowerMonitor::NotifyThermalStateChange(
   DCHECK(IsInitialized());
   DVLOG(1) << "ThermalStateChange: "
            << PowerMonitorSource::DeviceThermalStateToString(new_state);
-  GetInstance()->thermal_state_observers_->Notify(
-      FROM_HERE, &PowerThermalObserver::OnThermalStateChange, new_state);
+
+  PowerMonitor* power_monitor = GetInstance();
+  AutoLock auto_lock(power_monitor->power_thermal_state_lock_);
+  if (power_monitor->power_thermal_state_ != new_state) {
+    power_monitor->power_thermal_state_ = new_state;
+    GetInstance()->thermal_state_observers_->Notify(
+        FROM_HERE, &PowerThermalObserver::OnThermalStateChange, new_state);
+  }
 }
 
 PowerMonitor* PowerMonitor::GetInstance() {

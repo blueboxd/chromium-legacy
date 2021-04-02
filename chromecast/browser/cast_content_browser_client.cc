@@ -213,6 +213,9 @@ media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
 
 void CastContentBrowserClient::InitializeURLLoaderThrottleDelegate() {}
 
+void CastContentBrowserClient::SetPersistentCookieAccessSettings(
+    PrefService* pref_service) {}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 CastContentBrowserClient::GetMediaTaskRunner() {
   if (!media_thread_) {
@@ -772,9 +775,9 @@ void CastContentBrowserClient::GetAdditionalWebUISchemes(
   additional_schemes->push_back(kChromeResourceScheme);
 }
 
-content::DevToolsManagerDelegate*
-CastContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new CastDevToolsManagerDelegate();
+std::unique_ptr<content::DevToolsManagerDelegate>
+CastContentBrowserClient::CreateDevToolsManagerDelegate() {
+  return std::make_unique<CastDevToolsManagerDelegate>();
 }
 
 std::unique_ptr<content::NavigationUIData>

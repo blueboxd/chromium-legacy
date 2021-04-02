@@ -3756,7 +3756,6 @@ if (is_android) {
     srcjar_deps = [
       ":base_android_java_enums_srcjar",
       ":base_java_aidl",
-      ":base_native_libraries_gen",
       ":java_switches_srcjar",
     ]
 
@@ -3771,6 +3770,7 @@ if (is_android) {
     public_deps = [
       ":jni_java",
       "//build/android:build_config_java",
+      "//build/android:native_libraries_java",
     ]
 
     sources = [
@@ -3928,12 +3928,6 @@ if (is_android) {
 
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
-    # New versions of BuildConfig.java and NativeLibraries.java
-    # (with the actual correct values) will be created when creating an apk.
-    jar_excluded_patterns = [
-      "*/NativeLibraries.class",
-      "*/NativeLibraries##*.class",
-    ]
     resources_package = "org.chromium.base"
   }
 
@@ -4128,7 +4122,7 @@ if (is_android) {
 
     # Make sure robolectric tests have classes filtered out of base_java by
     # jar_excluded_patterns.
-    srcjar_deps = [ ":base_native_libraries_gen" ]
+    srcjar_deps = [ "//build/android:native_libraries_gen", ]
     deps = [
       ":base_java",
       "//testing/android/junit:junit_test_support",
@@ -4223,10 +4217,6 @@ if (is_android) {
 
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
     deps = [ "//base:base_java" ]
-  }
-
-  write_native_libraries_java("base_native_libraries_gen") {
-    use_final_fields = false
   }
 
   android_library("base_java_unittest_support") {

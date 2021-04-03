@@ -126,7 +126,7 @@
       'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_google_expectations',
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
-      'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
+      'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_google',
       'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
     },
 
@@ -325,7 +325,7 @@
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
-      'fuchsia-fyi-x64-rel': 'release_bot_fuchsia_official',
+      'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
       'ios13-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios13-sdk-device': 'ios_device_release_static_bot_xctest',
       'ios13-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
@@ -1407,6 +1407,12 @@
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
       'strip_debug_info', 'android_fastbuild', 'webview_google',
+    ],
+
+    'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_google': [
+      'android', 'release_bot', 'minimal_symbols', 'x86',
+      'strip_debug_info', 'android_fastbuild', 'webview_google',
+      'disable_proguard'
     ],
 
     'android_release_trybot': [
@@ -2599,10 +2605,6 @@
 
     'release_bot_fuchsia_arm64_cast': [
       'release_bot', 'fuchsia', 'arm64', 'cast', 'no_symbols',
-    ],
-
-    'release_bot_fuchsia_official': [
-      'release_bot', 'fuchsia', 'official_optimize',
     ],
 
     'release_bot_mac_strip_minimal_symbols': [

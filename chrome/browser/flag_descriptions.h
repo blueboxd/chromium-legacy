@@ -1255,6 +1255,12 @@ extern const char kSidePanelPrototypeDescription[];
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
 
+extern const char kSharingHubDesktopAppMenuName[];
+extern const char kSharingHubDesktopAppMenuDescription[];
+
+extern const char kSharingHubDesktopOmniboxName[];
+extern const char kSharingHubDesktopOmniboxDescription[];
+
 extern const char kSharingPeerConnectionReceiverName[];
 extern const char kSharingPeerConnectionReceiverDescription[];
 
@@ -2067,6 +2073,9 @@ extern const char kOmniboxPedalSuggestionsDescription[];
 
 extern const char kOmniboxPedalsBatch2Name[];
 extern const char kOmniboxPedalsBatch2Description[];
+
+extern const char kOmniboxPedalsDefaultIconColoredName[];
+extern const char kOmniboxPedalsDefaultIconColoredDescription[];
 
 extern const char kOmniboxKeywordSearchButtonName[];
 extern const char kOmniboxKeywordSearchButtonDescription[];

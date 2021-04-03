@@ -20,8 +20,10 @@
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/posix/safe_strerror.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/task/current_thread.h"
@@ -50,8 +52,7 @@ namespace {
 
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
-constexpr const size_t kUnixMaxPathLen = sizeof(sockaddr_un::sun_path);
-constexpr const char kArcVmBootNotificationServerAddress[kUnixMaxPathLen] =
+constexpr const char kArcVmBootNotificationServerAddressPrefix[] =
     "\0test_arcvm_boot_notification_server";
 constexpr char kArcVmPreLoginServicesJobName[] =
     "arcvm_2dpre_2dlogin_2dservices";
@@ -89,6 +90,13 @@ UpgradeParams GetPopulatedUpgradeParams() {
   params.is_demo_session = true;
   params.demo_session_apps_path = base::FilePath("/pato/to/demo.apk");
   return params;
+}
+
+std::string GenerateAbstractAddress() {
+  std::string address(kArcVmBootNotificationServerAddressPrefix,
+                      sizeof(kArcVmBootNotificationServerAddressPrefix) - 1);
+  return address.append("-" +
+                        base::GUID::GenerateRandomV4().AsLowercaseString());
 }
 
 // A debugd client that can fail to start Concierge.
@@ -185,19 +193,26 @@ class TestArcVmBootNotificationServer
 
   // Creates a socket and binds it to a name in the abstract namespace, then
   // starts listening to the socket on another thread.
-  void Start() {
+  void Start(const std::string& abstract_addr) {
     fd_.reset(socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0));
-    ASSERT_TRUE(fd_.is_valid());
+    ASSERT_TRUE(fd_.is_valid())
+        << "open failed with " << base::safe_strerror(errno);
 
     sockaddr_un addr{.sun_family = AF_UNIX};
-    memcpy(addr.sun_path, kArcVmBootNotificationServerAddress,
-           sizeof(kArcVmBootNotificationServerAddress));
+    ASSERT_LT(abstract_addr.size(), sizeof(addr.sun_path))
+        << "abstract_addr is too long: " << abstract_addr;
+    ASSERT_EQ('\0', abstract_addr[0])
+        << "abstract_addr is not abstract: " << abstract_addr;
+    memset(addr.sun_path, 0, sizeof(addr.sun_path));
+    memcpy(addr.sun_path, abstract_addr.data(), abstract_addr.size());
+    LOG(INFO) << "Abstract address: \\0" << &(addr.sun_path[1]);
 
     ASSERT_EQ(HANDLE_EINTR(bind(fd_.get(), reinterpret_cast<sockaddr*>(&addr),
                                 sizeof(sockaddr_un))),
-              0);
-    ASSERT_EQ(HANDLE_EINTR(listen(fd_.get(), 5)), 0);
-
+              0)
+        << "bind failed with " << base::safe_strerror(errno);
+    ASSERT_EQ(HANDLE_EINTR(listen(fd_.get(), 5)), 0)
+        << "listen failed with " << base::safe_strerror(errno);
     controller_.reset(new base::MessagePumpForUI::FdWatchController(FROM_HERE));
     ASSERT_TRUE(base::CurrentUIThread::Get()->WatchFileDescriptor(
         fd_.get(), true, base::MessagePumpForUI::WATCH_READ, controller_.get(),
@@ -311,11 +326,11 @@ class ArcVmClientAdapterTest : public testing::Test,
     RemoveUpstartStartStopJobFailures();
     SetArcVmBootNotificationServerFdForTesting(base::nullopt);
 
+    const std::string abstract_addr(GenerateAbstractAddress());
     boot_server_ = std::make_unique<TestArcVmBootNotificationServer>();
-    boot_server_->Start();
+    boot_server_->Start(abstract_addr);
     SetArcVmBootNotificationServerAddressForTesting(
-        std::string(kArcVmBootNotificationServerAddress,
-                    sizeof(kArcVmBootNotificationServerAddress)),
+        abstract_addr,
         // connect_timeout_limit
         base::TimeDelta::FromMilliseconds(100),
         // connect_sleep_duration_initial

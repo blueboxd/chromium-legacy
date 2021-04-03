@@ -3077,6 +3077,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.Startup.CreationTime.StartChromiumLocked"
+    units="ms" expires_after="2022-02-26">
+  <owner>amalova@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>How long it takes to run startChromiumLocked.</summary>
+</histogram>
+
+<histogram name="Android.WebView.Startup.CreationTime.TotalFactoryInitTime"
+    units="ms" expires_after="2022-02-26">
+  <owner>amalova@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    The total time to initialize WebViewChromiumFactoryProvider.
+
+    This measurement is different from Stage1.FactoryInit as it takes into
+    accout time spent in framework.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.Startup.DataDirLockAttempts" units="attempts"
     expires_after="2020-12-10">
   <obsolete>
@@ -3103,6 +3122,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     process previously, upon entry to the initialization function. This should
     never be true under normal circumstances and may indicate an application
     catching an exception thrown by initialization and discarding it.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Startup.InitType"
+    enum="AndroidWebViewInitType" expires_after="2021-07-01">
+  <owner>torne@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records which thread WebView initialization started from. The metric is
+    recorded during the first startChromiumLocked call.
   </summary>
 </histogram>
 

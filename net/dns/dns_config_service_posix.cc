@@ -173,8 +173,7 @@ class DnsConfigServicePosix::Watcher : public DnsConfigService::Watcher {
 };
 
 // A SerialWorker that uses libresolv to initialize res_state and converts
-// it to DnsConfig (except on Android, where it reads system properties
-// net.dns1 and net.dns2; see #if around ReadDnsConfig above.)
+// it to DnsConfig.
 class DnsConfigServicePosix::ConfigReader : public SerialWorker {
  public:
   explicit ConfigReader(DnsConfigServicePosix& service) : service_(&service) {
@@ -264,7 +263,7 @@ base::Optional<DnsConfig> ConvertResStateToDnsConfig(
     }
     dns_config.nameservers.push_back(ipe);
   }
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS)
   static_assert(std::extent<decltype(res.nsaddr_list)>() >= MAXNS &&
                     std::extent<decltype(res._u._ext.nsaddrs)>() >= MAXNS,
                 "incompatible libresolv res_state");
@@ -289,8 +288,7 @@ base::Optional<DnsConfig> ConvertResStateToDnsConfig(
       return base::nullopt;
     dns_config.nameservers.push_back(ipe);
   }
-#else   // !(defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE) ||
-        // defined(OS_FREEBSD))
+#else   // !(defined(OS_CHROMEOS) || defined(OS_APPLE) || defined(OS_FREEBSD))
   DCHECK_LE(res.nscount, MAXNS);
   for (int i = 0; i < res.nscount; ++i) {
     IPEndPoint ipe;

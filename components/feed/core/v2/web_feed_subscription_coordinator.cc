@@ -148,12 +148,26 @@ class WebFeedSubscriptionModel {
       feedstore::RecommendedWebFeedIndex::Entry& entry =
           *store_index.add_entries();
       entry.set_web_feed_id(info.web_feed_id());
-      *entry.mutable_matchers() = info.uri_matchers();
+      *entry.mutable_matchers() = info.matchers();
     }
     index_->Populate(store_index);
     store_->WriteRecommendedFeeds(std::move(store_index),
                                   std::move(recommended_web_feeds),
                                   base::DoNothing());
+  }
+
+  // Updates subscribed web feeds in both index and store.
+  void UpdateSubscribedFeeds(
+      std::vector<feedstore::WebFeedInfo> subscribed_web_feeds) {
+    feedstore::SubscribedWebFeeds store_index;
+    store_index.set_update_time_millis(
+        feedstore::ToTimestampMillis(base::Time::Now()));
+    for (const feedstore::WebFeedInfo& info : subscribed_web_feeds) {
+      *store_index.add_feeds() = info;
+    }
+    index_->Populate(store_index);
+    store_->WriteSubscribedFeeds(std::move(store_index), base::DoNothing());
+    subscriptions_ = subscribed_web_feeds;
   }
 
   const std::vector<feedstore::WebFeedInfo>& subscriptions() const {
@@ -179,12 +193,18 @@ class WebFeedSubscriptionModel {
 WebFeedSubscriptionCoordinator::WebFeedSubscriptionCoordinator(
     FeedStream* feed_stream)
     : feed_stream_(feed_stream) {
-  base::TimeDelta delay = GetFeedConfig().fetch_recommended_web_feeds_delay;
+  base::TimeDelta delay = GetFeedConfig().fetch_web_feed_info_delay;
   if (IsSignedInAndWebFeedsEnabled() && !delay.is_zero()) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(
             &WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsIfStale,
+            GetWeakPtr()),
+        delay);
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            &WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsIfStale,
             GetWeakPtr()),
         delay);
   }
@@ -205,8 +225,8 @@ void WebFeedSubscriptionCoordinator::Populate(
 void WebFeedSubscriptionCoordinator::ClearAllFinished() {
   index_.Populate(feedstore::RecommendedWebFeedIndex{});
   model_.reset();
-  // TODO(harringtond): Clear and fetch subscribed feeds.
   FetchRecommendedWebFeedsIfStale();
+  FetchSubscribedWebFeedsIfStale();
 }
 
 void WebFeedSubscriptionCoordinator::FollowWebFeed(
@@ -223,7 +243,7 @@ void WebFeedSubscriptionCoordinator::FollowWebFeedFromUrlStart(
     const WebFeedPageInformation& page_info,
     base::OnceCallback<void(FollowWebFeedResult)> callback) {
   DCHECK(model_);
-  WebFeedIndex::Entry entry = index_.FindWebFeedForUrl(page_info.url);
+  WebFeedIndex::Entry entry = index_.FindWebFeedForUrl(page_info.url());
 
   SubscribeToWebFeedTask::Request request;
   request.page_info = page_info;
@@ -324,7 +344,7 @@ void WebFeedSubscriptionCoordinator::FindWebFeedInfoForPage(
     base::OnceCallback<void(WebFeedMetadata)> callback) {
   if (!model_ && !loading_model_) {
     // No model loaded, try to answer the request without it.
-    WebFeedIndex::Entry entry = index_.FindWebFeedForUrl(page_info.url);
+    WebFeedIndex::Entry entry = index_.FindWebFeedForUrl(page_info.url());
     if (!entry.followed()) {
       LookupWebFeedDataAndRespond(
           entry.web_feed_id, /*maybe_page_info=*/nullptr, std::move(callback));
@@ -399,7 +419,7 @@ void WebFeedSubscriptionCoordinator::LookupWebFeedDataAndRespond(
   if (!id.empty()) {
     entry = index_.FindWebFeed(id);
   } else if (maybe_page_info) {
-    entry = index_.FindWebFeedForUrl(maybe_page_info->url);
+    entry = index_.FindWebFeedForUrl(maybe_page_info->url());
     if (entry)
       id = entry.web_feed_id;
   }
@@ -520,8 +540,7 @@ const InFlightChange* WebFeedSubscriptionCoordinator::FindInflightChange(
   const InFlightChange* result = nullptr;
   for (const InFlightChange& change : in_flight_changes_) {
     if ((maybe_page_info && change.page_information &&
-         // TODO(crbug/1152592): Decide how much we cna relax URL matching.
-         change.page_information->url == maybe_page_info->url) ||
+         change.page_information->url() == maybe_page_info->url()) ||
         (!web_feed_id.empty() && change.web_feed_info &&
          change.web_feed_info->web_feed_id() == web_feed_id)) {
       result = &change;
@@ -557,7 +576,7 @@ SubscriptionInfo WebFeedSubscriptionCoordinator::FindSubscriptionInfo(
     const WebFeedPageInformation& page_info) {
   DCHECK(model_);
   return model_->GetSubscriptionInfo(
-      index_.FindWebFeedForUrl(page_info.url).web_feed_id);
+      index_.FindWebFeedForUrl(page_info.url()).web_feed_id);
 }
 SubscriptionInfo WebFeedSubscriptionCoordinator::FindSubscriptionInfoById(
     const std::string& web_feed_id) {
@@ -598,8 +617,45 @@ void WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsComplete(
   fetching_recommended_web_feeds_ = false;
   feed_stream_->GetMetricsReporter().RefreshRecommendedWebFeedsAttempted(
       result.status, result.recommended_web_feeds.size());
-  if (result.status == RecommendedWebFeedRefreshStatus::kSuccess)
+  if (result.status == WebFeedRefreshStatus::kSuccess)
     model_->UpdateRecommendedFeeds(std::move(result.recommended_web_feeds));
+}
+
+void WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsIfStale() {
+  if (!IsSignedInAndWebFeedsEnabled())
+    return;
+
+  base::TimeDelta staleness =
+      base::Time::Now() - index_.GetSubscribedFeedsUpdateTime();
+  if (staleness > GetFeedConfig().subscribed_feeds_staleness_threshold ||
+      staleness < -base::TimeDelta::FromHours(1)) {
+    WithModel(base::BindOnce(
+        &WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsStart,
+        base::Unretained(this)));
+  }
+}
+
+void WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsStart() {
+  DCHECK(model_);
+  if (fetching_subscribed_web_feeds_)
+    return;
+  fetching_subscribed_web_feeds_ = true;
+  feed_stream_->GetTaskQueue().AddTask(
+      std::make_unique<FetchSubscribedWebFeedsTask>(
+          feed_stream_,
+          base::BindOnce(
+              &WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsComplete,
+              base::Unretained(this))));
+}
+
+void WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsComplete(
+    FetchSubscribedWebFeedsTask::Result result) {
+  DCHECK(model_);
+  fetching_subscribed_web_feeds_ = false;
+  feed_stream_->GetMetricsReporter().RefreshSubscribedWebFeedsAttempted(
+      result.status, result.subscribed_web_feeds.size());
+  if (result.status == WebFeedRefreshStatus::kSuccess)
+    model_->UpdateSubscribedFeeds(std::move(result.subscribed_web_feeds));
 }
 
 }  // namespace feed

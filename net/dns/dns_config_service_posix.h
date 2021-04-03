@@ -5,13 +5,11 @@
 #ifndef NET_DNS_DNS_CONFIG_SERVICE_POSIX_H_
 #define NET_DNS_DNS_CONFIG_SERVICE_POSIX_H_
 
-#include <memory>
-
-#if !defined(OS_ANDROID)
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <resolv.h>
-#endif
+
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -26,7 +24,8 @@ struct DnsConfig;
 // Use DnsConfigService::CreateSystemService to use it outside of tests.
 namespace internal {
 
-// Service for reading and watching POSIX system (except Android) DNS settings.
+// Service for reading and watching POSIX system (except Android and Linux) DNS
+// settings.
 // This object is not thread-safe and methods may perform blocking I/O so
 // methods must be called on a sequence that allows blocking (i.e.
 // base::MayBlock). It may be constructed on a different sequence than which
@@ -58,11 +57,9 @@ class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
   DISALLOW_COPY_AND_ASSIGN(DnsConfigServicePosix);
 };
 
-#if !defined(OS_ANDROID)
 // Returns nullopt iff a valid config could not be determined.
 base::Optional<DnsConfig> NET_EXPORT_PRIVATE
 ConvertResStateToDnsConfig(const struct __res_state& res);
-#endif
 
 }  // namespace internal
 

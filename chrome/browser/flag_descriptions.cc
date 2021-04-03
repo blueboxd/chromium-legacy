@@ -2165,6 +2165,14 @@ const char kSharedClipboardUIDescription[] =
     "Enables shared clipboard feature signals to be handled by showing "
     "a list of user's available devices to share the clipboard.";
 
+const char kSharingHubDesktopAppMenuName[] = "Desktop Sharing Hub in App Menu";
+const char kSharingHubDesktopAppMenuDescription[] =
+    "Enables the Chrome Sharing Hub in the 3-dot menu for desktop.";
+
+const char kSharingHubDesktopOmniboxName[] = "Desktop Sharing Hub in Omnibox";
+const char kSharingHubDesktopOmniboxDescription[] =
+    "Enables the Chrome Sharing Hub in the omnibox for desktop.";
+
 const char kSharingPeerConnectionReceiverName[] =
     "Enable receiver device to handle peer connection requests.";
 const char kSharingPeerConnectionReceiverDescription[] =
@@ -2835,11 +2843,11 @@ const char kChromeShareScreenshotDescription[] =
 
 const char kChromeSharingHubName[] = "Chrome Sharing Hub";
 const char kChromeSharingHubDescription[] =
-    "Enables the Chrome Sharing Hub/custom share sheet.";
+    "Enables the Chrome Sharing Hub/custom share sheet for Android.";
 
 const char kChromeSharingHubV15Name[] = "Chrome Sharing Hub V1.5";
 const char kChromeSharingHubV15Description[] =
-    "Enables v1.5 of the Chrome Sharing Hub.";
+    "Enables v1.5 of the Chrome Sharing Hub for Android.";
 
 const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =
@@ -3591,6 +3599,12 @@ const char kOmniboxPedalsBatch2Description[] =
     "Enable the second batch of Omnibox Pedals (Safety Check, etc.). "
     "This flag has no effect unless \"Omnibox Pedal suggestions\" is also "
     "enabled.";
+
+const char kOmniboxPedalsDefaultIconColoredName[] =
+    "Omnibox Pedals Default Icon Colored";
+const char kOmniboxPedalsDefaultIconColoredDescription[] =
+    "Enable a color version of the default icon shown on the button for most "
+    "omnibox Pedals (aka Chrome Actions).";
 
 const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";
 const char kOmniboxKeywordSearchButtonDescription[] =

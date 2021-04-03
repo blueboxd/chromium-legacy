@@ -21,8 +21,17 @@ constexpr int64_t kFollowerCount = 123;
 
 WebFeedPageInformation MakeWebFeedPageInformation(const std::string& url) {
   WebFeedPageInformation info;
-  info.url = GURL(url);
+  info.SetUrl(GURL(url));
   return info;
+}
+
+feedwire::webfeed::WebFeedMatcher MakeDomainMatcher(const std::string& domain) {
+  feedwire::webfeed::WebFeedMatcher result;
+  feedwire::webfeed::WebFeedMatcher::Criteria* criteria = result.add_criteria();
+  criteria->set_criteria_type(
+      feedwire::webfeed::WebFeedMatcher::Criteria::PAGE_URL_HOST_SUFFIX);
+  criteria->set_text(domain);
+  return result;
 }
 
 feedwire::webfeed::WebFeed MakeWireWebFeed(const std::string& name) {
@@ -33,7 +42,7 @@ feedwire::webfeed::WebFeed MakeWireWebFeed(const std::string& name) {
   result.set_detail_text("details...");
   result.set_visit_uri("https://" + name + ".com");
   result.set_follower_count(kFollowerCount);
-  result.add_uri_matchers()->set_domain_match(name + ".com");
+  *result.add_web_feed_matchers() = MakeDomainMatcher(name + ".com");
   return result;
 }
 
@@ -61,7 +70,7 @@ void WriteRecommendedFeeds(
   for (const auto& info : recommended_feeds) {
     auto* entry = index.add_entries();
     entry->set_web_feed_id(info.web_feed_id());
-    *entry->mutable_matchers() = info.uri_matchers();
+    *entry->mutable_matchers() = info.matchers();
   }
 
   store.WriteRecommendedFeeds(index, recommended_feeds, base::DoNothing());
@@ -72,6 +81,14 @@ class FeedApiSubscriptionsTest : public FeedApiTest {
   void SetUp() override {
     subscription_feature_list_.InitAndEnableFeature(kWebFeed);
     FeedApiTest::SetUp();
+  }
+
+  // The test fixture disables the delayed fetch after startup. This function
+  // makes the default config active instead, which allows delayed fetch at
+  // startup.
+  void SetUpWithDefaultConfig() {
+    SetFeedConfigForTesting(Config());
+    CreateStream();
   }
 
   // Get all subscriptions, and check that stored subscriptions match.
@@ -125,6 +142,15 @@ class FeedApiSubscriptionsTest : public FeedApiTest {
     feedwire::webfeed::ListRecommendedWebFeedsResponse response;
     for (const auto& feed : web_feeds) {
       *response.add_recommended_web_feeds() = feed;
+    }
+    network_.InjectResponse(response);
+  }
+
+  void InjectListWebFeedsResponse(
+      std::vector<feedwire::webfeed::WebFeed> web_feeds) {
+    feedwire::webfeed::ListWebFeedsResponse response;
+    for (const auto& feed : web_feeds) {
+      *response.add_web_feeds() = feed;
     }
     network_.InjectResponse(response);
   }
@@ -442,7 +468,7 @@ TEST_F(FeedApiSubscriptionsTest,
   WriteRecommendedFeeds(*store_, {MakeWebFeedInfo("catfood")});
   CreateStream();
   WebFeedPageInformation page_info;
-  page_info.url = GURL("https://catfood.com");
+  page_info.SetUrl(GURL("https://catfood.com"));
 
   CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> follow_callback;
   subscriptions().FollowWebFeed(page_info, follow_callback.Bind());
@@ -470,7 +496,9 @@ TEST_F(FeedApiSubscriptionsTest,
   // Check status during subscribe process.
   {
     CallbackReceiver<WebFeedMetadata> metadata;
-    subscriptions().FindWebFeedInfoForPage(page_info, metadata.Bind());
+    subscriptions().FindWebFeedInfoForPage(
+        MakeWebFeedPageInformation("https://cats.com#fragments-are-ignored"),
+        metadata.Bind());
 
     EXPECT_EQ("WebFeedMetadata{ status=kSubscribeInProgress }",
               PrintToString(metadata.RunAndGetResult()));
@@ -587,30 +615,22 @@ TEST_F(FeedApiSubscriptionsTest,
   base::test::ScopedFeatureList features;
   features.InitAndDisableFeature(kWebFeed);
 
-  // The test fixture disables the delayed fetch after startup. Use the default
-  // config instead.
-  SetFeedConfigForTesting(Config());
-  CreateStream();
+  SetUpWithDefaultConfig();
 
   // Wait until the delayed task would normally run, verify no request is made.
-  task_environment_.FastForwardBy(
-      GetFeedConfig().fetch_recommended_web_feeds_delay +
-      base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                  base::TimeDelta::FromSeconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(0, network_.GetListRecommendedWebFeedsRequestCount());
 }
 
 TEST_F(FeedApiSubscriptionsTest, RecommendedWebFeedsAreFetchedAfterStartup) {
-  // The test fixture disables the delayed fetch after startup. Use the default
-  // config instead.
-  SetFeedConfigForTesting(Config());
-  CreateStream();
+  SetUpWithDefaultConfig();
   InjectRecommendedWebFeedsResponse({MakeWireWebFeed("cats")});
 
   // Wait until the delayed task runs, and verify the network request was sent.
-  task_environment_.FastForwardBy(
-      GetFeedConfig().fetch_recommended_web_feeds_delay +
-      base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                  base::TimeDelta::FromSeconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
 
@@ -632,15 +652,13 @@ TEST_F(FeedApiSubscriptionsTest, RecommendedWebFeedsAreFetchedAfterStartup) {
 TEST_F(FeedApiSubscriptionsTest, RecommendedWebFeedsAreClearedOnSignOut) {
   // 1. Populate web feeds at startup for a signed-in users.
   {
-    SetFeedConfigForTesting(Config());
-    CreateStream();
+    SetUpWithDefaultConfig();
     InjectRecommendedWebFeedsResponse({MakeWireWebFeed("cats")});
 
     // Wait until the delayed task runs, and verify the network request was
     // sent.
-    task_environment_.FastForwardBy(
-        GetFeedConfig().fetch_recommended_web_feeds_delay +
-        base::TimeDelta::FromSeconds(1));
+    task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                    base::TimeDelta::FromSeconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
     ASSERT_EQ(
@@ -659,17 +677,13 @@ TEST_F(FeedApiSubscriptionsTest, RecommendedWebFeedsAreClearedOnSignOut) {
 
 TEST_F(FeedApiSubscriptionsTest,
        RecommendedWebFeedsAreFetchedAfterSignInButNotSignOut) {
-  // The test fixture disables the delayed fetch after startup. Use the default
-  // config instead.
-  SetFeedConfigForTesting(Config());
-  CreateStream();
+  SetUpWithDefaultConfig();
   InjectRecommendedWebFeedsResponse({MakeWireWebFeed("cats")});
   InjectRecommendedWebFeedsResponse({MakeWireWebFeed("dogs")});
 
   // Wait until the delayed task runs, and verify the network request was sent.
-  task_environment_.FastForwardBy(
-      GetFeedConfig().fetch_recommended_web_feeds_delay +
-      base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                  base::TimeDelta::FromSeconds(1));
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
 
@@ -695,13 +709,11 @@ TEST_F(FeedApiSubscriptionsTest,
   // 1. First, fetch recommended web feeds at startup, same as
   // RecommendedWebFeedsAreFetchedAfterStartup.
   {
-    SetFeedConfigForTesting(Config());
-    CreateStream();
+    SetUpWithDefaultConfig();
     InjectRecommendedWebFeedsResponse({MakeWireWebFeed("cats")});
 
-    task_environment_.FastForwardBy(
-        GetFeedConfig().fetch_recommended_web_feeds_delay +
-        base::TimeDelta::FromSeconds(1));
+    task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                    base::TimeDelta::FromSeconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
   }
@@ -711,9 +723,8 @@ TEST_F(FeedApiSubscriptionsTest,
   {
     CreateStream();
 
-    task_environment_.FastForwardBy(
-        GetFeedConfig().fetch_recommended_web_feeds_delay +
-        base::TimeDelta::FromSeconds(1));
+    task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                    base::TimeDelta::FromSeconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
   }
@@ -726,15 +737,155 @@ TEST_F(FeedApiSubscriptionsTest,
     InjectRecommendedWebFeedsResponse({MakeWireWebFeed("catsv2")});
     CreateStream();
 
-    task_environment_.FastForwardBy(
-        GetFeedConfig().fetch_recommended_web_feeds_delay +
-        base::TimeDelta::FromSeconds(1));
+    task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                    base::TimeDelta::FromSeconds(1));
     WaitForIdleTaskQueue();
     ASSERT_EQ(2, network_.GetListRecommendedWebFeedsRequestCount());
     EXPECT_EQ(
         "{ WebFeedMetadata{ id=id_catsv2 is_recommended title=Title catsv2 "
         "publisher_url=https://catsv2.com/ status=kNotSubscribed } }",
         PrintToString(CheckRecommendedFeeds()));
+  }
+}
+
+TEST_F(FeedApiSubscriptionsTest,
+       SubscribedWebFeedsAreNotFetchedAfterStartupWhenFeatureIsDisabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(kWebFeed);
+
+  SetUpWithDefaultConfig();
+
+  // Wait until the delayed task would normally run, verify no request is made.
+  task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                  base::TimeDelta::FromSeconds(1));
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(0, network_.GetListFollowedWebFeedsRequestCount());
+}
+
+TEST_F(FeedApiSubscriptionsTest, SubscribedWebFeedsAreFetchedAfterStartup) {
+  SetUpWithDefaultConfig();
+  InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+
+  // Wait until the delayed task runs, and verify the network request was sent.
+  task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                  base::TimeDelta::FromSeconds(1));
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
+
+  // Ensure the new subscribed feed information is immediately available.
+  CallbackReceiver<WebFeedMetadata> metadata;
+  subscriptions().FindWebFeedInfoForPage(
+      MakeWebFeedPageInformation("https://cats.com"), metadata.Bind());
+  EXPECT_EQ(
+      "WebFeedMetadata{ id=id_cats title=Title cats "
+      "publisher_url=https://cats.com/ status=kSubscribed }",
+      PrintToString(metadata.RunAndGetResult()));
+  // Check that subscribed feeds are exactly as expected, and persisted.
+  EXPECT_EQ(
+      "{ WebFeedMetadata{ id=id_cats title=Title cats "
+      "publisher_url=https://cats.com/ status=kSubscribed } }",
+      PrintToString(CheckAllSubscriptions()));
+}
+
+TEST_F(FeedApiSubscriptionsTest, SubscribedWebFeedsAreClearedOnSignOut) {
+  // Populate web feeds at startup for a signed-in users.
+  {
+    SetUpWithDefaultConfig();
+    InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+
+    // Wait until the delayed task runs, and verify the network request was
+    // sent.
+    task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                    base::TimeDelta::FromSeconds(1));
+    WaitForIdleTaskQueue();
+    ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
+    ASSERT_EQ(
+        "{ WebFeedMetadata{ id=id_cats title=Title cats "
+        "publisher_url=https://cats.com/ status=kSubscribed } }",
+        PrintToString(CheckAllSubscriptions()));
+  }
+
+  // Sign out, and verify recommended web feeds are cleared.
+  is_signed_in_ = false;
+  stream_->OnSignedOut();
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
+  EXPECT_EQ("{}", PrintToString(CheckRecommendedFeeds()));
+}
+
+TEST_F(FeedApiSubscriptionsTest,
+       SubscribedWebFeedsAreFetchedAfterSignInButNotSignOut) {
+  SetUpWithDefaultConfig();
+  InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+  InjectListWebFeedsResponse({MakeWireWebFeed("dogs")});
+
+  // Wait until the delayed task runs, and verify the network request was sent.
+  task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                  base::TimeDelta::FromSeconds(1));
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
+
+  // Sign out, and verify no web feeds are fetched.
+  is_signed_in_ = false;
+  stream_->OnSignedOut();
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
+  EXPECT_EQ("{}", PrintToString(CheckAllSubscriptions()));
+
+  // Sign in, and verify web feeds are fetched and stored.
+  is_signed_in_ = true;
+  stream_->OnSignedIn();
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ(2, network_.GetListFollowedWebFeedsRequestCount());
+  EXPECT_EQ(
+      "{ WebFeedMetadata{ id=id_dogs title=Title dogs "
+      "publisher_url=https://dogs.com/ status=kSubscribed } }",
+      PrintToString(CheckAllSubscriptions()));
+}
+
+TEST_F(FeedApiSubscriptionsTest,
+       SubscribedWebFeedsAreFetchedAfterStartupOnlyWhenStale) {
+  // 1. First, fetch recommended web feeds at startup, same as
+  // RecommendedWebFeedsAreFetchedAfterStartup.
+  {
+    SetUpWithDefaultConfig();
+    InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+
+    task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                    base::TimeDelta::FromSeconds(1));
+    WaitForIdleTaskQueue();
+    ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
+  }
+
+  // 2. Recreate FeedStream, and verify recommended web feeds are not fetched
+  // again.
+  {
+    CreateStream();
+
+    task_environment_.FastForwardBy(GetFeedConfig().fetch_web_feed_info_delay +
+                                    base::TimeDelta::FromSeconds(1));
+    WaitForIdleTaskQueue();
+    ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
+  }
+
+  // 3. Wait until the data is stale, and then verify the recommended web feeds
+  // are fetched again.
+  {
+    task_environment_.FastForwardBy(
+        GetFeedConfig().recommended_feeds_staleness_threshold);
+    InjectListWebFeedsResponse({MakeWireWebFeed("catsv2")});
+    CreateStream();
+
+    task_environment_.FastForwardBy(
+        GetFeedConfig().subscribed_feeds_staleness_threshold +
+        base::TimeDelta::FromSeconds(1));
+    WaitForIdleTaskQueue();
+    ASSERT_EQ(2, network_.GetListFollowedWebFeedsRequestCount());
+    EXPECT_EQ(
+        "{ WebFeedMetadata{ id=id_catsv2 title=Title catsv2 "
+        "publisher_url=https://catsv2.com/ status=kSubscribed } }",
+        PrintToString(CheckAllSubscriptions()));
   }
 }
 

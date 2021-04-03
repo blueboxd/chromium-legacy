@@ -826,8 +826,8 @@ group("gn_all") {
       "//third_party/dawn/src/fuzzers:dawn_fuzzers",
       "//third_party/dawn/src/tests:dawn_end2end_tests",
       "//third_party/dawn/src/tests:dawn_unittests",
-      "//third_party/tint/src/fuzzers",
-      "//third_party/tint/src/test:tint_unittests",
+      "//third_party/dawn/third_party/tint/fuzzers",
+      "//third_party/dawn/third_party/tint/test:tint_unittests",
     ]
   }
 
@@ -1237,6 +1237,9 @@ if (!is_ios) {
              rebase_path("//third_party/blink/tools/run_webgpu_cts.py",
                          root_build_dir) + ")" ] + _common_web_test_args -
            [ _common_web_test_args[0] ]
+    if (is_asan) {
+        args += [ "--time-out-ms=30000" ]
+    }
     args += [
       "--webgpu-cts-expectations",
       "@WrappedPath(../../third_party/blink/web_tests/WebGPUExpectations)",

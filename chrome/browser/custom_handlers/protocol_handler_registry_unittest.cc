@@ -288,8 +288,8 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   void SetUpRegistry(bool initialize) {
     auto delegate = std::make_unique<FakeDelegate>();
     delegate_ = delegate.get();
-    registry_.reset(
-        new ProtocolHandlerRegistry(profile(), std::move(delegate)));
+    registry_ = std::make_unique<ProtocolHandlerRegistry>(profile(),
+                                                          std::move(delegate));
     if (initialize) registry_->InitProtocolSettings();
   }
 
@@ -300,7 +300,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   }
 
   void SetUp() override {
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     CHECK(profile_->GetPrefs());
     SetUpRegistry(true);
     test_protocol_handler_ =
@@ -1375,6 +1375,31 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemoveWebAppHandlers) {
   EXPECT_TRUE(
       delegate()->IsFakeAppHandlerRegisteredWithOS("mailto", "app_id2"));
   EXPECT_TRUE(delegate()->IsExternalHandlerRegistered("mailto"));
+}
+
+TEST_F(ProtocolHandlerRegistryTest,
+       TestRemovingNonDefaultHandlerUpdatesDefault) {
+  // Register multiple handlers for mailto and ensure the protocol is registered
+  // for disambiguation.
+  apps::ProtocolHandlerInfo ph1_info =
+      GetProtocolHandlerInfo("mailto", GURL("https://test1.com/%s"));
+  ProtocolHandler ph1 = GetProtocolHandler(ph1_info, "app_id1");
+  registry()->RegisterAppProtocolHandlers("app_id1", {ph1_info});
+
+  apps::ProtocolHandlerInfo ph2_info =
+      GetProtocolHandlerInfo("mailto", GURL("https://test2.com/%s"));
+  ProtocolHandler ph2 = GetProtocolHandler(ph2_info, "app_id2");
+  registry()->RegisterAppProtocolHandlers("app_id2", {ph2_info});
+
+  ASSERT_TRUE(
+      delegate()->IsFakeAppHandlerRegisteredWithOS("mailto", base::nullopt));
+
+  // Remove the non default handler (ph2) and test that the protocol is handled
+  // by ph1 and no longer registered for disambiguation.
+  registry()->DeregisterAppProtocolHandlers("app_id2", {ph2_info});
+
+  EXPECT_TRUE(
+      delegate()->IsFakeAppHandlerRegisteredWithOS("mailto", "app_id1"));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestRegisterHandlersWithOSFailure) {

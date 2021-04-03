@@ -550,8 +550,12 @@ Profile* StartupBrowserCreator::GetPrivateProfileIfRequested(
   } else {
     bool expect_incognito = command_line.HasSwitch(switches::kIncognito);
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+    auto* init_params = chromeos::LacrosChromeServiceImpl::Get()->init_params();
+    // TODO(https://crbug.com/1194304): Remove in M93.
+    expect_incognito |= init_params->is_incognito_deprecated;
     expect_incognito |=
-        chromeos::LacrosChromeServiceImpl::Get()->init_params()->is_incognito;
+        init_params->initial_browser_action ==
+        crosapi::mojom::InitialBrowserAction::kOpenIncognitoWindow;
 #endif
     LOG_IF(WARNING, expect_incognito)
         << "Incognito mode disabled by policy, launching a normal "
@@ -656,9 +660,12 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   bool restore_last_session =
       command_line.HasSwitch(switches::kRestoreLastSession);
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  restore_last_session |= chromeos::LacrosChromeServiceImpl::Get()
-                              ->init_params()
-                              ->restore_last_session;
+  auto* init_params = chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  // TODO(https://crbug.com/1194304): Remove in M93.
+  restore_last_session |= init_params->restore_last_session_deprecated;
+  restore_last_session |=
+      init_params->initial_browser_action ==
+      crosapi::mojom::InitialBrowserAction::kRestoreLastSession;
 #endif
   if ((restore_last_session || did_restart) && !profile->IsNewProfile()) {
     pref.type = SessionStartupPref::LAST;
@@ -1209,10 +1216,8 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
   // The profile isn't loaded yet and so needs to be loaded asynchronously.
   if (!profile) {
     profile_manager->CreateProfileAsync(
-        profile_path,
-        base::BindRepeating(&ProcessCommandLineOnProfileCreated, command_line,
-                            cur_dir),
-        std::u16string(), std::string());
+        profile_path, base::BindRepeating(&ProcessCommandLineOnProfileCreated,
+                                          command_line, cur_dir));
     return;
   }
   StartupBrowserCreator startup_browser_creator;

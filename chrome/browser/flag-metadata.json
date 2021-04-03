@@ -3950,6 +3950,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "omnibox-pedals-default-icon-colored",
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-refined-focus-state",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
@@ -4722,6 +4727,16 @@
     "name": "sharing-device-expiration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "sharing-hub-desktop-app-menu",
+    "owners": [ "kristipark", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 94
+  },
+  {
+    "name": "sharing-hub-desktop-omnibox",
+    "owners": [ "kristipark", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 94
   },
   {
     "name": "sharing-prefer-vapid",

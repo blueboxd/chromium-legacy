@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/camera_mic/vm_camera_mic_manager.h"
+#include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
 
 #include <string>
 #include <tuple>
@@ -38,7 +38,7 @@
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 const char kNotificationIdPrefix[] = "vm_camera_mic_manager";
@@ -525,4 +525,4 @@ void VmCameraMicManager::SetMicActive(VmType vm, bool active) {
   UpdateVmInfo(vm, &VmInfo::SetMicActive, active);
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ea1d39b35cf6f67ab3a00ecd53655775c11c550e',
+  'skia_revision': '9601185bb6df5e713e0ded98d8d8784cae3b7dcc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '9b0911a072fc6f5920dd8931e5762911aee0d6e0',
+  'angle_revision': '323c5f2464807aa2497ef4267e79352c35da10ac',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'dd38e6c5048e12f2d0c7a1fa13eb9040727129e5',
+  'devtools_frontend_revision': 'c1e6250eb16794dea6dd490eb94ef35ba9b5eee1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1549,7 +1549,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fdd7f1064e25c028425b6a5b4d5c66b47da92ae4',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '41c873ca97db9052f557635f71124b178b220477',
+    Var('webrtc_git') + '/src.git' + '@' + '18410aa438b69944cd741b8de62f556555891824',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1621,7 +1621,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c559758322c915b8acce86c6c2f99b055ecfa05d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@85cbc4456c99126a3f0ef3fe577063b5ddef1dac',
     'condition': 'checkout_src_internal',
   },
 
@@ -1651,7 +1651,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'k2jUMO7Mvq2rQNk1Hd5O44oVRS6wc3imGZInRu9GxOAC',
+        'version': 'pwViTqkXl8MarImI6rXeTOVqTSvYxXlLTb3egs-xXUsC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

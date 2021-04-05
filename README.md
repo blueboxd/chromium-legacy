@@ -15,7 +15,7 @@ This project is automatically built and uploaded twice a day (00:00 and 12:00 JS
 And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
 It's recommended to find and use a stable build for daily use. (The same is true for the original Chrome Canary/Chromium)
 
-## functions
+## features
 
 Basically equivalent to the [same version of original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see below).
 
@@ -32,7 +32,7 @@ Basically equivalent to the [same version of original Chromium](https://chromest
   - on 10.7, due to old OpenGL version, disabled entirely by Chromium itself
   - on 10.8/10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
 - WebAuthn/FIDO2 (any USB devices?)
-   - on 10.7, you need [patched `IOHIDFamily.kext`](../../../IOHIDFamily-368.21) to use USB devices
+  - on 10.7, you need [patched `IOHIDFamily.kext`](../../../IOHIDFamily-368.21) to use USB devices
 
 ## building
 
@@ -45,7 +45,7 @@ Build steps are almost the same as the [original Chromium's one](docs/mac_build_
 - Xcode 12.2+
   - to build for 10.7, need patched clang (TBW)
 - powerful CPUs
-  - about 40mins to build from scratch with `Xeon E5-2690 v4` & 2 x `Ryzen 9 3950X`
+  - about 40mins to build from scratch with `Xeon E5-2690 v4` + `Ryzen 9 5950X` + 2 x `Ryzen 9 3950X`
   - about 3-4hrs+ to build from scratch with `Core i9-9980HK`
 
 ### TL;DR

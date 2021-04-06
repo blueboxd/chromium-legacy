@@ -22,7 +22,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.signin.services.AccountInfoService;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings;
@@ -31,6 +30,7 @@ import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.AccountInfoService;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityMutator;
@@ -445,7 +445,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
             RecordHistogram.recordEnumeratedHistogram("Signin.SigninCompletedAccessPoint",
                     mSignInState.getAccessPoint(), SigninAccessPoint.MAX);
             RecordHistogram.recordEnumeratedHistogram("Signin.SigninReason",
-                    SigninReason.REASON_SIGNIN_PRIMARY_ACCOUNT, SigninReason.MAX_VALUE + 1);
+                    SigninReason.SIGNIN_PRIMARY_ACCOUNT, SigninReason.MAX_VALUE + 1);
         }
 
         if (mSignInState.mCallback != null) {
@@ -677,7 +677,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
             SigninManagerImplJni.get().wipeGoogleServiceWorkerCaches(
                     mNativeSigninManagerAndroid, wipeDataCallback);
         }
-        mAccountTrackerService.invalidateAccountSeedStatus(true);
+        mAccountTrackerService.onAccountsChanged();
     }
 
     @VisibleForTesting

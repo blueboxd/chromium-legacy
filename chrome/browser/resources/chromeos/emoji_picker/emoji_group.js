@@ -23,6 +23,10 @@ class EmojiGroupComponent extends PolymerElement {
       data: {type: Object, readonly: true},
       /** @type {Object<string,string>} */
       preferred: {type: Object},
+      /** @type {boolean} */
+      clearable: {type: Boolean, value: false},
+      /** @type {boolean} */
+      showClearRecents: {type: Boolean, value: false},
     };
   }
 
@@ -32,6 +36,11 @@ class EmojiGroupComponent extends PolymerElement {
 
   getDisplayEmojiForEmoji(emoji) {
     return this.preferred[emoji] || emoji;
+  }
+
+  onClearClick(ev) {
+    ev.preventDefault();
+    this.showClearRecents = true;
   }
 }
 

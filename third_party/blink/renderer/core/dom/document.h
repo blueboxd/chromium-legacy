@@ -65,7 +65,6 @@
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
@@ -136,6 +135,7 @@ class EventFactoryBase;
 class EventListener;
 template <typename EventType>
 class EventWithHitTestResults;
+class ExceptionState;
 class FloatQuad;
 class FloatRect;
 class FontMatchingMetrics;
@@ -611,7 +611,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncLayoutBlockCounter() { ++layout_blocks_counter_; }
   void IncLayoutBlockCounterNG() { ++layout_blocks_counter_ng_; }
 
-  const ComputedStyle* StyleForPage(int32_t page_index);
+  scoped_refptr<const ComputedStyle> StyleForPage(uint32_t page_index);
 
   // Ensures that location-based data will be valid for a given node.
   //
@@ -2050,7 +2050,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool is_srcdoc_document_;
   bool is_mobile_document_;
 
-  Member<LayoutView> layout_view_;
+  LayoutView* layout_view_;
 
   // The last element in |top_layer_elements_| is topmost in the top layer
   // stack and is thus the one that will be visually on top.

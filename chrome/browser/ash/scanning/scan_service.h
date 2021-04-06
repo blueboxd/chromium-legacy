@@ -94,7 +94,8 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
                       uint32_t page_number);
 
   // Processes the final result of calling LorgnetteScannerManager::Scan().
-  void OnScanCompleted(bool success);
+  void OnScanCompleted(bool success,
+                       lorgnette::ScanFailureMode /*failure_mode*/);
 
   // Processes the final result of calling
   // LorgnetteScannerManager::CancelScan().
@@ -159,6 +160,10 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
 
   // Tracks the number of pages scanned for histogram recording.
   int num_pages_scanned_;
+
+  // Indicates whether alternate pages must be rotated to account for an ADF
+  // scanner that flips them.
+  bool rotate_alternate_pages_;
 
   // The time at which GetScanners() is called. Used to record the time between
   // a user launching the Scan app and being able to interact with it.

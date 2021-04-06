@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -136,7 +137,8 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       keyword_mode_entry_method_(OmniboxEventProto::INVALID),
       in_revert_(false),
       allow_exact_keyword_match_(false) {
-  omnibox_controller_.reset(new OmniboxController(this, client_.get()));
+  omnibox_controller_ =
+      std::make_unique<OmniboxController>(this, client_.get());
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
@@ -578,6 +580,20 @@ void OmniboxEditModel::PasteAndGo(const std::u16string& text,
   AutocompleteMatch match;
   GURL alternate_nav_url;
   ClassifyString(text, &match, &alternate_nav_url);
+
+  GURL upgraded_url;
+  if (match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED &&
+      client_->ShouldDefaultTypedNavigationsToHttps() &&
+      AutocompleteInput::ShouldUpgradeToHttps(text, match.destination_url,
+                                              client_->GetHttpsPortForTesting(),
+                                              &upgraded_url)) {
+    input_.set_added_default_scheme_to_typed_url(true);
+    DCHECK(upgraded_url.is_valid());
+    match.destination_url = upgraded_url;
+  } else {
+    input_.set_added_default_scheme_to_typed_url(false);
+  }
+
   view_->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, alternate_nav_url,
                    text, OmniboxPopupModel::kNoMatch,
                    match_selection_timestamp);

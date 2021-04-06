@@ -46,12 +46,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
  public:
   AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
   ~AXLayoutObject() override;
-  void Trace(Visitor*) const override;
 
   // Public, overridden from AXObject.
   LayoutObject* GetLayoutObject() const final { return layout_object_; }
   ScrollableArea* GetScrollableAreaIfScrollable() const final;
-  ax::mojom::blink::Role DetermineAccessibilityRole() override;
 
   // If this is an anonymous node, returns the node of its containing layout
   // block, otherwise returns the node of this layout object.
@@ -62,7 +60,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   Element* AnchorElement() const override;
 
  protected:
-  Member<LayoutObject> layout_object_;
+  LayoutObject* layout_object_;
 
   //
   // Overridden from AXObject.
@@ -104,8 +102,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Hit testing.
   AXObject* AccessibilityHitTest(const IntPoint&) const override;
 
-  bool CanHaveChildren() const override;
-
   // Called when autofill/autocomplete state changes on a form control.
   void HandleAutofillStateChanged(WebAXAutofillState state) override;
 
@@ -135,8 +131,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // If we can't determine a useful role from the DOM node, attempt to determine
   // a role from the layout object.
-  ax::mojom::blink::Role RoleFromLayoutObject(
-      ax::mojom::blink::Role dom_role) const override;
+  ax::mojom::blink::Role RoleFromLayoutObjectOrNode() const override;
 
  private:
   AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,

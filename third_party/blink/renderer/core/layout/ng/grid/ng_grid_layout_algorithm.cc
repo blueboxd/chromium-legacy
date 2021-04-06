@@ -70,12 +70,12 @@ NGGridLayoutAlgorithm::NGGridLayoutAlgorithm(
   }
 }
 
-const NGLayoutResult* NGGridLayoutAlgorithm::Layout() {
+scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
   PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
 
   // Measure items.
   GridItems grid_items;
-  HeapVector<GridItemData> out_of_flow_items;
+  Vector<GridItemData> out_of_flow_items;
   ConstructAndAppendGridItems(&grid_items, &out_of_flow_items);
 
   const auto& container_style = Style();
@@ -83,21 +83,23 @@ const NGLayoutResult* NGGridLayoutAlgorithm::Layout() {
                                  ComputeAutomaticRepetitions(kForColumns),
                                  ComputeAutomaticRepetitions(kForRows));
 
-  NGGridLayoutAlgorithmTrackCollection column_track_collection;
-  NGGridLayoutAlgorithmTrackCollection row_track_collection;
-  BuildAlgorithmTrackCollections(&grid_items, &column_track_collection,
-                                 &row_track_collection, &grid_placement);
+  // Build block track collections.
+  NGGridBlockTrackCollection column_block_track_collection(kForColumns);
+  NGGridBlockTrackCollection row_block_track_collection(kForRows);
+  BuildBlockTrackCollections(&grid_items, &column_block_track_collection,
+                             &row_block_track_collection, &grid_placement);
+
+  // Build algorithm track collections from the block track collections.
+  NGGridLayoutAlgorithmTrackCollection column_track_collection(
+      column_block_track_collection,
+      grid_available_size_.inline_size == kIndefiniteSize);
+  NGGridLayoutAlgorithmTrackCollection row_track_collection(
+      row_block_track_collection,
+      grid_available_size_.block_size == kIndefiniteSize);
 
   // Cache track span properties for grid items.
   CacheGridItemsTrackSpanProperties(column_track_collection, &grid_items);
   CacheGridItemsTrackSpanProperties(row_track_collection, &grid_items);
-
-  // We perform the track sizing algorithm using two methods. First
-  // |InitializeTrackSizes|, which we need to get an initial column and row set
-  // geometry. Then |ComputeUsedTrackSizes|, to finalize the sizing algorithm
-  // for both dimensions.
-  GridGeometry grid_geometry(InitializeTrackSizes(&column_track_collection),
-                             InitializeTrackSizes(&row_track_collection));
 
   // Cache set indices and alignment fallbacks for grid items.
   for (auto& grid_item : grid_items.item_data) {
@@ -107,27 +109,28 @@ const NGLayoutResult* NGGridLayoutAlgorithm::Layout() {
     grid_item.SetAlignmentFallback(row_track_collection, container_style);
   }
 
+  // We perform the track sizing algorithm using two methods. First
+  // |InitializeTrackSizes|, which we need to get an initial column and row set
+  // geometry. Then |ComputeUsedTrackSizes|, to finalize the sizing algorithm
+  // for both dimensions.
+  GridGeometry grid_geometry(InitializeTrackSizes(&column_track_collection),
+                             InitializeTrackSizes(&row_track_collection));
+
   // Store column baselines, as these contributions can influence column sizing.
   CalculateAlignmentBaselines(grid_items, grid_geometry, kForColumns);
 
   // Resolve inline size.
-  ComputeUsedTrackSizes(SizingConstraint::kLayout, grid_geometry,
-                        &column_track_collection, &grid_items);
-
-  // Determine the final (used) column set geometry.
-  grid_geometry.column_geometry = ComputeSetGeometry(
-      column_track_collection, grid_available_size_.inline_size);
+  grid_geometry.column_geometry =
+      ComputeUsedTrackSizes(SizingConstraint::kLayout, grid_geometry,
+                            &column_track_collection, &grid_items);
 
   // Store row baselines now that column sizing is computed.
   CalculateAlignmentBaselines(grid_items, grid_geometry, kForRows);
 
   // Resolve block size.
-  ComputeUsedTrackSizes(SizingConstraint::kLayout, grid_geometry,
-                        &row_track_collection, &grid_items);
-
-  // Determine the final (used) row set geometry.
   grid_geometry.row_geometry =
-      ComputeSetGeometry(row_track_collection, grid_available_size_.block_size);
+      ComputeUsedTrackSizes(SizingConstraint::kLayout, grid_geometry,
+                            &row_track_collection, &grid_items);
 
   // Recompute column baselines now that the row sizing is determined.
   CalculateAlignmentBaselines(grid_items, grid_geometry, kForColumns);
@@ -158,8 +161,10 @@ const NGLayoutResult* NGGridLayoutAlgorithm::Layout() {
         (block_size - BorderScrollbarPadding().BlockSum())
             .ClampNegativeToZero();
 
-    grid_geometry.row_geometry =
-        ComputeSetGeometry(row_track_collection, resolved_available_block_size);
+    grid_available_size_.block_size = grid_min_available_size_.block_size =
+        grid_max_available_size_.block_size = resolved_available_block_size;
+
+    grid_geometry.row_geometry = ComputeSetGeometry(row_track_collection);
   }
 
   PlaceGridItems(grid_items, grid_geometry, block_size);
@@ -252,11 +257,20 @@ MinMaxSizesResult NGGridLayoutAlgorithm::ComputeMinMaxSizes(
                                  ComputeAutomaticRepetitions(kForColumns),
                                  ComputeAutomaticRepetitions(kForRows));
 
-  NGGridLayoutAlgorithmTrackCollection column_track_collection_for_min_size;
-  NGGridLayoutAlgorithmTrackCollection row_track_collection;
-  BuildAlgorithmTrackCollections(&grid_items,
-                                 &column_track_collection_for_min_size,
-                                 &row_track_collection, &grid_placement);
+  // Build block track collections.
+  NGGridBlockTrackCollection column_block_track_collection(kForColumns);
+  NGGridBlockTrackCollection row_block_track_collection(kForRows);
+  BuildBlockTrackCollections(&grid_items, &column_block_track_collection,
+                             &row_block_track_collection, &grid_placement);
+
+  // Build algorithm track collections from the block track collections.
+  NGGridLayoutAlgorithmTrackCollection column_track_collection_for_min_size(
+      column_block_track_collection,
+      grid_available_size_.inline_size == kIndefiniteSize);
+
+  NGGridLayoutAlgorithmTrackCollection row_track_collection(
+      row_block_track_collection,
+      grid_available_size_.block_size == kIndefiniteSize);
 
   // Cache track span properties for grid items.
   CacheGridItemsTrackSpanProperties(column_track_collection_for_min_size,
@@ -538,10 +552,6 @@ NGGridLayoutAlgorithm::GridItemData::SetIndices(
   return set_indices;
 }
 
-void NGGridLayoutAlgorithm::GridItemData::Trace(Visitor* visitor) const {
-  visitor->Trace(node);
-}
-
 NGGridLayoutAlgorithm::GridItems::Iterator
 NGGridLayoutAlgorithm::GridItems::begin() {
   return Iterator(&item_data, reordered_item_indices.begin());
@@ -738,7 +748,7 @@ LayoutUnit NGGridLayoutAlgorithm::ContributionSizeForGridItem(
   //  - We'll need to respect the aspect-ratio when appropriate.
   auto BlockContributionSize = [&]() -> LayoutUnit {
     DCHECK(!is_parallel_with_track_direction);
-    const NGLayoutResult* result = node.Layout(space);
+    scoped_refptr<const NGLayoutResult> result = node.Layout(space);
     NGBoxFragment fragment(
         item_style.GetWritingDirection(),
         To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
@@ -884,7 +894,7 @@ LayoutUnit NGGridLayoutAlgorithm::ContributionSizeForGridItem(
 
 void NGGridLayoutAlgorithm::ConstructAndAppendGridItems(
     GridItems* grid_items,
-    HeapVector<GridItemData>* out_of_flow_items) const {
+    Vector<GridItemData>* out_of_flow_items) const {
   DCHECK(grid_items);
   NGGridChildIterator iterator(Node());
   for (NGBlockNode child = iterator.NextChild(); child;
@@ -1236,32 +1246,6 @@ void NGGridLayoutAlgorithm::BuildBlockTrackCollections(
   BuildBlockTrackCollection(row_track_collection);
 }
 
-void NGGridLayoutAlgorithm::BuildAlgorithmTrackCollections(
-    GridItems* grid_items,
-    NGGridLayoutAlgorithmTrackCollection* column_track_collection,
-    NGGridLayoutAlgorithmTrackCollection* row_track_collection,
-    NGGridPlacement* grid_placement) const {
-  DCHECK(grid_items);
-  DCHECK(column_track_collection);
-  DCHECK(row_track_collection);
-  DCHECK(grid_placement);
-
-  // Build block track collections.
-  NGGridBlockTrackCollection column_block_track_collection(kForColumns);
-  NGGridBlockTrackCollection row_block_track_collection(kForRows);
-  BuildBlockTrackCollections(grid_items, &column_block_track_collection,
-                             &row_block_track_collection, grid_placement);
-
-  // Build algorithm track collections from the block track collections.
-  *column_track_collection = NGGridLayoutAlgorithmTrackCollection(
-      column_block_track_collection,
-      grid_available_size_.inline_size == kIndefiniteSize);
-
-  *row_track_collection = NGGridLayoutAlgorithmTrackCollection(
-      row_block_track_collection,
-      grid_available_size_.block_size == kIndefiniteSize);
-}
-
 void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridItems(
     const GridItems& grid_items,
     NGGridBlockTrackCollection* track_collection) const {
@@ -1363,7 +1347,7 @@ void NGGridLayoutAlgorithm::CalculateAlignmentBaselines(
     LogicalRect unused;
     const NGConstraintSpace space = CreateConstraintSpace(
         grid_geometry, grid_item, NGCacheSlot::kMeasure, &unused);
-    const NGLayoutResult* result = grid_item.node.Layout(space);
+    scoped_refptr<const NGLayoutResult> result = grid_item.node.Layout(space);
 
     NGBoxFragment fragment(
         grid_item.node.Style().GetWritingDirection(),
@@ -1471,7 +1455,7 @@ NGGridLayoutAlgorithm::SetGeometry NGGridLayoutAlgorithm::InitializeTrackSizes(
 }
 
 // https://drafts.csswg.org/css-grid-2/#algo-track-sizing
-void NGGridLayoutAlgorithm::ComputeUsedTrackSizes(
+NGGridLayoutAlgorithm::SetGeometry NGGridLayoutAlgorithm::ComputeUsedTrackSizes(
     SizingConstraint sizing_constraint,
     const GridGeometry& grid_geometry,
     NGGridLayoutAlgorithmTrackCollection* track_collection,
@@ -1494,6 +1478,9 @@ void NGGridLayoutAlgorithm::ComputeUsedTrackSizes(
 
   // 5. Stretch tracks with an 'auto' max track sizing function.
   StretchAutoTracks(sizing_constraint, track_collection);
+
+  // Return the set geometry.
+  return ComputeSetGeometry(*track_collection);
 }
 
 // Helpers for the track sizing algorithm.
@@ -2525,8 +2512,10 @@ TrackAlignmentGeometry ComputeTrackAlignmentGeometry(
 
 // Calculates the offsets for all sets.
 NGGridLayoutAlgorithm::SetGeometry NGGridLayoutAlgorithm::ComputeSetGeometry(
-    const NGGridLayoutAlgorithmTrackCollection& track_collection,
-    const LayoutUnit available_size) const {
+    const NGGridLayoutAlgorithmTrackCollection& track_collection) const {
+  const LayoutUnit available_size = track_collection.IsForColumns()
+                                        ? grid_available_size_.inline_size
+                                        : grid_available_size_.block_size;
   const TrackAlignmentGeometry track_alignment_geometry =
       track_collection.IsForColumns()
           ? ComputeTrackAlignmentGeometry(Style(), Style().JustifyContent(),
@@ -2720,7 +2709,7 @@ void NGGridLayoutAlgorithm::PlaceGridItems(const GridItems& grid_items,
     const NGConstraintSpace space = CreateConstraintSpace(
         grid_geometry, grid_item, NGCacheSlot::kLayout, &containing_grid_area);
 
-    const NGLayoutResult* result = grid_item.node.Layout(space);
+    scoped_refptr<const NGLayoutResult> result = grid_item.node.Layout(space);
     const auto& physical_fragment =
         To<NGPhysicalBoxFragment>(result->PhysicalFragment());
     NGBoxFragment logical_fragment(grid_item.node.Style().GetWritingDirection(),
@@ -2814,7 +2803,7 @@ void NGGridLayoutAlgorithm::PlaceGridItems(const GridItems& grid_items,
 }
 
 void NGGridLayoutAlgorithm::PlaceOutOfFlowItems(
-    const HeapVector<GridItemData>& out_of_flow_items,
+    const Vector<GridItemData>& out_of_flow_items,
     const GridGeometry& grid_geometry,
     LayoutUnit block_size) {
   for (const GridItemData& out_of_flow_item : out_of_flow_items) {
@@ -2846,7 +2835,7 @@ void NGGridLayoutAlgorithm::PlaceOutOfFlowDescendants(
   // At this point, we'll have a list of OOF candidates from any inflow children
   // of the grid (which have been propagated up). These might have an assigned
   // 'grid-area', so we need to assign their correct 'containing block rect'.
-  HeapVector<NGLogicalOutOfFlowPositionedNode>* out_of_flow_descendants =
+  Vector<NGLogicalOutOfFlowPositionedNode>* out_of_flow_descendants =
       container_builder_.MutableOutOfFlowPositionedCandidates();
   DCHECK(out_of_flow_descendants);
 

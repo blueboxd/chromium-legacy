@@ -298,7 +298,7 @@ void HistoryBackend::Init(
   // HistoryBackend is created on the UI thread by HistoryService, then the
   // HistoryBackend::Init() method is called on the DB thread. Create the
   // base::SupportsUserData on the DB thread since it is not thread-safe.
-  supports_user_data_helper_.reset(new HistoryBackendHelper);
+  supports_user_data_helper_ = std::make_unique<HistoryBackendHelper>();
 
   if (!force_fail)
     InitImpl(history_database_params);
@@ -484,8 +484,13 @@ void HistoryBackend::AddContentAnnotationsForVisit(
   if (!db_)
     return;
 
-  db_->AddContentAnnotationsForVisit(visit_id, content_annotations);
-  ScheduleCommit();
+  // Only add to the annotations table if the visit_id exists in the visits
+  // table.
+  VisitRow visit_row;
+  if (db_->GetRowForVisit(visit_id, &visit_row)) {
+    db_->AddContentAnnotationsForVisit(visit_id, content_annotations);
+    ScheduleCommit();
+  }
 }
 #endif
 
@@ -815,9 +820,9 @@ void HistoryBackend::InitImpl(
   DeleteFTSIndexDatabases();
 
   // History database.
-  db_.reset(new HistoryDatabase(
+  db_ = std::make_unique<HistoryDatabase>(
       history_database_params.download_interrupt_reason_none,
-      history_database_params.download_interrupt_reason_crash));
+      history_database_params.download_interrupt_reason_crash);
 
   // Unretained to avoid a ref loop with db_.
   db_->set_error_callback(base::BindRepeating(
@@ -1322,6 +1327,12 @@ HistoryLastVisitResult HistoryBackend::GetLastVisitToURL(const GURL& url,
       db_ && db_->GetLastVisitToURL(url, end_time, &last_visit),
       last_visit,
   };
+}
+
+DailyVisitsResult HistoryBackend::GetDailyVisitsToHost(const GURL& host,
+                                                       base::Time begin_time,
+                                                       base::Time end_time) {
+  return db_->GetDailyVisitsToHost(host, begin_time, end_time);
 }
 
 // Keyword visits --------------------------------------------------------------

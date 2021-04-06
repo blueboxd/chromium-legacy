@@ -1665,7 +1665,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   )HTML");
 
   auto* target = GetLayoutObjectByElementId("target");
-  ComputedStyle* style = ComputedStyle::Clone(target->StyleRef());
+  auto style = ComputedStyle::Clone(target->StyleRef());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   // Simulates starting a composite animation.
   style->SetHasCurrentTransformAnimation(true);
@@ -1894,6 +1894,32 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollOriginChange) {
             container_properties->ScrollTranslation()->Translation2D());
   EXPECT_EQ(PhysicalOffset(100, 0), child1->FirstFragment().PaintOffset());
   EXPECT_EQ(PhysicalOffset(), child2->FirstFragment().PaintOffset());
+}
+
+// A test case for http://crbug.com/1187815.
+TEST_P(PaintPropertyTreeUpdateTest, IFrameContainStrictChangeBorderTopWidth) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      iframe { border-radius: 10px; contain: strict; border: 2px solid black; }
+    </style>
+    <img style="width: 100px; height: 100px">
+    <iframe id="iframe"></iframe>
+  )HTML");
+  SetChildFrameHTML("ABC");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* child_view_properties =
+      ChildDocument().GetLayoutView()->FirstFragment().PaintProperties();
+  ASSERT_TRUE(child_view_properties);
+  ASSERT_TRUE(child_view_properties->PaintOffsetTranslation());
+  EXPECT_EQ(FloatSize(2, 2),
+            child_view_properties->PaintOffsetTranslation()->Translation2D());
+
+  GetDocument().getElementById("iframe")->setAttribute(
+      html_names::kStyleAttr, "border-top-width: 10px");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(FloatSize(2, 10),
+            child_view_properties->PaintOffsetTranslation()->Translation2D());
 }
 
 }  // namespace blink

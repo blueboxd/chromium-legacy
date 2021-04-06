@@ -508,9 +508,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     @Override
     public boolean didAcceptTermsOfService() {
-        boolean result = FirstRunUtils.didAcceptTermsOfService();
-        if (sObserver != null) sObserver.onAcceptTermsOfService();
-        return result;
+        return FirstRunUtils.didAcceptTermsOfService();
     }
 
     @Override
@@ -522,6 +520,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         FirstRunUtils.acceptTermsOfService(allowCrashUpload);
         FirstRunStatus.setSkipWelcomePage(true);
         flushPersistentData();
+
+        if (sObserver != null) sObserver.onAcceptTermsOfService();
+
         jumpToPage(mPager.getCurrentItem() + 1);
     }
 
@@ -561,6 +562,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             return false;
         }
 
+        int oldPosition = mPager.getCurrentItem();
         mPager.setCurrentItem(position, false);
 
         // Set A11y focus if possible. See https://crbug.com/1094064 for more context.
@@ -568,6 +570,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         FirstRunFragment currentFragment = mPagerAdapter.getFirstRunFragment(position);
         if (currentFragment != null) {
             currentFragment.setInitialA11yFocus();
+            if (oldPosition > position) {
+                // If the fragment is revisited through back press, reset its state.
+                currentFragment.reset();
+            }
         }
         return true;
     }

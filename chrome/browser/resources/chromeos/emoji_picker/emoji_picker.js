@@ -248,8 +248,7 @@ export class EmojiPicker extends PolymerElement {
   }
 
   onRightChevronClick() {
-    this.shadowRoot.getElementById('tabs').scrollLeft =
-        GROUP_ICON_SIZE * (GROUP_PER_ROW + 1);
+    this.shadowRoot.getElementById('tabs').scrollLeft = GROUP_ICON_SIZE * 6;
     this.scrollToGroup(GROUP_TABS[GROUP_PER_ROW - 2].groupId);
     this.shadowRoot.getElementById('bar').style.left = '36px';
     this.highlightBarMoving = true;
@@ -257,9 +256,12 @@ export class EmojiPicker extends PolymerElement {
 
   onLeftChevronClick() {
     this.shadowRoot.getElementById('tabs').scrollLeft = 0;
-    // TODO(crbug/1152237): need to handle case where recent is empty
     this.scrollToGroup(GROUP_TABS[0].groupId);
-    this.shadowRoot.getElementById('bar').style.left = '0px';
+    if (this.history.emoji.length > 0) {
+      this.shadowRoot.getElementById('bar').style.left = '0';
+    } else {
+      this.shadowRoot.getElementById('bar').style.left = '36px';
+    }
     this.highlightBarMoving = true;
   }
 
@@ -342,10 +344,10 @@ export class EmojiPicker extends PolymerElement {
       // the same time).
       tabscrollLeft = GROUP_ICON_SIZE * (index + 3 - GROUP_PER_ROW);
     }
-    this.shadowRoot.getElementById('tabs').scrollLeft = tabscrollLeft;
 
     // once tab scroll is updated - update the position of the highlight bar.
     if (!this.highlightBarMoving) {
+      this.shadowRoot.getElementById('tabs').scrollLeft = tabscrollLeft;
       this.shadowRoot.getElementById('bar').style.left =
           ((index * GROUP_ICON_SIZE - tabscrollLeft)) + 'px';
     }

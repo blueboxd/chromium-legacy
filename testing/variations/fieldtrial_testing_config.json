@@ -1781,23 +1781,6 @@
             ]
         }
     ],
-    "ContentCaptureUserActivatedDelay": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "ContentCaptureUserActivatedDelay",
-                    "enable_features": [
-                        "ContentCaptureUserActivatedDelay"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContentLanguagesInLanguagePicker": [
         {
             "platforms": [
@@ -4206,6 +4189,23 @@
             ]
         }
     ],
+    "MobileFriendlinessUKMBadTapTargets": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BadTapTargetsRatio"
+                    ]
+                }
+            ]
+        }
+    ],
     "MobileIdentityConsistency": [
         {
             "platforms": [
@@ -4486,8 +4486,7 @@
                 {
                     "name": "DesktopExperiments",
                     "params": {
-                        "EntitySuggestionsReduceLatencyDecoderTimeout": "30000",
-                        "EntitySuggestionsReduceLatencyDecoderWakeup": "true",
+                        "EntitySuggestionsReduceLatencyDecoderTimeout": "405",
                         "MaxZeroSuggestMatches": "10",
                         "OmniboxBookmarkPathsCounterfactual": "enabled",
                         "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",

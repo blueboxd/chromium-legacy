@@ -81,23 +81,22 @@ bool NGLayoutInputNode::IsSVGText() const {
 }
 
 bool NGLayoutInputNode::IsEmptyTableSection() const {
-  return box_->IsTableSection() &&
-         To<LayoutNGTableSection>(box_.Get())->IsEmpty();
+  return box_->IsTableSection() && To<LayoutNGTableSection>(box_)->IsEmpty();
 }
 
 wtf_size_t NGLayoutInputNode::TableColumnSpan() const {
   DCHECK(IsTableCol() || IsTableColgroup());
-  return To<LayoutNGTableColumn>(box_.Get())->Span();
+  return To<LayoutNGTableColumn>(box_)->Span();
 }
 
 wtf_size_t NGLayoutInputNode::TableCellColspan() const {
   DCHECK(box_->IsTableCell());
-  return To<LayoutNGTableCell>(box_.Get())->ColSpan();
+  return To<LayoutNGTableCell>(box_)->ColSpan();
 }
 
 wtf_size_t NGLayoutInputNode::TableCellRowspan() const {
   DCHECK(box_->IsTableCell());
-  return To<LayoutNGTableCell>(box_.Get())->ComputedRowSpan();
+  return To<LayoutNGTableCell>(box_)->ComputedRowSpan();
 }
 
 bool NGLayoutInputNode::IsTextControlPlaceholder() const {
@@ -115,8 +114,7 @@ void NGLayoutInputNode::IntrinsicSize(
 
   IntrinsicSizingInfo legacy_sizing_info;
 
-  To<LayoutReplaced>(box_.Get())
-      ->ComputeIntrinsicSizingInfo(legacy_sizing_info);
+  To<LayoutReplaced>(box_)->ComputeIntrinsicSizingInfo(legacy_sizing_info);
   if (!*computed_inline_size && legacy_sizing_info.has_width)
     *computed_inline_size = LayoutUnit(legacy_sizing_info.size.Width());
   if (!*computed_block_size && legacy_sizing_info.has_height)
@@ -143,6 +141,16 @@ String NGLayoutInputNode::ToString() const {
 
 #if DCHECK_IS_ON()
 void NGLayoutInputNode::ShowNodeTree() const {
+  if (getenv("RUNNING_UNDER_RR")) {
+    // Printing timestamps requires an IPC to get the local time, which
+    // does not work in an rr replay session. Just disable timestamp printing
+    // globally, since we don't need them. Affecting global state isn't a
+    // problem because invoking this from a rr session creates a temporary
+    // program environment that will be destroyed as soon as the invocation
+    // completes.
+    logging::SetLogItems(true, true, false, false);
+  }
+
   StringBuilder string_builder;
   string_builder.Append(".:: LayoutNG Node Tree ::.\n");
   AppendNodeToString(*this, &string_builder);

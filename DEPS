@@ -190,9 +190,6 @@ vars = {
   # By default, do not check out the re-client binaries.
   'checkout_reclient': False,
 
-  # Make Dawn skip its standalone dependencies
-  'dawn_standalone': False,
-
   # reclient CIPD package version
   'reclient_version': 're_client_version:0.26.0.b455196',
 
@@ -209,11 +206,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9601185bb6df5e713e0ded98d8d8784cae3b7dcc',
+  'skia_revision': 'b6689e5680504249d8c04c07a2fa6e8a1432308d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '866acc533124135f24afa78f918e8520f1110135',
+  'v8_revision': '508209dda05b04c80b580ec720f55f1850968b90',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -221,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '323c5f2464807aa2497ef4267e79352c35da10ac',
+  'angle_revision': '2f22157acd0ddac47bc8dd45ff3cf7a6c9226cc5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -280,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '3d2081b50b203dbd2faafeb925e6791462475f68',
+  'catapult_revision': '41a5e5e465ad93d6e08224613d3544334a6278bc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -288,7 +285,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c1e6250eb16794dea6dd490eb94ef35ba9b5eee1',
+  'devtools_frontend_revision': '5efb4bf5b1e5d9b93fa9d65bb01ad8bc8235f4fa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,11 +325,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1b91955e7d2c08adac70f814570379bb3e98e884',
+  'dawn_revision': '6f2bbe9896aa345fa50b8d5fb0c4d355322c1719',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'aef3793fde29e342db8b551190a9ebcee87975fb',
+  'quiche_revision': 'c2638cc1d6a6b7888b4b81acef2d853ab9951914',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -368,6 +365,10 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
+  'tint_revision': '2f04dc94ce25e91e40dc088d787e148bd499ba65',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
   'resultdb_version': 'git_revision:65b41c1a56b49e7b33de8efb9d8fc993ff03851c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
@@ -395,7 +396,7 @@ vars = {
   'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:5667cc61018864b17542e0baff8b790f245583b0',
+  'gn_version': 'git_revision:a95c8a3ccc7de65eb740aa68a0d021cdc8550205',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -727,7 +728,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'WETAzI0eBKBa5bPFMG3PwLTu0o52YSruFtETThr6kGAC',
+          'version': 'ghprA8qO4h8JFA4VWvyomL7fyGJSgjrCNCXMVYdMn6gC',
       },
     ],
     'condition': 'checkout_android',
@@ -842,6 +843,9 @@ deps = {
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
 
+  'src/third_party/tint/src':
+    Var('dawn_git') + '/tint.git' + '@' +  Var('tint_revision'),
+
   'src/third_party/libjxl/src':
     Var('chromium_git') + '/external/gitlab.com/wg1/jpeg-xl.git' + '@' + Var('libjxl_revision'),
 
@@ -943,7 +947,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '92f8ddb7193024ffc171f694c725c5ecd352001b',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '450c3c2eea499c5249be57ec76c688613f0236fe',
       'condition': 'checkout_chromeos',
   },
 
@@ -1174,7 +1178,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '390dfc08e3806a2125d08d4d8d034a24d587d77a',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  '0a5da45c7f942908974f5ab8e107c9fa82048ae7',
+    Var('aomedia_git') + '/aom.git' + '@' +  '4f74b5275f519fcaaad9503116b3c888062a24db',
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),
@@ -1413,7 +1417,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '3rPTIlJKMg1Z5vCo_OfxOVIQD_pJ1XvXE7OcYDYNk8cC'
+              'version': 'RDM8t3fsvkJHrC_GtCTB1D0dnK1Xv1ZqnZI2DXJ6_4wC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1546,10 +1550,10 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'a0b8774ce8cec1dc8f4308810bf05eb8867c62de',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fdd7f1064e25c028425b6a5b4d5c66b47da92ae4',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'cdc880463c6f6d2fc023f68e40b229a3614cd4d8',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '18410aa438b69944cd741b8de62f556555891824',
+    Var('webrtc_git') + '/src.git' + '@' + 'b454767f1085856bc47b7bf0d0bf4c22f94a1fb1',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1621,7 +1625,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@85cbc4456c99126a3f0ef3fe577063b5ddef1dac',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@518a82c7a2bd20afd65d401db9f200ef64bbaff7',
     'condition': 'checkout_src_internal',
   },
 
@@ -1651,7 +1655,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'pwViTqkXl8MarImI6rXeTOVqTSvYxXlLTb3egs-xXUsC',
+        'version': '9NGVEdj20eRMZ59Oo-mz-ZGn9049h0D2lBqo5DNDSooC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4419,8 +4423,6 @@ hooks = [
 recursedeps = [
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
   'src/third_party/angle',
-  # Dawn and Tint's revision are linked
-  'src/third_party/dawn',
   'src/third_party/openscreen/src',
   'src/third_party/vulkan-deps',
   # src-internal has its own DEPS file to pull additional internal repos

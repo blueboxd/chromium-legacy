@@ -345,9 +345,14 @@ RendererEvictionReasonToNotRestoredReason(
   switch (reason) {
     case blink::mojom::RendererEvictionReason::kJavaScriptExecution:
       return BackForwardCacheMetrics::NotRestoredReason::kJavaScriptExecution;
-    case blink::mojom::RendererEvictionReason::kNetworkRequestDatapipeDrained:
+    case blink::mojom::RendererEvictionReason::
+        kNetworkRequestDatapipeDrainedAsDatapipe:
       return BackForwardCacheMetrics::NotRestoredReason::
-          kNetworkRequestDatapipeDrained;
+          kNetworkRequestDatapipeDrainedAsDatapipe;
+    case blink::mojom::RendererEvictionReason::
+        kNetworkRequestDatapipeDrainedAsBytesConsumer:
+      return BackForwardCacheMetrics::NotRestoredReason::
+          kNetworkRequestDatapipeDrainedAsBytesConsumer;
     case blink::mojom::RendererEvictionReason::kNetworkRequestRedirected:
       return BackForwardCacheMetrics::NotRestoredReason::
           kNetworkRequestRedirected;
@@ -9425,6 +9430,7 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
     blink::mojom::PolicyContainerPtr policy_container) {
   DCHECK(navigation_client && navigation_request);
   DCHECK_NE(GURL(), common_params->url);
+  DCHECK_NE(net::OK, error_code);
   navigation_client->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
       has_stale_copy_in_cache, error_code, extended_error_code,

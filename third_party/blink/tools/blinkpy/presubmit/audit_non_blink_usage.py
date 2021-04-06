@@ -88,6 +88,7 @@ _CONFIG = [
             'base::size',
             'base::span',
             'logging::GetVlogLevel',
+            'logging::SetLogItems',
             'base::PassKey',
 
             # //base/allocator/partition_allocator/partition_alloc_constants.h
@@ -517,6 +518,7 @@ _CONFIG = [
             'ui::IsDialog',
             'ui::IsHeading',
             'ui::IsPlatformDocument',
+            'ui::IsPresentational',
             'ui::IsTableLike',
             'ui::IsTableRow',
             'ui::IsTableHeader',

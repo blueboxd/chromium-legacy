@@ -275,8 +275,6 @@ void WebAppsChromeOs::GetMenuModel(const std::string& app_id,
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenuUI) &&
       !web_app->shortcuts_menu_item_infos().empty()) {
-    // TODO(crbug.com/1152661): ReadAllShortcutsMenuIcons must support
-    // IconPurpose::MASKABLE.
     provider()->icon_manager().ReadAllShortcutsMenuIcons(
         app_id,
         base::BindOnce(&WebAppsChromeOs::OnShortcutsMenuIconsRead,
@@ -307,8 +305,13 @@ void WebAppsChromeOs::OnShortcutsMenuIconsRead(
        web_app->shortcuts_menu_item_infos()) {
     const std::map<SquareSizePx, SkBitmap>* menu_item_icon_bitmaps = nullptr;
     if (menu_item_index < shortcuts_menu_icon_bitmaps.size()) {
+      // We prefer |MASKABLE| icons, but fall back to icons with purpose |ANY|.
       menu_item_icon_bitmaps =
-          &shortcuts_menu_icon_bitmaps[menu_item_index].any;
+          &shortcuts_menu_icon_bitmaps[menu_item_index].maskable;
+      if (menu_item_icon_bitmaps->empty()) {
+        menu_item_icon_bitmaps =
+            &shortcuts_menu_icon_bitmaps[menu_item_index].any;
+      }
     }
 
     if (menu_item_index != 0) {
@@ -317,12 +320,11 @@ void WebAppsChromeOs::OnShortcutsMenuIconsRead(
 
     gfx::ImageSkia icon;
     if (menu_item_icon_bitmaps) {
-      // TODO(crbug.com/1152661): Remove kCrOsStandardIcon and add
-      // kCrOsStandardBackground|kCrOsStandardMask effects for web app menu
-      // maskable icons.
       IconEffects icon_effects = IconEffects::kNone;
       if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-        icon_effects = IconEffects::kCrOsStandardIcon;
+        // We apply masking to each shortcut icon, regardless if the purpose is
+        // |MASKABLE| or |ANY|.
+        icon_effects = kCrOsStandardBackground | kCrOsStandardMask;
       }
 
       icon = ConvertSquareBitmapsToImageSkia(
@@ -383,6 +385,12 @@ void WebAppsChromeOs::ExecuteContextMenuCommand(const std::string& app_id,
   LaunchAppWithParams(std::move(params));
 }
 
+void WebAppsChromeOs::OnWebAppInstalled(const web_app::AppId& app_id) {
+  provider()->registry_controller().SetAppIsDisabled(
+      app_id, IsWebAppInDisabledList(app_id));
+  WebAppsBase::OnWebAppInstalled(app_id);
+}
+
 void WebAppsChromeOs::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
@@ -427,15 +435,13 @@ void WebAppsChromeOs::OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
 
 void WebAppsChromeOs::OnWebAppsDisabledModeChanged() {
   std::vector<apps::mojom::AppPtr> apps;
-  auto disabled_web_apps = provider()->policy_manager().GetDisabledWebAppsIds();
   std::vector<web_app::AppId> app_ids = provider()->registrar().GetAppIds();
   for (const auto& id : app_ids) {
-    const bool is_disabled = base::Contains(disabled_web_apps, id);
     // We only update visibility of disabled apps in this method. When enabling
     // previously disabled app, OnWebAppDisabledStateChanged() method will be
     // called and this method will update visibility and readiness of the newly
     // enabled app.
-    if (is_disabled) {
+    if (IsWebAppInDisabledList(id)) {
       const web_app::WebApp* web_app = GetWebApp(id);
       if (!web_app || !Accepts(id)) {
         continue;
@@ -657,6 +663,9 @@ apps::mojom::AppPtr WebAppsChromeOs::Convert(const web_app::WebApp* web_app,
   apps::mojom::AppPtr app = WebAppsBase::ConvertImpl(
       web_app,
       is_disabled ? apps::mojom::Readiness::kDisabledByPolicy : readiness);
+  if (is_disabled) {
+    UpdateAppDisabledMode(app);
+  }
 
   bool paused = paused_apps_.IsPaused(web_app->app_id());
   app->icon_key = icon_key_factory().MakeIconKey(
@@ -796,5 +805,10 @@ apps::mojom::OptionalBool WebAppsChromeOs::ShouldShowBadge(
     // Show a badge only if a notification is showing.
     return has_notification;
   }
+}
+
+bool WebAppsChromeOs::IsWebAppInDisabledList(const std::string& app_id) const {
+  return base::Contains(provider()->policy_manager().GetDisabledWebAppsIds(),
+                        app_id);
 }
 }  // namespace apps

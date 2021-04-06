@@ -26,6 +26,7 @@
 #include "chromeos/components/media_app_ui/test/media_app_ui_browsertest.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "components/crash/content/browser/error_reporting/mock_crash_endpoint.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/entry_info.h"
@@ -70,7 +71,10 @@ constexpr char kDomExceptionScript[] =
 class MediaAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   MediaAppIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures({chromeos::features::kMediaApp}, {});
+    // LoadsInkForImageAnnotation needs SharedArrayBuffer.
+    // TODO(crbug.com/1144104) Migrate the Ink app to be cross-origin isolated.
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kMediaApp, features::kSharedArrayBuffer}, {});
   }
 
  private:
@@ -231,10 +235,14 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, LoadsInkForImageAnnotation) {
 
   // TODO(b/175766054): Decipher if we can one line getting the annotate button
   // in `waitForNode`.
+  // Note the button id (icon-button-3709949292) corresponds to the annotation
+  // button and is calculated from a hash of the label ("Annotate"). This id is
+  // used since cl/366443893 because the UI toolkit has loose guarantees about
+  // where the actual label appears in the shadow DOM.
   constexpr char clickAnnotate[] = R"(
     (async () => {
       const appBar = await waitForNode('backlight-app-bar', ['backlight-app']);
-      const annotateButton = appBar.shadowRoot.querySelector('[label="Annotate"]');
+      const annotateButton = appBar.shadowRoot.querySelector('#icon-button-3709949292');
       annotateButton.click();
       return true;
     })();

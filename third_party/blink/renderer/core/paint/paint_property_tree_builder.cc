@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
@@ -108,24 +109,6 @@ PaintPropertyTreeBuilderContext::PaintPropertyTreeBuilderContext()
       supports_composited_raster_invalidation(true),
       was_layout_shift_root(false),
       was_main_thread_scrolling(false) {}
-
-void PaintPropertyTreeBuilderFragmentContext::Trace(Visitor* visitor) const {
-  visitor->Trace(current);
-  visitor->Trace(absolute_position);
-  visitor->Trace(fixed_position);
-}
-
-void PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext::Trace(
-    Visitor* visitor) const {
-  visitor->Trace(paint_offset_root);
-}
-
-void PaintPropertyTreeBuilderContext::Trace(Visitor* visitor) const {
-  visitor->Trace(fragments);
-  visitor->Trace(container_for_absolute_position);
-  visitor->Trace(container_for_fixed_position);
-  visitor->Trace(painting_layer);
-}
 
 PaintPropertyChangeType VisualViewportPaintPropertyTreeBuilder::Update(
     VisualViewport& visual_viewport,
@@ -708,29 +691,29 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
               .NearestScrollTranslationNode()
               .ScrollNode() == context_.current.scroll;
       if (nearest_scroller_is_clip && translates_with_nearest_scroller) {
-        const StickyPositionScrollingConstraints* layout_constraint =
+        const StickyPositionScrollingConstraints& layout_constraint =
             layer->AncestorScrollContainerLayer()
                 ->GetScrollableArea()
                 ->GetStickyConstraintsMap()
                 .at(layer);
         auto constraint = std::make_unique<CompositorStickyConstraint>();
-        constraint->is_anchored_left = layout_constraint->is_anchored_left;
-        constraint->is_anchored_right = layout_constraint->is_anchored_right;
-        constraint->is_anchored_top = layout_constraint->is_anchored_top;
-        constraint->is_anchored_bottom = layout_constraint->is_anchored_bottom;
+        constraint->is_anchored_left = layout_constraint.is_anchored_left;
+        constraint->is_anchored_right = layout_constraint.is_anchored_right;
+        constraint->is_anchored_top = layout_constraint.is_anchored_top;
+        constraint->is_anchored_bottom = layout_constraint.is_anchored_bottom;
 
-        constraint->left_offset = layout_constraint->left_offset.ToFloat();
-        constraint->right_offset = layout_constraint->right_offset.ToFloat();
-        constraint->top_offset = layout_constraint->top_offset.ToFloat();
-        constraint->bottom_offset = layout_constraint->bottom_offset.ToFloat();
+        constraint->left_offset = layout_constraint.left_offset.ToFloat();
+        constraint->right_offset = layout_constraint.right_offset.ToFloat();
+        constraint->top_offset = layout_constraint.top_offset.ToFloat();
+        constraint->bottom_offset = layout_constraint.bottom_offset.ToFloat();
         constraint->constraint_box_rect =
             FloatRect(box_model.ComputeStickyConstrainingRect());
         constraint->scroll_container_relative_sticky_box_rect = FloatRect(
-            layout_constraint->scroll_container_relative_sticky_box_rect);
+            layout_constraint.scroll_container_relative_sticky_box_rect);
         constraint->scroll_container_relative_containing_block_rect = FloatRect(
-            layout_constraint->scroll_container_relative_containing_block_rect);
+            layout_constraint.scroll_container_relative_containing_block_rect);
         if (PaintLayer* sticky_box_shifting_ancestor =
-                layout_constraint->nearest_sticky_layer_shifting_sticky_box) {
+                layout_constraint.nearest_sticky_layer_shifting_sticky_box) {
           constraint->nearest_element_shifting_sticky_box =
               CompositorElementIdFromUniqueObjectId(
                   sticky_box_shifting_ancestor->GetLayoutObject().UniqueId(),
@@ -738,7 +721,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
         }
         if (PaintLayer* containing_block_shifting_ancestor =
                 layout_constraint
-                    ->nearest_sticky_layer_shifting_containing_block) {
+                    .nearest_sticky_layer_shifting_containing_block) {
           constraint->nearest_element_shifting_containing_block =
               CompositorElementIdFromUniqueObjectId(
                   containing_block_shifting_ancestor->GetLayoutObject()
@@ -2491,8 +2474,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
 
         // Absolutely positioned content in an inline should be positioned
         // relative to the inline.
-        const LayoutObject* container =
-            full_context_.container_for_absolute_position;
+        const auto* container = full_context_.container_for_absolute_position;
         if (container && container->IsLayoutInline()) {
           DCHECK(container->CanContainAbsolutePositionObjects());
           DCHECK(box_model_object.IsBox());
@@ -2514,8 +2496,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         if (context_.fixed_position.fixed_position_children_fixed_to_root)
           context_.current.paint_offset_root = &box_model_object;
 
-        const LayoutObject* container =
-            full_context_.container_for_fixed_position;
+        const auto* container = full_context_.container_for_fixed_position;
         if (container && container->IsLayoutInline()) {
           DCHECK(container->CanContainFixedPositionObjects());
           DCHECK(box_model_object.IsBox());
@@ -2568,8 +2549,14 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   const LayoutBox& box = To<LayoutBox>(object_);
 
   if (box.IsLayoutReplaced() &&
-      box.PreviousPhysicalContentBoxRect() != box.PhysicalContentBoxRect())
+      box.PreviousPhysicalContentBoxRect() != box.PhysicalContentBoxRect()) {
     box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
+    if (box.IsLayoutEmbeddedContent()) {
+      if (const auto* child_view =
+              To<LayoutEmbeddedContent>(box).ChildLayoutView())
+        child_view->GetMutableForPainting().SetNeedsPaintPropertyUpdate();
+    }
+  }
 
   if (box.Size() == box.PreviousSize())
     return;
@@ -3389,7 +3376,7 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
   FragmentainerIterator iterator(
       flow_thread, object_bounding_box_in_flow_thread.ToLayoutRect());
   bool fragments_changed = false;
-  HeapVector<PaintPropertyTreeBuilderFragmentContext, 1> new_fragment_contexts;
+  Vector<PaintPropertyTreeBuilderFragmentContext, 1> new_fragment_contexts;
   for (; !iterator.AtEnd(); iterator.Advance()) {
     auto pagination_offset =
         PhysicalOffsetToBeNoop(iterator.PaginationOffset());
@@ -3474,7 +3461,7 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     if (current_fragment_data->NextFragment())
       fragments_changed = true;
     current_fragment_data->ClearNextFragment();
-    context_.fragments = new_fragment_contexts;
+    context_.fragments = std::move(new_fragment_contexts);
   }
 
   // Need to update subtree paint properties for the changed fragments.

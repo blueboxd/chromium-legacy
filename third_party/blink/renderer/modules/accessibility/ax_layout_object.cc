@@ -112,11 +112,6 @@ AXLayoutObject::~AXLayoutObject() {
   DCHECK(IsDetached());
 }
 
-void AXLayoutObject::Trace(Visitor* visitor) const {
-  visitor->Trace(layout_object_);
-  AXNodeObject::Trace(visitor);
-}
-
 bool IsProgrammaticallyScrollable(LayoutBox* box) {
   if (!box->IsScrollContainer())
     return false;
@@ -133,7 +128,7 @@ ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
   if (!layout_object_ || !layout_object_->IsBox())
     return nullptr;
 
-  auto* box = To<LayoutBox>(layout_object_.Get());
+  auto* box = To<LayoutBox>(layout_object_);
 
   // This should possibly use box->CanBeScrolledAndHasScrollableArea() as it
   // used to; however, accessibility must consider any kind of non-visible
@@ -166,14 +161,12 @@ static bool IsImageOrAltText(LayoutObject* layout_object, Node* node) {
   return false;
 }
 
-ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
-    ax::mojom::blink::Role dom_role) const {
+ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
   DCHECK(layout_object_);
-  // Markup did not provide a specific role, so attempt to determine one
-  // from the computed style.
-  Node* node = GetNode();
 
-  if (layout_object_->IsListItem() || IsA<HTMLLIElement>(node))
+  Node* node = GetNode();  // Can be null in the case of pseudo content.
+
+  if (layout_object_->IsListItemIncludingNG() || IsA<HTMLLIElement>(node))
     return ax::mojom::blink::Role::kListItem;
   if (layout_object_->IsListMarkerIncludingAll())
     return ax::mojom::blink::Role::kListMarker;
@@ -204,7 +197,7 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
   if (IsA<HTMLCanvasElement>(node))
     return ax::mojom::blink::Role::kCanvas;
 
-  if (IsA<LayoutView>(*layout_object_))
+  if (IsA<LayoutView>(layout_object_))
     return ax::mojom::blink::Role::kRootWebArea;
 
   if (layout_object_->IsSVGImage())
@@ -215,45 +208,11 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
   if (layout_object_->IsHR())
     return ax::mojom::blink::Role::kSplitter;
 
-  // TODO(accessibility): refactor this method to take no argument and instead
-  // default to returning kUnknownRole, the caller can then check for this and
-  // return a different value if they prefer.
-  return dom_role;
-}
-
-ax::mojom::blink::Role AXLayoutObject::DetermineAccessibilityRole() {
-  if (!layout_object_) {
-    NOTREACHED();
-    return ax::mojom::blink::Role::kUnknown;
-  }
-
-  if (GetCSSAltText(GetNode())) {
-    const ComputedStyle* style = GetNode()->GetComputedStyle();
-    ContentData* content_data = style->GetContentData();
-
-    // We just check the first item of the content list to determine the
-    // appropriate role, should only ever be image or text.
-    ax::mojom::blink::Role role = ax::mojom::blink::Role::kStaticText;
-    if (content_data->IsImage())
-      role = ax::mojom::blink::Role::kImage;
-
-    return role;
-  }
-
-  native_role_ = NativeRoleIgnoringAria();
-
-  if ((aria_role_ = DetermineAriaRoleAttribute()) !=
-      ax::mojom::blink::Role::kUnknown) {
-    return aria_role_;
-  }
-
-  // Anything that needs to still be exposed but doesn't have a more specific
-  // role should be considered a generic container. Examples are
-  // layout blocks with no node, in-page link targets, and plain elements
-  // such as a <span> with ARIA markup.
-  return native_role_ == ax::mojom::blink::Role::kUnknown
-             ? ax::mojom::blink::Role::kGenericContainer
-             : native_role_;
+  // Anything that needs to be exposed but doesn't have a more specific role
+  // should be considered a generic container. Examples are layout blocks with
+  // no node, in-page link targets, and plain elements such as a <span> with
+  // an aria- property.
+  return ax::mojom::blink::Role::kGenericContainer;
 }
 
 Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
@@ -1071,7 +1030,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
       found_text_alternative = true;
     } else if (layout_object_->IsText() &&
                (!recursive || !layout_object_->IsCounter())) {
-      auto* layout_text = To<LayoutText>(layout_object_.Get());
+      auto* layout_text = To<LayoutText>(layout_object_);
       String visible_text = layout_text->PlainText();  // Actual rendered text.
       // If no text boxes we assume this is unrendered end-of-line whitespace.
       // TODO find robust way to deterministically detect end-of-line space.
@@ -1092,7 +1051,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
       found_text_alternative = true;
     } else if (layout_object_->IsListMarkerForNormalContent() && !recursive) {
       text_alternative =
-          To<LayoutListMarker>(layout_object_.Get())->TextAlternative();
+          To<LayoutListMarker>(layout_object_)->TextAlternative();
       found_text_alternative = true;
     } else if (!recursive) {
       if (ListMarker* marker = ListMarker::Get(layout_object_)) {
@@ -1132,7 +1091,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
             DocumentLifecycle::kPrePaintClean);
 #endif
 
-  PaintLayer* layer = To<LayoutBox>(layout_object_.Get())->Layer();
+  PaintLayer* layer = To<LayoutBox>(layout_object_)->Layer();
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                          HitTestRequest::kRetargetForInert);
@@ -1188,16 +1147,6 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   }
 
   return result;
-}
-
-bool AXLayoutObject::CanHaveChildren() const {
-  if (!layout_object_)
-    return false;
-  if (GetCSSAltText(GetNode()))
-    return false;
-  if (layout_object_->IsListMarkerForNormalContent())
-    return false;
-  return AXNodeObject::CanHaveChildren();
 }
 
 //

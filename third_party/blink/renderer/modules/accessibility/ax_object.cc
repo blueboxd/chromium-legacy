@@ -726,7 +726,6 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
     : id_(0),
       parent_(nullptr),
       role_(ax::mojom::blink::Role::kUnknown),
-      aria_role_(ax::mojom::blink::Role::kUnknown),
       explicit_container_id_(0),
       last_modification_count_(-1),
       cached_is_ignored_(false),
@@ -2009,14 +2008,94 @@ bool AXObject::IsRangeValueSupported() const {
   return ui::IsRangeValueSupported(RoleValue());
 }
 
+bool AXObject::IsScrollbar() const {
+  return RoleValue() == ax::mojom::blink::Role::kScrollBar;
+}
+
+bool AXObject::IsNativeSlider() const {
+  return false;
+}
+
+bool AXObject::IsSpinButton() const {
+  return RoleValue() == ax::mojom::blink::Role::kSpinButton;
+}
+
+bool AXObject::IsTabItem() const {
+  return RoleValue() == ax::mojom::blink::Role::kTab;
+}
+
 bool AXObject::IsTextField() const {
   if (IsDetached())
     return false;
   return IsNativeTextField() || IsNonNativeTextField();
 }
 
+bool AXObject::IsAutofillAvailable() const {
+  return false;
+}
+
 bool AXObject::IsClickable() const {
   return ui::IsClickable(RoleValue());
+}
+
+AccessibilityExpanded AXObject::IsExpanded() const {
+  return kExpandedUndefined;
+}
+
+bool AXObject::IsFocused() const {
+  return false;
+}
+
+AccessibilityGrabbedState AXObject::IsGrabbed() const {
+  return kGrabbedStateUndefined;
+}
+
+bool AXObject::IsHovered() const {
+  return false;
+}
+
+bool AXObject::IsLineBreakingObject() const {
+  return false;
+}
+
+bool AXObject::IsLinked() const {
+  return false;
+}
+
+bool AXObject::IsLoaded() const {
+  return false;
+}
+
+bool AXObject::IsMultiSelectable() const {
+  return false;
+}
+
+bool AXObject::IsOffScreen() const {
+  return false;
+}
+
+bool AXObject::IsRequired() const {
+  return false;
+}
+
+AccessibilitySelectedState AXObject::IsSelected() const {
+  return kSelectedStateUndefined;
+}
+
+bool AXObject::IsSelectedFromFocus() const {
+  return false;
+}
+
+bool AXObject::IsSelectedOptionActive() const {
+  return false;
+}
+
+bool AXObject::IsNotUserSelectable() const {
+  return false;
+}
+
+bool AXObject::IsVisited() const {
+  return false;
 }
 
 bool AXObject::AccessibilityIsIgnored() const {
@@ -2598,6 +2677,12 @@ bool AXObject::LastKnownIsIgnoredButIncludedInTreeValue() const {
 bool AXObject::LastKnownIsIncludedInTreeValue() const {
   return !LastKnownIsIgnoredValue() ||
          LastKnownIsIgnoredButIncludedInTreeValue();
+}
+
+ax::mojom::blink::Role AXObject::DetermineAccessibilityRole() {
+  DCHECK(!IsDetached());
+
+  return NativeRoleIgnoringAria();
 }
 
 bool AXObject::HasInheritedPresentationalRole() const {
@@ -3549,7 +3634,7 @@ AXRestriction AXObject::Restriction() const {
 }
 
 ax::mojom::blink::Role AXObject::AriaRoleAttribute() const {
-  return aria_role_;
+  return ax::mojom::blink::Role::kUnknown;
 }
 
 ax::mojom::blink::Role AXObject::DetermineAriaRoleAttribute() const {
@@ -3563,12 +3648,15 @@ ax::mojom::blink::Role AXObject::DetermineAriaRoleAttribute() const {
   // ARIA states if an item can get focus, it should not be presentational.
   // It also states user agents should ignore the presentational role if
   // the element has global ARIA states and properties.
-  if (ui::IsPresentational(role) &&
-      ((GetElement() && GetElement()->SupportsFocus()) ||
-       HasGlobalARIAAttribute())) {
-    // If we return an unknown role, then the native HTML role would be used
-    // instead.
-    return ax::mojom::blink::Role::kUnknown;
+  if (ui::IsPresentational(role)) {
+    if (IsA<HTMLIFrameElement>(*GetNode()) || IsA<HTMLFrameElement>(*GetNode()))
+      return ax::mojom::blink::Role::kIframePresentational;
+    if ((GetElement() && GetElement()->SupportsFocus()) ||
+        HasGlobalARIAAttribute()) {
+      // If we return an unknown role, then the native HTML role would be used
+      // instead.
+      return ax::mojom::blink::Role::kUnknown;
+    }
   }
 
   if (role == ax::mojom::blink::Role::kButton)

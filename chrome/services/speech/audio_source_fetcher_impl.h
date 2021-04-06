@@ -17,17 +17,15 @@ namespace speech {
 class SpeechRecognitionRecognizerImpl;
 
 // Class to get microphone audio data and send it to a
-// SpeechRecognitionRecognizerImpl for transcription. Runs in Browser process in
-// Chrome OS and Speech Recognition Service on Chrome or web speech fallback.
-// TODO(crbug.com/1173135): Override from
-// media::AudioCapturerSource::CaptureCallback to capture audio.
+// SpeechRecognitionRecognizerImpl for transcription. Runs on the IO thread in
+// the Browser process in Chrome OS and in the Speech Recognition Service
+// utility process on Chrome or web speech fallback.
 class AudioSourceFetcherImpl
     : public media::mojom::AudioSourceFetcher,
       public media::AudioCapturerSource::CaptureCallback,
       public media::AudioDataS16Converter {
  public:
   AudioSourceFetcherImpl(
-      mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory,
       std::unique_ptr<SpeechRecognitionRecognizerImpl> recognition_recognizer);
   ~AudioSourceFetcherImpl() override;
   AudioSourceFetcherImpl(const AudioSourceFetcherImpl&) = delete;
@@ -35,11 +33,13 @@ class AudioSourceFetcherImpl
 
   static void Create(
       mojo::PendingReceiver<media::mojom::AudioSourceFetcher> receiver,
-      mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory,
       std::unique_ptr<SpeechRecognitionRecognizerImpl> recognition_recognizer);
 
   // media::mojom::AudioSourceFetcher:
-  void Start() override;
+  void Start(
+      mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory,
+      const std::string& device_id,
+      const ::media::AudioParameters& audio_parameters) override;
   void Stop() override;
 
   // media::AudioCapturerSource::CaptureCallback:
@@ -74,6 +74,9 @@ class AudioSourceFetcherImpl
 
   // Audio parameters will be used when recording audio.
   media::AudioParameters audio_parameters_;
+
+  // Device ID used to record audio.
+  std::string device_id_;
 
   // Owned SpeechRecognitionRecognizerImpl was constructed by the
   // SpeechRecognitionService as appropriate for the platform.

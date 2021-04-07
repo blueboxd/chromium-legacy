@@ -131,8 +131,8 @@
   },
   {
     "name": "android-picture-in-picture-api",
-    "owners": [ "beccahughes", "jazzhsu" ],
-    "expiry_milestone": 82
+    "owners": [ "steimel", "jazzhsu", "media-dev" ],
+    "expiry_milestone": 100
   },
   {
     "name": "animated-image-resume",
@@ -156,7 +156,7 @@
   },
   {
     "name": "arc-custom-tabs-experiment",
-    "owners": [ "hashimoto", "jschettler" ],
+    "owners": [ "hashimoto", "dominickn" ],
     "expiry_milestone": 95
   },
   {
@@ -1973,7 +1973,7 @@
   {
     "name": "enable-launcher-app-paging",
     "owners": [ "//ash/app_list/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-layout-ng",
@@ -2027,6 +2027,11 @@
   {
     "name": "enable-magnifier-panning-improvements",
     "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 92
+  },
+  {
+    "name": "enable-managed-configuration-web-api",
+    "owners": [ "apotapchuk" ],
     "expiry_milestone": 92
   },
   {
@@ -3855,11 +3860,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-double-space-keyword-triggering",
-    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 99
-  },
-  {
     "name": "omnibox-drive-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
@@ -3882,7 +3882,12 @@
   {
     "name": "omnibox-keyword-search-button",
     "owners": [ "jdonnelly", "yoangela", "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
+  },
+  {
+    "name": "omnibox-keyword-space-triggering",
+    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 99
   },
   {
     "name": "omnibox-local-history-zero-suggest",
@@ -4585,8 +4590,13 @@
   },
   {
     "name": "scan-app-media-link",
-    "owners": [ "gavinwill", "jschettler" ],
+    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "scan-app-sticky-settings",
+    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "scheduler-configuration",

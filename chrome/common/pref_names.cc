@@ -1252,14 +1252,6 @@ const char kLiveCaptionEnabled[] =
 // The language to use with the Live Caption feature.
 const char kLiveCaptionLanguageCode[] =
     "accessibility.captions.live_caption_language";
-
-// The file path of the Speech On-Device API (SODA) binary.
-const char kSodaBinaryPath[] = "accessibility.captions.soda_binary_path";
-
-// The scheduled time to clean up the Speech On-Device API (SODA) files from the
-// device.
-const char kSodaScheduledDeletionTime[] =
-    "accessibility.captions.soda_scheduled_deletion_time";
 #endif
 
 #if defined(OS_MAC)
@@ -3171,6 +3163,14 @@ const char kShowCaretBrowsingDialog[] =
 // a policy, and the default value for managed users is false. Admins willing to
 // give rights to use Lacros can set the policy to true.
 const char kLacrosAllowed[] = "lacros_allowed";
+// Enum pref indicating how to launch the Lacros browser. It can have one of the
+// following values:
+// 0: User choice (default value).
+// 1: Lacros is disallowed.
+// 2: Lacros is enabled but not the pimary browser.
+// 3: Lacros is enabled as the primary browser.
+// 4: Lacros is the only available browser.
+const char kLacrosLaunchSwitch[] = "lacros_launch_switch";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

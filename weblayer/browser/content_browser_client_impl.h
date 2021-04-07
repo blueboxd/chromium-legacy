@@ -128,6 +128,10 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   content::ControllerPresentationServiceDelegate*
   GetControllerPresentationServiceDelegate(
       content::WebContents* web_contents) override;
+  void OpenURL(
+      content::SiteInstance* site_instance,
+      const content::OpenURLParams& params,
+      base::OnceCallback<void(content::WebContents*)> callback) override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
   content::GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
@@ -194,6 +198,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   CreateSpeechRecognitionManagerDelegate() override;
   ukm::UkmService* GetUkmService() override;
   bool HasErrorPage(int http_status_code) override;
+  bool IsClipboardPasteAllowed(
+      content::RenderFrameHost* render_frame_host) override;
 
   void CreateFeatureListAndFieldTrials();
 

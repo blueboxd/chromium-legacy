@@ -1227,6 +1227,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       if (has_mask_based_clip_path)
         clip_path_clip = fragment_data_.ClipPathBoundingBox();
 
+      const auto* output_clip = EffectCanUseCurrentClipAsOutputClip()
+                                    ? context_.current.clip
+                                    : nullptr;
+
       if (mask_clip || clip_path_clip) {
         IntRect combined_clip = mask_clip ? *mask_clip : *clip_path_clip;
         if (mask_clip && clip_path_clip)
@@ -1236,6 +1240,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
             *context_.current.clip,
             ClipPaintPropertyNode::State(context_.current.transform,
                                          FloatRoundedRect(combined_clip))));
+        output_clip = properties_->MaskClip();
       } else {
         OnClearClip(properties_->ClearMaskClip());
       }
@@ -1245,10 +1250,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         mask_compositor_element_id =
             GetCompositorElementId(CompositorElementIdNamespace::kEffectMask);
       }
-
-      const auto* output_clip = EffectCanUseCurrentClipAsOutputClip()
-                                    ? context_.current.clip
-                                    : nullptr;
 
       EffectPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
@@ -1260,17 +1261,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       }
       if (object_.IsBoxModelObject()) {
         if (auto* layer = To<LayoutBoxModelObject>(object_).Layer()) {
+          CompositorFilterOperations operations;
+          gfx::RRectF bounds;
           // Try to use the cached effect for backdrop-filter.
-          if (properties_->Effect()) {
-            state.backdrop_filter = properties_->Effect()->BackdropFilter();
-            state.backdrop_filter_bounds =
-                properties_->Effect()->BackdropFilterBounds();
+          if (properties_->Effect() &&
+              properties_->Effect()->BackdropFilter()) {
+            operations = *properties_->Effect()->BackdropFilter();
+            bounds = properties_->Effect()->BackdropFilterBounds();
           }
-          layer->UpdateCompositorFilterOperationsForBackdropFilter(
-              state.backdrop_filter, &state.backdrop_filter_bounds);
-          layer->ClearBackdropFilterOnEffectNodeDirty();
-          if (!state.backdrop_filter.IsEmpty()) {
-            state.backdrop_mask_element_id = mask_compositor_element_id;
+          layer->UpdateCompositorFilterOperationsForBackdropFilter(operations,
+                                                                   bounds);
+          if (!operations.IsEmpty()) {
+            state.backdrop_filter_info = base::WrapUnique(
+                new EffectPaintPropertyNode::BackdropFilterInfo{
+                    std::move(operations), bounds, mask_compositor_element_id});
           }
         }
       }
@@ -1459,15 +1463,18 @@ static bool NeedsFilter(const LayoutObject& object,
 static void UpdateFilterEffect(const LayoutObject& object,
                                const EffectPaintPropertyNode* effect_node,
                                CompositorFilterOperations& filter) {
-  if (object.IsBoxModelObject() &&
-      To<LayoutBoxModelObject>(object).HasLayer()) {
+  if (object.HasLayer()) {
     // Try to use the cached filter.
     if (effect_node)
       filter = effect_node->Filter();
     PaintLayer* layer = To<LayoutBoxModelObject>(object).Layer();
+#if DCHECK_IS_ON()
+    // We should have already updated the reference box.
+    auto reference_box = layer->FilterReferenceBox();
     layer->UpdateFilterReferenceBox();
+    DCHECK_EQ(reference_box, layer->FilterReferenceBox());
+#endif
     layer->UpdateCompositorFilterOperationsForFilter(filter);
-    layer->ClearFilterOnEffectNodeDirty();
     return;
   }
   if (object.IsSVGChild() && !object.IsText()) {

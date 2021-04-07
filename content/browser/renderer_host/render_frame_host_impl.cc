@@ -3673,7 +3673,7 @@ void RenderFrameHostImpl::RequestSmartClipExtract(
     gfx::Rect rect) {
   int32_t callback_id = smart_clip_callbacks_.Add(
       std::make_unique<ExtractSmartClipDataCallback>(std::move(callback)));
-  GetMojomFrameInRenderer()->ExtractSmartClipData(
+  GetAssociatedLocalFrame()->ExtractSmartClipData(
       rect, base::BindOnce(&RenderFrameHostImpl::OnSmartClipDataExtracted,
                            base::Unretained(this), callback_id));
 }
@@ -7461,6 +7461,27 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
   DCHECK(!is_live || render_view_host_->IsRenderViewLive());
 
   return is_live;
+}
+
+RenderFrameHost::LifecycleState RenderFrameHostImpl::GetLifecycleState() {
+  switch (lifecycle_state()) {
+    case LifecycleStateImpl::kSpeculative:
+      // TODO(https://crbug.com/1183639): Ensure that Speculative
+      // RenderFrameHosts are not exposed to embedders.
+      NOTREACHED();
+      return LifecycleState::kPendingCommit;
+    case LifecycleStateImpl::kPendingCommit:
+      return LifecycleState::kPendingCommit;
+    case LifecycleStateImpl::kPrerendering:
+      return LifecycleState::kPrerendering;
+    case LifecycleStateImpl::kActive:
+      return LifecycleState::kActive;
+    case LifecycleStateImpl::kInBackForwardCache:
+      return LifecycleState::kInBackForwardCache;
+    case LifecycleStateImpl::kRunningUnloadHandlers:
+    case LifecycleStateImpl::kReadyToBeDeleted:
+      return LifecycleState::kPendingDeletion;
+  }
 }
 
 bool RenderFrameHostImpl::IsCurrent() {

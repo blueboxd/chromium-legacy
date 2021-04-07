@@ -112,7 +112,10 @@ ReadLaterButton::ReadLaterButton(Browser* browser)
       })),
       highlight_color_animation_(
           std::make_unique<HighlightColorAnimation>(this)) {
-  DCHECK(!BrowserView::GetBrowserViewForBrowser(browser_)->side_panel());
+  // Note: BrowserView may not exist during tests.
+  if (BrowserView::GetBrowserViewForBrowser(browser_))
+    DCHECK(!BrowserView::GetBrowserViewForBrowser(browser_)->side_panel());
+
   dot_indicator_ = views::DotIndicator::Install(image());
 
   reading_list_model_ =
@@ -159,6 +162,8 @@ SkColor ReadLaterButton::GetInkDropBaseColor() const {
 }
 
 void ReadLaterButton::OnThemeChanged() {
+  LabelButton::OnThemeChanged();
+
   // We don't always have a theme provider (ui tests, for example).
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
@@ -167,19 +172,12 @@ void ReadLaterButton::OnThemeChanged() {
       ToolbarButton::AdjustHighlightColorForContrast(
           theme_provider, gfx::kGoogleBlue300, gfx::kGoogleBlue600,
           gfx::kGoogleBlue050, gfx::kGoogleBlue900));
-  SetEnabledTextColors(highlight_color_animation_->GetTextColor());
-  SetImageModel(
-      views::Button::STATE_NORMAL,
-      ui::ImageModel::FromVectorIcon(
-          kReadLaterIcon, highlight_color_animation_->GetIconColor()));
 
   dot_indicator_->SetColor(
       /*dot_color=*/GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_AlertSeverityHigh),
       /*border_color=*/theme_provider->GetColor(
           ThemeProperties::COLOR_TOOLBAR));
-
-  LabelButton::OnThemeChanged();
 }
 
 void ReadLaterButton::Layout() {
@@ -306,6 +304,11 @@ void ReadLaterButton::HighlightColorAnimation::Show() {
 
 void ReadLaterButton::HighlightColorAnimation::Hide() {
   ClearHighlightColor();
+}
+
+void ReadLaterButton::HighlightColorAnimation::SetColor(SkColor color) {
+  highlight_color_ = color;
+  parent_->UpdateColors();
 }
 
 SkColor ReadLaterButton::HighlightColorAnimation::GetTextColor() const {

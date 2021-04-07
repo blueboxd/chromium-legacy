@@ -875,27 +875,6 @@
             ]
         }
     ],
-    "AutofillEnableSupportForMoreStructureInNames": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnableSupportForMoreStructureInNames",
-                    "enable_features": [
-                        "AutofillEnableSupportForMoreStructureInNames"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillKeyboardAccessory": [
         {
             "platforms": [
@@ -2223,26 +2202,6 @@
                     "name": "WithoutFtpSupport",
                     "disable_features": [
                         "FtpProtocol"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DesktopHats": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledNTP80",
-                    "params": {
-                        "en_site_id": "tbl7ghvx6q4sth3jzfxynlvnxi",
-                        "probability": "0.01",
-                        "survey": "satisfaction"
-                    },
-                    "enable_features": [
-                        "HappinessTrackingSurveysForDesktop"
                     ]
                 }
             ]

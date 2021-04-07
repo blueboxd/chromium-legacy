@@ -73,6 +73,8 @@ source_set("dns") {
       "httpssvc_metrics.cc",
       "httpssvc_metrics.h",
       "mapped_host_resolver.cc",
+      "nsswitch_reader.cc",
+      "nsswitch_reader.h",
       "record_parsed.cc",
       "record_rdata.cc",
       "resolve_context.cc",
@@ -417,6 +419,7 @@ source_set("tests") {
     "https_record_rdata_unittest.cc",
     "httpssvc_metrics_unittest.cc",
     "mapped_host_resolver_unittest.cc",
+    "nsswitch_reader_unittest.cc",
     "record_parsed_unittest.cc",
     "record_rdata_unittest.cc",
     "resolve_context_unittest.cc",
@@ -551,6 +554,16 @@ fuzzer_test("net_dns_integrity_record_fuzzer") {
     "//net",
     "//net:net_fuzzer_test_support",
   ]
+}
+
+fuzzer_test("net_dns_nsswitch_reader_fuzzer") {
+  sources = [ "nsswitch_reader_fuzzer.cc" ]
+  deps = [
+    "//base",
+    "//net",
+    "//net:net_fuzzer_test_support",
+  ]
+  dict = "//net/data/fuzzer_dictionaries/net_dns_nsswitch_reader_fuzzer.dict"
 }
 
 fuzzer_test("net_dns_record_fuzzer") {

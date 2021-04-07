@@ -592,6 +592,9 @@ extern const char kDownloadLaterDebugOnWifiNameDescription[];
 extern const char kEnableLoginDetectionName[];
 extern const char kEnableLoginDetectionDescription[];
 
+extern const char kEnableManagedConfigurationWebApiName[];
+extern const char kEnableManagedConfigurationWebApiDescription[];
+
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
 
@@ -956,8 +959,8 @@ extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 extern const char kOmniboxDefaultTypedNavigationsToHttpsName[];
 extern const char kOmniboxDefaultTypedNavigationsToHttpsDescription[];
 
-extern const char kOmniboxDoubleSpaceKeywordTriggeringName[];
-extern const char kOmniboxDoubleSpaceKeywordTriggeringDescription[];
+extern const char kOmniboxKeywordSpaceTriggeringName[];
+extern const char kOmniboxKeywordSpaceTriggeringDescription[];
 
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
@@ -2039,9 +2042,6 @@ extern const char kNtpChromeCartModuleDescription[];
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 
-extern const char kHappinessTrackingSurveysForDesktopName[];
-extern const char kHappinessTrackingSurveysForDesktopDescription[];
-
 extern const char kHappinessTrackingSurveysForDesktopDemoName[];
 extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
 
@@ -2732,6 +2732,9 @@ extern const char kScalableStatusAreaDescription[];
 extern const char kScanAppMediaLinkName[];
 extern const char kScanAppMediaLinkDescription[];
 
+extern const char kScanAppStickySettingsName[];
+extern const char kScanAppStickySettingsDescription[];
+
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
@@ -2878,12 +2881,6 @@ extern const char kEnableNewBadgeOnMenuItemsDescription[];
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-
-extern const char kEnableMediaFeedsName[];
-extern const char kEnableMediaFeedsDescription[];
-
-extern const char kEnableMediaFeedsBackgroundFetchName[];
-extern const char kEnableMediaFeedsBackgroundFetchDescription[];
 
 extern const char kEnableOopPrintDriversName[];
 extern const char kEnableOopPrintDriversDescription[];

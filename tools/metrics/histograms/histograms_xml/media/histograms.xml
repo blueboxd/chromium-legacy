@@ -137,7 +137,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Audio.Autoplay" enum="AutoplaySource"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>Records the autoplay source of audios.</summary>
 </histogram>
@@ -1146,7 +1146,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Media.Capabilities.DecodingInfo.Time.Video" units="ms"
     expires_after="2021-07-27">
   <owner>chcunningham@chromium.org</owner>
-  <owner>mlamouri@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Time spent between receiving a decodingInfo() call and resolving it. It only
@@ -1157,7 +1156,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Media.Capabilities.DecodingInfo.Time.Video.Clear" units="ms"
     expires_after="2021-08-09">
   <owner>chcunningham@chromium.org</owner>
-  <owner>mlamouri@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Time spent between receiving a decodingInfo() call and resolving it. It only
@@ -1170,7 +1168,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Media.Capabilities.DecodingInfo.Time.Video.Encrypted"
     units="ms" expires_after="2021-01-15">
   <owner>chcunningham@chromium.org</owner>
-  <owner>mlamouri@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Time spent between receiving a decodingInfo() call and resolving it. It only
@@ -1234,7 +1231,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Controls.Show.Audio" enum="MediaControlsShowReason"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <summary>
     Record whether the default media controls of an audio element were shown and
     why every time they could be shown. Note that audio elements that were not
@@ -1245,7 +1243,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Controls.Show.Video" enum="MediaControlsShowReason"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
   <summary>
     Record whether the default media controls of a video element were shown and
     why every time they could be shown.
@@ -1915,6 +1914,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Feeds.AggregateWatchtime" units="ms"
     expires_after="2021-08-09">
+  <obsolete>
+    Removed in M91.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -1926,6 +1928,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Feeds.Feed.ReadResult" enum="MediaFeedReadResult"
     expires_after="2021-08-09">
+  <obsolete>
+    Removed in M91.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -1936,6 +1941,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Feeds.FeedItem.ReadResult"
     enum="MediaFeedItemReadResult" expires_after="2021-05-09">
+  <obsolete>
+    Removed in M91.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -1945,6 +1953,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Media.Feeds.Fetch.Size" units="KB" expires_after="2021-05-09">
+  <obsolete>
+    Removed in M91.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -1955,6 +1966,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Feeds.SafeSearch.Result"
     enum="MediaFeedSafeSearchResult" expires_after="2021-05-09">
+  <obsolete>
+    Removed in M91.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -3353,6 +3367,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
+<histogram name="Media.RTCVideoDecoderFirstFrameLatencyMs" units="ms"
+    expires_after="2021-05-02">
+  <owner>liberato@chromium.org</owner>
+  <owner>webrtc-video@google.com</owner>
+  <summary>
+    Time from decoder creation until the first frame is decoded.
+  </summary>
+</histogram>
+
 <histogram name="Media.RTCVideoDecoderInitDecodeSuccess" enum="BooleanSuccess"
     expires_after="never">
 <!-- expires-never: WebRTC health metric. -->
@@ -3431,7 +3454,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Session.ActiveTime" units="ms"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Time during which a media session has been active, in other words, the time
@@ -3444,7 +3467,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Session.Pause" enum="MediaSessionActionSource"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     The number of times the user paused playback of a media session using other
@@ -3454,7 +3477,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Session.Play" enum="MediaSessionActionSource"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     The number of times the user started playback of a media session using other
@@ -3464,7 +3487,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Session.RequestAudioFocusResult" enum="BooleanSuccess"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Indicate whether the native requestAudioFocus() call was successful.
@@ -3473,7 +3496,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Session.Stop" enum="MediaSessionActionSource"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     The number of times the user stopped a media session using other means than
@@ -3483,7 +3506,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Session.Suspended" enum="MediaSessionSuspendedSource"
     expires_after="2021-08-01">
-  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     The number of times a media session is suspended and why it has been
@@ -3778,7 +3801,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Video.Autoplay" enum="AutoplaySource"
     expires_after="2021-08-01">
-  <owner>mlamouri@google.com</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Records the autoplay source of videos. This includes
@@ -3788,14 +3811,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Video.Autoplay.Muted" enum="AutoplaySource"
     expires_after="2021-06-01">
-  <owner>mlamouri@google.com</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>Records the autoplay source of muted videos.</summary>
 </histogram>
 
 <histogram name="Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"
     enum="Boolean" expires_after="2021-08-01">
-  <owner>mlamouri@google.com</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Records muted video started playing with play() become visible at some
@@ -3808,7 +3831,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration"
     units="ms" expires_after="2021-08-01">
-  <owner>mlamouri@google.com</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Records the offscreen playing duration of a muted video autoplaying from
@@ -3818,7 +3841,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.Video.Autoplay.Muted.UnmuteAction" enum="BooleanSuccess"
     expires_after="2021-08-01">
-  <owner>mlamouri@google.com</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Status of the unmute action on a video that autoplayed because it was muted.
@@ -4395,7 +4418,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.VideoPersistence.AttemptResult"
     enum="VideoPersistenceAttemptResult" expires_after="2021-09-19">
-  <owner>mlamouri@google.com</owner>
   <owner>peconn@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -4406,7 +4428,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.VideoPersistence.ControlsType"
     enum="VideoPersistenceControlsType" expires_after="2021-09-19">
-  <owner>mlamouri@google.com</owner>
+  <owner>peconn@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
     Record the type of controls a persisted video is using. This is recorded
@@ -4416,7 +4438,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.VideoPersistence.Duration" units="ms"
     expires_after="M93">
-  <owner>mlamouri@google.com</owner>
   <owner>peconn@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -4427,7 +4448,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Media.VideoPersistence.EndReason"
     enum="VideoPersistenceEndReason" expires_after="2021-09-19">
-  <owner>mlamouri@google.com</owner>
   <owner>peconn@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>

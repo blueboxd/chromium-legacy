@@ -739,7 +739,7 @@
       status: "experimental",
     },
     {
-      name: "DeviceInterface",
+      name: "DeviceAttributes",
       status: "experimental",
     },
     {
@@ -945,6 +945,7 @@
     },
     {
       name: "FledgeInterestGroups",
+      origin_trial_feature_name: "FledgeInterestGroups",
     },
     {
       name: "FocuslessSpatialNavigation",
@@ -1195,6 +1196,14 @@
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
+      name: "ManagedConfiguration",
+      status:"experimental",
+    },
+    {
+      name: "ManagedInterface",
+      "implied_by": ["DeviceAttributes", "ManagedConfiguration"],
+    },
+    {
       name:"ManualSlotting",
       status:"stable",
     },
@@ -1256,12 +1265,6 @@
     // Set to reflect the kMediaEngagementBypassAutoplayPolicies feature.
     {
       name: "MediaEngagementBypassAutoplayPolicies",
-    },
-    // Media Feeds: https://wicg.github.io/media-feeds/
-    // Set to reflect the kMediaFeeds feature.
-    {
-      name: "MediaFeeds",
-      status: "experimental",
     },
     {
       name: "MediaLatencyHint",

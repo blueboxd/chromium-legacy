@@ -71,7 +71,6 @@
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
-#include "chrome/browser/tflite_experiment/tflite_experiment_switches.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -104,7 +103,6 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_web_contents_helper.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -162,11 +160,6 @@
 #include "chrome/browser/ui/cocoa/screentime/tab_helper.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
-#include "chrome/browser/media/feeds/media_feeds_service.h"
-#endif
-
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
@@ -200,10 +193,6 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
-#endif
-
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-#include "chrome/browser/tflite_experiment/tflite_experiment_observer.h"
 #endif
 
 using content::WebContents;
@@ -278,12 +267,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   LiteVideoObserver::MaybeCreateForWebContents(web_contents);
   login_detection::LoginDetectionTabHelper::MaybeCreateForWebContents(
       web_contents);
-
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  if (tflite_experiment::switches::GetTFLiteModelPath())
-    TFLiteExperimentObserver::CreateForWebContents(web_contents);
-#endif
-
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
@@ -400,8 +383,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     LastTabStandingTrackerTabHelper::CreateForWebContents(web_contents);
   }
   ManagePasswordsUIController::CreateForWebContents(web_contents);
-  if (media_feeds::MediaFeedsService::IsEnabled())
-    MediaFeedsContentsObserver::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
   SadTabHelper::CreateForWebContents(web_contents);
@@ -440,8 +421,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
-          features::kHappinessTrackingSurveysForDesktop) ||
-      base::FeatureList::IsEnabled(
           features::kHappinessTrackingSurveysForDesktopDemo)) {
     HatsHelper::CreateForWebContents(web_contents);
   }

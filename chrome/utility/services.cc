@@ -11,8 +11,6 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/services/machine_learning/machine_learning_service.h"  // nogncheck
-#include "chrome/services/machine_learning/public/mojom/machine_learning_service.mojom.h"  // nogncheck
 #include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
 #include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 #include "components/paint_preview/buildflags/buildflags.h"
@@ -41,7 +39,6 @@
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
 #include "components/services/quarantine/quarantine_impl.h"  // nogncheck
-#include "media/mojo/services/media_service_factory.h"       // nogncheck
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MAC)
@@ -135,13 +132,6 @@ auto RunQRCodeGeneratorService(
     mojo::PendingReceiver<qrcode_generator::mojom::QRCodeGeneratorService>
         receiver) {
   return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
-      std::move(receiver));
-}
-
-auto RunMachineLearningService(
-    mojo::PendingReceiver<machine_learning::mojom::MachineLearningService>
-        receiver) {
-  return std::make_unique<machine_learning::MachineLearningService>(
       std::move(receiver));
 }
 
@@ -306,13 +296,6 @@ auto RunAssistantAudioDecoder(
 #endif
 #endif
 
-#if defined(OS_WIN)
-auto RunMediaFoundationService(
-    mojo::PendingReceiver<media::mojom::MediaService> receiver) {
-  return media::CreateMediaFoundationService(std::move(receiver));
-}
-#endif  // defined(OS_WIN)
-
 }  // namespace
 
 void RegisterElevatedMainThreadServices(mojo::ServiceFactory& services) {
@@ -329,7 +312,6 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunUnzipper);
   services.Add(RunLanguageDetectionService);
   services.Add(RunQRCodeGeneratorService);
-  services.Add(RunMachineLearningService);
 
   if (base::FeatureList::IsEnabled(blink::features::kWebAppEnableUrlHandlers))
     services.Add(RunWebAppOriginAssociationParser);
@@ -344,7 +326,6 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunQuarantineService);
   services.Add(RunWindowsUtility);
   services.Add(RunWindowsIconReader);
-  services.Add(RunMediaFoundationService);
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(IS_CHROMEOS_ASH)

@@ -115,8 +115,6 @@ crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/emb
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame.html [ Pass Failure ]
-crbug.com/949003 virtual/not-site-per-process/http/tests/printing/cross-site-frame-scrolled.html [ Pass ]
-crbug.com/949003 virtual/not-site-per-process/http/tests/printing/cross-site-frame.html [ Pass ]
 # ====== Site Isolation failures until here ======
 
 # ====== Oilpan-only failures from here ======
@@ -755,10 +753,6 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/1155036 external/wpt/css/css-flexbox/contain-size-layout-abspos-flex-container-crash.html [ Crash Pass ]
-
-# Column flexboxes don't give tables the right height.
-
-crbug.com/1181403 external/wpt/css/css-flexbox/table-as-item-stretch-cross-size-3.html [ Failure ]
 
 # These tests are in conflict with overflow-area-*, update them if our change is web compatible.
 crbug.com/1069614 external/wpt/css/css-flexbox/overflow-top-left.html [ Failure ]
@@ -5735,6 +5729,9 @@ crbug.com/1034513 [ Win7 ] virtual/stable/fast/dom/Window/window-resize-contents
 # Assertion errors need to be fixed
 crbug.com/1034492 http/tests/devtools/unit/filtered-item-selection-dialog-filtering.js [ Pass Failure ]
 crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ Pass Failure ]
+
+# Disable for landing devtools change
+crbug.com/1194704 http/tests/devtools/unit/suggest-box.js [ Pass Failure ]
 
 # Sheriff 2019-12-23
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]

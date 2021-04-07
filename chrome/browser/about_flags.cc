@@ -1207,6 +1207,22 @@ const FeatureEntry::FeatureVariation kOmniboxBookmarkPathsVariations[] = {
     },
 };
 
+const FeatureEntry::FeatureVariation
+    kOmniboxKeywordSpaceTriggeringVariations[] = {
+        {
+            "Single Space",
+            (FeatureEntry::FeatureParam[]){},
+            0,
+            nullptr,
+        },
+        {
+            "Double Space",
+            (FeatureEntry::FeatureParam[]){
+                {"KeywordSpaceTriggeringDoubleSpace", "true"}},
+            1,
+            nullptr,
+        }};
+
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -1773,50 +1789,10 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
      {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
      {"enable_tab_groups_continuation", "true"}};
 
-const FeatureEntry::FeatureParam
-    kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
-        {"start_surface_variation", "single"},
-        {"exclude_mv_tiles", "true"},
-        {"hide_switch_when_no_incognito_tabs", "true"}};
-
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceSingleTab[] =
     {{"start_surface_variation", "single"},
      {"show_last_active_tab_only", "true"},
      {"hide_switch_when_no_incognito_tabs", "true"}};
-
-const FeatureEntry::FeatureParam
-    kStartSurfaceAndroid_SingleSurfaceSingleTabWithoutMvTiles[] = {
-        {"start_surface_variation", "single"},
-        {"show_last_active_tab_only", "true"},
-        {"exclude_mv_tiles", "true"}};
-
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
-    {"start_surface_variation", "twopanes"}};
-
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_TasksOnly[] = {
-    {"start_surface_variation", "tasksonly"}};
-
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly[] = {
-    {"start_surface_variation", "omniboxonly"},
-    {"hide_switch_when_no_incognito_tabs", "true"}};
-
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly_Quick[] = {
-    {"start_surface_variation", "omniboxonly"},
-    {"omnibox_scroll_mode", "quick"},
-    {"hide_switch_when_no_incognito_tabs", "true"}};
-
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly_Pinned[] = {
-    {"start_surface_variation", "omniboxonly"},
-    {"omnibox_scroll_mode", "pinned"},
-    {"hide_switch_when_no_incognito_tabs", "true"}};
-
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_TrendyTerms[] = {
-    {"start_surface_variation", "trendyterms"},
-    {"trendy_enabled", "true"},
-    {"trendy_success_min_period_ms", "30000"},
-    {"trendy_failure_min_period_ms", "10000"},
-    {"omnibox_scroll_mode", "quick"},
-    {"hide_switch_when_no_incognito_tabs", "true"}};
 
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
@@ -1827,27 +1803,9 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_SingleSurface_V2), nullptr},
     {"Single Surface V2 Finale", kStartSurfaceAndroid_SingleSurface_V2Finale,
      base::size(kStartSurfaceAndroid_SingleSurface_V2Finale), nullptr},
-    {"Single Surface without MV Tiles",
-     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles,
-     base::size(kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles), nullptr},
     {"Single Surface + Single Tab", kStartSurfaceAndroid_SingleSurfaceSingleTab,
      base::size(kStartSurfaceAndroid_SingleSurfaceSingleTab), nullptr},
-    {"Single Surface + Single Tab without MV Tiles",
-     kStartSurfaceAndroid_SingleSurfaceSingleTabWithoutMvTiles,
-     base::size(kStartSurfaceAndroid_SingleSurfaceSingleTabWithoutMvTiles),
-     nullptr},
-    {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
-     base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr},
-    {"Tasks Only", kStartSurfaceAndroid_TasksOnly,
-     base::size(kStartSurfaceAndroid_TasksOnly), nullptr},
-    {"Omnibox Only", kStartSurfaceAndroid_OmniboxOnly,
-     base::size(kStartSurfaceAndroid_OmniboxOnly), nullptr},
-    {"Omnibox Only, Quick", kStartSurfaceAndroid_OmniboxOnly_Quick,
-     base::size(kStartSurfaceAndroid_OmniboxOnly_Quick), nullptr},
-    {"Omnibox Only, Pinned", kStartSurfaceAndroid_OmniboxOnly_Pinned,
-     base::size(kStartSurfaceAndroid_OmniboxOnly_Pinned), nullptr},
-    {"Trendy Terms, Quick", kStartSurfaceAndroid_TrendyTerms,
-     base::size(kStartSurfaceAndroid_TrendyTerms), nullptr}};
+};
 
 const FeatureEntry::FeatureParam kConditionalTabStripAndroid_Immediate[] = {
     {"conditional_tab_strip_session_time_ms", "0"}};
@@ -4423,10 +4381,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDisableCGIParamMatchingName,
      flag_descriptions::kOmniboxDisableCGIParamMatchingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kDisableCGIParamMatching)},
-    {"omnibox-double-space-keyword-triggering",
-     flag_descriptions::kOmniboxDoubleSpaceKeywordTriggeringName,
-     flag_descriptions::kOmniboxDoubleSpaceKeywordTriggeringDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kDoubleSpaceKeywordTriggering)},
+    {"omnibox-keyword-space-triggering",
+     flag_descriptions::kOmniboxKeywordSpaceTriggeringName,
+     flag_descriptions::kOmniboxKeywordSpaceTriggeringDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kKeywordSpaceTriggering,
+                                    kOmniboxKeywordSpaceTriggeringVariations,
+                                    "OmniboxBundledExperimentV1")},
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -5213,12 +5173,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
-    {"happiness-tracking-surveys-for-desktop",
-     flag_descriptions::kHappinessTrackingSurveysForDesktopName,
-     flag_descriptions::kHappinessTrackingSurveysForDesktopDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kHappinessTrackingSurveysForDesktop)},
-
     {"happiness-tracking-surveys-for-desktop-demo",
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoDescription,
@@ -6453,6 +6407,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"scan-app-media-link", flag_descriptions::kScanAppMediaLinkName,
      flag_descriptions::kScanAppMediaLinkDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppMediaLink)},
+    {"scan-app-sticky-settings", flag_descriptions::kScanAppStickySettingsName,
+     flag_descriptions::kScanAppStickySettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kScanAppStickySettings)},
     {"avatar-toolbar-button", flag_descriptions::kAvatarToolbarButtonName,
      flag_descriptions::kAvatarToolbarButtonDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAvatarToolbarButton)},
@@ -6581,17 +6538,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableTranslateSubFramesName,
      flag_descriptions::kEnableTranslateSubFramesDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateSubFrames)},
-
-#if !defined(OS_ANDROID)
-    {"enable-media-feeds", flag_descriptions::kEnableMediaFeedsName,
-     flag_descriptions::kEnableMediaFeedsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media::kMediaFeeds)},
-
-    {"enable-media-feeds-background-fetch",
-     flag_descriptions::kEnableMediaFeedsBackgroundFetchName,
-     flag_descriptions::kEnableMediaFeedsBackgroundFetchDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media::kMediaFeedsBackgroundFetching)},
-#endif  // !defined(OS_ANDROID)
 
     {"conversion-measurement-api",
      flag_descriptions::kConversionMeasurementApiName,
@@ -7097,6 +7043,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRawAudioCaptureDescription, kOsWin,
      FEATURE_VALUE_TYPE(media::kWasapiRawAudioCapture)},
 #endif  // defined(OS_MAC)
+
+    {"enable-managed-configuration-web-api",
+     flag_descriptions::kEnableManagedConfigurationWebApiName,
+     flag_descriptions::kEnableManagedConfigurationWebApiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(blink::features::kManagedConfiguration)},
 
     {"enable-restricted-web-apis",
      flag_descriptions::kEnableRestrictedWebApisName,

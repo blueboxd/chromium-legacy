@@ -869,7 +869,7 @@ if (is_fuchsia) {
   cr_fuchsia_package("d8_fuchsia_pkg") {
     testonly = true
     binary = "//v8:d8"
-    manifest = "//build/config/fuchsia/tests-with-exec.cmx"
+    manifest = "//v8/gni/v8.cmx"
     package_name_override = "d8"
   }
 
@@ -1029,7 +1029,6 @@ if (!is_ios) {
         "//chrome/test/chromedriver/server/server.py",
         "//chrome/test/chromedriver/test/run_webdriver_tests.py",
         "//chrome/test/chromedriver/util.py",
-        "//testing/xvfb.py",
         "//third_party/blink/tools/blinkpy/",
         "//third_party/blink/web_tests/external/wpt/webdriver/",
         "//third_party/blink/web_tests/VirtualTestSuites",
@@ -1040,6 +1039,7 @@ if (!is_ios) {
       data_deps = [
         "//chrome:chrome",
         "//chrome/test/chromedriver",
+        "//testing:test_scripts_shared",
         "//third_party/catapult/third_party/typ",
       ]
       if (is_win) {
@@ -1238,7 +1238,7 @@ if (!is_ios) {
                          root_build_dir) + ")" ] + _common_web_test_args -
            [ _common_web_test_args[0] ]
     if (is_asan) {
-        args += [ "--time-out-ms=30000" ]
+      args += [ "--time-out-ms=30000" ]
     }
     args += [
       "--webgpu-cts-expectations",

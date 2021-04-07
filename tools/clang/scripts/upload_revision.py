@@ -41,6 +41,9 @@ Cq-Include-Trybots: chromium/try:linux_chromium_compile_dbg_32_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_msan_rel_ng
 Cq-Include-Trybots: chromium/try:mac-arm64-rel,mac_chromium_asan_rel_ng
 Cq-Include-Trybots: chromium/try:win-asan,win7-rel
+Cq-Include-Trybots: chromium/try:android-official,fuchsia-official
+Cq-Include-Trybots: chromium/try:mac-official,linux-official
+Cq-Include-Trybots: chromium/try:win-official,win32-official
 Cq-Include-Trybots: chrome/try:iphone-device,ipad-device
 Cq-Include-Trybots: chrome/try:linux-chromeos-chrome
 Cq-Include-Trybots: chrome/try:win-chrome,win64-chrome,mac-chrome
@@ -103,8 +106,11 @@ def main():
   Git(["add", UPDATE_PY_PATH])
 
   commit_message = 'Ran `{}`.'.format(' '.join(sys.argv)) + COMMIT_FOOTER
-  Git(["commit", "-m", "Roll clang {} : {}.\n\n{}".format(
-      old_rev_string, rev_string, commit_message)])
+  Git([
+      "commit", "-m",
+      "Roll clang {} : {}\n\n{}".format(old_rev_string, rev_string,
+                                        commit_message)
+  ])
 
   Git(["cl", "upload", "-f", "--bypass-hooks"])
   Git([

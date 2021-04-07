@@ -539,7 +539,7 @@ ci.android_builder(
     tree_closing = True,
     experiments = {
         # TODO(crbug.com/1143122): remove this.
-        "luci.swarming.use_rbe_cas": 50,
+        "chromium.chromium_tests.use_rbe_cas": 50,
     },
 )
 
@@ -1282,7 +1282,7 @@ ci.angle_thin_tester(
 
 ci.angle_mac_builder(
     name = "ios-angle-builder",
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
     console_view_entry = consoles.console_view_entry(
         category = "iOS|Builder|ANGLE",
         short_name = "x64",
@@ -4898,7 +4898,7 @@ ci.linux_builder(
     main_console_view = "main",
     experiments = {
         # TODO(crbug.com/1143122): remove this.
-        "luci.swarming.use_rbe_cas": 20,
+        "chromium.chromium_tests.use_rbe_cas": 20,
     },
 )
 
@@ -5156,7 +5156,7 @@ ci.mac_builder(
     os = os.MAC_10_15,
     experiments = {
         # TODO(crbug.com/1143122): remove this.
-        "luci.swarming.use_rbe_cas": 20,
+        "chromium.chromium_tests.use_rbe_cas": 20,
     },
 )
 
@@ -5866,7 +5866,7 @@ ci.win_builder(
     os = os.WINDOWS_ANY,
     experiments = {
         # TODO(crbug.com/1143122): remove this.
-        "luci.swarming.use_rbe_cas": 20,
+        "chromium.chromium_tests.use_rbe_cas": 20,
     },
 )
 
@@ -5889,7 +5889,7 @@ ci.win_builder(
         short_name = "det",
     ),
     executable = "recipe:swarming/deterministic_build",
-    execution_timeout = 7 * time.hour,
+    execution_timeout = 12 * time.hour,
     goma_jobs = goma.jobs.J150,
     main_console_view = "main",
 )

@@ -24759,6 +24759,12 @@ Called by update_document_policy_enum.py.-->
   <int value="3" label="Arguments provided neither image data nor icon index"/>
 </enum>
 
+<enum name="ExtensionAllowlistOmahaAttributeValue">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Allowlisted"/>
+  <int value="2" label="Not allowlisted"/>
+</enum>
+
 <enum name="ExtensionBackgroundPageType">
   <int value="0" label="None"/>
   <int value="1" label="Persistent"/>
@@ -27109,6 +27115,12 @@ Called by update_extension_histograms.py.-->
   <int value="5" label="NOTIFIED_FROM_MANAGEMENT_NOT_FORCED"/>
   <int value="6" label="SEEN_BY_POLICY_LOADER"/>
   <int value="7" label="SEEN_BY_EXTERNAL_PROVIDER"/>
+</enum>
+
+<enum name="ExtensionInstallFrictionDialogAction">
+  <int value="0" label="Close"/>
+  <int value="1" label="Learn more"/>
+  <int value="2" label="Continue to install"/>
 </enum>
 
 <enum name="ExtensionInstallPromptExperimentLinkAction">
@@ -43108,11 +43120,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="LinkToTextShouldOfferResult">
   <int value="0" label="Success"/>
-  <int value="1" label="Rejected in JavaScript"/>
+  <int value="1" label="Rejected in JavaScript (deprecated)"/>
   <int value="2" label="Blocklisted"/>
-  <int value="3" label="Unable to invoke JavaScript"/>
-  <int value="4" label="Web layer task timeout"/>
-  <int value="5" label="Dispatched timeout"/>
+  <int value="3" label="Unable to invoke JavaScript (deprecated)"/>
+  <int value="4" label="Web layer task timeout (deprecated)"/>
+  <int value="5" label="Dispatched timeout (deprecated)"/>
+  <int value="6" label="Selection empty"/>
+  <int value="7" label="User editing"/>
+  <int value="8" label="Text Input view not found"/>
+  <int value="9" label="Success, with lower certainty"/>
 </enum>
 
 <enum name="LinuxAudioIO">
@@ -44567,6 +44583,7 @@ from previous Chrome versions.
   <int value="-1514611301" label="enable-data-reduction-proxy-bypass-warnings"/>
   <int value="-1512656386" label="disable-new-audio-rendering-mixing-strategy"/>
   <int value="-1512555526" label="PaintPreviewShowOnStartup:enabled"/>
+  <int value="-1510844027" label="ScanAppStickySettings:enabled"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
   <int value="-1508852757" label="CreditCardAutofillTouchBar:disabled"/>
   <int value="-1506880454"
@@ -44594,7 +44611,6 @@ from previous Chrome versions.
   <int value="-1487243228" label="NewUsbBackend:disabled"/>
   <int value="-1486521264" label="UseMediaHistoryStore:disabled"/>
   <int value="-1486198877" label="VrIconInDaydreamHome:disabled"/>
-  <int value="-1485497839" label="OmniboxDoubleSpaceKeywordTriggering:enabled"/>
   <int value="-1485461805" label="EnterpriseReportingInBrowser:enabled"/>
   <int value="-1482730792" label="stop-in-background:enabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
@@ -44691,6 +44707,7 @@ from previous Chrome versions.
       label="AutofillRationalizeRepeatedServerPredictions:enabled"/>
   <int value="-1421676705" label="force-webxr-runtime"/>
   <int value="-1420542268" label="AutofillEnableAccountWalletStorage:disabled"/>
+  <int value="-1420517225" label="OmniboxKeywordSpaceTriggering:enabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1419449681" label="PermissionChipRequestTypeSensitive:enabled"/>
   <int value="-1417642561" label="AutofillCreditCardUploadFeedback:enabled"/>
@@ -44761,8 +44778,6 @@ from previous Chrome versions.
   <int value="-1365795470"
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
   <int value="-1365503870" label="enable-simplified-fullscreen-ui"/>
-  <int value="-1364892365"
-      label="OmniboxDoubleSpaceKeywordTriggering:disabled"/>
   <int value="-1363709707" label="MaterialDesignHistory:disabled"/>
   <int value="-1362431915" label="RelatedSearches:disabled"/>
   <int value="-1361493814" label="FCMInvalidations:disabled"/>
@@ -44784,6 +44799,7 @@ from previous Chrome versions.
       label="disallow-autofill-sync-credential-for-reauth"/>
   <int value="-1349826793" label="ArcInputMethod:disabled"/>
   <int value="-1349532167" label="enable-wifi-credential-sync"/>
+  <int value="-1348040371" label="ScanAppStickySettings:disabled"/>
   <int value="-1346722635" label="gesture-selection"/>
   <int value="-1345931804" label="TabbedAppOverflowMenuIcons:disabled"/>
   <int value="-1344375439" label="ServiceWorkerPaymentApps:disabled"/>
@@ -45688,6 +45704,7 @@ from previous Chrome versions.
   <int value="-544629557" label="CSSBackdropFilter:enabled"/>
   <int value="-541764089" label="AudioPlayerJsModules:disabled"/>
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
+  <int value="-540972085" label="ManagedConfiguration:enabled"/>
   <int value="-540150399" label="TapVisualizerApp:enabled"/>
   <int value="-538141684" label="SafetyTip:enabled"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
@@ -45790,7 +45807,6 @@ from previous Chrome versions.
   <int value="-460081932" label="CustomFeedbackUi:disabled"/>
   <int value="-459318667" label="AccessiblePDFForm:enabled"/>
   <int value="-457584339" label="TemporaryHoldingSpace:enabled"/>
-  <int value="-457292000" label="HappinessTrackingSurveysForDesktop:enabled"/>
   <int value="-457174225" label="Av1Decoder:enabled"/>
   <int value="-456321929" label="ForceEnableSystemAec:disabled"/>
   <int value="-455413094" label="FilesJsModules:enabled"/>
@@ -46391,6 +46407,7 @@ from previous Chrome versions.
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
   <int value="90551098" label="UseWallpaperStagingUrl:enabled"/>
+  <int value="91916443" label="ManagedConfiguration:disabled"/>
   <int value="91938915" label="enable-suggestions-service"/>
   <int value="92106937" label="CloseTabSuggestions:disabled"/>
   <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
@@ -46626,7 +46643,6 @@ from previous Chrome versions.
   <int value="324522065" label="app-menu-icon"/>
   <int value="324631366" label="enable-drive-search-in-app-launcher"/>
   <int value="325907076" label="SanitizerAPI:enabled"/>
-  <int value="326876883" label="HappinessTrackingSurveysForDesktop:disabled"/>
   <int value="327045548" label="SafeSearchUrlReporting:enabled"/>
   <int value="328722396" label="NTPCondensedLayout:disabled"/>
   <int value="330138076" label="enable-clear-browsing-data-counters"/>
@@ -47205,6 +47221,7 @@ from previous Chrome versions.
   <int value="839230937" label="AutofillEnableCardNicknameUpstream:disabled"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
   <int value="840057845" label="HardwareMediaKeyHandling:enabled"/>
+  <int value="841123685" label="OmniboxKeywordSpaceTriggering:disabled"/>
   <int value="841276069" label="ChromeHomeDoodle:disabled"/>
   <int value="841343322" label="disable-new-korean-ime"/>
   <int value="841779535" label="password-export:enabled"/>
@@ -63247,6 +63264,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="SUCCESS">Printer returned a valid printer status.</int>
   <int value="2" label="UNREACHABLE">
     Device could not connect to the printer.
+  </int>
+  <int value="3" label="HOSTNAME_RESOLUTION">
+    Unable to resolve IP address from printer hostname.
   </int>
 </enum>
 
@@ -82057,6 +82077,12 @@ Called by update_scheduler_enums.py.-->
   <int value="1" label="ArrayBuffer"/>
   <int value="2" label="ArrayBufferView"/>
   <int value="3" label="Blob"/>
+</enum>
+
+<enum name="WebStoreInstallAllowlistParameter">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Allowlisted"/>
+  <int value="2" label="Not allowlisted"/>
 </enum>
 
 <enum name="WebUISettingsPathHashes">

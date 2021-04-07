@@ -12,9 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_source.h"
 #include "base/test/mock_callback.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -153,8 +152,6 @@ class FakeUpgradeDetector : public UpgradeDetector {
     NotifyRelaunchOverriddenToRequired(override);
   }
 
-  void BroadcastNotificationUpdateInProgress() { NotifyUpdateInProgress(); }
-
   base::TimeDelta high_threshold() const { return high_threshold_; }
 
  private:
@@ -164,12 +161,6 @@ class FakeUpgradeDetector : public UpgradeDetector {
   base::TimeDelta high_threshold_ = base::TimeDelta::FromDays(7);
 
   DISALLOW_COPY_AND_ASSIGN(FakeUpgradeDetector);
-};
-
-class StubPowerMonitorSource : public base::PowerMonitorSource {
- public:
-  // base::PowerMonitorSource:
-  bool IsOnBatteryPower() override { return false; }
 };
 
 }  // namespace
@@ -185,13 +176,10 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
         scoped_local_state_(TestingBrowserProcess::GetGlobal()),
         upgrade_detector_(task_environment_.GetMockClock(),
                           task_environment_.GetMockTickClock()) {
-    auto mock_power_monitor_source = std::make_unique<StubPowerMonitorSource>();
-    mock_power_monitor_source_ = mock_power_monitor_source.get();
-    base::PowerMonitor::Initialize(std::move(mock_power_monitor_source));
-  }
-
-  ~RelaunchNotificationControllerTest() override {
-    base::PowerMonitor::ShutdownForTesting();
+    // Unittests failed when the system is on battery. This class is using a
+    // mock power monitor source `power_monitor_source_` to ensure no real
+    // power state or power notifications are delivered to the unittests.
+    EXPECT_FALSE(base::PowerMonitor::IsOnBatteryPower());
   }
 
   UpgradeDetector* upgrade_detector() { return &upgrade_detector_; }
@@ -220,8 +208,10 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  // Owned by power_monitor_. Use this to simulate a power suspend and resume.
-  StubPowerMonitorSource* mock_power_monitor_source_ = nullptr;
+  // Use a mock power monitor source to ensure the test is in control of the
+  // power notifications.
+  base::test::ScopedPowerMonitorTestSource power_monitor_source_;
+
   base::test::TaskEnvironment task_environment_;
   ScopedTestingLocalState scoped_local_state_;
   FakeUpgradeDetector upgrade_detector_;
@@ -473,25 +463,6 @@ TEST_F(RelaunchNotificationControllerTest, PolicyChangesWithUpgrade) {
   EXPECT_CALL(mock_controller_delegate, Close());
   SetNotificationPref(0);
   ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
-}
-
-TEST_F(RelaunchNotificationControllerTest, NotifyUpdateInProgress) {
-  SetNotificationPref(1);
-  ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
-
-  FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockClock(), GetMockTickClock(),
-      &mock_controller_delegate);
-
-  // Show the notification when the annoyance level changes.
-  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_controller_delegate);
-
-  // Close relaunch notification when an update is in progress.
-  EXPECT_CALL(mock_controller_delegate, Close());
-  fake_upgrade_detector().BroadcastNotificationUpdateInProgress();
 }
 
 // Relaunch is forced when the deadline is reached.

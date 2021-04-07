@@ -1045,6 +1045,12 @@ const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
     "Allow user sign-in to be detected based on heuristics.";
 
+const char kEnableManagedConfigurationWebApiName[] =
+    "Enable Managed Configuration Web API";
+const char kEnableManagedConfigurationWebApiDescription[] =
+    "Allows website to access a managed configuration provided by the device "
+    "administrator for the origin.";
+
 const char kEnablePciguardUiName[] =
     "Enable Pciguard (Thunderbolt + USB4 tunneling) UI for settings";
 const char kEnablePciguardUiDescription[] =
@@ -1642,10 +1648,11 @@ const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
 
-const char kOmniboxDoubleSpaceKeywordTriggeringName[] =
-    "Omnibox Double-Space Keyword Triggering";
-const char kOmniboxDoubleSpaceKeywordTriggeringDescription[] =
-    "When enabled, two spaces after a keyword triggers keyword mode.";
+const char kOmniboxKeywordSpaceTriggeringName[] =
+    "Omnibox Keyword Space Triggering";
+const char kOmniboxKeywordSpaceTriggeringDescription[] =
+    "Controls whether keyword mode can be triggered by space, double space, or "
+    "neither.";
 
 const char kOmniboxLocalZeroSuggestFrecencyRankingName[] =
     "Frecency ranking for local history zero-prefix suggestions";
@@ -3537,11 +3544,6 @@ const char kEnableReaderModeDescription[] =
     "Allows viewing of simplified web pages by selecting 'Customize and "
     "control Chrome'>'Distill page'";
 
-const char kHappinessTrackingSurveysForDesktopName[] =
-    "Happiness Tracking Surveys";
-const char kHappinessTrackingSurveysForDesktopDescription[] =
-    "Enable showing Happiness Tracking Surveys to users on Desktop";
-
 const char kHappinessTrackingSurveysForDesktopDemoName[] =
     "Happiness Tracking Surveys Demo";
 const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
@@ -4693,6 +4695,11 @@ const char kScanAppMediaLinkDescription[] =
     "Enables showing a link in the Scan app to open scanned images in the Media"
     " app.";
 
+const char kScanAppStickySettingsName[] = "Enable sticky settings in Scan app";
+const char kScanAppStickySettingsDescription[] =
+    "Enables sticky settings in Scan app for automatically saving scan"
+    " settings in Chrome OS.";
+
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =
     "Instructs the OS to use a specific scheduler configuration setting.";
@@ -4938,17 +4945,6 @@ const char kEnableNewBadgeOnMenuItemsDescription[] =
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-
-const char kEnableMediaFeedsName[] = "Enables Media Feeds";
-const char kEnableMediaFeedsDescription[] =
-    "Enables the Media Feeds feature which allows us to fetch feeds of media "
-    "items from websites that support the feature. ";
-
-const char kEnableMediaFeedsBackgroundFetchName[] =
-    "Enables Media Feeds Background Fetch";
-const char kEnableMediaFeedsBackgroundFetchDescription[] =
-    "Enables the Media Feeds background fetch feature which allows feeds to be "
-    "fetched in the background. Requires #enable-media-feeds to be enabled. ";
 
 const char kEnableOopPrintDriversName[] =
     "Enables Out-of-Process Printer Drivers";

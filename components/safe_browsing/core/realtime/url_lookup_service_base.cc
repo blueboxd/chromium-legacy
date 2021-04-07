@@ -343,6 +343,9 @@ void RealTimeUrlLookupServiceBase::SendRequest(
   RecordRequestPopulationWithAndWithoutSuffix(
       "SafeBrowsing.RT.Request.UserPopulation", GetMetricSuffix(),
       request->population().user_population());
+  RecordCount100WithAndWithoutSuffix(
+      "SafeBrowsing.RT.Request.ReferrerChainLength", GetMetricSuffix(),
+      request->referrer_chain().size());
   std::string req_data;
   request->SerializeToString(&req_data);
 
@@ -480,6 +483,9 @@ void RealTimeUrlLookupServiceBase::Shutdown() {
     delete pending.first;
   }
   pending_requests_.clear();
+
+  // Clear references to other KeyedServices.
+  cache_manager_ = nullptr;
 }
 
 }  // namespace safe_browsing

@@ -2591,8 +2591,8 @@ void PaintLayer::UpdateFilterReferenceBox() {
 
 FloatRect PaintLayer::FilterReferenceBox() const {
 #if DCHECK_IS_ON()
-  DCHECK(GetLayoutObject().GetDocument().Lifecycle().GetState() >=
-         DocumentLifecycle::kInPrePaint);
+  DCHECK_GE(GetLayoutObject().GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kInPrePaint);
 #endif
   if (ResourceInfo())
     return ResourceInfo()->FilterReferenceBox();
@@ -2610,6 +2610,7 @@ gfx::RRectF PaintLayer::BackdropFilterBounds() const {
           PhysicalRect::EnclosingRect(BackdropFilterReferenceBox())));
   return backdrop_filter_bounds;
 }
+
 bool PaintLayer::HitTestClippedOutByClipPath(
     PaintLayer* root_layer,
     const HitTestLocation& hit_test_location) const {
@@ -3498,7 +3499,7 @@ FilterOperations PaintLayer::FilterOperationsIncludingReflection() const {
 }
 
 void PaintLayer::UpdateCompositorFilterOperationsForFilter(
-    CompositorFilterOperations& operations) const {
+    CompositorFilterOperations& operations) {
   auto filter = FilterOperationsIncludingReflection();
   FloatRect reference_box = FilterReferenceBox();
 
@@ -3514,21 +3515,21 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
 
   operations =
       FilterEffectBuilder(reference_box, zoom).BuildFilterOperations(filter);
+  filter_on_effect_node_dirty_ = false;
 }
 
 void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
     CompositorFilterOperations& operations,
-    base::Optional<gfx::RRectF>* backdrop_filter_bounds) const {
-  DCHECK(backdrop_filter_bounds);
+    gfx::RRectF& backdrop_filter_bounds) {
   const auto& style = GetLayoutObject().StyleRef();
   if (style.BackdropFilter().IsEmpty()) {
     operations.Clear();
-    backdrop_filter_bounds->reset();
+    backdrop_filter_on_effect_node_dirty_ = false;
     return;
   }
 
   FloatRect reference_box = BackdropFilterReferenceBox();
-  *backdrop_filter_bounds = BackdropFilterBounds();
+  backdrop_filter_bounds = BackdropFilterBounds();
   // CompositorFilter needs the reference box to be unzoomed.
   float zoom = style.EffectiveZoom();
   if (zoom != 1)
@@ -3558,6 +3559,7 @@ void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
   // Note that |operations| may be empty here, if the |filter_operations| list
   // contains only invalid filters (e.g. invalid reference filters). See
   // https://crbug.com/983157 for details.
+  backdrop_filter_on_effect_node_dirty_ = false;
 }
 
 PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {

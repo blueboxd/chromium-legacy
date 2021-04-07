@@ -410,10 +410,6 @@
 #include "chrome/browser/ui/browser_view_prefs.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/media/feeds/media_feeds_service.h"
-#endif
-
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/session_service_log.h"
 #endif
@@ -428,26 +424,6 @@ const char kLocalSearchServiceSyncMetricsCrosSettingsCount[] =
 const char kLocalSearchServiceSyncMetricsHelpAppCount[] =
     "local_search_service_sync.metrics.help_app_count";
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Deprecated 4/2020
-const char kAmbientModeTopicSource[] = "settings.ambient_mode.topic_source";
-
-// Deprecated 4/2020
-const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// Deprecated 4/2020
-const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
-
-// Deprecated 4/2020
-const char kPreviewsLPRHostBlacklist[] = "previews.litepage.host-blacklist";
-const char kPreviewsLPRProbeCache[] = "Availability.Prober.cache.Litepages";
-const char kPreviewsLPROriginProbeCache[] =
-    "Availability.Prober.cache.LitepagesOriginCheck";
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Deprecated 4/2020
 const char kSupervisedUsersNextId[] = "LocallyManagedUsersNextId";
 
@@ -600,16 +576,6 @@ void RegisterProfilePrefsForMigration(
 
   chrome_browser_net::secure_dns::RegisterProbesSettingBackupPref(registry);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  registry->RegisterIntegerPref(kAmbientModeTopicSource, 0);
-  registry->RegisterListPref(kPrintingAllowedPageSizes);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  registry->RegisterDictionaryPref(kExcludedSchemes);
-  registry->RegisterDictionaryPref(kPreviewsLPRHostBlacklist);
-  registry->RegisterDictionaryPref(kPreviewsLPRProbeCache);
-  registry->RegisterDictionaryPref(kPreviewsLPROriginProbeCache);
-
   registry->RegisterBooleanPref(kStricterMixedContentTreatmentEnabled, true);
 
   registry->RegisterDictionaryPref(kHashedAvailablePages);
@@ -669,6 +635,13 @@ void RegisterProfilePrefsForMigration(
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   registry->RegisterBooleanPref(kRunAllFlashInAllowMode, false);
+#endif
+
+#if !defined(OS_ANDROID)
+  // Removed in M91.
+  registry->RegisterBooleanPref(prefs::kMediaFeedsBackgroundFetching, false);
+  registry->RegisterBooleanPref(prefs::kMediaFeedsSafeSearchEnabled, false);
+  registry->RegisterBooleanPref(prefs::kMediaFeedsAutoSelectEnabled, false);
 #endif
 }
 
@@ -1163,10 +1136,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RegisterBrowserViewProfilePrefs(registry);
 #endif
 
-#if !defined(OS_ANDROID)
-  media_feeds::MediaFeedsService::RegisterProfilePrefs(registry);
-#endif
-
   RegisterProfilePrefsForMigration(registry);
 }
 
@@ -1265,22 +1234,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   chrome_browser_net::secure_dns::MigrateProbesSettingToOrFromBackup(
       profile_prefs);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Added 4/2020.
-  profile_prefs->ClearPref(kAmbientModeTopicSource);
-
-  // Added 4/2020.
-  profile_prefs->ClearPref(kPrintingAllowedPageSizes);
-#endif
-
-  // Added 4/2020
-  profile_prefs->ClearPref(kExcludedSchemes);
-
-  // Added 4/2020.
-  profile_prefs->ClearPref(kPreviewsLPRHostBlacklist);
-  profile_prefs->ClearPref(kPreviewsLPRProbeCache);
-  profile_prefs->ClearPref(kPreviewsLPROriginProbeCache);
-
   // Added 6/2020
   profile_prefs->ClearPref(kStricterMixedContentTreatmentEnabled);
 
@@ -1364,6 +1317,13 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Added 03/2021
   profile_prefs->ClearPref(kRunAllFlashInAllowMode);
+#endif
+
+#if !defined(OS_ANDROID)
+  // Added 04/2021
+  profile_prefs->ClearPref(prefs::kMediaFeedsBackgroundFetching);
+  profile_prefs->ClearPref(prefs::kMediaFeedsSafeSearchEnabled);
+  profile_prefs->ClearPref(prefs::kMediaFeedsAutoSelectEnabled);
 #endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

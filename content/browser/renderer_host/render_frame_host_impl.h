@@ -215,6 +215,7 @@ class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
 class MediaInterfaceProxy;
+class NavigationEarlyHintsManager;
 class NavigationEntryImpl;
 class NavigationRequest;
 class PeerConnectionTrackerHost;
@@ -2056,6 +2057,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return last_response_head_;
   }
 
+  NavigationEarlyHintsManager* early_hints_manager() {
+    return early_hints_manager_.get();
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2760,6 +2765,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Updates the |lifecycle_state_|. Called when there is a change in the
   // RenderFrameHost LifecycleStateImpl.
   void SetLifecycleState(LifecycleStateImpl state);
+
+  // Converts a content-internal RenderFrameHostImpl::LifecycleStateImpl into a
+  // coarser-grained RenderFrameHost::LifecycleState which can be exposed
+  // outside of content.
+  static RenderFrameHost::LifecycleState GetLifecycleStateFromImpl(
+      LifecycleStateImpl state);
 
   void BindReportingObserver(
       mojo::PendingReceiver<blink::mojom::ReportingObserver>
@@ -3581,6 +3592,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The current document's HTTP response head. This is used by back-forward
   // cache, for navigating a second time toward the same document.
   network::mojom::URLResponseHeadPtr last_response_head_;
+
+  std::unique_ptr<NavigationEarlyHintsManager> early_hints_manager_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

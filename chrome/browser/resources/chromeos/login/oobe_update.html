@@ -21,10 +21,6 @@
 <dom-module id="oobe-update-element">
   <template>
     <style include="oobe-dialog-host">
-      :host-context([new-layout]) {
-        --oobe-adaptive-dialog-content-top-padding: 0;
-      }
-
       .progress-message {
         color: var(--oobe-subheader-text-color);
         margin-top: 32px;
@@ -171,6 +167,7 @@
     </oobe-adaptive-dialog>
     <oobe-loading-dialog id="restarting-dialog"
         text-key="updateCompeletedRebootingMsg" for-step="restart">
+      <iron-icon slot="icon" icon="oobe-32:googleg"></iron-icon>
     </oobe-loading-dialog>
     <oobe-adaptive-dialog footer-shrinkable id="better-update-complete-dialog"
         for-step="reboot" aria-live="polite">

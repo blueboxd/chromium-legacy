@@ -172,22 +172,18 @@
   handleTouchEvents_(event) {
     // We only need to know that a tap happens somewhere in the list.
     // Also the 2nd parameter of handleTouchEvents is just passed back to the
-    // callback. Therefore we can pass a dummy value to it.
-    // TODO(yamaguchi): Revise TapHandler.handleTouchEvents to delete the param.
+    // callback. Therefore we can pass a dummy value -1.
     this.tapHandler_.handleTouchEvents(event, -1, (e, index, eventType) => {
       if (eventType == FileTapHandler.TapEvent.TAP) {
-        if (e.target.classList.contains('detail-checkmark')) {
-          // Tap on the checkmark should only toggle select the item just like a
-          // mouse click on it.
+        // Taps on the checkmark should only toggle select the item.
+        if (event.target.classList.contains('detail-checkmark') ||
+            event.target.classList.contains('detail-icon')) {
           return false;
         }
-        // The selection model has the single selection at this point.
-        // When using touchscreen, the selection should be cleared because
-        // we don't want show the file selected when not in check-select
-        // mode.
-        return this.handleOpenDefault(
-            event, true /* clearSelectionAfterLaunch */);
+
+        return this.handleOpenDefault_(event);
       }
+
       return false;
     });
   }
@@ -229,7 +225,7 @@
    * @private
    */
   onDoubleClick_(event) {
-    this.handleOpenDefault(event, false);
+    this.handleOpenDefault_(event);
   }
 
   /**
@@ -238,22 +234,21 @@
    * Otherwise, accepts the current selection.
    *
    * @param {Event} event The dblclick event.
-   * @param {boolean} clearSelectionAfterLaunch
    * @return {boolean} true if successfully opened the item.
    * @private
    */
-  handleOpenDefault(event, clearSelectionAfterLaunch) {
+  handleOpenDefault_(event) {
     if (this.namingController_.isRenamingInProgress()) {
-      // Don't pay attention to clicks during a rename.
+      // Don't pay attention to clicks or taps during a rename.
       return false;
     }
 
+    // It is expected that the target item should have already been selected
+    // by previous touch or mouse event processing.
     const listItem = this.ui_.listContainer.findListItemForNode(
         event.touchedElement || event.srcElement);
-    // It is expected that the target item should have already been selected in
-    // LiseSelectionController.handlePointerDownUp on preceding mousedown event.
     const selection = this.selectionHandler_.selection;
-    if (!listItem || !listItem.selected || selection.totalCount != 1) {
+    if (!listItem || !listItem.selected || selection.totalCount !== 1) {
       return false;
     }
 
@@ -261,27 +256,22 @@
     if (entry.isDirectory) {
       this.directoryModel_.changeDirectoryEntry(
           /** @type {!DirectoryEntry} */ (entry));
-    } else {
-      return this.acceptSelection_(clearSelectionAfterLaunch);
+      return false;
     }
-    return false;
+
+    return this.acceptSelection_();
   }
 
   /**
-   * Accepts the current selection depending on the mode.
-   * @param {boolean} clearSelectionAfterLaunch
+   * Accepts the current selection depending on the files app dialog mode.
    * @return {boolean} true if successfully accepted the current selection.
    * @private
    */
-  acceptSelection_(clearSelectionAfterLaunch) {
-    const selection = this.selectionHandler_.selection;
-    if (this.dialogType_ == DialogType.FULL_PAGE) {
+  acceptSelection_() {
+    if (this.dialogType_ === DialogType.FULL_PAGE) {
       this.taskController_.getFileTasks()
           .then(tasks => {
             tasks.executeDefault();
-            if (clearSelectionAfterLaunch) {
-              this.directoryModel_.clearSelection();
-            }
           })
           .catch(error => {
             if (error) {
@@ -290,10 +280,12 @@
           });
       return true;
     }
+
     if (!this.ui_.dialogFooter.okButton.disabled) {
       this.ui_.dialogFooter.okButton.click();
       return true;
     }
+
     return false;
   }
 
@@ -413,8 +405,7 @@
             this.directoryModel_.changeDirectoryEntry(
                 /** @type {!DirectoryEntry} */ (selection.entries[0]));
           }
-        } else if (this.acceptSelection_(
-                       false /* clearSelectionAfterLaunch */)) {
+        } else if (this.acceptSelection_()) {
           event.preventDefault();
         }
         break;

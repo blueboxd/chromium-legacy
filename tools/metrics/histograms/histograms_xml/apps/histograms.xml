@@ -484,8 +484,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Apps.AppList.ScoreNormalizer.L2ErrorDecreased" enum="Boolean"
     expires_after="2022-01-31">
   <owner>adafang@google.com</owner>
-  <owner>wrong@chromium.com</owner>
-  <owner>tby@chromium.com</owner>
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
   <summary>
     Whether or not splitting and merging bins is less than or equal to the old
     L2 error of bin counts. Logged after each search result is recorded.
@@ -495,8 +495,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Apps.AppList.ScoreNormalizer.ReadPrefsError"
     enum="BooleanError" expires_after="2022-01-31">
   <owner>adafang@google.com</owner>
-  <owner>wrong@chromium.com</owner>
-  <owner>tby@chromium.com</owner>
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
   <summary>
     Whether or not dividers and/or counts from read prefs is empty. A empty
     dividers or counts means one of the values in the vector was not saved
@@ -508,8 +508,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Apps.AppList.ScoreNormalizer.SearchResultsCount" units="count"
     expires_after="2022-01-31">
   <owner>adafang@google.com</owner>
-  <owner>wrong@chromium.com</owner>
-  <owner>tby@chromium.com</owner>
+  <owner>wrong@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
   <summary>
     The number of search results which have been normalized. Logged when each
     vector of search results is normalized.
@@ -561,6 +561,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Apps.AppList.SuggestedFiles.LaunchIndex" units="index"
     expires_after="2021-08-15">
+  <obsolete>
+    Removed April 2021. Use the more general Apps.AppList.UserEvent.LaunchIndex
+    instead.
+  </obsolete>
   <owner>tby@chromium.org</owner>
   <owner>wrong@chromium.org</owner>
   <summary>
@@ -589,6 +593,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Records error when processing user events into Apps.AppList.UserEvent.*
     metrics. These are expected to be rare and bucket proportion is not
     meaningful.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.UserEvent.LaunchIndex" units="index"
+    expires_after="2021-08-01">
+<!-- Name completed by histogram_suffixes name="LauncherUISurface" -->
+
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <summary>
+    Emitted on a usage of the launcher, and records overall impressions,
+    launches, and abandons for a launcher UI view. The bucket proportion is not
+    meaningful for this metric, because impressions are a superset of launches
+    and abandons. Instead, the ratio between buckets can be used to calculate
+    accurate overall CTR.
   </summary>
 </histogram>
 

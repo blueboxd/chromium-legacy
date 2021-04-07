@@ -3906,10 +3906,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeSystemEmojiPickerName,
      flag_descriptions::kImeSystemEmojiPickerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeSystemEmojiPicker)},
-    {"enable-cros-language-settings-update",
-     flag_descriptions::kCrosLanguageSettingsUpdateName,
-     flag_descriptions::kCrosLanguageSettingsUpdateDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kLanguageSettingsUpdate)},
     {"enable-cros-language-settings-update-2",
      flag_descriptions::kCrosLanguageSettingsUpdate2Name,
      flag_descriptions::kCrosLanguageSettingsUpdate2Description, kOsCrOS,
@@ -5203,6 +5199,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
+     flag_descriptions::kUseMultiloginEndpointDescription,
+     kOsMac | kOsWin | kOsLinux, FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
+
     {"enable-new-profile-picker", flag_descriptions::kNewProfilePickerName,
      flag_descriptions::kNewProfilePickerDescription,
      kOsMac | kOsWin | kOsLinux,

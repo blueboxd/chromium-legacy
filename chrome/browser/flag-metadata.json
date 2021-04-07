@@ -465,7 +465,7 @@
   {
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 94
   },
   {
     "name": "bluetooth-aggressive-appearance-filter",
@@ -1558,11 +1558,6 @@
   },
   {
     "name": "enable-cros-ime-system-emoji-picker",
-    "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "enable-cros-language-settings-update",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 95
   },
@@ -3289,8 +3284,8 @@
   },
   {
     "name": "interest-feed-v2-clicks-and-views-cond-upload",
-    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
-    "expiry_milestone": 90
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org", "edchin@chromium.org" ],
+    "expiry_milestone": 95
   },
   {
     "name": "ios-breadcrumbs",
@@ -4196,11 +4191,6 @@
     "name": "pdf-viewer-presentation-mode",
     "owners": [ "dpapad" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "pdf-viewer-update",
-    "owners": [ "rbpotter", "thestig" ],
-    "expiry_milestone": 89
   },
   {
     "name": "pdf-xfa-forms",

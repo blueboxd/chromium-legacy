@@ -66,6 +66,7 @@
 #include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl.h"
 #include "content/browser/loader/file_url_loader_factory.h"
+#include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/log_console_message.h"
@@ -7464,7 +7465,12 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
 }
 
 RenderFrameHost::LifecycleState RenderFrameHostImpl::GetLifecycleState() {
-  switch (lifecycle_state()) {
+  return GetLifecycleStateFromImpl(lifecycle_state());
+}
+
+RenderFrameHost::LifecycleState RenderFrameHostImpl::GetLifecycleStateFromImpl(
+    LifecycleStateImpl state) {
+  switch (state) {
     case LifecycleStateImpl::kSpeculative:
       // TODO(https://crbug.com/1183639): Ensure that Speculative
       // RenderFrameHosts are not exposed to embedders.
@@ -7479,6 +7485,7 @@ RenderFrameHost::LifecycleState RenderFrameHostImpl::GetLifecycleState() {
     case LifecycleStateImpl::kInBackForwardCache:
       return LifecycleState::kInBackForwardCache;
     case LifecycleStateImpl::kRunningUnloadHandlers:
+      return LifecycleState::kPendingDeletion;
     case LifecycleStateImpl::kReadyToBeDeleted:
       return LifecycleState::kPendingDeletion;
   }
@@ -9305,6 +9312,8 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   // receive DidStopLoading.
   loading_mem_tracker_ = navigation_request->TakePeakGpuMemoryTracker();
 
+  early_hints_manager_ = navigation_request->TakeEarlyHintsManager();
+
   // Only take some properties if this is not the synchronous initial
   // `about:blank` navigation, because the values set at construction time
   // should remain unmodified.
@@ -10601,8 +10610,19 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleStateImpl state) {
     has_pending_lifecycle_state_update_ = false;
   }
 
-  // Notify the delegate about change in |lifecycle_state_|.
-  delegate_->RenderFrameHostStateChanged(this, old_state, lifecycle_state_);
+  // As kSpeculative state is not exposed to embedders, we can ignore the
+  // transitions out of kSpeculative state while notifying delegate.
+  if (old_state != LifecycleStateImpl::kSpeculative) {
+    LifecycleState old_lifecycle_state = GetLifecycleStateFromImpl(old_state);
+    LifecycleState new_lifecycle_state = GetLifecycleState();
+
+    // old and new lifecycle state can be equal for kPendingDeletion state.
+    // Don't notify the observers in such cases.
+    if (old_lifecycle_state != new_lifecycle_state) {
+      delegate_->RenderFrameHostStateChanged(this, old_lifecycle_state,
+                                             new_lifecycle_state);
+    }
+  }
 }
 
 void RenderFrameHostImpl::RecordDocumentCreatedUkmEvent(

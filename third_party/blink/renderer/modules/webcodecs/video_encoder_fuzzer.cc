@@ -81,8 +81,9 @@ DEFINE_TEXT_PROTO_FUZZER(
       for (auto& invocation : proto.invocations()) {
         switch (invocation.Api_case()) {
           case wc_fuzzer::VideoEncoderApiInvocation::kConfigure:
-            video_encoder->configure(MakeEncoderConfig(invocation.configure()),
-                                     IGNORE_EXCEPTION_FOR_TESTING);
+            video_encoder->configure(
+                MakeVideoEncoderConfig(invocation.configure()),
+                IGNORE_EXCEPTION_FOR_TESTING);
             break;
           case wc_fuzzer::VideoEncoderApiInvocation::kEncode: {
             VideoFrame* frame =

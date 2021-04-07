@@ -1586,6 +1586,10 @@ const char kUpdateHoverAtBeginFrameDescription[] =
     "Recompute hover state at BeginFrame for layout and scroll based mouse "
     "moves, rather than old timing-based mechanism.";
 
+const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
+const char kUseMultiloginEndpointDescription[] =
+    "Use Gaia OAuth multilogin for identity consistency.";
+
 const char kOmniboxAdaptiveSuggestionsCountName[] =
     "Adaptive Omnibox Suggestions count";
 const char kOmniboxAdaptiveSuggestionsCountDescription[] =
@@ -3959,10 +3963,6 @@ const char kCroshSWAName[] = "Crosh System Web App";
 const char kCroshSWADescription[] =
     "When enabled, crosh (Chrome OS Shell) will run as a tabbed System Web App "
     "rather than a normal browser tab.";
-
-const char kCrosLanguageSettingsUpdateName[] = "Language Settings Update";
-const char kCrosLanguageSettingsUpdateDescription[] =
-    "Enable this flag to see the new language settings update.";
 
 const char kCrosLanguageSettingsUpdate2Name[] = "Language Settings Update 2";
 const char kCrosLanguageSettingsUpdate2Description[] =

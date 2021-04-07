@@ -219,7 +219,7 @@ constexpr auto kUpdateLoadStatesInterval =
 
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 
-using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
+using LifecycleState = RenderFrameHost::LifecycleState;
 
 // TODO(crbug.com/1059903): Clean up after the initial investigation.
 constexpr base::Feature kCheckWebContentsAccessFromNonCurrentFrame{
@@ -833,8 +833,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       upload_size_(0),
       upload_position_(0),
       is_resume_pending_(false),
-      visible_capturer_count_(0),
-      hidden_capturer_count_(0),
       is_being_destroyed_(false),
       notify_disconnection_(false),
       dialog_manager_(nullptr),
@@ -1756,8 +1754,10 @@ void WebContentsImpl::SetWasDiscarded(bool was_discarded) {
   GetFrameTree()->root()->set_was_discarded();
 }
 
-void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size,
-                                             bool stay_hidden) {
+base::ScopedClosureRunner WebContentsImpl::IncrementCapturerCount(
+    const gfx::Size& capture_size,
+    bool stay_hidden,
+    bool stay_awake) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::IncrementCapturerCount");
   DCHECK(!is_being_destroyed_);
   if (stay_hidden) {
@@ -1769,6 +1769,9 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size,
     ++visible_capturer_count_;
   }
 
+  if (stay_awake)
+    ++stay_awake_capturer_count_;
+
   // Note: This provides a hint to upstream code to size the views optimally
   // for quality (e.g., to avoid scaling).
   if (!capture_size.IsEmpty() && preferred_size_for_capture_.IsEmpty()) {
@@ -1776,7 +1779,7 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size,
     OnPreferredSizeChanged(preferred_size_);
   }
 
-  if (!capture_wake_lock_) {
+  if (!capture_wake_lock_ && stay_awake_capturer_count_) {
     if (auto* wake_lock_context = GetWakeLockContext()) {
       auto receiver = capture_wake_lock_.BindNewPipeAndPassReceiver();
       wake_lock_context->GetWakeLock(
@@ -1790,29 +1793,10 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size,
     capture_wake_lock_->RequestWakeLock();
 
   UpdateVisibilityAndNotifyPageAndView(GetVisibility());
-}
 
-void WebContentsImpl::DecrementCapturerCount(bool stay_hidden) {
-  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DecrementCapturerCount");
-  if (stay_hidden)
-    --hidden_capturer_count_;
-  else
-    --visible_capturer_count_;
-  DCHECK_GE(hidden_capturer_count_, 0);
-  DCHECK_GE(visible_capturer_count_, 0);
-
-  if (is_being_destroyed_)
-    return;
-
-  if (!IsBeingCaptured()) {
-    const gfx::Size old_size = preferred_size_for_capture_;
-    preferred_size_for_capture_ = gfx::Size();
-    OnPreferredSizeChanged(old_size);
-    if (capture_wake_lock_)
-      capture_wake_lock_->CancelWakeLock();
-  }
-
-  UpdateVisibilityAndNotifyPageAndView(GetVisibility());
+  return base::ScopedClosureRunner(
+      base::BindOnce(&WebContentsImpl::DecrementCapturerCount,
+                     weak_factory_.GetWeakPtr(), stay_hidden, stay_awake));
 }
 
 bool WebContentsImpl::IsBeingCaptured() {
@@ -8585,9 +8569,10 @@ WebContentsImpl::GetRenderViewHostsIncludingBackForwardCached() {
 }
 
 void WebContentsImpl::RenderFrameHostStateChanged(
-    RenderFrameHostImpl* render_frame_host,
-    LifecycleStateImpl old_state,
-    LifecycleStateImpl new_state) {
+    RenderFrameHost* render_frame_host,
+    LifecycleState old_state,
+    LifecycleState new_state) {
+  DCHECK_NE(old_state, new_state);
   OPTIONAL_TRACE_EVENT2("content",
                         "WebContentsImpl::RenderFrameHostStateChanged",
                         "render_frame_host", render_frame_host, "states",
@@ -8599,30 +8584,53 @@ void WebContentsImpl::RenderFrameHostStateChanged(
                           dict.Add("old", old_state);
                           dict.Add("new", new_state);
                         });
-  const bool was_in_back_forward_cache =
-      old_state == LifecycleStateImpl::kInBackForwardCache;
-  const bool is_in_back_forward_cache =
-      new_state == LifecycleStateImpl::kInBackForwardCache;
-  if (was_in_back_forward_cache != is_in_back_forward_cache) {
-    observers_.NotifyObservers(
-        &WebContentsObserver::FrameBackForwardCacheStateChanged,
-        render_frame_host);
-  }
   if (render_frame_host->GetParent())
     return;
 
-  if (old_state == LifecycleStateImpl::kActive &&
-      new_state != LifecycleStateImpl::kActive) {
+  if (old_state == LifecycleState::kActive &&
+      new_state != LifecycleState::kActive) {
     // TODO(sreejakshetty): Remove this reset when ColorChooser becomes
     // per-frame.
     // Close the color chooser popup when RenderFrameHost changes state from
     // kActive.
     color_chooser_.reset();
   }
+
+  observers_.NotifyObservers(&WebContentsObserver::RenderFrameHostStateChanged,
+                             render_frame_host, old_state, new_state);
 }
 
 bool WebContentsImpl::IsPrimaryFrameTree(const FrameTree& frame_tree) const {
   return !frame_tree.is_prerendering();
+}
+
+void WebContentsImpl::DecrementCapturerCount(bool stay_hidden,
+                                             bool stay_awake) {
+  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DecrementCapturerCount");
+  if (stay_hidden)
+    --hidden_capturer_count_;
+  else
+    --visible_capturer_count_;
+  if (stay_awake)
+    --stay_awake_capturer_count_;
+  DCHECK_GE(hidden_capturer_count_, 0);
+  DCHECK_GE(visible_capturer_count_, 0);
+  DCHECK_GE(stay_awake_capturer_count_, 0);
+
+  if (is_being_destroyed_)
+    return;
+
+  const bool is_being_captured = IsBeingCaptured();
+  if (!is_being_captured) {
+    const gfx::Size old_size = preferred_size_for_capture_;
+    preferred_size_for_capture_ = gfx::Size();
+    OnPreferredSizeChanged(old_size);
+  }
+
+  if (capture_wake_lock_ && (!is_being_captured || !stay_awake_capturer_count_))
+    capture_wake_lock_->CancelWakeLock();
+
+  UpdateVisibilityAndNotifyPageAndView(GetVisibility());
 }
 
 }  // namespace content

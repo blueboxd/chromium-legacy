@@ -1,0 +1,23 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  ActiveScriptWrappable,
+  Exposed=Window,
+  RuntimeEnabled=ManagedInterface,
+  SecureContext
+] interface NavigatorManagedData : EventTarget {
+  // Managed Configuration API.
+  [CallWith=ScriptState, RuntimeEnabled=ManagedConfiguration]
+  Promise<record<DOMString, object>> getManagedConfiguration(sequence<DOMString> keys);
+  [RuntimeEnabled=ManagedConfiguration]
+  attribute EventHandler onmanagedconfigurationchange;
+
+  // Device Attributes API.
+  [CallWith=ScriptState, RuntimeEnabled=DeviceAttributes] Promise<DOMString> getDirectoryId();
+  [CallWith=ScriptState, RuntimeEnabled=DeviceAttributes] Promise<DOMString> getHostname();
+  [CallWith=ScriptState, RuntimeEnabled=DeviceAttributes] Promise<DOMString> getSerialNumber();
+  [CallWith=ScriptState, RuntimeEnabled=DeviceAttributes] Promise<DOMString> getAnnotatedAssetId();
+  [CallWith=ScriptState, RuntimeEnabled=DeviceAttributes] Promise<DOMString> getAnnotatedLocation();
+};

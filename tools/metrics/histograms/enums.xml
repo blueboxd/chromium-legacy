@@ -5024,6 +5024,9 @@ others/histograms.xml -->
   <int value="4" label="Success, returning user"/>
   <int value="5" label="Proactive triggering setting disabled"/>
   <int value="6" label="Intent received"/>
+  <int value="7" label="Feature disabled"/>
+  <int value="8" label="No initial url"/>
+  <int value="9" label="Mandatory parameter missing"/>
 </enum>
 
 <enum name="AutofillAssistantOnBoarding">
@@ -6526,6 +6529,11 @@ others/histograms.xml -->
   <int value="3" label="Overlay L1"/>
   <int value="4" label="Overlay Insecure Player-element Fullscreen"/>
   <int value="5" label="Overlay Insecure Non-player-element Fullscreen"/>
+</enum>
+
+<enum name="AwDebugCall">
+  <int value="0" label="setCpuAffinityToLittleCores"/>
+  <int value="1" label="enableIdleThrottling"/>
 </enum>
 
 <enum name="BackForwardCacheActionAfterPagehide">
@@ -16115,6 +16123,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="106" label="ProxyCheckHealth"/>
   <int value="107" label="ProxyStartAuthSession"/>
   <int value="108" label="ProxyAuthenticateAuthSession"/>
+  <int value="109" label="ProxyAddCredentials"/>
 </enum>
 
 <enum name="CryptohomeDiskCleanupProgress">
@@ -17418,6 +17427,7 @@ Called by update_debug_scenarios.py.-->
   <int value="5" label="kImageICO"/>
   <int value="6" label="kImageBMP"/>
   <int value="7" label="kImageAVIF"/>
+  <int value="8" label="kImageJXL"/>
 </enum>
 
 <enum name="DecodeSwapChainNotUsedReason">
@@ -24094,6 +24104,11 @@ Called by update_document_policy_enum.py.-->
   <int value="841" label="CECPQ2Enabled"/>
   <int value="842" label="HeadlessMode"/>
   <int value="843" label="WebRTCIPHandlingPolicy"/>
+  <int value="844" label="PdfAnnotationsEnabled"/>
+  <int value="845" label="DefaultFileHandlingGuardSetting"/>
+  <int value="846" label="FileHandlingAllowedForUrls"/>
+  <int value="847" label="FileHandlingBlockedForUrls"/>
+  <int value="848" label="DeviceAllowedBluetoothServices"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27212,6 +27227,16 @@ Called by update_extension_histograms.py.-->
   <int value="2" label="Requested but not found"/>
   <int value="3" label="Requested and included"/>
   <int value="4" label="Requested but not supported"/>
+</enum>
+
+<enum name="ExtensionNavigationPermissions">
+  <int value="0" label="Total Navigations"/>
+  <int value="1" label="Content Script Access"/>
+  <int value="2" label="Page Access"/>
+  <int value="3" label="Web Navigation"/>
+  <int value="4" label="Web Request"/>
+  <int value="5" label="Declarative Net Request"/>
+  <int value="6" label="History"/>
 </enum>
 
 <enum name="ExtensionNotificationType">
@@ -32078,6 +32103,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3872"
       label="WorkerControlledByServiceWorkerWithFetchEventHandlerOutOfScope"/>
   <int value="3873" label="AuthorizationCoveredByWildcard"/>
+  <int value="3874" label="ElementGetInnerHTML"/>
+  <int value="3875" label="FileHandlingLaunch"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -44508,7 +44535,6 @@ from previous Chrome versions.
   <int value="-1575375861" label="enable-captive-portal-random-url"/>
   <int value="-1575131701" label="AppServiceAsh:disabled"/>
   <int value="-1573468162" label="ClientStorageAccessContextAuditing:enabled"/>
-  <int value="-1572898796" label="IncognitoDarkModeEnforcedForDesktop:enabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1571525676" label="FilesSWA:disabled"/>
@@ -44595,6 +44621,7 @@ from previous Chrome versions.
   <int value="-1497450774" label="TreatUnsafeDownloadsAsActive:disabled"/>
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1496106797" label="IPH_PasswordsAccountStorage:enabled"/>
+  <int value="-1496051102" label="PageInfoV2Desktop:disabled"/>
   <int value="-1495973732"
       label="ResamplingScrollEventsExperimentalPrediction:disabled"/>
   <int value="-1492934655" label="TabSwitcherOnReturn:enabled"/>
@@ -44972,6 +44999,7 @@ from previous Chrome versions.
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1212167260" label="disable-app-window-cycling"/>
   <int value="-1208501269" label="AutofillScanThemeDialog:enabled"/>
+  <int value="-1208044478" label="InheritNativeThemeFromParentWidget:enabled"/>
   <int value="-1206875404" label="EnableIncognitoWindowCounter:enabled"/>
   <int value="-1206698676" label="MacV2Sandbox:disabled"/>
   <int value="-1206524306" label="EnableAuraTooltipsOnWindows:disabled"/>
@@ -45330,6 +45358,7 @@ from previous Chrome versions.
   <int value="-893673593" label="BentoOffline:disabled"/>
   <int value="-892428689" label="ManualPasswordGenerationAndroid:enabled"/>
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
+  <int value="-890517779" label="JXL:enabled"/>
   <int value="-889670978" label="AssistantRoutines:disabled"/>
   <int value="-887094098" label="ForcedColors:enabled"/>
   <int value="-886912558" label="ChromeHomePromo:enabled"/>
@@ -45596,6 +45625,7 @@ from previous Chrome versions.
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-658319177" label="VaapiAV1Decoder:disabled"/>
   <int value="-657808907" label="CopyLinkToText:disabled"/>
+  <int value="-654705905" label="ShortcutCustomizationApp:enabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
   <int value="-653616608" label="MacSyscallSandbox:disabled"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
@@ -45837,6 +45867,7 @@ from previous Chrome versions.
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-424584720" label="ClipboardFilenames:enabled"/>
   <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>
+  <int value="-421428607" label="InheritNativeThemeFromParentWidget:disabled"/>
   <int value="-420347911" label="MobileIdentityConsistencyFRE:disabled"/>
   <int value="-419733676" label="IsolatePrerendersMustProbeOrigin:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
@@ -46504,6 +46535,7 @@ from previous Chrome versions.
   <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
   <int value="189777537" label="DisableInitialMostVisitedFadeIn:enabled"/>
+  <int value="190282969" label="JXL:disabled"/>
   <int value="191737931" label="enable-mark-http-as"/>
   <int value="192167036" label="LogJsConsoleMessages:disabled"/>
   <int value="192320180" label="ignore-gpu-blocklist"/>
@@ -46717,6 +46749,7 @@ from previous Chrome versions.
   <int value="386138870" label="DesktopPWAsOmniboxInstall:enabled"/>
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>
   <int value="387233614" label="HomePageButtonForceEnabled:disabled"/>
+  <int value="387678734" label="ShortcutCustomizationApp:disabled"/>
   <int value="388328387" label="WindowsMixedReality:enabled"/>
   <int value="388786873" label="EnableUnifiedMultiDeviceSettings:enabled"/>
   <int value="388996324" label="CustomContextMenu:disabled"/>
@@ -46778,6 +46811,7 @@ from previous Chrome versions.
   <int value="436682243" label="TabGroupsAndroid:disabled"/>
   <int value="436980707" label="ContextualSearchForceCaption:enabled"/>
   <int value="438307192" label="FirstPartySets:disabled"/>
+  <int value="439267320" label="ScreenTime:disabled"/>
   <int value="439525862" label="GlobalMediaControlsForCast:disabled"/>
   <int value="444411390" label="enable-incognito-shortcut-on-desktop"/>
   <int value="444754854" label="LegacyTLSWarnings:disabled"/>
@@ -46808,7 +46842,6 @@ from previous Chrome versions.
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="469999350" label="NotificationScheduleService:disabled"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
-  <int value="470708618" label="IncognitoDarkModeEnforcedForDesktop:disabled"/>
   <int value="471224152" label="WinUseHybridSpellChecker:enabled"/>
   <int value="471519375" label="NewOsSettingsSearch:disabled"/>
   <int value="471560693" label="webview-verbose-logging"/>
@@ -47158,6 +47191,7 @@ from previous Chrome versions.
   <int value="765803208" label="AutofillShowTypePredictions:enabled"/>
   <int value="766898398" label="sampling-heap-profiler"/>
   <int value="767543730" label="DoubleTapToZoomInTabletMode:enabled"/>
+  <int value="767549069" label="ScreenTime:enabled"/>
   <int value="767970385" label="ResamplingScrollEvents:enabled"/>
   <int value="770680432" label="DecodeLossyWebPImagesToYUV:enabled"/>
   <int value="772272625" label="simplify-https-indicator"/>
@@ -47649,6 +47683,7 @@ from previous Chrome versions.
   <int value="1222309415" label="SplitCacheByNetworkIsolationKey:enabled"/>
   <int value="1222808563" label="DisableInitialMostVisitedFadeIn:disabled"/>
   <int value="1226624874" label="Mus:disabled"/>
+  <int value="1226676061" label="PageInfoV2Desktop:enabled"/>
   <int value="1227633129" label="NtpChromeCartModule:disabled"/>
   <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1229299518" label="SingleTabMode:disabled"/>
@@ -59192,6 +59227,20 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="PartnerTypeMetric">
+  <int value="0" label="Other"/>
+  <int value="1" label="Thunderbolt + DisplayPort Alt Mode Hub"/>
+  <int value="2" label="Thunderbolt + DisplayPort Alt Mode Peripheral"/>
+  <int value="3" label="Thunderbolt Hub"/>
+  <int value="4" label="Thunderbolt Peripheral"/>
+  <int value="5" label="USB4 Hub"/>
+  <int value="6" label="USB4 Peripheral"/>
+  <int value="7" label="DisplayPort Alt Mode Hub"/>
+  <int value="8" label="DisplayPort Alt Mode Peripheral"/>
+  <int value="9" label="USB Hub"/>
+  <int value="10" label="USB Peripheral"/>
+</enum>
+
 <enum name="PassiveForcedListenerResultType">
   <int value="0" label="PreventDefaultNotCalled"/>
   <int value="1" label="DocumentLevelTouchPreventDefaultCalled"/>
@@ -62543,6 +62592,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="parse proto failed"/>
 </enum>
 
+<enum name="PrerenderCancelledInterface">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kGamepadHapticsManager"/>
+  <int value="2" label="kGamepadMonitor"/>
+</enum>
+
 <enum name="PrerenderCookieSendType">
   <obsolete>
     Deprecated March 13 2015.
@@ -62684,6 +62739,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="kNavigationRequestFailure"/>
   <int value="9" label="kNavigationRequestBlockedByCsp"/>
   <int value="10" label="kMainFrameNavigation"/>
+  <int value="11" label="kDisallowedMojoInterface"/>
+  <int value="12" label="kPlugin"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
@@ -74704,6 +74761,24 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Launch incognito"/>
   <int value="5" label="Translate"/>
   <int value="6" label="Update Chrome"/>
+  <int value="7" label="Run Chrome safety check"/>
+  <int value="8" label="Manage security settings"/>
+  <int value="9" label="Manage cookies"/>
+  <int value="10" label="Manage addresses"/>
+  <int value="11" label="Manage sync"/>
+  <int value="12" label="Manage site settings"/>
+  <int value="13" label="Create Google doc"/>
+  <int value="14" label="Create Google sheet"/>
+  <int value="15" label="Create Google slide"/>
+  <int value="16" label="Create Google calendar event"/>
+  <int value="17" label="Create Google site"/>
+  <int value="18" label="Create Google keep note"/>
+  <int value="19" label="Create Google form"/>
+  <int value="20" label="Compose email in Gmail"/>
+  <int value="21" label="See Chrome tips"/>
+  <int value="22" label="Manage Google account"/>
+  <int value="23" label="Clear YouTube history"/>
+  <int value="24" label="Change Google password"/>
 </enum>
 
 <enum name="SuggestionsResponseState">

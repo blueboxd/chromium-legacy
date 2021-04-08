@@ -226,6 +226,7 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
 #endif  // OS_MAC
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1492,10 +1493,15 @@ const FeatureEntry::FeatureVariation kPromoBrowserCommandsVariations[] = {
 #if !defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kNtpChromeCartModuleFakeData[] = {
-    {ntp_features::kNtpChromeCartModuleDataParam, "fake"}};
+    {ntp_features::kNtpChromeCartModuleDataParam, "fake"},
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"}};
+const FeatureEntry::FeatureParam kNtpChromeCartModuleAbandonedCartDiscount[] = {
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"}};
 const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
-    {"- Fake Data", kNtpChromeCartModuleFakeData,
+    {"- Fake Data And Discount", kNtpChromeCartModuleFakeData,
      base::size(kNtpChromeCartModuleFakeData), nullptr},
+    {"- Abandoned Cart Discount", kNtpChromeCartModuleAbandonedCartDiscount,
+     base::size(kNtpChromeCartModuleAbandonedCartDiscount), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
@@ -3108,15 +3114,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUiShowCompositedLayerBordersDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kUiShowCompositedLayerBordersChoices)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#if defined(OS_MAC)
-    {
-        "zero-copy-video-capture",
-        flag_descriptions::kZeroCopyVideoCaptureName,
-        flag_descriptions::kZeroCopyVideoCaptureDescription,
-        kOsMac,
-        FEATURE_VALUE_TYPE(media::kAVFoundationCaptureV2),
-    },
-#endif  // defined(OS_MAC)
 #if defined(OS_WIN)
     {
         "zero-copy-video-capture",
@@ -4713,20 +4710,20 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpRecipeTasksModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpRecipeTasksModule,
                                     kNtpRecipeTasksModuleVariations,
-                                    "NtpRecipeTasksModule")},
+                                    "DesktopNtpModules")},
 
     {"ntp-shopping-tasks-module",
      flag_descriptions::kNtpShoppingTasksModuleName,
      flag_descriptions::kNtpShoppingTasksModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpShoppingTasksModule,
                                     kNtpShoppingTasksModuleVariations,
-                                    "NtpShoppingTasksModule")},
+                                    "DesktopNtpModules")},
 
     {"ntp-chrome-cart-module", flag_descriptions::kNtpChromeCartModuleName,
      flag_descriptions::kNtpChromeCartModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpChromeCartModule,
                                     kNtpChromeCartModuleVariations,
-                                    "NtpChromeCartModule")},
+                                    "DesktopNtpModules")},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -5650,6 +5647,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkingInDiagnosticsAppName,
      flag_descriptions::kEnableNetworkingInDiagnosticsAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableNetworkingInDiagnosticsApp)},
+
+    {"enable-shortcut-customization-app",
+     flag_descriptions::kEnableShortcutCustomizationAppName,
+     flag_descriptions::kEnableShortcutCustomizationAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kShortcutCustomizationApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,
@@ -6165,6 +6167,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"metal", flag_descriptions::kMetalName,
      flag_descriptions::kMetalDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMetal)},
+    {"screentime", flag_descriptions::kScreenTimeName,
+     flag_descriptions::kScreenTimeDescription, kOsMac,
+     FEATURE_VALUE_TYPE(screentime::kScreenTime)},
 #endif
 
     {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
@@ -6383,6 +6388,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"page-info-history", flag_descriptions::kPageInfoHistoryName,
      flag_descriptions::kPageInfoHistoryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoHistory)},
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+    {"page-info-version-2-desktop", flag_descriptions::kPageInfoV2DesktopName,
+     flag_descriptions::kPageInfoV2DesktopDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoV2Desktop)},
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6670,11 +6681,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kIncognitoBrandConsistencyForDesktop)},
 
-    {"incognito-dark-mode-enforced-for-desktop",
-     flag_descriptions::kIncognitoDarkModeEnforcedForDesktopName,
-     flag_descriptions::kIncognitoDarkModeEnforcedForDesktopDescription,
+    {"inherit-native-theme-from-parent-widget",
+     flag_descriptions::kInheritNativeThemeFromParentWidgetName,
+     flag_descriptions::kInheritNativeThemeFromParentWidgetDescription,
      kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kIncognitoDarkModeEnforcedForDesktop)},
+     FEATURE_VALUE_TYPE(views::features::kInheritNativeThemeFromParentWidget)},
 #endif
 
     {"content-settings-redesign",
@@ -6720,6 +6731,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(download::features::kSmartSuggestionForLargeDownloads)},
 #endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_JXL_DECODER)
+    {"enable-jxl", flag_descriptions::kEnableJXLName,
+     flag_descriptions::kEnableJXLDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kJXL)},
+#endif  // BUILDFLAG(ENABLE_JXL_DECODER)
 
     {"window-naming", flag_descriptions::kWindowNamingName,
      flag_descriptions::kWindowNamingDescription, kOsAll,

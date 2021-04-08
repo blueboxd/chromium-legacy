@@ -564,6 +564,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedSerialAllowAllPortsForUrls,
     base::Value::Type::LIST },
 #endif  // !defined(OS_ANDROID)
+  { key::kDefaultFileHandlingGuardSetting,
+    prefs::kManagedDefaultFileHandlingGuardSetting,
+    base::Value::Type::INTEGER },
+  { key::kFileHandlingAllowedForUrls,
+    prefs::kManagedFileHandlingAllowedForUrls,
+    base::Value::Type::LIST },
+  { key::kFileHandlingBlockedForUrls,
+    prefs::kManagedFileHandlingBlockedForUrls,
+    base::Value::Type::LIST },
   { key::kDefaultFileSystemReadGuardSetting,
     prefs::kManagedDefaultFileSystemReadGuardSetting,
     base::Value::Type::INTEGER },
@@ -1371,6 +1380,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebRtcIPHandling,
     prefs::kWebRTCIPHandlingPolicy,
     base::Value::Type::STRING },
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  { key::kPdfAnnotationsEnabled,
+    prefs::kPdfAnnotationsEnabled,
+    base::Value::Type::BOOLEAN },
+#endif
 };
 // clang-format on
 

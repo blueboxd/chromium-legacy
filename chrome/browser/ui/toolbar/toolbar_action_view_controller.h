@@ -56,8 +56,8 @@ class ToolbarActionViewController {
 
     // The action was invoked by the user activiating (via mouse or keyboard)
     // the entry in the legacy overflow (3-dot) menu.
-    // TODO(devlin): Remove this entry when the extensions menu fully launches.
-    kLegacyOverflowedEntry = 3,
+    // Removed 2021/04.
+    // kLegacyOverflowedEntry = 3,
 
     // The action was invoked programmatically via an API.
     kApi = 4,
@@ -94,9 +94,6 @@ class ToolbarActionViewController {
 
   // Returns true if the action should be enabled on the given |web_contents|.
   virtual bool IsEnabled(content::WebContents* web_contents) const = 0;
-
-  // Returns true if the action has a popup for the given |web_contents|.
-  virtual bool HasPopup(content::WebContents* web_contents) const = 0;
 
   // Returns whether there is currently a popup visible.
   virtual bool IsShowingPopup() const = 0;

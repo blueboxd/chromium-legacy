@@ -86,4 +86,13 @@ interface ITestWebLayer {
   void notifyOfAutofillEvents(in IBrowser browser,
                               in IObjectWrapper /* Runnable */ onNewEvent,
                               in IObjectWrapper /* ArrayList<Integer> */ eventsObserved) = 25;
+
+  // Simulates tapping the download notification with `id`.
+  void activateBackgroundFetchNotification(int id) = 26;
+
+  // Speeds up download service initialization.
+  void expediteDownloadService() = 27;
+
+  // Mocks the GMSCore Fido calls used by WebAuthn.
+  void setMockWebAuthnEnabled(in boolean enabled) = 28;
 }

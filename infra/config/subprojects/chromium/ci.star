@@ -1624,6 +1624,15 @@ ci.chromium_builder(
 )
 
 ci.chromiumos_builder(
+    name = "linux-ash-chromium-generator-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "default",
+    ),
+    tree_closing = False,
+    main_console_view = "main",
+)
+
+ci.chromiumos_builder(
     name = "Linux ChromiumOS Full",
     console_view_entry = consoles.console_view_entry(
         category = "default",
@@ -3558,6 +3567,42 @@ ci.fyi_builder(
     ),
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",
+    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "TSAN Release (j-100) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux tsan",
+        short_name = "rre",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-trusted",
+    reclient_jobs = 100,
+    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "TSAN Release (j-250) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux tsan",
+        short_name = "rre",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-trusted",
+    reclient_jobs = 250,
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
     configure_kitchen = True,
     kitchen_emulate_gce = True,

@@ -264,10 +264,10 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/bluetooth/debug_logs_manager.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
+#include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/child_accounts/family_user_chrome_activity_metrics.h"
 #include "chrome/browser/chromeos/child_accounts/family_user_metrics_service.h"
 #include "chrome/browser/chromeos/child_accounts/family_user_session_metrics.h"
-#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
@@ -349,6 +349,7 @@
 #include "chromeos/components/local_search_service/search_metrics_reporter.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/network/cellular_esim_profile_handler_impl.h"
+#include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
@@ -532,6 +533,12 @@ const char kPinnedExtensionsMigrationComplete[] =
 const char kRunAllFlashInAllowMode[] = "plugins.run_all_flash_in_allow_mode";
 #endif
 
+// Deprecated 04/2021.
+const char kSessionStatisticFCPMean[] =
+    "optimization_guide.session_statistic.fcp_mean";
+const char kSessionStatisticFCPStdDev[] =
+    "optimization_guide.session_statistic.fcp_std_dev";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -643,6 +650,9 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(prefs::kMediaFeedsSafeSearchEnabled, false);
   registry->RegisterBooleanPref(prefs::kMediaFeedsAutoSelectEnabled, false);
 #endif
+
+  registry->RegisterDoublePref(kSessionStatisticFCPStdDev, -1.0f);
+  registry->RegisterDoublePref(kSessionStatisticFCPMean, -1.0f);
 }
 
 }  // namespace
@@ -738,6 +748,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   ash::cert_provisioning::RegisterLocalStatePrefs(registry);
   chromeos::CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(registry);
+  chromeos::CellularMetricsLogger::RegisterLocalStatePrefs(registry);
   ash::ChromeUserManagerImpl::RegisterPrefs(registry);
   chromeos::CupsPrintersManager::RegisterLocalStatePrefs(registry);
   chromeos::DemoModeDetector::RegisterPrefs(registry);
@@ -1325,6 +1336,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(prefs::kMediaFeedsSafeSearchEnabled);
   profile_prefs->ClearPref(prefs::kMediaFeedsAutoSelectEnabled);
 #endif
+  // Added 04/2021.
+  profile_prefs->ClearPref(kSessionStatisticFCPMean);
+  profile_prefs->ClearPref(kSessionStatisticFCPStdDev);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

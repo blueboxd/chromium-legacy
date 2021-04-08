@@ -52,8 +52,6 @@ extern const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
-extern const char kAccountsPrefSupervisedUsersEnabled[];
-COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefTransferSAMLCookies[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefLoginScreenDomainAutoComplete[];
@@ -291,6 +289,9 @@ extern const char kUsbDetachableAllowlistKeyPid[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDevicePeripheralDataAccessEnabled[];
+
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceAllowedBluetoothServices[];
 }  // namespace chromeos
 
 // TODO(https://crbug.com/1164001): remove when migrated to ash/components/.
@@ -317,7 +318,6 @@ using ::chromeos::kAccountsPrefEphemeralUsersEnabled;
 using ::chromeos::kAccountsPrefFamilyLinkAccountsAllowed;
 using ::chromeos::kAccountsPrefLoginScreenDomainAutoComplete;
 using ::chromeos::kAccountsPrefShowUserNamesOnSignIn;
-using ::chromeos::kAccountsPrefSupervisedUsersEnabled;
 using ::chromeos::kAccountsPrefTransferSAMLCookies;
 using ::chromeos::kAccountsPrefUsers;
 using ::chromeos::kAllowBluetooth;
@@ -327,6 +327,7 @@ using ::chromeos::kAttestationForContentProtectionEnabled;
 using ::chromeos::kBorealisAllowedForDevice;
 using ::chromeos::kCastReceiverName;
 using ::chromeos::kCrosSettingsPrefix;
+using ::chromeos::kDeviceAllowedBluetoothServices;
 using ::chromeos::kDeviceAttestationEnabled;
 using ::chromeos::kDeviceAutoUpdateTimeRestrictions;
 using ::chromeos::kDeviceChannelDowngradeBehavior;

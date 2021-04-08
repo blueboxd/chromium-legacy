@@ -10,6 +10,7 @@
 #include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_audio_output_dev.h"
@@ -177,11 +178,11 @@ InterfaceList::InterfaceList() {
     Permission current_required_permission = PERMISSION_DEV;
     #include "ppapi/thunk/interfaces_ppb_public_dev.h"
   }
+#if !defined(OS_NACL)
   {
     Permission current_required_permission = PERMISSION_PRIVATE;
     #include "ppapi/thunk/interfaces_ppb_private.h"
   }
-#if !defined(OS_NACL)
   {
     Permission current_required_permission = PERMISSION_FLASH;
     #include "ppapi/thunk/interfaces_ppb_private_flash.h"
@@ -331,8 +332,7 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) {
   if (g_process_global_permissions.Get().HasPermission(
           found->second->required_permission())) {
     // Only log interface use once per plugin.
-    found->second->LogWithUmaOnce(
-        PluginGlobals::Get()->GetBrowserSender(), name);
+    found->second->LogWithUmaOnce(name);
     return found->second->iface();
   }
   return nullptr;
@@ -345,8 +345,7 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
   return found->second->iface();
 }
 
-void InterfaceList::InterfaceInfo::LogWithUmaOnce(
-    IPC::Sender* sender, const std::string& name) {
+void InterfaceList::InterfaceInfo::LogWithUmaOnce(const std::string& name) {
   {
     base::AutoLock acquire(sent_to_uma_lock_);
     if (sent_to_uma_)
@@ -354,8 +353,7 @@ void InterfaceList::InterfaceInfo::LogWithUmaOnce(
     sent_to_uma_ = true;
   }
   int hash = InterfaceList::HashInterfaceName(name);
-  PluginGlobals::Get()->GetBrowserSender()->Send(
-      new PpapiHostMsg_LogInterfaceUsage(hash));
+  base::UmaHistogramSparse("Pepper.InterfaceUsed", hash);
 }
 
 void InterfaceList::AddProxy(ApiID id,

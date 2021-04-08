@@ -7,7 +7,6 @@
 
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
-#include "chrome/browser/profiles/profile.h"
 
 class PrefService;
 
@@ -40,10 +39,10 @@ class SodaInstaller {
   // instance.
   static SodaInstaller* GetInstance();
 
-  // Initialize SODA if appropriate for profile type. Called by
-  // ChromeBrowserMainParts during browser startup. Checks whether SODA is due
-  // for uninstallation, and if so, triggers uninstallation.
-  void InitForProfileIfAppropriate(Profile* profile);
+  // Initialize SODA if any SODA-utilising feature is enabled. Intended to be
+  // called during embedder startup. Checks whether SODA is due for
+  // uninstallation, and if so, triggers uninstallation.
+  void Init(PrefService* profile_prefs, PrefService* global_prefs);
 
   // Schedules SODA for uninstallation if no SODA client features are
   // currently enabled. Should be called when client features using SODA are

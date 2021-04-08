@@ -167,6 +167,11 @@ GURL GetSigninURL(bool dark_mode) {
   return signin_url;
 }
 
+GURL GetSyncConfirmationLoadingURL() {
+  return GURL(chrome::kChromeUISyncConfirmationURL)
+      .Resolve(chrome::kChromeUISyncConfirmationLoadingPath);
+}
+
 bool IsExternalURL(const GURL& url) {
   // Empty URL is used initially, about:blank is used to stop navigation after
   // sign-in succeeds.
@@ -199,6 +204,15 @@ void ContinueSAMLSignin(std::unique_ptr<content::WebContents> saml_wc,
 
   ProfileMetrics::LogProfileAddSignInFlowOutcome(
       ProfileMetrics::ProfileAddSignInFlowOutcome::kSAML);
+}
+
+SkColor GetSignInColor(Profile* profile, SkColor profile_color) {
+  // The new profile theme may be overridden by an existing policy theme. This
+  // check ensures the correct theme is applied to the sync confirmation window.
+  auto* theme_service = ThemeServiceFactory::GetForProfile(profile);
+  if (theme_service->UsingPolicyTheme())
+    return theme_service->GetPolicyThemeColor();
+  return profile_color;
 }
 
 class ProfilePickerWidget : public views::Widget {
@@ -763,12 +777,8 @@ void ProfilePickerView::SwitchToSyncConfirmationFinished() {
   SyncConfirmationUI* sync_confirmation_ui = static_cast<SyncConfirmationUI*>(
       sign_in_->contents->GetWebUI()->GetController());
 
-  // The new profile theme may be overridden by an existing policy theme. This
-  // check ensures the correct theme is applied to the sync confirmation window.
-  auto* theme_service = ThemeServiceFactory::GetForProfile(sign_in_->profile);
   sync_confirmation_ui->InitializeMessageHandlerForCreationFlow(
-      theme_service->UsingPolicyTheme() ? theme_service->GetPolicyThemeColor()
-                                        : sign_in_->profile_color);
+      GetSignInColor(sign_in_->profile, sign_in_->profile_color));
 }
 
 void ProfilePickerView::SwitchToProfileSwitch(
@@ -807,7 +817,8 @@ void ProfilePickerView::SwitchToEnterpriseProfileWelcomeFinished(
           ->GetController()
           ->GetAs<EnterpriseProfileWelcomeUI>();
   enterprise_profile_welcome_ui->Initialize(
-      type, gaia::ExtractDomainName(sign_in_->email), sign_in_->profile_color,
+      type, gaia::ExtractDomainName(sign_in_->email),
+      GetSignInColor(sign_in_->profile, sign_in_->profile_color),
       std::move(proceed_callback));
 }
 
@@ -1069,11 +1080,11 @@ void ProfilePickerView::OnRefreshTokenUpdatedForAccount(
       base::BindOnce(&ShowCustomizationBubble, sign_in_->profile_color),
       /*enterprise_sync_consent_needed=*/false);
 
-  // Stop with the sign-in navigation, it is not needed any more and this avoids
-  // any glitches of the redirect page getting displayed. This is needed because
-  // in some cases (such as managed signed-in), there are further delays before
-  // any follow-up UI is shown.
-  ShowScreen(sign_in_->contents.get(), GURL(url::kAboutBlankURL),
+  // Stop with the sign-in navigation and show a spinner instead. The spinner
+  // will be shown until DiceTurnSyncOnHelper (below) figures out whether it's a
+  // managed account and whether sync is disabled by policies (which in some
+  // cases involves fetching policies and can take a couple of seconds).
+  ShowScreen(sign_in_->contents.get(), GetSyncConfirmationLoadingURL(),
              /*show_toolbar=*/false, /*enable_navigating_back=*/false);
 
   // Set up a timeout for extended account info (which cancels any existing

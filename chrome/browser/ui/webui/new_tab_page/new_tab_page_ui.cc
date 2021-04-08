@@ -108,6 +108,8 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
       base::FeatureList::IsEnabled(ntp_features::kNtpMiddleSlotPromo));
   source->AddBoolean("modulesEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kModules));
+  source->AddBoolean("modulesLoadEnabled", base::FeatureList::IsEnabled(
+                                               ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
                      ntp_features::GetModulesLoadTimeout().InMilliseconds());
 
@@ -243,6 +245,22 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
        IDS_NTP_MODULES_CART_CART_MENU_REMOVE_MERCHANT},
       {"modulesCartCartMenuRemoveMerchantToastMessage",
        IDS_NTP_MODULES_CART_CART_MENU_REMOVE_MERCHANT_TOAST_MESSAGE},
+      {"modulesCartDiscountChipAmount",
+       IDS_NTP_MODULES_CART_DISCOUNT_CHIP_AMOUNT},
+      {"modulesCartDiscountChipUpToAmount",
+       IDS_NTP_MODULES_CART_DISCOUNT_CHIP_UP_TO_AMOUNT},
+      {"modulesCartDiscountConsentContent",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT},
+      {"modulesCartDiscountConsentAccept",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_ACCEPT},
+      {"modulesCartDiscountConsentAcceptConfirmation",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_ACCEPT_CONFIRMATION},
+      {"modulesCartDiscountConsentReject",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_REJECT},
+      {"modulesCartDiscountConsentRejectConfirmation",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_REJECT_CONFIRMATION},
+      {"modulesCartDiscountConsentConfirmationDismiss",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONFIRMATION_DISMISS},
   };
   source->AddLocalizedStrings(kStrings);
 

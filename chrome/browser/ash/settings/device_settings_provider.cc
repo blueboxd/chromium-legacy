@@ -64,7 +64,6 @@ const char* const kKnownSettings[] = {
     kAccountsPrefEphemeralUsersEnabled,
     kAccountsPrefLoginScreenDomainAutoComplete,
     kAccountsPrefShowUserNamesOnSignIn,
-    kAccountsPrefSupervisedUsersEnabled,
     kAccountsPrefTransferSAMLCookies,
     kAccountsPrefUsers,
     kAllowBluetooth,
@@ -73,6 +72,7 @@ const char* const kKnownSettings[] = {
     kAttestationForContentProtectionEnabled,
     kBorealisAllowedForDevice,
     kCastReceiverName,
+    kDeviceAllowedBluetoothServices,
     kDeviceAttestationEnabled,
     kDeviceAutoUpdateTimeRestrictions,
     kDeviceCrostiniArcAdbSideloadingAllowed,
@@ -194,8 +194,6 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
   // true is default permissive value and false is safe prohibitive value.
   // Exceptions:
   //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
-  //   kAccountsPrefSupervisedUsersEnabled has a default value of false
-  //     for enterprise devices and true for consumer devices.
   //   kAccountsPrefTransferSAMLCookies has a default value of false.
   //   kAccountsPrefFamilyLinkAccountsAllowed has a default value of false.
   if (policy.has_allow_new_users() &&
@@ -245,13 +243,6 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       !policy.has_guest_mode_enabled() ||
           !policy.guest_mode_enabled().has_guest_mode_enabled() ||
           policy.guest_mode_enabled().guest_mode_enabled());
-
-  bool supervised_users_enabled = false;
-  if (!chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
-    supervised_users_enabled = true;
-  }
-  new_values_cache->SetBoolean(kAccountsPrefSupervisedUsersEnabled,
-                               supervised_users_enabled);
 
   new_values_cache->SetBoolean(
       kAccountsPrefShowUserNamesOnSignIn,
@@ -1074,6 +1065,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       new_values_cache->SetValue(kBorealisAllowedForDevice,
                                  base::Value(container.allowed()));
     }
+  }
+
+  if (policy.has_device_allowed_bluetooth_services()) {
+    base::Value list(base::Value::Type::LIST);
+    const em::DeviceAllowedBluetoothServicesProto& container(
+        policy.device_allowed_bluetooth_services());
+    for (const auto& service_uuid : container.allowlist())
+      list.Append(service_uuid);
+    new_values_cache->SetValue(kDeviceAllowedBluetoothServices,
+                               std::move(list));
   }
 }
 

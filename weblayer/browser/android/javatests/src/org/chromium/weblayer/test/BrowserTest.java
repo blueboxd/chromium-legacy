@@ -50,6 +50,7 @@ public class BrowserTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(91)
     public void testSetChangeVisibilityOnNextDetach() {
         String url = mActivityTestRule.getTestDataURL("visibility.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);

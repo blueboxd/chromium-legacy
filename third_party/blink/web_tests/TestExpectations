@@ -3480,6 +3480,7 @@ crbug.com/1053825 external/wpt/css/css-grid/grid-model/grid-overflow-padding-002
 crbug.com/1053825 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-001.html [ Failure ]
 crbug.com/1053825 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-002.html [ Failure ]
 crbug.com/1053825 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-003.html [ Failure ]
+crbug.com/1045599 fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Failure ]
 
 # Bad stretching of svgs without aspect-ratio.
 crbug.com/1114013 external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-5.html [ Failure ]
@@ -3567,6 +3568,7 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowi
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-overflow-padding-001.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-overflow-padding-002.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Pass ]
+virtual/layout-ng-grid/fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Pass ]
 
 ### Tests failing with LayoutNGGrid enabled:
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/absolute-positioning-grid-container-parent-001.html [ Failure ]
@@ -3633,15 +3635,11 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-columns-rows-
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-grow-tracks-to-their-max.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-intrinsic-maximums.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-addition-track-breadth-update.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-positioning-with-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-removal-track-breadth-update.html [ Failure Crash ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-item-spanning-and-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-template-shorthand-get-set.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-track-sizing-with-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/grid-track-sizing-with-percentages-and-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/implicit-position-dynamic-change.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/implicit-tracks-before-explicit.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/min-width-margin-box.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/minmax-max-content-resolution-rows.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/minmax-min-content-column-resolution-rows.html [ Failure ]
@@ -5735,9 +5733,6 @@ crbug.com/1034513 [ Win7 ] virtual/stable/fast/dom/Window/window-resize-contents
 crbug.com/1034492 http/tests/devtools/unit/filtered-item-selection-dialog-filtering.js [ Pass Failure ]
 crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ Pass Failure ]
 
-# Disable for landing devtools change
-crbug.com/1194704 http/tests/devtools/unit/suggest-box.js [ Pass Failure ]
-
 # Sheriff 2019-12-23
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
 
@@ -5934,6 +5929,7 @@ crbug.com/1050039 [ Mac ] fast/events/onbeforeunload-focused-iframe.html [ Pass 
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/elements/styles-1/edit-value-url-with-color.js [ Skip ]
 crbug.com/1006759 http/tests/devtools/sources/css-outline-dialog.js [ Skip ]
+crbug.com/1197010 http/tests/devtools/elements/styles-2/inherited-mixed-case-properties.js [ Pass Failure ]
 
 #Mixed content autoupgrades make these tests not applicable, since they check for mixed content audio/video
 crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag.https.html [ Failure ]
@@ -6360,9 +6356,6 @@ crbug.com/1159445 [ Mac ] paint/invalidation/repaint-overlay/layers-overlay.html
 
 crbug.com/1140329 http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout Failure ]
 
-crbug.com/1193472 http/tests/devtools/console/console-format-broken-unicode.js [ Pass Failure ]
-crbug.com/1193472 http/tests/devtools/console/console-format.js [ Pass Failure ]
-
 #Sheriff 2020-10-21
 crbug.com/1141206 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
@@ -6556,6 +6549,9 @@ crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-vie
 crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Pass Failure ]
 crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget.html [ Pass Failure ]
 crbug.com/1178160 virtual/threaded-prefer-compositing/external/wpt/css/cssom-view/MediaQueryList-extends-EventTarget-interop.html [ Pass Failure ]
+
+# Disabling test until https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2801092 is merged.
+crbug.com/1195224 http/tests/devtools/filtered-item-selection-dialog-rendering.js [ Pass Failure ]
 
 # No support for key combinations like Alt + c in testdriver.Actions for content_shell
 crbug.com/893480 external/wpt/uievents/interface/keyboard-accesskey-click-event.html [ Timeout ]
@@ -6756,7 +6752,7 @@ crbug.com/921151 http/tests/security/mixedContent/insecure-iframe-with-hsts.http
 crbug.com/1093840 external/wpt/mathml/relations/html5-tree/math-global-event-handlers.tentative.html [ Pass Timeout ]
 
 # Sheriff 2021-04-06
-crbug.com/1032451 [ Linux ] virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Failure ]
+crbug.com/1032451 [ Linux ] virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Failure Timeout ]
 
 # Sheriff 2021-04-07
 crbug.com/1196620 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-video-sibling.html [ Pass Failure ]

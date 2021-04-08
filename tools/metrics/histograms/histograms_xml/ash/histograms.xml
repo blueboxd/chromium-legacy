@@ -198,7 +198,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.BackGesture.StartScenarioType"
-    enum="BackGestureStartScenarioType" expires_after="2021-08-01">
+    enum="BackGestureStartScenarioType" expires_after="2021-10-04">
   <owner>minch@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -864,6 +864,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Ash.Desks.WeeklyActiveDesks" units="active desks"
+    expires_after="2022-03-24">
+  <owner>chinsenj@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of unique weekly active desks a user has interacted with in a
+    week. A desk is considered interacted with if a window is moved to it, it is
+    created, its name is changed, or it is activated and stayed on for at least
+    3s. This metric is persisted across multiple sessions and restarts. I.e. if
+    a user logs out and logs back in. This metric is reported a week after it
+    begins counting. If a session is restored and more than a week has elapsed
+    since counting has begun, the restored data will be emitted as an entry and
+    this metric will be reset.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Desktop.TimeBetweenNavigateToTaskSwitches" units="seconds"
     expires_after="2021-03-15">
   <owner>tbuckley@chromium.org</owner>
@@ -1199,7 +1215,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Login.Lock.NbPasswordAttempts.UntilSuccess"
-    units="attempts" expires_after="2021-07-27">
+    units="attempts" expires_after="2021-10-04">
   <owner>tellier@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1279,7 +1295,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Login.PinAutosubmit.Backfill"
-    enum="PinAutosubmitBackfillEvent" expires_after="2021-08-01">
+    enum="PinAutosubmitBackfillEvent" expires_after="2021-10-04">
   <owner>rrsilva@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -1742,7 +1758,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Rotation.AnimationSmoothness" units="%"
-    expires_after="2021-07-26">
+    expires_after="2021-10-04">
   <owner>oshima@chromium.org</owner>
   <owner>wutao@chromium.org</owner>
   <summary>
@@ -1833,7 +1849,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Shelf.NumberOfUnpinnedItems" units="Icons"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>anasalazar@google.com</owner>
   <owner>mmourgos@google.com</owner>
   <summary>
@@ -1956,7 +1972,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Shelf.Palette.Usage" enum="PaletteTrayOptions"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@chromium.org</owner>
   <summary>
@@ -2255,7 +2271,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.TouchView.LidAngle" units="degrees"
-    expires_after="2021-07-27">
+    expires_after="2021-10-04">
   <owner>oshima@chromium.org</owner>
   <summary>
     Chrome OS only. The computed angle between the lid and the keyboard panel.
@@ -2375,7 +2391,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.CrossFade" units="%"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>wutao@chromium.org</owner>
   <summary>
     Relative smoothness of cross fade animation when setting window bounds. 100%
@@ -2684,7 +2700,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.ClamshellMode"
-    units="ms" expires_after="2021-08-01">
+    units="ms" expires_after="2021-10-04">
   <owner>yichenz@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>

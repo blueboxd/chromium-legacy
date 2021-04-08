@@ -66,7 +66,9 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     kNavigationRequestFailure = 8,
     kNavigationRequestBlockedByCsp = 9,
     kMainFrameNavigation = 10,
-    kMaxValue = kMainFrameNavigation
+    kDisallowedMojoInterface = 11,
+    kPlugin = 12,
+    kMaxValue = kPlugin
   };
 
   PrerenderHost(blink::mojom::PrerenderAttributesPtr attributes,
@@ -119,6 +121,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  bool IsAssociatedWith(const WebContentsImpl& web_contents);
 
   url::Origin initiator_origin() const { return initiator_origin_; }
 

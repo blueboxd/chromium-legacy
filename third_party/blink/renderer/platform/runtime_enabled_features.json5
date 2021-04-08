@@ -1152,11 +1152,6 @@
       implied_by: ["CSSContainerQueries"],
     },
     {
-      name: "LayoutNGLayoutOverflow",
-      depends_on: ["LayoutNG"],
-      status: "stable",
-    },
-    {
       name: "LayoutNGPrinting",
     },
     {
@@ -1166,7 +1161,7 @@
     {
       name: "LayoutNGTable",
       depends_on: ["LayoutNG"],
-      status: "stable"
+      status: "test"
     },
     {
       name: "LayoutNGTextControl",
@@ -1197,7 +1192,7 @@
     },
     {
       name: "ManagedConfiguration",
-      status:"experimental",
+      status: "stable",
     },
     {
       name: "ManagedInterface",
@@ -2271,8 +2266,8 @@
     },
     {
       name: "WebOTPAssertionFeaturePolicy",
-      status: "experimental",
       depends_on: ["WebOTP"],
+      status: {"default": "experimental", "Android": "stable"},
     },
     {
       name: "WebScheduler",

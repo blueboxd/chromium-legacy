@@ -75,6 +75,7 @@ android_library("weblayer_private_java_tests") {
   testonly = true
   sources = [
     "src/org/chromium/weblayer/test/AutofillTest.java",
+    "src/org/chromium/weblayer/test/BackgroundFetchTest.java",
     "src/org/chromium/weblayer/test/BrowserControlsOffsetCallbackTest.java",
     "src/org/chromium/weblayer/test/BrowserControlsTest.java",
     "src/org/chromium/weblayer/test/ContentCaptureTest.java",
@@ -92,6 +93,7 @@ android_library("weblayer_private_java_tests") {
     "src/org/chromium/weblayer/test/TabPrivateTest.java",
     "src/org/chromium/weblayer/test/TranslateTest.java",
     "src/org/chromium/weblayer/test/UrlBarControllerTest.java",
+    "src/org/chromium/weblayer/test/WebAuthnTest.java",
   ]
   deps = [
     ":weblayer_java_private_test_support",
@@ -111,6 +113,7 @@ android_library("weblayer_private_java_tests") {
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//ui/android:ui_java_test_support",
+    "//weblayer/browser/java:test_interfaces_java",
     "//weblayer/public/java",
     "//weblayer/public/javatestutil:test_java",
     "//weblayer/shell/android:weblayer_shell_java",
@@ -180,7 +183,10 @@ template("weblayer_instrumentation") {
       additional_apks = []
     }
     additional_apks += [ "//net/android:net_test_support_apk" ]
-    data = [ "//weblayer/test/data/" ]
+    data = [
+      "//content/test/data/android/authenticator.html",
+      "//weblayer/test/data/",
+    ]
     proguard_enabled = !is_java_debug
   }
 }

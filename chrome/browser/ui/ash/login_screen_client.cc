@@ -10,6 +10,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "base/bind.h"
+#include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
@@ -75,14 +75,14 @@ void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void LoginScreenClient::AddSystemTrayFocusObserver(
-    ash::SystemTrayFocusObserver* observer) {
-  system_tray_focus_observers_.AddObserver(observer);
+void LoginScreenClient::AddSystemTrayObserver(
+    ash::SystemTrayObserver* observer) {
+  system_tray_observers_.AddObserver(observer);
 }
 
-void LoginScreenClient::RemoveSystemTrayFocusObserver(
-    ash::SystemTrayFocusObserver* observer) {
-  system_tray_focus_observers_.RemoveObserver(observer);
+void LoginScreenClient::RemoveSystemTrayObserver(
+    ash::SystemTrayObserver* observer) {
+  system_tray_observers_.RemoveObserver(observer);
 }
 
 void LoginScreenClient::AddLoginScreenShownObserver(
@@ -252,8 +252,13 @@ void LoginScreenClient::ShowLockScreenNotificationSettings() {
 }
 
 void LoginScreenClient::OnFocusLeavingSystemTray(bool reverse) {
-  for (ash::SystemTrayFocusObserver& observer : system_tray_focus_observers_)
+  for (ash::SystemTrayObserver& observer : system_tray_observers_)
     observer.OnFocusLeavingSystemTray(reverse);
+}
+
+void LoginScreenClient::OnSystemTrayBubbleShown() {
+  for (ash::SystemTrayObserver& observer : system_tray_observers_)
+    observer.OnSystemTrayBubbleShown();
 }
 
 void LoginScreenClient::OnLoginScreenShown() {

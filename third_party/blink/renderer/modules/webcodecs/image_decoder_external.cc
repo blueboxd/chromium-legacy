@@ -247,6 +247,10 @@ void ImageDecoderExternal::UpdateSelectedTrack() {
   reset(MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
                                            "Aborted by track change"));
 
+  // Track changes recreate a new decoder under the hood, so don't let stale
+  // metadata updates come in for the newly selected (or no selected) track.
+  weak_factory_.InvalidateWeakPtrs();
+
   // TODO(crbug.com/1073995): We eventually need a formal track selection
   // mechanism. For now we can only select between the still and animated images
   // and must destruct the decoder for changes.
@@ -436,9 +440,7 @@ void ImageDecoderExternal::OnDecodeReady(
   --num_submitted_decodes_;
 
   if (result->status == ImageDecoderCore::Status::kDecodeError || failed_) {
-    failed_ = true;
-    decode_weak_factory_.InvalidateWeakPtrs();
-    MaybeSatisfyPendingDecodes();
+    SetFailed();
     return;
   }
 
@@ -500,8 +502,7 @@ void ImageDecoderExternal::OnMetadata(
 
   data_complete_ = metadata.data_complete;
   if (metadata.failed || failed_) {
-    failed_ = true;
-    MaybeSatisfyPendingMetadataDecodes();
+    SetFailed();
     return;
   }
 
@@ -538,6 +539,14 @@ void ImageDecoderExternal::OnMetadata(
   }
 
   MaybeSatisfyPendingMetadataDecodes();
+}
+
+void ImageDecoderExternal::SetFailed() {
+  DVLOG(1) << __func__;
+  failed_ = true;
+  decode_weak_factory_.InvalidateWeakPtrs();
+  MaybeSatisfyPendingMetadataDecodes();
+  MaybeSatisfyPendingDecodes();
 }
 
 }  // namespace blink

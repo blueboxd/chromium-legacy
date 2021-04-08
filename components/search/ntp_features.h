@@ -28,6 +28,7 @@ extern const base::Feature kNtpLogo;
 extern const base::Feature kNtpShortcuts;
 extern const base::Feature kNtpMiddleSlotPromo;
 extern const base::Feature kModules;
+extern const base::Feature kNtpModulesLoad;
 extern const base::Feature kNtpRecipeTasksModule;
 extern const base::Feature kNtpShoppingTasksModule;
 extern const base::Feature kNtpChromeCartModule;
@@ -65,6 +66,8 @@ extern const char kNtpModulesLoadTimeoutMillisecondsParam[];
 extern const char kNtpStatefulTasksModuleDataParam[];
 // Parameter determining the type of cart data used to render module.
 extern const char kNtpChromeCartModuleDataParam[];
+// Parameter for enabling the abandoned cart discount.
+extern const char kNtpChromeCartModuleAbandonedCartDiscountParam[];
 
 // Returns the age threshold for local history repeatable queries.
 base::Time GetLocalHistoryRepeatableQueriesAgeThreshold();

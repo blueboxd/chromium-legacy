@@ -340,7 +340,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   // Accessors for information about available screens and the current screen.
   void set_screen_infos(const ScreenInfos& s) { screen_infos_ = s; }
-  const ScreenInfos& screen_infos() { return screen_infos_; }
+  const ScreenInfos& screen_infos() const { return screen_infos_; }
 
   const viz::LocalSurfaceId& local_surface_id_from_parent() const {
     return local_surface_id_from_parent_;
@@ -423,7 +423,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Stores the current control and selection bounds of |webwidget_|
   // that are used to position the candidate window during IME composition.
   // These are stored in DIPs if use-zoom-for-dsf is disabled and are relative
-  // to the widget
+  // to the root frame.
   gfx::Rect frame_control_bounds_;
   gfx::Rect frame_selection_bounds_;
 

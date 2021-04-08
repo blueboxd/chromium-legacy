@@ -24,6 +24,8 @@ import org.chromium.components.media_router.BrowserMediaRouter;
 import org.chromium.components.media_router.MockMediaRouteProvider;
 import org.chromium.components.media_router.RouterTestUtils;
 import org.chromium.components.permissions.PermissionDialogController;
+import org.chromium.components.webauthn.Fido2ApiHandler;
+import org.chromium.components.webauthn.MockFido2ApiHandler;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.device.geolocation.LocationProviderOverrider;
@@ -31,6 +33,7 @@ import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.weblayer_private.BrowserImpl;
+import org.chromium.weblayer_private.DownloadImpl;
 import org.chromium.weblayer_private.InfoBarContainer;
 import org.chromium.weblayer_private.ProfileImpl;
 import org.chromium.weblayer_private.TabImpl;
@@ -171,13 +174,6 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
                 () -> { NetworkChangeNotifier.forceConnectivityState(true); });
     }
 
-    @NativeMethods
-    interface Natives {
-        void waitForBrowserControlsMetadataState(
-                long tabImpl, int top, int bottom, Runnable runnable);
-        void setIgnoreMissingKeyForTranslateManager(boolean ignore);
-    }
-
     @Override
     public boolean canInfoBarContainerScroll(ITab tab) {
         return ((TabImpl) tab).canInfoBarContainerScrollForTesting();
@@ -305,5 +301,33 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
                     new TestAutofillManagerWrapper(browserImpl.getContext(), unwrappedOnNewEvents,
                             unwrappedEventsObserved));
         });
+    }
+
+    @Override
+    public void activateBackgroundFetchNotification(int id) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> DownloadImpl.activateNotificationForTesting(id));
+    }
+
+    @Override
+    public void expediteDownloadService() {
+        TestWebLayerImplJni.get().expediteDownloadService();
+    }
+
+    @Override
+    public void setMockWebAuthnEnabled(boolean enabled) {
+        if (enabled) {
+            Fido2ApiHandler.overrideInstanceForTesting(new MockFido2ApiHandler());
+        } else {
+            Fido2ApiHandler.overrideInstanceForTesting(null);
+        }
+    }
+
+    @NativeMethods
+    interface Natives {
+        void waitForBrowserControlsMetadataState(
+                long tabImpl, int top, int bottom, Runnable runnable);
+        void setIgnoreMissingKeyForTranslateManager(boolean ignore);
+        void expediteDownloadService();
     }
 }

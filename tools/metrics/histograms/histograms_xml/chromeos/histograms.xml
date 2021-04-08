@@ -27,6 +27,11 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   ChromeOS.FeatureUsage.* histograms to record different events related to the
   feature -->
 
+  <variant name="ESim" summary="esim">
+    <owner>azeemarshad@chromium.org</owner>
+    <owner>cros-connectivity@google.com</owner>
+    <owner>hsuregan@chromium.org</owner>
+  </variant>
   <variant name="Fingerprint" summary="fingerprint">
     <owner>rsorokin@chromium.org</owner>
     <owner>tomhughes@chromium.org</owner>
@@ -81,7 +86,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Apps.IntentPickerDestinationPlatform"
-    enum="ArcIntentHandlerDestinationPlatform" expires_after="2021-07-27">
+    enum="ArcIntentHandlerDestinationPlatform" expires_after="2021-10-04">
   <owner>elijahtaylor@google.com</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>shihuis@google.com</owner>
@@ -420,12 +425,22 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="RoutineType">
     <variant name="BatteryCharge"/>
     <variant name="BatteryDischarge"/>
+    <variant name="CaptivePortal"/>
     <variant name="CpuCache"/>
     <variant name="CpuFloatingPoint"/>
     <variant name="CpuPrime"/>
     <variant name="CpuStress"/>
+    <variant name="DnsLatency"/>
+    <variant name="DnsResolution"/>
+    <variant name="DnsResolverPresent"/>
+    <variant name="GatewayCanBePinged"/>
+    <variant name="HasSecureWiFiConnection"/>
+    <variant name="HttpFirewall"/>
+    <variant name="HttpsFirewall"/>
+    <variant name="HttpsLatency"/>
     <variant name="LanConnectivity"/>
     <variant name="Memory"/>
+    <variant name="SignalStrength"/>
   </token>
 </histogram>
 
@@ -600,7 +615,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.ArcUsageUpdate"
-    enum="KeyPermissionsManagerArcUsageUpdateStatus" expires_after="2021-08-01">
+    enum="KeyPermissionsManagerArcUsageUpdateStatus" expires_after="2021-10-04">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@google.com</owner>
   <summary>
@@ -610,7 +625,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.ArcUsageUpdateTime" units="ms"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -630,7 +645,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.MigrationTime" units="ms"
-    expires_after="2021-08-01">
+    expires_after="2021-10-04">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -1007,7 +1022,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Languages.Interaction"
-    enum="SettingsLanguagesPageInteraction" expires_after="2021-08-01">
+    enum="SettingsLanguagesPageInteraction" expires_after="2021-10-04">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -1017,7 +1032,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Languages.OfferToTranslateCheckbox"
-    enum="BooleanChecked" expires_after="2021-08-01">
+    enum="BooleanChecked" expires_after="2021-10-04">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -1027,7 +1042,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Languages.SupportPageVisits"
-    enum="SettingsLanguagesSupportPage" expires_after="2021-08-01">
+    enum="SettingsLanguagesSupportPage" expires_after="2021-10-04">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -1036,7 +1051,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Settings.Languages.Toggle"
-    enum="BooleanToggled" expires_after="2021-08-01">
+    enum="BooleanToggled" expires_after="2021-10-04">
 <!-- Name completed by histogram_suffixes name="SettingsLanguagesPageToggle" -->
 
   <owner>myy@chromium.org</owner>
@@ -1460,7 +1475,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.ShelfPodCount" units="count"
-    expires_after="2021-08-05">
+    expires_after="2021-10-04">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1484,7 +1499,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.Tablet.ShelfPodCount" units="count"
-    expires_after="2021-08-05">
+    expires_after="2021-10-04">
   <owner>tengs@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1522,6 +1537,17 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     An enum value how system tray bubble is expanded or collapsed. It can be
     toggled by the button and touch gesture.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.TypeC.PartnerType" enum="PartnerTypeMetric"
+    expires_after="2021-10-31">
+  <owner>pmalani@chromium.org</owner>
+  <owner>chromeos-power@google.com</owner>
+  <summary>
+    This value represents the type of a USB Type-C peripheral (the Partner)
+    which is connected to a device. It is recorded every time a new peripheral
+    is connected.
   </summary>
 </histogram>
 

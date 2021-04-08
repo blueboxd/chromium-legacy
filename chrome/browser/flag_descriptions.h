@@ -20,6 +20,7 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/buildflags.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/allocator/buildflags.h"
@@ -610,6 +611,9 @@ extern const char kEnablePortalsCrossOriginDescription[];
 extern const char kEnablePixelCanvasRecordingName[];
 extern const char kEnablePixelCanvasRecordingDescription[];
 
+extern const char kEnableShortcutCustomizationAppName[];
+extern const char kEnableShortcutCustomizationAppDescription[];
+
 extern const char kEnableSRPIsolatedPrerendersName[];
 extern const char kEnableSRPIsolatedPrerendersDescription[];
 
@@ -808,11 +812,11 @@ extern const char kImpulseScrollAnimationsDescription[];
 extern const char kIncognitoBrandConsistencyForDesktopName[];
 extern const char kIncognitoBrandConsistencyForDesktopDescription[];
 
-extern const char kIncognitoDarkModeEnforcedForDesktopName[];
-extern const char kIncognitoDarkModeEnforcedForDesktopDescription[];
-
 extern const char kIncognitoScreenshotName[];
 extern const char kIncognitoScreenshotDescription[];
+
+extern const char kInheritNativeThemeFromParentWidgetName[];
+extern const char kInheritNativeThemeFromParentWidgetDescription[];
 
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
@@ -1095,6 +1099,9 @@ extern const char kUpdateHoverAtBeginFrameDescription[];
 
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
+
+extern const char kPageInfoV2DesktopName[];
+extern const char kPageInfoV2DesktopDescription[];
 
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
@@ -2186,6 +2193,9 @@ extern const char kMacSyscallSandboxDescription[];
 extern const char kMetalName[];
 extern const char kMetalDescription[];
 
+extern const char kScreenTimeName[];
+extern const char kScreenTimeDescription[];
+
 #endif  // defined(OS_MAC)
 
 // Chrome OS ------------------------------------------------------------------
@@ -2953,6 +2963,11 @@ extern const char kUseOzonePlatformDescription[];
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+#if BUILDFLAG(ENABLE_JXL_DECODER)
+extern const char kEnableJXLName[];
+extern const char kEnableJXLDescription[];
+#endif  // BUILDFLAG(ENABLE_JXL_DECODER)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 extern const char kDiceWebSigninInterceptionName[];

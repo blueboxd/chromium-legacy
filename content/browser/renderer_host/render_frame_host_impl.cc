@@ -81,6 +81,7 @@
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/prerender/prerender_metrics.h"
 #include "content/browser/prerender/prerender_processor.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
@@ -1138,8 +1139,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       // same-origin to the prerender trigger page.
       broker_.ApplyMojoBinderPolicies(
           MojoBinderPolicyApplier::CreateForSameOriginPrerendering(
-              base::BindOnce(&RenderFrameHostImpl::CancelPrerendering,
-                             base::Unretained(this))));
+              base::BindOnce(
+                  &RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy,
+                  base::Unretained(this))));
     }
   }
 
@@ -4669,7 +4671,9 @@ bool RenderFrameHostImpl::IsInactiveAndDisallowActivation() {
           BackForwardCacheMetrics::NotRestoredReason::kIgnoreEventAndEvict);
       return true;
     case LifecycleStateImpl::kPrerendering:
-      CancelPrerendering();
+      // TODO(https://crbug.com/1126305): Explain why we cancel prerendering
+      // here, then pass a dedicated FinalStatus.
+      CancelPrerendering(PrerenderHost::FinalStatus::kDestroyed);
       return true;
     case LifecycleStateImpl::kSpeculative:
     case LifecycleStateImpl::kPendingCommit:
@@ -7155,6 +7159,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   associated_registry_->AddInterface(base::BindRepeating(
       [](RenderFrameHostImpl* impl,
          mojo::PendingAssociatedReceiver<mojom::PepperHost> receiver) {
+        if (impl->frame_tree()->is_prerendering()) {
+          impl->CancelPrerendering(PrerenderHost::FinalStatus::kPlugin);
+          return;
+        }
         impl->pepper_host_receiver_.Bind(std::move(receiver));
         impl->pepper_host_receiver_.SetFilter(
             impl->CreateMessageFilterForAssociatedReceiver(
@@ -7379,6 +7387,20 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
   }
 
   render_accessibility_->SetMode(ax_mode.mode());
+}
+
+void RenderFrameHostImpl::RequestAXTreeSnapshot(
+    AXTreeSnapshotCallback callback,
+    const ui::AXMode& ax_mode,
+    bool exclude_offscreen,
+    size_t max_nodes,
+    const base::TimeDelta& timeout) {
+  auto params = mojom::SnapshotAccessibilityTreeParams::New();
+  params->ax_mode = ax_mode.mode();
+  params->exclude_offscreen = exclude_offscreen;
+  params->max_nodes = max_nodes;
+  params->timeout = timeout;
+  RequestAXTreeSnapshot(std::move(callback), std::move(params));
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
@@ -8035,7 +8057,8 @@ void RenderFrameHostImpl::BindPrerenderProcessor(
       std::make_unique<PrerenderProcessor>(*this), std::move(pending_receiver));
 }
 
-void RenderFrameHostImpl::CancelPrerendering() {
+void RenderFrameHostImpl::CancelPrerendering(
+    PrerenderHost::FinalStatus status) {
   DCHECK(blink::features::IsPrerender2Enabled());
   // This function is called from MojoBinderPolicyApplier, which should only be
   // active during prerendering. It would be an error to call this while not
@@ -8051,8 +8074,13 @@ void RenderFrameHostImpl::CancelPrerendering() {
   // TODO(https://crbug.com/1126305): Pass a FinalStatus to CancelPrerendering()
   // method when MojoInterface control, or IsInactiveAndDisallowActivation are
   // called.
-  prerender_host_registry->AbandonHostAsync(
-      frame_tree_node_id, PrerenderHost::FinalStatus::kDestroyed);
+  prerender_host_registry->AbandonHostAsync(frame_tree_node_id, status);
+}
+
+void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
+    const std::string& interface_name) {
+  RecordPrerenderCancelledInterface(interface_name);
+  CancelPrerendering(PrerenderHost::FinalStatus::kDisallowedMojoInterface);
 }
 
 void RenderFrameHostImpl::ActivateForPrerendering() {

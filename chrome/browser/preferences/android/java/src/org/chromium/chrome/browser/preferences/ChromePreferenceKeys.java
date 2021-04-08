@@ -98,11 +98,12 @@ public final class ChromePreferenceKeys {
      */
     public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
-    /**
-     * The URI of Chrome shared to Android system clibpoard, we only need this preference for the
-     * Android O and O_MR1 version.
-     */
+    /** The URI of Chrome shared URI to Android system clibpoard. */
     public static final String CLIPBOARD_SHARED_URI = "Chrome.Clipboard.SharedUri";
+
+    /** The timestamp of Chrome shared URI to Android system clibpoard. */
+    public static final String CLIPBOARD_SHARED_URI_TIMESTAMP =
+            "Chrome.Clipboard.SharedUriTimestamp";
 
     /**
      * Save the timestamp of the last time that chrome-managed commerce subscriptions are
@@ -237,6 +238,14 @@ public final class ChromePreferenceKeys {
             "Chrome.Contextmenu.OpenImageInEphemeralTabClicked";
     public static final String CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED =
             "Chrome.Contextmenu.OpenInEphemeralTabClicked";
+
+    /**
+     * Key used to save the context menu item order for the "Open in new tab" item and
+     * the "Open in new tab in group" item.
+     */
+    public static final String CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST =
+            "Chrome.ContextMenu.OpenNewTabInGroupFirst";
+
     public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED =
             "Chrome.ContextMenu.SearchWithGoogleLensClicked";
 
@@ -945,6 +954,7 @@ public final class ChromePreferenceKeys {
                 AUTOFILL_ASSISTANT_PROACTIVE_HELP,
                 APPLICATION_OVERRIDE_LANGUAGE,
                 CLIPBOARD_SHARED_URI,
+                CLIPBOARD_SHARED_URI_TIMESTAMP,
                 COMMERCE_SUBSCRIPTIONS_CHROME_MANAGED_TIMESTAMP,
                 CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER,
                 CONDITIONAL_TAB_STRIP_FEATURE_STATUS,
@@ -952,6 +962,7 @@ public final class ChromePreferenceKeys {
                 CONDITIONAL_TAB_STRIP_OPT_OUT,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
+                CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
                 CONTEXT_MENU_SHOP_IMAGE_WITH_GOOGLE_LENS_CLICKED,
                 CONTEXT_MENU_SHOP_SIMILAR_PRODUCTS_CLICKED,

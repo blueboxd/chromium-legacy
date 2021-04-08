@@ -53,9 +53,6 @@ namespace {
 // the UI.
 const char* const kCancelActionName = "cancel";
 
-// Intent not set constant.
-const char* const kIntentNotSet = "NotSet";
-
 }  // namespace
 
 static base::android::ScopedJavaLocalRef<jobject>
@@ -109,7 +106,7 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobjectArray>& jparameter_names,
                           const JavaParamRef<jobjectArray>& jparameter_values,
                           jboolean jis_cct,
-                          const JavaParamRef<jobject>& jonboarding_coordinator,
+                          const JavaParamRef<jobject>& joverlay_coordinator,
                           jboolean jonboarding_shown,
                           jlong jservice) {
   // When Start() is called, AA_START should have been measured. From now on,
@@ -124,8 +121,8 @@ bool ClientAndroid::Start(JNIEnv* env,
   CreateController(std::move(service));
 
   // If an overlay is already shown, then show the rest of the UI.
-  if (jonboarding_coordinator) {
-    AttachUI(jonboarding_coordinator);
+  if (joverlay_coordinator) {
+    AttachUI(joverlay_coordinator);
   }
 
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
@@ -134,8 +131,7 @@ bool ClientAndroid::Start(JNIEnv* env,
       jonboarding_shown, /* is_direct_action = */ false, jinitial_url);
 
   intent_ = trigger_context->GetScriptParameters().GetIntent().value_or(
-      kIntentNotSet);
-
+      std::string());
   if (VLOG_IS_ON(2)) {
     std::string experiment_ids =
         base::android::ConvertJavaStringToUTF8(env, jexperiment_ids);
@@ -352,7 +348,7 @@ bool ClientAndroid::PerformDirectAction(
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
     const base::android::JavaParamRef<jobjectArray>& jparameter_names,
     const base::android::JavaParamRef<jobjectArray>& jparameter_values,
-    const base::android::JavaParamRef<jobject>& jonboarding_coordinator) {
+    const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
   std::string action_name =
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
@@ -376,8 +372,8 @@ bool ClientAndroid::PerformDirectAction(
     return false;
 
   // If an overlay is already shown, then show the rest of the UI immediately.
-  if (jonboarding_coordinator) {
-    AttachUI(jonboarding_coordinator);
+  if (joverlay_coordinator) {
+    AttachUI(joverlay_coordinator);
   }
 
   return controller_->PerformUserActionWithContext(action_index,
@@ -411,10 +407,10 @@ void ClientAndroid::AttachUI() {
 }
 
 void ClientAndroid::AttachUI(
-    const JavaParamRef<jobject>& jonboarding_coordinator) {
+    const JavaParamRef<jobject>& joverlay_coordinator) {
   if (!ui_controller_android_) {
     ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
-        web_contents_, jonboarding_coordinator);
+        web_contents_, joverlay_coordinator);
     if (!ui_controller_android_) {
       // The activity is not or not yet in a mode where attaching the UI is
       // possible.

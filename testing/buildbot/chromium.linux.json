@@ -3006,6 +3006,9 @@
         "test_id_prefix": "ninja://fuchsia/engine:web_engine_browsertests/"
       },
       {
+        "args": [
+          "--child-arg=--vmodule=test_navigation_listener=1"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4198,6 +4201,9 @@
         "test_id_prefix": "ninja://fuchsia/engine:web_engine_browsertests/"
       },
       {
+        "args": [
+          "--child-arg=--vmodule=test_navigation_listener=1"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -13574,7 +13580,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 20
+          "shards": 25
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       },

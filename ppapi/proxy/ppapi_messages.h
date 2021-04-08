@@ -632,9 +632,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
                             std::string /* interface_name */,
                             bool /* result */)
 
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_LogInterfaceUsage,
-                     int /* interface_hash */)
-
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // Network state notification from the browser for implementing
 // PPP_NetworkState_Dev.
@@ -1279,12 +1276,6 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_NotifyError,
                     ppapi::HostResource /* video_decoder */,
                     PP_VideoDecodeError_Dev /* error */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
-
-// PPB_X509Certificate_Private
-IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
-                            std::vector<char> /* der */,
-                            bool /* succeeded */,
-                            ppapi::PPB_X509Certificate_Fields /* result */)
 
 //-----------------------------------------------------------------------------
 // Resource call/reply messages.

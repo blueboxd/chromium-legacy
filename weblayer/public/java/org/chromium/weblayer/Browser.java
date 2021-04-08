@@ -512,7 +512,7 @@ public class Browser {
      * visibility is hidden video may stop, or other side effects may result. At certain times,
      * such as fullscreen or rotation, it may be necessary to transiently detach the Browser.
      * Calling this method with a value of false results in WebLayer not hiding the page on the next
-     * detach. Once the Browser is attached, the value is implicitly set to true. Calling this
+     * detach. Once the Browser is reattached, the value is implicitly reset to true. Calling this
      * method when the Browser is already detached does nothing.
      *
      * @param changeVisibility Whether WebLayer should change visibility as the result of a detach.

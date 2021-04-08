@@ -31,8 +31,6 @@ namespace ash {
 
 namespace {
 
-// TODO(jschettler): Replace with webui::SetUpWebUIDataSource() once it no
-// longer requires a dependency on //chrome/browser.
 void SetUpWebUIDataSource(content::WebUIDataSource* source,
                           base::span<const webui::ResourcePath> resources,
                           int default_resource) {
@@ -85,10 +83,20 @@ void AddScanningAppStrings(content::WebUIDataSource* html_source) {
       {"retryButtonLabel", IDS_SCANNING_APP_RETRY_BUTTON_LABEL},
       {"scanButtonText", IDS_SCANNING_APP_SCAN_BUTTON_TEXT},
       {"scanCanceledToastText", IDS_SCANNING_APP_SCAN_CANCELED_TOAST_TEXT},
-      {"scanFailedDialogBodyText",
-       IDS_SCANNING_APP_SCAN_FAILED_DIALOG_BODY_TEXT},
+      {"scanFailedDialogAdfEmptyText",
+       IDS_SCANNING_APP_SCAN_FAILED_DIALOG_ADF_EMPTY_TEXT},
+      {"scanFailedDialogAdfJammedText",
+       IDS_SCANNING_APP_SCAN_FAILED_DIALOG_ADF_JAMMED_TEXT},
+      {"scanFailedDialogDeviceBusyText",
+       IDS_SCANNING_APP_SCAN_FAILED_DIALOG_DEVICE_BUSY_TEXT},
+      {"scanFailedDialogFlatbedOpenText",
+       IDS_SCANNING_APP_SCAN_FAILED_DIALOG_FLATBED_OPEN_TEXT},
+      {"scanFailedDialogIoErrorText",
+       IDS_SCANNING_APP_SCAN_FAILED_DIALOG_IO_ERROR_TEXT},
       {"scanFailedDialogTitleText",
        IDS_SCANNING_APP_SCAN_FAILED_DIALOG_TITLE_TEXT},
+      {"scanFailedDialogUnknownErrorText",
+       IDS_SCANNING_APP_SCAN_FAILED_DIALOG_UNKNOWN_ERROR_TEXT},
       {"scanPreviewHelperText", IDS_SCANNING_APP_SCAN_PREVIEW_HELPER_TEXT},
       {"scanPreviewProgressText", IDS_SCANNING_APP_SCAN_PREVIEW_PROGRESS_TEXT},
       {"scanToDropdownLabel", IDS_SCANNING_APP_SCAN_TO_DROPDOWN_LABEL},

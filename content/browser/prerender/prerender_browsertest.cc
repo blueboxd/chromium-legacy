@@ -22,6 +22,7 @@
 #include "content/browser/file_system_access/file_system_chooser_test_helpers.h"
 #include "content/browser/prerender/prerender_host.h"
 #include "content/browser/prerender/prerender_host_registry.h"
+#include "content/browser/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -571,6 +572,28 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, LinkRelPrerender_Duplicate) {
   // Activating the prerendered page should not issue a request.
   EXPECT_EQ(GetRequestCount(kPrerenderingUrl1), 1);
   EXPECT_EQ(GetRequestCount(kPrerenderingUrl2), 1);
+}
+
+// Regression test for https://crbug.com/1194865.
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, CloseOnPrerendering) {
+  const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  ASSERT_EQ(shell()->web_contents()->GetURL(), kInitialUrl);
+
+  // Add <link rel=prerender> that will prerender `kPrerenderingUrl`.
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 0);
+  AddPrerender(kPrerenderingUrl);
+  EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+
+  // A prerender host for the URL should be registered.
+  PrerenderHostRegistry& registry = GetPrerenderHostRegistry();
+  EXPECT_NE(registry.FindHostByUrlForTesting(kPrerenderingUrl), nullptr);
+
+  // Should not crash.
+  shell()->Close();
 }
 
 // Tests that non-http(s) schemes are disallowed for prerendering.
@@ -1155,6 +1178,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
                        MojoCapabilityControl_CancelMainFrame) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
   auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
+  base::HistogramTester histogram_tester;
 
   const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
@@ -1181,7 +1205,15 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
   mojo::Remote<mojom::TestInterfaceForCancel> remote;
   prerender_broker->GetInterface(remote.BindNewPipeAndPassReceiver());
   EXPECT_EQ(registry.FindHostByUrlForTesting(kPrerenderingUrl), nullptr);
-
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kDisallowedMojoInterface, 1);
+  // `TestInterfaceForCancel` doesn't have a enum value because it is not used
+  // in production, so histogram_tester should log
+  // PrerenderCancelledInterface::kUnkown here.
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledInterface",
+      PrerenderCancelledInterface::kUnknown, 1);
   SetBrowserClientForTesting(old_browser_client);
 }
 
@@ -1191,6 +1223,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
                        MojoCapabilityControl_CancelIframe) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
   auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
+  base::HistogramTester histogram_tester;
 
   const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
@@ -1223,6 +1256,15 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
   EXPECT_EQ(registry.FindHostByUrlForTesting(kPrerenderingUrl), nullptr);
 
   SetBrowserClientForTesting(old_browser_client);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kDisallowedMojoInterface, 1);
+  // `TestInterfaceForCancel` doesn't have a enum value because it is not used
+  // in production, so histogram_tester should log
+  // PrerenderCancelledInterface::kUnkown here.
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledInterface",
+      PrerenderCancelledInterface::kUnknown, 1);
 }
 
 // Tests that mojo capability control will crash the prerender if the browser
@@ -1612,6 +1654,44 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, ClipboardByExecCommandFail) {
                           "document.execCommand('paste');",
                           EvalJsOptions::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void TestPlugin(WebContents* const web_contents,
+                PrerenderHostRegistry& registry,
+                const GURL prerendering_url) {
+  PrerenderHostRegistryObserver registry_observer(registry);
+  EXPECT_TRUE(
+      ExecJs(web_contents, JsReplace("add_prerender($1)", prerendering_url)));
+  registry_observer.WaitForTrigger(prerendering_url);
+  PrerenderHost* prerender_host =
+      registry.FindHostByUrlForTesting(prerendering_url);
+  PrerenderHostObserver host_observer(*prerender_host);
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(registry.FindHostByUrlForTesting(prerendering_url), nullptr);
+}
+
+// Tests that we will cancel the prerendering if the prerendering page attempts
+// to use plugins.
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, PluginsCancelPrerendering) {
+  base::HistogramTester histogram_tester;
+  const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  PrerenderHostRegistry& registry = GetPrerenderHostRegistry();
+  TestPlugin(shell()->web_contents(), registry,
+             GetUrl("/prerender/page-with-embedded-plugin.html"));
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kPlugin, 1);
+  TestPlugin(shell()->web_contents(), registry,
+             GetUrl("/prerender/page-with-object-plugin.html"));
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kPlugin, 2);
+}
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // End: Tests for feature restrictions in prerendered pages ====================
 

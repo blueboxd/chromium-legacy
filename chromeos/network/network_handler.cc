@@ -76,7 +76,8 @@ void NetworkHandler::Init() {
   if (features::IsCellularActivationUiEnabled()) {
     cellular_inhibitor_->Init(network_state_handler_.get(),
                               network_device_handler_.get());
-    cellular_esim_profile_handler_->Init(cellular_inhibitor_.get());
+    cellular_esim_profile_handler_->Init(network_state_handler_.get(),
+                                         cellular_inhibitor_.get());
     cellular_esim_connection_handler_->Init(
         network_state_handler_.get(), cellular_inhibitor_.get(),
         cellular_esim_profile_handler_.get());
@@ -151,8 +152,10 @@ bool NetworkHandler::IsInitialized() {
 void NetworkHandler::InitializePrefServices(
     PrefService* logged_in_profile_prefs,
     PrefService* device_prefs) {
-  if (features::IsCellularActivationUiEnabled())
+  if (features::IsCellularActivationUiEnabled()) {
     cellular_esim_profile_handler_->SetDevicePrefs(device_prefs);
+    cellular_metrics_logger_->SetDevicePrefs(device_prefs);
+  }
   ui_proxy_config_service_.reset(new UIProxyConfigService(
       logged_in_profile_prefs, device_prefs, network_state_handler_.get(),
       network_profile_handler_.get()));
@@ -165,8 +168,10 @@ void NetworkHandler::InitializePrefServices(
 }
 
 void NetworkHandler::ShutdownPrefServices() {
-  if (features::IsCellularActivationUiEnabled())
+  if (features::IsCellularActivationUiEnabled()) {
     cellular_esim_profile_handler_->SetDevicePrefs(nullptr);
+    cellular_metrics_logger_->SetDevicePrefs(nullptr);
+  }
   ui_proxy_config_service_.reset();
   network_metadata_store_.reset();
 }

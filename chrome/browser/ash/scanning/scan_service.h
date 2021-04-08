@@ -94,8 +94,7 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
                       uint32_t page_number);
 
   // Processes the final result of calling LorgnetteScannerManager::Scan().
-  void OnScanCompleted(bool success,
-                       lorgnette::ScanFailureMode /*failure_mode*/);
+  void OnScanCompleted(bool success, lorgnette::ScanFailureMode failure_mode);
 
   // Processes the final result of calling
   // LorgnetteScannerManager::CancelScan().
@@ -108,13 +107,11 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   void OnPageSaved(const base::FilePath& saved_file_path);
 
   // Called once the task runner finishes saving the last page of a scan.
-  void OnAllPagesSaved(bool success);
+  void OnAllPagesSaved(bool success, lorgnette::ScanFailureMode failure_mode);
 
   // Sets the local member variables back to their initial empty state.
   void ClearScanState();
 
-  // TODO(jschettler): Replace this with a generic helper function when one is
-  // available.
   // Determines whether the service supports saving scanned images to
   // |file_path|.
   bool FilePathSupported(const base::FilePath& file_path);

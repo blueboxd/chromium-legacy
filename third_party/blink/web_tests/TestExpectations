@@ -2728,8 +2728,6 @@ crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collap
 crbug.com/626703 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-safe-001.html [ Failure ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-non-collapsed-selection.tentative.html?target=ContentEditable [ Failure Timeout ]
 crbug.com/626703 external/wpt/editing/other/typing-around-link-element-at-collapsed-selection.tentative.html?target=ContentEditable&parent=b&child=i [ Failure Timeout ]
-crbug.com/626703 external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-initial-layout-000.html [ Failure ]
-crbug.com/626703 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-initial-layout/scroll-snap-initial-layout-000.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/FileAPI/idlharness.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/html/interaction/focus/document-level-focus-apis/document-has-system-focus.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-set-keyframes.https.html [ Failure ]
@@ -5929,7 +5927,6 @@ crbug.com/1050039 [ Mac ] fast/events/onbeforeunload-focused-iframe.html [ Pass 
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/elements/styles-1/edit-value-url-with-color.js [ Skip ]
 crbug.com/1006759 http/tests/devtools/sources/css-outline-dialog.js [ Skip ]
-crbug.com/1197010 http/tests/devtools/elements/styles-2/inherited-mixed-case-properties.js [ Pass Failure ]
 
 #Mixed content autoupgrades make these tests not applicable, since they check for mixed content audio/video
 crbug.com/1025274 external/wpt/mixed-content/gen/top.meta/unset/audio-tag.https.html [ Failure ]
@@ -6756,3 +6753,6 @@ crbug.com/1032451 [ Linux ] virtual/threaded/animations/stability/animation-iter
 
 # Sheriff 2021-04-07
 crbug.com/1196620 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-video-sibling.html [ Pass Failure ]
+
+# QuicTransport tests should be eventually deleted.
+crbug.com/1196989 external/wpt/webtransport/quic/* [ Skip ]

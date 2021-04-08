@@ -32105,6 +32105,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3873" label="AuthorizationCoveredByWildcard"/>
   <int value="3874" label="ElementGetInnerHTML"/>
   <int value="3875" label="FileHandlingLaunch"/>
+  <int value="3876" label="SameOriginDocumentsWithDifferentCOOPStatus"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -82653,6 +82654,14 @@ Called by update_scheduler_enums.py.-->
 <enum name="WebViewClientTypeEnum">
   <int value="0" label="Regular WebViewClient"/>
   <int value="1" label="WebViewClientCompat (via AndroidX)"/>
+</enum>
+
+<enum name="WebViewComponentUpdaterGetFilesResult">
+  <int value="0" label="Sucess"/>
+  <int value="1" label="Failed (component not installed)"/>
+  <int value="2" label="Failed (no versions)"/>
+  <int value="3" label="Failed (no file descriptors)"/>
+  <int value="4" label="Failed (error opening file descriptors)"/>
 </enum>
 
 <enum name="WebViewDrawAndSubmissionType">

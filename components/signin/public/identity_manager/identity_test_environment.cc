@@ -241,7 +241,7 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
   auto token_service = std::make_unique<FakeProfileOAuth2TokenService>(
       pref_service,
       std::make_unique<TestProfileOAuth2TokenServiceDelegateChromeOS>(
-          account_tracker_service.get(), account_manager,
+          account_tracker_service.get(),
           account_manager_factory->GetAccountManagerAsh(user_data_dir.value()),
           /*is_regular_profile=*/true));
 
@@ -345,6 +345,9 @@ IdentityTestEnvironment::FinishBuildIdentityManagerForTests(
       std::move(gaia_cookie_manager_service);
   init_params.primary_account_manager = std::move(primary_account_manager);
   init_params.token_service = std::move(token_service);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  init_params.signin_client = signin_client;
+#endif
 
   return std::make_unique<IdentityManager>(std::move(init_params));
 }
@@ -365,6 +368,10 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
 TestIdentityManagerObserver*
 IdentityTestEnvironment::identity_manager_observer() {
   return test_identity_manager_observer_.get();
+}
+
+void IdentityTestEnvironment::WaitForRefreshTokensLoaded() {
+  signin::WaitForRefreshTokensLoaded(identity_manager());
 }
 
 CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(

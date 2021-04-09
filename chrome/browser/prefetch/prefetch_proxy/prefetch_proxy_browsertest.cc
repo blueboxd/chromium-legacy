@@ -4283,8 +4283,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
       "PrefetchProxy.Prefetch.Mainframe.CookiesToCopy", 1, 1);
 
   // Check that the JavaScript ran.
-  EXPECT_EQ(base::ASCIIToUTF16("JavaScript Executed"),
-            GetWebContents()->GetTitle());
+  EXPECT_EQ(u"JavaScript Executed", GetWebContents()->GetTitle());
 
   // Navigate one more time to destroy the SubresourceManager so that its UMA is
   // recorded and to trigger UKM recording.
@@ -4336,8 +4335,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
   size_t starting_origin_request_count = OriginServerRequestCount();
 
   ui_test_utils::NavigateToURL(browser(), prefetch_url);
-  EXPECT_EQ(base::UTF8ToUTF16("Title Of Awesomeness"),
-            GetWebContents()->GetTitle());
+  EXPECT_EQ(u"Title Of Awesomeness", GetWebContents()->GetTitle());
 
   VerifyOriginRequestsAreIsolated({prefetch_url.path()});
 

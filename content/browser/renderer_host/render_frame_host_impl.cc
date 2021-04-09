@@ -277,6 +277,7 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #endif
 
 namespace content {
@@ -290,27 +291,59 @@ int RenderFrameHostImpl::max_accessibility_resets_ = 0;
 int RenderFrameHostImpl::max_accessibility_resets_ = 4;
 #endif  // AX_FAIL_FAST_BUILD
 
-// TODO(crbug.com/1181748): This should use absl::variant
-struct RenderFrameHostOrProxy {
-  RenderFrameHostImpl* const frame;
-  RenderFrameProxyHost* const proxy;
-
+class RenderFrameHostOrProxy {
+ public:
   RenderFrameHostOrProxy(RenderFrameHostImpl* frame,
-                         RenderFrameProxyHost* proxy)
-      : frame(frame), proxy(proxy) {
+                         RenderFrameProxyHost* proxy) {
     DCHECK(!frame || !proxy)
         << "Both frame and proxy can't be non-null at the same time";
+    if (proxy) {
+      frame_or_proxy_ = proxy;
+      return;
+    }
+    if (frame) {
+      frame_or_proxy_ = frame;
+      return;
+    }
   }
 
-  explicit operator bool() { return frame || proxy; }
+  explicit operator bool() { return frame_or_proxy_.index() > 0; }
 
   FrameTreeNode* GetFrameTreeNode() {
-    if (frame)
-      return frame->frame_tree_node();
-    if (proxy)
+    if (auto* proxy = GetProxy()) {
       return proxy->frame_tree_node();
+    } else if (auto* frame = GetFrame()) {
+      return frame->frame_tree_node();
+    }
     return nullptr;
   }
+
+  RenderFrameHostImpl* GetCurrentFrameHost() {
+    if (auto* proxy = GetProxy()) {
+      return proxy->frame_tree_node()->current_frame_host();
+    } else if (auto* frame = GetFrame()) {
+      return frame;
+    }
+    return nullptr;
+  }
+
+ private:
+  RenderFrameProxyHost* GetProxy() {
+    if (auto** proxy = absl::get_if<RenderFrameProxyHost*>(&frame_or_proxy_)) {
+      return *proxy;
+    }
+    return nullptr;
+  }
+
+  RenderFrameHostImpl* GetFrame() {
+    if (auto** frame = absl::get_if<RenderFrameHostImpl*>(&frame_or_proxy_)) {
+      return *frame;
+    }
+    return nullptr;
+  }
+
+  absl::variant<absl::monostate, RenderFrameHostImpl*, RenderFrameProxyHost*>
+      frame_or_proxy_;
 };
 
 namespace {
@@ -4270,10 +4303,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChildInternal(
     bad_message::ReceivedBadMessage(GetProcess(), reason);
     return nullptr;
   }
-  return child_frame_or_proxy.proxy
-             ? child_frame_or_proxy.proxy->frame_tree_node()
-                   ->current_frame_host()
-             : child_frame_or_proxy.frame;
+  return child_frame_or_proxy.GetCurrentFrameHost();
 }
 
 void RenderFrameHostImpl::UpdateTitle(
@@ -7894,10 +7924,7 @@ void RenderFrameHostImpl::AccessibilityHitTestCallback(
 
   auto frame_or_proxy = LookupRenderFrameHostOrProxy(
       GetProcess()->GetID(), hit_test_response->hit_frame_token);
-  RenderFrameHostImpl* hit_frame =
-      frame_or_proxy.proxy
-          ? frame_or_proxy.proxy->frame_tree_node()->current_frame_host()
-          : frame_or_proxy.frame;
+  RenderFrameHostImpl* hit_frame = frame_or_proxy.GetCurrentFrameHost();
 
   if (!hit_frame || hit_frame->IsInactiveAndDisallowActivation()) {
     if (opt_callback)
@@ -10758,6 +10785,59 @@ void RenderFrameHostImpl::GetPluginInfo(const GURL& url,
       GetProcess()->GetID(), routing_id_, url, main_frame_origin, mime_type,
       allow_wildcard, nullptr, &info, &actual_mime_type);
   std::move(callback).Run(found, info, actual_mime_type);
+}
+
+void RenderFrameHostImpl::DidCreateInProcessInstance(int32_t instance,
+                                                     int32_t render_frame_id,
+                                                     const GURL& document_url,
+                                                     const GURL& plugin_url) {
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(GetProcess());
+  process->pepper_renderer_connection()->DidCreateInProcessInstance(
+      instance, render_frame_id, document_url, plugin_url);
+}
+
+void RenderFrameHostImpl::DidDeleteInProcessInstance(int32_t instance) {
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(GetProcess());
+  process->pepper_renderer_connection()->DidDeleteInProcessInstance(instance);
+}
+
+void RenderFrameHostImpl::DidCreateOutOfProcessPepperInstance(
+    int32_t plugin_child_id,
+    int32_t pp_instance,
+    bool is_external,
+    int32_t render_frame_id,
+    const GURL& document_url,
+    const GURL& plugin_url,
+    bool is_privileged_context,
+    DidCreateOutOfProcessPepperInstanceCallback callback) {
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(GetProcess());
+  process->pepper_renderer_connection()->DidCreateOutOfProcessPepperInstance(
+      plugin_child_id, pp_instance, is_external, render_frame_id, document_url,
+      plugin_url, is_privileged_context, std::move(callback));
+}
+
+void RenderFrameHostImpl::DidDeleteOutOfProcessPepperInstance(
+    int32_t plugin_child_id,
+    int32_t pp_instance,
+    bool is_external) {
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(GetProcess());
+  process->pepper_renderer_connection()->DidDeleteOutOfProcessPepperInstance(
+      plugin_child_id, pp_instance, is_external);
+}
+
+void RenderFrameHostImpl::OpenChannelToPepperPlugin(
+    const url::Origin& embedder_origin,
+    const base::FilePath& path,
+    const base::Optional<url::Origin>& origin_lock,
+    OpenChannelToPepperPluginCallback callback) {
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(GetProcess());
+  process->pepper_renderer_connection()->OpenChannelToPepperPlugin(
+      embedder_origin, path, origin_lock, std::move(callback));
 }
 
 void RenderFrameHostImpl::PluginHung(bool is_hung) {

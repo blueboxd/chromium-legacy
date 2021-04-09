@@ -18,7 +18,7 @@ TEST(MultiAnimationTest, Basic) {
   parts.push_back(MultiAnimation::Part(base::TimeDelta::FromMilliseconds(100),
                                        Tween::EASE_OUT));
 
-  MultiAnimation animation(parts, MultiAnimation::kDefaultTimerInterval);
+  MultiAnimation animation(parts);
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);
   as_element->SetStartTime(base::TimeTicks());
@@ -40,35 +40,12 @@ TEST(MultiAnimationTest, Basic) {
                    animation.GetCurrentValue());
 }
 
-TEST(MultiAnimationTest, DifferingStartAndEnd) {
-  // Create a MultiAnimation with two parts.
-  MultiAnimation::Parts parts;
-  parts.push_back(MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
-                                       base::TimeDelta::FromMilliseconds(100),
-                                       base::TimeDelta::FromMilliseconds(400),
-                                       Tween::LINEAR));
-
-  MultiAnimation animation(parts, MultiAnimation::kDefaultTimerInterval);
-  AnimationContainerElement* as_element =
-      static_cast<AnimationContainerElement*>(&animation);
-  as_element->SetStartTime(base::TimeTicks());
-
-  // Step to 0. Because the start_time is 100, this should be 100ms into the
-  // animation
-  as_element->Step(base::TimeTicks());
-  EXPECT_EQ(.25, animation.GetCurrentValue());
-
-  // Step to 100, which is effectively 200ms into the animation.
-  as_element->Step(base::TimeTicks() + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_EQ(.5, animation.GetCurrentValue());
-}
-
 // Makes sure multi-animation stops if cycles is false.
 TEST(MultiAnimationTest, DontCycle) {
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
                                        Tween::LINEAR));
-  MultiAnimation animation(parts, MultiAnimation::kDefaultTimerInterval);
+  MultiAnimation animation(parts);
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);
   as_element->SetStartTime(base::TimeTicks());
@@ -101,7 +78,7 @@ TEST(MultiAnimationTest, ExceedCycleNonContinuous) {
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
                                        Tween::LINEAR));
-  MultiAnimation animation(parts, MultiAnimation::kDefaultTimerInterval);
+  MultiAnimation animation(parts);
   CurrentValueDelegate delegate;
   animation.set_delegate(&delegate);
   animation.set_continuous(false);
@@ -119,7 +96,7 @@ TEST(MultiAnimationTest, Cycle) {
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
                                        Tween::LINEAR));
-  MultiAnimation animation(parts, MultiAnimation::kDefaultTimerInterval);
+  MultiAnimation animation(parts);
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);
   as_element->SetStartTime(base::TimeTicks());
@@ -143,7 +120,7 @@ TEST(MultiAnimationTest, GetCurrentValueDerivedFromStartAndEndOfCurrentPart) {
                                        Tween::EASE_OUT, kSecondPartStart,
                                        kSecondPartEnd));
 
-  MultiAnimation animation(parts, MultiAnimation::kDefaultTimerInterval);
+  MultiAnimation animation(parts);
   animation.set_continuous(false);
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);

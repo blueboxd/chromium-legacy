@@ -781,6 +781,7 @@ if (!is_android) {
     use_xvfb = use_xvfb_in_this_config
 
     configs += [ "//build/config:precompiled_headers" ]
+    configs += [ ":disable_thinlto_cache_flags" ]
     defines = [
       "HAS_OUT_OF_PROC_TEST_RUNNER",
       "CHROME_VERSION_MAJOR=" + chrome_version_major,
@@ -1170,6 +1171,7 @@ if (!is_android) {
       "../browser/metrics/ukm_background_recorder_browsertest.cc",
       "../browser/metrics/ukm_browsertest.cc",
       "../browser/metrics/usage_scenario/tab_usage_scenario_tracker_browsertest.cc",
+      "../browser/metrics/usage_scenario/webrtc_event_provider_browsertest.cc",
       "../browser/metrics/variations/force_field_trials_browsertest.cc",
       "../browser/metrics/variations/variations_http_headers_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_browsertest.cc",
@@ -1686,6 +1688,7 @@ if (!is_android) {
         "../browser/ui/views/chrome_cleaner_reboot_dialog_browsertest_win.cc",
         "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
       ]
+      data_deps += [ "//chrome/browser/web_applications/chrome_pwa_launcher" ]
       data += [ "$root_out_dir/chrome_200_percent.pak" ]
       deps += [ "//chrome/app:chrome_dll_resources" ]
     }
@@ -3465,7 +3468,7 @@ group("telemetry_perf_webview_tests") {
   deps = [ "//chrome/test:telemetry_perf_tests" ]
 }
 
-config("unit_tests_thinlto_flags") {
+config("disable_thinlto_cache_flags") {
   if (is_linux && use_thin_lto) {
     # This build target has so many inputs the LLD will run into the default
     # vm.max_map_count limit of 65530 memory mappings when using the ThinLTO
@@ -4138,7 +4141,7 @@ test("unit_tests") {
   }
 
   configs += [ "//build/config:precompiled_headers" ]
-  configs += [ ":unit_tests_thinlto_flags" ]
+  configs += [ ":disable_thinlto_cache_flags" ]
 
   data_deps = [
     "//chrome/test/data/media/engagement/preload:generate_preload_list",
@@ -4403,7 +4406,8 @@ test("unit_tests") {
     sources += [
       "../browser/android/search_permissions/search_permissions_service_unittest.cc",
       "../browser/autofill/address_accessory_controller_impl_unittest.cc",
-      "../browser/autofill/android/save_address_profile_message_delegate_unittest.cc",
+      "../browser/autofill/android/save_address_profile_message_controller_unittest.cc",
+      "../browser/autofill/android/save_address_profile_prompt_controller_unittest.cc",
       "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
       "../browser/autofill/autofill_keyboard_accessory_adapter_unittest.cc",
       "../browser/autofill/autofill_offer_notification_infobar_delegate_mobile_unittest.cc",
@@ -5134,6 +5138,7 @@ test("unit_tests") {
       "../browser/ui/ash/network/network_portal_notification_controller_unittest.cc",
       "../browser/ui/ash/network/network_state_notifier_unittest.cc",
       "../browser/ui/ash/network/tether_notification_presenter_unittest.cc",
+      "../browser/ui/ash/notification_badge_color_cache_unittest.cc",
       "../browser/ui/ash/session_controller_client_impl_unittest.cc",
       "../browser/ui/ash/wallpaper_controller_client_impl_unittest.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.cc",
@@ -6223,6 +6228,7 @@ test("unit_tests") {
       "../browser/ui/views/translate/translate_bubble_view_unittest.cc",
       "../browser/ui/views/user_education/feature_promo_bubble_view_unittest.cc",
       "../browser/ui/views/user_education/feature_promo_controller_views_unittest.cc",
+      "../browser/ui/views/user_education/new_badge_label_unittest.cc",
       "../browser/ui/views/user_education/tip_marquee_view_unittest.cc",
       "../browser/ui/views/webid/webid_dialog_views_unittest.cc",
       "../browser/ui/views/window_name_prompt_unittest.cc",

@@ -91,7 +91,6 @@
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_view.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view.h"
 #include "components/infobars/core/infobar.h"
-#include "components/messages/android/messages_feature.h"
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
@@ -533,16 +532,8 @@ void ChromeAutofillClient::ConfirmSaveAddressProfile(
     const AutofillProfile& profile,
     AddressProfileSavePromptCallback callback) {
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          messages::kMessagesForAndroidInfrastructure)) {
-    save_address_profile_message_delegate_.DisplaySavePrompt(
-        web_contents(), profile, std::move(callback));
-  } else {
-    // Fallback to the default behavior without the prompt.
-    std::move(callback).Run(
-        AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted,
-        profile);
-  }
+  save_address_profile_flow_manager_.OfferSave(web_contents(), profile,
+                                               std::move(callback));
 #else
   SaveAddressProfileBubbleControllerImpl::CreateForWebContents(web_contents());
   SaveAddressProfileBubbleControllerImpl* controller =
@@ -564,10 +555,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
     const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   // Don't show any popups while Autofill Assistant's UI is shown.
-  auto* assistant_runtime_manager =
-      autofill_assistant::RuntimeManager::GetForWebContents(web_contents());
-  if (assistant_runtime_manager && assistant_runtime_manager->GetState() ==
-                                       autofill_assistant::UIState::kShown) {
+  if (IsAutofillAssistantShowing()) {
     return;
   }
 
@@ -673,6 +661,13 @@ void ChromeAutofillClient::ShowOfferNotificationIfApplicable(
   controller->ShowOfferNotificationIfApplicable(domains_to_display_bubble,
                                                 card);
 #endif
+}
+
+bool ChromeAutofillClient::IsAutofillAssistantShowing() {
+  auto* assistant_runtime_manager =
+      autofill_assistant::RuntimeManager::GetForWebContents(web_contents());
+  return assistant_runtime_manager && assistant_runtime_manager->GetState() ==
+                                          autofill_assistant::UIState::kShown;
 }
 
 bool ChromeAutofillClient::IsAutocompleteEnabled() {

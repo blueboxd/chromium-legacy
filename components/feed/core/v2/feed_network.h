@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/proto/v2/wire/upload_actions_request.pb.h"
@@ -41,7 +42,6 @@ struct ListWebFeedsDiscoverApi {
   static const NetworkRequestType kRequestType =
       NetworkRequestType::kListWebFeeds;
   static base::StringPiece Method() { return "GET"; }
-  // TODO(harringtond): Path TDB.
   static base::StringPiece RequestPath() { return "v1/webFeeds"; }
 };
 
@@ -60,7 +60,6 @@ struct FollowWebFeedDiscoverApi {
   static const NetworkRequestType kRequestType =
       NetworkRequestType::kFollowWebFeed;
   static base::StringPiece Method() { return "POST"; }
-  // TODO(harringtond): Path TDB.
   static base::StringPiece RequestPath() { return "v1:followWebFeed"; }
 };
 
@@ -70,8 +69,16 @@ struct UnfollowWebFeedDiscoverApi {
   static const NetworkRequestType kRequestType =
       NetworkRequestType::kUnfollowWebFeed;
   static base::StringPiece Method() { return "POST"; }
-  // TODO(harringtond): Path TDB.
   static base::StringPiece RequestPath() { return "v1:unfollowWebFeed"; }
+};
+
+struct WebFeedListContentsDiscoverApi {
+  using Request = feedwire::Request;
+  using Response = feedwire::Response;
+  static const NetworkRequestType kRequestType =
+      NetworkRequestType::kWebFeedListContents;
+  static base::StringPiece Method() { return "POST"; }
+  static base::StringPiece RequestPath() { return "v1/contents"; }
 };
 
 class FeedNetwork {
@@ -116,6 +123,7 @@ class FeedNetwork {
       NetworkRequestType request_type,
       const feedwire::Request& request,
       bool force_signed_out_request,
+      const std::string& gaia,
       base::OnceCallback<void(QueryRequestResult)> callback) = 0;
 
   // Send a Discover API request. Usage:
@@ -123,11 +131,12 @@ class FeedNetwork {
   template <typename API>
   void SendApiRequest(
       const typename API::Request& request,
+      const std::string& gaia,
       base::OnceCallback<void(ApiResult<typename API::Response>)> callback) {
     std::string binary_proto;
     request.SerializeToString(&binary_proto);
     SendDiscoverApiRequest(
-        API::RequestPath(), API::Method(), std::move(binary_proto),
+        API::RequestPath(), API::Method(), std::move(binary_proto), gaia,
         base::BindOnce(&ParseAndForwardApiResponse<API>, std::move(callback)));
   }
 
@@ -142,6 +151,7 @@ class FeedNetwork {
       base::StringPiece api_path,
       base::StringPiece method,
       std::string request_bytes,
+      const std::string& gaia,
       base::OnceCallback<void(RawResponse)> callback) = 0;
 
   template <typename API>

@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
@@ -36,16 +37,28 @@
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/gesture_event_details.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 
 namespace {
+
+// Delay in milliseconds of when the dragging UI should be shown for touch drag.
+// Note: For better user experience, this is made shorter than
+// ET_GESTURE_LONG_PRESS delay, which is too long for this case, e.g., about
+// 650ms.
+constexpr base::TimeDelta kTouchLongpressDelay =
+    base::TimeDelta::FromMilliseconds(300);
 
 std::string ConvertAlertStateToString(TabAlertState alert_state) {
   switch (alert_state) {
@@ -174,7 +187,12 @@ TabStripUIHandler::TabStripUIHandler(Browser* browser,
                               base::Unretained(this))),
       tab_before_unload_tracker_(
           base::BindRepeating(&TabStripUIHandler::OnTabCloseCancelled,
-                              base::Unretained(this))) {}
+                              base::Unretained(this))),
+      long_press_timer_(std::make_unique<base::RetainingOneShotTimer>(
+          FROM_HERE,
+          kTouchLongpressDelay,
+          base::BindRepeating(&TabStripUIHandler::OnLongPressTimer,
+                              base::Unretained(this)))) {}
 TabStripUIHandler::~TabStripUIHandler() = default;
 
 void TabStripUIHandler::NotifyLayoutChanged() {
@@ -189,8 +207,15 @@ void TabStripUIHandler::NotifyReceivedKeyboardFocus() {
   FireWebUIListener("received-keyboard-focus");
 }
 
+void TabStripUIHandler::NotifyContextMenuClosed() {
+  if (!IsJavascriptAllowed())
+    return;
+  FireWebUIListener("context-menu-closed");
+}
+
 // content::WebUIMessageHandler:
 void TabStripUIHandler::OnJavascriptAllowed() {
+  web_ui()->GetWebContents()->SetDelegate(this);
   browser_->tab_strip_model()->AddObserver(this);
 }
 
@@ -350,6 +375,70 @@ void TabStripUIHandler::TabBlockedStateChanged(content::WebContents* contents,
   FireWebUIListener("tab-updated", GetTabData(contents, index));
 }
 
+bool TabStripUIHandler::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  switch (event.GetType()) {
+    case blink::WebInputEvent::Type::kGestureScrollBegin:
+      // Drag and drop for the WebUI tab strip is currently only supported for
+      // Aura platforms.
+#if defined(USE_AURA)
+      // If we are passed the `kTouchLongpressDelay` threshold since the initial
+      // tap down initiate a drag on scroll start.
+      if (!long_press_timer_->IsRunning()) {
+        handling_gesture_scroll_ = true;
+
+        // If we are about to start a drag ensure the context menu is closed.
+        embedder_->CloseContextMenu();
+
+        // Synthesize a long press event to start the drag and drop session.
+        // TODO(tluk): Replace this with a better drag and drop trigger when
+        // available.
+        ui::GestureEventDetails press_details(ui::ET_GESTURE_LONG_PRESS);
+        press_details.set_device_type(
+            ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+        ui::GestureEvent press_event(
+            touch_drag_start_point_.x(), touch_drag_start_point_.y(),
+            ui::EF_IS_SYNTHESIZED, base::TimeTicks::Now(), press_details);
+
+        auto* window = web_ui()->GetWebContents()->GetContentNativeView();
+        window->delegate()->OnGestureEvent(&press_event);
+
+        // Following the long press we need to dispatch a scroll end event to
+        // ensure the gesture stream is not left in an inconsistent state.
+        ui::GestureEventDetails scroll_end_details(ui::ET_GESTURE_SCROLL_END);
+        scroll_end_details.set_device_type(
+            ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+        ui::GestureEvent scroll_end_event(
+            touch_drag_start_point_.x(), touch_drag_start_point_.y(),
+            ui::EF_IS_SYNTHESIZED, base::TimeTicks::Now(), scroll_end_details);
+        window->delegate()->OnGestureEvent(&scroll_end_event);
+        return true;
+      }
+      long_press_timer_->Stop();
+      return false;
+#endif  // defined(USE_AURA)
+      return false;
+    case blink::WebInputEvent::Type::kGestureScrollEnd:
+      handling_gesture_scroll_ = false;
+      return false;
+    case blink::WebInputEvent::Type::kGestureTapDown:
+      touch_drag_start_point_ =
+          gfx::ToRoundedPoint(event.PositionInRootFrame());
+      long_press_timer_->Reset();
+      return false;
+    case blink::WebInputEvent::Type::kGestureLongPress:
+      // Do not block the long press if handling a scroll gesture.
+      if (handling_gesture_scroll_)
+        return false;
+      FireWebUIListener("show-context-menu");
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 // content::WebUIMessageHandler:
 void TabStripUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -418,6 +507,12 @@ void TabStripUIHandler::RegisterMessages() {
       "reportTabCreationDuration",
       base::BindRepeating(&TabStripUIHandler::HandleReportTabCreationDuration,
                           base::Unretained(this)));
+}
+
+void TabStripUIHandler::OnLongPressTimer() {
+  if (!IsJavascriptAllowed())
+    return;
+  FireWebUIListener("long-press");
 }
 
 void TabStripUIHandler::HandleCreateNewTab(const base::ListValue* args) {
@@ -737,7 +832,9 @@ void TabStripUIHandler::HandleShowBackgroundContextMenu(
   embedder_->ShowContextMenuAtPoint(
       gfx::ToRoundedPoint(point),
       std::make_unique<WebUIBackgroundContextMenu>(
-          browser_, embedder_->GetAcceleratorProvider()));
+          browser_, embedder_->GetAcceleratorProvider()),
+      base::BindRepeating(&TabStripUIHandler::NotifyContextMenuClosed,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TabStripUIHandler::HandleShowEditDialogForGroup(
@@ -797,7 +894,9 @@ void TabStripUIHandler::HandleShowTabContextMenu(const base::ListValue* args) {
   embedder_->ShowContextMenuAtPoint(
       gfx::ToRoundedPoint(point),
       std::make_unique<WebUITabContextMenu>(
-          browser, embedder_->GetAcceleratorProvider(), tab_index));
+          browser, embedder_->GetAcceleratorProvider(), tab_index),
+      base::BindRepeating(&TabStripUIHandler::NotifyContextMenuClosed,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TabStripUIHandler::HandleGetLayout(const base::ListValue* args) {

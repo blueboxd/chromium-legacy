@@ -263,6 +263,7 @@ void TestFeedNetwork::SendQueryRequest(
     NetworkRequestType request_type,
     const feedwire::Request& request,
     bool force_signed_out_request,
+    const std::string& gaia,
     base::OnceCallback<void(QueryRequestResult)> callback) {
   forced_signed_out_request = force_signed_out_request;
   ++send_query_call_count;
@@ -317,11 +318,19 @@ void TestFeedNetwork::SendDiscoverApiRequest(
     base::StringPiece api_path,
     base::StringPiece method,
     std::string request_bytes,
+    const std::string& gaia,
     base::OnceCallback<void(RawResponse)> callback) {
   api_requests_sent_[api_path.as_string()] = request_bytes;
   ++api_request_count_[api_path.as_string()];
   std::vector<RawResponse>& injected_responses =
       injected_api_responses_[api_path.as_string()];
+
+  if (api_path == WebFeedListContentsDiscoverApi::RequestPath()) {
+    feedwire::Request request_proto;
+    request_proto.ParseFromString(request_bytes);
+    query_request_sent = request_proto;
+    send_query_call_count++;
+  }
 
   // If there is no injected response, create a default response.
   if (injected_responses.empty()) {
@@ -344,6 +353,13 @@ void TestFeedNetwork::SendDiscoverApiRequest(
       ASSERT_TRUE(request.ParseFromString(request_bytes));
       feedwire::webfeed::ListWebFeedsResponse response_message;
       InjectResponse(response_message);
+    }
+    if (api_path == WebFeedListContentsDiscoverApi::RequestPath()) {
+      // Emulate a successful response.
+      // The response body is currently an empty message, because most of the
+      // time we want to inject a translated response for ease of test-writing.
+      feedwire::Response response;
+      InjectApiResponse<WebFeedListContentsDiscoverApi>(response);
     }
   }
 
@@ -600,6 +616,9 @@ void FeedApiTest::SetUp() {
   // Disable fetching of recommended web feeds at startup to
   // avoid a delayed task in tests that don't need it.
   config.fetch_web_feed_info_delay = base::TimeDelta();
+  // `use_feed_query_requests_for_web_feeds` is a temporary option for
+  // debugging, setting it to false tests the preferred endpoint.
+  config.use_feed_query_requests_for_web_feeds = false;
   SetFeedConfigForTesting(config);
 
   feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
@@ -637,8 +656,8 @@ bool FeedApiTest::IsEulaAccepted() {
 bool FeedApiTest::IsOffline() {
   return is_offline_;
 }
-bool FeedApiTest::IsSignedIn() {
-  return is_signed_in_;
+std::string FeedApiTest::GetSyncSignedInGaia() {
+  return signed_in_gaia_;
 }
 DisplayMetrics FeedApiTest::GetDisplayMetrics() {
   DisplayMetrics result;

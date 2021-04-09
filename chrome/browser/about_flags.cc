@@ -4223,6 +4223,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
+    {"omnibox-clipboard-suggestions-content-hidden",
+     flag_descriptions::kClipboardSuggestionContentHiddenName,
+     flag_descriptions::kClipboardSuggestionContentHiddenDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kClipboardSuggestionContentHidden)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-clobber-triggers-contextual-web-zero-suggest",
@@ -6465,6 +6470,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingV2)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"shimless-rma-flow", flag_descriptions::kShimlessRMAFlowName,
+     flag_descriptions::kShimlessRMAFlowDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMAFlow)},
     {"nearby-sharing", flag_descriptions::kNearbySharingName,
      flag_descriptions::kNearbySharingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharing)},

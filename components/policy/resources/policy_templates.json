@@ -25454,7 +25454,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''This policy allows admins to configure Bluetooth services that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is allowed to connect to.
 
-When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> only allows users to connect to the specified Bluetooth services with an exception when the list is empty which means any service is allowed to use. UUIDs reserved by the Bluetooth SIG can be represented as <ph name="BLUETOOTH_RESERVED_UUID_WITH_0x">'0xABCD</ph>' or <ph name="BLUETOOTH_RESERVED_UUID_WITHOUT_0x">'ABCD'</ph>. Custom UUIDs can be represented as <ph name="BLUETOOTH_CUSTOM_UUID">'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'</ph>. UUIDs are case insensitive. Leaving this policy unset lets users connect to any Bluetooth service.'''
+When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> only allows users to connect to the specified Bluetooth services with an exception when the list is empty which means any service is allowed to use. UUIDs reserved by the Bluetooth SIG can be represented as <ph name="BLUETOOTH_RESERVED_UUID_WITH_0X">'0xABCD'</ph> or <ph name="BLUETOOTH_RESERVED_UUID_WITHOUT_0X">'ABCD'</ph>. Custom UUIDs can be represented as <ph name="BLUETOOTH_CUSTOM_UUID">'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'</ph>. UUIDs are case insensitive. Leaving this policy unset lets users connect to any Bluetooth service.'''
     },
   ],
   'messages': {

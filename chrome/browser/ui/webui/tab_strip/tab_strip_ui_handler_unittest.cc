@@ -47,7 +47,9 @@ class StubTabStripUIEmbedder : public TabStripUIEmbedder {
   void CloseContainer() override {}
   void ShowContextMenuAtPoint(
       gfx::Point point,
-      std::unique_ptr<ui::MenuModel> menu_model) override {}
+      std::unique_ptr<ui::MenuModel> menu_model,
+      base::RepeatingClosure on_menu_closed_callback) override {}
+  void CloseContextMenu() override {}
   void ShowEditDialogForGroupAtPoint(gfx::Point point,
                                      gfx::Rect rect,
                                      tab_groups::TabGroupId group_id) override {
@@ -67,10 +69,17 @@ class TabStripUIHandlerTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
+    web_contents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(profile()));
+    web_ui_.set_web_contents(web_contents_.get());
     handler_ = std::make_unique<TestTabStripUIHandler>(web_ui(), browser(),
                                                        &stub_embedder_);
     handler()->AllowJavascriptForTesting();
     web_ui()->ClearTrackedCalls();
+  }
+  void TearDown() override {
+    web_contents_.reset();
+    BrowserWithTestWindowTest::TearDown();
   }
 
   TabStripUIHandler* handler() { return handler_.get(); }
@@ -90,6 +99,7 @@ class TabStripUIHandlerTest : public BrowserWithTestWindowTest {
 
  private:
   StubTabStripUIEmbedder stub_embedder_;
+  std::unique_ptr<content::WebContents> web_contents_;
   content::TestWebUI web_ui_;
   std::unique_ptr<TestTabStripUIHandler> handler_;
 };

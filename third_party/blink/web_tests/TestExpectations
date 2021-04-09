@@ -1807,7 +1807,6 @@ crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page.htm
 
 # Since there is no compositor thread when running tests then there is no main thread event queue. Hence the
 # logic for this test will be skipped when running Layout tests.
-crbug.com/770028 external/wpt/pointerevents/pointerlock/pointerevent_pointerrawupdate_in_pointerlock-manual.html [ Skip ]
 crbug.com/770028 external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html [ Skip ]
 crbug.com/770028 external/wpt/pointerevents/pointerevent_predicted_events_attributes-manual.html [ Skip ]
 
@@ -6756,3 +6755,15 @@ crbug.com/1196620 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-
 
 # QuicTransport tests should be eventually deleted.
 crbug.com/1196989 external/wpt/webtransport/quic/* [ Skip ]
+
+# Sheriff 2021-04-08
+crbug.com/1197073 [ Linux ] external/wpt/html/syntax/xmldecl/xmldecl-1.html [ Pass Failure ]
+crbug.com/1197087 external/wpt/web-animations/interfaces/Animation/finished.html [ Pass Failure ]
+crbug.com/1197087 external/wpt/css/css-animations/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
+crbug.com/1197087 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
+crbug.com/1197087 virtual/threaded/external/wpt/css/css-animations/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
+
+crbug.com/1195295 fast/events/touch/multi-touch-timestamp.html [ Pass Failure ]
+
+crbug.com/1197296 [ Mac10.15 ] external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Pass Failure ]
+crbug.com/1197296 [ Mac10.15 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Pass Failure ]

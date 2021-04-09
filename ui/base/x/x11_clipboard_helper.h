@@ -32,7 +32,10 @@ class SelectionRequestor;
 // migration is complete and legacy backend gets removed.
 class COMPONENT_EXPORT(UI_BASE_X) XClipboardHelper : public x11::EventObserver {
  public:
-  explicit XClipboardHelper(base::RepeatingClosure selection_change_closure);
+  using SelectionChangeCallback =
+      base::RepeatingCallback<void(ClipboardBuffer)>;
+
+  explicit XClipboardHelper(SelectionChangeCallback selection_change_callback);
   XClipboardHelper(const XClipboardHelper&) = delete;
   XClipboardHelper& operator=(const XClipboardHelper&) = delete;
   ~XClipboardHelper() override;
@@ -67,6 +70,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XClipboardHelper : public x11::EventObserver {
   // the X server.
   std::vector<std::string> GetAvailableAtomNames(ClipboardBuffer buffer);
 
+  // Tells if we currently own the selection for a given clipboard |buffer|.
+  bool IsSelectionOwner(ClipboardBuffer buffer) const;
+
   // Returns a list of all text atoms that we handle.
   std::vector<x11::Atom> GetTextAtoms() const;
 
@@ -79,9 +85,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XClipboardHelper : public x11::EventObserver {
   // If we own the CLIPBOARD selection, requests the clipboard manager to take
   // ownership of it.
   void StoreCopyPasteDataAndWait();
-
-  // Returns the current sequence number for a given clipboard |buffer|.
-  uint64_t GetSequenceNumber(ClipboardBuffer buffer) const;
 
  private:
   class TargetList;

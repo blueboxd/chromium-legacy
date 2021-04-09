@@ -168,7 +168,7 @@ const base::Feature kCdmFactoryDaemon{"CdmFactoryDaemon",
 
 // If enabled, send the LTE attach APN configuration to the modem.
 const base::Feature kCellularUseAttachApn{"CellularUseAttachApn",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, use external euicc in Cellular Setup and Settings.
 const base::Feature kCellularUseExternalEuicc{
@@ -500,6 +500,11 @@ const base::Feature kMediaAppVideoControls{"MediaAppVideoControls",
 const base::Feature kMultilingualTyping{"MultilingualTyping",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables support for specific enabled web apps to be treated as note-taking
+// apps on Chrome OS.
+const base::Feature kNoteTakingForEnabledWebApps{
+    "NoteTakingForEnabledWebApps", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether to enable on-device grammar check service.
 const base::Feature kOnDeviceGrammarCheck{"OnDeviceGrammarCheck",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -617,6 +622,10 @@ const base::Feature kScanAppStickySettings{"ScanAppStickySettings",
 // (currently 3s).
 const base::Feature kSessionManagerLongKillTimeout{
     "SessionManagerLongKillTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the new shimless rma flow.
+const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables a toggle to enable Bluetooth debug logs.
 const base::Feature kShowBluetoothDebugLogToggle{
@@ -884,6 +893,10 @@ bool IsQuickAnswersOnEditableTextEnabled() {
 
 bool IsQuickAnswersStandaloneSettingsEnabled() {
   return base::FeatureList::IsEnabled(kQuickAnswersStandaloneSettings);
+}
+
+bool IsShimlessRMAFlowEnabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMAFlow);
 }
 
 bool IsSplitSettingsSyncEnabled() {

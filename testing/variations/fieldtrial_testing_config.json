@@ -1594,7 +1594,42 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledSingleSurfaceFinale",
+                    "params": {
+                        "hide_switch_when_no_incognito_tabs": "true",
+                        "home_button_on_grid_tab_switcher": "true",
+                        "new_home_surface_from_home_button": "hide_tab_switcher_only",
+                        "omnibox_focused_on_new_tab": "true",
+                        "start_surface_variation": "single",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "InstantStart",
+                        "StartSurfaceAndroid",
+                        "TabGroupsContinuationAndroid",
+                        "TabSwitcherOnReturn"
+                    ]
+                },
+                {
+                    "name": "EnabledSingleSurfaceV2Finale",
+                    "params": {
+                        "hide_switch_when_no_incognito_tabs": "true",
+                        "home_button_on_grid_tab_switcher": "true",
+                        "new_home_surface_from_home_button": "hide_tab_switcher_only",
+                        "omnibox_focused_on_new_tab": "true",
+                        "show_last_active_tab_only": "true",
+                        "start_surface_variation": "single",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "InstantStart",
+                        "StartSurfaceAndroid",
+                        "TabGroupsContinuationAndroid",
+                        "TabSwitcherOnReturn"
+                    ]
+                },
+                {
+                    "name": "EnabledSingleSurface",
                     "params": {
                         "start_surface_variation": "single",
                         "tab_switcher_on_return_time_ms": "3600000"
@@ -1602,6 +1637,22 @@
                     "enable_features": [
                         "InstantStart",
                         "StartSurfaceAndroid",
+                        "TabGroupsContinuationAndroid",
+                        "TabSwitcherOnReturn"
+                    ]
+                },
+                {
+                    "name": "EnabledSingleSurfaceV2",
+                    "params": {
+                        "open_ntp_instead_of_start": "true",
+                        "show_last_active_tab_only": "true",
+                        "start_surface_variation": "single",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "InstantStart",
+                        "StartSurfaceAndroid",
+                        "TabGroupsContinuationAndroid",
                         "TabSwitcherOnReturn"
                     ]
                 }
@@ -2628,6 +2679,7 @@
                 "android",
                 "android_weblayer",
                 "chromeos",
+                "linux",
                 "mac",
                 "windows"
             ],
@@ -7323,21 +7375,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WASAPIRawAudioCapture"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WKHTTPSystemCookieStore": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "WKHTTPSystemCookieStore",
-                    "enable_features": [
-                        "WKHTTPSystemCookieStore"
                     ]
                 }
             ]

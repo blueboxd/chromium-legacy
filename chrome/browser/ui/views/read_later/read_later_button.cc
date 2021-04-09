@@ -252,7 +252,7 @@ void ReadLaterButton::UpdateColors() {
 
   const int highlight_radius =
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MAXIMUM, size());
+          views::Emphasis::kMaximum, size());
   SetEnabledTextColors(highlight_color_animation_->GetTextColor());
   SetImageModel(
       views::Button::STATE_NORMAL,
@@ -272,21 +272,19 @@ void ReadLaterButton::UpdateColors() {
 ReadLaterButton::HighlightColorAnimation::HighlightColorAnimation(
     ReadLaterButton* parent)
     : parent_(parent),
-      highlight_color_animation_(
-          std::vector<gfx::MultiAnimation::Part>{
-              gfx::MultiAnimation::Part(kHighlightShowDuration,
-                                        gfx::Tween::FAST_OUT_SLOW_IN,
-                                        0.0,
-                                        1.0),
-              gfx::MultiAnimation::Part(kHighlightDuration,
-                                        gfx::Tween::Type::LINEAR,
-                                        1.0,
-                                        1.0),
-              gfx::MultiAnimation::Part(kHighlightHideDuration,
-                                        gfx::Tween::FAST_OUT_SLOW_IN,
-                                        1.0,
-                                        0.0)},
-          gfx::MultiAnimation::kDefaultTimerInterval) {
+      highlight_color_animation_(std::vector<gfx::MultiAnimation::Part>{
+          gfx::MultiAnimation::Part(kHighlightShowDuration,
+                                    gfx::Tween::FAST_OUT_SLOW_IN,
+                                    0.0,
+                                    1.0),
+          gfx::MultiAnimation::Part(kHighlightDuration,
+                                    gfx::Tween::Type::LINEAR,
+                                    1.0,
+                                    1.0),
+          gfx::MultiAnimation::Part(kHighlightHideDuration,
+                                    gfx::Tween::FAST_OUT_SLOW_IN,
+                                    1.0,
+                                    0.0)}) {
   highlight_color_animation_.set_delegate(this);
   highlight_color_animation_.set_continuous(false);
 }

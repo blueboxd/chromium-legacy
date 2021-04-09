@@ -120,6 +120,7 @@ class InProcessChildThreadParams;
 class IsolationContext;
 class MediaStreamTrackMetricsHost;
 class P2PSocketDispatcherHost;
+class PepperRendererConnection;
 class PermissionServiceContext;
 class PluginRegistryImpl;
 class ProcessLock;
@@ -240,8 +241,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
   bool IsProcessBackgrounded() override;
-  void IncrementKeepAliveRefCount(KeepAliveSource source) override;
-  void DecrementKeepAliveRefCount(KeepAliveSource source) override;
+  void IncrementKeepAliveRefCount() override;
+  void DecrementKeepAliveRefCount() override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
   mojom::Renderer* GetRendererInterface() override;
@@ -658,9 +659,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
     ipc_send_watcher_for_testing_ = std::move(watcher);
   }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  PepperRendererConnection* pepper_renderer_connection() {
+    return pepper_renderer_connection_.get();
+  }
+#endif
+
   size_t keep_alive_ref_count() const { return keep_alive_ref_count_; }
-  // TODO(wjmaclean): remove this when the experiment is done.
-  std::string keep_alive_sources() const { return keep_alive_sources_; }
 
   // Allows overriding the URLLoaderFactory creation via CreateURLLoaderFactory.
   // Passing a null callback will restore the default behavior.
@@ -927,7 +932,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojo::OutgoingInvitation mojo_invitation_;
 
   size_t keep_alive_ref_count_;
-  std::string keep_alive_sources_;
 
   // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
   // no longer be modified.
@@ -1131,6 +1135,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   // For the render process to connect to the system tracing service.
   std::unique_ptr<tracing::SystemTracingService> system_tracing_service_;
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  scoped_refptr<PepperRendererConnection> pepper_renderer_connection_;
 #endif
 
   // IOThreadHostImpl owns some IO-thread state associated with this

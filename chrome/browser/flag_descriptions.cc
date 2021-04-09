@@ -2869,6 +2869,12 @@ const char kChromeSharingHubV15Name[] = "Chrome Sharing Hub V1.5";
 const char kChromeSharingHubV15Description[] =
     "Enables v1.5 of the Chrome Sharing Hub for Android.";
 
+const char kClipboardSuggestionContentHiddenName[] =
+    "Clipboard suggestion content hidden";
+const char kClipboardSuggestionContentHiddenDescription[] =
+    "Prevents the Clipboard suggestion from proactively retrieving the "
+    "clipboard content.";
+
 const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
@@ -4716,6 +4722,9 @@ const char kScanAppStickySettingsName[] = "Enable sticky settings in Scan app";
 const char kScanAppStickySettingsDescription[] =
     "Enables sticky settings in Scan app for automatically saving scan"
     " settings in Chrome OS.";
+
+const char kShimlessRMAFlowName[] = "Enable shimless RMA flow";
+const char kShimlessRMAFlowDescription[] = "Enable shimless RMA flow";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =

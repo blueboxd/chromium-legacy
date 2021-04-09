@@ -27,7 +27,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/autofill/android/save_address_profile_message_delegate.h"
+#include "chrome/browser/autofill/android/save_address_profile_flow_manager.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
 #else  // !OS_ANDROID
@@ -150,6 +150,7 @@ class ChromeAutofillClient
       const std::vector<GURL>& domains_to_display_bubble,
       const GURL& offer_details_url,
       const CreditCard* card) override;
+  bool IsAutofillAssistantShowing() override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
@@ -203,7 +204,7 @@ class ChromeAutofillClient
   CardExpirationDateFixFlowControllerImpl
       card_expiration_date_fix_flow_controller_;
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
-  SaveAddressProfileMessageDelegate save_address_profile_message_delegate_;
+  SaveAddressProfileFlowManager save_address_profile_flow_manager_;
 #endif
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

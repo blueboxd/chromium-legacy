@@ -809,6 +809,9 @@ extern const char kCompositorThreadedScrollbarScrollingDescription[];
 extern const char kImpulseScrollAnimationsName[];
 extern const char kImpulseScrollAnimationsDescription[];
 
+extern const char kIncognitoBrandConsistencyForAndroidName[];
+extern const char kIncognitoBrandConsistencyForAndroidDescription[];
+
 extern const char kIncognitoBrandConsistencyForDesktopName[];
 extern const char kIncognitoBrandConsistencyForDesktopDescription[];
 
@@ -1635,6 +1638,9 @@ extern const char kBackgroundTaskComponentUpdateDescription[];
 
 extern const char kBentoOfflineName[];
 extern const char kBentoOfflineDescription[];
+
+extern const char kBookmarkBottomSheetName[];
+extern const char kBookmarkBottomSheetDescription[];
 
 extern const char kCCTIncognitoName[];
 extern const char kCCTIncognitoDescription[];

@@ -4612,6 +4612,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReadLaterReminderNotificationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          reading_list::switches::kReadLaterReminderNotification)},
+
+    {"bookmark-bottom-sheet", flag_descriptions::kBookmarkBottomSheetName,
+     flag_descriptions::kBookmarkBottomSheetDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kBookmarkBottomSheet)},
 #endif
 
     {"tab-groups-auto-create", flag_descriptions::kTabGroupsAutoCreateName,
@@ -6680,6 +6684,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableIncognitoShortcutOnDesktopDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kEnableIncognitoShortcutOnDesktop)},
 #endif  // defined(OS_WIN)
+
+#if defined(OS_ANDROID)
+    {"incognito-brand-consistency-for-android",
+     flag_descriptions::kIncognitoBrandConsistencyForAndroidName,
+     flag_descriptions::kIncognitoBrandConsistencyForAndroidDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kIncognitoBrandConsistencyForAndroid)},
+#endif
 
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

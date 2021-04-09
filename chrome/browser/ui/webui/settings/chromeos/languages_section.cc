@@ -292,6 +292,10 @@ void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_DESCRIPTION},
       {"addSpellCheckLanguagesTitle",
        IDS_OS_SETTINGS_LANGUAGES_ADD_SPELL_CHECK_LANGUAGES_TITLE},
+      {"suggestedSpellcheckLanguages",
+       IDS_OS_SETTINGS_LANGUAGES_SUGGESTED_SPELL_CHECK_LANGUAGES_LABEL},
+      {"allSpellcheckLanguages",
+       IDS_OS_SETTINGS_LANGUAGES_ALL_SPELL_CHECK_LANGUAGES_LABEL},
       {"spellCheckLanguageNotAllowed",
        IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGE_NOT_ALLOWED},
       {"removeSpellCheckLanguageTooltip",
@@ -396,8 +400,6 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("imeOptionsInSettings",
                           base::FeatureList::IsEnabled(
                               ::chromeos::features::kImeOptionsInSettings));
-  // TODO(crbug.com/1097328): Delete this.
-  html_source->AddBoolean("enableLanguageSettingsV2", true);
   html_source->AddBoolean("enableLanguageSettingsV2Update2",
                           IsLanguageSettingsV2Update2Enabled());
 }

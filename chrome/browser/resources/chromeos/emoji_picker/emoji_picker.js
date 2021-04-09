@@ -165,7 +165,7 @@ export class EmojiPicker extends PolymerElement {
         EMOJI_VARIANTS_SHOWN,
         ev => this.onShowEmojiVariants(
             /** @type {!EmojiVariantsShownEvent} */ (ev)));
-    this.addEventListener('click', () => this.hideEmojiVariants());
+    this.addEventListener('click', () => this.hideDialogs());
     this.apiProxy_.showUI();
     this.getHistory();
   }
@@ -192,6 +192,7 @@ export class EmojiPicker extends PolymerElement {
     xhr.send();
 
     this.updateStyles({
+      '--emoji-group-button-size': EMOJI_GROUP_SIZE_PX,
       '--emoji-picker-width': EMOJI_PICKER_WIDTH_PX,
       '--emoji-picker-height': EMOJI_PICKER_HEIGHT_PX,
       '--emoji-size': EMOJI_SIZE_PX,
@@ -361,6 +362,15 @@ export class EmojiPicker extends PolymerElement {
   }
 
 
+  hideDialogs() {
+    this.hideEmojiVariants();
+    if (this.history.emoji.length > 0) {
+      this.shadowRoot.querySelector(`div[data-group="history"]`)
+          .querySelector('emoji-group')
+          .showClearRecents = false;
+    }
+  }
+
   hideEmojiVariants() {
     if (this.activeVariant) {
       this.activeVariant.variantsVisible = false;
@@ -403,7 +413,20 @@ export class EmojiPicker extends PolymerElement {
     const shift = EMOJI_ICON_SIZE * Math.ceil(overflowWidth / EMOJI_ICON_SIZE);
     // negative value means we are already within bounds, so no shift needed.
     variants.style.marginLeft = `-${Math.max(shift, 0)}px`;
-    variants.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    // Now, examine vertical scrolling and scroll if needed. Not quire sure why
+    // we need listcontainer.offsetTop, but it makes things work.
+    const groups = this.shadowRoot.getElementById('groups');
+    const scrollTop = groups.scrollTop;
+    const variantTop = variants.offsetTop;
+    const variantBottom = variantTop + variants.offsetHeight;
+    const listTop = this.shadowRoot.getElementById('listContainer').offsetTop;
+    if (variantBottom > scrollTop + groups.offsetHeight + listTop) {
+      groups.scrollTo({
+        top: variantBottom - groups.offsetHeight - listTop,
+        left: 0,
+        behavior: 'smooth',
+      });
+    }
   }
 
   onEmojiDataLoaded(data) {

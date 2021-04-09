@@ -349,7 +349,6 @@ class CONTENT_EXPORT NavigationRequest
   GlobalFrameRoutingId GetPreviousRenderFrameHostId() override;
   bool IsServedFromBackForwardCache() override;
   void SetIsOverridingUserAgent(bool override_ua) override;
-  bool GetIsOverridingUserAgent() override;
   void SetSilentlyIgnoreErrors() override;
   network::mojom::WebSandboxFlags SandboxFlagsToCommit() override;
   bool IsWaitingToCommit() override;
@@ -457,12 +456,6 @@ class CONTENT_EXPORT NavigationRequest
       RenderProcessHost* post_redirect_process);
 
   int nav_entry_id() const { return nav_entry_id_; }
-
-  bool was_set_overriding_user_agent_called() const {
-    return was_set_overriding_user_agent_called_;
-  }
-
-  bool entry_overrides_ua() const { return entry_overrides_ua_; }
 
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
@@ -756,8 +749,8 @@ class CONTENT_EXPORT NavigationRequest
   // properly determine SiteInstances and process allocation.
   UrlInfo GetUrlInfo();
 
-  bool IsOverridingUserAgent() const {
-    return commit_params_->is_overriding_user_agent || entry_overrides_ua_;
+  bool is_overriding_user_agent() const {
+    return commit_params_->is_overriding_user_agent;
   }
 
   // Returns the IsolationInfo that should be used to load subresources.
@@ -1220,6 +1213,11 @@ class CONTENT_EXPORT NavigationRequest
 
   base::Optional<network::mojom::BlockedByResponseReason> EnforceCOEP();
 
+  // Check the COOP value of the page is compatible with the COEP value of each
+  // of its documents. COOP:kSameOriginPlusCoep is incompatible with COEP:kNone.
+  // If they aren't, this returns false and emits a crash report.
+  bool CoopCoepSanityCheck();
+
   // Returns the user-agent override, or an empty string if one isn't set.
   std::string GetUserAgentOverride();
 
@@ -1333,10 +1331,6 @@ class CONTENT_EXPORT NavigationRequest
   const int nav_entry_id_;
   bool is_view_source_ = false;
   int bindings_;
-  bool entry_overrides_ua_ = false;
-
-  // Set to true if SetIsOverridingUserAgent() is called.
-  bool was_set_overriding_user_agent_called_ = false;
 
   scoped_refptr<SiteInstanceImpl> starting_site_instance_;
 

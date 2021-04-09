@@ -7386,7 +7386,7 @@ void RenderFrameHostImpl::ClearFocusedElement() {
 void RenderFrameHostImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
-  GetMojomFrameInRenderer()->BindDevToolsAgent(std::move(host),
+  GetAssociatedLocalFrame()->BindDevToolsAgent(std::move(host),
                                                std::move(receiver));
 }
 
@@ -8237,11 +8237,10 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
   // Allocate the worker in the same process as the creator.
   int worker_process_id = GetProcess()->GetID();
 
-  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      coep_reporter;
-  auto coep_reporter_endpoint = coep_reporter.InitWithNewPipeAndPassReceiver();
-  if (coep_reporter_)
-    coep_reporter_->Clone(std::move(coep_reporter_endpoint));
+  base::WeakPtr<CrossOriginEmbedderPolicyReporter> coep_reporter;
+  if (coep_reporter_) {
+    coep_reporter = coep_reporter_->GetWeakPtr();
+  }
 
   // When a dedicated worker is created from the frame script, the frame is both
   // the creator and the ancestor.
@@ -8252,7 +8251,9 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
           /*creator_worker_token=*/base::nullopt,
           /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
           last_committed_origin_, isolation_info_,
-          cross_origin_embedder_policy_, std::move(coep_reporter)),
+          cross_origin_embedder_policy_,
+          /*creator_coep_reporter=*/coep_reporter,
+          /*ancestor_coep_reporter=*/coep_reporter),
       std::move(receiver));
 }
 
@@ -9211,7 +9212,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   if (!is_same_document_navigation) {
-    DCHECK_EQ(navigation_request->IsOverridingUserAgent() &&
+    DCHECK_EQ(navigation_request->is_overriding_user_agent() &&
                   frame_tree_node_->IsMainFrame(),
               params->is_overriding_user_agent);
   } else {
@@ -9336,7 +9337,7 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   is_mhtml_document_ = navigation_request->IsWaitingToCommit() &&
                        navigation_request->IsMhtmlOrSubframe();
 
-  is_overriding_user_agent_ = navigation_request->IsOverridingUserAgent() &&
+  is_overriding_user_agent_ = navigation_request->is_overriding_user_agent() &&
                               frame_tree_node_->IsMainFrame();
 
   // Mark whether the document is loaded with loadDataWithBaseURL or not. If

@@ -177,7 +177,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:0f11e003d56071a19f4403570ebfdb8f197c2f87',
+  'luci_go': 'git_revision:6b7ff5a4d7e3247a449a8dfa5511541dffebba8b',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -189,6 +189,9 @@ vars = {
 
   # By default, do not check out the re-client binaries.
   'checkout_reclient': False,
+
+  # Make Dawn skip its standalone dependencies
+  'dawn_standalone': False,
 
   # reclient CIPD package version
   'reclient_version': 're_client_version:0.26.0.b455196',
@@ -218,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'fc189386e9a21cc6e69da59f496c713f27e309d2',
+  'angle_revision': '41dbfe9c9dc4133988f6cbe78ad95489a20fd8e0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -277,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '868d5d0e07f850e9b8203f2c2278223f3f19513d',
+  'catapult_revision': 'ec09f2be04e6bcce46f1c83d3de825d196149245',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -285,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '7322deeb77b7bfbb55ff1f11bb0c446ed4afcbc0',
+  'devtools_frontend_revision': '0f019a03ee9120c5188f03109a89b6f37ab8bd1a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -325,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '4a7c120456ad98195f6cd2455b2f0fca551059b1',
+  'dawn_revision': '59f2038dce0e7636c7afe8b922d025a05767a5e1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -362,10 +365,6 @@ vars = {
   # the commit queue can handle CLs rolling ukey2
   # and whatever else without interference from each other.
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling feed
-  # and whatever else without interference from each other.
-  'tint_revision': '101f463992613b055e6ac6e9588023e4b0695ed6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -728,7 +727,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '3Wc9OewhlswREXclzHm1_VJcsro7RRi74spk2JgBo84C',
+          'version': 'I4iXCvmhWTz6LS3SRxvYQfwfqZfaSFuCALAI2yfZMJwC',
       },
     ],
     'condition': 'checkout_android',
@@ -842,9 +841,6 @@ deps = {
 
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
-
-  'src/third_party/tint/src':
-    Var('dawn_git') + '/tint.git' + '@' +  Var('tint_revision'),
 
   'src/third_party/libjxl/src':
     Var('chromium_git') + '/external/gitlab.com/wg1/jpeg-xl.git' + '@' + Var('libjxl_revision'),
@@ -967,7 +963,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '1cabb17575917b73ec2e270d4187656c20b1ab0c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c53cbb415e3cca0aaa5e9c4e427f9ce2c157f2e0',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1339,7 +1335,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '47d6927909dcaeee748d90414eb6d6f340b17263',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f9ecfcb4611d599678bd649270888d2c5624cb35',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1553,7 +1549,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'c8e9a0e3d56fb25793de46c02c30b748c167e031',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'edc946ea81a457e5d928497e7d3a2e6543e2fb9a',
+    Var('webrtc_git') + '/src.git' + '@' + '10aaa3f1e7fed9ece132673f61d92c1f9838afbb',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1625,7 +1621,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b9bad4564f48ecfb91a4cda1d1bf3c05d6f51380',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c1df589e58811b05b1dcb37b5831a9e3ca50f264',
     'condition': 'checkout_src_internal',
   },
 
@@ -4456,6 +4452,8 @@ hooks = [
 recursedeps = [
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
   'src/third_party/angle',
+  # Dawn and Tint's revision are linked
+  'src/third_party/dawn',
   'src/third_party/openscreen/src',
   'src/third_party/vulkan-deps',
   # src-internal has its own DEPS file to pull additional internal repos

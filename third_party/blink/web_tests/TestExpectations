@@ -108,6 +108,7 @@ crbug.com/901056 external/wpt/html/semantics/embedded-content/media-elements/loa
 crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Pass ]
 crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event.html [ Pass ]
 
+crbug.com/1197502 [ Win ] http/tests/intersection-observer/cross-origin-iframe-with-nesting.html [ Pass Failure ]
 
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
@@ -1851,7 +1852,6 @@ crbug.com/752449 [ Mac10.12 ] external/wpt/css/css-fonts/matching/style-ranges-o
 
 crbug.com/1191718 external/wpt/css/css-fonts/size-adjust-text-decoration.tentative.html [ Failure ]
 
-crbug.com/1196635 external/wpt/css/css-font-loading/fontface-size-adjust-descriptor.html [ Failure ]
 crbug.com/1196631 external/wpt/css/css-fonts/size-adjust-01.html [ Failure ]
 
 # CSS Font Feature Resolution is not implemented yet
@@ -4765,6 +4765,10 @@ crbug.com/874837 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachm
 crbug.com/874931 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure Crash ]
 crbug.com/875003 [ Win ] editing/caret/caret-is-hidden-when-no-focus.html [ Pass Failure ]
 
+# Sheiff failures 2021-04-09
+crbug.com/1197444 [ Linux ] virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Failure ]
+crbug.com/1197444 [ Linux ] virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/animations/two-background-color-animation-diff-length3.html [ Failure ]
+
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
 
 # New failure when importing css-variables:
@@ -6034,6 +6038,7 @@ crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.
 
 # Sheriff 2020-05-18
 crbug.com/1084256 [ Linux ] http/tests/misc/insert-iframe-into-xml-document-before-xsl-transform.html [ Pass Failure ]
+crbug.com/1084256 [ Mac ] http/tests/misc/insert-iframe-into-xml-document-before-xsl-transform.html [ Pass Failure ]
 crbug.com/1084276 [ Mac ] http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Pass Failure ]
 
 # Disabled to prepare fixing the tests in V8
@@ -6102,9 +6107,6 @@ crbug.com/1093026 [ Linux ] http/tests/security/offscreencanvas-placeholder-read
 crbug.com/1093026 [ Win10 ] http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Pass Failure ]
 
 # Ecosystem-Infra Rotation 2020-06-15
-# Flake Portal seem to be reporting crashes as failures, so we expect that as well.
-crbug.com/1094930 external/wpt/webrtc/receiver-track-live.https.html [ Pass Crash Failure ]
-
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/cssbox-content-box.html [ Failure ]
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/cssbox-border-box.html [ Failure ]
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/cssbox-stroke-box.html [ Failure ]
@@ -6358,6 +6360,33 @@ crbug.com/1141206 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure
 #Sheriff 2020-10-26
 crbug.com/1142877 [ Mac ] external/wpt/mediacapture-fromelement/capture.html [ Pass Failure Crash ]
 crbug.com/1142877 [ Linux Debug ] external/wpt/mediacapture-fromelement/capture.html [ Pass Failure Crash ]
+
+# Needs to be rebaselined after https://crrev.com/c/2814565 lands.
+crbug.com/1197019 http/tests/devtools/console/console-big-array.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-call-getter-on-proto.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-dir-es6.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-dir.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-edit-property-value.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-eval-scoped.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-format-classes.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-format-es6-2.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-format-es6.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-format-performance.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-format.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-functions.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-group-click.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-log-object-with-getter.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-log-short-hand-method.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-truncate-long-messages.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/nested-worker-eval-contains-stack.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/console/worker-eval-contains-stack.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/sources/debugger/properties-special.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/sources/debugger-ui/function-details.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/sources/debugger-ui/function-generator-details.js [ Pass Failure ]
+crbug.com/1197019 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Pass Failure ]
 
 #Sheriff 2020-10-29
 crbug.com/1143720 [ Win7 ] external/wpt/media-source/mediasource-detach.html [ Pass Failure ]
@@ -6767,3 +6796,9 @@ crbug.com/1195295 fast/events/touch/multi-touch-timestamp.html [ Pass Failure ]
 
 crbug.com/1197296 [ Mac10.15 ] external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Pass Failure ]
 crbug.com/1197296 [ Mac10.15 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Pass Failure ]
+
+# Will be fixed by PlzDedicatedWorker.
+crbug.com/1060837 external/wpt/html/cross-origin-embedder-policy/reporting-to-frame-owner.https.html [ Timeout ]
+# These timeout because COEP reporting to a worker is not implemented.
+crbug.com/1197041 external/wpt/html/cross-origin-embedder-policy/reporting-to-worker-owner.https.html [ Skip ]
+crbug.com/1197041 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/reporting-to-worker-owner.https.html [ Skip ]

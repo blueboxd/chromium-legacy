@@ -275,7 +275,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool SupportsAltText();
 
-  void SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style);
+  void SetComputedStyle(const ComputedStyle* computed_style);
 
   // Other methods (not part of DOM)
   ALWAYS_INLINE bool IsTextNode() const {
@@ -713,8 +713,10 @@ class CORE_EXPORT Node : public EventTarget {
   bool ShouldSkipMarkingStyleDirty() const;
 
   const ComputedStyle* EnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone) {
-    return VirtualEnsureComputedStyle(pseudo_element_specifier);
+      PseudoId pseudo_element_specifier = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom) {
+    return VirtualEnsureComputedStyle(pseudo_element_specifier,
+                                      pseudo_argument);
   }
 
   // ---------------------------------------------------------------------------
@@ -930,6 +932,12 @@ class CORE_EXPORT Node : public EventTarget {
     ClearFlag(kNeedsInheritDirectionalityFromParent);
   }
 
+  // TODO(masonf): This is needed to avoid devtools-frontend missing
+  // the |importedDocument| property, which apparently came from the now-
+  // removed LinkImport object. ImportedDocument used to point to the
+  // document imported by an HTML Imports <link rel=import>.
+  Document* ImportedDocument() const { return nullptr; }
+
   void Trace(Visitor*) const override;
 
  private:
@@ -1106,7 +1114,8 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   virtual const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId = kPseudoIdNone);
+      PseudoId = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   void TrackForDebugging();
 

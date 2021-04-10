@@ -1049,6 +1049,16 @@ _BANNED_CPP_FUNCTIONS = (
       False,
       (),
     ),
+    (
+      'RoInitialize',
+      (
+        'Improper use of base::win::RoInitialize() has been implicated in a ',
+        'few COM initialization leaks. Use base::win::ScopedWinrtInitializer ',
+        'instead. See http://crbug.com/1197722 for more information.'
+      ),
+      True,
+      (),
+    ),
 )
 
 # Format: Sequence of tuples containing:
@@ -1344,7 +1354,9 @@ _KNOWN_ROBOTS = set(
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
-          for s in ('chromium-internal-autoroll',))
+          for s in ('chromium-internal-autoroll',)
+  ) | set('%s@owners-cleanup-prod.google.com.iam.gserviceaccount.com' % s
+          for s in ('swarming-tasks',))
 
 
 def _IsCPlusPlusFile(input_api, file_path):

@@ -86,26 +86,6 @@ class TestAppLauncherHandler : public AppLauncherHandler {
   }
 };
 
-std::string BuildScopedTrace(const std::string& action_string,
-                             const std::vector<std::string>& testing_actions,
-                             bool is_sync_test) {
-  const std::string test_case = base::JoinString(testing_actions, ", ");
-  return base::StringPrintf(
-      "\nFailed test case: %s\n"
-      "Failed action: %s\n"
-      "To disable this test, add the following line to "
-      "//chrome/test/data/web_apps/TestExpectations:\n"
-      "crbug.com/XXXXX [ %s ] [ Skip ] %s\n"
-      "To run this test in isolation, run the following command:\n"
-      "out/Default/%s_tests --gtest_filter=\"*%s*\" "
-      "--web-app-integration-test-case=%s\n",
-      test_case.c_str(), action_string.c_str(), kPlatformName,
-      test_case.c_str(), is_sync_test ? "sync_integration" : "browser",
-      is_sync_test ? "TwoClientWebAppsIntegrationSyncTest"
-                   : "WebAppIntegrationBrowserTest",
-      test_case.c_str());
-}
-
 }  // anonymous namespace
 
 BrowserState::BrowserState(
@@ -404,8 +384,10 @@ WebAppIntegrationBrowserTestBase::BuildAllPlatformTestCaseSet(
 // alphabetical order.
 void WebAppIntegrationBrowserTestBase::ExecuteAction(
     const std::string& action_string) {
-  SCOPED_TRACE(BuildScopedTrace(action_string, testing_actions(),
-                                delegate_->IsSyncTest()));
+  // Useful for sheriffs and developers in test failures since this test
+  // framework differs from that of traditional browser tests.
+  LOG(INFO) << base::StringPrintf("Current testing action: %s",
+                                  action_string.c_str());
 
   std::string action_param;
   RE2::PartialMatch(action_string, "(site_(a_foo|a_bar|a|b|c))", &action_param);
@@ -469,6 +451,8 @@ void WebAppIntegrationBrowserTestBase::ExecuteAction(
     UninstallFromMenu();
   } else if (action_base == "uninstall_internal") {
     UninstallInternal(action_param);
+  } else if (action_base == "manifest_update_display_standalone") {
+    ManifestUpdateDisplay(action_param, blink::mojom::DisplayMode::kStandalone);
   } else if (action_base == "manifest_update_display_minimal") {
     ManifestUpdateDisplay(action_param, blink::mojom::DisplayMode::kMinimalUi);
   } else if (action_base == "user_signin_internal") {
@@ -789,8 +773,10 @@ void WebAppIntegrationBrowserTestBase::ManifestUpdateDisplay(
     const std::string& action_scope,
     DisplayMode display_mode) {
   // TODO(jarrydg): Create a map of supported manifest updates keyed on scope.
-  ASSERT_EQ("site_a", action_scope);
-  ASSERT_EQ(blink::mojom::DisplayMode::kMinimalUi, display_mode);
+  ASSERT_TRUE(("site_a" == action_scope &&
+               blink::mojom::DisplayMode::kMinimalUi == display_mode) ||
+              ("site_b" == action_scope &&
+               blink::mojom::DisplayMode::kStandalone == display_mode));
   ForceUpdateManifestContents(action_scope,
                               GetAppURLForManifest(action_scope, display_mode));
 }
@@ -949,6 +935,25 @@ void WebAppIntegrationBrowserTestBase::AssertWindowDisplayMode(
 }
 
 // Helpers
+std::string WebAppIntegrationBrowserTestBase::BuildLogForTest(
+    const std::vector<std::string>& testing_actions,
+    bool is_sync_test) {
+  const std::string test_case = base::JoinString(testing_actions, ", ");
+  return base::StringPrintf(
+      "Current test case: %s\n"
+      "To disable this test, add the following line to "
+      "//chrome/test/data/web_apps/TestExpectations (without the quotes):\n"
+      "\"crbug.com/XXXXX [ %s ] [ Skip ] %s\"\n"
+      "To run this test in isolation, run the following command:\n"
+      "out/Default/%s_tests --gtest_filter=\"*%s*\" "
+      "--web-app-integration-test-case=%s\n",
+      test_case.c_str(), kPlatformName, test_case.c_str(),
+      is_sync_test ? "sync_integration" : "browser",
+      is_sync_test ? "TwoClientWebAppsIntegrationSyncTest"
+                   : "WebAppIntegrationBrowserTest",
+      test_case.c_str());
+}
+
 std::vector<AppId> WebAppIntegrationBrowserTestBase::GetAppIdsForProfile(
     Profile* profile) {
   return WebAppProvider::Get(profile)->registrar().GetAppIds();
@@ -1094,6 +1099,8 @@ GURL WebAppIntegrationBrowserTestBase::GetAppURLForManifest(
   std::string str_template = "/web_apps/%s/basic.html";
   if (display_mode == blink::mojom::DisplayMode::kMinimalUi) {
     str_template += "?manifest=manifest_minimal_ui.json";
+  } else if (display_mode == blink::mojom::DisplayMode::kStandalone) {
+    str_template += "?manifest=manifest_standalone.json";
   }
   return embedded_test_server()->GetURL(
       base::StringPrintf(str_template.c_str(), action_scope.c_str()));

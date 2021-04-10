@@ -2521,25 +2521,17 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.html?wpt_flags=h2 [ Failure Timeout ]
+crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.sharedworker.html?wpt_flags=h2 [ Failure Timeout ]
+crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.serviceworker.html?wpt_flags=h2 [ Failure Timeout ]
+crbug.com/626703 external/wpt/websockets/Send-binary-arraybufferview-int16-offset.any.html?wpt_flags=h2 [ Crash Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/url/a-element-xhtml.xhtml [ Failure Crash ]
-crbug.com/626703 [ Mac10.13 ] virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Crash Timeout ]
-crbug.com/626703 [ Linux ] virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac10.14 ] virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Win ] virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
+crbug.com/626703 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Crash Timeout Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/syntax/xmldecl/xmldecl-1.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-ruby/ruby-intrinsic-isize-003.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/selection/contenteditable/modifying-selection-with-primary-mouse-button.tentative.html [ Failure Crash ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/streams/readable-streams/tee.any.html [ Failure Crash ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Crash Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Crash Timeout Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/url/url-origin.any.worker.html [ Failure Crash ]
 crbug.com/626703 [ Mac ] external/wpt/html/syntax/xmldecl/xmldecl.html [ Failure Crash Timeout ]
 crbug.com/1191547 external/wpt/html/semantics/forms/the-label-element/proxy-modifier-click-to-associated-element.tentative.html [ Timeout ]
@@ -5959,7 +5951,6 @@ crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/respons
 crbug.com/1057351 virtual/threaded-no-composited-antialiasing/animations/stability/empty-keyframes.html [ Pass Failure ]
 
 ### sheriff 2020-03-03
-crbug.com/1058073 [ Mac ] http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Pass Failure ]
 crbug.com/1058073 [ Mac ] http/tests/devtools/service-workers/sw-navigate-useragent.js [ Pass Failure ]
 crbug.com/1058137 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
 
@@ -6792,10 +6783,15 @@ crbug.com/1197087 external/wpt/css/css-animations/AnimationEffect-getComputedTim
 crbug.com/1197087 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 crbug.com/1197087 virtual/threaded/external/wpt/css/css-animations/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 
+# Sheriff 2021-04-09
+crbug.com/1197528 [ Mac ] pointer-lock/pointerlockchange-pointerlockerror-events.html [ Pass Failure ]
+
 crbug.com/1195295 fast/events/touch/multi-touch-timestamp.html [ Pass Failure ]
 
 crbug.com/1197296 [ Mac10.15 ] external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Pass Failure ]
 crbug.com/1197296 [ Mac10.15 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Pass Failure ]
+
+crbug.com/1196745 [ Mac10.15 ] editing/selection/editable-links.html [ Skip ]
 
 # Will be fixed by PlzDedicatedWorker.
 crbug.com/1060837 external/wpt/html/cross-origin-embedder-policy/reporting-to-frame-owner.https.html [ Timeout ]

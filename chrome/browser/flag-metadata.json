@@ -145,6 +145,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "app-menu-mobile-site-option",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "app-service-adaptive-icon",
     "owners": [ "//components/services/app_service/OWNERS" ],
     "expiry_milestone": 93
@@ -4984,6 +4989,16 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "tabgrid-context-menu-ios",
+    "owners": [ "mrefaat", "michaeldo", "bling-flags@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "tabs-bulkactions-ios",
+    "owners": [ "mrefaat", "michaeldo", "bling-flags@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "text-fragment-color-change",

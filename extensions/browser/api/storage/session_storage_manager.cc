@@ -118,6 +118,36 @@ bool SessionStorageManager::ExtensionStorage::Set(
   return true;
 }
 
+void SessionStorageManager::ExtensionStorage::Remove(
+    const std::vector<std::string>& keys,
+    std::vector<ValueChange>& changes) {
+  for (auto& key : keys) {
+    auto value_it = values_.find(key);
+    if (value_it == values_.end())
+      continue;
+
+    // Add the change to the changes list.
+    ValueChange change(
+        key, base::Optional<base::Value>(std::move(value_it->second->value)),
+        nullptr);
+    changes.push_back(std::move(change));
+
+    used_total_ -= value_it->second->size;
+    values_.erase(value_it);
+  }
+}
+
+void SessionStorageManager::ExtensionStorage::Clear(
+    std::vector<ValueChange>& changes) {
+  for (auto& value : values_) {
+    ValueChange change(
+        value.first,
+        base::Optional<base::Value>(std::move(value.second->value)), nullptr);
+    changes.push_back(std::move(change));
+  }
+  values_.clear();
+}
+
 // Implementation of SessionStorageManager.
 SessionStorageManager::SessionStorageManager(size_t quota_bytes_per_extension)
     : quota_bytes_per_extension_(quota_bytes_per_extension) {}
@@ -168,4 +198,26 @@ bool SessionStorageManager::Set(const ExtensionId& extension_id,
 
   return storage->Set(std::move(input_values), changes);
 }
+
+void SessionStorageManager::Remove(const ExtensionId& extension_id,
+                                   const std::vector<std::string>& keys,
+                                   std::vector<ValueChange>& changes) {
+  auto storage_it = extensions_storage_.find(extension_id);
+  if (storage_it != extensions_storage_.end())
+    storage_it->second->Remove(keys, changes);
+}
+
+void SessionStorageManager::Remove(const ExtensionId& extension_id,
+                                   const std::string& key,
+                                   std::vector<ValueChange>& changes) {
+  Remove(extension_id, std::vector<std::string>(1, key), changes);
+}
+
+void SessionStorageManager::Clear(const ExtensionId& extension_id,
+                                  std::vector<ValueChange>& changes) {
+  auto storage_it = extensions_storage_.find(extension_id);
+  if (storage_it != extensions_storage_.end())
+    storage_it->second->Clear(changes);
+}
+
 }  // namespace extensions

@@ -67,6 +67,20 @@ class SessionStorageManager : public base::SupportsUserData::Data {
            std::map<std::string, base::Value> values,
            std::vector<ValueChange>& changes);
 
+  // Removes multiple keys for the given `extension_id`.
+  void Remove(const ExtensionId& extension_id,
+              const std::vector<std::string>& keys,
+              std::vector<ValueChange>& changes);
+
+  // Removes a key for the given `extension_id`.
+  void Remove(const ExtensionId& extension_id,
+              const std::string& key,
+              std::vector<ValueChange>& changes);
+
+  // Clears the storage of the given `extension_id`.
+  void Clear(const ExtensionId& extension_id,
+             std::vector<ValueChange>& changes);
+
  private:
   struct SessionValue {
     SessionValue(base::Value value, size_t size);
@@ -93,6 +107,13 @@ class SessionStorageManager : public base::SupportsUserData::Data {
     // if a change occurs.
     bool Set(std::map<std::string, base::Value> input_values,
              std::vector<ValueChange>& changes);
+
+    // Removes multiple keys from the storage.
+    void Remove(const std::vector<std::string>& keys,
+                std::vector<ValueChange>& changes);
+
+    // Clears the storage.
+    void Clear(std::vector<ValueChange>& changes);
 
    private:
     // Returns the updated usage for the input values and adds them as session

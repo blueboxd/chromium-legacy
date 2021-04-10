@@ -569,7 +569,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // stored on the Element, computes the ComputedStyle and stores it on the
   // Element’s ElementRareData.  Used for getComputedStyle when Element is
   // display none.
-  const ComputedStyle* EnsureComputedStyle(PseudoId = kPseudoIdNone);
+  const ComputedStyle* EnsureComputedStyle(
+      PseudoId = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   bool HasDisplayContentsStyle() const;
 
@@ -738,16 +740,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   //
   // This is appropriate to use if the cached version is invalid in a given
   // situation.
-  scoped_refptr<ComputedStyle> UncachedStyleForPseudoElement(
-      const StyleRequest&);
+  ComputedStyle* UncachedStyleForPseudoElement(const StyleRequest&);
 
   // This is the same as UncachedStyleForPseudoElement, except that the caller
   // must provide an appropriate StyleRecalcContext such that e.g. @container
   // queries are evaluated correctly.
   //
   // See StyleRecalcContext for more information.
-  scoped_refptr<ComputedStyle> StyleForPseudoElement(const StyleRecalcContext&,
-                                                     const StyleRequest&);
+  ComputedStyle* StyleForPseudoElement(const StyleRecalcContext&,
+                                       const StyleRequest&);
 
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 
@@ -853,7 +854,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  scoped_refptr<ComputedStyle> StyleForLayoutObject(const StyleRecalcContext&);
+  ComputedStyle* StyleForLayoutObject(const StyleRecalcContext&);
 
   bool HasID() const;
   bool HasClass() const;
@@ -981,8 +982,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   virtual void WillRecalcStyle(const StyleRecalcChange);
   virtual void DidRecalcStyle(const StyleRecalcChange);
-  virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
-      const StyleRecalcContext&);
+  virtual ComputedStyle* CustomStyleForLayoutObject(const StyleRecalcContext&);
 
   virtual NamedItemType GetNamedItemType() const {
     return NamedItemType::kNone;
@@ -1013,8 +1013,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
-  scoped_refptr<ComputedStyle> OriginalStyleForLayoutObject(
-      const StyleRecalcContext&);
+  ComputedStyle* OriginalStyleForLayoutObject(const StyleRecalcContext&);
 
   // Step 4 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
   Node* InsertAdjacent(const String& where, Node* new_child, ExceptionState&);
@@ -1075,10 +1074,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // these changes can be directly propagated to this element (the child).
   // If these conditions are met, propagates the changes to the current style
   // and returns the new style. Otherwise, returns null.
-  scoped_refptr<ComputedStyle> PropagateInheritedProperties();
+  ComputedStyle* PropagateInheritedProperties();
 
-  const ComputedStyle* EnsureOwnComputedStyle(const StyleRecalcContext&,
-                                              PseudoId);
+  const ComputedStyle* EnsureOwnComputedStyle(
+      const StyleRecalcContext&,
+      PseudoId,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   // Recalculate the ComputedStyle for this element and return a
   // StyleRecalcChange for propagation/traversal into child nodes.
@@ -1188,8 +1189,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual int DefaultTabIndex() const;
 
   const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone) final {
-    return EnsureComputedStyle(pseudo_element_specifier);
+      PseudoId pseudo_element_specifier = kPseudoIdNone,
+      const AtomicString& pseudo_argument = g_null_atom) final {
+    return EnsureComputedStyle(pseudo_element_specifier, pseudo_argument);
   }
 
   inline void UpdateCallbackSelectors(const ComputedStyle* old_style,

@@ -132,6 +132,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="41" label="FLAG_REQUEST_FILTER_KEY_EVENTS"/>
   <int value="42" label="FLAG_REQUEST_TOUCH_EXPLORATION_MODE"/>
   <int value="43" label="FLAG_RETRIEVE_INTERACTIVE_WINDOWS"/>
+  <int value="44" label="SERVICE_TYPE_UNKNOWN"/>
+  <int value="45" label="SERVICE_TYPE_PASSWORD_MANAGER"/>
+  <int value="46" label="SERVICE_TYPE_ASSISTIVE_TECH"/>
 </enum>
 
 <enum name="AccessibilityATKAPIEnum">
@@ -19872,6 +19875,10 @@ Called by update_document_policy_enum.py.-->
 <enum name="DownloadCancelReason">
   <int value="0" label="Existing download path"/>
   <int value="1" label="Target confirmation result"/>
+  <int value="2" label="No valid path"/>
+  <int value="3" label="Mixed content"/>
+  <int value="4" label="Failed path reservation"/>
+  <int value="5" label="Empty local path"/>
 </enum>
 
 <enum name="DownloadConnectionSecurity">
@@ -28546,7 +28553,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="460" label="EditingApplePasteAsQuotation"/>
   <int value="461" label="EditingAppleStyleSpanClass"/>
   <int value="462" label="EditingAppleTabSpanClass"/>
-  <int value="463" label="HTMLImportsAsyncAttribute"/>
+  <int value="463" label="OBSOLETE_HTMLImportsAsyncAttribute"/>
   <int value="464" label="FontFaceSetReady"/>
   <int value="465" label="XMLHttpRequestSynchronous"/>
   <int value="466" label="CSSSelectorPseudoUnresolved"/>
@@ -42788,9 +42795,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="41" label="SBOX_ERROR_CANNOT_RESOLVE_INTERCEPTION_THUNK"/>
   <int value="42" label="SBOX_ERROR_CANNOT_WRITE_INTERCEPTION_THUNK"/>
   <int value="43" label="SBOX_ERROR_CANNOT_FIND_BASE_ADDRESS"/>
-  <int value="44" label="SBOX_ERROR_CREATE_APPCONTAINER_PROFILE"/>
-  <int value="45" label="SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_ACCESS_CHECK"/>
-  <int value="46" label="SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_CAPABILITY"/>
+  <int value="44" label="SBOX_ERROR_CREATE_APPCONTAINER"/>
+  <int value="45" label="SBOX_ERROR_CREATE_APPCONTAINER_ACCESS_CHECK"/>
+  <int value="46" label="SBOX_ERROR_CREATE_APPCONTAINER_CAPABILITY"/>
   <int value="47" label="SBOX_ERROR_CANNOT_INIT_JOB"/>
   <int value="48" label="SBOX_ERROR_INVALID_LOWBOX_SID"/>
   <int value="49" label="SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN"/>
@@ -45008,6 +45015,7 @@ from previous Chrome versions.
   <int value="-1212855900" label="enable-all-bookmarks-view"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1212167260" label="disable-app-window-cycling"/>
+  <int value="-1209720026" label="AppMenuMobileSiteOption:disabled"/>
   <int value="-1208501269" label="AutofillScanThemeDialog:enabled"/>
   <int value="-1208044478" label="InheritNativeThemeFromParentWidget:enabled"/>
   <int value="-1206875404" label="EnableIncognitoWindowCounter:enabled"/>
@@ -47484,6 +47492,7 @@ from previous Chrome versions.
   <int value="1046878091" label="PasswordForceSaving:enabled"/>
   <int value="1046981538" label="OfflinePagesShowAlternateDinoPage:disabled"/>
   <int value="1047110483" label="ShelfHotseat:disabled"/>
+  <int value="1049339770" label="AppMenuMobileSiteOption:enabled"/>
   <int value="1049885154" label="OfflinePagesPrefetching:disabled"/>
   <int value="1050048304" label="enable-font-cache-scaling"/>
   <int value="1050321458" label="new-profile-management"/>
@@ -55533,6 +55542,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="23" label="NOT_AUTHENTICATED"/>
   <int value="24" label="TOO_MANY_STAS"/>
   <int value="25" label="DISCONNECT_FAILURE"/>
+  <int value="26" label="SIM_LOCKED"/>
 </enum>
 
 <enum name="NetworkStatus">
@@ -56007,6 +56017,33 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Transport-layer cached"/>
   <int value="7" label="Transport-layer default"/>
   <int value="8" label="H2 pings"/>
+</enum>
+
+<enum name="NsswitchIncompatibleReason">
+  <int value="0" label="&quot;files&quot; missing"/>
+  <int value="1" label="Multiple &quot;files&quot;"/>
+  <int value="2" label="Bad &quot;files&quot; actions"/>
+  <int value="3" label="&quot;dns&quot; missing"/>
+  <int value="4" label="Bad &quot;dns&quot; actions"/>
+  <int value="5" label="Bad &quot;mdns*_minimal&quot; actions"/>
+  <int value="6" label="Bad other-service actions"/>
+  <int value="7" label="Unknown service"/>
+  <int value="8" label="Incompatible service"/>
+</enum>
+
+<enum name="NsswitchService">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="&quot;files&quot;"/>
+  <int value="2" label="&quot;dns&quot;"/>
+  <int value="3" label="&quot;mdns&quot;"/>
+  <int value="4" label="&quot;mdns4&quot;"/>
+  <int value="5" label="&quot;mdns6&quot;"/>
+  <int value="6" label="&quot;mdns_minimal&quot;"/>
+  <int value="7" label="&quot;mdns4_minimal&quot;"/>
+  <int value="8" label="&quot;mdns6_minimal&quot;"/>
+  <int value="9" label="&quot;myhostname&quot;"/>
+  <int value="10" label="&quot;resolve&quot;"/>
+  <int value="11" label="&quot;nis&quot;"/>
 </enum>
 
 <enum name="NTPBackgroundCustomizationAvailability">
@@ -72656,6 +72693,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="40" label="UMA_WEB_FEED_FOLLOW_FAILURE"/>
   <int value="41" label="UMA_WEB_FEED_UNFOLLOW_SUCCESS"/>
   <int value="42" label="UMA_WEB_FEED_UNFOLLOW_FAILURE"/>
+  <int value="43" label="UMA_LANGUAGE_SPLIT_RESTART"/>
 </enum>
 
 <enum name="SnapshotItemId">

@@ -2810,6 +2810,12 @@ const char kAutofillUseMobileLabelDisambiguationDescription[] =
     "When enabled, Autofill suggestions' labels are displayed using a "
     "mobile-friendly format.";
 
+const char kAppMenuMobileSiteOptionName[] =
+    "Show Mobile Site option in app menu";
+const char kAppMenuMobileSiteOptionDescription[] =
+    "When enabled, app menu should show 'Mobile site' when showing desktop "
+    "site, instead of showing 'Desktop Site' with checkbox";
+
 const char kBackgroundTaskComponentUpdateName[] =
     "Background Task Component Updates";
 const char kBackgroundTaskComponentUpdateDescription[] =
@@ -4530,14 +4536,6 @@ const char kHoldingSpaceDescription[] =
     "aims to increase productivity by saving time. When enabled, access recent "
     "screenshots and downloads from the shelf. Pin important files with the "
     "Files App context menu to keep them one click away.";
-
-const char kHoldingSpacePreviewsName[] =
-    "Support showing previews of quick access screenshots, downloads, and "
-    "files";
-const char kHoldingSpacePreviewsDescription[] =
-    "Enables support for showing previews of quick access screenshots, "
-    "downloads, and imporant files in the shelf. Note that this has no effect "
-    "unless #enable-holding-space is also enabled.";
 
 const char kImeAssistAutocorrectName[] = "Enable assistive autocorrect";
 const char kImeAssistAutocorrectDescription[] =

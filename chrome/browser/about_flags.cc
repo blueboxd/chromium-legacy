@@ -4418,6 +4418,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kRequestDesktopSiteForTablets,
                                     kRequestDesktopSiteForTabletsVariations,
                                     "RequestDesktopSiteForTablets")},
+    {"app-menu-mobile-site-option",
+     flag_descriptions::kAppMenuMobileSiteOptionName,
+     flag_descriptions::kAppMenuMobileSiteOptionDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAppMenuMobileSiteOption)},
 #endif  // OS_ANDROID
 
     {"omnibox-display-title-for-current-url",
@@ -6811,11 +6815,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-holding-space", flag_descriptions::kHoldingSpaceName,
      flag_descriptions::kHoldingSpaceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpace)},
-
-    {"enable-holding-space-previews",
-     flag_descriptions::kHoldingSpacePreviewsName,
-     flag_descriptions::kHoldingSpacePreviewsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpacePreviews)},
 
     {"enhanced-desk-animations", flag_descriptions::kEnhancedDeskAnimationsName,
      flag_descriptions::kEnhancedDeskAnimationsDescription, kOsCrOS,

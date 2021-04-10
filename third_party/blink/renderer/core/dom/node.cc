@@ -1075,7 +1075,7 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
   }
 }
 
-void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
+void Node::SetComputedStyle(const ComputedStyle* computed_style) {
   // We don't set computed style for text nodes.
   DCHECK(IsElementNode());
 
@@ -1612,10 +1612,11 @@ void Node::DetachLayoutTree(bool performing_reattach) {
 }
 
 const ComputedStyle* Node::VirtualEnsureComputedStyle(
-    PseudoId pseudo_element_specifier) {
+    PseudoId pseudo_element_specifier,
+    const AtomicString& pseudo_argument) {
   return ParentOrShadowHostNode()
              ? ParentOrShadowHostNode()->EnsureComputedStyle(
-                   pseudo_element_specifier)
+                   pseudo_element_specifier, pseudo_argument)
              : nullptr;
 }
 

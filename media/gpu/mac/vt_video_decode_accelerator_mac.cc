@@ -167,7 +167,7 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatH264(
   static const CMVideoFormatDescriptionCreateFromH264ParameterSetsPtr CMVideoFormatDescriptionCreateFromH264ParameterSetsFuncPtr =
       reinterpret_cast<CMVideoFormatDescriptionCreateFromH264ParameterSetsPtr>(dlsym(((void *) -2), "CMVideoFormatDescriptionCreateFromH264ParameterSets"));
   if(!CMVideoFormatDescriptionCreateFromH264ParameterSetsFuncPtr)
-		return base::ScopedCFTypeRef<CMFormatDescriptionRef>(nil);
+    return base::ScopedCFTypeRef<CMFormatDescriptionRef>(nil);
   DCHECK(!sps.empty());
   DCHECK(!pps.empty());
 

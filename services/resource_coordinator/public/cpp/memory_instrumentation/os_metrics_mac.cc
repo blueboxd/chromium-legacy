@@ -359,22 +359,22 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
                                  mojom::RawOSMemDump* dump) {
 
   if(__builtin_available(macOS 10.9,*)) {
-  task_vm_info info;
-
-  mach_msg_type_number_t count = ChromeTaskVMInfoCount;
-  kern_return_t result =
-      task_info(mach_task_self(), TASK_VM_INFO,
-                reinterpret_cast<task_info_t>(&info), &count);
-  if (result != KERN_SUCCESS)
-    return false;
-
-  dump->platform_private_footprint->internal_bytes = info.internal;
-  dump->platform_private_footprint->compressed_bytes = info.compressed;
-
-  if (count == ChromeTaskVMInfoCount) {
-    dump->platform_private_footprint->phys_footprint_bytes =
-        info.phys_footprint;
-  }
+    task_vm_info info;
+    
+    mach_msg_type_number_t count = ChromeTaskVMInfoCount;
+    kern_return_t result =
+    task_info(mach_task_self(), TASK_VM_INFO,
+              reinterpret_cast<task_info_t>(&info), &count);
+    if (result != KERN_SUCCESS)
+      return false;
+    
+    dump->platform_private_footprint->internal_bytes = info.internal;
+    dump->platform_private_footprint->compressed_bytes = info.compressed;
+    
+    if (count == ChromeTaskVMInfoCount) {
+      dump->platform_private_footprint->phys_footprint_bytes =
+      info.phys_footprint;
+    }
   } else {
     size_t private_size, shared_size;
     mach_msg_type_number_t count = 10;
@@ -386,13 +386,13 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
     if(kr == KERN_SUCCESS) {
       dump->platform_private_footprint->internal_bytes = task_info_data.resident_size;
       dump->platform_private_footprint->phys_footprint_bytes = task_info_data.resident_size;
-	}
+    }
     
-	if(GetMemoryBytes(&private_size,&shared_size)) {
+    if(GetMemoryBytes(&private_size,&shared_size)) {
       dump->platform_private_footprint->private_bytes = private_size;
-	} else {
-	  return false;
-	}
+    } else {
+      return false;
+    }
   }
   return true;
 }

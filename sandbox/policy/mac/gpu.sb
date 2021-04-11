@@ -142,7 +142,7 @@
 
 (if (<= os-version 1009)
   (allow sysctl-read)
-	; else
+  ; else
   (allow sysctl-read
     (sysctl-name "hw.busfrequency_max")
     (sysctl-name "hw.cachelinesize")

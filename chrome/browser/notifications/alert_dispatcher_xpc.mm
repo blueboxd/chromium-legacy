@@ -54,7 +54,6 @@ void RecordXPCEvent(XPCConnectionEvent event) {
 }
 
 - (instancetype)init {
-	
   if ((self = [super init])) {
     if(@available(macOS 10.8, *)) {
       _xpcConnection.reset([[NSXPCConnection alloc]
@@ -86,7 +85,7 @@ void RecordXPCEvent(XPCConnectionEvent event) {
       _xpcConnection.get().exportedObject = self;
       [_xpcConnection resume];
     }
-	}
+  }
   return self;
 }
 

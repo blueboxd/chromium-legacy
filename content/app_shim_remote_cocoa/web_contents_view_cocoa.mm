@@ -287,7 +287,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
       visibility = Visibility::kVisible;
     else
       visibility = Visibility::kOccluded;
-	} else {
+  } else {
     if ([self isHiddenOrHasHiddenAncestor] || ![self window])
       visibility = Visibility::kHidden;
     else
@@ -326,7 +326,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
       NSWindowDidExitFullScreenNotification
     ]) mutableCopy];
     if(NSWindowDidChangeOcclusionStateNotificationStr) {
-    	[notificationsToRemove addObject:*NSWindowDidChangeOcclusionStateNotificationStr];
+      [notificationsToRemove addObject:*NSWindowDidChangeOcclusionStateNotificationStr];
     }
     for (NSString* notificationName in notificationsToRemove) {
       [notificationCenter removeObserver:self
@@ -335,7 +335,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
     }
   }
   if (newWindow) {
-  	if(NSWindowDidChangeOcclusionStateNotificationStr) {
+    if(NSWindowDidChangeOcclusionStateNotificationStr) {
       [notificationCenter addObserver:self
                              selector:@selector(windowChangedOcclusionState:)
                                  name:*NSWindowDidChangeOcclusionStateNotificationStr

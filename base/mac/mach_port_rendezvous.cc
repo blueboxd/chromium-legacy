@@ -183,9 +183,9 @@ void MachPortRendezvousServer::HandleRequest() {
     return;
   }
 
-	pid_t sender_pid;
-	audit_token_to_au32(request.trailer.msgh_audit,
-			NULL, NULL, NULL, NULL, NULL, &sender_pid, NULL, NULL);
+  pid_t sender_pid;
+  audit_token_to_au32(request.trailer.msgh_audit,
+    NULL, NULL, NULL, NULL, NULL, &sender_pid, NULL, NULL);
 
   MachPortsForRendezvous ports_to_send = PortsForPid(sender_pid);
   if (ports_to_send.empty()) {

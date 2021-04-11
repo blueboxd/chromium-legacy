@@ -50,7 +50,7 @@ void SetupAccessibilityDisplayOptionsNotifier() {
                   wc->OnWebPreferencesChanged();
                 }
               }];
-	}
+  }
 }
 }  // namespace
 

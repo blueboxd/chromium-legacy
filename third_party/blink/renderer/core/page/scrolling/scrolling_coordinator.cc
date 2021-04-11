@@ -322,7 +322,7 @@ void ScrollingCoordinator::WillCloseAnimationHost(LocalFrameView* view) {
     if (view->GetCompositorAnimationTimeline()) {
           view->GetCompositorAnimationHost()->RemoveAnimationTimeline(
             view->GetCompositorAnimationTimeline()->GetAnimationTimeline());
-	}
+  }
     view->GetScrollingContext()->SetAnimationTimeline(nullptr);
     view->GetScrollingContext()->SetAnimationHost(nullptr);
   } else if (programmatic_scroll_animator_timeline_) {

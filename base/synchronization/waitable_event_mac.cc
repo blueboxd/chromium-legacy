@@ -368,7 +368,7 @@ bool WaitableEvent::PeekPort(mach_port_t port, bool dequeue) {
       kr = mach_msg(&sendmsg.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof(sendmsg), 0,
                     MACH_PORT_NULL, 0, MACH_PORT_NULL);
       MACH_CHECK(kr == KERN_SUCCESS || kr == MACH_SEND_TIMED_OUT, kr) << "mach_msg";
-	}
+    }
     return true;
   } else {
     MACH_CHECK(kr == MACH_RCV_TIMED_OUT, kr) << "mach_msg";

@@ -646,11 +646,11 @@ void NativeThemeMac::ConfigureWebInstance() {
   AddObserver(color_scheme_observer_.get());
 
   // Observe caption style changes.
-  CFNotificationCenterAddObserver(
-      CFNotificationCenterGetLocalCenter(), this,
-      CaptionSettingsChangedNotificationCallback,
-      kMACaptionAppearanceSettingsChangedNotification, 0,
-      CFNotificationSuspensionBehaviorDeliverImmediately);
+//  CFNotificationCenterAddObserver(
+//      CFNotificationCenterGetLocalCenter(), this,
+//      CaptionSettingsChangedNotificationCallback,
+//      kMACaptionAppearanceSettingsChangedNotification, 0,
+//      CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 
 }  // namespace ui

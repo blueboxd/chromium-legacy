@@ -47,10 +47,10 @@
 - macOS 11.1 SDK
   - 10.7向けにビルドする場合、SDKの[NSArray.h](https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/NSArray.h) と [NSDictionary.h](https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/NSDictionary.h)にパッチが必要
 - Xcode 12.2+
-  - 10.7向けの場合、同梱のclangではなくパッチを当てたclangが必要（書きかけ）
+  - 10.7向けの場合、SDKや同梱のclangではなく[パッチを当てたclang](../../../llvm-project)が必要
 - 強めのCPU
-  - `Xeon E5-2690 v4`1台と`Ryzen 9 5950X`、`Ryzen 9 3950X`を2台の分散ビルドでフルビルドに40分程度
-  - `Core i9-9980HK`単体でフルビルドに3-4時間
+  - `Ryzen 9 5950X`1台と`Ryzen 9 3950X`を2台の分散ビルドでフルビルドに40分程度
+  - `Core i9-9980HK`単体でフルビルドに3-4時間以上
 
 ### TL;DR
 

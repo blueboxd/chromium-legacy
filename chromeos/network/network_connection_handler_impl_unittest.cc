@@ -363,6 +363,28 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetCellularSimLocked() {
+    // Simulate a locked SIM.
+    base::Value sim_lock_status(base::Value::Type::DICTIONARY);
+    sim_lock_status.SetKey(shill::kSIMLockTypeProperty,
+                           base::Value(shill::kSIMLockPin));
+    helper_.device_test()->SetDeviceProperty(
+        kTestCellularDevicePath, shill::kSIMLockStatusProperty,
+        std::move(sim_lock_status), /*notify_changed=*/true);
+
+    // Set the cellular service to be the active profile.
+    base::Value::ListStorage sim_slot_infos;
+    base::Value slot_info_item(base::Value::Type::DICTIONARY);
+    slot_info_item.SetKey(shill::kSIMSlotInfoICCID, base::Value(kTestIccid));
+    slot_info_item.SetBoolKey(shill::kSIMSlotInfoPrimary, true);
+    sim_slot_infos.push_back(std::move(slot_info_item));
+    helper_.device_test()->SetDeviceProperty(
+        kTestCellularDevicePath, shill::kSIMSlotInfoProperty,
+        base::Value(sim_slot_infos), /*notify_changed=*/true);
+
+    base::RunLoop().RunUntilIdle();
+  }
+
   void AddNonConnectablePSimService() {
     AddCellularDevice();
 
@@ -393,7 +415,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         dbus::ObjectPath(kTestCellularServicePath),
         dbus::ObjectPath(kTestEuiccPath), kTestIccid, kTestCellularName,
         "service_provider", "activation_code", kTestCellularServicePath,
-        hermes::profile::State::kInactive, /*service_only=*/false);
+        hermes::profile::State::kInactive,
+        hermes::profile::ProfileClass::kOperational, /*service_only=*/false);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -931,6 +954,14 @@ TEST_F(NetworkConnectionHandlerImplTest, PSimProfile_OutOfCredits) {
   Connect(kTestCellularServicePath);
   EXPECT_EQ(NetworkConnectionHandler::kErrorCellularOutOfCredits,
             GetResultAndReset());
+}
+
+TEST_F(NetworkConnectionHandlerImplTest, SimLocked) {
+  AddNonConnectablePSimService();
+  SetCellularSimLocked();
+  SetCellularServiceConnectable();
+  Connect(kTestCellularServicePath);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorSimLocked, GetResultAndReset());
 }
 
 TEST_F(NetworkConnectionHandlerImplTest, ESimProfile_AlreadyConnectable) {

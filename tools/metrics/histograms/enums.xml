@@ -17887,6 +17887,7 @@ Called by update_debug_scenarios.py.-->
   <int value="50" label="Service worker network request panel closed quickly"/>
   <int value="51" label="Network panel timing tab SW respondWith clicked"/>
   <int value="52" label="Copy value in network request panel"/>
+  <int value="53" label="Console Sidebar opened"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -24116,6 +24117,7 @@ Called by update_document_policy_enum.py.-->
   <int value="846" label="FileHandlingAllowedForUrls"/>
   <int value="847" label="FileHandlingBlockedForUrls"/>
   <int value="848" label="DeviceAllowedBluetoothServices"/>
+  <int value="849" label="ExplicitlyAllowedNetworkPorts"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -44404,6 +44406,7 @@ from previous Chrome versions.
   <int value="-1713564656" label="ProtectSyncCredentialOnReauth:enabled"/>
   <int value="-1711751318" label="enable-data-reduction-proxy-lo-fi-preview"/>
   <int value="-1710772665" label="disable-my-files-navigation"/>
+  <int value="-1706483123" label="VmStatusPage:enabled"/>
   <int value="-1704472714" label="UseMessagesGoogleComDomain:disabled"/>
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
@@ -44416,6 +44419,7 @@ from previous Chrome versions.
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
   <int value="-1694900665" label="HandwritingGestureEditing:enabled"/>
   <int value="-1693498375" label="CdmFactoryDaemon:enabled"/>
+  <int value="-1692973133" label="VmStatusPage:disabled"/>
   <int value="-1692967465"
       label="ContextMenuPerformanceInfoAndRemoteHintFetching:enabled"/>
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>

@@ -6,6 +6,9 @@
 # file. When the test failures below are triaged, new bugs will be created and we will change the
 # bug for the expectation to the new bug.
 
+# Test fails when run on Android.
+crbug.com/1197454 external/wpt/document-policy/experimental-features/unsized-media.tentative.https.sub.html [ Failure ]
+
 # This test is flaky.
 crbug.com/1126079 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/access-from-coop-page-to-openee_coop-ro.https.html [ Timeout ]
 
@@ -56,10 +59,21 @@ crbug.com/1025610 external/wpt/push-api/idlharness.https.any.serviceworker.html 
 crbug.com/1025610 external/wpt/push-api/idlharness.https.any.sharedworker.html [ Failure ]
 crbug.com/1025610 external/wpt/push-api/idlharness.https.any.worker.html [ Failure ]
 
+# Several scroll animations tests fail in WebLayer and Clank.
+crbug.com/1198063 external/wpt/scroll-animations/css/at-scroll-timeline-start-end.html [ Failure ]
+crbug.com/1198063 external/wpt/scroll-animations/current-time-root-scroller.html [ Failure ]
+crbug.com/1198063 external/wpt/scroll-animations/idlharness.window.html [ Failure ]
+crbug.com/1198063 external/wpt/scroll-animations/progress-based-current-time.tenative.html [ Failure ]
+crbug.com/1198063 external/wpt/scroll-animations/scroll-timeline-snapshotting.html [ Timeout ]
+
 # SharedWorker is not supported on Android (https://crbug.com/154571).
 crbug.com/1190392 external/wpt/trusted-types/WorkerGlobalScope-eval.html [ Failure ]
 crbug.com/1190392 external/wpt/trusted-types/WorkerGlobalScope-importScripts.html [ Failure ]
 crbug.com/1190392 external/wpt/trusted-types/worker-constructor.https.html [ Failure ]
+
+# Reporting IDL failures on Android.
+crbug.com/1198081 external/wpt/reporting/idlharness.any.html [ Failure ]
+crbug.com/1198081 external/wpt/reporting/idlharness.any.worker.html [ Failure ]
 
 # Add untriaged failures in this block
 crbug.com/1050754 external/wpt/IndexedDB/file_support.sub.html [ Failure ]
@@ -716,10 +730,6 @@ crbug.com/1050754 external/wpt/css/mediaqueries/test_media_queries.html [ Failur
 crbug.com/1050754 external/wpt/css/selectors/focus-visible-002.html [ Timeout ]
 crbug.com/1050754 external/wpt/css/selectors/focus-visible-016.html [ Failure Pass ]
 crbug.com/1050754 external/wpt/custom-elements/reactions/HTMLInputElement.html [ Failure ]
-crbug.com/1050754 external/wpt/document-policy/experimental-features/sync-script.tentative.https.sub.html [ Failure Pass ]
-crbug.com/1050754 external/wpt/document-policy/experimental-features/unsized-media.tentative.https.sub.html [ Failure ]
-crbug.com/1050754 external/wpt/document-policy/reporting/oversized-images-reporting-tentative.html [ Timeout ]
-crbug.com/1050754 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
 crbug.com/1050754 external/wpt/dom/events/Event-dispatch-click.html [ Timeout ]
 crbug.com/1050754 external/wpt/dom/events/scrolling/input-text-scroll-event-when-using-arrow-keys.html [ Timeout ]
 crbug.com/1050754 external/wpt/dom/events/scrolling/overscroll-event-fired-to-scrolled-element.html [ Failure ]
@@ -1892,7 +1902,6 @@ crbug.com/1050754 external/wpt/referrer-policy/gen/top.meta/unsafe-url/sharedwor
 crbug.com/1050754 external/wpt/referrer-policy/gen/top.meta/unsafe-url/sharedworker-module.http.html [ Failure ]
 crbug.com/1050754 external/wpt/referrer-policy/gen/top.meta/unset/sharedworker-classic.http.html [ Failure ]
 crbug.com/1050754 external/wpt/referrer-policy/gen/top.meta/unset/sharedworker-module.http.html [ Failure ]
-crbug.com/1050754 external/wpt/reporting/bufferSize.html [ Pass Timeout ]
 crbug.com/1050754 external/wpt/resize-observer/observe.html [ Failure ]
 crbug.com/1050754 external/wpt/resize-observer/svg.html [ Failure ]
 crbug.com/1050754 external/wpt/resource-timing/crossorigin-sandwich-TAO.sub.html [ Failure ]
@@ -1916,19 +1925,6 @@ crbug.com/1050754 external/wpt/screen-wake-lock/wakelock-released.https.html [ C
 crbug.com/1050754 external/wpt/screen-wake-lock/wakelock-request-denied.https.html [ Crash ]
 crbug.com/1050754 external/wpt/screen-wake-lock/wakelock-type.https.window.html [ Crash ]
 crbug.com/1050754 external/wpt/screen-wake-lock/wakelockpermissiondescriptor.https.html [ Crash ]
-crbug.com/1050754 external/wpt/scroll-animations/css/at-scroll-timeline-dynamic.tentative.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/css/at-scroll-timeline-start-end.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/current-time-root-scroller.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/element-based-offset-clamp.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/pause-animation.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/progress-based-current-time.tenative.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/scroll-animation-effect-phases.tentative.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/scroll-animation-inactive-timeline.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/scroll-animation.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/scroll-timeline-invalidation.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/scroll-timeline-snapshotting.html [ Timeout ]
-crbug.com/1050754 external/wpt/scroll-animations/setting-playback-rate.html [ Failure ]
-crbug.com/1050754 external/wpt/scroll-animations/updating-the-finished-state.html [ Failure ]
 crbug.com/1050754 external/wpt/scroll-to-text-fragment/find-range-from-text-directive.html [ Pass Timeout ]
 crbug.com/1050754 external/wpt/scroll-to-text-fragment/force-load-at-top.html [ Pass Timeout ]
 crbug.com/1050754 external/wpt/scroll-to-text-fragment/redirects.html [ Pass Timeout ]

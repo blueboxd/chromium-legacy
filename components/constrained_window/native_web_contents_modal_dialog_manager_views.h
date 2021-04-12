@@ -65,6 +65,7 @@ class NativeWebContentsModalDialogManagerViews
   web_modal::SingleWebContentsDialogManagerDelegate* native_delegate() {
     return native_delegate_;
   }
+
   // By default just calls widget->Show() or Hide(), but allows a derived class
   // to override in order to hide an alternate way (e.g. if the default hide
   // would tear down attached dialogs too early).

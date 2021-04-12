@@ -98,12 +98,6 @@ void NativeWebContentsModalDialogManagerViews::Show() {
   }
 #endif
   ShowWidget(widget);
-  // |host_| may be null during tab drag on Views/Win32.
-  //
-  // TODO(https://crbug.com/1119431): This null check may be out of date.
-  if (host_)
-    constrained_window::UpdateWebContentsModalDialogPosition(widget, host_);
-  widget->Show();
   if (host_->ShouldActivateDialog())
     Focus();
 
@@ -116,7 +110,7 @@ void NativeWebContentsModalDialogManagerViews::Show() {
 
 #if !defined(USE_AURA)
   // Don't re-animate when switching tabs. Note this is done on Mac only after
-  // the initial Show() call above, and then "sticks" for later calls.
+  // the initial ShowWidget() call above, and then "sticks" for later calls.
   // TODO(tapted): Consolidate this codepath with Aura.
   widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);
 #endif
@@ -130,7 +124,6 @@ void NativeWebContentsModalDialogManagerViews::Hide() {
       widget->GetNativeWindow()->parent()));
 #endif
   HideWidget(widget);
-  widget->Hide();
 }
 
 void NativeWebContentsModalDialogManagerViews::Close() {

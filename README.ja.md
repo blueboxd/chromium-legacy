@@ -55,7 +55,7 @@
 ### TL;DR
 
 ```bash
-curl https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/167ff995dca72a6fd329b6aece4c3c645ac77e7c/build.sh | bash
+curl https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/f02e2154acecd5076293e70baf27c97dcc8f6272/build.sh | bash
 ```
 
 ### 手順
@@ -63,45 +63,64 @@ curl https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff545388068399
 環境構築とビルド:
 
 ```bash
+# setup working dir
+mkdir -pv chromium-project && cd chromium-project
+
+# prepare patched clang
+mkdir -pv clang-master && pushd clang-master
+curl -LOJ https://github.com/blueboxd/llvm-project/releases/download/main/main.tar.xz
+tar xvf main.tar.xz
+popd
+
 # setup depot_tools
-mkdir chromium-project && cd chromium-project
-git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-export PATH=`pwd`/depot_tools:"$PATH"
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && export PATH=`pwd`/depot_tools:"$PATH"
 
 # setup project dir
-mkdir chromium-legacy && cd chromium-legacy
+mkdir -pv chromium-legacy && cd chromium-legacy
 # place this repo as src
 curl -OJ https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/.gclient
-# clone sources
+
+# checkout sources & dependencies
 gclient sync -v --no-history
 
 # setup patched skia
-cd src/third_party/skia
+pushd src/third_party/skia
 git remote add for-lion https://github.com/blueboxd/skia.git
 git fetch for-lion && git checkout for-lion && git checkout for-lion -- .
+popd
 
 # setup patch for v8
-cd ../../v8/src
+pushd src/v8/src
 curl -OJ https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/sp_mut.cc
 cd ../
 cat BUILD.gn | sed -e 's#"src/wasm/wasm-code-manager.h",#"src/wasm/wasm-code-manager.h",\'$'\n    "src/sp_mut.cc",#g' > BUILD.gn.tmp && mv -fv BUILD.gn.tmp BUILD.gn
+popd
 
 # setup patch for libANGLE
-cd ../third_party/angle/src/libANGLE/renderer/
+pushd src/third_party/angle/src/libANGLE/renderer/
 curl -OJ https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/65ba4558a17eb47feb38729a87b8d8976d5bb8ad/driver_utils_mac.mm
 cd metal
 cat BUILD.gn| sed -e 's#"QuartzCore.framework",#"QuartzCore.framework",\'$'\n        "CoreServices.framework",#g'  > BUILD.gn.tmp && mv -fv BUILD.gn.tmp BUILD.gn
+popd
 
 # setup out dir
-cd ../../../../../../../
-mkdir -p out/release && cd out/release
+mkdir -pv out/release
+pushd out/release
 # setup args.gn with basic parameters
-curl -OJ https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/97a23ba80d28005f6072053920d979be87213193/args.gn
-cd ../../src
+curl -OJ https://gist.githubusercontent.com/blueboxd/c1f355fb6fe829e98ff5453880683993/raw/1688a9f9bd71d90b6e83b66836cf16e3796ec6c3/args.gn
+popd
+
+# use patched clang
+pushd ../clang-master
+echo "clang_base_path=\"`pwd`\"" >> ../chromium-legacy/out/release/args.gn
+popd
+
+# generate build files
+cd src
 gn gen ../out/release
 
 # build
-ninja -C ../out/release chrome
+time ninja -C ../out/release chrome
 
 # now your build is ready
 open -R ../out/release/Chromium.app

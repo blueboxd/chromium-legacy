@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a56e553d586989438a64568e7425dcb356185f80',
+  'skia_revision': '062743a859ee4c477013ec6a55e0cbe32b81f904',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -260,7 +260,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'f9350be1e45baa1c29f7551274982262f8e769ce',
+  'freetype_revision': 'b9b74f9f78565513086050acdda98ddc23cf605e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -570,7 +570,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'caaed1b045775d441d6cbf9e6ad00881885a6929',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e2f4fd39ee036bef0411b59b35080642b4a23483',
       'condition': 'checkout_ios',
   },
 
@@ -1621,7 +1621,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f2e67f6a3e4a0b6cffcf4076e38503ddf2e295ee',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1fd9f0d6b89206b0099133b717dfd0238fe9d40c',
     'condition': 'checkout_src_internal',
   },
 
@@ -1651,7 +1651,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'UOYk02e8WWPOQEkZhFYmxLjiQLy1clNOfYEOEp51I9YC',
+        'version': 'v_9io-HYlF1rrJWGZC8BtQCp4SY3XVu6KN719WOy8DoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

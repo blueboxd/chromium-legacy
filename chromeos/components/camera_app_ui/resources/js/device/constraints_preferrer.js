@@ -84,14 +84,11 @@ export class ConstraintsPreferrer {
    * @protected
    */
   restoreResolutionPreference_(key) {
-    // TODO(inker): Return promise and await it to assure preferences are loaded
-    // before any access.
-    localStorage.get({[key]: {}}).then((values) => {
-      this.prefResolution_ = new Map();
-      for (const [deviceId, {width, height}] of Object.entries(values[key])) {
-        this.prefResolution_.set(deviceId, new Resolution(width, height));
-      }
-    });
+    const preference = localStorage.getObject(key);
+    this.prefResolution_ = new Map();
+    for (const [deviceId, {width, height}] of Object.entries(preference)) {
+      this.prefResolution_.set(deviceId, new Resolution(width, height));
+    }
   }
 
   /**
@@ -100,7 +97,7 @@ export class ConstraintsPreferrer {
    * @protected
    */
   saveResolutionPreference_(key) {
-    localStorage.set({[key]: Object.fromEntries(this.prefResolution_)});
+    localStorage.set(key, Object.fromEntries(this.prefResolution_));
   }
 
   /**
@@ -249,8 +246,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
    * @private
    */
   restoreFpsPreference_() {
-    localStorage.get({deviceVideoFps: {}})
-        .then((values) => this.prefFpses_ = values['deviceVideoFps']);
+    this.prefFpses_ = localStorage.getObject('deviceVideoFps');
   }
 
   /**
@@ -258,7 +254,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
    * @private
    */
   saveFpsPreference_() {
-    localStorage.set({deviceVideoFps: this.prefFpses_});
+    localStorage.set('deviceVideoFps', this.prefFpses_);
   }
 
   /**

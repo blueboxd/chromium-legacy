@@ -737,9 +737,8 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, Activation_iFrame) {
 
 // Makes sure that cross-origin subframe navigations are deferred during
 // prerendering.
-// Flaky https://crbug.com/1190262.
 IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
-                       DISABLED_DeferCrossOriginSubframeNavigation) {
+                       DeferCrossOriginSubframeNavigation) {
   // Navigate to an initial page.
   const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html?initial");
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -825,9 +824,8 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
 
 // Makes sure that subframe navigations are deferred if cross-origin redirects
 // are observed in a prerendering page.
-// Flaky https://crbug.com/1190262.
 IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
-                       DISABLED_DeferCrossOriginRedirectsOnSubframeNavigation) {
+                       DeferCrossOriginRedirectsOnSubframeNavigation) {
   // Navigate to an initial page.
   const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html?initial");
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -924,6 +922,38 @@ IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus",
       PrerenderHost::FinalStatus::kMainFrameNavigation, 1);
+}
+
+// Regression test for https://crbug.com/1198051
+IN_PROC_BROWSER_TEST_P(PrerenderBrowserTest, MainFrameSamePageNavigation) {
+  base::HistogramTester histogram_tester;
+  const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
+  const GURL kPrerenderingUrl =
+      GetUrl("/navigation_controller/hash_anchor_with_iframe.html");
+  const GURL kAnchorUrl =
+      GetUrl("/navigation_controller/hash_anchor_with_iframe.html#Test");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start a prerender.
+  AddPrerender(kPrerenderingUrl);
+  PrerenderHostRegistry& registry = GetPrerenderHostRegistry();
+  PrerenderHost* prerender_host =
+      registry.FindHostByUrlForTesting(kPrerenderingUrl);
+  prerender_host->WaitForLoadStopForTesting();
+
+  // Do a same document navigation
+  NavigatePrerenderedPage(*prerender_host, kAnchorUrl);
+  prerender_host->WaitForLoadStopForTesting();
+
+  // Activate
+  NavigatePrimaryPage(kPrerenderingUrl);
+  // Make sure the render is not dead by doing a same page navigation.
+  NavigatePrimaryPage(kAnchorUrl);
+
+  // Make sure we did activate the page and issued no network requests
+  EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
 }
 
 // Makes sure that activation on navigation for a pop-up window doesn't happen.

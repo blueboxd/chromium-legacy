@@ -16,7 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/test/power_monitor_test.h"
 #include "base/test/test_file_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -289,7 +289,8 @@ class ExtensionProtocolsTestBase : public testing::Test {
   }
 
   content::BrowserContext* browser_context() {
-    return force_incognito_ ? testing_profile_->GetPrimaryOTRProfile()
+    return force_incognito_ ? testing_profile_->GetPrimaryOTRProfile(
+                                  /*create_if_needed=*/true)
                             : testing_profile_.get();
   }
 

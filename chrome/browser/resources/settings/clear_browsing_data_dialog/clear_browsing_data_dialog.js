@@ -74,6 +74,17 @@ function replaceDialog(oldDialog, newDialog) {
   }
 }
 
+/**
+ * @typedef {{
+ *   signedIn: boolean,
+ *   syncConsented: boolean,
+ *   syncingHistory: boolean,
+ *   shouldShowCookieException: boolean,
+ * }}
+ */
+let UpdateSyncStateEvent;
+
+
 Polymer({
   is: 'settings-clear-browsing-data-dialog',
 
@@ -181,6 +192,12 @@ Polymer({
     },
 
     /** @private */
+    isSyncConsented_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     isSyncingHistory_: {
       type: Boolean,
       value: false,
@@ -237,6 +254,19 @@ Polymer({
     installedAppsFlagEnabled_: {
       type: Boolean,
       value: () => loadTimeData.getBoolean('installedAppsInCbd'),
+    },
+
+    /** @private */
+    searchHistoryLinkFlagEnabled_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('searchHistoryLink'),
+    },
+
+    /** @private */
+    shouldShowSearchHistoryLabel_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeShouldShowSearchHistoryLabel_(isSignedIn_)'
     },
   },
 
@@ -321,38 +351,50 @@ Polymer({
    * Updates the history description to show the relevant information
    * depending on sync and signin state.
    *
-   * @param {boolean} signedIn Whether the user is signed in.
-   * @param {boolean} syncing Whether the user is syncing history.
-   * @param {boolean} shouldShowCookieException Whether the exception about not
-   *    being signed out of your Google account should be shown.
+   * @param {UpdateSyncStateEvent} event
    * @private
    */
-  updateSyncState_(signedIn, syncing, shouldShowCookieException) {
-    this.isSignedIn_ = signedIn;
-    this.isSyncingHistory_ = syncing;
-    this.shouldShowCookieException_ = shouldShowCookieException;
+  updateSyncState_(event) {
+    this.isSignedIn_ = event.signedIn;
+    this.isSyncConsented_ = event.syncConsented;
+    this.isSyncingHistory_ = event.syncingHistory;
+    this.shouldShowCookieException_ = event.shouldShowCookieException;
     this.$.clearBrowsingDataDialog.classList.add('fully-rendered');
   },
 
   /**
    * Choose a label for the history checkbox.
-   * @param {boolean} isSignedIn
+   * @param {boolean} isSyncConsented
    * @param {boolean} isSyncingHistory
    * @param {string} historySummary
    * @param {string} historySummarySignedIn
+   * @param {string} historySummarySignedInNoLink
    * @param {string} historySummarySynced
    * @return {string}
    * @private
    */
   browsingCheckboxLabel_(
-      isSignedIn, isSyncingHistory, hasSyncError, historySummary,
-      historySummarySignedIn, historySummarySynced) {
-    if (isSyncingHistory && !hasSyncError) {
+      isSyncConsented, isSyncingHistory, hasSyncError, historySummary,
+      historySummarySignedIn, historySummarySignedInNoLink,
+      historySummarySynced) {
+    if (this.searchHistoryLinkFlagEnabled_) {
+      return isSyncingHistory ? historySummarySignedInNoLink : historySummary;
+    } else if (isSyncingHistory && !hasSyncError) {
       return historySummarySynced;
-    } else if (isSignedIn && !this.isSyncPaused_) {
+    } else if (isSyncConsented && !this.isSyncPaused_) {
       return historySummarySignedIn;
     }
     return historySummary;
+  },
+
+  /**
+   * Whether the search history text box should be shown.
+   * @param {boolean} isSignedIn
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowSearchHistoryLabel_(isSignedIn) {
+    return this.searchHistoryLinkFlagEnabled_ && isSignedIn;
   },
 
   /**

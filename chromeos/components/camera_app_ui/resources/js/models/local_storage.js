@@ -2,66 +2,64 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assertBoolean, assertInstanceof, assertString} from '../chrome_util.js';
+
 /**
- * @param {(string|!Array<string>|!Object)} keys
- * @return {!Promise<!Object>}
+ * @param {string} key
+ * @param {*} defaultValue
+ * @return {*} The value in storage or defaultValue if not found.
  */
-export async function get(keys) {
-  let result = {};
-  let sanitizedKeys = [];
-  if (typeof keys === 'string') {
-    sanitizedKeys = [keys];
-  } else if (Array.isArray(keys)) {
-    sanitizedKeys = keys;
-  } else if (keys !== null && typeof keys === 'object') {
-    sanitizedKeys = Object.keys(keys);
-
-    // If any key does not exist, use the default value specified in the
-    // input.
-    result = Object.assign({}, keys);
-  } else {
-    throw new Error('WebUI localStorageGet() cannot be run with ' + keys);
+function getHelper(key, defaultValue) {
+  const rawValue = window.localStorage.getItem(key);
+  if (rawValue === null) {
+    return defaultValue;
   }
-
-  for (const key of sanitizedKeys) {
-    const value = window.localStorage.getItem(key);
-    if (value !== null) {
-      result[key] = JSON.parse(value);
-    } else if (result[key] === undefined) {
-      // For key that does not exist and does not have a default value, set it
-      // to null.
-      result[key] = null;
-    }
-  }
-  return result;
+  return JSON.parse(rawValue);
 }
 
 /**
- * @param {!Object<string>} items
- * @return {!Promise}
+ * @param {string} key
+ * @return {!Object} The object in storage or an empty object {} if not found.
  */
-export async function set(items) {
-  for (const [key, val] of Object.entries(items)) {
-    window.localStorage.setItem(key, JSON.stringify(val));
-  }
+export function getObject(key) {
+  return assertInstanceof(getHelper(key, {}), Object);
 }
 
 /**
- * @param {(string|!Array<string>)} items
- * @return {!Promise}
+ * @param {string} key
+ * @return {string} The string in storage or an empty string "" if not found.
  */
-export async function remove(items) {
-  if (typeof items === 'string') {
-    items = [items];
-  }
-  for (const key of items) {
+export function getString(key) {
+  return assertString(getHelper(key, ''));
+}
+/**
+ * @param {string} key
+ * @return {boolean} The boolean in storage or false if not found.
+ */
+export function getBool(key) {
+  return assertBoolean(getHelper(key, false));
+}
+
+/**
+ * @param {string} key
+ * @param {*} value
+ */
+export function set(key, value) {
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
+
+/**
+ * @param {...string} keys
+ */
+export function remove(...keys) {
+  for (const key of keys) {
     window.localStorage.removeItem(key);
   }
 }
 
 /**
- * @return {!Promise}
+ * Clears all the items in the local storage.
  */
-export async function clear() {
+export function clear() {
   window.localStorage.clear();
 }

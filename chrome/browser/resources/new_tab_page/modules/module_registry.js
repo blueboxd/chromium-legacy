@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 import {NewTabPageProxy} from '../new_tab_page_proxy.js';
-
-import {Module, ModuleDescriptor} from './module_descriptor.js';
-import {descriptors} from './module_descriptors.js';
+import {ModuleDescriptor} from './module_descriptor.js';
 
 /**
  * @fileoverview The module registry holds the descriptors of NTP modules and
@@ -18,7 +16,7 @@ let instance = null;
 export class ModuleRegistry {
   /** @return {!ModuleRegistry} */
   static getInstance() {
-    return instance || (instance = new ModuleRegistry(descriptors));
+    return instance || (instance = new ModuleRegistry());
   }
 
   /** @param {ModuleRegistry} newInstance */
@@ -26,13 +24,9 @@ export class ModuleRegistry {
     instance = newInstance;
   }
 
-  /**
-   * Creates a registry populated with a list of descriptors
-   * @param {!Array<!ModuleDescriptor>} descriptors
-   */
-  constructor(descriptors) {
+  constructor() {
     /** @private {!Array<!ModuleDescriptor>} */
-    this.descriptors_ = descriptors;
+    this.descriptors_ = [];
   }
 
   /** @return {!Array<!ModuleDescriptor>} */
@@ -41,11 +35,20 @@ export class ModuleRegistry {
   }
 
   /**
+   * Registers modules via their descriptors.
+   * @param {!Array<!ModuleDescriptor>} descriptors
+   */
+  registerModules(descriptors) {
+    /** @type {!Array<!ModuleDescriptor>} */
+    this.descriptors_ = descriptors;
+  }
+
+  /**
    * Initializes enabled modules previously set via |registerModules| and
-   * returns the initialized modules.
+   * returns the initialized descriptors.
    * @param {number} timeout Timeout in milliseconds after which initialization
    *     of a particular module aborts.
-   * @return {!Promise<!Array<!Module>>}
+   * @return {!Promise<!Array<!ModuleDescriptor>>}
    */
   async initializeModules(timeout) {
     // Capture updateDisabledModules -> setDisabledModules round trip in a
@@ -59,11 +62,9 @@ export class ModuleRegistry {
           });
       NewTabPageProxy.getInstance().handler.updateDisabledModules();
     });
-    const descriptors =
-        this.descriptors_.filter(d => !disabledIds.includes(d.id));
-    const elements =
-        await Promise.all(descriptors.map(d => d.initialize(timeout)));
-    return elements.map((e, i) => ({element: e, descriptor: descriptors[i]}))
-        .filter(m => !!m.element);
+    await Promise.all(
+        this.descriptors_.filter(d => disabledIds.indexOf(d.id) < 0)
+            .map(d => d.initialize(timeout)));
+    return this.descriptors_.filter(descriptor => !!descriptor.element);
   }
 }

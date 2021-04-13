@@ -147,7 +147,9 @@ bool g_is_opening_new_window = false;
 // there are only minimized windows), it will unminimize it.
 Browser* ActivateBrowser(Profile* profile) {
   Browser* browser = chrome::FindLastActiveWithProfile(
-      profile->IsGuestSession() ? profile->GetPrimaryOTRProfile() : profile);
+      profile->IsGuestSession()
+          ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+          : profile);
   if (browser)
     browser->window()->Activate();
   return browser;
@@ -1145,7 +1147,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
                              IDC_FOCUS_SEARCH);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
-      CreateBrowser(lastProfile->GetPrimaryOTRProfile());
+      CreateBrowser(
+          lastProfile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
       break;
     case IDC_RESTORE_TAB:
       chrome::OpenWindowWithRestoredTabs(lastProfile);
@@ -1441,7 +1444,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Guest sessions must always be OffTheRecord. Use that when opening windows.
   if (profile->IsGuestSession())
-    return profile->GetPrimaryOTRProfile();
+    return profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   return profile;
 }

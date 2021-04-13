@@ -2030,11 +2030,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "enable-magnifier-new-focus-following",
-    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "enable-magnifier-panning-improvements",
     "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 92
@@ -2700,7 +2695,7 @@
   {
     "name": "enable-webrtc-pipewire-capturer",
     "owners": [ "tomas.popela@gmail.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 100
   },
   {
     "name": "enable-webrtc-remote-event-log",
@@ -3507,6 +3502,11 @@
     // aren't easily understood. It is primarily used by support to help
     // individual users get cast working.
     "expiry_milestone": -1
+  },
+  {
+    "name": "media-session-webrtc",
+    "owners": [ "steimel", "media-dev" ],
+    "expiry_milestone": 100
   },
   {
     "name": "memlog",

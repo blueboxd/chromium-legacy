@@ -3973,10 +3973,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kKernelnextVMs)},
-    {"enable-magnifier-new-focus-following",
-     flag_descriptions::kMagnifierNewFocusFollowingName,
-     flag_descriptions::kMagnifierNewFocusFollowingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kMagnifierNewFocusFollowing)},
     {"enable-magnifier-panning-improvements",
      flag_descriptions::kMagnifierPanningImprovementsName,
      flag_descriptions::kMagnifierPanningImprovementsDescription, kOsCrOS,
@@ -6251,9 +6247,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHelpAppSearchServiceIntegrationName,
      flag_descriptions::kHelpAppSearchServiceIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppSearchServiceIntegration)},
-    {"media-app", flag_descriptions::kMediaAppName,
-     flag_descriptions::kMediaAppDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kMediaApp)},
     {"media-app-annotation", flag_descriptions::kMediaAppAnnotationName,
      flag_descriptions::kMediaAppAnnotationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppAnnotation)},
@@ -7191,6 +7184,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOptimizationGuideModelDownloadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          optimization_guide::features::kOptimizationGuideModelDownloading)},
+
+    {"media-session-webrtc", flag_descriptions::kMediaSessionWebRTCName,
+     flag_descriptions::kMediaSessionWebRTCDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kMediaSessionWebRTC)},
 
     {"webid", flag_descriptions::kWebIdName,
      flag_descriptions::kWebIdDescription, kOsAll,

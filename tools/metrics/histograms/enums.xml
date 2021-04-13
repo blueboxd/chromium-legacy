@@ -21672,6 +21672,7 @@ Called by update_document_policy_enum.py.-->
   <int value="8" label="NO_CHROME_ACCOUNT"/>
   <int value="9" label="LOW_END_DEVICE"/>
   <int value="10" label="MULTIPLE_ACCOUNTS_ON_DEVICE"/>
+  <int value="11" label="AGSA_NOT_INSTALLED"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase">
@@ -47880,6 +47881,7 @@ from previous Chrome versions.
   <int value="1369649674" label="ChromeShareScreenshot:enabled"/>
   <int value="1370797930" label="ShowBluetoothDeviceBattery:enabled"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>
+  <int value="1371344350" label="MediaSessionWebRTC:disabled"/>
   <int value="1371907429" label="enable-wallet-card-import"/>
   <int value="1372680885" label="enable-mtp-write-support"/>
   <int value="1373777956" label="disable-threaded-gpu-rasterization"/>
@@ -48745,6 +48747,7 @@ from previous Chrome versions.
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137554806"
       label="enable-experimental-accessibility-dictation-listening"/>
+  <int value="2137571271" label="MediaSessionWebRTC:enabled"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
   <int value="2138146331" label="OmniboxVoiceSearchAlwaysVisible:enabled"/>
   <int value="2139048614" label="UseSurfaceLayerForVideo:enabled"/>
@@ -50568,6 +50571,8 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="No scripts allowed"/>
   <int value="3" label="Not shown"/>
   <int value="4" label="Disabled by settings"/>
+  <int value="5" label="User explicitly enabled"/>
+  <int value="6" label="User explicitly disabled"/>
 </enum>
 
 <enum name="MediaDocumentDownloadButtonType">
@@ -67994,6 +67999,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Unauthorized"/>
   <int value="7" label="File encrypted"/>
   <int value="8" label="Unsupported file type"/>
+  <int value="9" label="Too many requests"/>
 </enum>
 
 <enum name="SafeBrowsingDelayedWarningEvent">
@@ -71025,6 +71031,40 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="7"/>
 </enum>
 
+<enum name="SharingLongScreenshotsBitmapGenerationStatus">
+<!--
+  SharingLongScreenshotsBitmapGenerationStatus must be kept in sync with BitmapGenerationStatus defined
+  in /chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/long_screenshots/LongScreenshotsMetrics.java
+-->
+
+  <int value="0" label="Unknown"/>
+  <int value="1" label="OK"/>
+  <int value="2" label="Directory Creation Failed"/>
+  <int value="3" label="Capture Failed"/>
+  <int value="4" label="Proto Serialization Failed"/>
+  <int value="5" label="Web Contents Gone"/>
+  <int value="6" label="Native Service Uninitialized"/>
+  <int value="7" label="Low Memory Detected"/>
+  <int value="8" label="Proto Deserialization Failed"/>
+  <int value="9" label="Native Not Initialized"/>
+</enum>
+
+<enum name="SharingLongScreenshotsEvent">
+<!--
+  SharingLongScreenshotsEvent must be kept in sync with SharingLongScreenshotsEvent defined
+  in /chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/long_screenshots/LongScreenshotsMetrics.java
+-->
+
+  <int value="0" label="Dialog Open"/>
+  <int value="1" label="Dialog Cancel"/>
+  <int value="2" label="Dialog Confirm"/>
+  <int value="3" label="Capture: Generation Error"/>
+  <int value="4" label="Capture: Memory Pressure"/>
+  <int value="5" label="Compositor: Complete"/>
+  <int value="6" label="Compositor: Memory Pressure"/>
+  <int value="7" label="Compositor: Generation Error"/>
+</enum>
+
 <enum name="SharingMajorVersionComparison">
   <int value="0" label="Unknown"/>
   <int value="1" label="Sender version is lower"/>
@@ -71080,7 +71120,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="SharingScreenshotFallbackAction">
 <!--
-  SharingScreenshotAction must be kept in sync with SharingScreenshotAction defined
+  SharingScreenshotFallbackAction must be kept in sync with SharingScreenshotAction defined
   in /chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetMetrics.java
 -->
 

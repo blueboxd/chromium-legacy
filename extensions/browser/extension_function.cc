@@ -256,13 +256,13 @@ class BadMessageResponseValue : public ExtensionFunction::ResponseValueObject {
 
 class RespondNowAction : public ExtensionFunction::ResponseActionObject {
  public:
-  typedef base::Callback<void(bool)> SendResponseCallback;
+  typedef base::OnceCallback<void(bool)> SendResponseCallback;
   RespondNowAction(ExtensionFunction::ResponseValue result,
-                   const SendResponseCallback& send_response)
-      : result_(std::move(result)), send_response_(send_response) {}
-  ~RespondNowAction() override {}
+                   SendResponseCallback send_response)
+      : result_(std::move(result)), send_response_(std::move(send_response)) {}
+  ~RespondNowAction() override = default;
 
-  void Execute() override { send_response_.Run(result_->Apply()); }
+  void Execute() override { std::move(send_response_).Run(result_->Apply()); }
 
  private:
   ExtensionFunction::ResponseValue result_;
@@ -418,6 +418,17 @@ ExtensionFunction::~ExtensionFunction() {
   };
 
   DCHECK(did_respond() || can_be_destroyed_before_responding()) << name();
+
+  // If ignore_did_respond_for_testing() has been called it could cause another
+  // DCHECK about not calling Mojo callback.
+  // Since the ExtensionFunction request on the frame is a Mojo message
+  // which has a reply callback, it should be called before it's destroyed.
+  if (!response_callback_.is_null()) {
+    constexpr char kShouldCallMojoCallback[] = "Ignored did_respond()";
+    std::move(response_callback_)
+        .Run(ResponseType::FAILED, base::Value(base::Value::Type::LIST),
+             kShouldCallMojoCallback);
+  }
 #endif  // DCHECK_IS_ON()
 }
 
@@ -622,7 +633,7 @@ ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
     ResponseValue result) {
   return ResponseAction(new RespondNowAction(
       std::move(result),
-      base::Bind(&ExtensionFunction::SendResponseImpl, this)));
+      base::BindOnce(&ExtensionFunction::SendResponseImpl, this)));
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {

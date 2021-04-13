@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,6 +34,7 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/any_widget_observer_singleton.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -399,7 +401,7 @@ void Widget::Init(InitParams params) {
     SetInitialBoundsForFramelessWindow(bounds);
   }
 
-  observation_.Observe(GetNativeTheme());
+  native_theme_observation_.Observe(GetNativeTheme());
   native_widget_initialized_ = true;
   native_widget_->OnWidgetInitDone();
 
@@ -806,13 +808,15 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
 
 const ui::ColorProvider* Widget::GetColorProvider() const {
   auto color_scheme = GetNativeTheme()->GetDefaultSystemColorScheme();
+  auto theme_name = GetNativeTheme()->GetNativeThemeName();
   return ui::ColorProviderManager::Get().GetColorProviderFor(
       {(color_scheme == ui::NativeTheme::ColorScheme::kDark)
            ? ui::ColorProviderManager::ColorMode::kDark
            : ui::ColorProviderManager::ColorMode::kLight,
        (color_scheme == ui::NativeTheme::ColorScheme::kPlatformHighContrast)
            ? ui::ColorProviderManager::ContrastMode::kHigh
-           : ui::ColorProviderManager::ContrastMode::kNormal});
+           : ui::ColorProviderManager::ContrastMode::kNormal,
+       std::move(theme_name)});
 }
 
 FocusManager* Widget::GetFocusManager() {
@@ -1100,6 +1104,13 @@ base::WeakPtr<Widget> Widget::GetWeakPtr() {
 
 bool Widget::ShouldPaintAsActive() const {
   return native_widget_active_ || paint_as_active_refcount_;
+}
+
+void Widget::SetNativeTheme(ui::NativeTheme* native_theme) {
+  native_theme_ = native_theme;
+  native_theme_observation_.Reset();
+  if (native_theme)
+    native_theme_observation_.Observe(native_theme);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1528,19 +1539,6 @@ View* Widget::GetFocusTraversableParentView() {
 
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   TRACE_EVENT0("ui", "Widget::OnNativeThemeUpdated");
-
-  DCHECK(observation_.IsObservingSource(observed_theme));
-
-#if defined(OS_APPLE) || defined(OS_WIN)
-  ui::NativeTheme* current_native_theme = observed_theme;
-#else
-  ui::NativeTheme* current_native_theme = GetNativeTheme();
-#endif
-  if (!observation_.IsObservingSource(current_native_theme)) {
-    observation_.Reset();
-    observation_.Observe(current_native_theme);
-  }
-
   PropagateNativeThemeChanged();
 }
 
@@ -1569,6 +1567,18 @@ void Widget::DestroyRootView() {
 void Widget::OnDragWillStart() {}
 
 void Widget::OnDragComplete() {}
+
+const ui::NativeTheme* Widget::GetNativeTheme() const {
+  if (native_theme_)
+    return native_theme_;
+
+  if (base::FeatureList::IsEnabled(
+          features::kInheritNativeThemeFromParentWidget) &&
+      parent_)
+    return parent_->GetNativeTheme();
+
+  return ui::NativeTheme::GetInstanceForNativeUi();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:

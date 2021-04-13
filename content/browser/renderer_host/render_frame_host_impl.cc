@@ -223,6 +223,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/loader/inter_process_time_ticks_converter.h"
@@ -836,16 +837,6 @@ void VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
       navigation_request->GetOriginForURLLoaderFactory();
   if (renderer_side_origin.opaque() && browser_side_origin.opaque())
     return;
-
-#if defined(OS_ANDROID)
-  // TODO(lukasza): Investigate why about:blank navigations on Android sometimes
-  // have an opaque, unique `browser_side_origin` that doesn't match a regular,
-  // tuple `renderer_side_origin` - see webview_cts_tests,
-  // android.webkit.cts.WebViewTest#testJavascriptInterfaceForClientPopup on
-  // android-pie-arm64-rel.
-  if (navigation_request->GetURL().IsAboutBlank())
-    return;
-#endif
 
   // Navigating to file://localhost/... on windows causes `browser_side_origin`
   // and `renderer_side_origin` to be different (file://localhost/ vs file:///).
@@ -6057,7 +6048,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   }
 
   // Renderer-debug URLs can never be committed.
-  if (IsRendererDebugURL(url)) {
+  if (blink::IsRendererDebugURL(url)) {
     LogCanCommitOriginAndUrlFailureReason("is_renderer_debug_url");
     return CanCommitStatus::CANNOT_COMMIT_URL;
   }
@@ -6119,7 +6110,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     // about:blank, data, and blob URLs.
 
     // Renderer-debug URLs can never be committed.
-    if (IsRendererDebugURL(origin_tuple_or_precursor_tuple.GetURL())) {
+    if (blink::IsRendererDebugURL(origin_tuple_or_precursor_tuple.GetURL())) {
       LogCanCommitOriginAndUrlFailureReason(
           "origin_or_precursor_is_renderer_debug_url");
       return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
@@ -6515,7 +6506,7 @@ void RenderFrameHostImpl::CommitNavigation(
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params->url.possibly_invalid_spec());
-  DCHECK(!IsRendererDebugURL(common_params->url));
+  DCHECK(!blink::IsRendererDebugURL(common_params->url));
   DCHECK(navigation_request);
 
   bool is_same_document =
@@ -7066,7 +7057,7 @@ void RenderFrameHostImpl::FailedNavigation(
 }
 
 void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
-  DCHECK(IsRendererDebugURL(url));
+  DCHECK(blink::IsRendererDebugURL(url));
 
   // Several tests expect a load of Chrome Debug URLs to send a DidStopLoading
   // notification, so set is loading to true here to properly surface it when
@@ -7078,7 +7069,7 @@ void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
     frame_tree_node()->DidStartLoading(true, was_loading);
   }
 
-  GetMojomFrameInRenderer()->HandleRendererDebugURL(url);
+  GetAssociatedLocalFrame()->HandleRendererDebugURL(url);
 
   // Ensure that the renderer process is marked as used after processing a
   // renderer debug URL, since this process is now unsafe to be reused by sites

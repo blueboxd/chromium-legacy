@@ -1584,6 +1584,8 @@
     },
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      'Fuchsia x64', # https://crbug.com/1198259
+      'Fuchsia ARM64', # https://crbug.com/1198259
     ],
   },
   'info_collection_tests': {
@@ -2127,12 +2129,6 @@
       'ToTWinCFI',
       'ToTWinCFI64',
       'ToTWinThinLTO64',
-    ],
-  },
-  'openscreen_unittests': {
-    'remove_from': [
-      'Linux CFI',  # crbug.com/1143983
-      'CFI Linux ToT',  # crbug.com/1143983
     ],
   },
   'ozone_unittests': {

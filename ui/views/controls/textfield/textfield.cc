@@ -232,7 +232,6 @@ Textfield::Textfield()
   set_drag_controller(this);
   auto cursor_view = std::make_unique<View>();
   cursor_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  cursor_view->layer()->SetColor(GetTextColor());
   cursor_view->GetViewAccessibility().OverrideIsIgnored(true);
   cursor_view_ = AddChildView(std::move(cursor_view));
   GetRenderText()->SetFontList(GetDefaultFontList());
@@ -1503,6 +1502,11 @@ gfx::Rect Textfield::GetCaretBounds() const {
   gfx::Rect rect = GetRenderText()->GetUpdatedCursorBounds();
   ConvertRectToScreen(this, &rect);
   return rect;
+}
+
+gfx::Rect Textfield::GetSelectionBoundingBox() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
 }
 
 bool Textfield::GetCompositionCharacterBounds(uint32_t index,

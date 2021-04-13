@@ -820,7 +820,10 @@ component("views") {
           "widget/desktop_aura/desktop_screen_win.h",
           "widget/desktop_aura/desktop_window_tree_host_win.cc",
         ]
-        deps += [ "//ui/events:dom_keyboard_layout" ]
+        deps += [
+          "//ui/events:dom_keyboard_layout",
+          "//ui/events:keyboard_hook",
+        ]
       }
       if (use_ozone) {
         public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
@@ -923,6 +926,8 @@ source_set("test_support") {
     "animation/test/test_ink_drop_host.h",
     "animation/test/test_ink_drop_ripple_observer.cc",
     "animation/test/test_ink_drop_ripple_observer.h",
+    "controls/table/test_table_model.cc",
+    "controls/table/test_table_model.h",
     "controls/textfield/textfield_test_api.cc",
     "controls/textfield/textfield_test_api.h",
     "layout/animating_layout_manager_test_util.cc",
@@ -1150,8 +1155,6 @@ test("views_unittests") {
     "controls/tabbed_pane/tabbed_pane_unittest.cc",
     "controls/table/table_utils_unittest.cc",
     "controls/table/table_view_unittest.cc",
-    "controls/table/test_table_model.cc",
-    "controls/table/test_table_model.h",
     "controls/textarea/textarea_unittest.cc",
     "controls/textfield/textfield_model_unittest.cc",
     "controls/textfield/textfield_unittest.cc",

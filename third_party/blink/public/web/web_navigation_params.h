@@ -19,8 +19,8 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -235,7 +235,9 @@ struct BLINK_EXPORT WebNavigationParams {
   // The http status code of the request used to load the main resource, if any.
   int http_status_code = 0;
   // The origin of the request used to load the main resource, specified at
-  // https://fetch.spec.whatwg.org/#concept-request-origin. Can be null.
+  // https://fetch.spec.whatwg.org/#concept-request-origin. This is never null
+  // for renderer-initiated navigations, but can be null for 1)
+  // browser-initiated navigations and 2) loading of initial empty documents.
   // TODO(dgozman,nasko): we shouldn't need both this and |origin_to_commit|.
   WebSecurityOrigin requestor_origin;
   // If non-null, used as a URL which we weren't able to load. For example,

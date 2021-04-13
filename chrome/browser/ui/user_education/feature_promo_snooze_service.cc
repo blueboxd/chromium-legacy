@@ -216,6 +216,13 @@ FeaturePromoSnoozeService::ReadSnoozeData(const base::Feature& iph_feature) {
     return snooze_data;
   }
 
+  if (!show_time || !show_count) {
+    // This feature was shipped before without handling
+    // non-clickers. Assume previous displays were all snooozed.
+    show_time = *snooze_time - base::TimeDelta::FromSeconds(1);
+    show_count = *snooze_count;
+  }
+
   snooze_data = SnoozeData();
   snooze_data->is_dismissed = *is_dismissed;
   snooze_data->last_show_time = *show_time;

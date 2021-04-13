@@ -113,16 +113,18 @@ class FeaturePromoSnoozeInteractiveTest : public InProcessBrowserTest {
 
   void SetSnoozePrefs(const base::Feature& iph_feature,
                       bool is_dismissed,
-                      int show_count,
+                      base::Optional<int> show_count,
                       int snooze_count,
-                      base::Time last_show_time,
+                      base::Optional<base::Time> last_show_time,
                       base::Time last_snooze_time,
                       base::TimeDelta last_snooze_duration) {
     FeaturePromoSnoozeService::SnoozeData data;
     data.is_dismissed = is_dismissed;
-    data.show_count = show_count;
+    if (show_count)
+      data.show_count = *show_count;
     data.snooze_count = snooze_count;
-    data.last_show_time = last_show_time;
+    if (last_show_time)
+      data.last_show_time = *last_show_time;
     data.last_snooze_time = last_snooze_time;
     data.last_snooze_duration = last_snooze_duration;
     snooze_service_->SaveSnoozeData(iph_feature, data);
@@ -340,4 +342,21 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoSnoozeInteractiveTest,
                    /* last_show_time_max */ show_time_max,
                    /* last_snooze_time_min */ base::Time(),
                    /* last_snooze_time_max */ base::Time());
+}
+
+IN_PROC_BROWSER_TEST_F(FeaturePromoSnoozeInteractiveTest,
+                       WorkWithoutNonClickerData) {
+  // Non-clicker policy shipped pref entries that don't exist before.
+  // Make sure empty entries are properly handled.
+  base::TimeDelta snooze_duration = base::TimeDelta::FromHours(26);
+  base::Time snooze_time = base::Time::Now() - snooze_duration;
+  SetSnoozePrefs(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
+                 /* is_dismiss */ false,
+                 /* show_count */ base::nullopt,
+                 /* snooze_count */ 1,
+                 /* last_show_time */ base::nullopt,
+                 /* last_snooze_time */ snooze_time,
+                 /* last_snooze_duration */ snooze_duration);
+
+  AttemptTabGroupsIPH(true);
 }

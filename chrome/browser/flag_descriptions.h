@@ -866,6 +866,9 @@ extern const char kMediaHistoryDescription[];
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
 
+extern const char kMediaSessionWebRTCName[];
+extern const char kMediaSessionWebRTCDescription[];
+
 extern const char kMemoriesName[];
 extern const char kMemoriesDescription[];
 
@@ -2565,9 +2568,6 @@ extern const char kSwitchAccessPointScanningDescription[];
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideName[];
 extern const char kExperimentalAccessibilitySwitchAccessSetupGuideDescription[];
 
-extern const char kMagnifierNewFocusFollowingName[];
-extern const char kMagnifierNewFocusFollowingDescription[];
-
 extern const char kMagnifierPanningImprovementsName[];
 extern const char kMagnifierPanningImprovementsDescription[];
 
@@ -2696,9 +2696,6 @@ extern const char kLockScreenMediaControlsDescription[];
 
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
-
-extern const char kMediaAppName[];
-extern const char kMediaAppDescription[];
 
 extern const char kMediaAppAnnotationName[];
 extern const char kMediaAppAnnotationDescription[];

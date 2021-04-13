@@ -7402,6 +7402,19 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="IOS.PageAddedToReadingList">
+  <owner>thegreenfrog@chromium.org</owner>
+  <summary>
+    Logged when the user adds a page to the Reading List.
+  </summary>
+  <metric name="AddedFromMessages" enum="Boolean">
+    <summary>
+      True if the page was added by the user tapping on the Messages prompt to
+      save to Reading List.
+    </summary>
+  </metric>
+</event>
+
 <event name="IOS.PageZoomChanged">
   <owner>rkgibson@google.com</owner>
   <summary>
@@ -12200,7 +12213,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PaymentApp.CheckoutEvents">
-  <owner>sahel@chromium.org</owner>
+  <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>
     Records checkout events as well as completion status for the invoked payment
@@ -12233,7 +12246,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PaymentRequest.CheckoutEvents">
-  <owner>sahel@chromium.org</owner>
+  <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <metric name="CompletionStatus">
     <summary>
@@ -12258,7 +12271,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PaymentRequest.TransactionAmount">
-  <owner>sahel@chromium.org</owner>
+  <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <metric name="Category">
     <summary>

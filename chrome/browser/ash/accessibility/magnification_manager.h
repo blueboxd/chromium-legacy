@@ -8,7 +8,7 @@
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -30,9 +30,6 @@ namespace ash {
 //     desktop.
 //   - Watch change of the pref. When the pref changes, the setting of the
 //     magnifier will interlock with it.
-//
-// MagnificationManager also observes focus changed in page and calls Ash when
-// either Fullscreen or Docked magnifier is enabled.
 class MagnificationManager
     : public content::NotificationObserver,
       public user_manager::UserManager::UserSessionStateObserver,
@@ -66,10 +63,6 @@ class MagnificationManager
 
   // Loads the Fullscreen magnifier scale from the pref.
   double GetSavedScreenMagnifierScale() const;
-
-  // Updates for a new focus rect (eg, from ARC++) if a magnifier is enabled.
-  void HandleFocusedRectChangedIfEnabled(const gfx::Rect& bounds_in_screen,
-                                         bool is_editable);
 
   // Move magnifier to ensure rect is within viewport if a magnifier is enabled.
   void HandleMoveMagnifierToRectIfEnabled(const gfx::Rect& rect);
@@ -108,14 +101,8 @@ class MagnificationManager
   void UpdateMagnifierFromPrefs();
   void UpdateDockedMagnifierFromPrefs();
 
-  // Called when received content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE.
-  void HandleFocusChangedInPage(const content::NotificationDetails& details);
-
-  // Called in response to AXEventObserver.
-  void HandleFocusChanged(const gfx::Rect& bounds_in_screen, bool is_editable);
-
   Profile* profile_ = nullptr;
-  ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
+  base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
 
   // Last mouse event time - used for ignoring focus changes for a few
   // milliseconds after the last mouse event.

@@ -135,6 +135,11 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/scoped_lacros_chrome_service_test_helper.h"
+#endif
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
@@ -378,7 +383,14 @@ void TestingProfile::Init() {
   arc::ArcServiceLauncher* launcher = arc::ArcServiceLauncher::Get();
   if (launcher)
     launcher->MaybeSetProfile(this);
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!chromeos::LacrosChromeServiceImpl::Get()) {
+    scoped_lacros_chrome_service_test_helper_ =
+        std::make_unique<chromeos::ScopedLacrosChromeServiceTestHelper>();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
       this, base::BindRepeating(&BuildPersonalDataManagerInstanceFor));
@@ -440,10 +452,10 @@ void TestingProfile::Init() {
 void TestingProfile::InitializeProfileType() {
   if (guest_session_) {
     if (IsEphemeralGuestProfileEnabled()) {
-      profile_metrics::SetBrowserContextType(
+      profile_metrics::SetBrowserProfileType(
           this, profile_metrics::BrowserProfileType::kEphemeralGuest);
     } else {
-      profile_metrics::SetBrowserContextType(
+      profile_metrics::SetBrowserProfileType(
           this, profile_metrics::BrowserProfileType::kGuest);
     }
     return;
@@ -459,13 +471,13 @@ void TestingProfile::InitializeProfileType() {
     }
   }
   if (is_system) {
-    profile_metrics::SetBrowserContextType(
+    profile_metrics::SetBrowserProfileType(
         this, profile_metrics::BrowserProfileType::kSystem);
     return;
   }
 
   if (IsOffTheRecord()) {
-    profile_metrics::SetBrowserContextType(
+    profile_metrics::SetBrowserProfileType(
         this,
         (otr_profile_id_ == OTRProfileID::PrimaryID())
             ? profile_metrics::BrowserProfileType::kIncognito
@@ -473,7 +485,7 @@ void TestingProfile::InitializeProfileType() {
     return;
   }
 
-  profile_metrics::SetBrowserContextType(
+  profile_metrics::SetBrowserProfileType(
       this, profile_metrics::BrowserProfileType::kRegular);
 }
 
@@ -1001,7 +1013,7 @@ bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
 }
 
 bool TestingProfile::IsGuestSession() const {
-  return profile_metrics::GetBrowserContextType(this) ==
+  return profile_metrics::GetBrowserProfileType(this) ==
          profile_metrics::BrowserProfileType::kGuest;
 }
 

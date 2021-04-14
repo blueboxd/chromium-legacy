@@ -200,7 +200,6 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSender {
     int net_error = net::ERR_IO_PENDING;
     PreviewsState previews_state = PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
-    // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;
     std::unique_ptr<MojoURLLoaderClient> url_loader_client;
 
@@ -215,7 +214,9 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSender {
   // Follows redirect, if any, for the given request.
   void FollowPendingRedirect(PendingRequestInfo* request_info);
 
-  void ToLocalURLResponseHead(
+  // Converts remote times in the response head to local times. Returns the
+  // converted response start time.
+  base::TimeTicks ToLocalURLResponseHead(
       const PendingRequestInfo& request_info,
       network::mojom::URLResponseHead& response_head) const;
 

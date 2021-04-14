@@ -6612,6 +6612,7 @@ others/histograms.xml -->
   <int value="131079" label="kContent-kMediaDevicesDispatcherHost"/>
   <int value="131080" label="kContent-kWebBluetooth"/>
   <int value="131081" label="kContent-kWebUSB"/>
+  <int value="131082" label="kContent-kMediaSession"/>
   <int value="196608" label="kEmbedder-kUnknown"/>
   <int value="196609" label="kEmbedder-kPopupBlockerTabHelper"/>
   <int value="196610" label="kEmbedder-kSafeBrowsingTriggeredPopupBlocker"/>
@@ -6625,6 +6626,7 @@ others/histograms.xml -->
   <int value="196617"
       label="kEmbedder-kChromePasswordManagerClient_BindCredentialManager"/>
   <int value="196618" label="kEmbedder-kPermissionRequestManager"/>
+  <int value="196619" label="kEmbedder-kModalDialog"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReasonShort">
@@ -15597,6 +15599,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="60" label="MOUNT_CONTAINER_TIMED_OUT"/>
   <int value="61" label="UNKNOWN_STATE_TIMED_OUT"/>
   <int value="62" label="NEED_UPDATE"/>
+  <int value="63" label="SHARE_PATHS_FAILED"/>
+  <int value="64" label="UNREGISTERED_APPLICATION"/>
 </enum>
 
 <enum name="CrostiniSettingsEvent">
@@ -46960,6 +46964,7 @@ from previous Chrome versions.
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
+  <int value="552317551" label="MediaAppHandlesPdf:disabled"/>
   <int value="555959995" label="ChromeSharingHub:enabled"/>
   <int value="556555487"
       label="AutofillDoNotUploadSaveUnsupportedCards:disabled"/>
@@ -48386,6 +48391,7 @@ from previous Chrome versions.
   <int value="1825940786" label="ChromeHomePromo:disabled"/>
   <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
+  <int value="1829259057" label="MediaAppHandlesPdf:enabled"/>
   <int value="1830460973" label="disable-network-settings-config"/>
   <int value="1831103529" label="MediaNotificationsCounter:disabled"/>
   <int value="1831545645" label="query-tiles-single-tier"/>

@@ -1346,7 +1346,6 @@ crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
 crbug.com/1146092 wpt_internal/css/css-contain/* [ Skip ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
 crbug.com/1197029 virtual/container-queries/wpt_internal/css/css-conditional/container-queries/auto-scrollbars-001.html [ Failure ]
-crbug.com/1045599 virtual/container-queries/wpt_internal/css/css-contain/grid-block-size.html [ Failure ]
 crbug.com/1045599 virtual/container-queries/wpt_internal/css/css-contain/grid-inline-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-block-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-inline-size.html [ Failure ]
@@ -6753,6 +6752,3 @@ crbug.com/1196201 fast/events/mouse-event-source-device-event-sender.html [ Pass
 # Sheriff 2021-04-13
 crbug.com/1198515 [ Mac ] external/wpt/web-animations/timing-model/animations/playing-an-animation.html [ Pass Failure ]
 crbug.com/1198698 external/wpt/clear-site-data/storage.https.html [ Pass Timeout ]
-
-# Temporarily disabled to land a devtools-frontend change.
-crbug.com/1197542 http/tests/devtools/elements/styles-2/metrics-box-sizing.js [ Pass Failure ]

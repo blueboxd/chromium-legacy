@@ -77,7 +77,7 @@ cr.define('cellularSetup', function() {
   const MAX_START_ACTIVATION_ATTEMPTS = 3;
 
   /* #export */ const PSIM_SETUP_RESULT_METRIC_NAME =
-      'Network.Cellular.PSim.CellularSetupResult';
+      'Network.Cellular.PSim.SetupFlowResult';
 
   /* #export */ const SUCCESSFUL_PSIM_SETUP_DURATION_METRIC_NAME =
       'Network.Cellular.PSim.CellularSetup.Success.Duration';
@@ -317,6 +317,7 @@ cr.define('cellularSetup', function() {
         case PSimUIState.WAITING_FOR_ACTIVATION_TO_FINISH:
         case PSimUIState.TIMEOUT_FINISH_ACTIVATION:
         case PSimUIState.FINAL_TIMEOUT_START_ACTIVATION:
+        case PSimUIState.ALREADY_ACTIVATED:
           this.fire('exit-cellular-setup');
           break;
         case PSimUIState.TIMEOUT_START_ACTIVATION:

@@ -12,7 +12,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
@@ -1431,7 +1430,6 @@ void BrowserView::FullscreenStateChanging() {
           ? GetExclusiveAccessManager()->GetExclusiveAccessExitBubbleType()
           : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
       display::kInvalidDisplayId);
-  frame_->GetFrameView()->OnFullscreenStateChanged();
 }
 
 void BrowserView::FullscreenStateChanged() {
@@ -3314,6 +3312,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // Undo our anti-jankiness hacks and force a re-layout.
   in_process_fullscreen_ = false;
   ToolbarSizeChanged(false);
+  frame_->GetFrameView()->OnFullscreenStateChanged();
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {

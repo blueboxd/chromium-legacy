@@ -21,13 +21,14 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
 namespace {
 
-struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalContainerFragment {
+struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalFragment {
   LayoutUnit baseline;
   LayoutUnit last_baseline;
   NGInkOverflow ink_overflow;
@@ -177,7 +178,7 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
   // We store the children list inline in the fragment as a flexible
   // array. Therefore, we need to make sure to allocate enough space for
   // that array here, which requires a manual allocation + placement new.
-  // The initialization of the array is done by NGPhysicalContainerFragment;
+  // The initialization of the array is done by NGPhysicalFragment;
   // we pass the buffer as a constructor argument.
   return MakeGarbageCollected<NGPhysicalBoxFragment>(
       AdditionalBytes(byte_size), PassKey(), builder, has_layout_overflow,
@@ -242,13 +243,13 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     bool has_fragment_items,
     bool has_rare_data,
     WritingMode block_or_line_writing_mode)
-    : NGPhysicalContainerFragment(builder,
-                                  block_or_line_writing_mode,
-                                  children_,
-                                  kFragmentBox,
-                                  builder->BoxType(),
-                                  has_fragment_items,
-                                  has_rare_data) {
+    : NGPhysicalFragment(builder,
+                         block_or_line_writing_mode,
+                         children_,
+                         kFragmentBox,
+                         builder->BoxType(),
+                         has_fragment_items,
+                         has_rare_data) {
   DCHECK(layout_object_);
   DCHECK(layout_object_->IsBoxModelObject());
 
@@ -332,9 +333,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     bool has_layout_overflow,
     const PhysicalRect& layout_overflow,
     bool recalculate_layout_overflow)
-    : NGPhysicalContainerFragment(other,
-                                  recalculate_layout_overflow,
-                                  children_),
+    : NGPhysicalFragment(other, recalculate_layout_overflow, children_),
       baseline_(other.baseline_),
       last_baseline_(other.last_baseline_),
       ink_overflow_(other.InkOverflowType(), other.ink_overflow_) {
@@ -539,8 +538,7 @@ bool NGPhysicalBoxFragment::CanUseFragmentsForInkOverflow() const {
     return false;
   // TODO(crbug.com/1144203): Following conditions are not supported in NG
   // visual overflow yet.
-  if (IsTableNGRow() || IsTableNG() || IsRenderedLegend() ||
-      IsColumnSpanAll() || IsMathML())
+  if (IsRenderedLegend() || IsColumnSpanAll() || IsMathML())
     return false;
   DCHECK(IsInlineBox() || OwnerLayoutBox());
   return true;
@@ -987,11 +985,53 @@ PhysicalRect NGPhysicalBoxFragment::RecalcContentsInkOverflow() {
 PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
   DCHECK_EQ(PostLayout(), this);
   const ComputedStyle& style = Style();
-  if (!style.HasVisualOverflowingEffect())
+  const bool has_visual_overflowing_effect = style.HasVisualOverflowingEffect();
+  const bool is_table = IsTableNG();
+  const bool is_table_row = IsTableNGRow();
+  if (!has_visual_overflowing_effect && !is_table && !is_table_row)
     return LocalRect();
 
   PhysicalRect ink_overflow(LocalRect());
+  if (UNLIKELY(is_table)) {
+    // Table's collapsed borders contribute to visual overflow.
+    // In the inline direction, table's border box does not include
+    // visual border width (largest border), but does include
+    // layout border width (border of first cell).
+    // Expands border box to include visual border width.
+    if (const NGTableBorders* collapsed_borders = TableCollapsedBorders()) {
+      PhysicalRect borders_overflow = LocalRect();
+      NGBoxStrut visual_size_diff =
+          collapsed_borders->GetCollapsedBorderVisualSizeDiff();
+      borders_overflow.Expand(
+          visual_size_diff.ConvertToPhysical(style.GetWritingDirection()));
+      ink_overflow.Unite(borders_overflow);
+    }
+  } else if (UNLIKELY(is_table_row)) {
+    // This is necessary because table-rows paints beyond border box if it
+    // contains rowspanned cells.
+    for (const NGLink& child : PostLayoutChildren()) {
+      const auto& child_fragment = To<NGPhysicalBoxFragment>(*child);
+      if (!child_fragment.IsTableNGCell())
+        continue;
+      const auto* child_layout_object =
+          To<LayoutNGTableCell>(child_fragment.GetLayoutObject());
+      if (child_layout_object->ComputedRowSpan() == 1)
+        continue;
+      PhysicalRect child_rect;
+      if (child_fragment.CanUseFragmentsForInkOverflow())
+        child_rect = child_fragment.InkOverflow();
+      else
+        child_rect = child_layout_object->PhysicalVisualOverflowRect();
+      child_rect.offset += child.offset;
+      ink_overflow.Unite(child_rect);
+    }
+  }
+
+  if (!has_visual_overflowing_effect)
+    return ink_overflow;
+
   ink_overflow.Expand(style.BoxDecorationOutsets());
+
   if (style.HasOutline() && IsOutlineOwner()) {
     Vector<PhysicalRect> outline_rects;
     // The result rects are in coordinates of this object's border box.
@@ -1507,14 +1547,14 @@ void NGPhysicalBoxFragment::CheckIntegrity() const {
 #endif
 
 void NGPhysicalBoxFragment::TraceAfterDispatch(Visitor* visitor) const {
-  // |children_| is traced in |NGPhysicalContainerFragment|.
+  // |children_| is traced in |NGPhysicalFragment|.
   // These if branches are safe since |const_has_fragment_items_| and
   // |const_has_rare_data_| are const and set in ctor.
   if (const_has_fragment_items_)
     visitor->Trace(*ComputeItemsAddress());
   if (const_has_rare_data_)
     visitor->Trace(*ComputeRareDataAddress());
-  NGPhysicalContainerFragment::TraceAfterDispatch(visitor);
+  NGPhysicalFragment::TraceAfterDispatch(visitor);
 }
 
 void NGPhysicalBoxFragment::RareData::Trace(Visitor* visitor) const {

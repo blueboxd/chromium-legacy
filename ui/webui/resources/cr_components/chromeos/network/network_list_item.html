@@ -1,6 +1,7 @@
 <link rel="import" href="../../../html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/esim_manager_utils.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/cellular_types.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
@@ -91,7 +92,7 @@
         color: var(--google-green-500);
       }
 
-      .locked {
+      .warning {
         color: var(--google-yellow-700);
       }
 
@@ -160,11 +161,14 @@
             [[getSubtitle(subtitle_)]]
           </div>
           <div id="networkStateText"
-              class$="[[getNetworkStateTextClass_(networkState.*)]]"
-              hidden$="[[!isStateTextVisible_(networkState.*)]]"
+              class$="[[getNetworkStateTextClass_(networkState.*,
+                  isPSimUnavailableNetwork_)]]"
+              hidden$="[[!isStateTextVisible_(networkState.*,
+                  isPSimUnavailableNetwork_)]]"
               active$="[[isStateTextActive_(networkState.*,
                            activationUnavailable)]]">
-            [[getNetworkStateText_(networkState.*, activationUnavailable, deviceState.*)]]
+            [[getNetworkStateText_(networkState.*, activationUnavailable,
+                deviceState.*, isPSimUnavailableNetwork_)]]
           </div>
         </div>
         <template is="dom-if" if="[[isPolicySource(networkState.source)]]">
@@ -173,10 +177,10 @@
           </cr-policy-indicator>
         </template>
         <!-- This can only be shown if isUpdatedCellularUiEnabled_ is enabled. -->
-        <template is="dom-if" if="[[isPSimUnactivatedNetwork_]]" restamp>
-          <!-- TODO(crbug.com/1196507) Add on-click listener to button-->
+        <template is="dom-if" if="[[isPSimPendingActivationNetwork_]]" restamp>
           <cr-button id="activateButton"
               aria-label$="[[getActivateBtnA11yLabel_(item)]]"
+              on-click="onActivateButtonClick_"
               disabled="[[disabled_]]">
             [[i18n('networkListItemActivate')]]
           </cr-button>
@@ -191,7 +195,8 @@
         </template>
         <template is="dom-if"
             if="[[isSubpageButtonVisible_(networkState, showButtons, disabled_,
-              networkState.typeState.cellular.simLocked, isPSimUnactivatedNetwork_)]]" restamp>
+              networkState.typeState.cellular.simLocked,
+              isPSimPendingActivationNetwork_)]]" restamp>
           <div>
             <cr-icon-button class="subpage-arrow"
                 id="subpageButton"

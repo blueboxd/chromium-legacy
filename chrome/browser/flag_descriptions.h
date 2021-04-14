@@ -196,9 +196,6 @@ extern const char kAutofillProfileServerValidationDescription[];
 extern const char kAutofillPruneSuggestionsName[];
 extern const char kAutofillPruneSuggestionsDescription[];
 
-extern const char kAutofillRichMetadataQueriesName[];
-extern const char kAutofillRichMetadataQueriesDescription[];
-
 extern const char kAutofillSaveAndFillVPAName[];
 extern const char kAutofillSaveAndFillVPADescription[];
 
@@ -1008,9 +1005,6 @@ extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
 
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
-
-extern const char kOmniboxSearchEngineLogoName[];
-extern const char kOmniboxSearchEngineLogoDescription[];
 
 extern const char kOmniboxSearchReadyIncognitoName[];
 extern const char kOmniboxSearchReadyIncognitoDescription[];
@@ -2265,9 +2259,6 @@ extern const char kArcUseHighMemoryDalvikProfileDesc[];
 extern const char kArcEnableUsapName[];
 extern const char kArcEnableUsapDesc[];
 
-extern const char kArcUsbHostName[];
-extern const char kArcUsbHostDescription[];
-
 extern const char kAshEnablePipRoundedCornersName[];
 extern const char kAshEnablePipRoundedCornersDescription[];
 
@@ -2617,6 +2608,9 @@ extern const char kFsNosymfollowDescription[];
 extern const char kFullRestoreName[];
 extern const char kFullRestoreDescription[];
 
+extern const char kHelpAppDiscoverTabName[];
+extern const char kHelpAppDiscoverTabDescription[];
+
 extern const char kHelpAppLauncherSearchName[];
 extern const char kHelpAppLauncherSearchDescription[];
 
@@ -2810,13 +2804,6 @@ extern const char kTouchscreenCalibrationDescription[];
 extern const char kUiDevToolsName[];
 extern const char kUiDevToolsDescription[];
 
-extern const char kUiShowCompositedLayerBordersName[];
-extern const char kUiShowCompositedLayerBordersDescription[];
-extern const char kUiShowCompositedLayerBordersRenderPass[];
-extern const char kUiShowCompositedLayerBordersSurface[];
-extern const char kUiShowCompositedLayerBordersLayer[];
-extern const char kUiShowCompositedLayerBordersAll[];
-
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
 
@@ -2855,6 +2842,9 @@ extern const char kWakeOnWifiAllowedDescription[];
 
 extern const char kWebuiDarkModeName[];
 extern const char kWebuiDarkModeDescription[];
+
+extern const char kWifiSyncAllowDeletesName[];
+extern const char kWifiSyncAllowDeletesDescription[];
 
 extern const char kWifiSyncAndroidName[];
 extern const char kWifiSyncAndroidDescription[];

@@ -145,6 +145,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       RenderFrameHost::LifecycleState old_state,
       RenderFrameHost::LifecycleState new_state) {}
 
+  // This method is invoked when something "replaces" the contents of the
+  // WebContents or otherwise changes the FrameSinkId of the contents that
+  // should be captured if capturing this WebContents, WITHOUT changing the
+  // RenderFrameHost.
+  virtual void CaptureTargetChanged() {}
+
   // This method is invoked when the RenderView of the current RenderViewHost
   // is ready, e.g. because we recreated it after a crash.
   virtual void RenderViewReady() {}
@@ -311,6 +317,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
 
   // This method is invoked when content was loaded from an in-memory cache.
   virtual void DidLoadResourceFromMemoryCache(
+      RenderFrameHost* render_frame_host,
       const GURL& url,
       const std::string& mime_type,
       network::mojom::RequestDestination request_destination) {}

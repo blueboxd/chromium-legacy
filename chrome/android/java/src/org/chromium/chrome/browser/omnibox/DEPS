@@ -8,6 +8,7 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/app/tabmodel/TabWindowManagerSingleton.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkBridge.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/history_clusters/HistoryClustersTabHelper.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/IntentHandler.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ntp/NewTabPageUma.java",
@@ -15,6 +16,7 @@ include_rules = [
 
   "+base/android/java/src/org/chromium/base",
   "+chrome/browser/feature_engagement",
+  "+chrome/browser/flags",
   "+chrome/browser/lens",
   "+chrome/browser/privacy/settings",
   "+chrome/browser/profiles/android",
@@ -26,6 +28,7 @@ include_rules = [
   "+chrome/browser/ui/android",
   "+chrome/browser/user_education",
   "+components/browser_ui/settings/android",
+  "+components/embedder_support/android",
   "+components/feature_engagement/public/android",
   "+components/omnibox/browser/android",
   "+components/signin/public/android",

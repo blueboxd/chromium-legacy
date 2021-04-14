@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 
@@ -30,7 +30,7 @@ namespace web_app {
 // Forward declarations of generalized interfaces.
 class AppRegistryController;
 class AppIconManager;
-class ExternalWebAppManager;
+class PreinstalledWebAppManager;
 class InstallFinalizer;
 class ManifestUpdateManager;
 class SystemWebAppManager;
@@ -79,7 +79,7 @@ class WebAppProvider : public WebAppProviderBase {
   InstallManager& install_manager() override;
   InstallFinalizer& install_finalizer() override;
   ManifestUpdateManager& manifest_update_manager() override;
-  PendingAppManager& pending_app_manager() override;
+  ExternallyManagedAppManager& externally_managed_app_manager() override;
   WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;
   WebAppAudioFocusIdMap& audio_focus_id_map() override;
@@ -97,8 +97,8 @@ class WebAppProvider : public WebAppProviderBase {
     return on_registry_ready_;
   }
 
-  ExternalWebAppManager& external_web_app_manager() {
-    return *external_web_app_manager_;
+  PreinstalledWebAppManager& preinstalled_web_app_manager() {
+    return *preinstalled_web_app_manager_;
   }
 
  protected:
@@ -133,11 +133,11 @@ class WebAppProvider : public WebAppProviderBase {
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
   std::unique_ptr<AppRegistryController> registry_controller_;
-  std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
+  std::unique_ptr<PreinstalledWebAppManager> preinstalled_web_app_manager_;
   std::unique_ptr<AppIconManager> icon_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<ManifestUpdateManager> manifest_update_manager_;
-  std::unique_ptr<PendingAppManager> pending_app_manager_;
+  std::unique_ptr<ExternallyManagedAppManager> externally_managed_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppInstallManager> install_manager_;

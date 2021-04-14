@@ -10,9 +10,9 @@ import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {loadTimeData} from '../../i18n_setup.js';
 import {$$} from '../../utils.js';
 import {ModuleDescriptor} from '../module_descriptor.js';
 
@@ -48,6 +48,9 @@ class ChromeCartModuleElement extends mixinBehaviors
         reflectToAttribute: true,
       },
 
+      /** @type {boolean} */
+      showDiscountConsent: Boolean,
+
       /** @private {boolean} */
       showLeftScrollButton_: Boolean,
 
@@ -69,6 +72,12 @@ class ChromeCartModuleElement extends mixinBehaviors
         type: Object,
         value: null,
       },
+
+      /** @private {string} */
+      confirmDiscountConsentString_: String,
+
+      /** @private {string} */
+      discountConsentIconSrc_: String,
     };
   }
 
@@ -303,9 +312,18 @@ class ChromeCartModuleElement extends mixinBehaviors
     const scrollOffset = Math.max(
         leftScrollShadow ? leftScrollShadow.offsetWidth : 0,
         rightScrollShadow ? rightScrollShadow.offsetWidth : 0);
+    let leftPosition = carts[index].offsetLeft - scrollOffset;
+    // TODO(crbug.com/1198632): This could make a left scroll jump over cart
+    // items.
+    if (index === 0) {
+      const consentCard = this.shadowRoot.getElementById('consentCard');
+      if (consentCard) {
+        leftPosition -= consentCard.offsetWidth;
+      }
+    }
     this.$.cartCarousel.scrollTo({
       top: 0,
-      left: carts[index].offsetLeft - scrollOffset,
+      left: leftPosition,
       behavior: this.scrollBehavior,
     });
   }
@@ -331,6 +349,27 @@ class ChromeCartModuleElement extends mixinBehaviors
     const index = this.$.cartItemRepeat.indexForElement(e.target);
     ChromeCartProxy.getInstance().handler.onCartItemClicked(index);
     this.dispatchEvent(new Event('usage', {bubbles: true, composed: true}));
+  }
+
+  /** @private */
+  onDisallowDiscount_() {
+    this.showDiscountConsent = false;
+    this.confirmDiscountConsentString_ =
+        loadTimeData.getString('modulesCartDiscountConsentRejectConfirmation');
+    $$(this, '#confirmDiscountConsentToast').show();
+  }
+
+  /** @private */
+  onAllowDiscount_() {
+    this.showDiscountConsent = false;
+    this.confirmDiscountConsentString_ =
+        loadTimeData.getString('modulesCartDiscountConsentAcceptConfirmation');
+    $$(this, '#confirmDiscountConsentToast').show();
+  }
+
+  /** @private */
+  onConfirmDiscountConsentClick_() {
+    $$(this, '#confirmDiscountConsentToast').hide();
   }
 }
 

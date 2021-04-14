@@ -485,9 +485,16 @@ crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descenda
 # Flaky test.
 crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Pass Failure ]
 
+# Flaky - possible filter paint invalidation bug.
+crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ Pass Failure ]
+crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-intercept-prop.html [ Pass Failure ]
+crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-dom-offset-attr.html [ Pass Failure ]
+crbug.com/1184773 virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-dom-intercept-attr.html [ Pass Failure ]
+
 # Fixed in CompositeAfterPaint.
 crbug.com/1135676 external/wpt/css/css-ui/resize-child-will-change-transform.html [ Failure ]
 crbug.com/148499 external/wpt/svg/extensibility/foreignObject/will-change-in-foreign-object-paint-order.html [ Failure ]
+crbug.com/1183814 external/wpt/svg/extensibility/foreignObject/scroll-transform-nested-stacked-children.html [ Failure ]
 
 crbug.com/819617 [ Linux ] virtual/text-antialias/descent-clip-in-scaled-page.html [ Failure ]
 
@@ -4597,58 +4604,6 @@ crbug.com/1194557 external/wpt/encoding/streams/decode-utf8.any.sharedworker.htm
 crbug.com/1194557 external/wpt/encoding/streams/decode-utf8.any.worker.html [ Failure Timeout ]
 crbug.com/1194557 external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/requires-success.any.sharedworker.html [ Failure Timeout ]
 crbug.com/1194557 external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/requires-success.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/close_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/close_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/close_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/close_async.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/flush_async_basic.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/flush_async_basic.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/flush_async_basic.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/flush_async_basic.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/getLength_setLength_async_basic.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/getLength_setLength_async_basic.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/getLength_setLength_async_basic.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/getLength_setLength_async_basic.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/read_write_async_basic.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/read_write_async_basic.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/read_write_async_basic.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/read_write_async_basic.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/rename_async_failure_handling.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/rename_async_failure_handling.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/rename_async_failure_handling.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/rename_async_failure_handling.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/setLength_bounds_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/setLength_bounds_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/setLength_bounds_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/setLength_bounds_async.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_capacity_allocation_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_capacity_allocation_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_capacity_allocation_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_capacity_allocation_async.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_getLength_async_basic.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_getLength_async_basic.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_getLength_async_basic.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/write_getLength_async_basic.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_flush_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_flush_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_flush_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_flush_async.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_getLength_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_getLength_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_getLength_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_getLength_async.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_read_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_read_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_read_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_read_async.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_setLength_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_setLength_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_setLength_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_setLength_async.tentative.https.any.worker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_write_async.tentative.https.any.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_write_async.tentative.https.any.serviceworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_write_async.tentative.https.any.sharedworker.html [ Failure Timeout ]
-crbug.com/1194557 external/wpt/native-io/concurrent_io/concurrent_io_write_async.tentative.https.any.worker.html [ Failure Timeout ]
 crbug.com/1194557 external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Failure Timeout ]
 crbug.com/1194557 external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Failure Timeout ]
 crbug.com/1194557 external/wpt/wasm/jsapi/memory/constructor-shared.tentative.any.html [ Failure Timeout ]
@@ -6085,13 +6040,6 @@ crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Ski
 crbug.com/1144127 http/tests/devtools/modules-load-elements.js [ Pass Failure ]
 crbug.com/1144127 http/tests/devtools/modules-load-network.js [ Pass Failure ]
 crbug.com/1144127 http/tests/devtools/console/console-xpath.js [ Pass Failure ]
-crbug.com/1158760 http/tests/devtools/elements/edit/set-outer-html-2.js [ Pass Failure ]
-crbug.com/1158760 http/tests/devtools/elements/edit/set-outer-html-for-xhtml.js [ Pass Failure ]
-crbug.com/1158760 http/tests/devtools/elements/edit/set-outer-html-whitespace.js [ Pass Failure ]
-crbug.com/1158760 http/tests/devtools/elements/edit/set-outer-html.js [ Pass Failure ]
-crbug.com/1158760 http/tests/devtools/elements/edit/undo-set-outer-html-2.js [ Pass Failure ]
-crbug.com/1158760 http/tests/devtools/elements/edit/undo-set-outer-html.js [ Pass Failure ]
-
 
 # Sheriff 2020-06-17
 crbug.com/1095969 [ Mac ] fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
@@ -6636,7 +6584,6 @@ crbug.com/v8/11429 http/tests/devtools/profiler/cpu-profiler-profiling.js [ Pass
 
 # Sheriff 2021-03-04
 crbug.com/1184745 [ Mac ] external/wpt/media-source/mediasource-changetype-play.html [ Pass Failure ]
-crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ Pass Failure ]
 
 # Sheriff 2021-03-08
 crbug.com/1092462 [ Linux ] http/tests/media/media-source/mediasource-duration.html [ Pass Failure ]
@@ -6651,8 +6598,6 @@ crbug.com/1185121 fast/scroll-snap/animate-fling-to-snap-points-1.html [ Pass Fa
 crbug.com/1184157 http/tests/serviceworker/window-close-during-registration.html [ Pass Failure Timeout ]
 
 # Sheriff 2021-03-11
-crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-intercept-prop.html [ Pass Failure ]
-crbug.com/1184773 [ Mac ] virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-dom-offset-attr.html [ Pass Failure ]
 crbug.com/1186901 [ Linux ] http/tests/devtools/elements/styles-3/style-autocomplete.js [ Pass Failure ]
 
 # Updating virtual suite from virtual/threaded/fast/scroll-snap to
@@ -6773,6 +6718,11 @@ crbug.com/1197296 [ Mac10.15 ] virtual/unified-autoplay/external/wpt/feature-pol
 
 crbug.com/1196745 [ Mac10.15 ] editing/selection/editable-links.html [ Skip ]
 
+# WebID
+# These tests are only valid when WebID flag is enabled
+crbug.com/1067455 wpt_internal/webid/* [ Failure ]
+crbug.com/1067455 virtual/webid/* [ Pass ]
+
 # Will be fixed by PlzDedicatedWorker.
 crbug.com/1060837 external/wpt/html/cross-origin-embedder-policy/reporting-to-frame-owner.https.html [ Timeout ]
 # These timeout because COEP reporting to a worker is not implemented.
@@ -6798,3 +6748,11 @@ crbug.com/1198098 storage/indexeddb/key-generator.html [ Pass Timeout ]
 crbug.com/1198103 virtual/scroll-unification/fast/events/drag-and-drop-autoscroll.html [ Pass Timeout ]
 
 crbug.com/1193979 [ Mac ] fast/events/tabindex-focus-blur-all.html [ Pass Failure ]
+crbug.com/1196201 fast/events/mouse-event-source-device-event-sender.html [ Pass Failure ]
+
+# Sheriff 2021-04-13
+crbug.com/1198515 [ Mac ] external/wpt/web-animations/timing-model/animations/playing-an-animation.html [ Pass Failure ]
+crbug.com/1198698 external/wpt/clear-site-data/storage.https.html [ Pass Timeout ]
+
+# Temporarily disabled to land a devtools-frontend change.
+crbug.com/1197542 http/tests/devtools/elements/styles-2/metrics-box-sizing.js [ Pass Failure ]

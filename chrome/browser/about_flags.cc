@@ -206,7 +206,7 @@
 #include "components/external_intents/android/external_intents_feature_list.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/web_applications/components/external_app_install_features.h"
+#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -679,20 +679,6 @@ const FeatureEntry::Choice kLacrosStabilityChoices[] = {
      crosapi::browser_util::kLacrosStabilitySwitch,
      crosapi::browser_util::kLacrosStabilityMoreStable},
 };
-
-const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kUiShowCompositedLayerBordersRenderPass,
-     cc::switches::kUIShowCompositedLayerBorders,
-     cc::switches::kCompositedRenderPassBorders},
-    {flag_descriptions::kUiShowCompositedLayerBordersSurface,
-     cc::switches::kUIShowCompositedLayerBorders,
-     cc::switches::kCompositedSurfaceBorders},
-    {flag_descriptions::kUiShowCompositedLayerBordersLayer,
-     cc::switches::kUIShowCompositedLayerBorders,
-     cc::switches::kCompositedLayerBorders},
-    {flag_descriptions::kUiShowCompositedLayerBordersAll,
-     cc::switches::kUIShowCompositedLayerBorders, ""}};
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -1910,6 +1896,14 @@ const FeatureEntry::FeatureVariation kLensCameraAssistedSearchVariations[] = {
     {"(Mic then Lens)", kLensCameraAssistedSearchLensButtonEnd,
      base::size(kLensCameraAssistedSearchLensButtonEnd), nullptr}};
 
+const FeatureEntry::FeatureParam kLensContextMenuTranslateHideRemoveIcon[] = {
+    {"hideChipRemoveIcon", "true"}};
+
+const FeatureEntry::FeatureVariation kLensContextMenuTranslateVariations[] = {
+    {"(Hide Remove Icon)", kLensContextMenuTranslateHideRemoveIcon,
+     base::size(kLensContextMenuTranslateHideRemoveIcon), nullptr},
+};
+
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
@@ -1979,23 +1973,6 @@ const FeatureEntry::FeatureVariation kOmniboxAssistantVoiceSearchVariations[] =
         {"(no account check)", kOmniboxAssistantVoiceSearchNoMultiAccountCheck,
          base::size(kOmniboxAssistantVoiceSearchNoMultiAccountCheck), nullptr},
 };
-
-const FeatureEntry::FeatureParam
-    kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
-        {"rounded_edges", "true"}};
-const FeatureEntry::FeatureParam
-    kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant[] = {
-        {"loupe_everywhere", "true"}};
-const FeatureEntry::FeatureVariation
-    kOmniboxSearchEngineLogoFeatureVariations[] = {
-        {"(rounded edges)",
-         kOmniboxSearchEngineLogoRoundedEdgesVariationConstant,
-         base::size(kOmniboxSearchEngineLogoRoundedEdgesVariationConstant),
-         nullptr},
-        {"(loupe everywhere)",
-         kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant,
-         base::size(kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant),
-         nullptr}};
 
 const FeatureEntry::FeatureParam
     kPhotoPickerVideoSupportEnabledWithAnimatedThumbnails[] = {
@@ -3113,10 +3090,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ui-slow-animations", flag_descriptions::kUiSlowAnimationsName,
      flag_descriptions::kUiSlowAnimationsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kUISlowAnimations)},
-    {"ui-show-composited-layer-borders",
-     flag_descriptions::kUiShowCompositedLayerBordersName,
-     flag_descriptions::kUiShowCompositedLayerBordersDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kUiShowCompositedLayerBordersChoices)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_WIN)
     {
@@ -4052,9 +4025,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcUseHighMemoryDalvikProfileName,
      flag_descriptions::kArcUseHighMemoryDalvikProfileDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kUseHighMemoryDalvikProfile)},
-    {"arc-usb-host", flag_descriptions::kArcUsbHostName,
-     flag_descriptions::kArcUsbHostDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kUsbHostFeature)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-generic-sensor-extra-classes",
      flag_descriptions::kEnableGenericSensorExtraClassesName,
@@ -4208,12 +4178,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNativeVoiceSuggestProviderName,
      flag_descriptions::kOmniboxNativeVoiceSuggestProviderDescription,
      kOsAndroid, FEATURE_VALUE_TYPE(omnibox::kNativeVoiceSuggestProvider)},
-    {"omnibox-search-engine-logo",
-     flag_descriptions::kOmniboxSearchEngineLogoName,
-     flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo,
-                                    kOmniboxSearchEngineLogoFeatureVariations,
-                                    "OmniboxSearchEngineLogo")},
     {"omnibox-search-ready-incognito",
      flag_descriptions::kOmniboxSearchReadyIncognitoName,
      flag_descriptions::kOmniboxSearchReadyIncognitoDescription, kOsAndroid,
@@ -4532,11 +4496,11 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"memories", flag_descriptions::kMemoriesName,
      flag_descriptions::kMemoriesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(memories::kMemories)},
+     FEATURE_VALUE_TYPE(history_clusters::kMemories)},
 
     {"memories-debug", flag_descriptions::kMemoriesDebugName,
      flag_descriptions::kMemoriesDebugDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(memories::kDebug)},
+     FEATURE_VALUE_TYPE(history_clusters::kDebug)},
 
     {"search-prefetch", flag_descriptions::kEnableSearchPrefetchName,
      flag_descriptions::kEnableSearchPrefetchDescription, kOsAll,
@@ -5006,11 +4970,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableToolbarStatusChipDescription,
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableToolbarStatusChip)},
-
-    {"autofill-rich-metadata-queries",
-     flag_descriptions::kAutofillRichMetadataQueriesName,
-     flag_descriptions::kAutofillRichMetadataQueriesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillRichMetadataQueries)},
 
 #if defined(USE_AURA)
     {"touchpad-overscroll-history-navigation",
@@ -5621,6 +5580,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPhoneHubDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPhoneHub)},
 
+    {"wifi-sync-allow-deletes", flag_descriptions::kWifiSyncAllowDeletesName,
+     flag_descriptions::kWifiSyncAllowDeletesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kWifiSyncAllowDeletes)},
+
     {"wifi-sync-android", flag_descriptions::kWifiSyncAndroidName,
      flag_descriptions::kWifiSyncAndroidDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kWifiSyncAndroid)},
@@ -6054,7 +6017,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextMenuTranslateWithGoogleLensName,
      flag_descriptions::kContextMenuTranslateWithGoogleLensDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextMenuTranslateWithGoogleLens)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kContextMenuTranslateWithGoogleLens,
+         kLensContextMenuTranslateVariations,
+         "LensContextMenuTranslate")},
 
     {"lens-camera-assisted-search",
      flag_descriptions::kLensCameraAssistedSearchName,
@@ -6240,6 +6206,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
      flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
+    {"help-app-discover-tab", flag_descriptions::kHelpAppDiscoverTabName,
+     flag_descriptions::kHelpAppDiscoverTabDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kHelpAppDiscoverTab)},
     {"help-app-launcher-search", flag_descriptions::kHelpAppLauncherSearchName,
      flag_descriptions::kHelpAppLauncherSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppLauncherSearch)},

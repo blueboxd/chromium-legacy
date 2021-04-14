@@ -134,13 +134,12 @@ consoles.console_view(
 consoles.console_view(
     name = "chromium.angle",
     ordering = {
-        None: ["Android", "AndroidVk", "Fuchsia", "Linux", "LinuxOzone", "Mac", "iOS", "Windows", "Perf"],
+        None: ["Android", "AndroidVk", "Fuchsia", "Linux", "Mac", "iOS", "Windows", "Perf"],
         "*builder*": ["Builder"],
         "Android": "*builder*",
         "AndroidVk": "*builder*",
         "Fuchsia": "*builder*",
         "Linux": "*builder*",
-        "LinuxOzone": "*builder*",
         "Mac": "*builder*",
         "iOS": "*builder*",
         "Windows": "*builder*",
@@ -909,7 +908,6 @@ ci.android_builder(
 # running on CQ.
 ci.android_builder(
     name = "android-pie-arm64-coverage-experimental-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "builder_tester|arm64",
         short_name = "p-cov",
@@ -1200,23 +1198,6 @@ ci.angle_thin_tester(
         short_name = "x64",
     ),
     triggered_by = ["linux-angle-chromium-builder"],
-)
-
-ci.angle_linux_builder(
-    name = "linux-ozone-angle-builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "LinuxOzone|Builder|ANGLE",
-        short_name = "x64",
-    ),
-)
-
-ci.angle_thin_tester(
-    name = "linux-ozone-angle-intel",
-    console_view_entry = consoles.console_view_entry(
-        category = "LinuxOzone|Intel|ANGLE",
-        short_name = "x64",
-    ),
-    triggered_by = ["linux-ozone-angle-builder"],
 )
 
 ci.angle_mac_builder(
@@ -3530,6 +3511,19 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = "Linux Builder (deps-cache) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "re",
+    ),
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-trusted",
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
     name = "Linux Builder (j-100) (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -3596,6 +3590,23 @@ ci.fyi_builder(
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "TSAN Release (deps-cache) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux tsan",
+        short_name = "rre",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-trusted",
+    reclient_rewrapper_env = {"RBE_cache_silo": "TSAN Release (deps-cache) (reclient)"},
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
@@ -4358,14 +4369,6 @@ ci.gpu_fyi_linux_builder(
 )
 
 ci.gpu_fyi_linux_builder(
-    name = "GPU FYI Linux Ozone Builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Builder",
-        short_name = "ozn",
-    ),
-)
-
-ci.gpu_fyi_linux_builder(
     name = "GPU FYI Linux dEQP Builder",
     console_view_entry = consoles.console_view_entry(
         category = "Linux|Builder",
@@ -4473,15 +4476,6 @@ ci.gpu_fyi_thin_tester(
         short_name = "exp",
     ),
     triggered_by = ["GPU FYI Linux Builder"],
-)
-
-ci.gpu_fyi_thin_tester(
-    name = "Linux FYI Ozone (Intel)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Intel",
-        short_name = "ozn",
-    ),
-    triggered_by = ["GPU FYI Linux Ozone Builder"],
 )
 
 ci.gpu_fyi_thin_tester(
@@ -5100,6 +5094,15 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
+    name = "linux-no-base-tracing-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "nbt",
+    ),
+    main_console_view = "main",
+)
+
+ci.linux_builder(
     name = "linux-ozone-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
@@ -5338,6 +5341,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac11 Tests",
+    branch_selector = branches.STANDARD_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "mac",

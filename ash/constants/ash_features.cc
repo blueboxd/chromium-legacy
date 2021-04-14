@@ -410,6 +410,10 @@ const base::Feature kGesturePropertiesDBusService{
 const base::Feature kHandwritingGestureEditing{
     "HandwritingGestureEditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Discover Tab in the help app.
+const base::Feature kHelpAppDiscoverTab{"HelpAppDiscoverTab",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable showing search results from the help app in the launcher.
 const base::Feature kHelpAppLauncherSearch{"HelpAppLauncherSearch",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -721,6 +725,12 @@ const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
 // Enable new wallpaper experience in WebUI inside system settings.
 const base::Feature kWallpaperWebUI{"WallpaperWebUI",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable the syncing of deletes of Wi-Fi configurations.
+// This controls both sending delete events to the Chrome Sync server and
+// applying incoming deletes.
+const base::Feature kWifiSyncAllowDeletes{"WifiSyncAllowDeletes",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable syncing of Wi-Fi configurations between
 // ChromeOS and a connected Android phone.

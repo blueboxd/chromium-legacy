@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './strings.m.js';
 import './iframe.js';
 import './realbox/realbox.js';
 import './logo.js';
 import './modules/module_wrapper.js';
-import './modules/modules.js'; // Registers module descriptors.
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
@@ -16,14 +14,14 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {hexColorToSkColor, skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BackgroundManager} from './background_manager.js';
 import {BackgroundSelection, BackgroundSelectionType, CustomizeDialogPage} from './customize_dialog_types.js';
+import {loadTimeData} from './i18n_setup.js';
 import {recordLoadDuration} from './metrics_utils.js';
-import {ModuleDescriptor} from './modules/module_descriptor.js';
+import {Module} from './modules/module_descriptor.js';
 import {ModuleRegistry} from './modules/module_registry.js';
 import {NewTabPageProxy} from './new_tab_page_proxy.js';
 import {oneGoogleBarApi} from './one_google_bar_api.js';
@@ -245,8 +243,8 @@ class AppElement extends PolymerElement {
        */
       lazyRender_: Boolean,
 
-      /** @private {!Array<!ModuleDescriptor>} */
-      moduleDescriptors_: Object,
+      /** @private {!Array<!Module>} */
+      modules_: Object,
 
       /** @private {!Array<string>} */
       dismissedModules_: {
@@ -554,15 +552,15 @@ class AppElement extends PolymerElement {
         !loadTimeData.getBoolean('modulesEnabled')) {
       return;
     }
-    const descriptors = await ModuleRegistry.getInstance().initializeModules(
+    const modules = await ModuleRegistry.getInstance().initializeModules(
         loadTimeData.getInteger('modulesLoadTimeout'));
-    if (descriptors) {
+    if (modules) {
       this.pageHandler_.onModulesLoadedWithData();
     }
     if (!loadTimeData.getBoolean('modulesEnabled')) {
       return;
     }
-    this.moduleDescriptors_ = descriptors;
+    this.modules_ = modules;
   }
 
   /** @private */
@@ -655,7 +653,7 @@ class AppElement extends PolymerElement {
         loadTimeData.getBoolean('modulesEnabled')) {
       recordLoadDuration(
           'NewTabPage.Modules.ShownTime', WindowProxy.getInstance().now());
-      this.moduleDescriptors_.forEach(({id}) => {
+      this.modules_.forEach(({descriptor: {id}}) => {
         chrome.metricsPrivate.recordBoolean(
             `NewTabPage.Modules.EnabledOnNTPLoad.${id}`,
             !this.disabledModules_.all &&
@@ -899,7 +897,7 @@ class AppElement extends PolymerElement {
    * @private
    */
   onDismissModule_(e) {
-    const id = $$(this, '#modules').itemForElement(e.target).id;
+    const id = $$(this, '#modules').itemForElement(e.target).descriptor.id;
     const restoreCallback = e.detail.restoreCallback;
     this.removedModuleData_ = {
       message: e.detail.message,
@@ -926,7 +924,7 @@ class AppElement extends PolymerElement {
    * @private
    */
   onDisableModule_(e) {
-    const id = $$(this, '#modules').itemForElement(e.target).id;
+    const id = $$(this, '#modules').itemForElement(e.target).descriptor.id;
     const restoreCallback = e.detail.restoreCallback;
     this.removedModuleData_ = {
       message: e.detail.message,

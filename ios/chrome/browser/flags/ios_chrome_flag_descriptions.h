@@ -46,11 +46,6 @@ extern const char kAutofillSaveCardDismissOnNavigationDescription[];
 extern const char kAutofillSaveCardInfobarEditSupportName[];
 extern const char kAutofillSaveCardInfobarEditSupportDescription[];
 
-// Title and description for the flag to enable rich autofill queries on
-// Canary/Dev.
-extern const char kAutofillRichMetadataQueriesName[];
-extern const char kAutofillRichMetadataQueriesDescription[];
-
 // Title and description for the flag that controls whether Autofill's
 // suggestions' labels are formatting with a mobile-friendly approach.
 extern const char kAutofillUseMobileLabelDisambiguationName[];
@@ -173,10 +168,6 @@ extern const char kEnableFREUIModuleIOSDescription[];
 // Title and description for the flag to enable fullpage screenshots.
 extern const char kEnableFullPageScreenshotName[];
 extern const char kEnableFullPageScreenshotDescription[];
-
-// Title and description for the flag to enable incognito mode management.
-extern const char kEnableIncognitoModeAvailabilityIOSName[];
-extern const char kEnableIncognitoModeAvailabilityIOSDescription[];
 
 // Title and description for the flag to enable to show a different UI when the
 // setting is managed by an enterprise policy.

@@ -5447,8 +5447,8 @@ void WebContentsImpl::DidLoadResourceFromMemoryCache(
                         "WebContentsImpl::DidLoadResourceFromMemoryCache",
                         "render_frame_host", source, "url", url);
   observers_.NotifyObservers(
-      &WebContentsObserver::DidLoadResourceFromMemoryCache, url, mime_type,
-      request_destination);
+      &WebContentsObserver::DidLoadResourceFromMemoryCache, source, url,
+      mime_type, request_destination);
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
@@ -8158,6 +8158,26 @@ void WebContentsImpl::ExitPictureInPicture() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ExitPictureInPicture");
   if (delegate_)
     delegate_->ExitPictureInPicture();
+}
+
+void WebContentsImpl::OnXrHasRenderTarget(
+    const viz::FrameSinkId& frame_sink_id) {
+  xr_render_target_ = frame_sink_id;
+  observers_.NotifyObservers(&WebContentsObserver::CaptureTargetChanged);
+}
+
+viz::FrameSinkId WebContentsImpl::GetCaptureFrameSinkId() {
+  if (xr_render_target_.is_valid())
+    return xr_render_target_;
+
+  RenderWidgetHostView* host_view = GetRenderWidgetHostView();
+  if (!host_view) {
+    return {};
+  }
+
+  RenderWidgetHostViewBase* base_view =
+      static_cast<RenderWidgetHostViewBase*>(host_view);
+  return base_view->GetFrameSinkId();
 }
 
 #if defined(OS_ANDROID)

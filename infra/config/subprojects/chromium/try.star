@@ -448,7 +448,6 @@ try_.chromium_android_builder(
 # TODO(crbug/1182468) Remove when experiment is done.
 try_.chromium_android_builder(
     name = "android-pie-arm64-coverage-experimental-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
     builderless = True,
     cores = 16,
     goma_jobs = goma.jobs.J300,
@@ -677,15 +676,6 @@ try_.chromium_angle_builder(
 
 try_.chromium_angle_builder(
     name = "linux-angle-try",
-    executable = "recipe:angle_chromium_trybot",
-)
-
-try_.chromium_angle_builder(
-    name = "linux_angle_ozone_rel_ng",
-)
-
-try_.chromium_angle_builder(
-    name = "linux-ozone-angle-try",
     executable = "recipe:angle_chromium_trybot",
 )
 
@@ -1163,6 +1153,10 @@ try_.chromium_linux_builder(
     executable = "recipe:chromium_libfuzzer_trybot",
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+try_.chromium_linux_builder(
+    name = "linux-no-base-tracing-rel",
 )
 
 try_.chromium_linux_builder(

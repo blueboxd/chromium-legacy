@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace memories {
+namespace history_clusters {
 class MemoriesService;
 }
 
@@ -29,6 +29,8 @@ class HistoryClustersTabHelper
 
   // Called when the user copies the URL from the location bar.
   void OnOmniboxUrlCopied();
+  // Called when the user shares the URL via mobile sharing hub.
+  void OnOmniboxUrlShared();
 
   // Called by |HistoryTabHelper| right after submitting a new navigation for
   // |web_contents()| to HistoryService. We need close coordination with
@@ -50,7 +52,7 @@ class HistoryClustersTabHelper
   //
   // This should only be called once per navigation, as this may flush the visit
   // to MemoriesService.
-  memories::VisitContextSignals OnUkmNavigationComplete(
+  history_clusters::VisitContextSignals OnUkmNavigationComplete(
       int64_t navigation_id,
       const page_load_metrics::PageEndReason page_end_reason);
 
@@ -74,7 +76,7 @@ class HistoryClustersTabHelper
 
   // Helper functions to return the memories and history services.
   // |GetMemoriesService()| will never return nullptr.
-  memories::MemoriesService* GetMemoriesService();
+  history_clusters::MemoriesService* GetMemoriesService();
   // |GetHistoryService()| may return nullptr.
   history::HistoryService* GetHistoryService();
 

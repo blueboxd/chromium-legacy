@@ -48,6 +48,10 @@ namespace base {
 class Location;
 }  // namespace base
 
+namespace blink {
+class WebInputEvent;
+}  // namespace blink
+
 namespace gfx {
 class Point;
 class Rect;
@@ -58,7 +62,6 @@ class Vector2d;
 
 namespace chrome_pdf {
 
-class InputEvent;
 class Thumbnail;
 class UrlLoader;
 struct AccessibilityActionData;
@@ -159,7 +162,7 @@ class PDFEngine {
                                        const float* zoom) {}
 
     // Updates the cursor.
-    virtual void UpdateCursor(ui::mojom::CursorType cursor_type) {}
+    virtual void UpdateCursor(ui::mojom::CursorType new_cursor_type) {}
 
     // Updates the tick marks in the vertical scrollbar.
     virtual void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) {}
@@ -305,7 +308,7 @@ class PDFEngine {
                      std::vector<gfx::Rect>& pending) = 0;
   virtual void PostPaint() = 0;
   virtual bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) = 0;
-  virtual bool HandleEvent(const InputEvent& event) = 0;
+  virtual bool HandleInputEvent(const blink::WebInputEvent& event) = 0;
   virtual uint32_t QuerySupportedPrintOutputFormats() = 0;
   virtual void PrintBegin() = 0;
   virtual pp::Resource PrintPages(

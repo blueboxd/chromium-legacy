@@ -214,11 +214,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "arc-usb-host",
-    "owners": [ "lgcheng" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "arc-use-high-memory-dalvik-profile",
     "owners": [ "khmel" ],
     "expiry_milestone": 92
@@ -404,11 +399,6 @@
   },
   {
     "name": "autofill-restrict-formless-form-extraction",
-    "owners": [ "rogerm" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "autofill-rich-metadata-queries",
     "owners": [ "rogerm" ],
     "expiry_milestone": 76
   },
@@ -1938,11 +1928,6 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-incognito-mode-availability-ios",
-    "owners": [ "tinazwang", "sebsg" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "enable-incognito-shortcut-on-desktop",
     "owners": [ "rhalavati", "chrome-privacy-core@google.com" ],
     "expiry_milestone": 92
@@ -3148,6 +3133,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "help-app-discover-tab",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "help-app-launcher-search",
     "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
     "expiry_milestone": 97
@@ -4151,12 +4141,12 @@
   {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 94
   },
   {
     "name": "paint-preview-startup",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 94
   },
   {
     "name": "passive-listener-default",
@@ -5114,11 +5104,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "ui-show-composited-layer-borders",
-    "owners": [ "ccameron" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ui-slow-animations",
     "owners": [ "oshima", "sammiequon", "afakhry" ],
     // This flag is used for in-the-field debugging of animation issues on
@@ -5391,6 +5376,11 @@
     // the particular hardware. Useful to debug user issues or multiple runtimes
     // with a single headset.
     "expiry_milestone": -1
+  },
+  {
+    "name": "wifi-sync-allow-deletes",
+    "owners": [ "jonmann", "cros-system-services@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "wifi-sync-android",

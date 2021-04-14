@@ -182,7 +182,6 @@
               "external/wpt/encoding",
               "external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism",
               "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
-              "external/wpt/native-io",
               "external/wpt/orientation-sensor",
               "external/wpt/wasm/jsapi/memory",
               "external/wpt/webaudio/the-audio-api/the-audiobuffer-interface",
@@ -1001,5 +1000,10 @@
     "prefix": "no-alloc-direct-call",
     "bases": ["fast/canvas", "external/wpt/html/canvas"],
     "args": ["--enable-fake-no-alloc-direct-call-for-testing"]
+  },
+  {
+    "prefix": "webid",
+    "bases": ["wpt_internal/webid"],
+    "args": ["--enable-features=WebID"]
   }
 ]

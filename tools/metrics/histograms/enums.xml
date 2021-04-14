@@ -24119,6 +24119,7 @@ Called by update_document_policy_enum.py.-->
   <int value="847" label="FileHandlingBlockedForUrls"/>
   <int value="848" label="DeviceAllowedBluetoothServices"/>
   <int value="849" label="ExplicitlyAllowedNetworkPorts"/>
+  <int value="850" label="DeviceDebugPacketCaptureAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -32116,6 +32117,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3874" label="ElementGetInnerHTML"/>
   <int value="3875" label="FileHandlingLaunch"/>
   <int value="3876" label="SameOriginDocumentsWithDifferentCOOPStatus"/>
+  <int value="3877" label="HTMLMediaElementSetSinkId"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -45650,6 +45652,7 @@ from previous Chrome versions.
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-658319177" label="VaapiAV1Decoder:disabled"/>
   <int value="-657808907" label="CopyLinkToText:disabled"/>
+  <int value="-656743717" label="HelpAppDiscoverTab:enabled"/>
   <int value="-654705905" label="ShortcutCustomizationApp:enabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
   <int value="-653616608" label="MacSyscallSandbox:disabled"/>
@@ -47367,6 +47370,7 @@ from previous Chrome versions.
   <int value="918608729" label="finch-seed-min-download-period"/>
   <int value="921536672" label="OfflinePagesDescriptiveFailStatus:enabled"/>
   <int value="921561616" label="WebAssemblyTiering:disabled"/>
+  <int value="923923308" label="WifiSyncAllowDeletes:enabled"/>
   <int value="924769517" label="AppServiceAdaptiveIcon:disabled"/>
   <int value="925712999" label="V8Orinoco:enabled"/>
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
@@ -48490,6 +48494,7 @@ from previous Chrome versions.
   <int value="1923496816" label="AssistantIntentTranslateInfo:disabled"/>
   <int value="1923780021" label="PrivacyReorderedAndroid:enabled"/>
   <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
+  <int value="1924326113" label="HelpAppDiscoverTab:disabled"/>
   <int value="1924773264" label="WakeOnWifiAllowed:disabled"/>
   <int value="1925213304" label="FillingAcrossAffiliatedWebsites:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
@@ -48704,6 +48709,7 @@ from previous Chrome versions.
   <int value="2094335682" label="StreamlinedUsbPrinterSetup:enabled"/>
   <int value="2096736155" label="BrowsingDataLifetimeManager:enabled"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
+  <int value="2098059607" label="WifiSyncAllowDeletes:disabled"/>
   <int value="2098714203" label="enable-generic-sensors"/>
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
   <int value="2099945365" label="OmniboxAssistantVoiceSearch:enabled"/>
@@ -75813,7 +75819,11 @@ would be helpful to identify which type is being sent.
       Obsolete data type.
     </obsolete>
   </int>
-  <int value="33" label="Managed User Whitelists"/>
+  <int value="33" label="Managed User Allowlists">
+    <obsolete>
+      Obsolete data type.
+    </obsolete>
+  </int>
   <int value="34" label="Autofill Wallet"/>
   <int value="35" label="Autofill Wallet Metadata"/>
   <int value="36" label="Arc Package"/>
@@ -77919,7 +77929,7 @@ Full version information for the fingerprint enum values:
   <int value="11" label="Disabled by Key"/>
   <int value="12" label="Language in ULP"/>
   <int value="13" label="Aborted by translate ranker"/>
-  <int value="14" label="Aborted by too often denied rule"/>
+  <int value="14" label="[Deprecated] Aborted by too often denied rule"/>
   <int value="15" label="Aborted by matches previous language"/>
   <int value="16" label="Decision made to create infobar on Android"/>
   <int value="17" label="Show omnibar icon to the user"/>
@@ -82002,6 +82012,15 @@ others/histograms.xml -->
   <int value="3" label="Sender, transport sequence number"/>
 </enum>
 
+<enum name="WebRtcDesktopCapturerImpl">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="WgcCapturerWin"/>
+  <int value="2" label="ScreenCapturerWinMagnifier"/>
+  <int value="3" label="WindowCapturerWinGdi"/>
+  <int value="4" label="ScreenCapturerWinGdi"/>
+  <int value="5" label="ScreenCapturerWinDirectx"/>
+</enum>
+
 <enum name="WebRTCEventFrequency">
   <int value="0" label="None."/>
   <int value="1" label="Few."/>
@@ -82134,6 +82153,46 @@ others/histograms.xml -->
   <int value="1" label="VP8"/>
   <int value="2" label="VP9"/>
   <int value="3" label="H264"/>
+</enum>
+
+<enum name="WebRtcWgcCapturerResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="NoDirect3dDevice"/>
+  <int value="2" label="NoSourceSelected"/>
+  <int value="3" label="ItemCreationFailure"/>
+  <int value="4" label="SessionStartFailure"/>
+  <int value="5" label="GetFrameFailure"/>
+  <int value="6" label="FrameDropped"/>
+</enum>
+
+<enum name="WebRtcWgcCaptureSessionGetFrameResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="ItemClosed"/>
+  <int value="2" label="TryGetNextFrameFailed"/>
+  <int value="3" label="FrameDropped"/>
+  <int value="4" label="GetSurfaceFailed"/>
+  <int value="5" label="DxgiInterfaceAccessFailed"/>
+  <int value="6" label="Texture2dCastFailed"/>
+  <int value="7" label="CreateMappedTextureFailed"/>
+  <int value="8" label="MapFrameFailed"/>
+  <int value="9" label="GetContentSizeFailed"/>
+  <int value="10" label="ResizeMappedTextureFailed"/>
+  <int value="11" label="RecreateFramePoolFailed"/>
+</enum>
+
+<enum name="WebRtcWgcCaptureSessionStartResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="SourceClosed"/>
+  <int value="2" label="AddClosedFailed"/>
+  <int value="3" label="DxgiDeviceCastFailed"/>
+  <int value="4" label="D3dDelayLoadFailed"/>
+  <int value="5" label="D3dDeviceCreationFailed"/>
+  <int value="6" label="FramePoolActivationFailed"/>
+  <int value="7" label="FramePoolCastFailed"/>
+  <int value="8" label="GetItemSizeFailed"/>
+  <int value="9" label="CreateFreeThreadedFailed"/>
+  <int value="10" label="CreateCaptureSessionFailed"/>
+  <int value="11" label="StartCaptureFailed"/>
 </enum>
 
 <enum name="WebSchedulerTrackedFeature">

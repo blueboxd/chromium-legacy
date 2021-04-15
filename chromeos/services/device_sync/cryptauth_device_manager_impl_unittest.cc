@@ -341,13 +341,12 @@ void ExpectSyncedDevicesAndPrefAreEqual(
       std::vector<cryptauth::SoftwareFeature> enabled_software_features;
 
       for (const auto& it : software_features_from_prefs->DictItems()) {
-        int software_feature_state;
-        ASSERT_TRUE(it.second.GetAsInteger(&software_feature_state));
+        ASSERT_TRUE(it.second.is_int());
 
         cryptauth::SoftwareFeature software_feature =
             SoftwareFeatureStringToEnum(it.first);
         switch (static_cast<multidevice::SoftwareFeatureState>(
-            software_feature_state)) {
+            it.second.GetInt())) {
           case multidevice::SoftwareFeatureState::kEnabled:
             enabled_software_features.push_back(software_feature);
             FALLTHROUGH;
@@ -534,8 +533,8 @@ class DeviceSyncCryptAuthDeviceManagerImplTest
       update.Get()->Append(std::move(device_dictionary));
     }
 
-    device_manager_.reset(new TestCryptAuthDeviceManager(
-        &clock_, client_factory_.get(), &gcm_manager_, &pref_service_));
+    device_manager_ = std::make_unique<TestCryptAuthDeviceManager>(
+        &clock_, client_factory_.get(), &gcm_manager_, &pref_service_);
     device_manager_->AddObserver(this);
 
     get_my_devices_response_.add_devices()->CopyFrom(devices_in_response_[0]);
@@ -722,8 +721,8 @@ TEST_F(
   ListPrefUpdate update(&pref_service_, prefs::kCryptAuthDeviceSyncUnlockKeys);
   update.Get()->Append(std::move(device_dictionary));
 
-  device_manager_.reset(new TestCryptAuthDeviceManager(
-      &clock_, client_factory_.get(), &gcm_manager_, &pref_service_));
+  device_manager_ = std::make_unique<TestCryptAuthDeviceManager>(
+      &clock_, client_factory_.get(), &gcm_manager_, &pref_service_);
   device_manager_->Start();
 
   // Ensure that the deprecated booleans are not exposed in the final

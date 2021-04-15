@@ -9580,6 +9580,22 @@ Called by update_bad_message_reasons.py.-->
   <int value="5" label="App provided items"/>
 </enum>
 
+<enum name="BrowserDataMigratorFinalStatus">
+  <int value="0" label="Skipped"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Find user data dir failed"/>
+  <int value="3" label="Detete tmp dir failed"/>
+  <int value="4" label="Not enough space">
+    Migration did not run because there was not enough free space.
+  </int>
+  <int value="5" label="Copy failed">
+    Migration did not complete since copy stage did not complete.
+  </int>
+  <int value="6" label="Move failed">
+    Migration did not complete since move stage did not complete.
+  </int>
+</enum>
+
 <enum name="BrowserGestureActionType">
   <int value="0" label="Tab switched tap"/>
   <int value="1" label="Active tab tap"/>
@@ -21342,6 +21358,13 @@ Called by update_document_policy_enum.py.-->
   <int value="5" label="Bad gamma value"/>
 </enum>
 
+<enum name="EditableContentType">
+  <int value="0" label="Not editable"/>
+  <int value="1" label="Content editable"/>
+  <int value="2" label="Text area"/>
+  <int value="3" label="Input"/>
+</enum>
+
 <enum name="EduCoexistenceFlowResult">
   <obsolete>
     Deprecated in M91 after v2 EduCoexistence.
@@ -24134,6 +24157,7 @@ Called by update_document_policy_enum.py.-->
   <int value="850" label="DeviceDebugPacketCaptureAllowed"/>
   <int value="851" label="SuggestLogoutAfterClosingLastWindow"/>
   <int value="852" label="SharedArrayBufferUnrestrictedAccessAllowed"/>
+  <int value="853" label="LensCameraAssistedSearchEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -43014,10 +43038,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Lens Search And Shop Supported"/>
   <int value="9" label="Camera Not Available"/>
   <int value="10" label="Disabled on Low End Device"/>
-  <int value="11" label="Disabled by Feature Flag"/>
-  <int value="12" label="AGSA Version Not Supported"/>
-  <int value="13" label="Disabled on Incognito"/>
-  <int value="14" label="Disabled on Tablet"/>
+  <int value="11" label="AGSA Version Not Supported"/>
+  <int value="12" label="Disabled on Incognito"/>
+  <int value="13" label="Disabled on Tablet"/>
+  <int value="14" label="Disabled for Enterprise user"/>
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue">
@@ -48414,7 +48438,9 @@ from previous Chrome versions.
   <int value="1835075399" label="PostQuantumCECPQ2:disabled"/>
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
   <int value="1837330563" label="WebPaymentsMinimalUI:disabled"/>
+  <int value="1837847580" label="MutingCompromisedCredentials:disabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
+  <int value="1839005510" label="MutingCompromisedCredentials:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>
   <int value="1841793150" label="TwoPanesStartSurfaceAndroid:enabled"/>
   <int value="1842219851" label="enable-incognito-window-counter"/>
@@ -62836,7 +62862,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="kNavigationRequestFailure"/>
   <int value="9" label="kNavigationRequestBlockedByCsp"/>
   <int value="10" label="kMainFrameNavigation"/>
-  <int value="11" label="kDisallowedMojoInterface"/>
+  <int value="11" label="kMojoBinderPolicy"/>
   <int value="12" label="kPlugin"/>
 </enum>
 

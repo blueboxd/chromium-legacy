@@ -37,8 +37,8 @@ class SodaInstallerImplChromeOS : public SodaInstaller {
   base::FilePath GetLanguagePath() const override;
 
   // SodaInstaller:
-  void InstallSoda(PrefService* prefs) override;
-  void InstallLanguage(PrefService* prefs) override;
+  void InstallLanguage(PrefService* profile_prefs,
+                       PrefService* global_prefs) override;
   bool IsSodaInstalled() const override;
   bool IsLanguageInstalled(
       const std::string& locale_or_language) const override;
@@ -48,6 +48,7 @@ class SodaInstallerImplChromeOS : public SodaInstaller {
   friend class ::OnDeviceSpeechRecognizerTest;
 
   // SodaInstaller:
+  void InstallSoda(PrefService* global_prefs) override;
   // Here "uninstall" is used in the DLC sense of the term: Uninstallation will
   // disable a DLC but not immediately remove it from disk.
   // Once a refcount to the DLC reaches 0 (meaning all profiles which had it

@@ -81,8 +81,7 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
 
     divider_handler_view_ =
         AddChildView(std::make_unique<SplitViewDividerHandlerView>());
-    SetEventTargeter(
-        std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+    SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   }
   ~DividerView() override = default;
 
@@ -432,7 +431,7 @@ void SplitViewDivider::CreateDividerWidget(SplitViewController* controller) {
   divider_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.parent = Shell::GetContainer(controller->root_window(),
                                       kShellWindowId_AlwaysOnTopContainer);
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);

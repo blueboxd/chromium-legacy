@@ -1313,6 +1313,7 @@ interface Crypto
     getter subtle
     method constructor
     method getRandomValues
+    method randomUUID
 interface CryptoKey
     attribute @@toStringTag
     getter algorithm
@@ -4692,8 +4693,10 @@ interface ImageCapture
     method takePhoto
 interface ImageData
     attribute @@toStringTag
+    getter colorSpace
     getter data
     getter height
+    getter storageFormat
     getter width
     method constructor
     method getSettings

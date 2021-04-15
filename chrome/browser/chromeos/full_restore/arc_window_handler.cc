@@ -33,11 +33,18 @@ apps::mojom::WindowInfoPtr ConvertToArcBounds(
     window_info->bounds.reset();
     return window_info;
   }
-  // TODO(sstan): Add position adjustment after specify how to conversion
-  // to ARC bounds.
+  // TODO(sstan): Only for single screen. Need to find a general way.
+  window_info->bounds->x *= scale_factor;
+  window_info->bounds->y *= scale_factor;
   window_info->bounds->width *= scale_factor;
   window_info->bounds->height *= scale_factor;
   return window_info;
+}
+
+void ArcWindowHandler::OnAppInstanceConnected() {
+  // TODO(sstan): Send existed ghost window info to ARC once ghost window
+  // has been introduced.
+  app_instance_connected_ = true;
 }
 
 }  // namespace full_restore

@@ -372,8 +372,8 @@ void TestingProfile::Init() {
                               immediate_callback_runner);
   account_manager->SetPrefService(GetPrefs());
   if (!ash::CrosSettings::IsInitialized()) {
-    scoped_cros_settings_test_helper_.reset(
-        new ash::ScopedCrosSettingsTestHelper);
+    scoped_cros_settings_test_helper_ =
+        std::make_unique<ash::ScopedCrosSettingsTestHelper>();
   }
   arc::ArcServiceLauncher* launcher = arc::ArcServiceLauncher::Get();
   if (launcher)
@@ -417,8 +417,7 @@ void TestingProfile::Init() {
       this, base::BindRepeating(&web_app::TestWebAppProvider::BuildDefault));
 #endif
 
-  // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
-  // simulating ProfileImpl::GetOffTheRecordPrefs().
+  // Prefs for incognito profiles are set in CreateIncognitoPrefService().
   SimpleFactoryKey* key = GetProfileKey();
   if (!IsOffTheRecord()) {
     DCHECK(!original_profile_);
@@ -939,10 +938,6 @@ GURL TestingProfile::GetHomePage() {
 
 void TestingProfile::SetCreationTimeForTesting(base::Time creation_time) {
   start_time_ = creation_time;
-}
-
-PrefService* TestingProfile::GetOffTheRecordPrefs() {
-  return nullptr;
 }
 
 bool TestingProfile::IsSignedIn() {

@@ -22,7 +22,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/safe_browsing/android/remote_database_manager.h"
-#include "components/subresource_filter/android/ads_blocked_infobar_delegate.h"
+#include "components/subresource_filter/content/browser/ads_blocked_infobar_delegate.h"
 #include "weblayer/browser/infobar_service.h"
 #endif
 
@@ -55,7 +55,8 @@ GetDatabaseManagerFromSafeBrowsingService() {
 SubresourceFilterClientImpl::SubresourceFilterClientImpl(
     content::WebContents* web_contents)
 #if defined(OS_ANDROID)
-    : web_contents_(web_contents)
+    : web_contents_(web_contents),
+      infobar_service_(InfoBarService::FromWebContents(web_contents_))
 #endif
 {
 }
@@ -80,8 +81,7 @@ void SubresourceFilterClientImpl::CreateThrottleManagerWithClientForWebContents(
 
 void SubresourceFilterClientImpl::ShowNotification() {
 #if defined(OS_ANDROID)
-  subresource_filter::AdsBlockedInfobarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents_));
+  subresource_filter::AdsBlockedInfobarDelegate::Create(infobar_service_);
 #endif
 }
 

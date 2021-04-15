@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,6 +50,7 @@
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_resources_remover.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -98,7 +100,6 @@
 #include "chrome/browser/chromeos/dbus/vm/vm_permission_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
 #include "chrome/browser/chromeos/device_name_store.h"
-#include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
@@ -568,7 +569,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // (ComponentUpdaterServiceProvider).
   g_browser_process->platform_part()->InitializeCrosComponentManager();
 
-  dbus_services_.reset(new internal::DBusServices(parameters()));
+  dbus_services_ = std::make_unique<internal::DBusServices>(parameters());
 
   // Need to be done after LoginState has been initialized in DBusServices().
   ::memory::MemoryKillsMonitor::Initialize();
@@ -579,9 +580,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 int ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-  network_change_manager_client_.reset(new NetworkChangeManagerClient(
+  network_change_manager_client_ = std::make_unique<NetworkChangeManagerClient>(
       static_cast<net::NetworkChangeNotifierPosix*>(
-          content::GetNetworkChangeNotifier())));
+          content::GetNetworkChangeNotifier()));
 
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
@@ -628,10 +629,10 @@ int ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
           ->GetSharedURLLoaderFactory(),
       g_browser_process->local_state());
 
-  fast_transition_observer_.reset(
-      new FastTransitionObserver(g_browser_process->local_state()));
-  network_throttling_observer_.reset(
-      new NetworkThrottlingObserver(g_browser_process->local_state()));
+  fast_transition_observer_ = std::make_unique<FastTransitionObserver>(
+      g_browser_process->local_state());
+  network_throttling_observer_ = std::make_unique<NetworkThrottlingObserver>(
+      g_browser_process->local_state());
 
   g_browser_process->platform_part()->InitializeSchedulerConfigurationManager();
   arc_service_launcher_ = std::make_unique<arc::ArcServiceLauncher>(
@@ -724,13 +725,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     logging::RedirectChromeLogging(parsed_command_line());
 
     // Load the default app order synchronously for restarting case.
-    app_order_loader_.reset(
-        new default_app_order::ExternalLoader(false /* async */));
+    app_order_loader_ =
+        std::make_unique<default_app_order::ExternalLoader>(false /* async */);
   }
 
   if (!app_order_loader_) {
-    app_order_loader_.reset(
-        new default_app_order::ExternalLoader(true /* async */));
+    app_order_loader_ =
+        std::make_unique<default_app_order::ExternalLoader>(true /* async */);
   }
 
   audio::SoundsManager::Create(content::GetAudioServiceStreamFactoryBinder());
@@ -761,8 +762,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       base::BindOnce(&version_loader::GetVersion, version_loader::VERSION_FULL),
       base::BindOnce(&ChromeOSVersionCallback));
 
-  arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
-  web_kiosk_app_manager_.reset(new WebKioskAppManager());
+  arc_kiosk_app_manager_ = std::make_unique<ArcKioskAppManager>();
+  web_kiosk_app_manager_ = std::make_unique<WebKioskAppManager>();
 
   if (base::FeatureList::IsEnabled(features::kEnableHostnameSetting)) {
     DeviceNameStore::GetInstance()->Initialize(

@@ -191,6 +191,7 @@ interface Crypto
     getter subtle
     method constructor
     method getRandomValues
+    method randomUUID
 interface CryptoKey
     attribute @@toStringTag
     getter algorithm
@@ -772,8 +773,10 @@ interface ImageBitmapRenderingContext
     method transferFromImageBitmap
 interface ImageData
     attribute @@toStringTag
+    getter colorSpace
     getter data
     getter height
+    getter storageFormat
     getter width
     method constructor
     method getSettings

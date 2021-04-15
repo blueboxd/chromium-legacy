@@ -1997,7 +1997,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // url_is_unreachable is |true|.
   bool ShouldBypassSecurityChecksForErrorPage(
       NavigationRequest* navigation_request,
-      bool* should_commit_unreachable_url = nullptr);
+      bool* should_commit_error_page = nullptr);
 
   // Explicitly allow the use of an audio output device in this render frame.
   // When called with a hashed device id string the renderer will be allowed to
@@ -2665,7 +2665,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Updates the site url if the navigation was successful and the page is not
   // an interstitial.
-  void UpdateSiteURL(const GURL& url, bool url_is_unreachable);
+  void UpdateSiteURL(const GURL& url, bool is_error_page);
 
   // The actual implementation of committing a navigation in the browser
   // process. Called by the DidCommitProvisionalLoad IPC handler.
@@ -3519,7 +3519,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Optional PeakGpuMemoryTracker, when this frame is the main frame. Created
   // by NavigationRequest, ownership is maintained until the frame has stopped
   // loading. Or newer navigations occur.
-  std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
+  std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_;
 
   scoped_refptr<WebAuthRequestSecurityChecker>
       webauth_request_security_checker_;

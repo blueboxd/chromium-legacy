@@ -892,11 +892,11 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_PRIMARY_USER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name.reset(
-        new std::string(user_manager::UserManager::Get()
-                            ->GetPrimaryUser()
-                            ->GetAccountId()
-                            .GetUserEmail()));
+    pref_object->controlled_by_name =
+        std::make_unique<std::string>(user_manager::UserManager::Get()
+                                          ->GetPrimaryUser()
+                                          ->GetAccountId()
+                                          .GetUserEmail());
     return pref_object;
   }
 #endif
@@ -935,8 +935,8 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->controlled_by =
         settings_api::ControlledBy::CONTROLLED_BY_OWNER;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-    pref_object->controlled_by_name.reset(new std::string(
-        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail()));
+    pref_object->controlled_by_name = std::make_unique<std::string>(
+        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
     return pref_object;
   }
 
@@ -1217,10 +1217,7 @@ const Extension* PrefsUtil::GetExtensionControllingPref(
     return GetExtensionOverridingHomepage(profile_);
 
   if (pref_object.key == ::prefs::kRestoreOnStartup) {
-    int restore_on_startup;
-    CHECK(pref_object.value->GetAsInteger(&restore_on_startup));
-
-    if (restore_on_startup == SessionStartupPref::kPrefValueURLs)
+    if (pref_object.value->GetInt() == SessionStartupPref::kPrefValueURLs)
       return GetExtensionOverridingStartupPages(profile_);
   }
 

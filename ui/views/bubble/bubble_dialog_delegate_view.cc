@@ -127,8 +127,8 @@ Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
     }
   }
   bubble_params.activatable = bubble->CanActivate()
-                                  ? Widget::InitParams::ACTIVATABLE_YES
-                                  : Widget::InitParams::ACTIVATABLE_NO;
+                                  ? Widget::InitParams::Activatable::kYes
+                                  : Widget::InitParams::Activatable::kNo;
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
   DCHECK(bubble_params.parent || !bubble->has_parent());
   bubble_widget->Init(std::move(bubble_params));
@@ -363,7 +363,8 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
   LayoutProvider* provider = LayoutProvider::Get();
   // An individual bubble should override these margins if its layout differs
   // from the typical title/text/buttons.
-  set_margins(provider->GetDialogInsetsForContentType(TEXT, TEXT));
+  set_margins(provider->GetDialogInsetsForContentType(
+      DialogContentType::kText, DialogContentType::kText));
   set_title_margins(provider->GetInsetsMetric(INSETS_DIALOG_TITLE));
   if (anchor_view)
     SetAnchorView(anchor_view);

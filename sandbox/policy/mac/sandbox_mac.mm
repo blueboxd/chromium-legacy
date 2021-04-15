@@ -58,26 +58,6 @@
 namespace sandbox {
 namespace policy {
 
-const char* SandboxMac::kSandboxBrowserPID = "BROWSER_PID";
-const char* SandboxMac::kSandboxBundlePath = "BUNDLE_PATH";
-const char* SandboxMac::kSandboxChromeBundleId = "BUNDLE_ID";
-const char* SandboxMac::kSandboxSodaComponentPath = "SODA_COMPONENT_PATH";
-const char* SandboxMac::kSandboxSodaLanguagePackPath =
-    "SODA_LANGUAGE_PACK_PATH";
-const char* SandboxMac::kSandboxComponentPath = "COMPONENT_PATH";
-const char* SandboxMac::kSandboxDisableDenialLogging =
-    "DISABLE_SANDBOX_DENIAL_LOGGING";
-const char* SandboxMac::kSandboxEnableLogging = "ENABLE_LOGGING";
-const char* SandboxMac::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
-const char* SandboxMac::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
-const char* SandboxMac::kSandboxOSVersion = "OS_VERSION";
-const char* SandboxMac::kSandboxElCapOrLater = "ELCAP_OR_LATER";
-const char* SandboxMac::kSandboxMacOS1013 = "MACOS_1013";
-const char* SandboxMac::kSandboxFieldTrialSeverName = "FIELD_TRIAL_SERVER_NAME";
-const char* SandboxMac::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
-const char* SandboxMac::kSandboxDisableMetalShaderCache =
-    "DISABLE_METAL_SHADER_CACHE";
-
 // Warm up System APIs that empirically need to be accessed before the Sandbox
 // is turned on.
 // This method is layed out in blocks, each one containing a separate function
@@ -169,14 +149,6 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
       base::CommandLine::ForCurrentProcess();
   bool enable_logging =
       command_line->HasSwitch(switches::kEnableSandboxLogging);
-  if (!compiler.InsertBooleanParam(kSandboxEnableLogging, enable_logging))
-    return false;
-
-  // Without this, the sandbox will print a message to the system log every
-  // time it denies a request.  This floods the console with useless spew.
-  if (!compiler.InsertBooleanParam(kSandboxDisableDenialLogging,
-                                   !enable_logging))
-    return false;
 
   // Splice the path of the user's home directory into the sandbox profile
   // (see renderer.sb for details).
@@ -184,31 +156,9 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
   base::FilePath home_dir_canonical =
       GetCanonicalPath(base::FilePath(home_dir));
 
-  if (!compiler.InsertStringParam(kSandboxHomedirAsLiteral,
-                                  home_dir_canonical.value())) {
-    return false;
-  }
-
-  if (!compiler.InsertStringParam(
-          kSandboxFieldTrialSeverName,
-          base::MachPortRendezvousClient::GetBootstrapName())) {
-    return false;
-  }
-
-  bool elcap_or_later = base::mac::IsAtLeastOS10_11();
-  if (!compiler.InsertBooleanParam(kSandboxElCapOrLater, elcap_or_later))
-    return false;
-
-  bool macos_1013 = base::mac::IsOS10_13();
-  if (!compiler.InsertBooleanParam(kSandboxMacOS1013, macos_1013))
-    return false;
-
   if (sandbox_type == SandboxType::kGpu) {
     base::FilePath bundle_path =
-        SandboxMac::GetCanonicalPath(base::mac::FrameworkBundlePath());
-    if (!compiler.InsertStringParam(kSandboxBundleVersionPath,
-                                    bundle_path.value()))
-      return false;
+        GetCanonicalPath(base::mac::FrameworkBundlePath());
   }
 
   // Initialize sandbox.
@@ -218,8 +168,7 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
   return success;
 }
 
-// static
-base::FilePath SandboxMac::GetCanonicalPath(const base::FilePath& path) {
+base::FilePath GetCanonicalPath(const base::FilePath& path) {
   base::ScopedFD fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
   if (!fd.is_valid()) {
     DPLOG(ERROR) << "GetCanonicalSandboxPath() failed for: " << path.value();
@@ -235,8 +184,7 @@ base::FilePath SandboxMac::GetCanonicalPath(const base::FilePath& path) {
   return base::FilePath(canonical_path);
 }
 
-// static
-std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
+std::string GetSandboxProfile(SandboxType sandbox_type) {
   std::string profile = std::string(kSeatbeltPolicyString_common);
 
   switch (sandbox_type) {

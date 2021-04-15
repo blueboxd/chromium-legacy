@@ -19,6 +19,18 @@ class FilePath;
 namespace sandbox {
 namespace policy {
 
+// Convert provided path into a "canonical" path matching what the Sandbox
+// expects i.e. one without symlinks.
+// This path is not necessarily unique e.g. in the face of hardlinks.
+SANDBOX_POLICY_EXPORT base::FilePath GetCanonicalPath(
+    const base::FilePath& path);
+
+// Returns the sandbox profile string for a given sandbox type.
+// It CHECKs that the sandbox profile is a valid type, so it always returns a
+// valid result, or crashes.
+SANDBOX_POLICY_EXPORT std::string GetSandboxProfile(
+    SandboxType sandbox_type);
+
 class SANDBOX_POLICY_EXPORT SandboxMac {
  public:
   // Warm up System APIs that empirically need to be accessed before the
@@ -34,41 +46,10 @@ class SANDBOX_POLICY_EXPORT SandboxMac {
   //
   // Returns true on success, false if an error occurred enabling the sandbox.
   static bool Enable(SandboxType sandbox_type);
-  
-  // Convert provided path into a "canonical" path matching what the Sandbox
-  // expects i.e. one without symlinks.
-  // This path is not necessarily unique e.g. in the face of hardlinks.
-  static base::FilePath GetCanonicalPath(const base::FilePath& path);
-
-  // Returns the sandbox profile string for a given sandbox type.
-  // It CHECKs that the sandbox profile is a valid type, so it always returns a
-  // valid result, or crashes.
-  static std::string GetSandboxProfile(SandboxType sandbox_type);
-
-  static const char* kSandboxBrowserPID;
-  static const char* kSandboxBundlePath;
-  static const char* kSandboxChromeBundleId;
-  static const char* kSandboxSodaComponentPath;
-  static const char* kSandboxSodaLanguagePackPath;
-  static const char* kSandboxComponentPath;
-  static const char* kSandboxDisableDenialLogging;
-  static const char* kSandboxEnableLogging;
-  static const char* kSandboxHomedirAsLiteral;
-  static const char* kSandboxLoggingPathAsLiteral;
-  static const char* kSandboxOSVersion;
-
-  // TODO(kerrnel): this is only for the legacy sandbox.
-  static const char* kSandboxElCapOrLater;
-  static const char* kSandboxMacOS1013;
-  static const char* kSandboxFieldTrialSeverName;
-
-  static const char* kSandboxBundleVersionPath;
-  static const char* kSandboxDisableMetalShaderCache;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxMac);
 };
-
 }  // namespace policy
 }  // namespace sandbox
 

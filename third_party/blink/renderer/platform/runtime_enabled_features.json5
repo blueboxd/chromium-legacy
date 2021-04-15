@@ -1416,6 +1416,12 @@
       status: "experimental",
     },
     {
+      // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the
+      // feature is in stable with no issues.
+      name: "OffsetParentNewSpecBehavior",
+      status: "stable"
+    },
+    {
       name: "OnDeviceChange",
       // Android does not yet support SystemMonitor.
       status: {"Android": "", "default": "stable"},
@@ -1877,6 +1883,9 @@
       name: "SharedArrayBufferOnDesktop",
     },
     {
+      name: "SharedArrayBufferUnrestrictedAccessAllowed",
+    },
+    {
       name: "SharedWorker",
       // Android does not yet support SharedWorker. crbug.com/154571
       status: {"Android": "", "default": "stable"},
@@ -2000,6 +2009,10 @@
     {
       name: "ThirdPartyOriginTrials",
       status: "stable",
+    },
+    {
+      name: "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
+      status: "experimental",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",

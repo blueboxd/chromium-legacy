@@ -391,7 +391,8 @@ int HypotheticalScrollbarThickness(const LayoutBox& box,
       Document& document = box.GetDocument();
       float scale_from_dip =
           chrome_client.WindowToViewportScalar(document.GetFrame(), 1.0f);
-      return theme.ScrollbarThickness(scale_from_dip);
+      return theme.ScrollbarThickness(scale_from_dip,
+                                      box.StyleRef().ScrollbarWidth());
     }
   }
 }
@@ -7339,6 +7340,16 @@ void LayoutBox::RecalcFragmentsVisualOverflow() {
   for (const NGPhysicalBoxFragment& fragment : PhysicalFragments()) {
     DCHECK(fragment.CanUseFragmentsForInkOverflow());
     fragment.GetMutableForPainting().RecalcInkOverflow();
+  }
+  // If |this| is an anonymous fieldset wrapper, the rendered legend is a child
+  // of |this| in the box tree, but it is a child of the fieldset container in
+  // the fragment tree. Make sure it is recalculated.
+  if (UNLIKELY(IsAnonymous() && HasSelfPaintingLayer())) {
+    const auto* parent = DynamicTo<LayoutBlock>(Parent());
+    if (parent && parent->IsLayoutNGFieldset()) {
+      if (LayoutBox* legend = LayoutFieldset::FindInFlowLegend(*parent))
+        legend->RecalcFragmentsVisualOverflow();
+    }
   }
   CopyVisualOverflowFromFragmentsRecursively();
 }

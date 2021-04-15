@@ -344,7 +344,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            const std::string& message) override;
   void ExecuteJavaScriptMethod(const std::u16string& object_name,
                                const std::u16string& method_name,
-                               base::Value&& arguments,
+                               base::Value arguments,
                                JavaScriptResultCallback callback) override;
   void ExecuteJavaScript(const std::u16string& javascript,
                          JavaScriptResultCallback callback) override;
@@ -394,10 +394,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const gfx::Point&,
       const blink::mojom::MediaPlayerAction& action) override;
   bool CreateNetworkServiceDefaultFactory(
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory>&&
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver) override;
   void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
-      base::flat_set<url::Origin> isolated_world_origins,
+      const base::flat_set<url::Origin>& isolated_world_origins,
       bool push_to_renderer_now) override;
   bool IsSandboxed(network::mojom::WebSandboxFlags flags) override;
   void FlushNetworkAndNavigationInterfacesForTesting() override;
@@ -424,7 +424,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   StoragePartition* GetStoragePartition() override;
   BrowserContext* GetBrowserContext() override;
   void ReportInspectorIssue(blink::mojom::InspectorIssueInfoPtr info) override;
-  void WriteIntoTracedValue(perfetto::TracedValue&& context) override;
+  void WriteIntoTracedValue(perfetto::TracedValue context) override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -1233,12 +1233,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool is_overriding_user_agent() { return is_overriding_user_agent_; }
 
-  // Notifies the render frame that |frame_tree_node_| has had the sticky
-  // user activation bit set for the first time.
-  // This is called both for the actual frame that saw user activation and any
-  // ancestor frames that might also be activated as part of UserActivationV2
-  // requirements.
-  void DidReceiveFirstUserActivation();
+  // Notifies the render frame that |frame_tree_node_| has received user
+  // activation. May be invoked multiple times. This is called both for the
+  // actual frame that saw user activation and any ancestor frames that might
+  // also be activated as part of UserActivationV2 requirements. Does not
+  // include frames activated by the same-origin visibility heuristic, see
+  // `UserActivationState` for details.
+  void DidReceiveUserActivation();
 
   // Apply any isolation policies, such as site isolation triggered by COOP
   // headers, that might be triggered when a particular frame has just seen a
@@ -2057,6 +2058,28 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return early_hints_manager_.get();
   }
 
+  // Create a bundle of subresource factories for an initial empty document.
+  // Used for browser-initiated (e.g. no opener) creation of a new main frame.
+  // Example scenarios:
+  // 1. `window.open` with `rel=noopener` (this path is not used if rel=noopener
+  //    is missing;  child frames also don't go through this path).
+  // 2. Browser-initiated (e.g. browser-UI-driven) opening of a new tab.
+  // 3. Recreating an active main frame when recovering from a renderer crash.
+  // 4. Creating a speculative main frame if navigation requires a process swap.
+  //
+  // Currently the returned bundle is mostly empty - in practice it is
+  // sufficient to provide only a NetworkService-bound default factory (i.e. no
+  // chrome-extension:// or file:// or data: factories are present today).
+  // TODO(lukasza): Revisit the above is necessary.
+  //
+  // The parameters of the NetworkService-bound default factory (e.g.
+  // `request_initiator_origin_lock`, IPAddressSpace, etc.) are associated
+  // with the current `last_committed_origin_` (typically an opaque, unique
+  // origin for a browser-created initial empty document;  it may be a regular
+  // origin when recovering from a renderer crash).
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+  CreateSubresourceLoaderFactoriesForInitialEmptyDocument();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2426,16 +2449,26 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* navigation_request,
       base::StringPiece debug_tag);
 
-  // Creates a Network Service-backed factory from appropriate |NetworkContext|
-  // and sets a connection error handler to trigger
-  // |OnNetworkServiceConnectionError()| if the factory is out-of-process.  If
-  // this returns true, any redirect safety checks should be bypassed in
-  // downstream loaders.
+  // Like CreateNetworkServiceDefaultFactoryInternal but also sets up a
+  // connection error handler to detect and recover from NetworkService
+  // crashes.
   bool CreateNetworkServiceDefaultFactoryAndObserve(
       network::mojom::URLLoaderFactoryParamsPtr params,
       ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
+
+  // Asks an appropriate `NetworkService` to create a new URLLoaderFactory with
+  // the given `params` and binds the factory to the `default_factory_receiver`.
+  //
+  // The callers typically base the `params` on either 1) the current state of
+  // `this` RenderFrameHostImpl (e.g. the origin of the initial empty document,
+  // or the last committed origin) or 2) a pending NavigationRequest.
+  //
+  // If this returns true, any redirect safety checks should be bypassed in
+  // downstream loaders.  (This indicates that a layer above //content has
+  // wrapped `default_factory_receiver` and may inject arbitrary redirects - for
+  // example see WebRequestAPI::MaybeProxyURLLoaderFactory.)
   bool CreateNetworkServiceDefaultFactoryInternal(
       network::mojom::URLLoaderFactoryParamsPtr params,
       ukm::SourceIdObj ukm_source_id,
@@ -3322,8 +3355,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   KeepAliveHandleFactory keep_alive_handle_factory_;
 
   // For observing Network Service connection errors only. Will trigger
-  // |OnNetworkServiceConnectionError()| and push updated factories to
-  // |RenderFrame|.
+  // `UpdateSubresourceLoaderFactories()` and push updated factories to
+  // `RenderFrame`.
   mojo::Remote<network::mojom::URLLoaderFactory>
       network_service_disconnect_handler_holder_;
 

@@ -591,6 +591,21 @@ void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(
     CountUse(feature);
 }
 
+void LocalDOMWindow::CountUseOnlyInCrossSiteIframe(
+    mojom::blink::WebFeature feature) {
+  if (!GetFrame())
+    return;
+
+  if (top()->GetFrame() &&
+      !top()
+           ->GetFrame()
+           ->GetSecurityContext()
+           ->GetSecurityOrigin()
+           ->IsSameSiteWith(GetSecurityContext().GetSecurityOrigin())) {
+    CountUse(feature);
+  }
+}
+
 bool LocalDOMWindow::HasInsecureContextInAncestors() {
   for (Frame* parent = GetFrame()->Tree().Parent(); parent;
        parent = parent->Tree().Parent()) {
@@ -628,9 +643,11 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
 
 #if !defined(OS_ANDROID)
   // On desktop, enable SharedArrayBuffer for the reverse Origin Trial,
-  // or if the Finch "kill switch" is on.
+  // or if the Finch "kill switch" is on, or if enabled by Enterprise Policy.
   if (RuntimeEnabledFeatures::UnrestrictedSharedArrayBufferEnabled(this) ||
-      RuntimeEnabledFeatures::SharedArrayBufferOnDesktopEnabled()) {
+      RuntimeEnabledFeatures::SharedArrayBufferOnDesktopEnabled() ||
+      RuntimeEnabledFeatures::
+          SharedArrayBufferUnrestrictedAccessAllowedEnabled()) {
     v8::V8::SetIsCrossOriginIsolated();
   }
 #endif

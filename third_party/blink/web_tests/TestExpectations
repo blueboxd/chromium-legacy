@@ -495,6 +495,7 @@ crbug.com/1184773 virtual/synchronous_html_parser/svg/dynamic-updates/SVGFECompo
 crbug.com/1135676 external/wpt/css/css-ui/resize-child-will-change-transform.html [ Failure ]
 crbug.com/148499 external/wpt/svg/extensibility/foreignObject/will-change-in-foreign-object-paint-order.html [ Failure ]
 crbug.com/1183814 external/wpt/svg/extensibility/foreignObject/scroll-transform-nested-stacked-children.html [ Failure ]
+crbug.com/1167352 external/wpt/css/css-will-change/will-change-transform-add-content.html [ Failure ]
 
 crbug.com/819617 [ Linux ] virtual/text-antialias/descent-clip-in-scaled-page.html [ Failure ]
 
@@ -561,6 +562,7 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ 
 #### external/wpt/css/css-position
 crbug.com/752022 external/wpt/css/css-position/sticky/position-sticky-offset-overflow.html [ Failure ]
 crbug.com/664246 external/wpt/css/css-position/sticky/position-sticky-scrollIntoView.html [ Failure ]
+crbug.com/1114280 external/wpt/css/css-position/position-absolute-replaced-intrinsic-size.tentative.html [ Failure ]
 
 #### external/wpt/css/css-sizing
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
@@ -1353,6 +1355,8 @@ crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol
 # CSS Scrollbars
 crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
 crbug.com/891944 external/wpt/css/css-scrollbars/transparent-on-root.html [ Failure ]
+# Incorrect native scrollbar repaint
+crbug.com/891944 [ Mac ] external/wpt/css/css-scrollbars/scrollbar-width-paint-001.html [ Failure ]
 
 
 # ====== CSS Infinity and NaN ======
@@ -5997,7 +6001,6 @@ crbug.com/1088475 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/proces
 crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvas-zero-size-readback.html [ Pass Crash ]
 crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRect.html [ Pass Failure ]
 crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRectPartial.html [ Pass Failure ]
-crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 
 # Sheriff 2020-06-03
 crbug.com/1007228 [ Mac ] external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Pass Failure ]

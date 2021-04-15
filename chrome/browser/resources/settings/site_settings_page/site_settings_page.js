@@ -162,9 +162,9 @@ function getCategoryItemMap() {
       id: Id.IDLE_DETECTION,
       label: 'siteSettingsIdleDetection',
       icon: 'settings:devices',
-      enabledLabel: redesignEnabled ? 'siteSettingsHidDevicesAllowed' :
+      enabledLabel: redesignEnabled ? 'siteSettingsDeviceUseAllowed' :
                                       'siteSettingsIdleDetectionAsk',
-      disabledLabel: redesignEnabled ? 'siteSettingsHidDevicesBlocked' :
+      disabledLabel: redesignEnabled ? 'siteSettingsDeviceUseBlocked' :
                                        'siteSettingsIdleDetectionBlock',
     },
     {
@@ -399,6 +399,14 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
+    /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * @private {{
      *   all: (!Array<!CategoryListItem>|undefined),

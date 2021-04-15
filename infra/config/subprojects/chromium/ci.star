@@ -3585,7 +3585,7 @@ ci.fyi_builder(
         short_name = "dre",
     ),
     triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
+        max_concurrent_invocations = 1,
     ),
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",
@@ -3619,7 +3619,7 @@ ci.fyi_builder(
         short_name = "rre",
     ),
     triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
+        max_concurrent_invocations = 1,
     ),
     goma_backend = None,
     reclient_instance = "rbe-chromium-trusted",
@@ -3637,7 +3637,7 @@ ci.fyi_builder(
         short_name = "rre",
     ),
     triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
+        max_concurrent_invocations = 1,
     ),
     goma_backend = None,
     reclient_instance = "rbe-chromium-trusted",
@@ -3655,7 +3655,7 @@ ci.fyi_builder(
         short_name = "rre",
     ),
     triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
+        max_concurrent_invocations = 1,
     ),
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",
@@ -3672,7 +3672,7 @@ ci.fyi_builder(
         short_name = "rre",
     ),
     triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 3,
+        max_concurrent_invocations = 1,
     ),
     goma_backend = None,
     reclient_instance = "rbe-chromium-gvisor-shadow",
@@ -3688,7 +3688,7 @@ ci.fyi_builder(
         short_name = "dbg",
     ),
     triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
+        max_concurrent_invocations = 1,
     ),
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",
@@ -3704,7 +3704,7 @@ ci.fyi_builder(
         short_name = "rel",
     ),
     triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 4,
+        max_concurrent_invocations = 1,
     ),
     goma_backend = None,
     reclient_instance = "goma-rbe-chromium",
@@ -4766,15 +4766,6 @@ ci.gpu_fyi_thin_tester(
 )
 
 ci.gpu_fyi_thin_tester(
-    name = "Win7 FYI Debug (AMD)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|7|x86|AMD",
-        short_name = "dbg",
-    ),
-    triggered_by = ["GPU FYI Win Builder (dbg)"],
-)
-
-ci.gpu_fyi_thin_tester(
     name = "Win7 FYI Release (AMD)",
     console_view_entry = consoles.console_view_entry(
         category = "Windows|7|x86|AMD",
@@ -4805,14 +4796,6 @@ ci.gpu_fyi_windows_builder(
     name = "GPU FYI Win Builder",
     console_view_entry = consoles.console_view_entry(
         category = "Windows|Builder|Release",
-        short_name = "x86",
-    ),
-)
-
-ci.gpu_fyi_windows_builder(
-    name = "GPU FYI Win Builder (dbg)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|Debug",
         short_name = "x86",
     ),
 )
@@ -5090,15 +5073,6 @@ ci.linux_builder(
         short_name = "gcc",
     ),
     goma_backend = None,
-    main_console_view = "main",
-)
-
-ci.linux_builder(
-    name = "linux-no-base-tracing-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "nbt",
-    ),
     main_console_view = "main",
 )
 

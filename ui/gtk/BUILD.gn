@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/linux/gtk/gtk.gni")
@@ -15,15 +14,8 @@ import("//tools/generate_stubs/rules.gni")
 assert(is_linux || is_chromeos_lacros || is_chromeos,
        "This file should only be referenced on Linux")
 
-buildflag_header("gtk_buildflags") {
-  header = "gtk_buildflags.h"
-
-  flags = [ "GTK_VERSION=$gtk_version" ]
-}
-
 source_set("gtk_types") {
   sources = [ "gtk_types.h" ]
-  deps = [ ":gtk_buildflags" ]
 }
 
 generate_stubs("gtk_stubs") {
@@ -39,6 +31,7 @@ generate_stubs("gtk_stubs") {
   deps = [
     ":gtk_types",
     "//build/config/linux/gtk",
+    "//build/config/linux/gtk:gtkprint",
   ]
   logging_function = "LogNoop()"
   logging_include = "ui/gtk/log_noop.h"
@@ -50,13 +43,15 @@ source_set("gtk_compat") {
     "gtk_compat.h",
   ]
   deps = [
-    ":gtk_buildflags",
     ":gtk_stubs",
     ":gtk_types",
     "//base",
-    "//build/config/linux/gtk",
     "//ui/base",
     "//ui/gfx",
+  ]
+  public_deps = [
+    "//build/config/linux/gtk",
+    "//build/config/linux/gtk:gtkprint",
   ]
 }
 
@@ -64,7 +59,6 @@ component("gtk_ui_delegate") {
   public = [ "gtk_ui_delegate.h" ]
   sources = [ "gtk_ui_delegate.cc" ]
   deps = [
-    ":gtk_buildflags",
     "//base",
     "//ui/gfx",
   ]
@@ -172,6 +166,9 @@ test("gtk_unittests") {
 
     # Required so that including gtk_util.h can resolve <gtk/gtk.h>.
     "//build/config/linux/gtk",
+
+    # Required so that including gtk_util.h can resolve <gtk/gtkunixprint.h>.
+    "//build/config/linux/gtk:gtkprint",
     "//testing/gtest",
     "//ui/base:features",
     "//ui/native_theme",

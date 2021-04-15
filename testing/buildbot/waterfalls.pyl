@@ -4204,7 +4204,6 @@
       'GPU FYI Mac Builder' : {},
       'GPU FYI Mac Builder (dbg)' : {},
       'GPU FYI Win Builder' : {},
-      'GPU FYI Win Builder (dbg)' : {},
       'GPU FYI Win x64 Builder' : {},
       'GPU FYI Win x64 Builder (dbg)' : {},
       'GPU FYI Win x64 DX12 Vulkan Builder': {},
@@ -4802,18 +4801,6 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
-      'Win7 FYI Debug (AMD)': {
-        'os_type': 'win',
-        'browser_config': 'debug',
-        'mixins': [
-          'limited_capacity_bot',
-          'win7_amd_r7_240',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_win7_amd_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_debug_telemetry_tests',
-        },
-      },
       'Win7 FYI Release (AMD)': {
         'os_type': 'win',
         'browser_config': 'release',
@@ -5086,11 +5073,6 @@
       'linux-gcc-rel': {
         'additional_compile_targets': [
           'empty_main',
-        ],
-      },
-      'linux-no-base-tracing-rel': {
-        'additional_compile_targets': [
-          'all',
         ],
       },
       'linux-ozone-rel': {

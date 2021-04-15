@@ -600,9 +600,9 @@
     "expiry_milestone": 94
   },
   {
-    "name": "clear-cross-browsing-context-group-main-frame-name",
+    "name": "clear-cross-site-cross-browsing-context-group-window-name",
     "owners": [ "shuuran", "kaustubhag" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 94
   },
   {
     "name": "clear-old-browsing-data",
@@ -2601,7 +2601,7 @@
   {
     "name": "enable-web-authentication-cable-v2-support",
     "owners": [ "webauthn-team@google.com" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 95
   },
   {
     "name": "enable-web-authentication-chromeos-authenticator",

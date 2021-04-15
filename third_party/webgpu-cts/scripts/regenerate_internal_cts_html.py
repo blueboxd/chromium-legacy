@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import ast
 import tempfile
 import os
@@ -12,6 +13,8 @@ import sys
 
 third_party_dir = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from compile_src import compile_src_for_node
 
 
 def generate_internal_cts_html():
@@ -50,27 +53,17 @@ def generate_internal_cts_html():
                 split_list_out.write('%s\n' % test)
 
         print('WebGPU CTS: Transpiling tools...')
-        cmd = [
-            '../scripts/tsc_ignore_errors.py',
-            '--project',
-            'node.tsconfig.json',
-            '--outDir',
-            js_out_dir,
-            '--noEmit',
-            'false',
-            '--declaration',
-            'false',
-            '--sourceMap',
-            'false',
-        ]
-        process = subprocess.Popen(cmd,
-                                   cwd=os.path.join(third_party_dir,
-                                                    'webgpu-cts', 'src'))
-        process.communicate()
+        compile_src_for_node(js_out_dir)
+
+        old_sys_path = sys.path
+        try:
+            sys.path = old_sys_path + [os.path.join(third_party_dir, 'node')]
+            from node import RunNode
+        finally:
+            sys.path = old_sys_path
 
         print('WebGPU CTS: Generating cts.html contents...')
         cmd = [
-            os.path.join(third_party_dir, 'node', 'node.py'),
             os.path.join(js_out_dir,
                          'common/tools/gen_wpt_cts_html.js'), cts_html_fname,
             os.path.join(third_party_dir, 'blink', 'web_tests', 'webgpu',
@@ -79,10 +72,9 @@ def generate_internal_cts_html():
                          'argsprefixes.txt'), split_list_fname,
             'wpt_internal/webgpu/cts.html', 'webgpu'
         ]
-        process = subprocess.Popen(cmd)
-        process.communicate()
+        print(RunNode(cmd))
 
-        with open(cts_html_fname) as f:
+        with open(cts_html_fname, 'rb') as f:
             return f.read()
 
     finally:
@@ -92,12 +84,30 @@ def generate_internal_cts_html():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--check',
+                        action='store_true',
+                        help='Check that the output file is up to date.')
+    parser.add_argument('--stamp', help='Stamp file to write after success.')
+    args = parser.parse_args()
+
     out_cts_html = os.path.join(third_party_dir, 'blink', 'web_tests',
                                 'wpt_internal', 'webgpu', 'cts.html')
     contents = generate_internal_cts_html()
     if not contents:
-        print('Failed to generate %s' % out_cts_html)
-        sys.exit(1)
+        raise RuntimeError('Failed to generate %s' % out_cts_html)
 
-    with open(out_cts_html, 'wb') as f:
-        f.write(contents)
+    if args.check:
+        with open(out_cts_html, 'rb') as f:
+            if f.read() != contents:
+                print(contents)
+                raise RuntimeError(
+                    '%s is out of date. Please re-run //third_party/webgpu-cts/scripts/regenerate_internal_cts_html.py\n'
+                    % out_cts_html)
+    else:
+        with open(out_cts_html, 'wb') as f:
+            f.write(contents)
+
+    if args.stamp:
+        with open(args.stamp, 'w') as f:
+            f.write('')

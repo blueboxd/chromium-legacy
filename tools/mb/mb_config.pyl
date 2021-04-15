@@ -479,7 +479,6 @@
       'GPU FYI Mac Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Perf Android 64 Builder': 'gpu_fyi_tests_android_vulkan_ndk_release_trybot_dcheck_off_arm64',
       'GPU FYI Win Builder': 'gpu_fyi_tests_release_trybot_x86',
-      'GPU FYI Win Builder (dbg)': 'gpu_fyi_tests_debug_trybot_x86',
       'GPU FYI Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Win x64 DX12 Vulkan Builder': 'gpu_fyi_tests_dx12vk_release_trybot',
@@ -524,7 +523,6 @@
       'linux-bfcache-rel': 'release_bot_blink',
       'linux-extended-tracing-rel': 'release_bot_extended_tracing',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
-      'linux-no-base-tracing-rel': 'release_bot_no_base_tracing',
       'linux-ozone-rel': 'ozone_linux_release_bot',
       'linux-trusty-rel': 'gpu_tests_release_bot',
     },
@@ -1007,7 +1005,6 @@
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
       'linux-mbi-mode-per-render-process-host-rel': 'gpu_tests_release_trybot_mbi_mode_per_render_process_host',
       'linux-mbi-mode-per-site-instance-rel': 'gpu_tests_release_trybot_mbi_mode_per_site_instance',
-      'linux-no-base-tracing-rel': 'release_trybot_no_base_tracing',
       'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
@@ -1137,7 +1134,6 @@
     },
 
     'tryserver.chromium.win': {
-      'gpu-fyi-try-win7-amd-dbg-32': 'gpu_fyi_tests_debug_trybot_x86',
       'gpu-fyi-try-win7-amd-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
@@ -2054,10 +2050,6 @@
       'gpu_fyi_tests', 'debug_bot', 'disable_nacl',
     ],
 
-    'gpu_fyi_tests_debug_trybot_x86': [
-      'gpu_fyi_tests', 'debug_bot', 'x86', 'disable_nacl',
-    ],
-
     'gpu_fyi_tests_dx12vk_debug_trybot': [
       'gpu_fyi_tests', 'dx12vk', 'debug_bot', 'disable_nacl',
     ],
@@ -2625,10 +2617,6 @@
       'release_bot', 'minimal_symbols',
     ],
 
-    'release_bot_no_base_tracing': [
-      'release_bot', 'base_tracing_off',
-    ],
-
     'release_bot_x86_minimal_symbols': [
       'release_bot', 'x86', 'minimal_symbols',
     ],
@@ -2687,10 +2675,6 @@
 
     'release_trybot_no_nacl': [
       'release_trybot', 'disable_nacl',
-    ],
-
-    'release_trybot_no_base_tracing': [
-      'release_trybot', 'base_tracing_off',
     ],
 
     'release_trybot_paeverywhere_x86': [
@@ -2879,10 +2863,6 @@
 
     'autofill_assistant_api': {
       'gn_args': 'enable_autofill_assistant_api=true',
-    },
-
-    'base_tracing_off': {
-      'gn_args': 'enable_base_tracing=false',
     },
 
     'betty-arc-r': {

@@ -91,7 +91,8 @@
             id="site-settings"
             page-title="$i18n{siteSettings}"
             learn-more-url="$i18n{exceptionsLearnMoreURL}">
-          <settings-site-settings-page focus-config="[[focusConfig_]]">
+          <settings-site-settings-page focus-config="[[focusConfig_]]"
+              prefs="{{prefs}}">
           </settings-site-settings-page>
         </settings-subpage>
       </template>
@@ -1253,7 +1254,7 @@
                 category="[[ContentSettingsTypes.IDLE_DETECTION]]"
                 allow-header="$i18n{siteSettingsDeviceUseAllowedExceptions}"
                 block-header="$i18n{siteSettingsDeviceUseBlockedExceptions}"
-                search-filter="[[searchFilter_IDLE_DETECTION]]">
+                search-filter="[[searchFilter_]]">
             </category-setting-exceptions>
           </template>
           <template is="dom-if" if="[[!enableContentSettingsRedesign_]]">

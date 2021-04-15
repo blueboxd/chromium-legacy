@@ -576,6 +576,20 @@ NearbySharingServiceImpl::RegisterReceiveSurface(
   NS_LOG(VERBOSE) << __func__ << ": A ReceiveSurface("
                   << ReceiveSurfaceStateToString(state)
                   << ") has been registered";
+
+  // TODO(crbug.com/1186559): Remove these logs. They are only needed to help
+  // debug crbug.com/1186559.
+  if (state == ReceiveSurfaceState::kForeground) {
+    if (!IsBluetoothPresent()) {
+      NS_LOG(ERROR) << __func__ << ": Bluetooth is not present.";
+    } else if (!IsBluetoothPowered()) {
+      NS_LOG(WARNING) << __func__ << ": Bluetooth is not powered.";
+    } else {
+      NS_LOG(VERBOSE) << __func__ << ": This device's MAC address is: "
+                      << bluetooth_adapter_->GetAddress();
+    }
+  }
+
   InvalidateReceiveSurfaceState();
   return StatusCodes::kOk;
 }
@@ -713,7 +727,7 @@ NearbySharingService::StatusCodes NearbySharingServiceImpl::SendAttachments(
   info->set_transfer_update_callback(std::make_unique<TransferUpdateDecorator>(
       base::BindRepeating(&NearbySharingServiceImpl::OnOutgoingTransferUpdate,
                           weak_ptr_factory_.GetWeakPtr())));
-
+  send_attachments_timestamp_ = base::Time::Now();
   OnTransferStarted(/*is_incoming=*/false);
   is_connecting_ = true;
   InvalidateSendSurfaceState();
@@ -2125,7 +2139,7 @@ void NearbySharingServiceImpl::ReceivePayloads(
       continue;
     }
 
-    base::FilePath file_path = download_path.AppendASCII(file.file_name());
+    base::FilePath file_path = download_path.Append(file.file_name());
     valid_file_payloads.emplace(file.id(), std::move(file_path));
   }
 
@@ -2436,6 +2450,8 @@ void NearbySharingServiceImpl::SendIntroduction(
 
   // We've successfully written the introduction, so we now have to wait for the
   // remote side to accept.
+  RecordNearbyShareTimeFromInitiateSendToRemoteDeviceNotificationMetric(
+      base::Time::Now() - send_attachments_timestamp_);
   NS_LOG(VERBOSE) << __func__ << ": Successfully wrote the introduction frame";
 
   mutual_acceptance_timeout_alarm_.Reset(base::BindOnce(

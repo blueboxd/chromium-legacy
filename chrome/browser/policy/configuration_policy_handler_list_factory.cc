@@ -533,6 +533,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSitePerProcess,
     prefs::kSitePerProcess,
     base::Value::Type::BOOLEAN },
+#if !defined(OS_ANDROID)
+  { key::kSharedArrayBufferUnrestrictedAccessAllowed,
+    prefs::kSharedArrayBufferUnrestrictedAccessAllowed,
+    base::Value::Type::BOOLEAN },
+#endif  // !defined(OS_ANDROID)
   { key::kIsolateOriginsAndroid,
     prefs::kIsolateOrigins,
     base::Value::Type::STRING },
@@ -744,6 +749,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kShowLogoutButtonInTray,
     ash::prefs::kShowLogoutButtonInTray,
+    base::Value::Type::BOOLEAN },
+  { key::kSuggestLogoutAfterClosingLastWindow,
+    ash::prefs::kSuggestLogoutAfterClosingLastWindow,
     base::Value::Type::BOOLEAN },
   { key::kAppRecommendationZeroStateEnabled,
     prefs::kAppReinstallRecommendationEnabled,

@@ -9,6 +9,7 @@
 #include <gdk/gdk.h>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
+#include <gtk/gtkunixprint.h>
 
 #include <string>
 #include <vector>
@@ -100,6 +101,26 @@ ScopedGObject<GtkIconPaintable> Gtk4IconThemeLookupIcon(
 void GtkStyleContextGet(GtkStyleContext* context, ...);
 
 void GtkStyleContextGetStyle(GtkStyleContext* context, ...);
+
+// These variadic functions do not have corresponding va_list equivalents,
+// so instances with only a fixed set of arguments are provided.
+
+GtkWidget* GtkFileChooserDialogNew(const gchar* title,
+                                   GtkWindow* parent,
+                                   GtkFileChooserAction action,
+                                   const gchar* first_button_text,
+                                   GtkResponseType first_response,
+                                   const gchar* second_button_text,
+                                   GtkResponseType second_response);
+
+GtkTreeStore* GtkTreeStoreNew(GType type);
+
+// These functions have dropped "const" in their signatures, so cannot be
+// declared in *.sigs.
+
+GdkEventType GdkEventGetEventType(GdkEvent* event);
+
+guint32 GdkEventGetTime(GdkEvent* event);
 
 }  // namespace gtk
 

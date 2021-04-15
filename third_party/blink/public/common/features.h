@@ -176,6 +176,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebviewAccelerateSmallCanvases;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
 
+// TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the feature
+// is in stable with no issues.
+BLINK_COMMON_EXPORT extern const base::Feature kOffsetParentNewSpecBehavior;
+
 BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kFontPreloadingDelaysRenderingParam;
@@ -379,6 +383,11 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kBlockCrossOriginTopNavigationToDiffentScheme;
 
 BLINK_COMMON_EXPORT extern const base::Feature kJXL;
+
+// Forces same-process display:none cross-origin iframes to be throttled in the
+// same manner that OOPIFs are.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes;
 
 }  // namespace features
 }  // namespace blink

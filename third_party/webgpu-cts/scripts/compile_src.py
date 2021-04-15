@@ -20,20 +20,16 @@ try:
 finally:
     sys.path = old_sys_path
 
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print('Usage: compile_src.py GEN_DIR')
-        sys.exit(1)
 
-    gen_dir = sys.argv[1]
-
-    # Compile the CTS src.
+def compile_src(out_dir):
     run_tsc_ignore_errors([
         '--project',
         os.path.join(webgpu_cts_dir, 'src', 'tsconfig.json'),
         '--outDir',
-        os.path.join(gen_dir, 'src'),
+        out_dir,
         '--noEmit',
+        'false',
+        '--noEmitOnError',
         'false',
         '--declaration',
         'false',
@@ -43,23 +39,43 @@ if __name__ == '__main__':
         'ES2017',
     ])
 
-    # Compile the gen_listings tool for Node.js
+
+def compile_src_for_node(out_dir):
     run_tsc_ignore_errors([
-        os.path.join(webgpu_cts_dir, 'src', 'src', 'common', 'tools',
-                     'gen_listings.ts'),
+        '--project',
+        os.path.join(webgpu_cts_dir, 'src', 'node.tsconfig.json'),
         '--outDir',
-        os.path.join(gen_dir, 'node'),
+        out_dir,
+        '--noEmit',
+        'false',
+        '--noEmitOnError',
+        'false',
         '--declaration',
         'false',
         '--sourceMap',
         'false',
+        '--target',
+        'ES6',
     ])
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print('Usage: compile_src.py GEN_DIR')
+        sys.exit(1)
+
+    gen_dir = sys.argv[1]
+
+    # Compile the CTS src.
+    compile_src(os.path.join(gen_dir, 'src'))
+    compile_src_for_node(os.path.join(gen_dir, 'src-node'))
 
     # Run gen_listings.js to overwrite the dummy src/webgpu/listings.js created
     # from transpiling src/
     RunNode([
-        os.path.join(gen_dir, 'node', 'tools', 'gen_listings.js'),
+        os.path.join(gen_dir, 'src-node', 'common', 'tools',
+                     'gen_listings.js'),
         '--no-validate',
         os.path.join(gen_dir, 'src'),
-        os.path.join(gen_dir, 'src', 'webgpu'),
+        os.path.join(gen_dir, 'src-node', 'webgpu'),
     ])

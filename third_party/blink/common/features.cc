@@ -577,6 +577,12 @@ const base::Feature kWebviewAccelerateSmallCanvases{
 const base::Feature kDiscardCodeCacheAfterFirstUse{
     "DiscardCodeCacheAfterFirstUse", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Kill switch for the new element.offsetParent behavior.
+// TODO(crbug.com/920069): Remove this once the feature has
+// landed and no compat issues are reported.
+const base::Feature kOffsetParentNewSpecBehavior{
+    "OffsetParentNewSpecBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Slightly delays rendering if there are fonts being preloaded, so that
 // they don't miss the first paint if they can be loaded fast enough (e.g.,
 // from the disk cache)
@@ -919,5 +925,11 @@ const base::Feature kBlockCrossOriginTopNavigationToDiffentScheme{
 // Enables a Web API for websites to access admin-provided configuration.
 const base::Feature kManagedConfiguration{"ManagedConfiguration",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Causes all cross-origin iframes, both same-process and out-of-process, to
+// have their rendering throttled on display:none or zero-area.
+const base::Feature kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes{
+    "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace blink

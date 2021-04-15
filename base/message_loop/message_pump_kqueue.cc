@@ -389,6 +389,11 @@ bool MessagePumpKqueue::DoInternalWork(Delegate* delegate,
   } while (rv < 0 && errno == EINTR);
 
   PCHECK(rv >= 0) << "kevent64";
+  if (rv == 0) {
+    // No events to dispatch so no need to call ProcessEvents().
+    return false;
+  }
+
   return ProcessEvents(delegate, rv);
 }
 

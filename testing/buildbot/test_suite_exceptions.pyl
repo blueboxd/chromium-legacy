@@ -66,7 +66,6 @@
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
       'android-lollipop-arm-rel',
-      'android-11-x86-fyi-rel', # crbug.com/1188282: keeps crashing
     ],
   },
   'angle_end2end_tests': {
@@ -1314,12 +1313,6 @@
           'shards': 2,
         },
       },
-      # TODO(crbug.com/1189344): Remove the filter once the issue is fixed.
-      'android-11-x86-fyi-rel': {
-        'args': [
-          '--gtest_filter=-FontUniqueNameLookupTest.TestMatchPostScriptNameTtc',
-        ],
-      },
       'fuchsia-code-coverage': {
         'swarming': {
           'shards': 12,
@@ -1799,11 +1792,6 @@
         },
       },
     },
-  },
-  'maps_tests': {
-    'remove_from': [
-      'Fuchsia x64' # https://crbug.com/1058255
-    ],
   },
   'media_blink_unittests': {
     'modifications': {

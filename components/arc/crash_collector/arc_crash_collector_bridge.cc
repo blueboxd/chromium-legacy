@@ -20,7 +20,6 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -49,8 +48,13 @@ bool RunCrashReporter(const std::vector<std::string>& args, int stdin_fd) {
 // Runs crash_reporter to save the java crash info provided via the pipe.
 void RunJavaCrashReporter(const std::string& crash_type,
                           base::ScopedFD pipe,
-                          std::vector<std::string> args) {
+                          std::vector<std::string> args,
+                          base::Optional<base::TimeDelta> uptime) {
   args.push_back("--arc_java_crash=" + crash_type);
+  if (uptime) {
+    args.push_back(
+        base::StringPrintf("--arc_uptime=%" PRId64, uptime->InMilliseconds()));
+  }
 
   if (!RunCrashReporter(args, pipe.get()))
     LOG(ERROR) << "Failed to run crash_reporter";
@@ -131,13 +135,15 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
   arc_bridge_service_->crash_collector()->SetHost(nullptr);
 }
 
-void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
-                                        mojo::ScopedHandle pipe) {
+void ArcCrashCollectorBridge::DumpCrash(
+    const std::string& type,
+    mojo::ScopedHandle pipe,
+    base::Optional<base::TimeDelta> uptime) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::WithBaseSyncPrimitives()},
       base::BindOnce(&RunJavaCrashReporter, type,
                      mojo::UnwrapPlatformHandle(std::move(pipe)).TakeFD(),
-                     CreateCrashReporterArgs()));
+                     CreateCrashReporterArgs(), uptime));
 }
 
 void ArcCrashCollectorBridge::DumpNativeCrash(const std::string& exec_name,
@@ -182,9 +188,6 @@ std::vector<std::string> ArcCrashCollectorBridge::CreateCrashReporterArgs() {
   };
   if (fingerprint_)
     args.push_back("--arc_fingerprint=" + fingerprint_.value());
-
-  if (arc::IsArcVmEnabled())
-    args.emplace_back("--arc_is_arcvm");
 
   return args;
 }

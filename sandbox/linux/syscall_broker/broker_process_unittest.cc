@@ -811,7 +811,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
   const char* bad_leading_path5 = "/mbogo/fictitioux";
   const char* bad_leading_path6 = "/mbogo/fictitiousa";
 
-  default_stat_struct sb;
+  struct stat sb;
 
   {
     // Actual file with permissions to see file but command not allowed.
@@ -824,7 +824,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
 
     memset(&sb, 0, sizeof(sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   tempfile_name, follow_links, &sb));
   }
 
@@ -840,7 +840,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
 
     memset(&sb, 0, sizeof(sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   nonesuch_name, follow_links, &sb));
   }
   {
@@ -852,7 +852,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
 
     memset(&sb, 0, sizeof(sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   tempfile_name, follow_links, &sb));
   }
   {
@@ -864,39 +864,38 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindOnce(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(-ENOENT,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
-                  nonesuch_name, follow_links, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.GetBrokerClientSignalBased()->Stat(
+                           nonesuch_name, follow_links, &sb));
 
     // Gets denied all the way back to root since no create permission.
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   leading_path1, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   leading_path2, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   leading_path3, follow_links, &sb));
 
     // Not fooled by substrings.
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path1, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path2, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path3, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path4, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path5, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path6, follow_links, &sb));
   }
   {
@@ -908,41 +907,37 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindOnce(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(-ENOENT,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
-                  nonesuch_name, follow_links, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.GetBrokerClientSignalBased()->Stat(
+                           nonesuch_name, follow_links, &sb));
 
     // Gets ENOENT all the way back to root since it has create permission.
-    EXPECT_EQ(-ENOENT,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
-                  leading_path1, follow_links, &sb));
-    EXPECT_EQ(-ENOENT,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
-                  leading_path2, follow_links, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.GetBrokerClientSignalBased()->Stat(
+                           leading_path1, follow_links, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.GetBrokerClientSignalBased()->Stat(
+                           leading_path2, follow_links, &sb));
 
     // But can always get the root.
-    EXPECT_EQ(0,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
-                  leading_path3, follow_links, &sb));
+    EXPECT_EQ(0, open_broker.GetBrokerClientSignalBased()->Stat(
+                     leading_path3, follow_links, &sb));
 
     // Not fooled by substrings.
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path1, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path2, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path3, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path4, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path5, follow_links, &sb));
     EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
+              open_broker.GetBrokerClientSignalBased()->Stat(
                   bad_leading_path6, follow_links, &sb));
   }
   {
@@ -954,9 +949,8 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindOnce(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(0,
-              open_broker.GetBrokerClientSignalBased()->DefaultStatForTesting(
-                  tempfile_name, follow_links, &sb));
+    EXPECT_EQ(0, open_broker.GetBrokerClientSignalBased()->Stat(
+                     tempfile_name, follow_links, &sb));
 
     // Following fields may never be consistent but should be non-zero.
     // Don't trust the platform to define fields with any particular sign.
@@ -974,9 +968,9 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     EXPECT_EQ(12, sb.st_size);
 
     // Can't go backwards in time, 1500000000 was some time ago.
-    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_atime_));
-    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_mtime_));
-    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_ctime_));
+    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_atime));
+    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_mtime));
+    EXPECT_LT(1500000000u, static_cast<unsigned int>(sb.st_ctime));
   }
 }
 
@@ -1596,52 +1590,52 @@ TEST(BrokerProcess, IsSyscallAllowed) {
   const base::flat_map<BrokerCommand, base::flat_set<int>> kSysnosForCommand = {
       {COMMAND_ACCESS,
        {__NR_faccessat,
-#if defined(__NR_access) && !defined(OS_ANDROID)
+#if defined(__NR_access)
         __NR_access
 #endif
        }},
       {COMMAND_MKDIR,
        {__NR_mkdirat,
-#if defined(__NR_mkdir) && !defined(OS_ANDROID)
+#if defined(__NR_mkdir)
         __NR_mkdir
 #endif
        }},
       {COMMAND_OPEN,
        {__NR_openat,
-#if defined(__NR_open) && !defined(OS_ANDROID)
+#if defined(__NR_open)
         __NR_open
 #endif
        }},
       {COMMAND_READLINK,
        {__NR_readlinkat,
-#if defined(__NR_readlink) && !defined(OS_ANDROID)
+#if defined(__NR_readlink)
         __NR_readlink
 #endif
        }},
       {COMMAND_RENAME,
        {__NR_renameat,
-#if defined(__NR_rename) && !defined(OS_ANDROID)
+#if defined(__NR_rename)
         __NR_rename
 #endif
        }},
       {COMMAND_UNLINK,
        {__NR_unlinkat,
-#if defined(__NR_unlink) && !defined(OS_ANDROID)
+#if defined(__NR_unlink)
         __NR_unlink
 #endif
        }},
       {COMMAND_RMDIR,
        {__NR_unlinkat,
-#if defined(__NR_rmdir) && !defined(OS_ANDROID)
+#if defined(__NR_rmdir)
         __NR_rmdir
 #endif
        }},
       {COMMAND_STAT,
        {
-#if defined(__NR_stat) && !defined(OS_ANDROID)
+#if defined(__NR_stat)
            __NR_stat,
 #endif
-#if defined(__NR_lstat) && !defined(OS_ANDROID)
+#if defined(__NR_lstat)
            __NR_lstat,
 #endif
 #if defined(__NR_fstatat)

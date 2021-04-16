@@ -69,6 +69,9 @@ class CellularESimProfileHandlerImplTest : public testing::Test {
 
     cellular_inhibitor_.Init(helper_.network_state_handler(),
                              helper_.network_device_handler());
+
+    helper_.device_test()->AddDevice(kDefaultCellularDevicePath,
+                                     shill::kTypeCellular, "cellular1");
   }
 
   void TearDown() override {
@@ -106,28 +109,17 @@ class CellularESimProfileHandlerImplTest : public testing::Test {
     }
   }
 
-  void AddCellularDevice() {
-    helper_.device_test()->AddDevice(kDefaultCellularDevicePath,
-                                     shill::kTypeCellular, "cellular1");
-    // Allow device state changes to propagate to network state handler.
-    base::RunLoop().RunUntilIdle();
-  }
-
   dbus::ObjectPath AddProfile(int euicc_num,
                               hermes::profile::State state,
                               const std::string& activation_code,
                               hermes::profile::ProfileClass profile_class =
-                                  hermes::profile::ProfileClass::kOperational,
-                              bool blank_iccid = false) {
+                                  hermes::profile::ProfileClass::kOperational) {
     dbus::ObjectPath path(base::StringPrintf("%s%02d", kTestProfileBasePath,
                                              num_profiles_created_));
 
-    std::string iccid;
-    if (!blank_iccid) {
-      iccid = base::StringPrintf("%s%02d", "iccid_", num_profiles_created_);
-    }
     helper_.hermes_euicc_test()->AddCarrierProfile(
-        path, dbus::ObjectPath(CreateTestEuiccPath(euicc_num)), iccid,
+        path, dbus::ObjectPath(CreateTestEuiccPath(euicc_num)),
+        base::StringPrintf("%s%02d", "iccid_", num_profiles_created_),
         base::StringPrintf("%s%02d", "name_", num_profiles_created_),
         base::StringPrintf("%s%02d", "service_provider_",
                            num_profiles_created_),
@@ -210,7 +202,6 @@ class CellularESimProfileHandlerImplTest : public testing::Test {
 };
 
 TEST_F(CellularESimProfileHandlerImplTest, NoEuicc) {
-  AddCellularDevice();
   // No EUICCs exist, so no profiles should exist.
   Init();
   EXPECT_TRUE(GetESimProfiles().empty());
@@ -227,7 +218,6 @@ TEST_F(CellularESimProfileHandlerImplTest, NoEuicc) {
 }
 
 TEST_F(CellularESimProfileHandlerImplTest, EuiccWithNoProfiles) {
-  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1);
 
   // No profiles were added to the EUICC.
@@ -246,7 +236,6 @@ TEST_F(CellularESimProfileHandlerImplTest, EuiccWithNoProfiles) {
 }
 
 TEST_F(CellularESimProfileHandlerImplTest, EuiccWithProfiles) {
-  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1);
 
   // Add two normal (i.e., kOperational) profiles.
@@ -303,7 +292,6 @@ TEST_F(CellularESimProfileHandlerImplTest, EuiccWithProfiles) {
 }
 
 TEST_F(CellularESimProfileHandlerImplTest, Persistent) {
-  AddCellularDevice();
   Init();
   SetDevicePrefs();
   EXPECT_TRUE(GetESimProfiles().empty());
@@ -347,7 +335,6 @@ TEST_F(CellularESimProfileHandlerImplTest, Persistent) {
 
 TEST_F(CellularESimProfileHandlerImplTest,
        RefreshProfileList_AcquireLockInterally) {
-  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1);
 
   Init();
@@ -366,7 +353,6 @@ TEST_F(CellularESimProfileHandlerImplTest,
 
 TEST_F(CellularESimProfileHandlerImplTest,
        RefreshProfileList_ProvideAlreadyAcquiredLock) {
-  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1);
 
   Init();
@@ -388,7 +374,6 @@ TEST_F(CellularESimProfileHandlerImplTest,
 }
 
 TEST_F(CellularESimProfileHandlerImplTest, RefreshProfileList_Failure) {
-  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1);
 
   Init();
@@ -410,7 +395,6 @@ TEST_F(CellularESimProfileHandlerImplTest, RefreshProfileList_Failure) {
 
 TEST_F(CellularESimProfileHandlerImplTest,
        RefreshProfileList_MultipleSimultaneousRequests) {
-  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1);
 
   Init();
@@ -440,7 +424,6 @@ TEST_F(CellularESimProfileHandlerImplTest,
 
 TEST_F(CellularESimProfileHandlerImplTest,
        RefreshesAutomaticallyWhenNotSeenBefore) {
-  AddCellularDevice();
   AddEuicc(/*euicc_num=*/1, /*also_add_to_prefs=*/false);
 
   Init();
@@ -449,49 +432,6 @@ TEST_F(CellularESimProfileHandlerImplTest,
   EXPECT_TRUE(euicc_paths_from_prefs.GetList().empty());
 
   SetDevicePrefs();
-  euicc_paths_from_prefs = GetEuiccListFromPrefs();
-  EXPECT_TRUE(euicc_paths_from_prefs.is_list());
-  EXPECT_EQ(1u, euicc_paths_from_prefs.GetList().size());
-  EXPECT_EQ(CreateTestEuiccPath(/*euicc_num=*/1),
-            euicc_paths_from_prefs.GetList()[0].GetString());
-}
-
-TEST_F(CellularESimProfileHandlerImplTest, IgnoresESimProfilesWithNoIccid) {
-  const char kTestIccid[] = "1245671234567";
-  AddEuicc(/*euicc_num=*/1, /*also_add_to_prefs=*/false);
-  Init();
-  SetDevicePrefs();
-  dbus::ObjectPath profile_path = AddProfile(
-      /*euicc_num=*/1, hermes::profile::State::kInactive,
-      /*activation_code=*/std::string(),
-      hermes::profile::ProfileClass::kOperational,
-      /*blank_iccid=*/true);
-  EXPECT_TRUE(GetESimProfiles().empty());
-
-  // Verify that profile object is created after iccid property is set.
-  HermesProfileClient::Properties* properties =
-      HermesProfileClient::Get()->GetProperties(profile_path);
-  properties->iccid().ReplaceValue(kTestIccid);
-  base::RunLoop().RunUntilIdle();
-
-  std::vector<CellularESimProfile> esim_profiles = GetESimProfiles();
-  EXPECT_EQ(1u, esim_profiles.size());
-  EXPECT_EQ(kTestIccid, esim_profiles[0].iccid());
-}
-
-TEST_F(CellularESimProfileHandlerImplTest,
-       SkipsAutomaticRefreshIfNoCellularDevice) {
-  Init();
-  AddEuicc(/*euicc_num=*/1, /*also_add_to_prefs=*/false);
-  SetDevicePrefs();
-
-  // Verify that no EUICCs exist in pref.
-  base::Value euicc_paths_from_prefs = GetEuiccListFromPrefs();
-  EXPECT_TRUE(euicc_paths_from_prefs.is_list());
-  EXPECT_TRUE(euicc_paths_from_prefs.GetList().empty());
-
-  // Verify that EUICCs are refreshed after the cellular device is added.
-  AddCellularDevice();
   euicc_paths_from_prefs = GetEuiccListFromPrefs();
   EXPECT_TRUE(euicc_paths_from_prefs.is_list());
   EXPECT_EQ(1u, euicc_paths_from_prefs.GetList().size());

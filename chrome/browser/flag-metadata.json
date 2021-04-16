@@ -503,6 +503,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "categorical-search",
+    "owners": [ "tby", "thanhdng", "wrong" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "cct-incognito",
     "owners": [ "rhalavati", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 93
@@ -2869,11 +2874,6 @@
     "name": "files-trash",
     "owners": [ "joelhockey", "noel", "simmonsjosh" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "files-unified-media-view",
-    "owners": [ "fukino", "weifangsun" ],
-    "expiry_milestone": 87
   },
   {
     "name": "files-zip-mount",

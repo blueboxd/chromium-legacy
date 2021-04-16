@@ -1,19 +1,17 @@
 {
   "program": {
-    "binary": "web_engine_exe"
+    "binary": "web_engine_exe",
+    "args": [ "--context-provider" ]
   },
   "sandbox": {
     "features": [
-      "config-data",
-      "deprecated-ambient-replace-as-executable",
-      "root-ssl-certificates",
-      "vulkan"
+      "config-data"
     ],
     "services": [
       "fuchsia.feedback.ComponentDataRegister",
       "fuchsia.feedback.CrashReportingProductRegister",
       "fuchsia.logger.LogSink",
-      "fuchsia.process.Launcher"
+      "fuchsia.sys.Launcher"
     ]
   }
 }

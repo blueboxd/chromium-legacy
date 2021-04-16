@@ -2490,6 +2490,15 @@ const FeatureEntry::FeatureVariation
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const FeatureEntry::FeatureParam kCategoricalSearch_Unranked[] = {
+    {"ranking", "none"}};
+
+const FeatureEntry::FeatureVariation kCategoricalSearchVariations[] = {
+    {"Unranked", kCategoricalSearch_Unranked,
+     base::size(kCategoricalSearch_Unranked), nullptr}};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 constexpr FeatureEntry::FeatureParam kPlatformProvidedTrustTokenIssuance[] = {
     {"PlatformProvidedTrustTokenIssuance", "true"}};
 
@@ -4119,9 +4128,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-zip-unpack", flag_descriptions::kFilesZipUnpackName,
      flag_descriptions::kFilesZipUnpackDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesZipUnpack)},
-    {"files-unified-media-view", flag_descriptions::kUnifiedMediaViewName,
-     flag_descriptions::kUnifiedMediaViewDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kUnifiedMediaView)},
     {"force-spectre-v2-mitigation",
      flag_descriptions::kForceSpectreVariant2MitigationName,
      flag_descriptions::kForceSpectreVariant2MitigationDescription, kOsCrOS,
@@ -6560,6 +6566,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"cdm-factory-daemon", flag_descriptions::kCdmFactoryDaemonName,
      flag_descriptions::kCdmFactoryDaemonDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCdmFactoryDaemon)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"categorical-search", flag_descriptions::kCategoricalSearchName,
+     flag_descriptions::kCategoricalSearchName, kOsCrOS,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(app_list_features::kCategoricalSearch,
+                                    kCategoricalSearchVariations,
+                                    "LauncherCategoricalSearch")},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"autofill-enable-offers-in-downstream",

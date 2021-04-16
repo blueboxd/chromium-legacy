@@ -185,7 +185,7 @@ namespace internal {
 
 namespace {
 
-void BindShapeDetectionServiceOnIOThread(
+void BindShapeDetectionServiceOnProcessThread(
     mojo::PendingReceiver<shape_detection::mojom::ShapeDetectionService>
         receiver) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS_ASH)
@@ -206,8 +206,11 @@ shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
       mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
       remote;
   if (!*remote) {
-    GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&BindShapeDetectionServiceOnIOThread,
+    auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                           ? content::GetUIThreadTaskRunner({})
+                           : content::GetIOThreadTaskRunner({});
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&BindShapeDetectionServiceOnProcessThread,
                                   remote->BindNewPipeAndPassReceiver()));
     remote->reset_on_disconnect();
   }
@@ -718,10 +721,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePaymentManager, base::Unretained(host)));
 
-  if (base::FeatureList::IsEnabled(features::kHandwritingRecognitionEnabled)) {
-    map->Add<handwriting::mojom::HandwritingRecognitionService>(
-        base::BindRepeating(&CreateHandwritingRecognitionService));
-  }
+  map->Add<handwriting::mojom::HandwritingRecognitionService>(
+      base::BindRepeating(&CreateHandwritingRecognitionService));
 
   map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));

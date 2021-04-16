@@ -19,6 +19,7 @@
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/synchronization/lock.h"
 #include "base/task/current_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -155,8 +156,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
       force_immediate_dispatch_(!EnableTaskPerMessage()),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
       incoming_serialization_mode_(g_default_incoming_serialization_mode),
-      interface_name_(interface_name),
-      nesting_observer_(RunLoopNestingObserver::GetForThread()) {
+      interface_name_(interface_name) {
   if (config == MULTI_THREADED_SEND)
     lock_.emplace();
 
@@ -166,9 +166,17 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
 #endif
 
   weak_self_ = weak_factory_.GetWeakPtr();
+
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
-  WaitToReadMore();
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    WaitToReadMore();
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Connector::WaitToReadMore, weak_self_));
+  }
 }
 
 Connector::~Connector() {
@@ -410,6 +418,9 @@ void Connector::WaitToReadMore() {
   CHECK(!paused_);
   DCHECK(!handle_watcher_);
 
+  if (!nesting_observer_)
+    nesting_observer_ = RunLoopNestingObserver::GetForThread();
+
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   handle_watcher_ = std::make_unique<SimpleWatcher>(
       FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL, task_runner_,
@@ -465,9 +476,10 @@ MojoResult Connector::ReadMessage(Message* message) {
     // We include |interface_name_| in the error message since it usually
     // (via this Connector's owner) provides useful information about which
     // binding interface is using this Connector.
-    NotifyBadMessage(handle.get(),
-                     std::string(interface_name_) +
-                         "One or more handle attachments were invalid.");
+    NotifyBadMessage(
+        handle.get(),
+        base::StrCat({interface_name_,
+                      " One or more handle attachments were invalid."}));
     return MOJO_RESULT_ABORTED;
   }
 

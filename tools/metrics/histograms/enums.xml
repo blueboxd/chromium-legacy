@@ -3353,6 +3353,17 @@ Unknown properties are collapsed to zero. -->
   <int value="18" label="Printing turned off"/>
 </enum>
 
+<enum name="AppMenuHighlightItem">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="DOWNLOADS"/>
+  <int value="2" label="BOOKMARKS"/>
+  <int value="3" label="TRANSLATE"/>
+  <int value="4" label="ADD_TO_HOMESCREEN"/>
+  <int value="5" label="DOWNLOAD_THIS_PAGE"/>
+  <int value="6" label="BOOKMARK_THIS_PAGE"/>
+  <int value="7" label="DATA_REDUCTION_FOOTER"/>
+</enum>
+
 <enum name="AppMenuSimilarSelectionType">
   <obsolete>
     Deprecated as of 03/2021.
@@ -6728,6 +6739,10 @@ others/histograms.xml -->
   <int value="41" label="Navigation was cancelled while restoring"/>
   <int value="42" label="Disabled for Prerender"/>
   <int value="43" label="User-agent override differs"/>
+  <int value="44" label="Network request data pipe drained as data pipe"/>
+  <int value="45" label="Network request data pipe drained as byte consumer"/>
+  <int value="46" label="Foreground cache limit"/>
+  <int value="47" label="Browsing instance not swapped"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -27042,6 +27057,7 @@ Called by update_extension_histograms.py.-->
   <int value="1548" label="LANGUAGESETTINGSPRIVATE_SETTRANSLATETARGETLANGUAGE"/>
   <int value="1549" label="LANGUAGESETTINGSPRIVATE_GETNEVERTRANSLATELANGUAGES"/>
   <int value="1550" label="ACTION_GETUSERSETTINGS"/>
+  <int value="1551" label="ENTERPRISEREPORTINGPRIVATE_GETCERTIFICATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -32156,6 +32172,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3875" label="FileHandlingLaunch"/>
   <int value="3876" label="SameOriginDocumentsWithDifferentCOOPStatus"/>
   <int value="3877" label="HTMLMediaElementSetSinkId"/>
+  <int value="3878" label="PrefixedStorageQuotaThirdPartyContext"/>
+  <int value="3879" label="RequestedFileSystemPersistentThirdPartyContext"/>
+  <int value="3880" label="PrefixedStorageInfoThirdPartyContext"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -44300,6 +44319,7 @@ from previous Chrome versions.
   <int value="-1853570433" label="AdvancedPpdAttributes:enabled"/>
   <int value="-1851980281" label="TabGroupsCollapse:enabled"/>
   <int value="-1849706663" label="enable-password-force-saving:disabled"/>
+  <int value="-1849703825" label="WebUIFeedback:disabled"/>
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1847776781"
       label="enable-loading-ipc-optimization-for-small-resources"/>
@@ -48103,6 +48123,7 @@ from previous Chrome versions.
   <int value="1519067750" label="ActionableContentSettings:disabled"/>
   <int value="1520181151" label="PrintServerScaling:disabled"/>
   <int value="1524178643" label="AppServiceExternalProtocol:enabled"/>
+  <int value="1524732956" label="WebUIFeedback:enabled"/>
   <int value="1526718531"
       label="DarkenWebsitesCheckboxInThemesSetting:enabled"/>
   <int value="1527292264" label="DisplayChangeModal:enabled"/>

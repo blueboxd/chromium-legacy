@@ -2729,9 +2729,6 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <message name="IDS_MOST_VISITED_ITEM_REMOVED" desc="Text shown when the user removes one of the most visited websites on the new tab page.">
         Item removed
       </message>
-      <message name="IDS_NTP_ACCESSIBILITY_ITEM_REMOVED" desc="Text announced for accessibility when the user removes an item from the new tab page e.g. by swiping it away or using the context menu.">
-        Item removed: <ph name="ITEM_TITLE">%1$s<ex>Prime minister announces new health care plans</ex></ph>
-      </message>
       <message name="IDS_ACCESSIBILITY_GOOGLE_DOODLE" desc="Content description for the Google Doodle (the fun, alternative Google logo) shown on the new tab page.">
         Google doodle: <ph name="DOODLE_DESCRIPTION">%1$s<ex>Einstein’s birthday</ex></ph>
       </message>
@@ -2809,6 +2806,9 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       </message>
       <message name="IDS_FEED_MANAGE_FOLLOWING_DESCRIPTION" desc="Content description to manage followed sites.">
         Manage the sites that you're following
+      </message>
+      <message name="IDS_FOLLOW_MANAGE_FOLLOWING" desc="Header for Following Management activity.">
+        FOLLOWING
       </message>
       <message name="IDS_NTP_TURN_OFF_FEED" desc="Content description to turn off the feed from the feed header overflow menu.">
         Turn off
@@ -4611,6 +4611,9 @@ Data from your Incognito session will only be cleared from Chrome when you <ph n
       <!-- Continuous Search Navigation strings -->
       <message name="IDS_CSN_AD_LABEL" desc="Label for identifying an ad in search results." translateable="false">
       Ad
+      </message>
+      <message name="IDS_CSN_PROVIDER_LABEL" desc="Label that shows the source of a list of clickalbe URLs. This should have a new line character in the middle." translateable="false">
+      Results from\n<ph name="PROVIDER">%1$s</ph>
       </message>
     </messages>
   </release>

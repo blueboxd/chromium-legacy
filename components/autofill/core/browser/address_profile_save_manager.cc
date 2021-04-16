@@ -24,7 +24,7 @@ void AddressProfileSaveManager::SaveProfile(const AutofillProfile& profile) {
   if (base::FeatureList::IsEnabled(
           features::kAutofillAddressProfileSavePrompt)) {
     client_->ConfirmSaveAddressProfile(
-        profile,
+        profile, /*original_profile=*/nullptr,
         base::BindOnce(&AddressProfileSaveManager::SaveProfilePromptCallback,
                        weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -47,6 +47,10 @@ void AddressProfileSaveManager::SaveProfilePromptCallback(
       break;
     case AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined:
     case AutofillClient::SaveAddressProfileOfferUserDecision::kIgnored:
+      break;
+    case AutofillClient::SaveAddressProfileOfferUserDecision::kUndefined:
+    case AutofillClient::SaveAddressProfileOfferUserDecision::kUserNotAsked:
+      NOTREACHED();
       break;
   }
 }

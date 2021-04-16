@@ -195,7 +195,7 @@ base::stack<LogAssertHandlerFunction>& GetLogAssertHandlerStack() {
 }
 
 // A log message handler that gets notified of every log message we process.
-LogMessageHandlerFunction g_log_message_handler = nullptr;
+LogMessageHandlerFunction log_message_handler = nullptr;
 
 uint64_t TickCount() {
 #if defined(OS_WIN)
@@ -346,6 +346,30 @@ void CloseLogFileUnlocked() {
     g_logging_destination &= ~LOG_TO_FILE;
 }
 
+#if defined(OS_FUCHSIA)
+
+inline fx_log_severity_t LogSeverityToFuchsiaLogSeverity(LogSeverity severity) {
+  switch (severity) {
+    case LOGGING_INFO:
+      return FX_LOG_INFO;
+    case LOGGING_WARNING:
+      return FX_LOG_WARNING;
+    case LOGGING_ERROR:
+      return FX_LOG_ERROR;
+    case LOGGING_FATAL:
+      // Don't use FX_LOG_FATAL, otherwise fx_logger_log() will abort().
+      return FX_LOG_ERROR;
+  }
+  if (severity > -3) {
+    // LOGGING_VERBOSE levels 1 and 2.
+    return FX_LOG_DEBUG;
+  }
+  // LOGGING_VERBOSE levels 3 and higher, or incorrect levels.
+  return FX_LOG_TRACE;
+}
+
+#endif  // defined (OS_FUCHSIA)
+
 }  // namespace
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -401,7 +425,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
     const char* log_tag_data = log_tag.data();
 
     fx_logger_config_t config = {
-        .min_severity = g_vlog_info ? FX_LOG_DEBUG : FX_LOG_INFO,
+        .min_severity = g_vlog_info ? FX_LOG_TRACE : FX_LOG_INFO,
         .console_fd = -1,
         .tags = &log_tag_data,
         .num_tags = 1,
@@ -454,7 +478,7 @@ bool ShouldCreateLogMessage(int severity) {
     return false;
 
   // Return true here unless we know ~LogMessage won't do anything.
-  return g_logging_destination != LOG_NONE || g_log_message_handler ||
+  return g_logging_destination != LOG_NONE || log_message_handler ||
          severity >= kAlwaysPrintErrorLevel;
 }
 
@@ -512,11 +536,11 @@ ScopedLogAssertHandler::~ScopedLogAssertHandler() {
 }
 
 void SetLogMessageHandler(LogMessageHandlerFunction handler) {
-  g_log_message_handler = handler;
+  log_message_handler = handler;
 }
 
 LogMessageHandlerFunction GetLogMessageHandler() {
-  return g_log_message_handler;
+  return log_message_handler;
 }
 
 #if !defined(NDEBUG)
@@ -584,9 +608,9 @@ LogMessage::~LogMessage() {
       file_, base::StringPiece(str_newline).substr(message_start_), line_);
 
   // Give any log message handler first dibs on the message.
-  if (g_log_message_handler &&
-      g_log_message_handler(severity_, file_, line_, message_start_,
-                            str_newline)) {
+  if (log_message_handler &&
+      log_message_handler(severity_, file_, line_,
+                          message_start_, str_newline)) {
     // The handler took care of it, no further processing.
     return;
   }
@@ -778,35 +802,14 @@ LogMessage::~LogMessage() {
     __android_log_write(priority, kAndroidLogTag, str_newline.c_str());
 #endif
 #elif defined(OS_FUCHSIA)
-    fx_log_severity_t severity = FX_LOG_INFO;
-    switch (severity_) {
-      case LOGGING_INFO:
-        severity = FX_LOG_INFO;
-        break;
-      case LOGGING_WARNING:
-        severity = FX_LOG_WARNING;
-        break;
-      case LOGGING_ERROR:
-        severity = FX_LOG_ERROR;
-        break;
-      case LOGGING_FATAL:
-        // Don't use FX_LOG_FATAL, otherwise fx_logger_log() will abort().
-        severity = FX_LOG_ERROR;
-        break;
-    }
-    // TODO(https://crbug.com/1188820): Integrate verbose levels with the switch
-    // statement.
-    if (severity_ <= LOGGING_VERBOSE) {
-      severity = FX_LOG_DEBUG;
-    }
-
     fx_logger_t* logger = fx_log_get_logger();
     if (logger) {
       // Temporarily remove the trailing newline from |str_newline|'s C-string
       // representation, since fx_logger will add a newline of its own.
       str_newline.pop_back();
-      fx_logger_log_with_source(logger, severity, nullptr, file_, line_,
-                                str_newline.c_str() + message_start_);
+      fx_logger_log_with_source(
+          logger, LogSeverityToFuchsiaLogSeverity(severity_), nullptr, file_,
+          line_, str_newline.c_str() + message_start_);
       str_newline.push_back('\n');
     }
 #endif  // OS_FUCHSIA
@@ -1055,45 +1058,28 @@ FILE* DuplicateLogFILE() {
 
 // Used for testing. Declared in test/scoped_logging_settings.h.
 ScopedLoggingSettings::ScopedLoggingSettings()
-    : min_log_level_(g_min_log_level),
-      logging_destination_(g_logging_destination),
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      log_format_(g_log_format),
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-      enable_process_id_(g_log_process_id),
+    : enable_process_id_(g_log_process_id),
       enable_thread_id_(g_log_thread_id),
       enable_timestamp_(g_log_timestamp),
       enable_tickcount_(g_log_tickcount),
-      log_prefix_(g_log_prefix),
-      message_handler_(g_log_message_handler) {
-  if (g_log_file_name)
-    log_file_name_ = std::make_unique<PathString>(*g_log_file_name);
-  // Duplicating |g_log_file| is complex & unnecessary for this test helpers'
-  // use-cases, and so long as |g_log_file_name| is set, it will be re-opened
-  // automatically anyway, when required, so just close the existing one.
-  if (g_log_file) {
-    CHECK(g_log_file_name) << "Un-named |log_file| is not supported.";
-    CloseLogFileUnlocked();
-  }
+      min_log_level_(GetMinLogLevel()),
+      message_handler_(GetLogMessageHandler()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  log_format_ = g_log_format;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 ScopedLoggingSettings::~ScopedLoggingSettings() {
-  // Re-initialize logging via the normal path. This will clean up old file
-  // name and handle state, including re-initializing the VLOG internal state.
-  CHECK(InitLogging({
-    .logging_dest = logging_destination_,
-    .log_file_path = log_file_name_ ? log_file_name_->data() : nullptr,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    .log_format = log_format_
-#endif
-  })) << "Failed to restore settings.";
-
-  // Restore plain data settings.
+  g_log_process_id = enable_process_id_;
+  g_log_thread_id = enable_thread_id_;
+  g_log_timestamp = enable_timestamp_;
+  g_log_tickcount = enable_tickcount_;
   SetMinLogLevel(min_log_level_);
-  SetLogItems(enable_process_id_, enable_thread_id_, enable_timestamp_,
-              enable_tickcount_);
-  SetLogPrefix(log_prefix_);
   SetLogMessageHandler(message_handler_);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  g_log_format = log_format_;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

@@ -26,7 +26,6 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/desks_helper.h"
 #include "chrome/browser/ui/toolbar/move_to_desks_menu_model.h"
 #include "ui/views/widget/widget.h"
@@ -46,8 +45,7 @@ bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
     case kUninstallAppCommandId:
       return browser()->app_controller()->CanUninstall();
     case kExtensionsMenuCommandId:
-      return base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu) &&
-             base::FeatureList::IsEnabled(
+      return base::FeatureList::IsEnabled(
                  features::kDesktopPWAsElidedExtensionsMenu) &&
              browser()->window()->GetExtensionsContainer() &&
              browser()->window()->GetExtensionsContainer()->HasAnyExtensions();
@@ -105,16 +103,14 @@ void WebAppMenuModel::Build() {
   AddItemWithStringId(IDC_OPEN_IN_CHROME, IDS_OPEN_IN_CHROME);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::features::IsBentoEnabled()) {
-    auto* desks_helper = ash::DesksHelper::Get();
-    if (desks_helper && desks_helper->GetNumberOfDesks() > 1) {
-      AddSeparator(ui::NORMAL_SEPARATOR);
-      move_to_desks_submenu_ = std::make_unique<MoveToDesksMenuModel>(
-          this, views::Widget::GetWidgetForNativeWindow(
-                    browser()->window()->GetNativeWindow()));
-      AddSubMenuWithStringId(IDC_MOVE_TO_DESKS_MENU, IDS_MOVE_TO_DESKS_MENU,
-                             move_to_desks_submenu_.get());
-    }
+  auto* desks_helper = ash::DesksHelper::Get();
+  if (desks_helper && desks_helper->GetNumberOfDesks() > 1) {
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    move_to_desks_submenu_ = std::make_unique<MoveToDesksMenuModel>(
+        this, views::Widget::GetWidgetForNativeWindow(
+                  browser()->window()->GetNativeWindow()));
+    AddSubMenuWithStringId(IDC_MOVE_TO_DESKS_MENU, IDS_MOVE_TO_DESKS_MENU,
+                           move_to_desks_submenu_.get());
   }
 #endif
 

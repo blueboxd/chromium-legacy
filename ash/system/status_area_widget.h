@@ -179,6 +179,7 @@ class ASH_EXPORT StatusAreaWidget : public ClockObserver,
 
  private:
   friend class MediaTrayTest;
+  friend class TrayBackgroundViewTest;
 
   struct LayoutInputs {
     gfx::Rect bounds;
@@ -219,6 +220,10 @@ class ASH_EXPORT StatusAreaWidget : public ClockObserver,
   // Called when in the collapsed state to calculate and update the visibility
   // of each tray button.
   void CalculateButtonVisibilityForCollapsedState();
+
+  // Move the `stop_recording_button_tray_` to the front so that it's more
+  // visible.
+  void EnsureTrayOrder();
 
   // Calculates and returns the appropriate collapse state depending on
   // current conditions.

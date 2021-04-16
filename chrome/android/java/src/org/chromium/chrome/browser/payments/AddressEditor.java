@@ -40,7 +40,11 @@ import java.util.UUID;
 
 /**
  * An address editor. Can be used for either shipping or billing address editing.
+ *
+ * Note that this class is used by PaymentRequest only and will be removed when not needed any more.
+ * Please use {@link org.chromium.chrome.browser.autofill.settings.AddressEditor} instead.
  */
+@Deprecated
 public class AddressEditor
         extends EditorBase<AutofillAddress> implements GetSubKeysRequestDelegate {
     @IntDef({Purpose.PAYMENT_REQUEST, Purpose.AUTOFILL_SETTINGS})

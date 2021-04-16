@@ -2683,8 +2683,8 @@ static_library("browser") {
       "android/feed/v2/feed_service_bridge.h",
       "android/feed/v2/feed_service_factory.cc",
       "android/feed/v2/feed_service_factory.h",
-      "android/feed/v2/feed_stream_surface.cc",
-      "android/feed/v2/feed_stream_surface.h",
+      "android/feed/v2/feed_stream.cc",
+      "android/feed/v2/feed_stream.h",
       "android/feed/v2/refresh_task_scheduler_impl.cc",
       "android/feed/v2/refresh_task_scheduler_impl.h",
       "android/feed/v2/web_feed_bridge.cc",
@@ -2741,14 +2741,10 @@ static_library("browser") {
       "android/logo_bridge.cc",
       "android/logo_bridge.h",
       "android/media/media_capture_devices_dispatcher_android.cc",
-      "android/metrics/android_incognito_session_durations_service.cc",
-      "android/metrics/android_incognito_session_durations_service.h",
-      "android/metrics/android_incognito_session_durations_service_factory.cc",
-      "android/metrics/android_incognito_session_durations_service_factory.h",
-      "android/metrics/android_profile_session_durations_service.cc",
-      "android/metrics/android_profile_session_durations_service.h",
-      "android/metrics/android_profile_session_durations_service_factory.cc",
-      "android/metrics/android_profile_session_durations_service_factory.h",
+      "android/metrics/android_session_durations_service.cc",
+      "android/metrics/android_session_durations_service.h",
+      "android/metrics/android_session_durations_service_factory.cc",
+      "android/metrics/android_session_durations_service_factory.h",
       "android/metrics/launch_metrics.cc",
       "android/metrics/uma_session_stats.cc",
       "android/metrics/uma_session_stats.h",
@@ -3575,6 +3571,8 @@ static_library("browser") {
       "enterprise/reporting/extension_request/extension_request_observer_factory.h",
       "enterprise/reporting/extension_request/extension_request_policy_handler.cc",
       "enterprise/reporting/extension_request/extension_request_policy_handler.h",
+      "enterprise/reporting/extension_request/extension_request_report_generator.cc",
+      "enterprise/reporting/extension_request/extension_request_report_generator.h",
       "enterprise/reporting/extension_request/extension_request_report_throttler.cc",
       "enterprise/reporting/extension_request/extension_request_report_throttler.h",
       "enterprise/reporting/prefs.cc",
@@ -3587,6 +3585,8 @@ static_library("browser") {
       "enterprise/reporting/report_scheduler_desktop.h",
       "enterprise/reporting/reporting_delegate_factory_desktop.cc",
       "enterprise/reporting/reporting_delegate_factory_desktop.h",
+      "enterprise/signals/client_certificate_fetcher.cc",
+      "enterprise/signals/client_certificate_fetcher.h",
       "enterprise/signals/context_info_fetcher.cc",
       "enterprise/signals/context_info_fetcher.h",
       "enterprise/signals/device_info_fetcher.cc",
@@ -5298,8 +5298,6 @@ static_library("browser") {
       "notifications/popups_only_ui_controller.h",
       "notifications/screen_lock_notification_blocker.cc",
       "notifications/screen_lock_notification_blocker.h",
-      "password_manager/multi_profile_credentials_filter.cc",
-      "password_manager/multi_profile_credentials_filter.h",
       "platform_util.cc",
       "policy/cbcm_invalidations_initializer.cc",
       "policy/cbcm_invalidations_initializer.h",
@@ -5604,6 +5602,8 @@ static_library("browser") {
 
   if (enable_dice_support) {
     sources += [
+      "password_manager/multi_profile_credentials_filter.cc",
+      "password_manager/multi_profile_credentials_filter.h",
       "signin/dice_intercepted_session_startup_helper.cc",
       "signin/dice_intercepted_session_startup_helper.h",
       "signin/dice_response_handler.cc",
@@ -6924,6 +6924,20 @@ static_library("test_support") {
       "notifications/win/fake_itoastnotification.cc",
       "notifications/win/fake_itoastnotification.h",
     ]
+  }
+
+  if (enable_basic_printing) {
+    if (is_win || is_mac || is_linux || is_chromeos) {
+      sources += [
+        "printing/print_backend_service_test_impl.cc",
+        "printing/print_backend_service_test_impl.h",
+      ]
+      deps += [
+        "//chrome/services/printing:lib",
+        "//chrome/services/printing/public/mojom",
+        "//printing:test_support",
+      ]
+    }
   }
 
   if (enable_extensions) {

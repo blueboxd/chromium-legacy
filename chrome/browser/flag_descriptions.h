@@ -157,9 +157,6 @@ extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
 extern const char kAutofillAssistantChromeEntryName[];
 extern const char kAutofillAssistantChromeEntryDescription[];
 
-extern const char kAutofillCacheQueryResponsesName[];
-extern const char kAutofillCacheQueryResponsesDescription[];
-
 extern const char kAutofillEnableGoogleIssuedCardName[];
 extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
@@ -210,9 +207,6 @@ extern const char kAvatarToolbarButtonDescription[];
 
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
-
-extern const char kBentoName[];
-extern const char kBentoDescription[];
 
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
@@ -1431,9 +1425,6 @@ extern const char kTouchSelectionStrategyName[];
 extern const char kTouchSelectionStrategyDescription[];
 extern const char kTouchSelectionStrategyCharacter[];
 extern const char kTouchSelectionStrategyDirection[];
-
-extern const char kTouchpadOverscrollHistoryNavigationName[];
-extern const char kTouchpadOverscrollHistoryNavigationDescription[];
 
 extern const char kTraceUploadUrlName[];
 extern const char kTraceUploadUrlDescription[];
@@ -2918,6 +2909,9 @@ extern const char kRemoteCopyProgressNotificationDescription[];
 
 extern const char kDirectManipulationStylusName[];
 extern const char kDirectManipulationStylusDescription[];
+
+extern const char kWebuiFeedbackName[];
+extern const char kWebuiFeedbackDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)

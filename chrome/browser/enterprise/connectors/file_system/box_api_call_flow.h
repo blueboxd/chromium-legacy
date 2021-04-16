@@ -93,6 +93,35 @@ class BoxCreateUpstreamFolderApiCallFlow : public BoxApiCallFlow {
   base::WeakPtrFactory<BoxCreateUpstreamFolderApiCallFlow> weak_factory_{this};
 };
 
+// Helper for performing preflight checks before uploading a file.
+class BoxPreflightCheckApiCallFlow : public BoxApiCallFlow {
+ public:
+  BoxPreflightCheckApiCallFlow(TaskCallback callback,
+                               const base::FilePath& target_file_name,
+                               const std::string& folder_id);
+  ~BoxPreflightCheckApiCallFlow() override;
+
+ protected:
+  // BoxApiCallFlow interface.
+  GURL CreateApiCallUrl() override;
+  std::string CreateApiCallBody() override;
+  std::string GetRequestTypeForBody(const std::string& body) override;
+  bool IsExpectedSuccessCode(int code) const override;
+  void ProcessApiCallSuccess(const network::mojom::URLResponseHead* head,
+                             std::unique_ptr<std::string> body) override;
+  void ProcessApiCallFailure(int net_error,
+                             const network::mojom::URLResponseHead* head,
+                             std::unique_ptr<std::string> body) override;
+
+ private:
+  // Callback from the controller to report success, http_code, folder_id.
+  TaskCallback callback_;
+  const base::FilePath target_file_name_;
+  const std::string folder_id_;
+
+  base::WeakPtrFactory<BoxPreflightCheckApiCallFlow> weak_factory_{this};
+};
+
 // Helper for uploading a small (<= kWholeFileUploadMaxSize) file to upstream
 // downloads folder in box.
 class BoxWholeFileUploadApiCallFlow : public BoxApiCallFlow {
@@ -170,9 +199,9 @@ class BoxWholeFileUploadApiCallFlow : public BoxApiCallFlow {
 // in Box.
 class BoxCreateUploadSessionApiCallFlow : public BoxApiCallFlow {
  public:
-  // Additional callback arg is: session endpoints provided in API request
-  // response.
-  using TaskCallback = base::OnceCallback<void(bool, int, base::Value)>;
+  // Additional callback args are: session endpoints provided in API request
+  // response, and part_size for each chunk to be uploaded.
+  using TaskCallback = base::OnceCallback<void(bool, int, base::Value, size_t)>;
   BoxCreateUploadSessionApiCallFlow(TaskCallback callback,
                                     const std::string& folder_id,
                                     const size_t file_size,
@@ -258,8 +287,8 @@ class BoxPartFileUploadApiCallFlow : public BoxChunkedUploadBaseApiCallFlow {
   base::WeakPtrFactory<BoxPartFileUploadApiCallFlow> weak_factory_{this};
 };
 
-// Helper for committing an upload session once all the parts are uploaded
-// successfully.
+// Helper for aborting an upload session if there's unrecoverable failure during
+// uploading file chunks.
 class BoxAbortUploadSessionApiCallFlow
     : public BoxChunkedUploadBaseApiCallFlow {
  public:
@@ -307,8 +336,8 @@ class BoxCommitUploadSessionApiCallFlow
  private:
   TaskCallback callback_;
   const GURL commit_endpoint_;
-  const base::Value upload_session_parts_;
   const std::string sha_digest_;
+  base::Value upload_session_parts_;
   base::TimeDelta retry_after_;
 };
 

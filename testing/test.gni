@@ -6,6 +6,7 @@
 # TEST SETUP
 # ==============================================================================
 
+import("//build/config/chromeos/args.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build_overrides/build.gni")
 
@@ -29,7 +30,7 @@ if (is_android) {
   import("//build/config/fuchsia/generate_runner_scripts.gni")
   import("//build/config/fuchsia/package.gni")
   import("//third_party/fuchsia-sdk/sdk/build/cmc.gni")
-} else if (is_chromeos_ash) {
+} else if (is_chromeos_ash || (is_chromeos_lacros && is_chromeos_device)) {
   import("//build/config/chromeos/rules.gni")
   import("//build/config/sanitizers/sanitizers.gni")
   import("//build/util/generate_wrapper.gni")
@@ -77,8 +78,21 @@ template("test") {
   if (is_android) {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
 
-    _use_raw_android_executable = defined(invoker.use_raw_android_executable) &&
-                                  invoker.use_raw_android_executable
+    _use_default_launcher =
+        !defined(invoker.use_default_launcher) || invoker.use_default_launcher
+    if (!defined(invoker.use_raw_android_executable)) {
+      # Checkouts where build_with_chromium == false often have a custom GN
+      # template wrapper around test() which sets use_default_launcher == false.
+      # Set the _use_raw_android_executable default so that test() targets which
+      # do not use the custom wrapper
+      # (1) Do not cause "gn gen" to fail
+      # (2) Do not need to be moved into if(build_with_chromium) block.
+      _use_raw_android_executable =
+          !build_with_chromium && _use_default_launcher
+    } else {
+      not_needed([ "_use_default_launcher" ])
+      _use_raw_android_executable = invoker.use_raw_android_executable
+    }
 
     # output_name is used to allow targets with the same name but in different
     # packages to still produce unique runner scripts.
@@ -164,6 +178,7 @@ template("test") {
         "android_manifest_template",
         "app_as_shared_lib",
         "enable_multidex",
+        "generate_final_jni",
         "product_config_java_packages",
         "min_sdk_version",
         "proguard_configs",
@@ -173,9 +188,6 @@ template("test") {
         "use_default_launcher",
         "use_native_activity",
       ]
-
-      _use_default_launcher =
-          !defined(invoker.use_default_launcher) || invoker.use_default_launcher
 
       # Adds the unwind tables from unstripped binary as an asset file in the
       # apk, if |add_unwind_tables_in_apk| is specified by the test.
@@ -468,10 +480,11 @@ template("test") {
         data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
-  } else if (is_chromeos_ash && cros_board != "") {
+  } else if ((is_chromeos_ash || (is_chromeos_lacros && is_chromeos_device)) &&
+             cros_board != "") {
     assert(!defined(invoker.use_xvfb) || !invoker.use_xvfb)
 
-    # Building for a cros board (ie: not linux-chromeos).
+    # Building for a cros board (ie: not linux-chromeos or linux-lacros).
 
     _gen_runner_target = "${target_name}__runner"
     _runtime_deps_file =
@@ -521,7 +534,7 @@ template("test") {
         data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
-  } else if (chromeos_is_browser_only) {
+  } else if (is_chromeos_lacros && !is_chromeos_device) {
     _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
     _executable = target_name
     _gen_runner_target = "${target_name}__runner"

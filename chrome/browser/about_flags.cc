@@ -2855,9 +2855,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"dark-light-mode", flag_descriptions::kDarkLightTestName,
      flag_descriptions::kDarkLightTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDarkLightMode)},
-    {"enhanced-desks", flag_descriptions::kBentoName,
-     flag_descriptions::kBentoDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kBento)},
     {"screen-capture", flag_descriptions::kScreenCaptureTestName,
      flag_descriptions::kScreenCaptureTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCaptureMode)},
@@ -4147,11 +4144,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kGdiTextPrinting)},
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_MAC)
     {"new-usb-backend", flag_descriptions::kNewUsbBackendName,
-     flag_descriptions::kNewUsbBackendDescription, kOsWin | kOsMac,
+     flag_descriptions::kNewUsbBackendDescription, kOsMac,
      FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
-#endif  // defined(OS_WIN) || defined(OS_MAC)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_ANDROID)
     {"omnibox-adaptive-suggestions-count",
@@ -4655,6 +4652,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDirectManipulationStylusDescription,
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kDirectManipulationStylus)},
+
+    {"webui-feedback", flag_descriptions::kWebuiFeedbackName,
+     flag_descriptions::kWebuiFeedbackDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUIFeedback)},
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -4960,24 +4961,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kLazyFrameLoadingVariations,
                                     "LazyLoad")},
 
-    {"autofill-cache-query-responses",
-     flag_descriptions::kAutofillCacheQueryResponsesName,
-     flag_descriptions::kAutofillCacheQueryResponsesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
-
     {"autofill-enable-toolbar-status-chip",
      flag_descriptions::kAutofillEnableToolbarStatusChipName,
      flag_descriptions::kAutofillEnableToolbarStatusChipDescription,
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableToolbarStatusChip)},
-
-#if defined(USE_AURA)
-    {"touchpad-overscroll-history-navigation",
-     flag_descriptions::kTouchpadOverscrollHistoryNavigationName,
-     flag_descriptions::kTouchpadOverscrollHistoryNavigationDescription,
-     kOsWin | kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kTouchpadOverscrollHistoryNavigation)},
-#endif
 
     {"unsafely-treat-insecure-origin-as-secure",
      flag_descriptions::kTreatInsecureOriginAsSecureName,

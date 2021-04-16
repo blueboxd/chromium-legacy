@@ -1575,7 +1575,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       ControlsDontShowWhenOneShotIsPresent) {
+                       ControlsDontShowWhenOnlyOneShotIsPresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -1597,9 +1597,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    observer.WaitForControllable(false);
+    observer.WaitForControllable(true);
 
-    EXPECT_FALSE(IsControllable());
+    EXPECT_TRUE(IsControllable());
     EXPECT_TRUE(IsActive());
   }
 
@@ -1609,9 +1609,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    observer.WaitForControllable(false);
+    observer.WaitForControllable(true);
 
-    EXPECT_FALSE(IsControllable());
+    EXPECT_TRUE(IsControllable());
     EXPECT_TRUE(IsActive());
   }
 }
@@ -1671,7 +1671,22 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       DontSuspendWhenOneShotIsPresent) {
+                       DontSuspendWhenOnlyOneShotIsPresent) {
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+
+  StartNewPlayer(player_observer.get(), media::MediaContentType::OneShot);
+  ResolveAudioFocusSuccess();
+
+  SystemSuspend(false);
+
+  EXPECT_FALSE(IsControllable());
+  EXPECT_TRUE(IsActive());
+
+  EXPECT_EQ(0, player_observer->received_suspend_calls());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       SuspendWhenOneShotAndNormalArePresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::OneShot);
@@ -1682,9 +1697,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   SystemSuspend(false);
 
   EXPECT_FALSE(IsControllable());
-  EXPECT_TRUE(IsActive());
+  EXPECT_FALSE(IsActive());
 
-  EXPECT_EQ(0, player_observer->received_suspend_calls());
+  EXPECT_EQ(2, player_observer->received_suspend_calls());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
@@ -2696,11 +2711,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionFaviconBrowserTest, StartupInitalization) {
       new FaviconWaiter(shell()->web_contents()));
 
   // Insert the favicon dynamically.
-  ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents(),
-      "let l = document.createElement('link'); "
-      "l.rel='icon'; l.type='image/png'; l.href='single_face.jpg'; "
-      "document.head.appendChild(l)"));
+  ASSERT_TRUE(
+      ExecJs(shell()->web_contents(),
+             "let l = document.createElement('link'); "
+             "l.rel='icon'; l.type='image/png'; l.href='single_face.jpg'; "
+             "document.head.appendChild(l)"));
 
   // Wait until it's received by the browser process.
   favicon_waiter->Wait();
@@ -2858,8 +2873,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // With one normal player we should use the position that one provides.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').play()"));
+    ASSERT_TRUE(ExecJs(main_frame, "document.getElementById('video').play()"));
 
     observer.WaitForExpectedPosition(
         media_session::MediaPosition(1.0, duration, base::TimeDelta()));
@@ -2869,8 +2883,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we seek the player then the position should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(ExecuteScript(
-        main_frame, "document.getElementById('video').currentTime = 1"));
+    ASSERT_TRUE(
+        ExecJs(main_frame, "document.getElementById('video').currentTime = 1"));
 
     // We might only learn about the rate going back to 1.0 when the media time
     // has already progressed a bit.
@@ -2883,8 +2897,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we pause the player then the rate should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').pause()"));
+    ASSERT_TRUE(ExecJs(main_frame, "document.getElementById('video').pause()"));
 
     // Media time may have progressed since the time we seeked to 1s.
     paused_position =
@@ -2897,8 +2910,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we resume the player then the rate should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').play()"));
+    ASSERT_TRUE(ExecJs(main_frame, "document.getElementById('video').play()"));
 
     // We might only learn about the rate going back to 1.0 when the media time
     // has already progressed a bit.
@@ -2910,8 +2922,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we change the playback rate then the MediaPosition should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(ExecuteScript(
-        main_frame, "document.getElementById('video').playbackRate = 2"));
+    ASSERT_TRUE(ExecJs(main_frame,
+                       "document.getElementById('video').playbackRate = 2"));
 
     // Media time may have progressed since the time we resumed playback.
     observer.WaitForExpectedPositionAtLeast(
@@ -2923,7 +2935,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').src = ''"));
+        ExecJs(main_frame, "document.getElementById('video').src = ''"));
 
     observer.WaitForEmptyPosition();
   }

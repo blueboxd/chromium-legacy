@@ -436,6 +436,8 @@ static_library("test_support") {
     sources += [
       "../browser/autofill/autofill_uitest_util.cc",
       "../browser/autofill/autofill_uitest_util.h",
+      "../browser/ui/chooser_bubble_testapi.h",
+      "../browser/ui/views/chooser_bubble_testapi_views.cc",
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.cc",
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.h",
       "../browser/ui/views/media_router/app_menu_test_api.h",
@@ -3157,11 +3159,7 @@ if (!is_android) {
     }
     if (enable_basic_printing &&
         (is_win || is_mac || is_linux || is_chromeos)) {
-      sources += [
-        "../browser/printing/print_backend_browsertest.cc",
-        "../services/printing/print_backend_service_test_impl.cc",
-        "../services/printing/print_backend_service_test_impl.h",
-      ]
+      sources += [ "../browser/printing/print_backend_browsertest.cc" ]
       deps += [
         "//chrome/services/printing:lib",
         "//printing:test_support",
@@ -3951,7 +3949,7 @@ test("unit_tests") {
       "../browser/android/history_report/delta_file_commons_unittest.cc",
       "../browser/android/history_report/usage_reports_buffer_backend_unittest.cc",
       "../browser/android/locale/locale_template_url_loader_unittest.cc",
-      "../browser/android/metrics/android_incognito_session_durations_service_unittest.cc",
+      "../browser/android/metrics/android_session_durations_service_unittest.cc",
       "../browser/android/oom_intervention/near_oom_monitor_unittest.cc",
       "../browser/android/oom_intervention/oom_intervention_decider_unittest.cc",
       "../browser/android/signin/signin_manager_android_unittest.cc",
@@ -4084,6 +4082,7 @@ test("unit_tests") {
       "../browser/content_settings/generated_cookie_prefs_unittest.cc",
       "../browser/content_settings/generated_notification_pref_unittest.cc",
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
+      "../browser/enterprise/signals/client_certificate_fetcher_unittest.cc",
       "../browser/metrics/power/power_metrics_reporter_unittest.cc",
       "../browser/metrics/usage_scenario/tab_usage_scenario_tracker_unittest.cc",
       "../browser/metrics/usage_scenario/usage_scenario_data_store_unittest.cc",
@@ -4521,6 +4520,7 @@ test("unit_tests") {
       "../browser/enterprise/reporting/extension_request/extension_request_notification_unittest.cc",
       "../browser/enterprise/reporting/extension_request/extension_request_observer_factory_unittest.cc",
       "../browser/enterprise/reporting/extension_request/extension_request_observer_unittest.cc",
+      "../browser/enterprise/reporting/extension_request/extension_request_report_generator_unittest.cc",
       "../browser/enterprise/reporting/extension_request/extension_request_report_throttler_unittest.cc",
       "../browser/enterprise/reporting/policy_info_unittest.cc",
       "../browser/enterprise/reporting/profile_report_generator_unittest.cc",
@@ -4665,6 +4665,7 @@ test("unit_tests") {
       "../browser/ui/browser_close_unittest.cc",
       "../browser/ui/browser_command_controller_unittest.cc",
       "../browser/ui/browser_instant_controller_unittest.cc",
+      "../browser/ui/browser_list_unittest.cc",
       "../browser/ui/browser_unittest.cc",
       "../browser/ui/browser_window_state_unittest.cc",
       "../browser/ui/commander/commander_controller_unittest.cc",
@@ -4955,6 +4956,7 @@ test("unit_tests") {
       "../browser/ui/toolbar/mock_media_router_action_controller.h",
       "../browser/ui/views/autofill/edit_address_profile_view_unittest.cc",
       "../browser/ui/views/autofill/save_address_profile_view_unittest.cc",
+      "../browser/ui/views/autofill/update_address_profile_view_unittest.cc",
       "../browser/ui/views/passwords/move_to_account_store_bubble_view_unittest.cc",
       "../browser/ui/views/passwords/password_bubble_view_test_base.cc",
       "../browser/ui/views/passwords/password_bubble_view_test_base.h",
@@ -5879,13 +5881,6 @@ test("unit_tests") {
       "//printing:test_support",
       "//printing/mojom",
     ]
-
-    if (is_win || is_mac || is_linux || is_chromeos) {
-      sources += [
-        "../services/printing/print_backend_service_test_impl.cc",
-        "../services/printing/print_backend_service_test_impl.h",
-      ]
-    }
 
     if (enable_print_preview) {
       sources += [

@@ -112,7 +112,7 @@
   {
     "name": "android-detailed-language-settings",
     "owners": [ "perrier", "chrome-language@google.com" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 93
   },
   {
     "name": "android-managed-by-menu-item",
@@ -301,11 +301,6 @@
     "name": "autofill-assistant-proactive-help",
     "owners": [ "//components/autofill_assistant/OWNERS" ],
     "expiry_milestone": 91
-  },
-  {
-    "name": "autofill-cache-query-responses",
-    "owners": [ "rogerm" ],
-    "expiry_milestone": 72
   },
   {
     "name": "autofill-enable-company-name",
@@ -1338,7 +1333,7 @@
   {
     "name": "enable-assistant-dsp",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 95
   },
   {
     "name": "enable-assistant-launcher-integration",
@@ -2742,11 +2737,6 @@
     "name": "enhanced-desk-animations",
     "owners": ["sammiequon", "tclaiborne"],
     "expiry_milestone": 92
-  },
-  {
-    "name": "enhanced-desks",
-    "owners": ["afakhry", "cattalyya", "tclaiborne"],
-    "expiry_milestone": 93
   },
   {
     "name": "enterprise-realtime-extension-request",
@@ -5057,11 +5047,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "touchpad-overscroll-history-navigation",
-    "owners": [ "chaopeng", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "trace-upload-url",
     "owners": [ "oysteine" ],
     "expiry_milestone": 85
@@ -5357,6 +5342,11 @@
     "name": "webui-dark-mode",
     "owners": [ "khorimoto@chromium.org", "jessejames@chromium.org" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "webui-feedback",
+    "owners": [ "xiangdongkong@google.com", "dpapad@chromium.org" ],
+    "expiry_milestone": 94
   },
   {
     "name": "webui-tab-strip",

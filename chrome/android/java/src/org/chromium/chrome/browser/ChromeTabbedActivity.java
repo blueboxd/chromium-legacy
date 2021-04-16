@@ -84,7 +84,7 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
+import org.chromium.chrome.browser.feed.FeedSurfaceTracker;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
@@ -766,7 +766,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private void maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity."
                      + "maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver")) {
-            FeedStreamSurface.startup();
+            FeedSurfaceTracker.getInstance().startup();
 
             if (UsageStatsService.isEnabled()) {
                 UsageStatsService.getInstance().createPageViewObserver(
@@ -1197,7 +1197,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
                 mPendingInitialTabCreation = true;
                 PartnerBrowserCustomizations.getInstance().setOnInitializeAsyncFinished(() -> {
-                    if (!isActivityFinishingOrDestroyed()) createInitialTab();
+                    if (!isActivityFinishingOrDestroyed()) {
+                        createInitialTab();
+                    }
                 }, INITIAL_TAB_CREATION_TIMEOUT_MS);
             }
         } finally {
@@ -1215,6 +1217,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      * Create an initial tab for cold start without restored tabs.
      */
     private void createInitialTab() {
+        Log.i(TAG, "#createInitialTab executed.");
         mPendingInitialTabCreation = false;
 
         // If the start surface will be shown on start, do not create a new tab.

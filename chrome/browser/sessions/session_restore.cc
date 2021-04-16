@@ -78,7 +78,6 @@
 #include "extensions/common/extension_set.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_features.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #endif
 
@@ -535,16 +534,13 @@ class SessionRestoreImpl : public BrowserListObserver {
 
       // 5. Restore tabs in |browser|. This will also call Show() on |browser|
       //    if its initial show state is not mimimized.
-      // However, with desks restore enabled, a window is restored to its parent
-      // desk, which can be non-active desk, and left invisible but unminimized.
+      // For the cases that users have more than one desk, a window is restored
+      // to its parent desk, which can be non-active desk, and left invisible
+      // but unminimized.
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count, created_contents);
       (*tab_count) += (static_cast<int>(browser->tab_strip_model()->count()) -
                        initial_tab_count);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      DCHECK(browser->window()->IsVisible() ||
-             browser->window()->IsMinimized() ||
-             ash::features::IsBentoEnabled());
-#else
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
       DCHECK(browser->window()->IsVisible() ||
              browser->window()->IsMinimized());
 #endif
@@ -884,12 +880,13 @@ class SessionRestoreImpl : public BrowserListObserver {
 
 // static
 Browser* SessionRestore::RestoreSession(
-    Profile* profile, Browser* browser,
+    Profile* profile,
+    Browser* browser,
     SessionRestore::BehaviorBitmask behavior,
     const std::vector<GURL>& urls_to_open) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
-      "SessionRestore-Start", false);
+  chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker("SessionRestore-Start",
+                                                         false);
 #endif
   DCHECK(profile);
   DCHECK(SessionServiceFactory::GetForProfile(profile));
@@ -910,15 +907,13 @@ void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
   auto* profile = browser->profile();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Bento restores a window to the right desk, so we should not
-  // reuse any browser window. Otherwise, the conflict of the parent desk
-  // arises because tabs created in this |browser| should remain in the
-  // current active desk, but the first restored window should be restored
-  // to its saved parent desk before a crash. This also avoids users'
-  // confusion of the current window disappearing from the current desk
-  // after pressing a restore button.
-  if (ash::features::IsBentoEnabled())
-    browser = nullptr;
+  // Desks restore a window to the right desk, so we should not reuse any
+  // browser window. Otherwise, the conflict of the parent desk arises because
+  // tabs created in this |browser| should remain in the current active desk,
+  // but the first restored window should be restored to its saved parent desk
+  // before a crash. This also avoids users' confusion of the current window
+  // disappearing from the current desk after pressing a restore button.
+  browser = nullptr;
 #endif
 
   SessionRestore::BehaviorBitmask behavior =
@@ -928,9 +923,13 @@ void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
 
 // TODO(stahon@microsoft.com) http://crbug.com/1194201 covers this
 // being disabled on mac. MacOS will not restore apps on crash restore.
-#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE) && !defined(OS_MAC)
+// On linux, apps can be restored without the proper app frame,
+// disabling restorations on linux for now. http://crbug.com/1199109
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+#if !defined(OS_MAC) && !defined(OS_LINUX)
   // Apps should always be restored on crash restore.
   behavior |= SessionRestore::RESTORE_APPS;
+#endif
 #endif
   SessionRestore::RestoreSession(profile, browser, behavior,
                                  std::vector<GURL>());

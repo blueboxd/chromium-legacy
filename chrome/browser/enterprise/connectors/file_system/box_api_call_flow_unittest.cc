@@ -292,6 +292,67 @@ TEST_F(BoxCreateUpstreamFolderApiCallFlowTest_ProcessApiCallSuccess, Normal) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PreflightCheck
+////////////////////////////////////////////////////////////////////////////////
+
+class BoxPreflightCheckApiCallFlowForTest
+    : public BoxPreflightCheckApiCallFlow {
+ public:
+  using BoxPreflightCheckApiCallFlow::BoxPreflightCheckApiCallFlow;
+  using BoxPreflightCheckApiCallFlow::CreateApiCallBody;
+  using BoxPreflightCheckApiCallFlow::CreateApiCallBodyContentType;
+  using BoxPreflightCheckApiCallFlow::CreateApiCallUrl;
+  using BoxPreflightCheckApiCallFlow::IsExpectedSuccessCode;
+  using BoxPreflightCheckApiCallFlow::ProcessApiCallFailure;
+  using BoxPreflightCheckApiCallFlow::ProcessApiCallSuccess;
+};
+
+class BoxPreflightCheckApiCallFlowTest
+    : public BoxApiCallFlowTest<BoxPreflightCheckApiCallFlowForTest> {
+ protected:
+  void SetUp() override {
+    if (!temp_dir_.CreateUniqueTempDir()) {
+      FAIL() << "Failed to create temporary directory for testing";
+    }
+    file_path_ = temp_dir_.GetPath().Append(file_name_);
+
+    flow_ = std::make_unique<BoxPreflightCheckApiCallFlowForTest>(
+        base::BindOnce(&BoxPreflightCheckApiCallFlowTest::OnResponse,
+                       factory_.GetWeakPtr()),
+        file_name_, folder_id_);
+  }
+
+  void OnResponse(bool success, int response_code) {
+    processed_success_ = success;
+    response_code_ = response_code;
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
+  }
+
+  const std::string folder_id_{"1337"};
+  const base::FilePath file_name_{
+      FILE_PATH_LITERAL("box_preflight_check_test.txt")};
+  base::FilePath file_path_;
+
+  base::ScopedTempDir temp_dir_;
+  base::test::TaskEnvironment task_environment_;
+  base::OnceClosure quit_closure_;
+  base::WeakPtrFactory<BoxPreflightCheckApiCallFlowTest> factory_{this};
+};
+
+TEST_F(BoxPreflightCheckApiCallFlowTest, CreateApiCallUrl) {
+  GURL url(kFileSystemBoxPreflightCheckUrl);
+  ASSERT_EQ(flow_->CreateApiCallUrl(), url);
+}
+
+TEST_F(BoxPreflightCheckApiCallFlowTest, IsExpectedSuccessCode) {
+  ASSERT_TRUE(flow_->IsExpectedSuccessCode(200));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(400));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(403));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(404));
+  ASSERT_FALSE(flow_->IsExpectedSuccessCode(409));
+}
+////////////////////////////////////////////////////////////////////////////////
 // WholeFileUpload
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -519,16 +580,19 @@ class BoxCreateUploadSessionApiCallFlowTest
 
   void OnResponse(bool success,
                   int response_code,
-                  base::Value session_endpoints) {
+                  base::Value session_endpoints,
+                  size_t part_size) {
     processed_success_ = success;
     response_code_ = response_code;
     if (success) {
+      ASSERT_TRUE(session_endpoints.is_dict());
       session_upload_endpoint_ =
           session_endpoints.FindPath("upload_part")->GetString();
       session_abort_endpoint_ =
           session_endpoints.FindPath("abort")->GetString();
       session_commit_endpoint_ =
           session_endpoints.FindPath("commit")->GetString();
+      part_size_ = part_size;
     }
     if (quit_closure_)
       std::move(quit_closure_).Run();
@@ -537,6 +601,7 @@ class BoxCreateUploadSessionApiCallFlowTest
   std::string session_upload_endpoint_;
   std::string session_abort_endpoint_;
   std::string session_commit_endpoint_;
+  size_t part_size_ = 0;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder decoder_;
@@ -573,8 +638,9 @@ TEST_F(BoxCreateUploadSessionApiCallFlowTest, ProcessApiCallSuccess) {
   quit_closure_ = run_loop.QuitClosure();
 
   flow_->ProcessApiCallSuccess(
-      http_head.get(), std::make_unique<std::string>(
-                           kFileSystemBoxCreateUploadSessionResponseBody));
+      http_head.get(),
+      std::make_unique<std::string>(
+          kFileSystemBoxChunkedUploadCreateSessionResponseBody));
   run_loop.Run();
 
   ASSERT_EQ(response_code_, net::HTTP_CREATED);
@@ -582,6 +648,8 @@ TEST_F(BoxCreateUploadSessionApiCallFlowTest, ProcessApiCallSuccess) {
   EXPECT_EQ(session_upload_endpoint_, kFileSystemBoxChunkedUploadSessionUrl);
   EXPECT_EQ(session_abort_endpoint_, kFileSystemBoxChunkedUploadSessionUrl);
   EXPECT_EQ(session_commit_endpoint_, kFileSystemBoxChunkedUploadCommitUrl);
+  EXPECT_EQ(part_size_,
+            kFileSystemBoxChunkedUploadCreateSessionResponsePartSize);
 }
 
 TEST_F(BoxCreateUploadSessionApiCallFlowTest,
@@ -871,7 +939,7 @@ class BoxCommitUploadSessionApiCallFlowTest
     : public BoxApiCallFlowTest<BoxCommitUploadSessionApiCallFlowForTest> {
  protected:
   BoxCommitUploadSessionApiCallFlowTest()
-      : upload_session_parts_(base::Value::Type::DICTIONARY) {
+      : upload_session_parts_(base::Value::Type::LIST) {
     base::Value part1(base::Value::Type::DICTIONARY);
     part1.SetStringKey("part_id", "BFDF5379");
     part1.SetIntKey("offset", 0);
@@ -884,12 +952,15 @@ class BoxCommitUploadSessionApiCallFlowTest
     part2.SetIntKey("size", 1611392);
     part2.SetStringKey("sha1", "234b65934ed521fcfe3424b7d814ab8ded5185dc");
 
-    base::Value parts(base::Value::Type::LIST);
-    parts.Append(std::move(part1));
-    parts.Append(std::move(part2));
+    upload_session_parts_.Append(std::move(part1));
+    upload_session_parts_.Append(std::move(part2));
 
-    upload_session_parts_.SetKey("parts", std::move(parts));
-    base::JSONWriter::Write(upload_session_parts_, &expected_body_);
+    base::Value parts_body(base::Value::Type::DICTIONARY);
+    parts_body.SetKey("parts", upload_session_parts_.Clone());
+    // The request body should be in the form of "parts": [list of parts], but
+    // only the list is passed into the class.
+
+    base::JSONWriter::Write(parts_body, &expected_body_);
   }
 
   void SetUp() override {

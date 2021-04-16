@@ -12,8 +12,6 @@ static_library("constrained_window") {
     "constrained_window_views_client.h",
     "native_web_contents_modal_dialog_manager_views.cc",
     "native_web_contents_modal_dialog_manager_views.h",
-    "native_web_contents_modal_dialog_manager_views_mac.h",
-    "native_web_contents_modal_dialog_manager_views_mac.mm",
     "show_modal_dialog_views.cc",
   ]
 

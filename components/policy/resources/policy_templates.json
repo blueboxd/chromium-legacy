@@ -8538,8 +8538,8 @@
         'chrome_os:86-',
         'android:86-',
         'webview_android:86-',
+        'ios:91-',
       ],
-      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -8568,8 +8568,8 @@
         'chrome_os:86-',
         'android:86-',
         'webview_android:86-',
+        'ios:91-',
       ],
-      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -15856,6 +15856,7 @@
           'caption': 'Do not show content suggestions on the New Tab page',
         },
       ],
+      'future_on': [ 'ios' ],
       'example_value': True,
       'default': True,
       'id': 338,

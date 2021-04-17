@@ -52921,6 +52921,7 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Dismissed by user"/>
   <int value="7" label="Request was aborted"/>
   <int value="8" label="Granted by Content Setting"/>
+  <int value="9" label="Granted by persisted permission"/>
 </enum>
 
 <enum name="NativeLibraryPreloaderResult">
@@ -69324,6 +69325,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="REAL_TIME_INTERSTITIAL_BYPASS"/>
   <int value="5" label="DANGEROUS_DOWNLOAD_BYPASS"/>
   <int value="6" label="PASSWORD_REUSE_MODAL_BYPASS"/>
+  <int value="7" label="EXTENSION_ALLOWLIST_INSTALL_BYPASS"/>
+  <int value="8" label="NON_ALLOWLISTED_EXTENSION_RE_ENABLED"/>
 </enum>
 
 <enum name="SBPhishingClassifierEvent">

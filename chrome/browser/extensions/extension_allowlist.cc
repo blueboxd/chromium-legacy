@@ -7,6 +7,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_metrics_collector.h"
+#include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "extensions/browser/allowlist_state.h"
 #include "extensions/browser/extension_registry.h"
@@ -207,11 +209,23 @@ void ExtensionAllowlist::PerformActionBasedOnOmahaAttributes(
 
 bool ExtensionAllowlist::ShouldDisplayWarning(
     const std::string& extension_id) const {
-  return warnings_enabled_ &&
-         // Don't show a warning if the user can't disable the extension. (e.g.
-         // policy installs)
-         extension_service_->UserCanDisableInstalledExtension(extension_id) &&
-         GetExtensionAllowlistState(extension_id) == ALLOWLIST_NOT_ALLOWLISTED;
+  if (!warnings_enabled_)
+    return false;  // No warnings should be shown.
+
+  // Do not display warnings for extensions explicitly allowed by policy
+  // (forced, recommenced and allowed extensions).
+  // TODO(jeffcyr): Policy allowed extensions should also be exempted from auto
+  // disable.
+  ExtensionManagement* settings =
+      ExtensionManagementFactory::GetForBrowserContext(profile_);
+  if (settings->IsInstallationExplicitlyAllowed(extension_id))
+    return false;  // Extension explicitly allowed.
+
+  if (GetExtensionAllowlistState(extension_id) != ALLOWLIST_NOT_ALLOWLISTED)
+    return false;  // Extension is allowlisted.
+
+  // Warn about the extension.
+  return true;
 }
 
 void ExtensionAllowlist::OnExtensionInstalled(const std::string& extension_id,
@@ -355,13 +369,23 @@ void ExtensionAllowlist::OnExtensionStateChanged(
   if (!should_auto_disable_extensions_)
     return;  // We only care if allowlist if being enforced.
 
-  if (GetExtensionAllowlistState(extension_id) == ALLOWLIST_NOT_ALLOWLISTED) {
-    // The extension was enabled even though it's not on the allowlist. Consider
-    // this an acknowledgement from the user, and ensure we don't disable the
-    // extension again.
-    SetExtensionAllowlistAcknowledgeState(
-        extension_id, ALLOWLIST_ACKNOWLEDGE_ENABLED_BY_USER);
+  if (GetExtensionAllowlistState(extension_id) != ALLOWLIST_NOT_ALLOWLISTED) {
+    // We only care if the current state is not allowlisted.
+    return;
   }
+
+  if (GetExtensionAllowlistAcknowledgeState(extension_id) ==
+      ALLOWLIST_ACKNOWLEDGE_ENABLED_BY_USER) {
+    // The extension was already enabled and acknowledged by the user.
+    return;
+  }
+
+  // The extension was enabled even though it's not on the allowlist. Consider
+  // this an acknowledgement from the user, and ensure we don't disable the
+  // extension again.
+  ReportExtensionReEnabledEvent();
+  SetExtensionAllowlistAcknowledgeState(extension_id,
+                                        ALLOWLIST_ACKNOWLEDGE_ENABLED_BY_USER);
 }
 
 void ExtensionAllowlist::NotifyExtensionAllowlistWarningStateChanged(
@@ -370,6 +394,18 @@ void ExtensionAllowlist::NotifyExtensionAllowlistWarningStateChanged(
   for (auto& observer : observers_) {
     observer.OnExtensionAllowlistWarningStateChanged(extension_id,
                                                      show_warning);
+  }
+}
+
+void ExtensionAllowlist::ReportExtensionReEnabledEvent() {
+  auto* metrics_collector =
+      safe_browsing::SafeBrowsingMetricsCollectorFactory::GetForProfile(
+          profile_);
+  DCHECK(metrics_collector);
+  if (metrics_collector) {
+    metrics_collector->AddSafeBrowsingEventToPref(
+        safe_browsing::SafeBrowsingMetricsCollector::EventType::
+            NON_ALLOWLISTED_EXTENSION_RE_ENABLED);
   }
 }
 

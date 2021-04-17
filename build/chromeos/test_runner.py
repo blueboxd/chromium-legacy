@@ -723,7 +723,7 @@ def host_cmd(args, cmd_args):
       '--board',
       args.board,
       '--cache-dir',
-      args.cros_cache,
+      os.path.join(CHROMIUM_SRC_PATH, args.cros_cache),
   ]
   if args.use_vm:
     cros_run_test_cmd += [
@@ -758,7 +758,7 @@ def host_cmd(args, cmd_args):
 
     cros_run_test_cmd += [
         '--build-dir',
-        os.path.abspath(args.path_to_outdir),
+        os.path.join(CHROMIUM_SRC_PATH, args.path_to_outdir)
     ]
 
   cros_run_test_cmd += [
@@ -982,6 +982,12 @@ def main():
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 
   if not args.use_vm and not args.device:
+    logging.warning(
+        'The test runner is now assuming running in the lab environment, if '
+        'this is unintentional, please re-invoke the test runner with the '
+        '"--use-vm" arg if using a VM, otherwise use the "--device=<DUT>" arg '
+        'to specify a DUT.')
+
     # If we're not running on a VM, but haven't specified a hostname, assume
     # we're on a lab bot and are trying to run a test on a lab DUT. See if the
     # magic lab DUT hostname resolves to anything. (It will in the lab and will
@@ -989,11 +995,10 @@ def main():
     try:
       socket.getaddrinfo(LAB_DUT_HOSTNAME, None)
     except socket.gaierror:
-      logging.error('The default DUT hostname of %s is unreachable.',
+      logging.error('The default lab DUT hostname of %s is unreachable.',
                     LAB_DUT_HOSTNAME)
       return 1
 
-  args.cros_cache = os.path.abspath(args.cros_cache)
   return args.func(args, unknown_args)
 
 

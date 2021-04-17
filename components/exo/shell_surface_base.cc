@@ -490,6 +490,16 @@ void ShellSurfaceBase::UnsetSnap() {
   CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kNone);
 }
 
+void ShellSurfaceBase::SetCanGoBack() {
+  if (widget_)
+    widget_->GetNativeWindow()->SetProperty(ash::kMinimizeOnBackKey, false);
+}
+
+void ShellSurfaceBase::UnsetCanGoBack() {
+  if (widget_)
+    widget_->GetNativeWindow()->SetProperty(ash::kMinimizeOnBackKey, true);
+}
+
 void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
   GetViewAccessibility().OverrideChildTreeID(child_ax_tree_id);
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
@@ -570,6 +580,10 @@ void ShellSurfaceBase::DisableMovement() {
 }
 
 void ShellSurfaceBase::UpdateCanResize() {
+  if (overlay_widget_ && overlay_can_resize_.has_value()) {
+    SetCanResize(*overlay_can_resize_);
+    return;
+  }
   SetCanResize(!movement_disabled_ &&
                (minimum_size_.IsEmpty() || minimum_size_ != maximum_size_));
 }
@@ -614,6 +628,8 @@ ShellSurfaceBase::AsTracedValue() const {
 void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
   DCHECK(widget_);
   DCHECK(!overlay_widget_);
+  overlay_overlaps_frame_ = overlay_params.overlaps_frame;
+  overlay_can_resize_ = std::move(overlay_params.can_resize);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.parent = widget_->GetNativeWindow();
@@ -648,6 +664,7 @@ void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
   }
 
   UpdateWidgetBounds();
+  UpdateCanResize();
 }
 
 void ShellSurfaceBase::RemoveOverlay() {
@@ -657,6 +674,7 @@ void ShellSurfaceBase::RemoveOverlay() {
     GetWidget()->GetNativeWindow()->SetProperty(
         aura::client::kSkipImeProcessing, true);
   }
+  UpdateCanResize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1127,8 +1145,18 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
   base::Optional<gfx::Rect> bounds = GetWidgetBounds();
-  if (bounds && overlay_widget_)
-    overlay_widget_->SetBounds(gfx::Rect(bounds->size()));
+  if (bounds && overlay_widget_) {
+    gfx::Rect content_bounds(bounds->size());
+    int height = 0;
+    if (!overlay_overlaps_frame_ && frame_enabled()) {
+      auto* frame_view = static_cast<const ash::NonClientFrameViewAsh*>(
+          widget_->non_client_view()->frame_view());
+      height = frame_view->NonClientTopBorderHeight();
+    }
+    content_bounds.set_height(content_bounds.height() - height);
+    content_bounds.set_y(height);
+    overlay_widget_->SetBounds(content_bounds);
+  }
 
   aura::Window* window = widget_->GetNativeWindow();
   ash::WindowState* window_state = ash::WindowState::Get(window);

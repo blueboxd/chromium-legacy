@@ -2307,8 +2307,6 @@ bool LocalFrameView::UpdateLifecycleToPrePaintClean(
 
 bool LocalFrameView::UpdateLifecycleToCompositingInputsClean(
     DocumentUpdateReason reason) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return UpdateAllLifecyclePhasesExceptPaint(reason);
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kCompositingInputsClean, reason);
 }
@@ -2569,8 +2567,12 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
   while (true) {
     for (LocalFrameView* frame_view : unthrottled_frame_views) {
-      frame_view->Lifecycle().EnsureStateAtMost(
-          DocumentLifecycle::kVisualUpdatePending);
+      // RunResizeObserverSteps may run arbitrary script, which can cause a
+      // frame to become detached.
+      if (frame_view->GetFrame().IsAttached()) {
+        frame_view->Lifecycle().EnsureStateAtMost(
+            DocumentLifecycle::kVisualUpdatePending);
+      }
     }
     bool run_more_lifecycle_phases =
         RunStyleAndLayoutLifecyclePhases(target_state);
@@ -2778,6 +2780,21 @@ bool LocalFrameView::RunCompositingInputsLifecyclePhase(
                              LocalFrameUkmAggregator::kCompositingInputs);
     layout_view->Compositor()->UpdateInputsIfNeededRecursive(target_state);
   } else {
+    // TODO(pdr): This descendant dependent treewalk should be integrated into
+    // the prepaint tree walk.
+    {
+#if DCHECK_IS_ON()
+      SetIsUpdatingDescendantDependentFlags(true);
+#endif
+      ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+        frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
+        frame_view.GetLayoutView()->CommitPendingSelection();
+      });
+#if DCHECK_IS_ON()
+      SetIsUpdatingDescendantDependentFlags(false);
+#endif
+    }
+
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       frame_view.Lifecycle().AdvanceTo(
           DocumentLifecycle::kCompositingInputsClean);
@@ -2820,21 +2837,6 @@ bool LocalFrameView::RunCompositingAssignmentsLifecyclePhase(
 bool LocalFrameView::RunPrePaintLifecyclePhase(
     DocumentLifecycle::LifecycleState target_state) {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPrePaintLifecyclePhase");
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // TODO(pdr): This descendant dependent treewalk should be integrated into
-    // the prepaint tree walk.
-#if DCHECK_IS_ON()
-    SetIsUpdatingDescendantDependentFlags(true);
-#endif
-    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-      frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
-      frame_view.GetLayoutView()->CommitPendingSelection();
-    });
-#if DCHECK_IS_ON()
-    SetIsUpdatingDescendantDependentFlags(false);
-#endif
-  }
 
   ForAllNonThrottledLocalFrameViews(
       [](LocalFrameView& frame_view) {

@@ -2155,6 +2155,7 @@ if (!is_android) {
         "../browser/extensions/startup_helper_browsertest.cc",
         "../browser/extensions/stubs_apitest.cc",
         "../browser/extensions/subscribe_page_action_browsertest.cc",
+        "../browser/extensions/system_memory_apitest.cc",
         "../browser/extensions/test_resources_browsertest.cc",
         "../browser/extensions/updater/extension_update_client_base_browsertest.cc",
         "../browser/extensions/updater/extension_update_client_base_browsertest.h",
@@ -2268,7 +2269,6 @@ if (!is_android) {
 
     if (use_aura) {
       sources += [
-        "../browser/ui/aura/accessibility/automation_manager_aura_browsertest.cc",
         "../browser/ui/test/test_app_window_icon_observer.cc",
         "../browser/ui/test/test_app_window_icon_observer.h",
       ]
@@ -3295,6 +3295,7 @@ if (is_chromeos_lacros) {
       "../browser/lacros/popup_lacros_browsertest.cc",
       "../browser/lacros/screen_manager_lacros_browsertest.cc",
       "../browser/lacros/tablet_mode_lacros_browsertest.cc",
+      "../browser/lacros/web_contents_can_go_back_observer_browsertest.cc",
     ]
 
     deps = [
@@ -4753,6 +4754,7 @@ test("unit_tests") {
       "../browser/ui/user_education/reopen_tab_in_product_help_unittest.cc",
       "../browser/ui/web_applications/app_browser_controller_unittest.cc",
       "../browser/ui/web_applications/share_target_utils_unittest.cc",
+      "../browser/ui/web_applications/web_app_launch_manager_unittest.cc",
       "../browser/ui/web_applications/web_app_launch_utils_unittest.cc",
       "../browser/ui/webui/components/components_handler_unittest.cc",
       "../browser/ui/webui/customize_themes/chrome_customize_themes_handler_unittest.cc",
@@ -5845,7 +5847,7 @@ test("unit_tests") {
       "../browser/enterprise/connectors/file_system/box_api_call_flow_unittest.cc",
       "../browser/enterprise/connectors/file_system/box_api_call_test_helper.cc",
       "../browser/enterprise/connectors/file_system/box_api_call_test_helper.h",
-      "../browser/enterprise/connectors/file_system/download_controller_unittest.cc",
+      "../browser/enterprise/connectors/file_system/box_uploader_unittest.cc",
     ]
   }
 
@@ -6747,10 +6749,14 @@ if (!is_android) {
     }
 
     if (use_aura) {
-      sources += [ "../browser/ui/views/drag_and_drop_interactive_uitest.cc" ]
+      sources += [
+        "../browser/ui/aura/accessibility/automation_manager_aura_browsertest.cc",
+        "../browser/ui/views/drag_and_drop_interactive_uitest.cc",
+      ]
       deps += [
         "//ui/aura:aura_interactive_ui_tests",
         "//ui/base/dragdrop:types",
+        "//ui/base/dragdrop/mojom",
       ]
     } else {
       sources -= [

@@ -323,13 +323,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=91',
     ],
-    'identifier': 'Implementation Library Skew Tests For 91.0.4472.12',
+    'identifier': 'Implementation Library Skew Tests For 91.0.4472.13',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.12',
+          'revision': 'version:91.0.4472.13',
         }
       ],
     },
@@ -347,13 +347,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=90',
     ],
-    'identifier': 'Implementation Library Skew Tests For 90.0.4430.80',
+    'identifier': 'Implementation Library Skew Tests For 90.0.4430.82',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M90',
-          'revision': 'version:90.0.4430.80',
+          'revision': 'version:90.0.4430.82',
         }
       ],
     },
@@ -395,13 +395,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=91',
     ],
-    'identifier': 'Implementation Library Skew Tests For 91.0.4472.12',
+    'identifier': 'Implementation Library Skew Tests For 91.0.4472.13',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.12',
+          'revision': 'version:91.0.4472.13',
         }
       ],
     },
@@ -419,13 +419,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=90',
     ],
-    'identifier': 'Implementation Library Skew Tests For 90.0.4430.80',
+    'identifier': 'Implementation Library Skew Tests For 90.0.4430.82',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M90',
-          'revision': 'version:90.0.4430.80',
+          'revision': 'version:90.0.4430.82',
         }
       ],
     },
@@ -467,13 +467,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=91',
     ],
-    'identifier': 'Client Library Skew Tests For 91.0.4472.12',
+    'identifier': 'Client Library Skew Tests For 91.0.4472.13',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.12',
+          'revision': 'version:91.0.4472.13',
         }
       ],
     },
@@ -491,13 +491,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=90',
     ],
-    'identifier': 'Client Library Skew Tests For 90.0.4430.80',
+    'identifier': 'Client Library Skew Tests For 90.0.4430.82',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M90',
-          'revision': 'version:90.0.4430.80',
+          'revision': 'version:90.0.4430.82',
         }
       ],
     },
@@ -529,42 +529,42 @@
   'CROS_CORAL_TOT': {
     'skylab': {
       'cros_board': 'coral',
-      'cros_img': 'coral-release/R92-13910.0.0',
+      'cros_img': 'coral-release/R92-13918.0.0',
     },
     'identifier': 'CORAL_TOT',
   },
   'CROS_EVE_TOT': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R92-13909.0.0',
+      'cros_img': 'eve-release/R92-13918.0.0',
     },
     'identifier': 'EVE_TOT',
   },
   'CROS_KEFKA_TOT': {
     'skylab': {
       'cros_board': 'kefka',
-      'cros_img': 'kefka-release/R92-13910.0.0',
+      'cros_img': 'kefka-release/R92-13918.0.0',
     },
     'identifier': 'KEFKA_TOT',
   },
   'CROS_KIP_TOT': {
     'skylab': {
       'cros_board': 'kip',
-      'cros_img': 'kip-release/R92-13910.0.0',
+      'cros_img': 'kip-release/R92-13918.0.0',
     },
     'identifier': 'KIP_TOT',
   },
   'CROS_OCTOPUS_TOT': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R92-13910.0.0',
+      'cros_img': 'octopus-release/R92-13918.0.0',
     },
     'identifier': 'OCTOPUS_TOT',
   },
   'CROS_SNAPPY_TOT': {
     'skylab': {
       'cros_board': 'snappy',
-      'cros_img': 'snappy-release/R92-13909.0.0',
+      'cros_img': 'snappy-release/R92-13918.0.0',
     },
     'identifier': 'SNAPPY_TOT',
   },

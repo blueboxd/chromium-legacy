@@ -31,6 +31,9 @@ Basically equivalent to the [same version of original Chromium](https://chromest
 - GPU assists
   - on 10.7, due to old OpenGL version, disabled entirely by Chromium itself
   - on 10.8/10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
+- DRM protected media
+  - on 10.7/10.8, cannot use DRM protected media at all
+  - on 10.9+, need to [install Widevine library](https://ungoogled-software.github.io/ungoogled-chromium-wiki/faq#macos) to use DRM
 - WebAuthn/FIDO2 (any USB devices?)
   - on 10.7, you need [patched `IOHIDFamily.kext`](../../../IOHIDFamily-368.21) to use USB devices
 

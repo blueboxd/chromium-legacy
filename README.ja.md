@@ -35,6 +35,9 @@
 - GPU
   - 10.7ではOpenGLが古すぎるためGPUは利用できず、すべてソフトウェアレンダリングやソフトウェアデコードとなります
   - 10.8/10.9では描画に問題が出るため`--disable-gpu-compositing`オプションによってGPU Compotisitingが無効化されています
+- DRM保護
+  - 10.7/10.8ではDRM保護されたメディアは利用できません
+  - 10.9以上では[Widevineライブラリをインストール](https://ungoogled-software.github.io/ungoogled-chromium-wiki/faq#macos)する必要があります
 - WebAuthn/FIDO2
   - 10.7ではUSBキーの利用に[パッチを当てた `IOHIDFamily.kext`](../../../IOHIDFamily-368.21)が必要です
 

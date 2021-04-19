@@ -2602,8 +2602,6 @@ static_library("browser") {
       "android/contextualsearch/ctr_suppression.h",
       "android/contextualsearch/resolved_search_term.cc",
       "android/contextualsearch/resolved_search_term.h",
-      "android/contextualsearch/simple_search_term_resolver.cc",
-      "android/contextualsearch/simple_search_term_resolver.h",
       "android/contextualsearch/unhandled_tap_notifier_impl.cc",
       "android/contextualsearch/unhandled_tap_notifier_impl.h",
       "android/contextualsearch/unhandled_tap_web_contents_observer.cc",
@@ -4296,6 +4294,8 @@ static_library("browser") {
       "apps/app_service/publishers/lacros_apps.h",
       "apps/app_service/publishers/lacros_web_apps.cc",
       "apps/app_service/publishers/lacros_web_apps.h",
+      "apps/app_service/publishers/lacros_web_apps_factory.cc",
+      "apps/app_service/publishers/lacros_web_apps_factory.h",
       "apps/app_service/publishers/plugin_vm_apps.cc",
       "apps/app_service/publishers/plugin_vm_apps.h",
       "apps/app_service/publishers/remote_apps.cc",
@@ -4630,6 +4630,8 @@ static_library("browser") {
   if (is_chromeos_lacros) {
     assert(enable_system_notifications)
     sources += [
+      "apps/app_service/fake_lacros_web_apps_host.cc",
+      "apps/app_service/fake_lacros_web_apps_host.h",
       "chrome_browser_main_parts_lacros.cc",
       "chrome_browser_main_parts_lacros.h",
       "feedback/show_feedback_page_lacros.cc",
@@ -5825,16 +5827,15 @@ static_library("browser") {
       "//chrome/browser/apps/platform_apps",
 
       # TODO(https://crbug.com/883570): This is unfortunate, but not easy to
-      # fix.Ideally, //chrome/browser:browser shouldn't depend on these APIs
+      # fix. Ideally, //chrome/browser:browser shouldn't depend on these APIs
       #(though the APIs likely will depend on //chrome/browser), but we need
       # to pull them in here to allow registration of keyed services.
       "//chrome/browser/apps/platform_apps/api",
 
       "//chrome/browser/extensions",
-      "//chrome/browser/web_applications",
 
-      # TODO(crbug.com/877898): Erase these.
-      "//chrome/browser/web_applications:web_applications_on_extensions",
+      # TODO(crbug.com/1200215): Remove cycles and simplify all dependencies.
+      "//chrome/browser/web_applications",
       "//chrome/browser/web_applications/components",
       "//chrome/browser/web_applications/extensions",
     ]
@@ -5842,7 +5843,6 @@ static_library("browser") {
       "//apps",
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/browser/web_applications",
-      "//chrome/browser/web_applications:web_applications_on_extensions",
       "//chrome/browser/web_applications/components",
       "//chrome/browser/web_applications/extensions",
       "//chrome/common/extensions/api",
@@ -5851,7 +5851,7 @@ static_library("browser") {
       "//components/guest_view/browser",
       "//media/cast:sender",
 
-      # TODO(crbug.com / 879012): mirroring shouldn't depend on enable_extensions.
+      # TODO(crbug.com/879012): mirroring shouldn't depend on enable_extensions.
       "//components/mirroring/browser",
       "//components/mirroring/mojom:host",
       "//components/mirroring/mojom:service",

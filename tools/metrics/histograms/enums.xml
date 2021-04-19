@@ -17931,6 +17931,8 @@ Called by update_debug_scenarios.py.-->
   <int value="51" label="Network panel timing tab SW respondWith clicked"/>
   <int value="52" label="Copy value in network request panel"/>
   <int value="53" label="Console Sidebar opened"/>
+  <int value="54" label="User imported a trace into the performance panel"/>
+  <int value="55" label="User exported a trace from the performance panel"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -27058,6 +27060,7 @@ Called by update_extension_histograms.py.-->
   <int value="1549" label="LANGUAGESETTINGSPRIVATE_GETNEVERTRANSLATELANGUAGES"/>
   <int value="1550" label="ACTION_GETUSERSETTINGS"/>
   <int value="1551" label="ENTERPRISEREPORTINGPRIVATE_GETCERTIFICATE"/>
+  <int value="1552" label="AUTOTESTPRIVATE_ISSYSTEMWEBAPPOPENFUNCTION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -62006,6 +62009,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="25" label="OFFLINE"/>
   <int value="26" label="LIST_VM_DISKS_FAILED"/>
   <int value="27" label="OUT_OF_DISK_SPACE"/>
+  <int value="28" label="DOWNLOAD_FAILED_401"/>
+  <int value="29" label="DOWNLOAD_FAILED_403"/>
+  <int value="30" label="DOWNLOAD_FAILED_404"/>
 </enum>
 
 <enum name="PluginVmSetupResult">
@@ -62743,6 +62749,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="kUnknown"/>
   <int value="1" label="kGamepadHapticsManager"/>
   <int value="2" label="kGamepadMonitor"/>
+  <int value="3" label="kNotificationService"/>
 </enum>
 
 <enum name="PrerenderCookieSendType">
@@ -75674,17 +75681,37 @@ would be helpful to identify which type is being sent.
 
 <enum name="SyncErrorType">
   <summary>Possible errors that can be returned by the sync server.</summary>
-  <int value="1" label="DEPRECATED_ACCESS_DENIED"/>
+  <int value="1" label="DEPRECATED_ACCESS_DENIED">
+    <obsolete>
+      Obsolete value.
+    </obsolete>
+  </int>
   <int value="2" label="NOT_MY_BIRTHDAY"/>
   <int value="3" label="THROTTLED"/>
-  <int value="4" label="DEPRECATED_AUTH_EXPIRED"/>
-  <int value="5" label="DEPRECATED_USER_NOT_ACTIVATED"/>
-  <int value="6" label="DEPRECATED_AUTH_INVALID"/>
+  <int value="4" label="DEPRECATED_AUTH_EXPIRED">
+    <obsolete>
+      Obsolete value.
+    </obsolete>
+  </int>
+  <int value="5" label="DEPRECATED_USER_NOT_ACTIVATED">
+    <obsolete>
+      Obsolete value.
+    </obsolete>
+  </int>
+  <int value="6" label="DEPRECATED_AUTH_INVALID">
+    <obsolete>
+      Obsolete value.
+    </obsolete>
+  </int>
   <int value="7" label="CLEAR_PENDING"/>
   <int value="8" label="TRANSIENT_ERROR"/>
   <int value="9" label="MIGRATION_DONE"/>
   <int value="10" label="DISABLED_BY_ADMIN"/>
-  <int value="11" label="DEPRECATED_USER_ROLLBACK"/>
+  <int value="11" label="DEPRECATED_USER_ROLLBACK">
+    <obsolete>
+      Obsolete value.
+    </obsolete>
+  </int>
   <int value="12" label="PARTIAL_FAILURE"/>
   <int value="13" label="CLIENT_DATA_OBSOLETE"/>
   <int value="100" label="UNKNOWN"/>

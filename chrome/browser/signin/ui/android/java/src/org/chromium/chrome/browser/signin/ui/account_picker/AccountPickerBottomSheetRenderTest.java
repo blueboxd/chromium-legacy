@@ -8,8 +8,6 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.pressBack;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 
-import static org.mockito.MockitoAnnotations.initMocks;
-
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -23,6 +21,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.params.ParameterAnnotations;
@@ -30,7 +31,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -120,6 +120,9 @@ public class AccountPickerBottomSheetRenderTest {
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
 
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
     private final CustomAccountPickerDelegate mAccountPickerDelegate =
             new CustomAccountPickerDelegate();
 
@@ -143,7 +146,6 @@ public class AccountPickerBottomSheetRenderTest {
 
     @Before
     public void setUp() {
-        initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
@@ -239,29 +241,6 @@ public class AccountPickerBottomSheetRenderTest {
         clickContinueButtonAndWaitForErrorView();
         mRenderTestRule.render(
                 mCoordinator.getBottomSheetViewForTesting(), "signin_auth_error_sheet");
-    }
-
-    @DisabledTest(message = "https://crbug.com/1197715")
-    @Test
-    @MediumTest
-    @Feature("RenderTest")
-    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
-    public void testSigninAgainButtonOnSigninAuthErrorSheet(boolean nightModeEnabled)
-            throws IOException {
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
-        mAccountPickerDelegate.setError(State.INVALID_GAIA_CREDENTIALS);
-        buildAndShowCollapsedBottomSheet();
-        clickContinueButtonAndWaitForErrorView();
-        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            bottomSheetView.findViewById(R.id.account_picker_continue_as_button).performClick();
-        });
-
-        CriteriaHelper.pollUiThread(
-                bottomSheetView.findViewById(R.id.account_picker_selected_account)::isShown);
-        mRenderTestRule.render(
-                mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account");
     }
 
     @Test

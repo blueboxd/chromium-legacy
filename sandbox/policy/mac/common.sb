@@ -180,6 +180,7 @@
 ; Reads from /usr.
 (allow file-read-data
   (subpath "/usr/share/icu")
+  (subpath "/usr/share/langid")
 )
 
 ; Access to the home directory.

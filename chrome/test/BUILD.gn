@@ -47,10 +47,6 @@ import("//ui/views/features.gni")
 import("//ui/webui/webui_features.gni")
 import("//v8/gni/v8.gni")
 
-if (is_chromeos) {
-  import("//build/config/chromeos/rules.gni")
-}
-
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (is_android) {
@@ -1087,6 +1083,7 @@ if (!is_android) {
       "../browser/enterprise/connectors/analysis/content_analysis_dialog_browsertest.cc",
       "../browser/enterprise/connectors/connectors_service_browsertest.cc",
       "../browser/enterprise/reporting/report_scheduler_browsertest.cc",
+      "../browser/enterprise/util/managed_browser_utils_browsertest.cc",
       "../browser/extensions/protocol_handler_apitest.cc",
       "../browser/fast_shutdown_browsertest.cc",
       "../browser/favicon/content_favicon_driver_browsertest.cc",
@@ -2157,6 +2154,7 @@ if (!is_android) {
         "../browser/extensions/startup_helper_browsertest.cc",
         "../browser/extensions/stubs_apitest.cc",
         "../browser/extensions/subscribe_page_action_browsertest.cc",
+        "../browser/extensions/system_cpu_apitest.cc",
         "../browser/extensions/system_memory_apitest.cc",
         "../browser/extensions/test_resources_browsertest.cc",
         "../browser/extensions/updater/extension_update_client_base_browsertest.cc",
@@ -4439,6 +4437,7 @@ test("unit_tests") {
       "../browser/password_manager/android/all_passwords_bottom_sheet_helper_unittest.cc",
       "../browser/password_manager/android/auto_signin_first_run_dialog_android_unittest.cc",
       "../browser/password_manager/android/credential_leak_controller_android_unittest.cc",
+      "../browser/password_manager/android/generated_password_saved_message_delegate_unittest.cc",
       "../browser/password_manager/android/password_accessory_controller_impl_unittest.cc",
       "../browser/password_manager/android/password_generation_controller_impl_unittest.cc",
       "../browser/password_manager/android/save_password_infobar_delegate_android_unittest.cc",

@@ -2515,6 +2515,9 @@ const char kRelaunchNotification[] = "browser.relaunch_notification";
 // are in milliseconds.
 const char kRelaunchNotificationPeriod[] =
     "browser.relaunch_notification_period";
+// Pref name for the policy controlling the time interval within which the
+// relaunch should take place.
+const char kRelaunchWindow[] = "browser.relaunch_window";
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3210,6 +3213,12 @@ const char kCartModuleHidden[] = "cart_module_hidden";
 // cart module.
 const char kCartModuleWelcomeSurfaceShownTimes[] =
     "cart_module_welcome_surface_shown_times";
+// Boolean pref indicating whether user has reacted to the consent for
+// rule-based discount in cart module.
+const char kCartDiscountAcknowledged[] = "cart_discount_acknowledged";
+// Boolean pref indicating whether user has enabled rule-based discount in cart
+// module.
+const char kCartDiscountEnabled[] = "cart_discount_enabled";
 #endif
 
 #if defined(OS_ANDROID)

@@ -2139,8 +2139,6 @@ static_library("ui") {
       "settings_window_manager_chromeos.h",
       "settings_window_manager_observer_chromeos.h",
       "supervised_user/parent_permission_dialog.h",
-      "toolbar/move_to_desks_menu_model.cc",
-      "toolbar/move_to_desks_menu_model.h",
       "views/apps/app_dialog/app_block_dialog_view.cc",
       "views/apps/app_dialog/app_block_dialog_view.h",
       "views/apps/app_dialog/app_pause_dialog_view.cc",
@@ -2673,6 +2671,7 @@ static_library("ui") {
       "//ash/components/pcie_peripheral",
       "//ash/constants",
       "//ash/content/scanning",
+      "//ash/content/shimless_rma",
       "//ash/content/shortcut_customization_ui",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
@@ -2704,9 +2703,7 @@ static_library("ui") {
       "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
-      "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
-      "//chrome/browser/ui/webui/chromeos/emoji:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings",
       "//chrome/browser/ui/webui/nearby_share:mojom",
@@ -2778,7 +2775,6 @@ static_library("ui") {
       "//chromeos/services/network_config/public/mojom",
       "//chromeos/services/network_health/public/mojom",
       "//chromeos/settings",
-      "//chromeos/strings",
       "//chromeos/system",
       "//chromeos/ui/base",
       "//chromeos/ui/frame",
@@ -2820,7 +2816,11 @@ static_library("ui") {
       "//ui/file_manager:file_manager",
       "//ui/ozone",
     ]
-    public_deps += [ "//chromeos/services/multidevice_setup/public/mojom" ]
+    public_deps += [
+      "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
+      "//chrome/browser/ui/webui/chromeos/emoji:mojo_bindings",
+      "//chromeos/services/multidevice_setup/public/mojom",
+    ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
 
     if (!is_official_build) {
@@ -2854,7 +2854,10 @@ static_library("ui") {
       "views/frame/top_controls_slide_controller_chromeos.cc",
       "views/frame/top_controls_slide_controller_chromeos.h",
     ]
-    deps += [ "//components/account_manager_core:account_manager_core" ]
+    deps += [
+      "//chromeos/strings",
+      "//components/account_manager_core:account_manager_core",
+    ]
   }
 
   if (is_chromeos_lacros) {
@@ -3048,6 +3051,10 @@ static_library("ui") {
         "views/profiles/profile_customization_bubble_sync_controller.h",
         "views/profiles/profile_customization_bubble_view.cc",
         "views/profiles/profile_customization_bubble_view.h",
+        "views/sync/dice_bubble_sync_promo_view.cc",
+        "views/sync/dice_bubble_sync_promo_view.h",
+        "views/sync/dice_signin_button_view.cc",
+        "views/sync/dice_signin_button_view.h",
         "webui/signin/dice_turn_sync_on_helper.cc",
         "webui/signin/dice_turn_sync_on_helper.h",
         "webui/signin/dice_turn_sync_on_helper_delegate_impl.cc",
@@ -3535,12 +3542,8 @@ static_library("ui") {
       # This test header is included because it contains forward declarations
       # needed for "friend" statements for use in tests.
       "translate/translate_bubble_test_utils.h",
-      "views/accessibility/caption_bubble.cc",
-      "views/accessibility/caption_bubble.h",
       "views/accessibility/caption_bubble_controller_views.cc",
       "views/accessibility/caption_bubble_controller_views.h",
-      "views/accessibility/caption_bubble_model.cc",
-      "views/accessibility/caption_bubble_model.h",
       "views/accessibility/caret_browsing_dialog_delegate.cc",
       "views/accessibility/caret_browsing_dialog_delegate.h",
       "views/accessibility/non_accessible_image_view.cc",
@@ -3993,6 +3996,8 @@ static_library("ui") {
       "views/page_info/page_info_main_view.h",
       "views/page_info/page_info_new_bubble_view.cc",
       "views/page_info/page_info_new_bubble_view.h",
+      "views/page_info/page_switcher_view.cc",
+      "views/page_info/page_switcher_view.h",
       "views/page_info/permission_icon.cc",
       "views/page_info/permission_icon.h",
       "views/page_info/permission_selector_row.cc",
@@ -4361,6 +4366,7 @@ static_library("ui") {
       "//components/constrained_window",
       "//components/content_settings/browser/ui",
       "//components/fullscreen_control",
+      "//components/live_caption",
       "//components/media_message_center",
       "//components/page_info",
       "//components/payments/content",
@@ -4504,10 +4510,6 @@ static_library("ui") {
         "views/relaunch_notification/relaunch_required_dialog_view.cc",
         "views/relaunch_notification/relaunch_required_dialog_view.h",
         "views/screen_capture_notification_ui_views.cc",
-        "views/sync/dice_bubble_sync_promo_view.cc",
-        "views/sync/dice_bubble_sync_promo_view.h",
-        "views/sync/dice_signin_button_view.cc",
-        "views/sync/dice_signin_button_view.h",
       ]
       deps += [ "//ui/views/window/vector_icons" ]
     }

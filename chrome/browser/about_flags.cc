@@ -3963,6 +3963,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          features::kMagnifierContinuousMouseFollowingModeSetting)},
+    {"enable-system-proxy-for-system-services",
+     flag_descriptions::kSystemProxyForSystemServicesName,
+     flag_descriptions::kSystemProxyForSystemServicesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSystemProxyForSystemServices)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(OS_MAC)
     {"enable-immersive-fullscreen-toolbar",
@@ -4664,15 +4668,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-cache-one-google-bar", flag_descriptions::kNtpCacheOneGoogleBarName,
      flag_descriptions::kNtpCacheOneGoogleBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kCacheOneGoogleBar)},
-
-    {"ntp-iframe-one-google-bar", flag_descriptions::kNtpIframeOneGoogleBarName,
-     flag_descriptions::kNtpIframeOneGoogleBarDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kIframeOneGoogleBar)},
-
-    {"ntp-one-google-bar-modal-overlays",
-     flag_descriptions::kNtpOneGoogleBarModalOverlaysName,
-     flag_descriptions::kNtpOneGoogleBarModalOverlaysDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kOneGoogleBarModalOverlays)},
 
     {"ntp-repeatable-queries", flag_descriptions::kNtpRepeatableQueriesName,
      flag_descriptions::kNtpRepeatableQueriesDescription, kOsDesktop,
@@ -6010,6 +6005,10 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kContextMenuTranslateWithGoogleLens,
          kLensContextMenuTranslateVariations,
          "LensContextMenuTranslate")},
+
+    {"google-lens-sdk-intent", flag_descriptions::kGoogleLensSdkIntentName,
+     flag_descriptions::kGoogleLensSdkIntentDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kGoogleLensSdkIntent)},
 
     {"lens-camera-assisted-search",
      flag_descriptions::kLensCameraAssistedSearchName,

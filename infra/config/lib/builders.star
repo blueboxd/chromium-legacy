@@ -60,7 +60,19 @@ os = struct(
     LINUX_TRUSTY = os_enum("Ubuntu-14.04", os_category.LINUX),
     LINUX_XENIAL = os_enum("Ubuntu-16.04", os_category.LINUX),
     LINUX_BIONIC = os_enum("Ubuntu-18.04", os_category.LINUX),
+    # xenial -> bionic migration
+    # * If a builder does not already explicitly set an os value, use
+    #   LINUX_BIONIC_REMOVE
+    # * If a builder explicitly sets LINUX_DEFAULT, use
+    #   LINUX_BIONIC_SWITCH_TO_DEFAULT
+    #
+    # When the migration is complete, LINUX_DEFAULT can be switched to
+    #   Ubunutu-18.04, all instances of LINUX_BIONIC_REMOVE can be removed and
+    #   all instances of LINUX_BIONIC_SWITCH_TO_DEFAULT can be replaced with
+    #   LINUX_DEFAULT and no generated files should change
     LINUX_DEFAULT = os_enum("Ubuntu-16.04", os_category.LINUX),
+    LINUX_BIONIC_REMOVE = os_enum("Ubuntu-18.04", os_category.LINUX),
+    LINUX_BIONIC_SWITCH_TO_DEFAULT = os_enum("Ubuntu-18.04", os_category.LINUX),
     MAC_10_12 = os_enum("Mac-10.12", os_category.MAC),
     MAC_10_13 = os_enum("Mac-10.13", os_category.MAC),
     MAC_10_14 = os_enum("Mac-10.14", os_category.MAC),
@@ -340,6 +352,7 @@ def builder(
         reclient_service = args.DEFAULT,
         reclient_jobs = args.DEFAULT,
         reclient_rewrapper_env = args.DEFAULT,
+        experiments = None,
         **kwargs):
     """Define a builder.
 
@@ -431,7 +444,9 @@ def builder(
         in the '$build/goma' property.  By default, args.COMPUTE is set and
         'enable_ats' fields is set only if ats need to be enabled by default.
         The 'enable_ats' on Windows will control cross compiling in server
-        side. cross compile if `enable_ats` is not True.
+        side. cross compile if `enable_ats` is False.
+        Note: if goma_enable_ats is not set, goma recipe modules sets
+        GOMA_ARBITRARY_TOOLCHAIN_SUPPORT=true on windows by default.
       * goma_jobs - a member of the `goma.jobs` enum indicating the number of jobs
         to be used by the builder. Sets the 'jobs' field of the '$build/goma'
         property will be set according to the enum member. By default, the 'jobs'
@@ -470,6 +485,8 @@ def builder(
         compilations to run when using re-client as the compiler.
       * reclient_rewrapper_env - a map that sets the rewrapper flags via the
         environment variables. All such vars must start with the "RBE_" prefix.
+      * experiments - a dict of experiment name to the percentage chance (0-100)
+        that it will apply to builds generated from this builder.
       * kwargs - Additional keyword arguments to forward on to `luci.builder`.
     """
 
@@ -553,6 +570,12 @@ def builder(
             ssd = False
     if ssd != None:
         dimensions["ssd"] = str(int(ssd))
+
+    # TODO(crbug.com/1143122): remove this.
+    experiments = experiments or {}
+    if os and os.category == os_category.MAC:
+        experiments["chromium.chromium_tests.use_rbe_cas"] = 20
+    kwargs["experiments"] = experiments
 
     configure_kitchen = defaults.get_value("configure_kitchen", configure_kitchen)
     if configure_kitchen:

@@ -112,8 +112,23 @@ void ProjectorUiController::OnMarkerPressed() {
   EnableMarker(!marker_controller->is_enabled());
 }
 
+void ProjectorUiController::OnClearAllMarkersPressed() {
+  auto* marker_controller = MarkerController::Get();
+  DCHECK(marker_controller);
+  marker_controller->Clear();
+}
+
 void ProjectorUiController::OnTranscription(const std::string& transcription,
                                             bool is_final) {}
+
+void ProjectorUiController::OnSelfieCamPressed(bool enabled) {
+  // TODO(crbug/1199396): If enabled, launch the web UI.
+
+  // If the selfie cam is visible, then the button for turning on the selfie cam
+  // should be hidden in the projector bar view. The button for turning off the
+  // selfie cam should show instead.
+  projector_bar_view_->OnSelfieCamStateChanged(enabled);
+}
 
 bool ProjectorUiController::IsToolbarVisible() const {
   return model_.bar_enabled();

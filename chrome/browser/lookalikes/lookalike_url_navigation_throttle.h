@@ -11,12 +11,9 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/timer/elapsed_timer.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/lookalikes/digital_asset_links_cross_validator.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "components/digital_asset_links/digital_asset_links_handler.h"
-#include "components/site_engagement/core/mojom/site_engagement_details.mojom.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"

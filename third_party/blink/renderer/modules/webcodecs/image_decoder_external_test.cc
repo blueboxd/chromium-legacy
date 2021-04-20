@@ -345,6 +345,28 @@ TEST_F(ImageDecoderTest, DecoderClose) {
   }
 }
 
+TEST_F(ImageDecoderTest, DecoderContextDestroyed) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/gif";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+  auto* decoder =
+      CreateDecoder(&v8_scope, "images/resources/animated.gif", kImageType);
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+  EXPECT_EQ(decoder->type(), "image/gif");
+
+  v8_scope.GetExecutionContext()->NotifyContextDestroyed();
+  EXPECT_FALSE(decoder->HasPendingActivity());
+
+  // Promises won't resolve or reject now that the context is destroyed, but we
+  // should ensure decodeMetadata() and decode() don't trigger any issues.
+  decoder->decodeMetadata();
+  decoder->decode(MakeOptions(0, true));
+
+  // This will fail if a decode() or decodeMetadata() was queued.
+  EXPECT_FALSE(decoder->HasPendingActivity());
+}
+
 TEST_F(ImageDecoderTest, DecoderReadableStream) {
   V8TestingScope v8_scope;
   constexpr char kImageType[] = "image/gif";
@@ -495,6 +517,50 @@ TEST_F(ImageDecoderTest, DecoderReadableStreamAvif) {
   auto* frame = result->image();
   EXPECT_EQ(frame->displayWidth(), 159u);
   EXPECT_EQ(frame->displayHeight(), 159u);
+}
+
+TEST_F(ImageDecoderTest, DecodePartialImage) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/png";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+
+  auto* init = MakeGarbageCollected<ImageDecoderInit>();
+  init->setType(kImageType);
+
+  // Read just enough to get the header and some of the image data.
+  auto data = ReadFile("images/resources/dice.png");
+  auto* array_buffer = DOMArrayBuffer::Create(128, 1);
+  ASSERT_TRUE(data->GetBytes(array_buffer->Data(), array_buffer->ByteLength()));
+
+  init->setData(ArrayBufferOrArrayBufferViewOrReadableStream::FromArrayBuffer(
+      array_buffer));
+  auto* decoder = ImageDecoderExternal::Create(v8_scope.GetScriptState(), init,
+                                               v8_scope.GetExceptionState());
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  {
+    auto promise = decoder->decodeMetadata();
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+  }
+
+  {
+    auto promise1 = decoder->decode();
+    auto promise2 = decoder->decode(MakeOptions(2, true));
+
+    ScriptPromiseTester tester1(v8_scope.GetScriptState(), promise1);
+    ScriptPromiseTester tester2(v8_scope.GetScriptState(), promise2);
+
+    // Order is inverted here to catch a specific issue where out of range
+    // resolution is handled ahead of decode. https://crbug.com/1200137.
+    tester2.WaitUntilSettled();
+    ASSERT_TRUE(tester2.IsRejected());
+
+    tester1.WaitUntilSettled();
+    ASSERT_TRUE(tester1.IsRejected());
+  }
 }
 
 // TODO(crbug.com/1073995): Add tests for each format, partial decoding,

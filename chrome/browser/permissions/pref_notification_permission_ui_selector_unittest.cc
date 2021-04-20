@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_features.h"
@@ -95,7 +96,7 @@ TEST_F(PrefNotificationPermissionUiSelectorTest, FeatureAndPrefCombinations) {
                               QuitMessageLoop(&callback_loop)));
 
     permissions::MockPermissionRequest mock_request(
-        std::string(), permissions::RequestType::kNotifications,
+        std::u16string(), permissions::RequestType::kNotifications,
         GURL("http://example.com"));
     pref_selector()->SelectUiToUse(&mock_request, mock_callback.Get());
     callback_loop.Run();

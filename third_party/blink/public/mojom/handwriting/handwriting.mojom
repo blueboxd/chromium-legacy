@@ -6,6 +6,21 @@ module handwriting.mojom;
 
 // https://github.com/WICG/handwriting-recognition/blob/main/explainer.md
 
+// CrOS's handwriting service's API, defined in
+// //chromeos/services/machine_leaning/public/mojom and mirrored into platform2,
+// is largely derived from the types and interfaces defined below.
+//
+// The feature query APIs are not plumbed through, but otherwise, new
+// fields/methods likely need to be plumbed through the corresponding CrOS APIs
+// as well.
+//
+// Any changes in overlapping part may need to be kept synced in all these
+// three places,
+// 1. "chromeos/services/machine_learning/public/mojom/web_platform_handwriting.mojom"
+//    in chrome repo.
+// 2. "platform2/ml/mojom/web_platform_handwriting.mojom" in CrOS repo.
+// 3. This file.
+
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -60,7 +75,7 @@ struct HandwritingSegment {
 };
 
 // Represents one single prediction result.
-// The final prediction output is an array of it.
+// The final prediction output is an array of these.
 // Corresponds to handwriting_prediction.idl.
 struct HandwritingPrediction {
   string text;

@@ -166,6 +166,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeStartupDelegate,
     &kChromeSurveyNextAndroid,
     &kCommandLineOnNonRooted,
+    &kCommerceMerchantViewer,
     &kConditionalTabStripAndroid,
     &kContentSuggestionsScrollToLoad,
     &kContextMenuEnableLensShoppingAllowlist,
@@ -195,6 +196,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFocusOmniboxInIncognitoTabIntents,
+    &kGoogleLensSdkIntent,
     &kHandleMediaIntents,
     &kHomepagePromoCard,
     &kImmersiveUiMode,
@@ -450,6 +452,9 @@ const base::Feature kChromeSurveyNextAndroid{"ChromeSurveyNextAndroid",
 const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCommerceMerchantViewer{"CommerceMerchantViewer",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -472,6 +477,9 @@ const base::Feature kContextMenuSearchAndShopWithGoogleLens{
 
 const base::Feature kContextMenuTranslateWithGoogleLens{
     "ContextMenuTranslateWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kGoogleLensSdkIntent{"GoogleLensSdkIntent",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLensCameraAssistedSearch{
     "LensCameraAssistedSearch", base::FEATURE_DISABLED_BY_DEFAULT};

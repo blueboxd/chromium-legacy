@@ -873,6 +873,7 @@ extern const char kShowCastIconInToolbar[];
 #if !defined(OS_ANDROID)
 extern const char kRelaunchNotification[];
 extern const char kRelaunchNotificationPeriod[];
+extern const char kRelaunchWindow[];
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1128,6 +1129,8 @@ extern const char kSecurityTokenSessionNotificationScheduledDomain[];
 #if !defined(OS_ANDROID)
 extern const char kCartModuleHidden[];
 extern const char kCartModuleWelcomeSurfaceShownTimes[];
+extern const char kCartDiscountAcknowledged[];
+extern const char kCartDiscountEnabled[];
 #endif
 
 #if defined(OS_ANDROID)

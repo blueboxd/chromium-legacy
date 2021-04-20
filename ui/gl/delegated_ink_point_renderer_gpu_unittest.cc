@@ -148,7 +148,7 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
 // Test to confirm that points and tokens are stored and removed correctly based
 // on when the metadata and points arrive.
 TEST_F(DelegatedInkPointRendererGpuTest, StoreAndRemovePointsAndTokens) {
-  if (!surface()->SupportsDelegatedInk())
+  if (!surface() || !surface()->SupportsDelegatedInk())
     return;
 
   // Send some points and make sure they are all stored even with no metadata.
@@ -208,7 +208,7 @@ TEST_F(DelegatedInkPointRendererGpuTest, StoreAndRemovePointsAndTokens) {
 // Basic test to confirm that points are drawn as they arrive if they are in the
 // presentation area and after the metadata's timestamp.
 TEST_F(DelegatedInkPointRendererGpuTest, DrawPointsAsTheyArrive) {
-  if (!surface()->SupportsDelegatedInk())
+  if (!surface() || !surface()->SupportsDelegatedInk())
     return;
 
   gfx::DelegatedInkMetadata metadata(

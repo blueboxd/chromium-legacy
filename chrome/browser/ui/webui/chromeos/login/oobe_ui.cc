@@ -325,7 +325,7 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
 // chrome://oobe/login
 void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->SetDefaultResource(IDR_MD_LOGIN_HTML);
-  source->AddResourcePath(kLoginJSPath, IDR_MD_LOGIN_JS);
+  source->AddResourcePath(kLoginJSPath, IDR_OOBE_JS);
   source->AddResourcePath(kCustomElementsHTMLPath,
                           IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
   source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOGIN_JS);
@@ -421,19 +421,19 @@ void OobeUI::ConfigureOobeDisplay() {
 
     AddScreenHandler(std::make_unique<DemoPreferencesScreenHandler>(
         js_calls_container_.get()));
+
+    AddScreenHandler(
+        std::make_unique<EulaScreenHandler>(js_calls_container_.get()));
   }
 
-  AddScreenHandler(std::make_unique<NetworkScreenHandler>(
-      js_calls_container_.get(), core_handler_));
+  AddScreenHandler(
+      std::make_unique<NetworkScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<EnableAdbSideloadingScreenHandler>(
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<EnableDebuggingScreenHandler>(
       js_calls_container_.get()));
-
-  AddScreenHandler(std::make_unique<EulaScreenHandler>(
-      js_calls_container_.get(), core_handler_));
 
   AddScreenHandler(
       std::make_unique<ResetScreenHandler>(js_calls_container_.get()));
@@ -499,7 +499,7 @@ void OobeUI::ConfigureOobeDisplay() {
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<ActiveDirectoryLoginScreenHandler>(
-      js_calls_container_.get(), core_handler_));
+      js_calls_container_.get()));
 
   auto password_change_handler =
       std::make_unique<ActiveDirectoryPasswordChangeScreenHandler>(

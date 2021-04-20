@@ -250,6 +250,9 @@ extern const base::Feature kEnableWebAppUninstallFromOsSettings;
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnterpriseRealtimeExtensionRequest;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kEnterpiseRealtimeExtensionRequestThrottleDelay;
 #endif
 
 #if defined(OS_MAC)
@@ -575,9 +578,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSmbFs;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSoundContentSetting;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSyncBookmarkApps;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -2432,6 +2432,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "enable-system-proxy-for-system-services",
+    "owners": [ "acostinas"],
+    "expiry_milestone": 94
+  },
+  {
     "name": "enable-tab-engagement-reporting",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 90
@@ -3044,6 +3049,11 @@
     "name": "global-media-controls-seamless-transfer",
     "owners": [ "noahrose@google.com", "steimel", "media-dev" ],
     "expiry_milestone": 93
+  },
+  {
+    "name": "google-lens-sdk-intent",
+    "owners": [ "juanmojica@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "handwriting-gesture-editing",
@@ -3680,19 +3690,9 @@
     "expiry_milestone": 92
   },
   {
-    "name": "ntp-iframe-one-google-bar",
-    "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "ntp-modules",
     "owners": [ "aee", "mahmadi", "tiborg" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "ntp-one-google-bar-modal-overlays",
-    "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 88
   },
   {
     "name": "ntp-recipe-tasks-module",

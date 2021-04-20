@@ -1201,12 +1201,6 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
           Move window to <ph name="USER_NAME">$1<ex>User name</ex></ph> (<ph name="USER_EMAIL">$2<ex>john@google.com</ex></ph>)
         </message>
-        <message name="IDS_MOVE_TO_DESKS_MENU" desc="The text label of the Move to Desks submenu">
-          Move window to desk
-        </message>
-        <message name="IDS_ASSIGN_TO_ALL_DESKS" desc="The text label of the Assign to All Desks menu item">
-          All desks
-        </message>
       </if>
 
       <message name="IDS_ACCNAME_ZOOM_PLUS2" desc="The accessible description of the Make Text Larger menu item in the merged menu">
@@ -9738,24 +9732,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- Live caption. -->
-      <message name="IDS_LIVE_CAPTION_BUBBLE_TITLE" desc="Title of the Live Caption bubble">
-        Live Caption
-      </message>
-      <message name="IDS_LIVE_CAPTION_BUBBLE_CLOSE" desc="Tooltip for the Live Caption close button">
-        Turn off Live Caption for now
-      </message>
-      <message name="IDS_LIVE_CAPTION_BUBBLE_EXPAND" desc="Tooltip for the Live Caption expand button">
-        Show more lines
-      </message>
-      <message name="IDS_LIVE_CAPTION_BUBBLE_COLLAPSE" desc="Tooltip for the Live Caption collapse button">
-        Show fewer lines
-      </message>
-      <message name="IDS_LIVE_CAPTION_BUBBLE_ERROR" desc="Error message for the Live Caption bubble when Live Captions are unavailable.">
-        Live Caption is not available right now
-      </message>
-      <message name="IDS_LIVE_CAPTION_BUBBLE_APPEAR_SCREENREADER_ANNOUNCEMENT" desc="Announcement to screen readers on ChromeOS when the Live Caption bubble appears to inform users of how to focus the bubble.">
-        Live Caption visible, use window switcher to focus
-      </message>
       <message name="IDS_LIVE_CAPTION_PROMO" desc="Text shown on promotional UI appearing next to the global media controls button">
         Get captions for your audio and video
       </message>

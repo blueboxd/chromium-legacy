@@ -1292,6 +1292,11 @@ const char kGlobalMediaControlsOverlayControlsDescription[] =
     "Allowing controls to be dragged out from Global Media Controls dialog. "
     "Requires #global-media-controls to also be enabled.";
 
+const char kGoogleLensSdkIntentName[] =
+    "Enable the use of the Lens SDK when starting intent into Lens.";
+const char kGoogleLensSdkIntentDescription[] =
+    "Starts Lens using the Lens SDK if supported.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
 
@@ -1550,6 +1555,13 @@ const char kSyncingCompromisedCredentialsName[] = "Syncing of Security Issues";
 const char kSyncingCompromisedCredentialsDescription[] =
     "Enables syncing of Security issues which includes compromised and phished "
     "passwords.";
+
+const char kSystemProxyForSystemServicesName[] =
+    "Enable system-proxy for selected system services";
+const char kSystemProxyForSystemServicesDescription[] =
+    "Enabling this flag will allow Chrome OS system service which require "
+    "network connectivity to use the system-proxy daemon for authentication to "
+    "remote HTTP web proxies.";
 
 const char kDestroyProfileOnBrowserCloseName[] =
     "Destroy Profile on browser close";
@@ -3518,18 +3530,6 @@ const char kNtpCacheOneGoogleBarName[] = "Cache OneGoogleBar";
 const char kNtpCacheOneGoogleBarDescription[] =
     "Enables using the OneGoogleBar cached response in chrome://new-tab-page, "
     "when available.";
-
-const char kNtpIframeOneGoogleBarName[] = "Load OneGoogleBar in an iframe";
-const char kNtpIframeOneGoogleBarDescription[] =
-    "Enables loading the OneGoogleBar in an iframe. Otherwise, the "
-    "OneGoogleBar is loaded inline on chrome://new-tab-page.";
-
-const char kNtpOneGoogleBarModalOverlaysName[] =
-    "When OneGoogleBar is loaded in an iframe, overlays are modal";
-const char kNtpOneGoogleBarModalOverlaysDescription[] =
-    "Enables overlays being modal, when the OneGoogleBar is loaded as iframe."
-    "Otherwise, a clip-path definition is used to clip away parts of the"
-    "OneGoogleBar that do not have visible elements.";
 
 const char kNtpRepeatableQueriesName[] =
     "Repeatable queries on the New Tab Page";

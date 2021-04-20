@@ -95,13 +95,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
       base::FeatureList::IsEnabled(
           ntp_features::kNtpHandleMostVisitedNavigationExplicitly));
 
-  source->AddBoolean(
-      "iframeOneGoogleBarEnabled",
-      base::FeatureList::IsEnabled(ntp_features::kIframeOneGoogleBar));
-  source->AddBoolean(
-      "oneGoogleBarModalOverlaysEnabled",
-      base::FeatureList::IsEnabled(ntp_features::kOneGoogleBarModalOverlays));
-
   source->AddBoolean("shortcutsEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kNtpShortcuts));
   source->AddBoolean("logoEnabled",
@@ -310,6 +303,12 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(
       base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule));
   source->AddBoolean("driveModuleEnabled", base::FeatureList::IsEnabled(
                                                ntp_features::kNtpDriveModule));
+  source->AddBoolean(
+      "ruleBasedDiscountEnabled",
+      base::GetFieldTrialParamValueByFeature(
+          ntp_features::kNtpChromeCartModule,
+          ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam) ==
+          "true");
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kNewTabPageResources, kNewTabPageResourcesSize),

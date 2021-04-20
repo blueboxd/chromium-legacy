@@ -73,12 +73,21 @@ views::UniqueWidgetPtr ProjectorBarView::Create(
   return widget;
 }
 
+void ProjectorBarView::OnSelfieCamStateChanged(bool enabled) {
+  selfie_cam_on_button_->SetVisible(!enabled);
+  selfie_cam_off_button_->SetVisible(enabled);
+}
+
 void ProjectorBarView::OnLaserPointerStateChanged(bool enabled) {
   laser_pointer_button_->SetToggled(enabled);
 }
 
 void ProjectorBarView::OnMarkerStateChanged(bool enabled) {
   marker_button_->SetToggled(enabled);
+  clear_all_markers_button_->SetEnabled(enabled);
+
+  if (!enabled)
+    projector_controller_->OnClearAllMarkersPressed();
 
   // TODO(llin): shows the marker submenu if marker is enabled.
 }
@@ -135,6 +144,28 @@ void ProjectorBarView::InitLayout() {
       base::BindRepeating(&ProjectorBarView::OnMarkerPressed,
                           base::Unretained(this)),
       kProjectorMarkerIcon));
+
+  // Add clear all markers button.
+  clear_all_markers_button_ =
+      AddChildView(std::make_unique<ProjectorImageButton>(
+          base::BindRepeating(&ProjectorBarView::OnClearAllMarkersPressed,
+                              base::Unretained(this)),
+          kProjectorClearAllMarkersIcon));
+  // This button is disabled by default until marker mode activated.
+  clear_all_markers_button_->SetEnabled(marker_button_->GetToggled());
+
+  // Add selfie cam button.
+  selfie_cam_on_button_ = AddChildView(std::make_unique<ProjectorImageButton>(
+      base::BindRepeating(&ProjectorBarView::OnSelfieCamPressed,
+                          base::Unretained(this), /*enabled=*/true),
+      kProjectorSelfieCamOnIcon));
+  selfie_cam_on_button_->SetVisible(true);
+
+  selfie_cam_off_button_ = AddChildView(std::make_unique<ProjectorImageButton>(
+      base::BindRepeating(&ProjectorBarView::OnSelfieCamPressed,
+                          base::Unretained(this), /*enabled=*/false),
+      kProjectorSelfieCamOffIcon));
+  selfie_cam_off_button_->SetVisible(false);
 }
 
 void ProjectorBarView::UpdateVectorIcon() {
@@ -172,6 +203,14 @@ void ProjectorBarView::OnLaserPointerPressed() {
 
 void ProjectorBarView::OnMarkerPressed() {
   projector_controller_->OnMarkerPressed();
+}
+
+void ProjectorBarView::OnClearAllMarkersPressed() {
+  projector_controller_->OnClearAllMarkersPressed();
+}
+
+void ProjectorBarView::OnSelfieCamPressed(bool enabled) {
+  projector_controller_->OnSelfieCamPressed(enabled);
 }
 
 BEGIN_METADATA(ProjectorBarView, views::View)

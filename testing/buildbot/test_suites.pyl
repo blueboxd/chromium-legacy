@@ -707,7 +707,12 @@
       'ozone_unittests': {},
       'pdf_unittests': {},
       'printing_unittests': {},
-      'profile_provider_unittest': {},
+      'profile_provider_unittest': {
+        'args': [
+          '--stop-ui',
+          '--test-launcher-jobs=1',
+        ],
+      },
       'sandbox_linux_unittests': {},
       'sql_unittests': {},
       'url_unittests': {},
@@ -5182,6 +5187,11 @@
       }
     },
 
+    'weblayer_instrumentation_tests_with_chrome': {
+      'weblayer_instrumentation_test_with_chrome_apk': {
+      }
+    },
+
     'weblayer_instrumentation_version_tests': {
       'weblayer_instrumentation_test_versions_apk': {
         'swarming': {
@@ -6806,32 +6816,27 @@
       },
       'android_specific_chromium_gtests': {
         'variants': [
-          'ANDROID_INSTRUMENTATION_RUN_ONLY_UNIT_TESTS',
-          'ANDROID_INSTRUMENTATION_RUN_ALL_EXCEPT_UNIT_TESTS',
+          'DEFAULT',
         ]
       },
       'chromium_gtests': {
         'variants': [
-          'ANDROID_INSTRUMENTATION_RUN_ONLY_UNIT_TESTS',
-          'ANDROID_INSTRUMENTATION_RUN_ALL_EXCEPT_UNIT_TESTS',
+          'DEFAULT',
         ]
       },
       'chromium_gtests_for_devices_with_graphical_output': {
         'variants': [
-          'ANDROID_INSTRUMENTATION_RUN_ONLY_UNIT_TESTS',
-          'ANDROID_INSTRUMENTATION_RUN_ALL_EXCEPT_UNIT_TESTS',
+          'DEFAULT',
         ]
       },
       'linux_flavor_specific_chromium_gtests': {
         'variants': [
-          'ANDROID_INSTRUMENTATION_RUN_ONLY_UNIT_TESTS',
-          'ANDROID_INSTRUMENTATION_RUN_ALL_EXCEPT_UNIT_TESTS',
+          'DEFAULT',
         ]
       },
       'vr_platform_specific_chromium_gtests': {
         'variants': [
-          'ANDROID_INSTRUMENTATION_RUN_ONLY_UNIT_TESTS',
-          'ANDROID_INSTRUMENTATION_RUN_ALL_EXCEPT_UNIT_TESTS',
+          'DEFAULT',
         ]
       },
       'weblayer_android_gtests': {
@@ -6842,8 +6847,7 @@
       },
       'weblayer_gtests': {
         'variants': [
-          'ANDROID_INSTRUMENTATION_RUN_ONLY_UNIT_TESTS',
-          'ANDROID_INSTRUMENTATION_RUN_ALL_EXCEPT_UNIT_TESTS',
+          'DEFAULT',
         ]
       },
       'webview_cts_tests_gtest': {
@@ -6861,7 +6865,7 @@
     },
 
     'android_weblayer_x86_marshmallow_10_gtests': {
-      'weblayer_instrumentation_tests': {
+      'weblayer_instrumentation_tests_with_chrome': {
         'variants': [
           {
             'identifier': 'ToT_Tests',

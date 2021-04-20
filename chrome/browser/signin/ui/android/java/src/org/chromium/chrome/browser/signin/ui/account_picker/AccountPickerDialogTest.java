@@ -11,7 +11,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.support.test.InstrumentationRegistry;
 
@@ -24,6 +23,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -35,9 +37,9 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
-import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -64,6 +66,9 @@ public class AccountPickerDialogTest extends DummyUiActivityTestCase {
     public final AccountManagerTestRule mAccountManagerTestRule =
             new AccountManagerTestRule(new FakeProfileDataSource());
 
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
     @Mock
     private AccountTrackerService mAccountTrackerServiceMock;
 
@@ -83,7 +88,6 @@ public class AccountPickerDialogTest extends DummyUiActivityTestCase {
 
     @Before
     public void setUp() {
-        initMocks(this);
         AccountInfoService.init(mIdentityManagerMock, mAccountTrackerServiceMock);
         addAccount(mAccountName1, mFullName1);
         addAccount(mAccountName2, "");

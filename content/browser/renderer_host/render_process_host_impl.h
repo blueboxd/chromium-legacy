@@ -628,8 +628,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Binds |receiver| to the NotificationService instance owned by
   // |storage_partition_impl_|, and is used by frames and workers via
-  // BrowserInterfaceBroker.
+  // BrowserInterfaceBroker. |render_frame_id| will identify the RenderFrameHost
+  // when the service belongs to one, `MSG_ROUTING_NONE` for workers.
   void CreateNotificationService(
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override;
@@ -643,6 +645,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver)
       override;
+
+  void BindP2PSocketManager(
+      net::NetworkIsolationKey isolation_key,
+      mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver);
 
   // Allows |process_id| to use an additional |allowed_request_initiator|
   // (bypassing |request_initiator_origin_lock| enforcement).
@@ -759,8 +765,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);
   void BindAecDumpManager(
       mojo::PendingReceiver<blink::mojom::AecDumpManager> receiver);
-  void BindP2PSocketManager(
-      mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver);
   void CreateMediaLogRecordHost(
       mojo::PendingReceiver<content::mojom::MediaInternalLogRecords> receiver);
 #if BUILDFLAG(ENABLE_PLUGINS)

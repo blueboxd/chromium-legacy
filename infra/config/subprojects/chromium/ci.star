@@ -3991,28 +3991,6 @@ ci.fyi_mac_builder(
 )
 
 ci.fyi_windows_builder(
-    name = "Win10 Tests x64 1803",
-    console_view_entry = consoles.console_view_entry(
-        category = "win10|1803",
-    ),
-    goma_backend = None,
-    main_console_view = None,
-    os = os.WINDOWS_10,
-    triggered_by = ["ci/Win x64 Builder"],
-)
-
-ci.fyi_windows_builder(
-    name = "Win10 Tests x64 1909",
-    console_view_entry = consoles.console_view_entry(
-        category = "win10|1909",
-    ),
-    goma_backend = None,
-    main_console_view = None,
-    os = os.WINDOWS_10,
-    triggered_by = ["ci/Win x64 Builder"],
-)
-
-ci.fyi_windows_builder(
     name = "Win 10 Fast Ring",
     console_view_entry = consoles.console_view_entry(
         category = "win10",
@@ -5193,10 +5171,6 @@ ci.mac_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     os = os.MAC_10_15,
-    experiments = {
-        # TODO(crbug.com/1143122): remove this.
-        "chromium.chromium_tests.use_rbe_cas": 20,
-    },
 )
 
 ci.mac_builder(

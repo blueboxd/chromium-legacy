@@ -755,6 +755,9 @@ extern const char kGlobalMediaControlsModernUIDescription[];
 extern const char kGlobalMediaControlsOverlayControlsName[];
 extern const char kGlobalMediaControlsOverlayControlsDescription[];
 
+extern const char kGoogleLensSdkIntentName[];
+extern const char kGoogleLensSdkIntentDescription[];
+
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 
@@ -1360,6 +1363,9 @@ extern const char kSyncAutofillWalletOfferDataDescription[];
 
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
+
+extern const char kSystemProxyForSystemServicesName[];
+extern const char kSystemProxyForSystemServicesDescription[];
 
 extern const char kTabEngagementReportingName[];
 extern const char kTabEngagementReportingDescription[];
@@ -2025,12 +2031,6 @@ extern const char kGlobalMediaControlsCastStartStopDescription[];
 
 extern const char kNtpCacheOneGoogleBarName[];
 extern const char kNtpCacheOneGoogleBarDescription[];
-
-extern const char kNtpIframeOneGoogleBarName[];
-extern const char kNtpIframeOneGoogleBarDescription[];
-
-extern const char kNtpOneGoogleBarModalOverlaysName[];
-extern const char kNtpOneGoogleBarModalOverlaysDescription[];
 
 extern const char kNtpRepeatableQueriesName[];
 extern const char kNtpRepeatableQueriesDescription[];

@@ -396,6 +396,10 @@ const base::Feature kEventBasedStatusReporting{
 // Enables real-time reporting for extension request
 const base::Feature kEnterpriseRealtimeExtensionRequest{
     "EnterpriseRealtimeExtensionRequest", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::FeatureParam<base::TimeDelta>
+    kEnterpiseRealtimeExtensionRequestThrottleDelay{
+        &kEnterpriseRealtimeExtensionRequest, "throttle_delay",
+        base::TimeDelta::FromMinutes(1)};
 #endif
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
@@ -857,11 +861,6 @@ const base::Feature kSmbFs{"SmbFs", base::FEATURE_ENABLED_BY_DEFAULT};
 // website.
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables receiving and sending bookmark apps creation through APPS
-// sync. Will be removed in M92 https://crbug.com/1185374.
-const base::Feature kSyncBookmarkApps{"SyncBookmarkApps",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables chrome://sys-internals.

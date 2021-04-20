@@ -1624,12 +1624,10 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   const int id = GetID();
   const uint64_t tracing_id =
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
-  gpu_client_.reset(
-      new viz::GpuClient(std::make_unique<BrowserGpuClientDelegate>(), id,
-                         tracing_id, task_runner));
+  gpu_client_.reset(new viz::GpuClient(
+      std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
+      base::FeatureList::IsEnabled(features::kProcessHostOnUI),
+      GetIOThreadTaskRunner({})));
 }
 
 // static
@@ -1726,12 +1724,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
                                   "render_process_host", this);
   TRACE_EVENT_NESTABLE_ASYNC_END1("shutdown", "Browser.RenderProcessHostImpl",
                                   this, "render_process_host", this);
-
-  // Manually delete here in order to avoid DeleteOnIOThread trait when
-  // kProcessHostOnUI is enabled.
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI) && gpu_client_) {
-    delete gpu_client_.release();
-  }
 }
 
 bool RenderProcessHostImpl::Init() {
@@ -2120,11 +2112,17 @@ void RenderProcessHostImpl::CreatePaymentManagerForOrigin(
 }
 
 void RenderProcessHostImpl::CreateNotificationService(
+    int render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::NotificationService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GURL document_url;
+  if (RenderFrameHost* rfh = RenderFrameHost::FromID(GetID(), render_frame_id))
+    document_url = rfh->GetLastCommittedURL();
+
   storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
-      origin, std::move(receiver));
+      origin, document_url, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateWebSocketConnector(
@@ -2351,15 +2349,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   if (gpu_client_) {
     // |gpu_client_| outlives the registry, because its destruction is posted to
     // IO thread from the destructor of |this|.
-    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-      AddUIThreadInterface(
-          registry.get(),
-          base::BindRepeating(&viz::GpuClient::Add,
-                              base::Unretained(gpu_client_.get())));
-    } else {
-      registry->AddInterface(base::BindRepeating(
-          &viz::GpuClient::Add, base::Unretained(gpu_client_.get())));
-    }
+    registry->AddInterface(base::BindRepeating(
+        &viz::GpuClient::Add, base::Unretained(gpu_client_.get())));
   }
 
   registry->AddInterface(
@@ -2385,11 +2376,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateCodeCacheHost,
-                          weak_factory_.GetWeakPtr()));
-
-  AddUIThreadInterface(
-      registry.get(),
-      base::BindRepeating(&RenderProcessHostImpl::BindP2PSocketManager,
                           weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
@@ -2562,8 +2548,10 @@ void RenderProcessHostImpl::BindPushMessaging(
 }
 
 void RenderProcessHostImpl::BindP2PSocketManager(
+    net::NetworkIsolationKey isolation_key,
     mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver) {
-  p2p_socket_dispatcher_host_->BindReceiver(std::move(receiver));
+  p2p_socket_dispatcher_host_->BindReceiver(*this, std::move(receiver),
+                                            isolation_key);
 }
 
 void RenderProcessHostImpl::CreateMediaLogRecordHost(

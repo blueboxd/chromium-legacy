@@ -8258,8 +8258,8 @@ void RenderFrameHostImpl::CreateQuicTransportConnector(
 
 void RenderFrameHostImpl::CreateNotificationService(
     mojo::PendingReceiver<blink::mojom::NotificationService> receiver) {
-  GetProcess()->CreateNotificationService(GetLastCommittedOrigin(),
-                                          std::move(receiver));
+  GetProcess()->CreateNotificationService(
+      GetRoutingID(), GetLastCommittedOrigin(), std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateInstalledAppProvider(
@@ -8754,8 +8754,8 @@ service_manager::InterfaceProvider* RenderFrameHostImpl::GetJavaInterfaces() {
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> provider;
     BindInterfaceRegistryForRenderFrameHost(
         provider.InitWithNewPipeAndPassReceiver(), this);
-    java_interfaces_.reset(new service_manager::InterfaceProvider(
-        base::ThreadTaskRunnerHandle::Get()));
+    java_interfaces_ = std::make_unique<service_manager::InterfaceProvider>(
+        base::ThreadTaskRunnerHandle::Get());
     java_interfaces_->Bind(std::move(provider));
   }
   return java_interfaces_.get();
@@ -10048,7 +10048,7 @@ int CalculateHTTPStatusCode(NavigationRequest* request,
   // Navigations that are served from the back/forward cache or that are
   // prerendered will always have the HTTP status code set to 200.
   //
-  // TODO(https://crbug.com/1170277): Navigations should actually return the
+  // TODO(https://crbug.com/1199699): Navigations should actually return the
   // last HTTP status code of the RenderFrameHost.
   if (request->IsServedFromBackForwardCache() ||
       request->IsPrerenderedPageActivation()) {

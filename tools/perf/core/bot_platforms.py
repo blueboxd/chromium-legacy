@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
-import urllib
+import six.moves.urllib.parse  # pylint: disable=import-error
 
 from core import benchmark_finders
 from core import benchmark_utils
@@ -123,7 +123,7 @@ class PerfPlatform(object):
   @property
   def builder_url(self):
     return ('https://ci.chromium.org/p/chrome/builders/ci/%s' %
-             urllib.quote(self._name))
+            six.moves.urllib.parse.quote(self._name))
 
 
 class BenchmarkConfig(object):
@@ -364,6 +364,8 @@ _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('rendering.desktop'),
 ])
 _WIN_10_AMD_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('jetstream'),
+    _GetBenchmarkConfig('jetstream2'),
     _GetBenchmarkConfig('kraken'),
     _GetBenchmarkConfig('octane'),
     _GetBenchmarkConfig('system_health.common_desktop'),

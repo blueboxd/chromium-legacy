@@ -278,6 +278,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_STARTUP_DELEGATE = "ChromeStartupDelegate";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
+    public static final String COMMERCE_MERCHANT_VIEWER = "CommerceMerchantViewer";
     public static final String CONDITIONAL_TAB_STRIP_ANDROID = "ConditionalTabStripAndroid";
     public static final String CONTACTS_PICKER_SELECT_ALL = "ContactsPickerSelectAll";
     public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =
@@ -287,6 +288,7 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXT_MENU_GOOGLE_LENS_CHIP = "ContextMenuGoogleLensChip";
     public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS =
             "ContextMenuSearchWithGoogleLens";
+    public static final String GOOGLE_LENS_SDK_INTENT = "GoogleLensSdkIntent";
     public static final String CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS = "ContextMenuShopWithGoogleLens";
     public static final String CONTEXT_MENU_SEARCH_AND_SHOP_WITH_GOOGLE_LENS =
             "ContextMenuSearchAndShopWithGoogleLens";

@@ -5421,6 +5421,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "website-url": "https://www.privacysandbox.com"
+                    },
                     "enable_features": [
                         "PrivacySandboxSettings"
                     ]
@@ -7150,6 +7153,94 @@
                     "disable_features": [
                         "SmallScriptStreaming",
                         "V8OffThreadFinalization"
+                    ]
+                }
+            ]
+        }
+    ],
+    "V8SparkplugTurboprop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledSparkplug",
+                    "enable_features": [
+                        "V8Sparkplug"
+                    ],
+                    "disable_features": [
+                        "V8TurboProp"
+                    ]
+                },
+                {
+                    "name": "EnabledTurboprop",
+                    "enable_features": [
+                        "V8TurboProp"
+                    ],
+                    "disable_features": [
+                        "V8Sparkplug"
+                    ]
+                },
+                {
+                    "name": "EnabledSparkplugTurboprop",
+                    "enable_features": [
+                        "V8Sparkplug",
+                        "V8TurboProp"
+                    ]
+                },
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "V8Sparkplug",
+                        "V8TurboProp"
+                    ]
+                }
+            ]
+        }
+    ],
+    "V8SparkplugTurboprop_Mobile": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "V8Sparkplug",
+                        "V8TurboProp"
+                    ]
+                },
+                {
+                    "name": "EnabledSparkplug",
+                    "enable_features": [
+                        "V8Sparkplug"
+                    ],
+                    "disable_features": [
+                        "V8TurboProp"
+                    ]
+                },
+                {
+                    "name": "EnabledTurboprop",
+                    "enable_features": [
+                        "V8TurboProp"
+                    ],
+                    "disable_features": [
+                        "V8Sparkplug"
+                    ]
+                },
+                {
+                    "name": "EnabledSparkplugTurboprop",
+                    "enable_features": [
+                        "V8Sparkplug",
+                        "V8TurboProp"
                     ]
                 }
             ]

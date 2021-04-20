@@ -77,7 +77,6 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
-#include "components/search/ntp_features.h"
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/known_interception_disclosure_ui.h"
 #include "components/security_interstitials/content/urls.h"
@@ -152,6 +151,8 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/content/scanning/scanning_ui.h"
 #include "ash/content/scanning/url_constants.h"
+#include "ash/content/shimless_rma/shimless_rma.h"
+#include "ash/content/shimless_rma/url_constants.h"
 #include "ash/content/shortcut_customization_ui/shortcut_customization_app_ui.h"
 #include "ash/content/shortcut_customization_ui/url_constants.h"
 #include "base/system/sys_info.h"
@@ -787,6 +788,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>;
   if (url.host_piece() == ash::kChromeUIScanningAppHost)
     return &NewWebUI<ash::ScanningUI>;
+  if (ash::features::IsShimlessRMAFlowEnabled() &&
+      url.host_piece() == ash::kChromeUIShimlessRMAHost) {
+    return &NewWebUI<ash::ShimlessRMADialogUI>;
+  }
   if (url.host_piece() == chromeos::kChromeUIMediaAppHost)
     return &NewComponentUI<chromeos::MediaAppUI, ChromeMediaAppUIDelegate>;
   if (features::IsShortcutCustomizationAppEnabled()) {
@@ -1163,10 +1168,7 @@ bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
       // https://crbug.com/831813
       origin.host() == chrome::kChromeUIInspectHost ||
       // https://crbug.com/859345
-      origin.host() == chrome::kChromeUIDownloadsHost ||
-      // TODO(crbug.com/1076506): remove when change to iframed OneGoogleBar.
-      (origin.host() == chrome::kChromeUINewTabPageHost &&
-       !base::FeatureList::IsEnabled(ntp_features::kIframeOneGoogleBar));
+      origin.host() == chrome::kChromeUIDownloadsHost;
 }
 
 ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() = default;

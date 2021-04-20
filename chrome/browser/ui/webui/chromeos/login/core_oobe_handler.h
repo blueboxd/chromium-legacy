@@ -48,20 +48,14 @@ class CoreOobeView {
     MODE_NARROW,
   };
 
-  virtual ~CoreOobeView() {}
+  virtual ~CoreOobeView() = default;
 
-  virtual void ShowSignInError(const std::string& error_text,
-                               const std::string& help_link_text,
-                               HelpAppLauncher::HelpTopic help_topic_id) = 0;
   virtual void ResetSignInUI(bool force_online) = 0;
-  virtual void ClearErrors() = 0;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) = 0;
-  virtual void ReloadEulaContent(const base::DictionaryValue& dictionary) = 0;
   virtual void SetVirtualKeyboardShown(bool shown) = 0;
   virtual void SetClientAreaSize(int width, int height) = 0;
   virtual void SetShelfHeight(int height) = 0;
   virtual void SetDialogPaddingMode(DialogPaddingMode mode) = 0;
-  virtual void ShowDeviceResetScreen() = 0;
   virtual void UpdateKeyboardState() = 0;
   virtual void FocusReturned(bool reverse) = 0;
   virtual void SetOrientation(bool is_horizontal) = 0;
@@ -122,18 +116,12 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
  private:
   // CoreOobeView implementation:
-  void ShowSignInError(const std::string& error_text,
-                       const std::string& help_link_text,
-                       HelpAppLauncher::HelpTopic help_topic_id) override;
   void ResetSignInUI(bool force_online) override;
-  void ClearErrors() override;
   void ReloadContent(const base::DictionaryValue& dictionary) override;
-  void ReloadEulaContent(const base::DictionaryValue& dictionary) override;
   void SetVirtualKeyboardShown(bool displayed) override;
   void SetClientAreaSize(int width, int height) override;
   void SetShelfHeight(int height) override;
   void SetDialogPaddingMode(CoreOobeView::DialogPaddingMode mode) override;
-  void ShowDeviceResetScreen() override;
   void FocusReturned(bool reverse) override;
   void SetOrientation(bool is_horizontal) override;
   void SetDialogSize(int width, int height) override;

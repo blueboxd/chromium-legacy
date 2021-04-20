@@ -968,7 +968,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="PASSWORD"/>
   <int value="2" label="PAYMENT_INFO"/>
   <int value="3" label="ADDRESS_INFO"/>
-  <int value="4" label="TOUCH_TO_FILL_INFO"/>
+  <int value="4" label="(obsolete) TOUCH_TO_FILL_INFO"/>
 </enum>
 
 <enum name="AccessoryToggleType">
@@ -14572,6 +14572,8 @@ Called by update_net_error_codes.py.-->
   <int value="21" label="CRAS_METRICS_DEVICE_ABNORMAL_FALLBACK"/>
   <int value="22" label="CRAS_METRICS_DEVICE_SILENT_HOTWORD"/>
   <int value="23" label="CRAS_METRICS_DEVICE_UNKNOWN"/>
+  <int value="24" label="CRAS_METRICS_DEVICE_BLUETOOTH_WB_MIC"/>
+  <int value="25" label="CRAS_METRICS_DEVICE_ALSA_LOOPBACK"/>
 </enum>
 
 <enum name="CrashExitCodes">
@@ -18904,6 +18906,7 @@ Called by update_debug_scenarios.py.-->
   <int value="7" label="Failed because Update Engine is busy"/>
   <int value="8" label="Failed to verify image"/>
   <int value="9" label="Failed to mount image"/>
+  <int value="10" label="Failed to find image"/>
 </enum>
 
 <enum name="DlcService.UninstallResult">
@@ -24175,6 +24178,7 @@ Called by update_document_policy_enum.py.-->
   <int value="851" label="SuggestLogoutAfterClosingLastWindow"/>
   <int value="852" label="SharedArrayBufferUnrestrictedAccessAllowed"/>
   <int value="853" label="LensCameraAssistedSearchEnabled"/>
+  <int value="854" label="RelaunchWindow"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -25433,6 +25437,7 @@ Called by update_extension_histograms.py.-->
   <int value="473" label="TAB_GROUPS_ON_REMOVED"/>
   <int value="474" label="TAB_GROUPS_ON_UPDATED"/>
   <int value="475" label="FILE_MANAGER_PRIVATE_ON_DRIVE_CONFIRM_DIALOG"/>
+  <int value="476" label="TTS_ENGINE_ON_SPEAK_WITH_AUDIO_STREAM"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -27061,6 +27066,7 @@ Called by update_extension_histograms.py.-->
   <int value="1550" label="ACTION_GETUSERSETTINGS"/>
   <int value="1551" label="ENTERPRISEREPORTINGPRIVATE_GETCERTIFICATE"/>
   <int value="1552" label="AUTOTESTPRIVATE_ISSYSTEMWEBAPPOPENFUNCTION"/>
+  <int value="1553" label="TTSENGINE_SENDTTSAUDIO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -44218,6 +44224,7 @@ from previous Chrome versions.
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1927080237" label="Vulkan:enabled"/>
+  <int value="-1926124919" label="WebViewOriginTrials:enabled"/>
   <int value="-1925453192" label="BlockInsecurePrivateNetworkRequests:enabled"/>
   <int value="-1925214028"
       label="EnterpriseReportingApiKeychainRecreation:enabled"/>
@@ -45128,6 +45135,7 @@ from previous Chrome versions.
   <int value="-1176748003"
       label="FramebustingNeedsSameOriginOrUserGesture:disabled"/>
   <int value="-1176493523" label="enable-md-extensions"/>
+  <int value="-1174292609" label="SystemProxyForSystemServices:disabled"/>
   <int value="-1174267639" label="ClientLoFi:disabled"/>
   <int value="-1173361620" label="CCTModulePostMessage:disabled"/>
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
@@ -45173,6 +45181,7 @@ from previous Chrome versions.
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1144754105" label="ScalableStatusArea:enabled"/>
   <int value="-1144501989" label="UserActivityPredictionMlService:disabled"/>
+  <int value="-1144128534" label="GoogleLensSdkIntent:enabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
   <int value="-1142933895" label="ReduceDisplayNotifications:disabled"/>
@@ -47346,6 +47355,7 @@ from previous Chrome versions.
   <int value="835018878" label="disable-quic"/>
   <int value="835726069" label="NtpWebUI:disabled"/>
   <int value="836406476" label="EnableTouchableAppContextMenu:enabled"/>
+  <int value="837350465" label="SystemProxyForSystemServices:enabled"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
   <int value="839230937" label="AutofillEnableCardNicknameUpstream:disabled"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
@@ -47948,6 +47958,7 @@ from previous Chrome versions.
   <int value="1367487214" label="VaapiJpegImageDecodeAcceleration:enabled"/>
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
+  <int value="1368907760" label="GoogleLensSdkIntent:disabled"/>
   <int value="1369449914" label="SysInternals:disabled"/>
   <int value="1369649674" label="ChromeShareScreenshot:enabled"/>
   <int value="1370797930" label="ShowBluetoothDeviceBattery:enabled"/>
@@ -48734,6 +48745,7 @@ from previous Chrome versions.
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2063420769" label="SharedHighlightingV2:disabled"/>
   <int value="2066015302" label="QueryTiles:disabled"/>
+  <int value="2066508701" label="WebViewOriginTrials:disabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
   <int value="2067735898" label="WebVrAutopresentFromIntent:enabled"/>
   <int value="2067903732"
@@ -62455,6 +62467,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="kOtherActivity"/>
   <int value="6" label="kBackground"/>
   <int value="7" label="kCharging"/>
+  <int value="8" label="kNopAnimation"/>
 </enum>
 
 <enum name="PowerSupplyType">

@@ -109,9 +109,11 @@ void WaylandWindow::UpdateBufferScale(bool update_bounds) {
 
   auto* output =
       connection_->wayland_output_manager()->GetOutput(preferred_outputs_id);
-  // Sanity check. WaylandConnection always waits for at least one output to
-  // become ready. See WaylandConnection::Initialize.
-  DCHECK(output);
+  // There can be a race between sending leave output event and destroying
+  // wl_outputs. Thus, explicitly check if the output exist.
+  if (!output)
+    return;
+
   int32_t new_scale = output->scale_factor();
   ui_scale_ = output->GetUIScaleFactor();
 
@@ -142,7 +144,9 @@ uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
   if (entered_outputs_.empty())
     return 0;
 
-  DCHECK_EQ(PlatformWindowType::kWindow, type());
+  // PlatformWindowType::kPopup are created as toplevel windows as well.
+  DCHECK(type() == PlatformWindowType::kWindow ||
+         type() == PlatformWindowType::kPopup);
 
   // A window can be located on two or more displays. Thus, return the id of the
   // output that has the biggest scale factor. Otherwise, use the very first one
@@ -578,8 +582,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
-  // Will do nothing for menus because they have got their scale above.
-  UpdateBufferScale(false);
   root_surface_->SetOpaqueRegion(gfx::Rect(bounds_px_.size()));
 
   return true;

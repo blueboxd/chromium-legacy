@@ -2374,7 +2374,6 @@ static_library("browser") {
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/emoji:mojo_bindings",
-      "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings",
@@ -4240,6 +4239,8 @@ static_library("browser") {
     sources += [
       "apps/app_service/app_notifications.cc",
       "apps/app_service/app_notifications.h",
+      "apps/app_service/app_platform_metrics.cc",
+      "apps/app_service/app_platform_metrics.h",
       "apps/app_service/app_service_proxy_chromeos.cc",
       "apps/app_service/app_service_proxy_chromeos.h",
       "apps/app_service/app_shortcut_item.cc",
@@ -6597,7 +6598,6 @@ grit("resources") {
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",
-      "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings_webui_js",
       "//chrome/browser/ui/webui/settings/chromeos:mojom_js",
     ]

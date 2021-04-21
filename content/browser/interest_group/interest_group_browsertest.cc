@@ -747,6 +747,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 
   auto interest_group = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group->name = kGroupName;
   interest_group->owner = test_origin_a;
   interest_service->JoinInterestGroup(std::move(interest_group));
@@ -770,6 +772,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // Silently fails to join -- the frame origin isn't https.
   auto interest_group_http = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group_http->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group_http->name = kGroupName;
   interest_group_http->owner = test_origin_http;
   interest_service->JoinInterestGroup(std::move(interest_group_http));
@@ -795,6 +799,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // Silently fails to join -- the owner origin doesn't match the frame origin.
   auto interest_group = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group->name = kGroupName;
   interest_group->owner = test_origin_b;
   interest_service->JoinInterestGroup(std::move(interest_group));
@@ -821,6 +827,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // origin.
   auto interest_group = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group->name = kGroupName;
   interest_group->owner = test_origin_a;
   interest_group->bidding_url = test_url_b;
@@ -848,6 +856,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // origin.
   auto interest_group = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group->name = kGroupName;
   interest_group->owner = test_origin_a;
   interest_group->update_url = test_url_b;
@@ -875,6 +885,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // match the frame origin.
   auto interest_group = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group->name = kGroupName;
   interest_group->owner = test_origin_a;
   interest_group->trusted_bidding_signals_url = test_url_b;
@@ -900,6 +912,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // Silently fails to join -- the ad renderingUrl doesn't use https.
   auto interest_group = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group->name = kGroupName;
   interest_group->owner = test_origin_https;
   auto ad = blink::mojom::InterestGroupAd::New();
@@ -929,6 +943,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // Join succeeds.
   auto interest_group = blink::mojom::InterestGroup::New();
   constexpr char kGroupName[] = "cars";
+  interest_group->expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(300);
   interest_group->name = kGroupName;
   interest_group->owner = test_origin_a;
   interest_service1->JoinInterestGroup(std::move(interest_group));

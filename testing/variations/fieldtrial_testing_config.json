@@ -636,6 +636,21 @@
             ]
         }
     ],
+    "AppListOmniboxRichEntities": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableOmniboxRichEntities"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppListZeroStateMixedTypesRanker": [
         {
             "platforms": [
@@ -1063,6 +1078,21 @@
                     },
                     "enable_features": [
                         "BackgroundSync"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BackgroundThreadPool": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BackgroundThreadPool"
                     ]
                 }
             ]
@@ -3035,8 +3065,8 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "EnhancedProtectionPromoMaxImpressionsAndroid": "10",
-                        "SigninPromoMaxImpressionsAndroid": "10"
+                        "MaxEnhancedProtectionPromoImpressions": "5",
+                        "MaxSigninPromoImpressions": "5"
                     },
                     "enable_features": [
                         "EnhancedProtectionPromoCard"
@@ -4063,22 +4093,6 @@
                     "enable_features": [
                         "LiveCaption",
                         "UseSodaForLiveCaption"
-                    ]
-                }
-            ]
-        }
-    ],
-    "LoginDetection": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LoginDetection"
                     ]
                 }
             ]

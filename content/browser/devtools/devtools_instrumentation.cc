@@ -168,7 +168,7 @@ void OnNavigationResponseReceived(
     const network::mojom::URLResponseHead& response) {
   // This response is artificial (see CachedNavigationURLLoader), so we don't
   // want to report it.
-  if (nav_request.IsServedFromBackForwardCache())
+  if (nav_request.IsPageActivation())
     return;
 
   FrameTreeNode* ftn = nav_request.frame_tree_node();
@@ -260,11 +260,26 @@ void OnNavigationRequestFailed(
 
   // If a BFCache navigation fails, it will be restarted as a regular
   // navigation, so we don't want to report this failure.
+  // TODO(https://crbug.com/1195751): Stop reporting this for Prerender as well
+  // after it supports fallback to regular navigation on activation failures.
   if (nav_request.IsServedFromBackForwardCache())
     return;
 
   DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
                    protocol::Network::ResourceTypeEnum::Document, status);
+}
+
+bool ShouldBypassCSP(const NavigationRequest& nav_request) {
+  DevToolsAgentHostImpl* agent_host =
+      RenderFrameDevToolsAgentHost::GetFor(nav_request.frame_tree_node());
+  if (!agent_host)
+    return false;
+
+  for (auto* page : protocol::PageHandler::ForAgentHost(agent_host)) {
+    if (page->ShouldBypassCSP())
+      return true;
+  }
+  return false;
 }
 
 void WillBeginDownload(download::DownloadCreateInfo* info,
@@ -654,9 +669,10 @@ void OnNavigationRequestWillBeSent(
     agent_host->OnNavigationRequestWillBeSent(navigation_request);
   }
 
-  // We use CachedNavigationURLLoader for BFCache navigations and don't actually
-  // send a network request, so we don't report this request to DevTools.
-  if (navigation_request.IsServedFromBackForwardCache())
+  // We use CachedNavigationURLLoader for page activation (BFCache navigations
+  // and Prerender activations) and don't actually send a network request, so we
+  // don't report this request to DevTools.
+  if (navigation_request.IsPageActivation())
     return;
 
   // Make sure both back-ends yield the same timestamp.

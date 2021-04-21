@@ -333,6 +333,7 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
     in_process_view_id_mapping_ =
         std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
             root_view_id_, [in_process_ns_window_ contentView]);
+    [in_process_ns_window_ enforceNeverMadeVisible];
   }
 
   // Initialize |remote_ns_window_remote_| to point to a bridge created by
@@ -718,6 +719,17 @@ NSView* NativeWidgetMacNSWindowHost::GetGlobalCaptureView() {
   // TODO(ccameron): This will not work across process boundaries.
   return
       [remote_cocoa::CocoaMouseCapture::GetGlobalCaptureWindow() contentView];
+}
+
+void NativeWidgetMacNSWindowHost::AddRemoteWindowControlsOverlayView(
+    remote_cocoa::mojom::WindowControlsOverlayNSViewType overlay_type) {
+  GetNSWindowMojo()->CreateWindowControlsOverlayNSView(overlay_type);
+}
+
+void NativeWidgetMacNSWindowHost::UpdateRemoteWindowControlsOverlayView(
+    const gfx::Rect& bounds,
+    remote_cocoa::mojom::WindowControlsOverlayNSViewType overlay_type) {
+  GetNSWindowMojo()->UpdateWindowControlsOverlayNSView(bounds, overlay_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

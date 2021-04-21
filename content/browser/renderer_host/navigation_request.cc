@@ -792,8 +792,8 @@ network::mojom::IPAddressSpace CalculateIPAddressSpace(
 bool CoepBlockIframe(
     network::mojom::CrossOriginEmbedderPolicyValue parent_coep,
     network::mojom::CrossOriginEmbedderPolicyValue child_coep) {
-  return parent_coep != network::mojom::CrossOriginEmbedderPolicyValue::kNone &&
-         child_coep == network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  return network::CompatibleWithCrossOriginIsolated(parent_coep) &&
+         !network::CompatibleWithCrossOriginIsolated(child_coep);
 }
 
 }  // namespace
@@ -1171,6 +1171,7 @@ NavigationRequest::NavigationRequest(
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
+  DCHECK_EQ(common_params_->url, commit_params_->original_url);
   ScopedNavigationRequestCrashKeys crash_keys(this);
 
   // There should be no navigations to about:newtab, about:version or other
@@ -2908,11 +2909,6 @@ void NavigationRequest::OnResponseStarted(
 
   if (!browser_initiated_ && render_frame_host_ &&
       render_frame_host_ != frame_tree_node_->current_frame_host()) {
-    // Reset the source location information if the navigation will not commit
-    // in the current renderer process. This information originated in another
-    // process (the current one), it should not be transferred to the new one.
-    common_params_->source_location = network::mojom::SourceLocation::New();
-
     // Allow the embedder to cancel the cross-process commit if needed.
     // TODO(clamy): Rename ShouldTransferNavigation.
     if (!frame_tree_node_->navigator().GetDelegate()->ShouldTransferNavigation(
@@ -4182,10 +4178,10 @@ bool NavigationRequest::IsAllowedByCSPDirective(
   } else {
     url = common_params_->url;
   }
-  return context->IsAllowedByCsp(policies, directive, url,
-                                 has_followed_redirect, is_response_check,
-                                 common_params_->source_location, disposition,
-                                 begin_params_->is_form_submission);
+  return context->IsAllowedByCsp(
+      policies, directive, url, commit_params_->original_url,
+      has_followed_redirect, is_response_check, common_params_->source_location,
+      disposition, begin_params_->is_form_submission);
 }
 
 net::Error NavigationRequest::CheckCSPDirectives(
@@ -5197,6 +5193,11 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
     render_frame_host_->SetLifecycleStateToPendingCommit();
   }
 
+  // Reset the source location information, which is not needed anymore. This
+  // avoids leaking cross-origin data to another process in case the navigation
+  // doesn't commit in the same process as the document that initiated it.
+  common_params_->source_location = network::mojom::SourceLocation::New();
+
   SetState(READY_TO_COMMIT);
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
@@ -5988,8 +5989,7 @@ bool NavigationRequest::CoopCoepSanityCheck() {
                             .value;
   if (coop_value ==
           network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep &&
-      cross_origin_embedder_policy_.value !=
-          network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp) {
+      !CompatibleWithCrossOriginIsolated(cross_origin_embedder_policy_)) {
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
     return false;
@@ -6074,7 +6074,7 @@ void NavigationRequest::ComputePoliciesToCommit() {
   policy_container_navigation_bundle_->SetIPAddressSpace(
       CalculateIPAddressSpace(common_params_->url, response_head_.get()));
 
-  if (response_head_) {
+  if (response_head_ && !devtools_instrumentation::ShouldBypassCSP(*this)) {
     policy_container_navigation_bundle_->AddContentSecurityPolicies(
         mojo::Clone(response_head_->parsed_headers->content_security_policy));
   }

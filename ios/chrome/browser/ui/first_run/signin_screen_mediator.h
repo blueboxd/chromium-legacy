@@ -7,17 +7,31 @@
 
 #import <Foundation/Foundation.h>
 
+@class AuthenticationFlow;
 @class ChromeIdentity;
 @protocol SigninScreenConsumer;
+@protocol SigninScreenMediatorDelegate;
 
 // Mediator that handles the sign-in operation.
 @interface SigninScreenMediator : NSObject
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 // Consumer for this mediator.
 @property(nonatomic, weak) id<SigninScreenConsumer> consumer;
 
+// Delegate.
+@property(nonatomic, weak) id<SigninScreenMediatorDelegate> delegate;
+
 // The identity currently selected.
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
+
+// Whether an account has been added. Must be set externally.
+@property(nonatomic, assign) BOOL addedAccount;
+
+// Starts the sign in process, using |authenticationFlow|.
+- (void)startSignInWithAuthenticationFlow:
+    (AuthenticationFlow*)authenticationFlow;
 
 @end
 

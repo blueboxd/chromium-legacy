@@ -612,6 +612,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return FlipForWritingMode(VisualOverflowRect());
   }
+  // VisualOverflow has DCHECK for reading before it is computed. This function
+  // pretends there is no visual overflow when it is not computed.
+#if DCHECK_IS_ON()
+  LayoutRect VisualOverflowRectAllowingUnset() const;
+#else
+  ALWAYS_INLINE LayoutRect VisualOverflowRectAllowingUnset() const {
+    return VisualOverflowRect();
+  }
+#endif
   LayoutUnit LogicalLeftVisualOverflow() const {
     NOT_DESTROYED();
     return StyleRef().IsHorizontalWritingMode() ? VisualOverflowRect().X()
@@ -1602,6 +1611,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // for this object.
   PhysicalRect ClippingRect(const PhysicalOffset& location) const;
 
+  // Adjust the clip rectangle to encompass overflow-clip-margin, and remove
+  // clipping along any axis where we shouldn't clip.
+  void ApplyVisibleOverflowToClipRect(PhysicalRect& clip_rect) const;
+
   virtual void PaintBoxDecorationBackground(
       const PaintInfo&,
       const PhysicalOffset& paint_offset) const;
@@ -2183,8 +2196,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return overflow_ && overflow_->layout_overflow;
   }
+#if DCHECK_IS_ON()
+  void CheckIsVisualOverflowComputed() const;
+#else
+  ALWAYS_INLINE void CheckIsVisualOverflowComputed() const {}
+#endif
   inline bool VisualOverflowIsSet() const {
     NOT_DESTROYED();
+    CheckIsVisualOverflowComputed();
     return overflow_ && overflow_->visual_overflow;
   }
 

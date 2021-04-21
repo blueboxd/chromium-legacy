@@ -177,7 +177,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:0f913477afc80d5c4b6609834d3bef6b44910e67',
+  'luci_go': 'git_revision:e7e8e7aea55bc50729ec835604b2a00e6e668afe',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '04c82165b1c7bb1c4a15484aa423f6dbcf5b646f',
+  'skia_revision': 'c34dc525fc0983394e8220c3ba982782761b2eb9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '0a9df1ea3d036c455dce918d05b20895ebacbe17',
+  'v8_revision': '0855ff60c53b225310d26d43e4649844fa839e4c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '019e6b4ff3182b5feca902f6607bf623431e2339',
+  'catapult_revision': 'da84ecd4339f4849a960d1954303df7f53262bc0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '6c87c5baa8b8157fec79c5ba3948c2f8e593b8ed',
+  'devtools_frontend_revision': '54db86e6068d5770164dc222d326b51a3ac31c91',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -725,7 +725,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'Aq0Lv9CBJciSLgO3v0Gsdf_2p3CzBC6eS6GVba2FaTwC',
+          'version': '62L8Qq-ph8yigd2lXL0GeNQyj6bUYMohiPUhybSkpmkC',
       },
     ],
     'condition': 'checkout_android',
@@ -961,7 +961,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '07a683430c8b94b977334c0d8c3fe39dafdbbf76',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'bc1f5c75f1cb98c8920de93b775255780f3834f9',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1169,7 +1169,7 @@ deps = {
     Var('chromium_git') + '/chromium/llvm-project/compiler-rt/lib/fuzzer.git' + '@' +  Var('libfuzzer_revision'),
 
   'src/third_party/libaddressinput/src':
-    Var('chromium_git') + '/external/libaddressinput.git' + '@' + '8a44b7ea39e04948ea6eb250fcb925b25c999751',
+    Var('chromium_git') + '/external/libaddressinput.git' + '@' + 'a09973635582a05cea3c83b167700129544565d1',
 
   'src/third_party/libaom/source/libaom':
     Var('aomedia_git') + '/aom.git' + '@' +  '6c93db7ff63430d2e5dcdfc42e84e3a0514da608',
@@ -1333,7 +1333,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f54425d3ec7a916eed6ed9389c8efc1926d23f53',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '00e1a0b0133f4a2296a32749bb3a398e1960b5f6',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1411,7 +1411,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'HKF-hF6FPizUH_Jo7tPqqwdDtPttydKeE8FBJ6UGDykC'
+              'version': 'gbE647CJpzN2RcpB8uONfgPAwFeAb8XOBhQtalIbVFkC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1616,7 +1616,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'NKZuruAmfHYsvExEsZys6zfuoJasnS0F14j58rQ5y1AC',
+        'version': 'Ds00JhfWe32OQ8-Hqnrn7YapO52_BQ-QqDobfZUCjqwC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/environment.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/text_input_client.h"
@@ -24,6 +25,13 @@ bool IsEventFromVK(const ui::KeyEvent& event) {
   const auto* properties = event.properties();
   return properties &&
          properties->find(ui::kPropertyFromVK) != properties->end();
+}
+
+bool IsSameKeyEvent(const ui::KeyEvent& lhs, const ui::KeyEvent& rhs) {
+  // Note that we do not check timestamp here in order to support wayland's
+  // text_input::keysym, which does not have timestamp.
+  return lhs.type() == rhs.type() && lhs.code() == rhs.code() &&
+         lhs.flags() == rhs.flags();
 }
 
 }  // namespace
@@ -59,6 +67,40 @@ LinuxInputMethodContext* InputMethodAuraLinux::GetContextForTesting(
 ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
     ui::KeyEvent* event) {
   DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);
+  // If there's pending key event, i.e. a key event which is expected to
+  // trigger input method actions (like OnCommit, OnPreedit* invocation)
+  // and to be dispatched from there, but not yet, dispatch the pending event
+  // first.
+  // Practically, this happens with dead-keys. Dead keys are considered
+  // to be consumed by IME. Actually, it updates input method's internal
+  // state. However, it makes no input method actions, so the event won't be
+  // dispatched without this handling.
+  // Note that this is the earliest timing to find the pending event needs
+  // to be dispatched. It is because InputMethodAuraLinux cannot find whether
+  // input method actions will be followed or not on holding the event.
+  //
+  // There's exception in the case. Some input framework sends key events
+  // twice to fill the gap of synchronous API v.s. asynchronous operations.
+  // Specifically:
+  // - The first key event is passed to input method via |context_| below.
+  // - Inside the function, it triggers asynchronous input method operation.
+  //   However, the function needs to return whether the event is filtered
+  //   or not synchronously, it returns "filtered" regardless of the event
+  //   will be actually filtered or not.
+  // - On completion of the input method action, specifically if the input
+  //   method does not consume the event, the framework internally re-generates
+  //   the same key event, and post it back again to the application.
+  // This happens some common input method framework, such as iBus/fcitx and
+  // GTK-IMmodule. Also, wayland extension implemented by exosphere in
+  // ash-chrome for Lacros behaves in the same way from InputMethodAuraLinux's
+  // point of view.
+  // To avoid dispatching twice, do not dispatch it here. Following code
+  // will handle the second (i.e. fallback) key event, including event
+  // dispatching.
+  if (ime_filtered_key_event_.has_value() &&
+      !IsSameKeyEvent(*ime_filtered_key_event_, *event)) {
+    std::ignore = DispatchKeyEventPostIME(&*ime_filtered_key_event_);
+  }
   ime_filtered_key_event_.reset();
 
   // If no text input client, do nothing.
@@ -112,7 +154,17 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
   // consumed by IME and commit/preedit string update will happen
   // asynchronously. The remaining case is covered in OnCommit and
   // OnPreeditChanged/End.
-  if (filtered && !HasInputMethodResult() && !IsTextInputTypeNone()) {
+  // TODO(crbug.com/1199385): On Lacros CTRL+TAB events are sent twice if
+  // user types it on loading page, because the connected client is considered
+  // None type, and so the peek key event is not held here.
+  // To derisk the regression in other platform, and to prioritize the fix
+  // on Lacros, we conditionally do not check whether the connected client
+  // is None type for Lacros only. We should remove this soon.
+  if (filtered && !HasInputMethodResult()
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+      && !IsTextInputTypeNone()
+#endif
+  ) {
     ime_filtered_key_event_ = std::move(*event);
     return ui::EventDispatchDetails();
   }
@@ -376,8 +428,9 @@ void InputMethodAuraLinux::OnCommit(const std::u16string& text) {
   if (!is_sync_mode_ && !IsTextInputTypeNone()) {
     ui::KeyEvent event =
         ime_filtered_key_event_.has_value()
-            ? *ime_filtered_key_event_
+            ? std::move(*ime_filtered_key_event_)
             : ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
+    ime_filtered_key_event_.reset();
     ui::EventDispatchDetails details = DispatchImeFilteredKeyPressEvent(&event);
     if (details.target_destroyed || details.dispatcher_destroyed ||
         event.stopped_propagation()) {
@@ -443,8 +496,9 @@ void InputMethodAuraLinux::OnPreeditUpdate(
     return;
   ui::KeyEvent event =
       ime_filtered_key_event_.has_value()
-          ? *ime_filtered_key_event_
+          ? std::move(*ime_filtered_key_event_)
           : ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, 0);
+  ime_filtered_key_event_.reset();
   ui::EventDispatchDetails details = DispatchImeFilteredKeyPressEvent(&event);
   if (details.target_destroyed || details.dispatcher_destroyed ||
       event.stopped_propagation()) {

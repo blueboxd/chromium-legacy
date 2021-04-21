@@ -38,6 +38,7 @@
 - DRM保護
   - 10.7/10.8ではDRM保護されたメディアは利用できません
   - 10.9以上では[Widevineライブラリをインストール](https://ungoogled-software.github.io/ungoogled-chromium-wiki/faq#macos)する必要があります
+    - 10.9では[ダミーライブラリ](../..//files/6339324/dummylibs.zip)を`/usr/lib`にコピーする必要があります
 - WebAuthn/FIDO2
   - 10.7ではUSBキーの利用に[パッチを当てた `IOHIDFamily.kext`](../../../IOHIDFamily-368.21)が必要です
 

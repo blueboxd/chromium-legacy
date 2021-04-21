@@ -34,6 +34,7 @@ Basically equivalent to the [same version of original Chromium](https://chromest
 - DRM protected media
   - on 10.7/10.8, cannot use DRM protected media at all
   - on 10.9+, need to [install Widevine library](https://ungoogled-software.github.io/ungoogled-chromium-wiki/faq#macos) to use DRM
+    - on 10.9, need to install [dummy libraries](../..//files/6339324/dummylibs.zip) to `/usr/lib`
 - WebAuthn/FIDO2 (any USB devices?)
   - on 10.7, you need [patched `IOHIDFamily.kext`](../../../IOHIDFamily-368.21) to use USB devices
 

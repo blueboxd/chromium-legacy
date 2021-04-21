@@ -5,10 +5,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
@@ -2183,16 +2185,15 @@ class PDFExtensionClipboardTest : public PDFExtensionTest,
   // Runs `action` and checks the Linux selection clipboard contains `expected`.
   void DoActionAndCheckSelectionClipboard(base::OnceClosure action,
                                           const std::string& expected) {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-    DoActionAndCheckClipboard(std::move(action),
-                              ui::ClipboardBuffer::kSelection, expected);
-#else
-    // Even though there is no selection clipboard to check, `action` still
-    // needs to run.
-    std::move(action).Run();
-#endif
+    if (ui::Clipboard::IsSupportedClipboardBuffer(
+            ui::ClipboardBuffer::kSelection)) {
+      DoActionAndCheckClipboard(std::move(action),
+                                ui::ClipboardBuffer::kSelection, expected);
+    } else {
+      // Even though there is no selection clipboard to check, `action` still
+      // needs to run.
+      std::move(action).Run();
+    }
   }
 
   // Sends a copy command and checks the copy/paste clipboard.
@@ -2314,10 +2315,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
   SendCopyCommandAndCheckCopyPasteClipboard("HEL");
 }
 
-// Flaky on ChromeOS (https://crbug.com/1121446)
-// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
-// complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// Flaky on Linux (https://crbug.com/1121446)
+#if defined(OS_LINUX)
 #define MAYBE_CombinedShiftArrowPresses DISABLED_CombinedShiftArrowPresses
 #else
 #define MAYBE_CombinedShiftArrowPresses CombinedShiftArrowPresses
@@ -2997,38 +2996,45 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
   }
 
  private:
-  std::vector<std::string> CollectLines(ui::AXTreeUpdate ax_tree) {
+  std::vector<std::string> CollectLines(
+      const ui::AXTreeUpdate& ax_tree_update) {
     std::vector<std::string> lines;
+
+    ui::AXTree tree(ax_tree_update);
+    std::vector<ui::AXNode*> embedded_objs;
+    FindAXNodes(tree.root(), {ax::mojom::Role::kEmbeddedObject},
+                &embedded_objs);
+    // Can't use ASSERT_EQ because CollectLines doesn't return void.
+    CHECK_EQ(1U, embedded_objs.size());
+    ui::AXNode* pdf_doc_root = embedded_objs[0];
+
+    std::vector<ui::AXNode*> text_nodes;
+    FindAXNodes(pdf_doc_root,
+                {ax::mojom::Role::kStaticText, ax::mojom::Role::kInlineTextBox},
+                &text_nodes);
 
     int previous_node_id = 0;
     int previous_node_next_id = 0;
     std::string line;
-    bool found_embedded_object = false;
-    for (const auto& node : ax_tree.nodes) {
-      // Ignore everything before the embedded object (the root of the PDF).
-      if (node.role == ax::mojom::Role::kEmbeddedObject)
-        found_embedded_object = true;
-      if (!found_embedded_object)
-        continue;
-
+    for (ui::AXNode* node : text_nodes) {
       // StaticText begins a new paragraph.
-      if (node.role == ax::mojom::Role::kStaticText && !line.empty()) {
+      if (node->data().role == ax::mojom::Role::kStaticText && !line.empty()) {
         lines.push_back(line);
         lines.push_back("\u00b6");  // pilcrow/paragraph mark, Alt+0182
         line.clear();
       }
 
       // We collect all inline text boxes within the paragraph.
-      if (node.role != ax::mojom::Role::kInlineTextBox)
+      if (node->data().role != ax::mojom::Role::kInlineTextBox)
         continue;
 
       std::string name =
-          node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+          node->data().GetStringAttribute(ax::mojom::StringAttribute::kName);
       base::StringPiece trimmed_name =
           base::TrimString(name, "\r\n", base::TRIM_TRAILING);
-      int prev_id =
-          node.GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId);
-      if (previous_node_next_id == node.id) {
+      int prev_id = node->data().GetIntAttribute(
+          ax::mojom::IntAttribute::kPreviousOnLineId);
+      if (previous_node_next_id == node->id()) {
         // Previous node pointed to us, so we are part of the same line.
         EXPECT_EQ(previous_node_id, prev_id)
             << "Expect this node to point to previous node.";
@@ -3044,13 +3050,32 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
         line = trimmed_name.as_string();
       }
 
-      previous_node_id = node.id;
+      previous_node_id = node->id();
       previous_node_next_id =
-          node.GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
+          node->data().GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
     }
     if (!line.empty())
       lines.push_back(line);
+
+    // Extra newline to match current expectations. TODO: get rid of this
+    // and rebase the expectations files.
+    if (!lines.empty())
+      lines.push_back("\u00b6");  // pilcrow/paragraph mark, Alt+0182
+
     return lines;
+  }
+
+  // Searches recursively through |current| and all descendants and
+  // populates a vector with all nodes that match any of the roles
+  // in |roles|.
+  void FindAXNodes(ui::AXNode* current,
+                   const base::flat_set<ax::mojom::Role> roles,
+                   std::vector<ui::AXNode*>* results) {
+    if (base::Contains(roles, current->data().role))
+      results->push_back(current);
+
+    for (ui::AXNode* child : current->children())
+      FindAXNodes(child, roles, results);
   }
 };
 

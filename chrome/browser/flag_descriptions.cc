@@ -1669,21 +1669,10 @@ const char kOmniboxKeywordSpaceTriggeringDescription[] =
     "Controls whether keyword mode can be triggered by space, double space, or "
     "neither.";
 
-const char kOmniboxLocalZeroSuggestFrecencyRankingName[] =
-    "Frecency ranking for local history zero-prefix suggestions";
-const char kOmniboxLocalZeroSuggestFrecencyRankingDescription[] =
-    "Enable frecency ranking for local history zero-prefix suggestions.";
-
 const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frquently visited pages from history as a single row "
     "with a carousel instead of one URL per line.";
-
-const char kOmniboxNativeVoiceSuggestProviderName[] =
-    "Native Voice Suggest Provider";
-const char kOmniboxNativeVoiceSuggestProviderDescription[] =
-    "When selected, collects voice suggestions with the help of native (c++) "
-    "voice suggestions provider.";
 
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[] =
     "Omnibox Trending Zero Prefix Suggestions";
@@ -2303,13 +2292,6 @@ const char kWebOTPCrossDeviceName[] = "WebOTP Cross Device";
 const char kWebOTPCrossDeviceDescription[] =
     "Enable the WebOTP API to work across devices";
 
-const char kSpeculativeServiceWorkerStartOnQueryInputName[] =
-    "Enable speculative start of a service worker when a search is predicted.";
-const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
-    "If enabled, when the user enters text in the omnibox that looks like a "
-    "a query, any service worker associated with the search engine the query "
-    "will be sent to is started early.";
-
 const char kSplitCacheByNetworkIsolationKeyName[] = "HTTP Cache Partitioning";
 const char kSplitCacheByNetworkIsolationKeyDescription[] =
     "Partitions the HTTP Cache by (top-level site, current-frame site) to "
@@ -2844,6 +2826,11 @@ const char kChimeAlwaysShowNotificationName[] =
 const char kChimeAndroidSdkDescription[] =
     "Enable Chime SDK to receive push notification.";
 const char kChimeAndroidSdkName[] = "Use Chime SDK";
+
+const char kContinuousFeedsName[] = "Continuous Feeds Navigation";
+const char kContinuousFeedsDescription[] =
+    "Enables caching Discover article metadata to enable more seamless "
+    "navigation between articles.";
 
 const char kContinuousSearchName[] = "Continuous Search Navigation";
 const char kContinuousSearchDescription[] =

@@ -104,6 +104,9 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   // Called when starting 3-seconds count down before recording video.
   void StartCountDown(base::OnceClosure countdown_finished_callback);
 
+  // Returns true if we are currently in video recording countdown animation.
+  bool IsInCountDownAnimation() const;
+
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -124,6 +127,12 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
+
+  // Updates the current cursor depending on current |location_in_screen| and
+  // current capture type and source. |is_touch| is used when calculating fine
+  // tune position in region capture mode. We'll have a larger hit test region
+  // for the touch events than the mouse events.
+  void UpdateCursor(const gfx::Point& location_in_screen, bool is_touch);
 
  private:
   friend class CaptureModeSessionFocusCycler;
@@ -231,15 +240,6 @@ class ASH_EXPORT CaptureModeSession : public ui::LayerOwner,
 
   // Updates |root_window_dimmers_| to dim the correct root windows.
   void UpdateRootWindowDimmers();
-
-  // Returns true if we are currently in video recording countdown animation.
-  bool IsInCountDownAnimation() const;
-
-  // Updates the current cursor depending on current |location_in_screen| and
-  // current capture type and source. |is_touch| is used when calculating fine
-  // tune position in region capture mode. We'll have a larger hit test region
-  // for the touch events than the mouse events.
-  void UpdateCursor(const gfx::Point& location_in_screen, bool is_touch);
 
   // Returns true if we're using custom image capture icon when |type| is
   // kImage or using custom video capture icon when |type| is kVideo.

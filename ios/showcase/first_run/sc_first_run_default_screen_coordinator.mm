@@ -35,6 +35,8 @@
                                      animated:YES];
 }
 
+#pragma mark - FirstRunScreenViewControllerDelegate
+
 - (void)didTapPrimaryActionButton {
   UIAlertController* alert =
       [UIAlertController alertControllerWithTitle:@"Primary Button Tapped"

@@ -8815,11 +8815,6 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Latched"/>
 </enum>
 
-<enum name="BooleanLegacySupervisedUserHidden">
-  <int value="0" label="Displayed on login screen"/>
-  <int value="1" label="Hidden on login screen"/>
-</enum>
-
 <enum name="BooleanLoadCollided">
   <int value="0" label="Load did not collide"/>
   <int value="1" label="Load collided"/>
@@ -27480,8 +27475,8 @@ Called by update_extension_permission.py.-->
   <int value="21" label="kBrailleDisplayPrivate"/>
   <int value="22" label="kBrowser"/>
   <int value="23" label="kBrowsingData"/>
-  <int value="24" label="kCast"/>
-  <int value="25" label="kCastStreaming"/>
+  <int value="24" label="kDeleted_Cast"/>
+  <int value="25" label="kDeleted_CastStreaming"/>
   <int value="26" label="kChromeosInfoPrivate"/>
   <int value="27" label="kClipboardRead"/>
   <int value="28" label="kClipboardWrite"/>
@@ -30058,7 +30053,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="1866" label="VRPoseAngularAcceleration"/>
   <int value="1867" label="CSSOverflowPaged"/>
   <int value="1868" label="ChildSrcAllowedWorkerThatScriptSrcBlocked"/>
-  <int value="1869" label="HTMLTableElementPresentationAttributeBackground"/>
+  <int value="1869"
+      label="OBSOLETE_HTMLTableElementPresentationAttributeBackground"/>
   <int value="1870" label="V8Navigator_GetInstalledRelatedApps_Method"/>
   <int value="1871" label="NamedAccessOnWindow_ChildBrowsingContext"/>
   <int value="1872"
@@ -43022,6 +43018,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="10" label="No text"/>
 </enum>
 
+<enum name="LegacySupervisedUserStatus">
+  <int value="0" label="Displayed on login screen"/>
+  <int value="1" label="Hidden on login screen"/>
+  <int value="2" label="Attempted cryptohome deletion"/>
+</enum>
+
 <enum name="LensChipEvent">
   <int value="0" label="Shown"/>
   <int value="1" label="Clicked"/>
@@ -45774,6 +45776,7 @@ from previous Chrome versions.
   <int value="-614223913"
       label="ClickToCallContextMenuForSelectedText:enabled"/>
   <int value="-613596048" label="new-canvas-2d-api"/>
+  <int value="-613146027" label="ContinuousFeeds:disabled"/>
   <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
@@ -47821,6 +47824,7 @@ from previous Chrome versions.
   <int value="1253001092" label="FeedShare:enabled"/>
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
   <int value="1254472299" label="PrivacySettingsRedesign:disabled"/>
+  <int value="1254952449" label="ContinuousFeeds:enabled"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257533754" label="UseDownloadOfflineContentProvider:disabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
@@ -62468,6 +62472,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="kBackground"/>
   <int value="7" label="kCharging"/>
   <int value="8" label="kNopAnimation"/>
+  <int value="9" label="kVideoPlayback"/>
 </enum>
 
 <enum name="PowerSupplyType">

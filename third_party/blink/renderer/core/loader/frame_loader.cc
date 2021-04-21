@@ -658,10 +658,12 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
 
   // Perform same document navigation.
   if (same_document_navigation) {
+    DCHECK(origin_window);
     document_loader_->CommitSameDocumentNavigation(
         url, frame_load_type, nullptr, request.ClientRedirect(),
-        resource_request.HasUserGesture(), origin_window,
-        request.GetTriggeringEventInfo(), nullptr /* extra_data */);
+        resource_request.HasUserGesture(), origin_window->GetSecurityOrigin(),
+        /*is_content_initiated=*/true, request.GetTriggeringEventInfo(),
+        nullptr /* extra_data */);
     return;
   }
 
@@ -1677,7 +1679,7 @@ void FrameLoader::ReportLegacyTLSVersion(const KURL& url,
       console_message));
 }
 
-void FrameLoader::WriteIntoTracedValue(perfetto::TracedValue context) const {
+void FrameLoader::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   {
     auto frame_dict = dict.AddDictionary("frame");

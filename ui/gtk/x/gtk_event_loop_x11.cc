@@ -4,7 +4,6 @@
 
 #include "ui/gtk/x/gtk_event_loop_x11.h"
 
-#include <gtk/gtk.h>
 #include <xcb/xcb.h>
 #include <xcb/xproto.h>
 
@@ -12,7 +11,7 @@
 #include "ui/gfx/x/event.h"
 #include "ui/gtk/gtk_compat.h"
 
-namespace ui {
+namespace gtk {
 
 namespace {
 
@@ -24,9 +23,9 @@ x11::KeyButMask BuildXkbStateFromGdkEvent(unsigned int state,
 x11::KeyEvent ConvertGdkEventToKeyEvent(GdkEvent* gdk_event) {
   if (!gtk::GtkCheckVersion(4)) {
     auto* key = reinterpret_cast<GdkEventKey*>(gdk_event);
-    DCHECK(key->type == GDK_KEY_PRESS || key->type == GDK_KEY_RELEASE);
+    DCHECK(key->type == GdkKeyPress() || key->type == GdkKeyRelease());
     return {
-        .opcode = key->type == GDK_KEY_PRESS ? x11::KeyEvent::Press
+        .opcode = key->type == GdkKeyPress() ? x11::KeyEvent::Press
                                              : x11::KeyEvent::Release,
         .send_event = key->send_event,
         .detail = static_cast<x11::KeyCode>(key->hardware_keycode),
@@ -58,7 +57,7 @@ x11::KeyEvent ConvertGdkEventToKeyEvent(GdkEvent* gdk_event) {
   }
 
   return {
-      .opcode = gtk::GdkEventGetEventType(gdk_event) == GDK_KEY_PRESS
+      .opcode = gtk::GdkEventGetEventType(gdk_event) == GdkKeyPress()
                     ? x11::KeyEvent::Press
                     : x11::KeyEvent::Release,
       .detail = static_cast<x11::KeyCode>(keymap_key.keycode),
@@ -90,13 +89,8 @@ void ProcessGdkEvent(GdkEvent* gdk_event) {
   auto event_type = gtk::GtkCheckVersion(4)
                         ? gtk::GdkEventGetEventType(gdk_event)
                         : *reinterpret_cast<GdkEventType*>(gdk_event);
-  switch (event_type) {
-    case GDK_KEY_PRESS:
-    case GDK_KEY_RELEASE:
-      break;
-    default:
-      return;
-  }
+  if (event_type != GdkKeyPress() && event_type != GdkKeyRelease())
+    return;
 
   // We want to process the gtk event; mapped to an X11 event immediately
   // otherwise if we put it back on the queue we may get items out of order.
@@ -138,4 +132,4 @@ void GtkEventLoopX11::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
   gtk_main_do_event(gdk_event);
 }
 
-}  // namespace ui
+}  // namespace gtk

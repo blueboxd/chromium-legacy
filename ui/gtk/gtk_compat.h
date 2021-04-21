@@ -28,6 +28,12 @@ extern "C" {
 #include "ui/gtk/gtk.sigs"
 }
 
+#define GDK_KEY_PRESS Do_not_use_GDK_KEY_PRESS_because_it_is_not_ABI_compatible
+#define GDK_KEY_RELEASE \
+  Do_not_use_GDK_KEY_RELEASE_because_it_is_not_ABI_compatible
+
+using SkColor = uint32_t;
+
 namespace gtk {
 
 // Loads libgtk and related libraries and returns true on success.
@@ -51,7 +57,14 @@ gfx::Insets GtkStyleContextGetBorder(GtkStyleContext* context);
 
 gfx::Insets GtkStyleContextGetMargin(GtkStyleContext* context);
 
-GdkRGBA GtkStyleContextGetColor(GtkStyleContext* context);
+SkColor GtkStyleContextGetColor(GtkStyleContext* context);
+
+// Only available in Gtk3.
+SkColor GtkStyleContextGetBackgroundColor(GtkStyleContext* context);
+
+// Only available in Gtk3.
+SkColor GtkStyleContextLookupColor(GtkStyleContext* context,
+                                   const gchar* color_name);
 
 bool GtkImContextFilterKeypress(GtkIMContext* context, GdkEventKey* event);
 
@@ -122,6 +135,12 @@ GdkEventType GdkEventGetEventType(GdkEvent* event);
 
 guint32 GdkEventGetTime(GdkEvent* event);
 
+// Some enum values have changed between versions.
+
+GdkEventType GdkKeyPress();
+
+GdkEventType GdkKeyRelease();
+
 }  // namespace gtk
 
-#endif
+#endif  // UI_GTK_GTK_COMPAT_H_

@@ -118,14 +118,12 @@ StyleEngine::StyleEngine(Document& document)
       resolver_(MakeGarbageCollected<StyleResolver>(document)),
       owner_color_scheme_(mojom::blink::ColorScheme::kLight) {
   if (document.GetFrame()) {
+    global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
     font_selector_ = CreateCSSFontSelectorFor(document);
     font_selector_->RegisterForInvalidationCallbacks(this);
     if (const auto* owner = document.GetFrame()->Owner())
       owner_color_scheme_ = owner->GetColorScheme();
   }
-  // TODO(crbug.com/1198601) This should only be needed for documents
-  // with a frame, but there are currently issues with that.
-  global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   if (document.IsInMainFrame())
     viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
   if (auto* settings = GetDocument().GetSettings()) {
@@ -1989,6 +1987,13 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
     RebuildLayoutTree();
   }
 
+  if (IsA<HTMLHtmlElement>(container)) {
+    // If the container is the HTML root element, the body styles may have
+    // changed as a result of the new container query evaluation and if
+    // properties propagated from body changed, we need to update the viewport
+    // styles.
+    GetStyleResolver().PropagateStyleToViewport();
+  }
   GetDocument().GetLayoutView()->UpdateMarkersAndCountersAfterStyleChange();
 }
 
@@ -2098,6 +2103,7 @@ void StyleEngine::UpdateStyleAndLayoutTree() {
   }
   ClearWhitespaceReattachSet();
   UpdateColorSchemeBackground();
+  GetStyleResolver().PropagateStyleToViewport();
 }
 
 void StyleEngine::ViewportDefiningElementDidChange() {

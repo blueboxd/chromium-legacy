@@ -742,21 +742,30 @@ base::Optional<LogicalSize> ComputeNormalizedNaturalSize(
     const NGBlockNode& node,
     const NGBoxStrut& border_padding,
     const LogicalSize& aspect_ratio) {
+  // Returns the default natural size (if we have no aspect-ratio).
+  auto NaturalSize = [&]() -> LogicalSize {
+    DCHECK(aspect_ratio.IsEmpty());
+    const auto& style = node.Style();
+    PhysicalSize natural_size(LayoutUnit(300), LayoutUnit(150));
+    natural_size.Scale(style.EffectiveZoom());
+    return natural_size.ConvertToLogical(style.GetWritingMode());
+  };
+
   base::Optional<LayoutUnit> intrinsic_inline;
   base::Optional<LayoutUnit> intrinsic_block;
   node.IntrinsicSize(&intrinsic_inline, &intrinsic_block);
 
   // Add the border-padding. If we *don't* have an aspect-ratio use the default
-  // replaced size (300x150).
+  // natural size (300x150).
   if (intrinsic_inline)
     intrinsic_inline = *intrinsic_inline + border_padding.InlineSum();
   else if (aspect_ratio.IsEmpty())
-    intrinsic_inline = LayoutUnit(300) + border_padding.InlineSum();
+    intrinsic_inline = NaturalSize().inline_size + border_padding.InlineSum();
 
   if (intrinsic_block)
     intrinsic_block = *intrinsic_block + border_padding.BlockSum();
   else if (aspect_ratio.IsEmpty())
-    intrinsic_block = LayoutUnit(150) + border_padding.BlockSum();
+    intrinsic_block = NaturalSize().block_size + border_padding.BlockSum();
 
   // If we have one natural size reflect via. the aspect-ratio.
   if (!intrinsic_inline && intrinsic_block) {
@@ -790,12 +799,26 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
   const NGBoxStrut border_padding =
       ComputeBorders(space, node) + ComputePadding(space, style);
 
+  // Replaced elements in quirks-mode resolve their min/max block-sizes against
+  // a different size than the main size. See:
+  //  - https://www.w3.org/TR/CSS21/visudet.html#min-max-heights
+  //  - https://bugs.chromium.org/p/chromium/issues/detail?id=385877
+  // For the history on this behaviour. Fortunately if this is the case we can
+  // just use the given available size to resolve these sizes against.
+  LayoutUnit percentage_resolution_size = space.PercentageResolutionBlockSize();
+  if (node.GetDocument().InQuirksMode())
+    percentage_resolution_size = space.AvailableSize().block_size;
+
   const Length& block_length = style.LogicalHeight();
   const MinMaxSizes block_min_max_sizes = {
       ResolveMinBlockLength(space, style, border_padding,
-                            style.LogicalMinHeight()),
+                            style.LogicalMinHeight(),
+                            /* available_block_size_adjustment */ LayoutUnit(),
+                            &percentage_resolution_size),
       ResolveMaxBlockLength(space, style, border_padding,
-                            style.LogicalMaxHeight())};
+                            style.LogicalMaxHeight(),
+                            /* available_block_size_adjustment */ LayoutUnit(),
+                            &percentage_resolution_size)};
   base::Optional<LayoutUnit> replaced_block;
   if (space.IsFixedBlockSize()) {
     replaced_block = space.AvailableSize().block_size;
@@ -811,13 +834,12 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
       DCHECK(space.AvailableSize().block_size != kIndefiniteSize);
       block_length_to_resolve = Length::FillAvailable();
     }
-    replaced_block = ResolveMainBlockLength(space, style, border_padding,
-                                            block_length_to_resolve,
-                                            space.AvailableSize().block_size);
 
-    if (*replaced_block == kIndefiniteSize) {
-      replaced_block.reset();
-    } else {
+    if (!BlockLengthUnresolvable(space, block_length_to_resolve)) {
+      replaced_block = ResolveMainBlockLength(
+          space, style, border_padding, block_length_to_resolve,
+          /* intrinsic_size */ kIndefiniteSize);
+      DCHECK_NE(*replaced_block, kIndefiniteSize);
       replaced_block =
           block_min_max_sizes.ClampSizeToMinAndMax(*replaced_block);
     }
@@ -888,12 +910,15 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
       DCHECK(space.AvailableSize().inline_size != kIndefiniteSize);
       inline_length_to_resolve = Length::FillAvailable();
     }
-    replaced_inline = ResolveMainInlineLength(
-        space, style, border_padding, MinMaxSizesFunc, inline_length_to_resolve,
-        available_inline_size_adjustment);
-    DCHECK(replaced_inline != kIndefiniteSize);
-    replaced_inline =
-        inline_min_max_sizes.ClampSizeToMinAndMax(*replaced_inline);
+
+    if (!InlineLengthUnresolvable(space, inline_length_to_resolve)) {
+      replaced_inline = ResolveMainInlineLength(
+          space, style, border_padding, MinMaxSizesFunc,
+          inline_length_to_resolve, available_inline_size_adjustment);
+      DCHECK_NE(*replaced_inline, kIndefiniteSize);
+      replaced_inline =
+          inline_min_max_sizes.ClampSizeToMinAndMax(*replaced_inline);
+    }
   }
 
   if (replaced_inline && replaced_block)

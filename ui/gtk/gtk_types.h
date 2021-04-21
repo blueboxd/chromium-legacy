@@ -10,6 +10,9 @@
 
 // This file provides types that are only available in specific versions of GTK.
 
+// This struct uses doubles in Gtk3, but floats in Gtk4.
+#define GdkRGBA Do_not_use_GdkRGBA_because_it_is_not_ABI_compatible
+
 extern "C" {
 #if GTK_MAJOR_VERSION == 3
 using GskRenderNodeType = enum {
@@ -54,7 +57,7 @@ using GdkSurface = struct _GdkSurface;
 using GdkToplevel = struct _GdkToplevel;
 
 constexpr GdkMemoryFormat GDK_MEMORY_B8G8R8A8 = static_cast<GdkMemoryFormat>(3);
-#else
+#elif GTK_MAJOR_VERSION == 4
 enum GtkWidgetHelpType : int;
 enum GtkWindowType : int;
 
@@ -94,9 +97,9 @@ constexpr int GTK_ICON_LOOKUP_USE_BUILTIN = 1 << 2;
 constexpr int GTK_ICON_LOOKUP_GENERIC_FALLBACK = 1 << 3;
 constexpr int GTK_ICON_LOOKUP_FORCE_SIZE = 1 << 4;
 
-constexpr const char GTK_STYLE_PROPERTY_BACKGROUND_IMAGE[] = "background-image";
-
 constexpr auto GTK_WINDOW_TOPLEVEL = static_cast<GtkWindowType>(0);
+#else
+#error "Unsupported GTK version"
 #endif
 }
 

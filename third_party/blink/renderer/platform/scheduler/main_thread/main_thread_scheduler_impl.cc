@@ -2079,7 +2079,7 @@ void MainThreadSchedulerImpl::CreateTraceEventObjectSnapshot() const {
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
       "MainThreadScheduler", this, [&](perfetto::TracedValue context) {
         base::AutoLock lock(any_thread_lock_);
-        WriteIntoTracedValueLocked(std::move(context), helper_.NowTicks());
+        WriteIntoTraceLocked(std::move(context), helper_.NowTicks());
       });
 }
 
@@ -2087,11 +2087,11 @@ void MainThreadSchedulerImpl::CreateTraceEventObjectSnapshotLocked() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
       "MainThreadScheduler", this, [&](perfetto::TracedValue context) {
-        WriteIntoTracedValueLocked(std::move(context), helper_.NowTicks());
+        WriteIntoTraceLocked(std::move(context), helper_.NowTicks());
       });
 }
 
-void MainThreadSchedulerImpl::WriteIntoTracedValueLocked(
+void MainThreadSchedulerImpl::WriteIntoTraceLocked(
     perfetto::TracedValue context,
     base::TimeTicks optional_now) const {
   helper_.CheckOnValidThread();
@@ -2169,8 +2169,7 @@ void MainThreadSchedulerImpl::WriteIntoTracedValueLocked(
   dict.Add("render_widget_scheduler_signals", render_widget_scheduler_signals_);
 
   dict.Add("task_queue_throttler", [&](perfetto::TracedValue context) {
-    task_queue_throttler_->WriteIntoTracedValue(std::move(context),
-                                                optional_now);
+    task_queue_throttler_->WriteIntoTrace(std::move(context), optional_now);
   });
 }
 
@@ -2193,7 +2192,7 @@ MainThreadSchedulerImpl::Policy::GetTimeDomainType() const {
   return TimeDomainType::kReal;
 }
 
-void MainThreadSchedulerImpl::Policy::WriteIntoTracedValue(
+void MainThreadSchedulerImpl::Policy::WriteIntoTrace(
     perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("rail_mode", RAILModeToString(rail_mode()));
@@ -2443,14 +2442,6 @@ MainThreadSchedulerImpl::V8TaskRunner() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::CompositorTaskRunner() {
-  if (scheduling_settings()
-          .mbi_compositor_task_runner_per_agent_scheduling_group) {
-    NOTREACHED() << "When MbiPerAGSCompositorTaskRunner is enabled, "
-                    "MainThreadSchedulerImpl::CompositorTaskRunner() shouldn't "
-                    "be used. We are planning to remove "
-                    "MainThreadSchedulerImpl::CompositorTaskRunner() in the "
-                    "near future.";
-  }
   return compositor_task_runner_;
 }
 

@@ -347,6 +347,7 @@ html element a
     property port
     property protocol
     property referrerPolicy
+    property registerAttributionSource
     property rel
     property relList
     property reportingOrigin
@@ -904,6 +905,7 @@ html element param
 html element picture
 html element plaintext
 html element popup
+    property anchor
     property hide
     property initiallyOpen
     property open

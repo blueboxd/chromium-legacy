@@ -2761,9 +2761,9 @@ bool LocalFrameView::RunCompositingInputsLifecyclePhase(
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
 
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kCompositingInputs);
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
-                             LocalFrameUkmAggregator::kCompositingInputs);
     layout_view->Compositor()->UpdateInputsIfNeededRecursive(target_state);
   } else {
     // TODO(pdr): This descendant dependent treewalk should be integrated into
@@ -2865,7 +2865,7 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
                              LocalFrameUkmAggregator::kPrePaint);
 
     GetPage()->GetLinkHighlight().UpdateBeforePrePaint();
-    MakeGarbageCollected<PrePaintTreeWalk>()->WalkTree(*this);
+    PrePaintTreeWalk().WalkTree(*this);
     GetPage()->GetLinkHighlight().UpdateAfterPrePaint();
   }
 

@@ -4050,7 +4050,7 @@ void RenderFrameHostImpl::ReportInspectorIssue(
       this, std::move(info));
 }
 
-void RenderFrameHostImpl::WriteIntoTracedValue(perfetto::TracedValue context) {
+void RenderFrameHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("process", GetProcess());
   dict.Add("routing_id", GetRoutingID());
@@ -8148,14 +8148,6 @@ void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
 void RenderFrameHostImpl::ActivateForPrerendering() {
   DCHECK(blink::features::IsPrerender2Enabled());
 
-  // RenderFrameHostManager will swap the RenderFrameHostImpl and set the new
-  // one to kActive for the MPArch case.
-  if (blink::features::IsPrerenderWebContentsEnabled()) {
-    // Update the |lifecycle_state_| to kActive on activation.
-    DCHECK_EQ(lifecycle_state(), LifecycleStateImpl::kPrerendering);
-    SetLifecycleState(LifecycleStateImpl::kActive);
-  }
-
   // TODO(https://crbug.com/1186796): Loosen the policies of the mojo capability
   // control during dispatching the prerenderingchange event in the Blink.
 
@@ -9268,8 +9260,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // TODO(arthursonzogni): Updating this flag for same-document, bfcache, or
   // prerender navigation doesn't seem right. This should likely be executed in
   // DidCommitNewDocument().
-  if (IsBackForwardCacheEnabled() ||
-      blink::features::IsPrerenderMPArchEnabled()) {
+  if (IsBackForwardCacheEnabled() || blink::features::IsPrerender2Enabled()) {
     // Store the Commit params so they can be reused if the page is ever
     // restored from the BackForwardCache.
     last_commit_params_ = std::move(params);
@@ -9528,6 +9519,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     blink::mojom::PolicyContainerPtr policy_container,
     const base::UnguessableToken& devtools_navigation_token) {
   DCHECK_EQ(net::OK, navigation_request->GetNetErrorCode());
+  IncreaseCommitNavigationCounter();
   navigation_client->CommitNavigation(
       std::move(common_params), std::move(commit_params),
       std::move(response_head), std::move(response_body),
@@ -9554,6 +9546,7 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
   DCHECK(navigation_client && navigation_request);
   DCHECK_NE(GURL(), common_params->url);
   DCHECK_NE(net::OK, error_code);
+  IncreaseCommitNavigationCounter();
   navigation_client->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
       has_stale_copy_in_cache, error_code, extended_error_code,
@@ -10980,6 +10973,13 @@ void RenderFrameHostImpl::OnDidDisplayContentWithCertificateErrors() {
       "content",
       "RenderFrameHostImpl::OnDidDisplayContentWithCertificateErrors");
   frame_tree_->controller().ssl_manager()->DidDisplayContentWithCertErrors();
+}
+
+void RenderFrameHostImpl::IncreaseCommitNavigationCounter() {
+  if (commit_navigation_sent_counter_ < std::numeric_limits<int>::max())
+    ++commit_navigation_sent_counter_;
+  else
+    commit_navigation_sent_counter_ = 0;
 }
 
 std::ostream& operator<<(std::ostream& o,

@@ -312,6 +312,7 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION =
             "ContextualSearchThinWebViewImplementation";
     public static final String CONTEXTUAL_SEARCH_TRANSLATIONS = "ContextualSearchTranslations";
+    public static final String CONTINUOUS_FEEDS = "ContinuousFeeds";
     public static final String CONTINUOUS_SEARCH = "ContinuousSearch";
     public static final String COOKIES_WITHOUT_SAME_SITE_MUST_BE_SECURE =
             "CookiesWithoutSameSiteMustBeSecure";
@@ -395,8 +396,6 @@ public abstract class ChromeFeatureList {
             "OmniboxEnableClipboardProviderImageSuggestions";
     public static final String OMNIBOX_HIDE_VISITS_FROM_CCT = "OmniboxHideVisitsFromCct";
     public static final String OMNIBOX_MOST_VISITED_TILES = "OmniboxMostVisitedTiles";
-    public static final String OMNIBOX_NATIVE_VOICE_SUGGEST_PROVIDER =
-            "OmniboxNativeVoiceSuggestProvider";
     public static final String OMNIBOX_SEARCH_READY_INCOGNITO = "OmniboxSearchReadyIncognito";
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";

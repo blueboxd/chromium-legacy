@@ -4,8 +4,6 @@
 
 #include "ui/gtk/gtk_util.h"
 
-#include <gdk/gdk.h>
-#include <gtk/gtk.h>
 #include <locale.h>
 #include <stddef.h>
 
@@ -29,7 +27,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gtk/gtk_compat.h"
 #include "ui/gtk/gtk_ui.h"
-#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/gtk/gtk_ui_platform.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -183,7 +181,7 @@ void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
 
   gtk_widget_realize(dialog);
   gfx::AcceleratedWidget parent_id = parent->GetHost()->GetAcceleratedWidget();
-  GtkUi::GetDelegate()->SetGtkWidgetTransientFor(dialog, parent_id);
+  GtkUi::GetPlatform()->SetGtkWidgetTransientFor(dialog, parent_id);
 
   // We also set the |parent| as a property of |dialog|, so that we can unlink
   // the two later.
@@ -197,7 +195,7 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog) {
 
 void ClearAuraTransientParent(GtkWidget* dialog, aura::Window* parent) {
   g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, nullptr);
-  GtkUi::GetDelegate()->ClearTransientFor(
+  GtkUi::GetPlatform()->ClearTransientFor(
       parent->GetHost()->GetAcceleratedWidget());
 }
 
@@ -338,11 +336,6 @@ GtkStateFlags StateToStateFlags(ui::NativeTheme::State state) {
   }
 }
 
-SkColor GdkRgbaToSkColor(const GdkRGBA& color) {
-  return SkColorSetARGB(color.alpha * 255, color.red * 255, color.green * 255,
-                        color.blue * 255);
-}
-
 NO_SANITIZE("cfi-icall")
 GtkCssContext AppendCssNodeToStyleContext(GtkCssContext context,
                                           const std::string& css_node) {
@@ -458,10 +451,6 @@ GtkCssContext GetStyleContextFromCss(const std::string& css_selector) {
   return context;
 }
 
-SkColor GetFgColorFromStyleContext(GtkStyleContext* context) {
-  return GdkRgbaToSkColor(GtkStyleContextGetColor(context));
-}
-
 SkColor GetBgColorFromStyleContext(GtkCssContext context) {
   // Backgrounds are more general than solid colors (eg. gradients),
   // but chromium requires us to boil this down to one color.  We
@@ -482,7 +471,7 @@ SkColor GetBgColorFromStyleContext(GtkCssContext context) {
 }
 
 SkColor GetFgColor(const std::string& css_selector) {
-  return GetFgColorFromStyleContext(GetStyleContextFromCss(css_selector));
+  return GtkStyleContextGetColor(GetStyleContextFromCss(css_selector));
 }
 
 ScopedCssProvider GetCssProvider(const std::string& css) {
@@ -535,12 +524,7 @@ SkColor GetSelectionBgColor(const std::string& css_selector) {
   DCHECK(!GtkCheckVersion(4));
   // This is verbatim how Gtk gets the selection color on versions
   // before 3.20.
-  GdkRGBA selection_color;
-  G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
-  gtk_style_context_get_background_color(
-      context, gtk_style_context_get_state(context), &selection_color);
-  G_GNUC_END_IGNORE_DEPRECATIONS;
-  return GdkRgbaToSkColor(selection_color);
+  return GtkStyleContextGetBackgroundColor(context);
 }
 
 bool ContextHasClass(GtkCssContext context, const std::string& style_class) {
@@ -625,7 +609,7 @@ GdkModifierType GetGdkKeyEventState(const ui::KeyEvent& key_event) {
     // In such a case there is no event being dispatching in the display
     // backend.
     state = static_cast<GdkModifierType>(
-        state | ui::GtkUiDelegate::instance()->GetGdkKeyState());
+        state | GtkUi::GetPlatform()->GetGdkKeyState());
   }
 
   return state;
@@ -634,13 +618,13 @@ GdkModifierType GetGdkKeyEventState(const ui::KeyEvent& key_event) {
 GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
   DCHECK(!GtkCheckVersion(4));
   GdkEventType event_type =
-      key_event.type() == ui::ET_KEY_PRESSED ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+      key_event.type() == ui::ET_KEY_PRESSED ? GdkKeyPress() : GdkKeyRelease();
   auto event_time = key_event.time_stamp() - base::TimeTicks();
   int hw_code = GetKeyEventProperty(key_event, ui::kPropertyKeyboardHwKeyCode);
   int group = GetKeyEventProperty(key_event, ui::kPropertyKeyboardGroup);
 
   // Get GdkKeymap
-  GdkKeymap* keymap = GtkUi::GetDelegate()->GetGdkKeymap();
+  GdkKeymap* keymap = GtkUi::GetPlatform()->GetGdkKeymap();
 
   // Get keyval and state
   GdkModifierType state = GetGdkKeyEventState(key_event);
@@ -979,12 +963,10 @@ base::Optional<SkColor> SkColorFromColorId(ui::ColorId color_id) {
       return GetBgColor(GtkCheckVersion(3, 20) ? "GtkTextView#textview.view"
                                                : "GtkTextView.view");
     case ui::kColorTextfieldForegroundPlaceholder:
-      if (!GtkCheckVersion(3, 90)) {
+      if (!GtkCheckVersion(4)) {
         auto context = GetStyleContextFromCss("GtkEntry#entry");
         // This is copied from gtkentry.c.
-        GdkRGBA fg = {0.5, 0.5, 0.5};
-        gtk_style_context_lookup_color(context, "placeholder_text_color", &fg);
-        return GdkRgbaToSkColor(fg);
+        return GtkStyleContextLookupColor(context, "placeholder_text_color");
       }
       return GetFgColor("GtkEntry#entry #text #placeholder");
     case ui::kColorTextfieldForegroundDisabled:
@@ -1014,7 +996,7 @@ base::Optional<SkColor> SkColorFromColorId(ui::ColorId color_id) {
     case ui::kColorTooltipForeground: {
       auto context = GetTooltipContext();
       context = AppendCssNodeToStyleContext(context, "GtkLabel#label");
-      return GetFgColorFromStyleContext(context);
+      return GtkStyleContextGetColor(context);
     }
 
     // Trees and Tables (implemented on GTK using the same class)

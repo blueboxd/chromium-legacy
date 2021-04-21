@@ -1577,7 +1577,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.NativeBackgroundTask.TaskFinished.FullBrowser"
-    enum="BackgroundTaskId" expires_after="2021-08-15">
+    enum="BackgroundTaskId" expires_after="2021-10-17">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -1589,7 +1589,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.NativeBackgroundTask.TaskFinished.ReducedMode"
-    enum="BackgroundTaskId" expires_after="2021-08-15">
+    enum="BackgroundTaskId" expires_after="2021-10-17">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -1615,7 +1615,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.NativeBackgroundTask.TaskStarted.FullBrowser"
-    enum="BackgroundTaskId" expires_after="2021-08-15">
+    enum="BackgroundTaskId" expires_after="2021-10-17">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -1626,7 +1626,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.NativeBackgroundTask.TaskStarted.ReducedMode"
-    enum="BackgroundTaskId" expires_after="2021-08-15">
+    enum="BackgroundTaskId" expires_after="2021-10-17">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -2597,6 +2597,40 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Logs the result of ComponentsProviderService getFilesForComponent request.
     This method retrieves FileDescriptors for an installed component. This is
     logged once for every request the service receives.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ComponentUpdater.UnexpectedExit"
+    enum="Boolean" expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Whether AwComponentUpdateService quit unexpectedly on the previous run. This
+    might indicate a crash occurred during the previous job. This is logged once
+    per run of AwComponentUpdateService.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ComponentUpdater.UpdateJobDuration" units="ms"
+    expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Duration of AwComponentUpdateService update job. This job is responsible for
+    updating and installing components. This is logged once per run of the job.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ComponentUpdater.UpdateJobFilesChanged"
+    units="count" expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    How many components were updated by AwComponentUpdateService update job.
+    This is logged once per run of the job, and is capped at 1000.
   </summary>
 </histogram>
 

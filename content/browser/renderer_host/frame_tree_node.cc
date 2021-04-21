@@ -165,7 +165,7 @@ FrameTreeNode::~FrameTreeNode() {
 
     current_frame_host()->ResetLoadingState();
   } else {
-    DCHECK(blink::features::IsPrerenderMPArchEnabled());
+    DCHECK(blink::features::IsPrerender2Enabled());
     DCHECK(!parent());  // Only main documents can be activated.
     DCHECK(!opener());  // Prerendered frame trees can't have openers.
 
@@ -361,7 +361,7 @@ void FrameTreeNode::SetCollapsed(bool collapsed) {
 }
 
 void FrameTreeNode::SetFrameTree(FrameTree& frame_tree) {
-  DCHECK(blink::features::IsPrerenderMPArchEnabled());
+  DCHECK(blink::features::IsPrerender2Enabled());
   frame_tree_ = &frame_tree;
 }
 
@@ -806,7 +806,7 @@ void FrameTreeNode::SetPopupCreatorOrigin(
   popup_creator_origin_ = popup_creator_origin;
 }
 
-void FrameTreeNode::WriteIntoTracedValue(perfetto::TracedValue context) const {
+void FrameTreeNode::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("id", frame_tree_node_id());
   dict.Add("is_main_frame", IsMainFrame());

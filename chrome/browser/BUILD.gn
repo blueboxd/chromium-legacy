@@ -112,8 +112,8 @@ source_set("browser_process") {
     "browser_process.cc",
     "browser_process.h",
   ]
-  deps = [
-    "//base",
+  deps = [ "//base" ]
+  public_deps = [
     "//build:chromeos_buildflags",
     "//chrome/common:buildflags",
     "//media:media_buildflags",
@@ -2932,6 +2932,7 @@ static_library("browser") {
       "chrome_browser_field_trials_mobile.h",
       "chrome_browser_main_android.cc",
       "chrome_browser_main_android.h",
+      "commerce/merchant_viewer/web_contents_helper.cc",
       "crash_upload_list/crash_upload_list_android.cc",
       "crash_upload_list/crash_upload_list_android.h",
       "data_reduction_proxy/data_reduction_promo_infobar_delegate_android.cc",
@@ -4200,6 +4201,11 @@ static_library("browser") {
       "//services/device/public/cpp/hid",
       "//third_party/sqlite",
     ]
+    public_deps += [
+      "//chrome/common:buildflags",
+      "//extensions/buildflags",
+    ]
+
     if (!is_chromeos_ash) {
       sources += [
         "accessibility/soda_installer_impl.cc",

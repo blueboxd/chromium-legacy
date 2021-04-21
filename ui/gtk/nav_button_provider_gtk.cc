@@ -4,8 +4,6 @@
 
 #include "ui/gtk/nav_button_provider_gtk.h"
 
-#include <gtk/gtk.h>
-
 #include "base/notreached.h"
 #include "ui/base/glib/glib_cast.h"
 #include "ui/base/glib/scoped_gobject.h"
@@ -118,7 +116,7 @@ gfx::Size LoadNavButtonIcon(
     SkColor* pixels = reinterpret_cast<SkColor*>(g_malloc(nbytes));
     size_t stride = sizeof(SkColor) * width;
     gdk_texture_download(texture, reinterpret_cast<guchar*>(pixels), stride);
-    SkColor fg = GetFgColorFromStyleContext(button_context);
+    SkColor fg = GtkStyleContextGetColor(button_context);
     for (int i = 0; i < width * height; ++i)
       pixels[i] = SkColorSetA(fg, SkColorGetA(pixels[i]));
     icon->texture = TakeGObject(
@@ -278,8 +276,10 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
     } else {
       cairo_pattern_t* cr_pattern = nullptr;
       cairo_surface_t* cr_surface = nullptr;
-      GtkStyleContextGet(button_context, GTK_STYLE_PROPERTY_BACKGROUND_IMAGE,
-                         &cr_pattern, nullptr);
+      GtkStyleContextGet(
+          button_context,
+          "background-image" /* GTK_STYLE_PROPERTY_BACKGROUND_IMAGE */,
+          &cr_pattern, nullptr);
       if (cr_pattern) {
         cairo_pattern_get_surface(cr_pattern, &cr_surface);
         if (cr_surface &&

@@ -1366,6 +1366,7 @@ static_library("ui") {
       "webui/devtools_ui.h",
       "webui/devtools_ui_data_source.cc",
       "webui/devtools_ui_data_source.h",
+      "webui/download_shelf/download_shelf_handler.h",
       "webui/download_shelf/download_shelf_page_handler.cc",
       "webui/download_shelf/download_shelf_page_handler.h",
       "webui/download_shelf/download_shelf_ui.cc",
@@ -2717,6 +2718,7 @@ static_library("ui") {
       "//chromeos/components/camera_app_ui",
       "//chromeos/components/connectivity_diagnostics",
       "//chromeos/components/diagnostics_ui",
+      "//chromeos/components/drivefs",
       "//chromeos/components/drivefs/mojom:mojom",
       "//chromeos/components/eche_app_ui",
       "//chromeos/components/help_app_ui",
@@ -3884,6 +3886,8 @@ static_library("ui") {
       "views/location_bar/omnibox_chip_button.h",
       "views/location_bar/permission_chip.cc",
       "views/location_bar/permission_chip.h",
+      "views/location_bar/permission_request_chip.cc",
+      "views/location_bar/permission_request_chip.h",
       "views/location_bar/selected_keyword_view.cc",
       "views/location_bar/selected_keyword_view.h",
       "views/location_bar/star_menu_model.cc",
@@ -4467,12 +4471,6 @@ static_library("ui") {
         ]
         if (use_gtk) {
           deps += [ "//ui/gtk" ]
-          if (use_x11) {
-            deps += [
-              "//ui/gfx/x",
-              "//ui/gtk/x",
-            ]
-          }
           if (use_ozone) {
             deps += [ "//ui/ozone" ]
           }

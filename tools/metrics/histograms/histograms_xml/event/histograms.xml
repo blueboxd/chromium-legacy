@@ -75,7 +75,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.BrowserVerifiedUserActivation" enum="BooleanSuccess"
-    expires_after="2021-08-15">
+    expires_after="2021-10-17">
   <owner>liviutinta@chromium.org</owner>
   <owner>mustaq@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
@@ -467,7 +467,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.Scroll.Wheel.TimeToHandled2"
-    units="microseconds" expires_after="2021-08-15">
+    units="microseconds" expires_after="2021-10-17">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -784,7 +784,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2021-08-15">
+    units="microseconds" expires_after="2021-10-17">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
@@ -985,6 +985,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     by the event, no recording is made.
 
     Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollJank" enum="Boolean"
+    expires_after="2022-04-01">
+  <owner>ddrone@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Tracks janky frames while processing scroll events, which are defined as
+    frames taking longer than half of vsync interval compared to previous or
+    next frame.
   </summary>
 </histogram>
 
@@ -1330,7 +1341,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.TimeToHandled2"
-    units="microseconds" expires_after="2021-08-15">
+    units="microseconds" expires_after="2021-10-17">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between initial creation of a touch event and the generated

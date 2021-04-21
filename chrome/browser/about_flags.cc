@@ -4181,10 +4181,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMostVisitedTilesName,
      flag_descriptions::kOmniboxMostVisitedTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kMostVisitedTiles)},
-    {"omnibox-native-voice-suggestions-provider",
-     flag_descriptions::kOmniboxNativeVoiceSuggestProviderName,
-     flag_descriptions::kOmniboxNativeVoiceSuggestProviderDescription,
-     kOsAndroid, FEATURE_VALUE_TYPE(omnibox::kNativeVoiceSuggestProvider)},
     {"omnibox-search-ready-incognito",
      flag_descriptions::kOmniboxSearchReadyIncognitoName,
      flag_descriptions::kOmniboxSearchReadyIncognitoDescription, kOsAndroid,
@@ -4238,12 +4234,6 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kOnFocusSuggestionsContextualWeb,
          kOmniboxOnFocusSuggestionsContextualWebVariations,
          "OmniboxGoogleOnContent")},
-
-    {"omnibox-local-zero-suggest-frecency-ranking",
-     flag_descriptions::kOmniboxLocalZeroSuggestFrecencyRankingName,
-     flag_descriptions::kOmniboxLocalZeroSuggestFrecencyRankingDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxLocalZeroSuggestFrecencyRanking)},
 
     {"omnibox-experimental-suggest-scoring",
      flag_descriptions::kOmniboxExperimentalSuggestScoringName,
@@ -4361,12 +4351,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "OmniboxBundledExperimentV1")},
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
-
-    {"enable-speculative-service-worker-start-on-query-input",
-     flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputName,
-     flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kSpeculativeServiceWorkerStartOnQueryInput)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
@@ -6969,6 +6953,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSafetyCheckWeakPasswords)},
 
 #if defined(OS_ANDROID)
+    {"continuous-feeds", flag_descriptions::kContinuousFeedsName,
+     flag_descriptions::kContinuousFeedsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kContinuousFeeds)},
+
     {"continuous-search", flag_descriptions::kContinuousSearchName,
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kContinuousSearch)},

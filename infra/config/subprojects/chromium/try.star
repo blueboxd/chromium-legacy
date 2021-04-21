@@ -77,7 +77,7 @@ luci.cq_group(
         repo = "https://chromium.googlesource.com/chromium/src",
         refs = [branches.value(
             # The chromium project's CQ covers all of the refs under refs/heads,
-            # which includes refs/heads/master
+            # which includes refs/heads/main
             for_main = "refs/heads/.+",
             # For projects running out of a branch, the CQ only runs for that
             # ref
@@ -213,7 +213,6 @@ try_.blink_builder(
 try_.blink_builder(
     name = "win10-blink-rel",
     goma_backend = goma.backend.RBE_PROD,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
     os = os.WINDOWS_ANY,
     builderless = True,
 )
@@ -278,7 +277,6 @@ try_.chromium_builder(
     os = os.WINDOWS_DEFAULT,
     cores = 32,
     execution_timeout = 6 * time.hour,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
 )
 
 try_.chromium_builder(
@@ -700,7 +698,6 @@ try_.chromium_angle_builder(
 try_.chromium_angle_builder(
     name = "win-angle-chromium-x64-try",
     os = os.WINDOWS_ANY,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
     executable = "recipe:angle_chromium_trybot",
 )
 
@@ -714,7 +711,6 @@ try_.chromium_angle_builder(
 try_.chromium_angle_builder(
     name = "win-angle-x64-try",
     os = os.WINDOWS_ANY,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
     executable = "recipe:angle_chromium_trybot",
 )
 
@@ -889,7 +885,6 @@ try_.chromium_dawn_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     os = os.WINDOWS_ANY,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/gpu/.+",
@@ -940,7 +935,6 @@ try_.chromium_dawn_builder(
 try_.chromium_dawn_builder(
     name = "win-dawn-rel",
     os = os.WINDOWS_ANY,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
 )
 
 try_.chromium_dawn_builder(
@@ -1292,6 +1286,16 @@ try_.chromium_linux_builder(
     ssd = True,
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+# TODO(crbug.com/1200574): Remove after migration.
+try_.chromium_linux_builder(
+    name = "linux_chromium_asan_rel_ng_bionic",
+    branch_selector = branches.STANDARD_MILESTONE,
+    goma_jobs = goma.jobs.J150,
+    ssd = True,
+    os = os.LINUX_BIONIC,
+    main_list_view = "try",
 )
 
 try_.chromium_linux_builder(
@@ -1656,7 +1660,6 @@ try_.chromium_updater_win_builder(
             ".+/[+]/chrome/updater/.+",
         ],
     ),
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
 )
 
 try_.chromium_updater_win_builder(
@@ -1672,13 +1675,11 @@ try_.chromium_updater_win_builder(
 
 try_.chromium_win_builder(
     name = "win-annotator-rel",
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
 )
 
 try_.chromium_win_builder(
     name = "win-asan",
     goma_jobs = goma.jobs.J150,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
 )
 
 try_.chromium_win_builder(
@@ -1690,7 +1691,6 @@ try_.chromium_win_builder(
         "pool_size": 20,
         "tests": "*",
     },
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
 )
 
 try_.chromium_win_builder(
@@ -1706,7 +1706,6 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win_archive",
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
 )
 
 try_.chromium_win_builder(
@@ -1759,7 +1758,6 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win10_chromium_x64_dbg_ng",
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
     os = os.WINDOWS_10,
 )
 
@@ -1773,7 +1771,6 @@ try_.chromium_win_builder(
     name = "win10_chromium_x64_rel_ng",
     branch_selector = branches.STANDARD_MILESTONE,
     goma_jobs = goma.jobs.J150,
-    goma_enable_ats = True,  # TODO(b/183895446): remove this
     os = os.WINDOWS_10,
     cores = 16,
     ssd = True,

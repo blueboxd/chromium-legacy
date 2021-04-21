@@ -251,12 +251,10 @@ ui::Cursor GetCursorForFullscreenOrWindowCapture(bool capture_image) {
   ui::ScaleAndRotateCursorBitmapAndHotpoint(
       device_scale_factor, display.panel_rotation(), &bitmap, &hotspot);
   auto* cursor_factory = ui::CursorFactory::GetInstance();
-  ui::PlatformCursor platform_cursor =
-      cursor_factory->CreateImageCursor(cursor.type(), bitmap, hotspot);
-  cursor.SetPlatformCursor(platform_cursor);
+  cursor.SetPlatformCursor(
+      cursor_factory->CreateImageCursor(cursor.type(), bitmap, hotspot));
   cursor.set_custom_bitmap(bitmap);
   cursor.set_custom_hotspot(hotspot);
-  cursor_factory->UnrefImageCursor(platform_cursor);
 
   return cursor;
 }
@@ -737,6 +735,15 @@ void CaptureModeSession::StartCountDown(
   }
 }
 
+bool CaptureModeSession::IsInCountDownAnimation() const {
+  if (is_shutting_down_)
+    return false;
+
+  CaptureLabelView* label_view =
+      static_cast<CaptureLabelView*>(capture_label_widget_->GetContentsView());
+  return label_view->IsInCountDownAnimation();
+}
+
 void CaptureModeSession::OnPaintLayer(const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
 
@@ -877,6 +884,79 @@ void CaptureModeSession::OnDisplayMetricsChanged(
   if (capture_label_widget_)
     UpdateCaptureLabelWidget(CaptureLabelAnimation::kNone);
   layer()->SchedulePaint(layer()->bounds());
+}
+
+void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
+                                      bool is_touch) {
+  if (is_shutting_down_)
+    return;
+
+  // Hide mouse cursor in tablet mode.
+  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
+  if (tablet_mode_controller->InTabletMode() &&
+      !tablet_mode_controller->IsInDevTabletMode()) {
+    cursor_setter_->HideCursor();
+    return;
+  }
+
+  if (IsInCountDownAnimation()) {
+    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
+    return;
+  }
+
+  // If the current mouse is on capture bar or settings menu, use the pointer
+  // mouse cursor.
+  const bool is_event_on_capture_bar_or_menu =
+      capture_mode_bar_widget_->GetWindowBoundsInScreen().Contains(
+          location_in_screen) ||
+      IsEventInSettingsMenuBounds(location_in_screen);
+  if (is_event_on_capture_bar_or_menu) {
+    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
+    return;
+  }
+  // If the current mouse event is on capture label button, and capture label
+  // button can handle the event, show the hand mouse cursor.
+  const bool is_event_on_capture_button =
+      capture_label_widget_->GetWindowBoundsInScreen().Contains(
+          location_in_screen) &&
+      static_cast<CaptureLabelView*>(capture_label_widget_->GetContentsView())
+          ->ShouldHandleEvent();
+  if (is_event_on_capture_button) {
+    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kHand);
+    return;
+  }
+
+  const CaptureModeSource source = controller_->source();
+  if (source == CaptureModeSource::kWindow && !GetSelectedWindow()) {
+    // If we're in window capture mode and there is no select window at the
+    // moment, we should use the original mouse.
+    cursor_setter_->ResetCursor();
+    return;
+  }
+
+  if (source == CaptureModeSource::kFullscreen ||
+      source == CaptureModeSource::kWindow) {
+    // For fullscreen and other window capture cases, we should either use
+    // image capture icon or screen record icon as the mouse icon.
+    cursor_setter_->UpdateCursor(GetCursorForFullscreenOrWindowCapture(
+        controller_->type() == CaptureModeType::kImage));
+    return;
+  }
+
+  DCHECK_EQ(source, CaptureModeSource::kRegion);
+  if (fine_tune_position_ != FineTunePosition::kNone) {
+    // We're in fine tuning process.
+    if (capture_mode_util::IsCornerFineTunePosition(fine_tune_position_)) {
+      cursor_setter_->HideCursor();
+    } else {
+      cursor_setter_->UpdateCursor(
+          GetCursorTypeForFineTunePosition(fine_tune_position_));
+    }
+  } else {
+    // Otherwise update the cursor depending on the current cursor location.
+    cursor_setter_->UpdateCursor(GetCursorTypeForFineTunePosition(
+        GetFineTunePosition(location_in_screen, is_touch)));
+  }
 }
 
 gfx::Rect CaptureModeSession::GetSelectedWindowBounds() const {
@@ -1767,83 +1847,6 @@ void CaptureModeSession::UpdateRootWindowDimmers() {
     auto dimmer = std::make_unique<WindowDimmer>(root_window);
     dimmer->window()->Show();
     root_window_dimmers_.emplace(std::move(dimmer));
-  }
-}
-
-bool CaptureModeSession::IsInCountDownAnimation() const {
-  CaptureLabelView* label_view =
-      static_cast<CaptureLabelView*>(capture_label_widget_->GetContentsView());
-  return label_view->IsInCountDownAnimation();
-}
-
-void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
-                                      bool is_touch) {
-  // Hide mouse cursor in tablet mode.
-  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
-  if (tablet_mode_controller->InTabletMode() &&
-      !tablet_mode_controller->IsInDevTabletMode()) {
-    cursor_setter_->HideCursor();
-    return;
-  }
-
-  if (IsInCountDownAnimation()) {
-    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
-    return;
-  }
-
-  // If the current mouse is on capture bar or settings menu, use the pointer
-  // mouse cursor.
-  const bool is_event_on_capture_bar_or_menu =
-      capture_mode_bar_widget_->GetWindowBoundsInScreen().Contains(
-          location_in_screen) ||
-      IsEventInSettingsMenuBounds(location_in_screen);
-  if (is_event_on_capture_bar_or_menu) {
-    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
-    return;
-  }
-
-  // If the current mouse event is on capture label button, and capture label
-  // button can handle the event, show the hand mouse cursor.
-  const bool is_event_on_capture_button =
-      capture_label_widget_->GetWindowBoundsInScreen().Contains(
-          location_in_screen) &&
-      static_cast<CaptureLabelView*>(capture_label_widget_->GetContentsView())
-          ->ShouldHandleEvent();
-  if (is_event_on_capture_button) {
-    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kHand);
-    return;
-  }
-
-  const CaptureModeSource source = controller_->source();
-  if (source == CaptureModeSource::kWindow && !GetSelectedWindow()) {
-    // If we're in window capture mode and there is no select window at the
-    // moment, we should use the original mouse.
-    cursor_setter_->ResetCursor();
-    return;
-  }
-
-  if (source == CaptureModeSource::kFullscreen ||
-      source == CaptureModeSource::kWindow) {
-    // For fullscreen and other window capture cases, we should either use
-    // image capture icon or screen record icon as the mouse icon.
-    cursor_setter_->UpdateCursor(GetCursorForFullscreenOrWindowCapture(
-        controller_->type() == CaptureModeType::kImage));
-    return;
-  }
-
-  DCHECK_EQ(source, CaptureModeSource::kRegion);
-  if (fine_tune_position_ != FineTunePosition::kNone) {
-    // We're in fine tuning process.
-    if (capture_mode_util::IsCornerFineTunePosition(fine_tune_position_)) {
-      cursor_setter_->HideCursor();
-    } else {
-      cursor_setter_->UpdateCursor(
-          GetCursorTypeForFineTunePosition(fine_tune_position_));
-    }
-  } else {
-    // Otherwise update the cursor depending on the current cursor location.
-    cursor_setter_->UpdateCursor(GetCursorTypeForFineTunePosition(
-        GetFineTunePosition(location_in_screen, is_touch)));
   }
 }
 

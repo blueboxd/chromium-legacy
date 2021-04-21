@@ -546,7 +546,7 @@
   {
     "name": "chrome-share-screenshot",
     "owners": [ "jeffreycohen", "kristipark", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 92
   },
   {
     "name": "chrome-sharing-hub",
@@ -734,6 +734,11 @@
     "name": "contextual-search-twv-impl",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "continuous-feeds",
+    "owners": [ "//chrome/browser/continuous_search/OWNERS" ],
+    "expiry_milestone": 93
   },
   {
     "name": "continuous-search",
@@ -3878,11 +3883,6 @@
     "name": "omnibox-most-visited-tiles",
     "owners": [ "fgorski", "ender", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 92
-  },
-  {
-    "name": "omnibox-native-voice-suggestions-provider",
-    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 93
   },
   {
       "name": "omnibox-new-textfield-implementation",

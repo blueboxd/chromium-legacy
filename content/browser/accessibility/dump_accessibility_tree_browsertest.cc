@@ -299,6 +299,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSPseudoElementsIgnoredParent) {
+  RunCSSTest(FILE_PATH_LITERAL("pseudo-elements-ignored-parent.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCSSPseudoElementAlternativeText) {
   RunCSSTest(FILE_PATH_LITERAL("pseudo-element-alternative-text.html"));
 }
@@ -878,11 +883,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaLabelledByUpdates) {
   RunAriaTest(FILE_PATH_LITERAL("aria-labelledby-updates.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaLeafInEditable) {
-  RunAriaTest(FILE_PATH_LITERAL("aria-leaf-in-editable.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaLevel) {

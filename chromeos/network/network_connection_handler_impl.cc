@@ -264,7 +264,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
 
-  bool is_non_connectable_esim_network = false;
+  // Starts as empty string and is set only when a cellular ICCID is present.
+  std::string cellular_network_iccid;
 
   if (network) {
     // For existing networks, perform some immediate consistency checks.
@@ -318,6 +319,12 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     }
 
     if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
+      if (network->cellular_out_of_credits()) {
+        InvokeConnectErrorCallback(service_path, std::move(error_callback),
+                                   kErrorCellularOutOfCredits);
+        return;
+      }
+
       const DeviceState* cellular_device =
           network_state_handler_->GetDeviceState(network->device_path());
 
@@ -331,13 +338,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
         return;
       }
 
-      // eSIM networks are Cellular networks with an associated EID. Note that
-      // |cellular_connection_handler_| is expected to be null if the flag
-      // is disabled.
-      if (cellular_connection_handler_ && !network->eid().empty() &&
-          !network->connectable()) {
-        is_non_connectable_esim_network = true;
-      }
+      cellular_network_iccid = network->iccid();
     }
   }
 
@@ -348,7 +349,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   if (!network || network->profile_path().empty())
     profile_path = GetDefaultUserProfilePath(network);
 
-  bool call_connect = false;
+  bool can_call_connect = false;
 
   // Connect immediately to 'connectable' networks.
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
@@ -359,7 +360,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
       return;
     }
 
-    call_connect = true;
+    can_call_connect = true;
   }
 
   // All synchronous checks passed, add |service_path| to connecting list.
@@ -373,21 +374,20 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // an error occurs before a connect is initialted.
   network_state_handler_->SetNetworkConnectRequested(service_path, true);
 
-  if (is_non_connectable_esim_network) {
-    // eSIM profiles need to be enabled before a connection to them can be
-    // initiated. If this operation is successful, the network's "connectable"
-    // property will be set, and we can invoke CallShillConnect().
-    cellular_connection_handler_->EnableProfileForConnection(
-        service_path,
+  if (!cellular_network_iccid.empty()) {
+    // Cellular networks require special handling before Shill can initiate a
+    // connection. Prepare the network for connection before proceeding.
+    cellular_connection_handler_->PrepareExistingCellularNetworkForConnection(
+        cellular_network_iccid,
         base::BindOnce(&NetworkConnectionHandlerImpl::CallShillConnect,
                        AsWeakPtr()),
-        base::BindOnce(
-            &NetworkConnectionHandlerImpl::OnEnableESimProfileFailure,
-            AsWeakPtr(), service_path));
+        base::BindOnce(&NetworkConnectionHandlerImpl::
+                           OnPrepareCellularNetworkForConnectionFailure,
+                       AsWeakPtr()));
     return;
   }
 
-  if (call_connect) {
+  if (can_call_connect) {
     CallShillConnect(service_path);
     return;
   }
@@ -454,6 +454,39 @@ void NetworkConnectionHandlerImpl::NetworkPropertiesUpdated(
     CheckPendingRequest(network->path());
 }
 
+void NetworkConnectionHandlerImpl::NetworkIdentifierTransitioned(
+    const std::string& old_service_path,
+    const std::string& new_service_path,
+    const std::string& old_guid,
+    const std::string& new_guid) {
+  auto it = pending_requests_.find(old_service_path);
+
+  // If the service path transition does not apply to any networks which have
+  // pending network requests, there is nothing to update.
+  if (it == pending_requests_.end())
+    return;
+
+  NET_LOG(EVENT) << "ConnectRequest cache updated service path: "
+                 << old_service_path << " => " << new_service_path;
+
+  const NetworkState* network =
+      network_state_handler_->GetNetworkState(new_service_path);
+  std::string profile_path;
+  if (!network || network->profile_path().empty())
+    profile_path = GetDefaultUserProfilePath(network);
+
+  // Remove the old map entry from the previous service path and add a new
+  // mapping with the updated service path.
+  ConnectRequest request = std::move(it->second);
+  request.service_path = new_service_path;
+  request.profile_path = profile_path;
+  pending_requests_.erase(it);
+  pending_requests_.emplace(new_service_path, std::move(request));
+
+  network_state_handler_->SetNetworkConnectRequested(
+      new_service_path, /*connect_requested=*/true);
+}
+
 bool NetworkConnectionHandlerImpl::HasConnectingNetwork(
     const std::string& service_path) {
   return pending_requests_.count(service_path) != 0;
@@ -467,15 +500,14 @@ NetworkConnectionHandlerImpl::GetPendingRequest(
   return iter != pending_requests_.end() ? &(iter->second) : nullptr;
 }
 
-void NetworkConnectionHandlerImpl::OnEnableESimProfileFailure(
+void NetworkConnectionHandlerImpl::OnPrepareCellularNetworkForConnectionFailure(
     const std::string& service_path,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
-    NET_LOG(ERROR)
-        << "OnEnableESimProfileFailure called with no pending request: "
-        << NetworkPathId(service_path);
+    NET_LOG(ERROR) << "OnPrepareCellularNetworkForConnectionFailure called "
+                      "with no pending "
+                   << " request: " << NetworkPathId(service_path);
     return;
   }
   network_handler::ErrorCallback error_callback =
@@ -524,13 +556,6 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   if (connectable && *type != shill::kTypeVPN) {
     // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
     CallShillConnect(service_path);
-    return;
-  }
-
-  bool out_of_credits =
-      properties->FindBoolKey(shill::kOutOfCreditsProperty).value_or(false);
-  if (out_of_credits && *type == shill::kTypeCellular) {
-    ErrorCallbackForPendingRequest(service_path, kErrorCellularOutOfCredits);
     return;
   }
 

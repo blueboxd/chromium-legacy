@@ -37,6 +37,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void NetworkIdentifierTransitioned(const std::string& old_service_path,
+                                     const std::string& new_service_path,
+                                     const std::string& old_guid,
+                                     const std::string& new_guid) override;
 
   // NetworkCertLoader::Observer
   void OnCertificatesLoaded() override;
@@ -75,10 +79,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
 
   ConnectRequest* GetPendingRequest(const std::string& service_path);
 
-  void OnEnableESimProfileFailure(
+  void OnPrepareCellularNetworkForConnectionFailure(
       const std::string& service_path,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+      const std::string& error_name);
 
   // Callback from Shill.Service.GetProperties. Parses |properties| to verify
   // whether or not the network appears to be configured. If configured,

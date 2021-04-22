@@ -303,9 +303,19 @@
     "expiry_milestone": 91
   },
   {
+    "name": "autofill-auto-trigger-manual-fallback-for-cards",
+    "owners": ["siashah", "siyua"],
+    "expiry_milestone": 98
+  },
+  {
     "name": "autofill-enable-google-issued-card",
     "owners": [ "siashah" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "autofill-enable-merchant-bound-virtual-cards",
+    "owners": [ "siashah", "siyua" ],
+    "expiry_milestone": 98
   },
   {
     "name": "autofill-enable-offer-notification",
@@ -326,6 +336,11 @@
     "name": "autofill-enable-offers-in-downstream",
     "owners": [ "siyua" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "autofill-enable-sticky-manual-fallback-for-cards",
+    "owners": [ "siashah","siyua" ],
+    "expiry_milestone": 98
   },
   {
     "name": "autofill-enable-toolbar-status-chip",
@@ -386,6 +401,11 @@
     "name": "autofill-show-all-profiles-on-prefilled-forms",
     "owners": [ "olivierrobin", "bling-flags@google.com" ],
     "expiry_milestone": 86
+  },
+  {
+    "name":"autofill-suggest-virtual-cards-only-on-full-form-detection",
+    "owners": ["siashah", "siyua"],
+    "expiry_milestone":98
   },
   {
     "name": "autofill-use-improved-label-disambiguation",
@@ -485,12 +505,12 @@
   {
     "name": "cct-incognito",
     "owners": [ "rhalavati", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 100
   },
   {
     "name": "cct-incognito-available-to-third-party",
     "owners": [ "rhalavati", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 100
   },
   {
     "name": "cdm-factory-daemon",
@@ -2163,6 +2183,11 @@
     "name": "enable-pci-guard-ui",
     "owners": [ "jimmyxgong", "cros-peripherals@google.com" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "enable-penetrating-image-selection",
+    "owners": [ "benwgold", "flackr" ],
+    "expiry_milestone": 95
   },
   { "name": "enable-phone-hub",
     "owners": [ "better-together-dev@google.com", "tjohnsonkanu", "khorimoto" ],
@@ -4584,11 +4609,6 @@
     "name": "screentime",
     "owners": [ "ellyjones", "chrome-mac-dev@google.com" ],
     "expiry_milestone": 94
-  },
-  {
-    "name": "scroll-to-text-ios",
-    "owners": [ "tmartino" ],
-    "expiry_milestone": 90
   },
   {
     "name": "scroll-unification",

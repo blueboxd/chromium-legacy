@@ -20,7 +20,8 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "components/signin/public/base/signin_switches.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
 namespace signin {
@@ -203,12 +204,8 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // Sessions and Active Directory logins. Guest Sessions have already been
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   force_account_consistency = true;
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (base::FeatureList::IsEnabled(switches::kUseAccountManagerFacade)) {
-    force_account_consistency = true;
-  }
 #endif
 
   if (!force_account_consistency && gaia_id.empty()) {

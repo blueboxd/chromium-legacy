@@ -1983,13 +1983,16 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
       // we may have fallen back to the document root.
       layout_tree_rebuild_root_.Clear();
       layout_tree_rebuild_root_.Update(nullptr, &container);
+    } else {
+      DCHECK(FlatTreeTraversal::Contains(
+          container, *layout_tree_rebuild_root_.GetRootNode()));
     }
     RebuildLayoutTree();
   }
 
-  if (IsA<HTMLHtmlElement>(container)) {
-    // If the container is the HTML root element, the body styles may have
-    // changed as a result of the new container query evaluation and if
+  if (container == GetDocument().documentElement()) {
+    // If the container is the root element, there may be body styles which have
+    // changed as a result of the new container query evaluation, and if
     // properties propagated from body changed, we need to update the viewport
     // styles.
     GetStyleResolver().PropagateStyleToViewport();

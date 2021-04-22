@@ -2093,9 +2093,7 @@ interface EditContext : EventTarget
     getter selectionEnd
     getter selectionStart
     getter text
-    method blur
     method constructor
-    method focus
     method updateLayout
     method updateSelection
     method updateText
@@ -4727,7 +4725,6 @@ interface ImageDecoder
     method close
     method constructor
     method decode
-    method decodeMetadata
     method reset
 interface ImageTrack
     attribute @@toStringTag
@@ -4740,6 +4737,7 @@ interface ImageTrack
 interface ImageTrackList
     attribute @@toStringTag
     getter length
+    getter ready
     getter selectedIndex
     getter selectedTrack
     method @@iterator
@@ -6482,18 +6480,6 @@ interface PushSubscriptionOptions
     getter applicationServerKey
     getter userVisibleOnly
     method constructor
-interface QuicTransport
-    attribute @@toStringTag
-    getter closed
-    getter ready
-    method close
-    method constructor
-    method createBidirectionalStream
-    method createSendStream
-    method receiveBidirectionalStreams
-    method receiveDatagrams
-    method receiveStreams
-    method sendDatagrams
 interface RTCCertificate
     attribute @@toStringTag
     getter expires
@@ -8160,11 +8146,9 @@ interface ScriptProcessorNode : AudioNode
     setter onaudioprocess
 interface ScrollTimeline : AnimationTimeline
     attribute @@toStringTag
-    getter endScrollOffset
     getter orientation
     getter scrollOffsets
     getter scrollSource
-    getter startScrollOffset
     getter timeRange
     method constructor
 interface SecurityPolicyViolationEvent : Event

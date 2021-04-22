@@ -7,7 +7,7 @@ Creation issue: {
             sharedArrayBufferIssueDetails : {
                 isWarning : true
                 sourceCodeLocation : {
-                    columnNumber : 13
+                    columnNumber : 18
                     lineNumber : 0
                     scriptId : <string>
                     url : 
@@ -22,7 +22,7 @@ Transfer issue: {
         code : SharedArrayBufferIssue
         details : {
             sharedArrayBufferIssueDetails : {
-                isWarning : true
+                isWarning : false
                 sourceCodeLocation : {
                     columnNumber : 1
                     lineNumber : 0

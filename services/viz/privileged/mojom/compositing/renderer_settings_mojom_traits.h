@@ -24,6 +24,11 @@ struct StructTraits<viz::mojom::DebugRendererSettingsDataView,
     return input.tint_composited_content;
   }
 
+  static bool tint_composited_content_modulate(
+      const viz::DebugRendererSettings& input) {
+    return input.tint_composited_content_modulate;
+  }
+
   static bool show_overdraw_feedback(const viz::DebugRendererSettings& input) {
     return input.show_overdraw_feedback;
   }
@@ -44,6 +49,11 @@ struct StructTraits<viz::mojom::DebugRendererSettingsDataView,
 template <>
 struct StructTraits<viz::mojom::RendererSettingsDataView,
                     viz::RendererSettings> {
+  static bool apply_simple_frame_rate_throttling(
+      const viz::RendererSettings& input) {
+    return input.apply_simple_frame_rate_throttling;
+  }
+
   static bool allow_antialiasing(const viz::RendererSettings& input) {
     return input.allow_antialiasing;
   }

@@ -19,6 +19,8 @@ bool StructTraits<viz::mojom::DebugRendererSettingsDataView,
     Read(viz::mojom::DebugRendererSettingsDataView data,
          viz::DebugRendererSettings* out) {
   out->tint_composited_content = data.tint_composited_content();
+  out->tint_composited_content_modulate =
+      data.tint_composited_content_modulate();
   out->show_overdraw_feedback = data.show_overdraw_feedback();
   out->show_dc_layer_debug_borders = data.show_dc_layer_debug_borders();
   out->show_aggregated_damage = data.show_aggregated_damage();
@@ -29,6 +31,8 @@ bool StructTraits<viz::mojom::DebugRendererSettingsDataView,
 bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
     Read(viz::mojom::RendererSettingsDataView data,
          viz::RendererSettings* out) {
+  out->apply_simple_frame_rate_throttling =
+      data.apply_simple_frame_rate_throttling();
   out->allow_antialiasing = data.allow_antialiasing();
   out->force_antialiasing = data.force_antialiasing();
   out->force_blending_with_shaders = data.force_blending_with_shaders();

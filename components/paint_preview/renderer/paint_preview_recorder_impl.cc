@@ -58,7 +58,7 @@ void BuildAndSendResponse(std::unique_ptr<PaintPreviewTracker> tracker,
                           FinishedRecording out,
                           CapturePaintPreviewCallback callback) {
   if (out.status == mojom::PaintPreviewStatus::kOk) {
-    BuildResponse(tracker.get(), out.response.get(), /*log=*/true);
+    BuildResponse(tracker.get(), out.response.get());
   }
   std::move(callback).Run(out.status, std::move(out.response));
 }
@@ -137,9 +137,9 @@ void FinishRecordingOnUIThread(sk_sp<const cc::PaintRecord> recording,
     return;
   }
 
-  TRACE_EVENT_BEGIN0("paint_preview", "ParseGlyphsAndLinks");
-  ParseGlyphsAndLinks(recording.get(), tracker.get());
-  TRACE_EVENT_END0("paint_preview", "ParseGlyphsAndLinks");
+  TRACE_EVENT_BEGIN0("paint_preview", "PreProcessPaintOpBuffer");
+  PreProcessPaintOpBuffer(recording.get(), tracker.get());
+  TRACE_EVENT_END0("paint_preview", "PreProcessPaintOpBuffer");
 
   // This cannot be done async if the recording contains a GPU accelerated
   // image.
@@ -297,7 +297,8 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   base::TimeTicks start_time = base::TimeTicks::Now();
   TRACE_EVENT_BEGIN0("paint_preview", "WebLocalFrame::CapturePaintPreview");
   bool success = frame->CapturePaintPreview(
-      bounds, canvas, /*include_linked_destinations=*/params->capture_links);
+      bounds, canvas, /*include_linked_destinations=*/params->capture_links,
+      /*skip_accelerated_content=*/params->skip_accelerated_content);
   TRACE_EVENT_END0("paint_preview", "WebLocalFrame::CapturePaintPreview");
   canvas->restore();
   base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;

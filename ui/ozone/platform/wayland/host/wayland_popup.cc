@@ -128,7 +128,7 @@ void WaylandPopup::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
   // is above the top level parent window, the origin of the top level window
   // has to be shifted by that value on y-axis so that the origin of the menu
   // becomes x,0, and events can be handled normally.
-  if (!wl::IsMenuType(parent_window()->type())) {
+  if (!parent_window()->AsWaylandPopup()) {
     gfx::Rect parent_bounds = parent_window()->GetBounds();
     // The menu window is flipped along y-axis and have x,-y origin. Shift the
     // parent top level window instead.
@@ -170,7 +170,6 @@ void WaylandPopup::OnCloseRequest() {
 }
 
 bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties) {
-  DCHECK(wl::IsMenuType(type()));
   DCHECK(parent_window());
   root_surface()->SetBufferScale(parent_window()->buffer_scale(), false);
   set_ui_scale(parent_window()->ui_scale());
@@ -183,34 +182,38 @@ bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties) {
   // if the primary display's scale is different from parents' scale (and this'
   // scale), fix bounds accordingly. Otherwise, popup is located using wrong
   // bounds in DIP.
-  if (auto* primary_output =
-          connection()->wayland_output_manager()->GetPrimaryOutput()) {
-    const auto primary_display_scale_factor = primary_output->scale_factor();
+  auto primary_display_scale_factor = connection()
+                                          ->wayland_output_manager()
+                                          ->GetPrimaryOutput()
+                                          ->scale_factor();
 
-    gfx::RectF float_rect = gfx::RectF(GetBounds());
-    gfx::Transform transform;
-    float scale = primary_display_scale_factor;
-    // The bounds are initially given in the scale of the primary display, so we
-    // have to upscale or downscale the rect to the scale of the target display,
-    // if that scale is different.
-    if (primary_display_scale_factor < buffer_scale()) {
-      scale = static_cast<float>(buffer_scale()) /
-              static_cast<float>(primary_display_scale_factor);
-      transform.Scale(scale, scale);
-      transform.TransformRect(&float_rect);
-    } else if (primary_display_scale_factor > buffer_scale()) {
-      scale = static_cast<float>(primary_display_scale_factor) /
-              static_cast<float>(buffer_scale());
-      transform.Scale(scale, scale);
-      transform.TransformRectReverse(&float_rect);
-    }
-
-    // delegate()->OnBoundsChanged cannot be called at this point. Thus, set
-    // pending internal bounds and call SetBounds later when CreateShellPopup is
-    // called.
-    pending_initial_bounds_px_ = gfx::ToEnclosingRect(float_rect);
+  gfx::RectF float_rect = gfx::RectF(GetBounds());
+  gfx::Transform transform;
+  float scale = primary_display_scale_factor;
+  // The bounds are initially given in the scale of the primary display, so we
+  // have to upscale or downscale the rect to the scale of the target display,
+  // if that scale is different.
+  if (primary_display_scale_factor < buffer_scale()) {
+    scale = static_cast<float>(buffer_scale()) /
+            static_cast<float>(primary_display_scale_factor);
+    transform.Scale(scale, scale);
+    transform.TransformRect(&float_rect);
+  } else if (primary_display_scale_factor > buffer_scale()) {
+    scale = static_cast<float>(primary_display_scale_factor) /
+            static_cast<float>(buffer_scale());
+    transform.Scale(scale, scale);
+    transform.TransformRectReverse(&float_rect);
   }
+
+  // delegate()->OnBoundsChanged cannot be called at this point. Thus, set
+  // pending internal bounds and call SetBounds later when CreateShellPopup is
+  // called.
+  pending_initial_bounds_px_ = gfx::ToEnclosingRect(float_rect);
   return true;
+}
+
+WaylandPopup* WaylandPopup::AsWaylandPopup() {
+  return this;
 }
 
 }  // namespace ui

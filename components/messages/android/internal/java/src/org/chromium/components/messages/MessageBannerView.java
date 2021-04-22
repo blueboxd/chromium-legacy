@@ -6,6 +6,7 @@ package org.chromium.components.messages;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -13,8 +14,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.components.browser_ui.widget.BoundedLinearLayout;
 import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener;
 import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.SwipeHandler;
@@ -62,13 +65,21 @@ public class MessageBannerView extends BoundedLinearLayout {
         if (mOnTitleChanged != null) mOnTitleChanged.run();
     }
 
-    void setDescription(String description) {
+    void setDescription(CharSequence description) {
         mDescription.setVisibility(VISIBLE);
         mDescription.setText(description);
     }
 
     void setIcon(Drawable icon) {
         mIconView.setImageDrawable(icon);
+    }
+
+    void setIconTint(@ColorInt int color) {
+        if (color == MessageBannerProperties.TINT_NONE) {
+            ApiCompatibilityUtils.setImageTintList(mIconView, null);
+        } else {
+            ApiCompatibilityUtils.setImageTintList(mIconView, ColorStateList.valueOf(color));
+        }
     }
 
     void setPrimaryButtonText(String text) {

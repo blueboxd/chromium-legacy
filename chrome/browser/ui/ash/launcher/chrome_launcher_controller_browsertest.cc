@@ -60,7 +60,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/browser_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
@@ -89,6 +89,7 @@
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -275,7 +276,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
 
   size_t NumberOfDetectedLauncherBrowsers(bool show_all_tabs) {
     ash::ShelfItemDelegate* item_controller =
-        controller_->GetBrowserShortcutLauncherItemControllerForTesting();
+        controller_->GetBrowserShortcutShelfItemControllerForTesting();
     return item_controller
         ->GetAppMenuItems(show_all_tabs ? ui::EF_SHIFT_DOWN : 0,
                           base::NullCallback())
@@ -426,8 +427,8 @@ class ShelfWebAppBrowserTest : public ShelfAppBrowserTest {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
-    return web_app::InstallWebApp(browser()->profile(),
-                                  std::move(web_app_info));
+    return web_app::test::InstallWebApp(browser()->profile(),
+                                        std::move(web_app_info));
   }
 
   // ShelfAppBrowserTest:
@@ -991,7 +992,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   const ash::ShelfItem& app_custom_icon_item =
       shelf_model()->items()[base_shelf_item_count + 1];
 
-  // Icons for Apps are set by the AppWindowLauncherController, so
+  // Icons for Apps are set by the AppWindowShelfController, so
   // image_set_by_controller() should be set.
   const ash::ShelfItemDelegate* app_item_delegate =
       GetShelfItemDelegate(app_item.id);
@@ -2125,9 +2126,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
 
 // Check browser shortcut item functionality.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
-                       BrowserShortcutLauncherItemController) {
+                       BrowserShortcutShelfItemController) {
   ash::ShelfItemDelegate* item_controller =
-      controller_->GetBrowserShortcutLauncherItemControllerForTesting();
+      controller_->GetBrowserShortcutShelfItemControllerForTesting();
   ASSERT_TRUE(item_controller);
   const ash::ShelfID browser_id = item_controller->shelf_id();
   EXPECT_EQ(extension_misc::kChromeAppId, browser_id.app_id);
@@ -2175,7 +2176,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
 }
 
 // Check that browser launch time is recorded when the browser is started
-// by means other than BrowserShortcutLauncherItemController.
+// by means other than BrowserShortcutShelfItemController.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
                        BrowserLaunchTimeRecorded) {
   extensions::ExtensionPrefs* prefs =

@@ -1021,7 +1021,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
     bool is_overriding_user_agent,
     const std::vector<GURL>& redirects,
     const GURL& original_url,
-    const blink::PageState& page_state,
     std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
     std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
     std::unique_ptr<SubresourceWebBundleNavigationInfo>
@@ -1051,6 +1050,13 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::string() /* href_translate */,
           false /* is_history_navigation_in_new_child_frame */,
           base::TimeTicks::Now() /* input_start */);
+  // Note that some params are set to default values (e.g. page_state set to
+  // the default blink::PageState()) even if the DidCommit message that came
+  // from the renderer contained relevant info that can be used to fill the
+  // params, because setting those values don't match with the pattern used
+  // by navigations that went through the browser (e.g. page_state is only
+  // set in CommitNavigationParams of history navigations) or these values are
+  // not used by the browser after commit.
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
           origin, network::mojom::WebSandboxFlags(), is_overriding_user_agent,
@@ -1058,7 +1064,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::vector<net::RedirectInfo>(),
           std::string() /* redirect_response */, original_url,
           method /* original_method */, false /* can_load_local_resources */,
-          page_state, 0 /* nav_entry_id*/,
+          blink::PageState(), 0 /* nav_entry_id*/,
           base::flat_map<std::string, bool>() /* subframe_unique_names */,
           false /* intended_as_new_entry */,
           -1 /* pending_history_list_offset */,
@@ -2407,7 +2413,13 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult(
   DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  const url::Origin origin = url::Origin::Create(common_params_->url);
+  // This cannot simply calculate an origin from the committing URL, as Android
+  // WebView allows embedders to use loadDataWithBaseURL() to commit a data: URL
+  // with an arbitrary base URL.
+  const url::Origin origin =
+      NavigationRequest::IsLoadDataWithBaseURL(*common_params_)
+          ? url::Origin::Create(common_params_->base_url_for_data_url)
+          : url::Origin::Create(common_params_->url);
   const IsolationContext& isolation_context =
       render_frame_host_->GetSiteInstance()->GetIsolationContext();
   const bool got_isolated = policy->ShouldOriginGetOptInIsolation(
@@ -2963,7 +2975,9 @@ void NavigationRequest::OnResponseStarted(
       instance->ConvertToDefaultOrSetSite(GetUrlInfo());
     }
     // Now that we know the IsolationContext for the assigned SiteInstance, we
-    // opt the origin into OAC here if needed.
+    // opt the origin into OAC here if needed. Note that this doesn't need to
+    // account for loading data URLs with a base URL, because such a base URL
+    // can never opt into OAC.
     // TODO(wjmaclean): Remove this call/function when same-process
     // OriginAgentCluster moves to SiteInstanceGroup, as then all OAC origins
     // will get a SiteInstance (regardless of process isolation) and tracking
@@ -2979,13 +2993,21 @@ void NavigationRequest::OnResponseStarted(
     // should be marked as opted-out in this SiteInstance. At this point we know
     // that |render_frame_host_|'s SiteInstance has been finalized, so it's safe
     // to use it here to get the correct |IsolationContext|.
+    //
+    // When loading a data URL with a base URL, use the base URL to calculate
+    // the origin; otherwise, `AddNonIsolatedOriginIfNeeded()` will simply do
+    // nothing as a data: URL has an opaque origin.
+    //
     // TODO(wjmaclean): this won't handle cases like about:blank (where it
     // inherits an origin we care about).  We plan to compute the origin
     // before commit time (https://crbug.com/888079), which may make it
     // possible to compute the right origin here.
+    const url::Origin origin =
+        NavigationRequest::IsLoadDataWithBaseURL(*common_params_)
+            ? url::Origin::Create(common_params_->base_url_for_data_url)
+            : url::Origin::Create(common_params_->url);
     ChildProcessSecurityPolicyImpl::GetInstance()->AddNonIsolatedOriginIfNeeded(
-        isolation_context, url::Origin::Create(common_params().url),
-        false /* is_global_walk_or_frame_removal */);
+        isolation_context, origin, false /* is_global_walk_or_frame_removal */);
 
     // Replace the SiteInstance of the previously committed entry if it's for a
     // url that doesn't require a site assignment, since this new commit is
@@ -4197,31 +4219,48 @@ net::Error NavigationRequest::CheckCSPDirectives(
   // only the result last set.
   net::Error error = net::OK;
 
-  if (base::FeatureList::IsEnabled(
-          features::kExperimentalContentSecurityPolicyFeatures) &&
-      initiator_policies) {
-    // [navigate-to]
-    if (!IsAllowedByCSPDirective(
+  if (initiator_policies) {
+    // [form-action]
+    if (begin_params_->is_form_submission && !is_response_check &&
+        !IsAllowedByCSPDirective(
             initiator_policies->content_security_policies, &initiator_context,
-            network::mojom::CSPDirectiveName::NavigateTo, has_followed_redirect,
+            network::mojom::CSPDirectiveName::FormAction, has_followed_redirect,
             url_upgraded_after_redirect, is_response_check, disposition)) {
-      // net::ERR_ABORTED is used instead of net::ERR_BLOCKED_BY_CSP. This is a
-      // better user experience as the user is not presented with an error page.
-      // However if other CSP directives life frame-src are violated, it may be
-      // appropriate for them to use ERR_BLOCKED_BY_CSP so this can be overriden
-      // by the checks below.
+      // net::ERR_ABORTED is used instead of net::ERR_BLOCKED_BY_CSP. This is
+      // a better user experience as the user is not presented with an error
+      // page. However if other CSP directives like frame-src are violated, it
+      // may be appropriate for them to use ERR_BLOCKED_BY_CSP so this can be
+      // overridden by the checks below.
       error = net::ERR_ABORTED;
     }
 
-    // [prefetch-src]
-    if (blink::features::IsPrerender2Enabled() &&
-        frame_tree_node_->frame_tree()->is_prerendering()) {
+    if (base::FeatureList::IsEnabled(
+            features::kExperimentalContentSecurityPolicyFeatures)) {
+      // [navigate-to]
       if (!IsAllowedByCSPDirective(
               initiator_policies->content_security_policies, &initiator_context,
-              network::mojom::CSPDirectiveName::PrefetchSrc,
+              network::mojom::CSPDirectiveName::NavigateTo,
               has_followed_redirect, url_upgraded_after_redirect,
               is_response_check, disposition)) {
-        error = net::ERR_BLOCKED_BY_CSP;
+        // net::ERR_ABORTED is used instead of net::ERR_BLOCKED_BY_CSP. This is
+        // a better user experience as the user is not presented with an error
+        // page. However if other CSP directives life frame-src are violated, it
+        // may be appropriate for them to use ERR_BLOCKED_BY_CSP so this can be
+        // overridden by the checks below.
+        error = net::ERR_ABORTED;
+      }
+
+      // [prefetch-src]
+      if (blink::features::IsPrerender2Enabled() &&
+          frame_tree_node_->frame_tree()->is_prerendering()) {
+        if (!IsAllowedByCSPDirective(
+                initiator_policies->content_security_policies,
+                &initiator_context,
+                network::mojom::CSPDirectiveName::PrefetchSrc,
+                has_followed_redirect, url_upgraded_after_redirect,
+                is_response_check, disposition)) {
+          error = net::ERR_BLOCKED_BY_CSP;
+        }
       }
     }
   }

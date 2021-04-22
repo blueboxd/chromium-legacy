@@ -512,6 +512,8 @@
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
       'Mac10.15 Tests', # https://crbug.com/1042757
+      'Mac10.15 Tests (dbg)', # https://crbug.com/1201386
+      'mac-code-coverage', # https://crbug.com/1201386
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
     ],
@@ -582,6 +584,10 @@
         'swarming': {
           'shards': 30,
         },
+        # crbug.com/1196416
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
+        ],
       },
       'Mac10.15 Tests': {
         # crbug.com/1042757
@@ -597,21 +603,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
         ],
-      },
-      'Mac10.15 Tests (dbg)': {
-        'args': [
-          # crbug.com/1196416
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
-        ],
-        # crbug.com/1042757
-        'swarming': {
-          'dimension_sets': [
-            {
-              # These shards are liable to time out when running on macmini7,1.
-              'cores': '8|12',
-            }
-          ],
-        },
       },
       'ToTWin(dbg)': {
         'swarming': {
@@ -715,11 +706,6 @@
        'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux_trusty_rel.browser_tests.filter',
         ],
-      },
-      'mac-code-coverage': {
-        'swarming': {
-          'shards': 15,
-        },
       },
       'win-asan': {
         # These are very slow on the ASAN trybot for some reason.
@@ -2552,6 +2538,20 @@
       'android-11-x86-fyi-rel', # crbug.com/1165280
     ],
   },
+  'system_webview_wpt': {
+    'modifications': {
+      'android-webview-pie-x86-wpt-fyi-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'machine_type': 'n1-standard-8',
+            },
+          ],
+          'shards': 18,
+        },
+      },
+    },
+  },
   'tab_capture_end2end_tests': {
     # Run these only on Release bots.
     'remove_from': [
@@ -2680,16 +2680,6 @@
       # crbug.com/1080749
       'Optional Linux Release (NVIDIA)',
     ],
-  },
-  'ui_base_unittests_wayland': {
-    'modifications': {
-      # CI Ozone/Wayland tester.
-      'Linux Tester (Ozone Wayland)': {
-        'args': [
-        '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.ui_base_unittests_wayland.filter',
-        ],
-      },
-    }
   },
   'unit_tests': {
     'remove_from': [
@@ -2922,21 +2912,6 @@
     ],
   },
   'webgl_conformance_tests': {
-    'modifications': {
-      # On desktop platforms these don't take very long (~7 minutes),
-      # but on Android they take ~30 minutes and we want to use more
-      # shards than on desktop.
-      'Android Release (Nexus 5X)': {
-        'swarming': {
-          'shards': 6,
-        },
-      },
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
-    },
     'remove_from': [
       # Too slow on this configuration, which is severely hardware
       # constrained. crbug.com/950690

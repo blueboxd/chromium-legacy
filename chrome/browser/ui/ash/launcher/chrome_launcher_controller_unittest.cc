@@ -67,9 +67,9 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_window_shelf_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_window_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -473,7 +473,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   ui::BaseWindow* GetLastActiveWindowForItemController(
-      AppWindowLauncherItemController* item_controller) {
+      AppWindowShelfItemController* item_controller) {
     return item_controller->last_active_window_;
   }
 
@@ -1038,7 +1038,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     }
 
     web_app::AppId installed_app_id =
-        web_app::InstallWebApp(profile(), std::move(web_app_info));
+        web_app::test::InstallWebApp(profile(), std::move(web_app_info));
     ASSERT_EQ(installed_app_id, web_app_id);
     app_service_test_.FlushMojoCalls();
   }
@@ -2141,7 +2141,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   // platform app.
   model_->SetShelfItemDelegate(
       shelf_id,
-      std::make_unique<AppServiceAppWindowLauncherItemController>(
+      std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id, launcher_controller_->app_service_app_window_controller()));
   launcher_controller_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
 
@@ -2867,7 +2867,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = GURL(kWebAppUrl);
   web_app::AppId installed_app_id =
-      web_app::InstallWebApp(profile(), std::move(web_app_info));
+      web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   launcher_controller_->PinAppWithID(installed_app_id);
 
   std::unique_ptr<Browser> profile2_browser =
@@ -3510,8 +3510,8 @@ TEST_F(ChromeLauncherControllerTest, Active) {
   ash::ShelfItemDelegate* app_item_delegate_1 =
       model_->GetShelfItemDelegate(model_->items()[initial_item_count].id);
   ASSERT_TRUE(app_item_delegate_1);
-  AppWindowLauncherItemController* app_item_controller_1 =
-      app_item_delegate_1->AsAppWindowLauncherItemController();
+  AppWindowShelfItemController* app_item_controller_1 =
+      app_item_delegate_1->AsAppWindowShelfItemController();
   ASSERT_TRUE(app_item_controller_1);
   ui::BaseWindow* last_active =
       GetLastActiveWindowForItemController(app_item_controller_1);
@@ -3530,8 +3530,8 @@ TEST_F(ChromeLauncherControllerTest, Active) {
   ash::ShelfItemDelegate* app_item_delegate_2 =
       model_->GetShelfItemDelegate(model_->items()[initial_item_count + 1].id);
   ASSERT_TRUE(app_item_delegate_2);
-  AppWindowLauncherItemController* app_item_controller_2 =
-      app_item_delegate_2->AsAppWindowLauncherItemController();
+  AppWindowShelfItemController* app_item_controller_2 =
+      app_item_delegate_2->AsAppWindowShelfItemController();
   ASSERT_TRUE(app_item_controller_2);
   last_active = GetLastActiveWindowForItemController(app_item_controller_2);
   EXPECT_EQ(app_2.window()->GetNativeWindow(), last_active->GetNativeWindow());
@@ -4053,7 +4053,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
                     std::unique_ptr<AppIconLoader>(app_icon_loader2));
 
   launcher_controller_->CreateAppLauncherItem(
-      std::make_unique<AppServiceAppWindowLauncherItemController>(
+      std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id3, launcher_controller_->app_service_app_window_controller()),
       ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
@@ -4062,7 +4062,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
   launcher_controller_->CreateAppLauncherItem(
-      std::make_unique<AppServiceAppWindowLauncherItemController>(
+      std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id2, launcher_controller_->app_service_app_window_controller()),
       ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
@@ -4071,7 +4071,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
   launcher_controller_->CreateAppLauncherItem(
-      std::make_unique<AppServiceAppWindowLauncherItemController>(
+      std::make_unique<AppServiceAppWindowShelfItemController>(
           shelf_id1, launcher_controller_->app_service_app_window_controller()),
       ash::STATUS_RUNNING);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());

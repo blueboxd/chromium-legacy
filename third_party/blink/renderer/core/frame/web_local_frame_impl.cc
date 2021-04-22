@@ -1762,11 +1762,16 @@ bool WebLocalFrameImpl::GetPrintPresetOptionsForPlugin(
 
 bool WebLocalFrameImpl::CapturePaintPreview(const gfx::Rect& bounds,
                                             cc::PaintCanvas* canvas,
-                                            bool include_linked_destinations) {
+                                            bool include_linked_destinations,
+                                            bool skip_accelerated_content) {
   FloatSize float_bounds(bounds.width(), bounds.height());
   bool success = false;
   {
-    Document::PaintPreviewScope paint_preview(*GetFrame()->GetDocument());
+    Document::PaintPreviewScope paint_preview(
+        *GetFrame()->GetDocument(),
+        skip_accelerated_content
+            ? Document::kPaintingPreviewSkipAcceleratedContent
+            : Document::kPaintingPreview);
     GetFrame()->StartPaintPreview();
     PaintPreviewContext* paint_preview_context =
         MakeGarbageCollected<PaintPreviewContext>(GetFrame());
@@ -2286,14 +2291,10 @@ bool WebLocalFrameImpl::IsProvisional() const {
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {
-  // This can't use the LocalFrame::localFrameRoot, since it may be called
-  // when the WebLocalFrame exists but the core LocalFrame does not.
-  // TODO(alexmos, dcheng): Clean this up to only calculate this in one place.
-  WebLocalFrameImpl* local_root = this;
-  while (auto* web_local_frame =
-             DynamicTo<WebLocalFrameImpl>(local_root->Parent()))
-    local_root = web_local_frame;
-  return local_root;
+  DCHECK(GetFrame());
+  auto* result = FromFrame(GetFrame()->LocalFrameRoot());
+  DCHECK(result);
+  return result;
 }
 
 WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {

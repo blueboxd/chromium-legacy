@@ -6639,6 +6639,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "lacros_smoke_tast_tests_eve",
         "resultdb": {
           "enable": true
         },
@@ -6654,8 +6655,8 @@
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "lacros_smoke_tast_tests_eve",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_smoke_tast_tests_eve/",
+        "test": "lacros_smoke_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_smoke_tast_tests/",
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }
@@ -6801,6 +6802,25 @@
         },
         "test": "app_shell_unittests",
         "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ash_content_unittests",
+        "test_id_prefix": "ninja://ash/content:ash_content_unittests/"
       },
       {
         "merge": {
@@ -8640,6 +8660,25 @@
         },
         "test": "app_shell_unittests",
         "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ash_content_unittests",
+        "test_id_prefix": "ninja://ash/content:ash_content_unittests/"
       },
       {
         "merge": {
@@ -10523,6 +10562,25 @@
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "ash_content_unittests",
+        "test_id_prefix": "ninja://ash/content:ash_content_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "ash_unittests",
         "test_id_prefix": "ninja://ash:ash_unittests/"
       },
@@ -12362,6 +12420,25 @@
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "ash_content_unittests",
+        "test_id_prefix": "ninja://ash/content:ash_content_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "ash_unittests",
         "test_id_prefix": "ninja://ash:ash_unittests/"
       },
@@ -14184,6 +14261,25 @@
         },
         "test": "app_shell_unittests",
         "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ash_content_unittests",
+        "test_id_prefix": "ninja://ash/content:ash_content_unittests/"
       },
       {
         "merge": {

@@ -5186,7 +5186,7 @@ others/histograms.xml -->
   <int value="3"
       label="Sync service missing AUTOFILL_PROFILE active data type"/>
   <int value="4" label="Account wallet storage upload disabled"/>
-  <int value="5" label="User has a secondary sync passphrase"/>
+  <int value="5" label="User has an explicit sync passphrase"/>
   <int value="6" label="Local sync is enabled"/>
   <int value="7" label="Payments integration user setting is disabled"/>
   <int value="8" label="User email is empty"/>
@@ -24190,6 +24190,7 @@ Called by update_document_policy_enum.py.-->
   <int value="852" label="SharedArrayBufferUnrestrictedAccessAllowed"/>
   <int value="853" label="LensCameraAssistedSearchEnabled"/>
   <int value="854" label="RelaunchWindow"/>
+  <int value="855" label="LacrosAvailability"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -32196,6 +32197,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3878" label="PrefixedStorageQuotaThirdPartyContext"/>
   <int value="3879" label="RequestedFileSystemPersistentThirdPartyContext"/>
   <int value="3880" label="PrefixedStorageInfoThirdPartyContext"/>
+  <int value="3881" label="CrossOriginEmbedderPolicyCorsOrCredentialless"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41092,6 +41094,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="12" label="Mark as Unread"/>
   <int value="13" label="View Offline"/>
   <int value="14" label="Open (JavaScript evaluation)"/>
+  <int value="15" label="Add to Reading List"/>
+  <int value="16" label="Add to Bookmarks"/>
+  <int value="17" label="Close Tab"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -41105,6 +41110,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Image on a Web page"/>
   <int value="8" label="Image-Link on a Web page"/>
   <int value="9" label="Link on a Web page"/>
+  <int value="10" label="Tab Grid Entry"/>
 </enum>
 
 <enum name="IOSMultiWindowConfiguration">
@@ -44039,6 +44045,7 @@ from previous Chrome versions.
   <int value="-2117201726" label="disable-gpu-rasterization"/>
   <int value="-2117169027" label="UpdateHoverAtBeginFrame:enabled"/>
   <int value="-2117048251" label="MediaApp:enabled"/>
+  <int value="-2116440101" label="EnablePenetratingImageSelection:enabled"/>
   <int value="-2114831248" label="disable-new-ntp"/>
   <int value="-2113783491" label="ArcFilePickerExperiment:enabled"/>
   <int value="-2113705745"
@@ -44444,6 +44451,8 @@ from previous Chrome versions.
   <int value="-1784788154" label="NewRemotePlaybackPipeline:disabled"/>
   <int value="-1783790234"
       label="AutofillEnableOfferNotificationCrossTabTracking:enabled"/>
+  <int value="-1782684481"
+      label="AutofillAutoTriggerManualFallbackForCards:disabled"/>
   <int value="-1780306716"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
   <int value="-1779753607" label="VizDisplayCompositor:disabled"/>
@@ -45557,6 +45566,8 @@ from previous Chrome versions.
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-853455968"
       label="OmniboxDefaultTypedNavigationsToHttps:disabled"/>
+  <int value="-852828854"
+      label="AutofillSuggestVirtualCardsOnlyOnFullFormDetection:enabled"/>
   <int value="-850821337" label="WebContentsForceDark:enabled"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
   <int value="-847735582" label="NotificationsViaHelperApp:enabled"/>
@@ -45681,6 +45692,8 @@ from previous Chrome versions.
       label="AutofillImportNonFocusableCreditCardForms:disabled"/>
   <int value="-734067604"
       label="notification-scheduler-immediate-background-task"/>
+  <int value="-733210914"
+      label="AutofillEnableMerchantBoundVirtualCards:disabled"/>
   <int value="-731502579" label="CupsPrintersUiOverhaul:disabled"/>
   <int value="-731133967" label="AutofillSettingsCardTypeSplit:disabled"/>
   <int value="-728461030" label="AutofillPruneSuggestions:disabled"/>
@@ -46323,6 +46336,8 @@ from previous Chrome versions.
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
   <int value="-132082004" label="CacheOneGoogleBar:enabled"/>
+  <int value="-131886819"
+      label="AutofillEnableMerchantBoundVirtualCards:enabled"/>
   <int value="-131673218" label="FileHandlingAPI:disabled"/>
   <int value="-131257916" label="OmniboxCompactSuggestions:disabled"/>
   <int value="-130318058" label="ExoGamepadVibration:enabled"/>
@@ -46527,6 +46542,7 @@ from previous Chrome versions.
   <int value="41990393" label="ContextMenuGoogleLensChip:enabled"/>
   <int value="42098736" label="TranslateAndroidManualTrigger:disabled"/>
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
+  <int value="42881842" label="EnablePenetratingImageSelection:disabled"/>
   <int value="43951968" label="DesktopPWAsCustomTabUI:enabled"/>
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="44240181" label="SharingQRCodeGenerator:disabled"/>
@@ -46956,6 +46972,8 @@ from previous Chrome versions.
   <int value="436682243" label="TabGroupsAndroid:disabled"/>
   <int value="436980707" label="ContextualSearchForceCaption:enabled"/>
   <int value="438307192" label="FirstPartySets:disabled"/>
+  <int value="438398886"
+      label="AutofillEnableStickyManualFallbackForCards:enabled"/>
   <int value="439267320" label="ScreenTime:disabled"/>
   <int value="439525862" label="GlobalMediaControlsForCast:disabled"/>
   <int value="444411390" label="enable-incognito-shortcut-on-desktop"/>
@@ -47048,6 +47066,8 @@ from previous Chrome versions.
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
   <int value="518419320" label="RemoteCopyProgressNotification:disabled"/>
+  <int value="519028964"
+      label="AutofillSuggestVirtualCardsOnlyOnFullFormDetection:disabled"/>
   <int value="519140642" label="SendWebUIJavaScriptErrorReports:enabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
   <int value="529235584" label="PhoneHub:enabled"/>
@@ -47072,6 +47092,8 @@ from previous Chrome versions.
   <int value="547170394"
       label="OmniboxAlternateMatchDescriptionSeparator:disabled"/>
   <int value="548503129" label="ImpulseScrollAnimations:enabled"/>
+  <int value="549168649"
+      label="AutofillEnableStickyManualFallbackForCards:disabled"/>
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
@@ -47570,6 +47592,8 @@ from previous Chrome versions.
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1003002105" label="MaterialDesignBookmarks:disabled"/>
   <int value="1003081697" label="DesktopPWAsUnifiedInstall:enabled"/>
+  <int value="1003612981"
+      label="AutofillAutoTriggerManualFallbackForCards:enabled"/>
   <int value="1004593833" label="LevelDBPerformRewrite:enabled"/>
   <int value="1004909189"
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>

@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -165,7 +166,8 @@ class IntentPickerBubbleViewBrowserTestChromeOS : public InProcessBrowserTest {
     web_app_info->start_url = url;
     web_app_info->scope = url;
     web_app_info->open_as_window = true;
-    auto app_id = web_app::InstallWebApp(profile(), std::move(web_app_info));
+    auto app_id =
+        web_app::test::InstallWebApp(profile(), std::move(web_app_info));
     WaitForAppService();
     return app_id;
   }
@@ -501,8 +503,10 @@ IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
 
 // Test that loading a page with pushState() call that changes URL
 // updates the intent picker view.
+//
+// TODO(crbug.com/1201397): fix flakiness and reenable
 IN_PROC_BROWSER_TEST_F(IntentPickerBubbleViewBrowserTestChromeOS,
-                       PushStateURLChangeTest) {
+                       DISABLED_PushStateURLChangeTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL test_url =
       embedded_test_server()->GetURL("/intent_picker/push_state_test.html");

@@ -331,13 +331,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=91',
     ],
-    'identifier': 'Implementation Library Skew Tests For 91.0.4472.19',
+    'identifier': 'Implementation Library Skew Tests For 91.0.4472.20',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.19',
+          'revision': 'version:91.0.4472.20',
         }
       ],
     },
@@ -355,13 +355,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=90',
     ],
-    'identifier': 'Implementation Library Skew Tests For 90.0.4430.88',
+    'identifier': 'Implementation Library Skew Tests For 90.0.4430.89',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M90',
-          'revision': 'version:90.0.4430.88',
+          'revision': 'version:90.0.4430.89',
         }
       ],
     },
@@ -403,13 +403,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=91',
     ],
-    'identifier': 'Implementation Library Skew Tests For 91.0.4472.19',
+    'identifier': 'Implementation Library Skew Tests For 91.0.4472.20',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.19',
+          'revision': 'version:91.0.4472.20',
         }
       ],
     },
@@ -427,13 +427,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--impl-version=90',
     ],
-    'identifier': 'Implementation Library Skew Tests For 90.0.4430.88',
+    'identifier': 'Implementation Library Skew Tests For 90.0.4430.89',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M90',
-          'revision': 'version:90.0.4430.88',
+          'revision': 'version:90.0.4430.89',
         }
       ],
     },
@@ -475,13 +475,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=91',
     ],
-    'identifier': 'Client Library Skew Tests For 91.0.4472.19',
+    'identifier': 'Client Library Skew Tests For 91.0.4472.20',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.19',
+          'revision': 'version:91.0.4472.20',
         }
       ],
     },
@@ -499,13 +499,13 @@
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
       '--client-version=90',
     ],
-    'identifier': 'Client Library Skew Tests For 90.0.4430.88',
+    'identifier': 'Client Library Skew Tests For 90.0.4430.89',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M90',
-          'revision': 'version:90.0.4430.88',
+          'revision': 'version:90.0.4430.89',
         }
       ],
     },
@@ -579,15 +579,46 @@
   'CROS_OCTOPUS_TOT-1': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R91-13873.0.0',
+      'cros_img': 'octopus-release/R91-13904.9.0',
     },
     'identifier': 'OCTOPUS_TOT-1',
   },
   'CROS_OCTOPUS_TOT-2': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R90-13816.40.0',
+      'cros_img': 'octopus-release/R90-13816.56.0',
     },
     'identifier': 'OCTOPUS_TOT-2',
+  },
+  'LACROS_AMD64_GENERIC': {
+    'args': [
+      '--board=amd64-generic',
+      '--use-vm',
+    ],
+    'identifier': 'amd64-generic',
+    'swarming': {
+       'dimension_sets': [
+        {
+          'cpu': 'x86',
+          'kvm': '1',
+          'os': 'Ubuntu-16.04',
+        }
+      ],
+    },
+  },
+  'LACROS_EVE': {
+    'args': [
+      '--board=eve',
+      '--flash',
+    ],
+    'identifier': 'eve',
+    'swarming': {
+      'dimension_sets': [
+        {
+          'os': 'ChromeOS',
+          'device_type': 'eve',
+        }
+      ],
+    },
   },
 }

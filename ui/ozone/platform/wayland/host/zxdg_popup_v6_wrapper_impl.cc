@@ -16,6 +16,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
@@ -121,11 +122,9 @@ bool ZXDGPopupV6WrapperImpl::Initialize(WaylandConnection* connection,
   ZXDGSurfaceV6WrapperImpl* parent_xdg_surface = nullptr;
   // If the parent window is a popup, the surface of that popup must be used as
   // a parent.
-  if (wl::IsMenuType(wayland_window_->parent_window()->type())) {
-    auto* wayland_popup =
-        static_cast<WaylandPopup*>(wayland_window_->parent_window());
+  if (auto* parent_popup = wayland_window_->parent_window()->AsWaylandPopup()) {
     ZXDGPopupV6WrapperImpl* popup =
-        static_cast<ZXDGPopupV6WrapperImpl*>(wayland_popup->shell_popup());
+        static_cast<ZXDGPopupV6WrapperImpl*>(parent_popup->shell_popup());
     parent_xdg_surface = popup->zxdg_surface_v6_wrapper();
   } else {
     WaylandToplevelWindow* wayland_surface =
@@ -198,7 +197,9 @@ zxdg_positioner_v6* ZXDGPopupV6WrapperImpl::CreatePositioner(
   if (!positioner)
     return nullptr;
 
-  auto menu_type = GetMenuTypeForPositioner(connection, parent_window);
+  auto menu_type = GetPopupTypeForPositioner(
+      wayland_window_->type(),
+      connection->event_source()->last_pointer_button_pressed(), parent_window);
 
   // The parent we got must be the topmost in the stack of the same family
   // windows.

@@ -1471,88 +1471,7 @@
       }
     },
 
-    'fuchsia_gpu_telemetry_tests': {
-      'context_lost_validating': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'name': 'context_lost_validating_tests',
-        'telemetry_test_name': 'context_lost',
-        'args': [
-          '--extra-browser-args=--use-cmd-decoder=validating',
-        ],
-        'mixins': [
-          'enable_resultdb',
-        ],
-      },
-      'depth_capture': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'enable_resultdb',
-        ],
-      },
-      'gpu_process': {
-        'name': 'gpu_process_launch_tests',
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'enable_resultdb',
-        ],
-      },
-      'hardware_accelerated_feature': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'enable_resultdb',
-        ],
-      },
-      'info_collection': {
-        'args': [
-          '--expected-vendor-id',
-          '${gpu_vendor_id}',
-          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId',
-        ],
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'enable_resultdb',
-        ],
-      },
-      'maps': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'chrome-gpu-gold-service-account',
-          'skia_gold_test',
-          'enable_resultdb',
-        ],
-      },
-      'pixel': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'chrome-gpu-gold-service-account',
-          'skia_gold_test',
-          'enable_resultdb',
-        ],
-      },
-      'screenshot_sync': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'enable_resultdb',
-        ],
-      },
-      'trace_test': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'enable_resultdb',
-        ],
-      },
-      'webgl_conformance': {
-        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
-        'mixins': [
-          'enable_resultdb',
-        ],
-        'swarming': {
-          'shards': 6,
-        },
-      }
-    },
-
-    'fuchsia_gtests': {
+    'fuchsia_common_gtests': {
       'absl_hardening_tests': {},
       'accessibility_unittests': {
         'mixins': ['fuchsia_runner_logs'],
@@ -1590,15 +1509,6 @@
       'capture_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
-      'cast_runner_browsertests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'cast_runner_integration_tests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'cast_runner_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
       'cc_unittests': {
         'swarming': {
           'shards': 2,
@@ -1619,9 +1529,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
         ],
-      },
-      'cr_fuchsia_base_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
       },
       'cronet_tests': {
         'mixins': ['fuchsia_runner_logs'],
@@ -1732,21 +1639,90 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter',
         ],
       },
-      'web_engine_browsertests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'web_engine_integration_tests': {
-        'args': [
-          '--child-arg=--vmodule=test_navigation_listener=1',
-        ],
-      },
-      'web_engine_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'web_runner_integration_tests': {},
       'wtf_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
+    },
+
+    'fuchsia_gpu_telemetry_tests': {
+      'context_lost_validating': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'name': 'context_lost_validating_tests',
+        'telemetry_test_name': 'context_lost',
+        'args': [
+          '--extra-browser-args=--use-cmd-decoder=validating',
+        ],
+        'mixins': [
+          'enable_resultdb',
+        ],
+      },
+      'depth_capture': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'enable_resultdb',
+        ],
+      },
+      'gpu_process': {
+        'name': 'gpu_process_launch_tests',
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'enable_resultdb',
+        ],
+      },
+      'hardware_accelerated_feature': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'enable_resultdb',
+        ],
+      },
+      'info_collection': {
+        'args': [
+          '--expected-vendor-id',
+          '${gpu_vendor_id}',
+          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId',
+        ],
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'enable_resultdb',
+        ],
+      },
+      'maps': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
+          'enable_resultdb',
+        ],
+      },
+      'pixel': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'chrome-gpu-gold-service-account',
+          'skia_gold_test',
+          'enable_resultdb',
+        ],
+      },
+      'screenshot_sync': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'enable_resultdb',
+        ],
+      },
+      'trace_test': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'enable_resultdb',
+        ],
+      },
+      'webgl_conformance': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'mixins': [
+          'enable_resultdb',
+        ],
+        'swarming': {
+          'shards': 18,
+        },
+      }
     },
 
     'fuchsia_sizes_tests': {
@@ -1768,6 +1744,9 @@
           '--use-cmd-decoder=passthrough',
         ],
         'linux_args': ['--no-xvfb'],
+        'swarming': {
+          'shards': 2,
+        },
       },
       'gl_unittests': {},
     },
@@ -2699,6 +2678,9 @@
           '--use-gpu-in-tests',
         ],
         'linux_args': ['--no-xvfb'],
+        'swarming': {
+          'shards': 2,
+        },
       },
       'gl_unittests': {
         'desktop_args': ['--use-gpu-in-tests'],
@@ -3897,7 +3879,10 @@
           'shards': 2,
         },
         'android_swarming': {
-          'shards': 6,
+          'shards': 12,
+        },
+        'chromeos_swarming': {
+          'shards': 18,
         },
       },
     },
@@ -4146,21 +4131,10 @@
       }
     },
 
-    'lacros_all_tast_tests_amd64_generic': {
-      'lacros_all_tast_tests_amd64_generic': {
-        'args': [
-          '--board=amd64-generic',
-          '--use-vm',
-        ],
+    'lacros_all_tast_tests': {
+      'lacros_all_tast_tests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
-          'dimension_sets': [
-            {
-              'cpu': 'x86',
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-            }
-          ],
         },
         'resultdb': {
           'enable': True,
@@ -4175,42 +4149,10 @@
       },
     },
 
-    'lacros_smoke_tast_tests_amd64_generic': {
-      'lacros_smoke_tast_tests_amd64_generic': {
-        'args': [
-          '--board=amd64-generic',
-          '--use-vm',
-        ],
+    'lacros_smoke_tast_tests': {
+      'lacros_smoke_tast_tests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
-          'dimension_sets': [
-            {
-              'cpu': 'x86',
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-            }
-          ],
-        },
-        'resultdb': {
-          'enable': True,
-        },
-      },
-    },
-
-    'lacros_smoke_tast_tests_eve': {
-      'lacros_smoke_tast_tests_eve': {
-        'args': [
-          '--board=eve',
-          '--flash',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'eve',
-            }
-          ],
         },
         'resultdb': {
           'enable': True,
@@ -4285,6 +4227,7 @@
 
     'linux_chromeos_specific_gtests': {
       # Chrome OS only.
+      'ash_content_unittests': {},
       'ash_unittests': {},
       'aura_unittests': {},
       'chromeos_components_unittests': {},
@@ -5165,6 +5108,33 @@
       'vr_pixeltests': {},
     },
 
+    'web_engine_gtests': {
+      'cast_runner_browsertests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cast_runner_integration_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cast_runner_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cr_fuchsia_base_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'web_engine_browsertests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'web_engine_integration_tests': {
+        'args': [
+          '--child-arg=--vmodule=test_navigation_listener=1',
+        ],
+      },
+      'web_engine_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'web_runner_integration_tests': {},
+    },
+
     'weblayer_android_gtests': {
       'weblayer_bundle_test': {
       },
@@ -5184,11 +5154,6 @@
 
     'weblayer_instrumentation_tests': {
       'weblayer_instrumentation_test_apk': {
-      }
-    },
-
-    'weblayer_instrumentation_tests_with_chrome': {
-      'weblayer_instrumentation_test_with_chrome_apk': {
       }
     },
 
@@ -5943,6 +5908,11 @@
     'fuchsia_arm64_isolated_scripts': [
       'fuchsia_sizes_tests',
       'gpu_angle_fuchsia_unittests_isolated_scripts',
+    ],
+
+    'fuchsia_gtests': [
+      'fuchsia_common_gtests',
+      'web_engine_gtests',
     ],
 
     'fuchsia_x64_isolated_scripts': [
@@ -6865,16 +6835,6 @@
     },
 
     'android_weblayer_x86_marshmallow_10_gtests': {
-      'weblayer_instrumentation_tests_with_chrome': {
-        'variants': [
-          {
-            'identifier': 'ToT_Tests',
-            'args': [
-              '--additional-apk=apks/ChromePublic.apk'
-            ],
-          }
-        ]
-      },
       'weblayer_instrumentation_version_tests_with_chrome': {
         'variants': [
           'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MILESTONE',
@@ -7207,6 +7167,14 @@
       },
     },
 
+    'lacros_all_tast_tests_amd64_generic': {
+      'lacros_all_tast_tests': {
+        'variants': [
+          'LACROS_AMD64_GENERIC',
+        ]
+      },
+    },
+
     # Check go/lacros-on-skylab for details of Skylab configurations.
     'lacros_skylab_x86_64': {
       'lacros_skylab_poc': {
@@ -7219,6 +7187,22 @@
           'CROS_SNAPPY_TOT',
           'CROS_OCTOPUS_TOT-1',
           'CROS_OCTOPUS_TOT-2',
+        ]
+      },
+    },
+
+    'lacros_smoke_tast_tests_amd64_generic': {
+      'lacros_smoke_tast_tests': {
+        'variants': [
+          'LACROS_AMD64_GENERIC',
+        ]
+      },
+    },
+
+    'lacros_smoke_tast_tests_eve': {
+      'lacros_smoke_tast_tests': {
+        'variants': [
+          'LACROS_EVE',
         ]
       },
     },

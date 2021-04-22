@@ -729,8 +729,16 @@ void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
   // is not inside the ObserverList iteration.
   it->second->RemoveObserver(observer);
   if (!it->second->HasObservers()) {
-    for (const auto& provider : media_route_providers_)
+    for (const auto& provider : media_route_providers_) {
+      if (!provider.second) {
+        // The provider somehow not existing may be the cause of the crash at
+        // crbug.com/1200786.
+        NOTREACHED() << "Provider is null: "
+                     << ProviderIdToString(provider.first);
+        continue;
+      }
       provider.second->StopObservingMediaRoutes(source_id);
+    }
     routes_queries_.erase(source_id);
   }
 }
@@ -849,9 +857,15 @@ void MediaRouterMojoImpl::OnTerminateRouteResult(
 
 void MediaRouterMojoImpl::OnRouteAdded(MediaRouteProviderId provider_id,
                                        const MediaRoute& route) {
+  // |routes_queries_| might be added during the iteration. Making a
+  // copy here to avoid the iterator from being invalidated.
+  std::vector<MediaRoutesQuery*> queries;
   for (auto& routes_query : routes_queries_) {
     if (routes_query.second->AddRouteForProvider(provider_id, route))
-      routes_query.second->NotifyObservers();
+      queries.push_back(routes_query.second.get());
+  }
+  for (auto* query : queries) {
+    query->NotifyObservers();
   }
 }
 

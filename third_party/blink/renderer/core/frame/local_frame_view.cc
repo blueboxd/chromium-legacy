@@ -1012,7 +1012,6 @@ void LocalFrameView::UpdateLayout() {
                    });
   probe::DidChangeViewport(frame_.Get());
 
-
 #if DCHECK_IS_ON()
   // Post-layout assert that nobody was re-marked as needing layout during
   // layout.
@@ -4112,8 +4111,11 @@ void LocalFrameView::Paint(GraphicsContext& context,
   const auto* owner_layout_object = GetFrame().OwnerLayoutObject();
   base::Optional<Document::PaintPreviewScope> paint_preview;
   if (owner_layout_object &&
-      owner_layout_object->GetDocument().IsPaintingPreview()) {
-    paint_preview.emplace(*GetFrame().GetDocument());
+      owner_layout_object->GetDocument().GetPaintPreviewState() !=
+          Document::kNotPaintingPreview) {
+    paint_preview.emplace(
+        *GetFrame().GetDocument(),
+        owner_layout_object->GetDocument().GetPaintPreviewState());
     // When capturing a Paint Preview we want to capture scrollable embedded
     // content separately. Paint should stop here and ask the browser to
     // coordinate painting such frames as a separate task.
@@ -4163,6 +4165,9 @@ void LocalFrameView::PaintOutsideOfLifecycle(
     const CullRect& cull_rect) {
   DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
 
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kPaint);
+
   AllowThrottlingScope allow_throttling(*this);
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
@@ -4183,6 +4188,9 @@ void LocalFrameView::PaintContentsOutsideOfLifecycle(
     const GlobalPaintFlags global_paint_flags,
     const CullRect& cull_rect) {
   DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
+
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kPaint);
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
@@ -4680,8 +4688,7 @@ void LocalFrameView::BeginLifecycleUpdates() {
   // over HTTP/HTTPs. And only defer commits once. This method gets called
   // multiple times, and we do not want to defer a second time if we have
   // already done so once and resumed commits already.
-  if (document &&
-      document->DeferredCompositorCommitIsAllowed() &&
+  if (document && document->DeferredCompositorCommitIsAllowed() &&
       !have_deferred_commits_) {
     chrome_client.StartDeferringCommits(
         GetFrame(), base::TimeDelta::FromMilliseconds(kCommitDelayDefaultInMs));

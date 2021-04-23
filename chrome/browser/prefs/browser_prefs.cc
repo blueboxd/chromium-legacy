@@ -815,7 +815,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::Preferences::RegisterPrefs(registry);
   chromeos::ResetScreen::RegisterPrefs(registry);
   chromeos::SchedulerConfigurationManager::RegisterLocalStatePrefs(registry);
-  chromeos::ServicesCustomizationDocument::RegisterPrefs(registry);
+  ash::ServicesCustomizationDocument::RegisterPrefs(registry);
   chromeos::SigninScreenHandler::RegisterPrefs(registry);
   chromeos::StartupUtils::RegisterPrefs(registry);
   ash::StatsReportingController::RegisterLocalStatePrefs(registry);
@@ -1111,7 +1111,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
       registry);
   ash::MultiProfileUserController::RegisterProfilePrefs(registry);
   chromeos::NetworkMetadataStore::RegisterPrefs(registry);
-  chromeos::ReleaseNotesStorage::RegisterProfilePrefs(registry);
+  ash::ReleaseNotesStorage::RegisterProfilePrefs(registry);
   chromeos::quick_unlock::FingerprintStorage::RegisterProfilePrefs(registry);
   chromeos::quick_unlock::PinStoragePrefs::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
@@ -1125,7 +1125,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::EduCoexistenceConsentInvalidationController::RegisterProfilePrefs(
       registry);
   SigninErrorNotifier::RegisterPrefs(registry);
-  chromeos::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
+  ash::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
   chromeos::settings::OSSettingsUI::RegisterProfilePrefs(registry);
   chromeos::StartupUtils::RegisterOobeProfilePrefs(registry);
   ash::UserImageSyncObserver::RegisterProfilePrefs(registry);

@@ -46821,7 +46821,6 @@ from previous Chrome versions.
   <int value="281024089" label="AppServiceExternalProtocol:disabled"/>
   <int value="282582564" label="DisableCameraFrameRotationAtSource:enabled"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
-  <int value="282692100" label="SubframeShutdownDelay:disabled"/>
   <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="285387302" label="AvatarToolbarButton:enabled"/>
@@ -48787,7 +48786,6 @@ from previous Chrome versions.
       label="AutofillEnableLocalCardMigrationForNonSyncUser:disabled"/>
   <int value="1990873642"
       label="AutofillEnableSurfacingServerCardNickname:disabled"/>
-  <int value="1991461704" label="SubframeShutdownDelay:enabled"/>
   <int value="1991771852" label="LeftToRightUrls:enabled"/>
   <int value="1991912338" label="ModuleScriptsDynamicImport:enabled"/>
   <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>
@@ -74977,6 +74975,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Metadata parse error"/>
   <int value="2" label="Memory quota exceeded"/>
   <int value="3" label="Serving constraints not met"/>
+  <int value="4" label="Web Bundle fetch failed"/>
 </enum>
 
 <enum name="SuccessTimeoutStarted">

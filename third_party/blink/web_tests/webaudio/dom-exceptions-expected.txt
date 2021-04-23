@@ -1,12 +1,12 @@
-CONSOLE WARNING: line 138: The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
-CONSOLE WARNING: line 142: The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
-CONSOLE WARNING: line 252: SharedArrayBuffer will require cross-origin isolation as of M91, around May 2021. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details.
-CONSOLE WARNING: line 347: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 353: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
-CONSOLE WARNING: line 523: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: line 769: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 779: The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
-CONSOLE WARNING: line 800: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 4: SharedArrayBuffer will require cross-origin isolation as of M91, around May 2021. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details.
+CONSOLE WARNING: line 139: The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
+CONSOLE WARNING: line 143: The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
+CONSOLE WARNING: line 348: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 354: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
+CONSOLE WARNING: line 524: The provided value '9x' is not a valid enum value of type OverSampleType.
+CONSOLE WARNING: line 770: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 780: The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
+CONSOLE WARNING: line 801: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED.
 PASS Executing "initialize"
@@ -41,13 +41,13 @@ PASS < [initialize] All assertions passed. (total 2 assertions)
 PASS > [createBuffer] 
 PASS   context.createBuffer(99, 1, context.sampleRate) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The number of channels provided (99) is outside the range [1, 32].".
 PASS   context.createBuffer(0, 1, context.sampleRate) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The number of channels provided (0) is outside the range [1, 32].".
-PASS   context.createBuffer(1, 1, 1) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1) is outside the range [3000, 384000].".
-PASS   context.createBuffer(1, 1, 2999) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (2999) is outside the range [3000, 384000].".
-PASS   context.createBuffer(1, 1, 384001) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (384001) is outside the range [3000, 384000].".
-PASS   context.createBuffer(1, 1, 1e6) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1.00000e+6) is outside the range [3000, 384000].".
+PASS   context.createBuffer(1, 1, 1) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1) is outside the range [3000, 768000].".
+PASS   context.createBuffer(1, 1, 2999) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (2999) is outside the range [3000, 768000].".
+PASS   context.createBuffer(1, 1, 768001) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (768001) is outside the range [3000, 768000].".
+PASS   context.createBuffer(1, 1, 1e6) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The sample rate provided (1.00000e+6) is outside the range [3000, 768000].".
 PASS   context.createBuffer(1, 1, 3000) did not throw an exception.
 PASS   context.createBuffer(1, 1, 192000) did not throw an exception.
-PASS   context.createBuffer(1, 1, 384000) did not throw an exception.
+PASS   context.createBuffer(1, 1, 768000) did not throw an exception.
 PASS   context.createBuffer(1, 0, context.sampleRate) threw NotSupportedError: "Failed to execute 'createBuffer' on 'BaseAudioContext': The number of frames provided (0) is less than or equal to the minimum bound (0).".
 PASS   context.createBuffer(new ArrayBuffer(100), true) threw TypeError: "Failed to execute 'createBuffer' on 'BaseAudioContext': 3 arguments required, but only 2 present.".
 PASS < [createBuffer] All assertions passed. (total 11 assertions)
@@ -154,8 +154,8 @@ PASS < [offline-audio-context] All assertions passed. (total 1 assertions)
 PASS > [invalid-offline-audio-context-parameters] errors for invalid channel counts
 PASS   new OfflineAudioContext(0, 100, context.sampleRate) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of channels provided (0) is outside the range [1, 32].".
 PASS   new OfflineAudioContext(99, 100, context.sampleRate) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of channels provided (99) is outside the range [1, 32].".
-PASS   new OfflineAudioContext(1, 100, 1) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 384000].".
-PASS   new OfflineAudioContext(1, 100, 1e6) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 384000].".
+PASS   new OfflineAudioContext(1, 100, 1) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 768000].".
+PASS   new OfflineAudioContext(1, 100, 1e6) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 768000].".
 PASS   new OfflineAudioContext(1, 0, 44100) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of frames provided (0) is less than the minimum bound (1).".
 PASS < [invalid-offline-audio-context-parameters] All assertions passed. (total 5 assertions)
 PASS > [invalid-frame-length] 

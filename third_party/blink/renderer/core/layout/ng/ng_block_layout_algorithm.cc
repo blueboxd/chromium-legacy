@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -40,23 +41,45 @@ namespace blink {
 namespace {
 
 bool HasLineEvenIfEmpty(LayoutBox* box) {
+  // Note: We should reduce calling |LayoutBlock::HasLineIfEmpty()|, because
+  // it calls slow function |IsRootEditableElement()|.
   LayoutBlockFlow* const block_flow = DynamicTo<LayoutBlockFlow>(box);
   if (!block_flow)
     return false;
   // Note: |block_flow->NeedsCollectInline()| is true after removing all
   // children from block[1].
   // [1] editing/inserting/insert_after_delete.html
-  LayoutObject* const child = GetLayoutObjectForFirstChildNode(block_flow);
-  if (!child) {
+  if (!GetLayoutObjectForFirstChildNode(block_flow)) {
     // Note: |block_flow->ChildrenInline()| can be both true or false:
     //  - true: just after construction, <div></div>
     //  - true: one of child is inline them remove all, <div>abc</div>
     //  - false: all children are block then remove all, <div><p></p></div>
     return block_flow->HasLineIfEmpty();
   }
-  if (!AreNGBlockFlowChildrenInline(block_flow))
-    return false;
-  return NGInlineNode(block_flow).HasLineEvenIfEmpty();
+  if (AreNGBlockFlowChildrenInline(block_flow))
+    return NGInlineNode(block_flow).HasLineEvenIfEmpty();
+  if (const auto* const flow_thread = block_flow->MultiColumnFlowThread()) {
+    DCHECK(!flow_thread->ChildrenInline());
+    for (const auto* child = flow_thread->FirstChild(); child;
+         child = child->NextSibling()) {
+      if (child->IsInline()) {
+        // Note: |LayoutNGOutsideListMarker| is out-of-flow for the tree
+        // building purpose in |LayoutBlockFlow::AddChild()|.
+        // |MultiColumnRenderingTest.ListItem| reaches here.
+        DCHECK(child->IsLayoutNGOutsideListMarker()) << child;
+        return false;
+      }
+      if (!child->IsFloatingOrOutOfFlowPositioned()) {
+        // We reach here when we have in-flow child.
+        // <div style="columns: 3"><div style="float:left"><div></div></div>
+        return false;
+      }
+    }
+    // There are no children or all children are floating or out of flow
+    // positioned.
+    return block_flow->HasLineIfEmpty();
+  }
+  return false;
 }
 
 LogicalOffset CenterBlockChild(LogicalOffset offset,
@@ -401,19 +424,22 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::Layout() {
     result = LayoutWithInlineChildLayoutContext(first_child);
   else
     result = Layout(nullptr);
-  if (UNLIKELY(result->Status() == NGLayoutResult::kNeedsEarlierBreak)) {
-    // If we found a good break somewhere inside this block, re-layout and break
-    // at that location.
-    DCHECK(result->GetEarlyBreak());
-    return RelayoutAndBreakEarlier<NGBlockLayoutAlgorithm>(
-        *result->GetEarlyBreak());
-  } else if (UNLIKELY(result->Status() ==
-                      NGLayoutResult::
-                          kNeedsRelayoutWithNoForcedTruncateAtLineClamp)) {
-    DCHECK(!ignore_line_clamp_);
-    return RelayoutIgnoringLineClamp();
+  switch (result->Status()) {
+    case NGLayoutResult::kNeedsEarlierBreak:
+      // If we found a good break somewhere inside this block, re-layout and
+      // break at that location.
+      DCHECK(result->GetEarlyBreak());
+      return RelayoutAndBreakEarlier<NGBlockLayoutAlgorithm>(
+          *result->GetEarlyBreak());
+    case NGLayoutResult::kNeedsRelayoutWithNoForcedTruncateAtLineClamp:
+      DCHECK(!ignore_line_clamp_);
+      return RelayoutIgnoringLineClamp();
+    case NGLayoutResult::kDisableFragmentation:
+      DCHECK(ConstraintSpace().HasBlockFragmentation());
+      return RelayoutWithoutFragmentation<NGBlockLayoutAlgorithm>();
+    default:
+      return result;
   }
-  return result;
 }
 
 NOINLINE const NGLayoutResult*
@@ -904,10 +930,15 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
   // We only finalize for fragmentation if the fragment has a BFC block offset.
   // This may occur with a zero block size fragment. We need to know the BFC
   // block offset to determine where the fragmentation line is relative to us.
-  if (container_builder_.BfcBlockOffset() &&
-      ConstraintSpace().HasBlockFragmentation()) {
-    if (!FinalizeForFragmentation())
-      return container_builder_.Abort(NGLayoutResult::kNeedsEarlierBreak);
+  if (UNLIKELY(container_builder_.BfcBlockOffset() &&
+               InvolvedInBlockFragmentation(container_builder_))) {
+    NGBreakStatus status = FinalizeForFragmentation();
+    if (status != NGBreakStatus::kContinue) {
+      if (status == NGBreakStatus::kNeedsEarlierBreak)
+        return container_builder_.Abort(NGLayoutResult::kNeedsEarlierBreak);
+      DCHECK_EQ(status, NGBreakStatus::kDisableFragmentation);
+      return container_builder_.Abort(NGLayoutResult::kDisableFragmentation);
+    }
   }
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
@@ -915,7 +946,7 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
 #if DCHECK_IS_ON()
   // If we're not participating in a fragmentation context, no block
   // fragmentation related fields should have been set.
-  if (!ConstraintSpace().HasBlockFragmentation())
+  if (!InvolvedInBlockFragmentation(container_builder_))
     container_builder_.CheckNoBlockFragmentation();
 #endif
 
@@ -2217,8 +2248,9 @@ void NGBlockLayoutAlgorithm::ConsumeRemainingFragmentainerSpace(
   }
 }
 
-bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
-  if (Node().IsInlineFormattingContextRoot() && !early_break_) {
+NGBreakStatus NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
+  if (Node().IsInlineFormattingContextRoot() && !early_break_ &&
+      ConstraintSpace().HasBlockFragmentation()) {
     if (container_builder_.HasInflowChildBreakInside() ||
         first_overflowing_line_) {
       if (first_overflowing_line_ &&
@@ -2238,7 +2270,7 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
         const NGEarlyBreak* breakpoint =
             MakeGarbageCollected<NGEarlyBreak>(line_number);
         container_builder_.SetEarlyBreak(breakpoint, kBreakAppealPerfect);
-        return false;
+        return NGBreakStatus::kNeedsEarlierBreak;
       }
     } else {
       // Everything could fit in the current fragmentainer, but, depending on
@@ -2277,7 +2309,7 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
                                               consumed_block_size);
       container_builder_.SetConsumedBlockSize(fragments_total_block_size);
     }
-    return true;
+    return NGBreakStatus::kContinue;
   }
 
   LayoutUnit space_left = kIndefiniteSize;

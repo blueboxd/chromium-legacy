@@ -236,6 +236,8 @@ crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
 ## prerender test: the File System Access API is not supported on Android ##
 crbug.com/1182032 [ Android ] virtual/prerender/wpt_internal/prerender/restriction-local-file-system-access.https.html [ Skip ]
+## prerender test: Notification constructor is not supported on Android ##
+crbug.com/1198110 [ Android ] virtual/prerender/wpt_internal/prerender/restriction-notification.https.html [ Skip ]
 
 # These tests require BFCache, which is currently disabled by default on Desktop.
 # Keep this in sync with VirtualTestSuites.
@@ -1080,7 +1082,6 @@ crbug.com/1146973 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/change-out-of-flow-type-and-remove-inner-multicol-crash.html [ Crash Failure ]
 crbug.com/996655 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Crash Failure Pass ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-auto-002.xht [ Crash Failure ]
-crbug.com/1066616 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-overflow-clip.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-002.xht [ Crash Failure Timeout ]
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-fraction-003.xht [ Crash Failure ]
 crbug.com/874051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure Crash ]
@@ -2438,6 +2439,10 @@ crbug.com/980872 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection
 # WebRTC: there's an open bug with some capture scenarios not working.
 crbug.com/1156408 external/wpt/webrtc/RTCPeerConnection-relay-canvas.https.html [ Pass Failure Timeout ]
 crbug.com/1156408 external/wpt/webrtc/RTCPeerConnection-capture-video.https.html [ Pass Failure Timeout ]
+
+# WebRTC: Disable DataChannel tests while new features are added to WebRTC.
+crbug.com/webrtc/12697 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/datachannel-emptystring.html [ Pass Failure ]
+crbug.com/webrtc/12697 external/wpt/webrtc/datachannel-emptystring.html [ Pass Failure ]
 
 crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
 
@@ -5068,31 +5073,24 @@ crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeou
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.https.html [ Failure Timeout ]
 
-# These tests require the Blink SharedArrayBufferOnDesktop feature, now that
-# SharedArrayBuffer is disabled by default everywhere.
-# TODO(crbug.com/1194557) Rework these tests to use COOP+COEP, and remove the
-# virtual tests.
-crbug.com/1194557 crypto/random-values.html [ Failure Timeout ]
-crbug.com/1194557 crypto/worker-random-values.html [ Failure Timeout ]
-crbug.com/1194557 crypto/subtle/importKey-badParameters.html [ Failure Timeout ]
-crbug.com/1194557 fast/beacon/beacon-basic.html [ Failure Timeout ]
-crbug.com/1194557 fast/css/fontface-arraybuffer.html [ Failure Timeout ]
-crbug.com/1194557 fast/dom/geometry-interfaces-dom-matrix.html [ Failure Timeout ]
-crbug.com/1194557 fast/events/constructors/midi-message-event-constructor.html [ Failure Timeout ]
-crbug.com/1194557 fast/files/blob-constructor.html [ Failure Timeout ]
-crbug.com/1194557 fast/webgl/webgl-sharedarraybuffer.html [ Failure Timeout ]
-crbug.com/1194557 fast/workers/worker-atomics-wait.html [ Failure Timeout ]
-crbug.com/1194557 fast/workers/worker-sharedarraybuffer-transfer.html [ Failure Timeout ]
-crbug.com/1194557 fast/workers/chromium/worker-sharedarraybuffer-transfer-two-workers.html [ Failure Timeout ]
-crbug.com/1194557 fast/xmlhttprequest/xmlhttprequest-send-sharedarraybuffer.html [ Failure Timeout ]
-crbug.com/1194557 http/tests/devtools/local-object-properties-section.js [ Failure Timeout ]
-crbug.com/1194557 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Timeout ]
-crbug.com/1194557 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Failure Timeout ]
-crbug.com/1194557 http/tests/devtools/unit/object-properties-expand-recursively.js [ Failure Timeout ]
-crbug.com/1194557 http/tests/websocket/send-arraybufferview.html [ Failure Timeout ]
-crbug.com/1194557 storage/indexeddb/shared-array-buffer-throws.html [ Failure Timeout ]
-crbug.com/1194557 virtual/shared_array_buffer_on_desktop/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-subdomain-yes-2-subdomain2-no.sub.https.html [ Failure Timeout ]
-crbug.com/1194557 webaudio/dom-exceptions.html [ Failure Timeout ]
+# Test timing out when SharedArrayBuffer is disable by default.
+# See https://crbug.com/1094557
+crbug.com/1194557 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Timeout ]
+crbug.com/1194557 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Pass ]
+
+# Failing test, but expectation file name is too long. See https://crbug.com/612667
+# See https://crbug.com/1094557
+crbug.com/1194557 external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-subdomain-yes-2-subdomain2-no.sub.https.html [ Timeout ]
+crbug.com/1194557 virtual/shared_array_buffer_on_desktop/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-subdomain-yes-2-subdomain2-no.sub.https.html [ Failure Pass ]
+
+# Failing devtool tests. Independently of SharedArrayBuffer enabled or not.
+crbug.com/1194557 http/tests/devtools/local-object-properties-section.js [ Failure ]
+crbug.com/1194557 http/tests/devtools/unit/object-properties-expand-recursively.js [ Failure ]
+
+# Test output varies depending on the bot. A single expectation file doesn't
+# work.
+crbug.com/1194557 fast/beacon/beacon-basic.html [ Failure Pass ]
+crbug.com/1194557 virtual/shared_array_buffer_on_desktop/fast/beacon/beacon-basic.html [ Pass ]
 
 # This test passes only when the JXL feature is enabled.
 crbug.com/1161994 http/tests/inspector-protocol/emulation/emulation-set-disabled-image-types-jxl.js [ Pass Failure ]
@@ -6746,9 +6744,6 @@ crbug.com/1150700 [ Win ] virtual/plz-dedicated-worker/external/wpt/service-work
 crbug.com/1130020 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout Crash ]
 crbug.com/1130020 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Pass Failure Timeout ]
 
-# WebBundle tests which fail
-crbug.com/1168449 external/wpt/web-bundle/subresource-loading/subresource-loading-cors-error.https.tentative.html [ Pass Timeout ]
-
 # Sheriff 2020-11-16
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Failure Timeout ]
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Pass Failure Timeout ]
@@ -7172,5 +7167,10 @@ crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-e
 
 # Sheriff 2021-04-22
 crbug.com/1191990 [ Linux ] http/tests/serviceworker/clients-openwindow.html [ Pass Failure ]
-crbug.com/1198443 [ Win ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
+crbug.com/1198443 [ Win ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
 crbug.com/1201879 [ Linux ] http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Pass Timeout ]
+
+# Sheriff 2021-04-23
+crbug.com/1202040 [ Win ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
+crbug.com/1202051 virtual/scroll-unification/scrollbars/layout-viewport-scrollbars-hidden.html [ Pass Failure ]
+crbug.com/1202051 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/layout-viewport-scrollbars-hidden.html [ Pass Failure ]

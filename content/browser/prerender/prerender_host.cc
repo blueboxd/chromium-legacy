@@ -74,11 +74,12 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
                                         &web_contents,
                                         &web_contents,
                                         &web_contents,
-                                        &web_contents)) {
+                                        &web_contents,
+                                        FrameTree::Type::kPrerender)) {
     frame_tree_->Init(
         SiteInstance::Create(web_contents.GetBrowserContext()).get(),
         /*renderer_initiated_creation=*/false,
-        /*main_frame_name=*/"", FrameTree::Type::kPrerender);
+        /*main_frame_name=*/"");
 
     // TODO(https://crbug.com/1199679): This should be moved to FrameTree::Init
     web_contents_.NotifySwappedFromRenderManager(
@@ -354,10 +355,6 @@ void PrerenderHost::AddObserver(Observer* observer) {
 
 void PrerenderHost::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool PrerenderHost::IsAssociatedWith(const WebContentsImpl& web_contents) {
-  return page_holder_->GetWebContents() == &web_contents;
 }
 
 }  // namespace content

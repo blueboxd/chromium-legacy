@@ -834,7 +834,15 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       render_view_host_delegate_view_(nullptr),
       created_with_opener_(false),
       node_(this),
-      frame_tree_(browser_context, this, this, this, this, this, this, this),
+      frame_tree_(browser_context,
+                  this,
+                  this,
+                  this,
+                  this,
+                  this,
+                  this,
+                  this,
+                  FrameTree::Type::kPrimary),
       is_load_to_different_document_(false),
       main_frame_process_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       main_frame_process_error_code_(0),
@@ -865,6 +873,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_overlay_content_(false),
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}),
+      prerender_host_registry_(blink::features::IsPrerender2Enabled()
+                                   ? std::make_unique<PrerenderHostRegistry>()
+                                   : nullptr),
       audible_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Audible")) {
@@ -945,23 +956,18 @@ WebContentsImpl::~WebContentsImpl() {
   // Shutdown the primary FrameTree.
   frame_tree_.Shutdown();
 
-  // Shutdown the non-primary FrameTrees. Currently the only instances of these
-  // are prerendering FrameTrees.
+  // Shutdown the non-primary FrameTrees.
+  //
   // Do this here rather than relying on the owner of the FrameTree to shutdown
   // on WebContentsDestroyed(), so that all the FrameTrees are shutdown at the
   // same time for consistency. Also, destroying a FrameTree results in other
   // observer functions like RenderFrameDeleted() being called, which are not
   // expected to be called after WebContentsDestroyed().
-  // TODO(https://crbug.com/1194865, https://crbug.com/1170619): Destroy the
-  // PrerenderHostRegistry here once it becomes per-WebContentsImpl instance,
-  // instead of calling AbandonAllHostsForWebContents() on it.
-  if (blink::features::IsPrerender2Enabled()) {
-    auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-        GetMainFrame()->GetStoragePartition());
-    PrerenderHostRegistry* prerender_host_registry =
-        storage_partition_impl->GetPrerenderHostRegistry();
-    prerender_host_registry->AbandonAllHostsForWebContents(*this);
-  }
+  //
+  // Currently the only instances of the non-primary FrameTrees are for
+  // prerendering. Shutdown them by destructing PrerenderHostRegistry.
+  if (blink::features::IsPrerender2Enabled())
+    prerender_host_registry_.reset();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Call this before WebContentsDestroyed() is broadcasted since
@@ -2735,10 +2741,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
         ->PreventAssociationWithSpareProcess();
   }
 
-  FrameTree::Type type = params.is_prerendering ? FrameTree::Type::kPrerender
-                                                : FrameTree::Type::kPrimary;
   frame_tree_.Init(site_instance.get(), params.renderer_initiated_creation,
-                   params.main_frame_name, type);
+                   params.main_frame_name);
 
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
@@ -6951,6 +6955,12 @@ WebContentsImpl::GetActiveTopLevelDocumentsInBrowsingContextGroup(
     out.push_back(other_render_frame_host);
   }
   return out;
+}
+
+PrerenderHostRegistry* WebContentsImpl::GetPrerenderHostRegistry() {
+  DCHECK(blink::features::IsPrerender2Enabled());
+  DCHECK(prerender_host_registry_);
+  return prerender_host_registry_.get();
 }
 
 void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,

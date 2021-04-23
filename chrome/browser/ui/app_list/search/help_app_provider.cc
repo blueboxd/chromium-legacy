@@ -134,7 +134,7 @@ void HelpAppResult::Open(int event_flags) {
         profile_, web_app::SystemAppType::HELP, params,
         apps::MakeWindowInfo(display::kDefaultDisplayId));
 
-    chromeos::ReleaseNotesStorage(profile_).StopShowingSuggestionChip();
+    ash::ReleaseNotesStorage(profile_).StopShowingSuggestionChip();
     return;
   }
   // Launch list result.
@@ -146,7 +146,8 @@ void HelpAppResult::Open(int event_flags) {
       apps::MakeWindowInfo(display::kDefaultDisplayId));
 }
 
-HelpAppProvider::HelpAppProvider(Profile* profile) : profile_(profile) {
+HelpAppProvider::HelpAppProvider(Profile* profile)
+    : profile_(profile), search_handler_(nullptr) {
   DCHECK(profile_);
 
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
@@ -175,7 +176,7 @@ void HelpAppProvider::Start(const std::u16string& query) {
   if (query.empty()) {
     // Zero state suggestion chip.
     SearchProvider::Results search_results;
-    if (chromeos::ReleaseNotesStorage(profile_).ShouldShowSuggestionChip()) {
+    if (ash::ReleaseNotesStorage(profile_).ShouldShowSuggestionChip()) {
       search_results.emplace_back(
           std::make_unique<HelpAppResult>(profile_, icon_));
     }
@@ -254,8 +255,7 @@ void HelpAppProvider::OnSearchReturned(
 // TODO(b/171828539): Consider using AppListNotifier for better proxy of
 // impressions.
 void HelpAppProvider::AppListShown() {
-  chromeos::ReleaseNotesStorage(profile_)
-      .DecreaseTimesLeftToShowSuggestionChip();
+  ash::ReleaseNotesStorage(profile_).DecreaseTimesLeftToShowSuggestionChip();
 }
 
 ash::AppListSearchResultType HelpAppProvider::ResultType() {

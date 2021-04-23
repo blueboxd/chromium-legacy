@@ -1251,7 +1251,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_marshmallow_10_gtests',
+          'gtest_tests': 'android_weblayer_x86_10_gtests',
         }
       },
       'android-weblayer-marshmallow-x86-rel-tests': {
@@ -1264,7 +1264,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_marshmallow_10_gtests',
+          'gtest_tests': 'android_weblayer_x86_marshmallow_gtests',
         }
       },
       'android-weblayer-pie-x86-wpt-fyi-rel': {
@@ -2633,19 +2633,6 @@
           'scripts': 'check_network_annotations_script',
         }
       },
-      'Linux Builder (j-250) (reclient)': {
-        # Copied from
-        # https://source.chromium.org/chromium/chromium/src/+/master:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
-        'mixins': [
-          'isolate_profile_data',
-        ],
-        'additional_compile_targets': [
-          'all'
-        ],
-        'test_suites': {
-          'scripts': 'check_network_annotations_script',
-        }
-      },
       'Linux Builder (j-500) (reclient)': {
         # Copied from
         # https://source.chromium.org/chromium/chromium/src/+/master:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
@@ -2706,11 +2693,6 @@
         ],
       },
       'TSAN Release (deps-cache) (reclient)': {
-        'additional_compile_targets': [
-          'chromium_builder_asan',
-        ],
-      },
-      'TSAN Release (j-100) (reclient)': {
         'additional_compile_targets': [
           'chromium_builder_asan',
         ],
@@ -5327,6 +5309,18 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
+        },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
+      },
+      # TODO(crbug.com/1200904): Remove after migration
+      'Linux TSan (bionic)': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_and_gl_and_vulkan_gtests',
         },
         'args': [
           '--test-launcher-print-test-stdio=always',

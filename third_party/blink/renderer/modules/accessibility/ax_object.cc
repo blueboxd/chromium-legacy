@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -49,8 +50,10 @@
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
@@ -74,6 +77,7 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
@@ -110,8 +114,6 @@ String IgnoredReasonName(AXIgnoredReason reason) {
       return "activeModalDialog";
     case kAXAriaModalDialog:
       return "activeAriaModalDialog";
-    case kAXAncestorIsLeafNode:
-      return "ancestorIsLeafNode";
     case kAXAriaHiddenElement:
       return "ariaHiddenElement";
     case kAXAriaHiddenSubtree:
@@ -469,9 +471,7 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       cached_is_ignored_(false),
       cached_is_ignored_but_included_in_tree_(false),
       cached_is_inert_or_aria_hidden_(false),
-      cached_is_descendant_of_leaf_node_(false),
       cached_is_descendant_of_disabled_node_(false),
-      cached_is_editable_root_(false),
       cached_live_region_root_(nullptr),
       cached_aria_column_index_(0),
       cached_aria_row_index_(0),
@@ -484,9 +484,12 @@ AXObject::~AXObject() {
   --number_of_live_ax_objects_;
 }
 
-void AXObject::Init(AXObject* parent_if_known) {
+void AXObject::Init(AXObject* parent) {
 #if DCHECK_IS_ON()
-  DCHECK(!parent_);
+  DCHECK(!parent_) << "Should not already have a cached parent:"
+                   << "\n* Child = " << GetNode() << " / " << GetLayoutObject()
+                   << "\n* Parent = " << parent_->ToString(true, true)
+                   << "\n* Equal to passed-in parent? " << (parent == parent_);
   DCHECK(!is_initializing_);
   base::AutoReset<bool> reentrancy_protector(&is_initializing_, true);
 #endif  // DCHECK_IS_ON()
@@ -503,9 +506,15 @@ void AXObject::Init(AXObject* parent_if_known) {
 
   // Determine the parent as soon as possible.
   // Every AXObject must have a parent unless it's the root.
-  SetParent(parent_if_known ? parent_if_known : ComputeParent());
+  SetParent(parent);
   DCHECK(parent_ || IsA<Document>(GetNode()))
       << "The following node should have a parent: " << GetNode();
+
+  // The parent cannot have children. This object must be destroyed.
+  DCHECK(!parent_ || parent_->CanHaveChildren())
+      << "Tried to set a parent that cannot have children:"
+      << "\n* Parent = " << parent_->ToString(true, true)
+      << "\n* Child = " << ToString(true, true);
 
   SetNeedsToUpdateChildren();  // Should be called after role_ is set.
   UpdateCachedAttributeValuesIfNeeded(false);
@@ -570,7 +579,7 @@ void AXObject::SetParent(AXObject* new_parent) {
 }
 
 // In many cases, ComputeParent() is not called, because the parent adding
-// the child will pass itself into AXObject::Init() via parent_if_known.
+// the parent adding the child will pass itself into AXObjectCacheImpl.
 // ComputeParent() is still necessary because some parts of the code,
 // especially web tests, result in AXObjects being created in the middle of
 // the tree before their parents are created.
@@ -579,66 +588,82 @@ void AXObject::SetParent(AXObject* new_parent) {
 AXObject* AXObject::ComputeParent() const {
   DCHECK(!IsDetached());
 
-  DCHECK(!parent_ || parent_->IsDetached())
-      << "Should use cached parent unless it's detached, and should not "
-         "attempt to recompute it, occurred on "
-      << GetNode();
+  DCHECK(!IsVirtualObject())
+      << "A virtual object must have a parent, and cannot exist without one. "
+         "The parent is set when the object is constructed.";
 
-  if (!GetNode() && !GetLayoutObject()) {
-    NOTREACHED() << "Can't compute parent on AXObjects without a backing Node "
-                    "or LayoutObject. Objects without those must set the "
-                    "parent in Init(), |this| = "
-                 << RoleValue();
-    return nullptr;
-  }
+  DCHECK(GetNode() || GetLayoutObject())
+      << "Can't compute parent on AXObjects without a backing Node "
+         "or LayoutObject. Objects without those must set the "
+         "parent in Init(), |this| = "
+      << RoleValue();
 
-  return ComputeParentImpl();
+  AXObject* ax_parent =
+      AXObjectCache().IsAriaOwned(this)
+          ? AXObjectCache().GetAriaOwnedParent(this)
+          : ComputeNonARIAParent(AXObjectCache(), GetNode(), GetLayoutObject());
+
+  CHECK(!ax_parent || !ax_parent->IsDetached())
+      << "Computed parent should never be detached:"
+      << "\n* Child: " << GetNode()
+      << "\n* Parent: " << ax_parent->ToString(true, true);
+
+  return ax_parent;
 }
 
-AXObject* AXObject::ComputeParentImpl() const {
-  DCHECK(!IsDetached());
+// static
+bool AXObject::CanComputeAsParent(Node* node) {
+  // A <select> menulist that will use AXMenuList is not allowed.
+  if (AXObjectCacheImpl::UseAXMenuList()) {
+    if (auto* select = DynamicTo<HTMLSelectElement>(node)) {
+      if (select->UsesMenuList())
+        return false;
+    }
+  }
+  // A <br> can only have an inline textbox child.
+  if (IsA<HTMLBRElement>(node))
+    return false;
+  // Parents of <area> are handled separately above.
+  if (IsA<HTMLMapElement>(node) || IsA<HTMLAreaElement>(node) ||
+      IsA<HTMLImageElement>(node)) {
+    return false;
+  }
 
-  if (AXObjectCache().IsAriaOwned(this))
-    return AXObjectCache().GetAriaOwnedParent(this);
+  return true;
+}
 
-  Node* current_node = GetNode();
+// static
+AXObject* AXObject::ComputeNonARIAParent(AXObjectCacheImpl& cache,
+                                         Node* current_node,
+                                         LayoutObject* current_layout_obj) {
+  DCHECK(current_node || current_layout_obj)
+      << "Can't compute parent without a backing Node "
+         "or LayoutObject.";
 
   // A WebArea's parent should be the page popup owner, if any, otherwise null.
   if (IsA<Document>(current_node)) {
-    LocalFrame* frame = GetLayoutObject()->GetFrame();
-    return AXObjectCache().GetOrCreate(frame->PagePopupOwner());
-  }
-
-  if (IsVirtualObject()) {
-    NOTREACHED()
-        << "A virtual object must have a parent, and cannot exist without one. "
-           "The parent is set when the object is constructed.";
-    return nullptr;
+    LocalFrame* frame = current_layout_obj->GetFrame();
+    return cache.GetOrCreate(frame->PagePopupOwner());
   }
 
   // If no node, or a pseudo element, use the layout parent.
   if (!current_node) {
-    LayoutObject* current_layout_obj = GetLayoutObject();
-    if (!current_layout_obj) {
-      NOTREACHED()
-          << "Can't compute parent on AXObjects without a backing Node "
-             "or LayoutObject. Objects without those must set the "
-             "parent in Init(), |this| = "
-          << RoleValue();
-      return nullptr;
-    }
     // If no DOM node and no parent, this must be an anonymous layout object.
     DCHECK(current_layout_obj->IsAnonymous());
     LayoutObject* parent_layout_obj = current_layout_obj->Parent();
     if (!parent_layout_obj)
       return nullptr;
-    if (AXObject* ax_parent = AXObjectCache().GetOrCreate(parent_layout_obj)) {
+    Node* parent_node = parent_layout_obj->GetNode();
+    if (!CanComputeAsParent(parent_node))
+      return nullptr;
+    if (AXObject* ax_parent = cache.GetOrCreate(parent_layout_obj)) {
       DCHECK(!ax_parent->IsDetached());
-      return ax_parent;
+      if (!ax_parent->ShouldUseLayoutObjectTraversalForChildren())
+        return nullptr;
+      return ax_parent->CanHaveChildren() ? ax_parent : nullptr;
     }
     // Switch to using DOM nodes. The only cases that should occur do not have
     // chains of multiple parents without DOM nodes.
-    Node* parent_node = parent_layout_obj->GetNode();
     DCHECK(parent_node) << "Computing an accessible parent from the layout "
                            "parent did not yield an accessible object nor a "
                            "DOM node to walk up from, current_layout_obj = "
@@ -651,16 +676,49 @@ AXObject* AXObject::ComputeParentImpl() const {
       << "Should not call ComputeParent() with disconnected node: "
       << current_node;
 
+  // For <option> in <select size=1>, return the popup.
+  if (AXObjectCacheImpl::UseAXMenuList()) {
+    if (auto* option = DynamicTo<HTMLOptionElement>(current_node)) {
+      if (AXObject* ax_select =
+              AXMenuListOption::ComputeParentAXMenuPopupFor(cache, option)) {
+        return ax_select;
+      }
+    }
+  }
+
+  // For <area>, return the image it is a child link of.
+  if (IsA<HTMLAreaElement>(current_node)) {
+    if (AXObject* ax_image =
+            AXImageMapLink::GetAXObjectForImageMap(cache, current_node)) {
+      return ax_image;
+    }
+  }
+
   while (true) {
     current_node = GetParentNodeForComputeParent(current_node);
     if (!current_node)
       break;
-    AXObject* ax_parent = AXObjectCache().GetOrCreate(current_node);
+    // When AXMenuList is being used, a menu list is only allowed to parent an
+    // AXMenuListPopup, which is added as a child on creation. No other
+    // children are allowed, and null is returned for anything else where the
+    // parent would be AXMenuList.
+    if (AXObjectCacheImpl::UseAXMenuList()) {
+      if (auto* select = DynamicTo<HTMLSelectElement>(current_node)) {
+        if (select->UsesMenuList())
+          return nullptr;
+      }
+    }
+    if (!CanComputeAsParent(current_node))
+      return nullptr;
+
+    AXObject* ax_parent = cache.GetOrCreate(current_node);
     if (ax_parent) {
       DCHECK(!ax_parent->IsDetached());
-      return ax_parent;
+      return ax_parent->CanHaveChildren() ? ax_parent : nullptr;
     }
   }
+
+  NOTREACHED() << "No parent found.";
 
   return nullptr;
 }
@@ -671,6 +729,8 @@ void AXObject::EnsureCorrectParentComputation() {
     return;
 
   DCHECK(!parent_->IsDetached());
+
+  DCHECK(parent_->CanHaveChildren());
 
   // Don't check the computed parent if the cached parent is a mock object.
   // It is expected that a computed parent could never be a mock object,
@@ -695,18 +755,22 @@ void AXObject::EnsureCorrectParentComputation() {
   if (GetNode() && GetNode()->IsPseudoElement())
     return;
 
-  // Verify that the algorithm in ComputeParentImpl() provides same results as
-  // parents that init their children with themselves as the parent_if_known.
-  // Inconsistency indicates a problem could potentially exist where a child's
-  // parent does not include the child in its children.
-  DCHECK(ComputeParentImpl())
-      << "Computed parent was null for " << this << ", expected " << parent_;
-  DCHECK_EQ(ComputeParentImpl(), parent_)
+    // Verify that the algorithm in ComputeParent() provides same results as
+    // parents that init their children with themselves as the parent.
+    // Inconsistency indicates a problem could potentially exist where a child's
+    // parent does not include the child in its children.
+#if DCHECK_IS_ON()
+  AXObject* computed_parent = ComputeParent();
+
+  DCHECK(computed_parent) << "Computed parent was null for " << this
+                          << ", expected " << parent_;
+  DCHECK_EQ(computed_parent, parent_)
       << "\n**** ComputeParent should have provided the same result as "
          "the known parent.\n**** Computed parent layout object was "
-      << ComputeParentImpl()->GetLayoutObject()
+      << computed_parent->GetLayoutObject()
       << "\n**** Actual parent's layout object was "
       << parent_->GetLayoutObject() << "\n**** Child was " << this;
+#endif
 }
 #endif
 
@@ -1851,7 +1915,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
                                DocumentLifecycle::kAfterPerformLayout)
       << "Unclean document at lifecycle "
       << GetDocument()->Lifecycle().ToString();
-#endif
+#endif  // DCHECK_IS_ON()
 
   // TODO(accessibility) Every AXObject must have a parent except the root.
   // Sometimes the parent is detached and a new parent isn't yet reattached.
@@ -1871,7 +1935,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     SetNeedsToUpdateChildren();
     cached_is_inert_or_aria_hidden_ = is_inert_or_aria_hidden;
   }
-  cached_is_descendant_of_leaf_node_ = !!LeafNodeAncestor();
   cached_is_descendant_of_disabled_node_ = !!DisabledAncestor();
 
   bool is_ignored = ComputeAccessibilityIsIgnored();
@@ -1916,7 +1979,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
 
   cached_is_ignored_ = is_ignored;
   cached_is_ignored_but_included_in_tree_ = is_ignored_but_included_in_tree;
-  cached_is_editable_root_ = ComputeIsEditableRoot();
   // Compute live region root, which can be from any ARIA live value, including
   // "off", or from an automatic ARIA live value, e.g. from role="status".
   // TODO(dmazzoni): remove this const_cast.
@@ -2078,22 +2140,6 @@ bool AXObject::IsBlockedByAriaModalDialog(
 
 bool AXObject::IsVisible() const {
   return !IsInertOrAriaHidden() && !IsHiddenViaStyle();
-}
-
-bool AXObject::IsDescendantOfLeafNode() const {
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_is_descendant_of_leaf_node_;
-}
-
-AXObject* AXObject::LeafNodeAncestor() const {
-  if (AXObject* parent = ParentObject()) {
-    if (!parent->CanHaveChildren())
-      return parent;
-
-    return parent->LeafNodeAncestor();
-  }
-
-  return nullptr;
 }
 
 const AXObject* AXObject::AriaHiddenRoot() const {
@@ -3439,9 +3485,71 @@ ax::mojom::blink::Role AXObject::DetermineAriaRoleAttribute() const {
   return role;
 }
 
+ax::mojom::blink::HasPopup AXObject::HasPopup() const {
+  return ax::mojom::blink::HasPopup::kFalse;
+}
+
+bool AXObject::IsEditable() const {
+  const Node* node = GetNode();
+  if (IsDetached() || !node)
+    return false;
+#if DCHECK_IS_ON()  // Required in order to get Lifecycle().ToString()
+  DCHECK(GetDocument());
+  DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+            DocumentLifecycle::kStyleClean)
+      << "Unclean document style at lifecycle state "
+      << GetDocument()->Lifecycle().ToString();
+#endif  // DCHECK_IS_ON()
+
+  if (HasEditableStyle(*node))
+    return true;
+
+  // For the purposes of accessibility, atomic text fields  i.e. input and
+  // textarea are editable because the user can potentially enter text in them.
+  if (IsNativeTextField())
+    return true;
+
+  return false;
+}
+
 bool AXObject::IsEditableRoot() const {
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_is_editable_root_;
+  return false;
+}
+
+bool AXObject::HasContentEditableAttributeSet() const {
+  return false;
+}
+
+bool AXObject::IsMultiline() const {
+  if (IsDetached() || !GetNode() || !IsTextField())
+    return false;
+
+  bool is_multiline = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kMultiline,
+                                    is_multiline)) {
+    return is_multiline;
+  }
+
+  return IsA<HTMLTextAreaElement>(*GetNode()) ||
+         HasContentEditableAttributeSet();
+}
+
+bool AXObject::IsRichlyEditable() const {
+  const Node* node = GetNode();
+  if (IsDetached() || !node)
+    return false;
+#if DCHECK_IS_ON()  // Required in order to get Lifecycle().ToString()
+  DCHECK(GetDocument());
+  DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+            DocumentLifecycle::kStyleClean)
+      << "Unclean document style at lifecycle state "
+      << GetDocument()->Lifecycle().ToString();
+#endif  // DCHECK_IS_ON()
+
+  if (HasRichlyEditableStyle(*node))
+    return true;
+
+  return false;
 }
 
 AXObject* AXObject::LiveRegionRoot() const {
@@ -3872,6 +3980,19 @@ AXObject* AXObject::ParentObject() const {
     parent_ = ComputeParent();
     DCHECK(parent_ || IsA<Document>(GetNode()))
         << "The following node should have a parent: " << GetNode();
+  } else {
+    if (parent_->IsDetached()) {
+      // TODO(accessibility) This should never happen, but it fails
+      // All/DumpAccessibilityTreeTest.IgnoredCrash/blink, meaning that when
+      // ClearChildren() was called, the parent did not find this as a child,
+      // and could not DetachFromParent() on the child.
+      // NOTREACHED()
+      //     << "Cached parent should never be detached:"
+      //     << "\n* Child: " << RoleValue() << " " << GetNode() << " "
+      //     << GetLayoutObject() << "\n* Parent: " << parent_->ToString(true,
+      //     true);
+      return nullptr;
+    }
   }
 
   return parent_;
@@ -4037,6 +4158,14 @@ void AXObject::ClearChildren() const {
       ax_child_from_node->DetachFromParent();
     }
   }
+}
+
+Node* AXObject::GetNode() const {
+  return nullptr;
+}
+
+LayoutObject* AXObject::GetLayoutObject() const {
+  return nullptr;
 }
 
 Element* AXObject::GetElement() const {
@@ -4896,9 +5025,9 @@ bool AXObject::HasARIAOwns(Element* element) {
   const AtomicString& aria_owns =
       element->FastGetAttribute(html_names::kAriaOwnsAttr);
 
-  // TODO: do we need to check !AriaOwnsElements.empty() ? Is that fundamentally
-  // different from HasExplicitlySetAttrAssociatedElements()? And is an element
-  // even necessary in the case of virtual nodes?
+  // TODO(accessibility): do we need to check !AriaOwnsElements.empty() ? Is
+  // that fundamentally different from HasExplicitlySetAttrAssociatedElements()?
+  // And is an element even necessary in the case of virtual nodes?
   return !aria_owns.IsEmpty() ||
          element->HasExplicitlySetAttrAssociatedElements(
              html_names::kAriaOwnsAttr);

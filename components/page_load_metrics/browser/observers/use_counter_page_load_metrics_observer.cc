@@ -19,27 +19,6 @@ using CSSSampleId = blink::mojom::CSSSampleId;
 
 namespace {
 
-void RecordUkmFeatures(const UkmFeatureList& features,
-                       const WebFeatureBitSet& features_recorded,
-                       const WebFeatureBitSet& main_frame_features_recorded,
-                       std::set<size_t>* ukm_features_recorded,
-                       ukm::SourceId source_id) {
-  for (auto feature : features) {
-    if (!features_recorded.test(static_cast<size_t>(feature)))
-      continue;
-    if (ukm_features_recorded->find(static_cast<size_t>(feature)) !=
-        ukm_features_recorded->end()) {
-      continue;
-    }
-    ukm::builders::Blink_UseCounter(source_id)
-        .SetFeature(static_cast<size_t>(feature))
-        .SetIsMainFrameFeature(
-            main_frame_features_recorded.test(static_cast<size_t>(feature)))
-        .Record(ukm::UkmRecorder::Get());
-    ukm_features_recorded->insert(static_cast<size_t>(feature));
-  }
-}
-
 // It's always recommended to use the deprecation API in blink. If the feature
 // was logged from the browser (or from both blink and the browser) where the
 // deprecation API is not available, use this method for the console warning.
@@ -106,7 +85,7 @@ UseCounterPageLoadMetricsObserver::OnCommit(
       .SetFeature(static_cast<size_t>(WebFeature::kPageVisits))
       .SetIsMainFrameFeature(1)
       .Record(ukm::UkmRecorder::Get());
-  ukm_features_recorded_.insert(static_cast<size_t>(WebFeature::kPageVisits));
+  ukm_features_recorded_.set(static_cast<size_t>(WebFeature::kPageVisits));
   RecordFeature(WebFeature::kPageVisits);
   RecordMainFrameFeature(WebFeature::kPageVisits);
   RecordCssProperty(CSSSampleId::kTotalPagesMeasured);
@@ -207,25 +186,19 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
 
 void UseCounterPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
-                    main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetPageUkmSourceId());
+  RecordUkmFeatures();
 }
 
 void UseCounterPageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo&
         failed_provisional_load_info) {
-  RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
-                    main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetPageUkmSourceId());
+  RecordUkmFeatures();
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UseCounterPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
-                    main_frame_features_recorded_, &ukm_features_recorded_,
-                    GetDelegate().GetPageUkmSourceId());
+  RecordUkmFeatures();
   return CONTINUE_OBSERVING;
 }
 
@@ -243,4 +216,20 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UseCounterPageLoadMetricsObserver::OnEnterBackForwardCache(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   return CONTINUE_OBSERVING;
+}
+
+void UseCounterPageLoadMetricsObserver::RecordUkmFeatures() {
+  for (auto feature : GetAllowedUkmFeatures()) {
+    if (!features_recorded_.test(static_cast<size_t>(feature)))
+      continue;
+    if (ukm_features_recorded_.test(static_cast<size_t>(feature)))
+      continue;
+    ukm_features_recorded_.set(static_cast<size_t>(feature));
+
+    ukm::builders::Blink_UseCounter(GetDelegate().GetPageUkmSourceId())
+        .SetFeature(static_cast<size_t>(feature))
+        .SetIsMainFrameFeature(
+            main_frame_features_recorded_.test(static_cast<size_t>(feature)))
+        .Record(ukm::UkmRecorder::Get());
+  }
 }

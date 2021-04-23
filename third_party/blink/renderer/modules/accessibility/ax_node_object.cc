@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
@@ -324,15 +323,6 @@ AXObject* AXNodeObject::ActiveDescendant() {
 AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
     IgnoredReasons* ignored_reasons) const {
   DCHECK(GetDocument());
-
-  // If this element is within a parent that cannot have children, it should not
-  // be exposed.
-  if (IsDescendantOfLeafNode()) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(
-          IgnoredReason(kAXAncestorIsLeafNode, LeafNodeAncestor()));
-    return kIgnoreObject;
-  }
 
   if (IsPresentational()) {
     if (ignored_reasons)
@@ -1055,50 +1045,6 @@ void AXNodeObject::AccessibilityChildrenFromAOMProperty(
   }
 }
 
-bool AXNodeObject::IsMultiline() const {
-  Node* node = GetNode();
-  if (!node)
-    return false;
-
-  const ax::mojom::blink::Role role = RoleValue();
-  const bool is_edit_box = role == ax::mojom::blink::Role::kSearchBox ||
-                           role == ax::mojom::blink::Role::kTextField;
-  if (!IsEditable() && !is_edit_box)
-    return false;  // Doesn't support multiline.
-
-  // Supports aria-multiline, so check for attribute.
-  bool is_multiline = false;
-  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kMultiline,
-                                    is_multiline)) {
-    return is_multiline;
-  }
-
-  // Default for <textarea> is true.
-  if (IsA<HTMLTextAreaElement>(*node))
-    return true;
-
-  // Default for other edit boxes is false, including for ARIA, says CORE-AAM.
-  if (is_edit_box)
-    return false;
-
-  // If root of contenteditable area and no ARIA role of textbox/searchbox used,
-  // default to multiline=true which is what the default behavior is.
-  return HasContentEditableAttributeSet();
-}
-
-// This only returns true if this is the element that actually has the
-// contentEditable attribute set, unlike node->hasEditableStyle() which will
-// also return true if an ancestor is editable.
-bool AXNodeObject::HasContentEditableAttributeSet() const {
-  const AtomicString& content_editable_value =
-      GetAttribute(html_names::kContenteditableAttr);
-  if (content_editable_value.IsNull())
-    return false;
-  // Both "true" (case-insensitive) and the empty string count as true.
-  return content_editable_value.IsEmpty() ||
-         EqualIgnoringASCIICase(content_editable_value, "true");
-}
-
 static Element* SiblingWithAriaRole(String role, Node* node) {
   Node* parent = LayoutTreeBuilderTraversal::Parent(*node);
   if (!parent)
@@ -1147,12 +1093,12 @@ Element* AXNodeObject::MouseButtonListener() const {
   return nullptr;
 }
 
-void AXNodeObject::Init(AXObject* parent_if_known) {
+void AXNodeObject::Init(AXObject* parent) {
 #if DCHECK_IS_ON()
   DCHECK(!initialized_);
   initialized_ = true;
 #endif
-  AXObject::Init(parent_if_known);
+  AXObject::Init(parent);
 
   DCHECK(role_ == native_role_ || role_ == aria_role_)
       << "Role must be either the cached native role or cached aria role: "
@@ -1216,21 +1162,6 @@ bool AXNodeObject::IsDefault() const {
   // Will only match :default pseudo class if it's the first default button in
   // a form.
   return GetElement()->MatchesDefaultPseudoClass();
-}
-
-bool AXNodeObject::ComputeIsEditableRoot() const {
-  Node* node = GetNode();
-  if (!node)
-    return false;
-  if (IsNativeTextField())
-    return true;
-  if (IsRootEditableElement(*node)) {
-    // Editable roots created by the user agent are handled by
-    // |IsNativeTextField| above.
-    ShadowRoot* root = node->ContainingShadowRoot();
-    return !root || !root->IsUserAgent();
-  }
-  return false;
 }
 
 bool AXNodeObject::IsFieldset() const {
@@ -1330,22 +1261,6 @@ bool AXNodeObject::IsOffScreen() const {
 
 bool AXNodeObject::IsProgressIndicator() const {
   return RoleValue() == ax::mojom::blink::Role::kProgressIndicator;
-}
-
-bool AXNodeObject::IsRichlyEditable() const {
-  // This check is necessary to support the richlyEditable and editable states
-  // in canvas fallback, for contenteditable elements.
-  // TODO(accessiblity) Support on descendants of the fallback element that
-  // has contenteditable set.
-  return HasContentEditableAttributeSet();
-}
-
-bool AXNodeObject::IsEditable() const {
-  if (IsNativeTextField())
-    return true;
-
-  // Support editable states in canvas fallback content.
-  return AXNodeObject::IsRichlyEditable();
 }
 
 bool AXNodeObject::IsSlider() const {
@@ -2756,8 +2671,9 @@ ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
 
   // ARIA 1.1 default value of haspopup for combobox is "listbox".
   if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton ||
-      RoleValue() == ax::mojom::blink::Role::kTextFieldWithComboBox)
+      RoleValue() == ax::mojom::blink::Role::kTextFieldWithComboBox) {
     return ax::mojom::blink::HasPopup::kListbox;
+  }
 
   if (AXObjectCache().GetAutofillState(AXObjectID()) !=
       WebAXAutofillState::kNoSuggestions) {
@@ -2765,6 +2681,47 @@ ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
   }
 
   return AXObject::HasPopup();
+}
+
+bool AXNodeObject::IsEditableRoot() const {
+  const Node* node = GetNode();
+  if (IsDetached() || !node)
+    return false;
+#if DCHECK_IS_ON()  // Required in order to get Lifecycle().ToString()
+  DCHECK(GetDocument());
+  DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+            DocumentLifecycle::kStyleClean)
+      << "Unclean document style at lifecycle state "
+      << GetDocument()->Lifecycle().ToString();
+#endif  // DCHECK_IS_ON()
+
+  // The DOM inside native text fields is an implementation detail that should
+  // not be exposed to platform accessibility APIs.
+  if (EnclosingTextControl(node))
+    return false;
+
+  if (IsRootEditableElement(*node))
+    return true;
+
+  // Catches the case where a contenteditable is inside another contenteditable.
+  // This is especially important when the two nested contenteditables have
+  // different attributes, e.g. "true" vs. "plaintext-only".
+  if (HasContentEditableAttributeSet())
+    return true;
+
+  return false;
+}
+
+bool AXNodeObject::HasContentEditableAttributeSet() const {
+  if (IsDetached() || !GetNode())
+    return false;
+
+  const auto* html_element = DynamicTo<HTMLElement>(GetNode());
+  if (!html_element)
+    return false;
+
+  String normalized_value = html_element->contentEditable();
+  return normalized_value == "true" || normalized_value == "plaintext-only";
 }
 
 // Returns the nearest block-level LayoutBlockFlow ancestor
@@ -3031,8 +2988,8 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
 
 String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
                                          bool recursive) const {
-  if (!CanHaveChildren() && recursive)
-    return String();
+  if (!CanHaveChildren())
+    return recursive ? String() : GetElement()->innerText();
 
   StringBuilder accumulated_text;
   AXObject* previous = nullptr;
@@ -3528,11 +3485,12 @@ void AXNodeObject::AddImageMapChildren() {
     // parent that its children have changed.
     if (AXObject* ax_preexisting = AXObjectCache().Get(first_area)) {
       if (AXObject* ax_previous_parent = ax_preexisting->CachedParentObject()) {
-        DCHECK_NE(ax_previous_parent, this);
-        DCHECK(ax_previous_parent->GetNode());
-        AXObjectCache().ChildrenChangedWithCleanLayout(
-            ax_previous_parent->GetNode(), ax_previous_parent);
+        if (ax_previous_parent != this) {
+          DCHECK(ax_previous_parent->GetNode());
+          AXObjectCache().ChildrenChangedWithCleanLayout(
+              ax_previous_parent->GetNode(), ax_previous_parent);
           ax_previous_parent->ClearChildren();
+        }
       }
     }
 
@@ -3638,13 +3596,13 @@ void AXNodeObject::AddOwnedChildren() {
   AXObjectCache().GetAriaOwnedChildren(this, owned_children);
 
   DCHECK(owned_children.size() == 0 || AXRelationCache::IsValidOwner(this))
-      << "This object is not allowed to use aria-owns, but is: "
+      << "This object is not allowed to use aria-owns, but it is.\n"
       << ToString(true, true);
 
   // Always include owned children.
   for (const auto& owned_child : owned_children) {
     DCHECK(AXRelationCache::IsValidOwnedChild(owned_child))
-        << "This object is not allowed to be owned, but is: "
+        << "This object is not allowed to be owned, but it is.\n"
         << owned_child->ToString(true, true);
     AddChildAndCheckIncluded(owned_child, true);
   }
@@ -3661,7 +3619,7 @@ void AXNodeObject::AddChildrenImpl() {
 
   if (!CanHaveChildren()) {
     NOTREACHED()
-        << "Should not reach AddChildren() if CanHaveChildren() is false "
+        << "Should not reach AddChildren() if CanHaveChildren() is false.\n"
         << ToString(true, true);
     return;
   }
@@ -3723,9 +3681,9 @@ void AXNodeObject::AddChildren() {
 #if DCHECK_IS_ON()
   // All added children must be attached.
   for (const auto& child : children_) {
-    DCHECK(!child->IsDetached())
-        << "A brand new child was detached: " << child->ToString(true, true)
-        << "\n ... of parent " << ToString(true, true);
+    DCHECK(!child->IsDetached()) << "A brand new child was detached.\n"
+                                 << child->ToString(true, true)
+                                 << "\n ... of parent " << ToString(true, true);
   }
 #endif
 }
@@ -3769,14 +3727,14 @@ void AXNodeObject::AddNodeChild(Node* node) {
 
 #if DCHECK_IS_ON()
 void AXNodeObject::CheckValidChild(AXObject* child) {
-  DCHECK(!child->IsDetached())
-      << "Cannot add a detached child: " << child->ToString(true, true);
+  DCHECK(!child->IsDetached()) << "Cannot add a detached child.\n"
+                               << child->ToString(true, true);
 
   Node* child_node = child->GetNode();
 
   // An HTML image can only have area children.
   DCHECK(!IsA<HTMLImageElement>(GetNode()) || IsA<HTMLAreaElement>(child_node))
-      << "Image elements can only have area children, had "
+      << "Image elements can only have area children, but this one has:\n"
       << child->ToString(true, true);
 
   // <area> children should only be added via AddImageMapChildren(), as the
@@ -3889,12 +3847,7 @@ void AXNodeObject::InsertChild(AXObject* child,
 }
 
 bool AXNodeObject::CanHaveChildren() const {
-  // If this is an AXLayoutObject, then it's okay if this object
-  // doesn't have a node - there are some layoutObjects that don't have
-  // associated nodes, like scroll areas and css-generated text.
-  if (!GetNode() && !IsAXLayoutObject())
-    return false;
-
+  DCHECK(!IsDetached());
   DCHECK(!IsA<HTMLMapElement>(GetNode()));
 
   // Placeholder gets exposed as an attribute on the input accessibility node,
@@ -3928,7 +3881,9 @@ bool AXNodeObject::CanHaveChildren() const {
       return true;
     case ax::mojom::blink::Role::kLineBreak:
     case ax::mojom::blink::Role::kStaticText:
-      return AXObjectCache().InlineTextBoxAccessibilityEnabled();
+      // AddInlineTextBoxChildren() must also check
+      // AXObjectCache().InlineTextBoxAccessibilityEnabled();
+      return true;
     case ax::mojom::blink::Role::kImage:
       // Can turn into an image map if gains children later.
       return GetNode() && GetNode()->IsLink();
@@ -3936,13 +3891,11 @@ bool AXNodeObject::CanHaveChildren() const {
       break;
   }
 
-  // Allow plain text controls to expose any children they might have, complying
+  // Allow native text fields to expose any children they might have, complying
   // with browser-side expectations that editable controls have children
   // containing the actual text content.
-  if (blink::EnclosingTextControl(GetNode()) ||
-      GetAttribute(html_names::kContenteditableAttr) == "plaintext-only") {
+  if (blink::EnclosingTextControl(GetNode()))
     return true;
-  }
 
   switch (AriaRoleAttribute()) {
     case ax::mojom::blink::Role::kImage:
@@ -3971,8 +3924,13 @@ bool AXNodeObject::CanHaveChildren() const {
       // otherwise the subtree is exposed. The ChildrenPresentational rule
       // is thus useful for authoring/verification tools but does not break
       // complex widget implementations.
+      // Similarly, when content is inside a contenteditable, it does not make
+      // sense to hide it, since the user can interact with it.
+      // TODO(accessibility) Does it make sense to hide any of this content even
+      // in non-editable content?
       Element* element = GetElement();
-      return element && !element->HasOneTextChild();
+      return element &&
+             (HasEditableStyle(*element) || !element->HasOneTextChild());
     }
     default:
       break;
@@ -4044,6 +4002,19 @@ Document* AXNodeObject::GetDocument() const {
   if (!GetNode())
     return nullptr;
   return &GetNode()->GetDocument();
+}
+
+Node* AXNodeObject::GetNode() const {
+  if (IsDetached()) {
+    DCHECK(!node_);
+    return nullptr;
+  }
+
+  DCHECK(!GetLayoutObject() || GetLayoutObject()->GetNode() == node_)
+      << "If there is an associated layout object, its node should match the "
+         "associated node of this accessibility object.\n"
+      << ToString(true, true);
+  return node_;
 }
 
 // TODO(chrishall): consider merging this with AXObject::Language in followup.
@@ -4241,14 +4212,7 @@ void AXNodeObject::ChildrenChanged() {
       node_to_update->SetNeedsToUpdateChildren();
   }
 
-  // If this node's children are not part of the accessibility tree then
-  // skip notification and walking up the ancestors.
-  // Cases where this happens:
-  // - an ancestor has only presentational children, or
-  // - this or an ancestor is a leaf node
-  // Uses |cached_is_descendant_of_leaf_node_| to avoid updating cached
-  // attributes for eachc change via | UpdateCachedAttributeValuesIfNeeded()|.
-  if (!CanHaveChildren() || LastKnownIsDescendantOfLeafNode())
+  if (!CanHaveChildren())
     return;
 
   // TODO(aleventhal) Consider removing.

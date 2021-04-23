@@ -1216,6 +1216,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "eche-swa-resizing",
+    "owners": [ "dhnishi" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "edit-bookmarks-ios",
     "owners": [ "edchin", "rohitrao", "bling-flags@google.com" ],
     "expiry_milestone": 90
@@ -2737,11 +2742,6 @@
     "name": "enhanced_clipboard_simple_render",
     "owners":["newcomer@chromium.org", "gzadina@google.com"],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enhanced-desk-animations",
-    "owners": ["sammiequon", "tclaiborne"],
-    "expiry_milestone": 92
   },
   {
     "name": "enterprise-realtime-extension-request",
@@ -4904,6 +4904,11 @@
     "name": "stylus-battery-status",
     "owners": ["amehfooz"],
     "expiry_milestone": 91
+  },
+  {
+    "name": "subframe-shutdown-delay",
+    "owners": [ "jessemckenna@google.com", "olivierli" ],
+    "expiry_milestone": 97
   },
   {
     "name": "sync-autofill-wallet-offer-data",

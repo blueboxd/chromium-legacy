@@ -53,6 +53,8 @@ class UseCounterPageLoadMetricsObserver
   // Returns a list of opt-in UKM features for use counter.
   static const UkmFeatureList& GetAllowedUkmFeatures();
 
+  void RecordUkmFeatures();
+
   // To keep tracks of which features have been measured.
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       features_recorded_;
@@ -62,7 +64,8 @@ class UseCounterPageLoadMetricsObserver
       css_properties_recorded_;
   std::bitset<static_cast<size_t>(blink::mojom::CSSSampleId::kMaxValue) + 1>
       animated_css_properties_recorded_;
-  std::set<size_t> ukm_features_recorded_;
+  std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
+      ukm_features_recorded_;
   DISALLOW_COPY_AND_ASSIGN(UseCounterPageLoadMetricsObserver);
 };
 

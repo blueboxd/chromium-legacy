@@ -111,13 +111,6 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
 };
 
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-const char kTestProfileDir[] = "Profile 1";
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL TestUrl() {
-  return GURL("https://example.com");
-}
 
 class AppShimHostTest : public testing::Test,
                         public AppShimHostBootstrap::Client,
@@ -137,9 +130,9 @@ class AppShimHostTest : public testing::Test,
 
   void DoOnShimConnected(chrome::mojom::AppShimLaunchType launch_type) {
     auto app_shim_info = chrome::mojom::AppShimInfo::New();
-    app_shim_info->profile_path = base::FilePath(kTestProfileDir);
+    app_shim_info->profile_path = base::FilePath("Profile 1");
     app_shim_info->app_id = kTestAppId;
-    app_shim_info->app_url = TestUrl();
+    app_shim_info->app_url = GURL("https://example.com");
     app_shim_info->launch_type = launch_type;
     // Ownership of TestingAppShimHostBootstrap will be transferred to its host.
     (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapReceiver()))
@@ -187,6 +180,8 @@ class AppShimHostTest : public testing::Test,
                          const std::vector<base::FilePath>& files) override {}
   void OnShimSelectedProfile(AppShimHost* host,
                              const base::FilePath& profile_path) override {}
+  void OnShimOpenedUrls(AppShimHost* host,
+                        const std::vector<GURL>& urls) override {}
 
   chrome::mojom::AppShimLaunchResult launch_result_ =
       chrome::mojom::AppShimLaunchResult::kSuccess;

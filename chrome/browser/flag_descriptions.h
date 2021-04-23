@@ -1359,6 +1359,9 @@ extern const char kStrictOriginIsolationDescription[];
 extern const char kStylusBatteryStatusName[];
 extern const char kStylusBatteryStatusDescription[];
 
+extern const char kSubframeShutdownDelayName[];
+extern const char kSubframeShutdownDelayDescription[];
+
 extern const char kSystemKeyboardLockName[];
 extern const char kSystemKeyboardLockDescription[];
 
@@ -2522,14 +2525,14 @@ extern const char kVideoPlayerJsModulesDescription[];
 extern const char kEcheSWAName[];
 extern const char kEcheSWADescription[];
 
+extern const char kEcheSWAResizingName[];
+extern const char kEcheSWAResizingDescription[];
+
 extern const char kEnableNetworkingInDiagnosticsAppName[];
 extern const char kEnableNetworkingInDiagnosticsAppDescription[];
 
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];
-
-extern const char kEnhancedDeskAnimationsName[];
-extern const char kEnhancedDeskAnimationsDescription[];
 
 extern const char kEnterpriseReportingInChromeOSName[];
 extern const char kEnterpriseReportingInChromeOSDescription[];

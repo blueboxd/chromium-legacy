@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/accessibility/caption_host_impl.h"
 #include "chrome/browser/accessibility/caption_util.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/caption_bubble_controller.h"
 #include "chrome/common/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/soda/constants.h"
@@ -63,10 +63,10 @@ void CaptionController::RegisterProfilePrefs(
 
 void CaptionController::Init() {
   base::UmaHistogramBoolean("Accessibility.LiveCaption.FeatureEnabled",
-                            base::FeatureList::IsEnabled(media::kLiveCaption));
+                            media::IsLiveCaptionFeatureEnabled());
 
   // Hidden behind a feature flag.
-  if (!base::FeatureList::IsEnabled(media::kLiveCaption))
+  if (!media::IsLiveCaptionFeatureEnabled())
     return;
 
   base::UmaHistogramBoolean(

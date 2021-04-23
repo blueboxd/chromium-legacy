@@ -3519,21 +3519,7 @@ ci.fyi_builder(
     ),
     goma_backend = None,
     reclient_instance = "rbe-chromium-trusted",
-    reclient_jobs = 250,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "Linux Builder (j-250) (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "re",
-    ),
-    goma_backend = None,
-    reclient_instance = "rbe-chromium-trusted",
-    reclient_jobs = 250,
+    reclient_jobs = 500,
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
@@ -3600,22 +3586,6 @@ ci.fyi_builder(
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "TSAN Release (j-100) (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux tsan",
-        short_name = "rre",
-    ),
-    goma_backend = None,
-    reclient_instance = "rbe-chromium-trusted",
-    reclient_jobs = 100,
-    reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
-    schedule = "triggered",  # triggered manually via Scheduler UI
 )
 
 ci.fyi_builder(
@@ -5179,10 +5149,6 @@ ci.mac_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     os = os.MAC_10_15,
-    experiments = {
-        # TODO(crbug.com/1143122): remove this.
-        "chromium.chromium_tests.use_rbe_cas": 20,
-    },
 )
 
 ci.mac_builder(
@@ -5556,6 +5522,20 @@ ci.memory_builder(
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 2,
     ),
+)
+
+# TODO(https://crbug.com/1200904): Remove this after migration
+ci.memory_builder(
+    name = "Linux TSan (bionic)",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "linux|TSan v2",
+        short_name = "tst",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    main_console_view = "main",
+    tree_closing = False,
+    os = os.LINUX_BIONIC,
 )
 
 ci.memory_builder(

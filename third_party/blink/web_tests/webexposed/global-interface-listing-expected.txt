@@ -237,6 +237,7 @@ interface AppHistory : EventTarget
     getter onnavigatesuccess
     method constructor
     method entries
+    method navigate
     setter onnavigate
     setter onnavigateerror
     setter onnavigatesuccess
@@ -252,6 +253,7 @@ interface AppHistoryNavigateEvent : Event
     getter canRespond
     getter formData
     getter hashChange
+    getter info
     getter userInitiated
     method constructor
     method respondWith
@@ -9057,9 +9059,11 @@ interface VideoFrame
     getter planes
     getter timestamp
     getter visibleRegion
+    method allocationSize
     method clone
     method close
     method constructor
+    method readInto
 interface VideoPlaybackQuality
     attribute @@toStringTag
     getter corruptedVideoFrames

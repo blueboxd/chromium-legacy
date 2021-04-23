@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/soda_language_pack_component_installer.h"
-#include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/soda/constants.h"
 #include "components/update_client/update_client_errors.h"
@@ -29,6 +29,8 @@
 #if defined(OS_WIN)
 #include <aclapi.h>
 #include <windows.h>
+
+#include "base/metrics/histogram_functions.h"
 #include "sandbox/win/src/sid.h"
 #endif
 
@@ -49,6 +51,21 @@ static_assert(base::size(kSodaPublicKeySHA256) == crypto::kSHA256Length,
               "Wrong hash length");
 
 constexpr char kSodaManifestName[] = "SODA Library";
+
+#if defined(OS_WIN)
+
+constexpr base::FilePath::CharType kSodaIndicatorFile[] =
+#if defined(ARCH_CPU_X86)
+    FILE_PATH_LITERAL("SODAFiles/arch_x86");
+#elif defined(ARCH_CPU_X86_64)
+    FILE_PATH_LITERAL("SODAFiles/arch_x64");
+#else
+    {};
+#endif
+
+static_assert(sizeof(kSodaIndicatorFile) > 0, "Unknown CPU architecture.");
+
+#endif
 
 }  // namespace
 
@@ -139,6 +156,19 @@ void SodaComponentInstallerPolicy::OnCustomUninstall() {}
 bool SodaComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
+#ifdef OS_WIN
+  bool missing_indicator_file =
+      !base::PathExists(install_dir.Append(kSodaIndicatorFile));
+
+  base::UmaHistogramBoolean(
+      "Accessibility.LiveCaption.SodaVerificationFailureMissingIndicatorFile",
+      missing_indicator_file);
+
+  if (missing_indicator_file) {
+    return false;
+  }
+#endif
+
   return base::PathExists(install_dir.Append(speech::kSodaBinaryRelativePath));
 }
 
@@ -199,7 +229,7 @@ void RegisterSodaComponent(ComponentUpdateService* cus,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption) &&
-      base::FeatureList::IsEnabled(media::kLiveCaption)) {
+      media::IsLiveCaptionFeatureEnabled()) {
     auto installer = base::MakeRefCounted<ComponentInstaller>(
         std::make_unique<SodaComponentInstallerPolicy>(
             base::BindRepeating(
@@ -225,7 +255,7 @@ void RegisterSodaLanguageComponent(ComponentUpdateService* cus,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption) &&
-      base::FeatureList::IsEnabled(media::kLiveCaption)) {
+      media::IsLiveCaptionFeatureEnabled()) {
     base::Optional<speech::SodaLanguagePackComponentConfig> config =
         speech::GetLanguageComponentConfig(
             profile_prefs->GetString(prefs::kLiveCaptionLanguageCode));

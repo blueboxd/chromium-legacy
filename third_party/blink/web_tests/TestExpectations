@@ -1012,6 +1012,8 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolu
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-036.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-038.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-039.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-040.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-041.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflow-clip-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflow-clip-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Pass ]
@@ -1448,9 +1450,6 @@ crbug.com/892032 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass
 
 # Tests that fail when FormControlsRefresh is enabled:
 crbug.com/1051136 fast/forms/select/listbox-overlay-scrollbar.html [ Failure ]
-
-# This test needs the fuzzy-diff feature - it has small anti-aliasing failures:
-crbug.com/1051143 external/wpt/css/css-transforms/transform-input-015.html [ Pass Failure ]
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
 # See: crbug.com/567965, crbug.com/518992, and crbug.com/518993
@@ -3845,6 +3844,8 @@ crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-034.html 
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-036.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-038.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-039.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-040.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-041.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Failure ]
@@ -7168,3 +7169,8 @@ crbug.com/1198232 [ Win ] virtual/scroll-unification/fast/events/mouseenter-mous
 crbug.com/1201346 http/tests/origin_trials/webexposed/bfcache-experiment-http-header-origin-trial.php [ Pass Failure ]
 crbug.com/1201348 [ Linux ] virtual/shared_array_buffer_on_desktop/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Timeout Pass ]
 crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-emulation-portals.js [ Pass Timeout ]
+
+# Sheriff 2021-04-22
+crbug.com/1191990 [ Linux ] http/tests/serviceworker/clients-openwindow.html [ Pass Failure ]
+crbug.com/1198443 [ Win ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
+crbug.com/1201879 [ Linux ] http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Pass Timeout ]

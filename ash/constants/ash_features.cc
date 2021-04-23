@@ -27,7 +27,7 @@ const base::Feature kAccountManagementFlowsV2{"AccountManagementFlowsV2",
 
 // Controls whether devices are updated before reboot after the first update.
 const base::Feature kAllowRepeatedUpdates{"AllowRepeatedUpdates",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Shows settings for adjusting scroll acceleration/sensitivity for
 // mouse/touchpad.
@@ -269,6 +269,10 @@ const base::Feature kDriveFsMirroring{"DriveFsMirroring",
 
 // Enables the System Web App (SWA) version of Eche.
 const base::Feature kEcheSWA{"EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the naive resize for the Eche window.
+const base::Feature kEcheSWAResizing{"EcheSWAResizing",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, emoji suggestion will be shown when user type "space".
 const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
@@ -788,6 +792,10 @@ bool IsDiagnosticsAppEnabled() {
 
 bool IsEcheSWAEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWA);
+}
+
+bool IsEcheSWAResizingEnabled() {
+  return base::FeatureList::IsEnabled(kEcheSWAResizing);
 }
 
 bool IsHostnameSettingEnabled() {

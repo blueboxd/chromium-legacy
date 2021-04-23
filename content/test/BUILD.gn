@@ -193,6 +193,8 @@ static_library("test_support") {
     "../public/test/no_renderer_crashes_assertion.h",
     "../public/test/policy_container_utils.cc",
     "../public/test/policy_container_utils.h",
+    "../public/test/prerender_test_util.cc",
+    "../public/test/prerender_test_util.h",
     "../public/test/render_frame_host_test_support.cc",
     "../public/test/render_frame_host_test_support.h",
     "../public/test/render_view_test.cc",
@@ -2441,6 +2443,7 @@ test("content_unittests") {
   if (enable_screen_capture) {
     sources += [
       "../browser/media/capture/frame_sink_video_capture_device_unittest.cc",
+      "../browser/media/capture/web_contents_frame_tracker_unittest.cc",
     ]
 
     if (!is_android) {

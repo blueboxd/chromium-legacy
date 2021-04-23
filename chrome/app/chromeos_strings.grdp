@@ -1622,6 +1622,9 @@
   <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
     <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
   </message>
+  <message name="IDS_NETWORK_LIST_ITEM_TITLE" desc="Label for a network shown in a list in settings and oobe displaying its name and subtitle.">
+    <ph name="SPAN_1_START">&lt;span id="networkName"&gt;</ph><ph name="NETWORK_NAME">$1<ex>My Verizon eSIM</ex></ph><ph name="SPAN_1_END">&lt;/span&gt;</ph> - <ph name="SPAN_2_START">&lt;span id="subtitle"&gt;</ph><ph name="CARRIER_NAME">$2<ex>Verizon Wireless</ex></ph><ph name="SPAN_2_END">&lt;/span&gt;</ph>
+  </message>
   <message name="IDS_NETWORK_LIST_ITEM_SUBPAGE_BUTTON_LABEL" desc="A11y label for a button which links to details about a network, shown in settings.">
     <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, Details
   </message>
@@ -4413,6 +4416,9 @@
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_MOUNT_CONTAINER" desc="Text shown in the crostini terminal when it is mounting container sshfs (ssh filesystem)">
     Mounting the Linux container sshfs
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_CONNECT_CONTAINER" desc="Text shown in the crostini terminal when it is connecting to the container">
+    Connecting to the container
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_READY" desc="Text shown in the crostini terminal when it just finished the initialization and it is ready to use.">
     Ready

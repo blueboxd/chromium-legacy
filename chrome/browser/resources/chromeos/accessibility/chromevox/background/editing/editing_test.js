@@ -1190,13 +1190,12 @@ TEST_F('ChromeVoxEditingTest', 'BackwardWordDelete', function() {
       `
     <div
         style='max-width: 5px; overflow-wrap: normal'
-        contenteditable
-        role="textbox">
+        contenteditable>
       this is a test
     </div>
   `,
       function(root) {
-        const input = root.find({role: RoleType.TEXT_FIELD});
+        const input = root.find({attributes: {editableRoot: true}});
         this.listenOnce(input, 'focus', function() {
           mockFeedback.call(this.press(KeyCode.END, {ctrl: true}))
               .expectSpeech('test')
@@ -1210,7 +1209,6 @@ TEST_F('ChromeVoxEditingTest', 'BackwardWordDelete', function() {
               .expectSpeech('is , deleted')
               .expectBraille('this\u00a0mled', {startIndex: 5, endIndex: 5})
               .call(this.press(KeyCode.BACK, {ctrl: true}))
-              .expectSpeech('this , deleted')
               .expectBraille(' mled', {startIndex: 0, endIndex: 0})
               .replay();
         });
@@ -1653,12 +1651,15 @@ TEST_F('ChromeVoxEditingTest', 'NestedInsertionDeletion', function() {
 });
 
 TEST_F('ChromeVoxEditingTest', 'Separator', function() {
+  // In the past, an ARIA leaf role would cause subtree content to be removed.
+  // However, the new decision is to not remove any content the user might
+  // interact with.
   const mockFeedback = this.createMockFeedback();
   const site = `
     <div contenteditable="true" role="textbox">
       <p>Start</p>
       <p><span>Hello</span></p>
-      <p><span role="separator">Separator content should not be read</span></p>
+      <p><span role="separator">Separator content should be read</span></p>
       <p><span>World</span></p>
     </div>
   `;
@@ -1668,13 +1669,11 @@ TEST_F('ChromeVoxEditingTest', 'Separator', function() {
       mockFeedback.call(this.press(KeyCode.DOWN))
           .expectSpeech('Hello')
           .call(this.press(KeyCode.DOWN))
-          .expectNextSpeechUtteranceIsNot(
-              'Separator content should not be read')
-          .expectSpeech('Separator')
+          .expectSpeech('Separator content should be read')
           .call(this.press(KeyCode.DOWN))
           .expectSpeech('World')
           .call(this.press(KeyCode.LEFT))
-          .expectSpeech('Separator')
+          .expectSpeech('\n')
           .replay();
     });
     input.focus();

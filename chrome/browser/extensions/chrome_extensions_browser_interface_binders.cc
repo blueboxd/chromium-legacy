@@ -37,7 +37,7 @@
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/services/machine_learning/public/cpp/service_connection.h"  // nogncheck
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
@@ -165,9 +165,7 @@ void PopulateChromeFrameBindersForExtension(
         base::BindRepeating(&chromeos::CameraAppUI::ConnectToCameraAppHelper));
   }
 
-  // TODO: extend to more extensions.
-  if (extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId ||
-      extension->id() == extension_misc::kEspeakSpeechSynthesisExtensionId) {
+  if (extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId) {
     binder_map->Add<chromeos::tts::mojom::TtsStreamFactory>(
         base::BindRepeating(&BindTtsStreamFactory));
   }

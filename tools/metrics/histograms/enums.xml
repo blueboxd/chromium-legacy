@@ -9702,6 +9702,17 @@ Called by update_bad_message_reasons.py.-->
   <int value="31" label="Chooser Permissions Bubble"/>
 </enum>
 
+<enum name="CableSpeedMetric">
+  <int value="0" label="Other"/>
+  <int value="1" label="USB 2.0"/>
+  <int value="2" label="USB 3.2 - Gen1"/>
+  <int value="3" label="USB 3.2 / USB4 - Gen2"/>
+  <int value="4" label="USB 3.1 - Gen1"/>
+  <int value="5" label="USB 3.1 - Gen1,Gen2"/>
+  <int value="6" label="USB4 - Gen3"/>
+  <int value="7" label="Thunderbolt Only - 10G,20G"/>
+</enum>
+
 <enum name="CachedMetadataHandlerState">
   <int value="0" label="Present"/>
   <int value="1" label="DataType mismatch"/>
@@ -15653,6 +15664,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="62" label="NEED_UPDATE"/>
   <int value="63" label="SHARE_PATHS_FAILED"/>
   <int value="64" label="UNREGISTERED_APPLICATION"/>
+  <int value="65" label="VSH_CONNECT_FAILED"/>
 </enum>
 
 <enum name="CrostiniSettingsEvent">
@@ -17533,6 +17545,7 @@ Called by update_debug_scenarios.py.-->
   <int value="41" label="ScanningApp"/>
   <int value="42" label="DiagnosticsApp"/>
   <int value="43" label="PrintManagementApp"/>
+  <int value="45" label="ShimlessRMAApp"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -32198,6 +32211,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3879" label="RequestedFileSystemPersistentThirdPartyContext"/>
   <int value="3880" label="PrefixedStorageInfoThirdPartyContext"/>
   <int value="3881" label="CrossOriginEmbedderPolicyCorsOrCredentialless"/>
+  <int value="3882" label="PostMessageFromSecureToSecure"/>
+  <int value="3883" label="PostMessageFromInsecureToInsecure"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32317,6 +32332,14 @@ Called by update_permissions_policy_enum.py.-->
       label="Successful attempt to use the feature. Recorded on each event."/>
   <int value="3"
       label="Failed attempt to use the feature. Recorded on each event."/>
+</enum>
+
+<enum name="FeedAutoplayEvent">
+  <int value="0" label="Auto-play is triggered, but not started yet."/>
+  <int value="1" label="The player starts to auto-play the video."/>
+  <int value="2" label="Auto-play stops before reaching the end."/>
+  <int value="3" label="Auto-play reaches the end."/>
+  <int value="4" label="User clicks on the auto-play video."/>
 </enum>
 
 <enum name="FeedbackSource">
@@ -33659,6 +33682,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="13" label="File was skipped because it belongs to this process."/>
   <int value="14" label="File did not have required embedded profile."/>
   <int value="15" label="File had internal data corruption."/>
+  <int value="16" label="File was not writable when it should be."/>
 </enum>
 
 <enum name="FileMetricsProviderEmbeddedProfileResult">
@@ -38120,6 +38144,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="HelpAppProviderListSearchResultState">
+  <summary>Possible list search result states in the HelpAppProvider.</summary>
+  <int value="0" label="Search finished with no problems"/>
+  <int value="1" label="Search canceled because no help app icon"/>
+  <int value="2"
+      label="Search canceled because the search backend isn't available"/>
+</enum>
+
 <enum name="HIDContinueScenarioType">
   <summary>Possible detected devices combination on leaving dialog</summary>
   <int value="0" label="Pointing device only detected."/>
@@ -39567,6 +39599,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Blocking cross frame node was found"/>
 </enum>
 
+<enum name="ImageSelectionRetrievalOutcome">
+  <int value="0" label="Cached image node was successfully retrieved."/>
+  <int value="1" label="Cached image node was not found."/>
+  <int value="2"
+      label="Specified frame was different from the cached node so the image
+             was not retrieved."/>
+</enum>
+
 <enum name="ImageSmoothingQuality">
   <int value="0" label="Image smoothing quality sets to None"/>
   <int value="1" label="Image smoothing quality sets to Low"/>
@@ -40991,6 +41031,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Action Button"/>
   <int value="1" label="Cancel"/>
   <int value="2" label="Remind Me Later"/>
+</enum>
+
+<enum name="IOSDefaultBrowserTailoredPromoType">
+  <int value="0" label="Unkown"/>
+  <int value="1" label="Made for iOS"/>
+  <int value="2" label="Stay Safe"/>
+  <int value="3" label="All Tabs"/>
 </enum>
 
 <enum name="IOSDeviceThermalState">
@@ -46774,6 +46821,7 @@ from previous Chrome versions.
   <int value="281024089" label="AppServiceExternalProtocol:disabled"/>
   <int value="282582564" label="DisableCameraFrameRotationAtSource:enabled"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
+  <int value="282692100" label="SubframeShutdownDelay:disabled"/>
   <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="285387302" label="AvatarToolbarButton:enabled"/>
@@ -47933,6 +47981,7 @@ from previous Chrome versions.
   <int value="1285905715" label="WebXRHitTest:enabled"/>
   <int value="1287625114" label="EnableIncognitoShortcutOnDesktop:disabled"/>
   <int value="1288612648" label="PluginVmFullscreen:enabled"/>
+  <int value="1288713607" label="EcheSWAResizing:disabled"/>
   <int value="1289433604" label="RecoverFromNeverSaveAndroid:enabled"/>
   <int value="1289495171" label="AssistantBetterOnboarding:disabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
@@ -48149,6 +48198,7 @@ from previous Chrome versions.
   <int value="1467583815" label="AVIF:disabled"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
   <int value="1472938299" label="WellKnownChangePassword:disabled"/>
+  <int value="1473157145" label="EcheSWAResizing:enabled"/>
   <int value="1473838479" label="EnableVirtualKeyboardMdUi:disabled"/>
   <int value="1473967338" label="OmniboxShortBookmarkSuggestions:enabled"/>
   <int value="1474861626" label="disable-multi-mirroring"/>
@@ -48737,6 +48787,7 @@ from previous Chrome versions.
       label="AutofillEnableLocalCardMigrationForNonSyncUser:disabled"/>
   <int value="1990873642"
       label="AutofillEnableSurfacingServerCardNickname:disabled"/>
+  <int value="1991461704" label="SubframeShutdownDelay:enabled"/>
   <int value="1991771852" label="LeftToRightUrls:enabled"/>
   <int value="1991912338" label="ModuleScriptsDynamicImport:enabled"/>
   <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>
@@ -55761,6 +55812,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Clicked on Learn More"/>
   <int value="10"
       label="Clicked on the Refresh button in the all dismissed state"/>
+  <int value="16" label="Opened a video snippet"/>
 </enum>
 
 <enum name="NewTabPageActionAndroid2">

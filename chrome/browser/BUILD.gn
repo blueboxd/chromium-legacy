@@ -1006,6 +1006,8 @@ static_library("browser") {
     "page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h",
     "page_load_metrics/observers/optimization_guide_page_load_metrics_observer.cc",
     "page_load_metrics/observers/optimization_guide_page_load_metrics_observer.h",
+    "page_load_metrics/observers/page_anchors_metrics_observer.cc",
+    "page_load_metrics/observers/page_anchors_metrics_observer.h",
     "page_load_metrics/observers/portal_page_load_metrics_observer.cc",
     "page_load_metrics/observers/portal_page_load_metrics_observer.h",
     "page_load_metrics/observers/prefetch_proxy_page_load_metrics_observer.cc",
@@ -3399,6 +3401,8 @@ static_library("browser") {
       "apps/app_service/extension_uninstaller.h",
       "apps/app_service/icon_key_util.cc",
       "apps/app_service/icon_key_util.h",
+      "apps/app_service/intent_util.cc",
+      "apps/app_service/intent_util.h",
       "apps/app_service/launch_utils.cc",
       "apps/app_service/launch_utils.h",
       "apps/app_service/publishers/extension_apps.cc",
@@ -4182,6 +4186,7 @@ static_library("browser") {
       "//components/feedback/content:factory",
       "//components/image_fetcher/core",
       "//components/keep_alive_registry",
+      "//components/live_caption:constants",
       "//components/pref_registry",
       "//components/printing/common:mojo_interfaces",
       "//components/services/app_service:lib",
@@ -4255,8 +4260,6 @@ static_library("browser") {
       "apps/app_service/arc_icon_once_loader.h",
       "apps/app_service/file_utils.cc",
       "apps/app_service/file_utils.h",
-      "apps/app_service/intent_util.cc",
-      "apps/app_service/intent_util.h",
       "apps/app_service/media_requests.cc",
       "apps/app_service/media_requests.h",
       "apps/app_service/menu_util.cc",
@@ -5341,7 +5344,9 @@ static_library("browser") {
       "upgrade_detector/upgrade_detector_impl.cc",
       "upgrade_detector/upgrade_detector_impl.h",
     ]
-  } else {  # is_android || is_chromeos_ash
+  }
+
+  if (is_android || is_chromeos_ash || is_win) {
     sources += [
       "media/protected_media_identifier_permission_context.cc",
       "media/protected_media_identifier_permission_context.h",

@@ -169,8 +169,10 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(hints_server_->Start());
 
-    param_feature_list_.InitWithFeatures(
-        {blink::features::kNavigationPredictor}, {});
+    std::map<std::string, std::string> params;
+    params["random_anchor_sampling_period"] = "1";
+    param_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kNavigationPredictor, params);
 
     InProcessBrowserTest::SetUp();
   }
@@ -346,19 +348,6 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   void ResetCountHintsRequestsReceived() {
     base::AutoLock lock(lock_);
     count_hints_requests_received_ = 0;
-  }
-
-  // Wait for page layout to happen. This is needed in some tests since the
-  // anchor elements are extracted from the webpage after page layout finishes.
-  void WaitForPageLayout() {
-    const char* entry_name =
-        ukm::builders::NavigationPredictorPageLinkMetrics::kEntryName;
-
-    if (ukm_recorder_->GetEntriesByName(entry_name).empty()) {
-      base::RunLoop run_loop;
-      ukm_recorder_->SetOnAddEntryCallback(entry_name, run_loop.QuitClosure());
-      run_loop.Run();
-    }
   }
 
  protected:
@@ -1607,11 +1596,6 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherSearchPageBrowserTest,
   // should be recorded as not covered by the hints fetcher.
   ResetCountHintsRequestsReceived();
   ui_test_utils::NavigateToURL(browser(), search_results_page_url());
-  WaitForPageLayout();
-
-  RetryForHistogramUntilCountReached(
-      histogram_tester,
-      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 1);
 
   WaitUntilHintsFetcherRequestReceived();
   EXPECT_EQ(1u, count_hints_requests_received());

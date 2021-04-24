@@ -20,16 +20,12 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
-namespace {
+namespace web_app {
 
 constexpr char kUseCounterHistogram[] = "Blink.UseCounter.Features";
 
 blink::mojom::WebFeature url_handling_feature =
     blink::mojom::WebFeature::kWebAppManifestUrlHandlers;
-
-}  // namespace
-
-namespace web_app {
 
 class WebAppUrlHandlingBrowserTest : public WebAppNavigationBrowserTest {
  public:

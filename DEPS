@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1dcf46359c5a0512da90145bcbf0ad894ce88d82',
+  'skia_revision': 'd7872aca1d6cb9f48726b17038480e4c0bc3ceb9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e9798f1a71a056bfe18ed9ac2d014a3163c22698',
+  'v8_revision': 'b6363909c2e36e2e01fdf473eeb57300c3a2d301',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '2a403f91deacb27c3eca32547951c3cdccebb518',
+  'angle_revision': '8df3e5f2b9dc098f1dfbffce4119a888cd50b78f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b2b0c3b6c6e093649c35b6824004284ca4c2bd4a',
+  'devtools_frontend_revision': 'c21b17623c3cfa4c6f043e7a15b64347f96d7949',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '96c708662820f56a26455bd29b141611eaa802e8',
+  'dawn_revision': '221b8b06cc777a21ca0f5d5e832302da800bec65',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -573,7 +573,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '977f40d44658a373a55f60e83a474fbdc533c05e',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'ee79f1c2b1ded032bf91dfcf01d82eb20c73fa31',
       'condition': 'checkout_ios',
   },
 
@@ -1552,7 +1552,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '9dd7f1e157c609c8056f7f8b9c04e627611ef937',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '70efbb839b307647241f4e76aeab4ce88beb009b',
+    Var('webrtc_git') + '/src.git' + '@' + '66241e4fa4fa88ae6314e9e51aac9edc3013ecb6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1621,7 +1621,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'Ds00JhfWe32OQ8-Hqnrn7YapO52_BQ-QqDobfZUCjqwC',
+        'version': 'uQBANVE52z0ySq0IRBuva5HYP2xW-1un1_JVzs1pyGkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -4020,7 +4020,7 @@ hooks = [
     'name': 'checkout_telemetry_binary_dependencies',
     'condition': 'checkout_telemetry_dependencies',
     'pattern': '.',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
     ],
   },
@@ -4030,7 +4030,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_linux and not checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4041,7 +4041,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_win and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4052,7 +4052,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_mac and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4063,7 +4063,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4132,7 +4132,7 @@ hooks = [
     'name': 'Fetch Android AFDO profile',
     'pattern': '.',
     'condition': 'checkout_android or checkout_linux',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chrome/android/profiles/newest.txt',
                 '--local_state=src/chrome/android/profiles/local.txt',
@@ -4247,7 +4247,7 @@ hooks = [
     'name': 'Fetch ChromeOS-specific orderfile for Chrome',
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/orderfile.newest.txt',
                 '--local_state=src/chromeos/profiles/orderfile.local.txt',
@@ -4260,7 +4260,7 @@ hooks = [
     'name': 'Fetch Chrome OS AFDO profiles (from Intel Atom cores)',
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/atom.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/atom.afdo.local.txt',
@@ -4272,7 +4272,7 @@ hooks = [
     'name': 'Fetch Chrome OS AFDO profiles (from Intel big cores)',
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/bigcore.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/bigcore.afdo.local.txt',
@@ -4378,7 +4378,7 @@ hooks = [
     'name': 'Fetch PGO profiles for win32',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_win',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/update_pgo_profiles.py',
                 '--target=win32',
                 'update',
@@ -4389,7 +4389,7 @@ hooks = [
     'name': 'Fetch PGO profiles for win64',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_win',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/update_pgo_profiles.py',
                 '--target=win64',
                 'update',
@@ -4400,7 +4400,7 @@ hooks = [
     'name': 'Fetch PGO profiles for mac',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_mac',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/update_pgo_profiles.py',
                 '--target=mac',
                 'update',
@@ -4411,7 +4411,7 @@ hooks = [
     'name': 'Fetch PGO profiles for linux',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_linux',
-    'action': [ 'vpython',
+    'action': [ 'python',
                 'src/tools/update_pgo_profiles.py',
                 '--target=linux',
                 'update',
@@ -4423,7 +4423,7 @@ hooks = [
     'name': 'Generate component metadata for tests',
     'pattern': '.',
     'action': [
-      'vpython',
+      'python',
       'src/testing/generate_location_tags.py',
       '--out',
       'src/testing/location_tags.json',

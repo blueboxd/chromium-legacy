@@ -30,6 +30,7 @@ import org.chromium.components.payments.PaymentAppFactoryParams;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.components.payments.PaymentManifestWebDataService;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -1552,8 +1553,8 @@ public class AndroidPaymentAppFinderTest
         mMethodData = buildMethodData(methodNames);
         mActivityTestRule.runOnUiThread(() -> {
             AndroidPaymentAppFinder finder =
-                    new AndroidPaymentAppFinder(new PaymentManifestWebDataService(), mDownloader,
-                            new PaymentManifestParser(), mPackageManager,
+                    new AndroidPaymentAppFinder(new PaymentManifestWebDataService(getWebContents()),
+                            mDownloader, new PaymentManifestParser(), mPackageManager,
                             /*delegate=*/AndroidPaymentAppFinderTest.this, /*factory=*/null);
             finder.bypassIsReadyToPayServiceInTest();
             if (appStorePackageName != null) {

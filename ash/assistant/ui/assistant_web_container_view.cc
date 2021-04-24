@@ -136,6 +136,10 @@ void AssistantWebContainerView::OpenUrl(const GURL& url) {
   ContentsView()->Navigate(url);
 }
 
+void AssistantWebContainerView::SetCanGoBackForTesting(bool can_go_back) {
+  DidChangeCanGoBack(can_go_back);
+}
+
 AssistantWebView* AssistantWebContainerView::ContentsView() {
   return contents_view_ptr_ ? contents_view_ptr_ : contents_view_.get();
 }
@@ -159,6 +163,10 @@ void AssistantWebContainerView::RemoveContents() {
 
   SetFocusBehavior(FocusBehavior::NEVER);
 
+  // Remove back button.
+  web_container_view_delegate_->UpdateBackButtonVisibility(
+      GetWidget(),
+      /*can_go_back=*/false);
   RemoveChildViewT(contents_view_ptr_)->RemoveObserver(this);
   contents_view_ptr_ = nullptr;
 }

@@ -100,15 +100,14 @@ TEST_F(ImageDecoderTest, IsTypeSupported) {
 
   EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/webp"));
 
-  EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/x-icon"));
-  EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/vnd.microsoft.icon"));
-
   EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/bmp"));
   EXPECT_TRUE(IsTypeSupported(&v8_scope, "image/x-xbitmap"));
 
   EXPECT_EQ(IsTypeSupported(&v8_scope, "image/avif"),
             BUILDFLAG(ENABLE_AV1_DECODER));
 
+  EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/x-icon"));
+  EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/vnd.microsoft.icon"));
   EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/svg+xml"));
   EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/heif"));
   EXPECT_FALSE(IsTypeSupported(&v8_scope, "image/pcx"));
@@ -577,6 +576,48 @@ TEST_F(ImageDecoderTest, DecodePartialImage) {
 
     tester1.WaitUntilSettled();
     ASSERT_TRUE(tester1.IsRejected());
+  }
+}
+
+TEST_F(ImageDecoderTest, DecodeYuv) {
+  V8TestingScope v8_scope;
+  constexpr char kImageType[] = "image/jpeg";
+  EXPECT_TRUE(IsTypeSupported(&v8_scope, kImageType));
+  auto* decoder =
+      CreateDecoder(&v8_scope, "images/resources/ycbcr-420.jpg", kImageType);
+  ASSERT_TRUE(decoder);
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  {
+    auto promise = decoder->tracks().ready(v8_scope.GetScriptState());
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+  }
+
+  const auto& tracks = decoder->tracks();
+  ASSERT_EQ(tracks.length(), 1u);
+  EXPECT_EQ(tracks.AnonymousIndexedGetter(0)->animated(), false);
+  EXPECT_EQ(tracks.selectedTrack().value()->animated(), false);
+
+  EXPECT_EQ(decoder->type(), kImageType);
+  EXPECT_EQ(tracks.selectedTrack().value()->frameCount(), 1u);
+  EXPECT_EQ(tracks.selectedTrack().value()->repetitionCount(), 0);
+  EXPECT_EQ(decoder->complete(), true);
+
+  {
+    auto promise = decoder->decode(MakeOptions(0, true));
+    ScriptPromiseTester tester(v8_scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+    auto* result = ToImageDecodeResult(&v8_scope, tester.Value());
+    EXPECT_TRUE(result->complete());
+
+    auto* frame = result->image();
+    EXPECT_EQ(frame->format(), "I420");
+    EXPECT_EQ(frame->duration(), 0u);
+    EXPECT_EQ(frame->displayWidth(), 99u);
+    EXPECT_EQ(frame->displayHeight(), 99u);
   }
 }
 

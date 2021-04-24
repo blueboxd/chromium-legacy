@@ -280,6 +280,7 @@ class CONTENT_EXPORT NavigationRequest
   SiteInstanceImpl* GetSourceSiteInstance() override;
   bool IsInMainFrame() override;
   bool IsInPrimaryMainFrame() override;
+  bool IsPrerenderedPageActivation() override;
   bool IsRendererInitiated() override;
   bool WasServerRedirect() override;
   const std::vector<GURL>& GetRedirectChain() override;
@@ -840,11 +841,6 @@ class CONTENT_EXPORT NavigationRequest
   // navigation.
   const GURL& GetOriginalRequestURL();
 
-  // Prerender2:
-  // Returns true if this navigation will activate a prerendered page. It is
-  // only meaningful to call this after BeginNavigation().
-  bool IsPrerenderedPageActivation() const;
-
   // This is the same as |NavigationHandle::IsServedFromBackForwardCache|, but
   // adds a const qualifier.
   bool IsServedFromBackForwardCache() const;
@@ -1300,6 +1296,10 @@ class CONTENT_EXPORT NavigationRequest
   // Called just after a navigation commits (also in case of error): it
   // sends all console messages to the final RenderFrameHost.
   void SendDeferredConsoleMessages();
+
+  bool ShouldRenderFallbackContentForResponse(
+      const net::HttpResponseHeaders& response_head) const;
+  void RenderFallbackContentForObjectTag();
 
   // Never null. The pointee node owns this navigation request instance.
   FrameTreeNode* const frame_tree_node_;

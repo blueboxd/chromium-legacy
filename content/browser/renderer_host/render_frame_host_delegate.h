@@ -197,7 +197,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // the renderer process.
   virtual void UpdateFaviconURL(
       RenderFrameHostImpl* source,
-      std::vector<blink::mojom::FaviconURLPtr> candidates) {}
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) {}
 
   // The frame changed its window.name property.
   virtual void DidChangeName(RenderFrameHostImpl* render_frame_host,
@@ -570,6 +570,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Return true if the page has a transient affordance to enter fullscreen
   // without consuming user activation.
   virtual bool IsTransientAllowFullscreenActive() const;
+
+  // Return true if the back forward cache is supported. This is not an
+  // indication that the cache will be used.
+  virtual bool IsBackForwardCacheSupported();
 
   // The page is trying to open a new widget (e.g. a select popup). The
   // widget should be created associated with the given

@@ -28,6 +28,7 @@ group("all") {
 
   if (!is_chromeos_ash && !is_chromeos_lacros && !is_android && !is_ios) {
     deps += [
+      "//remoting/host:remote_open_url",
       "//remoting/host:remoting_native_messaging_host",
       "//remoting/host:remoting_native_messaging_manifests",
       "//remoting/host:remoting_start_host",
@@ -263,6 +264,8 @@ static_library("common") {
     "it2me_desktop_environment.h",
     "keyboard_layout_monitor.cc",
     "keyboard_layout_monitor.h",
+    "mojo_ipc_server.cc",
+    "mojo_ipc_server.h",
     "mouse_cursor_monitor_proxy.cc",
     "mouse_cursor_monitor_proxy.h",
     "mouse_shape_pump.cc",
@@ -281,6 +284,8 @@ static_library("common") {
     "register_support_host_request.h",
     "remote_input_filter.cc",
     "remote_input_filter.h",
+    "remote_open_url_constants.cc",
+    "remote_open_url_constants.h",
     "remote_open_url_message_handler.cc",
     "remote_open_url_message_handler.h",
     "remoting_register_support_host_request.cc",
@@ -339,6 +344,7 @@ static_library("common") {
     "//remoting/base:authorization",
     "//remoting/host/file_transfer:common",
     "//remoting/host/input_monitor",
+    "//remoting/host/mojom",
     "//remoting/host/security_key",
     "//remoting/proto/ftl/v1:ftl_messages",
     "//remoting/proto/remoting/v1:remote_support_host_messages",
@@ -993,5 +999,23 @@ if (enable_me2me_host) {
   } else {
     group("remoting_me2me_host_archive") {
     }
+  }
+}
+
+if (enable_me2me_host) {
+  executable("remote_open_url") {
+    sources = [
+      "remote_open_url_client.cc",
+      "remote_open_url_client.h",
+      "remote_open_url_main.cc",
+    ]
+    deps = [
+      ":host",
+      ":logging",
+      "//base",
+      "//mojo/core/embedder:embedder",
+      "//remoting/host/mojom",
+      "//url",
+    ]
   }
 }

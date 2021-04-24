@@ -59,6 +59,24 @@ public final class ChromePreferenceKeys {
     public static final String APPLICATION_OVERRIDE_LANGUAGE =
             "Chrome.Language.ApplicationOverrideLanguage";
 
+    /**
+     * The last known state of the active tab that can take any value from
+     * {@link TabPersistentStore#ActiveTabState}, recorded when TabModelSelector is serialized. This
+     * pref is recorded because we delay the first draw only if we're going to show the NTP, and the
+     * tab state isn't available when we need to make a decision
+     * (ChromeTabbedActivity#performPostInflationStartup).
+     */
+    public static final String APP_LAUNCH_LAST_KNOWN_ACTIVE_TAB_STATE =
+            "Chrome.AppLaunch.LastKnownActiveTabState";
+
+    /**
+     * Whether the default search engine had a logo when #onStop was called. This is used with
+     * |Chrome.AppLaunch.LastKnownActiveTabState| to predict if we are going to show NTP with a
+     * logo on startup.
+     */
+    public static final String APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO =
+            "Chrome.AppLaunch.SearchEngineHadLogo";
+
     public static final String APP_LOCALE = "locale";
 
     /** Assistant voice search keys. */
@@ -651,13 +669,6 @@ public final class ChromePreferenceKeys {
     public static final String PERSISTENT_OFFLINE_CONTENT_AVAILABILITY_STATUS =
             "Chrome.OfflineIndicatorV2.HasPersistentOfflineContent";
 
-    public static final String PREFETCH_HAS_NEW_PAGES = "prefetch_notification_has_new_pages";
-    public static final String PREFETCH_IGNORED_NOTIFICATION_COUNTER =
-            "prefetch_notification_ignored_counter";
-    public static final String PREFETCH_NOTIFICATION_ENABLED = "prefetch_notification_enabled";
-    public static final String PREFETCH_NOTIFICATION_TIME = "prefetch_notification_shown_time";
-    public static final String PREFETCH_OFFLINE_COUNTER = "prefetch_notification_offline_counter";
-
     /**
      * Whether the PriceAlertsMessageCard is enabled.
      */
@@ -973,6 +984,8 @@ public final class ChromePreferenceKeys {
                 AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER,
                 AUTOFILL_ASSISTANT_NUMBER_OF_LITE_SCRIPTS_CANCELED,
                 AUTOFILL_ASSISTANT_PROACTIVE_HELP,
+                APP_LAUNCH_LAST_KNOWN_ACTIVE_TAB_STATE,
+                APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO,
                 APPLICATION_OVERRIDE_LANGUAGE,
                 CHROME_SURVEY_PROMPT_DISPLAYED_TIMESTAMP.pattern(),
                 CLIPBOARD_SHARED_URI,

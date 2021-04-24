@@ -168,13 +168,16 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       WebFrameLoadType = WebFrameLoadType::kReplaceCurrentItem,
       mojom::blink::ScrollRestorationType =
           mojom::blink::ScrollRestorationType::kAuto);
+
+  // |is_synchronously_committed| is described in comment for
+  // CommitSameDocumentNavigation.
   void UpdateForSameDocumentNavigation(const KURL&,
                                        SameDocumentNavigationSource,
                                        scoped_refptr<SerializedScriptValue>,
                                        mojom::blink::ScrollRestorationType,
                                        WebFrameLoadType,
                                        const SecurityOrigin* initiator_origin,
-                                       bool is_content_initiated);
+                                       bool is_synchronously_committed);
 
   const ResourceResponse& GetResponse() const { return response_; }
   bool IsClientRedirect() const { return is_client_redirect_; }
@@ -214,10 +217,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // |initiator_origin| is the origin of the document or script that initiated
   // the navigation or nullptr if the navigation is browser-initiated (e.g.
   // typed in omnibox).
-  // |is_content_initiated| is true iff the navigation comes internally from
-  // *this* renderer's content (e.g. link click, script). E.g. this argument is
-  // false when script in another renderer initiates the navigation (even
-  // though it is "content initiated").
+  // |is_synchronously_committed| is true if the navigation is synchronously
+  // committed from within Blink, rather than being driven by the browser's
+  // navigation stack.
   mojom::CommitResult CommitSameDocumentNavigation(
       const KURL&,
       WebFrameLoadType,
@@ -225,7 +227,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       ClientRedirectPolicy,
       bool has_transient_user_activation,
       const SecurityOrigin* initiator_origin,
-      bool is_content_initiated,
+      bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
@@ -313,7 +315,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // navigation was started using the history API in the renderer.
   bool IsBrowserInitiated() const { return is_browser_initiated_; }
 
-  bool IsSameOriginNavigation() const { return is_same_origin_navigation_; }
+  bool LastNavigationHadTrustedInitiator() const {
+    return last_navigation_had_trusted_initiator_;
+  }
 
   enum class HistoryNavigationType {
     kDifferentDocument,
@@ -396,7 +400,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       ClientRedirectPolicy,
       bool has_transient_user_activation,
       const SecurityOrigin* initiator_origin,
-      bool is_content_initiated,
+      bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
@@ -557,6 +561,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // committed in this DocumentLoader had transient activation.
   bool last_navigation_had_transient_user_activation_ = false;
 
+  // Whether the last navigation (cross-document or same-document) that
+  // committed in this DocumentLoader was initiated from the same-origin as the
+  // current document or was browser-initiated.
+  bool last_navigation_had_trusted_initiator_ = false;
+
   // Whether this load request comes with a sitcky user activation.
   const bool had_sticky_activation_ = false;
 
@@ -565,9 +574,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Whether this loader is working for a prerendering document.
   bool is_prerendering_ = false;
-
-  // Whether this load request was initiated by the same origin.
-  bool is_same_origin_navigation_ = false;
 
   // If true, the navigation loading this document should allow a text fragment
   // to invoke. This token may be instead consumed to pass this permission

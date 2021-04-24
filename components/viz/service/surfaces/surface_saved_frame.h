@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame_transition_directive.h"
-#include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/release_callback.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -37,6 +37,9 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
     gpu::Mailbox mailbox;
     gpu::SyncToken sync_token;
 
+    // Software bitmap representation.
+    SkBitmap bitmap;
+
     // This represents the region for the pixel output.
     gfx::Rect rect;
     // This is a transform that takes `rect` into a root render pass space. Note
@@ -48,7 +51,7 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
     bool is_software = false;
 
     // Release callback used to return a GPU texture.
-    std::unique_ptr<SingleReleaseCallback> release_callback;
+    ReleaseCallback release_callback;
   };
 
   struct FrameResult {
@@ -78,7 +81,7 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
   base::Optional<FrameResult> TakeResult() WARN_UNUSED_RESULT;
 
   // For testing functionality that ensures that we have a valid frame.
-  void CompleteSavedFrameForTesting(ReleaseCallback release_callback);
+  void CompleteSavedFrameForTesting();
 
  private:
   enum class ResultType { kRoot, kShared };

@@ -181,6 +181,7 @@ crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-incremental-r
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-state-persistence-no-dirty.html [ Pass Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-transform-skewed.html [ Failure ]
+crbug.com/1081534 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-transform-skewed.html [ Failure ]
 crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-text-FontFace.html [ Pass Failure ]
 
 # Flakey tests
@@ -192,7 +193,6 @@ crbug.com/1081534 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-getImageData.
 # for a platform please add the platform tag to the failing tests above.
 crbug.com/1081534 [ Android ] virtual/oopr-canvas2d/* [ Skip ]
 crbug.com/1081534 [ Fuchsia ] virtual/oopr-canvas2d/* [ Skip ]
-crbug.com/1081534 [ Linux ] virtual/oopr-canvas2d/* [ Skip ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/* [ Skip ]
 # --- END OOP-R Canvas Tests
 
@@ -571,6 +571,7 @@ crbug.com/664246 external/wpt/css/css-position/sticky/position-sticky-scrollInto
 #### external/wpt/css/css-sizing
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
+crbug.com/1114280 external/wpt/css/css-sizing/aspect-ratio/replaced-element-034.html [ Failure ]
 crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-001.html [ Failure ]
 crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-002.html [ Failure ]
 crbug.com/1135287 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-003.html [ Failure ]
@@ -1090,7 +1091,6 @@ crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mul
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-003.xht [ Crash Failure Timeout ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-004.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
-crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-inner-multicol.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-opacity-2nd-and-3rd-column.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
@@ -5083,10 +5083,6 @@ crbug.com/1194557 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sou
 crbug.com/1194557 external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-subdomain-yes-2-subdomain2-no.sub.https.html [ Timeout ]
 crbug.com/1194557 virtual/shared_array_buffer_on_desktop/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-subdomain-yes-2-subdomain2-no.sub.https.html [ Failure Pass ]
 
-# Failing devtool tests. Independently of SharedArrayBuffer enabled or not.
-crbug.com/1194557 http/tests/devtools/local-object-properties-section.js [ Failure ]
-crbug.com/1194557 http/tests/devtools/unit/object-properties-expand-recursively.js [ Failure ]
-
 # Test output varies depending on the bot. A single expectation file doesn't
 # work.
 crbug.com/1194557 fast/beacon/beacon-basic.html [ Failure Pass ]
@@ -6194,7 +6190,7 @@ crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/3d-r
 crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/backface-visibility-hidden-004.tentative.html [ Pass ]
 crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/backface-visibility-hidden-005.tentative.html [ Pass ]
 crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/backface-visibility-hidden-animated-002.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/preserve-3d-flat-grouping-properties.tentative.html [ Pass ]
+crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/preserve-3d-flat-grouping-properties-containing-block.tentative.html [ Pass ]
 crbug.com/1008483 virtual/transform-interop/compositing/geometry/require-own-backing-recalc-order.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
 crbug.com/1008483 virtual/transform-interop/paint/invalidation/stacking-context-lost.html [ Failure ]
@@ -7167,10 +7163,14 @@ crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-e
 
 # Sheriff 2021-04-22
 crbug.com/1191990 [ Linux ] http/tests/serviceworker/clients-openwindow.html [ Pass Failure ]
-crbug.com/1198443 [ Win ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
-crbug.com/1201879 [ Linux ] http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Pass Timeout ]
+crbug.com/1198443 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
+crbug.com/1201879 http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Pass Timeout ]
 
 # Sheriff 2021-04-23
-crbug.com/1202040 [ Win ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
+crbug.com/1198832 [ Linux ] external/wpt/css/css-sizing/aspect-ratio/replaced-element-003.html [ Pass Failure ]
+crbug.com/1202040 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
+crbug.com/1202040 virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
 crbug.com/1202051 virtual/scroll-unification/scrollbars/layout-viewport-scrollbars-hidden.html [ Pass Failure ]
 crbug.com/1202051 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/layout-viewport-scrollbars-hidden.html [ Pass Failure ]
+crbug.com/1200751 [ Linux ] fast/peerconnection/RTCPeerConnection-addMultipleTracks.html [ Pass Failure ]
+crbug.com/1197528 [ Linux ] pointer-lock/pointerlockchange-pointerlockerror-events.html [ Pass Failure ]

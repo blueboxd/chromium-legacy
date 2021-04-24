@@ -1684,6 +1684,7 @@
       'linux-ash-chromium-generator-rel': {
         'additional_compile_targets': [
           'chrome',
+          'gen_linux_ash_chromium_cipd_yaml',
         ],
       },
       'linux-cfm-rel': {
@@ -3063,8 +3064,11 @@
         'additional_compile_targets': [
           'chrome',
         ],
+        'mixins': [
+          'enable_resultdb',
+        ],
         'test_suites': {
-          'gtest_tests': 'lacros_all_tast_tests_amd64_generic',
+          'gtest_tests': 'lacros_device_or_vm_tests_fyi',
         },
         'os_type': 'chromeos'
       },
@@ -5033,6 +5037,16 @@
         },
       },
       'linux-bionic-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
+          'scripts': 'chromium_linux_scripts',
+        },
+      },
+      'linux-experimental-next-rel': {
         'mixins': [
           'linux-bionic',
         ],

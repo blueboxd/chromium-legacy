@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -699,7 +700,7 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
   UpdateForSameDocumentNavigation(
       new_url, kSameDocumentNavigationHistoryApi, std::move(data),
       scroll_restoration_type, type, frame_->DomWindow()->GetSecurityOrigin(),
-      /*is_content_initiated=*/true);
+      /*is_synchronously_committed=*/true);
 }
 
 void DocumentLoader::UpdateForSameDocumentNavigation(
@@ -709,7 +710,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     mojom::blink::ScrollRestorationType scroll_restoration_type,
     WebFrameLoadType type,
     const SecurityOrigin* initiator_origin,
-    bool is_content_initiated) {
+    bool is_synchronously_committed) {
   SinglePageAppNavigationType single_page_app_navigation_type =
       CategorizeSinglePageAppNavigation(same_document_navigation_source, type);
   UMA_HISTOGRAM_ENUMERATION(
@@ -748,17 +749,23 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     redirect_chain_.push_back(old_url);
   redirect_chain_.push_back(new_url);
 
+  last_navigation_had_trusted_initiator_ =
+      initiator_origin ? initiator_origin->IsSameOriginWith(
+                             frame_->DomWindow()->GetSecurityOrigin()) &&
+                             Url().ProtocolIsInHTTPFamily()
+                       : true;
+
   // We want to allow same-document text fragment navigations if they're coming
-  // from the browser. Do this only on a standard navigation so that we don't
-  // clobber the token when this is called from e.g. history.back().
+  // from the browser or same-origin. Do this only on a standard navigation so
+  // that we don't unintentionally clear the token when we reach here from the
+  // history API.
   if (type == WebFrameLoadType::kStandard ||
       same_document_navigation_source == kSameDocumentNavigationDefault) {
     bool is_browser_initiated = !initiator_origin;
-    DCHECK(!(is_browser_initiated && is_content_initiated));
+    DCHECK(!(is_browser_initiated && is_synchronously_committed));
     has_text_fragment_token_ =
         TextFragmentAnchor::GenerateNewTokenForSameDocument(
-            new_url.FragmentIdentifier(), type, is_browser_initiated,
-            same_document_navigation_source);
+            *this, type, same_document_navigation_source);
   }
 
   SetHistoryItemStateForCommit(history_item_.Get(), type,
@@ -781,7 +788,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       FrameScheduler::NavigationType::kSameDocument);
 
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
-      history_item_.Get(), commit_type, is_content_initiated,
+      history_item_.Get(), commit_type, is_synchronously_committed,
       is_history_api_navigation, is_client_redirect_);
   probe::DidNavigateWithinDocument(frame_);
   if (!was_loading) {
@@ -963,8 +970,18 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   body_loader_.reset();
   virtual_time_pauser_.UnpauseVirtualTime();
 
-  if (!error.IsCancellation() && frame_->Owner())
-    frame_->Owner()->RenderFallbackContent(frame_);
+  // `LoadFailed()` should never be called for a navigation failure in a frame
+  // owned by <object>. Browser-side navigation must handle these (whether
+  // network errors, blocked by CSP/XFO, or otherwise) and never delegate to the
+  // renderer.
+  //
+  // `LoadFailed()` *can* be called for a frame owned by <object> if the
+  // navigation body load is cancelled, e.g.:
+  // - `StartLoadingResponse()` calls `StopLoading()` when loading a
+  //   `MediaDocument`.
+  // - `LocalFrame::Detach()` calls `StopLoading()`.
+  // - `window.stop()` calls `StopAllLoaders()` which calls `StopLoading()`.
+  DCHECK(!IsA<HTMLObjectElement>(frame_->Owner()) || error.IsCancellation());
 
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   DCHECK_EQ(kCommitted, state_);
@@ -1187,9 +1204,9 @@ void DocumentLoader::HandleResponse() {
     }
   }
 
-  if (frame_->Owner() && response_.IsHTTP() &&
-      !cors::IsOkStatus(response_.HttpStatusCode()))
-    frame_->Owner()->RenderFallbackContent(frame_);
+  if (response_.IsHTTP() && !cors::IsOkStatus(response_.HttpStatusCode())) {
+    DCHECK(!IsA<HTMLObjectElement>(frame_->Owner()));
+  }
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
@@ -1216,7 +1233,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     ClientRedirectPolicy client_redirect_policy,
     bool has_transient_user_activation,
     const SecurityOrigin* initiator_origin,
-    bool is_content_initiated,
+    bool is_synchronously_committed,
     mojom::blink::TriggeringEventInfo triggering_event_info,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(!IsReloadLoadType(frame_load_type));
@@ -1264,10 +1281,10 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
 
   // If the requesting document is cross-origin, perform the navigation
   // asynchronously to minimize the navigator's ability to execute timing
-  // attacks. If |is_content_initiated| is false, the navigation is already
-  // asynchronous since it's coming from another agent so there's no need to
-  // post it again.
-  if (is_content_initiated && initiator_origin &&
+  // attacks. If |is_synchronously_committed| is false, the navigation is
+  // already asynchronous since it's coming from the browser so there's no need
+  // to post it again.
+  if (is_synchronously_committed && initiator_origin &&
       !initiator_origin->CanAccess(frame_->DomWindow()->GetSecurityOrigin())) {
     frame_->GetTaskRunner(TaskType::kInternalLoading)
         ->PostTask(
@@ -1276,13 +1293,15 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
                       WrapWeakPersistent(this), url, frame_load_type,
                       WrapPersistent(history_item), client_redirect_policy,
                       has_transient_user_activation,
-                      WTF::RetainedRef(initiator_origin), is_content_initiated,
-                      triggering_event_info, std::move(extra_data)));
+                      WTF::RetainedRef(initiator_origin),
+                      is_synchronously_committed, triggering_event_info,
+                      std::move(extra_data)));
   } else {
     CommitSameDocumentNavigationInternal(
         url, frame_load_type, history_item, client_redirect_policy,
-        has_transient_user_activation, initiator_origin, is_content_initiated,
-        triggering_event_info, std::move(extra_data));
+        has_transient_user_activation, initiator_origin,
+        is_synchronously_committed, triggering_event_info,
+        std::move(extra_data));
   }
   return mojom::CommitResult::Ok;
 }
@@ -1294,7 +1313,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     ClientRedirectPolicy client_redirect,
     bool has_transient_user_activation,
     const SecurityOrigin* initiator_origin,
-    bool is_content_initiated,
+    bool is_synchronously_committed,
     mojom::blink::TriggeringEventInfo triggering_event_info,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   // If this function was scheduled to run asynchronously, this DocumentLoader
@@ -1349,7 +1368,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   UpdateForSameDocumentNavigation(url, kSameDocumentNavigationDefault, nullptr,
                                   mojom::blink::ScrollRestorationType::kAuto,
                                   frame_load_type, initiator_origin,
-                                  is_content_initiated);
+                                  is_synchronously_committed);
 
   initial_scroll_state_.was_scrolled_by_user = false;
 
@@ -1575,6 +1594,7 @@ void DocumentLoader::StartLoadingInternal() {
 }
 
 void DocumentLoader::StartLoadingResponse() {
+  // TODO(dcheng): Clean up the null checks in this helper.
   if (!frame_)
     return;
 
@@ -1613,8 +1633,16 @@ void DocumentLoader::StartLoadingResponse() {
     return;
   }
 
-  // TODO(dgozman): why do we stop loading for media documents?
-  // This seems like a hack.
+  // Implements "Then, the user agent must act as if it had stopped parsing."
+  // from https://html.spec.whatwg.org/C/browsing-the-web.html#read-media
+  //
+  // This is an oddity of navigating to a media resource: the original request
+  // for the media resource—which resulted in a committed navigation—is simply
+  // discarded, while the media element created inside the MediaDocument then
+  // makes *another new* request for the same media resource.
+  //
+  // TODO(dcheng): Barring something really strange and unusual, there should
+  // always be a frame here.
   if (frame_ && frame_->GetDocument()->IsMediaDocument()) {
     parser_->Finish();
     StopLoading();
@@ -2253,14 +2281,21 @@ void DocumentLoader::CommitNavigation() {
   // will use stale values from HTMLParserOption.
   DidCommitNavigation();
 
+  bool is_same_origin_initiator = false;
   if (requestor_origin_) {
     const scoped_refptr<const SecurityOrigin> url_origin =
         SecurityOrigin::Create(Url());
 
-    is_same_origin_navigation_ =
+    is_same_origin_initiator =
         requestor_origin_->IsSameOriginWith(url_origin.get()) &&
         Url().ProtocolIsInHTTPFamily();
   }
+
+  // No requestor origin means it's browser-initiated (which includes *all*
+  // history navigations, including those initiated from `window.history`
+  // API).
+  last_navigation_had_trusted_initiator_ =
+      !requestor_origin_ || is_same_origin_initiator;
 
   // The PaintHolding feature defers compositor commits until content has
   // been painted or 500ms have passed, whichever comes first. The additional
@@ -2271,7 +2306,7 @@ void DocumentLoader::CommitNavigation() {
   if (base::FeatureList::IsEnabled(blink::features::kPaintHolding) &&
       IsA<HTMLDocument>(document) && Url().ProtocolIsInHTTPFamily() &&
       history_commit_type != kWebBackForwardCommit &&
-      (is_same_origin_navigation_ ||
+      (is_same_origin_initiator ||
        base::FeatureList::IsEnabled(
            blink::features::kPaintHoldingCrossOrigin))) {
     document->SetDeferredCompositorCommitIsAllowed(true);

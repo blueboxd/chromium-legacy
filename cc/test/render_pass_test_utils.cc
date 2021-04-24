@@ -44,8 +44,8 @@ viz::ResourceId CreateAndImportResource(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token, size,
       false /* is_overlay_candidate */);
   transfer_resource.color_space = std::move(color_space);
-  return resource_provider->ImportResource(
-      transfer_resource, viz::SingleReleaseCallback::Create(base::DoNothing()));
+  return resource_provider->ImportResource(transfer_resource,
+                                           base::DoNothing());
 }
 
 }  // anonymous namespace
@@ -362,7 +362,8 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child),
+      viz::SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<viz::TransferableResource> list;

@@ -14,10 +14,9 @@
  * change if the page is re-opened later.
  */
 
-// #import {assert} from './assert.m.js';
-
+/** @type {!LoadTimeData} */
 // eslint-disable-next-line no-var
-/* #export */ /** @type {!LoadTimeData} */ var loadTimeData;
+/* #export */ var loadTimeData;
 
 class LoadTimeData {
   constructor() {
@@ -37,14 +36,6 @@ class LoadTimeData {
   set data(value) {
     expect(!this.data_, 'Re-setting data.');
     this.data_ = value;
-  }
-
-  /**
-   * Returns a JsEvalContext for |data_|.
-   * @returns {JsEvalContext}
-   */
-  createJsEvalContext() {
-    return new JsEvalContext(this.data_);
   }
 
   /**
@@ -110,7 +101,7 @@ class LoadTimeData {
   substituteString(label, var_args) {
     const varArgs = arguments;
     return label.replace(/\$(.|$|\n)/g, function(m) {
-      assert(m.match(/\$[$1-9]/), 'Unescaped $ found in localized string.');
+      expect(m.match(/\$[$1-9]/), 'Unescaped $ found in localized string.');
       return m === '$$' ? '$' : varArgs[m[1]];
     });
   }
@@ -135,7 +126,7 @@ class LoadTimeData {
       // Pieces that are not $1-9 should be returned after replacing $$
       // with $.
       if (!p.match(/^\$[1-9]$/)) {
-        assert(
+        expect(
             (p.match(/\$/g) || []).length % 2 === 0,
             'Unescaped $ found in localized string.');
         return {value: p.replace(/\$\$/g, '$'), arg: null};
@@ -183,16 +174,21 @@ class LoadTimeData {
       this.data_[key] = replacements[key];
     }
   }
+
+  /** Reset loadTimeData's data to empty. Should only be used in tests. */
+  resetForTesting() {
+    this.data_ = {};
+  }
 }
 
   /**
-   * Checks condition, displays error message if expectation fails.
+   * Checks condition, throws error message if expectation fails.
    * @param {*} condition The condition to check for truthiness.
    * @param {string} message The message to display if the check fails.
    */
   function expect(condition, message) {
     if (!condition) {
-      console.error(
+      throw new Error(
           'Unexpected condition on ' + document.location.href + ': ' + message);
     }
   }

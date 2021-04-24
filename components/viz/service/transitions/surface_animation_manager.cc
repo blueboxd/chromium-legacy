@@ -52,6 +52,7 @@ void CreateAndAppendSrcTextureQuad(CompositorRenderPass* render_pass,
                                    const gfx::Rect& output_rect,
                                    const gfx::Transform& src_transform,
                                    float src_opacity,
+                                   bool y_flipped,
                                    ResourceId id) {
   auto* src_quad_state = render_pass->CreateAndAppendSharedQuadState();
   src_quad_state->SetAll(
@@ -75,8 +76,7 @@ void CreateAndAppendSrcTextureQuad(CompositorRenderPass* render_pass,
       /*uv_top_left=*/gfx::PointF(0, 0),
       /*uv_bottom_right=*/gfx::PointF(1, 1),
       /*background_color=*/SK_ColorTRANSPARENT,
-      /*vertex_opacity=*/vertex_opacity,
-      /*y_flipped=*/true,
+      /*vertex_opacity=*/vertex_opacity, y_flipped,
       /*nearest_neighbor=*/true,
       /*secure_output_only=*/false,
       /*protected_video_type=*/gfx::ProtectedVideoType::kClear);
@@ -127,7 +127,10 @@ void CreateAndAppendSharedRenderPassDrawQuad(
 
 }  // namespace
 
-SurfaceAnimationManager::SurfaceAnimationManager() = default;
+SurfaceAnimationManager::SurfaceAnimationManager(
+    SharedBitmapManager* shared_bitmap_manager)
+    : transferable_resource_tracker_(shared_bitmap_manager) {}
+
 SurfaceAnimationManager::~SurfaceAnimationManager() = default;
 
 void SurfaceAnimationManager::SetDirectiveFinishedCallback(
@@ -300,10 +303,13 @@ void SurfaceAnimationManager::InterpolateFrame(Surface* surface) {
   gfx::Transform src_transform = root_animation_.src_transform().Apply();
   gfx::Transform dst_transform = root_animation_.dst_transform().Apply();
 
+  // GPU textures are flipped but software bitmaps are not.
+  bool y_flipped = !saved_textures_->root.resource.is_software;
+
   if (src_on_top) {
     CreateAndAppendSrcTextureQuad(animation_pass.get(), output_rect,
                                   src_transform, root_animation_.src_opacity(),
-                                  saved_textures_->root.resource.id);
+                                  y_flipped, saved_textures_->root.resource.id);
   }
 
   auto* dst_quad_state = animation_pass->CreateAndAppendSharedQuadState();
@@ -336,7 +342,7 @@ void SurfaceAnimationManager::InterpolateFrame(Surface* surface) {
   if (!src_on_top) {
     CreateAndAppendSrcTextureQuad(animation_pass.get(), output_rect,
                                   src_transform, root_animation_.src_opacity(),
-                                  saved_textures_->root.resource.id);
+                                  y_flipped, saved_textures_->root.resource.id);
   }
 
   interpolated_frame.render_pass_list.push_back(std::move(animation_pass));
@@ -468,12 +474,10 @@ void SurfaceAnimationManager::CopyAndInterpolateSharedElements(
     const gfx::Transform& transform = animation.src_transform().Apply();
     float opacity = animation.src_opacity();
 
-    // TODO(vmpstr): If we don't have a src_texture, we should append a solid
-    // color quad, but we need to plumb a safe opaque color here so we know what
-    // color to use. See crbug.com/1200646.
     if (src_texture.has_value()) {
+      bool y_flipped = !src_texture->resource.is_software;
       CreateAndAppendSrcTextureQuad(animation_pass, rect, transform, opacity,
-                                    src_texture->resource.id);
+                                    y_flipped, src_texture->resource.id);
       interpolated_frame->resource_list.push_back(src_texture->resource);
     }
 
@@ -543,9 +547,6 @@ SurfaceAnimationManager::CopyPassWithoutSharedElementQuads(
       auto shared_it = shared_draw_data.find(pass_quad->render_pass_id);
       // If the quad is shared, then add it to the `shared_draw_data`.
       // Otherwise, add it to the copy pass directly.
-      // TODO(vmpstr): If we're removing an opaque render pass, then we need to
-      // replace it with a solid color quad. However, we need to plumb safe
-      // opaque color here first. See crbug.com/1200646.
       if (shared_it != shared_draw_data.end()) {
         shared_it->second.draw_quad = *pass_quad;
       } else {

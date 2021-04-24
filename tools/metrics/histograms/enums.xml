@@ -2879,6 +2879,13 @@ Unknown properties are collapsed to zero. -->
   <int value="25" label="APP_LIST_SEARCH_WEBSTORE"/>
 </enum>
 
+<enum name="AppLaunchBlockDrawForInitialTabAccuracy">
+  <int value="0" label="Blocked draw correctly"/>
+  <int value="1" label="Blocked draw when should not have"/>
+  <int value="2" label="Did not block draw when should have"/>
+  <int value="3" label="Correctly did not block draw"/>
+</enum>
+
 <enum name="AppLaunchContainer">
   <int value="0" label="LAUNCH_CONTAINER_WINDOW"/>
   <int value="1" label="LAUNCH_CONTAINER_PANEL"/>
@@ -6759,6 +6766,7 @@ others/histograms.xml -->
   <int value="45" label="Network request data pipe drained as byte consumer"/>
   <int value="46" label="Foreground cache limit"/>
   <int value="47" label="Browsing instance not swapped"/>
+  <int value="48" label="Disabled for delegate"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -7212,7 +7220,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="204" label="OBSOLETE_RFPH_BLOB_URL_TOKEN_FOR_NON_BLOB_URL"/>
   <int value="205" label="RFH_ERROR_PROCESS_NON_ERROR_COMMIT"/>
   <int value="206" label="RFH_ERROR_PROCESS_NON_UNIQUE_ORIGIN_COMMIT"/>
-  <int value="207" label="RFH_CANNOT_RENDER_FALLBACK_CONTENT"/>
+  <int value="207" label="OBSOLETE_RFH_CANNOT_RENDER_FALLBACK_CONTENT"/>
   <int value="208" label="RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE"/>
   <int value="209" label="OBSOLETE_RFH_INVALID_WEB_REPORTING_CRASH_ID"/>
   <int value="210" label="RFH_DETACH_MAIN_FRAME"/>
@@ -76346,6 +76354,7 @@ would be helpful to identify which type is being sent.
   <int value="13" label="Announcement notification ack button."/>
   <int value="14" label="Announcement notification open button."/>
   <int value="15" label="TWA notification 'Got it' button."/>
+  <int value="16" label="Auto fetch offline page cancel button."/>
 </enum>
 
 <enum name="SystemNotificationType">

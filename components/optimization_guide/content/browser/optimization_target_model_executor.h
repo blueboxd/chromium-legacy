@@ -90,6 +90,10 @@ class OptimizationTargetModelExecutor : public OptimizationTargetModelObserver {
                                                     model_metadata, this);
   }
   ~OptimizationTargetModelExecutor() override {
+    base::UmaHistogramCounts100(
+        "OptimizationGuide.ModelExecutor.RunCount." +
+            GetStringNameForOptimizationTarget(optimization_target_),
+        run_count_);
     decider_->RemoveObserverForOptimizationTargetModel(optimization_target_,
                                                        this);
   }
@@ -103,24 +107,21 @@ class OptimizationTargetModelExecutor : public OptimizationTargetModelObserver {
   using ExecutionCallback =
       base::OnceCallback<void(const base::Optional<OutputType>&)>;
   void ExecuteModelWithInput(ExecutionCallback callback, InputTypes... input) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    base::TimeTicks now = base::TimeTicks::Now();
+
     // base::Unretained is safe here since the execution will not run if
     // |model_execution_task_runner_| gets destructed.
     model_execution_task_runner_->PostTaskAndReplyWithResult(
         FROM_HERE,
         base::BindOnce(&OptimizationTargetModelExecutor::SendForExecution,
-                       base::Unretained(this), input...),
+                       base::Unretained(this), now, input...),
         base::BindOnce(&OptimizationTargetModelExecutor::OnExecutionCompleted,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       base::TimeTicks::Now()));
+                       now));
   }
 
   // OptimizationTargetModelObserver:
-  void OnShutdown() override {
-    base::UmaHistogramCounts100(
-        "OptimizationGuide.ModelExecutor.RunCount." +
-            GetStringNameForOptimizationTarget(optimization_target_),
-        run_count());
-  }
   void OnModelFileUpdated(proto::OptimizationTarget optimization_target,
                           const base::Optional<proto::Any>& model_metadata,
                           const base::FilePath& file_path) override {
@@ -145,8 +146,6 @@ class OptimizationTargetModelExecutor : public OptimizationTargetModelObserver {
             base::IgnoreResult(&OptimizationTargetModelExecutor::LoadModelFile),
             base::Unretained(this)));
   }
-
-  size_t run_count() const { return run_count_; }
 
   // Returns whether a model is currently loaded.
   bool HasLoadedModel() const { return loaded_model_ != nullptr; }
@@ -196,6 +195,11 @@ class OptimizationTargetModelExecutor : public OptimizationTargetModelObserver {
     // We received a new model file. Reset any loaded models.
     ResetLoadedModel();
 
+    base::UmaHistogramBoolean(
+        "OptimizationGuide.ModelExecutor.ModelAvailableToLoad." +
+            GetStringNameForOptimizationTarget(optimization_target_),
+        !!file_path_to_load_);
+
     if (!file_path_to_load_)
       return false;
 
@@ -216,17 +220,20 @@ class OptimizationTargetModelExecutor : public OptimizationTargetModelObserver {
     return !!loaded_model_;
   }
 
-  base::Optional<OutputType> SendForExecution(InputTypes... args) {
+  base::Optional<OutputType> SendForExecution(base::TimeTicks start_time,
+                                              InputTypes... args) {
     DCHECK(model_execution_task_runner_->RunsTasksInCurrentSequence());
 
-    // If there's no model to be loaded, no model can be loaded.
-    if (!file_path_to_load_) {
-      DCHECK(!loaded_model_);
-      return base::nullopt;
-    }
+    base::TimeDelta task_scheduling_latency =
+        base::TimeTicks::Now() - start_time;
+    base::UmaHistogramMediumTimes(
+        "OptimizationGuide.ModelExecutor.TaskSchedulingLatency." +
+            optimization_guide::GetStringNameForOptimizationTarget(
+                optimization_target_),
+        task_scheduling_latency);
 
     // Attempt to load the model file if it isn't loaded yet, fail if loading is
-    // unsuccessful.
+    // unsuccessful or no model is available to load.
     if (!loaded_model_ && !LoadModelFile())
       return base::nullopt;
 

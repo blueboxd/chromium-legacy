@@ -15,6 +15,7 @@ import org.chromium.components.payments.PaymentAppFactoryDelegate;
 import org.chromium.components.payments.PaymentAppFactoryInterface;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.components.payments.PaymentManifestWebDataService;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 
 import java.util.HashMap;
@@ -26,10 +27,10 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryInterface {
     // PaymentAppFactoryInterface implementation.
     @Override
     public void create(PaymentAppFactoryDelegate delegate) {
-        AndroidPaymentAppFinder finder =
-                new AndroidPaymentAppFinder(new PaymentManifestWebDataService(),
-                        new PaymentManifestDownloader(), new PaymentManifestParser(),
-                        new PackageManagerDelegate(), delegate, /*factory=*/this);
+        AndroidPaymentAppFinder finder = new AndroidPaymentAppFinder(
+                new PaymentManifestWebDataService(delegate.getParams().getWebContents()),
+                new PaymentManifestDownloader(), new PaymentManifestParser(),
+                new PackageManagerDelegate(), delegate, /*factory=*/this);
         finder.findAndroidPaymentApps();
     }
 

@@ -7681,7 +7681,7 @@ class TestDidNavigateCommitTypeWebFrameClient
 
   // frame_test_helpers::TestWebFrameClient:
   void DidFinishSameDocumentNavigation(WebHistoryCommitType type,
-                                       bool content_initiated,
+                                       bool is_synchronously_committed,
                                        bool is_history_api_navigation,
                                        bool is_client_redirect) override {
     last_commit_type_ = type;
@@ -7708,7 +7708,7 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
       item->Url(), WebFrameLoadType::kBackForward, item.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, /*initiator_origin=*/nullptr,
-      /*is_content_initiated=*/false,
+      /*is_synchronously_committed=*/false,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       nullptr /* extra_data */);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
@@ -13189,73 +13189,6 @@ TEST_F(WebFrameTest, LocalFrameWithRemoteParentIsTransparent) {
   EXPECT_EQ(Color::kTransparent, color);
 }
 
-class TestFallbackWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
- public:
-  TestFallbackWebFrameClient() : child_client_(nullptr) {}
-  ~TestFallbackWebFrameClient() override = default;
-
-  void SetChildWebFrameClient(TestFallbackWebFrameClient* client) {
-    child_client_ = client;
-  }
-
-  // frame_test_helpers::TestWebFrameClient:
-  WebLocalFrame* CreateChildFrame(
-      mojom::blink::TreeScopeType scope,
-      const WebString&,
-      const WebString&,
-      const FramePolicy&,
-      const WebFrameOwnerProperties& frameOwnerProperties,
-      mojom::blink::FrameOwnerElementType,
-      WebPolicyContainerBindParams policy_container_bind_params) override {
-    DCHECK(child_client_);
-    return CreateLocalChild(*Frame(), scope, child_client_,
-                            std::move(policy_container_bind_params));
-  }
-  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
-    if (child_client_ || KURL(info->url_request.Url()) == BlankURL()) {
-      TestWebFrameClient::BeginNavigation(std::move(info));
-      return;
-    }
-    Frame()->WillStartNavigation(*info);
-  }
-
- private:
-  TestFallbackWebFrameClient* child_client_;
-};
-
-TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
-  RegisterMockedHttpURLLoad("fallback.html");
-  TestFallbackWebFrameClient main_client;
-  TestFallbackWebFrameClient child_client;
-  main_client.SetChildWebFrameClient(&child_client);
-
-  frame_test_helpers::WebViewHelper web_view_helper_;
-  web_view_helper_.Initialize(&main_client);
-
-  WebLocalFrameImpl* main_frame = web_view_helper_.LocalMainFrame();
-  KURL url = ToKURL(base_url_ + "fallback.html");
-  FrameLoadRequest frame_load_request(nullptr, ResourceRequest(url));
-  main_frame->GetFrame()->Loader().StartNavigation(frame_load_request);
-
-  // Because the child frame will have placeholder document loader, the main
-  // frame will not finish loading, so
-  // frame_test_helpers::PumpPendingRequestsForFrameToLoad doesn't work here.
-  url_test_helpers::ServeAsynchronousRequests();
-
-  // Overwrite the client-handled child frame navigation with about:blank.
-  WebLocalFrame* child = main_frame->FirstChild()->ToWebLocalFrame();
-  frame_test_helpers::LoadFrameDontWait(child, BlankURL());
-
-  // Failing the original child frame navigation and trying to render fallback
-  // content shouldn't crash. It should return NoLoadInProgress. This is so the
-  // caller won't attempt to replace the correctly empty frame with an error
-  // page.
-  EXPECT_EQ(WebNavigationControl::NoLoadInProgress,
-            To<WebLocalFrameImpl>(child)->MaybeRenderFallbackContent(
-                WebURLError(ResourceError::Failure(url))));
-}
-
 TEST_F(WebFrameTest, AltTextOnAboutBlankPage) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("about:blank");
@@ -13305,7 +13238,8 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
       ToKURL("about:blank"), kSameDocumentNavigationHistoryApi, message,
       mojom::blink::ScrollRestorationType::kAuto,
       WebFrameLoadType::kReplaceCurrentItem,
-      frame->DomWindow()->GetSecurityOrigin(), /*is_content_initiated=*/true);
+      frame->DomWindow()->GetSecurityOrigin(),
+      /*is_synchronously_committed=*/true);
   // The bucket index corresponds to the definition of
   // |SinglePageAppNavigationType|.
   tester.ExpectBucketCount(histogramName,
@@ -13314,14 +13248,15 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
       ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
       mojom::blink::ScrollRestorationType::kManual,
       WebFrameLoadType::kBackForward, frame->DomWindow()->GetSecurityOrigin(),
-      /*is_content_initiated=*/true);
+      /*is_synchronously_committed=*/true);
   tester.ExpectBucketCount(histogramName,
                            kSPANavTypeSameDocumentBackwardOrForward, 1);
   document_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
       mojom::blink::ScrollRestorationType::kManual,
       WebFrameLoadType::kReplaceCurrentItem,
-      frame->DomWindow()->GetSecurityOrigin(), /*is_content_initiated=*/true);
+      frame->DomWindow()->GetSecurityOrigin(),
+      /*is_synchronously_committed=*/true);
   tester.ExpectBucketCount(histogramName, kSPANavTypeOtherFragmentNavigation,
                            1);
   // kSameDocumentNavigationHistoryApi and WebFrameLoadType::kBackForward is an

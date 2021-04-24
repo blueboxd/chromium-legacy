@@ -25,9 +25,7 @@
 #include "ui/platform_window/extensions/wayland_extension.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(jamescook): The nogncheck is to work around false-positive failures on
-// the code search bot. Remove after https://crrev.com/c/2432137 lands.
-#include "chromeos/crosapi/cpp/crosapi_constants.h"  // nogncheck
+#include "chromeos/crosapi/cpp/crosapi_constants.h"
 #endif
 
 namespace ui {
@@ -201,7 +199,8 @@ void WaylandToplevelWindow::Activate() {
   // Exo provides activation through aura-shell, Mutter--through gtk-shell.
   //
   // TODO(crbug.com/1175327): add support for xdg-activation.
-  if (aura_surface_)
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_ACTIVATE_SINCE_VERSION)
     zaura_surface_activate(aura_surface_.get());
   else if (gtk_surface1_)
     gtk_surface1_->RequestFocus();
@@ -423,7 +422,8 @@ void WaylandToplevelWindow::StartWindowDraggingSessionIfNeeded() {
 }
 
 void WaylandToplevelWindow::SetImmersiveFullscreenStatus(bool status) {
-  if (aura_surface_) {
+  if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
+                           ZAURA_SURFACE_SET_FULLSCREEN_MODE_SINCE_VERSION) {
     auto mode = status ? ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE
                        : ZAURA_SURFACE_FULLSCREEN_MODE_PLAIN;
     zaura_surface_set_fullscreen_mode(aura_surface_.get(), mode);

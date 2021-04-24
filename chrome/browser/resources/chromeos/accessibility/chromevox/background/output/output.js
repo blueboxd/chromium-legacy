@@ -2717,7 +2717,8 @@ Output.RULES = {
           $state`
     },
     alertDialog: {
-      enter: `$earcon(ALERT_MODAL) $name $state $description $textContent`,
+      enter: `$earcon(ALERT_MODAL) $name $state $description $roleDescription
+          $textContent`,
       speak: `$earcon(ALERT_MODAL) $name $nameOrTextContent $description $state
           $role`
     },
@@ -2728,14 +2729,15 @@ Output.RULES = {
     cell: {
       enter: {
         speak: `$cellIndexText $node(tableCellColumnHeaders) $nameFromNode
-            $state`,
+            $roleDescription $state`,
         braille: `$state $cellIndexText $node(tableCellColumnHeaders)
-            $nameFromNode`,
+            $nameFromNode $roleDescription`,
       },
       speak: `$name $cellIndexText $node(tableCellColumnHeaders)
-          $state $description`,
+          $roleDescription $state $description`,
       braille: `$state
-          $name $cellIndexText $node(tableCellColumnHeaders) $description
+          $name $cellIndexText $node(tableCellColumnHeaders) $roleDescription
+          $description
           $if($selected, @aria_selected_true)`
     },
     checkBox: {
@@ -2761,7 +2763,7 @@ Output.RULES = {
           $description`
     },
     group: {
-      enter: `$nameFromNode $state $restriction $description`,
+      enter: `$nameFromNode $roleDescription $state $restriction $description`,
       speak: `$nameOrDescendants $value $state $restriction $roleDescription
           $description`,
       leave: ``
@@ -2836,7 +2838,7 @@ Output.RULES = {
           $if($selected, @aria_selected_true, @aria_selected_false)
           $restriction $description`
     },
-    paragraph: {speak: `$nameOrDescendants`},
+    paragraph: {speak: `$nameOrDescendants $roleDescription`},
     radioButton: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $if($checked, @describe_radio_selected($name),
@@ -2847,7 +2849,7 @@ Output.RULES = {
     rootWebArea: {enter: `$name`, speak: `$if($name, $name, @web_content)`},
     region: {speak: `$state $nameOrTextContent $description $roleDescription`},
     row: {
-      enter: `$node(tableRowHeader)`,
+      enter: `$node(tableRowHeader) $roleDescription`,
       speak: `$name $node(activeDescendant) $value $state $restriction $role
           $if($selected, @aria_selected_true) $description`
     },
@@ -2864,7 +2866,7 @@ Output.RULES = {
           $if($selected, @aria_selected_true)`,
     },
     table: {
-      enter: `@table_summary($name,
+      enter: `$roleDescription @table_summary($name,
           $if($ariaRowCount, $ariaRowCount, $tableRowCount),
           $if($ariaColumnCount, $ariaColumnCount, $tableColumnCount))
           $node(tableHeader)`

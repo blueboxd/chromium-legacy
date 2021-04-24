@@ -25,7 +25,7 @@ namespace chrome_pdf {
 //
 // All layout units are pixels.
 //
-// The |Options| class controls the behavior of the layout, such as the default
+// The `Options` class controls the behavior of the layout, such as the default
 // orientation of pages.
 class DocumentLayout final {
  public:
@@ -127,15 +127,8 @@ class DocumentLayout final {
     return page_layouts_[page_index].inner_rect;
   }
 
-  // Computes layout that represent |page_sizes| formatted for single view.
-  //
-  // TODO(kmoon): Control layout type using an option.
-  void ComputeSingleViewLayout(const std::vector<gfx::Size>& page_sizes);
-
-  // Computes layout that represent |page_sizes| formatted for two-up view.
-  //
-  // TODO(kmoon): Control layout type using an option.
-  void ComputeTwoUpViewLayout(const std::vector<gfx::Size>& page_sizes);
+  // Computes the layout for a given list of `page_sizes` based on `options_`.
+  void ComputeLayout(const std::vector<gfx::Size>& page_sizes);
 
  private:
   // Layout of a single page.
@@ -147,15 +140,19 @@ class DocumentLayout final {
     gfx::Rect inner_rect;
   };
 
-  // Copies |source_rect| to |destination_rect|, setting |dirty_| to true if
-  // |destination_rect| is modified as a result.
+  // Helpers for ComputeLayout() handling different page spreads.
+  void ComputeOneUpLayout(const std::vector<gfx::Size>& page_sizes);
+  void ComputeTwoUpOddLayout(const std::vector<gfx::Size>& page_sizes);
+
+  // Copies `source_rect` to `destination_rect`, setting `dirty_` to true if
+  // `destination_rect` is modified as a result.
   void CopyRectIfModified(const gfx::Rect& source_rect,
                           gfx::Rect& destination_rect);
 
   Options options_;
 
   // Indicates if the layout has changed in an externally-observable way,
-  // usually as a result of calling |ComputeLayout()| with different inputs.
+  // usually as a result of calling `ComputeLayout()` with different inputs.
   //
   // Some operations that may trigger layout changes:
   // * Changing page sizes

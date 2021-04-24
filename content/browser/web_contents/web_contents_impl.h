@@ -541,7 +541,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool CompletedFirstVisuallyNonEmptyPaint() override;
   void UpdateFaviconURL(
       RenderFrameHostImpl* source,
-      std::vector<blink::mojom::FaviconURLPtr> candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   const std::vector<blink::mojom::FaviconURLPtr>& GetFaviconURLs() override;
   void Resize(const gfx::Rect& new_bounds) override;
   gfx::Size GetSize() override;
@@ -739,6 +739,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       blink::mojom::TextAutosizerPageInfoPtr page_info) override;
   bool HasSeenRecentScreenOrientationChange() override;
   bool IsTransientAllowFullscreenActive() const override;
+  bool IsBackForwardCacheSupported() override;
   RenderWidgetHostImpl* CreateNewPopupWidget(
       AgentSchedulingGroupHost& agent_scheduling_group,
       int32_t route_id,

@@ -32222,6 +32222,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3882" label="PostMessageFromSecureToSecure"/>
   <int value="3883" label="PostMessageFromInsecureToInsecure"/>
   <int value="3884" label="WebAppManifestProtocolHandlers"/>
+  <int value="3885" label="RTCPeerConnectionOfferAllowExtmapMixedFalse"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -66954,6 +66955,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
              or client tag"/>
   <int value="10" label="Parent node is not a folder"/>
   <int value="11" label="GUID changed for an already-tracked server ID"/>
+  <int value="12"
+      label="Permanent node update received without a server-defined unique
+             tag"/>
 </enum>
 
 <enum name="RemoteCommandExecutionStatus">

@@ -5,6 +5,7 @@
 #include "base/callback.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
@@ -61,6 +62,12 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
 
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile());
     remover_->SetEmbedderDelegate(&delegate_);
+
+    // TODO(crbug.com/1182630): This can be removed once crbug.com/1182630 is
+    // fixed. Make sure quota manager for storage partition is finished
+    // initializing.
+    content::BrowserContext::GetDefaultStoragePartition(profile());
+    task_environment()->RunUntilIdle();
   }
 
   void TearDown() override {

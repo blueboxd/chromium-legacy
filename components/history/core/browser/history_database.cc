@@ -14,6 +14,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -123,7 +124,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
     return LogInitFailure(InitStep::META_TABLE_INIT);
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
-      !InitSegmentTables() || !InitSyncTable())
+      !InitSegmentTables() || !InitSyncTable() || !InitClusterVisitTable())
     return LogInitFailure(InitStep::CREATE_TABLES);
   if (!InitVisitAnnotationsTables())
     return LogInitFailure(InitStep::CREATE_TABLES);
@@ -328,6 +329,9 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
   if (!DropVisitAnnotationsTables())
     return false;
   if (!InitVisitAnnotationsTables())
+    return false;
+
+  if (!DropClusterVisitTable() || !InitClusterVisitTable())
     return false;
 
   return true;

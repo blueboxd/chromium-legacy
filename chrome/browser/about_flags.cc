@@ -4603,11 +4603,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTabScrollingVariations,
                                     "TabScrolling")},
 
-    {"scrollable-tabstrip-buttons",
-     flag_descriptions::kScrollableTabStripButtonsName,
-     flag_descriptions::kScrollableTabStripButtonsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kScrollableTabStripButtons)},
-
     {"side-panel", flag_descriptions::kSidePanelName,
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
@@ -6728,6 +6723,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidPopupBlockedName,
      flag_descriptions::kMessagesForAndroidPopupBlockedDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPopupBlocked)},
+    {"messages-for-android-safety-tip",
+     flag_descriptions::kMessagesForAndroidSafetyTipName,
+     flag_descriptions::kMessagesForAndroidSafetyTipDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidSafetyTip)},
 #endif
 
 #if defined(OS_ANDROID)
@@ -7158,6 +7157,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseOzonePlatformDescription, kOsLinux,
      FEATURE_VALUE_TYPE(features::kUseOzonePlatform)},
 #endif
+
+    {"subframe-shutdown-delay", flag_descriptions::kSubframeShutdownDelayName,
+     flag_descriptions::kSubframeShutdownDelayDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSubframeShutdownDelay)},
 
     {"composite-after-paint", flag_descriptions::kCompositeAfterPaintName,
      flag_descriptions::kCompositeAfterPaintDescription, kOsAll,

@@ -1252,9 +1252,6 @@ extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
-extern const char kScrollableTabStripButtonsName[];
-extern const char kScrollableTabStripButtonsDescription[];
-
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
 
@@ -1358,6 +1355,9 @@ extern const char kStrictOriginIsolationDescription[];
 
 extern const char kStylusBatteryStatusName[];
 extern const char kStylusBatteryStatusDescription[];
+
+extern const char kSubframeShutdownDelayName[];
+extern const char kSubframeShutdownDelayDescription[];
 
 extern const char kSystemKeyboardLockName[];
 extern const char kSystemKeyboardLockDescription[];
@@ -1803,6 +1803,9 @@ extern const char kMessagesForAndroidPasswordsDescription[];
 
 extern const char kMessagesForAndroidPopupBlockedName[];
 extern const char kMessagesForAndroidPopupBlockedDescription[];
+
+extern const char kMessagesForAndroidSafetyTipName[];
+extern const char kMessagesForAndroidSafetyTipDescription[];
 
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];

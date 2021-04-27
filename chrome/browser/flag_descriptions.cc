@@ -2166,11 +2166,6 @@ const char kScrollableTabStripName[] = "Tab Scrolling";
 const char kScrollableTabStripDescription[] =
     "Enables tab strip to scroll left and right when full.";
 
-const char kScrollableTabStripButtonsName[] = "Tab Scrolling Buttons";
-const char kScrollableTabStripButtonsDescription[] =
-    "When the scrollable-tabstrip flag is enabled, this enables buttons to "
-    "permanently appear on the tabstrip.";
-
 const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
     "Refactoring project that eliminates scroll handling code from Blink. "
@@ -2375,6 +2370,13 @@ const char kStylusBatteryStatusName[] =
 const char kStylusBatteryStatusDescription[] =
     "Enables viewing the current stylus battery level in the stylus tools "
     "menu.";
+
+const char kSubframeShutdownDelayName[] =
+    "Add delay to subframe renderer process shutdown";
+const char kSubframeShutdownDelayDescription[] =
+    "Delays shutdown of subframe renderer processes by a few seconds to allow "
+    "them to be potentially reused. This aims to reduce process churn in "
+    "navigations where the source and destination share subframes.";
 
 const char kTabEngagementReportingName[] = "Tab Engagement Metrics";
 const char kTabEngagementReportingDescription[] =
@@ -3099,6 +3101,9 @@ const char kMessagesForAndroidPasswordsDescription[] =
 const char kMessagesForAndroidPopupBlockedName[] = "Popup Blocked Messages UI";
 const char kMessagesForAndroidPopupBlockedDescription[] =
     "When enabled, popup blocked infobars will use the new Messages UI.";
+const char kMessagesForAndroidSafetyTipName[] = "Safety Tip Messages UI";
+const char kMessagesForAndroidSafetyTipDescription[] =
+    "When enabled, safety tip infobars will use the new Messages UI.";
 
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =

@@ -21,6 +21,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="ProcessName">
+  <variant name="BrowserProcess" summary=""/>
+  <variant name="GPUProcess" summary=""/>
+  <variant name="NetworkProcess" summary=""/>
+  <variant name="PluginProcess" summary=""/>
+  <variant name="PPAPIFlashProcess" summary="">
+    <obsolete>
+      Ported over from previous suffix based definition where it was removed on
+      2021-03 now that support for Flash has been removed.
+    </obsolete>
+  </variant>
+  <variant name="PPAPIProcess" summary=""/>
+  <variant name="RendererExtensionEventProcess" summary=""/>
+  <variant name="RendererExtensionPersistentProcess" summary=""/>
+  <variant name="RendererProcess" summary=""/>
+  <variant name="Total" summary="Sum of all processes, no matter the name."/>
+  <variant name="UtilityProcess" summary=""/>
+  <variant name="WorkerProcess" summary=""/>
+</variants>
+
 <variants name="TextFragmentSource">
 <!-- Should be synced with TextFragmentLinkOpenSource in enums.xml. -->
 
@@ -5934,6 +5954,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Result of the sign in flow during first run on iOS.</summary>
 </histogram>
 
+<histogram name="FirstRun.Stage" enum="FirstRunStageResult"
+    expires_after="2022-04-30">
+  <owner>tinazwang@chromium.org</owner>
+  <owner>bling-get-started@google.com</owner>
+  <summary>
+    When Chrome is opened for the first time, the first run (onboarding) UI will
+    be shown. Metircs will be recorded in different first run stages such as
+    when first run experience is started, and when first run experience is
+    completed.
+  </summary>
+</histogram>
+
 <histogram name="FirstUserAction.BackgroundTime" units="minutes"
     expires_after="2021-08-22">
 <!-- Name completed by histogram_suffixes name="FirstUserActionType" and name="FirstUserActionTypeDevice" -->
@@ -9299,6 +9331,107 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="MerchantTrust.BottomSheet.CloseReason"
+    enum="BottomSheet.StateChangeReason" expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the reason that the merchant trust bottom sheet is closed. Recorded
+    when the bottom sheet is closed. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.BottomSheet.DurationFullyOpened" units="ms"
+    expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the duration in milliseconds that the merchant trust bottom sheet is
+    left fully expanded. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.BottomSheet.DurationHalfOpened" units="ms"
+    expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the duration in milliseconds that the merchant trust bottom sheet is
+    left half expanded. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.BottomSheet.DurationPeeked" units="ms"
+    expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the duration in milliseconds that the merchant trust bottom sheet is
+    peeking. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.BottomSheet.IsFullyViewed" enum="Boolean"
+    expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records whether the merchant trust bottom sheet is fully expanded. Recorded
+    when the bottom sheet is closed. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.BottomSheet.IsHalfViewed" enum="Boolean"
+    expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records whether the merchant trust bottom sheet is half expanded. Recorded
+    when the bottom sheet is closed. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.Message.ClearReason"
+    enum="MerchantTrustMessageClearReason" expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the reason that the merchant trust message is cleared in the
+    MessageDispatcher queue. Right now we only record message being cleared when
+    user navigates away from current page. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.Message.DismissReason"
+    enum="MessageDismissReason" expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the reason that the merchant trust message is dismissed. Implemented
+    for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.Message.DurationPrepared" units="ms"
+    expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the duration in milliseconds that the merchant trust message is in
+    the MessageDispatcher queue. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="MerchantTrust.Message.DurationShown" units="ms"
+    expires_after="M95">
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the duration in milliseconds that the merchant trust message is
+    shown. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Mist.SwitchResult" enum="MistSwitchResult" expires_after="M77">
   <owner>akhouderchah@chromium.org</owner>
   <owner>benchan@chromium.org</owner>
@@ -11004,8 +11137,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="PerformanceMonitor.AverageCPU2" units="hundredth of percent"
-    expires_after="2022-01-30">
+<histogram name="PerformanceMonitor.AverageCPU2.{ProcessName}{UsageScenario}"
+    units="hundredth of percent" expires_after="2022-01-30">
   <owner>fdoray@chromium.org</owner>
   <owner>sebmarchand@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
@@ -11016,6 +11149,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     fully loaded). I.e. 4 cores busy at 25% each will read as 25 * 4 * 100 =
     10000.
   </summary>
+  <token key="ProcessName" variants="ProcessName"/>
+<!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
+
+  <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
 <histogram name="PerformanceMonitor.AverageDisk" units="BytesPerSecond"
@@ -11032,7 +11169,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="PerformanceMonitor.EnergyImpact"
+<histogram base="true"
+    name="PerformanceMonitor.EnergyImpact.{ProcessName}{UsageScenario}"
     units="ScaledUnits" expires_after="2021-10-30">
   <owner>lgrey@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
@@ -11042,6 +11180,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     wakeups, IO, and task QoS level using per-machine-model weights. Divide by
     100 to match Activity Monitor's scale. Recorded every two minutes.
   </summary>
+  <token key="ProcessName" variants="ProcessName"/>
+<!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
+
+  <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
 <histogram name="PerformanceMonitor.HighCPU" enum="BooleanHit"
@@ -11058,16 +11200,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="PerformanceMonitor.IdleWakeups" units="WakeupsPerSecond"
-    expires_after="2021-10-30">
+<histogram name="PerformanceMonitor.IdleWakeups.{ProcessName}{UsageScenario}"
+    units="WakeupsPerSecond" expires_after="2021-10-30">
   <owner>lgrey@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
     The average CPU idle wakeups per second, sampled every two minutes.
   </summary>
+  <token key="ProcessName" variants="ProcessName"/>
+<!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
+
+  <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
-<histogram name="PerformanceMonitor.PackageExitIdleWakeups"
+<histogram
+    name="PerformanceMonitor.PackageExitIdleWakeups.{ProcessName}{UsageScenario}"
     units="WakeupsPerSecond" expires_after="2021-10-30">
   <owner>lgrey@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
@@ -11077,6 +11224,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     complex was taken out of low-power state. For more info, see the
     powermetrics man page on macOS.
   </summary>
+  <token key="ProcessName" variants="ProcessName"/>
+<!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
+
+  <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
 <histogram name="PeriodicBackgroundSync.Event.BatchSize" units="events"
@@ -16950,7 +17101,22 @@ should be kept until we use this API.  -->
 
 <histogram name="UserImage.LoggedIn" enum="ChromeOSUserImageId"
     expires_after="M82">
+  <obsolete>
+    Removed in M92. Replaced by UserImage.LoggedIn2, with the enum
+    ChromeOSUserImageId updated.
+  </obsolete>
   <owner>achuith@chromium.org</owner>
+  <summary>
+    Distribution of the default images that existing users login with (Chrome
+    OS). One sample is taken each time the user logs in.
+  </summary>
+</histogram>
+
+<histogram name="UserImage.LoggedIn2" enum="ChromeOSUserImageId"
+    expires_after="2022-03-30">
+  <owner>achuith@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
+  <owner>cros-oac@google.com</owner>
   <summary>
     Distribution of the default images that existing users login with (Chrome
     OS). One sample is taken each time the user logs in.
@@ -17730,6 +17896,17 @@ regressions. -->
   </summary>
 </histogram>
 
+<histogram name="Webapp.Install.UninstallEvent" enum="WebappUninstallSource"
+    expires_after="2022-04-12">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <owner>sunggch@microsoft.com</owner>
+  <summary>
+    Records the mechanism and source from which a web app uninstallation was
+    triggered, regardless of whether the uninstallation was successful.
+  </summary>
+</histogram>
+
 <histogram name="WebApp.InstallConfirmation.CloseReason"
     enum="WidgetClosedReason" expires_after="M95">
   <owner>dmurph@chromium.org</owner>
@@ -17938,6 +18115,9 @@ regressions. -->
 
 <histogram name="WebApp.UninstallDialog.AppMenuUninstallSuccess" enum="Boolean"
     expires_after="M95">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>dmurph@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -17948,6 +18128,9 @@ regressions. -->
 
 <histogram name="WebApp.UninstallDialog.AppsPageUninstallSuccess"
     enum="Boolean" expires_after="M95">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>dmurph@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>

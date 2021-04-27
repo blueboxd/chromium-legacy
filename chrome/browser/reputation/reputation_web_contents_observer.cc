@@ -7,9 +7,11 @@
 #include <string>
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/profiles/profile.h"

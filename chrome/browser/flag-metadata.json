@@ -3571,6 +3571,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "messages-for-android-safety-tip",
+    "owners": [ "pavely", "lazzzis" ],
+    "expiry_milestone": 98
+  },
+  {
     "name": "messages-save-card-infobar",
     "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
     "expiry_milestone": 83
@@ -4626,11 +4631,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "scrollable-tabstrip-buttons",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "tbergquist" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "sct-auditing",
     "owners": [ "cthomp", "estark", "jdeblasio" ],
     "expiry_milestone": 92
@@ -4909,6 +4909,11 @@
     "name": "stylus-battery-status",
     "owners": ["amehfooz"],
     "expiry_milestone": 91
+  },
+  {
+    "name": "subframe-shutdown-delay",
+    "owners": [ "jessemckenna@google.com", "olivierli" ],
+    "expiry_milestone": 97
   },
   {
     "name": "sync-autofill-wallet-offer-data",

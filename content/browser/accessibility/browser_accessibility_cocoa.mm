@@ -1993,9 +1993,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (role == ax::mojom::Role::kCanvas &&
       _owner->GetBoolAttribute(ax::mojom::BoolAttribute::kCanvasHasFallback)) {
     cocoa_role = NSAccessibilityGroupRole;
-  } else if ((_owner->IsPlainTextField() &&
-              _owner->HasState(ax::mojom::State::kMultiline)) ||
-             (_owner->IsRichTextField() && !ui::IsComboBox(role))) {
+  } else if (_owner->IsTextField() &&
+             _owner->HasState(ax::mojom::State::kMultiline)) {
     cocoa_role = NSAccessibilityTextAreaRole;
   } else if (role == ax::mojom::Role::kImage && _owner->GetChildCount()) {
     // An image map is an image with children, and exposed on Mac as a group.
@@ -2379,7 +2378,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
 
-  if (_owner->IsPlainTextField() &&
+  if (_owner->IsNativeTextField() &&
       GetState(_owner, ax::mojom::State::kProtected)) {
     return NSAccessibilitySecureTextFieldSubrole;
   }
@@ -2713,7 +2712,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 }
 
 - (NSRect)frameForRange:(NSRange)range {
-  if (!_owner->IsText() && !_owner->IsPlainTextField())
+  if (!_owner->IsText() && !_owner->IsNativeTextField())
     return CGRectNull;
   gfx::Rect rect = _owner->GetUnclippedRootFrameInnerTextRangeBoundsRect(
       range.location, NSMaxRange(range));

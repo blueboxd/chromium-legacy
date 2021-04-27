@@ -19,6 +19,7 @@
 #include "base/scoped_observation.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -794,6 +795,15 @@ void ClearPluginPrivateData(content::StoragePartition* partition,
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
+void ClearInterestGroups(content::StoragePartition* partition,
+                         const base::Time delete_begin,
+                         const base::Time delete_end,
+                         base::RunLoop* run_loop) {
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+                       delete_begin, delete_end, run_loop->QuitClosure());
+}
+
 bool FilterMatchesCookie(const CookieDeletionFilterPtr& filter,
                          const net::CanonicalCookie& cookie) {
   return network::DeletionFilterToInfo(filter.Clone())
@@ -1354,7 +1364,7 @@ TEST_F(StoragePartitionImplTest, RemoveInterestGroupForever) {
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearCookies, partition, base::Time(),
+      FROM_HERE, base::BindOnce(&ClearInterestGroups, partition, base::Time(),
                                 base::Time::Max(), &run_loop));
   run_loop.Run();
 

@@ -6055,6 +6055,38 @@ others/histograms.xml -->
   <int value="2" label="New profile created"/>
 </enum>
 
+<enum name="AutofillProfileImportDecision">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="UserNotAsked"/>
+  <int value="2" label="Accpeted"/>
+  <int value="3" label="Edited"/>
+  <int value="4" label="Declined"/>
+  <int value="5" label="Never"/>
+  <int value="6" label="Ignored"/>
+</enum>
+
+<enum name="AutofillProfileImportEditedType">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Name"/>
+  <int value="2" label="Email"/>
+  <int value="3" label="Phone"/>
+  <int value="4" label="City"/>
+  <int value="5" label="Country"/>
+  <int value="6" label="Zip"/>
+  <int value="7" label="State"/>
+  <int value="8" label="StreetAddress"/>
+  <int value="9" label="DependentLocality"/>
+  <int value="10" label="HonorificPrefix"/>
+</enum>
+
+<enum name="AutofillProfileImportType">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="NewProfile"/>
+  <int value="2" label="DuplicateImport"/>
+  <int value="3" label="SilentUpdate"/>
+  <int value="4" label="ConfirmableMerge"/>
+</enum>
+
 <enum name="AutofillProfileSyncChangeOrigin">
   <obsolete>
     Deprecated in M77. The corresponding histogram has been deprecated.
@@ -10974,32 +11006,98 @@ histogram as enum -->
   <summary>
     Indices of the default images as defined in
     chrome/browser/ash/login/users/default_user_image/default_user_images.cc.
-    The last three values are for taken photo, downloaded file and the image
-    previously used by user.
+    Value 19 is the image selected from file or photo. Value 20 is the profile
+    image.Values 0~18 and 21~40 are legacy default images that still used by
+    some users, but cannot be selected from Settings &gt; Personalization &gt;
+    Change device account image.
   </summary>
-  <int value="0" label="Default, Beaker"/>
-  <int value="1" label="Default, Bee"/>
-  <int value="2" label="Default, Briefcase"/>
-  <int value="3" label="Default, Circles"/>
-  <int value="4" label="Default, Cloud"/>
-  <int value="5" label="Default, Cupcake"/>
-  <int value="6" label="Default, Day"/>
-  <int value="7" label="Default, Flower"/>
-  <int value="8" label="Default, Globe"/>
-  <int value="9" label="Default, Hot air"/>
-  <int value="10" label="Default, Ladybug"/>
-  <int value="11" label="Default, Leaf"/>
-  <int value="12" label="Default, Night"/>
-  <int value="13" label="Default, Plane"/>
-  <int value="14" label="Default, Robot body"/>
-  <int value="15" label="Default, Robot head"/>
-  <int value="16" label="Default, Toolbox"/>
-  <int value="17" label="Default, User color"/>
-  <int value="18" label="Default, User enterprise"/>
-  <int value="19" label="Photo taken"/>
-  <int value="20" label="Downloaded file"/>
-  <int value="21" label="Old image"/>
-  <int value="22" label="Profile image"/>
+<!-- Please append new values to the end and do not change the order of existing value. -->
+
+  <int value="0" label="Beaker"/>
+  <int value="1" label="Bee"/>
+  <int value="2" label="Briefcase"/>
+  <int value="3" label="Circles"/>
+  <int value="4" label="Cloud"/>
+  <int value="5" label="Cupcake"/>
+  <int value="6" label="Day"/>
+  <int value="7" label="Flower"/>
+  <int value="8" label="Globe"/>
+  <int value="9" label="Hot air"/>
+  <int value="10" label="Ladybug"/>
+  <int value="11" label="Leaf"/>
+  <int value="12" label="Night"/>
+  <int value="13" label="Plane"/>
+  <int value="14" label="Robot body"/>
+  <int value="15" label="Robot head"/>
+  <int value="16" label="Toolbox"/>
+  <int value="17" label="User color"/>
+  <int value="18" label="User enterprise"/>
+  <int value="19" label="User defined"/>
+  <int value="20" label="Profile image"/>
+  <int value="21" label="Bicycle"/>
+  <int value="22" label="Bokeh"/>
+  <int value="23" label="Chess"/>
+  <int value="24" label="Coffee"/>
+  <int value="25" label="Dragonfly"/>
+  <int value="26" label="Frog"/>
+  <int value="27" label="Gazania Flower"/>
+  <int value="28" label="Jack Russell Terrier"/>
+  <int value="29" label="Jellyfish"/>
+  <int value="30" label="Kiwi"/>
+  <int value="31" label="Penguin1"/>
+  <int value="32" label="Rainbowfish"/>
+  <int value="33" label="Record player"/>
+  <int value="34" label="Upside Down"/>
+  <int value="35" label="Cat"/>
+  <int value="36" label="Penguin2"/>
+  <int value="37" label="Fox"/>
+  <int value="38" label="Snail"/>
+  <int value="39" label="Red butterfly"/>
+  <int value="40" label="Cat"/>
+  <int value="41" label="Corgi"/>
+  <int value="42" label="Rabbit"/>
+  <int value="43" label="Pink butterfly"/>
+  <int value="44" label="Monkey"/>
+  <int value="45" label="Dragon"/>
+  <int value="46" label="Elephant"/>
+  <int value="47" label="Panda"/>
+  <int value="48" label="Unicorn"/>
+  <int value="49" label="Butterflies"/>
+  <int value="50" label="Bird"/>
+  <int value="51" label="Ramen"/>
+  <int value="52" label="Tamagotchi"/>
+  <int value="53" label="Cheese"/>
+  <int value="54" label="Football"/>
+  <int value="55" label="Basketball"/>
+  <int value="56" label="Vinyl record"/>
+  <int value="57" label="Sushi"/>
+  <int value="58" label="Bike"/>
+  <int value="59" label="Sunglasses"/>
+  <int value="60" label="Pizza"/>
+  <int value="61" label="Sandwich"/>
+  <int value="62" label="Cappuccino"/>
+  <int value="63" label="Ice water"/>
+  <int value="64" label="Ice cream"/>
+  <int value="65" label="Onigiri"/>
+  <int value="66" label="Melon"/>
+  <int value="67" label="Avocado"/>
+  <int value="68" label="Landing"/>
+  <int value="69" label="Lunar"/>
+  <int value="70" label="Dots"/>
+  <int value="71" label="Spin"/>
+  <int value="72" label="Grids"/>
+  <int value="73" label="Botanist"/>
+  <int value="74" label="Burger"/>
+  <int value="75" label="Graduate"/>
+  <int value="76" label="Guitar"/>
+  <int value="77" label="Waving"/>
+  <int value="78" label="Lion"/>
+  <int value="79" label="Planet"/>
+  <int value="80" label="Instant Camera"/>
+  <int value="81" label="Robot"/>
+  <int value="82" label="Sneaker"/>
+  <int value="83" label="Van"/>
+  <int value="84" label="Watermelon"/>
 </enum>
 
 <enum name="ChromePDFViewerActions">
@@ -32223,6 +32321,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3883" label="PostMessageFromInsecureToInsecure"/>
   <int value="3884" label="WebAppManifestProtocolHandlers"/>
   <int value="3885" label="RTCPeerConnectionOfferAllowExtmapMixedFalse"/>
+  <int value="3886" label="NewCanvas2DAPI"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34006,6 +34105,12 @@ Called by update_permissions_policy_enum.py.-->
   <int value="5" label="Have SSO account, Gave Up"/>
   <int value="6" label="Could not create FirstRun Sentinel - deprecated"/>
   <int value="7" label="Skipped by policy"/>
+</enum>
+
+<enum name="FirstRunStageResult">
+  <summary>Stages of the first run experience.</summary>
+  <int value="0" label="Start First Run"/>
+  <int value="1" label="Complete First Run"/>
 </enum>
 
 <enum name="FirstUserActionType">
@@ -44841,6 +44946,7 @@ from previous Chrome versions.
   <int value="-1486521264" label="UseMediaHistoryStore:disabled"/>
   <int value="-1486198877" label="VrIconInDaydreamHome:disabled"/>
   <int value="-1485461805" label="EnterpriseReportingInBrowser:enabled"/>
+  <int value="-1484619809" label="MessagesForAndroidSafetyTip:enabled"/>
   <int value="-1482730792" label="stop-in-background:enabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1481990501" label="Windows10CustomTitlebar:disabled"/>
@@ -46816,6 +46922,7 @@ from previous Chrome versions.
   <int value="266702296" label="disable-plugin-power-saver"/>
   <int value="268535107"
       label="ash-new-touch-support-for-screen-magnification"/>
+  <int value="268794953" label="MessagesForAndroidSafetyTip:disabled"/>
   <int value="270038252" label="SignInProfileCreationEnterprise:disabled"/>
   <int value="270118291" label="SyncAutofillWalletOfferData:disabled"/>
   <int value="270267831" label="enable-scripts-require-action"/>
@@ -46831,6 +46938,7 @@ from previous Chrome versions.
   <int value="281024089" label="AppServiceExternalProtocol:disabled"/>
   <int value="282582564" label="DisableCameraFrameRotationAtSource:enabled"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
+  <int value="282692100" label="SubframeShutdownDelay:disabled"/>
   <int value="283182071" label="SecurityInterstitialsDarkMode:enabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="285387302" label="AvatarToolbarButton:enabled"/>
@@ -48796,6 +48904,7 @@ from previous Chrome versions.
       label="AutofillEnableLocalCardMigrationForNonSyncUser:disabled"/>
   <int value="1990873642"
       label="AutofillEnableSurfacingServerCardNickname:disabled"/>
+  <int value="1991461704" label="SubframeShutdownDelay:enabled"/>
   <int value="1991771852" label="LeftToRightUrls:enabled"/>
   <int value="1991912338" label="ModuleScriptsDynamicImport:enabled"/>
   <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>
@@ -51875,6 +51984,24 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Could not identify the target language"/>
   <int value="6" label="Translate is not allowed by policy"/>
   <int value="7" label="Could not identify the source language"/>
+</enum>
+
+<enum name="MerchantTrustMessageClearReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Navigate to same domain"/>
+  <int value="2" label="Navigate to different domain"/>
+</enum>
+
+<enum name="MessageDismissReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Primary action"/>
+  <int value="2" label="Secondary action"/>
+  <int value="3" label="Timer"/>
+  <int value="4" label="Gesture"/>
+  <int value="5" label="Tab switched"/>
+  <int value="6" label="Tab destroyed"/>
+  <int value="7" label="Activity destroyed"/>
+  <int value="8" label="Scope destroyed"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -81608,6 +81735,24 @@ others/histograms.xml -->
   <int value="0" label="Uninstall only"/>
   <int value="1" label="Uninstall and remove data"/>
   <int value="2" label="Dialog canceled"/>
+</enum>
+
+<enum name="WebappUninstallSource">
+  <int value="0" label="Unknown surface, potentially in ChromeOS"/>
+  <int value="1" label="Menu item from the 3-dot menu of a WebApp window"/>
+  <int value="2" label="Context menu for a WebApp in chrome://apps"/>
+  <int value="3" label="Via OS Settings or Controls"/>
+  <int value="4" label="Uninstalled from Sync"/>
+  <int value="5" label="App management surface, currently ChromeOS-only"/>
+  <int value="6" label="Migration"/>
+  <int value="7" label="App List (Launcher in ChromeOS)"/>
+  <int value="8" label="Shelf (in ChromeOS)"/>
+  <int value="9" label="Internally managed pre-installed app management"/>
+  <int value="10" label="Externally managed pre-installed app management"/>
+  <int value="11" label="Enterprise policy app management"/>
+  <int value="12" label="System app management on ChromeOS"/>
+  <int value="13" label="Placeholder app management for preinstalled apps"/>
+  <int value="14" label="Externally managed Arc apps"/>
 </enum>
 
 <enum name="WebAppUrlLoaderResult">

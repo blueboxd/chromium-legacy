@@ -23,7 +23,6 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -2373,7 +2372,7 @@ ImplementedAtkInterfaces AXPlatformNodeAuraLinux::GetGTypeInterfaceMask(
 
   if (!IsImageOrVideo(data.role)) {
     interface_mask.Add(ImplementedAtkInterfaces::Value::kText);
-    if (!data.IsPlainTextField())
+    if (!data.IsNativeTextField())
       interface_mask.Add(ImplementedAtkInterfaces::Value::kHypertext);
   }
 
@@ -3107,7 +3106,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
 
-  if (IsPlainTextField() || IsRichTextField()) {
+  if (IsTextField()) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE_TEXT);
     if (data.HasState(ax::mojom::State::kMultiline))
       atk_state_set_add_state(atk_state_set, ATK_STATE_MULTI_LINE);
@@ -3750,7 +3749,7 @@ void AXPlatformNodeAuraLinux::GetFullSelection(int32_t* anchor_node_id,
   DCHECK(focus_node_id);
   DCHECK(focus_offset);
 
-  if (IsPlainTextField() &&
+  if (IsNativeTextField() &&
       GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, anchor_offset) &&
       GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, focus_offset)) {
     int32_t node_id = GetData().id != -1 ? GetData().id : GetUniqueId();
@@ -4500,7 +4499,7 @@ bool AXPlatformNodeAuraLinux::
 bool AXPlatformNodeAuraLinux::
     GrabFocusOrSetSequentialFocusNavigationStartingPointAtOffset(int offset) {
   int child_count = delegate_->GetChildCount();
-  if (IsPlainTextField() || child_count == 0)
+  if (IsNativeTextField() || child_count == 0)
     return GrabFocusOrSetSequentialFocusNavigationStartingPoint();
 
   // When this node has children, we walk through them to figure out what child

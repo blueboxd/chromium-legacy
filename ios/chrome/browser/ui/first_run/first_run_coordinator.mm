@@ -6,11 +6,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/metrics/histogram_functions.h"
+#include "ios/chrome/browser/first_run/first_run_metrics.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_provider.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_type.h"
 #import "ios/chrome/browser/ui/first_run/signin_screen_coordinator.h"
-#import "ios/chrome/browser/ui/first_run/sync_screen_coordinator.h"
+#import "ios/chrome/browser/ui/first_run/sync/sync_screen_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/welcome_screen_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -44,13 +46,21 @@
 
 - (void)start {
   [self presentScreen:[self.screenProvider nextScreenType]];
+  void (^completion)(void) = ^{
+    base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kStart);
+  };
   [self.baseViewController presentViewController:self.navigationController
                                         animated:NO
-                                      completion:nil];
+                                      completion:completion];
 }
 
 - (void)stop {
-  [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
+  void (^completion)(void) = ^{
+    base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kComplete);
+    [self.delegate didFinishPresentingScreens];
+  };
+  [self.baseViewController dismissViewControllerAnimated:YES
+                                              completion:completion];
 }
 
 #pragma mark - FirstRunScreenDelegate

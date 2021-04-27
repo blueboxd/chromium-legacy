@@ -44,6 +44,11 @@ luci.bucket(
         ),
         acl.entry(
             roles = acl.BUILDBUCKET_TRIGGERER,
+            users = [
+                # Allow chrome-release/branch builders on luci.chrome.official.infra
+                # to schedule builds
+                "chrome-official-brancher@chops-service-accounts.iam.gserviceaccount.com",
+            ],
             groups = "project-chromium-ci-schedulers",
         ),
         acl.entry(
@@ -1012,6 +1017,14 @@ ci.android_fyi_builder(
 )
 
 ci.android_fyi_builder(
+    name = "android-weblayer-pie-x86-wpt-smoketest",
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|weblayer",
+        short_name = "P",
+    ),
+)
+
+ci.android_fyi_builder(
     name = "android-webview-pie-x86-wpt-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "builder_tester|webview",
@@ -1622,6 +1635,7 @@ ci.chromiumos_builder(
     tree_closing = False,
     main_console_view = "main",
     triggered_by = [],
+    schedule = "triggered",
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {

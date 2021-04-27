@@ -898,20 +898,6 @@ void LayoutBox::LayoutSubtreeRoot() {
     UpdateLayout();
   }
 
-  // If this box has an associated layout-result, rebuild the spine of the
-  // fragment-tree to ensure consistency.
-  if (PhysicalFragmentCount()) {
-    LayoutBlock* cb = ContainingBlock();
-    while (NGBlockNode::CanUseNewLayout(*cb) && !cb->NeedsLayout()) {
-      // Create and set a new identical results.
-      for (auto& layout_result : cb->layout_results_) {
-        layout_result =
-            NGLayoutResult::CloneWithPostLayoutFragments(*layout_result);
-      }
-      cb = cb->ContainingBlock();
-    }
-  }
-
   GetDocument().GetFrame()->GetInputMethodController().DidLayoutSubtree(*this);
 }
 
@@ -3580,60 +3566,67 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   LayoutUnit block_offset_delta;
   NGMarginStrut end_margin_strut = cached_layout_result->EndMarginStrut();
 
-  const NGConstraintSpace& old_space =
-      cached_layout_result->GetConstraintSpaceForCaching();
+  bool are_bfc_offsets_equal;
+  bool is_margin_strut_equal;
+  bool is_exclusion_space_equal;
 
-  // Check the BFC offset. Even if they don't match, there're some cases we can
-  // still reuse the fragment.
-  bool are_bfc_offsets_equal =
-      new_space.BfcOffset() == old_space.BfcOffset() &&
-      new_space.ExpectedBfcBlockOffset() ==
-          old_space.ExpectedBfcBlockOffset() &&
-      new_space.ForcedBfcBlockOffset() == old_space.ForcedBfcBlockOffset();
+  {
+    const NGConstraintSpace& old_space =
+        cached_layout_result->GetConstraintSpaceForCaching();
 
-  // Even for the first fragment, when block fragmentation is enabled, block
-  // offset changes should cause re-layout, since we will fragment at other
-  // locations than before.
-  if (UNLIKELY(!are_bfc_offsets_equal && new_space.HasBlockFragmentation())) {
-    DCHECK(old_space.HasBlockFragmentation());
-    return nullptr;
-  }
+    // Check the BFC offset. Even if they don't match, there're some cases we
+    // can still reuse the fragment.
+    are_bfc_offsets_equal =
+        new_space.BfcOffset() == old_space.BfcOffset() &&
+        new_space.ExpectedBfcBlockOffset() ==
+            old_space.ExpectedBfcBlockOffset() &&
+        new_space.ForcedBfcBlockOffset() == old_space.ForcedBfcBlockOffset();
 
-  bool is_margin_strut_equal =
-      new_space.MarginStrut() == old_space.MarginStrut();
-  bool is_exclusion_space_equal =
-      new_space.ExclusionSpace() == old_space.ExclusionSpace();
-
-  bool is_new_formatting_context = physical_fragment.IsFormattingContextRoot();
-
-  // If a node *doesn't* establish a new formatting context it may be affected
-  // by floats, or clearance.
-  // If anything has changed prior to us (different exclusion space, etc), we
-  // need to perform a series of additional checks if we can still reuse this
-  // layout result.
-  if (!is_new_formatting_context &&
-      (!are_bfc_offsets_equal || !is_exclusion_space_equal ||
-       !is_margin_strut_equal ||
-       new_space.ClearanceOffset() != old_space.ClearanceOffset())) {
-    DCHECK(!CreatesNewFormattingContext());
-
-    // If we have a different BFC offset, or exclusion space we can't perform
-    // "simplified" layout.
-    // This may occur if our %-block-size has changed (allowing "simplified"
-    // layout), and we've been pushed down in the BFC coordinate space by a
-    // sibling.
-    // The "simplified" layout algorithm doesn't have the required logic to
-    // shift any added exclusions within the output exclusion space.
-    if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
-        cache_status == NGLayoutCacheStatus::kCanReuseLines)
+    // Even for the first fragment, when block fragmentation is enabled, block
+    // offset changes should cause re-layout, since we will fragment at other
+    // locations than before.
+    if (UNLIKELY(!are_bfc_offsets_equal && new_space.HasBlockFragmentation())) {
+      DCHECK(old_space.HasBlockFragmentation());
       return nullptr;
+    }
 
-    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
+    is_margin_strut_equal = new_space.MarginStrut() == old_space.MarginStrut();
+    is_exclusion_space_equal =
+        new_space.ExclusionSpace() == old_space.ExclusionSpace();
+    bool is_clearance_offset_equal =
+        new_space.ClearanceOffset() == old_space.ClearanceOffset();
 
-    if (!MaySkipLayoutWithinBlockFormattingContext(
-            *cached_layout_result, new_space, &bfc_block_offset,
-            &block_offset_delta, &end_margin_strut))
-      return nullptr;
+    bool is_new_formatting_context =
+        physical_fragment.IsFormattingContextRoot();
+
+    // If a node *doesn't* establish a new formatting context it may be affected
+    // by floats, or clearance.
+    // If anything has changed prior to us (different exclusion space, etc), we
+    // need to perform a series of additional checks if we can still reuse this
+    // layout result.
+    if (!is_new_formatting_context &&
+        (!are_bfc_offsets_equal || !is_exclusion_space_equal ||
+         !is_margin_strut_equal || !is_clearance_offset_equal)) {
+      DCHECK(!CreatesNewFormattingContext());
+
+      // If we have a different BFC offset, or exclusion space we can't perform
+      // "simplified" layout.
+      // This may occur if our %-block-size has changed (allowing "simplified"
+      // layout), and we've been pushed down in the BFC coordinate space by a
+      // sibling.
+      // The "simplified" layout algorithm doesn't have the required logic to
+      // shift any added exclusions within the output exclusion space.
+      if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
+          cache_status == NGLayoutCacheStatus::kCanReuseLines)
+        return nullptr;
+
+      DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
+
+      if (!MaySkipLayoutWithinBlockFormattingContext(
+              *cached_layout_result, new_space, &bfc_block_offset,
+              &block_offset_delta, &end_margin_strut))
+        return nullptr;
+    }
   }
 
   // We've performed all of the cache checks at this point. If we need
@@ -3655,12 +3648,33 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   if (NeedsLayout())
     ClearNeedsLayout();
 
+  // For example, for elements with a transform change we can re-use the cached
+  // result but we still need to recalculate the layout overflow.
+  if (RuntimeEnabledFeatures::LayoutNGLayoutOverflowRecalcEnabled() &&
+      use_layout_cache_slot && NeedsLayoutOverflowRecalc() &&
+      !ChildLayoutBlockedByDisplayLock()) {
+#if DCHECK_IS_ON()
+    const NGLayoutResult* cloned_cached_layout_result =
+        NGLayoutResult::CloneWithPostLayoutFragments(*cached_layout_result);
+#endif
+    RecalcLayoutOverflow();
+
+    // We need to update the cached layout result, as the call to
+    // RecalcLayoutOverflow() might have modified it.
+    cached_layout_result = GetCachedLayoutResult();
+#if DCHECK_IS_ON()
+    cloned_cached_layout_result->CheckSameForSimplifiedLayout(
+        *cached_layout_result);
+#endif
+  }
+
   // Optimization: NGTableConstraintSpaceData can be large, and it is shared
   // between all the rows in a table. Make constraint space table data for
   // reused row fragment be identical to the one used by other row fragments.
   if (IsTableRow() && IsLayoutNGMixin()) {
-    const_cast<NGConstraintSpace&>(old_space).ReplaceTableRowData(
-        *new_space.TableData(), new_space.TableRowIndex());
+    const_cast<NGConstraintSpace&>(
+        cached_layout_result->GetConstraintSpaceForCaching())
+        .ReplaceTableRowData(*new_space.TableData(), new_space.TableRowIndex());
   }
 
   // OOF-positioned nodes have to two-tier cache. The additional cache check
@@ -3672,8 +3686,10 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   // percentage resolution size in order for the first-tier cache to work.
   // See |NGBlockNode::CachedLayoutResultForOutOfFlowPositioned|.
   bool needs_cached_result_update =
-      node.IsOutOfFlowPositioned() && new_space.PercentageResolutionSize() !=
-                                          old_space.PercentageResolutionSize();
+      node.IsOutOfFlowPositioned() &&
+      new_space.PercentageResolutionSize() !=
+          cached_layout_result->GetConstraintSpaceForCaching()
+              .PercentageResolutionSize();
 
   // We can safely reuse this result if our BFC and "input" exclusion spaces
   // were equal.
@@ -7354,69 +7370,14 @@ void LayoutBox::RecalcFragmentsVisualOverflow() {
     DCHECK(fragment.CanUseFragmentsForInkOverflow());
     fragment.GetMutableForPainting().RecalcInkOverflow();
   }
-  // If |this| is an anonymous fieldset wrapper, the rendered legend is a child
-  // of |this| in the box tree, but it is a child of the fieldset container in
-  // the fragment tree. Make sure it is recalculated.
-  if (UNLIKELY(IsAnonymous() && HasSelfPaintingLayer())) {
-    const auto* fieldset = DynamicTo<LayoutNGFieldset>(Parent());
-    if (UNLIKELY(fieldset)) {
-      if (LayoutBox* legend = LayoutFieldset::FindInFlowLegend(*fieldset))
-        legend->RecalcFragmentsVisualOverflow();
-    }
-  }
-  CopyVisualOverflowFromFragmentsRecursively();
-}
-
-void LayoutBox::CopyVisualOverflowFromFragmentsRecursively() {
-  NOT_DESTROYED();
-  DCHECK(CanUseFragmentsForVisualOverflow());
-  DCHECK_GT(PhysicalFragmentCount(), 0u);
-  DCHECK(!DisplayLockUtilities::LockedAncestorPreventingPrePaint(*this));
-
-  CopyVisualOverflowFromFragments();
-
-  if (ChildPrePaintBlockedByDisplayLock())
-    return;
-  for (LayoutObject* current = SlowFirstChild(); current;) {
-    if (UNLIKELY(current->HasLayer() &&
-                 To<LayoutBoxModelObject>(current)->HasSelfPaintingLayer())) {
-      current = current->NextInPreOrderAfterChildren(this);
-      continue;
-    }
-    if (UNLIKELY(current->IsLayoutMultiColumnSet() ||
-                 current->IsLayoutMultiColumnSpannerPlaceholder())) {
-      // These objects do not need visual overflows in NG, and never have
-      // children.
-      DCHECK(!current->SlowFirstChild());
-      current = current->NextInPreOrderAfterChildren(this);
-      continue;
-    }
-    if (UNLIKELY(current->IsLayoutFlowThread())) {
-      // These objects do not need visual overflows in NG.
-      current = current->NextInPreOrder(this);
-      continue;
-    }
-
-    if (LayoutBox* box = DynamicTo<LayoutBox>(current)) {
-      if (box->CanUseFragmentsForVisualOverflow()) {
-        box->CopyVisualOverflowFromFragments();
-        if (UNLIKELY(current->ChildPrePaintBlockedByDisplayLock()))
-          current = current->NextInPreOrderAfterChildren(this);
-        else
-          current = current->NextInPreOrder(this);
-        continue;
-      }
-    } else if (current->IsInline()) {
-      DCHECK(IsA<LayoutText>(current) || IsA<LayoutInline>(current));
-      DCHECK(!current->ChildPrePaintBlockedByDisplayLock());
-      current = current->NextInPreOrder(this);
-      continue;
-    }
-
-    // Legacy objects. Move to next by skipping children because
-    // |RecalcFragmentsVisualOverflow| already recalculated them.
-    current = current->NextInPreOrderAfterChildren(this);
-  }
+  // |NGPhysicalBoxFragment::RecalcInkOverflow| should have copied the computed
+  // values back to |this| and its descendant fragments.
+  //
+  // We can't check descendants of |this| here, because the descendant fragments
+  // may be different from descendant |LayoutObject|s, but the descendant
+  // fragments should match what |PrePaintTreeWalk| traverses. If there were
+  // mismatches, |PrePaintTreeWalk| should hit the DCHECKs.
+  CheckIsVisualOverflowComputed();
 }
 
 // Copy visual overflow from |PhysicalFragments()|.
@@ -7756,9 +7717,6 @@ void LayoutBox::CheckIsVisualOverflowComputed() const {
   if (NGInkOverflow::ReadUnsetAsNoneScope::IsActive())
     return;
   if (!CanUseFragmentsForVisualOverflow())
-    return;
-  // TODO(crbug.com/1144203): NG block fragmentation needs more work.
-  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled())
     return;
   for (const NGPhysicalBoxFragment& fragment : PhysicalFragments())
     DCHECK(fragment.IsInkOverflowComputed());

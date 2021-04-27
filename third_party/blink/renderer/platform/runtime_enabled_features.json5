@@ -1163,6 +1163,11 @@
       implied_by: ["CSSContainerQueries"],
     },
     {
+      name: "LayoutNGLayoutOverflowRecalc",
+      depends_on: ["LayoutNG"],
+      status: "stable",
+    },
+    {
       name: "LayoutNGPrinting",
     },
     {
@@ -1927,7 +1932,7 @@
     // was enabled.
     {
       name: "SpeculationRules",
-      implied_by: ["SpeculationRulesPrefetchProxy"],
+      implied_by: ["SpeculationRulesPrefetchProxy", "Prerender2"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
     },
     // Origin trial to enable Speculation Rules for access to the prefetch proxy.
@@ -1969,10 +1974,6 @@
       origin_trial_feature_name: "SubresourceWebBundles",
       origin_trial_allows_third_party: true,
       status: "experimental"
-    },
-    {
-      name: "SurfaceEmbeddingFeatures",
-      status: "stable",
     },
     {
       name: "SVGTextNG",

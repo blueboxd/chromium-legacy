@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_shelf_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_shelf_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_dialog.h"
@@ -83,7 +83,7 @@ extensions::LaunchType ConvertLaunchTypeCommandToExtensionLaunchType(
 }  // namespace
 
 AppServiceShelfContextMenu::AppServiceShelfContextMenu(
-    ChromeLauncherController* controller,
+    ChromeShelfController* controller,
     const ash::ShelfItem* item,
     int64_t display_id)
     : ShelfContextMenu(controller, item, display_id) {
@@ -129,7 +129,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
     case ash::MENU_NEW_WINDOW:
       if (app_type_ == apps::mojom::AppType::kCrostini) {
         ShelfContextMenu::ExecuteCommand(ash::MENU_OPEN_NEW, event_flags);
-      } else if (app_type_ == apps::mojom::AppType::kLacros) {
+      } else if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
         crosapi::BrowserManager::Get()->NewWindow(/*incongnito=*/false);
       } else {
         ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
@@ -137,7 +137,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
       break;
 
     case ash::MENU_NEW_INCOGNITO_WINDOW:
-      if (app_type_ == apps::mojom::AppType::kLacros) {
+      if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
         crosapi::BrowserManager::Get()->NewWindow(/*incognito=*/true);
       } else {
         ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/true);
@@ -557,7 +557,7 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
       return true;
-    case apps::mojom::AppType::kLacros:
+    case apps::mojom::AppType::kStandaloneBrowser:
       // Lacros behaves like the Chrome browser icon and cannot be unpinned.
       return false;
     case apps::mojom::AppType::kUnknown:

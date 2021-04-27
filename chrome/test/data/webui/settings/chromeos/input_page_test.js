@@ -1104,6 +1104,10 @@ suite('input page', () => {
     //     enable spell check without a spell check language added (i.e. the
     //     "add spell check languages" dialog appears when turning it on).
 
+    // TODO(crbug.com/1201540): Add a test for the "automatically determining
+    //     spell check language" behaviour when the user has no spell check
+    //     languages.
+
     test('error handling', () => {
       // Enable Swahili so we have two languages for testing.
       languageHelper.setPrefValue('spellcheck.dictionaries', ['en-US', 'sw']);
@@ -1182,6 +1186,26 @@ suite('input page', () => {
     let allLanguages;
     let cancelButton;
     let actionButton;
+
+    /**
+     * Returns the list items in the dialog.
+     * @return {!Array<!Element>}
+     */
+    function getAllLanguagesListItems() {
+      // If an element (the <iron-list> in this case) is hidden in Polymer,
+      // Polymer will intelligently not update the DOM of the hidden element
+      // to prevent DOM updates that the user can't see. However, this means
+      // that when the <iron-list> is hidden (due to no results), the list
+      // items still exist in the DOM.
+      // This function should return the *visible* items that the user can
+      // select, so if the <iron-list> is hidden we should return an empty
+      // list instead.
+      const list = allLanguages.querySelector('iron-list');
+      if (list.hidden || list.style.display === 'none') {
+        return [];
+      }
+      return [...allLanguages.querySelectorAll('.list-item:not([hidden])')];
+    }
 
     setup(() => {
       // Enable Update 2.
@@ -1372,6 +1396,47 @@ suite('input page', () => {
 
       // en-US should also appear in the all languages list now.
       assertEquals(allLanguages.querySelectorAll('.list-item').length, 4);
+    });
+
+    test('searches languages on display name', () => {
+      const searchInput = dialog.$$('cr-search-field');
+
+      // Expecting a few languages to be displayed when no query exists.
+      assertGE(getAllLanguagesListItems().length, 1);
+
+      // Issue query that matches the |displayedName| in lowercase.
+      searchInput.setValue('norwegian');
+      Polymer.dom.flush();
+      assertEquals(getAllLanguagesListItems().length, 1);
+      assertTrue(getAllLanguagesListItems()[0].textContent.includes(
+          'Norwegian Bokmål'));
+
+      // Issue query that matches the |nativeDisplayedName|.
+      searchInput.setValue('norsk');
+      Polymer.dom.flush();
+      assertEquals(getAllLanguagesListItems().length, 1);
+
+      // Issue query that does not match any language.
+      searchInput.setValue('egaugnal');
+      Polymer.dom.flush();
+      assertEquals(getAllLanguagesListItems().length, 0);
+      assertFalse(dialog.$$('#no-search-results').hidden);
+    });
+
+    test('has escape key behavior working correctly', function() {
+      const searchInput = dialog.$$('cr-search-field');
+      searchInput.setValue('dummyquery');
+
+      // Test that dialog is not closed if 'Escape' is pressed on the input
+      // and a search query exists.
+      MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+      assertTrue(dialog.$.dialog.open);
+
+      // Test that dialog is closed if 'Escape' is pressed on the input and no
+      // search query exists.
+      searchInput.setValue('');
+      MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+      assertFalse(dialog.$.dialog.open);
     });
   });
 });

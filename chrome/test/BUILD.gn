@@ -1834,6 +1834,7 @@ if (!is_android) {
           "//chromeos/components/eche_app_ui:browser_tests_js",
           "//chromeos/components/help_app_ui:browser_tests_js",
           "//chromeos/components/media_app_ui:browser_tests_js",
+          "//chromeos/components/personalization_app:browser_tests_js",
           "//chromeos/components/system_apps:browser_tests",
         ]
 
@@ -2848,9 +2849,9 @@ if (!is_android) {
         "../browser/ui/ash/launcher/app_shortcut_shelf_item_controller_browsertest.cc",
         "../browser/ui/ash/launcher/arc_app_shelf_browsertest.cc",
         "../browser/ui/ash/launcher/browser_shortcut_shelf_item_controller_browsertest.cc",
-        "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
-        "../browser/ui/ash/launcher/chrome_launcher_controller_test_util.cc",
-        "../browser/ui/ash/launcher/chrome_launcher_controller_test_util.h",
+        "../browser/ui/ash/launcher/chrome_shelf_controller_browsertest.cc",
+        "../browser/ui/ash/launcher/chrome_shelf_controller_test_util.cc",
+        "../browser/ui/ash/launcher/chrome_shelf_controller_test_util.h",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.cc",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.h",
         "../browser/ui/ash/recording_service_browsertest.cc",
@@ -2973,6 +2974,7 @@ if (!is_android) {
       ]
 
       deps += [
+        "//chromeos/components/help_app_ui/search:mojo_bindings",
         "//chromeos/components/media_app_ui:buildflags",
         "//chromeos/ui/frame:test_support",
         "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
@@ -5153,7 +5155,7 @@ test("unit_tests") {
       "../browser/ui/ash/keyboard/chrome_keyboard_web_contents_unittest.cc",
       "../browser/ui/ash/keyboard_shortcut_viewer_metadata_unittest.cc",
       "../browser/ui/ash/launcher/arc_app_shelf_id_unittest.cc",
-      "../browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc",
+      "../browser/ui/ash/launcher/chrome_shelf_controller_unittest.cc",
       "../browser/ui/ash/launcher/shelf_context_menu_unittest.cc",
       "../browser/ui/ash/media_client_impl_unittest.cc",
       "../browser/ui/ash/media_notification_provider_impl_unittest.cc",

@@ -37,7 +37,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_shelf_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_prefs.h"
@@ -1177,7 +1177,7 @@ void ArcAppListPrefs::OnConnectionReady() {
   if (!app_list_refreshed_callback_.is_null())
     std::move(app_list_refreshed_callback_).Run();
   for (auto& observer : observer_list_)
-    observer.OnConnectionReady();
+    observer.OnAppConnectionReady();
 }
 
 void ArcAppListPrefs::OnConnectionClosed() {
@@ -1656,10 +1656,10 @@ void ArcAppListPrefs::OnPackageAppListRefreshed(
                                      arc::prefs::kArcPackages);
   base::DictionaryValue* package_dict = update.Get();
   if (!apps_to_remove.empty()) {
-    auto* launcher_controller = ChromeLauncherController::instance();
-    if (launcher_controller) {
+    auto* shelf_controller = ChromeShelfController::instance();
+    if (shelf_controller) {
       int pin_index =
-          launcher_controller->PinnedItemIndexByAppID(*apps_to_remove.begin());
+          shelf_controller->PinnedItemIndexByAppID(*apps_to_remove.begin());
       package_dict->SetInteger(kPinIndex, pin_index);
     }
   }

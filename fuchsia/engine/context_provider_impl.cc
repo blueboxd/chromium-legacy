@@ -202,6 +202,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kMaxDecodedImageSizeMb,
       switches::kRendererProcessLimit,
       switches::kUseCmdDecoder,
+      switches::kV,
       switches::kVModule,
       switches::kVulkanHeapMemoryLimitMb,
       switches::kVulkanSyncCpuMemoryLimitMb,
@@ -424,10 +425,6 @@ void ContextProviderImpl::Create(
 
   if (enable_protected_graphics) {
     launch_args.AppendSwitch(switches::kEnableVulkanProtectedMemory);
-    // TODO(crbug.com/1143764): Remove this after underlays are stable.
-    if (force_protected_graphics || !use_overlays_for_video) {
-      launch_args.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
-    }
     launch_args.AppendSwitch(switches::kEnableProtectedVideoBuffers);
     bool force_protected_video_buffers =
         web_engine_config.FindBoolPath("force-protected-video-buffers")

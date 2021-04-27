@@ -19,8 +19,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace settings {
@@ -244,6 +246,8 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_OFFER_TRANSLATION_LABEL},
       {"offerTranslationSublabel",
        IDS_OS_SETTINGS_LANGUAGES_OFFER_TRANSLATION_SUBLABEL},
+      {"offerGoogleTranslateLabel",
+       IDS_OS_SETTINGS_LANGUAGES_OFFER_GOOGLE_TRANSLATE_LABEL},
       {"changeDeviceLanguageDialogTitle",
        IDS_OS_SETTINGS_LANGUAGES_CHANGE_DEVICE_LANGUAGE_DIALOG_TITLE},
       {"selectedDeviceLanguageInstruction",
@@ -252,6 +256,12 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_NOT_SELECTED_DEVICE_LANGUAGE_INSTRUCTION},
       {"changeDeviceLanguageConfirmButtonLabel",
        IDS_OS_SETTINGS_LANGUAGES_CHANGE_DEVICE_LANGUAGE_CONFIRM_BUTTON_LABEL},
+      {"googleAccountLanguageTitle",
+       IDS_OS_SETTINGS_LANGUAGES_GOOGLE_ACCOUNT_LANGUAGE_TITLE},
+      {"googleAccountLanguageDescription",
+       IDS_OS_SETTINGS_LANGUAGES_GOOGLE_ACCOUNT_LANGUAGE_DESCRIPTION},
+      {"manageGoogleAccountLanguageLabel",
+       IDS_OS_SETTINGS_LANGUAGES_MANAGE_GOOGLE_ACCOUNT_LANGUAGE_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -265,6 +275,12 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_OS_SETTINGS_LANGUAGES_CHANGE_DEVICE_LANGUAGE_DIALOG_DESCRIPTION,
           base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl)));
+
+  html_source->AddString(
+      "googleAccountLanguagesURL",
+      net::AppendQueryParameter(GURL(chrome::kGoogleAccountLanguagesURL),
+                                "utm_source", "chrome-settings")
+          .spec());
 }
 
 void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
@@ -292,6 +308,8 @@ void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_LANGUAGES_LIST_DESCRIPTION},
       {"addSpellCheckLanguagesTitle",
        IDS_OS_SETTINGS_LANGUAGES_ADD_SPELL_CHECK_LANGUAGES_TITLE},
+      {"searchSpellCheckLanguagesLabel",
+       IDS_OS_SETTINGS_LANGUAGES_SEARCH_SPELL_CHECK_LANGUAGES_LABEL},
       {"suggestedSpellcheckLanguages",
        IDS_OS_SETTINGS_LANGUAGES_SUGGESTED_SPELL_CHECK_LANGUAGES_LABEL},
       {"allSpellcheckLanguages",

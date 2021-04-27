@@ -2708,7 +2708,7 @@ crbug.com/626703 [ Mac10.14 ] external/wpt/websockets/Create-valid-url-binaryTyp
 crbug.com/626703 [ Win10 ] external/wpt/websockets/stream/tentative/backpressure-send.any.sharedworker.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/websockets/Close-readyState-Closing.any.worker.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/plz-service-worker/external/wpt/service-workers/service-worker/no-dynamic-import-in-module.any.serviceworker-module.html [ Failure Crash ]
-crbug.com/626703 [ Linux ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure Timeout ]
+crbug.com/1167095 [ Linux ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Send-binary-arraybufferview-float64.any.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Close-server-initiated-close.any.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Send-null.any.html?wpt_flags=h2 [ Timeout ]
@@ -2746,7 +2746,7 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Create-valid-url-binaryTyp
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Close-readyState-Closed.any.worker.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/service-workers/service-worker/xhr-content-length.https.window.html [ Failure Crash Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure Crash Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Pass Failure Timeout ]
+crbug.com/1167095 [ Mac ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Pass Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-encoded-transform/sframe-transform-buffer-source.html [ Failure Crash Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/websockets/Close-1000-reason.any.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/websockets/Send-data.worker.html?wpt_flags=h2 [ Timeout ]
@@ -3023,8 +3023,8 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/websockets/Close-onlyReason.any.html?
 crbug.com/626703 [ Mac10.14 ] external/wpt/websockets/Close-onlyReason.any.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/websockets/Close-onlyReason.any.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/websockets/Close-onlyReason.any.html?wpt_flags=h2 [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Pass Failure Crash ]
-crbug.com/626703 [ Win10 ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure Crash ]
+crbug.com/1167095 [ Mac ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Pass Failure Crash ]
+crbug.com/1167095 [ Win10 ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure Crash ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/Send-unicode-data.any.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/websockets/Send-unicode-data.any.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/websockets/Send-unicode-data.any.html?wpt_flags=h2 [ Timeout ]
@@ -3666,7 +3666,7 @@ crbug.com/626703 [ Linux ] external/wpt/html/dom/idlharness.https.html?exclude=(
 crbug.com/626703 [ Linux ] external/wpt/html/dom/idlharness.https.html?include=(Document|Window) [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/dom/idlharness.https.html?include=HTML.* [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/dom/idlharness.worker.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure ]
+crbug.com/1167095 [ Linux ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/forms/form-submission-0/text-plain.window.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/input-device-capabilities/idlharness.window.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/media-source/idlharness.window.html [ Failure ]
@@ -3711,7 +3711,7 @@ crbug.com/626703 [ Mac ] virtual/plz-dedicated-worker/external/wpt/html/cross-or
 crbug.com/626703 [ Win ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Pass Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/animations/font-stretch-interpolation.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/dom/idlharness.any.serviceworker.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure ]
+crbug.com/1167095 [ Win ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/idlharness.any.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/idlharness.any.worker.html [ Failure ]
@@ -4274,7 +4274,6 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-trac
 virtual/layout-ng-grid/fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Pass ]
 
 ### Tests failing with LayoutNGGrid enabled:
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/absolute-positioning-grid-container-parent-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-positioned-items-gaps-001.html [ Crash Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-positioned-items-gaps-rtl-001.html [ Crash Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-positioned-items-within-grid-implicit-track-001.html [ Crash Failure ]
@@ -4454,8 +4453,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPath2.svg [ Fa
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPath3.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPathSpaces.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textPCDATA.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textPosition.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textPosition2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textStyles.svg [ Failure ]
@@ -4570,9 +4567,7 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/textPath-change-referenc
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-rotated-gradient.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-rotation.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-whitespace-handling.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-x-dx-lists.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-x-dy-lists.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-x-override-in-tspan-child.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/transformed-outlines.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/use-dynamic-append.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/use-event-handler-on-referenced-element.svg [ Failure ]
@@ -5225,13 +5220,13 @@ crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeou
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.https.html [ Failure Timeout ]
 
-# Test timing out when SharedArrayBuffer is disable by default.
-# See https://crbug.com/1094557
+# Test timing out when SharedArrayBuffer is disabled by default.
+# See https://crbug.com/1194557
 crbug.com/1194557 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Timeout ]
 crbug.com/1194557 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Pass ]
 
 # Failing test, but expectation file name is too long. See https://crbug.com/612667
-# See https://crbug.com/1094557
+# See https://crbug.com/1194557
 crbug.com/1194557 external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-subdomain-yes-2-subdomain2-no.sub.https.html [ Timeout ]
 crbug.com/1194557 virtual/shared_array_buffer_on_desktop/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-subdomain-yes-2-subdomain2-no.sub.https.html [ Failure Pass ]
 
@@ -5601,8 +5596,6 @@ crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
 crbug.com/806645 [ Win7 ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 crbug.com/806645 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
-
-crbug.com/1193389 external/wpt/resource-timing/tao-origin-SO-XO-SO-redirect-chain.https.html [ Failure ]
 
 # MHT works only when loaded from local FS (file://..).
 crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
@@ -6555,7 +6548,6 @@ crbug.com/1084276 [ Mac ] http/tests/security/offscreencanvas-placeholder-read-b
 # Disabled to prepare fixing the tests in V8
 crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.html [ Failure Pass ]
 crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.worker.html [ Failure Pass ]
-crbug.com/1202013 http/tests/devtools/console/console-tainted-globals.js [ Pass Failure ]
 
 # Disabled for landing DevTools change
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]

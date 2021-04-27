@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/release_notes/release_notes_notification.h"
 #include "chrome/browser/ash/release_notes/release_notes_storage.h"
+#include "chrome/browser/ash/web_applications/help_app/help_app_discover_tab_notification.h"
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -32,6 +34,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/components/help_app_ui/help_app_manager.h"
+#include "chromeos/components/help_app_ui/help_app_manager_factory.h"
+#include "chromeos/components/help_app_ui/search/search.mojom.h"
+#include "chromeos/components/help_app_ui/search/search_handler.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
 #include "components/user_manager/user_names.h"
@@ -261,6 +267,36 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
 #endif
 }
 
+// Test that clicking the discover tab notification opens Help App.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
+                       HelpAppV2LaunchDiscoverTabFromNotification) {
+  WaitForTestSystemAppInstall();
+  auto display_service =
+      std::make_unique<NotificationDisplayServiceTester>(/*profile=*/nullptr);
+  auto discover_tab_notification =
+      std::make_unique<chromeos::HelpAppDiscoverTabNotification>(profile());
+
+  discover_tab_notification->Show();
+  // Assert that the notification really is there.
+  auto notifications = display_service->GetDisplayedNotificationsForType(
+      NotificationHandler::Type::TRANSIENT);
+  ASSERT_EQ(1u, notifications.size());
+  ASSERT_EQ(chromeos::kShowHelpAppDiscoverTabNotificationId,
+            notifications[0].id());
+  // Then click.
+  display_service->SimulateClick(
+      NotificationHandler::Type::TRANSIENT,
+      chromeos::kShowHelpAppDiscoverTabNotificationId, base::nullopt,
+      base::nullopt);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_NO_FATAL_FAILURE(WaitForAppToOpen(GURL("chrome://help-app/discover")));
+#else
+  // We just have the original browser. No new app opens.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+#endif
+}
+
 // Test that the Help App does a navigation on launch even when it was already
 // open with the same URL.
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2NavigateOnRelaunch) {
@@ -354,6 +390,56 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2ShowParentalControls) {
   // Settings should be active in a new window.
   EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(expected_url, GetActiveWebContents()->GetVisibleURL());
+}
+
+// Test that the Help App delegate can update the index for launcher search.
+// Also test searching using the help app search handler.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
+                       HelpAppV2UpdateLauncherSearchIndexAndSearch) {
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_contents = LaunchApp(web_app::SystemAppType::HELP);
+
+  // Script that adds a data item to the launcher search index.
+  constexpr char kScript[] = R"(
+    (async () => {
+      const delegate = document.querySelector('showoff-app').getDelegate();
+      await delegate.updateLauncherSearchIndex([{
+        id: 'test-id',
+        title: 'Title',
+        mainCategoryName: 'Help',
+        tags: ['verycomplicatedsearchquery'],
+        urlPathWithParameters: 'help/sub/3399763/id/6318213',
+        locale: ''
+      }]);
+      window.domAutomationController.send(true);
+    })();
+  )";
+
+  bool script_finished;
+  // Use ExtractBool to make the script wait until the update completes.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      SandboxedWebUiAppTestBase::GetAppFrame(web_contents), kScript,
+      &script_finished));
+  EXPECT_TRUE(script_finished);
+
+  // Search using the search handler to confirm that the update happened.
+  base::RunLoop run_loop;
+  chromeos::help_app::HelpAppManagerFactory::GetForBrowserContext(profile())
+      ->search_handler()
+      ->Search(u"verycomplicatedsearchquery",
+               /*max_num_results=*/3u,
+               base::BindLambdaForTesting(
+                   [&](std::vector<chromeos::help_app::mojom::SearchResultPtr>
+                           search_results) {
+                     EXPECT_EQ(search_results.size(), 1u);
+                     EXPECT_EQ(search_results[0]->id, "test-id");
+                     EXPECT_EQ(search_results[0]->title, u"Title");
+                     EXPECT_EQ(search_results[0]->main_category, u"Help");
+                     EXPECT_EQ(search_results[0]->locale, "");
+                     EXPECT_GT(search_results[0]->relevance_score, 0.01);
+                     run_loop.QuitClosure().Run();
+                   }));
+  run_loop.Run();
 }
 
 // Test that the Help App opens when Gesture help requested.

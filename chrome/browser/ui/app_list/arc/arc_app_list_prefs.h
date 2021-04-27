@@ -232,7 +232,7 @@ class ArcAppListPrefs : public KeyedService,
     virtual void OnArcAppListPrefsDestroyed() {}
 
     // Notifies that App instance connection is ready.
-    virtual void OnConnectionReady() {}
+    virtual void OnAppConnectionReady() {}
 
    protected:
     ~Observer() override;
@@ -410,6 +410,7 @@ class ArcAppListPrefs : public KeyedService,
   bool IsDefaultPackage(const std::string& package_name) const;
 
  private:
+  // TODO(https://crbug.com/1201256): Rename to ChromeShelfControllerTest.
   friend class ChromeLauncherControllerTest;
   friend class ArcAppModelBuilderTest;
   friend class app_list::ArcAppShortcutsSearchProviderTest;

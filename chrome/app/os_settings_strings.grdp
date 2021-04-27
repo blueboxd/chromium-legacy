@@ -324,11 +324,23 @@
   <message name="IDS_OS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_THIS_LANGUAGE" desc="The label of the checkbox that enables the prompt to translate a page in the given language to users.">
     Offer to translate pages in this language
   </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_GOOGLE_ACCOUNT_LANGUAGE_TITLE" desc="Title for the section that informs users about the languages associated with their Google Account and what they affect.">
+   Google Account language
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_GOOGLE_ACCOUNT_LANGUAGE_DESCRIPTION" desc="Description for the section that informs users about the languages associated with their Google Account and what they affect.">
+   Google sites like Gmail, Drive, and YouTube use your Google Account language unless you’ve changed the individual product language
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_MANAGE_GOOGLE_ACCOUNT_LANGUAGE_LABEL" desc="Label for the button which links to the Google Account language page, allowing users to modify their Google Account languages.">
+   Manage Google Account language
+  </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_OFFER_TRANSLATION_LABEL" desc="Title for setting that allows the system to offer to translate websites that appear in other languages.">
    Translation suggestion
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_OFFER_TRANSLATION_SUBLABEL" desc="Description for setting that allows the system to offer to translate websites that appear in other languages.">
     Offer to translate websites in other languages
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_OFFER_GOOGLE_TRANSLATE_LABEL" desc="Title for setting that allows the system to offer to translate websites that appear in other languages using Google Translate.">
+    Offer Google Translate for websites in other languages
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_INPUT_METHOD_LIST_TITLE" desc="Title for the list of enabled input methods (keyboard layouts and input method editors).">
     Input methods
@@ -368,6 +380,9 @@
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_ADD_SPELL_CHECK_LANGUAGES_TITLE" translateable="false" desc="Title for the dialog that allows users to select new languages to add to their list of spell check languages.">
     Add spell check languages
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_SEARCH_SPELL_CHECK_LANGUAGES_LABEL" desc="Placeholder in the input field to search spell check languages.">
+    Search languages
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_SUGGESTED_SPELL_CHECK_LANGUAGES_LABEL" translateable="false" desc="Title of the list of spell check languages suggested to users.">
     Suggested

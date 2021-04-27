@@ -668,7 +668,7 @@ const char kArcUseHighMemoryDalvikProfileInternalName[] =
 const char kLacrosPrimaryInternalName[] = "lacros-primary";
 const char kLacrosSupportInternalName[] = "lacros-support";
 const char kLacrosStabilityInternalName[] = "lacros-stability";
-const char kLacrosWebAppsInternalName[] = "lacros-web-apps";
+const char kWebAppsCrosapiInternalName[] = "web-apps-crosapi";
 
 const FeatureEntry::Choice kLacrosStabilityChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1732,7 +1732,13 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceAlerts[] = {
-    {"enable_price_tracking", "true"}};
+    {"enable_price_tracking", "true"},
+    {"price_tracking_with_optimization_guide", "false"}};
+
+const FeatureEntry::FeatureParam
+    kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide[] = {
+        {"enable_price_tracking", "true"},
+        {"price_tracking_with_optimization_guide", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
@@ -1751,6 +1757,10 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
     {"Price alerts", kTabGridLayoutAndroid_PriceAlerts,
      base::size(kTabGridLayoutAndroid_PriceAlerts), nullptr},
+    {"Price alerts with OptimizationGuide",
+     kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide,
+     base::size(kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide),
+     nullptr},
     {"Without auto group", kTabGridLayoutAndroid_TabGroupAutoCreation,
      base::size(kTabGridLayoutAndroid_TabGroupAutoCreation), nullptr},
     {"Price notifications", kTabGridLayoutAndroid_PriceNotifications,
@@ -2974,9 +2984,9 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosStabilityInternalName, flag_descriptions::kLacrosStabilityName,
      flag_descriptions::kLacrosStabilityDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kLacrosStabilityChoices)},
-    {kLacrosWebAppsInternalName, flag_descriptions::kLacrosWebAppsName,
-     flag_descriptions::kLacrosWebAppsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kLacrosWebApps)},
+    {kWebAppsCrosapiInternalName, flag_descriptions::kWebAppsCrosapiName,
+     flag_descriptions::kWebAppsCrosapiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kWebAppsCrosapi)},
     {kLacrosPrimaryInternalName, flag_descriptions::kLacrosPrimaryName,
      flag_descriptions::kLacrosPrimaryDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLacrosPrimary)},
@@ -3279,6 +3289,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-sharing-hub-v1-5", flag_descriptions::kChromeSharingHubV15Name,
      flag_descriptions::kChromeSharingHubV15Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHubV15)},
+    {"webnotes-stylize", flag_descriptions::kWebNotesStylizeName,
+     flag_descriptions::kWebNotesStylizeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kWebNotesStylize)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
@@ -5344,6 +5357,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"app-management-intent-settings",
+     flag_descriptions::kAppManagementIntentSettingsName,
+     flag_descriptions::kAppManagementIntentSettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAppManagementIntentSettings)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     {"app-service-adaptive-icon",
      flag_descriptions::kAppServiceAdaptiveIconName,
      flag_descriptions::kAppServiceAdaptiveIconDescription, kOsCrOS,
@@ -6297,7 +6317,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          password_manager::features::kPasswordChangeInSettings,
          kPasswordChangeInSettingsFeatureVariations,
-         "PasswordChangeInSettings")},
+         "PasswordChangeAndroid")},
     {"password-scripts-fetching",
      flag_descriptions::kPasswordScriptsFetchingName,
      flag_descriptions::kPasswordScriptsFetchingDescription, kOsAndroid,
@@ -7302,7 +7322,7 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
     return !crosapi::browser_util::IsLacrosPrimaryFlagAllowed(channel);
   }
 
-  if (!strcmp(kLacrosWebAppsInternalName, entry.internal_name)) {
+  if (!strcmp(kWebAppsCrosapiInternalName, entry.internal_name)) {
     return !crosapi::browser_util::IsLacrosAllowedToBeEnabled(channel);
   }
 

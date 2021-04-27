@@ -42,8 +42,10 @@ js_library("add_spellcheck_languages_dialog") {
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior.m",
+    "//ui/webui/resources/cr_elements:find_shortcut_behavior",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
   ]
 }
 
@@ -172,6 +174,7 @@ js_library("os_languages_page_v2.m") {
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button.m",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",

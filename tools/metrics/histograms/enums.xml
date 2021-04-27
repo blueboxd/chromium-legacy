@@ -3425,7 +3425,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Web app in a window"/>
   <int value="6" label="Mac OS app"/>
   <int value="7" label="Plugin VM"/>
-  <int value="8" label="Lacros browser"/>
+  <int value="8" label="Standalone browser"/>
   <int value="9" label="Remote app"/>
   <int value="10" label="Borealis app"/>
   <int value="11" label="System web app"/>
@@ -44385,6 +44385,7 @@ from previous Chrome versions.
   <int value="-1962588488" label="SpeculativePreconnect:disabled"/>
   <int value="-1961931929" label="ContextualSuggestionsBottomSheet:enabled"/>
   <int value="-1961648833" label="show_summary"/>
+  <int value="-1961102654" label="WebNotesStylize:enabled"/>
   <int value="-1961071650" label="InterestFeedV2Autoplay:disabled"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
@@ -45163,6 +45164,7 @@ from previous Chrome versions.
   <int value="-1324634193" label="EnablePalmOnMaxTouchMajor:disabled"/>
   <int value="-1324029365" label="EnableTLS13EarlyData:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
+  <int value="-1321935621" label="WebAppsCrosapi:enabled"/>
   <int value="-1321640296"
       label="AutofillDownstreamCvcPromptUseGooglePayLogo:enabled"/>
   <int value="-1321212159" label="MediaAppAnnotation:enabled"/>
@@ -45174,7 +45176,6 @@ from previous Chrome versions.
   <int value="-1313810940" label="StrictOriginIsolation:disabled"/>
   <int value="-1311575452"
       label="AutofillEnforceMinRequiredFieldsForUpload:disabled"/>
-  <int value="-1311535850" label="LacrosWebApps:disabled"/>
   <int value="-1311503211" label="MuteNotificationsDuringScreenShare:enabled"/>
   <int value="-1311133348" label="VrBrowsingNativeAndroidUi:enabled"/>
   <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
@@ -45649,6 +45650,7 @@ from previous Chrome versions.
   <int value="-914210146" label="enable-web-based-signin"/>
   <int value="-914097698" label="EnableDbusAndX11StatusIcons:disabled"/>
   <int value="-913294939" label="DriveFS:enabled"/>
+  <int value="-912585719" label="AppManagementIntentSettings:disabled"/>
   <int value="-912456561" label="MidiManagerWinrt:enabled"/>
   <int value="-910452816" label="ChromeOSParentalControlsSettings:disabled"/>
   <int value="-909905655" label="AllowAllSitesToInitiateMirroring:disabled"/>
@@ -46014,6 +46016,7 @@ from previous Chrome versions.
   <int value="-599932554" label="DoodlesOnLocalNtp:disabled"/>
   <int value="-599005750" label="ScanningUI:disabled"/>
   <int value="-598050737" label="disable-es3-apis"/>
+  <int value="-596822155" label="AppManagementIntentSettings:enabled"/>
   <int value="-596337171" label="disable-ash-sidebar"/>
   <int value="-595819071"
       label="OmniboxUIExperimentBlueTitlesOnPageSuggestions:disabled"/>
@@ -46293,6 +46296,7 @@ from previous Chrome versions.
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-327272022" label="AutofillRejectCompanyBirthyearName:enabled"/>
+  <int value="-326535569" label="WebNotesStylize:disabled"/>
   <int value="-326083626" label="AppBanners:disabled"/>
   <int value="-325271559" label="NtpRepeatableQueries:enabled"/>
   <int value="-324786035"
@@ -48761,11 +48765,11 @@ from previous Chrome versions.
   <int value="1874604540" label="UseSuggestionsEvenIfFew:disabled"/>
   <int value="1875156497" label="CaptureMode:enabled"/>
   <int value="1875719680" label="ArcResizeLock:disabled"/>
-  <int value="1878031748" label="LacrosWebApps:enabled"/>
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
   <int value="1880955305" label="enable-preconnect-to-search"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
+  <int value="1883998150" label="WebAppsCrosapi:disabled"/>
   <int value="1887031213" label="AutofillManualFallbackAndroid:disabled"/>
   <int value="1887882558" label="RTCUnifiedPlanByDefault:enabled"/>
   <int value="1888812860" label="ChromeModernAlternateCardLayout:enabled"/>

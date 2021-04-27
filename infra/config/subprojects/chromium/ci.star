@@ -227,6 +227,7 @@ consoles.console_view(
             "win10",
             "win32",
             "paeverywhere",
+            "backuprefptr",
         ],
         "code_coverage": consoles.ordering(
             short_names = ["and", "ann", "lnx", "lcr", "jcr", "mac"],
@@ -2938,40 +2939,20 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = "android-paeverywhere-arm-fyi-dbg",
+    name = "android-backuprefptr-arm-fyi-rel",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|android",
-        short_name = "32dbg",
-    ),
-    notifies = ["chrome-memory-safety"],
-)
-
-ci.fyi_builder(
-    name = "android-paeverywhere-arm-fyi-rel",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|android",
+        category = "backuprefptr|android",
         short_name = "32rel",
     ),
     notifies = ["chrome-memory-safety"],
 )
 
 ci.fyi_builder(
-    name = "android-paeverywhere-arm64-fyi-dbg",
+    name = "android-backuprefptr-arm64-fyi-rel",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|android",
-        short_name = "64dbg",
-    ),
-    notifies = ["chrome-memory-safety"],
-)
-
-ci.fyi_builder(
-    name = "android-paeverywhere-arm64-fyi-rel",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|android",
+        category = "backuprefptr|android",
         short_name = "64rel",
     ),
     notifies = ["chrome-memory-safety"],
@@ -3162,21 +3143,10 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = "linux-paeverywhere-x64-fyi-dbg",
+    name = "linux-backuprefptr-x64-fyi-rel",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|linux",
-        short_name = "64dbg",
-    ),
-    notifies = ["chrome-memory-safety"],
-    os = os.LINUX_DEFAULT,
-)
-
-ci.fyi_builder(
-    name = "linux-paeverywhere-x64-fyi-rel",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|linux",
+        category = "backuprefptr|linux",
         short_name = "64rel",
     ),
     notifies = ["chrome-memory-safety"],
@@ -3443,21 +3413,10 @@ ci.updater_builder(
 )
 
 ci.fyi_builder(
-    name = "win-paeverywhere-x86-fyi-dbg",
+    name = "win-backuprefptr-x86-fyi-rel",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|win",
-        short_name = "32dbg",
-    ),
-    notifies = ["chrome-memory-safety"],
-    os = os.WINDOWS_ANY,
-)
-
-ci.fyi_builder(
-    name = "win-paeverywhere-x86-fyi-rel",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|win",
+        category = "backuprefptr|win",
         short_name = "32rel",
     ),
     notifies = ["chrome-memory-safety"],
@@ -3465,21 +3424,10 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = "win-paeverywhere-x64-fyi-dbg",
+    name = "win-backuprefptr-x64-fyi-rel",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|win",
-        short_name = "64dbg",
-    ),
-    notifies = ["chrome-memory-safety"],
-    os = os.WINDOWS_ANY,
-)
-
-ci.fyi_builder(
-    name = "win-paeverywhere-x64-fyi-rel",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "paeverywhere|win",
+        category = "backuprefptr|win",
         short_name = "64rel",
     ),
     notifies = ["chrome-memory-safety"],
@@ -5183,10 +5131,6 @@ ci.mac_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     os = os.MAC_10_15,
-    experiments = {
-        # TODO(crbug.com/1143122): remove this.
-        "chromium.chromium_tests.use_rbe_cas": 20,
-    },
 )
 
 ci.mac_builder(

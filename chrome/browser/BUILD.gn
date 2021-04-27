@@ -16,6 +16,7 @@ import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//components/captive_portal/core/features.gni")
 import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
@@ -1378,6 +1379,8 @@ static_library("browser") {
     "profiles/pref_service_builder_utils.h",
     "profiles/profile_attributes_entry.cc",
     "profiles/profile_attributes_entry.h",
+    "profiles/profile_attributes_init_params.cc",
+    "profiles/profile_attributes_init_params.h",
     "profiles/profile_attributes_storage.cc",
     "profiles/profile_attributes_storage.h",
     "profiles/profile_avatar_downloader.cc",
@@ -2430,6 +2433,10 @@ static_library("browser") {
         "//chromeos/components/telemetry_extension_ui",
         "//chromeos/components/telemetry_extension_ui/mojom",
       ]
+    }
+
+    if (enable_libassistant_sandbox) {
+      deps += [ "//chromeos/services/libassistant/public/mojom" ]
     }
   }
   if (is_linux || is_chromeos) {
@@ -4273,18 +4280,18 @@ static_library("browser") {
       "apps/app_service/publishers/crostini_apps.h",
       "apps/app_service/publishers/extension_apps_chromeos.cc",
       "apps/app_service/publishers/extension_apps_chromeos.h",
-      "apps/app_service/publishers/lacros_apps.cc",
-      "apps/app_service/publishers/lacros_apps.h",
-      "apps/app_service/publishers/lacros_web_apps.cc",
-      "apps/app_service/publishers/lacros_web_apps.h",
-      "apps/app_service/publishers/lacros_web_apps_factory.cc",
-      "apps/app_service/publishers/lacros_web_apps_factory.h",
       "apps/app_service/publishers/plugin_vm_apps.cc",
       "apps/app_service/publishers/plugin_vm_apps.h",
       "apps/app_service/publishers/remote_apps.cc",
       "apps/app_service/publishers/remote_apps.h",
+      "apps/app_service/publishers/standalone_browser_apps.cc",
+      "apps/app_service/publishers/standalone_browser_apps.h",
       "apps/app_service/publishers/web_apps_chromeos.cc",
       "apps/app_service/publishers/web_apps_chromeos.h",
+      "apps/app_service/publishers/web_apps_crosapi.cc",
+      "apps/app_service/publishers/web_apps_crosapi.h",
+      "apps/app_service/publishers/web_apps_crosapi_factory.cc",
+      "apps/app_service/publishers/web_apps_crosapi_factory.h",
       "apps/app_service/uninstall_dialog.cc",
       "apps/app_service/uninstall_dialog.h",
       "apps/icon_standardizer.cc",

@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
 
@@ -319,7 +318,7 @@ void IncomingStream::AbortAndReset() {
   state_ = State::kAborted;
 
   if (on_abort_) {
-    // Cause QuicTransport to drop its reference to us.
+    // Cause WebTransport to drop its reference to us.
     std::move(on_abort_).Run();
   }
 

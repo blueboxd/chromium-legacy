@@ -144,18 +144,8 @@ void NGSVGTextLayoutAlgorithm::Layout(
                                LayoutUnit((*info.y - ascent) / scaling_factor),
                                LayoutUnit(width / scaling_factor),
                                LayoutUnit(height / scaling_factor));
-    AffineTransform transform;
-    if (info.length_adjust_scale != 1.0f) {
-      // We'd like to scale only inline-size without moving inline position.
-      if (horizontal_) {
-        transform.SetMatrix(info.length_adjust_scale, 0, 0, 1,
-                            *info.x - info.length_adjust_scale * *info.x, 0);
-      } else {
-        transform.SetMatrix(1, 0, 0, info.length_adjust_scale, 0,
-                            *info.y - info.length_adjust_scale * *info.y);
-      }
-    }
-    item.item.ConvertToSVGText(unscaled_rect, scaled_rect, transform);
+    item.item.ConvertToSVGText(unscaled_rect, scaled_rect,
+                               info.length_adjust_scale);
   }
 }
 
@@ -256,6 +246,11 @@ void NGSVGTextLayoutAlgorithm::AdjustPositionsDxDy(
   ResolvedIterator iterator(inline_node_.SVGCharacterDataList());
   for (wtf_size_t i = 0; i < addressable_count_; ++i) {
     const NGSVGCharacterData& resolve = iterator.AdvanceTo(i);
+    // https://github.com/w3c/svgwg/issues/846
+    if (resolve.HasX())
+      shift.SetX(0.0f);
+    if (resolve.HasY())
+      shift.SetY(0.0f);
     // 2.1. If resolve_x[i] is unspecified, set it to 0. If resolve_y[i] is
     // unspecified, set it to 0.
     // https://github.com/w3c/svgwg/issues/271
@@ -523,12 +518,14 @@ void NGSVGTextLayoutAlgorithm::AdjustPositionsXY(
     const NGSVGCharacterData& resolve = iterator.AdvanceTo(i);
     // 3.1. If resolved_x[index] is set, then let
     // shift.x = resolved_x[index] − result.x[index].
+    // https://github.com/w3c/svgwg/issues/845
     if (resolve.HasX())
-      shift.SetX(resolve.x * scaling_factor - *result_[i].x);
+      shift.SetX(resolve.x * scaling_factor - css_positions_[i].X());
     // 3.2. If resolved_y[index] is set, then let
     // shift.y = resolved_y[index] − result.y[index].
+    // https://github.com/w3c/svgwg/issues/845
     if (resolve.HasY())
-      shift.SetY(resolve.y * scaling_factor - *result_[i].y);
+      shift.SetY(resolve.y * scaling_factor - css_positions_[i].Y());
     // 3.3. Let result.x[index] = result.x[index] + shift.x and
     // result.y[index] = result.y[index] + shift.y.
     result_[i].x = *result_[i].x + shift.X();

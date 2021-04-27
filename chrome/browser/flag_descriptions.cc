@@ -3500,6 +3500,10 @@ const char kWebFeedName[] = "Web Feed";
 const char kWebFeedDescription[] =
     "Allows users to keep up with and consume web content.";
 
+const char kWebNotesStylizeName[] = "WebNotes Stylize";
+const char kWebNotesStylizeDescription[] =
+    "Allows users to create and share stylized webnotes.";
+
 const char kXsurfaceMetricsReportingName[] = "Xsurface Metrics Reporting";
 const char kXsurfaceMetricsReportingDescription[] =
     "Allows metrics reporting state to be passed to Xsurface";
@@ -3514,6 +3518,12 @@ const char kAllowAllSitesToInitiateMirroringDescription[] =
     "When enabled, allows all websites to request to initiate tab mirroring "
     "via Presentation API. Requires #cast-media-route-provider to also be "
     "enabled";
+
+const char kAppManagementIntentSettingsName[] =
+    "App Management intent settings";
+const char kAppManagementIntentSettingsDescription[] =
+    "Enables and displays the intent settings link handling setting for App "
+    "Management.";
 
 const char kEnableAccessibilityLiveCaptionName[] = "Live Caption";
 const char kEnableAccessibilityLiveCaptionDescription[] =
@@ -4605,9 +4615,6 @@ const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =
     "Support for the experimental lacros-chrome browser.";
 
-const char kLacrosWebAppsName[] = " Lacros web apps";
-const char kLacrosWebAppsDescription[] = "Support web apps in Lacros browser.";
-
 const char kLimitAltTabToActiveDeskName[] =
     "Limit Alt-Tab windows to active desk";
 const char kLimitAltTabToActiveDeskDescription[] =
@@ -4880,6 +4887,10 @@ const char kVmStatusPageDescription[] = "Enable VM status page";
 const char kWakeOnWifiAllowedName[] = "Allow enabling wake on WiFi features";
 const char kWakeOnWifiAllowedDescription[] =
     "Allows wake on WiFi features in shill to be enabled.";
+
+const char kWebAppsCrosapiName[] = "Web Apps Crosapi";
+const char kWebAppsCrosapiDescription[] =
+    "Support web apps publishing from Lacros browser.";
 
 const char kWebuiDarkModeName[] = "WebUI dark mode";
 const char kWebuiDarkModeDescription[] =

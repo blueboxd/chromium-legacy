@@ -10,6 +10,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 component("network_service") {
   sources = [
+    "bfcache_opt_in_parser.cc",
+    "bfcache_opt_in_parser.h",
     "chunked_data_pipe_upload_data_stream.cc",
     "chunked_data_pipe_upload_data_stream.h",
     "conditional_cache_deletion_helper.cc",
@@ -117,8 +119,6 @@ component("network_service") {
     "proxy_resolving_socket_mojo.h",
     "proxy_service_mojo.cc",
     "proxy_service_mojo.h",
-    "quic_transport.cc",
-    "quic_transport.h",
     "resolve_host_request.cc",
     "resolve_host_request.h",
     "resource_scheduler/resource_scheduler.cc",
@@ -186,6 +186,8 @@ component("network_service") {
     "web_bundle_memory_quota_consumer.h",
     "web_bundle_url_loader_factory.cc",
     "web_bundle_url_loader_factory.h",
+    "web_transport.cc",
+    "web_transport.h",
   ]
 
   if (enable_mdns) {
@@ -300,6 +302,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "bfcache_opt_in_parser_unittest.cc",
     "chunked_data_pipe_upload_data_stream_unittest.cc",
     "cookie_manager_unittest.cc",
     "cookie_settings_unittest.cc",
@@ -336,7 +339,6 @@ source_set("tests") {
     "proxy_config_service_mojo_unittest.cc",
     "proxy_resolving_client_socket_unittest.cc",
     "proxy_resolving_socket_mojo_unittest.cc",
-    "quic_transport_unittest.cc",
     "resource_scheduler/resource_scheduler_params_manager_unittest.cc",
     "resource_scheduler/resource_scheduler_unittest.cc",
     "restricted_cookie_manager_unittest.cc",
@@ -358,6 +360,7 @@ source_set("tests") {
     "web_bundle_chunked_buffer_unittest.cc",
     "web_bundle_manager_unittest.cc",
     "web_bundle_url_loader_factory_unittest.cc",
+    "web_transport_unittest.cc",
   ]
 
   if (enable_mdns) {

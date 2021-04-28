@@ -274,6 +274,11 @@ const base::Feature kEcheSWAResizing{"EcheSWAResizing",
 const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the DNS proxy service providing support split and secure DNS
+// for Chrome OS.
+const base::Feature kEnableDnsProxy{"EnableDnsProxy",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables setting the device hostname.
 const base::Feature kEnableHostnameSetting{"EnableHostnameSetting",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -466,10 +471,6 @@ const base::Feature kLacrosSupport{"LacrosSupport",
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables device management disclosure on login / lock screen.
-const base::Feature kLoginDeviceManagementDisclosure{
-    "LoginDeviceManagementDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
@@ -728,6 +729,10 @@ const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
 const base::Feature kWallpaperWebUI{"WallpaperWebUI",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Generates WebAPKs representing installed PWAs and installs them inside ARC.
+const base::Feature kWebApkGenerator{"WebApkGenerator",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable the syncing of deletes of Wi-Fi configurations.
 // This controls both sending delete events to the Chrome Sync server and
 // applying incoming deletes.
@@ -813,10 +818,6 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsKerberosSettingsSectionEnabled() {
   return base::FeatureList::IsEnabled(kKerberosSettingsSection);
-}
-
-bool IsLoginDeviceManagementDisclosureEnabled() {
-  return base::FeatureList::IsEnabled(kLoginDeviceManagementDisclosure);
 }
 
 bool IsMinimumChromeVersionEnabled() {

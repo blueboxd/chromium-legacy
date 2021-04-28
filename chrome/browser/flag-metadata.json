@@ -448,6 +448,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "biometric-reauth-password-filling",
+    "owners": [ "ioanap" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "block-external-form-redirects-no-gesture",
     "owners": [ "jochen", "tedchoc" ],
     "expiry_milestone": 89
@@ -1491,6 +1496,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-commerce-merchant-viewer",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "enable-conditional-tabstrip",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 90
@@ -1688,6 +1698,11 @@
     "name": "enable-desktop-pwas-window-controls-overlay",
     "owners": [ "ambake@microsoft.com", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "enable-dns-proxy",
+    "owners": [ "garrick", "jasongustaman", "cros-networking@google.com" ],
+    "expiry_milestone": 99
   },
   {
     "name": "enable-encryption-migration",
@@ -5332,7 +5347,7 @@
     "name": "webnotes-stylize",
     "owners": [ "gayane", "seblalancette"],
     "expiry_milestone": 99
-  },  
+  },
   {
     "name": "webpage-alternative-text-zoom",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],

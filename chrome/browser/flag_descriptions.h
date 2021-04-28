@@ -221,6 +221,9 @@ extern const char kAvatarToolbarButtonDescription[];
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
 
+extern const char kBiometricReauthForPasswordFillingName[];
+extern const char kBiometricReauthForPasswordFillingDescription[];
+
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
@@ -1386,6 +1389,9 @@ extern const char kTabEngagementReportingDescription[];
 extern const char kTabGridLayoutAndroidName[];
 extern const char kTabGridLayoutAndroidDescription[];
 
+extern const char kCommerceMerchantViewerAndroidName[];
+extern const char kCommerceMerchantViewerAndroidDescription[];
+
 extern const char kTabGroupsAndroidName[];
 extern const char kTabGroupsAndroidDescription[];
 
@@ -2446,6 +2452,9 @@ extern const char kEnhancedClipboardNudgeSessionResetDescription[];
 
 extern const char kEnableCrOSActionRecorderName[];
 extern const char kEnableCrOSActionRecorderDescription[];
+
+extern const char kEnableDnsProxyName[];
+extern const char kEnableDnsProxyDescription[];
 
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];

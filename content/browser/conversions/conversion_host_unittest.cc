@@ -329,7 +329,9 @@ TEST_F(ConversionHostTest, EmbedderDisabledContext_ConversionDisallowed) {
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_F(ConversionHostTest, EmbedderDisabledContext_ImpressionDisallowed) {
+// TODO(crbug.com/1203592): Disabled due to flakiness.
+TEST_F(ConversionHostTest,
+       DISABLED_EmbedderDisabledContext_ImpressionDisallowed) {
   ConfigurableConversionTestBrowserClient browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&browser_client);
@@ -474,7 +476,8 @@ TEST_F(ConversionHostTest, NavigationWithNoImpression_Ignored) {
   EXPECT_EQ(0u, test_manager_.num_impressions());
 }
 
-TEST_F(ConversionHostTest, ValidImpression_ForwardedToManager) {
+// TODO(crbug.com/1203601): Disabled due to flakiness.
+TEST_F(ConversionHostTest, DISABLED_ValidImpression_ForwardedToManager) {
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
   auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
       GURL(kConversionUrl), main_rfh());
@@ -574,8 +577,9 @@ TEST_F(ConversionHostTest,
   EXPECT_EQ(0u, test_manager_.num_impressions());
 }
 
+// TODO(crbug.com/1203544): Disabled due to flakiness.
 TEST_F(ConversionHostTest,
-       ImpressionNavigation_OriginTrustworthyChecksPerformed) {
+       DISABLED_ImpressionNavigation_OriginTrustworthyChecksPerformed) {
   const char kLocalHost[] = "http://localhost";
 
   struct {

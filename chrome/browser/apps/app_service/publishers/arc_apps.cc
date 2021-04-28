@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
+#include "chrome/browser/apps/app_service/webapk/webapk_manager.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -530,6 +532,10 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxyChromeOs* proxy)
     instance_registry_observer_.Add(instance_registry);
   }
 
+  if (base::FeatureList::IsEnabled(ash::features::kWebApkGenerator)) {
+    web_apk_manager_ = std::make_unique<apps::WebApkManager>(profile_);
+  }
+
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kArc);
 }
 
@@ -1008,13 +1014,6 @@ void ArcApps::OnAppRemoved(const std::string& app_id) {
   app->app_id = app_id;
   app->readiness = apps::mojom::Readiness::kUninstalledByUser;
   Publish(std::move(app), subscribers_);
-
-  mojo::Remote<apps::mojom::AppService>& app_service =
-      apps::AppServiceProxyFactory::GetForProfile(profile_)->AppService();
-  if (!app_service.is_bound()) {
-    return;
-  }
-  app_service->RemovePreferredApp(apps::mojom::AppType::kArc, app_id);
 }
 
 void ArcApps::OnAppIconUpdated(const std::string& app_id,

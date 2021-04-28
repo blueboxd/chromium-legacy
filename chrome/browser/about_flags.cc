@@ -2997,6 +2997,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHardwareMirrorModeName,
      flag_descriptions::kEnableHardwareMirrorModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kEnableHardwareMirrorMode)},
+    {"enable-dns-proxy", flag_descriptions::kEnableDnsProxyName,
+     flag_descriptions::kEnableDnsProxyDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnableDnsProxy)},
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kInstantTethering)},
@@ -4894,6 +4897,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid,
                                     kTabGridLayoutAndroidVariations,
                                     "TabGridLayoutAndroid")},
+
+    {"enable-commerce-merchant-viewer",
+     flag_descriptions::kCommerceMerchantViewerAndroidName,
+     flag_descriptions::kCommerceMerchantViewerAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCommerceMerchantViewer)},
 
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
@@ -7265,7 +7273,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-penetrating-image-selection",
      flag_descriptions::kEnablePenetratingImageSelectionName,
      flag_descriptions::kEnablePenetratingImageSelectionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kEnablePenetratingImageSelection)}
+     FEATURE_VALUE_TYPE(blink::features::kEnablePenetratingImageSelection)},
+
+#if defined(OS_ANDROID)
+    {"biometric-reauth-password-filling",
+     flag_descriptions::kBiometricReauthForPasswordFillingName,
+     flag_descriptions::kBiometricReauthForPasswordFillingDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(password_manager::features::kBiometricTouchToFill)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

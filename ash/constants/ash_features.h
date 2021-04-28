@@ -130,6 +130,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWAResizing;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEmojiSuggestAddition;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEnableDnsProxy;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableHostnameSetting;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -206,8 +207,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosSupport;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosPrimary;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLanguageSettingsUpdate2;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kLoginDeviceManagementDisclosure;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMediaAppAnnotation;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -325,6 +324,8 @@ extern const base::Feature kWakeOnWifiAllowed;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWallpaperWebUI;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kWebApkGenerator;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWifiSyncAllowDeletes;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kWifiSyncAndroid;
@@ -359,7 +360,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsImeSandboxEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsKerberosSettingsSectionEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLoginDeviceManagementDisclosureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinimumChromeVersionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNetworkingInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNewOobeLayoutEnabled();

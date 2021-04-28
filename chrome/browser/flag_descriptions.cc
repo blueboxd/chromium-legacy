@@ -366,6 +366,12 @@ const char kBackForwardCacheDescription[] =
     "To enable caching pages on same-site navigations too, choose 'enabled "
     "same-site support'.";
 
+const char kBiometricReauthForPasswordFillingName[] =
+    "Biometric reauth for password filling";
+const char kBiometricReauthForPasswordFillingDescription[] =
+    "Enables biometric"
+    "re-authentication before password filling";
+
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =
@@ -2398,6 +2404,10 @@ const char kTabGridLayoutAndroidDescription[] =
     "Allows users to see their tabs in a grid layout in the tab switcher on "
     "phones.";
 
+const char kCommerceMerchantViewerAndroidName[] = "Merchant Viewer";
+const char kCommerceMerchantViewerAndroidDescription[] =
+    "Allows users to view merchant trust signals on eligible pages.";
+
 const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =
     "Allows users to create groups to better organize their tabs on phones.";
@@ -4240,6 +4250,11 @@ const char kEnableCrOSActionRecorderDescription[] =
     "When enabled, each app launching, file opening, setting change, and url "
     "visiting will be logged locally into an encrypted file. Should not be "
     "enabled. Be aware that hash option only provides a thin layer of privacy.";
+
+const char kEnableDnsProxyName[] = "Enable DNS proxy service";
+const char kEnableDnsProxyDescription[] =
+    "When enabled, standard DNS queries will be proxied through the system "
+    "service";
 
 const char kEnableEncryptionMigrationName[] =
     "Enable encryption migration of user data";

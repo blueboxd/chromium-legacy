@@ -760,7 +760,10 @@ void Widget::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;
 
+  auto weak_ptr = GetWeakPtr();
   native_widget_->SetFullscreen(fullscreen);
+  if (!weak_ptr)
+    return;
 
   if (non_client_view_)
     non_client_view_->InvalidateLayout();
@@ -1113,6 +1116,7 @@ void Widget::SetNativeTheme(ui::NativeTheme* native_theme) {
   native_theme_observation_.Reset();
   if (native_theme)
     native_theme_observation_.Observe(native_theme);
+  PropagateNativeThemeChanged();
 }
 
 int Widget::GetX() const {

@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
@@ -128,7 +129,8 @@ class Header : public views::Button {
 DownloadsSection::DownloadsSection(HoldingSpaceItemViewDelegate* delegate)
     : HoldingSpaceItemViewsSection(delegate,
                                    /*supported_types=*/
-                                   {HoldingSpaceItem::Type::kDownload,
+                                   {HoldingSpaceItem::Type::kArcDownload,
+                                    HoldingSpaceItem::Type::kDownload,
                                     HoldingSpaceItem::Type::kNearbyShare},
                                    /*max_count=*/kMaxDownloads) {}
 

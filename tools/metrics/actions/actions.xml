@@ -6270,6 +6270,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Discover.DiscoverTabNotification.Clicked">
+  <owner>callistus@google.com</owner>
+  <owner>showoff-eng@google.com</owner>
+  <description>
+    User clicked on the Discover tab notification, which launches the Discover
+    (internally &quot;Showoff&quot;) app.
+  </description>
+</action>
+
+<action name="Discover.DiscoverTabNotification.Shown" not_user_triggered="true">
+  <owner>callistus@google.com</owner>
+  <owner>showoff-eng@google.com</owner>
+  <description>
+    A notification for the Discover tab in the Discover (internally
+    &quot;Showoff&quot;) app was shown.
+  </description>
+</action>
+
 <action name="DockingWindow_Bottom">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9423,6 +9441,41 @@ should be able to be added at any place in this file.
   <description>
     Recorded when user enters edit mode for recently viewed search engines. iOS
     only.
+  </description>
+</action>
+
+<action name="IOS.StartSurface.HideShortcuts">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when hiding the shortcuts for the Start Surface. iOS only.
+  </description>
+</action>
+
+<action name="IOS.StartSurface.OpenMostRecentTab">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when opening the most recent tab after tapping on the Start Surface
+    return to recent tab tile. iOS only.
+  </description>
+</action>
+
+<action name="IOS.StartSurface.Show">
+  <owner>gogerald@chromium.org</owner>
+  <description>Recorded when showing the Start Surface. iOS only.</description>
+</action>
+
+<action name="IOS.StartSurface.ShowReturnToRecentTabTile">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing the return to recent tab tile for the Start Surface.
+    iOS only.
+  </description>
+</action>
+
+<action name="IOS.StartSurface.ShrinkLogo">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when shrinking the logo for the Start Surface. iOS only.
   </description>
 </action>
 

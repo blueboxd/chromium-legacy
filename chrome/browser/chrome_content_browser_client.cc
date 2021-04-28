@@ -642,6 +642,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_navigation_throttle.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
@@ -2588,7 +2589,7 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin,
     const std::string& name,
-    const url::Origin& constructor_origin,
+    const storage::StorageKey& storage_key,
     content::BrowserContext* context,
     int render_process_id,
     int render_frame_id) {
@@ -2601,7 +2602,7 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
           .get());
 
   content_settings::PageSpecificContentSettings::SharedWorkerAccessed(
-      render_process_id, render_frame_id, worker_url, name, constructor_origin,
+      render_process_id, render_frame_id, worker_url, name, storage_key,
       !allow);
   return allow;
 }
@@ -3813,7 +3814,9 @@ std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case sandbox::policy::SandboxType::kXrCompositing:
     case sandbox::policy::SandboxType::kNetwork:
     case sandbox::policy::SandboxType::kCdm:
+#if BUILDFLAG(ENABLE_PRINTING)
     case sandbox::policy::SandboxType::kPrintBackend:
+#endif
     case sandbox::policy::SandboxType::kPrintCompositor:
     case sandbox::policy::SandboxType::kAudio:
     case sandbox::policy::SandboxType::kSpeechRecognition:
@@ -3860,7 +3863,9 @@ bool ChromeContentBrowserClient::PreSpawnChild(
     case sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges:
     case sandbox::policy::SandboxType::kXrCompositing:
     case sandbox::policy::SandboxType::kCdm:
+#if BUILDFLAG(ENABLE_PRINTING)
     case sandbox::policy::SandboxType::kPrintBackend:
+#endif
     case sandbox::policy::SandboxType::kPrintCompositor:
     case sandbox::policy::SandboxType::kAudio:
     case sandbox::policy::SandboxType::kSpeechRecognition:
@@ -4218,6 +4223,13 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       payments::PaymentHandlerNavigationThrottle::MaybeCreateThrottleFor(
           handle),
       &throttles);
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  MaybeAddThrottle(
+      offline_pages::OfflinePageNavigationThrottle::MaybeCreateThrottleFor(
+          handle),
+      &throttles);
+#endif
 
   return throttles;
 }

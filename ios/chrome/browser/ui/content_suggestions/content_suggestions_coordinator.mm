@@ -49,6 +49,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_action_handler.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
@@ -98,6 +99,7 @@
 
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsActionHandler,
+    ContentSuggestionsHeaderCommands,
     ContentSuggestionsMenuProvider,
     ContentSuggestionsViewControllerAudience,
     DiscoverFeedDelegate,
@@ -201,6 +203,7 @@
       static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
                      FakeboxFocuser>>(self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self.ntpMediator;
+  self.headerController.headerCommandHandler = self;
   self.headerController.delegate = self.ntpMediator;
 
   self.headerController.readingListModel =
@@ -606,6 +609,12 @@
   }
 }
 
+#pragma mark - ContentSuggestionsHeaderCommands
+
+- (void)updateForHeaderSizeChange {
+  [self.ntpCommandHandler updateDiscoverFeedLayout];
+}
+
 #pragma mark - ContentSuggestionsActionHandler
 
 - (void)loadMoreFeedArticles {
@@ -750,10 +759,12 @@
 - (void)configureStartSurfaceIfNeeded {
   SceneState* scene =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  BOOL shouldShowReturnToRecentTabTile =
-      scene.modifytVisibleNTPForStartSurface &&
-      ShouldShowReturnToMostRecentTabForStartSurface();
-  if (shouldShowReturnToRecentTabTile) {
+  if (!scene.modifytVisibleNTPForStartSurface)
+    return;
+
+  if (ShouldShowReturnToMostRecentTabForStartSurface()) {
+    base::RecordAction(
+        base::UserMetricsAction("IOS.StartSurface.ShowReturnToRecentTabTile"));
     web::WebState* most_recent_tab =
         StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
             ->most_recent_tab();
@@ -769,8 +780,15 @@
       StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
           ->AddObserver(_startSurfaceObserver.get());
     }
-    scene.modifytVisibleNTPForStartSurface = NO;
   }
+  if (ShouldShrinkLogoForStartSurface()) {
+    base::RecordAction(base::UserMetricsAction("IOS.StartSurface.ShrinkLogo"));
+  }
+  if (ShouldHideShortcutsForStartSurface()) {
+    base::RecordAction(
+        base::UserMetricsAction("IOS.StartSurface.HideShortcuts"));
+  }
+  scene.modifytVisibleNTPForStartSurface = NO;
 }
 
 // Creates, configures and returns a DiscoverFeed ViewController.

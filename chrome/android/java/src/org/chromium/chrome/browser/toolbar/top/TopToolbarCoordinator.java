@@ -245,8 +245,8 @@ public class TopToolbarCoordinator implements Toolbar {
         if (DeviceClassManager.enableFullscreen()) {
             mOverlayCoordinator = new TopToolbarOverlayCoordinator(mToolbarLayout.getContext(),
                     layoutManager, mControlContainer::getProgressBarDrawingInfo, tabSupplier,
-                    browserControlsStateProvider, mResourceManagerSupplier,
-                    topUiThemeColorProvider, LayoutType.BROWSING, false);
+                    browserControlsStateProvider, mResourceManagerSupplier, topUiThemeColorProvider,
+                    LayoutType.BROWSING | LayoutType.SIMPLE_ANIMATION, false);
             layoutManager.addSceneOverlay(mOverlayCoordinator);
             mToolbarLayout.setOverlayCoordinator(mOverlayCoordinator);
         }
@@ -621,6 +621,16 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void setProgressBarEnabled(boolean enabled) {
         getProgressBar().setVisibility(enabled ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Force to hide toolbar shadow.
+     * @param forceHideShadow Whether toolbar shadow should be hidden.
+     *
+     * TODO(crbug.com/1202994): change to token-based access
+     */
+    public void setForceHideShadow(boolean forceHideShadow) {
+        mToolbarLayout.setForceHideShadow(forceHideShadow);
     }
 
     /**

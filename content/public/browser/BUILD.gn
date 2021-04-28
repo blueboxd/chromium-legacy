@@ -153,6 +153,8 @@ source_set("browser_sources") {
     "favicon_status.cc",
     "favicon_status.h",
     "feature_observer_client.h",
+    "federated_identity_request_permission_context_delegate.h",
+    "federated_identity_sharing_permission_context_delegate.h",
     "file_select_listener.h",
     "file_system_access_entry_factory.h",
     "file_system_access_permission_context.h",
@@ -465,6 +467,7 @@ source_set("browser_sources") {
   deps = [
     "//build:chromeos_buildflags",
     "//cc",
+    "//components/services/storage/public/cpp",
     "//components/viz/host",
     "//content/browser",  # Must not be public_deps!
     "//device/fido",

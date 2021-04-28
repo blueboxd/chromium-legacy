@@ -3528,6 +3528,21 @@
             ]
         }
     ],
+    "IOSDiscoverNoticeCardAutoDismiss": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InterestFeedNoticeCardAutoDismiss"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSErrorPageRefactoring": [
         {
             "platforms": [
@@ -3795,6 +3810,7 @@
                     "enable_features": [
                         "FederatedLearningOfCohorts",
                         "FlocIdSortingLshBasedComputation",
+                        "FlocPagesWithAdResourcesDefaultIncludedInFlocComputation",
                         "InterestCohortAPIOriginTrial",
                         "InterestCohortFeaturePolicy"
                     ]
@@ -4422,6 +4438,21 @@
             ]
         }
     ],
+    "NotificationsViaHelperApp": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NotificationsViaHelperApp"
+                    ]
+                }
+            ]
+        }
+    ],
     "NtpRepeatableQueriesDesktop": [
         {
             "platforms": [
@@ -4636,7 +4667,6 @@
                         "OmniboxShortBookmarkSuggestionsByTotalInputLength",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "QueryInOmnibox",
                         "SearchSuggestChips"
                     ]
                 }

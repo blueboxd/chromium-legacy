@@ -2166,6 +2166,11 @@ const char kScrollableTabStripName[] = "Tab Scrolling";
 const char kScrollableTabStripDescription[] =
     "Enables tab strip to scroll left and right when full.";
 
+const char kScrollableTabStripButtonsName[] = "Tab Scrolling Buttons";
+const char kScrollableTabStripButtonsDescription[] =
+    "When the scrollable-tabstrip flag is enabled, this enables buttons to "
+    "permanently appear on the tabstrip.";
+
 const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
     "Refactoring project that eliminates scroll handling code from Blink. "
@@ -2194,6 +2199,12 @@ const char kSidePanelDescription[] = "Host some content in a side panel.";
 const char kSidePanelPrototypeName[] = "Side panel prototype";
 const char kSidePanelPrototypeDescription[] =
     "Display a prototype of the side panel.";
+
+const char kServiceWorkerSubresourceFilterName[] =
+    "ServiceWorker subresource filter";
+const char kServiceWorkerSubresourceFilterDescription[] =
+    "Enables an experimental API to specify subresource URLs that bypass "
+    "service workers";
 
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
@@ -4613,7 +4624,9 @@ const char kLacrosStabilityMoreStableDescription[] =
 
 const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =
-    "Support for the experimental lacros-chrome browser.";
+    "Support for the experimental lacros-chrome browser. Please note that the "
+    "first restart can take some time to setup lacros-chrome. Please DO NOT "
+    "attempt to turn off the device during the restart.";
 
 const char kLimitAltTabToActiveDeskName[] =
     "Limit Alt-Tab windows to active desk";

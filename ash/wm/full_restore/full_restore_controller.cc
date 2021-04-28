@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -183,7 +184,6 @@ void FullRestoreController::OnWidgetInitialized(views::Widget* widget) {
       // in normal or maximized state.
       // TODO(crbug.com/1164472): Investigate splitview for ARC apps, which
       // are not managed by TabletModeWindowManager.
-      LOG(ERROR) << static_cast<int>(state_type.value());
       if (Shell::Get()->tablet_mode_controller()->InTabletMode())
         Shell::Get()->tablet_mode_controller()->AddWindow(window);
 
@@ -298,14 +298,31 @@ void FullRestoreController::SaveWindowImpl(
     // storage size.
     window_info.visible_on_all_workspaces = true;
   }
-  // If there are restore bounds, use those as current bounds. On restore, for
-  // states with restore bounds (maximized, minimized, snapped, etc), they will
-  // take the current bounds as their restore bounds and have the current bounds
-  // determined by the system.
-  window_info.current_bounds = window_state->HasRestoreBounds()
-                                   ? window_state->GetRestoreBoundsInScreen()
-                                   : window->GetBoundsInScreen();
-  window_info.window_state_type = window_state->GetStateType();
+
+  // If override bounds and window state are available (in tablet mode), save
+  // those bounds.
+  gfx::Rect* override_bounds = window->GetProperty(kRestoreBoundsOverrideKey);
+  if (override_bounds) {
+    window_info.current_bounds = *override_bounds;
+    window_info.window_state_type =
+        window->GetProperty(kRestoreWindowStateTypeOverrideKey);
+  } else {
+    // If there are restore bounds, use those as current bounds. On restore, for
+    // states with restore bounds (maximized, minimized, snapped, etc), they
+    // will take the current bounds as their restore bounds and have the current
+    // bounds determined by the system.
+    window_info.current_bounds = window_state->HasRestoreBounds()
+                                     ? window_state->GetRestoreBoundsInScreen()
+                                     : window->GetBoundsInScreen();
+    // Full restore does not support restoring fullscreen windows. If a window
+    // is fullscreen save the pre-fullscreen window state instead.
+    window_info.window_state_type =
+        window_state->IsInImmersiveFullscreen()
+            ? chromeos::ToWindowStateType(
+                  window->GetProperty(aura::client::kPreFullscreenShowStateKey))
+            : window_state->GetStateType();
+  }
+
   window_info.display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
   full_restore::SaveWindowInfo(window_info);

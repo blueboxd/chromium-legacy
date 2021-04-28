@@ -390,7 +390,7 @@ try_.chromium_android_builder(
 # Experimental builder to check dual coverage on android platform.
 try_.chromium_android_builder(
     name = "android-marshmallow-arm64-rel-dual-coverage",
-    builderless = not settings.is_main,
+    builderless = True,
     cores = branches.value(for_main = 32, for_branches = 16),
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
@@ -1230,6 +1230,8 @@ try_.chromium_linux_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
+    # TODO(crbug/1199425): Remove this once bionic bot is the default option.
+    os = os.LINUX_XENIAL_OR_BIONIC,
 )
 
 try_.chromium_linux_builder(
@@ -1294,6 +1296,12 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = "linux-xenial-rel",
+    goma_jobs = goma.jobs.J150,
+    os = os.LINUX_XENIAL,
+)
+
+try_.chromium_linux_builder(
     name = "linux-viz-rel",
 )
 
@@ -1328,6 +1336,7 @@ try_.chromium_linux_builder(
     ssd = True,
     main_list_view = "try",
     tryjob = try_.job(),
+    os = os.LINUX_XENIAL_OR_BIONIC,
 )
 
 # TODO(crbug.com/1200574): Remove after migration.
@@ -1338,9 +1347,6 @@ try_.chromium_linux_builder(
     ssd = True,
     os = os.LINUX_BIONIC,
     main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
 )
 
 try_.chromium_linux_builder(
@@ -1421,6 +1427,9 @@ try_.chromium_linux_builder(
     goma_jobs = goma.jobs.J150,
     os = os.LINUX_BIONIC,
     main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
 )
 
 try_.chromium_linux_builder(

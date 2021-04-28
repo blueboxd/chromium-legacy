@@ -54,7 +54,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -897,7 +897,7 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
 };
 
 // This test appears to be flaky on Mac.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #define MAYBE_ActivationChange DISABLED_ActivationChange
 #else
 #define MAYBE_ActivationChange ActivationChange
@@ -1414,7 +1414,7 @@ TEST_F(DesktopWidgetTest, MAYBE_GetRestoredBounds) {
 
   toplevel->Maximize();
   RunPendingMessages();
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Current expectation on Mac is to do nothing on Maximize.
   EXPECT_EQ(toplevel->GetWindowBoundsInScreen(), toplevel->GetRestoredBounds());
 #else
@@ -1854,7 +1854,7 @@ class MousePressEventConsumer : public ui::EventHandler {
 }  // namespace
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_APPLE) || defined(USE_AURA)
+#if !defined(OS_MAC) || defined(USE_AURA)
 
 // Test that mouse presses and mouse releases are dispatched normally when a
 // touch is down.
@@ -1882,7 +1882,7 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
   widget->CloseNow();
 }
 
-#endif  // !defined(OS_APPLE) || defined(USE_AURA)
+#endif  // !defined(OS_MAC) || defined(USE_AURA)
 
 // Tests that when there is no active capture, that a mouse press causes capture
 // to be set.
@@ -2261,7 +2261,7 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_APPLE) || defined(USE_AURA)
+#if !defined(OS_MAC) || defined(USE_AURA)
 
 TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
   Widget* widget = new Widget;
@@ -2285,7 +2285,7 @@ TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
   // Yay we did not crash!
 }
 
-#endif  // !defined(OS_APPLE) || defined(USE_AURA)
+#endif  // !defined(OS_MAC) || defined(USE_AURA)
 
 // See description of RunGetNativeThemeFromDestructor() for details.
 class GetNativeThemeFromDestructorView : public WidgetDelegateView {
@@ -2442,7 +2442,7 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
 // Test Widget::CloseAllSecondaryWidgets works as expected across platforms.
 // ChromeOS doesn't implement or need CloseAllSecondaryWidgets() since
 // everything is under a single root window.
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MAC)
 TEST_F(DesktopWidgetTest, CloseAllSecondaryWidgets) {
   Widget* widget1 = CreateTopLevelNativeWidget();
   Widget* widget2 = CreateTopLevelNativeWidget();
@@ -2509,7 +2509,7 @@ TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
   generator->MoveMouseTo(10, 10);
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   generator->ClickLeftButton();
 #else
   generator->PressTouch();
@@ -3295,6 +3295,41 @@ TEST_F(DesktopWidgetTest, FullscreenStatePropagated_DesktopWidget) {
             IsNativeWindowVisible(top_level_widget->GetNativeWindow()));
 }
 
+// Used to delete the widget when the supplied bounds changes.
+class DestroyingWidgetBoundsObserver : public WidgetObserver {
+ public:
+  explicit DestroyingWidgetBoundsObserver(std::unique_ptr<Widget> widget)
+      : widget_(std::move(widget)) {
+    widget_->AddObserver(this);
+  }
+
+  // There are no assertions here as not all platforms call
+  // OnWidgetBoundsChanged() when going fullscreen.
+  ~DestroyingWidgetBoundsObserver() override = default;
+
+  // WidgetObserver:
+  void OnWidgetBoundsChanged(Widget* widget,
+                             const gfx::Rect& new_bounds) override {
+    widget_->RemoveObserver(this);
+    widget_.reset();
+  }
+
+ private:
+  std::unique_ptr<Widget> widget_;
+};
+
+// Deletes a Widget when the bounds change as part of toggling fullscreen.
+// This is a regression test for https://crbug.com/1197436 .
+TEST_F(DesktopWidgetTest, DeleteInSetFullscreen) {
+  std::unique_ptr<Widget> widget = std::make_unique<Widget>();
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(std::move(params));
+  Widget* w = widget.get();
+  DestroyingWidgetBoundsObserver destroyer(std::move(widget));
+  w->SetFullscreen(true);
+}
+
 namespace {
 
 class FullscreenAwareFrame : public views::NonClientFrameView {
@@ -3852,7 +3887,7 @@ class WidgetShadowTest : public WidgetTest {
   bool force_child_ = false;
 
  private:
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MAC)
   void InitControllers() {}
 #else
   class TestFocusRules : public wm::BaseFocusRules {
@@ -3876,13 +3911,13 @@ class WidgetShadowTest : public WidgetTest {
 
   std::unique_ptr<wm::FocusController> focus_controller_;
   std::unique_ptr<wm::ShadowController> shadow_controller_;
-#endif  // !BUILDFLAG(ENABLE_DESKTOP_AURA) && !defined(OS_APPLE)
+#endif  // !BUILDFLAG(ENABLE_DESKTOP_AURA) && !defined(OS_MAC)
 
   DISALLOW_COPY_AND_ASSIGN(WidgetShadowTest);
 };
 
 // Disabled on Mac: All drop shadows are managed out of process for now.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #define MAYBE_ShadowsInRootWindow DISABLED_ShadowsInRootWindow
 #else
 #define MAYBE_ShadowsInRootWindow ShadowsInRootWindow
@@ -4013,7 +4048,7 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
 
 #endif  // defined(OS_WIN)
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MAC)
 
 namespace {
 
@@ -4055,7 +4090,7 @@ class CompositingWidgetTest : public DesktopWidgetTest {
       const Widget::InitParams::WindowOpacity opacity) {
     opacity_ = opacity;
     for (const auto& widget_type : widget_types_) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       // Tooltips are native on Mac. See NativeWidgetNSWindowBridge::Init.
       if (widget_type == Widget::InitParams::TYPE_TOOLTIP)
         continue;
@@ -4072,7 +4107,7 @@ class CompositingWidgetTest : public DesktopWidgetTest {
           widget_type == Widget::InitParams::TYPE_CONTROL)
         continue;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
       // Mac always always has a compositing window manager, but doesn't have
       // transparent titlebars which is what ShouldWindowContentsBeTransparent()
       // is currently used for. Asking for transparency should get it. Note that
@@ -4122,7 +4157,7 @@ TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetTranslucent) {
   CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kTranslucent);
 }
 
-#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_APPLE)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MAC)
 
 }  // namespace test
 }  // namespace views

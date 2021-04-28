@@ -4616,6 +4616,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTabScrollingVariations,
                                     "TabScrolling")},
 
+    {"scrollable-tabstrip-buttons",
+     flag_descriptions::kScrollableTabStripButtonsName,
+     flag_descriptions::kScrollableTabStripButtonsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kScrollableTabStripButtons)},
+
     {"side-panel", flag_descriptions::kSidePanelName,
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
@@ -6520,6 +6525,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableTranslateSubFramesName,
      flag_descriptions::kEnableTranslateSubFramesDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateSubFrames)},
+
+    {"service-worker-subresource-filter",
+     flag_descriptions::kServiceWorkerSubresourceFilterName,
+     flag_descriptions::kServiceWorkerSubresourceFilterDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kServiceWorkerSubresourceFilter)},
 
     {"conversion-measurement-api",
      flag_descriptions::kConversionMeasurementApiName,

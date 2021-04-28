@@ -1252,6 +1252,9 @@ extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
+extern const char kScrollableTabStripButtonsName[];
+extern const char kScrollableTabStripButtonsDescription[];
+
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
 
@@ -1269,6 +1272,9 @@ extern const char kSidePanelDescription[];
 
 extern const char kSidePanelPrototypeName[];
 extern const char kSidePanelPrototypeDescription[];
+
+extern const char kServiceWorkerSubresourceFilterName[];
+extern const char kServiceWorkerSubresourceFilterDescription[];
 
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];

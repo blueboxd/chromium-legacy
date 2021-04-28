@@ -4631,6 +4631,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "scrollable-tabstrip-buttons",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "tbergquist" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "sct-auditing",
     "owners": [ "cthomp", "estark", "jdeblasio" ],
     "expiry_milestone": 92
@@ -4679,6 +4684,11 @@
     "name": "send-webui-javascript-error-reports",
     "owners": ["iby", "cros-telemetry@google.com"],
     "expiry_milestone": 93
+  },
+  {
+    "name": "service-worker-subresource-filter",
+    "owners": [ "noahlemen@fb.com", "browsers@fb.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "set-market-url-for-testing",

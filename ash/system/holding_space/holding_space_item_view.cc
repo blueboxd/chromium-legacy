@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "ui/base/class_property.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -133,12 +134,19 @@ HoldingSpaceItemView::~HoldingSpaceItemView() {
 
 // static
 HoldingSpaceItemView* HoldingSpaceItemView::Cast(views::View* view) {
-  DCHECK(HoldingSpaceItemView::IsInstance(view));
-  return static_cast<HoldingSpaceItemView*>(view);
+  return const_cast<HoldingSpaceItemView*>(
+      Cast(const_cast<const views::View*>(view)));
 }
 
 // static
-bool HoldingSpaceItemView::IsInstance(views::View* view) {
+const HoldingSpaceItemView* HoldingSpaceItemView::Cast(
+    const views::View* view) {
+  DCHECK(HoldingSpaceItemView::IsInstance(view));
+  return static_cast<const HoldingSpaceItemView*>(view);
+}
+
+// static
+bool HoldingSpaceItemView::IsInstance(const views::View* view) {
   return view->GetProperty(kIsHoldingSpaceItemViewProperty);
 }
 

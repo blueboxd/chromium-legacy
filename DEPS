@@ -177,7 +177,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:890fb9c826b0d6577cd0ac802d91890ef6d99c03',
+  'luci_go': 'git_revision:a3a1f3a2e925eb44367c62783877c922c9ef7289',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'ca2c40743faf25ae3fdac8ba1813c33473a254ee',
+  'catapult_revision': '66cfbfb39deed7b1394c2fc085e2cc7b8f749f41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1416,7 +1416,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'kDiyvqnVfeLPV31Fw9yXRGVUsmHI2e4921gGXXhD1yUC'
+              'version': 'KmvDYKZZ-xQz7ZzzSKBh3HrWPpQv89vfFY9mBp6RDq4C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

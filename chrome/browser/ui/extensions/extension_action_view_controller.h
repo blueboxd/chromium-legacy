@@ -7,12 +7,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_host_observer.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "ui/gfx/image/image.h"
 
 class Browser;
@@ -43,11 +45,12 @@ class ExtensionActionViewController
   // The different options for showing a popup.
   enum PopupShowAction { SHOW_POPUP, SHOW_POPUP_AND_INSPECT };
 
-  ExtensionActionViewController(const extensions::Extension* extension,
-                                Browser* browser,
-                                extensions::ExtensionAction* extension_action,
-                                ExtensionsContainer* extensions_container,
-                                bool in_overflow_mode);
+  static std::unique_ptr<ExtensionActionViewController> Create(
+      const extensions::ExtensionId& extension_id,
+      Browser* browser,
+      ExtensionsContainer* extensions_container,
+      bool in_overflow_mode);
+
   ~ExtensionActionViewController() override;
 
   // ToolbarActionViewController:
@@ -101,6 +104,15 @@ class ExtensionActionViewController
   bool HasBeenBlockedForTesting(content::WebContents* web_contents) const;
 
  private:
+  // New instances should be instantiated with Create().
+  ExtensionActionViewController(
+      scoped_refptr<const extensions::Extension> extension,
+      Browser* browser,
+      extensions::ExtensionAction* extension_action,
+      extensions::ExtensionRegistry* extension_registry,
+      ExtensionsContainer* extensions_container,
+      bool in_overflow_mode);
+
   // ExtensionActionIconFactory::Observer:
   void OnIconUpdated() override;
 
@@ -203,8 +215,9 @@ class ExtensionActionViewController
   // The associated ExtensionRegistry; cached for quick checking.
   extensions::ExtensionRegistry* extension_registry_;
 
-  ScopedObserver<extensions::ExtensionHost, extensions::ExtensionHostObserver>
-      popup_host_observer_{this};
+  base::ScopedObservation<extensions::ExtensionHost,
+                          extensions::ExtensionHostObserver>
+      popup_host_observation_{this};
 
   base::WeakPtrFactory<ExtensionActionViewController> weak_factory_{this};
 

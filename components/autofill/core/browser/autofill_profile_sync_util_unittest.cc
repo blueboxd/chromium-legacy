@@ -43,6 +43,7 @@ AutofillProfile ConstructCompleteProfile() {
   profile.set_use_date(base::Time::FromTimeT(1423182152));
 
   profile.set_profile_label("profile_label");
+  profile.set_disallow_settings_visible_updates(true);
 
   // Set testing values and statuses for the name.
   profile.SetRawInfoWithVerificationStatus(NAME_HONORIFIC_PREFIX, u"Dr.",
@@ -71,11 +72,10 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(EMAIL_ADDRESS, u"user@example.com");
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"1.800.555.1234");
   profile.SetRawInfo(COMPANY_NAME, u"Google, Inc.");
-  profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_STREET_ADDRESS,
-      ASCIIToUTF16("123 Fake St. Dep Premise\n"
-                   "Apt. 10 Floor 2"),
-      VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_ADDRESS,
+                                           u"123 Fake St. Dep Premise\n"
+                                           u"Apt. 10 Floor 2",
+                                           VerificationStatus::kObserved);
 
   // Set testing values and statuses for the address.
   EXPECT_EQ(u"123 Fake St. Dep Premise",
@@ -137,6 +137,7 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_use_count(7);
   specifics.set_use_date(1423182152);
   specifics.set_profile_label("profile_label");
+  specifics.set_disallow_settings_visible_updates(true);
 
   // Set values and statuses for the names.
   specifics.add_name_honorific("Dr.");

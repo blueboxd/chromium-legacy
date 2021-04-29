@@ -1718,8 +1718,8 @@ static_library("browser") {
     "storage/appcache_feature_prefs.h",
     "storage/durable_storage_permission_context.cc",
     "storage/durable_storage_permission_context.h",
-    "subresource_filter/chrome_subresource_filter_client.cc",
-    "subresource_filter/chrome_subresource_filter_client.h",
+    "subresource_filter/chrome_content_subresource_filter_throttle_manager_factory.cc",
+    "subresource_filter/chrome_content_subresource_filter_throttle_manager_factory.h",
     "subresource_filter/subresource_filter_history_observer.cc",
     "subresource_filter/subresource_filter_history_observer.h",
     "subresource_filter/subresource_filter_profile_context_factory.cc",
@@ -2435,6 +2435,7 @@ static_library("browser") {
     ]
     if (!is_official_build) {
       deps += [
+        "//chromeos/components/demo_mode_app_ui",
         "//chromeos/components/file_manager:file_manager_ui",
         "//chromeos/components/file_manager/mojom",
         "//chromeos/components/telemetry_extension_ui",
@@ -3234,6 +3235,7 @@ static_library("browser") {
       "//chrome/browser/optimization_guide/android:jni_headers",
       "//chrome/browser/password_check/android:jni_headers",
       "//chrome/browser/password_check/android:password_check_enums_srcjar",
+      "//chrome/browser/password_edit_dialog/android",
       "//chrome/browser/password_entry_edit/android",
       "//chrome/browser/password_manager/android:jni_headers",
       "//chrome/browser/payments/android:jni_headers",

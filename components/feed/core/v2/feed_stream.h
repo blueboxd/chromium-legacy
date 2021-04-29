@@ -71,6 +71,7 @@ class FeedStream : public FeedApi,
     virtual bool IsOffline() = 0;
     virtual DisplayMetrics GetDisplayMetrics() = 0;
     virtual std::string GetLanguageTag() = 0;
+    virtual bool IsAutoplayEnabled() = 0;
     virtual void ClearAll() = 0;
     virtual std::string GetSyncSignedInGaia() = 0;
     virtual void PrefetchImage(const GURL& url) = 0;
@@ -190,9 +191,10 @@ class FeedStream : public FeedApi,
   FeedNetwork* GetNetwork() { return feed_network_; }
   FeedStore* GetStore() { return store_; }
   RequestThrottler* GetRequestThrottler() { return &request_throttler_; }
-  const feedstore::Metadata& GetMetadata() const { return metadata_; }
+  const feedstore::Metadata& GetMetadata() const;
   void SetMetadata(feedstore::Metadata metadata);
   bool SetMetadata(base::Optional<feedstore::Metadata> metadata);
+  void SetStreamStale(const StreamType& stream_type, bool is_stale);
 
   MetricsReporter& GetMetricsReporter() const { return *metrics_reporter_; }
 
@@ -247,6 +249,8 @@ class FeedStream : public FeedApi,
 
   RequestMetadata GetRequestMetadata(const StreamType& stream_type,
                                      bool is_for_next_page) const;
+
+  bool HasUnreadContent(const StreamType& stream_type);
 
   bool IsOffline() const { return delegate_->IsOffline(); }
 

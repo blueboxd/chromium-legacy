@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -17,7 +18,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
@@ -111,7 +111,7 @@ StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
       site_instance = render_frame_host_->GetSiteInstance();
   }
   return static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartition(context, site_instance));
+      context->GetStoragePartition(site_instance));
 }
 
 // TODO(acolwell): Update DownloadManager and related code to pass around
@@ -121,7 +121,7 @@ StoragePartitionImpl* GetStoragePartitionForSiteUrl(BrowserContext* context,
   auto partition_config = SiteInfo::GetStoragePartitionConfigForUrl(
       context, site_url, /*is_site_url=*/true);
   return static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetStoragePartition(context, partition_config));
+      context->GetStoragePartition(partition_config));
 }
 
 void OnDownloadStarted(
@@ -329,9 +329,8 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   download::SetIOTaskRunner(GetIOThreadTaskRunner({}));
 
   if (!in_progress_manager_) {
-    auto* proto_db_provider =
-        BrowserContext::GetDefaultStoragePartition(browser_context)
-            ->GetProtoDatabaseProvider();
+    auto* proto_db_provider = browser_context->GetDefaultStoragePartition()
+                                  ->GetProtoDatabaseProvider();
     in_progress_manager_ =
         std::make_unique<download::InProgressDownloadManager>(
             this, base::FilePath(), proto_db_provider,

@@ -33,6 +33,7 @@
 #include "base/process/kill.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
@@ -4158,8 +4159,7 @@ void RenderFrameHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
 }
 
 StoragePartition* RenderFrameHostImpl::GetStoragePartition() {
-  return BrowserContext::GetStoragePartition(GetBrowserContext(),
-                                             GetSiteInstance());
+  return GetBrowserContext()->GetStoragePartition(GetSiteInstance());
 }
 
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
@@ -5613,8 +5613,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   }
 
   // This will clone the sessionStorage for namespace_id_to_clone.
-  StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
-      GetSiteInstance()->GetBrowserContext(), GetSiteInstance());
+  StoragePartition* storage_partition = GetStoragePartition();
   DOMStorageContextWrapper* dom_storage_context =
       static_cast<DOMStorageContextWrapper*>(
           storage_partition->GetDOMStorageContext());
@@ -5629,7 +5628,6 @@ void RenderFrameHostImpl::CreateNewWindow(
         dom_storage_context, params->session_storage_namespace_id);
   }
 
-  network::CrossOriginOpenerPolicy popup_coop;
   network::CrossOriginEmbedderPolicy popup_coep;
   // On popup creation, if the opener and the openers's top-level document
   // are same origin, then the popup's initial empty document inherits its
@@ -5637,10 +5635,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
   RenderFrameHostImpl* top_level_opener = GetMainFrame();
   // Verify that they are same origin.
-  if (top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
+  if (!top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
           GetLastCommittedOrigin())) {
-    popup_coop = top_level_opener->cross_origin_opener_policy();
-  } else {
     // The documents are cross origin, leave COOP of the popup to the default
     // unsafe-none.
     switch (top_level_opener->cross_origin_opener_policy().value) {
@@ -5715,8 +5711,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   // because the flags should be already inherited by the CreateNewWindow call
   // above.
   main_frame->SetOriginDependentStateOfNewFrame(GetLastCommittedOrigin());
-  main_frame->cross_origin_opener_policy_ = popup_coop;
   main_frame->cross_origin_embedder_policy_ = popup_coep;
+
   main_frame->virtual_browsing_context_group_ =
       popup_virtual_browsing_context_group;
 
@@ -5727,7 +5723,7 @@ void RenderFrameHostImpl::CreateNewWindow(
     main_frame->set_coop_reporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
-            params->referrer->url, popup_coop,
+            params->referrer->url, main_frame->cross_origin_opener_policy(),
             isolation_info_.network_isolation_key()));
   }
 
@@ -6924,9 +6920,7 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 #endif
 
-    auto* partition =
-        static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-            browser_context, GetSiteInstance()));
+    auto* partition = static_cast<StoragePartitionImpl*>(GetStoragePartition());
     non_network_factories.emplace(
         url::kFileSystemScheme, CreateFileSystemURLLoaderFactory(
                                     GetProcess()->GetID(), GetFrameTreeNodeId(),
@@ -7019,9 +7013,8 @@ void RenderFrameHostImpl::CommitNavigation(
       // factories. TODO(kinuko): Consider setting this up only when prefetch
       // is used. Currently we have this here to make sure we have non-racy
       // situation (https://crbug.com/849929).
-      auto* storage_partition = static_cast<StoragePartitionImpl*>(
-          BrowserContext::GetStoragePartition(
-              GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+      auto* storage_partition =
+          static_cast<StoragePartitionImpl*>(GetStoragePartition());
       storage_partition->GetPrefetchURLLoaderService()->GetFactory(
           prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
           frame_tree_node_->frame_tree_node_id(),
@@ -7884,8 +7877,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
       (!network_service_disconnect_handler_holder_ ||
        !network_service_disconnect_handler_holder_.is_connected())) {
     network_service_disconnect_handler_holder_.reset();
-    StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
-        GetSiteInstance()->GetBrowserContext(), GetSiteInstance());
+    StoragePartition* storage_partition = GetStoragePartition();
     network::mojom::URLLoaderFactoryParamsPtr monitoring_factory_params =
         network::mojom::URLLoaderFactoryParams::New();
     monitoring_factory_params->process_id = GetProcess()->GetID();
@@ -9386,6 +9378,30 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 
   TakeNewDocumentPropertiesFromNavigation(navigation_request);
 
+  // Set embedded documents' cross-origin-opener-policy from their top level:
+  //  - Use top level's policy if they are same-origin.
+  //  - Use the default policy if they are cross-origin.
+  // This COOP value is not used to enforce anything on this frame, but will be
+  // inherited to every local-scheme document created from them.
+  // It will also be inherited by the initial empty document from its opener.
+
+  // TODO(https://crbug.com/888079) Computing and assigning the
+  // cross-origin-opener-policy of an embedded frame should be done in
+  // |NavigationRequest::ComputePoliciesToCommit| , but this is not currently
+  // possible because we need the origin for the computation. The linked bug
+  // moves the origin computation earlier in the navigation request, which will
+  // enable the move to |NavigationRequest::ComputePoliciesToCommit|.
+  if (parent_) {
+    if (GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
+            params.origin)) {
+      policy_container_host_->set_cross_origin_opener_policy(
+          GetMainFrame()->cross_origin_opener_policy());
+    } else {
+      policy_container_host_->set_cross_origin_opener_policy(
+          network::CrossOriginOpenerPolicy());
+    }
+  }
+
   CrossOriginOpenerPolicyReporter::InstallAccessMonitorsIfNeeded(
       frame_tree_node_);
 
@@ -9404,9 +9420,6 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   is_error_page_ = navigation_request->DidEncounterError();
 
   last_base_url_ = navigation_request->common_params().base_url_for_data_url;
-
-  cross_origin_opener_policy_ =
-      navigation_request->coop_status().current_coop();
 
   coop_reporter_ = navigation_request->coop_status().TakeCoopReporter();
   virtual_browsing_context_group_ =

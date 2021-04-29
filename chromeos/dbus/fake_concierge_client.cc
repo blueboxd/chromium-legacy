@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cicerone_client.h"
 
 namespace chromeos {
 
@@ -320,6 +320,15 @@ void FakeConciergeClient::SetVmId(
   set_vm_id_call_count_++;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), set_vm_id_response_));
+}
+
+void FakeConciergeClient::ReclaimVmMemory(
+    const vm_tools::concierge::ReclaimVmMemoryRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ReclaimVmMemoryResponse> callback) {
+  reclaim_vm_memory_call_count_++;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), reclaim_vm_memory_response_));
 }
 
 void FakeConciergeClient::NotifyVmStarted(

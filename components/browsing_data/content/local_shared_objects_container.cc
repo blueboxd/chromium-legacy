@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "components/browsing_data/content/appcache_helper.h"
 #include "components/browsing_data/content/cache_storage_helper.h"
 #include "components/browsing_data/content/canonical_cookie_hash.h"
@@ -43,31 +44,25 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(
     const std::vector<storage::FileSystemType>& additional_file_system_types,
     browsing_data::CookieHelper::IsDeletionDisabledCallback callback)
     : appcaches_(new CannedAppCacheHelper(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetAppCacheService())),
-      cookies_(new CannedCookieHelper(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context),
-          std::move(callback))),
+          browser_context->GetDefaultStoragePartition()->GetAppCacheService())),
+      cookies_(
+          new CannedCookieHelper(browser_context->GetDefaultStoragePartition(),
+                                 std::move(callback))),
       databases_(new CannedDatabaseHelper(browser_context)),
       file_systems_(new CannedFileSystemHelper(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetFileSystemContext(),
+          browser_context->GetDefaultStoragePartition()->GetFileSystemContext(),
           additional_file_system_types,
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetNativeIOContext())),
+          browser_context->GetDefaultStoragePartition()->GetNativeIOContext())),
       indexed_dbs_(new CannedIndexedDBHelper(
-          content::BrowserContext::GetDefaultStoragePartition(
-              browser_context))),
+          browser_context->GetDefaultStoragePartition())),
       local_storages_(new CannedLocalStorageHelper(browser_context)),
       service_workers_(new CannedServiceWorkerHelper(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
+          browser_context->GetDefaultStoragePartition()
               ->GetServiceWorkerContext())),
       shared_workers_(new CannedSharedWorkerHelper(
-          content::BrowserContext::GetDefaultStoragePartition(
-              browser_context))),
+          browser_context->GetDefaultStoragePartition())),
       cache_storages_(new CannedCacheStorageHelper(
-          content::BrowserContext::GetDefaultStoragePartition(
-              browser_context))),
+          browser_context->GetDefaultStoragePartition())),
       session_storages_(new CannedLocalStorageHelper(browser_context)) {}
 
 LocalSharedObjectsContainer::~LocalSharedObjectsContainer() = default;
@@ -217,7 +212,7 @@ size_t LocalSharedObjectsContainer::GetDomainCount() const {
     if (!domain.empty())
       domains.insert(std::move(domain));
     else
-      domains.insert(host.as_string());
+      domains.insert(std::string(host));
   }
   return domains.size();
 }

@@ -12,8 +12,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/android_autofill_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
@@ -63,7 +63,7 @@ ContentAutofillDriver::ContentAutofillDriver(
     content::RenderFrameHost* render_frame_host,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillHandler::AutofillDownloadManagerState enable_download_manager,
+    AutofillManager::AutofillDownloadManagerState enable_download_manager,
     AutofillProvider* provider)
     : render_frame_host_(render_frame_host),
       browser_autofill_manager_(nullptr),
@@ -131,8 +131,9 @@ ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ContentAutofillDriver::GetURLLoaderFactory() {
-  return content::BrowserContext::GetDefaultStoragePartition(
-             render_frame_host_->GetSiteInstance()->GetBrowserContext())
+  return render_frame_host_->GetSiteInstance()
+      ->GetBrowserContext()
+      ->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
@@ -170,9 +171,9 @@ void ContentAutofillDriver::SendFormDataToRenderer(
 
 void ContentAutofillDriver::PropagateAutofillPredictions(
     const std::vector<FormStructure*>& forms) {
-  AutofillHandler* handler = browser_autofill_manager_
+  AutofillManager* handler = browser_autofill_manager_
                                  ? browser_autofill_manager_
-                                 : autofill_handler_.get();
+                                 : autofill_manager_.get();
   DCHECK(handler);
   handler->PropagateAutofillPredictions(render_frame_host_, forms);
 }
@@ -262,7 +263,7 @@ net::IsolationInfo ContentAutofillDriver::IsolationInfo() {
 }
 
 void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms) {
-  autofill_handler_->OnFormsSeen(forms);
+  autofill_manager_->OnFormsSeen(forms);
 }
 
 void ContentAutofillDriver::SetFormToBeProbablySubmitted(
@@ -291,27 +292,27 @@ void ContentAutofillDriver::FormSubmitted(const FormData& form,
     return;
   }
 
-  autofill_handler_->OnFormSubmitted(form, known_success, source);
+  autofill_manager_->OnFormSubmitted(form, known_success, source);
 }
 
 void ContentAutofillDriver::TextFieldDidChange(const FormData& form,
                                                const FormFieldData& field,
                                                const gfx::RectF& bounding_box,
                                                base::TimeTicks timestamp) {
-  autofill_handler_->OnTextFieldDidChange(form, field, bounding_box, timestamp);
+  autofill_manager_->OnTextFieldDidChange(form, field, bounding_box, timestamp);
 }
 
 void ContentAutofillDriver::TextFieldDidScroll(const FormData& form,
                                                const FormFieldData& field,
                                                const gfx::RectF& bounding_box) {
-  autofill_handler_->OnTextFieldDidScroll(form, field, bounding_box);
+  autofill_manager_->OnTextFieldDidScroll(form, field, bounding_box);
 }
 
 void ContentAutofillDriver::SelectControlDidChange(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box) {
-  autofill_handler_->OnSelectControlDidChange(form, field, bounding_box);
+  autofill_manager_->OnSelectControlDidChange(form, field, bounding_box);
 }
 
 void ContentAutofillDriver::QueryFormFieldAutofill(
@@ -320,39 +321,39 @@ void ContentAutofillDriver::QueryFormFieldAutofill(
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
     bool autoselect_first_suggestion) {
-  autofill_handler_->OnQueryFormFieldAutofill(id, form, field, bounding_box,
+  autofill_manager_->OnQueryFormFieldAutofill(id, form, field, bounding_box,
                                               autoselect_first_suggestion);
 }
 
 void ContentAutofillDriver::HidePopup() {
-  autofill_handler_->OnHidePopup();
+  autofill_manager_->OnHidePopup();
 }
 
 void ContentAutofillDriver::FocusNoLongerOnForm(bool had_interacted_form) {
-  autofill_handler_->OnFocusNoLongerOnForm(had_interacted_form);
+  autofill_manager_->OnFocusNoLongerOnForm(had_interacted_form);
 }
 
 void ContentAutofillDriver::FocusOnFormField(const FormData& form,
                                              const FormFieldData& field,
                                              const gfx::RectF& bounding_box) {
-  autofill_handler_->OnFocusOnFormField(form, field, bounding_box);
+  autofill_manager_->OnFocusOnFormField(form, field, bounding_box);
 }
 
 void ContentAutofillDriver::DidFillAutofillFormData(const FormData& form,
                                                     base::TimeTicks timestamp) {
-  autofill_handler_->OnDidFillAutofillFormData(form, timestamp);
+  autofill_manager_->OnDidFillAutofillFormData(form, timestamp);
 }
 
 void ContentAutofillDriver::DidPreviewAutofillFormData() {
-  autofill_handler_->OnDidPreviewAutofillFormData();
+  autofill_manager_->OnDidPreviewAutofillFormData();
 }
 
 void ContentAutofillDriver::DidEndTextFieldEditing() {
-  autofill_handler_->OnDidEndTextFieldEditing();
+  autofill_manager_->OnDidEndTextFieldEditing();
 }
 
 void ContentAutofillDriver::SelectFieldOptionsDidChange(const FormData& form) {
-  autofill_handler_->SelectFieldOptionsDidChange(form);
+  autofill_manager_->SelectFieldOptionsDidChange(form);
 }
 
 void ContentAutofillDriver::DidNavigateFrame(
@@ -376,14 +377,14 @@ void ContentAutofillDriver::DidNavigateFrame(
     return;
 
   submitted_forms_.clear();
-  autofill_handler_->Reset();
+  autofill_manager_->Reset();
 }
 
 void ContentAutofillDriver::SetBrowserAutofillManager(
     std::unique_ptr<BrowserAutofillManager> manager) {
-  autofill_handler_ = std::move(manager);
+  autofill_manager_ = std::move(manager);
   browser_autofill_manager_ =
-      static_cast<BrowserAutofillManager*>(autofill_handler_.get());
+      static_cast<BrowserAutofillManager*>(autofill_manager_.get());
 }
 
 ContentAutofillDriver::ContentAutofillDriver()
@@ -431,8 +432,8 @@ void ContentAutofillDriver::RemoveHandler(
 void ContentAutofillDriver::SetAutofillProvider(
     AutofillProvider* provider,
     AutofillClient* client,
-    AutofillHandler::AutofillDownloadManagerState enable_download_manager) {
-  autofill_handler_ = std::make_unique<AutofillHandlerProxy>(
+    AutofillManager::AutofillDownloadManagerState enable_download_manager) {
+  autofill_manager_ = std::make_unique<AndroidAutofillManager>(
       this, client, provider, enable_download_manager);
   GetAutofillAgent()->SetUserGestureRequired(false);
   GetAutofillAgent()->SetSecureContextRequired(true);
@@ -484,7 +485,7 @@ void ContentAutofillDriver::SetAutofillProviderForTesting(
     AutofillProvider* provider,
     AutofillClient* client) {
   SetAutofillProvider(provider, client,
-                      AutofillHandler::AutofillDownloadManagerState::
+                      AutofillManager::AutofillDownloadManagerState::
                           DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
   // BrowserAutofillManager isn't used if provider is valid.
   browser_autofill_manager_ = nullptr;

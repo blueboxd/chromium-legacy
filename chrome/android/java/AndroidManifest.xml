@@ -306,6 +306,10 @@ by a child template that "extends" this file.
             <intent-filter>
                 <action android:name="com.sec.android.airview.HOVER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.web.action.APP_ATTRIBUTION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity-alias>
@@ -406,7 +410,7 @@ by a child template that "extends" this file.
         </receiver>
 
         <!-- Locale related -->
-        <receiver android:name="org.chromium.chrome.browser.locale.LocaleChangedBroadcastReceiver"
+        <receiver android:name="org.chromium.chrome.browser.notifications.channels.LocaleChangedBroadcastReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.LOCALE_CHANGED" />
@@ -1058,12 +1062,16 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.incognito.IncognitoNotificationService"
             android:exported="false"/>
 
-        <!-- service used by payment apps to notify the browser about changes in user selected
-             payment method, shipping address, or shipping option -->
+        <!-- Service used by payment apps to notify the browser about changes in user selected
+             payment method, shipping address, or shipping option. -->
         <service
             android:name="org.chromium.components.payments.PaymentDetailsUpdateService"
             android:exported="true"
-            tools:ignore="ExportedService"/>
+            tools:ignore="ExportedService">
+            <intent-filter>
+              <action android:name="org.chromium.intent.action.UPDATE_PAYMENT_DETAILS" />
+            </intent-filter>
+        </service>
 
         <receiver android:name="org.chromium.chrome.browser.announcement.AnnouncementNotificationManager$Receiver"
             android:exported="false"/>

@@ -479,6 +479,10 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
   while (!output_request_queue_.empty()) {
     if (!output_request_queue_.front().IsReady()) {
       DVLOGF(3) << "The first surface is not ready yet.";
+      // It is possible that that V4L2 buffers for this output surface are not
+      // even queued yet. Make sure that avd_->Decode() is called to continue
+      // that work and prevent the decoding thread from starving.
+      resume_decode = true;
       break;
     }
 
@@ -490,6 +494,7 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
         DVLOGF(2) << "Flush finished.";
         std::move(flush_cb_).Run(DecodeStatus::OK);
         resume_decode = true;
+        client_->CompleteFlush();
         break;
 
       case OutputRequest::kChangeResolutionFence:
@@ -508,7 +513,6 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
   }
 
   if (resume_decode) {
-    client_->CompleteFlush();
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&V4L2StatelessVideoDecoderBackend::DoDecodeWork,

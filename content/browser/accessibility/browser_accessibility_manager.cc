@@ -203,6 +203,9 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   // Fire any events that need to be fired when tree nodes get deleted. For
   // example, events that fire every time "OnSubtreeWillBeDeleted" is called.
   ax_tree()->Destroy();
+  for (auto& key_value_pair : id_wrapper_map_) {
+    delete key_value_pair.second;
+  }
   delegate_ = nullptr;  // Guard against reentrancy by screen reader.
   if (last_focused_node_tree_id_ &&
       ax_tree_id_ == *last_focused_node_tree_id_) {
@@ -1191,7 +1194,7 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
 
   const BrowserAccessibility* start_text_object = nullptr;
   const BrowserAccessibility* end_text_object = nullptr;
-  if (&start_object == &end_object && start_object.IsNativeTextField()) {
+  if (&start_object == &end_object && start_object.IsAtomicTextField()) {
     // We need to get to the shadow DOM that is inside the text control in order
     // to find the text-only objects.
     if (!start_object.InternalChildCount())
@@ -1247,7 +1250,7 @@ std::u16string BrowserAccessibilityManager::GetTextForRange(
   DCHECK_GE(start_offset, 0);
   DCHECK_GE(end_offset, 0);
 
-  if (&start_object == &end_object && start_object.IsNativeTextField()) {
+  if (&start_object == &end_object && start_object.IsAtomicTextField()) {
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 
@@ -1320,7 +1323,7 @@ gfx::Rect BrowserAccessibilityManager::GetRootFrameInnerTextRangeBoundsRect(
   DCHECK_GE(start_offset, 0);
   DCHECK_GE(end_offset, 0);
 
-  if (&start_object == &end_object && start_object.IsNativeTextField()) {
+  if (&start_object == &end_object && start_object.IsAtomicTextField()) {
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 

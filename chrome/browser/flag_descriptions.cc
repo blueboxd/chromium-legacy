@@ -2792,12 +2792,6 @@ const char kAndroidSurfaceControlDescription[] =
     " DisplayCompositor on Android. This feature is only available on "
     " android Q+ devices";
 
-const char kAppNotificationStatusMessagingName[] =
-    "App notification status messaging";
-const char kAppNotificationStatusMessagingDescription[] =
-    "Enables messaging in site permissions UI informing user when "
-    "notifications are disabled for the entire app.";
-
 const char kAssistantIntentPageUrlName[] =
     "Include page URL in Assistant intent";
 const char kAssistantIntentPageUrlDescription[] =
@@ -4643,6 +4637,11 @@ const char kLacrosSupportDescription[] =
     "first restart can take some time to setup lacros-chrome. Please DO NOT "
     "attempt to turn off the device during the restart.";
 
+const char kLauncherQueryHighlightingName[] = "Launcher query highlighting";
+const char kLauncherQueryHighlightingDescription[] =
+    "Enables highlighting occurrences of the search query in launcher search "
+    "result titles.";
+
 const char kLimitAltTabToActiveDeskName[] =
     "Limit Alt-Tab windows to active desk";
 const char kLimitAltTabToActiveDeskDescription[] =
@@ -4813,10 +4812,6 @@ const char kShowTouchHudDescription[] =
     "Shows a trail of colored dots for the last few touch points. Pressing "
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
-
-const char kSmbfsFileSharesName[] = "Smbfs file shares";
-const char kSmbfsFileSharesDescription[] =
-    "Use smbfs for accessing network file shares.";
 
 const char kSpectreVariant2MitigationName[] = "Spectre variant 2 mitigation";
 const char kSpectreVariant2MitigationDescription[] =

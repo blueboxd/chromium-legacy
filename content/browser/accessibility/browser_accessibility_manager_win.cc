@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -248,12 +248,12 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
                 focus_object->GetTextFieldAncestor()) {
           EnqueueSelectionChangedEvent(*text_field);
 
-          // Plain text fields (including input and textarea elements) have
+          // Atomic text fields (including input and textarea elements) have
           // descendant objects that are part of their internal implementation
           // in Blink, which are not exposed to platform APIs in the
           // accessibility tree. Firing an event on such descendants will not
           // reach the assistive software.
-          if (text_field->IsNativeTextField()) {
+          if (text_field->IsAtomicTextField()) {
             FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, text_field);
           } else {
             FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);

@@ -918,6 +918,26 @@
             ]
         }
     ],
+    "AutofillEnableOfferNotification": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableOfferNotification"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableSupportForMoreStructureInAddresses": [
         {
             "platforms": [
@@ -1860,6 +1880,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ClipboardHistoryContextMenuNudge"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CnameAliasDetectionInSubresourceFilter": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledRendererEnabledBrowser_20210312",
+                    "enable_features": [
+                        "SendCnameAliasesToSubresourceFilterFromBrowser",
+                        "SendCnameAliasesToSubresourceFilterFromRenderer"
                     ]
                 }
             ]
@@ -3658,6 +3700,21 @@
             ]
         }
     ],
+    "IOSPasswordReuseDetection": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PasswordReuseDetectionEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSRequestDesktopByDefault": [
         {
             "platforms": [
@@ -5161,6 +5218,27 @@
             ]
         }
     ],
+    "ParkableImages": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Both_V2",
+                    "enable_features": [
+                        "ParkableImagesToDisk",
+                        "UseParkableImageSegmentReader"
+                    ]
+                }
+            ]
+        }
+    ],
     "PartitionAllocLargeThreadCacheSize": [
         {
             "platforms": [
@@ -5173,24 +5251,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PartitionAllocLargeThreadCacheSize"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PartitionAllocThreadCachePeriodicPurge": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "linux",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PartitionAllocThreadCachePeriodicPurge"
                     ]
                 }
             ]

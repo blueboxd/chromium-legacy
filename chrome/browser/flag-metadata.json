@@ -1316,11 +1316,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "enable-app-notification-status-messaging",
-    "owners": [ "knollr", "peter" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "enable-arc-unified-audio-focus",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
@@ -3392,6 +3387,11 @@
     "expiry_milestone": 130
   },
   {
+    "name": "launcher-query-highlighting",
+    "owners": ["wrong", "tby", "thanhdng"],
+    "expiry_milestone": 95
+  },
+  {
     "name": "launcher-search-normalization",
     "owners": ["adafang", "wrong", "tby"],
     "expiry_milestone": 92
@@ -4872,11 +4872,6 @@
     "name": "smart-suggestion-for-large-downloads",
     "owners": [ "shaktisahu" ],
     "expiry_milestone": 93
-  },
-  {
-    "name": "smbfs-file-shares",
-    "owners": [ "simmonsjosh@google.com", "dats" ],
-    "expiry_milestone": 90
   },
   {
     "name": "smooth-scrolling",

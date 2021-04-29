@@ -57,8 +57,9 @@ NSString* ColumnIdentifier(int id) {
 
 @implementation TaskManagerWindowController
 
-- (id)initWithTaskManagerMac:(task_manager::TaskManagerMac*)taskManagerMac
-                  tableModel:(task_manager::TaskManagerTableModel*)tableModel {
+- (instancetype)
+    initWithTaskManagerMac:(task_manager::TaskManagerMac*)taskManagerMac
+                tableModel:(task_manager::TaskManagerTableModel*)tableModel {
   base::scoped_nsobject<NSWindow> window = [self createAndLayOutWindow];
   if ((self = [super initWithWindow:window])) {
     _taskManagerMac = taskManagerMac;
@@ -610,7 +611,7 @@ NSString* ColumnIdentifier(int id) {
     NSSortDescriptor* initialDescriptor = [column sortDescriptorPrototype];
     if ([newDescriptor ascending] == [initialDescriptor ascending]) {
       _withinSortDescriptorsDidChange = YES;
-      [_tableView setSortDescriptors:[NSArray array]];
+      [_tableView setSortDescriptors:@[]];
       newDescriptor = nil;
       _withinSortDescriptorsDidChange = NO;
     }

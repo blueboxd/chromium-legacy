@@ -1863,6 +1863,8 @@ static_library("ui") {
       "app_list/search/search_result_ranker/recurrence_ranker_util.h",
       "app_list/search/search_result_ranker/search_result_ranker.cc",
       "app_list/search/search_result_ranker/search_result_ranker.h",
+      "app_list/search/search_tags_util.cc",
+      "app_list/search/search_tags_util.h",
       "ash/accessibility/accessibility_controller_client.cc",
       "ash/accessibility/accessibility_controller_client.h",
       "ash/ambient/ambient_client_impl.cc",
@@ -2028,8 +2030,8 @@ static_library("ui") {
       "ash/launcher/shelf_spinner_controller.h",
       "ash/launcher/shelf_spinner_item_controller.cc",
       "ash/launcher/shelf_spinner_item_controller.h",
-      "ash/login_screen_client.cc",
-      "ash/login_screen_client.h",
+      "ash/login_screen_client_impl.cc",
+      "ash/login_screen_client_impl.h",
       "ash/login_screen_shown_observer.h",
       "ash/media_client_impl.cc",
       "ash/media_client_impl.h",
@@ -2800,6 +2802,7 @@ static_library("ui") {
         ]
       }
       deps += [
+        "//chromeos/components/demo_mode_app_ui",
         "//chromeos/components/file_manager:file_manager_ui",
         "//chromeos/components/sample_system_web_app_ui",
         "//chromeos/components/telemetry_extension_ui",

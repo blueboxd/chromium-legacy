@@ -235,6 +235,9 @@ const base::Feature kCryptAuthV2DeviceSync{"CryptAuthV2DeviceSync",
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDemoModeSWA{"DemoModeSWA",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Diagnostics app.
 const base::Feature kDiagnosticsApp{"DiagnosticsApp",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -399,6 +402,11 @@ const base::Feature kClipboardHistoryNudgeSessionReset{
 const base::Feature kClipboardHistoryContextMenuNudge{
     "ClipboardHistoryContextMenuNudge", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the clipboard history shortcut will appear in screenshot
+// notifications.
+const base::Feature kClipboardHistoryScreenshotNudge{
+    "ClipboardHistoryScreenshotNudge", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables copying an image to the system clipboard to support pasting onto
 // different surfaces
 const base::Feature kEnableFilesAppCopyImage{"EnableFilesAppCopyImage",
@@ -471,6 +479,10 @@ const base::Feature kLacrosSupport{"LacrosSupport",
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables device management disclosure on login / lock screen.
+const base::Feature kLoginDeviceManagementDisclosure{
+    "LoginDeviceManagementDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
@@ -779,6 +791,10 @@ bool IsCellularActivationUiEnabled() {
   return base::FeatureList::IsEnabled(kUpdatedCellularActivationUi);
 }
 
+bool IsDemoModeSWAEnabled() {
+  return base::FeatureList::IsEnabled(kDemoModeSWA);
+}
+
 bool IsDeepLinkingEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsDeepLinking);
 }
@@ -820,6 +836,10 @@ bool IsKerberosSettingsSectionEnabled() {
   return base::FeatureList::IsEnabled(kKerberosSettingsSection);
 }
 
+bool IsLoginDeviceManagementDisclosureEnabled() {
+  return base::FeatureList::IsEnabled(kLoginDeviceManagementDisclosure);
+}
+
 bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
 }
@@ -846,6 +866,10 @@ bool IsClipboardHistoryNudgeSessionResetEnabled() {
 
 bool IsClipboardHistoryContextMenuNudgeEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryContextMenuNudge);
+}
+
+bool IsClipboardHistoryScreenshotNudgeEnabled() {
+  return base::FeatureList::IsEnabled(kClipboardHistoryScreenshotNudge);
 }
 
 bool IsPciguardUiEnabled() {

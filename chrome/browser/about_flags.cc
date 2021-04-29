@@ -2820,12 +2820,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalWebPlatformFeaturesName,
      flag_descriptions::kExperimentalWebPlatformFeaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)},
-#if defined(OS_ANDROID)
-    {"enable-app-notification-status-messaging",
-     flag_descriptions::kAppNotificationStatusMessagingName,
-     flag_descriptions::kAppNotificationStatusMessagingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(browser_ui::kAppNotificationStatusMessaging)},
-#endif  // OS_ANDROID
     {"silent-debugger-extension-api",
      flag_descriptions::kSilentDebuggerExtensionApiName,
      flag_descriptions::kSilentDebuggerExtensionApiDescription, kOsDesktop,
@@ -4153,9 +4147,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          sandbox::policy::features::kForceSpectreVariant2Mitigation)},
-    {"smbfs-file-shares", flag_descriptions::kSmbfsFileSharesName,
-     flag_descriptions::kSmbfsFileSharesName, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kSmbFs)},
     {"spectre-v2-mitigation", flag_descriptions::kSpectreVariant2MitigationName,
      flag_descriptions::kSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(sandbox::policy::features::kSpectreVariant2Mitigation)},
@@ -7282,6 +7273,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(password_manager::features::kBiometricTouchToFill)},
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"launcher-query-highlighting",
+     flag_descriptions::kLauncherQueryHighlightingName,
+     flag_descriptions::kLauncherQueryHighlightingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kLauncherQueryHighlighting)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

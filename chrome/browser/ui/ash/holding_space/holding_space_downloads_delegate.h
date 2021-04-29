@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_UI_ASH_HOLDING_SPACE_HOLDING_SPACE_DOWNLOADS_DELEGATE_H_
 
 #include "base/callback.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_delegate.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 
@@ -20,13 +23,16 @@ namespace ash {
 // A delegate of `HoldingSpaceKeyedService` tasked with monitoring the status of
 // of downloads and notifying a callback on download completion.
 class HoldingSpaceDownloadsDelegate : public HoldingSpaceKeyedServiceDelegate,
+                                      public arc::ArcIntentHelperObserver,
                                       public content::DownloadManager::Observer,
                                       public download::DownloadItem::Observer {
  public:
-  // Callback to be invoked when a download is completed. Note that this
-  // callback will only be invoked after holding space persistence is restored.
+  // Callback to be invoked when a download is completed. Note that the
+  // specified type must be a download type. Also note that this callback will
+  // only be invoked after holding space persistence is restored.
   using ItemDownloadedCallback =
-      base::RepeatingCallback<void(const base::FilePath&)>;
+      base::RepeatingCallback<void(HoldingSpaceItem::Type,
+                                   const base::FilePath&)>;
 
   HoldingSpaceDownloadsDelegate(
       Profile* profile,
@@ -47,6 +53,10 @@ class HoldingSpaceDownloadsDelegate : public HoldingSpaceKeyedServiceDelegate,
   void Init() override;
   void OnPersistenceRestored() override;
 
+  // arc::ArcIntentHelperObserver:
+  void OnArcDownloadAdded(const base::FilePath& relative_path,
+                          const std::string& owner_package_name) override;
+
   // content::DownloadManager::Observer:
   void OnManagerInitialized() override;
   void ManagerGoingDown(content::DownloadManager* manager) override;
@@ -56,8 +66,11 @@ class HoldingSpaceDownloadsDelegate : public HoldingSpaceKeyedServiceDelegate,
   // download::DownloadItem::Observer:
   void OnDownloadUpdated(download::DownloadItem* item) override;
 
-  // Invoked when the specified `file_path` has completed downloading.
-  void OnDownloadCompleted(const base::FilePath& file_path);
+  // Invoked when a download of the specified `type` at the specified
+  // `file_path` has completed downloading. Note that the specified `type` must
+  // be a download type.
+  void OnDownloadCompleted(HoldingSpaceItem::Type type,
+                           const base::FilePath& file_path);
 
   // Removes all observers.
   void RemoveObservers();
@@ -65,11 +78,17 @@ class HoldingSpaceDownloadsDelegate : public HoldingSpaceKeyedServiceDelegate,
   // Callback to invoke when a download is completed.
   ItemDownloadedCallback item_downloaded_callback_;
 
-  ScopedObserver<content::DownloadManager, content::DownloadManager::Observer>
-      download_manager_observer_{this};
+  base::ScopedObservation<arc::ArcIntentHelperBridge,
+                          arc::ArcIntentHelperObserver>
+      arc_intent_helper_observation_{this};
 
-  ScopedObserver<download::DownloadItem, download::DownloadItem::Observer>
-      download_item_observer_{this};
+  base::ScopedObservation<content::DownloadManager,
+                          content::DownloadManager::Observer>
+      download_manager_observation_{this};
+
+  base::ScopedMultiSourceObservation<download::DownloadItem,
+                                     download::DownloadItem::Observer>
+      download_item_observations_{this};
 
   base::WeakPtrFactory<HoldingSpaceDownloadsDelegate> weak_factory_{this};
 };

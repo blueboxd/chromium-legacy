@@ -10,11 +10,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
@@ -695,7 +695,7 @@ void ContentVerifier::BindURLLoaderFactoryReceiverOnUIThread(
   if (shutdown_on_ui_)
     return;
 
-  content::BrowserContext::GetDefaultStoragePartition(context_)
+  context_->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess()
       ->Clone(std::move(url_loader_factory_receiver));
 }

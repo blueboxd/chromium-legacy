@@ -11,15 +11,18 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/feedstore_util.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/web_feed_subscriptions/subscribe_to_web_feed_task.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/offline_pages/task/closure_task.h"
+#include "components/prefs/pref_service.h"
 
 namespace feed {
 namespace {
@@ -191,8 +194,9 @@ class WebFeedSubscriptionModel {
 }  // namespace internal
 
 WebFeedSubscriptionCoordinator::WebFeedSubscriptionCoordinator(
+    PrefService* profile_prefs,
     FeedStream* feed_stream)
-    : feed_stream_(feed_stream) {
+    : feed_stream_(feed_stream), profile_prefs_(profile_prefs) {
   base::TimeDelta delay = GetFeedConfig().fetch_web_feed_info_delay;
   if (IsSignedInAndWebFeedsEnabled() && !delay.is_zero()) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -220,11 +224,15 @@ void WebFeedSubscriptionCoordinator::Populate(
     const FeedStore::WebFeedStartupData& startup_data) {
   index_.Populate(startup_data.recommended_feed_index);
   index_.Populate(startup_data.subscribed_web_feeds);
+  populated_ = true;
+
+  UpdateIsSubscriberPref();
 }
 
 void WebFeedSubscriptionCoordinator::ClearAllFinished() {
-  index_.Populate(feedstore::RecommendedWebFeedIndex{});
+  index_.Clear();
   model_.reset();
+  UpdateIsSubscriberPref();
   FetchRecommendedWebFeedsIfStale();
   FetchSubscribedWebFeedsIfStale();
 }
@@ -286,6 +294,7 @@ void WebFeedSubscriptionCoordinator::FollowWebFeedComplete(
   DequeueInflightChange();
   if (result.request_status == WebFeedSubscriptionRequestStatus::kSuccess) {
     model_->OnSubscribed(result.web_feed_info);
+    feed_stream_->SetStreamStale(kWebFeedStream, true);
   }
   SubscriptionInfo info =
       model_->GetSubscriptionInfo(result.followed_web_feed_id);
@@ -331,6 +340,7 @@ void WebFeedSubscriptionCoordinator::UnfollowWebFeedComplete(
     UnsubscribeFromWebFeedTask::Result result) {
   if (!result.unsubscribed_feed_name.empty()) {
     model_->OnUnsubscribed(result.unsubscribed_feed_name);
+    feed_stream_->SetStreamStale(kWebFeedStream, true);
   }
   DequeueInflightChange();
   UnfollowWebFeedResult callback_result;
@@ -669,6 +679,7 @@ void WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsComplete(
   if (result.status == WebFeedRefreshStatus::kSuccess)
     model_->UpdateSubscribedFeeds(std::move(result.subscribed_web_feeds));
 
+  UpdateIsSubscriberPref();
   CallRefreshCompleteCallbacks(
       RefreshResult{result.status == WebFeedRefreshStatus::kSuccess});
 }
@@ -680,6 +691,24 @@ void WebFeedSubscriptionCoordinator::CallRefreshCompleteCallbacks(
   for (auto& callback : callbacks) {
     std::move(callback).Run(result);
   }
+}
+
+// Ideally, this function would be async so that we can determine with more
+// certainty that the user is a web feed subscriber. Until the UI can be
+// updated, we need to return an answer right away, so we cache a boolean in
+// prefs.
+bool WebFeedSubscriptionCoordinator::IsWebFeedSubscriber() {
+  if (populated_) {
+    return IsSignedInAndWebFeedsEnabled() && index_.HasSubscriptions();
+  } else {
+    return profile_prefs_->GetBoolean(feed::prefs::kIsWebFeedSubscriber);
+  }
+}
+
+void WebFeedSubscriptionCoordinator::UpdateIsSubscriberPref() {
+  profile_prefs_->SetBoolean(
+      feed::prefs::kIsWebFeedSubscriber,
+      IsSignedInAndWebFeedsEnabled() && index_.HasSubscriptions());
 }
 
 }  // namespace feed

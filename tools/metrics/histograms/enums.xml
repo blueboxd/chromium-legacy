@@ -6799,6 +6799,9 @@ others/histograms.xml -->
   <int value="46" label="Foreground cache limit"/>
   <int value="47" label="Browsing instance not swapped"/>
   <int value="48" label="Disabled for delegate"/>
+  <int value="49"
+      label="BFCache-Opt-In header not present, or does not include `unload`
+             token, and an experimental config which requires it is active"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -17797,6 +17800,14 @@ Called by update_debug_scenarios.py.-->
   <int value="28" label="Google Docs (Chrome app)"/>
   <int value="29" label="Google Sheets (Chrome app)"/>
   <int value="30" label="Google Slides (Chrome app)"/>
+  <int value="31" label="YouTube (PWA)"/>
+  <int value="32" label="Google Docs (PWA)"/>
+  <int value="33" label="Google Meet (PWA)"/>
+  <int value="34" label="Google Sheets (PWA)"/>
+  <int value="35" label="Spotify (PWA)"/>
+  <int value="36" label="BeFunky (PWA)"/>
+  <int value="37" label="Clipchamp (PWA)"/>
+  <int value="38" label="GeForce NOW (PWA)"/>
 </enum>
 
 <enum name="DemoModeAppLaunchSource">
@@ -24315,6 +24326,7 @@ Called by update_document_policy_enum.py.-->
   <int value="853" label="LensCameraAssistedSearchEnabled"/>
   <int value="854" label="RelaunchWindow"/>
   <int value="855" label="LacrosAvailability"/>
+  <int value="856" label="DataLeakPreventionReportingEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34608,6 +34620,9 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="GaiaTokenRevocationStatus">
+  <obsolete>
+    Deprecated in M92.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Connection Canceled"/>
   <int value="2" label="Connection Failed"/>
@@ -36999,6 +37014,9 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="GooglePasswordManagerNavigationResult">
+  <obsolete>
+    Removed 04/2021
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Timeout"/>
@@ -38272,6 +38290,27 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Search canceled because no help app icon"/>
   <int value="2"
       label="Search canceled because the search backend isn't available"/>
+</enum>
+
+<enum name="HermesResponseStatus">
+  <summary>
+    Statuses returned by Hermes, the Chrome OS daemon process which configures
+    eSIM profiles a device's hardware.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Error: Already disabled"/>
+  <int value="2" label="Error: Already enabled"/>
+  <int value="3" label="Error: Invalid activation code"/>
+  <int value="4" label="Error: Invalid ICCID"/>
+  <int value="5" label="Error: Invalid parameter"/>
+  <int value="6" label="Error: Need confirmation code"/>
+  <int value="7" label="Error: Send notification failure"/>
+  <int value="8" label="Error: Test profile in prod"/>
+  <int value="9" label="Error: Unknown"/>
+  <int value="10" label="Error: Unsupported"/>
+  <int value="11" label="Error: Wrong state"/>
+  <int value="12" label="Error: Invalid response"/>
+  <int value="13" label="Error: No response"/>
 </enum>
 
 <enum name="HIDContinueScenarioType">
@@ -45802,6 +45841,7 @@ from previous Chrome versions.
   <int value="-793383355" label="StrictOriginIsolation:enabled"/>
   <int value="-792785226" label="TemporaryUnexpireFlagsM78:disabled"/>
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
+  <int value="-791778534" label="LauncherQueryHighlighting:enabled"/>
   <int value="-790900615" label="NtpShoppingTasksModule:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-787969387" label="HTTPSServerPreviewsUsingURLLoader:enabled"/>
@@ -47001,6 +47041,7 @@ from previous Chrome versions.
       label="AutofillImportNonFocusableCreditCardForms:enabled"/>
   <int value="313253630" label="AutofillRefreshStyleAndroid:enabled"/>
   <int value="313303258" label="WebPaymentsModifiers:disabled"/>
+  <int value="315602034" label="LauncherQueryHighlighting:disabled"/>
   <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>
   <int value="317432596" label="DisplayLocking:disabled"/>
   <int value="317889969" label="AutofillAddressProfileSavePrompt:disabled"/>
@@ -72071,10 +72112,23 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SigninRefreshTokenRevocationRequestProgress">
+  <obsolete>
+    Deprecated in M92.
+  </obsolete>
   <int value="0" label="Request Created"/>
   <int value="1" label="Request Started"/>
   <int value="2" label="Request Failed"/>
   <int value="3" label="Request Succeeded"/>
+</enum>
+
+<enum name="SigninRemoveLocalAccountOutcome">
+  <int value="0" label="Success"/>
+  <int value="1" label="AccountsStale">
+    Not removed because the account list was stale.
+  </int>
+  <int value="2" label="SignedOutAccountMissing">
+    Not removed because the account was not in the list of signed out accounts.
+  </int>
 </enum>
 
 <enum name="SigninRequestHeaderOperation">

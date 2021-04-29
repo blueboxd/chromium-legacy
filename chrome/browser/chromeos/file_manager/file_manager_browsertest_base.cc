@@ -473,7 +473,7 @@ struct AddEntriesMessage {
 
     // Maps |value| to base::Time. Returns true on success.
     static bool MapStringToTime(base::StringPiece value, base::Time* time) {
-      return base::Time::FromString(value.as_string().c_str(), time);
+      return base::Time::FromString(std::string(value).c_str(), time);
     }
   };
 };
@@ -596,7 +596,7 @@ void BlockFileTaskRunner(Profile* profile)
     EXCLUSIVE_LOCK_FUNCTION(GetLockForBlockingDefaultFileTaskRunner()) {
   GetLockForBlockingDefaultFileTaskRunner().Acquire();
 
-  content::BrowserContext::GetDefaultStoragePartition(profile)
+  profile->GetDefaultStoragePartition()
       ->GetFileSystemContext()
       ->default_file_task_runner()
       ->PostTask(FROM_HERE, base::BindOnce([] {
@@ -742,7 +742,6 @@ std::ostream& operator<<(std::ostream& out,
   PRINT_IF_NOT_DEFAULT(offline)
   PRINT_IF_NOT_DEFAULT(photos_documents_provider)
   PRINT_IF_NOT_DEFAULT(single_partition_format)
-  PRINT_IF_NOT_DEFAULT(smbfs)
   PRINT_IF_NOT_DEFAULT(tablet_mode)
   PRINT_IF_NOT_DEFAULT(zip)
   PRINT_IF_NOT_DEFAULT(zip_no_nacl)
@@ -1684,10 +1683,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
-  if (options.smbfs) {
-    enabled_features.push_back(features::kSmbFs);
-  }
-
   if (options.zip_no_nacl) {
     enabled_features.push_back(chromeos::features::kFilesZipMount);
     enabled_features.push_back(chromeos::features::kFilesZipPack);
@@ -1884,9 +1879,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     }
   }
 
-  if (options.smbfs) {
-    smbfs_volume_ = std::make_unique<SmbfsTestVolume>();
-  }
+  smbfs_volume_ = std::make_unique<SmbfsTestVolume>();
 
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());

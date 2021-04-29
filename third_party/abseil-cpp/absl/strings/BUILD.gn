@@ -286,22 +286,23 @@ absl_source_set("cordz_functions_test") {
   ]
 }
 
-absl_source_set("cordz_handle_test") {
-  testonly = true
-  sources = [ "internal/cordz_handle_test.cc" ]
-  deps = [
-    ":cordz_handle",
-    "//third_party/abseil-cpp/absl/base:config",
-    "//third_party/abseil-cpp/absl/memory",
-    "//third_party/abseil-cpp/absl/random",
-    "//third_party/abseil-cpp/absl/random:distributions",
-    "//third_party/abseil-cpp/absl/synchronization",
-    "//third_party/abseil-cpp/absl/synchronization:thread_pool",
-    "//third_party/abseil-cpp/absl/time",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest",
-  ]
-}
+# TODO(b/186638384): Re-enable when random is compilable on win32-archive-rel bot
+# absl_source_set("cordz_handle_test") {
+#   testonly = true
+#   sources = [ "internal/cordz_handle_test.cc" ]
+#   deps = [
+#     ":cordz_handle",
+#     "//third_party/abseil-cpp/absl/base:config",
+#     "//third_party/abseil-cpp/absl/memory",
+#     "//third_party/abseil-cpp/absl/random",
+#     "//third_party/abseil-cpp/absl/random:distributions",
+#     "//third_party/abseil-cpp/absl/synchronization",
+#     "//third_party/abseil-cpp/absl/synchronization:thread_pool",
+#     "//third_party/abseil-cpp/absl/time",
+#     "//third_party/googletest:gmock",
+#     "//third_party/googletest:gtest",
+#   ]
+# }
 
 absl_source_set("cordz_info_test") {
   testonly = true
@@ -323,25 +324,26 @@ absl_source_set("cordz_info_test") {
   ]
 }
 
-absl_source_set("cordz_sample_token_test") {
-  testonly = true
-  sources = [ "internal/cordz_sample_token_test.cc" ]
-  deps = [
-    ":cord_internal",
-    ":cordz_handle",
-    ":cordz_info",
-    ":cordz_sample_token",
-    ":cordz_test_helpers",
-    "//third_party/abseil-cpp/absl/base:config",
-    "//third_party/abseil-cpp/absl/memory",
-    "//third_party/abseil-cpp/absl/random",
-    "//third_party/abseil-cpp/absl/synchronization",
-    "//third_party/abseil-cpp/absl/synchronization:thread_pool",
-    "//third_party/abseil-cpp/absl/time",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest",
-  ]
-}
+# TODO(b/186638384): Re-enable when random is compilable on win32-archive-rel bot
+# absl_source_set("cordz_sample_token_test") {
+#   testonly = true
+#   sources = [ "internal/cordz_sample_token_test.cc" ]
+#   deps = [
+#     ":cord_internal",
+#     ":cordz_handle",
+#     ":cordz_info",
+#     ":cordz_sample_token",
+#     ":cordz_test_helpers",
+#     "//third_party/abseil-cpp/absl/base:config",
+#     "//third_party/abseil-cpp/absl/memory",
+#     "//third_party/abseil-cpp/absl/random",
+#     "//third_party/abseil-cpp/absl/synchronization",
+#     "//third_party/abseil-cpp/absl/synchronization:thread_pool",
+#     "//third_party/abseil-cpp/absl/time",
+#     "//third_party/googletest:gmock",
+#     "//third_party/googletest:gtest",
+#   ]
+# }
 
 absl_source_set("cord_test_helpers") {
   testonly = true

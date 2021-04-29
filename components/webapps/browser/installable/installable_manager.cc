@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -239,8 +239,8 @@ InstallableManager::InstallableManager(content::WebContents* web_contents)
   // This is null in unit tests.
   if (web_contents) {
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetStoragePartition(
-            web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+        web_contents->GetBrowserContext()->GetStoragePartition(
+            web_contents->GetSiteInstance());
     DCHECK(storage_partition);
 
     service_worker_context_ = storage_partition->GetServiceWorkerContext();

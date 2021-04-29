@@ -46,6 +46,9 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
   DisplayMetrics GetDisplayMetrics() override {
     return FeedServiceBridge::GetDisplayMetrics();
   }
+  bool IsAutoplayEnabled() override {
+    return FeedServiceBridge::IsAutoplayEnabled();
+  }
   void ClearAll() override { FeedServiceBridge::ClearAll(); }
   void PrefetchImage(const GURL& url) override {
     FeedServiceBridge::PrefetchImage(url);
@@ -100,7 +103,7 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(context);
+      context->GetDefaultStoragePartition();
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);

@@ -125,7 +125,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 94;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 96;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -346,9 +346,10 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion53ToCurrent) {
     EXPECT_EQ("00000000-0000-0000-0000-000000000001",
               s_profiles.ColumnString(0));
     EXPECT_EQ(u"Google, Inc.", s_profiles.ColumnString16(1));
-    EXPECT_EQ(ASCIIToUTF16("1950 Charleston Rd.\n"
-                           "(2nd floor)"),
-              s_profiles.ColumnString16(2));
+    EXPECT_EQ(
+        u"1950 Charleston Rd.\n"
+        u"(2nd floor)",
+        s_profiles.ColumnString16(2));
     EXPECT_EQ(std::u16string(), s_profiles.ColumnString16(3));
     EXPECT_EQ(u"Mountain View", s_profiles.ColumnString16(4));
     EXPECT_EQ(u"CA", s_profiles.ColumnString16(5));
@@ -2075,5 +2076,87 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion93ToCurrent) {
     EXPECT_TRUE(connection.DoesColumnExist("offer_data", "see_details_text"));
     EXPECT_TRUE(
         connection.DoesColumnExist("offer_data", "usage_instructions_text"));
+  }
+}
+
+// Tests addition of virtual_card_enrollment_state and card_art_url columns in
+// masked_credit_cards table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion94ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_94.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 94, 83));
+
+    EXPECT_FALSE(connection.DoesTableExist("credit_card_art_images"));
+
+    EXPECT_FALSE(connection.DoesColumnExist("masked_credit_cards",
+                                            "virtual_card_enrollment_state"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("masked_credit_cards", "card_art_url"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The virtual_card_enrollment_state column and the card_art_url column
+    // should exist.
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards",
+                                           "virtual_card_enrollment_state"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("masked_credit_cards", "card_art_url"));
+
+    // New columns in credit_card_art_images should exist.
+    EXPECT_TRUE(connection.DoesColumnExist("credit_card_art_images", "id"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("credit_card_art_images", "instrument_id"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("credit_card_art_images", "card_art_image"));
+  }
+}
+
+// Tests addition of lock state to the autofill_profile table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion95ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_95.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 95, 83));
+
+    EXPECT_FALSE(connection.DoesColumnExist(
+        "autofill_profile", "disallow_settings_visible_updates"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_FALSE(connection.DoesColumnExist(
+        "autofill_profile", "disallow_settings_visible_updates"));
   }
 }

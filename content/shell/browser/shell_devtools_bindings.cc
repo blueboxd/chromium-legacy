@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -326,8 +327,8 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     resource_request->site_for_cookies = net::SiteForCookies::FromUrl(gurl);
     resource_request->headers.AddHeadersFromString(headers);
 
-    auto* partition = content::BrowserContext::GetStoragePartitionForUrl(
-        web_contents()->GetBrowserContext(), gurl);
+    auto* partition =
+        web_contents()->GetBrowserContext()->GetStoragePartitionForUrl(gurl);
     auto factory = partition->GetURLLoaderFactoryForBrowserProcess();
 
     auto simple_url_loader = network::SimpleURLLoader::Create(
@@ -381,7 +382,7 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
                                 message.size());
   if (str_message.length() < kShellMaxMessageChunkSize) {
     CallClientFunction("DevToolsAPI", "dispatchMessage",
-                       base::Value(str_message.as_string()));
+                       base::Value(std::string(str_message)));
   } else {
     size_t total_size = str_message.length();
     for (size_t pos = 0; pos < str_message.length();
@@ -391,7 +392,7 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
 
       CallClientFunction(
           "DevToolsAPI", "dispatchMessageChunk",
-          base::Value(str_message_chunk.as_string()),
+          base::Value(std::string(str_message_chunk)),
           base::Value(base::NumberToString(pos ? 0 : total_size)));
     }
   }

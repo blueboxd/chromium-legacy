@@ -78,13 +78,14 @@ net::NetworkInterfaceList GetInterfaces() {
 
 std::unique_ptr<NetBiosClientInterface> GetNetBiosClient(Profile* profile) {
   auto* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetNetworkContext();
+      profile->GetDefaultStoragePartition()->GetNetworkContext();
   return std::make_unique<NetBiosClient>(network_context);
 }
 
+// TODO(crbug.com/1203884): Remove this method and any code conditional on it
+// being false.
 bool IsSmbFsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSmbFs);
+  return true;
 }
 
 // Metric recording functions.

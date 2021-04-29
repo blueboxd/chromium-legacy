@@ -1153,10 +1153,19 @@ void PrefetchProxyTabHelper::StartSpareRenderer() {
 
 void PrefetchProxyTabHelper::PrefetchSpeculationCandidates(
     const std::vector<GURL>& private_prefetches_with_subresources,
-    const std::vector<GURL>& private_prefetches) {
+    const std::vector<GURL>& private_prefetches,
+    const GURL& source_document_url) {
   // Use navigation predictor by default.
   if (!PrefetchProxyUseSpeculationRules())
     return;
+
+  // For IP-private prefetches, using the Google proxy needs to be restricted to
+  // first party sites until we understand the benefit and determine interest
+  // from other sites.
+  if (!IsGoogleDomainUrl(source_document_url, google_util::DISALLOW_SUBDOMAIN,
+                         google_util::ALLOW_NON_STANDARD_PORTS)) {
+    return;
+  }
 
   std::vector<GURL> prefetches = private_prefetches;
   std::set<GURL> allowed_to_prefetch_subresources;
@@ -1269,8 +1278,7 @@ content::ServiceWorkerContext* PrefetchProxyTabHelper::GetServiceWorkerContext(
     Profile* profile) {
   if (g_service_worker_context_for_test)
     return g_service_worker_context_for_test;
-  return content::BrowserContext::GetDefaultStoragePartition(profile)
-      ->GetServiceWorkerContext();
+  return profile->GetDefaultStoragePartition()->GetServiceWorkerContext();
 }
 
 // static
@@ -1326,15 +1334,14 @@ void PrefetchProxyTabHelper::CheckEligibilityOfURL(
   }
 
   content::StoragePartition* default_storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile);
+      profile->GetDefaultStoragePartition();
 
   // Only the default storage partition is supported since that is the only
   // place where service workers are observed by
   // |PrefetchProxyServiceWorkersObserver|.
   if (default_storage_partition !=
-      content::BrowserContext::GetStoragePartitionForUrl(
-          profile, url,
-          /*can_create=*/false)) {
+      profile->GetStoragePartitionForUrl(url,
+                                         /*can_create=*/false)) {
     std::move(result_callback)
         .Run(url, false,
              PrefetchProxyPrefetchStatus::
@@ -1509,7 +1516,7 @@ void PrefetchProxyTabHelper::OnGotIsolatedCookiesToCopyAfterSRPClick(
           weak_factory_.GetWeakPtr()));
 
   content::StoragePartition* default_storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile_);
+      profile_->GetDefaultStoragePartition();
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
 
   for (const net::CookieWithAccessResult& cookie : cookie_list) {

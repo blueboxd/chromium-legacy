@@ -1623,9 +1623,6 @@ extern const char kAndroidPartnerCustomizationPhenotypeDescription[];
 extern const char kAndroidSurfaceControlName[];
 extern const char kAndroidSurfaceControlDescription[];
 
-extern const char kAppNotificationStatusMessagingName[];
-extern const char kAppNotificationStatusMessagingDescription[];
-
 extern const char kAssistantIntentPageUrlName[];
 extern const char kAssistantIntentPageUrlDescription[];
 
@@ -2699,6 +2696,9 @@ extern const char kLacrosStabilityMoreStableDescription[];
 extern const char kLacrosSupportName[];
 extern const char kLacrosSupportDescription[];
 
+extern const char kLauncherQueryHighlightingName[];
+extern const char kLauncherQueryHighlightingDescription[];
+
 extern const char kLimitAltTabToActiveDeskName[];
 extern const char kLimitAltTabToActiveDeskDescription[];
 
@@ -2808,9 +2808,6 @@ extern const char kShowTapsDescription[];
 
 extern const char kShowTouchHudName[];
 extern const char kShowTouchHudDescription[];
-
-extern const char kSmbfsFileSharesName[];
-extern const char kSmbfsFileSharesDescription[];
 
 extern const char kSpectreVariant2MitigationName[];
 extern const char kSpectreVariant2MitigationDescription[];

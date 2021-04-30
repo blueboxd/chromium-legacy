@@ -2338,6 +2338,38 @@
             ]
         }
     ],
+    "DefaultChatWebApp": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DefaultChatWebApp"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DefaultMeetWebApp": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DefaultMeetWebApp"
+                    ]
+                }
+            ]
+        }
+    ],
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
@@ -6992,6 +7024,11 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "disable_background_log_with_TabRanker": "false",
+                        "number_of_oldest_tabs_to_log_with_TabRanker": "0",
+                        "number_of_oldest_tabs_to_score_with_TabRanker": "0"
+                    },
                     "enable_features": [
                         "TabRanker"
                     ]

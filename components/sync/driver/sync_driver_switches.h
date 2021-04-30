@@ -31,15 +31,13 @@ extern const base::Feature
 extern const base::Feature kSyncAutofillWalletOfferData;
 extern const base::Feature kSyncWifiConfigurations;
 extern const base::Feature kDecoupleSyncFromAndroidMasterSync;
-extern const base::Feature kFollowTrustedVaultKeyRotation;
-extern const base::Feature kAllowSilentTrustedVaultDeviceRegistration;
-extern const base::FeatureParam<base::TimeDelta>
-    kTrustedVaultServiceThrottlingDuration;
 
 extern const base::Feature kSyncRequiresPoliciesLoaded;
 extern const base::FeatureParam<base::TimeDelta> kSyncPolicyLoadTimeout;
 
 extern const base::Feature kSyncSupportTrustedVaultPassphraseRecovery;
+
+extern const base::Feature kSyncOfferTrustedVaultOptIn;
 
 }  // namespace switches
 

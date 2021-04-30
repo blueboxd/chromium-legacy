@@ -257,6 +257,7 @@
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
+#include "chrome/browser/apps/app_service/app_platform_metrics_service.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
@@ -824,7 +825,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::system::AutomaticRebootManager::RegisterPrefs(registry);
   chromeos::TimeZoneResolver::RegisterPrefs(registry);
   ash::UserImageManager::RegisterPrefs(registry);
-  chromeos::UserSessionManager::RegisterPrefs(registry);
+  ash::UserSessionManager::RegisterPrefs(registry);
   ash::WebKioskAppManager::RegisterPrefs(registry);
   component_updater::MetadataTable::RegisterPrefs(registry);
   cryptauth::CryptAuthDeviceIdProviderImpl::RegisterLocalPrefs(registry);

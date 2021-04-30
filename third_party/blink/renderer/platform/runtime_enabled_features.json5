@@ -1899,6 +1899,10 @@
       name: "SharedArrayBufferUnrestrictedAccessAllowed",
     },
     {
+      name: "SharedAutofill",
+      status: "experimental",
+    },
+    {
       name: "SharedWorker",
       // Android does not yet support SharedWorker. crbug.com/154571
       status: {"Android": "", "default": "stable"},
@@ -2317,6 +2321,12 @@
       name: "WebTransport",
       origin_trial_feature_name: "WebTransport",
       status: "experimental",
+    },
+    {
+      name: "WebTransportCustomCertificates",
+      origin_trial_feature_name: "WebTransport",
+      status: "experimental",
+      depends_on: ["WebTransport"],
     },
     {
       name: "WebUSB",

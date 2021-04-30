@@ -8,22 +8,25 @@
 #include "base/cpu.h"
 #include "base/cpu_affinity_posix.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/task/current_thread.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
 
 namespace {
 
 perfetto::StaticString TraceEventNameForAffinityMode(
     base::CpuAffinityMode affinity) {
-  if (affinity == base::CpuAffinityMode::kDefault) {
-    return "ApplyCpuAffinityModeDefault";
-  } else if (affinity == base::CpuAffinityMode::kLittleCoresOnly) {
-    return "ApplyCpuAffinityModeLittleCoresOnly";
+  switch (affinity) {
+    case base::CpuAffinityMode::kDefault:
+      return "ApplyCpuAffinityModeDefault";
+    case base::CpuAffinityMode::kLittleCoresOnly:
+      return "ApplyCpuAffinityModeLittleCoresOnly";
   }
-  return "ApplyCpuAffinityModeUnknown";
 }
 
 void ApplyProcessCpuAffinityMode(base::CpuAffinityMode affinity) {
@@ -50,7 +53,10 @@ bool CpuAffinityApplicable() {
 
 namespace power_scheduler {
 
-PowerScheduler::PowerScheduler() = default;
+PowerScheduler::PowerScheduler() {
+  DETACH_FROM_SEQUENCE(thread_pool_checker_);
+}
+
 PowerScheduler::~PowerScheduler() = default;
 
 // static
@@ -63,101 +69,170 @@ void PowerScheduler::WillProcessTask(const base::PendingTask& pending_task,
                                      bool was_blocked_or_low_priority) {}
 
 void PowerScheduler::DidProcessTask(const base::PendingTask& pending_task) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_checker_);
 
   ++task_counter_;
   if (task_counter_ == kUpdateAfterEveryNTasks) {
-    EnforceCpuAffinity();
+    thread_pool_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&PowerScheduler::EnforceCpuAffinityOnSequence,
+                                  base::Unretained(this)  // never destroyed.
+                                  ));
     task_counter_ = 0;
   }
 }
 
 void PowerScheduler::OnPowerModeChanged(power_scheduler::PowerMode old_mode,
                                         power_scheduler::PowerMode new_mode) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT2("power", "PowerScheduler::OnPowerModeChanged", "old_mode",
+               power_scheduler::PowerModeToString(old_mode), "new_mode",
+               power_scheduler::PowerModeToString(new_mode));
 
-  current_power_mode_ = new_mode;
-
-  ApplyPolicy();
+  OnPowerModeChangedOnSequence(old_mode, new_mode);
 }
 
 void PowerScheduler::Setup() {
-  // The setup should be called once from the main thread. Subsequent calls
-  // from other threads should be ignored.
+  // The setup should be called once from the main thread. In single-process
+  // mode, it may later be called on other threads (which should be ignored).
   if (did_call_setup_)
     return;
 
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_checker_);
 
-  SetupPolicy();
+  main_thread_task_runner_ = base::SequencedTaskRunnerHandle::Get();
+  thread_pool_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   did_call_setup_ = true;
+
+  if (pending_policy_ == SchedulingPolicy::kNone)
+    return;
+
+  thread_pool_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PowerScheduler::SetupPolicyOnSequence,
+                                base::Unretained(this),  // never destroyed.
+                                pending_policy_));
+  pending_policy_ = SchedulingPolicy::kNone;
 }
 
 void PowerScheduler::SetPolicy(SchedulingPolicy policy) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_checker_);
 
   if (!CpuAffinityApplicable())
     return;
 
-  current_policy_ = policy;
-
   // Set up the power affinity observer and apply the policy if it's already
   // possible. Otherwise it will be set up after thread initialization via
   // Setup() (see app/content_main_runner_impl.cc and child/child_process.cc).
-  if (base::CurrentThread::IsSet()) {
-    SetupPolicy();
+  if (thread_pool_task_runner_) {
+    thread_pool_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&PowerScheduler::SetupPolicyOnSequence,
+                                  base::Unretained(this),  // never destroyed.
+                                  policy));
+  } else {
+    pending_policy_ = policy;
   }
 }
 
-void PowerScheduler::SetupPolicy() {
+void PowerScheduler::SetupPolicyOnSequence(SchedulingPolicy policy) {
   DCHECK(power_scheduler::PowerModeArbiter::GetInstance());
-  DCHECK(base::CurrentThread::IsSet());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(thread_pool_checker_);
 
   // Reset the power mode in case it contains an obsolete value.
   current_power_mode_ = power_scheduler::PowerMode::kMaxValue;
+  current_policy_ = policy;
 
-  if (current_policy_ == SchedulingPolicy::kThrottleIdle &&
-      !power_observer_registered_) {
+  bool needs_power_observer =
+      current_policy_ == SchedulingPolicy::kThrottleIdle ||
+      current_policy_ == SchedulingPolicy::kThrottleIdleAndNopAnimation;
+
+  if (needs_power_observer && !power_observer_registered_) {
     power_scheduler::PowerModeArbiter::GetInstance()->AddObserver(this);
     power_observer_registered_ = true;
-  } else if (current_policy_ != SchedulingPolicy::kThrottleIdle &&
-             power_observer_registered_) {
+  } else if (!needs_power_observer && power_observer_registered_) {
     power_scheduler::PowerModeArbiter::GetInstance()->RemoveObserver(this);
     power_observer_registered_ = false;
   }
 
-  ApplyPolicy();
+  ApplyPolicyOnSequence();
 }
 
-void PowerScheduler::ApplyPolicy() {
-  auto new_affinity = base::CpuAffinityMode::kDefault;
-  if (current_policy_ == SchedulingPolicy::kLittleCoresOnly ||
-      (current_policy_ == SchedulingPolicy::kThrottleIdle &&
-       (current_power_mode_ == power_scheduler::PowerMode::kIdle ||
-        current_power_mode_ == power_scheduler::PowerMode::kBackground))) {
-    new_affinity = base::CpuAffinityMode::kLittleCoresOnly;
+void PowerScheduler::OnPowerModeChangedOnSequence(
+    power_scheduler::PowerMode old_mode,
+    power_scheduler::PowerMode new_mode) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(thread_pool_checker_);
+
+  current_power_mode_ = new_mode;
+  ApplyPolicyOnSequence();
+}
+
+void PowerScheduler::ApplyPolicyOnSequence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(thread_pool_checker_);
+
+  bool should_throttle = false;
+  switch (current_policy_) {
+    case SchedulingPolicy::kNone:
+      break;
+    case SchedulingPolicy::kLittleCoresOnly:
+      should_throttle = true;
+      break;
+    case SchedulingPolicy::kThrottleIdle:
+      should_throttle =
+          current_power_mode_ == power_scheduler::PowerMode::kIdle ||
+          current_power_mode_ == power_scheduler::PowerMode::kBackground;
+      break;
+    case SchedulingPolicy::kThrottleIdleAndNopAnimation:
+      should_throttle =
+          current_power_mode_ == power_scheduler::PowerMode::kIdle ||
+          current_power_mode_ == power_scheduler::PowerMode::kBackground ||
+          current_power_mode_ == power_scheduler::PowerMode::kNopAnimation;
+      break;
   }
+
+  auto new_affinity = should_throttle ? base::CpuAffinityMode::kLittleCoresOnly
+                                      : base::CpuAffinityMode::kDefault;
 
   if (new_affinity != enforced_affinity_) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    if (new_affinity == base::CpuAffinityMode::kDefault &&
+        !enforced_affinity_setup_time_.is_null()) {
+      UMA_HISTOGRAM_CUSTOM_TIMES("Power.PowerScheduler.ThrottlingDuration",
+                                 now - enforced_affinity_setup_time_,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromMinutes(10), 100);
+    }
+    enforced_affinity_setup_time_ = now;
     enforced_affinity_ = new_affinity;
-    EnforceCpuAffinity();
+    EnforceCpuAffinityOnSequence();
   }
 }
 
-void PowerScheduler::EnforceCpuAffinity() {
-  if (enforced_affinity_ == base::CpuAffinityMode::kLittleCoresOnly &&
-      !task_observer_registered_) {
-    base::CurrentThread::Get()->AddTaskObserver(this);
-    task_observer_registered_ = true;
-  } else if (enforced_affinity_ == base::CpuAffinityMode::kDefault &&
-             task_observer_registered_) {
-    // We don't have to enforce the default affinity.
-    base::CurrentThread::Get()->RemoveTaskObserver(this);
-    task_observer_registered_ = false;
-  }
+void PowerScheduler::EnforceCpuAffinityOnSequence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(thread_pool_checker_);
 
   if (enforced_affinity_ != base::CurrentThreadCpuAffinityMode())
     ApplyProcessCpuAffinityMode(enforced_affinity_);
+
+  // Android system may reset a non-default affinity setting, so we need to
+  // check periodically if we need to re-apply it.
+  bool mode_needs_periodic_enforcement =
+      enforced_affinity_ != base::CpuAffinityMode::kDefault;
+
+  if (mode_needs_periodic_enforcement && !task_observer_registered_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce([] {
+          base::CurrentThread::Get()->AddTaskObserver(
+              PowerScheduler::GetInstance());
+        }));
+    task_observer_registered_ = true;
+  } else if (!mode_needs_periodic_enforcement && task_observer_registered_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce([] {
+          base::CurrentThread::Get()->RemoveTaskObserver(
+              PowerScheduler::GetInstance());
+          PowerScheduler::GetInstance()->task_counter_ = 0;
+        }));
+    task_observer_registered_ = false;
+  }
 }
 
 }  // namespace power_scheduler

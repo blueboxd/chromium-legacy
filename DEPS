@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3934647d225a086e76df012b9b42526ab7621085',
+  'skia_revision': 'e4c4322da6bb17746ae608a17b97d2f8cfd915b4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f2272108b03226d25bb96231f2b7231c1786f287',
+  'v8_revision': '6e085af6bbdd3d117fefc046c5a5b70858a2d6a4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '54e99d36b70fd310c7f899faddf937158f2459a1',
+  'angle_revision': '0656787010a6ce708704916481adab2cd7b08688',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -229,7 +229,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'f115a5253d0699082058a1586d6b63fa998ba39e',
+  'pdfium_revision': '6cabdea2c245c5101e8491d6b262d122b93df208',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -256,7 +256,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '2b19997900032d8a4f93597e7b74798d856fe972',
+  'nacl_revision': 'aa390d9488d525be6b1edcd19ec30879cf9bc434',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'bbfed50cf91d86dc24b07f292741f2b20d7d0697',
+  'catapult_revision': 'ed0183e21a8642343f61c8302ee21550246e5b65',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '09cf50393be6504e67dc7dd9c64b1b51418d8700',
+  'devtools_frontend_revision': '69a53e842fef2729160345def9047cb7bf3ccbcd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2a979e6b70f6992b6f3b5c5318d461fa662f4688',
+  'dawn_revision': '361d312f7de4ab8fe1d7e0e75c4d32011d5d4982',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -356,7 +356,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': 'e1b1c671416858c85bbac732e1ae2482c659f834',
+  'nearby_revision': '857958c87fa5994490948608c625c9407f118fe3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -553,7 +553,7 @@ deps = {
   },
 
     'src/ios/third_party/edo/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + 'e904b04fc8cbaf6a5d4e20ca5c3cbd1fd8069d64',
+      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + '90f45891774cb213852b86b849be32a2fed4e177',
       'condition': 'checkout_ios',
   },
 
@@ -1338,7 +1338,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '52fefceb29bb88140996879a9a8970d7ea6dce83',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '21d255cb2580c7d9b2a9a554b35a7faed6b2605a',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1416,7 +1416,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'kswh0qF56RoEDBXJbyo1IWPAJ9F7WGAvMHGyWGbpBtUC'
+              'version': '8r2hDUTu7PDPvM1h7ICWN-PeH1-blwV23pGSxtf5EVoC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1549,10 +1549,10 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'a0b8774ce8cec1dc8f4308810bf05eb8867c62de',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '04615127de529c1b7aad103e61abce816ed0fe6f',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3692cbbd3224f9d7e2ae138ef26bd584855249a1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '141a4de0727cb2eba7d21e896e4ecf72b5be1502',
+    Var('webrtc_git') + '/src.git' + '@' + 'da83f65db342df78e55ee98a3532883a32ae9385',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -3259,7 +3259,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_jetbrains_kotlin_kotlin_stdlib',
-              'version': 'version:2@1.4.30.cr0',
+              'version': 'version:2@1.4.32.cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3270,7 +3270,29 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_jetbrains_kotlin_kotlin_stdlib_common',
-              'version': 'version:2@1.4.30.cr0',
+              'version': 'version:2@1.4.32.cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android',
+              'version': 'version:2@1.4.3.cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm',
+              'version': 'version:2@1.4.3.cr0',
           },
       ],
       'condition': 'checkout_android',

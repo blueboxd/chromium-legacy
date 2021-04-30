@@ -124,9 +124,13 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
  public:
   ~BackForwardCacheBrowserTest() override {
     if (fail_for_unexpected_messages_while_cached_) {
-      ExpectTotalCount(
-          "BackForwardCache.UnexpectedRendererToBrowserMessage.InterfaceName",
-          0);
+      // If this is triggered, see
+      // tools/metrics/histograms/histograms_xml/navigation/histograms.xml for
+      // which values correspond which messages.
+      EXPECT_THAT(histogram_tester_.GetAllSamples(
+                      "BackForwardCache.UnexpectedRendererToBrowserMessage."
+                      "InterfaceName"),
+                  testing::ElementsAre());
     }
   }
 
@@ -1363,7 +1367,7 @@ IN_PROC_BROWSER_TEST_F(
         ExpectCached(*delete_observers[j], /*cached=*/i != j,
                      /*backgrounded=*/i != j);
       } else {
-        EXPECT_TRUE(delete_observers[j]->deleted());
+        delete_observers[j]->WaitUntilDeleted();
       }
     }
   }
@@ -10671,21 +10675,16 @@ class BackForwardCacheOptInBrowserTest : public BackForwardCacheBrowserTest {
   }
 };
 
-// TODO(crbug.com/1204058): This test is flaky.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest,
-                       DISABLED_NoCacheWithoutHeader) {
+IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest, NoCacheWithoutHeader) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
 
   // 3) Go back.
   web_contents()->GetController().GoBack();
@@ -10696,39 +10695,19 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest,
                     {}, {}, {}, FROM_HERE);
 }
 
-namespace {
-
-const char kResponseWithOptIn[] =
-    "HTTP/1.1 200 OK\r\n"
-    "Content-Type: text/html; charset=utf-8\r\n"
-    "BFCache-Opt-In: unload\r\n"
-    "\r\n"
-    "bfcache opt in page.";
-
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest,
                        CacheIfHeaderIsPresent) {
-  net::test_server::ControllableHttpResponse response(embedded_test_server(),
-                                                      "/opt_in_document");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/opt_in_document"));
+  GURL url_a(embedded_test_server()->GetURL("a.com",
+                                            "/set-header?"
+                                            "BFCache-Opt-In: unload"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
-  TestNavigationObserver observer(web_contents());
-  shell()->LoadURL(url_a);
-  response.WaitForRequest();
-  response.Send(kResponseWithOptIn);
-  response.Done();
-  observer.Wait();
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  ASSERT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Go back.
   web_contents()->GetController().GoBack();
@@ -10737,29 +10716,20 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest,
   ExpectRestored(FROM_HERE);
 }
 
-// TODO(crbug.com/1204027): This test is flaky.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheOptInBrowserTest,
-                       DISABLED_NoCacheIfHeaderOnlyPresentOnDestinationPage) {
-  net::test_server::ControllableHttpResponse response(embedded_test_server(),
-                                                      "/opt_in_document");
+                       NoCacheIfHeaderOnlyPresentOnDestinationPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/opt_in_document"));
+  GURL url_b(embedded_test_server()->GetURL("b.com",
+                                            "/set-header?"
+                                            "BFCache-Opt-In: unload"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
   // 2) Navigate to B.
-  TestNavigationObserver observer(web_contents());
-  shell()->LoadURL(url_b);
-  response.WaitForRequest();
-  response.Send(kResponseWithOptIn);
-  response.Done();
-  observer.Wait();
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
 
   // 3) Go back. - A doesn't have header so it shouldn't be cached.
   web_contents()->GetController().GoBack();

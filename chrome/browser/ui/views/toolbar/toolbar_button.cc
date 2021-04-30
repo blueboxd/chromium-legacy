@@ -158,7 +158,8 @@ ToolbarButton::ToolbarButton(PressedCallback callback,
       tab_strip_model_(tab_strip_model),
       trigger_menu_on_long_press_(trigger_menu_on_long_press),
       highlight_color_animation_(this) {
-  SetHasInkDropActionOnClick(true);
+  ConfigureInkDropForToolbar(this);
+
   set_context_menu_controller(this);
 
   if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature)) {
@@ -166,15 +167,9 @@ ToolbarButton::ToolbarButton(PressedCallback callback,
     installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
   }
 
-  InstallToolbarButtonHighlightPathGenerator(this);
-
-  SetInkDropMode(InkDropMode::ON);
-
   // Make sure icons are flipped by default so that back, forward, etc. follows
   // UI direction.
   SetFlipCanvasOnPaintForRTLUI(true);
-
-  SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
 
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
@@ -565,13 +560,6 @@ std::unique_ptr<views::InkDrop> ToolbarButton::CreateInkDrop() {
   return views::LabelButton::CreateInkDrop();
 }
 
-std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
-    const {
-  // Ensure this doesn't get called when InstallableInkDrops are enabled.
-  DCHECK(!base::FeatureList::IsEnabled(views::kInstallableInkDropFeature));
-  return CreateToolbarInkDropHighlight(this);
-}
-
 std::unique_ptr<views::InkDropMask> ToolbarButton::CreateInkDropMask() const {
   if (has_in_product_help_promo_) {
     // This gets the latest ink drop insets. |SetTrailingMargin()| is called
@@ -597,7 +585,7 @@ SkColor ToolbarButton::GetInkDropBaseColor() const {
       highlight_color_animation_.GetInkDropBaseColor();
   if (drop_base_color)
     return *drop_base_color;
-  return GetToolbarInkDropBaseColor(this);
+  return LabelButton::GetInkDropBaseColor();
 }
 
 views::InkDrop* ToolbarButton::GetInkDrop() {
@@ -849,10 +837,10 @@ ToolbarButton::HighlightColorAnimation::GetBackgroundColor() const {
     // TODO(crbug.com/967317): Change the highlight opacity to 4% to match the
     // mocks, if needed.
     bg_color = color_utils::GetResultingPaintColor(
-        /*fg=*/SkColorSetA(*highlight_color_,
-                           SkColorGetA(*highlight_color_) *
-                               kToolbarInkDropHighlightVisibleOpacity),
-        /*bg=*/bg_color);
+        /*foreground=*/SkColorSetA(*highlight_color_,
+                                   SkColorGetA(*highlight_color_) *
+                                       kToolbarInkDropHighlightVisibleOpacity),
+        /*background=*/bg_color);
   }
   return FadeWithAnimation(bg_color, highlight_color_animation_);
 }

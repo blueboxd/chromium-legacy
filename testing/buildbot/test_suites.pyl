@@ -272,16 +272,6 @@
       'trichrome_chrome_bundle_smoke_test': {},
     },
 
-    'android_vega_vr_gtests': {
-      'chrome_public_test_vr_apk-vega': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
-        ],
-        'test': 'chrome_public_test_vr_apk',
-        'experiment_percentage': 100,
-      },
-    },
-
     'android_webapk_launch_tests': {
       'chrome_java_test_webapk_launch_tests': {},
     },
@@ -4141,12 +4131,12 @@
       },
     },
 
+    # TODO(crbug.com/1204231): Re-enable vaapi_unittest.
     'lacros_device_or_vm_gtests': {
       'aura_unittests': {},
       'cc_unittests': {},
       'interactive_ui_tests': {},
       'ozone_unittests': {},
-      'vaapi_unittest': {},
     },
 
     'lacros_skylab_poc': {
@@ -4630,9 +4620,6 @@
             '--smoke-test-mode',
           ],
           'script': '//tools/perf/process_perf_results.py',
-        },
-        'resultdb': {
-          'enable': True,
         },
       },
     },
@@ -5634,7 +5621,6 @@
       'android_monochrome_smoke_tests',
       'android_oreo_standard_gtests',
       'android_smoke_tests',
-      'android_vega_vr_gtests',
     ],
 
     'android_pie_gtests': [
@@ -7199,6 +7185,20 @@
         'variants': [
           'SIM_IPHONE_X_13_5',
           'SIM_IPAD_AIR_2_13_5',
+        ]
+      },
+    },
+
+    # TODO(crbug.com/1195415): Add EVE variant once HW arrives and is deployed.
+    'lacros_device_or_vm_tests': {
+      'lacros_smoke_tast_tests': {
+        'variants': [
+          'LACROS_AMD64_GENERIC',
+        ]
+      },
+      'lacros_device_or_vm_gtests': {
+        'variants': [
+          'LACROS_AMD64_GENERIC',
         ]
       },
     },

@@ -1276,11 +1276,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "enable-android-autofill-accessibility",
-    "owners": [ "ftirelo" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "enable-android-dark-search",
     "owners": [ "wylieb", "twellington", "fgorski" ],
     "expiry_milestone": 95
@@ -2070,11 +2065,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "enable-media-session-notifications",
-    "owners": [ "beccahughes", "media-dev" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
@@ -2572,6 +2562,11 @@
   },
   {
     "name": "enable-unsafe-webgpu",
+    "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
+    "expiry_milestone": 98
+  },
+  {
+    "name": "enable-unsafe-webgpu-service",
     "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
     "expiry_milestone": 98
   },
@@ -4809,7 +4804,9 @@
   {
     "name": "show-overdraw-feedback",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 88
+    // This is a debug flag to visualize compositing and rendering issues in
+    // the field.
+    "expiry_milestone": -1
   },
   {
     "name": "show-performance-metrics-hud",

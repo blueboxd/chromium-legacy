@@ -1479,6 +1479,9 @@ extern const char kTurnOffStreamingMediaCachingAlwaysDescription[];
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
 
+extern const char kUnsafeWebGPUServiceName[];
+extern const char kUnsafeWebGPUServiceDescription[];
+
 extern const char kUnsafeFastJSCallsName[];
 extern const char kUnsafeFastJSCallsDescription[];
 
@@ -1604,9 +1607,6 @@ extern const char kAddToHomescreenIPHDescription[];
 
 extern const char kAImageReaderName[];
 extern const char kAImageReaderDescription[];
-
-extern const char kAndroidAutofillAccessibilityName[];
-extern const char kAndroidAutofillAccessibilityDescription[];
 
 extern const char kAndroidDetailedLanguageSettingsName[];
 extern const char kAndroidDetailedLanguageSettingsDescription[];
@@ -2728,9 +2728,6 @@ extern const char kMediaAppHandlesPdfDescription[];
 
 extern const char kMediaAppVideoName[];
 extern const char kMediaAppVideoDescription[];
-
-extern const char kMediaSessionNotificationsName[];
-extern const char kMediaSessionNotificationsDescription[];
 
 extern const char kMeteredShowToggleName[];
 extern const char kMeteredShowToggleDescription[];

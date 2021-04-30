@@ -776,8 +776,7 @@ const char kDesktopPWAsTabStripLinkCapturingDescription[] =
 const char kDesktopPWAsRunOnOsLoginName[] = "Desktop PWAs run on OS login";
 const char kDesktopPWAsRunOnOsLoginDescription[] =
     "Enable installed PWAs to be configured to automatically start when the OS "
-    "user logs in. Launching a PWA while the browser is not running is known "
-    "to cause a failure to restore sessions. See https://crbug.com/938759.";
+    "user logs in.";
 
 const char kDesktopPWAsProtocolHandlingName[] = "Desktop PWA Protocol handling";
 const char kDesktopPWAsProtocolHandlingDescription[] =
@@ -2555,6 +2554,12 @@ const char kUnsafeWebGPUDescription[] =
     "Enables access to the experimental WebGPU API. Warning: As GPU sandboxing "
     "isn't implemented yet for the WebGPU API, it is possible to read GPU data "
     "for other processes.";
+const char kUnsafeWebGPUServiceName[] = "Unsafe WebGPU Service";
+const char kUnsafeWebGPUServiceDescription[] =
+    "Enables access to the experimental WebGPU API on service side but not "
+    "blink side."
+    "This is used to test origin trial code integrations before WebGPU is "
+    "enabled globally.";
 
 const char kUnsafeFastJSCallsName[] = "Unsafe fast JS calls";
 const char kUnsafeFastJSCallsDescription[] =
@@ -2764,10 +2769,6 @@ const char kAImageReaderDescription[] =
     " Enables MediaPlayer and MediaCodec to use AImageReader on Android. "
     " This feature is only available for android P+ devices. Disabling it also "
     " disables SurfaceControl.";
-
-const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
-const char kAndroidAutofillAccessibilityDescription[] =
-    "Enable accessibility for autofill popup.";
 
 const char kAndroidDetailedLanguageSettingsName[] =
     "Detailed Language Settings";
@@ -4686,11 +4687,6 @@ const char kMediaAppVideoName[] = "Media App Handles Video";
 const char kMediaAppVideoDescription[] =
     "Use chrome://media-app as the default handler for video. Hides the "
     "deprecated VideoPlayer chrome app as a file handler.";
-
-const char kMediaSessionNotificationsName[] = "Media session notifications";
-const char kMediaSessionNotificationsDescription[] =
-    "Shows notifications for media sessions showing the currently playing "
-    "media and providing playback controls";
 
 const char kMeteredShowToggleName[] = "Show Metered Toggle";
 const char kMeteredShowToggleDescription[] =

@@ -139,12 +139,6 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
-    std::unique_ptr<views::InkDropImpl> ink_drop) {
-  ink_drop->SetShowHighlightOnFocus(false);
-  return std::move(ink_drop);
-}
-
 std::unique_ptr<LabelButtonBorder> CreateBookmarkButtonBorder() {
   auto border = std::make_unique<LabelButtonBorder>();
   border->set_insets(ChromeLayoutProvider::Get()->GetInsetsMetric(
@@ -161,13 +155,11 @@ class BookmarkButtonBase : public views::LabelButton {
   METADATA_HEADER(BookmarkButtonBase);
   BookmarkButtonBase(PressedCallback callback, const std::u16string& title)
       : LabelButton(std::move(callback), title) {
+    ConfigureInkDropForToolbar(this);
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
 
     views::InstallPillHighlightPathGenerator(this);
-    SetInkDropMode(InkDropMode::ON);
-    SetHasInkDropActionOnClick(true);
-    SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
 
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
@@ -195,19 +187,6 @@ class BookmarkButtonBase : public views::LabelButton {
   }
 
   // LabelButton:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    return CreateToolbarInkDropHighlight(this);
-  }
-
-  SkColor GetInkDropBaseColor() const override {
-    return GetToolbarInkDropBaseColor(this);
-  }
-
   void OnThemeChanged() override {
     LabelButton::OnThemeChanged();
     ToolbarButton::UpdateFocusRingColor(this, focus_ring());
@@ -304,29 +283,15 @@ class BookmarkMenuButtonBase : public MenuButton {
       PressedCallback callback,
       const std::u16string& title = std::u16string())
       : MenuButton(std::move(callback), title) {
+    ConfigureInkDropForToolbar(this);
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
     views::InstallPillHighlightPathGenerator(this);
-    SetInkDropMode(InkDropMode::ON);
-    SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
   }
   BookmarkMenuButtonBase(const BookmarkMenuButtonBase&) = delete;
   BookmarkMenuButtonBase& operator=(const BookmarkMenuButtonBase&) = delete;
 
   // MenuButton:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    return CreateToolbarInkDropHighlight(this);
-  }
-
-  SkColor GetInkDropBaseColor() const override {
-    return GetToolbarInkDropBaseColor(this);
-  }
-
   void OnThemeChanged() override {
     MenuButton::OnThemeChanged();
     ToolbarButton::UpdateFocusRingColor(this, focus_ring());

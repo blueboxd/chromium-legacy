@@ -129,6 +129,13 @@ class GpuIntegrationTest(
       os_name = cls.browser.platform.GetOSName()
       if os_name == 'android' or os_name == 'chromeos':
         browser_args.remove(cba.DISABLE_GPU)
+
+    # Reduce number of video buffers when running tests on Fuchsia to
+    # workaround crbug.com/1203580
+    # TODO(https://crbug.com/1203580): Remove this once the bug is resolved.
+    if cls._finder_options.browser_type == 'web-engine-shell':
+      browser_args.append('--double-buffer-compositing')
+
     return browser_args
 
   @classmethod
@@ -553,7 +560,7 @@ class GpuIntegrationTest(
       skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info.feature_status,
                                                  startup_args)
       tags.append(skia_renderer)
-    display_server = gpu_helper.GetDisplayServer()
+    display_server = gpu_helper.GetDisplayServer(browser.browser_type)
     if display_server:
       tags.append(display_server)
     return tags

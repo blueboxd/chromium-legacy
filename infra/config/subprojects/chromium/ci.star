@@ -933,6 +933,16 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = "android-weblayer-marshmallow-x86-rel-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "tester|weblayer",
+        short_name = "M",
+    ),
+    triggered_by = ["android-weblayer-with-aosp-webview-x86-rel"],
+    notifies = ["weblayer-sheriff"],
+)
+
+ci.android_builder(
     name = "android-weblayer-oreo-x86-rel-tests",
     console_view_entry = consoles.console_view_entry(
         category = "tester|weblayer",
@@ -950,6 +960,14 @@ ci.android_builder(
     ),
     triggered_by = ["android-weblayer-x86-rel"],
     notifies = ["weblayer-sheriff"],
+)
+
+ci.android_builder(
+    name = "android-weblayer-with-aosp-webview-x86-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "builder|weblayer_with_aosp_webview",
+        short_name = "x86",
+    ),
 )
 
 ci.android_builder(
@@ -1046,16 +1064,6 @@ ci.android_fyi_builder(
     console_view_entry = consoles.console_view_entry(
         category = "tester|weblayer",
         short_name = "10",
-    ),
-    triggered_by = ["android-weblayer-with-aosp-webview-x86-fyi-rel"],
-    notifies = ["weblayer-sheriff"],
-)
-
-ci.android_fyi_builder(
-    name = "android-weblayer-marshmallow-x86-rel-tests",
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|weblayer",
-        short_name = "M",
     ),
     triggered_by = ["android-weblayer-with-aosp-webview-x86-fyi-rel"],
     notifies = ["weblayer-sheriff"],
@@ -3777,6 +3785,16 @@ ci.fyi_coverage_builder(
 )
 
 ci.fyi_coverage_builder(
+    name = "linux-lacros-code-coverage",
+    console_view_entry = consoles.console_view_entry(
+        category = "code_coverage",
+        short_name = "lac",
+    ),
+    use_clang_coverage = True,
+    coverage_test_types = ["overall", "unit"],
+)
+
+ci.fyi_coverage_builder(
     name = "mac-code-coverage",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
@@ -4776,6 +4794,20 @@ ci.linux_builder(
     cq_mirrors_console_view = "mirrors",
     goma_jobs = goma.jobs.J50,
     main_console_view = "main",
+)
+
+ci.linux_builder(
+    name = "Cast Linux Debug",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "cast",
+        short_name = "dbg",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    main_console_view = "main",
+    os = os.LINUX_BIONIC,
+    # TODO(crbug.com/1173333): Make it tree-closing.
+    tree_closing = False,
 )
 
 ci.linux_builder(

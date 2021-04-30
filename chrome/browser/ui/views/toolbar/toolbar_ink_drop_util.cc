@@ -39,6 +39,7 @@ class ToolbarButtonHighlightPathGenerator
     return path;
   }
 };
+
 }  // namespace
 
 gfx::Insets GetToolbarInkDropInsets(const views::View* host_view) {
@@ -59,13 +60,6 @@ gfx::Insets GetToolbarInkDropInsets(const views::View* host_view) {
   return inkdrop_insets;
 }
 
-std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
-    const views::InkDropHostView* host_view) {
-  auto highlight = host_view->views::InkDropHostView::CreateInkDropHighlight();
-  highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
-  return highlight;
-}
-
 SkColor GetToolbarInkDropBaseColor(const views::View* host_view) {
   const auto* theme_provider = host_view->GetThemeProvider();
   // There may be no theme provider in unit tests.
@@ -83,16 +77,13 @@ views::InstallableInkDropConfig GetToolbarInstallableInkDropConfig(
   return config;
 }
 
-void InstallToolbarButtonHighlightPathGenerator(views::View* host) {
-  views::HighlightPathGenerator::Install(
-      host, std::make_unique<ToolbarButtonHighlightPathGenerator>());
-}
-
 void ConfigureInkDropForToolbar(views::Button* host) {
   host->SetHasInkDropActionOnClick(true);
-  InstallToolbarButtonHighlightPathGenerator(host);
+  views::HighlightPathGenerator::Install(
+      host, std::make_unique<ToolbarButtonHighlightPathGenerator>());
   host->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   host->SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
   host->SetInkDropHighlightOpacity(kToolbarInkDropHighlightVisibleOpacity);
-  host->SetInkDropBaseColor(GetToolbarInkDropBaseColor(host));
+  host->SetInkDropBaseColorCallback(
+      base::BindRepeating(&GetToolbarInkDropBaseColor, host));
 }

@@ -160,6 +160,12 @@
       },
     },
   },
+  'aura_unittests_amd64-generic': {
+    'remove_from': [
+      # TODO(crbug.com/1204231): Re-enable.
+      'lacros-amd64-generic-rel',
+    ]
+  },
   'base_unittests': {
     'modifications': {
       'android-11-x86-fyi-rel': {
@@ -485,7 +491,10 @@
       },
       'mac10.14-blink-rel-dummy': {
         'swarming': {
-          'shards': 20,
+          # Increase timeout and reduce shards.
+          # See https://crbug.com/1203565.
+          'shards': 12,
+          'hard_timeout': 1800,
         },
       },
       'mac10.15-blink-rel-dummy': {
@@ -495,7 +504,14 @@
       },
       'mac11.0-blink-rel-dummy': {
         'swarming': {
-          'shards': 20,
+          # Increase timeout and reduce shards.
+          'shards': 12,
+          'hard_timeout': 1800,
+        },
+      },
+      'win10-blink-rel-dummy': {
+        'swarming': {
+          'hard_timeout': 1200,
         },
       },
     },
@@ -1829,6 +1845,12 @@
       },
     },
   },
+  'interactive_ui_tests_amd64-generic': {
+    'remove_from': [
+      # TODO(crbug.com/1204231): Re-enable.
+      'lacros-amd64-generic-rel',
+    ]
+  },
   'interactive_ui_tests_wayland': {
     'modifications': {
       # CQ tester.
@@ -2314,6 +2336,12 @@
       },
     },
   },
+  'ozone_unittests_amd64-generic': {
+    'remove_from': [
+      # TODO(crbug.com/1204231): Re-enable.
+      'lacros-amd64-generic-rel',
+    ]
+  },
   'perfetto_unittests': {
     'remove_from': [
       # TODO(crbug.com/931138): Fix permission issue when creating tmp files
@@ -2435,6 +2463,11 @@
       },
     },
   },
+  'pixel_tests': {
+    'remove_from': [
+      'Fuchsia x64' # https://crbug.com/1203236
+    ],
+  },
   'rendering_representative_perf_tests': {
     'modifications': {
       'Win10 FYI x64 Exp Release (Intel HD 630)': {
@@ -2494,6 +2527,11 @@
     },
     'remove_from': [
       'android-asan',  # https://crbug.com/962650
+    ],
+  },
+  'screenshot_sync_tests': {
+    'remove_from': [
+      'Fuchsia x64' # https://crbug.com/1203236
     ],
   },
   'screenshot_sync_validating_tests': {

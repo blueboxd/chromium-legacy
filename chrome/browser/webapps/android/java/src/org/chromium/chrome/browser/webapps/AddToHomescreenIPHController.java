@@ -150,6 +150,10 @@ public class AddToHomescreenIPHController {
     }
 
     private void showMessageIPH(Tab tab) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.MESSAGES_FOR_ANDROID_INFRASTRUCTURE)) {
+            return;
+        }
+
         if (!mTracker.shouldTriggerHelpUI(FeatureConstants.ADD_TO_HOMESCREEN_MESSAGE_FEATURE)) {
             return;
         }
@@ -172,7 +176,8 @@ public class AddToHomescreenIPHController {
                         .with(MessageBannerProperties.ON_PRIMARY_ACTION,
                                 () -> onMessageAddButtonClicked(tab))
                         .build();
-        mMessageDispatcher.enqueueMessage(model, tab.getWebContents(), MessageScopeType.NAVIGATION);
+        mMessageDispatcher.enqueueMessage(
+                model, tab.getWebContents(), MessageScopeType.NAVIGATION, false);
         RecordUserAction.record("Android.AddToHomescreenIPH.Message.Shown");
     }
 

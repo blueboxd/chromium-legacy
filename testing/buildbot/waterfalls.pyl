@@ -1170,6 +1170,19 @@
           'gtest_tests': 'android_pie_rel_gtests',
         }
       },
+      'android-weblayer-marshmallow-x86-rel-tests': {
+        'mixins': [
+          'enable_resultdb',
+          'marshmallow-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_weblayer_x86_marshmallow_gtests',
+        }
+      },
       'android-weblayer-oreo-x86-rel-tests': {
         'mixins': [
           'enable_resultdb',
@@ -1274,19 +1287,6 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_weblayer_x86_10_gtests',
-        }
-      },
-      'android-weblayer-marshmallow-x86-rel-tests': {
-        'mixins': [
-          'enable_resultdb',
-          'marshmallow-x86-emulator',
-          'emulator-4-cores',
-          'linux-xenial',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_weblayer_x86_marshmallow_gtests',
         }
       },
       'android-weblayer-pie-x86-wpt-fyi-rel': {
@@ -1713,7 +1713,7 @@
           'chrome',
         ],
         'test_suites': {
-          'gtest_tests': 'lacros_smoke_tast_tests_amd64_generic',
+          'gtest_tests': 'lacros_device_or_vm_tests',
         },
         'os_type': 'chromeos'
       },
@@ -2968,6 +2968,7 @@
           ],
         },
         'test_suites': {
+          'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
           'gtest_tests': 'web_engine_gtests',
         },
       },
@@ -3241,6 +3242,17 @@
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
+        },
+      },
+      'linux-lacros-code-coverage': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_lacros_gtests',
         },
       },
       'linux-lacros-tester-fyi-rel': {
@@ -5151,8 +5163,7 @@
       },
       'Mac10.13 Tests': {
         'mixins': [
-            'isolate_profile_data',
-            'mac_10.15',
+            'mac_10.13',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests_no_nacl',
@@ -6206,7 +6217,7 @@
     'machines': {
       'Linux - Future': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': ['all'],
         'test_suites': {
@@ -6216,7 +6227,7 @@
       },
       'Linux - Future (dbg)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': ['all'],
         'test_suites': {

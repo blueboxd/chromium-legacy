@@ -34,7 +34,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -112,6 +111,7 @@ ReadLaterButton::ReadLaterButton(Browser* browser)
       })),
       highlight_color_animation_(
           std::make_unique<HighlightColorAnimation>(this)) {
+  ConfigureInkDropForToolbar(this);
   // Note: BrowserView may not exist during tests.
   if (BrowserView::GetBrowserViewForBrowser(browser_))
     DCHECK(!BrowserView::GetBrowserViewForBrowser(browser_)
@@ -128,9 +128,6 @@ ReadLaterButton::ReadLaterButton(Browser* browser)
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
 
   views::InstallPillHighlightPathGenerator(this);
-  SetInkDropMode(InkDropMode::ON);
-  SetHasInkDropActionOnClick(true);
-  SetInkDropVisibleOpacity(kToolbarInkDropVisibleOpacity);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_READ_LATER_TITLE));
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
@@ -144,22 +141,6 @@ ReadLaterButton::~ReadLaterButton() = default;
 void ReadLaterButton::CloseBubble() {
   if (webui_bubble_manager_->GetBubbleWidget())
     webui_bubble_manager_->CloseBubble();
-}
-
-std::unique_ptr<views::InkDrop> ReadLaterButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(false);
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropHighlight>
-ReadLaterButton::CreateInkDropHighlight() const {
-  return CreateToolbarInkDropHighlight(this);
-}
-
-SkColor ReadLaterButton::GetInkDropBaseColor() const {
-  return GetToolbarInkDropBaseColor(this);
 }
 
 void ReadLaterButton::OnThemeChanged() {

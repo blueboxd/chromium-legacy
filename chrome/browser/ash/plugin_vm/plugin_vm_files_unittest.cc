@@ -17,10 +17,10 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/ui/ash/launcher/app_window_base.h"
-#include "chrome/browser/ui/ash/launcher/app_window_shelf_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_shelf_controller.h"
-#include "chrome/browser/ui/ash/launcher/shelf_controller_helper.h"
+#include "chrome/browser/ui/ash/shelf/app_window_base.h"
+#include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -177,13 +177,13 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
   ASSERT_FALSE(cicerone_response_callback.is_null());
 
   ash::ShelfID shelf_id(kPluginVmShelfAppId);
-  auto launcher_item_controller =
+  auto shelf_item_controller =
       std::make_unique<AppWindowShelfItemController>(shelf_id);
   MockAppWindowBase mock_window(shelf_id, nullptr);
-  launcher_item_controller->AddWindow(&mock_window);
-  mock_window.SetController(launcher_item_controller.get());
+  shelf_item_controller->AddWindow(&mock_window);
+  mock_window.SetController(shelf_item_controller.get());
   shelf_model.SetShelfItemDelegate(ash::ShelfID(kPluginVmShelfAppId),
-                                   std::move(launcher_item_controller));
+                                   std::move(shelf_item_controller));
   vm_tools::cicerone::LaunchContainerApplicationResponse response;
   response.set_success(true);
   EXPECT_CALL(mock_window, Activate());

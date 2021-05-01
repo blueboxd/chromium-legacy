@@ -39,6 +39,7 @@
 #include "ui/base/l10n/time_format.h"
 
 namespace {
+
 GURL GetRandomlySizedThumbnailUrl() {
   const std::vector<int> dimensions = {150, 160, 170, 180, 190, 200};
   auto random_dimension = [&dimensions]() {
@@ -47,6 +48,7 @@ GURL GetRandomlySizedThumbnailUrl() {
   return GURL(base::StringPrintf("https://via.placeholder.com/%dX%d",
                                  random_dimension(), random_dimension()));
 }
+
 }  // namespace
 #endif
 
@@ -92,8 +94,18 @@ void MemoriesHandler::QueryMemories(
   if (history_clusters::RemoteModelEndpointForDebugging().is_valid()) {
     auto* memory_service =
         MemoriesServiceFactory::GetForBrowserContext(profile_);
-    memory_service->QueryMemories(std::move(query_params),
-                                  std::move(result_callback));
+    memory_service->QueryMemories(
+        std::move(query_params),
+        base::BindOnce(
+            [](base::OnceCallback<void(
+                   history_clusters::mojom::QueryParamsPtr,
+                   std::vector<history_clusters::mojom::MemoryPtr>)> callback,
+               history_clusters::MemoriesService::QueryMemoriesResponse
+                   response) {
+              std::move(callback).Run(std::move(response.query_params),
+                                      std::move(response.clusters));
+            },
+            std::move(result_callback)));
   } else {
 #if defined(CHROME_BRANDED)
     page_->OnMemoriesQueryResult(
@@ -105,6 +117,34 @@ void MemoriesHandler::QueryMemories(
                         std::move(result_callback));
 #endif
   }
+}
+
+void MemoriesHandler::RemoveVisits(
+    std::vector<history_clusters::mojom::VisitPtr> visits,
+    RemoveVisitsCallback callback) {
+  // Reject the request if a pending task exists or the set of visits is empty.
+  if (remove_task_tracker_.HasTrackedTasks() || visits.empty()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::vector<history::ExpireHistoryArgs> expire_list;
+  expire_list.reserve(visits.size());
+  for (const auto& visit_ptr : visits) {
+    expire_list.resize(expire_list.size() + 1);
+    auto& expire_args = expire_list.back();
+    // ExpireHistoryArgs::end_time is not inclusive. Make sure all visits in the
+    // given timespan are removed by adding 1 second to it.
+    expire_args.end_time = visit_ptr->time + base::TimeDelta::FromSeconds(1);
+    expire_args.begin_time = visit_ptr->first_visit_time;
+  }
+  auto* memory_service = MemoriesServiceFactory::GetForBrowserContext(profile_);
+  memory_service->RemoveVisits(
+      expire_list,
+      base::BindOnce(&MemoriesHandler::OnVisitsRemoved,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(visits)),
+      &remove_task_tracker_);
+  std::move(callback).Run(true);
 }
 
 void MemoriesHandler::OnMemoriesDebugMessage(const std::string& message) {
@@ -121,6 +161,11 @@ void MemoriesHandler::OnMemoriesQueryResult(
       std::move(continuation_query_params);
   result_mojom->memories = std::move(memory_mojoms);
   page_->OnMemoriesQueryResult(std::move(result_mojom));
+}
+
+void MemoriesHandler::OnVisitsRemoved(
+    std::vector<history_clusters::mojom::VisitPtr> visits) {
+  page_->OnVisitsRemoved(std::move(visits));
 }
 
 #if !defined(CHROME_BRANDED)
@@ -146,7 +191,7 @@ void MemoriesHandler::QueryHistoryService(
       query_params->recency_threshold.value_or(base::Time::Now());
   // Make sure to look back far enough to find some visits.
   query_options.begin_time =
-      query_options.end_time.LocalMidnight() - base::TimeDelta::FromDays(14);
+      query_options.end_time.LocalMidnight() - base::TimeDelta::FromDays(30);
   std::u16string query = base::UTF8ToUTF16(query_params->query);
   history_service->QueryHistory(
       query, query_options,
@@ -225,11 +270,12 @@ void MemoriesHandler::OnHistoryQueryResults(
     } else {  // !is_valid_search_url
       // If the URL is not a search URL, try to add the visit to the top visits.
       auto visit = history_clusters::mojom::Visit::New();
-      // TOOD(mahmadi): URLResult does not contain visit_id.
+      // TODO(mahmadi): URLResult does not contain visit_id.
       visit->url = result.url();
       visit->page_title = base::UTF16ToUTF8(result.title());
       visit->thumbnail_url = GetRandomlySizedThumbnailUrl();
       visit->time = result.visit_time();
+      visit->first_visit_time = result.visit_time();
       visit->relative_date = base::UTF16ToUTF8(ui::TimeFormat::Simple(
           ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
           base::Time::Now() - visit->time));
@@ -246,6 +292,7 @@ void MemoriesHandler::OnHistoryQueryResults(
             });
         if (duplicate_visit_it != visits.end()) {
           (*duplicate_visit_it)->num_duplicate_visits++;
+          (*duplicate_visit_it)->first_visit_time = visit->time;
           return;
         }
         // For the top visits, if the domain name is seen before, add |visit| to

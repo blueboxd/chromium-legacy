@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/views/app_list_folder_view.h"
@@ -807,7 +808,7 @@ void AppListView::Show(AppListViewState preferred_state, bool is_side_shelf) {
   OnTabletModeChanged(delegate_->IsInTabletMode());
   app_list_main_view_->ShowAppListWhenReady();
 
-  UMA_HISTOGRAM_TIMES(kAppListCreationTimeHistogram,
+  UMA_HISTOGRAM_TIMES("Apps.AppListCreationTime",
                       base::Time::Now() - time_shown_.value());
   time_shown_ = base::nullopt;
   RecordFolderMetrics();
@@ -1264,7 +1265,7 @@ void AppListView::RecordStateTransitionForUma(AppListViewState new_state) {
   if (transition == kMaxAppListStateTransition)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(kAppListStateTransitionSourceHistogram, transition,
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListStateTransitionSource", transition,
                             kMaxAppListStateTransition);
 
   switch (transition) {
@@ -2374,6 +2375,7 @@ void AppListView::SetBackgroundShieldColor() {
 void AppListView::RecordFolderMetrics() {
   int number_of_apps_in_folders = 0;
   int number_of_folders = 0;
+  int non_system_folders = 0;
   AppListItemList* item_list =
       app_list_main_view_->model()->top_level_item_list();
   for (size_t i = 0; i < item_list->item_count(); ++i) {
@@ -2385,9 +2387,14 @@ void AppListView::RecordFolderMetrics() {
     if (folder->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM)
       continue;  // Don't count items in OEM folders.
     number_of_apps_in_folders += folder->item_list()->item_count();
+    if (folder->id() == kCrostiniFolderId)
+      continue;
+    // Folders that are not the OEM folder and not "Linux apps".
+    ++non_system_folders;
   }
-  UMA_HISTOGRAM_COUNTS_100(kNumberOfFoldersHistogram, number_of_folders);
-  UMA_HISTOGRAM_COUNTS_100(kNumberOfAppsInFoldersHistogram,
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfFolders", number_of_folders);
+  UMA_HISTOGRAM_COUNTS_100("Apps.NumberOfNonSystemFolders", non_system_folders);
+  UMA_HISTOGRAM_COUNTS_100("Apps.AppsInFolders.FullscreenAppListEnabled",
                            number_of_apps_in_folders);
 }
 

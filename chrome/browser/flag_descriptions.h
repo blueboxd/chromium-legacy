@@ -1273,9 +1273,6 @@ extern const char kSendTabToSelfWhenSignedInDescription[];
 extern const char kSidePanelName[];
 extern const char kSidePanelDescription[];
 
-extern const char kSidePanelPrototypeName[];
-extern const char kSidePanelPrototypeDescription[];
-
 extern const char kServiceWorkerSubresourceFilterName[];
 extern const char kServiceWorkerSubresourceFilterDescription[];
 
@@ -1815,6 +1812,9 @@ extern const char kMessagesForAndroidPopupBlockedDescription[];
 
 extern const char kMessagesForAndroidSafetyTipName[];
 extern const char kMessagesForAndroidSafetyTipDescription[];
+
+extern const char kMessagesForAndroidSaveCardName[];
+extern const char kMessagesForAndroidSaveCardDescription[];
 
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
@@ -2407,9 +2407,6 @@ extern const char kEnableAppDataSearchDescription[];
 
 extern const char kEnableAppGridGhostName[];
 extern const char kEnableAppGridGhostDescription[];
-
-extern const char kEnableAppListSearchAutocompleteName[];
-extern const char kEnableAppListSearchAutocompleteDescription[];
 
 extern const char kEnableAppReinstallZeroStateName[];
 extern const char kEnableAppReinstallZeroStateDescription[];

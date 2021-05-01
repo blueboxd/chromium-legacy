@@ -1306,11 +1306,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "enable-app-list-search-autocomplete",
-    "owners": [ "newcomer" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "enable-arc-unified-audio-focus",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
@@ -3602,6 +3597,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "messages-for-android-save-card",
+    "owners": [ "pavely", "lazzzis" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "messages-save-card-infobar",
     "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
     "expiry_milestone": 83
@@ -4847,11 +4847,6 @@
   {
     "name" : "side-panel",
     "owners": [ "chrome-desktop-ui-sea@google.com", "pbos" ],
-    "expiry_milestone" : 92
-  },
-  {
-    "name" : "side-panel-prototype",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "johntlee" ],
     "expiry_milestone" : 92
   },
   {

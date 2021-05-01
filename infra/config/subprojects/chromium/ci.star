@@ -3579,6 +3579,23 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = "TSAN Release (deps-cache-full-files) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux tsan",
+        short_name = "rre",
+    ),
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 3,
+    ),
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-trusted",
+    reclient_rewrapper_env = {"RBE_cache_silo": "TSAN Release (deps-cache-full-files) (reclient)"},
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
     name = "TSAN Release (j-250) (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "linux tsan",
@@ -5419,6 +5436,7 @@ ci.memory_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
+    os = os.LINUX_BIONIC,
     ssd = True,
 )
 
@@ -5432,6 +5450,7 @@ ci.memory_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     triggered_by = ["ci/Linux ASan LSan Builder"],
+    os = os.LINUX_BIONIC,
 )
 
 ci.memory_builder(

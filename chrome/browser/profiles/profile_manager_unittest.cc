@@ -109,8 +109,7 @@ void ExpectProfileWithName(const std::string& profile_name,
 
   // Create a profile on the fly so the the same comparison
   // can be used in Windows and other platforms.
-  EXPECT_EQ(base::FilePath().AppendASCII(profile_name),
-            profile->GetPath().BaseName());
+  EXPECT_EQ(base::FilePath().AppendASCII(profile_name), profile->GetBaseName());
   std::move(closure).Run();
 }
 
@@ -186,7 +185,7 @@ class ProfileManagerTest : public testing::Test {
                                const std::string& name,
                                MockObserver* mock_observer) {
     ProfileManager::CreateMultiProfileAsync(
-        base::UTF8ToUTF16(name), 0,
+        base::UTF8ToUTF16(name), /*icon_index=*/0, /*is_hidden=*/false,
         base::BindRepeating(&MockObserver::OnProfileCreated,
                             base::Unretained(mock_observer)));
   }
@@ -582,6 +581,31 @@ TEST_F(ProfileManagerTest, CreateMultiProfileAsyncMultipleRequests) {
   EXPECT_NE(profile1, profile2);
   EXPECT_NE(profile1, profile3);
   EXPECT_NE(profile2, profile3);
+}
+
+TEST_F(ProfileManagerTest, CreateHiddenProfileAsync) {
+  Profile* profile = nullptr;
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), NotFail()))
+      .Times(testing::AtLeast(2))
+      .WillRepeatedly(testing::SaveArg<0>(&profile));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  profile_manager->CreateMultiProfileAsync(
+      u"New Profile", 0, /*is_hidden=*/true,
+      base::BindRepeating(&MockObserver::OnProfileCreated,
+                          base::Unretained(&mock_observer)));
+
+  content::RunAllTasksUntilIdle();
+  ASSERT_NE(profile, nullptr);
+
+  ProfileAttributesEntry* entry =
+      profile_manager->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath());
+  ASSERT_NE(entry, nullptr);
+  EXPECT_TRUE(entry->IsOmitted());
+  EXPECT_TRUE(entry->IsEphemeral());
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -1405,6 +1429,12 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   ASSERT_EQ(0u, final_last_active_profile_list->GetSize());
 }
 
+#if defined(OS_WIN)
+#define MAYBE_CleanUpGuestEphemeralProfile DISABLED_CleanUpGuestEphemeralProfile
+#else
+#define MAYBE_CleanUpGuestEphemeralProfile CleanUpGuestEphemeralProfile
+#endif
+// TODO(crbug.com/1203621) Disabled for flakiness.
 TEST_P(ProfileManagerGuestTest, CleanUpGuestEphemeralProfile) {
   // Create two profiles, one of them is guest.
   ProfileManager* profile_manager = g_browser_process->profile_manager();

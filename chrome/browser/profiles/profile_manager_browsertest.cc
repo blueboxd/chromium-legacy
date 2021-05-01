@@ -309,8 +309,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeleteSingletonProfile) {
 
   // Make sure the last used profile was set correctly before the notification
   // was sent.
-  std::string last_used_profile_name =
-      last_used->GetPath().BaseName().MaybeAsASCII();
+  std::string last_used_profile_name = last_used->GetBaseName().MaybeAsASCII();
   EXPECT_EQ(last_used_profile_name, observer.last_used_profile_name());
 }
 
@@ -507,7 +506,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest,
   base::RunLoop run_loop;
   ProfileManager::CreateMultiProfileAsync(
       u"New Profile",
-      /*icon_index=*/0,
+      /*icon_index=*/0, /*is_hidden=*/false,
       base::BindRepeating(&ProfileCreationComplete,
                           run_loop.QuitWhenIdleClosure()));
   run_loop.Run();

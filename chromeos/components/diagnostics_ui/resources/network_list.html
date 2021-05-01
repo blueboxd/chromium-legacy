@@ -5,7 +5,12 @@
 </style>
 
 <div id="networkListContainer">
-  <connectivity-card id="connectivityCard"
+  <connectivity-card id="connectivityCard" active-guid="[[activeGuid_]]"
     is-test-running="{{isTestRunning}}">
   </connectivity-card>
+  <dom-repeat id="networkInfoList" items="[[otherNetworkGuids_]]" as="guid">
+    <template>
+      <network-info guid="[[guid]]"></network-info>
+    </template>
+  </dom-repeat>
 </div>

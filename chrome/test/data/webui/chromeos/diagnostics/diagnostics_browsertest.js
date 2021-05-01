@@ -58,6 +58,7 @@ const debug_suites_list = [
   'FakeSystemDataProvider',
   'FakeSystemRoutineContoller',
   'MemoryCard',
+  'NetworkInfo',
   'NetworkList',
   'OverviewCard',
   'PercentBarChart',
@@ -66,7 +67,8 @@ const debug_suites_list = [
   'RoutineResultEntry',
   'RoutineResultList',
   'RoutineSection',
-  'TextBadge'
+  'TextBadge',
+  'WifiInfo',
 ];
 
 TEST_F('DiagnosticsApp', 'BrowserTest', function() {

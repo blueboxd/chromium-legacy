@@ -24,6 +24,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
@@ -403,6 +405,7 @@ public class FeedStream implements Stream {
     private SnackbarManager mSnackManager;
     private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
     private WindowAndroid mWindowAndroid;
+    private UnreadContentObserver mUnreadContentObserver;
 
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
@@ -498,6 +501,17 @@ public class FeedStream implements Stream {
                 }
             }
         };
+        // Only watch for unread content on the web feed, not for-you feed.
+        if (!isInterestFeed) {
+            mUnreadContentObserver = new UnreadContentObserver(/*isWebFeed=*/true);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        if (mUnreadContentObserver != null) {
+            mUnreadContentObserver.destroy();
+        }
     }
 
     @Override
@@ -551,7 +565,7 @@ public class FeedStream implements Stream {
         int feedCount = mContentManager.getItemCount() - mHeaderCount;
         if (feedCount > 0) {
             mContentManager.removeContents(mHeaderCount, feedCount);
-            mRecyclerViewAnimationFinishDetector.asyncWait();
+            notifyContentChangeOnAnimationFinish();
         }
 
         mContentManager.setHandlers(new HashMap<>());
@@ -704,6 +718,12 @@ public class FeedStream implements Stream {
         if (canTrigger) {
             mAccumulatedDySinceLastLoadMore = 0;
         }
+    }
+
+    @Override
+    public ObservableSupplier<Boolean> hasUnreadContent() {
+        return mUnreadContentObserver != null ? mUnreadContentObserver.mHasUnreadContent
+                                              : Stream.super.hasUnreadContent();
     }
 
     /**
@@ -871,7 +891,7 @@ public class FeedStream implements Stream {
         }
 
         if (hasContentChange) {
-            mRecyclerViewAnimationFinishDetector.asyncWait();
+            notifyContentChangeOnAnimationFinish();
         }
     }
 
@@ -893,6 +913,19 @@ public class FeedStream implements Stream {
             layoutManager.scrollToPositionWithOffset(state.position, state.offset);
         }
         return true;
+    }
+
+    private void notifyContentChangeOnAnimationFinish() {
+        // This works around the bug that the out-of-screen toolbar is not brought back together
+        // with the new tab page view when it slides down. This is because the RecyclerView
+        // animation may not finish when content changed event is triggered and thus the new tab
+        // page layout view may still be partially off screen.
+        mRecyclerViewAnimationFinishDetector.asyncWait(mRecyclerView, () -> {
+            for (ContentChangedListener listener : mContentChangedListeners) {
+                listener.onContentChanged(
+                        mContentManager != null ? mContentManager.getContentList() : null);
+            }
+        });
     }
 
     @VisibleForTesting
@@ -942,16 +975,23 @@ public class FeedStream implements Stream {
 
     // Detects animation finishes in RecyclerView.
     // https://stackoverflow.com/questions/33710605/detect-animation-finish-in-androids-recyclerview
-    private class RecyclerViewAnimationFinishDetector
+    private static class RecyclerViewAnimationFinishDetector
             implements RecyclerView.ItemAnimator.ItemAnimatorFinishedListener {
-        private boolean mWaitingStarted;
+        private RecyclerView mRecyclerView;
+        private Runnable mFinishedCallback;
 
-        /** Asynchronously waits for the animation to finish. */
-        public void asyncWait() {
-            if (mWaitingStarted) {
+        /**
+         * Asynchronously waits for the animation to finish.
+         *
+         * @param recyclerView RecyclerView to wait for animation to finish.
+         * @param finishedCallback Callback to invoke when the animation finishes.
+         */
+        public void asyncWait(RecyclerView recyclerView, Runnable finishedCallback) {
+            if (mRecyclerView != null) {
                 return;
             }
-            mWaitingStarted = true;
+            mRecyclerView = recyclerView;
+            mFinishedCallback = finishedCallback;
 
             // The RecyclerView has not started animating yet, so post a message to the
             // message queue that will be run after the RecyclerView has started animating.
@@ -970,15 +1010,10 @@ public class FeedStream implements Stream {
         }
 
         private void onFinished() {
-            mWaitingStarted = false;
-
-            // This works around the bug that the out-of-screen toolbar is not brought back together
-            // with the new tab page view when it slides down. This is because the RecyclerView
-            // animation may not finish when content changed event is triggered and thus the new tab
-            // page layout view may still be partially off screen.
-            for (ContentChangedListener listener : mContentChangedListeners) {
-                listener.onContentChanged(
-                        mContentManager != null ? mContentManager.getContentList() : null);
+            mRecyclerView = null;
+            if (mFinishedCallback != null) {
+                mFinishedCallback.run();
+                mFinishedCallback = null;
             }
         }
 
@@ -1056,6 +1091,20 @@ public class FeedStream implements Stream {
         protected void onScrollEvent(int scrollAmount) {
             FeedStreamJni.get().reportStreamScrolled(
                     mNativeFeedStream, FeedStream.this, scrollAmount);
+        }
+    }
+
+    private class UnreadContentObserver extends FeedServiceBridge.UnreadContentObserver {
+        ObservableSupplierImpl<Boolean> mHasUnreadContent = new ObservableSupplierImpl<>();
+
+        UnreadContentObserver(boolean isWebFeed) {
+            super(isWebFeed);
+            mHasUnreadContent.set(false);
+        }
+
+        @Override
+        public void hasUnreadContentChanged(boolean hasUnreadContent) {
+            mHasUnreadContent.set(hasUnreadContent);
         }
     }
 

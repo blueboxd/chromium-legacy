@@ -2232,8 +2232,8 @@ Press an assigned switch to remove assignment.
   <message name="IDS_SETTINGS_INTERNET_DEVICE_INITIALIZING" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is initializing.">
     Initializing
   </message>
-  <message name="IDS_SETTINGS_INTERNET_DEVICE_BUSY" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is busy.">
-    Busy
+  <message name="IDS_SETTINGS_INTERNET_DEVICE_BUSY" desc="Settings > Internet > Message when the cellular modem is busy applying updates (e.g., installing an eSIM profile).">
+    Applying changes...
   </message>
   <message name="IDS_SETTINGS_INTERNET_JOIN_TYPE" desc="Title for the network configuration dialog for a new network.">
     Join <ph name="TYPE">$1<ex>WiFi</ex></ph> network
@@ -2375,6 +2375,9 @@ Press an assigned switch to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_REMOVE_PROFILE_DIALOG_TITLE" desc="Settings > Internet > Network details >Remove profile dialog: Title remove esim profile dialog">
     Remove "<ph name="ESIM_PROFILE_NAME">$1<ex>Profile 1</ex></ph>"?
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_REMOVE_PROFILE_DIALOG_DESCRIPTION" desc="Settings > Internet > Network details >Remove profile dialog: Description for the remove esim profile dialog, warning the user that they may not be to reinstall the profile they are about to remove.">
+    You may not be able to reinstall this profile
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_REMOVE_PROFILE_DIALOG_CANCEL" desc="Settings > Internet > Network details >Remove profile dialog: The Label for the dialog cancel button to remove an eSIM cellular network">
     Cancel

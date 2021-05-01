@@ -11,7 +11,6 @@ goog.provide('Output');
 goog.require('AbstractEarcons');
 goog.require('AutomationTreeWalker');
 goog.require('ChromeVox');
-goog.require('EarconEngine');
 goog.require('EventSourceState');
 goog.require('LocaleOutputHelper');
 goog.require('LogStore');
@@ -2510,6 +2509,7 @@ Output.ROLE_INFO_ = {
   image: {
     msgId: 'role_img',
   },
+  imeCandidate: {msgId: 'ime_candidate', ignoreAncestry: true},
   inputTime: {msgId: 'input_type_time', inherits: 'abstractContainer'},
   link: {msgId: 'role_link', earconId: 'LINK'},
   list: {msgId: 'role_list', inherits: 'abstractList'},

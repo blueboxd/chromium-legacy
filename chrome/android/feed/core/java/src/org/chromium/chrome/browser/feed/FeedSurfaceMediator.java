@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.memory.MemoryPressureCallback;
@@ -365,37 +366,6 @@ public class FeedSurfaceMediator
     private void initializePropertiesForStream() {
         Stream stream = mCoordinator.getStream();
 
-        if (mSnapScrollHelper != null && stream != null) {
-            mStreamScrollListener = new ScrollListener() {
-                @Override
-                public void onScrollStateChanged(int state) {}
-
-                @Override
-                public void onScrolled(int dx, int dy) {
-                    mSnapScrollHelper.handleScroll();
-                }
-
-                @Override
-                public void onHeaderOffsetChanged(int verticalOffset) {}
-            };
-            stream.addScrollListener(mStreamScrollListener);
-        }
-
-        mStreamContentChangedListener = contents -> {
-            if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
-
-            if (mContentFirstAvailableTimeMs == 0) {
-                mContentFirstAvailableTimeMs = SystemClock.elapsedRealtime();
-                if (mHasPendingUmaRecording) {
-                    maybeRecordContentLoadingTime();
-                    mHasPendingUmaRecording = false;
-                }
-            }
-            mIsLoadingFeed = false;
-            mStreamContentChanged = true;
-        };
-        stream.addOnContentChangedListener(mStreamContentChangedListener);
-
         if (mHasHeader) {
             mSectionHeaderModel.set(SectionHeaderListProperties.ON_TAB_SELECTED_CALLBACK_KEY,
                     new FeedSurfaceHeaderSelectedCallback());
@@ -456,6 +426,12 @@ public class FeedSurfaceMediator
         mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY).add(headerModel);
         int tabId =
                 mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY).size() - 1;
+
+        // Update UNREAD_CONTENT_KEY now, and any time hasUnreadContent() changes.
+        Callback<Boolean> callback = hasUnreadContent
+                -> headerModel.set(SectionHeaderProperties.UNREAD_CONTENT_KEY, hasUnreadContent);
+        callback.onResult(stream.hasUnreadContent().addObserver(callback));
+
         mTabToStreamMap.put(tabId, stream);
     }
 
@@ -474,10 +450,46 @@ public class FeedSurfaceMediator
         mRestoreScrollState = null;
         mCurrentStream = stream;
         mCoordinator.getHybridListRenderer().onSurfaceOpened();
+        if (mSnapScrollHelper != null) {
+            mStreamScrollListener = new ScrollListener() {
+                @Override
+                public void onScrollStateChanged(int state) {}
+
+                @Override
+                public void onScrolled(int dx, int dy) {
+                    mSnapScrollHelper.handleScroll();
+                }
+
+                @Override
+                public void onHeaderOffsetChanged(int verticalOffset) {}
+            };
+            mCurrentStream.addScrollListener(mStreamScrollListener);
+        }
+
+        mStreamContentChangedListener = contents -> {
+            if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
+
+            if (mContentFirstAvailableTimeMs == 0) {
+                mContentFirstAvailableTimeMs = SystemClock.elapsedRealtime();
+                if (mHasPendingUmaRecording) {
+                    maybeRecordContentLoadingTime();
+                    mHasPendingUmaRecording = false;
+                }
+            }
+            mIsLoadingFeed = false;
+            mStreamContentChanged = true;
+        };
+        mCurrentStream.addOnContentChangedListener(mStreamContentChangedListener);
     }
 
     void unbindStream() {
         if (mCurrentStream == null) return;
+        if (mStreamScrollListener != null) {
+            mCurrentStream.removeScrollListener(mStreamScrollListener);
+            mStreamScrollListener = null;
+        }
+        mCurrentStream.removeOnContentChangedListener(mStreamContentChangedListener);
+
         mCoordinator.getHybridListRenderer().onSurfaceClosed();
         mCurrentStream.unbind();
         mCurrentStream = null;
@@ -572,6 +584,9 @@ public class FeedSurfaceMediator
         }
 
         unbindStream();
+        for (Stream s : mTabToStreamMap.values()) {
+            s.destroy();
+        }
         mTabToStreamMap.clear();
 
         mPrefChangeRegistrar.removeObserver(Pref.ARTICLES_LIST_VISIBLE);

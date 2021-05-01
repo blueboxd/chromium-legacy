@@ -33,6 +33,7 @@
       <include name="IDR_DIAGNOSTICS_MEMORY_CARD_JS" file="${root_gen_dir}/chromeos/components/diagnostics_ui/resources/memory_card.js" resource_path="memory_card.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_DIAGNOSTICS_MOJO_INTERFACE_PROVIDER_JS" file="mojo_interface_provider.js" type="BINDATA"/>
       <include name="IDR_DIAGNOSTICS_MOJO_UTILS_JS" file="mojo_utils.js" type="BINDATA"/>
+      <include name="IDR_DIAGNOSTICS_NETWORK_INFO_JS" file="${root_gen_dir}/chromeos/components/diagnostics_ui/resources/network_info.js" resource_path="network_info.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_DIAGNOSTICS_NETWORK_LIST_JS" file="${root_gen_dir}/chromeos/components/diagnostics_ui/resources/network_list.js" resource_path="network_list.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_DIAGNOSTICS_OVERVIEW_CARD_JS" file="${root_gen_dir}/chromeos/components/diagnostics_ui/resources/overview_card.js" resource_path="overview_card.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_DIAGNOSTICS_PERCENT_BAR_CHART_JS" file="${root_gen_dir}/chromeos/components/diagnostics_ui/resources/percent_bar_chart.js" resource_path="percent_bar_chart.js" use_base_dir="false" type="BINDATA"/>
@@ -47,6 +48,7 @@
       <include name="IDR_DIAGNOSTICS_TEXT_BADGE_JS" file="${root_gen_dir}/chromeos/components/diagnostics_ui/resources/text_badge.js" resource_path="text_badge.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_DIAGNOSTICS_TYPES_JS" file="diagnostics_types.js" type="BINDATA"/>
       <include name="IDR_DIAGNOSTICS_UTILS_JS" file="diagnostics_utils.js" type="BINDATA"/>
+      <include name="IDR_DIAGNOSTICS_WIFI_INFO_JS" file="${root_gen_dir}/chromeos/components/diagnostics_ui/resources/wifi_info.js" resource_path="wifi_info.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_D3_SRC_D3_MIN_JS" file="../../../../third_party/d3/src/d3.min.js" resource_path="d3.min.js" type="BINDATA" />
     </includes>
   </release>

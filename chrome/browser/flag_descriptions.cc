@@ -2201,10 +2201,6 @@ const char kSendTabToSelfWhenSignedInDescription[] =
 const char kSidePanelName[] = "Side panel";
 const char kSidePanelDescription[] = "Host some content in a side panel.";
 
-const char kSidePanelPrototypeName[] = "Side panel prototype";
-const char kSidePanelPrototypeDescription[] =
-    "Display a prototype of the side panel.";
-
 const char kServiceWorkerSubresourceFilterName[] =
     "ServiceWorker subresource filter";
 const char kServiceWorkerSubresourceFilterDescription[] =
@@ -3120,6 +3116,10 @@ const char kMessagesForAndroidPopupBlockedDescription[] =
 const char kMessagesForAndroidSafetyTipName[] = "Safety Tip Messages UI";
 const char kMessagesForAndroidSafetyTipDescription[] =
     "When enabled, safety tip infobars will use the new Messages UI.";
+
+extern const char kMessagesForAndroidSaveCardName[] = "Save Card Messages UI";
+extern const char kMessagesForAndroidSaveCardDescription[] =
+    "When enabled, save card infobars will use the new Messages UI.";
 
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
@@ -4177,12 +4177,6 @@ const char kEnableAppReinstallZeroStateDescription[] =
 const char kEnableAppGridGhostName[] = "App Grid Ghosting";
 const char kEnableAppGridGhostDescription[] =
     "Enables ghosting during an item drag in launcher.";
-
-const char kEnableAppListSearchAutocompleteName[] =
-    "App List Search Autocomplete";
-const char kEnableAppListSearchAutocompleteDescription[] =
-    "Allow App List search box to autocomplete queries for Google searches and "
-    "apps.";
 
 const char kEnableArcUnifiedAudioFocusName[] =
     "Enable unified audio focus on ARC";

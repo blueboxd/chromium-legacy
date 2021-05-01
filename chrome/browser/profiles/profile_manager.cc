@@ -862,6 +862,7 @@ Profile* ProfileManager::GetProfileFromProfileKey(ProfileKey* profile_key) {
 base::FilePath ProfileManager::CreateMultiProfileAsync(
     const std::u16string& name,
     size_t icon_index,
+    bool is_hidden,
     const CreateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!name.empty());
@@ -893,6 +894,8 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
     init_params.profile_path = new_path;
     init_params.profile_name = name;
     init_params.icon_index = icon_index;
+    init_params.is_ephemeral = is_hidden;
+    init_params.is_omitted = is_hidden;
     storage.AddProfile(std::move(init_params));
   }
 
@@ -2060,7 +2063,7 @@ void ProfileManager::SaveActiveProfiles() {
   profile_list->Clear();
 
   // crbug.com/120112 -> several non-off-the-record profiles might have the same
-  // GetPath().BaseName(). In that case, we cannot restore both
+  // GetBaseName(). In that case, we cannot restore both
   // profiles. Include each base name only once in the last active profile
   // list.
   std::set<std::string> profile_paths;
@@ -2072,7 +2075,7 @@ void ProfileManager::SaveActiveProfiles() {
         << "Guest profiles shouldn't be saved as active profiles";
     CHECK(!(*it)->IsOffTheRecord())
         << "OTR profiles shouldn't be saved as active profiles";
-    std::string profile_path = (*it)->GetPath().BaseName().MaybeAsASCII();
+    std::string profile_path = (*it)->GetBaseName().MaybeAsASCII();
     // Some profiles might become ephemeral after they are created.
     // Don't persist the System Profile as one of the last actives, it should
     // never get a browser.
@@ -2180,8 +2183,7 @@ void ProfileManager::UpdateLastUser(Profile* last_active) {
   // Also never consider the SystemProfile as "active".
   if (profiles_info_.find(last_active->GetPath()) != profiles_info_.end() &&
       !last_active->IsSystemProfile()) {
-    std::string profile_path_base =
-        last_active->GetPath().BaseName().MaybeAsASCII();
+    std::string profile_path_base = last_active->GetBaseName().MaybeAsASCII();
     if (profile_path_base != GetLastUsedProfileBaseName())
       profiles::SetLastUsedProfile(profile_path_base);
 

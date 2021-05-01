@@ -368,27 +368,52 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
 MinMaxSizesResult ComputeMinAndMaxContentContributionForReplaced(
     const NGBlockNode& child,
     const NGConstraintSpace& space) {
-  const ComputedStyle& child_style = child.Style();
-  LayoutBox* box = child.GetLayoutBox();
-  bool needs_size_reset = false;
-  if (!box->HasOverrideContainingBlockContentLogicalHeight()) {
-    box->SetOverrideContainingBlockContentLogicalHeight(
-        space.ReplacedPercentageResolutionBlockSize());
-    needs_size_reset = true;
+  const auto& child_style = child.Style();
+  MinMaxSizes result;
+
+  if (RuntimeEnabledFeatures::LayoutNGReplacedEnabled()) {
+    const NGBoxStrut border_padding =
+        ComputeBorders(space, child) + ComputePadding(space, child_style);
+    result = ComputeReplacedSize(child, space, border_padding).inline_size;
+
+    if (child_style.LogicalWidth().IsPercentOrCalc() ||
+        child_style.LogicalMaxWidth().IsPercentOrCalc()) {
+      // TODO(ikilpatrick): No browser does this today, but we'd get slightly
+      // better results here if we also considered the min-block size, and
+      // transferred through the aspect-ratio (if available).
+      result.min_size = ResolveMinInlineLength(
+          space, child_style, border_padding,
+          [&](MinMaxSizesType) -> MinMaxSizesResult {
+            // Behave the same as if we couldn't resolve the min-inline size.
+            MinMaxSizes sizes;
+            sizes = border_padding.InlineSum();
+            return {sizes, /* depends_on_block_constraints */ false};
+          },
+          child_style.LogicalMinWidth());
+    }
+  } else {
+    LayoutBox* box = child.GetLayoutBox();
+    bool needs_size_reset = false;
+    if (!box->HasOverrideContainingBlockContentLogicalHeight()) {
+      box->SetOverrideContainingBlockContentLogicalHeight(
+          space.ReplacedPercentageResolutionBlockSize());
+      needs_size_reset = true;
+    }
+
+    result = box->PreferredLogicalWidths();
+
+    if (needs_size_reset)
+      box->ClearOverrideContainingBlockContentSize();
   }
-
-  MinMaxSizes result = box->PreferredLogicalWidths();
-
-  if (needs_size_reset)
-    box->ClearOverrideContainingBlockContentSize();
 
   // Replaced elements which have a percentage block-size always depend on
   // their block constraints (as they have an aspect-ratio which changes their
   // min/max content size).
-  bool depends_on_block_constraints =
-      child_style.LogicalMinHeight().IsPercentOrCalc() ||
+  const bool depends_on_block_constraints =
       child_style.LogicalHeight().IsPercentOrCalc() ||
-      child_style.LogicalMaxHeight().IsPercentOrCalc();
+      child_style.LogicalMinHeight().IsPercentOrCalc() ||
+      child_style.LogicalMaxHeight().IsPercentOrCalc() ||
+      (child_style.LogicalHeight().IsAuto() && space.StretchBlockSizeIfAuto());
   return MinMaxSizesResult(result, depends_on_block_constraints);
 }
 
@@ -792,6 +817,7 @@ base::Optional<LogicalSize> ComputeNormalizedNaturalSize(
 // Computes size for a replaced element.
 LogicalSize ComputeReplacedSize(const NGBlockNode& node,
                                 const NGConstraintSpace& space,
+                                const NGBoxStrut& border_padding,
                                 ReplacedSizeMode mode) {
   DCHECK(node.IsReplaced());
 
@@ -804,19 +830,7 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
     return LogicalSize();
 
   const ComputedStyle& style = node.Style();
-  const NGBoxStrut border_padding =
-      ComputeBorders(space, node) + ComputePadding(space, style);
   const EBoxSizing box_sizing = style.BoxSizingForAspectRatio();
-
-  // Replaced elements in quirks-mode resolve their min/max block-sizes against
-  // a different size than the main size. See:
-  //  - https://www.w3.org/TR/CSS21/visudet.html#min-max-heights
-  //  - https://bugs.chromium.org/p/chromium/issues/detail?id=385877
-  // For the history on this behaviour. Fortunately if this is the case we can
-  // just use the given available size to resolve these sizes against.
-  LayoutUnit percentage_resolution_size = space.PercentageResolutionBlockSize();
-  if (node.GetDocument().InQuirksMode())
-    percentage_resolution_size = space.AvailableSize().block_size;
 
   const Length& block_length = style.LogicalHeight();
   MinMaxSizes block_min_max_sizes;
@@ -825,15 +839,26 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
     // Don't resolve any block lengths or constraints.
     block_min_max_sizes = {LayoutUnit(), LayoutUnit::Max()};
   } else {
+    // Replaced elements in quirks-mode resolve their min/max block-sizes
+    // against a different size than the main size. See:
+    //  - https://www.w3.org/TR/CSS21/visudet.html#min-max-heights
+    //  - https://bugs.chromium.org/p/chromium/issues/detail?id=385877
+    // For the history on this behaviour. Fortunately if this is the case we
+    // can just use the given available size to resolve these sizes against.
+    const LayoutUnit min_max_percentage_resolution_size =
+        node.GetDocument().InQuirksMode()
+            ? space.AvailableSize().block_size
+            : space.PercentageResolutionBlockSize();
+
     block_min_max_sizes = {
         ResolveMinBlockLength(
             space, style, border_padding, style.LogicalMinHeight(),
             /* available_block_size_adjustment */ LayoutUnit(),
-            &percentage_resolution_size),
+            &min_max_percentage_resolution_size),
         ResolveMaxBlockLength(
             space, style, border_padding, style.LogicalMaxHeight(),
             /* available_block_size_adjustment */ LayoutUnit(),
-            &percentage_resolution_size)};
+            &min_max_percentage_resolution_size)};
 
     if (space.IsFixedBlockSize()) {
       replaced_block = space.AvailableSize().block_size;
@@ -850,10 +875,15 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
         block_length_to_resolve = Length::FillAvailable();
       }
 
-      if (!BlockLengthUnresolvable(space, block_length_to_resolve)) {
+      const LayoutUnit main_percentage_resolution_size =
+          space.ReplacedPercentageResolutionBlockSize();
+      if (!BlockLengthUnresolvable(space, block_length_to_resolve,
+                                   &main_percentage_resolution_size)) {
         replaced_block = ResolveMainBlockLength(
             space, style, border_padding, block_length_to_resolve,
-            /* intrinsic_size */ kIndefiniteSize);
+            /* intrinsic_size */ kIndefiniteSize,
+            /* available_block_size_adjustment */ LayoutUnit(),
+            &main_percentage_resolution_size);
         DCHECK_NE(*replaced_block, kIndefiniteSize);
         replaced_block =
             block_min_max_sizes.ClampSizeToMinAndMax(*replaced_block);
@@ -1444,7 +1474,7 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
 
   if (node.IsReplaced()) {
     const LogicalSize border_box_size =
-        ComputeReplacedSize(node, constraint_space);
+        ComputeReplacedSize(node, constraint_space, border_padding);
     return {border_box_size, border, scrollbar, padding};
   }
 

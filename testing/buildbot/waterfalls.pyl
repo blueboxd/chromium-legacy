@@ -2747,6 +2747,11 @@
           'chromium_builder_asan',
         ],
       },
+      'TSAN Release (deps-cache-full-files) (reclient)': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
       'TSAN Release (j-250) (reclient)': {
         'additional_compile_targets': [
           'chromium_builder_asan',
@@ -4875,6 +4880,15 @@
         'test_suites': {
           'gtest_tests': 'chromium_linux_cast_video_gtests',
         },
+      },
+      'Cast Linux Debug': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'additional_compile_targets': [
+          'cast_shell',
+          'cast_test_lists',
+        ],
       },
       'Fuchsia ARM64': {
         'additional_compile_targets': [

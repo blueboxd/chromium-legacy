@@ -86,6 +86,8 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
+#import "ios/chrome/browser/ui/default_promo/default_promo_non_modal_presentation_delegate.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -1704,25 +1706,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [coordinator
       animateAlongsideTransition:^(
-          id<UIViewControllerTransitionCoordinatorContext> context) {
-        // Force updates of the toolbar updater as the toolbar height might
-        // change on rotation.
-        [_toolbarUIUpdater updateState];
-        // Resize horizontal viewport if Smooth Scrolling is on.
-        if (fullscreen::features::ShouldUseSmoothScrolling()) {
-          BrowserViewController* strongSelf = weakSelf;
-          if (strongSelf) {
-            strongSelf.fullscreenController->ResizeHorizontalViewport();
-          }
-        }
+          id<UIViewControllerTransitionCoordinatorContext>) {
+        [weakSelf animateTransition];
       }
-      completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        BrowserViewController* strongSelf = weakSelf;
-        if (!base::FeatureList::IsEnabled(kModernTabStrip)) {
-          if (strongSelf.tabStripView) {
-            [strongSelf.legacyTabStripCoordinator tabStripSizeDidChange];
-          }
-        }
+      completion:^(id<UIViewControllerTransitionCoordinatorContext>) {
+        [weakSelf completedTransition];
       }];
 
   id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
@@ -1730,6 +1718,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   crash_keys::SetCurrentOrientation(GetInterfaceOrientation(),
                                     [[UIDevice currentDevice] orientation]);
+}
+
+- (void)animateTransition {
+  // Force updates of the toolbar updater as the toolbar height might
+  // change on rotation.
+  [_toolbarUIUpdater updateState];
+  // Resize horizontal viewport if Smooth Scrolling is on.
+  if (fullscreen::features::ShouldUseSmoothScrolling()) {
+    self.fullscreenController->ResizeHorizontalViewport();
+  }
+}
+
+- (void)completedTransition {
+  if (!base::FeatureList::IsEnabled(kModernTabStrip)) {
+    if (self.tabStripView) {
+      [self.legacyTabStripCoordinator tabStripSizeDidChange];
+    }
+  }
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
@@ -1830,25 +1836,28 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.sideSwipeController resetContentView];
   }
 
-  // TODO(crbug.com/965688): An Infobar message is currently the only presented
-  // controller that allows interaction with the rest of the App while its being
-  // presented. Dismiss it in case the user or system has triggered another
-  // presentation.
-  if (!base::FeatureList::IsEnabled(kInfobarOverlayUI) &&
-      (self.infobarContainerCoordinator.infobarBannerState !=
-       InfobarBannerPresentationState::NotPresented)) {
-    [self.infobarContainerCoordinator
-        dismissInfobarBannerAnimated:NO
-                          completion:^{
-                            [super
-                                presentViewController:viewControllerToPresent
-                                             animated:flag
-                                           completion:finalCompletionHandler];
-                          }];
-  } else {
+  void (^superCall)() = ^{
     [super presentViewController:viewControllerToPresent
                         animated:flag
                       completion:finalCompletionHandler];
+  };
+  // TODO(crbug.com/965688): An Infobar message or the Default Browser Promo are
+  // currently the only presented controller that allow interaction with the
+  // rest of the App while they are being presented. Dismiss it in case the user
+  // or system has triggered another presentation.
+  if (!base::FeatureList::IsEnabled(kInfobarOverlayUI) &&
+      (self.infobarContainerCoordinator.infobarBannerState !=
+       InfobarBannerPresentationState::NotPresented)) {
+    [self.infobarContainerCoordinator dismissInfobarBannerAnimated:NO
+                                                        completion:superCall];
+  } else if ([self.nonModalPromoPresentationDelegate
+                     defaultNonModalPromoIsShowing]) {
+    [self.nonModalPromoPresentationDelegate
+        dismissDefaultNonModalPromoAnimated:NO
+                                 completion:superCall];
+
+  } else {
+    superCall();
   }
 }
 
@@ -4599,6 +4608,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Dismiss Find in Page focus.
   [self.dispatcher defocusFindInPage];
 
+  // Allow the non-modal promo scheduler to close the promo.
+  [self.nonModalPromoScheduler logPopupMenuEntered];
+
   if (type == PopupMenuCommandTypeToolsMenu) {
     [self.bubblePresenter toolsMenuDisplayed];
   }
@@ -4788,21 +4800,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!self.visible || !self.webUsageEnabled)
     return;
 
-  // Block that starts voice search at the end of new Tab animation if
-  // necessary.
-  ProceduralBlock startVoiceSearchIfNecessary = ^void() {
-    if (_startVoiceSearchAfterNewTabAnimation) {
-      _startVoiceSearchAfterNewTabAnimation = NO;
-      [self startVoiceSearch];
-    }
-  };
-
   if (background) {
     self.inNewTabAnimation = NO;
   } else {
     self.inNewTabAnimation = YES;
+    __weak __typeof(self) weakSelf = self;
     [self animateNewTabForWebState:webState
-        inForegroundWithCompletion:startVoiceSearchIfNecessary];
+        inForegroundWithCompletion:^{
+          [weakSelf startVoiceSearchIfNecessary];
+        }];
+  }
+}
+
+// Helper which starts voice search at the end of new Tab animation if
+// necessary.
+- (void)startVoiceSearchIfNecessary {
+  if (_startVoiceSearchAfterNewTabAnimation) {
+    _startVoiceSearchAfterNewTabAnimation = NO;
+    [self startVoiceSearch];
   }
 }
 
@@ -4847,7 +4862,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   auto commonCompletion = ^{
     webStateView.frame = self.contentArea.bounds;
     newPage.userInteractionEnabled = YES;
-    if (currentAnimationIdentifier != _NTPAnimationIdentifier) {
+    if (currentAnimationIdentifier != self->_NTPAnimationIdentifier) {
       // Prevent the completion block from being executed if a new animation has
       // started in between. |self.foregroundTabWasAddedCompletionBlock| isn't
       // called because it is overridden when a new animation is started.
@@ -4942,7 +4957,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           // In an extreme case, this method can be called twice in quick
           // succession, before the animation completes. Check if the blocking
           // UI should be shown or the animation needs to be rolled back.
-          if (_itemsRequireAuthentication) {
+          if (self->_itemsRequireAuthentication) {
             self.blockingView.alpha = 1;
           } else {
             [self.blockingView removeFromSuperview];

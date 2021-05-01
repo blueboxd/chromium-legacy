@@ -45,6 +45,7 @@
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/prerender/prerender_host_registry.h"
+#include "content/browser/renderer_host/commit_deferring_condition.h"
 #include "content/browser/renderer_host/cookie_utils.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -1458,7 +1459,32 @@ NavigationRequest::~NavigationRequest() {
       GetPrerenderHostRegistry().AbandonReservedHost(
           prerender_frame_tree_node_id_);
     }
+
+    if (IsServedFromBackForwardCache()) {
+      BackForwardCacheImpl::Entry* bfcache_entry =
+          GetNavigationController()->GetBackForwardCache().GetEntry(
+              nav_entry_id());
+      if (!bfcache_entry)
+        return;
+
+      RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
+          bfcache_entry->render_frame_host->GetGlobalFrameRoutingId());
+      // RFH could have been deleted. E.g. eviction timer fired
+      if (rfh && rfh->IsInBackForwardCache()) {
+        // rfh is still in the cache so the navigation must have failed. But we
+        // have already disabled eviction so the safest thing to do here to
+        // recover is to evict.
+        rfh->EvictFromBackForwardCacheWithReason(
+            BackForwardCacheMetrics::NotRestoredReason::
+                kNavigationCancelledWhileRestoring);
+      }
+    }
   }
+}
+
+void NavigationRequest::RegisterCommitDeferringConditionForTesting(
+    std::unique_ptr<CommitDeferringCondition> condition) {
+  commit_deferrer_->AddConditionForTesting(std::move(condition));  // IN-TEST
 }
 
 void NavigationRequest::BeginNavigation() {
@@ -1756,6 +1782,8 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
 
   throttle_runner_ =
       base::WrapUnique(new NavigationThrottleRunner(this, navigation_id_));
+
+  commit_deferrer_ = CommitDeferringConditionRunner::Create(*this);
 
 #if defined(OS_ANDROID)
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
@@ -2502,13 +2530,8 @@ void NavigationRequest::ProcessOriginAgentClusterEndResult() {
 }
 
 bool NavigationRequest::ShouldRequestSiteIsolationForCOOP() {
-  // Don't isolate if the master COOP isolation feature is turned off.  The
-  // feature is expected to only be needed on platforms where strict site
-  // isolation isn't used, such as Android.
-  if (!base::FeatureList::IsEnabled(
-          features::kSiteIsolationForCrossOriginOpenerPolicy)) {
+  if (!SiteIsolationPolicy::IsSiteIsolationForCOOPEnabled())
     return false;
-  }
 
   // COOP headers are only served once a response is available.
   if (state_ < WILL_PROCESS_RESPONSE)
@@ -2517,11 +2540,6 @@ bool NavigationRequest::ShouldRequestSiteIsolationForCOOP() {
   // COOP isolation can only be triggered from main frames.  COOP headers
   // aren't honored in subframes.
   if (!IsInMainFrame())
-    return false;
-
-  // Don't apply COOP isolation if site isolation has been disabled (e.g., due
-  // to memory thresholds).
-  if (!SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled())
     return false;
 
   // Check the COOP header value. All same-origin values are considered to be
@@ -3623,8 +3641,9 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
   // If the NavigationThrottles allowed the navigation to continue, have the
   // processing of the response resume in the network stack.
   if (result.action() == NavigationThrottle::PROCEED) {
-    // If this is a download, intercept the navigation response and pass it to
-    // DownloadManager, and cancel the navigation.
+    // If this is a download and NavigationThrottles allowed it, intercept the
+    // navigation response, pass it to DownloadManager, and cancel the
+    // navigation.
     if (is_download_) {
       // TODO(arthursonzogni): Pass the real ResourceRequest. For the moment
       // only these parameters will be used, but it may evolve quickly.
@@ -3749,10 +3768,20 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     return;
   }
 
+  DCHECK_EQ(result.action(), NavigationThrottle::PROCEED);
+
+  commit_deferrer_->ProcessChecks();
+
+  // DO NOT ADD CODE after this. The previous call to ProcessChecks may have
+  // caused the destruction of the NavigationRequest.
+}
+
+void NavigationRequest::OnCommitDeferringConditionChecksComplete() {
+  DCHECK_LT(state_, READY_TO_COMMIT);
   CommitNavigation();
 
-  // DO NOT ADD CODE after this. The previous call to CommitNavigation caused
-  // the destruction of the NavigationRequest.
+  // DO NOT ADD CODE after this. The previous call to CommitNavigation
+  // caused the destruction of the NavigationRequest.
 }
 
 void NavigationRequest::CommitErrorPage(
@@ -5286,18 +5315,23 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
         render_frame_host_->GetProcess()->GetID());
   }
 
+  RenderFrameHostImpl* previous_render_frame_host =
+      frame_tree_node_->current_frame_host();
+
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.
   if (!IsSameDocument() && !is_error) {
-    is_same_process_ =
-        render_frame_host_->GetProcess()->GetID() ==
-        frame_tree_node_->current_frame_host()->GetProcess()->GetID();
+    is_same_process_ = render_frame_host_->GetProcess()->GetID() ==
+                       previous_render_frame_host->GetProcess()->GetID();
 
-    RecordReadyToCommitMetrics(frame_tree_node_->current_frame_host(),
-                               render_frame_host_, *common_params_.get(),
-                               ready_to_commit_time_,
+    RecordReadyToCommitMetrics(previous_render_frame_host, render_frame_host_,
+                               *common_params_.get(), ready_to_commit_time_,
                                origin_agent_cluster_end_result_);
   }
+
+  // TODO(https://crbug.com/888079) Take sandbox into account.
+  same_origin_ = (previous_render_frame_host->GetLastCommittedOrigin() ==
+                  GetOriginForURLLoaderFactory());
 
   SetExpectedProcess(render_frame_host_->GetProcess());
 
@@ -5308,6 +5342,9 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 #endif
     GetDelegate()->ReadyToCommitNavigation(this);
   }
+
+  if (ready_to_commit_callback_for_testing_)
+    std::move(ready_to_commit_callback_for_testing_).Run();
 }
 
 std::unique_ptr<AppCacheNavigationHandle>
@@ -5695,6 +5732,11 @@ SiteInstanceImpl* NavigationRequest::GetSourceSiteInstance() {
 
 bool NavigationRequest::IsRendererInitiated() {
   return !browser_initiated_;
+}
+
+bool NavigationRequest::IsSameOrigin() {
+  DCHECK(HasCommitted());
+  return same_origin_;
 }
 
 bool NavigationRequest::WasServerRedirect() {

@@ -17,6 +17,9 @@
 
 namespace ash {
 
+const char kAppListPeekingToFullscreenHistogram[] =
+    "Apps.AppListPeekingToFullscreenSource";
+
 // The UMA histogram that logs smoothness of pagination animation.
 constexpr char kPaginationTransitionAnimationSmoothness[] =
     "Apps.PaginationTransition.AnimationSmoothness";
@@ -107,13 +110,13 @@ void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
 
 void RecordPageSwitcherSource(AppListPageSwitcherSource source,
                               bool is_tablet_mode) {
-  UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram, source,
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListPageSwitcherSource", source,
                             kMaxAppListPageSwitcherSource);
   if (is_tablet_mode) {
-    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogramInTablet,
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListPageSwitcherSource.TabletMode",
                               source, kMaxAppListPageSwitcherSource);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogramInClamshell,
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListPageSwitcherSource.ClamshellMode",
                               source, kMaxAppListPageSwitcherSource);
   }
 }

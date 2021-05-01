@@ -2968,10 +2968,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNotificationIndicatorName,
      flag_descriptions::kNotificationIndicatorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNotificationIndicator)},
-    {"enable-app-list-search-autocomplete",
-     flag_descriptions::kEnableAppListSearchAutocompleteName,
-     flag_descriptions::kEnableAppListSearchAutocompleteDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableAppListSearchAutocomplete)},
     {kLacrosSupportInternalName, flag_descriptions::kLacrosSupportName,
      flag_descriptions::kLacrosSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLacrosSupport)},
@@ -4620,10 +4616,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"side-panel", flag_descriptions::kSidePanelName,
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
-
-    {"side-panel-prototype", flag_descriptions::kSidePanelPrototypeName,
-     flag_descriptions::kSidePanelPrototypeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSidePanelPrototype)},
 
     {"tab-outlines-in-low-contrast-themes",
      flag_descriptions::kTabOutlinesInLowContrastThemesName,
@@ -6757,6 +6749,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidSafetyTipName,
      flag_descriptions::kMessagesForAndroidSafetyTipDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidSafetyTip)},
+    {"messages-for-android-save-card",
+     flag_descriptions::kMessagesForAndroidSaveCardName,
+     flag_descriptions::kMessagesForAndroidSaveCardDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidSaveCard)},
 #endif
 
 #if defined(OS_ANDROID)

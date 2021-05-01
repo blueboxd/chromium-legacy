@@ -2097,35 +2097,16 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadPhoneticPronunciationTest', function() {
       function(root) {
         root.find({role: RoleType.BUTTON}).focus();
         mockFeedback.call(doCmd('readPhoneticPronunciation'))
-            .expectSpeech('T')
-            .expectSpeech('tango')
-            .expectSpeech('h')
-            .expectSpeech('hotel')
-            .expectSpeech('i')
-            .expectSpeech('india')
-            .expectSpeech('s')
-            .expectSpeech('sierra')
+            .expectSpeech('T: tango, h: hotel, i: india, s: sierra')
             .call(doCmd('nextWord'))
             .call(doCmd('readPhoneticPronunciation'))
-            .expectSpeech('i')
-            .expectSpeech('india')
-            .expectSpeech('s')
-            .expectSpeech('sierra')
+            .expectSpeech('i: india, s: sierra')
             .call(doCmd('nextWord'))
             .call(doCmd('nextWord'))
             .call(doCmd('readPhoneticPronunciation'))
-            .expectSpeech('b')
-            .expectSpeech('bravo')
-            .expectSpeech('u')
-            .expectSpeech('uniform')
-            .expectSpeech('t')
-            .expectSpeech('tango')
-            .expectSpeech('t')
-            .expectSpeech('tango')
-            .expectSpeech('o')
-            .expectSpeech('oscar')
-            .expectSpeech('n')
-            .expectSpeech('november')
+            .expectSpeech(
+                'b: bravo, u: uniform, t: tango, t: tango, o: oscar, ' +
+                'n: november')
             .call(doCmd('nextEditText'))
             .call(doCmd('readPhoneticPronunciation'))
             .expectSpeech('No available text for this item');
@@ -3400,4 +3381,46 @@ TEST_F('ChromeVoxBackgroundTest', 'FocusAfterClick', function() {
         })
         .replay();
   });
+});
+
+SYNC_TEST_F('ChromeVoxBackgroundTest', 'EarconPlayback', function() {
+  const engine = ChromeVoxState.instance.earcons_.engine_;
+  assertTrue(engine !== undefined);
+
+  // We only test a few earcons here. Not all earcons prevent parallel playback
+  // or have mappings into the earcon engine.
+
+  // There are no tracked sources yet.
+  assertEquals(0, Object.keys(engine.lastEarconSources_).length);
+
+  // Note that alert modal vs nonmodal would be allowed to play in parallel (as
+  // do wrap / wrap edge) because they are different events even though they
+  // really play the same sound.
+  ChromeVox.earcons.playEarcon(Earcon.ALERT_MODAL);
+  assertEquals(1, Object.keys(engine.lastEarconSources_).length);
+  const lastAlertSource = engine.lastEarconSources_[Earcon.ALERT_MODAL];
+  assertTrue(lastAlertSource !== undefined);
+
+  ChromeVox.earcons.playEarcon(Earcon.ALERT_MODAL);
+  assertEquals(1, Object.keys(engine.lastEarconSources_).length);
+
+  // The earcon for this stayed the same (above), so there's no duplicate
+  // playback of two alerts.
+  assertEquals(lastAlertSource, engine.lastEarconSources_[Earcon.ALERT_MODAL]);
+
+  // This simulates a parallel playback of the button earcon which is allowed.
+  ChromeVox.earcons.playEarcon(Earcon.BUTTON);
+  assertEquals(2, Object.keys(engine.lastEarconSources_).length);
+  assertTrue(engine.lastEarconSources_[Earcon.BUTTON] !== undefined);
+
+  // This gets called by web audio when the earcon finishes.
+  lastAlertSource.onended();
+
+  // The button earcon is still playing.
+  assertEquals(1, Object.keys(engine.lastEarconSources_).length);
+  assertTrue(engine.lastEarconSources_[Earcon.BUTTON] !== undefined);
+
+  // Finish up the button earcon, too.
+  engine.lastEarconSources_[Earcon.BUTTON].onended();
+  assertEquals(0, Object.keys(engine.lastEarconSources_).length);
 });

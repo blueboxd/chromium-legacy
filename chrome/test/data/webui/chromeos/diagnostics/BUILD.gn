@@ -27,6 +27,7 @@ js_type_check("closure_compile") {
     ":fake_system_routine_controller_test",
     ":memory_card_test",
     ":mojo_interface_provider_test",
+    ":network_info_test",
     ":network_list_test",
     ":overview_card_test",
     ":percent_bar_chart_test",
@@ -37,6 +38,7 @@ js_type_check("closure_compile") {
     ":routine_section_test",
     ":test_diagnostics_browser_proxy",
     ":text_badge_test",
+    ":wifi_info_test",
   ]
 }
 
@@ -186,15 +188,29 @@ js_library("mojo_interface_provider_test") {
   deps = [
     "../..:chai_assert",
     "//chromeos/components/diagnostics_ui/resources:diagnostics_types",
+    "//chromeos/components/diagnostics_ui/resources:fake_network_health_provider",
     "//chromeos/components/diagnostics_ui/resources:fake_system_routine_controller",
     "//chromeos/components/diagnostics_ui/resources:mojo_interface_provider",
   ]
+}
+
+js_library("network_info_test") {
+  deps = [
+    "../..:chai_assert",
+    "../..:test_util.m",
+    "//chromeos/components/diagnostics_ui/resources:network_info",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("network_list_test") {
   deps = [
     "../..:chai_assert",
     "../..:test_util.m",
+    "//chromeos/components/diagnostics_ui/resources:diagnostics_types",
+    "//chromeos/components/diagnostics_ui/resources:fake_data",
+    "//chromeos/components/diagnostics_ui/resources:fake_network_health_provider",
+    "//chromeos/components/diagnostics_ui/resources:mojo_interface_provider",
     "//chromeos/components/diagnostics_ui/resources:network_list",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
@@ -292,5 +308,13 @@ js_library("text_badge_test") {
     "../..:chai_assert",
     "../..:test_util.m",
     "//chromeos/components/diagnostics_ui/resources:text_badge",
+  ]
+}
+
+js_library("wifi_info_test") {
+  deps = [
+    "../..:chai_assert",
+    "../..:test_util.m",
+    "//chromeos/components/diagnostics_ui/resources:wifi_info",
   ]
 }

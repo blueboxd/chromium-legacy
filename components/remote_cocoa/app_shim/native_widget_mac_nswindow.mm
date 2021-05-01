@@ -147,7 +147,10 @@ NSPoint clickedLocation;
   if (_isEnforcingNeverMadeVisible)
     return;
   _isEnforcingNeverMadeVisible = YES;
-  [self addObserver:self forKeyPath:@"visible" options:0 context:nil];
+  [self addObserver:self
+         forKeyPath:@"visible"
+            options:NSKeyValueObservingOptionNew
+            context:nil];
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -158,7 +161,8 @@ NSPoint clickedLocation;
   DCHECK([keyPath isEqual:@"visible"]);
   DCHECK_EQ(object, self);
   DCHECK_EQ(context, nil);
-  base::debug::DumpWithoutCrashing();
+  if ([[change objectForKey:NSKeyValueChangeNewKey] boolValue])
+    base::debug::DumpWithoutCrashing();
 }
 
 // Public methods.

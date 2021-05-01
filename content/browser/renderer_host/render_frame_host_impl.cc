@@ -5164,9 +5164,9 @@ void RenderFrameHostImpl::MaybeIsolateForUserActivation() {
                           GetLastCommittedOrigin())
                     : true;
     if (is_same_origin_activation) {
-      SiteInstanceImpl::StartIsolatingSite(
-          GetSiteInstance()->GetBrowserContext(),
-          GetMainFrame()->GetLastCommittedURL(), false /* should_persist */);
+      SiteInstance::StartIsolatingSite(GetSiteInstance()->GetBrowserContext(),
+                                       GetMainFrame()->GetLastCommittedURL(),
+                                       false /* should_persist */);
     }
   }
 }
@@ -10922,8 +10922,9 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleStateImpl state) {
     LifecycleState old_lifecycle_state = GetLifecycleStateFromImpl(old_state);
     LifecycleState new_lifecycle_state = GetLifecycleState();
 
-    // old and new lifecycle state can be equal for kPendingDeletion state.
-    // Don't notify the observers in such cases.
+    // Old and new lifecycle states can be equal due to the same LifecycleState
+    // representing multiple LifecycleStateImpls, for example the
+    // kPendingDeletion state. Don't notify the observers in such cases.
     if (old_lifecycle_state != new_lifecycle_state) {
       delegate_->RenderFrameHostStateChanged(this, old_lifecycle_state,
                                              new_lifecycle_state);

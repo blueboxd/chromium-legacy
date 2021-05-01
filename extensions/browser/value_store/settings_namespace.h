@@ -11,7 +11,7 @@ namespace extensions {
 
 namespace settings_namespace {
 
-// The namespaces of the storage areas.
+// The namespaces of the storage areas that have ValueStore.
 enum Namespace {
   LOCAL,    // "local"    i.e. chrome.storage.local
   SYNC,     // "sync"     i.e. chrome.storage.sync
@@ -22,10 +22,6 @@ enum Namespace {
 // Converts a namespace to its string representation.
 // Namespace must not be INVALID.
 std::string ToString(Namespace settings_namespace);
-
-// Converts a string representation of a namespace to its namespace, or INVALID
-// if the string doesn't map to one.
-Namespace FromString(const std::string& ns_string);
 
 }  // namespace settings_namespace
 

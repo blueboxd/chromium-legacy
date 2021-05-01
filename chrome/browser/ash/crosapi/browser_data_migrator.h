@@ -11,14 +11,16 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/version.h"
 #include "chromeos/login/auth/user_context.h"
 
 namespace ash {
 
-// The new profile data directory location under the original profile data
-// directory location. More concretely the new location will be
-// `/home/chronos/u-<hash>/lacros/Default`.
-constexpr char kLacrosProfileDir[] = "lacros/Default";
+// The new profile data directory location is
+// '/home/chronos/u-<hash>/lacros/Default'. User data directory for lacros.
+constexpr char kLacrosDir[] = "lacros";
+// Profile data directory for lacros.
+constexpr char kLacrosProfilePath[] = "Default";
 
 // The following are UMA names.
 constexpr char kFinalStatus[] = "Ash.BrowserDataMigrator.FinalStatus";
@@ -32,6 +34,17 @@ constexpr char kCreateDirectoryFail[] =
 // an instance and calls `MigrateInternal()`.
 class BrowserDataMigrator {
  public:
+  // Used to describe a file/dir that has to be migrated.
+  struct TargetItem {
+    enum class ItemType { kFile, kDirectory };
+    TargetItem(base::FilePath path, ItemType item_type);
+    ~TargetItem() = default;
+    bool operator==(const TargetItem& rhs) const;
+
+    base::FilePath path;
+    bool is_directory;
+  };
+
   // Used to describe what files/dirs have to be migrated to the new location
   // and the total byte size of those files.
   struct TargetInfo {
@@ -39,8 +52,11 @@ class BrowserDataMigrator {
     ~TargetInfo();
     TargetInfo(const TargetInfo&);
 
-    std::vector<base::FilePath> file_paths;
-    std::vector<base::FilePath> dir_paths;
+    // Items that have to be copied that are directly under user data directory.
+    std::vector<TargetItem> user_data_items;
+    // Items that have to be copied that are directly under profile data
+    // directory. Profile data directory itself is inside user data directory.
+    std::vector<TargetItem> profile_data_items;
     int64_t total_byte_count;
   };
 
@@ -57,7 +73,22 @@ class BrowserDataMigrator {
     kNotEnoughSpace = 4,
     kCopyFailed = 5,
     kMoveFailed = 6,
-    kMaxValue = kMoveFailed
+    kDataWipeFailed = 7,
+    kMaxValue = kDataWipeFailed
+  };
+
+  enum class ResultValue {
+    kSkipped,
+    kSucceeded,
+    kFailed,
+  };
+
+  // Return value of `MigrateInternal()`.
+  struct MigrationResult {
+    // Describes the end result of user data wipe.
+    ResultValue data_wipe;
+    // Describes the end result of data migration.
+    ResultValue data_migration;
   };
 
   // The class is instantiated on UI thread, bound to `MigrateInternal()` and
@@ -82,16 +113,34 @@ class BrowserDataMigrator {
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsMigrationRequiredOnUI);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest,
                            IsMigrationRequiredOnWorker);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsDataWipeRequiredInvalid);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest,
+                           IsDataWipeRequiredFutureVersion);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest,
+                           IsDataWipeRequiredSameVersion);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsDataWipeRequired);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsDataWipeRequired2);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, MaybeWipeUserDir);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, GetTargetInfo);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, RecordStatus);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, Migrate);
 
+  // Checks if lacros' data directory needs to be wiped before migration.
+  // `data_version` is the version of last data wipe. `current_version` is the
+  // version of ash-chrome. `required_version` is the version that introduces
+  // some breaking change. `data_version` needs to be greater or equal to
+  // `required_version`. If `required_version` is newer than `current_version`,
+  // data wipe is not required.
+  static bool IsDataWipeRequired(base::Version data_version,
+                                 const base::Version& current_version,
+                                 const base::Version& required_version);
   // Handles the migration on a worker thread. Returns whether a migration
   // occurred.
-  bool MigrateInternal();
+  MigrationResult MigrateInternal(bool is_data_wipe_required);
   // Called when the migration is finished on the UI thread.
   static void MigrateInternalFinishedUIThread(base::OnceClosure callback,
-                                              bool did_migrate);
+                                              const std::string& user_id_hash,
+                                              MigrationResult result);
   // Records to UMA histograms. Note that if `target_info` is nullptr, timer
   // will be ignored.
   static void RecordStatus(const FinalStatus& final_status,

@@ -114,14 +114,6 @@ public class VideoPlayerViewBinderTest {
     @Test
     @UiThreadTest
     @SmallTest
-    public void testControlsVisibility() {
-        mModel.set(VideoPlayerProperties.SHOW_MEDIA_CONTROLS, true);
-        assertEquals(View.VISIBLE, mControls.getVisibility());
-    }
-
-    @Test
-    @UiThreadTest
-    @SmallTest
     public void testTryNowButton() {
         View tryNowButton = mControls.findViewById(R.id.try_now);
         mModel.set(VideoPlayerProperties.SHOW_TRY_NOW, false);
@@ -150,6 +142,22 @@ public class VideoPlayerViewBinderTest {
         AtomicBoolean buttonClicked = new AtomicBoolean();
         mModel.set(VideoPlayerProperties.CALLBACK_WATCH_NEXT, () -> buttonClicked.set(true));
         watchNextButton.performClick();
+        assertTrue(buttonClicked.get());
+    }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testPlayButton() {
+        View playButton = mControls.findViewById(R.id.play_button);
+        mModel.set(VideoPlayerProperties.SHOW_PLAY_BUTTON, false);
+        assertEquals(View.GONE, playButton.getVisibility());
+        mModel.set(VideoPlayerProperties.SHOW_PLAY_BUTTON, true);
+        assertEquals(View.VISIBLE, playButton.getVisibility());
+
+        AtomicBoolean buttonClicked = new AtomicBoolean();
+        mModel.set(VideoPlayerProperties.CALLBACK_PLAY_BUTTON, () -> buttonClicked.set(true));
+        playButton.performClick();
         assertTrue(buttonClicked.get());
     }
 

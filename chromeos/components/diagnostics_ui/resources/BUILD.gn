@@ -28,6 +28,7 @@ js_type_check("closure_compile_module") {
     ":memory_card",
     ":mojo_interface_provider",
     ":mojo_utils",
+    ":network_info",
     ":network_list",
     ":overview_card",
     ":percent_bar_chart",
@@ -37,6 +38,7 @@ js_type_check("closure_compile_module") {
     ":routine_result_list",
     ":routine_section",
     ":text_badge",
+    ":wifi_info",
   ]
 }
 
@@ -171,9 +173,19 @@ js_library("mojo_utils") {
   ]
 }
 
+js_library("network_info") {
+  deps = [
+    ":diagnostics_card",
+    ":diagnostics_types",
+    ":wifi_info",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("network_list") {
   deps = [
     ":connectivity_card",
+    ":diagnostics_types",
     ":mojo_interface_provider",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -235,6 +247,12 @@ js_library("text_badge") {
   ]
 }
 
+js_library("wifi_info") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 html_to_js("web_components") {
   js_files = [
     "battery_status_card.js",
@@ -247,6 +265,7 @@ html_to_js("web_components") {
     "diagnostics_shared_css.js",
     "icons.js",
     "memory_card.js",
+    "network_info.js",
     "network_list.js",
     "overview_card.js",
     "percent_bar_chart.js",
@@ -255,5 +274,6 @@ html_to_js("web_components") {
     "routine_result_list.js",
     "routine_section.js",
     "text_badge.js",
+    "wifi_info.js",
   ]
 }

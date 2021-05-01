@@ -177,7 +177,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:7c21dae4ffe132b3bf611dce050d268f1ef4c155',
+  'luci_go': 'git_revision:1b257aacd4934e5a8b2508b240ffc7d866df9273',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '097263bb5089e743e15de60a22bda4cbd4e2711a',
+  'skia_revision': '5dfb3f40684b3be4758c426889405139355a382b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -229,7 +229,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '6cabdea2c245c5101e8491d6b262d122b93df208',
+  'pdfium_revision': 'b8408a570c17dc5813c94cb66ac2edc6dd126003',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b2687c0b37e97ede7106473fcffff495591e7d5b',
+  'devtools_frontend_revision': '7a79f9237c887613fdc44f5bd9ee795081cb603d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '1226d48b71a91116708724589ba7a857e967cb19',
+  'dawn_revision': 'ab718ebba2598f0a3af66230cc920db52ff7620d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -730,7 +730,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'u2rB_PZbxW7A06T_fZaRSifQYPLnK7m2hUlbWLjzZd4C',
+          'version': 'I7STvPFBrwtkPh1fjfCeD9OQOFguWozA6gVmHaTl61UC',
       },
     ],
     'condition': 'checkout_android',
@@ -1552,7 +1552,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3692cbbd3224f9d7e2ae138ef26bd584855249a1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e1b685a50a578f18aa9b023506e87a86dbeecf11',
+    Var('webrtc_git') + '/src.git' + '@' + '694ecad8346ee8f11109332c6d928535aeb9bace',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

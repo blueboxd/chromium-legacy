@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '7a79f9237c887613fdc44f5bd9ee795081cb603d',
+  'devtools_frontend_revision': 'a89c0fe01c2a9d0cb27317bbd929fc3c68586d1f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -643,7 +643,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'e8H6Duswam9cGEM58cIUR28oeXDJatnsrPR1TQaV3xMC',
+          'version': 'MZwyLjNaFyHnOcU0G5IW27ouk3UoZYF5WrMIwn35yuwC',
         },
       ],
       'dep_type': 'cipd',
@@ -654,7 +654,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'kK-5LmnH3Fd5aoWpgvDtnEGEc4DWc8oCbRNi3LIQHI0C',
+          'version': 'NpEliTduVpeYtsPsmz3EbL91y9lLV8U0r68T6HYNu_wC',
         },
       ],
       'dep_type': 'cipd',
@@ -665,7 +665,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'EeNGg56zgV_M4-G9OgfF5a9UE0sQAvheYep-avx167AC',
+          'version': 'wNkFrxma6lCFycXDdHX1Gunjow5_8_NCacfKImq908UC',
         },
       ],
       'dep_type': 'cipd',
@@ -730,7 +730,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'uUMG_4pkBTYiirj6z_PtuCCNZwocTCbnlSlTcdSzQe8C',
+          'version': 'shhcvIQmkadS49s7gxWnbJhKbME6mSxhR188J7CYIyYC',
       },
     ],
     'condition': 'checkout_android',
@@ -1416,7 +1416,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'BGSmhPgYrPBnQ9dUEMh0QHNL988lWdkmpI87DIIfwkoC'
+              'version': 'IkJe_PGoF9FZE4NgmhuVPlSogmI0pgjjHezTAckYoEYC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

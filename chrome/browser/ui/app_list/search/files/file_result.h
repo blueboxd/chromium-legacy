@@ -31,7 +31,9 @@ class FileResult : public ChromeSearchResult {
   FileResult(const std::string& schema,
              const base::FilePath& filepath,
              ResultType result_type,
-             base::Optional<chromeos::string_matching::TokenizedString>& query,
+             const std::u16string& query,
+             const base::Optional<chromeos::string_matching::TokenizedString>&
+                 tokenized_query,
              Type type,
              Profile* profile);
   ~FileResult() override;
@@ -47,9 +49,11 @@ class FileResult : public ChromeSearchResult {
              const base::FilePath& filepath,
              ResultType result_type,
              DisplayType display_type,
+             Type type,
              Profile* profile);
 
   const base::FilePath filepath_;
+  const Type type_;
   Profile* const profile_;
 };
 

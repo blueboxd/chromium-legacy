@@ -71,6 +71,7 @@ void DriveSearchProvider::Start(const std::u16string& query) {
     return;
   }
 
+  last_query_ = query;
   last_tokenized_query_.emplace(query, TokenizedString::Mode::kWords);
 
   // New scores will be assigned for sorting purposes so use the default
@@ -98,10 +99,13 @@ void DriveSearchProvider::SetSearchResults(
   for (const auto& item : items) {
     if (item->metadata->type ==
         drivefs::mojom::FileMetadata::Type::kDirectory) {
-      // Ignore directories in search.
-      continue;
+      const auto type = item->metadata->shared
+                            ? FileResult::Type::kSharedDirectory
+                            : FileResult::Type::kDirectory;
+      results.emplace_back(MakeResult(item->path, type));
+    } else {
+      results.emplace_back(MakeResult(item->path, FileResult::Type::kFile));
     }
-    results.emplace_back(MakeResult(item->path));
   }
 
   SwapResults(&results);
@@ -111,7 +115,8 @@ void DriveSearchProvider::SetSearchResults(
 }
 
 std::unique_ptr<FileResult> DriveSearchProvider::MakeResult(
-    const base::FilePath& path) {
+    const base::FilePath& path,
+    FileResult::Type type) {
   // Strip leading separators so that the path can be reparented.
   // TODO(crbug.com/1154513): Remove this step once the drive backend returns
   // results in relative path format.
@@ -128,8 +133,8 @@ std::unique_ptr<FileResult> DriveSearchProvider::MakeResult(
 
   return std::make_unique<FileResult>(
       kDriveSearchSchema, reparented_path,
-      ash::AppListSearchResultType::kDriveSearch, last_tokenized_query_,
-      FileResult::Type::kFile, profile_);
+      ash::AppListSearchResultType::kDriveSearch, last_query_,
+      last_tokenized_query_, type, profile_);
 }
 
 }  // namespace app_list

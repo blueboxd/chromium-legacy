@@ -577,6 +577,10 @@ const base::Feature kIncognitoBrandConsistencyForDesktop{
     "IncognitoBrandConsistencyForDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// When enabled, removes any entry points to the history UI from Incognito mode.
+const base::Feature kUpdateHistoryEntryPointsInIncognito{
+    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 // Support sharing in Chrome OS intent handling.
 const base::Feature kIntentHandlingSharing{"IntentHandlingSharing",
@@ -840,7 +844,7 @@ const base::Feature kSecurityKeyAttestationPrompt{
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kSharesheet{"Sharesheet", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSharesheetContentPreviews{
-    "SharesheetContentPreviews", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SharesheetContentPreviews", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

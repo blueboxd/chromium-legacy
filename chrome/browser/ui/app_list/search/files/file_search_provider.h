@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_FILE_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_FILES_FILE_SEARCH_PROVIDER_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -38,10 +39,13 @@ class FileSearchProvider : public SearchProvider {
   }
 
  private:
-  void OnSearchComplete(const std::vector<base::FilePath>& paths);
-  std::unique_ptr<FileResult> MakeResult(const base::FilePath& path);
+  void OnSearchComplete(
+      const std::vector<std::pair<base::FilePath, bool>>& paths);
+  std::unique_ptr<FileResult> MakeResult(
+      const std::pair<base::FilePath, bool>& path);
 
   base::TimeTicks query_start_time_;
+  std::u16string last_query_;
   base::Optional<chromeos::string_matching::TokenizedString>
       last_tokenized_query_;
 

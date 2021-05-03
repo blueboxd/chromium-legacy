@@ -162,6 +162,7 @@ class NoSharedArrayBufferByDefault : public CrossOriginOpenerPolicyBrowserTest {
         // Disabled:
         {
             features::kSharedArrayBuffer,
+            features::kSharedArrayBufferOnDesktop,
             features::kWebAssemblyThreads,
         });
   }
@@ -3059,6 +3060,7 @@ class UnrestrictedSharedArrayBufferOriginTrialBrowserTest
         {
             // Disabled
             features::kSharedArrayBuffer,
+            features::kSharedArrayBufferOnDesktop,
             features::kWebAssemblyThreads,
         });
   }
@@ -3134,6 +3136,57 @@ IN_PROC_BROWSER_TEST_F(UnrestrictedSharedArrayBufferOriginTrialBrowserTest,
   EXPECT_EQ(false,
             EvalJs(current_frame_host(), "'SharedArrayBuffer' in globalThis"));
 #endif  // defined(OS_ANDROID)
+}
+
+// Check setting the OriginTrial works, even in popups where the javascript
+// context of the initial empty document is reused.
+IN_PROC_BROWSER_TEST_F(UnrestrictedSharedArrayBufferOriginTrialBrowserTest,
+                       HasSharedArrayBufferReuseContext) {
+  // Create a document without the origin trial in a renderer process.
+  {
+    URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+        [&](URLLoaderInterceptor::RequestParams* params) {
+          DCHECK_EQ(params->url_request.url, OriginTrialURL());
+          URLLoaderInterceptor::WriteResponse(
+              "HTTP/1.1 200 OK\n"
+              "Content-type: text/html\n\n",
+              "", params->client.get());
+          return true;
+        }));
+    EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+    EXPECT_EQ(false, EvalJs(current_frame_host(),
+                            "'SharedArrayBuffer' in globalThis"));
+  }
+
+  // In the same process, open a popup. The document loaded defines an
+  // OriginTrial. It will reuse the javascript context created for the initial
+  // empty document.
+  {
+    URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+        [&](URLLoaderInterceptor::RequestParams* params) {
+          DCHECK_EQ(params->url_request.url, OriginTrialURL());
+          URLLoaderInterceptor::WriteResponse(
+              "HTTP/1.1 200 OK\n"
+              "Content-type: text/html\n"
+              "Origin-Trial: " +
+                  OriginTrialToken() + "\n\n",
+              "", params->client.get());
+          return true;
+        }));
+    ShellAddedObserver shell_observer;
+    EXPECT_TRUE(ExecJs(current_frame_host(), "window.open(location.href)"));
+
+    auto* popup = static_cast<WebContentsImpl*>(
+        shell_observer.GetShell()->web_contents());
+    WaitForLoadStop(popup);
+
+#if defined(OS_ANDROID)
+    EXPECT_EQ(false, EvalJs(popup, "'SharedArrayBuffer' in globalThis"));
+#else
+    // TODO(https://crbug.com/1204271). This should be true instead.
+    EXPECT_EQ(false, EvalJs(popup, "'SharedArrayBuffer' in globalThis"));
+#endif
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(UnrestrictedSharedArrayBufferOriginTrialBrowserTest,

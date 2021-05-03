@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/string_matching/tokenized_string_match.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -89,8 +90,9 @@ FileResult::FileResult(const std::string& schema,
                        const base::FilePath& filepath,
                        ResultType result_type,
                        DisplayType display_type,
+                       Type type,
                        Profile* profile)
-    : filepath_(filepath), profile_(profile) {
+    : filepath_(filepath), type_(type), profile_(profile) {
   DCHECK(profile);
   set_id(schema + filepath.value());
 
@@ -131,7 +133,12 @@ FileResult::FileResult(const std::string& schema,
                        DisplayType display_type,
                        float relevance,
                        Profile* profile)
-    : FileResult(schema, filepath, result_type, display_type, profile) {
+    : FileResult(schema,
+                 filepath,
+                 result_type,
+                 display_type,
+                 Type::kFile,
+                 profile) {
   set_relevance(relevance);
   // TODO(crbug.com/1188495): Add relevance metrics for zero state files.
 
@@ -155,14 +162,23 @@ FileResult::FileResult(
     const std::string& schema,
     const base::FilePath& filepath,
     ResultType result_type,
-    base::Optional<chromeos::string_matching::TokenizedString>& query,
+    const std::u16string& query,
+    const base::Optional<chromeos::string_matching::TokenizedString>&
+        tokenized_query,
     Type type,
     Profile* profile)
-    : FileResult(schema, filepath, result_type, DisplayType::kList, profile) {
-  const double relevance = CalculateRelevance(query, title());
+    : FileResult(schema,
+                 filepath,
+                 result_type,
+                 DisplayType::kList,
+                 type,
+                 profile) {
+  const double relevance = CalculateRelevance(tokenized_query, title());
   DCHECK((relevance >= 0) && (relevance <= 1));
   set_relevance(relevance);
   LogRelevance(result_type, relevance);
+
+  SetTitleTags(CalculateTags(query, title()));
 
   // Launcher search results UI is light by default, so use icons for light
   // background if dark/light mode feature is not enabled.
@@ -184,9 +200,19 @@ FileResult::FileResult(
 FileResult::~FileResult() = default;
 
 void FileResult::Open(int event_flags) {
-  platform_util::OpenItem(profile_, filepath_,
-                          platform_util::OpenItemType::OPEN_FILE,
-                          platform_util::OpenOperationCallback());
+  switch (type_) {
+    case Type::kFile:
+      platform_util::OpenItem(profile_, filepath_,
+                              platform_util::OpenItemType::OPEN_FILE,
+                              platform_util::OpenOperationCallback());
+      break;
+    case Type::kDirectory:
+    case Type::kSharedDirectory:
+      platform_util::OpenItem(profile_, filepath_,
+                              platform_util::OpenItemType::OPEN_FOLDER,
+                              platform_util::OpenOperationCallback());
+      break;
+  }
 }
 
 ::std::ostream& operator<<(::std::ostream& os, const FileResult& result) {

@@ -16,7 +16,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.AccountManagerResult;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ProfileDataSource;
 
@@ -74,7 +73,7 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     @Override
-    public List<Account> getGoogleAccounts() {
+    public List<Account> tryGetGoogleAccounts() {
         List<Account> accounts = new ArrayList<>();
         synchronized (mLock) {
             for (AccountHolder accountHolder : mAccountHolders) {
@@ -85,13 +84,8 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     @Override
-    public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {
-        callback.onResult(new AccountManagerResult<>(getGoogleAccounts()));
-    }
-
-    @Override
     public void tryGetGoogleAccounts(Callback<List<Account>> callback) {
-        callback.onResult(getGoogleAccounts());
+        callback.onResult(tryGetGoogleAccounts());
     }
 
     @Override

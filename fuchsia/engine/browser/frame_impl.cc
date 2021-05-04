@@ -55,6 +55,7 @@
 #include "third_party/blink/public/common/messaging/web_message_port.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -533,7 +534,7 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
     std::string* origin,
     fuchsia::web::WebMessage* message,
     PostMessageCallback* callback) {
-  if (!IsCastStreamingEnabled())
+  if (!context_->has_cast_streaming_enabled())
     return false;
 
   if (!IsCastStreamingAppOrigin(*origin))
@@ -558,7 +559,8 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
 
 void FrameImpl::MaybeStartCastStreaming(
     content::NavigationHandle* navigation_handle) {
-  if (!IsCastStreamingEnabled() || !cast_streaming_session_client_)
+  if (!context_->has_cast_streaming_enabled() ||
+      !cast_streaming_session_client_)
     return;
 
   mojo::AssociatedRemote<mojom::CastStreamingReceiver> cast_streaming_receiver;

@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '537293bf155f5688a8d91d609b5231799e77d81b',
+  'skia_revision': 'f60081c6d7a8c63b06bd2eb986e3868d90dca4ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'a296b0203c48c3de8d65c1274abe8062e0f2dc81',
+  'v8_revision': '9d1783a04b57fcd17142605d33bfd504a88dab0f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c6fb0e5afbdb81334a0b8e67f2c9ef1ed6eeb2b2',
+  'angle_revision': 'f45dad5ec471a7a0cca0eb352ec15e80c574e6a2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -256,11 +256,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': 'dad64a4e4e0c40ff2471a39748494e65f2d9f7b9',
+  'nacl_revision': '86962315f50399ad80c3c518277852778c0eb462',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'ec95f9c9212e9bf9371471f845903bb0e895807d',
+  'freetype_revision': '82fd32d67426f4d58663d3d382478473c95ac27c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c0969ff0ad4faf423ed1cc3a20feec97990b2580',
+  'devtools_frontend_revision': '43db3beca8e1dc7e992073dffe2d57249743231d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -730,7 +730,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'WPO_QMEF9NV6Zg7-1VmbVF8AqhgqwfW2uMuC_JkoquwC',
+          'version': 'FNuFgvRBcpyQW5WOaiPBvxLfoUoh4aBd5S2QkEohikoC',
       },
     ],
     'condition': 'checkout_android',
@@ -1435,7 +1435,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '969c3bd5a820ea0613b9a7ddcd97c3de1bb19285',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'fdba2677f32812e823c54d214fe54c73e60b5163',
 
   'src/third_party/r8': {
       'packages': [
@@ -1552,7 +1552,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '3692cbbd3224f9d7e2ae138ef26bd584855249a1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '410d70d965d68ead2daa83ee7f0b694cebd0dad2',
+    Var('webrtc_git') + '/src.git' + '@' + '612ddd74f07bac7977d4bc1cb6ae91c000a505f2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1613,7 +1613,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fca5899fefdc23c7beb0cd412fd851bcb7019fbb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7b6c9269295024ce875e795c611035b5457ac82c',
     'condition': 'checkout_src_internal',
   },
 

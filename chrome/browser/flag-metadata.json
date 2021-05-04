@@ -46,7 +46,7 @@
   {
     "name": "account-management-flows-v2",
     "owners": [ "anastasiian", "sinhak" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 92
   },
   {
     "name": "actionable-content-settings",
@@ -3927,11 +3927,6 @@
   },
   {
     "name": "omnibox-keyword-space-triggering",
-    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 99
-  },
-  {
-    "name": "omnibox-keyword-space-triggering-setting",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 99
   },

@@ -1712,11 +1712,11 @@ const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
 
-const char kOmniboxKeywordSpaceTriggeringSettingName[] =
-    "Omnibox Keyword Space Triggering Setting";
-const char kOmniboxKeywordSpaceTriggeringSettingDescription[] =
-    "Adds a setting to the search engines setting page to control whether "
-    "spacebar activates keyword mode.";
+const char kOmniboxKeywordSpaceTriggeringName[] =
+    "Omnibox Keyword Space Triggering";
+const char kOmniboxKeywordSpaceTriggeringDescription[] =
+    "Controls whether keyword mode can be triggered by space, double space, or "
+    "neither.";
 
 const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =

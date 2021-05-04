@@ -566,7 +566,6 @@ crbug.com/1114280 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-003.xht [
 
 #### external/wpt/css/css-position
 crbug.com/752022 external/wpt/css/css-position/sticky/position-sticky-offset-overflow.html [ Failure ]
-crbug.com/664246 external/wpt/css/css-position/sticky/position-sticky-scrollIntoView.html [ Failure ]
 
 #### external/wpt/css/css-sizing
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
@@ -6785,10 +6784,6 @@ crbug.com/1180274 crbug.com/1046784 http/tests/inspector-protocol/network/naviga
 crbug.com/1180491 [ Linux ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]
 crbug.com/1180491 [ Linux ] virtual/storage-access-api/external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Pass Failure ]
 
-# Sheriff 2021-02-23
-crbug.com/1181466 external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
-crbug.com/1181466 virtual/threaded/external/wpt/css/css-scroll-snap/snap-after-relayout/resnap-to-focused.html [ Pass Failure ]
-
 # Sheriff 2021-02-24
 crbug.com/1181667 [ Linux ] external/wpt/css/selectors/focus-visible-011.html [ Pass Failure ]
 crbug.com/1045052 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Failure Timeout ]
@@ -6879,9 +6874,6 @@ crbug.com/1190905 [ Win ] http/tests/devtools/indexeddb/live-update-indexeddb-li
 
 # Sheriff 2021-03-23
 crbug.com/1182689 [ Mac ] external/wpt/editing/run/delete.html?6001-last [ Failure ]
-
-# Temporarily disable to update DevTools
-crbug.com/1202024 http/tests/devtools/resource-tree/resource-tree-events.js [ Pass Failure ]
 
 # Sheriff 2021-03-24
 crbug.com/1192215 [ Linux ] external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Pass Failure ]
@@ -7003,7 +6995,6 @@ crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-e
 # Sheriff 2021-04-22
 crbug.com/1191990 [ Linux ] http/tests/serviceworker/clients-openwindow.html [ Pass Failure ]
 crbug.com/1198443 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
-crbug.com/1201879 http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Pass Timeout ]
 
 # Sheriff 2021-04-23
 crbug.com/1198832 [ Linux ] external/wpt/css/css-sizing/aspect-ratio/replaced-element-003.html [ Pass Failure ]

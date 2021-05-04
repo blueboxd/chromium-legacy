@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -64,7 +63,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
 
     private int mUpdateTasksCounter;
     private final Queue<Runnable> mCallbacksWaitingForAccountsFetch = new ArrayDeque<>();
-    private ObservableValue<Boolean> mUpdatePendingState = new MutableObservableValue<>(true);
 
     /**
      * @param delegate the AccountManagerDelegate to use as a backend
@@ -106,7 +104,7 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     }
 
     /**
-     * Returns whether the account cache has already been populated. {@link #getGoogleAccounts()}
+     * Returns whether the account cache has already been populated. {@link #tryGetGoogleAccounts()}
      * and similar methods will return instantly if the cache has been populated, otherwise these
      * methods may block waiting for the cache to be populated.
      */
@@ -115,14 +113,7 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         return mFilteredAccounts.get() != null;
     }
 
-    /**
-     * Retrieves all Google accounts on the device.
-     *
-     * @throws AccountManagerDelegateException if Google Play Services are out of date,
-     *         Chrome lacks necessary permissions, etc.
-     */
-    @Override
-    public List<Account> getGoogleAccounts() throws AccountManagerDelegateException {
+    private List<Account> getGoogleAccounts() throws AccountManagerDelegateException {
         AccountManagerResult<List<Account>> maybeAccounts = mFilteredAccounts.get();
         if (maybeAccounts == null) {
             try {
@@ -142,12 +133,13 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         return maybeAccounts.get();
     }
 
-    /**
-     * Asynchronous version of {@link #getGoogleAccounts()}.
-     */
     @Override
-    public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(mFilteredAccounts.get()));
+    public List<Account> tryGetGoogleAccounts() {
+        try {
+            return getGoogleAccounts();
+        } catch (AccountManagerDelegateException e) {
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -252,17 +244,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     }
 
     /**
-     * Checks whether there are pending updates for account list cache.
-     * @return true if there are no pending updates, false otherwise
-     */
-    @VisibleForTesting
-    @MainThread
-    public ObservableValue<Boolean> isUpdatePending() {
-        ThreadUtils.assertOnUiThread();
-        return mUpdatePendingState;
-    }
-
-    /**
      * Returns the Gaia id for the account associated with the given email address.
      * If an account with the given email address is not installed on the device
      * then null is returned.
@@ -347,8 +328,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     private void incrementUpdateCounter() {
         assert mUpdateTasksCounter >= 0;
         if (mUpdateTasksCounter++ > 0) return;
-
-        mUpdatePendingState.set(true);
     }
 
     private void decrementUpdateCounter() {
@@ -359,7 +338,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
             final Runnable runnable = mCallbacksWaitingForAccountsFetch.remove();
             runnable.run();
         }
-        mUpdatePendingState.set(false);
     }
 
     private class InitializeTask extends AsyncTask<Void> {

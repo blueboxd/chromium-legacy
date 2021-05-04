@@ -31,7 +31,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction"
-    enum="AccountConsistencyPromoAction" expires_after="2021-08-31">
+    enum="AccountConsistencyPromoAction" expires_after="2021-10-31">
   <owner>bsazonov@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -41,7 +41,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction.Shown.Count"
-    units="counts" expires_after="2021-08-31">
+    units="counts" expires_after="2021-10-31">
   <owner>aliceywang@chromium.org</owner>
   <owner>triploblastic@chromium.org</owner>
   <summary>
@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction.SignedIn.Count"
-    units="counts" expires_after="2021-08-31">
+    units="counts" expires_after="2021-10-31">
   <owner>aliceywang@chromium.org</owner>
   <owner>triploblastic@chromium.org</owner>
   <summary>
@@ -62,7 +62,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAfterDismissal"
-    enum="AccountConsistencyPromoAfterDismissal" expires_after="2021-08-31">
+    enum="AccountConsistencyPromoAfterDismissal" expires_after="2021-10-31">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -235,7 +235,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidNumberOfDeviceAccounts" units="accounts"
-    expires_after="2021-08-31">
+    expires_after="2021-10-31">
   <owner>triploblastic@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
@@ -890,6 +890,16 @@ should be kept to monitor/debug signin Multilogin issues-->
   </summary>
 </histogram>
 
+<histogram name="Signin.Reconciler.Operation" enum="SigninReconcilerOperation"
+    expires_after="2022-05-02">
+  <owner>msarda@chromium.org</owner>
+  <owner>droger@chromium.org</owner>
+  <summary>
+    Records the operation executed by the reconcilor to reconcile the accounts
+    (or no-op if the accounts are already consistent).
+  </summary>
+</histogram>
+
 <histogram
     name="Signin.Reconciler.RejectedRequestsDueToThrottler.{RequestType}"
     units="requests" expires_after="M95">
@@ -920,6 +930,24 @@ should be kept to monitor/debug signin Multilogin issues-->
     How many accounts were removed from the cookie jar because they were not in
     the browser's token service.
   </summary>
+</histogram>
+
+<histogram name="Signin.Reconciler.Trigger.{Operation}"
+    enum="SigninReconcilerTrigger" expires_after="2022-05-02">
+  <owner>droger@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>msalama@chromium.org</owner>
+  <summary>
+    Recorded when the account reconcilor tries to change the cookie to match the
+    tokens and performs a {Operation} operation. Records the event which
+    triggered the reconcile.
+  </summary>
+  <token key="Operation">
+    <variant name="Logout" summary="logout"/>
+    <variant name="Multilogin" summary="multilogin"/>
+    <variant name="Noop" summary="no-op"/>
+    <variant name="Throttled" summary="throttled (cancelled)"/>
+  </token>
 </histogram>
 
 <histogram name="Signin.RefreshTokenRevocationCompleted"
@@ -1329,7 +1357,7 @@ should be kept for as long as we store refresh tokens in an SQLite DB. -->
 
 <histogram
     name="Signin.TransactionalReauthGaiaNavigationDuration.FromConfirmClick"
-    units="ms" expires_after="2021-08-29">
+    units="ms" expires_after="2021-10-31">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -1340,7 +1368,7 @@ should be kept for as long as we store refresh tokens in an SQLite DB. -->
 
 <histogram
     name="Signin.TransactionalReauthGaiaNavigationDuration.FromReauthStart"
-    units="ms" expires_after="2021-08-29">
+    units="ms" expires_after="2021-10-31">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -1350,7 +1378,7 @@ should be kept for as long as we store refresh tokens in an SQLite DB. -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthResult" enum="SigninReauthResult"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 
@@ -1364,7 +1392,7 @@ name="TransactionalReauthEntryPoint" -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthUserAction"
-    enum="SigninReauthUserAction" expires_after="2021-08-29">
+    enum="SigninReauthUserAction" expires_after="2021-10-31">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 
@@ -1404,7 +1432,7 @@ Chrome adds accounts to the Gaia cookies. -->
 </histogram>
 
 <histogram name="Signin.UserRequestedWipeDataOnSignout" enum="BooleanRequested"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
   <owner>triploblastic@google.com</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>User requested to wipe local device data on signout.</summary>

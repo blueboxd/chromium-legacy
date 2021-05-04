@@ -14,11 +14,13 @@
 #include "pdf/post_message_sender.h"
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "v8/include/v8.h"
 
 namespace blink {
+class WebLocalFrame;
 class WebPluginContainer;
 }  // namespace blink
 
@@ -71,6 +73,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void DidReceiveData(const char* data, size_t data_length) override;
   void DidFinishLoading() override;
   void DidFailLoading(const blink::WebURLError& error) override;
+  blink::WebTextInputType GetPluginTextInputType() override;
 
   // PdfViewPluginBase:
   void UpdateCursor(ui::mojom::CursorType new_cursor_type) override;
@@ -153,11 +156,18 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   bool InitializeCommon(std::unique_ptr<ContainerWrapper> container_wrapper);
 
+  // Returns the local frame to which the web plugin container belongs to. May
+  // only be called when the plugin has the container inside a valid frame.
+  blink::WebLocalFrame* GetValidContainerFrame() const;
+
   void OnViewportChanged(const gfx::Rect& view_rect, float new_device_scale);
 
   // Invalidates the entire web plugin container and schedules a paint of the
   // page in it.
   void InvalidatePluginContainer();
+
+  blink::WebTextInputType text_input_type_ =
+      blink::WebTextInputType::kWebTextInputTypeNone;
 
   blink::WebPluginParams initial_params_;
 

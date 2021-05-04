@@ -36,6 +36,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="WebApp" summary="Web apps"/>
 </variants>
 
+<histogram name="Apps.ActivatedCount.{AppType}" units="ms"
+    expires_after="2021-10-28">
+  <owner>dominickn@chromium.org</owner>
+  <owner>nancylingwang@chromium.org</owner>
+  <summary>
+    Recorded the app window activated times for {AppType} in Chrome OS. This is
+    logged when more than 24 hours pass after last log, or during the system
+    startup phase if more than 24 hours passed after last log.
+  </summary>
+  <token key="AppType" variants="AppType"/>
+</histogram>
+
 <histogram name="Apps.AppInfoDialog.CreateExtensionShortcutSuccess"
     enum="Boolean" expires_after="M95">
   <owner>dmurph@chromium.org</owner>
@@ -1137,7 +1149,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListPlayStoreQueryState"
-    enum="AppListPlayStoreQueryState" expires_after="2021-08-29">
+    enum="AppListPlayStoreQueryState" expires_after="2021-10-31">
   <owner>hejq@chromium.org</owner>
   <summary>The state of a Play Store app search request.</summary>
 </histogram>
@@ -1164,7 +1176,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Apps.AppListRecommendedResponse"
-    enum="ReinstallResponseParseResult" expires_after="2021-08-29">
+    enum="ReinstallResponseParseResult" expires_after="2021-10-31">
   <owner>napper@chromium.org</owner>
   <owner>robsc@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -1468,7 +1480,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Apps.ContextMenuUserJourneyTime" units="ms"
-    expires_after="2021-08-29">
+    expires_after="2021-10-31">
 <!-- Name completed by histogram_suffixes
      name="AppUIComponent" -->
 

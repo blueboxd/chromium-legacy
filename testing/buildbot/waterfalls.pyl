@@ -2705,7 +2705,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_viz_gtests',
-          'isolated_scripts': 'skia_renderer_isolated_scripts',
+          'isolated_scripts': 'vulkan_swiftshader_isolated_scripts',
         },
       },
       'Mac Builder Next': {
@@ -4871,7 +4871,7 @@
       },
       'Cast Linux': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'cast_shell',
@@ -4911,7 +4911,7 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'linux',
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'swarming': {
           'dimension_sets': [
@@ -5018,7 +5018,7 @@
       'Linux Tests': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -5028,7 +5028,7 @@
       },
       'Linux Tests (dbg)(1)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -5111,9 +5111,6 @@
         ],
       },
       'linux-ozone-rel': {
-        'mixins': [
-          'linux-xenial',
-        ],
         'additional_compile_targets': [
           'chrome',
         ],
@@ -5317,7 +5314,7 @@
       },
       'Linux ASan LSan Tests (1)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',

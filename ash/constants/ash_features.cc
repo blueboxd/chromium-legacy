@@ -453,6 +453,10 @@ const base::Feature kVirtualKeyboardFloatingDefault{
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables noise cancellation UI toggle.
+const base::Feature kEnableInputNoiseCancellationUi{
+    "EnableInputNoiseCancellationUi", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the Kerberos Section in ChromeOS settings. When disabled, Kerberos
 // settings will stay under People Section. https://crbug.com/983041
 const base::Feature kKerberosSettingsSection{"KerberosSettingsSection",
@@ -479,10 +483,6 @@ const base::Feature kLacrosSupport{"LacrosSupport",
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables device management disclosure on login / lock screen.
-const base::Feature kLoginDeviceManagementDisclosure{
-    "LoginDeviceManagementDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
@@ -523,6 +523,13 @@ const base::Feature kNoteTakingForEnabledWebApps{
 // Controls whether to enable on-device grammar check service.
 const base::Feature kOnDeviceGrammarCheck{"OnDeviceGrammarCheck",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the feedback tool new UX on Chrome OS.
+// This tool under development will be rolled out via Finch.
+// Enabling this flag will use the new feedback tool instead of the current
+// tool on CrOS.
+const base::Feature kOsFeedback{"OsFeedback",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a unique URL for each path in CrOS settings.
 // This allows deep linking to individual settings, i.e. in settings search.
@@ -827,6 +834,10 @@ bool IsGaiaReauthEndpointEnabled() {
   return base::FeatureList::IsEnabled(kGaiaReauthEndpoint);
 }
 
+bool IsInputNoiseCancellationUiEnabled() {
+  return base::FeatureList::IsEnabled(kEnableInputNoiseCancellationUi);
+}
+
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
@@ -834,10 +845,6 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsKerberosSettingsSectionEnabled() {
   return base::FeatureList::IsEnabled(kKerberosSettingsSection);
-}
-
-bool IsLoginDeviceManagementDisclosureEnabled() {
-  return base::FeatureList::IsEnabled(kLoginDeviceManagementDisclosure);
 }
 
 bool IsMinimumChromeVersionEnabled() {

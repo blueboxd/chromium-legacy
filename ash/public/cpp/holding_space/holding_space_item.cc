@@ -63,6 +63,7 @@ bool HoldingSpaceItem::IsDownload(HoldingSpaceItem::Type type) {
       return true;
     case Type::kNearbyShare:
     case Type::kPinnedFile:
+    case Type::kPrintedPdf:
     case Type::kScreenRecording:
     case Type::kScreenshot:
       return false;
@@ -134,12 +135,12 @@ base::CallbackListSubscription HoldingSpaceItem::AddDeletionCallback(
   return deletion_callback_list_.Add(std::move(callback));
 }
 
-bool HoldingSpaceItem::IsFinalized() const {
+bool HoldingSpaceItem::IsInitialized() const {
   return !file_system_url_.is_empty();
 }
 
-void HoldingSpaceItem::Finalize(const GURL& file_system_url) {
-  DCHECK(!IsFinalized());
+void HoldingSpaceItem::Initialize(const GURL& file_system_url) {
+  DCHECK(!IsInitialized());
   DCHECK(!file_system_url.is_empty());
   file_system_url_ = file_system_url;
 }
@@ -166,6 +167,7 @@ bool HoldingSpaceItem::IsScreenCapture() const {
     case Type::kDownload:
     case Type::kNearbyShare:
     case Type::kPinnedFile:
+    case Type::kPrintedPdf:
       return false;
   }
 }

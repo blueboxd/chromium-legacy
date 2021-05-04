@@ -598,6 +598,9 @@ extern const char kDownloadLaterDescription[];
 extern const char kDownloadLaterDebugOnWifiName[];
 extern const char kDownloadLaterDebugOnWifiNameDescription[];
 
+extern const char kEnableFencedFramesName[];
+extern const char kEnableFencedFramesDescription[];
+
 extern const char kEnableLoginDetectionName[];
 extern const char kEnableLoginDetectionDescription[];
 
@@ -989,8 +992,8 @@ extern const char kOmniboxDisableCGIParamMatchingDescription[];
 extern const char kOmniboxDefaultTypedNavigationsToHttpsName[];
 extern const char kOmniboxDefaultTypedNavigationsToHttpsDescription[];
 
-extern const char kOmniboxKeywordSpaceTriggeringName[];
-extern const char kOmniboxKeywordSpaceTriggeringDescription[];
+extern const char kOmniboxKeywordSpaceTriggeringSettingName[];
+extern const char kOmniboxKeywordSpaceTriggeringSettingDescription[];
 
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
@@ -1067,9 +1070,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
 
 extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
-
-extern const char kOmniboxUISwapTitleAndUrlName[];
-extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
 extern const char kOmniboxWebUIOmniboxPopupName[];
 extern const char kOmniboxWebUIOmniboxPopupDescription[];
@@ -1223,9 +1223,6 @@ extern const char kReadLaterNewBadgePromoDescription[];
 extern const char kRecordWebAppDebugInfoName[];
 extern const char kRecordWebAppDebugInfoDescription[];
 
-extern const char kRewriteLevelDBOnDeletionName[];
-extern const char kRewriteLevelDBOnDeletionDescription[];
-
 extern const char kRestrictGamepadAccessName[];
 extern const char kRestrictGamepadAccessDescription[];
 
@@ -1352,9 +1349,6 @@ extern const char kWebOTPCrossDeviceDescription[];
 
 extern const char kSplitCacheByNetworkIsolationKeyName[];
 extern const char kSplitCacheByNetworkIsolationKeyDescription[];
-
-extern const char kStopInBackgroundName[];
-extern const char kStopInBackgroundDescription[];
 
 extern const char kStoragePressureEventName[];
 extern const char kStoragePressureEventDescription[];
@@ -1818,9 +1812,6 @@ extern const char kMessagesForAndroidSafetyTipDescription[];
 
 extern const char kMessagesForAndroidSaveCardName[];
 extern const char kMessagesForAndroidSaveCardDescription[];
-
-extern const char kOfflineIndicatorAlwaysHttpProbeName[];
-extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
 
 extern const char kOfflineIndicatorChoiceName[];
 extern const char kOfflineIndicatorChoiceDescription[];
@@ -2474,6 +2465,9 @@ extern const char kEnableGoogleAssistantAecDescription[];
 extern const char kEnableHeuristicStylusPalmRejectionName[];
 extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 
+extern const char kEnableInputNoiseCancellationUiName[];
+extern const char kEnableInputNoiseCancellationUiDescription[];
+
 extern const char kEnableLauncherSearchNormalizationName[];
 extern const char kEnableLauncherSearchNormalizationDescription[];
 
@@ -2482,6 +2476,9 @@ extern const char kNewDragSpecInLauncherDescription[];
 
 extern const char kEnableNeuralStylusPalmRejectionName[];
 extern const char kEnableNeuralStylusPalmRejectionDescription[];
+
+extern const char kEnableOsFeedbackName[];
+extern const char kEnableOsFeedbackDescription[];
 
 extern const char kEnableNewShortcutMappingName[];
 extern const char kEnableNewShortcutMappingDescription[];

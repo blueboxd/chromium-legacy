@@ -177,7 +177,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 #include "third_party/blink/public/common/switches.h"
-#include "third_party/leveldatabase/leveldb_features.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
@@ -1194,23 +1193,6 @@ const FeatureEntry::FeatureVariation kOmniboxBookmarkPathsVariations[] = {
         nullptr,
     },
 };
-
-const FeatureEntry::FeatureVariation
-    kOmniboxKeywordSpaceTriggeringVariations[] = {
-        {
-            "Single Space",
-            (FeatureEntry::FeatureParam[]){},
-            0,
-            nullptr,
-        },
-        {
-            "Double Space",
-            (FeatureEntry::FeatureParam[]){
-                {"KeywordSpaceTriggeringDoubleSpace", "true"}},
-            1,
-            nullptr,
-        }};
-
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -3628,11 +3610,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(offline_pages::kOfflineIndicatorFeature,
                                     kOfflineIndicatorFeatureVariations,
                                     "OfflineIndicator")},
-    {"offline-indicator-always-http-probe",
-     flag_descriptions::kOfflineIndicatorAlwaysHttpProbeName,
-     flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
     {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
      flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},
@@ -3982,10 +3959,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImmersiveFullscreenDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kImmersiveFullscreen)},
 #endif  // OS_MAC
-    {"rewrite-leveldb-on-deletion",
-     flag_descriptions::kRewriteLevelDBOnDeletionName,
-     flag_descriptions::kRewriteLevelDBOnDeletionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(leveldb::kLevelDBRewriteFeature)},
     {"passive-listener-default",
      flag_descriptions::kPassiveEventListenerDefaultName,
      flag_descriptions::kPassiveEventListenerDefaultDescription, kOsAll,
@@ -4351,12 +4324,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDisableCGIParamMatchingName,
      flag_descriptions::kOmniboxDisableCGIParamMatchingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kDisableCGIParamMatching)},
-    {"omnibox-keyword-space-triggering",
-     flag_descriptions::kOmniboxKeywordSpaceTriggeringName,
-     flag_descriptions::kOmniboxKeywordSpaceTriggeringDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kKeywordSpaceTriggering,
-                                    kOmniboxKeywordSpaceTriggeringVariations,
-                                    "OmniboxBundledExperimentV1")},
+    {"omnibox-keyword-space-triggering-setting",
+     flag_descriptions::kOmniboxKeywordSpaceTriggeringSettingName,
+     flag_descriptions::kOmniboxKeywordSpaceTriggeringSettingDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kKeywordSpaceTriggeringSetting)},
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -4477,11 +4448,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDynamicMaxAutocomplete,
                                     kOmniboxDynamicMaxAutocompleteVariations,
                                     "OmniboxBundledExperimentV1")},
-
-    {"omnibox-ui-swap-title-and-url",
-     flag_descriptions::kOmniboxUISwapTitleAndUrlName,
-     flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentSwapTitleAndUrl)},
 
     {"omnibox-webui-omnibox-popup",
      flag_descriptions::kOmniboxWebUIOmniboxPopupName,
@@ -4764,10 +4730,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabHoverCardImages,
                                     kTabHoverCardImagesVariations,
                                     "TabHoverCardImages")},
-
-    {"stop-in-background", flag_descriptions::kStopInBackgroundName,
-     flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
     {"enable-storage-pressure-event",
      flag_descriptions::kStoragePressureEventName,
@@ -5509,6 +5471,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNeuralStylusPalmRejectionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmDetectionFilter)},
 
+    {"enable-os-feedback", flag_descriptions::kEnableOsFeedbackName,
+     flag_descriptions::kEnableOsFeedbackDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOsFeedback)},
+
     {"enable-palm-max-touch-major",
      flag_descriptions::kEnablePalmOnMaxTouchMajorName,
      flag_descriptions::kEnablePalmOnMaxTouchMajorDescription, kOsCrOS,
@@ -5607,6 +5573,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableShortcutCustomizationAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShortcutCustomizationApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"enable-fenced-frames", flag_descriptions::kEnableFencedFramesName,
+     flag_descriptions::kEnableFencedFramesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kFencedFrames)},
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,
      flag_descriptions::kEnablePortalsDescription, kOsAll,
@@ -7276,6 +7246,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLauncherQueryHighlightingName,
      flag_descriptions::kLauncherQueryHighlightingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kLauncherQueryHighlighting)},
+
+    {"enable-input-noise-cancellation-ui",
+     flag_descriptions::kEnableInputNoiseCancellationUiName,
+     flag_descriptions::kEnableInputNoiseCancellationUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableInputNoiseCancellationUi)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"update-history-entry-points-in-incognito",

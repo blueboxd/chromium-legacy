@@ -853,6 +853,12 @@ const char kWinrtGeolocationImplementationDescription[] =
     "Enables usage of the Windows.Devices.Geolocation WinRT APIs on Windows "
     "for geolocation";
 
+const char kEnableFencedFramesName[] = "Enable the <fencedframe> element.";
+const char kEnableFencedFramesDescription[] =
+    "Fenced frames are an experimental web platform feature that allows "
+    "embedding an isolated top-level page. See "
+    "https://github.com/shivanigithub/fenced-frame";
+
 const char kEnableGenericSensorExtraClassesName[] =
     "Generic Sensor Extra Classes";
 const char kEnableGenericSensorExtraClassesDescription[] =
@@ -1706,11 +1712,11 @@ const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
 
-const char kOmniboxKeywordSpaceTriggeringName[] =
-    "Omnibox Keyword Space Triggering";
-const char kOmniboxKeywordSpaceTriggeringDescription[] =
-    "Controls whether keyword mode can be triggered by space, double space, or "
-    "neither.";
+const char kOmniboxKeywordSpaceTriggeringSettingName[] =
+    "Omnibox Keyword Space Triggering Setting";
+const char kOmniboxKeywordSpaceTriggeringSettingDescription[] =
+    "Adds a setting to the search engines setting page to control whether "
+    "spacebar activates keyword mode.";
 
 const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
@@ -1857,11 +1863,6 @@ const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[] =
 const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[] =
     "Google head non personalized search suggestions provided by a compact on "
     "device model for non-incognito";
-
-const char kOmniboxUISwapTitleAndUrlName[] = "Omnibox UI Swap Title and URL";
-const char kOmniboxUISwapTitleAndUrlDescription[] =
-    "In the omnibox dropdown, shows titles before URLs when both are "
-    "available.";
 
 const char kOmniboxWebUIOmniboxPopupName[] = "WebUI Omnibox Popup";
 const char kOmniboxWebUIOmniboxPopupDescription[] =
@@ -2114,11 +2115,6 @@ const char kRecordWebAppDebugInfoDescription[] =
     "Enables recording additional web app related debugging data to be "
     "displayed in: chrome://internals/web-app";
 
-const char kRewriteLevelDBOnDeletionName[] =
-    "Rewrite LevelDB instances after full deletions";
-const char kRewriteLevelDBOnDeletionDescription[] =
-    "Rewrite LevelDB instances to remove traces of deleted data from disk.";
-
 const char kRestrictGamepadAccessName[] = "Restrict gamepad access";
 const char kRestrictGamepadAccessDescription[] =
     "Enables Permissions Policy and Secure Context restrictions on the Gamepad "
@@ -2347,11 +2343,6 @@ const char kStrictOriginIsolationDescription[] =
     "Experimental security mode that strengthens the site isolation policy. "
     "Controls whether site isolation should use origins instead of scheme and "
     "eTLD+1.";
-
-const char kStopInBackgroundName[] = "Stop in background";
-const char kStopInBackgroundDescription[] =
-    "Stop scheduler task queues, in the background, "
-    " after a grace period.";
 
 const char kStorageAccessAPIName[] = "Storage Access API";
 const char kStorageAccessAPIDescription[] =
@@ -3127,12 +3118,6 @@ const char kMessagesForAndroidSafetyTipDescription[] =
 extern const char kMessagesForAndroidSaveCardName[] = "Save Card Messages UI";
 extern const char kMessagesForAndroidSaveCardDescription[] =
     "When enabled, save card infobars will use the new Messages UI.";
-
-const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
-const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
-    "Always do http probe to detect network connectivity for offline indicator "
-    "as opposed to just taking the connection state from the system."
-    "Used for testing.";
 
 const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
 const char kOfflineIndicatorChoiceDescription[] =
@@ -4293,6 +4278,12 @@ const char kEnableHeuristicStylusPalmRejectionDescription[] =
     "Enable additional heuristic palm rejection logic when interacting with "
     "stylus usage. Not intended for all devices.";
 
+const char kEnableInputNoiseCancellationUiName[] =
+    "Enable Input Noise Cancellation UI.";
+const char kEnableInputNoiseCancellationUiDescription[] =
+    "Enable toggling input noise cancellation through the Quick Settings. By "
+    "default, this flag is disabled.";
+
 const char kEnableLauncherSearchNormalizationName[] =
     "Enable normalization of launcher search results";
 const char kEnableLauncherSearchNormalizationDescription[] =
@@ -4309,6 +4300,11 @@ const char kEnableNeuralStylusPalmRejectionName[] =
 const char kEnableNeuralStylusPalmRejectionDescription[] =
     "Experimental: Enable Neural Palm detection. Not compatible with all "
     "devices.";
+
+const char kEnableOsFeedbackName[] = "Enable updated Feedback Tool App";
+const char kEnableOsFeedbackDescription[] =
+    "Enable the feedback tool with new UX design that helps users mitigate "
+    "the issues while writing feedback and makes the UI easier to use.";
 
 const char kEnableNewShortcutMappingName[] = "Enable New Shortcut Mapping";
 const char kEnableNewShortcutMappingDescription[] =

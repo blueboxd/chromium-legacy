@@ -542,7 +542,7 @@
       // @font-face descriptor size-adjust.
       // https://drafts.csswg.org/css-fonts-5/#descdef-font-face-size-adjust
       name: "CSSFontFaceSizeAdjust",
-      status: "test",
+      status: "experimental",
     },
     {
       // @font-face descriptors ascent-override, descent-override and
@@ -922,6 +922,16 @@
     {
       name: "FeaturePolicyReporting",
       status: "experimental"
+    },
+    {
+      name: "FencedFrames",
+      // This helps enable and expose the <fencedframe> element, but note that
+      // blink::features::kFencedFrames must be enabled as well, similar to
+      // Portals, as we require the support of the browser process to fully
+      // enable the feature. Enabling this runtime enabled feature alone has no
+      // effect.
+      status: "experimental",
+      origin_trial_feature_name: "FencedFrames",
     },
     {
       name: "FetchUploadStreaming",

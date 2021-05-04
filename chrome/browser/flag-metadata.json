@@ -1763,7 +1763,7 @@
   {
     "name": "enable-experimental-accessibility-switch-access-text",
     "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-experimental-cookie-features",
@@ -1796,6 +1796,11 @@
     // This flag is used by web developers to test upcoming WebAssembly
     // features.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-fenced-frames",
+    "owners": [ "dom", "shivanisha", "chrome-fenced-frames@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-filtering-scroll-events",
@@ -1952,6 +1957,11 @@
     "name": "enable-inline-update-flow",
     "owners": [ "nyquist", "dtrainor" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "enable-input-noise-cancellation-ui",
+    "owners": [ "swifton@google.com", "cros-peripherals@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "enable-instant-start",
@@ -2172,6 +2182,11 @@
     "name": "enable-oop-rasterization-ddl",
     "owners": [ "robertphillips", "penghuang" ],
     "expiry_milestone": 87
+  },
+  {
+    "name": "enable-os-feedback",
+    "owners": [ "xiangdongkong", "cros-telemetry@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "enable-palm-max-touch-major",
@@ -3781,11 +3796,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "offline-indicator-always-http-probe",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "offline-indicator-choice",
     "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
@@ -3917,6 +3927,11 @@
   },
   {
     "name": "omnibox-keyword-space-triggering",
+    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 99
+  },
+  {
+    "name": "omnibox-keyword-space-triggering-setting",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 99
   },
@@ -4079,11 +4094,6 @@
     "name": "omnibox-ui-sometimes-elide-to-registrable-domain",
     "owners": [ "estark", "carlosil", "chrome-security-enamel@google.com" ],
     "expiry_milestone": 89
-  },
-  {
-    "name": "omnibox-ui-swap-title-and-url",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "omnibox-webui-omnibox-popup",
@@ -4545,11 +4555,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "rewrite-leveldb-on-deletion",
-    "owners": [ "dullweber" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "run-video-capture-service-in-browser",
     "owners": [ "agpalak", "guidou" ],
     "expiry_milestone": 95
@@ -4914,11 +4919,6 @@
     "expiry_milestone": 94
   },
   {
-    "name": "stop-in-background",
-    "owners": [ "chrome-catan@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "storage-access-api",
     "owners": [ "brandm@microsoft.com" ],
     "expiry_milestone": 90
@@ -5053,11 +5053,6 @@
     // exposed in chrome://flags to allow QA and UXers to verify touch-related
     // behavior without access to touch devices.
     "expiry_milestone": -1
-  },
-  {
-    "name": "touch-events",
-    "owners": [ "eirage", "input-dev" ],
-    "expiry_milestone": 76
   },
   {
     "name": "touch-selection-strategy",

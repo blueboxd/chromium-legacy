@@ -154,15 +154,13 @@ void Checkbox::OnThemeChanged() {
 }
 
 std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
-  std::unique_ptr<InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetAutoHighlightMode(InkDropImpl::AutoHighlightMode::NONE);
-  return ink_drop;
+  return views::InkDrop::CreateInkDropWithoutAutoHighlight(
+      this, /*highlight_on_hover=*/false);
 }
 
 std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
   // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
-  return CreateSquareInkDropRipple(
+  return CreateInkDropForSquareRipple(
       image()->GetMirroredContentsBounds().CenterPoint(), gfx::Size(21, 21));
 }
 

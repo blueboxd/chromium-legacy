@@ -1590,7 +1590,6 @@ static_library("ui") {
       "//components/search_provider_logos",
       "//components/services/app_service/public/cpp:app_update",
       "//components/services/app_service/public/mojom",
-      "//components/soda:constants",
       "//components/ui_metrics",
       "//components/url_formatter",
       "//components/vector_icons",
@@ -3530,6 +3529,9 @@ static_library("ui") {
       "send_tab_to_self/send_tab_to_self_bubble_controller.cc",
       "send_tab_to_self/send_tab_to_self_bubble_controller.h",
       "send_tab_to_self/send_tab_to_self_bubble_view.h",
+      "sharing_hub/sharing_hub_bubble_controller.cc",
+      "sharing_hub/sharing_hub_bubble_controller.h",
+      "sharing_hub/sharing_hub_bubble_view.h",
 
       # This test header is included because it contains forward declarations
       # needed for "friend" statements for use in tests.
@@ -4130,6 +4132,10 @@ static_library("ui") {
       "views/sharing/sharing_dialog_view.h",
       "views/sharing/sharing_icon_view.cc",
       "views/sharing/sharing_icon_view.h",
+      "views/sharing_hub/sharing_hub_bubble_view_impl.cc",
+      "views/sharing_hub/sharing_hub_bubble_view_impl.h",
+      "views/sharing_hub/sharing_hub_icon_view.cc",
+      "views/sharing_hub/sharing_hub_icon_view.h",
       "views/side_panel.cc",
       "views/side_panel.h",
       "views/ssl_client_certificate_selector.cc",
@@ -4377,6 +4383,8 @@ static_library("ui") {
       "//components/payments/core",
       "//components/qr_code_generator",
       "//components/reading_list/features:flags",
+      "//components/soda",
+      "//components/soda:constants",
       "//components/tab_count_metrics",
       "//components/ui_devtools/views",
       "//device/vr/buildflags:buildflags",

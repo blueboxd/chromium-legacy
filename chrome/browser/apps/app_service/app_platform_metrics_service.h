@@ -16,6 +16,7 @@ class PrefRegistrySimple;
 namespace apps {
 
 class AppRegistryCache;
+class InstanceRegistry;
 
 extern const char kAppPlatformMetricsDayId[];
 
@@ -35,11 +36,15 @@ class AppPlatformMetricsService {
   static int GetDayIdForTesting(base::Time time);
 
   // Start the timer and check if a new day has arrived.
-  void Start(apps::AppRegistryCache& app_registry_cache);
+  void Start(AppRegistryCache& app_registry_cache,
+             InstanceRegistry& instance_registry);
 
  private:
   // Helper function to check if a new day has arrived.
   void CheckForNewDay();
+
+  // Helper function to check if 5 mintues have arrived.
+  void CheckForFiveMinutes();
 
   Profile* const profile_;
 
@@ -47,6 +52,9 @@ class AppPlatformMetricsService {
 
   // A periodic timer that checks if a new day has arrived.
   base::RepeatingTimer timer_;
+
+  // A periodic timer that checks if five minutes have arrived.
+  base::RepeatingTimer five_minutes_timer_;
 
   std::unique_ptr<AppPlatformMetrics> app_platform_app_metrics_;
 };

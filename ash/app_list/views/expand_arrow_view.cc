@@ -272,11 +272,8 @@ const char* ExpandArrowView::GetClassName() const {
 }
 
 std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      Button::CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
-  return std::move(ink_drop);
+  return views::InkDrop::CreateInkDropWithoutAutoHighlight(
+      this, /*highlight_on_hover=*/false);
 }
 
 std::unique_ptr<views::InkDropRipple> ExpandArrowView::CreateInkDropRipple()

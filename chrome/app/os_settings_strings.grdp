@@ -13,6 +13,9 @@
   <message name="IDS_SETTINGS_DEVICE_ON" desc="In Settings pages, the label when a bluetooth, wifi, or mobile device is on (enabled)." meaning="Device is enabled.">
     On
   </message>
+  <message name="IDS_SETTINGS_DISMISS" desc="Label to dismiss a shortcut reminder.">
+    Dismiss
+  </message>
 
   <!--Main Page-->
   <message name="IDS_SETTINGS_SECONDARY_USER_BANNER" desc="Banner displayed in settings page when the user is secondary in a multi-profile session.">
@@ -350,6 +353,15 @@
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_INPUT_METHOD_LIST_TITLE" desc="Title for the list of enabled input methods (keyboard layouts and input method editors).">
     Input methods
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_SHORTCUT_REMINDER_TITLE" desc="Title for the reminder to the user that some shortcuts are available for this feature.">
+    Keyboard shortcut available
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_SHORTCUT_REMINDER_LAST_USED_IME_DESCRIPTION" desc="The body of the shortcut reminder for switching to the last used input method. Note that 'Ctrl' shouldn't be translated in almost all languages.">
+    To switch to the last used input method, press <ph name="BEGIN_SHORTCUT">&lt;kbd&gt;</ph><ph name="BEGIN_CTRL">&lt;kbd&gt;</ph>Ctrl<ph name="END_CTRL">&lt;/kbd&gt;</ph><ph name="SEPARATOR">+</ph><ph name="BEGIN_SPACE">&lt;kbd&gt;</ph>Space<ph name="END_SPACE">&lt;/kbd&gt;</ph><ph name="END_SHORTCUT">&lt;/kbd&gt;</ph>
+  </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_SHORTCUT_REMINDER_NEXT_IME_DESCRIPTION" desc="The body of the shortcut reminder for switching to the next input method. Note that 'Ctrl' shouldn't be translated in almost all languages, and 'Shift' shouldn't be translated in most languages.">
+    To switch to the next input method, press <ph name="BEGIN_SHORTCUT">&lt;kbd&gt;</ph><ph name="BEGIN_CTRL">&lt;kbd&gt;</ph>Ctrl<ph name="END_CTRL">&lt;/kbd&gt;</ph><ph name="SEPARATOR1">+</ph><ph name="BEGIN_SHIFT">&lt;kbd&gt;</ph>Shift<ph name="END_SHIFT">&lt;/kbd&gt;</ph><ph name="SEPARATOR2">+</ph><ph name="BEGIN_SPACE">&lt;kbd&gt;</ph>Space<ph name="END_SPACE">&lt;/kbd&gt;</ph><ph name="END_SHORTCUT">&lt;/kbd&gt;</ph>
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_OPEN_OPTIONS_PAGE_LABEL" desc="Description read by screenreader for the button to open the settings page for a input method (keyboard layout and input method editor).">
     Open settings page for <ph name="INPUT_METHOD_NAME">$1<ex>US keyboard</ex></ph>
@@ -3651,7 +3663,7 @@ Press an assigned switch to remove assignment.
     Disabling can make your peripherals perform better, but may expose your personal data through unauthorized usage.
   </message>
   <message name="IDS_OS_SETTINGS_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_SUB_DESCRIPTION" desc="The description of the dialog that states that disabling peripheral data acces protection may reset the user's peripherals and may take a few seconds.">
-    Your displays and peripherals may reset briefly. This may take a few seconds to take effect.
+    Your displays and peripherals may reset briefly. For this change to take effect, unplug and replug your peripherals.
   </message>
   <message name="IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_CANCEL_BUTTON_LABEL" desc="The label of the cancel button for the data access protection confirmation dialog">
     Cancel

@@ -75,8 +75,13 @@ suite('InternetPage', function() {
     if (showPSimFlow) {
       params.append('showPsimFlow', 'true');
     }
+
+    // Pretend that we initially started on the INTERNET_NETWORKS route with the
+    // params.
     settings.Router.getInstance().navigateTo(
         settings.routes.INTERNET_NETWORKS, params);
+    internetPage.currentRouteChanged(
+        settings.routes.INTERNET_NETWORKS, undefined);
 
     // Update the device state here to trigger an
     // attemptShowCellularSetupDialog_() call.
@@ -84,6 +89,46 @@ suite('InternetPage', function() {
         chromeos.networkConfig.mojom.NetworkType.kCellular, isCellularEnabled);
 
     return flushAsync();
+  }
+
+  /**
+   * @param {DivElement} warningMessage
+   */
+  async function assertWarningMessageVisibility(warningMessage) {
+    assertTrue(!!warningMessage);
+
+    // Warning message should be initially hidden.
+    assertTrue(warningMessage.hidden);
+
+    // Add a pSIM network.
+    const mojom = chromeos.networkConfig.mojom;
+    mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+    const pSimNetwork = OncMojo.getDefaultManagedProperties(
+        mojom.NetworkType.kCellular, 'cellular1');
+    pSimNetwork.connectionState = mojom.ConnectionStateType.kConnected;
+    mojoApi_.setManagedPropertiesForTest(pSimNetwork);
+    await flushAsync();
+
+    // Warning message should now be showing.
+    assertFalse(warningMessage.hidden);
+
+    // Disconnect from the pSIM network.
+    pSimNetwork.connectionState = mojom.ConnectionStateType.kNotConnected;
+    mojoApi_.setManagedPropertiesForTest(pSimNetwork);
+    await flushAsync();
+    // Warning message should be hidden.
+    assertTrue(warningMessage.hidden);
+
+    // Add an eSIM network.
+    const eSimNetwork = OncMojo.getDefaultManagedProperties(
+        mojom.NetworkType.kCellular, 'cellular2');
+    eSimNetwork.connectionState = mojom.ConnectionStateType.kConnected;
+    eSimNetwork.typeProperties.cellular.eid = 'eid';
+    mojoApi_.setManagedPropertiesForTest(eSimNetwork);
+    await flushAsync();
+
+    // Warning message should be showing again.
+    assertFalse(warningMessage.hidden);
   }
 
   setup(function() {
@@ -318,6 +363,8 @@ suite('InternetPage', function() {
       await flushAsync();
       renameDialog = internetPage.$$('#esimRenameDialog');
       assertTrue(!!renameDialog);
+
+      await assertWarningMessageVisibility(renameDialog.$.warningMessage);
     });
 
     test('Show remove esim profile dialog', async function() {
@@ -334,6 +381,8 @@ suite('InternetPage', function() {
       await flushAsync();
       removeDialog = internetPage.$$('#esimRemoveProfileDialog');
       assertTrue(!!removeDialog);
+
+      await assertWarningMessageVisibility(removeDialog.$.warningMessage);
     });
   });
 
@@ -488,8 +537,13 @@ suite('InternetPage', function() {
     params.append(
         'type', OncMojo.getNetworkTypeString(mojom.NetworkType.kCellular));
     params.append('showSimLockDialog', true);
+
+    // Pretend that we initially started on the INTERNET_NETWORKS route with the
+    // params.
     settings.Router.getInstance().navigateTo(
         settings.routes.INTERNET_NETWORKS, params);
+    internetPage.currentRouteChanged(
+        settings.routes.INTERNET_NETWORKS, undefined);
 
     await flushAsync();
 

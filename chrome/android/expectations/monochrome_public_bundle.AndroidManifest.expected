@@ -779,6 +779,10 @@
         <action android:name="android.speech.action.VOICE_SEARCH_RESULTS"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>  # DIFF-ANCHOR: 2a3a3c3d
+      <intent-filter>  # DIFF-ANCHOR: 19f73fdc
+        <action android:name="android.web.action.APP_ATTRIBUTION"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>  # DIFF-ANCHOR: 19f73fdc
       <intent-filter>  # DIFF-ANCHOR: 83919a44
         <action android:name="com.sec.android.airview.HOVER"/>
       </intent-filter>  # DIFF-ANCHOR: 83919a44
@@ -877,6 +881,13 @@
     <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES" android:value="5"/>
     <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES" android:value="40"/>
     <meta-data android:name="org.chromium.content.browser.SMART_CLIP_PROVIDER" android:value="org.chromium.content_public.browser.SmartClipProvider"/>
+    <provider  # DIFF-ANCHOR: 0e75b297
+        android:name="androidx.startup.InitializationProvider"
+        android:authorities="$PACKAGE.androidx-startup"
+        android:exported="false"
+        tools:node="merge">
+      <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup"/>
+    </provider>  # DIFF-ANCHOR: 0e75b297
     <provider  # DIFF-ANCHOR: bc0a9a7a
         android:name="com.google.firebase.provider.FirebaseInitProvider"
         android:authorities="$PACKAGE.firebaseinitprovider"
@@ -971,13 +982,6 @@
         android:name="org.chromium.chrome.browser.customtabs.CustomTabsShareBroadcastReceiver"
         android:exported="false">
     </receiver>  # DIFF-ANCHOR: fd245bee
-    <receiver  # DIFF-ANCHOR: de591772
-        android:name="org.chromium.chrome.browser.locale.LocaleChangedBroadcastReceiver"
-        android:exported="false">
-      <intent-filter>  # DIFF-ANCHOR: 5458f2a2
-        <action android:name="android.intent.action.LOCALE_CHANGED"/>
-      </intent-filter>  # DIFF-ANCHOR: 5458f2a2
-    </receiver>  # DIFF-ANCHOR: de591772
     <receiver  # DIFF-ANCHOR: 2b9c19aa
         android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
         android:exported="false">
@@ -994,6 +998,13 @@
         <action android:name="org.chromium.chrome.browser.notifications.CLOSE_NOTIFICATION"/>
       </intent-filter>  # DIFF-ANCHOR: 1c1c5ed8
     </receiver>  # DIFF-ANCHOR: df76237f
+    <receiver  # DIFF-ANCHOR: a9b53579
+        android:name="org.chromium.chrome.browser.notifications.channels.LocaleChangedBroadcastReceiver"
+        android:exported="false">
+      <intent-filter>  # DIFF-ANCHOR: 5458f2a2
+        <action android:name="android.intent.action.LOCALE_CHANGED"/>
+      </intent-filter>  # DIFF-ANCHOR: 5458f2a2
+    </receiver>  # DIFF-ANCHOR: a9b53579
     <receiver  # DIFF-ANCHOR: 0cefd906
         android:name="org.chromium.chrome.browser.notifications.scheduler.DisplayAgent$Receiver"
         android:exported="false">

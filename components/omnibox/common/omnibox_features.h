@@ -17,7 +17,6 @@ extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kImageSearchSuggestionThumbnail;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kDisplayTitleForCurrentUrl;
-extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kDocumentProvider;
 extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
 extern const base::Feature kDebounceDocumentProvider;
@@ -81,7 +80,9 @@ extern const base::Feature kWebUIOmniboxPopup;
 // popup).
 extern const base::Feature kIntranetRedirectBehaviorPolicyRollout;
 extern const base::Feature kOmniboxAssistantVoiceSearch;
-extern const base::Feature kKeywordSpaceTriggering;
+extern const base::Feature kKeywordSpaceTriggeringSetting;
+// Experiment to introduce new security indicators for HTTPS.
+extern const base::Feature kUpdatedConnectionSecurityIndicators;
 
 // Path-hiding experiments - these hide the path and other URL components in
 // some circumstances in the steady-state omnibox.

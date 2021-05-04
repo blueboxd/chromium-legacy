@@ -12265,6 +12265,16 @@ histogram as enum -->
   <int value="3" label="Virtual Keyboard"/>
 </enum>
 
+<enum name="ClipboardPastedImageUrls">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Image with local file urls"/>
+  <int value="2" label="Image with http(s) urls"/>
+  <int value="3" label="Image with cid urls"/>
+  <int value="4" label="Image with other urls"/>
+  <int value="5" label="Base64 encoded image"/>
+  <int value="6" label="Image with local file urls and RTF"/>
+</enum>
+
 <enum name="ClockdriftLevel">
   <int value="0" label="None"/>
   <int value="1" label="Probable"/>
@@ -32357,6 +32367,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3887" label="ServiceWorkerSubresourceFilter"/>
   <int value="3888" label="WebGPU"/>
   <int value="3889" label="CSSFilterColorMatrix"/>
+  <int value="3890" label="HTMLFencedFrameElement"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38729,6 +38740,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="kNearbyShare"/>
   <int value="4" label="kScreenRecording"/>
   <int value="5" label="kArcDownload"/>
+  <int value="6" label="kPrintedPdf"/>
 </enum>
 
 <enum name="HoldingSpacePodAction">
@@ -44541,6 +44553,8 @@ from previous Chrome versions.
   <int value="-1899409297"
       label="ProcessSharingWithStrictSiteInstances:disabled"/>
   <int value="-1899342084" label="ArcGhostWindow:enabled"/>
+  <int value="-1898963163"
+      label="OmniboxKeywordSpaceTriggeringSetting:disabled"/>
   <int value="-1898386671" label="PasswordCheck:enabled"/>
   <int value="-1896871201" label="CrossOriginOpenerPolicyReporting:enabled"/>
   <int value="-1896733769" label="CheckOfflineCapability:disabled"/>
@@ -45110,7 +45124,6 @@ from previous Chrome versions.
       label="AutofillRationalizeRepeatedServerPredictions:enabled"/>
   <int value="-1421676705" label="force-webxr-runtime"/>
   <int value="-1420542268" label="AutofillEnableAccountWalletStorage:disabled"/>
-  <int value="-1420517225" label="OmniboxKeywordSpaceTriggering:enabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1419449681" label="PermissionChipRequestTypeSensitive:enabled"/>
   <int value="-1417642561" label="AutofillCreditCardUploadFeedback:enabled"/>
@@ -45279,6 +45292,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:disabled"/>
   <int value="-1286038936"
       label="AutofillEnableCardNicknameManagement:enabled"/>
+  <int value="-1285790931" label="FencedFrames:disabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1284637134" label="pull-to-refresh"/>
   <int value="-1283164264" label="CroshSWA:disabled"/>
@@ -46085,6 +46099,7 @@ from previous Chrome versions.
   <int value="-600726805" label="DeprecateMenagerieAPI:disabled"/>
   <int value="-599932554" label="DoodlesOnLocalNtp:disabled"/>
   <int value="-599005750" label="ScanningUI:disabled"/>
+  <int value="-598191408" label="OmniboxKeywordSpaceTriggeringSetting:enabled"/>
   <int value="-598050737" label="disable-es3-apis"/>
   <int value="-596822155" label="AppManagementIntentSettings:enabled"/>
   <int value="-596337171" label="disable-ash-sidebar"/>
@@ -46111,6 +46126,7 @@ from previous Chrome versions.
   <int value="-570889908" label="CCTModuleDexLoading:enabled"/>
   <int value="-568448085" label="SharedClipboardReceiver:disabled"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
+  <int value="-567743697" label="EnableInputNoiseCancellationUi:enabled"/>
   <int value="-563980787" label="disable-webrtc"/>
   <int value="-563600258" label="PhotoPickerVideoSupport:disabled"/>
   <int value="-562771426" label="InstantStart:disabled"/>
@@ -46965,6 +46981,7 @@ from previous Chrome versions.
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
   <int value="221212638" label="StartSurfaceAndroid:enabled"/>
   <int value="221707633" label="AutofillFixOfferInIncognito:disabled"/>
+  <int value="222055978" label="OsFeedback:disabled"/>
   <int value="222184258"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
   <int value="223591010" label="CastMediaRouteProvider:enabled"/>
@@ -47675,7 +47692,6 @@ from previous Chrome versions.
   <int value="839230937" label="AutofillEnableCardNicknameUpstream:disabled"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
   <int value="840057845" label="HardwareMediaKeyHandling:enabled"/>
-  <int value="841123685" label="OmniboxKeywordSpaceTriggering:disabled"/>
   <int value="841276069" label="ChromeHomeDoodle:disabled"/>
   <int value="841343322" label="disable-new-korean-ime"/>
   <int value="841779535" label="password-export:enabled"/>
@@ -47918,6 +47934,7 @@ from previous Chrome versions.
   <int value="1061947013" label="OmniboxDeferredKeyboardPopup:disabled"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
+  <int value="1065547630" label="EnableInputNoiseCancellationUi:disabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1067990299" label="enable-ui-devtools"/>
   <int value="1069325321" label="CrostiniGpuSupport:enabled"/>
@@ -48211,6 +48228,7 @@ from previous Chrome versions.
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1310000273" label="ReleaseNotesNotificationAllChannels:disabled"/>
   <int value="1310316934" label="OptimizationGuideModelDownloading:enabled"/>
+  <int value="1311579438" label="FencedFrames:enabled"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
   <int value="1313476409" label="ReportFeedUserActions:disabled"/>
@@ -48345,6 +48363,7 @@ from previous Chrome versions.
   <int value="1414918327" label="enable-accelerated-video-decode"/>
   <int value="1416592483" label="ash-enable-mirrored-screen"/>
   <int value="1418054870" label="SpecialLocale:enabled"/>
+  <int value="1419806576" label="OsFeedback:enabled"/>
   <int value="1419984081"
       label="DesktopPWAsFlashAppNameInsteadOfOrigin:enabled"/>
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
@@ -67306,6 +67325,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="16" label="RPC invalid"/>
   <int value="17" label="Data pipe create error"/>
   <int value="18" label="Mojo pipe error"/>
+  <int value="19" label="Message send failure"/>
+  <int value="20" label="Data send failure"/>
+  <int value="21" label="Unexpected failure"/>
+  <int value="22" label="Service gone"/>
+  <int value="23" label="Disabled by user"/>
 </enum>
 
 <enum name="RemotingTrackConfiguration">

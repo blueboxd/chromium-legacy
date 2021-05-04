@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_color.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -330,7 +332,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           // BackgroundColorPaintWorklet, as a result, we should not composite
           // the background color animation on the table rows or cols.
           if (!RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() ||
-              layout_object->IsLayoutTableCol() ||
+              !layout_object || layout_object->IsLayoutTableCol() ||
               layout_object->IsTableRow() || background_transfers_to_view ||
               !compositable_animation) {
             DefaultToUnsupportedProperty(unsupported_properties, property,

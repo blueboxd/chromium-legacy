@@ -336,6 +336,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kLanguageInputMethodSpecificSettings] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_allowlist)[ash::prefs::kLastUsedImeShortcutReminderDismissed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kNextImeShortcutReminderDismissed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -355,6 +359,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   // Search page.
   (*s_allowlist)[DefaultSearchManager::kDefaultSearchProviderDataPrefName] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_allowlist)[::omnibox::kKeywordSpaceTriggeringEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Site Settings prefs.
   (*s_allowlist)[::content_settings::kCookiePrimarySetting] =

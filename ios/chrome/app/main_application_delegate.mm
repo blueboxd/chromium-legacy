@@ -318,25 +318,14 @@ const int kMainIntentCheckDelay = 1;
           if (!appStartupFromExternalIntent) {
             base::RecordAction(
                 base::UserMetricsAction("IOSOpenByMainIntent"));
+          } else {
+            base::RecordAction(base::UserMetricsAction("IOSOpenByViewIntent"));
           }
         });
     [_appState applicationWillEnterForeground:UIApplication.sharedApplication
                               metricsMediator:_metricsMediator
                                  memoryHelper:_memoryHelper];
   }
-}
-
-#pragma mark Downloading Data in the Background
-
-- (void)application:(UIApplication*)application
-    handleEventsForBackgroundURLSession:(NSString*)identifier
-                      completionHandler:(void (^)(void))completionHandler {
-  if (_appState.initStage <= InitStageSafeMode)
-    return;
-  // This initialization to BACKGROUND stage may not be necessary, but is
-  // preserved in case somewhere there is a dependency on this.
-  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_BACKGROUND];
-  completionHandler();
 }
 
 #pragma mark Continuing User Activity and Handling Quick Actions

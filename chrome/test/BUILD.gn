@@ -996,6 +996,8 @@ if (!is_android) {
       "../browser/apps/platform_apps/event_page_browsertest.cc",
       "../browser/apps/platform_apps/platform_app_navigation_redirector_browsertest.cc",
       "../browser/apps/platform_apps/service_worker_browsertest.cc",
+      "../browser/attribution_reporting/conversions_usage_restriction_trial_browsertest.cc",
+      "../browser/attribution_reporting/conversions_usecounter_browsertest.cc",
       "../browser/autocomplete/autocomplete_browsertest.cc",
       "../browser/autofill/autofill_autocomplete_browsertest.cc",
       "../browser/autofill/autofill_browsertest.cc",
@@ -1050,8 +1052,6 @@ if (!is_android) {
       "../browser/component_updater/component_patcher_operation_browsertest.cc",
       "../browser/content_index/content_index_browsertest.cc",
       "../browser/content_settings/content_settings_browsertest.cc",
-      "../browser/conversions/conversions_usage_restriction_trial_browsertest.cc",
-      "../browser/conversions/conversions_usecounter_browsertest.cc",
       "../browser/crash_recovery_browsertest.cc",
       "../browser/custom_handlers/protocol_handler_registry_browsertest.cc",
       "../browser/data_reduction_proxy/data_reduction_proxy_browsertest.cc",
@@ -3149,9 +3149,6 @@ if (!is_android) {
     if (is_win) {
       sources += [ "../browser/policy/test/audio_process_high_priority_enabled_browsertest.cc" ]
     }
-    if (is_mac || is_win || is_chromeos_ash) {
-      sources += [ "../browser/extensions/api/networking_cast_private/networking_cast_private_apitest.cc" ]
-    }
     if (((is_linux || is_chromeos_lacros) && !is_chromeos_lacros) || is_mac) {
       sources +=
           [ "../browser/first_run/first_run_internal_posix_browsertest.cc" ]
@@ -3581,7 +3578,6 @@ test("unit_tests") {
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
     "../browser/component_updater/trust_token_key_commitments_component_installer_unittest.cc",
-    "../browser/component_updater/zxcvbn_data_component_installer_unittest.cc",
     "../browser/content_index/content_index_provider_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
@@ -4113,6 +4109,7 @@ test("unit_tests") {
       "../browser/browsing_data/chrome_browsing_data_lifetime_manager_unittest.cc",
       "../browser/component_updater/soda_component_installer_unittest.cc",
       "../browser/component_updater/soda_language_pack_component_installer_unittest.cc",
+      "../browser/component_updater/zxcvbn_data_component_installer_unittest.cc",
       "../browser/content_settings/generated_cookie_prefs_unittest.cc",
       "../browser/content_settings/generated_notification_pref_unittest.cc",
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
@@ -4298,6 +4295,12 @@ test("unit_tests") {
     "//components/page_load_metrics/common:test_support",
     "//components/query_tiles:unit_tests",
     "//components/reporting/client:test_support",
+    "//components/reporting/encryption:decryption",
+    "//components/reporting/encryption:encryption",
+    "//components/reporting/encryption:encryption_module",
+    "//components/reporting/encryption:encryption_module_interface",
+    "//components/reporting/encryption:test_support",
+    "//components/reporting/encryption:testing_primitives",
     "//components/reporting/storage:storage_uploader_interface",
     "//components/reporting/storage:test_support",
     "//components/reporting/util:test_callbacks_support",
@@ -4312,7 +4315,6 @@ test("unit_tests") {
     "//components/services/app_service/public/cpp:protocol_handling",
     "//components/services/patch/content",
     "//components/services/unzip/content",
-    "//components/soda:constants",
     "//components/spellcheck:buildflags",
     "//components/strings",
     "//components/subresource_filter/core/browser:test_support",
@@ -4357,7 +4359,6 @@ test("unit_tests") {
     "//third_party/metrics_proto",
     "//third_party/re2",
     "//third_party/webrtc_overrides:webrtc_component",
-    "//third_party/zxcvbn-cpp",
     "//ui/base:test_support",
     "//ui/display:test_support",
     "//ui/gfx:test_support",
@@ -4924,6 +4925,7 @@ test("unit_tests") {
       "//components/sync:test_support",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
+      "//third_party/zxcvbn-cpp",
       "//ui/base/idle:test_support",
       "//ui/native_theme:test_support",
     ]
@@ -5005,7 +5007,10 @@ test("unit_tests") {
       "../renderer/media/webrtc_logging_agent_impl_unittest.cc",
     ]
 
-    deps += [ "//services/network:test_support" ]
+    deps += [
+      "//components/soda:constants",
+      "//services/network:test_support",
+    ]
 
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:unit_tests_js" ]
@@ -5397,6 +5402,7 @@ test("unit_tests") {
       "../browser/extensions/blocklist_check_unittest.cc",
       "../browser/extensions/blocklist_extension_prefs_unittest.cc",
       "../browser/extensions/blocklist_state_fetcher_unittest.cc",
+      "../browser/extensions/blocklist_states_interaction_unittest.cc",
       "../browser/extensions/chrome_app_icon_unittest.cc",
       "../browser/extensions/chrome_app_sorting_unittest.cc",
       "../browser/extensions/chrome_component_extension_resource_manager_unittest.cc",
@@ -6085,9 +6091,6 @@ test("unit_tests") {
   if (is_win || is_mac) {
     deps += [ "//chrome/common/notifications:unit_tests" ]
   }
-  if (is_win || is_mac || is_chromeos_ash) {
-    sources += [ "../browser/extensions/api/networking_private/networking_private_crypto_unittest.cc" ]
-  }
   if (enable_rlz) {
     sources += [ "../browser/rlz/chrome_rlz_tracker_delegate_unittest.cc" ]
     deps += [ "//rlz:test_support" ]
@@ -6262,6 +6265,7 @@ test("unit_tests") {
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.h",
       "../browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc",
+      "../browser/ui/views/tabs/tab_hover_card_controller_unittest.cc",
       "../browser/ui/views/tabs/tab_hover_card_metrics_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_layout_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_unittest.cc",

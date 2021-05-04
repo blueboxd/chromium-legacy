@@ -47,8 +47,16 @@ base::Optional<Priority> GetPriorityProtoFromSequencingInformationValue(
 
   const std::string* str_priority_result =
       sequencing_information.FindStringKey("priority");
+  if (!str_priority_result) {
+    LOG(ERROR) << "Field priority is missing from SequencingInformation: "
+               << sequencing_information;
+    return base::nullopt;
+  }
+
   Priority priority;
   if (!Priority_Parse(*str_priority_result, &priority)) {
+    LOG(ERROR) << "Unable to parse field priority in SequencingInformation: "
+               << sequencing_information;
     return base::nullopt;
   }
   return priority;
@@ -154,7 +162,7 @@ void RecordHandlerImpl::ReportUploader::OnStart() {
     return;
   }
 
-  if (records_->empty()) {
+  if (records_->empty() && !need_encryption_key_) {
     Status empty_records =
         Status(error::INVALID_ARGUMENT, "records_ was empty");
     LOG(ERROR) << empty_records;
@@ -224,7 +232,7 @@ void RecordHandlerImpl::ReportUploader::HandleFailedUpload() {
 }
 
 void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload() {
-  // Decypher 'response' containing a base::Value dictionary that looks like:
+  // Decipher 'response' containing a base::Value dictionary that looks like:
   //  {
   //    "lastSucceedUploadedRecord": ... // SequencingInformation proto
   //    "firstFailedUploadedRecord": {

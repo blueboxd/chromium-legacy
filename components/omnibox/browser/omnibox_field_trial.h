@@ -121,15 +121,6 @@ typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
 // end of the vector are assumed to have scores of 1.0.
 typedef std::vector<std::pair<size_t, double>> NumMatchesScores;
 
-// Do not change these values as they need to be in sync with values
-// specified in experiment configs on the variations server.
-enum EmphasizeTitlesCondition {
-  EMPHASIZE_WHEN_NONEMPTY = 0,
-  EMPHASIZE_WHEN_TITLE_MATCHES = 1,
-  EMPHASIZE_WHEN_ONLY_TITLE_MATCHES = 2,
-  EMPHASIZE_NEVER = 3
-};
-
 // ---------------------------------------------------------
 // For any experiment that's part of the bundled omnibox field trial.
 
@@ -360,17 +351,6 @@ bool HUPSearchDatabase();
 int KeywordScoreForSufficientlyCompleteMatch();
 
 // ---------------------------------------------------------
-// For the EmphasizeTitles experiment that's part of the bundled omnibox
-// field trial.
-
-// Returns the conditions under which the UI code should display the title
-// of a URL more prominently than the URL for input |input|. Normally the URL
-// is displayed more prominently. Returns NEVER_EMPHASIZE if the experiment
-// isn't active.
-EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
-    const AutocompleteInput& input);
-
-// ---------------------------------------------------------
 // For UI experiments.
 
 // Short bookmarks.
@@ -451,16 +431,6 @@ int UnelideURLOnHoverThresholdMs();
 // Returns true if CGI parameter names should not be considered when scoring
 // suggestions.
 bool ShouldDisableCGIParamMatching();
-
-enum KeywordSpaceTrigger {
-  SPACE_TRIGGERING_DISABLED = 0,
-  SINGLE_SPACE_TRIGGERS_KEYWORD = 1,
-  DOUBLE_SPACE_TRIGGERS_KEYWORD = 2,
-};
-
-// Returns whether space triggering is disabled, triggered by single space
-// (default), or double space (double space keyword triggering is enabled).
-KeywordSpaceTrigger GetKeywordSpaceTrigger();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -598,9 +568,6 @@ extern const char kBookmarkPathsUiReplaceTitle[];
 extern const char kBookmarkPathsUiReplaceUrl[];
 extern const char kBookmarkPathsUiAppendAfterTitle[];
 extern const char kBookmarkPathsUiDynamicReplaceUrl[];
-
-// Parameter names used for scoped search/keyword mode experiments.
-extern const char kKeywordSpaceTriggeringDoubleSpaceParam[];
 
 namespace internal {
 // The bundled omnibox experiment comes with a set of parameters

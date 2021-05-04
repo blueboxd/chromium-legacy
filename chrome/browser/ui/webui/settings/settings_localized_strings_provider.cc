@@ -981,14 +981,18 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT_AND_DEVICE},
       {"passwordMovePasswordsToAccount",
        IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT},
-      {"passwordMovePasswordsToAccountDialogFooter",
-       IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT_DIALOG_FOOTER},
+      {"passwordMovePasswordsToAccountDialogBodyText",
+       IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT_DIALOG_BODY_TEXT},
       {"passwordMovePasswordsToAccountDialogTitle",
        IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT_DIALOG_TITLE},
       {"passwordMoveToAccountDialogTitle",
        IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_TITLE},
       {"passwordMoveToAccountDialogBody",
        IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_BODY},
+      {"passwordMoveMultiplePasswordsToAccountDialogMoveButtonText",
+       IDS_SETTINGS_PASSWORD_MOVE_MULTIPLE_PASSWORDS_TO_ACCOUNT_DIALOG_MOVE_BUTTON_TEXT},
+      {"passwordMoveMultiplePasswordsToAccountDialogCancelButtonText",
+       IDS_SETTINGS_PASSWORD_MOVE_MULTIPLE_PASSWORDS_TO_ACCOUNT_DIALOG_CANCEL_BUTTON_TEXT},
       {"passwordMoveToAccountDialogMoveButtonText",
        IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_MOVE_BUTTON_TEXT},
       {"passwordMoveToAccountDialogCancelButtonText",
@@ -1607,8 +1611,22 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SEARCH_ENGINES_REMOVE_FROM_LIST},
       {"searchEnginesManageExtension",
        IDS_SETTINGS_SEARCH_ENGINES_MANAGE_EXTENSION},
+      // TODO(yoangela): Placeholder strings, update when these strings are
+      // finalized.
+      {"searchEnginesTriggerOptions",
+       IDS_SETTINGS_SEARCH_ENGINES_TRIGGER_OPTIONS},
+      {"searchEnginesTriggerDescription",
+       IDS_SETTINGS_SEARCH_ENGINES_TRIGGER_DESCRIPTION},
+      {"searchEnginesTriggerSpaceEnabled",
+       IDS_SETTINGS_SEARCH_ENGINES_TRIGGER_SPACE_ENABLED},
+      {"searchEnginesTriggerSpaceDisabled",
+       IDS_SETTINGS_SEARCH_ENGINES_TRIGGER_SPACE_DISABLED},
+
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+  html_source->AddBoolean(
+      "showKeywordTriggerSetting",
+      base::FeatureList::IsEnabled(omnibox::kKeywordSpaceTriggeringSetting));
 }
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source,

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_SHARING_HUB_SHARING_HUB_ICON_VIEW_H_
 
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 
 class CommandUpdater;
 
@@ -31,6 +31,7 @@ class SharingHubIconView : public PageActionIconView {
   views::BubbleDialogDelegate* GetBubble() const override;
   void UpdateImpl() override;
   bool ShouldShowLabel() const override;
+  std::u16string GetTextForTooltipAndAccessibleName() const override;
 
  protected:
   // PageActionIconView:

@@ -2377,7 +2377,11 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
           PLATFORM_FAILURE, );
       hr = decoder_->ProcessInput(0, sample.Get(), 0);
     }
-    // If we continue to get the MF_E_NOTACCEPTING error we do the following:-
+    // If we continue to get the MF_E_NOTACCEPTING error we do the following:
+    // 1. Check if MF appears to be stuck in a not-accepting loop. When this
+    //    occurs we want to break out of the loop early to allow recovery
+    //    without prolonged ux hangs or running into potential OOM issues.
+    // If not in a loop then:
     // 1. Add the input sample to the pending queue.
     // 2. If we don't have any output samples we post the
     //    DecodePendingInputBuffers task to process the pending input samples.
@@ -2387,6 +2391,17 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     // given time due to the limitation with the Microsoft media foundation
     // decoder where it recycles the output Decoder surfaces.
     if (hr == MF_E_NOTACCEPTING) {
+      // Check if we appear to be stuck in a loop
+      if (inputs_before_decode_ >= 1000) {
+        // The value of 1000 is an arbitrary upper bound here since processing
+        // is not gated on any media timings. In practice we typically see
+        // maximum values in the 5 to 10 range for normal execution, so 1000
+        // affords two orders of magnitude outside of the expected range.
+        RETURN_AND_NOTIFY_ON_HR_FAILURE(
+            hr, "Input processing appears stuck in MF_E_NOTACCEPTING loop.",
+            PLATFORM_FAILURE, );
+      }
+
       pending_input_buffers_.push_back(sample);
       decoder_thread_task_runner_->PostTask(
           FROM_HERE,
@@ -2732,12 +2747,16 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
       // this |picture_buffer| will be updated when the video frame is created.
       const auto& mailbox = gpu::Mailbox::GenerateForSharedImage();
 
-      auto shared_image = gpu::SharedImageBackingD3D::CreateFromGLTexture(
+      auto shared_image = std::make_unique<gpu::SharedImageBackingD3D>(
           mailbox, viz_formats[texture_idx],
           picture_buffer->texture_size(texture_idx),
           picture_buffer->color_space(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, shared_image_usage, gl_image_dxgi->texture(),
-          std::move(gl_texture));
+          kPremul_SkAlphaType, shared_image_usage,
+          /*swap_chain=*/nullptr, std::move(gl_texture),
+          picture_buffer->gl_image(),
+          /*buffer_index=*/0, gl_image_dxgi->texture(),
+          base::win::ScopedHandle(),
+          /*dxgi_keyed_mutex=*/nullptr);
 
       // Caller is assumed to provide cleared d3d textures.
       shared_image->SetCleared();

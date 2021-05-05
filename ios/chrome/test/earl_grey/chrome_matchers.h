@@ -87,6 +87,9 @@ id<GREYMatcher> NavigationBarCancelButton();
 // Returns matcher for a close button.
 id<GREYMatcher> CloseButton();
 
+// Returns matcher for close tab menu button.
+id<GREYMatcher> CloseTabMenuButton();
+
 // Matcher for the navigate forward button.
 id<GREYMatcher> ForwardButton();
 
@@ -565,7 +568,7 @@ id<GREYMatcher> ManualFallbackAddCreditCardsMatcher();
 id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher();
 
 // Returns the matcher for the iOS 13+ Activity View header.
-id<GREYMatcher> ActivityViewHeader(NSString* page_title);
+id<GREYMatcher> ActivityViewHeader(NSString* url_host, NSString* page_title);
 
 // Returns a matcher for the button to trigger password generation on manual
 // fallback.

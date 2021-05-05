@@ -7,13 +7,14 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/time/time.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_state.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -38,6 +39,11 @@ class VIEWS_EXPORT InkDrop {
       bool highlight_on_hover = true,
       bool highlight_on_focus = false);
 
+  // Configure `host` to use CreateInkDropForSquareRipple().
+  static void UseInkDropForSquareRipple(InkDropHostView* host,
+                                        bool highlight_on_hover = true,
+                                        bool highlight_on_focus = false);
+
   // Create an InkDrop appropriate for the "flood-fill" InkDropRipple effect.
   // This InkDrop shows as a response to the ripple effect.
   static std::unique_ptr<InkDrop> CreateInkDropForFloodFillRipple(
@@ -45,11 +51,21 @@ class VIEWS_EXPORT InkDrop {
       bool highlight_on_hover = true,
       bool highlight_on_focus = false);
 
+  // Configure `host` to use CreateInkDropForFloodFillRipple().
+  static void UseInkDropForFloodFillRipple(InkDropHostView* host,
+                                           bool highlight_on_hover = true,
+                                           bool highlight_on_focus = false);
+
   // Create an InkDrop whose highlight does not react to its ripple.
   static std::unique_ptr<InkDrop> CreateInkDropWithoutAutoHighlight(
       InkDropHostView* host,
       bool highlight_on_hover = true,
       bool highlight_on_focus = false);
+
+  // Configure `host` to use CreateInkDropWithoutAutoHighlight().
+  static void UseInkDropWithoutAutoHighlight(InkDropHostView* host,
+                                             bool highlight_on_hover = true,
+                                             bool highlight_on_focus = false);
 
   // Called by ink drop hosts when their size is changed.
   virtual void HostSizeChanged(const gfx::Size& new_size) = 0;

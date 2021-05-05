@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_constants.h"
@@ -23,8 +25,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/metadata/metadata_header_macros.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
@@ -96,6 +96,7 @@ HoverButton::HoverButton(PressedCallback callback, const std::u16string& text)
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
   SetInkDropMode(InkDropMode::ON);
+  views::InkDrop::UseInkDropForFloodFillRipple(this);
 
   SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                            ui::EF_RIGHT_MOUSE_BUTTON);
@@ -273,10 +274,6 @@ void HoverButton::StateChanged(ButtonState old_state) {
 
 SkColor HoverButton::GetInkDropBaseColor() const {
   return GetInkDropColor(this);
-}
-
-std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
-  return views::InkDrop::CreateInkDropForFloodFillRipple(this);
 }
 
 views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {

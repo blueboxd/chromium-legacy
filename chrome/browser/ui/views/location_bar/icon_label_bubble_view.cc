@@ -8,10 +8,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -30,7 +32,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -146,6 +147,17 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
 
   SetInkDropVisibleOpacity(GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
   SetInkDropHighlightOpacity(GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
+
+  SetCreateInkDropCallback(base::BindRepeating(
+      [](IconLabelBubbleView* host) {
+        std::unique_ptr<views::InkDrop> ink_drop =
+            views::InkDrop::CreateInkDropForFloodFillRipple(
+                host, /*highlight_on_hover=*/false,
+                /*highlight_on_focus=*/!host->focus_ring());
+        ink_drop->AddObserver(host);
+        return ink_drop;
+      },
+      this));
 
   views::HighlightPathGenerator::Install(
       this, std::make_unique<HighlightPathGenerator>());
@@ -319,15 +331,6 @@ void IconLabelBubbleView::OnThemeChanged() {
   label()->SetBackground(nullptr);
 
   UpdateLabelColors();
-}
-
-std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
-  std::unique_ptr<views::InkDrop> ink_drop =
-      views::InkDrop::CreateInkDropForFloodFillRipple(
-          this, /*highlight_on_hover=*/false,
-          /*highlight_on_focus=*/!focus_ring());
-  ink_drop->AddObserver(this);
-  return ink_drop;
 }
 
 SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
@@ -578,7 +581,7 @@ void IconLabelBubbleView::UpdateBorder() {
 BEGIN_METADATA(IconLabelBubbleView, views::LabelButton)
 ADD_READONLY_PROPERTY_METADATA(SkColor,
                                ForegroundColor,
-                               views::metadata::SkColorConverter)
+                               ui::metadata::SkColorConverter)
 ADD_READONLY_PROPERTY_METADATA(double, AnimationValue)
 ADD_READONLY_PROPERTY_METADATA(int, InternalSpacing)
 ADD_READONLY_PROPERTY_METADATA(int, ExtraInternalSpacing)

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -24,7 +25,6 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/style/platform_style.h"
@@ -53,6 +53,8 @@ Checkbox::Checkbox(const std::u16string& label, PressedCallback callback)
   SetRequestFocusOnPress(false);
   SetInkDropMode(InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
+  views::InkDrop::UseInkDropWithoutAutoHighlight(this,
+                                                 /*highlight_on_hover=*/false);
 
   // Limit the checkbox height to match the legacy appearance.
   const gfx::Size preferred_size(LabelButton::CalculatePreferredSize());
@@ -151,11 +153,6 @@ std::unique_ptr<LabelButtonBorder> Checkbox::CreateDefaultBorder() const {
 void Checkbox::OnThemeChanged() {
   LabelButton::OnThemeChanged();
   UpdateImage();
-}
-
-std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
-  return views::InkDrop::CreateInkDropWithoutAutoHighlight(
-      this, /*highlight_on_hover=*/false);
 }
 
 std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {

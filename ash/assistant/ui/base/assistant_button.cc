@@ -9,12 +9,12 @@
 #include "ash/assistant/util/histogram_util.h"
 #include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/highlight_path_generator.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -58,6 +58,7 @@ AssistantButton::AssistantButton(AssistantButtonListener* listener,
   SetInkDropBaseColor(kInkDropBaseColor);
   SetInkDropVisibleOpacity(kInkDropVisibleOpacity);
   views::InstallCircleHighlightPathGenerator(this, gfx::Insets(kInkDropInset));
+  views::InkDrop::UseInkDropForFloodFillRipple(this);
 }
 
 AssistantButton::~AssistantButton() = default;
@@ -94,10 +95,6 @@ void AssistantButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SetFocusPainter(views::Painter::CreateSolidRoundRectPainter(
       SkColorSetA(GetInkDropBaseColor(), 0xff * kInkDropHighlightOpacity),
       width() / 2 - kInkDropInset, gfx::Insets(kInkDropInset)));
-}
-
-std::unique_ptr<views::InkDrop> AssistantButton::CreateInkDrop() {
-  return views::InkDrop::CreateInkDropForFloodFillRipple(this);
 }
 
 std::unique_ptr<views::InkDropHighlight>

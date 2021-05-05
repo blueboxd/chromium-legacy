@@ -22,6 +22,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/events/event.h"
@@ -32,7 +33,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/views_delegate.h"
 #include "ui/wm/core/shadow_types.h"
@@ -323,7 +323,7 @@ void TrayBubbleView::SetPreferredWidth(int width) {
 }
 
 gfx::Insets TrayBubbleView::GetBorderInsets() const {
-  return bubble_border_->GetInsets();
+  return bubble_border_ ? bubble_border_->GetInsets() : gfx::Insets();
 }
 
 void TrayBubbleView::ResetDelegate() {
@@ -487,7 +487,8 @@ void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
 }
 
 void TrayBubbleView::SetBubbleBorderInsets(gfx::Insets insets) {
-  bubble_border_->set_insets(insets);
+  if (bubble_border_)
+    bubble_border_->set_insets(insets);
 }
 
 void TrayBubbleView::CloseBubbleView() {

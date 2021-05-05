@@ -15,6 +15,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_types.h"
@@ -39,7 +40,6 @@
 #include "ui/views/controls/prefix_selector.h"
 #include "ui/views/image_model_utils.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
@@ -68,7 +68,10 @@ class TransparentButton : public Button {
 
     SetInkDropMode(InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
+    InkDrop::UseInkDropForSquareRipple(this,
+                                       /*highlight_on_hover=*/false);
   }
+
   ~TransparentButton() override = default;
 
   bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
@@ -85,13 +88,6 @@ class TransparentButton : public Button {
   }
 
   // Button:
-  std::unique_ptr<InkDrop> CreateInkDrop() override {
-    std::unique_ptr<InkDrop> ink_drop =
-        InkDrop::CreateInkDropForSquareRipple(this);
-    ink_drop->SetShowHighlightOnHover(false);
-    return ink_drop;
-  }
-
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override {
     return std::unique_ptr<views::InkDropRipple>(
         new views::FloodFillInkDropRipple(

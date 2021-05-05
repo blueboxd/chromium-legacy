@@ -2543,6 +2543,7 @@ if (!is_android) {
         "../browser/ash/login/app_mode/kiosk_launch_controller_browsertest.cc",
         "../browser/ash/login/app_mode/web_kiosk_browsertest.cc",
         "../browser/ash/login/arc_terms_of_service_browsertest.cc",
+        "../browser/ash/login/ash_hud_login_browsertest.cc",
         "../browser/ash/login/challenge_response_auth_keys_loader_browsertest.cc",
         "../browser/ash/login/configuration_based_oobe_browsertest.cc",
         "../browser/ash/login/crash_restore_browsertest.cc",
@@ -2878,7 +2879,7 @@ if (!is_android) {
         "../browser/ui/ash/shelf/chrome_shelf_controller_test_util.cc",
         "../browser/ui/ash/shelf/chrome_shelf_controller_test_util.h",
         "../browser/ui/ash/shelf_browsertest.cc",
-        "../browser/ui/ash/system_tray_client_browsertest.cc",
+        "../browser/ui/ash/system_tray_client_impl_browsertest.cc",
         "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
         "../browser/ui/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/ash/tablet_mode_page_behavior_browsertest.cc",
@@ -5896,7 +5897,6 @@ test("unit_tests") {
 
   if (is_linux || is_mac || is_win) {
     sources += [
-      "../browser/enterprise/connectors/device_trust/attestation_service_unittest.cc",
       "../browser/enterprise/connectors/device_trust/device_trust_key_pair_unittest.cc",
       "../browser/enterprise/connectors/device_trust/navigation_throttle_unittest.cc",
     ]

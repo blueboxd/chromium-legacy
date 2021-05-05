@@ -10297,6 +10297,9 @@ histogram as enum -->
 </enum>
 
 <enum name="CellularConnectResult">
+  <obsolete>
+    Deprecated as of 04/2021.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Invalid GUID"/>
   <int value="2" label="Invalid state"/>
@@ -24351,6 +24354,7 @@ Called by update_document_policy_enum.py.-->
   <int value="855" label="LacrosAvailability"/>
   <int value="856" label="DataLeakPreventionReportingEnabled"/>
   <int value="857" label="AdditionalDnsQueryTypesEnabled"/>
+  <int value="858" label="TripleDESEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -25610,6 +25614,7 @@ Called by update_extension_histograms.py.-->
   <int value="474" label="TAB_GROUPS_ON_UPDATED"/>
   <int value="475" label="FILE_MANAGER_PRIVATE_ON_DRIVE_CONFIRM_DIALOG"/>
   <int value="476" label="TTS_ENGINE_ON_SPEAK_WITH_AUDIO_STREAM"/>
+  <int value="477" label="ACCESSIBILITY_PRIVATE_ON_SHOW_CHROMEVOX_TUTORIAL"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -32368,6 +32373,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3888" label="WebGPU"/>
   <int value="3889" label="CSSFilterColorMatrix"/>
   <int value="3890" label="HTMLFencedFrameElement"/>
+  <int value="3891" label="CSSFilterLuminanceToAlpha"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -45741,6 +45747,7 @@ from previous Chrome versions.
   <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
   <int value="-905538983" label="SimplifyHttpsIndicator:disabled"/>
   <int value="-902125579" label="ImmersiveUiMode:disabled"/>
+  <int value="-900871741" label="DesktopPWAsNotificationIconAndTitle:disabled"/>
   <int value="-899915066" label="ImprovedKeyboardShortcuts:disabled"/>
   <int value="-899393472" label="enable-new-app-menu-icon"/>
   <int value="-899334103" label="disable-fast-text-autosizing"/>
@@ -46906,6 +46913,7 @@ from previous Chrome versions.
       label="HappinessTrackingSurveysForDesktopDevToolsIssuesCookiesSameSite:enabled"/>
   <int value="139569991" label="SharingDeviceExpiration:disabled"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
+  <int value="144868136" label="DesktopPWAsNotificationIconAndTitle:enabled"/>
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
   <int value="146553675" label="BookmarkBottomSheet:disabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
@@ -57068,6 +57076,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Cancelled"/>
 </enum>
 
+<enum name="OfflineMeasurementsUserState">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="Phone is off"/>
+  <int value="2" label="Phone is on, but screen is off"/>
+  <int value="3" label="Screen is on, Chrome is not in the foreground"/>
+  <int value="4" label="Screen is on, Chrome is in the foreground"/>
+</enum>
+
 <enum name="OfflinePagePrefetchNotificationAction">
   <int value="0" label="Attempt to show pending content check"/>
   <int value="1" label="Showed notification"/>
@@ -63974,9 +63990,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="REGISTER_PROMO_SELECTED"/>
   <int value="9" label="ACCOUNT_CHANGED"/>
   <int value="10" label="ADD_ACCOUNT_SELECTED"/>
-  <int value="11" label="INVITATION_AVAILABLE"/>
-  <int value="12" label="INVITATION_ACCEPTED"/>
-  <int value="13" label="INVITATION_REJECTED"/>
+  <int value="11" label="INVITATION_AVAILABLE_DEPRECATED"/>
+  <int value="12" label="INVITATION_ACCEPTED_DEPRECATED"/>
+  <int value="13" label="INVITATION_REJECTED_DEPRECATED"/>
   <int value="14" label="MANAGE_BUTTON_CLICKED"/>
 </enum>
 
@@ -71672,6 +71688,25 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Drag is canceled instead of ending normally"/>
 </enum>
 
+<enum name="ShillCellularConnectResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Failed to connect"/>
+  <int value="3" label="DHCP Failure"/>
+  <int value="4" label="DNS Lookup Failure"/>
+  <int value="5" label="EAP Authentication"/>
+  <int value="6" label="Eap Local Tls"/>
+  <int value="7" label="Eap Remote Tls"/>
+  <int value="8" label="Out of Range"/>
+  <int value="9" label="Pin Missing"/>
+  <int value="10" label="No failure"/>
+  <int value="11" label="Not Associated"/>
+  <int value="12" label="Not Authenticated"/>
+  <int value="13" label="Too Many STAs"/>
+  <int value="14" label="Bad Passphrase"/>
+  <int value="15" label="Bad Wep Key"/>
+</enum>
+
 <enum name="ShillSuspendTerminationDarkResumeActionResult">
   <summary>
     The termination/suspend/dark resume action result types come from
@@ -75721,6 +75756,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SurveyDownloadResponseCodes">
+  <obsolete>
+    Removed as of 05/2021.
+  </obsolete>
   <int value="-1" label="Response code missing"/>
   <int value="0" label="Survey downloaded"/>
   <int value="1" label="No survey available"/>
@@ -79771,6 +79809,24 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Required and not available"/>
   <int value="2" label="Not required and available"/>
   <int value="3" label="Not required and not available"/>
+</enum>
+
+<enum name="UserInitiatedCellularConnectResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Invalid GUID"/>
+  <int value="3" label="Invalid State"/>
+  <int value="4" label="Canceled"/>
+  <int value="5" label="Not configured"/>
+  <int value="6" label="Blocked"/>
+  <int value="7" label="Cellular Inhibit Failure"/>
+  <int value="8" label="ESim profile issue"/>
+  <int value="9" label="Cellular out of credits"/>
+  <int value="10" label="Sim locked"/>
+  <int value="11" label="Connect failed"/>
+  <int value="12" label="Not connected"/>
+  <int value="13" label="Activate Failed"/>
+  <int value="14" label="Enabled or disabled when not available"/>
 </enum>
 
 <enum name="UserInitiatedEvent">

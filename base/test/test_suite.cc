@@ -266,18 +266,16 @@ const std::string& GetProfileName() {
 }
 
 void InitializeLogging() {
-  logging::LoggingSettings settings;
-  settings.logging_dest =
-      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
-  logging::InitLogging(settings);
+  CHECK(logging::InitLogging({.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG |
+                                              logging::LOG_TO_STDERR}));
 
+  // We want process and thread IDs because we may have multiple processes.
 #if defined(OS_ANDROID)
   // To view log output with IDs and timestamps use "adb logcat -v threadtime".
   logging::SetLogItems(false, false, false, false);
 #else
   // We want process and thread IDs because we may have multiple processes.
-  // Note: temporarily enabled timestamps in an effort to catch bug 6361.
-  logging::SetLogItems(true, true, true, true);
+  logging::SetLogItems(true, true, false, false);
 #endif  // !defined(OS_ANDROID)
 }
 

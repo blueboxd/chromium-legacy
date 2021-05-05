@@ -38,7 +38,6 @@ import {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from '../data/destination.js';
 // </if>
 import {getPrinterTypeForDestination, PrinterType} from '../data/destination_match.js';
 import {DestinationErrorType, DestinationStore} from '../data/destination_store.js';
-import {InvitationStore} from '../data/invitation_store.js';
 import {Error, State} from '../data/state.js';
 
 import {SettingsBehavior} from './settings_behavior.js';
@@ -128,22 +127,19 @@ Polymer({
     /** @private {!Array<!Destination>} */
     displayedDestinations_: Array,
 
+    // <if expr="chromeos">
     /** @private {string} */
     driveDestinationKey_: {
       type: String,
       value: '',
     },
 
-    // <if expr="chromeos">
     hasPinSetting_: {
       type: Boolean,
       computed: 'computeHasPinSetting_(settings.pin.available)',
       reflectToAttribute: true,
     },
     // </if>
-
-    /** @private {?InvitationStore} */
-    invitationStore_: Object,
 
     /** @private {boolean} */
     isDialogOpen_: {
@@ -221,23 +217,8 @@ Polymer({
 
   /** @override */
   detached() {
-    if (!this.cloudPrintDisabled_) {
-      this.invitationStore_.resetTracker();
-    }
     this.destinationStore_.resetTracker();
     this.tracker_.removeAll();
-  },
-
-  /** @private */
-  updateDriveDestination_() {
-    let key = createDestinationKey(
-        Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
-        this.activeUser_);
-    // <if expr="chromeos">
-    key = SAVE_TO_DRIVE_CROS_DESTINATION_KEY;
-    // </if>
-    this.driveDestinationKey_ =
-        this.destinationStore_.getDestinationByKey(key) ? key : '';
   },
 
   /** @private */
@@ -283,6 +264,32 @@ Polymer({
     this.destinationStore_.selectDefaultDestination();
   },
 
+  filterRecentDestinations_(recentDestinations) {
+    let filteredDestinations = recentDestinations;
+    // Remove unsupported privet printers from the sticky settings,
+    // to free up these spots for supported printers.
+    // TODO(rbpotter): Remove this logic a milestone after the policy and flag
+    // have been removed.
+    if (!loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
+      filteredDestinations = recentDestinations.filter(d => {
+        return d.origin !== DestinationOrigin.PRIVET;
+      });
+    }
+
+    // <if expr="chromeos">
+    // Remove Cloud Print Drive destination. The Chrome OS version will always
+    // be shown in the dropdown and is still supported.
+    filteredDestinations = filteredDestinations.filter(d => {
+      return d.id !== Destination.GooglePromotedId.DOCS;
+    });
+    // </if>
+
+    if (filteredDestinations.length !== recentDestinations.length) {
+      this.setSetting('recentDestinations', filteredDestinations);
+    }
+    return filteredDestinations;
+  },
+
   /**
    * @param {string} defaultPrinter The system default printer ID.
    * @param {boolean} pdfPrinterDisabled Whether the PDF printer is disabled.
@@ -299,14 +306,17 @@ Polymer({
     let recentDestinations =
         /** @type {!Array<!RecentDestination>} */ (
             this.getSettingValue('recentDestinations'));
+    // <if expr="chromeos">
+    this.driveDestinationKey_ =
+        isDriveMounted ? SAVE_TO_DRIVE_CROS_DESTINATION_KEY : '';
+    // </if>
 
     if (cloudPrintInterface.isConfigured()) {
       this.cloudPrintDisabled_ = false;
       this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
-      this.invitationStore_ = new InvitationStore();
-      this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
       beforeNextRender(this, () => {
         this.shadowRoot.querySelector('#userManager').initUserAccounts();
+        recentDestinations = this.filterRecentDestinations_(recentDestinations);
         recentDestinations = recentDestinations.slice(
             0, this.getRecentDestinationsDisplayCount_(recentDestinations));
         this.destinationStore_.init(
@@ -316,20 +326,7 @@ Polymer({
       return;
     }
 
-    // Remove unsupported privet printers from the sticky settings,
-    // to free up these spots for supported printers.
-    // TODO (rbpotter): Remove this logic a milestone after the policy and flag
-    // have been removed.
-    if (!loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
-      const filteredRecentDestinations = recentDestinations.filter(d => {
-        return d.origin !== DestinationOrigin.PRIVET;
-      });
-      if (filteredRecentDestinations.length !== recentDestinations.length) {
-        this.setSetting('recentDestinations', filteredRecentDestinations);
-        recentDestinations = filteredRecentDestinations;
-      }
-    }
-
+    recentDestinations = this.filterRecentDestinations_(recentDestinations);
     recentDestinations = recentDestinations.slice(
         0, this.getRecentDestinationsDisplayCount_(recentDestinations));
     this.destinationStore_.init(
@@ -443,8 +440,7 @@ Polymer({
     }
     // </if>
 
-    return destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
-        destination.id === Destination.GooglePromotedId.DOCS;
+    return destination.id === Destination.GooglePromotedId.SAVE_AS_PDF;
   },
 
   /** @private */
@@ -531,7 +527,6 @@ Polymer({
     }
 
     this.displayedDestinations_ = updatedDestinations;
-    this.updateDriveDestination_();
   },
 
   /**
@@ -573,9 +568,6 @@ Polymer({
     const value = e.detail;
     if (value === 'seeMore') {
       this.destinationStore_.startLoadAllDestinations();
-      if (this.activeUser_) {
-        this.invitationStore_.startLoadingInvitations(this.activeUser_);
-      }
       this.$.destinationDialog.get().show();
       this.lastUser_ = this.activeUser_;
       this.isDialogOpen_ = true;
@@ -593,7 +585,6 @@ Polymer({
     assert(!this.cloudPrintDisabled_);
     this.shadowRoot.querySelector('#userManager')
         .updateActiveUser(e.detail, true);
-    this.updateDriveDestination_();
   },
 
   /** @private */

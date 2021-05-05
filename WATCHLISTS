@@ -838,6 +838,13 @@
     'cr_elements': {
       'filepath': 'ui/webui/resources/cr_element',
     },
+    'cros_commercial_policy': {
+      'filepath': 'ash/policy/'\
+                  '|components/policy/'\
+                  '|chromeos/policy/'\
+                  '|chrome/browser/chromeos/policy/'\
+                  '|chrome/browser/policy/'
+    },
     'cros_reporting': {
       'filepath': 'chrome/browser/policy/messaging_layer/'\
                   '|chrome/browser/chromeos/policy/status_collector/'\
@@ -1464,9 +1471,7 @@
                   '|ios/chrome/browser/ui/page_info/'
     },
     'page_load_metrics' : {
-      'filepath': 'chrome/browser/page_load_metrics/'\
-                  '|chrome/common/page_load_metrics/'\
-                  '|chrome/renderer/page_load_metrics/'
+      'filepath': '/page_load_metrics/'
     },
     'panels': {
       'filepath': 'chrome/browser/ui/panels'\
@@ -2398,6 +2403,7 @@
            'ukai+cc@chromium.org',
            'yyanagisawa+cc@chromium.org'],
     'cr_elements': ['michaelpg+watch-elements@chromium.org'],
+    'cros_commercial_policy': ['chromeos-commercial-stability-reviews@google.com'],
     'cros_reporting': ['cros-reporting-reviews@google.com'],
     'cros_sharesheet': ['melzhang+watch+sharesheet@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],

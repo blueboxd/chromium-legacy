@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.feed.v2;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.app.Activity;
-import android.os.Handler;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewParent;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.ScrollListener;
+import org.chromium.chrome.browser.ntp.snippets.SectionType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.RequestCoordinatorBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -400,6 +400,7 @@ public class FeedStream implements Stream {
             new ObserverList<ContentChangedListener>();
     private final ObserverList<InteractionsListener> mInteractionListeners = new ObserverList<>();
     private final NativePageNavigationDelegate mNavigationDelegate;
+    private final boolean mIsInterestFeed;
     // Various helpers/controllers.
     private ShareHelperWrapper mShareHelper;
     private SnackbarManager mSnackManager;
@@ -425,7 +426,6 @@ public class FeedStream implements Stream {
     private @Nullable NtpListContentManager mContentManager;
     private @Nullable SurfaceScope mSurfaceScope;
     private @Nullable HybridListRenderer mRenderer;
-    private @Nullable RecyclerViewAnimationFinishDetector mRecyclerViewAnimationFinishDetector;
     private FeedSurfaceMediator.ScrollState mScrollStateToRestore;
     private int mHeaderCount;
     private boolean mIsPlaceholderShown;
@@ -452,7 +452,7 @@ public class FeedStream implements Stream {
             WindowAndroid windowAndroid, Supplier<ShareDelegate> shareDelegateSupplier,
             boolean isInterestFeed) {
         this.mActivity = activity;
-
+        mIsInterestFeed = isInterestFeed;
         mNativeFeedStream = FeedStreamJni.get().init(this, isInterestFeed);
 
         mBottomSheetController = bottomSheetController;
@@ -515,6 +515,12 @@ public class FeedStream implements Stream {
     }
 
     @Override
+    @SectionType
+    public int getSectionType() {
+        return mIsInterestFeed ? SectionType.FOR_YOU_FEED : SectionType.WEB_FEED;
+    }
+
+    @Override
     public void bind(RecyclerView rootView, NtpListContentManager manager,
             FeedSurfaceMediator.ScrollState savedInstanceState, SurfaceScope surfaceScope,
             HybridListRenderer renderer) {
@@ -531,7 +537,6 @@ public class FeedStream implements Stream {
         mSurfaceScope = surfaceScope;
         mRenderer = renderer;
         mHeaderCount = manager.getItemCount();
-        mRecyclerViewAnimationFinishDetector = new RecyclerViewAnimationFinishDetector();
         if (mWindowAndroid.getDisplay() != null) {
             mWindowAndroid.getDisplay().addObserver(mRotationObserver);
         }
@@ -565,13 +570,12 @@ public class FeedStream implements Stream {
         int feedCount = mContentManager.getItemCount() - mHeaderCount;
         if (feedCount > 0) {
             mContentManager.removeContents(mHeaderCount, feedCount);
-            notifyContentChangeOnAnimationFinish();
+            notifyContentChange();
         }
 
         mContentManager.setHandlers(new HashMap<>());
         mContentManager = null;
 
-        mRecyclerViewAnimationFinishDetector = null;
         mRecyclerView.removeOnScrollListener(mMainScrollListener);
         mRecyclerView.getAdapter().unregisterAdapterDataObserver(mRestoreScrollObserver);
         mRecyclerView = null;
@@ -891,7 +895,7 @@ public class FeedStream implements Stream {
         }
 
         if (hasContentChange) {
-            notifyContentChangeOnAnimationFinish();
+            notifyContentChange();
         }
     }
 
@@ -915,17 +919,11 @@ public class FeedStream implements Stream {
         return true;
     }
 
-    private void notifyContentChangeOnAnimationFinish() {
-        // This works around the bug that the out-of-screen toolbar is not brought back together
-        // with the new tab page view when it slides down. This is because the RecyclerView
-        // animation may not finish when content changed event is triggered and thus the new tab
-        // page layout view may still be partially off screen.
-        mRecyclerViewAnimationFinishDetector.asyncWait(mRecyclerView, () -> {
-            for (ContentChangedListener listener : mContentChangedListeners) {
-                listener.onContentChanged(
-                        mContentManager != null ? mContentManager.getContentList() : null);
-            }
-        });
+    private void notifyContentChange() {
+        for (ContentChangedListener listener : mContentChangedListeners) {
+            listener.onContentChanged(
+                    mContentManager != null ? mContentManager.getContentList() : null);
+        }
     }
 
     @VisibleForTesting
@@ -970,57 +968,6 @@ public class FeedStream implements Stream {
         @Override
         public void feedContentVisible() {
             FeedStreamJni.get().reportFeedViewed(mNativeFeedStream, FeedStream.this);
-        }
-    }
-
-    // Detects animation finishes in RecyclerView.
-    // https://stackoverflow.com/questions/33710605/detect-animation-finish-in-androids-recyclerview
-    private static class RecyclerViewAnimationFinishDetector
-            implements RecyclerView.ItemAnimator.ItemAnimatorFinishedListener {
-        private RecyclerView mRecyclerView;
-        private Runnable mFinishedCallback;
-
-        /**
-         * Asynchronously waits for the animation to finish.
-         *
-         * @param recyclerView RecyclerView to wait for animation to finish.
-         * @param finishedCallback Callback to invoke when the animation finishes.
-         */
-        public void asyncWait(RecyclerView recyclerView, Runnable finishedCallback) {
-            if (mRecyclerView != null) {
-                return;
-            }
-            mRecyclerView = recyclerView;
-            mFinishedCallback = finishedCallback;
-
-            // The RecyclerView has not started animating yet, so post a message to the
-            // message queue that will be run after the RecyclerView has started animating.
-            new Handler().post(() -> { checkFinish(); });
-        }
-
-        private void checkFinish() {
-            if (mRecyclerView != null && mRecyclerView.isAnimating()) {
-                // The RecyclerView is still animating, try again when the animation has finished.
-                mRecyclerView.getItemAnimator().isRunning(this);
-                return;
-            }
-
-            // The RecyclerView has animated all it's views.
-            onFinished();
-        }
-
-        private void onFinished() {
-            mRecyclerView = null;
-            if (mFinishedCallback != null) {
-                mFinishedCallback.run();
-                mFinishedCallback = null;
-            }
-        }
-
-        @Override
-        public void onAnimationsFinished() {
-            // There might still be more items that will be animated after this one.
-            new Handler().post(() -> { checkFinish(); });
         }
     }
 

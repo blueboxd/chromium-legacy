@@ -554,6 +554,11 @@ void HandleSwitchToNextIme(const ui::Accelerator& accelerator) {
   Shell::Get()->ime_controller()->SwitchToNextIme();
 }
 
+void HandleCalculator() {
+  base::RecordAction(UserMetricsAction("Accel_Open_Calculator"));
+  NewWindowDelegate::GetInstance()->OpenCalculator();
+}
+
 void HandleDiagnostics() {
   base::RecordAction(UserMetricsAction("Accel_Open_Diagnostics"));
   NewWindowDelegate::GetInstance()->OpenDiagnostics();
@@ -903,7 +908,7 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_MEDIA_LAUNCH_APP2)
+  if (accelerator.key_code() == ui::VKEY_ZOOM)
     base::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Disable fullscreen while overview animation is running due to
@@ -2089,6 +2094,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case MEDIA_STOP:
     case NEW_TAB:
     case NEW_WINDOW:
+    case OPEN_CALCULATOR:
     case OPEN_CROSH:
     case OPEN_DIAGNOSTICS:
     case OPEN_FEEDBACK_PAGE:
@@ -2318,6 +2324,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case NEW_WINDOW:
       HandleNewWindow();
+      break;
+    case OPEN_CALCULATOR:
+      HandleCalculator();
       break;
     case OPEN_CROSH:
       HandleCrosh();

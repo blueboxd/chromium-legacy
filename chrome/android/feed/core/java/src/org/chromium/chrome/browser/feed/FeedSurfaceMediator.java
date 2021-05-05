@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
 import android.widget.ScrollView;
@@ -43,6 +44,7 @@ import org.chromium.chrome.browser.ntp.cards.promo.enhanced_protection.EnhancedP
 import org.chromium.chrome.browser.ntp.snippets.OnSectionHeaderSelectedListener;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderListProperties;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderProperties;
+import org.chromium.chrome.browser.ntp.snippets.SectionType;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -211,6 +213,8 @@ public class FeedSurfaceMediator
     private ContentChangedListener mStreamContentChangedListener;
     private MemoryPressureCallback mMemoryPressureCallback;
     private @Nullable SignInPromo mSignInPromo;
+    private RecyclerViewAnimationFinishDetector mRecyclerViewAnimationFinishDetector =
+            new RecyclerViewAnimationFinishDetector();
 
     private boolean mFeedEnabled;
     private boolean mHasHeader;
@@ -272,6 +276,14 @@ public class FeedSurfaceMediator
         }
 
         mSectionHeaderModel = headerModel;
+
+        // This works around the bug that the out-of-screen toolbar is not brought back together
+        // with the new tab page view when it slides down. This is because the RecyclerView
+        // animation may not finish when content changed event is triggered and thus the new tab
+        // page layout view may still be partially off screen.
+        mStreamContentChangedListener = contents
+                -> mRecyclerViewAnimationFinishDetector.runWhenAnimationComplete(
+                        this::onContentsChanged);
 
         initialize();
     }
@@ -391,10 +403,7 @@ public class FeedSurfaceMediator
             mSectionHeaderModel.set(
                     SectionHeaderListProperties.MENU_DELEGATE_KEY, this::onItemSelected);
 
-            if (WebFeedBridge.isWebFeedSubscriber() && FeedFeatures.isWebFeedUIEnabled()) {
-                addHeaderAndStream(mContext.getResources().getString(R.string.ntp_following),
-                        mCoordinator.createFeedStream(/* isInterestFeed = */ false));
-            }
+            setUpWebFeedTab();
         } else {
             // Show feed if there is no header that would allow user to hide feed.
             // This is currently only relevant for the two panes start surface.
@@ -435,6 +444,40 @@ public class FeedSurfaceMediator
         mTabToStreamMap.put(tabId, stream);
     }
 
+    private int getTabIdForSection(@SectionType int sectionType) {
+        for (int tabId : mTabToStreamMap.keySet()) {
+            if (mTabToStreamMap.get(tabId).getSectionType() == sectionType) {
+                return tabId;
+            }
+        }
+        return -1;
+    }
+
+    /** Adds or removes the WebFeed tab, depending on whether it should be shown. */
+    private void setUpWebFeedTab() {
+        // Skip if the for-you tab hasn't been added yet.
+        if (getTabIdForSection(SectionType.FOR_YOU_FEED) == -1) {
+            return;
+        }
+        int tabId = getTabIdForSection(SectionType.WEB_FEED);
+        boolean hasWebFeedTab = tabId != -1;
+        boolean shouldHaveWebFeedTab = mHasHeader && WebFeedBridge.isWebFeedSubscriber()
+                && FeedFeatures.isWebFeedUIEnabled();
+        if (hasWebFeedTab == shouldHaveWebFeedTab) return;
+        if (shouldHaveWebFeedTab) {
+            addHeaderAndStream(mContext.getResources().getString(R.string.ntp_following),
+                    mCoordinator.createFeedStream(/* isInterestFeed = */ false));
+        } else {
+            if (mCurrentStream != null && mCurrentStream.getSectionType() == SectionType.WEB_FEED) {
+                unbindStream();
+            }
+            mTabToStreamMap.remove(tabId);
+            mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
+                    .removeAt(tabId);
+            mSectionHeaderModel.set(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY, 0);
+        }
+    }
+
     /**
      * Binds a stream to the {@link NtpListContentManager}. Unbinds currently active stream if
      * different from new stream. Once bound, the stream can add/remove contents.
@@ -444,11 +487,12 @@ public class FeedSurfaceMediator
         if (mCurrentStream != null) {
             unbindStream();
         }
-        stream.bind(mCoordinator.getRecyclerView(), mCoordinator.getContentManager(),
+        mCurrentStream = stream;
+        mCurrentStream.addOnContentChangedListener(mStreamContentChangedListener);
+        mCurrentStream.bind(mCoordinator.getRecyclerView(), mCoordinator.getContentManager(),
                 mRestoreScrollState, mCoordinator.getSurfaceScope(),
                 mCoordinator.getHybridListRenderer());
         mRestoreScrollState = null;
-        mCurrentStream = stream;
         mCoordinator.getHybridListRenderer().onSurfaceOpened();
         if (mSnapScrollHelper != null) {
             mStreamScrollListener = new ScrollListener() {
@@ -465,43 +509,48 @@ public class FeedSurfaceMediator
             };
             mCurrentStream.addScrollListener(mStreamScrollListener);
         }
-
-        mStreamContentChangedListener = contents -> {
-            if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
-
-            if (mContentFirstAvailableTimeMs == 0) {
-                mContentFirstAvailableTimeMs = SystemClock.elapsedRealtime();
-                if (mHasPendingUmaRecording) {
-                    maybeRecordContentLoadingTime();
-                    mHasPendingUmaRecording = false;
-                }
-            }
-            mIsLoadingFeed = false;
-            mStreamContentChanged = true;
-        };
-        mCurrentStream.addOnContentChangedListener(mStreamContentChangedListener);
     }
 
-    void unbindStream() {
+    void onContentsChanged() {
+        if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
+
+        if (mContentFirstAvailableTimeMs == 0) {
+            mContentFirstAvailableTimeMs = SystemClock.elapsedRealtime();
+            if (mHasPendingUmaRecording) {
+                maybeRecordContentLoadingTime();
+                mHasPendingUmaRecording = false;
+            }
+        }
+        mIsLoadingFeed = false;
+        mStreamContentChanged = true;
+    }
+
+    private void unbindStream() {
         if (mCurrentStream == null) return;
         if (mStreamScrollListener != null) {
             mCurrentStream.removeScrollListener(mStreamScrollListener);
             mStreamScrollListener = null;
         }
-        mCurrentStream.removeOnContentChangedListener(mStreamContentChangedListener);
-
         mCoordinator.getHybridListRenderer().onSurfaceClosed();
         mCurrentStream.unbind();
+        mCurrentStream.removeOnContentChangedListener(mStreamContentChangedListener);
         mCurrentStream = null;
     }
 
-    void rebindStream() {
+    void onSurfaceOpened() {
+        setUpWebFeedTab();
+        rebindStream();
+    }
+
+    void onSurfaceClosed() {
+        unbindStream();
+    }
+
+    private void rebindStream() {
         // If a stream is already bound, then do nothing.
         if (mCurrentStream != null) return;
-
         // If feed shouldn't be shown, do nothing.
         if (!mSectionHeaderModel.get(SectionHeaderListProperties.IS_SECTION_ENABLED_KEY)) return;
-
         // Find the stream that should be bound and bind it. If no stream matches, then we haven't
         // fully set up yet. This will be taken care of by setup.
         Stream stream = mTabToStreamMap.get(
@@ -931,5 +980,55 @@ public class FeedSurfaceMediator
         StartSurfaceConfiguration.recordHistogram(FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
                 mContentFirstAvailableTimeMs - mActivityCreationTimeMs, mIsInstantStart);
         return true;
+    }
+
+    // Detects animation finishes in RecyclerView.
+    // https://stackoverflow.com/questions/33710605/detect-animation-finish-in-androids-recyclerview
+    private class RecyclerViewAnimationFinishDetector
+            implements RecyclerView.ItemAnimator.ItemAnimatorFinishedListener {
+        private Runnable mFinishedCallback;
+
+        /**
+         * Asynchronously waits for the animation to finish. If there's already a callback waiting,
+         * this replaces the existing callback.
+         *
+         * @param finishedCallback Callback to invoke when the animation finishes.
+         */
+        public void runWhenAnimationComplete(Runnable finishedCallback) {
+            if (mCoordinator.getRecyclerView() == null) {
+                return;
+            }
+            mFinishedCallback = finishedCallback;
+
+            // The RecyclerView has not started animating yet, so post a message to the
+            // message queue that will be run after the RecyclerView has started animating.
+            new Handler().post(() -> { checkFinish(); });
+        }
+
+        private void checkFinish() {
+            RecyclerView recyclerView = mCoordinator.getRecyclerView();
+
+            if (recyclerView != null && recyclerView.isAnimating()) {
+                // The RecyclerView is still animating, try again when the animation has finished.
+                recyclerView.getItemAnimator().isRunning(this);
+                return;
+            }
+
+            // The RecyclerView has animated all it's views.
+            onFinished();
+        }
+
+        private void onFinished() {
+            if (mFinishedCallback != null) {
+                mFinishedCallback.run();
+                mFinishedCallback = null;
+            }
+        }
+
+        @Override
+        public void onAnimationsFinished() {
+            // There might still be more items that will be animated after this one.
+            new Handler().post(() -> { checkFinish(); });
+        }
     }
 }

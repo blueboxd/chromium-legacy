@@ -4042,6 +4042,24 @@
             ]
         }
     ],
+    "InstalledAppsInCbd": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InstalledAppsInCbd"
+                    ]
+                }
+            ]
+        }
+    ],
     "IntentBlockExternalFormRedirectsNoGesture": [
         {
             "platforms": [
@@ -4627,6 +4645,68 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MobileIdentityConsistency"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MojoInlineMessagePayloads": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MojoInlineMessagePayloads"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MojoPosixUseWritev": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MojoPosixUseWritev"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MojoSharedMemoryChannelLinux": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "MojoLinuxChannelSharedMemEfdZeroOnWake": "true",
+                        "MojoLinuxChannelSharedMemPages": "2"
+                    },
+                    "enable_features": [
+                        "MojoLinuxChannelSharedMem"
                     ]
                 }
             ]
@@ -7308,7 +7388,7 @@
             ]
         }
     ],
-    "TextFragmentColorChange": [
+    "TextFragmentColorChangeBlink": [
         {
             "platforms": [
                 "android",
@@ -7321,7 +7401,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "TextFragmentColorChange"
+                        "TextFragmentColorChangeBlink"
                     ]
                 }
             ]

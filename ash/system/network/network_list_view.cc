@@ -517,10 +517,17 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
 
 std::u16string NetworkListView::GenerateAccessibilityLabel(
     const NetworkInfo& info) {
-  if (CanNetworkConnect(info.connection_state, info.type, info.connectable)) {
+  if (CanNetworkConnect(info.connection_state, info.type, info.activation_state,
+                        info.connectable)) {
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_CONNECT, info.label);
   }
+
+  if (ShouldShowActivateCellularNetwork(info)) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_ACTIVATE, info.label);
+  }
+
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN,
                                     info.label);
 }

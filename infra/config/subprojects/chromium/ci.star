@@ -1474,7 +1474,7 @@ ci.chromium_builder(
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = False,
 )
 
@@ -1804,6 +1804,7 @@ ci.chromiumos_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.chromiumos_builder(
@@ -3564,6 +3565,37 @@ ci.fyi_builder(
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "TSAN Release (core-32) (goma)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux tsan",
+        short_name = "rre",
+    ),
+    cores = 32,
+    goma_jobs = 250,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+    schedule = "triggered",  # triggered manually via Scheduler UI
+)
+
+ci.fyi_builder(
+    name = "TSAN Release (core-32) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux tsan",
+        short_name = "rre",
+    ),
+    cores = 32,
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-trusted",
+    reclient_jobs = 250,
+    reclient_rewrapper_env = {"RBE_cache_silo": "TSAN Release (core-32) (reclient)"},
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+    schedule = "triggered",  # triggered manually via Scheduler UI
 )
 
 ci.fyi_builder(
@@ -5414,21 +5446,6 @@ ci.memory_builder(
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
     # times have been brought down to reasonable level
     execution_timeout = 4 * time.hour + 30 * time.minute,
-    tree_closing = False,
-)
-
-# TODO(crbug.com/1200574): Remove this builder after migration.
-ci.memory_builder(
-    name = "Linux ASan LSan (bionic)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|asan bionic",
-        short_name = "bio",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    main_console_view = "main",
-    os = os.LINUX_BIONIC,
-    ssd = True,
     tree_closing = False,
 )
 

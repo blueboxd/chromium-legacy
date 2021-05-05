@@ -269,6 +269,13 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
 }
 
++ (id<GREYMatcher>)closeTabMenuButton {
+  return grey_allOf(
+      [ChromeMatchersAppInterface
+          buttonWithAccessibilityLabelID:(IDS_IOS_CONTENT_CONTEXT_CLOSETAB)],
+      grey_sufficientlyVisible(), nil);
+}
+
 + (id<GREYMatcher>)forwardButton {
   return [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:(IDS_ACCNAME_FORWARD)];
@@ -1067,12 +1074,19 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_allOf(classMatcher, parentMatcher, nil);
 }
 
-+ (id<GREYMatcher>)activityViewHeaderWithTitle:(NSString*)pageTitle {
-  return grey_allOf(grey_accessibilityLabel(pageTitle),
-                    grey_ancestor(grey_allOf(
-                        grey_accessibilityTrait(UIAccessibilityTraitHeader),
-                        grey_kindOfClassName(@"LPLinkView"), nil)),
-                    nil);
++ (id<GREYMatcher>)activityViewHeaderWithURLHost:(NSString*)host
+                                           title:(NSString*)pageTitle {
+  return grey_allOf(
+      // The title of the activity view starts as the URL, then asynchronously
+      // changes to the page title. Sometimes, the activity view fails to update
+      // the text to the page title, causing test flake. Allow matcher to pass
+      // with either value for the activity view title.
+      grey_anyOf(grey_accessibilityLabel(host),
+                 grey_accessibilityLabel(pageTitle), nil),
+      grey_ancestor(
+          grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitHeader),
+                     grey_kindOfClassName(@"LPLinkView"), nil)),
+      nil);
 }
 
 + (id<GREYMatcher>)manualFallbackSuggestPasswordMatcher {

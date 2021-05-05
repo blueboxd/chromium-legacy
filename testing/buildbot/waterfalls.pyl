@@ -2742,6 +2742,16 @@
           'chromium_builder_asan',
         ],
       },
+      'TSAN Release (core-32) (goma)': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
+      'TSAN Release (core-32) (reclient)': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
       'TSAN Release (deps-cache) (reclient)': {
         'additional_compile_targets': [
           'chromium_builder_asan',
@@ -5174,8 +5184,7 @@
       },
       'Mac10.13 Tests': {
         'mixins': [
-            'isolate_profile_data',
-            'mac_10.15',
+            'mac_10.13',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests_no_nacl',
@@ -5299,18 +5308,6 @@
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
         },
-      },
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
-        },
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
       },
       'Linux ASan LSan Tests (1)': {
         'mixins': [
@@ -5546,7 +5543,7 @@
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'no_gpu',
           'x86-64',
         ],
@@ -5559,7 +5556,7 @@
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'no_gpu',
           'timeout_15m',
           'x86-64',
@@ -5573,7 +5570,7 @@
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'no_gpu',
           'timeout_15m',
           'x86-64',
@@ -5587,7 +5584,7 @@
         'mixins': [
           'gpu-swarming-pool',
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'no_gpu',
           'timeout_15m',
           'x86-64',

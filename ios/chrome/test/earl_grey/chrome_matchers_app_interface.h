@@ -80,6 +80,9 @@
 // Returns matcher for a close button.
 + (id<GREYMatcher>)closeButton;
 
+// Returns matcher for close tab context menu button.
++ (id<GREYMatcher>)closeTabMenuButton;
+
 // Matcher for the navigate forward button.
 + (id<GREYMatcher>)forwardButton;
 
@@ -556,7 +559,8 @@
 + (id<GREYMatcher>)manualFallbackCreditCardTableViewWindowMatcher;
 
 // Returns the matcher for the Activity View header.
-+ (id<GREYMatcher>)activityViewHeaderWithTitle:(NSString*)pageTitle;
++ (id<GREYMatcher>)activityViewHeaderWithURLHost:(NSString*)host
+                                           title:(NSString*)pageTitle;
 
 // Returns a matcher for the button to trigger password generation on manual
 // fallback.

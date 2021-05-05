@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "components/ui_devtools/buildflags.h"
 #include "components/viz/common/features.h"
+#include "components/viz/service/debugger/viz_debugger.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/gpu_init.h"
@@ -111,6 +112,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_init_->gpu_feature_info_for_hardware_gpu(),
       gpu_init_->gpu_extra_info(), gpu_init_->vulkan_implementation(),
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
+  VizDebugger::GetInstance();
 }
 
 VizMainImpl::~VizMainImpl() {
@@ -266,6 +268,21 @@ void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
 #endif
 }
 
+#if BUILDFLAG(USE_VIZ_DEBUGGER)
+void VizMainImpl::FilterDebugStream(base::Value filter_data) {
+  VizDebugger::GetInstance()->FilterDebugStream(std::move(filter_data));
+}
+
+void VizMainImpl::StartDebugStream(
+    mojo::PendingRemote<mojom::VizDebugOutput> pending_debug_output) {
+  VizDebugger::GetInstance()->StartDebugStream(std::move(pending_debug_output));
+}
+
+void VizMainImpl::StopDebugStream() {
+  VizDebugger::GetInstance()->StopDebugStream();
+}
+#endif
+
 scoped_refptr<gpu::SharedContextState> VizMainImpl::GetSharedContextState() {
   return gpu_service_->GetContextState();
 }
@@ -274,28 +291,21 @@ scoped_refptr<gl::GLShareGroup> VizMainImpl::GetShareGroup() {
   return gpu_service_->share_group();
 }
 
-void VizMainImpl::ExitProcess(base::Optional<ExitCode> immediate_exit_code) {
+void VizMainImpl::ExitProcess(ExitCode immediate_exit_code) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!gpu_init_->gpu_info().in_process_gpu && immediate_exit_code) {
+  if (!gpu_init_->gpu_info().in_process_gpu) {
     // Atomically shut down GPU process to make it faster and simpler.
     base::Process::TerminateCurrentProcessImmediately(
-        static_cast<int>(immediate_exit_code.value()));
+        static_cast<int>(immediate_exit_code));
     return;
   }
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.
   receiver_.reset();
 
-  if (viz_compositor_thread_runner_) {
-    // Destroy RootCompositorFrameSinkImpls on the compositor while the GPU
-    // thread is still running to avoid deadlock. Quit GPU thread TaskRunner
-    // after cleanup on compositor thread is finished.
-    viz_compositor_thread_runner_->CleanupForShutdown(base::BindOnce(
-        &Delegate::QuitMainMessageLoop, base::Unretained(delegate_)));
-  } else {
-    delegate_->QuitMainMessageLoop();
-  }
+  DCHECK(!viz_compositor_thread_runner_);
+  delegate_->QuitMainMessageLoop();
 }
 
 }  // namespace viz

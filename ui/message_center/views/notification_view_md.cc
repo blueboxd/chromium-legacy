@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -16,6 +17,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/canvas.h"
@@ -55,7 +57,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
@@ -572,7 +573,12 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
-  SetInkDropVisibleOpacity(1);
+  SetInkDropVisibleOpacity(1.0f);
+  SetCreateInkDropCallback(base::BindRepeating(
+      [](InkDropHostView* host) -> std::unique_ptr<views::InkDrop> {
+        return std::make_unique<NotificationInkDropImpl>(host, host->size());
+      },
+      this));
 
   AddChildView(ink_drop_container_);
 
@@ -1471,10 +1477,6 @@ void NotificationViewMD::AddBackgroundAnimation(const ui::Event& event) {
 void NotificationViewMD::RemoveBackgroundAnimation() {
   SetInkDropMode(InkDropMode::OFF);
   AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
-}
-
-std::unique_ptr<views::InkDrop> NotificationViewMD::CreateInkDrop() {
-  return std::make_unique<NotificationInkDropImpl>(this, size());
 }
 
 std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()

@@ -360,6 +360,16 @@
       "chromium_builder_asan"
     ]
   },
+  "TSAN Release (core-32) (goma)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
+  "TSAN Release (core-32) (reclient)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
   "TSAN Release (deps-cache) (reclient)": {
     "additional_compile_targets": [
       "chromium_builder_asan"
@@ -38652,7 +38662,7 @@
             {
               "cpu": "x86",
               "kvm": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-18.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -38679,7 +38689,7 @@
             {
               "cpu": "x86",
               "kvm": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-18.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -38706,7 +38716,7 @@
             {
               "cpu": "x86",
               "kvm": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-18.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -38733,7 +38743,7 @@
             {
               "cpu": "x86",
               "kvm": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-18.04"
             }
           ],
           "idempotent": false,
@@ -38745,7 +38755,8 @@
       {
         "args": [
           "--board=amd64-generic",
-          "--use-vm"
+          "--use-vm",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/device-lacros.ozone_unittests.filter"
         ],
         "merge": {
           "args": [],
@@ -38761,7 +38772,7 @@
             {
               "cpu": "x86",
               "kvm": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-18.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"

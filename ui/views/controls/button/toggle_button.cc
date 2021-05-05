@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -22,7 +23,6 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 
 namespace views {
@@ -134,6 +134,8 @@ ToggleButton::ToggleButton(PressedCallback callback)
   // desirable.
   SetInstallFocusRingOnFocus(false);
   SetHasInkDropActionOnClick(true);
+  views::InkDrop::UseInkDropForSquareRipple(this,
+                                            /*highlight_on_hover=*/false);
 }
 
 ToggleButton::~ToggleButton() {
@@ -321,12 +323,6 @@ void ToggleButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 
 void ToggleButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   thumb_view_->RemoveInkDropLayer(ink_drop_layer);
-}
-
-std::unique_ptr<InkDrop> ToggleButton::CreateInkDrop() {
-  return views::InkDrop::CreateInkDropForSquareRipple(
-      this,
-      /*highlight_on_hover=*/false);
 }
 
 std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {

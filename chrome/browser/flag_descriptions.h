@@ -459,6 +459,9 @@ extern const char kDesktopPWAsElidedExtensionsMenuDescription[];
 extern const char kDesktopPWAsFlashAppNameInsteadOfOriginName[];
 extern const char kDesktopPWAsFlashAppNameInsteadOfOriginDescription[];
 
+extern const char kDesktopPWAsNotificationIconAndTitleName[];
+extern const char kDesktopPWAsNotificationIconAndTitleDescription[];
+
 extern const char kDesktopPWAsLinkCapturingName[];
 extern const char kDesktopPWAsLinkCapturingDescription[];
 
@@ -1842,9 +1845,6 @@ extern const char kOfflinePagesPrefetchingDescription[];
 
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
-
-extern const char kOfflinePagesShowAlternateDinoPageName[];
-extern const char kOfflinePagesShowAlternateDinoPageDescription[];
 
 extern const char kOffliningRecentPagesName[];
 extern const char kOffliningRecentPagesDescription[];

@@ -178,6 +178,10 @@ id<GREYMatcher> AddToReadingListButton() {
   return [ChromeMatchersAppInterface addToReadingListButton];
 }
 
+id<GREYMatcher> CloseTabMenuButton() {
+  return [ChromeMatchersAppInterface closeTabMenuButton];
+}
+
 id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
                                    BOOL is_toggled_on) {
   return [ChromeMatchersAppInterface settingsSwitchCell:accessibility_identifier
@@ -711,8 +715,9 @@ id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher() {
       manualFallbackCreditCardTableViewWindowMatcher];
 }
 
-id<GREYMatcher> ActivityViewHeader(NSString* page_title) {
-  return [ChromeMatchersAppInterface activityViewHeaderWithTitle:page_title];
+id<GREYMatcher> ActivityViewHeader(NSString* url_host, NSString* page_title) {
+  return [ChromeMatchersAppInterface activityViewHeaderWithURLHost:url_host
+                                                             title:page_title];
 }
 
 id<GREYMatcher> ManualFallbackSuggestPasswordMatcher() {

@@ -326,6 +326,8 @@ try_.chromium_android_builder(
         },
     },
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -373,6 +375,8 @@ try_.chromium_android_builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -385,6 +389,8 @@ try_.chromium_android_builder(
     ssd = True,
     use_java_coverage = True,
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 # Experimental builder to check dual coverage on android platform.
@@ -406,6 +412,8 @@ try_.chromium_android_builder(
     goma_jobs = goma.jobs.J300,
     ssd = True,
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -479,6 +487,8 @@ try_.chromium_android_builder(
     ssd = True,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -573,6 +583,8 @@ try_.chromium_android_builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -617,6 +629,8 @@ try_.chromium_android_builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -637,6 +651,8 @@ try_.chromium_android_builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug/1202741)
+    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.chromium_android_builder(
@@ -795,6 +811,7 @@ try_.chromium_chromiumos_builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.chromium_chromiumos_builder(
@@ -802,6 +819,7 @@ try_.chromium_chromiumos_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
+    os = os.LINUX_BIONIC_REMOVE,
     tryjob = try_.job(),
 )
 
@@ -1353,16 +1371,6 @@ try_.chromium_linux_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     os = os.LINUX_BIONIC,
-)
-
-# TODO(crbug.com/1200574): Remove after migration.
-try_.chromium_linux_builder(
-    name = "linux_chromium_asan_rel_ng_bionic",
-    branch_selector = branches.STANDARD_MILESTONE,
-    goma_jobs = goma.jobs.J150,
-    ssd = True,
-    os = os.LINUX_BIONIC,
-    main_list_view = "try",
 )
 
 try_.chromium_linux_builder(

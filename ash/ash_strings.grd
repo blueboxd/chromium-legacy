@@ -1521,6 +1521,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_CONNECT" desc="Accessibility label used for a network in quick settings network list that connects to the network.">
         Connect to <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_ACTIVATE" desc="Accessibility label used for an unactivated cellular network in quick settings network list that opens the activation flow when clicked.">
+        Click to activate <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECT_BUTTON_A11Y_LABEL" desc="Accessibility label used for a button to disconnect from a network in quick settings network list.">
         Disconnect from <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
       </message>
@@ -2462,6 +2465,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_POD_ACCOUNT_DIALOG_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the button that opens the account info dialog for a given user, when the remove option is not present, e.g. on the lock screen.">
         Open info dialog for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
+      </message>
+      <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_DIALOG_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the button that opens the account info dialog for a given public account.">
+        Open info dialog for <ph name="USER_NAME">$1<ex>Seattle Public Library</ex></ph>
+      </message>
+      <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_LOG_IN_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the button that allows the given public account to log in.">
+        Log in
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
         The device admin may monitor your browsing activity.

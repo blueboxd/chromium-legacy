@@ -1113,7 +1113,6 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
     params.content_rect = gfx::Rect(50, 50);
     params.quad_rect = on_screen_rect;
     params.clip_rect = on_screen_rect;
-    params.is_clipped = true;
     surface_->ScheduleDCLayer(params);
 
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -1214,9 +1213,8 @@ TEST_F(DirectCompositionPixelTest, SwapChainImage) {
   ASSERT_TRUE(front_buffer_texture);
 
   auto front_buffer_image = base::MakeRefCounted<GLImageD3D>(
-      swap_chain_size, GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-      gfx::ColorSpace::CreateSRGB(), front_buffer_texture,
-      /*array_slice=*/0, /*plane_index=*/0, swap_chain);
+      swap_chain_size, GL_BGRA_EXT, GL_UNSIGNED_BYTE, front_buffer_texture,
+      swap_chain);
   ASSERT_TRUE(front_buffer_image->Initialize());
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> back_buffer_texture;

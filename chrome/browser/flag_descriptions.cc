@@ -753,6 +753,12 @@ const char kDesktopPWAsFlashAppNameInsteadOfOriginDescription[] =
     "Replaces the origin flash with an app name flash when launching a web app "
     "window.";
 
+const char kDesktopPWAsNotificationIconAndTitleName[] =
+    "Desktop PWAs improvements in notification icon and title";
+const char kDesktopPWAsNotificationIconAndTitleDescription[] =
+    "Replaces the websites origin and the Chrome icon with the web app's name "
+    "and app icon in notifications.";
+
 const char kDesktopPWAsLinkCapturingName[] =
     "Desktop PWA declarative link capturing";
 const char kDesktopPWAsLinkCapturingDescription[] =
@@ -3172,12 +3178,6 @@ const char kOfflinePagesLivePageSharingDescription[] =
     "Enables to share current loaded page as offline page by saving as MHTML "
     "first.";
 
-const char kOfflinePagesShowAlternateDinoPageName[] =
-    "Enable alternate dino page with more user capabilities.";
-const char kOfflinePagesShowAlternateDinoPageDescription[] =
-    "Enables the dino page to show more buttons and offer existing offline "
-    "content.";
-
 const char kOffliningRecentPagesName[] =
     "Enable offlining of recently visited pages";
 const char kOffliningRecentPagesDescription[] =
@@ -3641,18 +3641,6 @@ const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
     "suggestions and layout.";
 
-const char kOmniboxSuggestionButtonRowName[] = "Omnibox suggestion button row";
-const char kOmniboxSuggestionButtonRowDescription[] =
-    "Enable a button row on omnibox suggestions to present actionable items "
-    "such as keyword search, tab-switch buttons, and Pedals.";
-
-const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
-const char kOmniboxPedalSuggestionsDescription[] =
-    "Enable omnibox Pedal suggestions to accelerate actions within Chrome by "
-    "detecting user intent and offering direct access to the end goal. This "
-    "flag has no effect unless \"Omnibox suggestion button row\" is also "
-    "enabled.";
-
 const char kOmniboxPedalsBatch2Name[] = "Omnibox Pedals batch 2";
 const char kOmniboxPedalsBatch2Description[] =
     "Enable the second batch of Omnibox Pedals (Safety Check, etc.). "
@@ -3668,8 +3656,7 @@ const char kOmniboxPedalsDefaultIconColoredDescription[] =
 const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";
 const char kOmniboxKeywordSearchButtonDescription[] =
     "Enable the omnibox keyword search button which offers a way to search "
-    "on specific sites from the omnibox. This flag has no effect unless "
-    "\"Omnibox suggestion button row\" is also enabled.";
+    "on specific sites from the omnibox.";
 
 const char kOmniboxRefinedFocusStateName[] = "Omnibox refined focus state UI";
 const char kOmniboxRefinedFocusStateDescription[] =

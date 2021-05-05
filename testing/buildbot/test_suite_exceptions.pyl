@@ -218,6 +218,7 @@
   'blink_web_tests': {
     'remove_from': [
       'Mac10.11 Tests',
+      'Mac10.13 Tests', # crbug.com/1205669
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
     ],
@@ -573,14 +574,6 @@
       'Linux - Future (dbg)': {  # client.v8.chromium
         'swarming': {
           'shards': 10,
-        },
-      },
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 40,
         },
       },
       'Linux ASan LSan Tests (1)': {
@@ -1119,14 +1112,6 @@
       'ToTFuchsiaOfficial',  # https://crbug.com/961457
     ],
     'modifications': {
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 5,
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372
@@ -1193,12 +1178,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
-      },
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        'swarming': {
-          'shards': 12,
-        },
       },
       'Linux ASan LSan Tests (1)': {
         'swarming': {
@@ -1322,6 +1301,12 @@
       },
       'linux-chromeos-rel': {
         'swarming': {
+          # TODO(crbug.com/1202743): Remove this exception.
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-18.04',
+            },
+          ],
           'shards': 3,
         },
       },
@@ -1391,14 +1376,6 @@
   },
   'content_unittests': {
     'modifications': {
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        # These are slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
         # crbug.com/794372
@@ -1539,8 +1516,6 @@
   'gin_unittests': {
     'remove_from': [
       'ToTLinuxASan',  # https://crbug.com/831667
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)',
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
@@ -1555,22 +1530,6 @@
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         'args': [
           '--use-gpu-in-tests',
@@ -1711,6 +1670,7 @@
     },
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      'Mac10.13 Tests', # https://crbug.com/1204424
     ],
   },
   'info_collection_tests': {
@@ -1765,13 +1725,6 @@
       'Linux - Future (dbg)': {  # client.v8.chromium
         'swarming': {
           'shards': 3,
-        },
-      },
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        # These are slow on the ASan trybot for some reason, crbug.com/794372
-        'swarming': {
-          'shards': 6,
         },
       },
       'Linux ASan LSan Tests (1)': {
@@ -1861,6 +1814,16 @@
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
         ],
       },
+      'linux-chromeos-rel': {
+        'swarming': {
+          # TODO(crbug.com/1202743): Remove this exception.
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        }
+      },
       'linux-chromeos-stable': {
         'args': [
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
@@ -1915,6 +1878,18 @@
         },
       },
     },
+  },
+  # TODO(crbug.com/1198252): Remove once Lacros Tast tests flakiness is fixed.
+  'lacros_smoke_tast_tests_amd64-generic': {
+    'remove_from': [
+      'lacros-amd64-generic-rel',
+    ],
+  },
+  # TODO(crbug.com/1198252): Remove once Lacros Tast tests flakiness is fixed.
+  'lacros_smoke_tast_tests_eve': {
+    'remove_from': [
+      'lacros-amd64-generic-chrome',
+    ],
   },
   'maps_pixel_passthrough_test': {
     'replacements': {
@@ -2174,14 +2149,6 @@
           'shards': 16,
         },
       },
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 16,
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372
@@ -2398,7 +2365,14 @@
     'remove_from': [
       # TODO(crbug.com/1204231): Re-enable.
       'lacros-amd64-generic-rel',
-    ]
+    ],
+    'modifications': {
+      'lacros-amd64-generic-rel-fyi': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/device-lacros.ozone_unittests.filter',
+        ],
+      },
+    },
   },
   'perfetto_unittests': {
     'remove_from': [
@@ -2650,12 +2624,6 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
     ],
     'modifications': {
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        'swarming': {
-          'shards': 4,
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         'swarming': {
           'shards': 4,
@@ -2701,6 +2669,16 @@
         'swarming': {
           'shards': 4,
         },
+      },
+      'linux-chromeos-rel': {
+        'swarming': {
+          # TODO(crbug.com/1202743): Remove this exception.
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        }
       },
       'linux-code-coverage': {
         'swarming': {
@@ -2889,14 +2867,6 @@
       'android-pie-arm64-rel',  # https://crbug.com/1010211
     ],
     'modifications': {
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        # These are slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 4,
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
         # crbug.com/794372
@@ -2956,6 +2926,12 @@
       },
       'linux-chromeos-rel': {
         'swarming': {
+          # TODO(crbug.com/1202743): Remove this exception.
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-18.04',
+            },
+          ],
           'shards': 2,
         },
       },
@@ -3144,14 +3120,6 @@
       'android-marshmallow-x86-rel-non-cq',
     ],
     'modifications': {
-      # TODO(crbug.com/1200574): Remove after migration.
-      'Linux ASan LSan (bionic)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 5,
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372

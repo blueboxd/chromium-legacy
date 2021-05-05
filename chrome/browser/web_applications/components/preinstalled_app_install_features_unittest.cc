@@ -6,21 +6,16 @@
 
 #include "base/strings/strcat.h"
 #include "base/system/sys_info.h"
-#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/crosapi/cpp/crosapi_constants.h"
-#endif
-
 namespace web_app {
 
 struct Migrate {
-  bool beta;
+  bool base;
   bool managed;
 };
 
@@ -30,39 +25,42 @@ class PreinstalledWebAppInstallFeaturesTest
  public:
   static std::string ParamToString(
       const ::testing::TestParamInfo<Migrate> param_info) {
-    return base::StrCat(
-        {param_info.param.beta ? "MigrateBeta" : "UnmigrateBeta", "_",
-         param_info.param.managed ? "MigrateManaged" : "UnmigrateManaged"});
+    std::string result = "Migrate";
+    if (param_info.param.base)
+      result += "Base";
+    if (param_info.param.managed)
+      result += "Managed";
+    if (result == "Migrate")
+      result += "None";
+    return result;
   }
 
   PreinstalledWebAppInstallFeaturesTest() {
-    base_migration_.InitWithFeatures(
-        {kMigrateDefaultChromeAppToWebAppsGSuite,
-         kMigrateDefaultChromeAppToWebAppsNonGSuite},
-        {});
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    if (GetMigrate().beta) {
-      beta_migration_.InitAndEnableFeature(
-          kMigrateDefaultChromeAppToWebAppsChromeOsBeta);
+    if (MigrateBase()) {
+      base_migration_.InitWithFeatures(
+          {kMigrateDefaultChromeAppToWebAppsGSuite,
+           kMigrateDefaultChromeAppToWebAppsNonGSuite},
+          {});
     } else {
-      beta_migration_.InitAndDisableFeature(
-          kMigrateDefaultChromeAppToWebAppsChromeOsBeta);
+      base_migration_.InitWithFeatures(
+          {}, {kMigrateDefaultChromeAppToWebAppsGSuite,
+               kMigrateDefaultChromeAppToWebAppsNonGSuite});
     }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    if (GetMigrate().managed) {
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (MigrateManaged()) {
       managed_migration_.InitAndEnableFeature(
-          kMigrateDefaultChromeAppToWebAppsChromeOsManaged);
+          kAllowDefaultWebAppMigrationForChromeOsManagedUsers);
     } else {
       managed_migration_.InitAndDisableFeature(
-          kMigrateDefaultChromeAppToWebAppsChromeOsManaged);
+          kAllowDefaultWebAppMigrationForChromeOsManagedUsers);
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 
   ~PreinstalledWebAppInstallFeaturesTest() override = default;
 
-  const Migrate& GetMigrate() { return GetParam(); }
+  bool MigrateBase() const { return GetParam().base; }
+  bool MigrateManaged() const { return GetParam().managed; }
 
   void ExpectMigrationEnabled(bool unmanaged_expectation,
                               bool managed_expectation) {
@@ -97,46 +95,29 @@ class PreinstalledWebAppInstallFeaturesTest
 
  protected:
   base::test::ScopedFeatureList base_migration_;
-  base::test::ScopedFeatureList beta_migration_;
   base::test::ScopedFeatureList managed_migration_;
 
   content::BrowserTaskEnvironment task_environment_;
 };
 
-TEST_P(PreinstalledWebAppInstallFeaturesTest, NonBetaChannel) {
+TEST_P(PreinstalledWebAppInstallFeaturesTest, MigrationEnabled) {
   ExpectMigrationEnabled(
-      /*unmanaged_expectation=*/true,
+      /*unmanaged_expectation=*/MigrateBase(),
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-      /*managed_expectation=*/GetMigrate().managed
+      /*managed_expectation=*/MigrateBase() && MigrateManaged()
 #else
-      /*managed_expectation=*/true
+      /*managed_expectation=*/MigrateBase()
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   );
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-TEST_P(PreinstalledWebAppInstallFeaturesTest, BetaChannel) {
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      base::StrCat(
-          {crosapi::kChromeOSReleaseTrack, "=", crosapi::kReleaseChannelBeta}),
-      base::Time::Now());
-
-  ExpectMigrationEnabled(/*unmanaged_expectation=*/GetMigrate().beta,
-                         /*managed_expectation=*/GetMigrate().beta);
-
-  base::SysInfo::ResetChromeOSVersionInfoForTest();
-}
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-
 INSTANTIATE_TEST_SUITE_P(
     All,
     PreinstalledWebAppInstallFeaturesTest,
-    testing::Values(Migrate{.beta = false, .managed = false},
-                    Migrate{.beta = false, .managed = true},
-                    Migrate{.beta = true, .managed = false},
-                    Migrate{.beta = true, .managed = true}),
+    testing::Values(Migrate{.base = false, .managed = false},
+                    Migrate{.base = false, .managed = true},
+                    Migrate{.base = true, .managed = false},
+                    Migrate{.base = true, .managed = true}),
     &PreinstalledWebAppInstallFeaturesTest::ParamToString);
 
 }  // namespace web_app

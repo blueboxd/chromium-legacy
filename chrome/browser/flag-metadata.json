@@ -1919,16 +1919,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-holding-space",
-    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "enable-holding-space-previews",
-    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-hosted-app-quit-notification",
     "owners": [ "ccameron" ],
     "expiry_milestone": 77
@@ -2098,12 +2088,12 @@
   {
     "name": "enable-migrate-default-chrome-app-to-web-apps-gsuite",
     "owners": [ "alancutter", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 94
   },
   {
     "name": "enable-migrate-default-chrome-app-to-web-apps-non-gsuite",
     "owners": [ "alancutter", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 94
   },
   {
     "name": "enable-nacl",
@@ -4561,14 +4551,6 @@
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "safe-browsing-real-time-url-lookup-enterprise-ga-endpoint",
-    "owners": [
-      "xinghuilu",
-      "chrome-safebrowsing-core@google.com"
-    ],
-    "expiry_milestone": 92
   },
   {
     "name": "safety-check-chrome-cleaner-child",

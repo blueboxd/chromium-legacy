@@ -876,6 +876,21 @@
             ]
         }
     ],
+    "AutofillDownstreamCvcPromptUseGooglePayLogo": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AutofillDownstreamCvcPromptUseGooglePayLogo",
+                    "enable_features": [
+                        "AutofillDownstreamCvcPromptUseGooglePayLogo"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableAugmentedPhoneCountryCode": [
         {
             "platforms": [
@@ -6543,21 +6558,6 @@
             ]
         }
     ],
-    "SafeBrowsingPasswordProtectionReferringAppEnabledAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingPasswordProtectionReferringAppEnabledAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "SafeBrowsingPerProfileNetworkContexts": [
         {
             "platforms": [
@@ -6590,6 +6590,29 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingRealTimeUrlLookupEnabledWithToken"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingRealTimeUrlLookupReferrerChain": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200422",
+                    "params": {
+                        "SafeBrowsingRealTimeUrlLookupReferrerLengthParam": "2"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupReferrerChain"
                     ]
                 }
             ]
@@ -6813,6 +6836,23 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SignInProfileCreation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SignInProfileCreationEnterprise": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SignInProfileCreationEnterprise"
                     ]
                 }
             ]
@@ -8274,6 +8314,26 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-PreStreamDecoders": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "ios",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "max:0,_V1"
                 }
             ]
         }

@@ -5048,6 +5048,8 @@ others/histograms.xml -->
   <int value="23" label="Disabled proactive help setting"/>
   <int value="24" label="Base64 decoding error"/>
   <int value="25" label="The user rejected the bottom sheet onboarding"/>
+  <int value="26" label="CCT -&gt; tab not supported"/>
+  <int value="27" label="Canceled"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptOnboarding">
@@ -32374,6 +32376,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3889" label="CSSFilterColorMatrix"/>
   <int value="3890" label="HTMLFencedFrameElement"/>
   <int value="3891" label="CSSFilterLuminanceToAlpha"/>
+  <int value="3892" label="HandwritingRecognitionCreateRecognizer"/>
+  <int value="3893" label="HandwritingRecognitionQuerySupport"/>
+  <int value="3894" label="HandwritingRecognitionStartDrawing"/>
+  <int value="3895" label="HandwritingRecognitionGetPrediction"/>
+  <int value="3896" label="WebBluetoothManufacturerDataFilter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -70476,9 +70483,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SendTabToSelfClickResult">
-  <int value="0" label="SendTabToSelf entry point is shown. (Obsolete)"/>
+  <int value="0" label="SendTabToSelf entry point is shown.">
+    <obsolete>
+      Removed on 06/2020.
+    </obsolete>
+  </int>
   <int value="1" label="SendTabToSelf target device is clicked."/>
-  <int value="2" label="SendTabToSelf device list is shown. (Obsolete)"/>
+  <int value="2" label="SendTabToSelf device list is shown.">
+    <obsolete>
+      Removed on 06/2020.
+    </obsolete>
+  </int>
 </enum>
 
 <enum name="SendTabToSelfNotification">

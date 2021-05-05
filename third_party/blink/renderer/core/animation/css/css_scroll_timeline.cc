@@ -204,13 +204,11 @@ HeapVector<Member<IdTargetObserver>> CreateElementReferenceObservers(
 
 }  // anonymous namespace
 
-CSSScrollTimeline::Options::Options(Element* element,
+CSSScrollTimeline::Options::Options(Document& document,
                                     StyleRuleScrollTimeline& rule)
-    : source_(ComputeScrollSource(element->GetDocument(), rule.GetSource())),
+    : source_(ComputeScrollSource(document, rule.GetSource())),
       direction_(ComputeScrollDirection(rule.GetOrientation())),
-      offsets_(ComputeScrollOffsets(element->GetDocument(),
-                                    rule.GetStart(),
-                                    rule.GetEnd())),
+      offsets_(ComputeScrollOffsets(document, rule.GetStart(), rule.GetEnd())),
       time_range_(ComputeTimeRange(rule.GetTimeRange())),
       rule_(&rule) {}
 
@@ -223,7 +221,6 @@ CSSScrollTimeline::CSSScrollTimeline(Document* document, Options&& options)
       rule_(options.rule_) {
   DCHECK(options.IsValid());
   DCHECK(rule_);
-  document->GetDocumentAnimations().CacheCSSScrollTimeline(*this);
 }
 
 const AtomicString& CSSScrollTimeline::Name() const {

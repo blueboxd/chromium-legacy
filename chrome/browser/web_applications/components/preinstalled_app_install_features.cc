@@ -7,9 +7,6 @@
 #include "base/feature_list.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_features.h"
-#include "components/version_info/channel.h"
 
 namespace web_app {
 
@@ -53,36 +50,18 @@ const base::Feature kMigrateDefaultChromeAppToWebAppsNonGSuite {
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-// Enables migration of default installed web apps over to their replacement
-// web apps for Chrome OS beta channel users.
-// This flag overrides the value of the kMigrateDefaultChromeAppToWebAppsGSuite
-// and kMigrateDefaultChromeAppToWebAppsNonGSuite for Chrome OS beta users.
-// Dev/canary/stable channels continue to use the above flags.
-// We do this because:
-//  - The Chrome OS migration flags used to be default enabled.
-//  - Chrome OS beta channel got migrated.
-//  - We changed the flags to be default disabled before it went out to stable.
-//  - We want to avoid reverse migrating beta users (it will lose icon positions
-//    in the shelf/launcher).
-//  - Metrics team has advised us to use client side logic instead of a field
-//    trial to maintain beta's migrated state.
-// Note: This will all go away once the migration is complete.
-const base::Feature kMigrateDefaultChromeAppToWebAppsChromeOsBeta{
-    "MigrateDefaultChromeAppToWebAppsChromeOsBeta",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables migration of default installed web apps over to their replacement
-// web apps for Chrome OS managed users.
-// This flag overrides the value of the kMigrateDefaultChromeAppToWebAppsGSuite
-// and kMigrateDefaultChromeAppToWebAppsNonGSuite for Chrome OS managed users.
+// Whether to allow the MigrateDefaultChromeAppToWebAppsGSuite and
+// MigrateDefaultChromeAppToWebAppsNonGSuite flags for managed users.
+// Without this flag enabled managed users will not undergo the default web app
+// migration.
 //
 // Why have a separate flag?
 // Field trials are not able to accurately distinguish managed Chrome OS users.
 // Because admin installed Chrome apps conflict with the default web app
 // migration we need to maintain separate control over the rollout for mananged
 // users.
-const base::Feature kMigrateDefaultChromeAppToWebAppsChromeOsManaged{
-    "MigrateDefaultChromeAppToWebAppsChromeOsManaged",
+const base::Feature kAllowDefaultWebAppMigrationForChromeOsManagedUsers{
+    "AllowDefaultWebAppMigrationForChromeOsManagedUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables default installing the Chat web app.
@@ -100,25 +79,18 @@ bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
     return true;
 
   for (const base::Feature* feature : kPreinstalledAppInstallFeatures) {
-    if (feature->name == feature_name) {
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-      if (IsMigrationFeature(*feature)) {
-        // See |kMigrateDefaultChromeAppToWebAppsChromeOsBeta| comment above.
-        if (chrome::GetChannel() == version_info::Channel::BETA) {
-          return base::FeatureList::IsEnabled(
-              kMigrateDefaultChromeAppToWebAppsChromeOsBeta);
-        }
-
-        // See |kMigrateDefaultChromeAppToWebAppsChromeOsManaged| comment above.
-        if (profile.GetProfilePolicyConnector()->IsManaged()) {
-          return base::FeatureList::IsEnabled(
-              kMigrateDefaultChromeAppToWebAppsChromeOsManaged);
-        }
-      }
+    // See |kAllowDefaultWebAppMigrationForChromeOsManagedUsers| comment above.
+    if (base::FeatureList::IsEnabled(*feature) &&
+        feature->name == feature_name && IsMigrationFeature(*feature) &&
+        profile.GetProfilePolicyConnector()->IsManaged()) {
+      return base::FeatureList::IsEnabled(
+          kAllowDefaultWebAppMigrationForChromeOsManagedUsers);
+    }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
+    if (feature->name == feature_name)
       return base::FeatureList::IsEnabled(*feature);
-    }
   }
 
   return false;

@@ -5738,13 +5738,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kEnhancedProtectionPromoCard)},
 #endif
 
-    {"safe-browsing-real-time-url-lookup-enterprise-ga-endpoint",
-     flag_descriptions::kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointName,
-     flag_descriptions::
-         kSafeBrowsingRealTimeUrlLookupEnterpriseGaEndpointDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(safe_browsing::kRealTimeUrlLookupEnterpriseGaEndpoint)},
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"gesture-properties-dbus-service",
      flag_descriptions::kEnableGesturePropertiesDBusServiceName,
@@ -6763,12 +6756,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncAutofillWalletOfferDataName,
      flag_descriptions::kSyncAutofillWalletOfferDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncAutofillWalletOfferData)},
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-holding-space", flag_descriptions::kHoldingSpaceName,
-     flag_descriptions::kHoldingSpaceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kTemporaryHoldingSpace)},
-#endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

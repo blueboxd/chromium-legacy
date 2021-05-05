@@ -213,7 +213,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '55e37b474d17543e9a8b6bcba71a1c53b2852da8',
+  'v8_revision': '9b373ece78ec52eeee18e248c4d76696ce6e335a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'd4ee032a15d5c5fa3d0307f0561286ab8a9dce1c',
+  'catapult_revision': '1ae270e66814fe4d968ec699f21b75205e2d7a83',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'af02decd68b7f0dbecec0c5ac2468119daab6989',
+  'devtools_frontend_revision': 'e967dcb9bebdd2b33464207dae7a5627949319cd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'a7f1c50f498e8d0655061e1530984449b8eba5e1',
+  'dawn_revision': '3dddab2dd596239f4fbc2ea180776def4287768a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -384,7 +384,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libjxl_revision': 'e5ce94456581d43f8a52c8100c726a0d079f65e7',
+  'libjxl_revision': '9a8f5195e4d1c45112fd65f184ebe115f4163ba2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -730,7 +730,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'F-KyxlnPsilCF8hZJ4eXLycPHgTbV09Ch5FXUOHjzWMC',
+          'version': 'RjeRyfAqXQf6VfPsfovn5_088ot2hkVyL1FaGWMsxI0C',
       },
     ],
     'condition': 'checkout_android',
@@ -966,7 +966,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6b022d1efb1559ab795a1c91014a2a6fb7efba88',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '3da91715d3b7447cc012b3e38901b9e9a54039eb',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1416,7 +1416,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'Q9wrtYCFy4whHc75FrdwzygrqI5DSmX_tuj8UJUcrckC'
+              'version': '42zBK32YxEB18xY1NCrwmj25vLkVlpXgaCil3aOhi6EC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1552,7 +1552,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '239db71432f4e4fe1f6192a7d54717701ef84f66',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'da3dc149b20576a9bae09b0d7a4ecfe819829c1f',
+    Var('webrtc_git') + '/src.git' + '@' + 'c51ce06208e516ce80539a100a5d1f41ff360c75',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1613,7 +1613,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ad034b3d65c52aa32195977c4f4f22641c6d3d03',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@48aeba5a7e1ef4b213c51d909971831d3278d23a',
     'condition': 'checkout_src_internal',
   },
 
@@ -1621,7 +1621,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'yY4G9__wVxlswvn7cNuQGTFi4WP3FitAGp1I_1AgGagC',
+        'version': '6mLyz6teriSC8d5wsJf-A5ZsxuzknycldIZl8mGcJBUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

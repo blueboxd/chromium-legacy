@@ -2969,6 +2969,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "force-enable-face-ae",
+    "owners": [ "chromeos-camera-eng@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "force-secure-payment-confirmation-dialog",
     "owners": [ "//components/payments/OWNERS" ],
     "expiry_milestone": 90
@@ -3922,6 +3927,11 @@
   },
   {
     "name": "omnibox-keyword-space-triggering",
+    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 99
+  },
+  {
+    "name": "omnibox-keyword-space-triggering-setting",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 99
   },

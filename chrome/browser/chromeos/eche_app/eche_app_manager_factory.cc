@@ -16,12 +16,16 @@
 #include "chrome/browser/chromeos/secure_channel/nearby_connector_factory.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chromeos/components/eche_app_ui/eche_app_manager.h"
+#include "chromeos/components/eche_app_ui/eche_uid_provider.h"
 #include "chromeos/components/eche_app_ui/system_info.h"
 #include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -31,6 +35,20 @@ namespace chromeos {
 namespace eche_app {
 
 namespace {
+
+void CloseEcheApp(Profile* profile) {
+  for (auto* browser : *(BrowserList::GetInstance())) {
+    if (browser->profile() != profile)
+      continue;
+    if (!browser->app_controller())
+      continue;
+    if (browser->app_controller()->system_app_type() !=
+        web_app::SystemAppType::ECHE)
+      continue;
+    browser->window()->Close();
+    return;
+  }
+}
 
 void LaunchEcheApp(Profile* profile, int64_t notification_id) {
   std::string url = "chrome://eche-app/#notification_id=";
@@ -67,6 +85,11 @@ EcheAppManagerFactory::EcheAppManagerFactory()
 
 EcheAppManagerFactory::~EcheAppManagerFactory() = default;
 
+void EcheAppManagerFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(kEcheAppSeedPref, "");
+}
+
 KeyedService* EcheAppManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (!features::IsPhoneHubEnabled() || !features::IsEcheSWAEnabled())
@@ -93,10 +116,11 @@ KeyedService* EcheAppManagerFactory::BuildServiceInstanceFor(
   if (!secure_channel_client)
     return nullptr;
 
-  return new EcheAppManager(GetSystemInfo(profile), phone_hub_manager,
-                            device_sync_client, multidevice_setup_client,
-                            secure_channel_client,
-                            base::BindRepeating(&LaunchEcheApp, profile));
+  return new EcheAppManager(profile->GetPrefs(), GetSystemInfo(profile),
+                            phone_hub_manager, device_sync_client,
+                            multidevice_setup_client, secure_channel_client,
+                            base::BindRepeating(&LaunchEcheApp, profile),
+                            base::BindRepeating(&CloseEcheApp, profile));
 }
 
 std::unique_ptr<SystemInfo> EcheAppManagerFactory::GetSystemInfo(

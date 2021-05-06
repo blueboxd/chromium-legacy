@@ -753,8 +753,6 @@ static_library("ui") {
       "webui/explore_sites_internals/explore_sites_internals_page_handler.h",
       "webui/explore_sites_internals/explore_sites_internals_ui.cc",
       "webui/explore_sites_internals/explore_sites_internals_ui.h",
-      "webui/internals/lens/lens_internals_ui_message_handler.cc",
-      "webui/internals/lens/lens_internals_ui_message_handler.h",
       "webui/internals/notifications/notifications_internals_ui_message_handler.cc",
       "webui/internals/notifications/notifications_internals_ui_message_handler.h",
       "webui/internals/query_tiles/query_tiles_internals_ui_message_handler.cc",
@@ -2960,6 +2958,7 @@ static_library("ui") {
       "views/profiles/profile_picker_turn_sync_on_delegate.h",
       "views/profiles/profile_picker_view.cc",
       "views/profiles/profile_picker_view.h",
+      "views/profiles/profile_picker_web_contents_host.h",
       "webui/app_launcher_page_ui.cc",
       "webui/app_launcher_page_ui.h",
       "webui/browser_switch/browser_switch_ui.cc",
@@ -4760,6 +4759,12 @@ static_library("ui") {
       "//services/device/public/mojom:usb",
     ]
 
+    if (is_chromeos_lacros) {
+      sources += [
+        "webui/print_preview/local_printer_handler_lacros.cc",
+        "webui/print_preview/local_printer_handler_lacros.h",
+      ]
+    }
     if (is_chromeos_ash) {
       sources += [
         "webui/print_preview/local_printer_handler_chromeos.cc",

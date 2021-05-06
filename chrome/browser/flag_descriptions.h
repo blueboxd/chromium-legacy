@@ -998,6 +998,9 @@ extern const char kOmniboxDefaultTypedNavigationsToHttpsDescription[];
 extern const char kOmniboxKeywordSpaceTriggeringName[];
 extern const char kOmniboxKeywordSpaceTriggeringDescription[];
 
+extern const char kOmniboxKeywordSpaceTriggeringSettingName[];
+extern const char kOmniboxKeywordSpaceTriggeringSettingDescription[];
+
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
 
@@ -2295,6 +2298,9 @@ extern const char kBluetoothWbsDogfoodDescription[];
 
 extern const char kPreferConstantFrameRateName[];
 extern const char kPreferConstantFrameRateDescription[];
+
+extern const char kForceEnableFaceAeName[];
+extern const char kForceEnableFaceAeDescription[];
 
 extern const char kCategoricalSearchName[];
 extern const char kCategoricalSearchDescription[];

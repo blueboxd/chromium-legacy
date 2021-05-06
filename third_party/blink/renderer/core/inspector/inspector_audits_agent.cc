@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/inspector/protocol/Audits.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
@@ -109,7 +110,6 @@ std::unique_ptr<protocol::Audits::InspectorIssue> CreateLowTextContrastIssue(
 
 void InspectorAuditsAgent::Trace(Visitor* visitor) const {
   visitor->Trace(network_agent_);
-  visitor->Trace(inspector_issue_storage_);
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);
 }

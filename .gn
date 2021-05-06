@@ -38,10 +38,6 @@ default_args = {
   v8_enable_gdbjit = false
   v8_imminent_deprecation_warnings = false
 
-  # TODO(jochen): Remove this. http://crbug.com/v8/5830,
-  # http://crbug.com/728583.
-  v8_check_microtasks_scopes_consistency = false
-
   # Don't include webrtc's builtin task queue implementation.
   rtc_link_task_queue_impl = false
 
@@ -68,10 +64,6 @@ default_args = {
 # "gn check" or "gn gen --check".
 no_check_targets = [
   # //chrome/*, https://crbug.com/949535
-  "//chrome/browser/media/router/discovery:*",  # 4 errors
-  "//chrome/browser/safe_browsing/android:*",  # 3 errors
-  "//chrome/browser/safety_check/android:*",  # 3 errors
-  "//chrome/browser/storage_access_api:*",  # 2 errors
   "//chrome/browser/touch_to_fill/android:*",  # 8 errors
   "//chrome/test:*",  # 2682 errors
   "//extensions/browser/api:*",  # 7 errors

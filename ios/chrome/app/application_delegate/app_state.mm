@@ -285,7 +285,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     __block base::OnceClosure criticalClosure = base::MakeCriticalClosure(
         "applicationDidEnterBackground:_savingCookies", base::BindOnce(^{
           DCHECK_CURRENTLY_ON(web::WebThread::UI);
-          _savingCookies = NO;
+          self->_savingCookies = NO;
         }));
     base::PostTask(
         FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
@@ -445,11 +445,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   ios::GetChromeBrowserProvider()
       ->GetAppDistributionProvider()
       ->CancelDistributionNotifications();
-
-  if (IsDiscoverFeedEnabled()) {
-    // Stop the Discover feed so it disconnects its services.
-    ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->StopFeed();
-  }
 
   // Halt the tabs, so any outstanding requests get cleaned up, without actually
   // closing the tabs. Set the BVC to inactive to cancel all the dialogs.

@@ -16,8 +16,8 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/engine/sync_string_conversions.h"
+#include "components/sync/nigori/nigori.h"
 
 namespace syncer {
 
@@ -139,6 +139,7 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
 
   void OnCryptographerStateChanged(Cryptographer* cryptographer,
                                    bool has_pending_keys) override {
+    // A null cryptographer is passed to avoid usage from another sequence.
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(

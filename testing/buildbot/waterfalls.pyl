@@ -1748,7 +1748,7 @@
       'linux-chromeos-rel': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'all',
@@ -1758,6 +1758,9 @@
         },
       },
       'linux-lacros-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'additional_compile_targets': [
           'all',
         ],
@@ -1766,6 +1769,9 @@
         },
       },
       'linux-lacros-tester-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'additional_compile_targets': [
           'chrome',
           'chrome_sandbox',
@@ -2670,9 +2676,39 @@
           'chromium_builder_asan',
         ],
       },
+      'Linux Builder (core-32) (goma)': {
+        # Copied from
+        # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
+      'Linux Builder (core-32) (reclient)': {
+        # Copied from
+        # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
+      'Linux Builder (core-32) (runsc) (reclient)': {
+        # Copied from
+        # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
       'Linux Builder (deps-cache) (reclient)': {
         # Copied from
-        # https://source.chromium.org/chromium/chromium/src/+/master:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
+        # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
         'mixins': [
           'isolate_profile_data',
         ],
@@ -2685,7 +2721,7 @@
       },
       'Linux Builder (j-500) (reclient)': {
         # Copied from
-        # https://source.chromium.org/chromium/chromium/src/+/master:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
+        # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
         'mixins': [
           'isolate_profile_data',
         ],
@@ -4979,7 +5015,7 @@
       },
       'Linux Ozone Tester (Headless)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
          ],
         'test_suites': {
          'gtest_tests': 'linux_ozone_headless_tests',
@@ -4987,7 +5023,7 @@
       },
       'Linux Ozone Tester (Wayland)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
          ],
         'test_suites': {
          'gtest_tests': 'linux_ozone_wayland_tests',
@@ -4995,7 +5031,7 @@
       },
       'Linux Ozone Tester (X11)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
          'gtest_tests': 'linux_ozone_x11_tests',

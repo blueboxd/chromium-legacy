@@ -4,18 +4,18 @@
 
 #include "net/dns/host_resolver_manager.h"
 #include "base/task/thread_pool.h"
+#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 
 #if defined(OS_WIN)
 #include <Winsock2.h>
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <netdb.h>
 #include <netinet/in.h>
-#if !defined(OS_NACL)
 #include <net/if.h>
 #if !defined(OS_ANDROID)
 #include <ifaddrs.h>
 #endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_NACL)
 #endif  // defined(OS_WIN)
 
 #include <algorithm>
@@ -86,6 +86,7 @@
 #include "net/dns/httpssvc_metrics.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/resolve_context.h"
@@ -240,9 +241,6 @@ bool HaveOnlyLoopbackAddresses() {
   return false;
 #elif defined(OS_ANDROID)
   return android::HaveOnlyLoopbackAddresses();
-#elif defined(OS_NACL)
-  NOTIMPLEMENTED();
-  return false;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   struct ifaddrs* interface_addr = NULL;
   int rv = getifaddrs(&interface_addr);
@@ -1150,13 +1148,16 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       transactions_needed_.push(DnsQueryType::A);
       transactions_needed_.push(DnsQueryType::AAAA);
 
-      // Queue up an INTEGRITY query if we are allowed to.
+      // Queue up an INTEGRITY/HTTPS query if we are allowed to.
       const bool is_httpssvc_experiment_domain =
           httpssvc_domain_cache_.IsExperimental(hostname);
       const bool is_httpssvc_control_domain =
           httpssvc_domain_cache_.IsControl(hostname);
+      const bool can_query_via_insecure =
+          !secure_ && features::kDnsHttpssvcEnableQueryOverInsecure.Get() &&
+          client_->CanQueryAdditionalTypesViaInsecureDns();
       if (base::FeatureList::IsEnabled(features::kDnsHttpssvc) &&
-          (secure_ || features::kDnsHttpssvcEnableQueryOverInsecure.Get()) &&
+          (secure_ || can_query_via_insecure) &&
           (is_httpssvc_experiment_domain || is_httpssvc_control_domain)) {
         httpssvc_metrics_.emplace(
             is_httpssvc_experiment_domain /* expect_intact */);
@@ -1191,6 +1192,9 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     DnsQueryType type = transactions_needed_.front();
     transactions_needed_.pop();
+
+    DCHECK(type != DnsQueryType::HTTPS || secure_ ||
+           client_->CanQueryAdditionalTypesViaInsecureDns());
 
     // Record how long this transaction has been waiting to be created.
     base::TimeDelta time_queued = tick_clock_->NowTicks() - task_start_time_;
@@ -2541,7 +2545,9 @@ HostResolverManager::HostResolverManager(
 
 #if defined(ENABLE_BUILT_IN_DNS)
   dns_client_ = DnsClient::CreateClient(net_log_);
-  dns_client_->SetInsecureEnabled(options.insecure_dns_client_enabled);
+  dns_client_->SetInsecureEnabled(
+      options.insecure_dns_client_enabled,
+      options.additional_types_via_insecure_dns_enabled);
   dns_client_->SetConfigOverrides(options.dns_config_overrides);
 #else
   DCHECK(options.dns_config_overrides == DnsConfigOverrides());
@@ -2614,17 +2620,30 @@ HostResolverManager::CreateMdnsListener(const HostPortPair& host,
   return listener;
 }
 
-void HostResolverManager::SetInsecureDnsClientEnabled(bool enabled) {
+void HostResolverManager::SetInsecureDnsClientEnabled(
+    bool enabled,
+    bool additional_dns_types_enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!dns_client_)
     return;
 
   bool enabled_before = dns_client_->CanUseInsecureDnsTransactions();
-  dns_client_->SetInsecureEnabled(enabled);
+  bool additional_types_before =
+      enabled_before && dns_client_->CanQueryAdditionalTypesViaInsecureDns();
+  dns_client_->SetInsecureEnabled(enabled, additional_dns_types_enabled);
 
-  if (dns_client_->CanUseInsecureDnsTransactions() != enabled_before)
+  // Abort current tasks if `CanUseInsecureDnsTransactions()` changes or if
+  // insecure transactions are enabled and
+  // `CanQueryAdditionalTypesViaInsecureDns()` changes. Changes to allowing
+  // additional types don't matter if insecure transactions are completely
+  // disabled.
+  if (dns_client_->CanUseInsecureDnsTransactions() != enabled_before ||
+      (dns_client_->CanUseInsecureDnsTransactions() &&
+       dns_client_->CanQueryAdditionalTypesViaInsecureDns() !=
+           additional_types_before)) {
     AbortInsecureDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
+  }
 }
 
 base::Value HostResolverManager::GetDnsConfigAsValue() const {
@@ -2752,8 +2771,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
   HostCache::Entry results = ResolveLocally(
       request->request_host().host(), request->network_isolation_key(),
       request->parameters().dns_query_type, request->parameters().source,
-      request->host_resolver_flags(),
-      request->parameters().secure_dns_mode_override,
+      request->host_resolver_flags(), request->parameters().secure_dns_policy,
       request->parameters().cache_usage, request->source_net_log(),
       request->host_cache(), request->resolve_context(), &effective_query_type,
       &effective_host_resolver_flags, &effective_secure_dns_mode, &tasks,
@@ -2786,7 +2804,7 @@ HostCache::Entry HostResolverManager::ResolveLocally(
     DnsQueryType dns_query_type,
     HostResolverSource source,
     HostResolverFlags flags,
-    base::Optional<SecureDnsMode> secure_dns_mode_override,
+    SecureDnsPolicy secure_dns_policy,
     ResolveHostParameters::CacheUsage cache_usage,
     const NetLogWithSource& source_net_log,
     HostCache* cache,
@@ -2806,10 +2824,10 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   }
 
   GetEffectiveParametersForRequest(
-      hostname, dns_query_type, source, flags, secure_dns_mode_override,
-      cache_usage, ip_address_ptr, source_net_log, resolve_context,
-      out_effective_query_type, out_effective_host_resolver_flags,
-      out_effective_secure_dns_mode, out_tasks);
+      hostname, dns_query_type, source, flags, secure_dns_policy, cache_usage,
+      ip_address_ptr, source_net_log, resolve_context, out_effective_query_type,
+      out_effective_host_resolver_flags, out_effective_secure_dns_mode,
+      out_tasks);
 
   if (!ip_address.IsValid()) {
     // Check that the caller supplied a valid hostname to resolve. For
@@ -3104,15 +3122,20 @@ std::unique_ptr<HostResolverManager::Job> HostResolverManager::RemoveJob(
 }
 
 SecureDnsMode HostResolverManager::GetEffectiveSecureDnsMode(
-    const std::string& hostname,
-    base::Optional<SecureDnsMode> secure_dns_mode_override) {
+    SecureDnsPolicy secure_dns_policy) {
+  // Use switch() instead of if() to ensure that all policies are handled.
+  switch (secure_dns_policy) {
+    case SecureDnsPolicy::kDisable:
+      return SecureDnsMode::kOff;
+    case SecureDnsPolicy::kAllow:
+      break;
+  }
+
   const DnsConfig* config =
       dns_client_ ? dns_client_->GetEffectiveConfig() : nullptr;
 
   SecureDnsMode secure_dns_mode = SecureDnsMode::kOff;
-  if (secure_dns_mode_override) {
-    secure_dns_mode = secure_dns_mode_override.value();
-  } else if (config) {
+  if (config) {
     secure_dns_mode = config->secure_dns_mode;
   }
   return secure_dns_mode;
@@ -3204,14 +3227,13 @@ void HostResolverManager::CreateTaskSequence(
     DnsQueryType dns_query_type,
     HostResolverSource source,
     HostResolverFlags flags,
-    base::Optional<SecureDnsMode> secure_dns_mode_override,
+    SecureDnsPolicy secure_dns_policy,
     ResolveHostParameters::CacheUsage cache_usage,
     ResolveContext* resolve_context,
     SecureDnsMode* out_effective_secure_dns_mode,
     std::deque<TaskType>* out_tasks) {
   DCHECK(out_tasks->empty());
-  *out_effective_secure_dns_mode =
-      GetEffectiveSecureDnsMode(hostname, secure_dns_mode_override);
+  *out_effective_secure_dns_mode = GetEffectiveSecureDnsMode(secure_dns_policy);
 
   // A cache lookup should generally be performed first. For jobs involving a
   // DnsTask, this task may be replaced.
@@ -3247,7 +3269,9 @@ void HostResolverManager::CreateTaskSequence(
         if (dns_client_ && dns_client_->GetEffectiveConfig()) {
           bool insecure_allowed =
               dns_client_->CanUseInsecureDnsTransactions() &&
-              !dns_client_->FallbackFromInsecureTransactionPreferred();
+              !dns_client_->FallbackFromInsecureTransactionPreferred() &&
+              (IsAddressType(dns_query_type) ||
+               dns_client_->CanQueryAdditionalTypesViaInsecureDns());
           PushDnsTasks(proc_task_allowed, *out_effective_secure_dns_mode,
                        insecure_allowed, allow_cache, prioritize_local_lookups,
                        resolve_context, out_tasks);
@@ -3268,10 +3292,14 @@ void HostResolverManager::CreateTaskSequence(
       break;
     case HostResolverSource::DNS:
       if (dns_client_ && dns_client_->GetEffectiveConfig()) {
+        bool insecure_allowed =
+            dns_client_->CanUseInsecureDnsTransactions() &&
+            (IsAddressType(dns_query_type) ||
+             dns_client_->CanQueryAdditionalTypesViaInsecureDns());
         PushDnsTasks(false /* proc_task_allowed */,
-                     *out_effective_secure_dns_mode,
-                     dns_client_->CanUseInsecureDnsTransactions(), allow_cache,
-                     prioritize_local_lookups, resolve_context, out_tasks);
+                     *out_effective_secure_dns_mode, insecure_allowed,
+                     allow_cache, prioritize_local_lookups, resolve_context,
+                     out_tasks);
       }
       break;
     case HostResolverSource::MULTICAST_DNS:
@@ -3288,7 +3316,7 @@ void HostResolverManager::GetEffectiveParametersForRequest(
     DnsQueryType dns_query_type,
     HostResolverSource source,
     HostResolverFlags flags,
-    base::Optional<SecureDnsMode> secure_dns_mode_override,
+    SecureDnsPolicy secure_dns_policy,
     ResolveHostParameters::CacheUsage cache_usage,
     const IPAddress* ip_address,
     const NetLogWithSource& net_log,
@@ -3320,9 +3348,8 @@ void HostResolverManager::GetEffectiveParametersForRequest(
   }
 
   CreateTaskSequence(hostname, *out_effective_type, source,
-                     *out_effective_flags, secure_dns_mode_override,
-                     cache_usage, resolve_context,
-                     out_effective_secure_dns_mode, out_tasks);
+                     *out_effective_flags, secure_dns_policy, cache_usage,
+                     resolve_context, out_effective_secure_dns_mode, out_tasks);
 }
 
 bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {

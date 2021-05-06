@@ -13,6 +13,8 @@
 #include "ui/base/cursor/platform_cursor.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 
+using ::testing::Values;
+
 namespace ui {
 
 namespace {
@@ -128,10 +130,12 @@ TEST_P(WaylandCursorFactoryTest, RetainOldThemeUntilNewBufferIsAttached) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandCursorFactoryTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandCursorFactoryTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

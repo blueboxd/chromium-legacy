@@ -131,6 +131,7 @@
       # Times out listing tests crbug.com/1167314
       'android-asan',
       # Does not currently work on Lacros configurations.
+      'linux-lacros-code-coverage',
       'linux-lacros-tester-rel',
       'linux-lacros-tester-fyi-rel',
     ],
@@ -235,26 +236,12 @@
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
-        # TODO(crbug/1200134): Remove it once blink tests is fixed on
-        # bionic bots.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
-        },
       },
       'Linux Tests (dbg)(1)': {
         'args': [
           '--debug',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
           'shards': 25,
         },
       },
@@ -608,25 +595,17 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter',
         ],
       },
-      # TODO(crbug/1200334): Remove it once interactive_ui_tests is fixed on
-      # bionic bots.
       'Linux Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
-        },
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
+        ],
       },
       'Linux Tests (dbg)(1)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
+        ],
         # crbug.com/1066161
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
           'shards': 20,
         },
       },
@@ -720,6 +699,9 @@
         ],
       },
       'linux-chromeos-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
+        ],
         'swarming': {
           'shards': 20,
           'dimension_sets': [
@@ -742,14 +724,19 @@
           'shards': 50,
         },
       },
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter;../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
+        ],
+      },
       'linux-lacros-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter;../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
         ],
       },
       'linux-lacros-tester-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter;../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
         ],
       },
       'linux-trusty-rel': {
@@ -772,12 +759,22 @@
       'Linux Ozone Tester (Wayland)': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
         ],
       },
       # CI tester.
       'Linux Tester (Ozone Wayland)': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter',
+        ],
+      },
+    },
+  },
+  'browser_tests_x11': {
+    'modifications': {
+      'Linux Ozone Tester (X11)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
         ],
       },
     },
@@ -1148,6 +1145,12 @@
         },
       },
       # https://crbug.com/1111979,
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter',
+        ],
+      },
+      # https://crbug.com/1111979,
       'linux-lacros-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter',
@@ -1301,12 +1304,6 @@
       },
       'linux-chromeos-rel': {
         'swarming': {
-          # TODO(crbug.com/1202743): Remove this exception.
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-18.04',
-            },
-          ],
           'shards': 3,
         },
       },
@@ -1317,6 +1314,12 @@
         'swarming': {
           'shards': 12,
         },
+      },
+      # https://crbug.com/1111979,
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.content_browsertests.filter',
+        ],
       },
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
@@ -1480,6 +1483,11 @@
         'experiment_percentage': 100, # https://crbug.com/876615
       },
       # https://crbug.com/1111979,
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
+        ],
+      },
       'linux-lacros-rel': {
         'args': [
           '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
@@ -1495,6 +1503,13 @@
   'extensions_unittests': {
     'modifications': {
       # https://crbug.com/1111979,
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--gtest_filter=-NativeExtensionBindingsSystemUnittest*:'
+          'BluetoothSocketApiUnittest.CreateThenClose:'
+          'FeatureProviderTest.PermissionFeatureAvailability',
+        ],
+      },
       'linux-lacros-tester-rel': {
         'args': [
           '--gtest_filter=-NativeExtensionBindingsSystemUnittest*:'
@@ -1753,26 +1768,6 @@
           'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
         },
       },
-      # TODO(crbug/1199425): Remove it once interactive_ui_tests is fixed on
-      # bionic bots.
-      'Linux Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
-        },
-      },
-      'Linux Tests (dbg)(1)': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
-        },
-      },
       'ToTLinuxTSan': {
         # These are slow on the TSan bots for some reason, crbug.com/794372
         'swarming': {
@@ -1814,16 +1809,6 @@
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
         ],
       },
-      'linux-chromeos-rel': {
-        'swarming': {
-          # TODO(crbug.com/1202743): Remove this exception.
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-18.04',
-            },
-          ],
-        }
-      },
       'linux-chromeos-stable': {
         'args': [
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
@@ -1833,6 +1818,12 @@
         'swarming': {
           'shards': 10,
         },
+      },
+      # https://crbug.com/1111979
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
+        ],
       },
       # https://crbug.com/1111979
       'linux-lacros-rel': {
@@ -2248,24 +2239,6 @@
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
-        # TODO(crbug/1200134): Remove it once blink tests is fixed on
-        # bionic bots.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
-        },
-      },
-      'Linux Tests (dbg)(1)': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            }
-          ],
-        },
       },
       'linux-code-coverage': {
         'args': [
@@ -2362,12 +2335,8 @@
     },
   },
   'ozone_unittests_amd64-generic': {
-    'remove_from': [
-      # TODO(crbug.com/1204231): Re-enable.
-      'lacros-amd64-generic-rel',
-    ],
     'modifications': {
-      'lacros-amd64-generic-rel-fyi': {
+      'lacros-amd64-generic-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/device-lacros.ozone_unittests.filter',
         ],
@@ -2670,22 +2639,17 @@
           'shards': 4,
         },
       },
-      'linux-chromeos-rel': {
-        'swarming': {
-          # TODO(crbug.com/1202743): Remove this exception.
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-18.04',
-            },
-          ],
-        }
-      },
       'linux-code-coverage': {
         'swarming': {
           'shards': 4,
         },
       },
       # https://crbug.com/1199909,
+      'linux-lacros-code-coverage': {
+        'args': [
+           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
+        ]
+      },
       'linux-lacros-rel': {
         'args': [
            '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
@@ -2926,14 +2890,14 @@
       },
       'linux-chromeos-rel': {
         'swarming': {
-          # TODO(crbug.com/1202743): Remove this exception.
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-18.04',
-            },
-          ],
           'shards': 2,
         },
+      },
+      # https://crbug.com/1111979,
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter',
+        ],
       },
       # https://crbug.com/1111979,
       'linux-lacros-rel': {
@@ -2970,6 +2934,18 @@
   'views_unittests': {
     'modifications': {
       # https://crbug.com/1111979,
+      'linux-lacros-code-coverage': {
+        'args': [
+          '--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:'
+          'DesktopWidgetTest*:'
+          'DesktopWindowTreeHostPlatformTest*:'
+          'EditableComboboxTest*:'
+          'MenuRunnerTest*:'
+          'TextfieldTest*:'
+          'TooltipControllerTest*:'
+          'TooltipStateManagerTest*'
+        ],
+      },
       'linux-lacros-tester-rel': {
         'args': [
           '--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:'

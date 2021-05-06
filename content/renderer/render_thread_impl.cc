@@ -65,7 +65,6 @@
 #include "content/child/runtime_features.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/frame_messages.h"
 #include "content/common/partition_alloc_support.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/public/common/content_constants.h"
@@ -349,25 +348,6 @@ void CreateSingleSampleMetricsProvider(
         receiver) {
   process_host->BindHostReceiver(std::move(receiver));
 }
-
-// This factory is used to defer binding of the InterfacePtr to the compositor
-// thread.
-class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
- public:
-  explicit UkmRecorderFactoryImpl(
-      mojo::SharedRemote<mojom::ChildProcessHost> process_host)
-      : process_host_(std::move(process_host)) {}
-  ~UkmRecorderFactoryImpl() override = default;
-
-  std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
-    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
-    process_host_->BindHostReceiver(recorder.InitWithNewPipeAndPassReceiver());
-    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
-  }
-
- private:
-  const mojo::SharedRemote<mojom::ChildProcessHost> process_host_;
-};
 
 static bool IsSingleProcess() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1302,11 +1282,6 @@ void RenderThreadImpl::SetScrollAnimatorEnabled(
     bool enable_scroll_animator,
     base::PassKey<AgentSchedulingGroup>) {
   is_scroll_animator_enabled_ = enable_scroll_animator;
-}
-
-std::unique_ptr<cc::UkmRecorderFactory>
-RenderThreadImpl::CreateUkmRecorderFactory() {
-  return std::make_unique<UkmRecorderFactoryImpl>(child_process_host());
 }
 
 gfx::RenderingPipeline* RenderThreadImpl::GetMainThreadPipeline() {

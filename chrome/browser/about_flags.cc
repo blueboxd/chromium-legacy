@@ -3204,6 +3204,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(language::kOverrideTranslateTriggerInIndia,
                                     kTranslateForceTriggerOnEnglishVariations,
                                     "OverrideTranslateTriggerInIndia")},
+    {"translate-intent", flag_descriptions::kTranslateIntentName,
+     flag_descriptions::kTranslateIntentDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(language::kTranslateIntent)},
 #endif  // OS_ANDROID
 
     {"override-language-prefs-for-href-translate",
@@ -3924,8 +3927,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityDictationListeningName,
      flag_descriptions::kExperimentalAccessibilityDictationListeningDescription,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilityDictationListening)},
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilityDictationListening)},
     {"enable-experimental-accessibility-dictation-offline",
      flag_descriptions::kExperimentalAccessibilityDictationOfflineName,
      flag_descriptions::kExperimentalAccessibilityDictationOfflineDescription,
@@ -5713,6 +5716,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kPrivacySandboxSettings)},
 
+    {"privacy-sandbox-settings-2",
+     flag_descriptions::kPrivacySandboxSettings2Name,
+     flag_descriptions::kPrivacySandboxSettings2Description,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kPrivacySandboxSettings2)},
+
 #if defined(OS_ANDROID)
     {"metrics-settings-android", flag_descriptions::kMetricsSettingsAndroidName,
      flag_descriptions::kMetricsSettingsAndroidDescription, kOsAndroid,
@@ -6305,14 +6314,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(optimization_guide::features::
                             kContextMenuPerformanceInfoAndRemoteHintFetching)},
-#endif  // !defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-    {"page-info-performance-hints",
-     flag_descriptions::kPageInfoPerformanceHintsName,
-     flag_descriptions::kPageInfoPerformanceHintsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         performance_hints::features::kPageInfoPerformanceHints)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)

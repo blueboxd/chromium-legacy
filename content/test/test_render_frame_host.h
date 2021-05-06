@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/navigation_client.mojom-forward.h"
 #include "content/common/navigation_params.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -93,6 +92,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateUserActivation() override;
   const std::vector<std::string>& GetConsoleMessages() override;
   int GetHeavyAdIssueCount(HeavyAdIssueType type) override;
+  void SimulateManifestURLUpdate(
+      const base::Optional<GURL>& manifest_url) override;
 
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,

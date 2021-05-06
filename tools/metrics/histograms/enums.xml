@@ -5079,6 +5079,8 @@ others/histograms.xml -->
   <int value="7" label="Feature disabled"/>
   <int value="8" label="No initial url"/>
   <int value="9" label="Mandatory parameter missing"/>
+  <int value="10" label="Navigated away"/>
+  <int value="11" label="Navigation error"/>
 </enum>
 
 <enum name="AutofillAssistantOnBoarding">
@@ -6709,6 +6711,7 @@ others/histograms.xml -->
   <int value="196618" label="kEmbedder-kPermissionRequestManager"/>
   <int value="196619" label="kEmbedder-kModalDialog"/>
   <int value="196620" label="kEmbedder-kExtensions"/>
+  <int value="196621" label="kEmbedder-kExtensionMessaging"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReasonShort">
@@ -14466,6 +14469,11 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Cache hit, but the entry blocked to make a request"/>
   <int value="2" label="Cache missed"/>
   <int value="3" label="Cache hit, but the entry was stale"/>
+</enum>
+
+<enum name="CpuAffinityMode">
+  <int value="0" label="kDefault"/>
+  <int value="1" label="kLittleCoresOnly"/>
 </enum>
 
 <enum name="CpuTimeMetricsThreadType">
@@ -32381,6 +32389,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3894" label="HandwritingRecognitionStartDrawing"/>
   <int value="3895" label="HandwritingRecognitionGetPrediction"/>
   <int value="3896" label="WebBluetoothManufacturerDataFilter"/>
+  <int value="3897" label="SanitizerAPIGetConfig"/>
+  <int value="3898" label="SanitizerAPIGetDefaultConfig"/>
+  <int value="3899" label="ComputePressureObserver_Constructor"/>
+  <int value="3900" label="ComputePressureObserver_Observe"/>
+  <int value="3901" label="ComputePressureObserver_Stop"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34171,6 +34184,9 @@ Called by update_permissions_policy_enum.py.-->
   <summary>Stages of the first run experience.</summary>
   <int value="0" label="Start First Run"/>
   <int value="1" label="Complete First Run"/>
+  <int value="2" label="Show sync screen"/>
+  <int value="3" label="Close sync screen with sync"/>
+  <int value="4" label="Close sync screen without sync"/>
 </enum>
 
 <enum name="FirstUserActionType">
@@ -44322,6 +44338,7 @@ from previous Chrome versions.
   <int value="-2097895488" label="NotificationScrollBar:enabled"/>
   <int value="-2097515669" label="disable-cast"/>
   <int value="-2095519429" label="FtpProtocol:enabled"/>
+  <int value="-2094897448" label="TranslateIntent:disabled"/>
   <int value="-2093047873"
       label="AbusiveOriginNotificationPermissionRevocation:enabled"/>
   <int value="-2092067251" label="NativeFilesystemAPI:disabled"/>
@@ -44718,6 +44735,8 @@ from previous Chrome versions.
   <int value="-1772942854" label="LongPressBackForHistory:enabled"/>
   <int value="-1772905637"
       label="RunVideoCaptureServiceInBrowserProcess:enabled"/>
+  <int value="-1772476751"
+      label="ExperimentalAccessibilityDictationListening:enabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1771552112" label="QueryTilesInOmnibox:disabled"/>
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
@@ -47462,6 +47481,8 @@ from previous Chrome versions.
   <int value="630308195" label="SignInProfileCreation:enabled"/>
   <int value="630776247" label="USBGuard:disabled"/>
   <int value="630947363" label="touch-events"/>
+  <int value="632324382"
+      label="ExperimentalAccessibilityDictationListening:disabled"/>
   <int value="632340413" label="network-settings-config"/>
   <int value="633442161" label="ExperimentalUi:disabled"/>
   <int value="634789085" label="LayeredAPI:disabled"/>
@@ -47491,6 +47512,7 @@ from previous Chrome versions.
   <int value="647662142" label="use-angle"/>
   <int value="649111851" label="MidiManagerCros:enabled"/>
   <int value="649508040" label="AutofillEnableCompanyName:enabled"/>
+  <int value="650013099" label="PrivacySandboxSettings2:disabled"/>
   <int value="651421878" label="VideoRotateToFullscreen:enabled"/>
   <int value="651471603" label="MediaFoundationD3D11VideoCapture:enabled"/>
   <int value="651562604" label="RawClipboard:enabled"/>
@@ -47663,6 +47685,7 @@ from previous Chrome versions.
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
   <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
+  <int value="788130042" label="PrivacySandboxSettings2:enabled"/>
   <int value="792307132"
       label="KeyboardBasedDisplayArrangementInSettings:enabled"/>
   <int value="792884862" label="EnableSharedImageForWebview:enabled"/>
@@ -48387,6 +48410,7 @@ from previous Chrome versions.
   <int value="1428004502" label="PaymentRequestOptionalTotal:enabled"/>
   <int value="1428221397" label="QueryTilesInNTP:enabled"/>
   <int value="1429923065" label="enable-media-internals:enabled"/>
+  <int value="1430924529" label="TranslateIntent:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
   <int value="1431934725" label="OmniboxAutocompleteTitles:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>
@@ -62856,6 +62880,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="kCharging"/>
   <int value="8" label="kNopAnimation"/>
   <int value="9" label="kVideoPlayback"/>
+  <int value="10" label="kLoadingAnimation"/>
 </enum>
 
 <enum name="PowerSupplyType">
@@ -68981,10 +69006,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="SB2DownloadChecks">
   <int value="0" label="URL_CHECKS_TOTAL"/>
-  <int value="1" label="URL_CHECKS_CANCELED"/>
+  <int value="1" label="DEPRECATED_URL_CHECKS_CANCELED"/>
   <int value="2" label="URL_CHECKS_MALWARE"/>
-  <int value="3" label="HASH_CHECKS_TOTAL"/>
-  <int value="4" label="HASH_CHECKS_MALWARE"/>
+  <int value="3" label="DEPRECATED_HASH_CHECKS_TOTAL"/>
+  <int value="4" label="DEPRECATED_HASH_CHECKS_MALWARE"/>
 </enum>
 
 <enum name="SB2FilterLoad">
@@ -76684,6 +76709,13 @@ would be helpful to identify which type is being sent.
   <int value="14" label="Announcement notification open button."/>
   <int value="15" label="TWA notification 'Got it' button."/>
   <int value="16" label="Auto fetch offline page cancel button."/>
+  <int value="17" label="Media notification play button."/>
+  <int value="18" label="Media notification pause button."/>
+  <int value="19" label="Media notification stop button."/>
+  <int value="20" label="Media notification previous track button."/>
+  <int value="21" label="Media notification next track button."/>
+  <int value="22" label="Media notification seek forward button."/>
+  <int value="23" label="Media notification seek backward button."/>
 </enum>
 
 <enum name="SystemNotificationType">
@@ -82858,7 +82890,8 @@ Called by update_scheduler_enums.py.-->
   <int value="52" label="WebOTPService"/>
   <int value="53" label="OutstandingNetworkRequestDirectSocket"/>
   <int value="54" label="IsolatedWorldScript"/>
-  <int value="55" label="ExtensionStyleSheet"/>
+  <int value="55" label="InjectedStyleSheet"/>
+  <int value="56" label="MediaSessionImplOnServiceCreated"/>
 </enum>
 
 <enum name="WebShareMethod">

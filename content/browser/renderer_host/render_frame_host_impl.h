@@ -104,6 +104,7 @@
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
+#include "third_party/blink/public/mojom/compute_pressure/compute_pressure.mojom-forward.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
@@ -1472,6 +1473,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetFontAccessManager(
       mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver);
 
+  void BindComputePressureHost(
+      mojo::PendingReceiver<blink::mojom::ComputePressureHost> receiver);
+
   void GetFileSystemAccessManager(
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver);
 
@@ -1885,6 +1889,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetWindowRect(const gfx::Rect& bounds,
                      SetWindowRectCallback callback) override;
 
+  void UpdateManifestURL(const base::Optional<GURL>& manifest_url);
+
   void ReportNoBinderForInterface(const std::string& error);
 
   // Returns true if this object has any NavigationRequests matching |origin|.
@@ -1922,17 +1928,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // content/public/browser/render_document_host_user_data.h for more details.
   base::SupportsUserData::Data* GetRenderDocumentHostUserData(
       const void* key) const {
-    return document_associated_data_.GetUserData(key);
+    return document_associated_data_->GetUserData(key);
   }
 
   void SetRenderDocumentHostUserData(
       const void* key,
       std::unique_ptr<base::SupportsUserData::Data> data) {
-    document_associated_data_.SetUserData(key, std::move(data));
+    document_associated_data_->SetUserData(key, std::move(data));
   }
 
   void RemoveRenderDocumentHostUserData(const void* key) {
-    document_associated_data_.RemoveUserData(key);
+    document_associated_data_->RemoveUserData(key);
   }
 
   // Called when we commit speculative RFH early due to not having an alive
@@ -2046,6 +2052,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::PeerConnectionTrackerHost> receiver);
   void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
   void DisableWebRtcEventLogOutput(int lid) override;
+  bool IsDocumentOnLoadCompletedInMainFrame() override;
+  const GURL& ManifestURL() override;
+  const std::vector<blink::mojom::FaviconURLPtr>& FaviconURLs() override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void PepperInstanceClosed(int32_t instance_id);
@@ -3531,12 +3540,30 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Container for arbitrary document-associated feature-specific data. Should
   // be reset when committing a cross-document navigation in this
-  // RenderFrameHost. Please refer to the description at
+  // RenderFrameHost. RenderFrameHostImpl stores internal members here
+  // directly while consumers of RenderFrameHostImpl should store data via
+  // GetRenderDocumentHostUserData(). Please refer to the description at
   // content/public/browser/render_document_host_user_data.h for more details.
-  class DocumentAssociatedData : public base::SupportsUserData {
-    friend class RenderFrameHostImpl;
+  struct DocumentAssociatedData : public base::SupportsUserData {
+    DocumentAssociatedData();
+    ~DocumentAssociatedData() override;
+    DocumentAssociatedData(const DocumentAssociatedData&) = delete;
+    DocumentAssociatedData& operator=(const DocumentAssociatedData&) = delete;
+
+    // True if we've received a notification that the onload() handler has
+    // run in the main frame.
+    bool is_on_load_completed = false;
+
+    // Web application manifest URL (or empty URL if none) for this main frame.
+    // See https://w3c.github.io/manifest/#web-application-manifest
+    GURL manifest_url;
+
+    // Candidate favicon URLs. Each main frame may have a collection and will
+    // be displayed when active (i.e., upon activation for prerendering).
+    std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
   };
-  DocumentAssociatedData document_associated_data_;
+
+  std::unique_ptr<DocumentAssociatedData> document_associated_data_;
 
   // Keeps track of the scenario when RenderFrameHostManager::CommitPending is
   // called before the navigation commits. This becomes true if the previous

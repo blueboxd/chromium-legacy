@@ -1446,7 +1446,7 @@
   {
     "name": "enable-autofill-upi-vpa",
     "owners": [ "cfroussios" ],
-    "expiry_milestone": 88
+    "expiry_milestone": 98
   },
   {
     "name": "enable-background-blur",
@@ -4318,6 +4318,17 @@
     "expiry_milestone": 92
   },
   {
+    "name": "privacy-sandbox-settings-2",
+    "owners": [
+      "andzaytsev",
+      "harrisonsean",
+      "sauski",
+      "rainhard",
+      "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 94
+  },
+  {
     "name": "prominent-dark-mode-active-tab-title",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
@@ -5040,6 +5051,11 @@
     "name": "translate-force-trigger-on-english",
     "owners": [ "megjablon", "cuianthony", "chrome-language@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "translate-intent",
+    "owners": [ "jds", "basiaz", "chrome-language@google.com" ],
+    "expiry_milestone": 94
   },
   {
     "name": "treat-unsafe-downloads-as-active-content",

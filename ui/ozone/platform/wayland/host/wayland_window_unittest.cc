@@ -55,6 +55,7 @@ using ::testing::Mock;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrEq;
+using ::testing::Values;
 
 namespace ui {
 
@@ -139,7 +140,7 @@ class WaylandWindowTest : public WaylandTest {
                                const gfx::Rect bounds) {
     auto* popup = GetTextXdgPopupByWindow(menu_window);
     ASSERT_TRUE(popup);
-    if (GetParam() == kXdgShellV6) {
+    if (GetParam().shell_version == wl::ShellVersion::kV6) {
       zxdg_popup_v6_send_configure(popup->resource(), bounds.x(), bounds.y(),
                                    bounds.width(), bounds.height());
     } else {
@@ -1973,7 +1974,7 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
 TEST_P(WaylandWindowTest, AdjustPopupBounds) {
   PopupPosition menu_window_positioner, nested_menu_window_positioner;
 
-  if (GetParam() == kXdgShellV6) {
+  if (GetParam().shell_version == wl::ShellVersion::kV6) {
     menu_window_positioner = {
         gfx::Rect(439, 46, 1, 30), gfx::Size(287, 409),
         ZXDG_POSITIONER_V6_ANCHOR_BOTTOM | ZXDG_POSITIONER_V6_ANCHOR_RIGHT,
@@ -2186,7 +2187,7 @@ TEST_P(WaylandWindowTest, SetOpaqueRegion) {
 TEST_P(WaylandWindowTest, OnCloseRequest) {
   EXPECT_CALL(delegate_, OnCloseRequest());
 
-  if (GetParam() == kXdgShellV6)
+  if (GetParam().shell_version == wl::ShellVersion::kV6)
     zxdg_toplevel_v6_send_close(xdg_surface_->xdg_toplevel()->resource());
   else
     xdg_toplevel_send_close(xdg_surface_->xdg_toplevel()->resource());
@@ -2648,16 +2649,16 @@ TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
 
   // We can't mock all those methods above as long as the xdg_toplevel is
   // created and destroyed on each show and hide call. However, it is the same
-  // WaylandToplevelWindow object that cached the values we set and must restore
-  // them on Show().
+  // WaylandToplevelWindow object that cached the values we set and must
+  // restore them on Show().
   EXPECT_EQ(mock_xdg_toplevel->min_size(), min_size.value());
   EXPECT_EQ(mock_xdg_toplevel->max_size(), max_size.value());
   EXPECT_EQ(std::string(kAppId), mock_xdg_toplevel->app_id());
   EXPECT_EQ(mock_xdg_toplevel->title(), base::UTF16ToUTF8(kTitle));
 }
 
-// Tests that a popup window is created using the serial of button press events
-// as required by the Wayland protocol spec.
+// Tests that a popup window is created using the serial of button press
+// events as required by the Wayland protocol spec.
 TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
   wl_seat_send_capabilities(
       server_.seat()->resource(),
@@ -2969,9 +2970,11 @@ TEST_P(WaylandWindowTest, UsesCorrectParentForChildrenWindows) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandWindowTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

@@ -57,7 +57,6 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
@@ -1447,7 +1446,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       agent_scheduling_group.agent_group_scheduler(),
       compositor_deps->GetTaskGraphRunner(),
       params->widget_params->visual_properties.screen_infos,
-      compositor_deps->CreateUkmRecorderFactory(),
       /*settings=*/nullptr, compositor_deps->GetMainThreadPipeline(),
       compositor_deps->GetCompositorThreadPipeline());
 
@@ -1640,7 +1638,6 @@ void RenderFrameImpl::CreateFrame(
         agent_scheduling_group.agent_group_scheduler(),
         compositor_deps->GetTaskGraphRunner(),
         widget_params->visual_properties.screen_infos,
-        compositor_deps->CreateUkmRecorderFactory(),
         /*settings=*/nullptr, compositor_deps->GetMainThreadPipeline(),
         compositor_deps->GetCompositorThreadPipeline());
 
@@ -1685,7 +1682,6 @@ void RenderFrameImpl::CreateFrame(
         agent_scheduling_group.agent_group_scheduler(),
         compositor_deps->GetTaskGraphRunner(),
         widget_params->visual_properties.screen_infos,
-        compositor_deps->CreateUkmRecorderFactory(),
         /*settings=*/nullptr, compositor_deps->GetMainThreadPipeline(),
         compositor_deps->GetCompositorThreadPipeline());
 

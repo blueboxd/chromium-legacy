@@ -692,11 +692,6 @@
       name: "CSSTargetTextPseudoElement",
       status: "stable",
     },
-    // Support for @property rules.
-    {
-      name: "CSSVariables2AtProperty",
-      status: "stable",
-    },
     // Support for registered custom properties with <image> syntax.
     {
       name: "CSSVariables2ImageValues",
@@ -1187,8 +1182,7 @@
     },
     {
       name: "LayoutNGReplaced",
-      depends_on: ["LayoutNG"],
-      status: "stable",
+      depends_on: ["LayoutNG"]
     },
     {
       name: "LayoutNGTable",
@@ -1229,10 +1223,6 @@
     {
       name: "ManagedInterface",
       "implied_by": ["DeviceAttributes", "ManagedConfiguration"],
-    },
-    {
-      name:"ManualSlotting",
-      status:"stable",
     },
     {
       name: "MathMLCore",

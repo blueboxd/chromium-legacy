@@ -263,8 +263,8 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          WebNavigationApiTestWithContextType,
                          testing::Values(ContextType::kServiceWorker));
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ClientRedirect) {
-  ASSERT_TRUE(RunExtensionTest("webnavigation/clientRedirect")) << message_;
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, ClientRedirect) {
+  ASSERT_TRUE(RunTest("webnavigation/clientRedirect")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
@@ -349,8 +349,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/simpleLoad")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Failures) {
-  ASSERT_TRUE(RunExtensionTest("webnavigation/failures")) << message_;
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Failures) {
+  ASSERT_TRUE(RunTest("webnavigation/failures")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
@@ -504,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, History) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/history")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, CrossProcess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LoadExtension(test_data_dir_.AppendASCII("webnavigation").AppendASCII("app"));
@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
       "empty.html");
   call_script_user_gesture.set_has_user_gesture(true);
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcess")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/crossProcess")) << message_;
 }
 
 // crbug.com/708139.
@@ -540,7 +540,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_CrossProcessFragment) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType,
+                       CrossProcessHistory) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // See crossProcessHistory/e.html.
@@ -558,14 +559,14 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
       browser(), embedded_test_server()->GetURL("/test6"), "updateHistory()",
       "empty.html");
 
-  ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcessHistory"))
-      << message_;
+  ASSERT_TRUE(RunTest("webnavigation/crossProcessHistory")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessIframe) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType,
+                       CrossProcessIframe) {
   content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcessIframe")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/crossProcessIframe")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
@@ -574,12 +575,12 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/pendingDeletion")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Crash) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("webnavigation/crash")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/crash")) << message_;
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(tab));

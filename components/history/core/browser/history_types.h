@@ -317,7 +317,7 @@ struct MostVisitedURL {
 
 // FilteredURL -----------------------------------------------------------------
 
-// Holds the per-URL information of the filterd url query.
+// Holds the per-URL information of the filtered url query.
 struct FilteredURL {
   struct ExtendedInfo {
     ExtendedInfo();
@@ -662,12 +662,14 @@ enum class UrlsModifiedReason {
   kAndroidDb,
 };
 
-// Context signals about a page visit collected during the page lifetime.
+// Clusters --------------------------------------------------------------------
+
+// Context annotations about a page visit collected during the page lifetime.
 // This struct encapsulates data that's shared between UKM and the on-device
 // storage for `HistoryCluster` metadata, recorded to both when the page
 // lifetime ends. This is to ensure that History actually has the visit row
 // already written.
-struct ClusterVisitContextSignals {
+struct VisitContextAnnotations {
   // True if the user has cut or copied the omnibox URL to the clipboard for
   // this page load.
   bool omnibox_url_copied = false;
@@ -713,33 +715,24 @@ struct ClusterVisitContextSignals {
 };
 
 // A `VisitRow` along with its corresponding `URLRow` and
-// `ClusterVisitContextSignals`. This is used to cluster visits.
+// `VisitContextAnnotations`. This is used to cluster visits.
 struct ClusterVisit {
   URLRow url_row;
   VisitRow visit_row;
-  ClusterVisitContextSignals context_signals;
+  VisitContextAnnotations context_annotations;
 };
 
 // The DB representation of `ClusterVisit`.
 struct ClusterVisitRow {
   ClusterVisitRow() = default;
   explicit ClusterVisitRow(const ClusterVisit& cluster_visit)
-      : ClusterVisitRow(0,
-                        cluster_visit.url_row.id(),
-                        cluster_visit.visit_row.visit_id,
-                        cluster_visit.context_signals) {}
-  ClusterVisitRow(const int64_t cluster_visit_id,
-                  const URLID url_id,
-                  const VisitID visit_id,
-                  const ClusterVisitContextSignals& context_signals)
-      : cluster_visit_id(cluster_visit_id),
-        url_id(url_id),
-        visit_id(visit_id),
-        context_signals(context_signals) {}
-  int64_t cluster_visit_id;
-  URLID url_id;
+      : ClusterVisitRow(cluster_visit.visit_row.visit_id,
+                        cluster_visit.context_annotations) {}
+  ClusterVisitRow(const VisitID visit_id,
+                  const VisitContextAnnotations& context_annotations)
+      : visit_id(visit_id), context_annotations(context_annotations) {}
   VisitID visit_id;
-  ClusterVisitContextSignals context_signals;
+  VisitContextAnnotations context_annotations;
 };
 
 struct Cluster {

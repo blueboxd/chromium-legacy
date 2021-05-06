@@ -1827,6 +1827,7 @@ ci.chromiumos_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.chromiumos_builder(
@@ -1838,6 +1839,7 @@ ci.chromiumos_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.chromiumos_builder(
@@ -1851,6 +1853,7 @@ ci.chromiumos_builder(
     cq_mirrors_console_view = "mirrors",
     triggered_by = ["linux-lacros-builder-rel"],
     tree_closing = False,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 # For Chromebox for meetings(CfM)
@@ -3505,6 +3508,51 @@ ci.fyi_builder(
         short_name = "tgc",
     ),
     os = os.LINUX_DEFAULT,
+)
+
+ci.fyi_builder(
+    name = "Linux Builder (core-32) (goma)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "c32g",
+    ),
+    cores = 32,
+    goma_jobs = 500,
+    configure_kitchen = True,
+    os = os.LINUX_DEFAULT,
+    schedule = "triggered",
+)
+
+ci.fyi_builder(
+    name = "Linux Builder (core-32) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "c32r",
+    ),
+    cores = 32,
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-trusted",
+    reclient_jobs = 500,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+    schedule = "triggered",
+)
+
+ci.fyi_builder(
+    name = "Linux Builder (core-32) (runsc) (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "c32rg",
+    ),
+    cores = 32,
+    goma_backend = None,
+    reclient_instance = "rbe-chromium-gvisor-shadow",
+    reclient_jobs = 500,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_DEFAULT,
+    schedule = "triggered",
 )
 
 ci.fyi_builder(

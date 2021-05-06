@@ -2063,6 +2063,11 @@ const char kPrivacySandboxSettingsDescription[] =
     "Enables privacy sandbox settings. Requires at least one of the Privacy "
     "Sandbox APIs to be enabled.";
 
+const char kPrivacySandboxSettings2Name[] = "Privacy Sandbox Settings 2";
+const char kPrivacySandboxSettings2Description[] =
+    "Enables the second set of privacy sandbox settings. Requires "
+    "#privacy-sandbox-settings to also be enabled";
+
 const char kSafetyCheckWeakPasswordsName[] = "Safety check for weak passwords";
 const char kSafetyCheckWeakPasswordsDescription[] =
     "If weak passwords were found, show them in safety check.";
@@ -2498,6 +2503,11 @@ const char kTraceUploadUrlChoiceEmloading[] = "emloading";
 const char kTraceUploadUrlChoiceQa[] = "QA";
 const char kTraceUploadUrlChoiceTesting[] = "Testing";
 
+const char kTranslateBubbleUIName[] =
+    "Select which UI to use for translate bubble";
+const char kTranslateBubbleUIDescription[] =
+    "Three bubble options to choose. Existing UI is selected by default";
+
 const char kTranslateForceTriggerOnEnglishName[] =
     "Select which language model to use to trigger translate on English "
     "content";
@@ -2505,10 +2515,10 @@ const char kTranslateForceTriggerOnEnglishDescription[] =
     "Force the Translate Triggering on English pages experiment to be enabled "
     "with the selected language model active.";
 
-const char kTranslateBubbleUIName[] =
-    "Select which UI to use for translate bubble";
-const char kTranslateBubbleUIDescription[] =
-    "Three bubble options to choose. Existing UI is selected by default";
+const char kTranslateIntentName[] = "Translate intent";
+const char kTranslateIntentDescription[] =
+    "Enables an intent that allows Assistant to initiate a translation of the "
+    "foreground tab.";
 
 const char kTreatInsecureOriginAsSecureName[] =
     "Insecure origins treated as secure";
@@ -3193,10 +3203,6 @@ const char kPageInfoHistoryName[] = "Page info history";
 const char kPageInfoHistoryDescription[] =
     "Enable a history sub page to the page info menu, and a button to forget "
     "a site, removing all preferences and history.";
-
-const char kPageInfoPerformanceHintsName[] = "Page info performance hints";
-const char kPageInfoPerformanceHintsDescription[] =
-    "Show site performance information in the page info menu.";
 
 const char kPageInfoV2Name[] = "Page info version two";
 const char kPageInfoV2Description[] =

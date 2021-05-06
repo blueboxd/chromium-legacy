@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/mojom/metrics.mojom.h"
 #include "components/arc/mojom/process.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -60,6 +61,11 @@ class ArcMetricsService : public KeyedService,
     virtual void OnArcMetricsServiceDestroyed() {}
   };
 
+  class UserInteractionObserver : public base::CheckedObserver {
+   public:
+    virtual void OnUserInteraction(UserInteractionType type) = 0;
+  };
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcMetricsService* GetForBrowserContext(
@@ -76,6 +82,10 @@ class ArcMetricsService : public KeyedService,
 
   // KeyedService overrides.
   void Shutdown() override;
+
+  // Records one of Arc.UserInteraction UMA stats. |context| cannot be null.
+  static void RecordArcUserInteraction(content::BrowserContext* context,
+                                       UserInteractionType type);
 
   // Sets the histogram namer. Required to not have a dependency on browser
   // codebase.
@@ -118,6 +128,9 @@ class ArcMetricsService : public KeyedService,
 
   void AddAppKillObserver(AppKillObserver* obs);
   void RemoveAppKillObserver(AppKillObserver* obs);
+
+  void AddUserInteractionObserver(UserInteractionObserver* obs);
+  void RemoveUserInteractionObserver(UserInteractionObserver* obs);
 
   // Finds the boot_progress_arc_upgraded event, removes it from |events|, and
   // returns the event time. If the boot_progress_arc_upgraded event is not
@@ -193,6 +206,7 @@ class ArcMetricsService : public KeyedService,
     DISALLOW_COPY_AND_ASSIGN(AppLauncherObserver);
   };
 
+  void RecordArcUserInteraction(UserInteractionType type);
   void RequestProcessList();
   void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
 
@@ -232,6 +246,7 @@ class ArcMetricsService : public KeyedService,
   bool gamepad_interaction_recorded_ = false;
 
   base::ObserverList<AppKillObserver> app_kill_observers_;
+  base::ObserverList<UserInteractionObserver> user_interaction_observers_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

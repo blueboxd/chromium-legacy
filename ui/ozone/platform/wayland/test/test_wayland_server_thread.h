@@ -7,6 +7,7 @@
 
 #include <wayland-server-core.h>
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -36,6 +37,16 @@ struct DisplayDeleter {
   void operator()(wl_display* display);
 };
 
+// Server configuration related enums and structs.
+enum class ShellVersion { kV6, kStable };
+enum class PrimarySelectionProtocol { kNone, kGtk, kZwp };
+
+struct ServerConfig {
+  ShellVersion shell_version = ShellVersion::kStable;
+  PrimarySelectionProtocol primary_selection_protocol =
+      PrimarySelectionProtocol::kNone;
+};
+
 class TestWaylandServerThread : public base::Thread,
                                 base::MessagePumpLibevent::FdWatcher {
  public:
@@ -51,7 +62,7 @@ class TestWaylandServerThread : public base::Thread,
   // wl_display_connect).
   // Instantiates an xdg_shell of version |shell_version|; versions 6 and 7
   // (stable) are supported.
-  bool Start(uint32_t shell_version);
+  bool Start(const ServerConfig& config);
 
   // Pauses the server thread when it becomes idle.
   void Pause();

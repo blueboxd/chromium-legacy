@@ -55,27 +55,24 @@ InkDropHostView::~InkDropHostView() {
   destroying_ = true;
 }
 
-void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  // If a clip is provided, use that as it is more performant than a mask.
-  if (!AddInkDropClip(ink_drop_layer))
-    InstallInkDropMask(ink_drop_layer);
-  AddLayerBeneathView(ink_drop_layer);
+void InkDropHostView::SetAddInkDropLayerCallback(
+    base::RepeatingCallback<void(ui::Layer*)> callback) {
+  add_ink_drop_layer_callback_ = std::move(callback);
 }
 
-void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  // No need to do anything when called during shutdown, and if a derived
-  // class has overridden Add/RemoveInkDropLayer, running this implementation
-  // would be wrong.
-  if (destroying_)
-    return;
-  RemoveLayerBeneathView(ink_drop_layer);
+const base::RepeatingCallback<void(ui::Layer*)>&
+InkDropHostView::GetAddInkDropLayerCallback() const {
+  return add_ink_drop_layer_callback_;
+}
 
-  // Remove clipping.
-  ink_drop_layer->SetClipRect(gfx::Rect());
-  ink_drop_layer->SetRoundedCornerRadius(gfx::RoundedCornersF(0.f));
+void InkDropHostView::SetRemoveInkDropLayerCallback(
+    base::RepeatingCallback<void(ui::Layer*)> callback) {
+  remove_ink_drop_layer_callback_ = std::move(callback);
+}
 
-  // Layers safely handle destroying a mask layer before the masked layer.
-  ink_drop_mask_.reset();
+const base::RepeatingCallback<void(ui::Layer*)>&
+InkDropHostView::GetRemoveInkDropLayerCallback() const {
+  return remove_ink_drop_layer_callback_;
 }
 
 std::unique_ptr<InkDrop> InkDropHostView::CreateInkDrop() {
@@ -262,6 +259,40 @@ void InkDropHostView::OnInkDropHighlightedChanged() {
   OnPropertyChanged(&ink_drop_, kPropertyEffectsNone);
 }
 
+void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  if (add_ink_drop_layer_callback_) {
+    add_ink_drop_layer_callback_.Run(ink_drop_layer);
+    return;
+  }
+
+  // If a clip is provided, use that as it is more performant than a mask.
+  if (!AddInkDropClip(ink_drop_layer))
+    InstallInkDropMask(ink_drop_layer);
+  AddLayerBeneathView(ink_drop_layer);
+}
+
+void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  // No need to do anything when called during shutdown, and if a derived
+  // class has set `remove_ink_drop_layer_callback_` then running that callback
+  // is very likely to be a use-after-free.
+  if (destroying_)
+    return;
+
+  if (remove_ink_drop_layer_callback_) {
+    remove_ink_drop_layer_callback_.Run(ink_drop_layer);
+    return;
+  }
+
+  RemoveLayerBeneathView(ink_drop_layer);
+
+  // Remove clipping.
+  ink_drop_layer->SetClipRect(gfx::Rect());
+  ink_drop_layer->SetRoundedCornerRadius(gfx::RoundedCornersF(0.f));
+
+  // Layers safely handle destroying a mask layer before the masked layer.
+  ink_drop_mask_.reset();
+}
+
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropForSquareRipple(
     const gfx::Point& center_point,
     const gfx::Size& size) const {
@@ -274,41 +305,6 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropForSquareRipple(
 
 bool InkDropHostView::HasInkDrop() const {
   return !!ink_drop_;
-}
-
-void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
-  ink_drop_mask_ = CreateInkDropMask();
-  if (ink_drop_mask_)
-    ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
-}
-
-void InkDropHostView::ResetInkDropMask() {
-  ink_drop_mask_.reset();
-}
-
-bool InkDropHostView::AddInkDropClip(ui::Layer* ink_drop_layer) {
-  base::Optional<gfx::RRectF> clipping_data =
-      HighlightPathGenerator::GetRoundRectForView(this);
-  if (!clipping_data)
-    return false;
-
-  ink_drop_layer->SetClipRect(gfx::ToEnclosingRect(clipping_data->rect()));
-  auto get_corner_radii =
-      [&clipping_data](gfx::RRectF::Corner corner) -> float {
-    return clipping_data.value().GetCornerRadii(corner).x();
-  };
-  gfx::RoundedCornersF rounded_corners;
-  rounded_corners.set_upper_left(
-      get_corner_radii(gfx::RRectF::Corner::kUpperLeft));
-  rounded_corners.set_upper_right(
-      get_corner_radii(gfx::RRectF::Corner::kUpperRight));
-  rounded_corners.set_lower_right(
-      get_corner_radii(gfx::RRectF::Corner::kLowerRight));
-  rounded_corners.set_lower_left(
-      get_corner_radii(gfx::RRectF::Corner::kLowerLeft));
-  ink_drop_layer->SetRoundedCornerRadius(rounded_corners);
-  ink_drop_layer->SetIsFastRoundedCorner(true);
-  return true;
 }
 
 // static
@@ -340,7 +336,42 @@ InkDropEventHandler* InkDropHostView::GetEventHandler() {
       const_cast<const InkDropHostView*>(this)->GetEventHandler());
 }
 
+bool InkDropHostView::AddInkDropClip(ui::Layer* ink_drop_layer) {
+  base::Optional<gfx::RRectF> clipping_data =
+      HighlightPathGenerator::GetRoundRectForView(this);
+  if (!clipping_data)
+    return false;
+
+  ink_drop_layer->SetClipRect(gfx::ToEnclosingRect(clipping_data->rect()));
+  auto get_corner_radii =
+      [&clipping_data](gfx::RRectF::Corner corner) -> float {
+    return clipping_data.value().GetCornerRadii(corner).x();
+  };
+  gfx::RoundedCornersF rounded_corners;
+  rounded_corners.set_upper_left(
+      get_corner_radii(gfx::RRectF::Corner::kUpperLeft));
+  rounded_corners.set_upper_right(
+      get_corner_radii(gfx::RRectF::Corner::kUpperRight));
+  rounded_corners.set_lower_right(
+      get_corner_radii(gfx::RRectF::Corner::kLowerRight));
+  rounded_corners.set_lower_left(
+      get_corner_radii(gfx::RRectF::Corner::kLowerLeft));
+  ink_drop_layer->SetRoundedCornerRadius(rounded_corners);
+  ink_drop_layer->SetIsFastRoundedCorner(true);
+  return true;
+}
+
+void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
+  ink_drop_mask_ = CreateInkDropMask();
+  DCHECK(ink_drop_mask_);
+  ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
+}
+
 BEGIN_METADATA(InkDropHostView, View)
+ADD_PROPERTY_METADATA(base::RepeatingCallback<void(ui::Layer*)>,
+                      AddInkDropLayerCallback)
+ADD_PROPERTY_METADATA(base::RepeatingCallback<void(ui::Layer*)>,
+                      RemoveInkDropLayerCallback)
 ADD_PROPERTY_METADATA(base::RepeatingCallback<std::unique_ptr<InkDrop>()>,
                       CreateInkDropCallback)
 ADD_PROPERTY_METADATA(base::RepeatingCallback<std::unique_ptr<InkDropRipple>()>,

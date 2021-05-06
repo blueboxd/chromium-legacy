@@ -31,7 +31,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/context_menu_params.h"
@@ -72,7 +71,6 @@
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
-#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -2777,49 +2775,6 @@ TEST_F(WebContentsImplTest, Bluetooth) {
   EXPECT_EQ(observer.num_is_connected_to_bluetooth_device_changed(), 2);
   EXPECT_FALSE(observer.last_is_connected_to_bluetooth_device());
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
-}
-
-TEST_F(WebContentsImplTest, FaviconURLsSet) {
-  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
-  const auto kFavicon =
-      blink::mojom::FaviconURL(GURL("https://example.com/favicon.ico"),
-                               blink::mojom::FaviconIconType::kFavicon, {});
-
-  contents()->NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
-
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
-
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(2u, contents()->GetFaviconURLs().size());
-
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
-}
-
-TEST_F(WebContentsImplTest, FaviconURLsResetWithNavigation) {
-  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
-  favicon_urls.push_back(blink::mojom::FaviconURL::New(
-      GURL("https://example.com/favicon.ico"),
-      blink::mojom::FaviconIconType::kFavicon, std::vector<gfx::Size>()));
-
-  contents()->NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
-
-  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
-                               std::move(favicon_urls));
-  EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
-
-  contents()->NavigateAndCommit(GURL("https://example.com/navigation.html"));
-  EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
 }
 
 TEST_F(WebContentsImplTest, BadDownloadImageResponseFromRenderer) {

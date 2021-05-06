@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -136,6 +137,10 @@ ToggleButton::ToggleButton(PressedCallback callback)
   SetHasInkDropActionOnClick(true);
   views::InkDrop::UseInkDropForSquareRipple(this,
                                             /*highlight_on_hover=*/false);
+  SetAddInkDropLayerCallback(base::BindRepeating(
+      &InkDropHostView::AddInkDropLayer, base::Unretained(thumb_view_)));
+  SetRemoveInkDropLayerCallback(base::BindRepeating(
+      &InkDropHostView::RemoveInkDropLayer, base::Unretained(thumb_view_)));
 }
 
 ToggleButton::~ToggleButton() {
@@ -315,14 +320,6 @@ void ToggleButton::PaintButtonContents(gfx::Canvas* canvas) {
       GetTrackColor(true), GetTrackColor(false), color_ratio));
   canvas->DrawRoundRect(track_rect, track_rect.height() / 2, track_flags);
   canvas->Restore();
-}
-
-void ToggleButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  thumb_view_->AddInkDropLayer(ink_drop_layer);
-}
-
-void ToggleButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  thumb_view_->RemoveInkDropLayer(ink_drop_layer);
 }
 
 std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {

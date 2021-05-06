@@ -41,15 +41,18 @@
 #include "ui/platform_window/wm/wm_drop_handler.h"
 #include "url/gurl.h"
 
+using ::testing::_;
+using ::testing::Mock;
+using ::testing::Values;
+using ui::mojom::DragOperation;
+
 namespace ui {
 namespace {
 
-using mojom::DragOperation;
-using ::testing::_;
-using ::testing::Mock;
-
 constexpr char kSampleTextForDragAndDrop[] =
     "This is a sample text for drag-and-drop.";
+constexpr char16_t kSampleTextForDragAndDrop16[] =
+    u"This is a sample text for drag-and-drop.";
 
 constexpr FilenameToURLPolicy kFilenameToURLPolicy =
     FilenameToURLPolicy::CONVERT_FILENAMES;
@@ -164,8 +167,7 @@ class WaylandDataDragControllerTest : public WaylandDragDropTest {
   WaylandWindow* window() { return window_.get(); }
 
   std::u16string sample_text_for_dnd() const {
-    static auto text = base::ASCIIToUTF16(kSampleTextForDragAndDrop);
-    return text;
+    return kSampleTextForDragAndDrop16;
   }
 
   void RunDragLoopWithSampleData(WaylandWindow* origin_window, int operations) {
@@ -753,10 +755,12 @@ TEST_P(WaylandDataDragControllerTest, MenuRequestCreatesPopupWindow) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandDataDragControllerTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandDataDragControllerTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

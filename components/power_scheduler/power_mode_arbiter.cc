@@ -37,17 +37,31 @@ class TraceObserver : public PowerModeArbiter::Observer {
 // power_scheduler component.
 class PowerModeArbiter::ChargingPowerModeVoter : base::PowerStateObserver {
  public:
-  ChargingPowerModeVoter()
-      : charging_voter_(PowerModeArbiter::GetInstance()->NewVoter(
-            "PowerModeVoter.Charging")) {
-    const bool on_battery =
-        base::PowerMonitor::AddPowerStateObserverAndReturnOnBatteryState(this);
-    if (base::PowerMonitor::IsInitialized())
-      OnPowerStateChange(on_battery);
+  explicit ChargingPowerModeVoter(PowerModeArbiter* arbiter)
+      : charging_voter_(arbiter->NewVoter("PowerModeVoter.Charging")) {
+    // Start out in charging mode until we can register the observer with
+    // PowerMonitor, which itself also starts out in charging mode.
+    charging_voter_->VoteFor(PowerMode::kCharging);
   }
 
   ~ChargingPowerModeVoter() override {
-    base::PowerMonitor::RemovePowerStateObserver(this);
+    if (was_setup_)
+      base::PowerMonitor::RemovePowerStateObserver(this);
+  }
+
+  void Setup() {
+    if (was_setup_)
+      return;
+    was_setup_ = true;
+
+    const bool on_battery =
+        base::PowerMonitor::AddPowerStateObserverAndReturnOnBatteryState(this);
+    OnPowerStateChange(on_battery);
+  }
+
+  void SetOnBatteryPowerForTesting(bool on_battery_power) {
+    OnPowerStateChange(on_battery_power);
+    was_setup_ = true;  // Prevent real setup in the test.
   }
 
   void OnPowerStateChange(bool on_battery_power) override {
@@ -57,6 +71,7 @@ class PowerModeArbiter::ChargingPowerModeVoter : base::PowerStateObserver {
 
  private:
   std::unique_ptr<PowerModeVoter> charging_voter_;
+  bool was_setup_ = false;
 };
 
 PowerModeArbiter::Observer::~Observer() = default;
@@ -73,7 +88,8 @@ PowerModeArbiter::PowerModeArbiter()
     : trace_observer_(std::make_unique<TraceObserver>()),
       active_mode_("PowerModeArbiter", this),
       observers_(
-          base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>()) {
+          base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>()),
+      charging_voter_(std::make_unique<ChargingPowerModeVoter>(this)) {
   base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
 }
 
@@ -111,10 +127,10 @@ void PowerModeArbiter::OnThreadPoolAvailable() {
 
   // Create the charging voter on the task runner sequence, so that charging
   // state notifications are received there.
-  task_runner->PostTask(FROM_HERE, base::BindOnce([] {
-                          PowerModeArbiter::GetInstance()->charging_voter_ =
-                              std::make_unique<ChargingPowerModeVoter>();
-                        }));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce([] {
+        PowerModeArbiter::GetInstance()->charging_voter_->Setup();
+      }));
 }
 
 std::unique_ptr<PowerModeVoter> PowerModeArbiter::NewVoter(const char* name) {
@@ -292,6 +308,7 @@ void PowerModeArbiter::OnVotesUpdated() {
 PowerMode PowerModeArbiter::ComputeActiveModeLocked() {
   PowerMode mode = PowerMode::kIdle;
   bool is_audible = false;
+  bool is_loading = false;
 
   for (const auto& voter_and_vote : votes_) {
     PowerMode vote = voter_and_vote.second.mode();
@@ -299,11 +316,17 @@ PowerMode PowerModeArbiter::ComputeActiveModeLocked() {
       mode = vote;
     if (vote == PowerMode::kAudible)
       is_audible = true;
+    if (vote == PowerMode::kLoading)
+      is_loading = true;
   }
 
   // In background, audible overrides.
   if (mode == PowerMode::kBackground && is_audible)
     return PowerMode::kAudible;
+
+  // Break out loading while concurrently animating into a separate mode.
+  if (mode == PowerMode::kAnimation && is_loading)
+    return PowerMode::kLoadingAnimation;
 
   return mode;
 }
@@ -311,6 +334,10 @@ PowerMode PowerModeArbiter::ComputeActiveModeLocked() {
 PowerMode PowerModeArbiter::GetActiveModeForTesting() {
   base::AutoLock lock(lock_);
   return active_mode_.mode();
+}
+
+void PowerModeArbiter::SetOnBatteryPowerForTesting(bool on_battery_power) {
+  charging_voter_->SetOnBatteryPowerForTesting(on_battery_power);  // IN-TEST
 }
 
 void PowerModeArbiter::OnTraceLogEnabled() {

@@ -1188,6 +1188,9 @@ extern const char kPrivacyAdvisorDescription[];
 extern const char kPrivacySandboxSettingsName[];
 extern const char kPrivacySandboxSettingsDescription[];
 
+extern const char kPrivacySandboxSettings2Name[];
+extern const char kPrivacySandboxSettings2Description[];
+
 extern const char kSafetyCheckWeakPasswordsName[];
 extern const char kSafetyCheckWeakPasswordsDescription[];
 
@@ -1448,11 +1451,14 @@ extern const char kTraceUploadUrlChoiceEmloading[];
 extern const char kTraceUploadUrlChoiceQa[];
 extern const char kTraceUploadUrlChoiceTesting[];
 
+extern const char kTranslateBubbleUIName[];
+extern const char kTranslateBubbleUIDescription[];
+
 extern const char kTranslateForceTriggerOnEnglishName[];
 extern const char kTranslateForceTriggerOnEnglishDescription[];
 
-extern const char kTranslateBubbleUIName[];
-extern const char kTranslateBubbleUIDescription[];
+extern const char kTranslateIntentName[];
+extern const char kTranslateIntentDescription[];
 
 extern const char kTreatInsecureOriginAsSecureName[];
 extern const char kTreatInsecureOriginAsSecureDescription[];
@@ -1850,9 +1856,6 @@ extern const char kPageInfoDiscoverabilityDescription[];
 
 extern const char kPageInfoHistoryName[];
 extern const char kPageInfoHistoryDescription[];
-
-extern const char kPageInfoPerformanceHintsName[];
-extern const char kPageInfoPerformanceHintsDescription[];
 
 extern const char kPageInfoV2Name[];
 extern const char kPageInfoV2Description[];

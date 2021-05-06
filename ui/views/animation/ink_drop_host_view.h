@@ -52,11 +52,34 @@ class VIEWS_EXPORT InkDropHostView : public View {
   InkDropHostView& operator=(const InkDropHostView&) = delete;
   ~InkDropHostView() override;
 
-  // Adds the |ink_drop_layer| in to a visible layer tree.
-  virtual void AddInkDropLayer(ui::Layer* ink_drop_layer);
+  // TODO(pbos): Re-think this API, we may want to expose adding a Layer beneath
+  // a child view to add the effect in the middle of the layer stack. See
+  // ToggleButton.
+  //
+  // Adds a callback for attaching |ink_drop_layer| in to a visible layer tree.
+  //
+  // Do not call from new code. Most uses for this API should be overriding
+  // View::AddLayerBeneathView instead. New ones should re-think the API.
+  void SetAddInkDropLayerCallback(
+      base::RepeatingCallback<void(ui::Layer*)> callback);
 
-  // Removes |ink_drop_layer| from the layer tree.
-  virtual void RemoveInkDropLayer(ui::Layer* ink_drop_layer);
+  // Only here to support metadata.
+  const base::RepeatingCallback<void(ui::Layer*)>& GetAddInkDropLayerCallback()
+      const;
+
+  // TODO(pbos): Re-think this API, we may want to expose adding a Layer beneath
+  // a child view to add the effect in the middle of the layer stack. See
+  // ToggleButton.
+  //
+  // Adds a callback for removing |ink_drop_layer| from the layer tree.
+  //
+  // Do not call from new code. Most uses for this API should be overriding
+  // View::AddLayerBeneathView instead. New ones should re-think the API.
+  void SetRemoveInkDropLayerCallback(
+      base::RepeatingCallback<void(ui::Layer*)> callback);
+  // Only here to support metadata.
+  const base::RepeatingCallback<void(ui::Layer*)>&
+  GetRemoveInkDropLayerCallback() const;
 
   // Returns a configured InkDrop. To override default behavior call
   // SetCreateInkDropRippleCallback().
@@ -93,7 +116,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   // Creates and returns the visual effect used for hover and focus. Used by
   // InkDropImpl instances.
-  virtual std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const;
+  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const;
 
   // Callback version of CreateInkDropHighlight(). Note that this is called in
   // the base implementation of CreateInkDropHighlight(), so if "it's not
@@ -105,15 +128,9 @@ class VIEWS_EXPORT InkDropHostView : public View {
   const base::RepeatingCallback<std::unique_ptr<InkDropHighlight>()>&
   GetCreateInkDropHighlightCallback() const;
 
-  // Subclasses can override to return a mask for the ink drop. By default,
-  // this generates a mask based on HighlightPathGenerator.
-  // TODO(pbos): Replace overrides with HighlightPathGenerator usage and remove
-  // this function.
-  virtual std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
-
-  // Callback version of CreateInkDropMask(). Note that this is called in the
-  // base implementation of CreateInkDropMask(), so if "it's not working", check
-  // the class hierarchy for overrides.
+  // Callback replacement of CreateInkDropMask().
+  // TODO(pbos): Investigate removing this. It currently is only used by
+  // ToolbarButton.
   void SetCreateInkDropMaskCallback(
       base::RepeatingCallback<std::unique_ptr<InkDropMask>()> callback);
 
@@ -192,6 +209,11 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // changes, to trigger the corresponding property change notification here.
   void OnInkDropHighlightedChanged();
 
+  // Methods called by InkDrop for attaching its layer.
+  // TODO(pbos): Investigate using direct calls on View::AddLayerBeneathView.
+  void AddInkDropLayer(ui::Layer* ink_drop_layer);
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer);
+
  protected:
   // Size used by default for the SquareInkDropRipple.
   static constexpr gfx::Size kDefaultInkDropSize = gfx::Size(24, 24);
@@ -203,18 +225,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   // Returns true if an ink drop instance has been created.
   bool HasInkDrop() const;
-
-  // Initializes and sets a mask on |ink_drop_layer|. No-op if
-  // CreateInkDropMask() returns null. This will not run if |AddInkDropClip()|
-  // succeeds in the default implementation of |AddInkDropLayer()|.
-  void InstallInkDropMask(ui::Layer* ink_drop_layer);
-
-  void ResetInkDropMask();
-
-  // Adds a clip rect on the root layer of the ink drop impl. This is a more
-  // performant alternative to using circles or rectangle mask layers. Returns
-  // true if a clip was added.
-  bool AddInkDropClip(ui::Layer* ink_drop_layer);
 
   // Returns a large ink drop size based on the |small_size| that works well
   // with the SquareInkDropRipple animation durations.
@@ -246,6 +256,19 @@ class VIEWS_EXPORT InkDropHostView : public View {
   const InkDropEventHandler* GetEventHandler() const;
   InkDropEventHandler* GetEventHandler();
 
+  // This generates a mask for the InkDrop.
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
+
+  // Adds a clip rect on the root layer of the ink drop impl. This is a more
+  // performant alternative to using circles or rectangle mask layers. Returns
+  // true if a clip was added.
+  bool AddInkDropClip(ui::Layer* ink_drop_layer);
+
+  // Initializes and sets a mask on `ink_drop_layer`. This will not run if
+  // AddInkDropClip() succeeds in the default implementation of
+  // AddInkDropLayer().
+  void InstallInkDropMask(ui::Layer* ink_drop_layer);
+
   // Defines what type of |ink_drop_| to create.
   InkDropMode ink_drop_mode_ = InkDropMode::OFF;
 
@@ -273,6 +296,8 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   std::unique_ptr<views::InkDropMask> ink_drop_mask_;
 
+  base::RepeatingCallback<void(ui::Layer*)> add_ink_drop_layer_callback_;
+  base::RepeatingCallback<void(ui::Layer*)> remove_ink_drop_layer_callback_;
   base::RepeatingCallback<std::unique_ptr<InkDrop>()> create_ink_drop_callback_;
   base::RepeatingCallback<std::unique_ptr<InkDropRipple>()>
       create_ink_drop_ripple_callback_;

@@ -27,6 +27,7 @@
 
 using ::testing::_;
 using ::testing::SaveArg;
+using ::testing::Values;
 
 namespace ui {
 
@@ -486,9 +487,11 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatBeforeTimeout) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandKeyboardTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandKeyboardTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

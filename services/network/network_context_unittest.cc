@@ -80,7 +80,6 @@
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_query_type.h"
-#include "net/dns/public/secure_dns_mode.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/dns/resolve_context.h"
 #include "net/http/http_auth.h"
@@ -3812,7 +3811,8 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
       false /* delay */);
   auto mock_dns_client = std::make_unique<net::MockDnsClient>(
       base_configuration, std::move(rules));
-  mock_dns_client->SetInsecureEnabled(true);
+  mock_dns_client->SetInsecureEnabled(/*enabled=*/true,
+                                      /*additional_types_enabled=*/false);
   mock_dns_client->set_ignore_system_config_changes(true);
   auto* mock_dns_client_ptr = mock_dns_client.get();
   internal_resolver->GetManagerForTesting()->SetDnsClientForTesting(
@@ -4562,11 +4562,12 @@ TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
-    EXPECT_EQ(disable_secure_dns,
-              resolver->last_secure_dns_mode_override().has_value());
     if (disable_secure_dns) {
-      EXPECT_EQ(net::SecureDnsMode::kOff,
-                resolver->last_secure_dns_mode_override().value());
+      EXPECT_EQ(net::SecureDnsPolicy::kDisable,
+                resolver->last_secure_dns_policy());
+    } else {
+      EXPECT_EQ(net::SecureDnsPolicy::kAllow,
+                resolver->last_secure_dns_policy());
     }
   }
 }
@@ -4608,11 +4609,12 @@ TEST_F(NetworkContextTest, FactoryParams_DisableSecureDns) {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client->RunUntilComplete();
-    EXPECT_EQ(disable_secure_dns,
-              resolver.last_secure_dns_mode_override().has_value());
     if (disable_secure_dns) {
-      EXPECT_EQ(net::SecureDnsMode::kOff,
-                resolver.last_secure_dns_mode_override().value());
+      EXPECT_EQ(net::SecureDnsPolicy::kDisable,
+                resolver.last_secure_dns_policy());
+    } else {
+      EXPECT_EQ(net::SecureDnsPolicy::kAllow,
+                resolver.last_secure_dns_policy());
     }
   }
 }

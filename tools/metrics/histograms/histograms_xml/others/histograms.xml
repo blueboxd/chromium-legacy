@@ -13335,19 +13335,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SB2.DownloadChecks" enum="SB2DownloadChecks"
-    expires_after="M77">
-  <owner>vakh@chromium.org</owner>
+    expires_after="2022-05-02">
+  <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
-    Records results of SafeBrowsing download check, including both url check and
-    downloaded file hash check.
+    Records results of SafeBrowsing download url check. Warning: this histogram
+    was expired from M78 to M91. Data may be missing.
+
+    This metric is used to populate a dashboard on go/crsb-site.
   </summary>
 </histogram>
 
-<histogram name="SB2.DownloadUrlCheckDuration" units="ms" expires_after="M77">
-  <owner>vakh@chromium.org</owner>
+<histogram name="SB2.DownloadUrlCheckDuration" units="ms"
+    expires_after="2022-05-02">
+  <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
-  <summary>The time it takes for SafeBrowsing to check a download url.</summary>
+  <summary>
+    The time it takes for SafeBrowsing to check a download url. Warning: this
+    histogram was expired from M78 to M91. Data may be missing.
+  </summary>
 </histogram>
 
 <histogram name="SB2.GetHashResponseOrErrorCode"
@@ -17203,6 +17209,16 @@ should be kept until we use this API.  -->
   </summary>
 </histogram>
 
+<histogram name="UserImage.Changed" enum="ChromeOSUserImageId"
+    expires_after="2022-03-30">
+  <owner>jasontt@chromium.org</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Distribution of the images that users changed (Chrome OS). One sample is
+    taken each time the user changes their image to a different one in Settings.
+  </summary>
+</histogram>
+
 <histogram name="UserImage.LoggedIn" enum="ChromeOSUserImageId"
     expires_after="M82">
   <obsolete>
@@ -18831,7 +18847,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebUITabStrip.CloseAction" enum="WebUITabStripCloseActions"
-    expires_after="2021-10-04">
+    expires_after="2021-10-25">
   <owner>collinbaker@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>
@@ -18842,7 +18858,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebUITabStrip.CloseTabAction"
-    enum="WebUITabStripCloseTabActions" expires_after="2021-10-10">
+    enum="WebUITabStripCloseTabActions" expires_after="2021-10-25">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -18853,7 +18869,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebUITabStrip.OpenAction" enum="WebUITabStripOpenActions"
-    expires_after="2021-10-04">
+    expires_after="2021-10-25">
   <owner>collinbaker@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>
@@ -18864,7 +18880,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebUITabStrip.OpenDuration" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-10-25">
   <owner>collinbaker@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>
@@ -18874,7 +18890,8 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="WebUITabStrip.TabActivation" units="ms" expires_after="M90">
+<histogram name="WebUITabStrip.TabActivation" units="ms"
+    expires_after="2021-10-25">
   <owner>robliao@chromium.org</owner>
   <owner>johntlee@chromium.org</owner>
   <summary>

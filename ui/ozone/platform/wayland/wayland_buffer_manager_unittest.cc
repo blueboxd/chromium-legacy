@@ -24,6 +24,7 @@
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 
 using testing::_;
+using testing::Values;
 
 namespace ui {
 
@@ -1671,9 +1672,11 @@ TEST_P(WaylandBufferManagerTest, RootSurfaceIsCommittedLast) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandBufferManagerTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandBufferManagerTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

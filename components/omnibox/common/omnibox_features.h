@@ -69,6 +69,7 @@ extern const base::Feature kMostVisitedTiles;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kOmniboxSearchReadyIncognito;
 extern const base::Feature kOmniboxPedalsBatch2;
+extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
 extern const base::Feature kOmniboxPedalsDefaultIconColored;
 extern const base::Feature kOmniboxKeywordSearchButton;
 extern const base::Feature kOmniboxRefinedFocusState;
@@ -78,7 +79,6 @@ extern const base::Feature kWebUIOmniboxPopup;
 // popup).
 extern const base::Feature kIntranetRedirectBehaviorPolicyRollout;
 extern const base::Feature kOmniboxAssistantVoiceSearch;
-extern const base::Feature kKeywordSpaceTriggering;
 extern const base::Feature kKeywordSpaceTriggeringSetting;
 // Experiment to introduce new security indicators for HTTPS.
 extern const base::Feature kUpdatedConnectionSecurityIndicators;

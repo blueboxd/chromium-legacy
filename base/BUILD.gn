@@ -102,10 +102,11 @@ assert(!enable_mutex_priority_inheritance || is_chromecast,
        "Do not enable PI mutexes without consulting the security team")
 
 # Prevent using BackupRefPtr when PartitionAlloc-Everywhere isn't used.
-# In theory, such a configuration is possible, but its scope would be limited
+# In theory, such a configuration is possible, but its scope would be limited to
 # only Blink partitions, which is currently not tested. Better to trigger an
 # error, than have BackupRefPtr silently disabled while believing it is enabled.
-if (!is_nacl) {
+# TODO(1206505): Temporarily don't trigger on Linux.
+if (!is_nacl && !is_linux) {
   assert(!use_backup_ref_ptr || use_allocator == "partition",
          "Can't use BackupRefPtr without PartitionAlloc-Everywhere")
 }
@@ -405,6 +406,7 @@ component("base") {
     "memory/memory_pressure_monitor.h",
     "memory/nonscannable_memory.cc",
     "memory/nonscannable_memory.h",
+    "memory/page_size.h",
     "memory/platform_shared_memory_region.cc",
     "memory/platform_shared_memory_region.h",
     "memory/ptr_util.h",
@@ -931,6 +933,7 @@ component("base") {
       "memory/madv_free_discardable_memory_allocator_posix.h",
       "memory/madv_free_discardable_memory_posix.cc",
       "memory/madv_free_discardable_memory_posix.h",
+      "memory/page_size_posix.cc",
       "message_loop/watchable_io_message_pump_posix.cc",
       "message_loop/watchable_io_message_pump_posix.h",
       "native_library_posix.cc",
@@ -999,6 +1002,7 @@ component("base") {
       "files/memory_mapped_file_win.cc",
       "logging_win.cc",
       "logging_win.h",
+      "memory/page_size_win.cc",
       "message_loop/message_pump_win.cc",
       "message_loop/message_pump_win.h",
       "native_library_win.cc",
@@ -1675,6 +1679,7 @@ component("base") {
       "fuchsia/service_provider_impl.h",
       "fuchsia/startup_context.cc",
       "fuchsia/startup_context.h",
+      "memory/page_size_posix.cc",
       "memory/platform_shared_memory_region_fuchsia.cc",
       "message_loop/message_pump_fuchsia.cc",
       "message_loop/message_pump_fuchsia.h",
@@ -1780,7 +1785,7 @@ component("base") {
     sources += [
       "debug/stack_trace_nacl.cc",
       "files/file_path_watcher_stub.cc",
-      "process/process_metrics_nacl.cc",
+      "memory/page_size_nacl.cc",
       "process/process_stubs.cc",
       "sync_socket_nacl.cc",
       "threading/platform_thread_linux.cc",
@@ -1810,6 +1815,7 @@ component("base") {
       "memory/madv_free_discardable_memory_allocator_posix.h",
       "memory/madv_free_discardable_memory_posix.cc",
       "memory/madv_free_discardable_memory_posix.h",
+      "memory/page_size_posix.cc",
       "native_library.cc",
       "native_library_posix.cc",
       "path_service.cc",

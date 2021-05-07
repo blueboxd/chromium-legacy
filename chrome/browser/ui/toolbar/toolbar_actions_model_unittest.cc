@@ -83,12 +83,8 @@ class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
     ++removed_count_;
   }
 
-  void OnToolbarActionLoadFailed() override {}
-
   void OnToolbarActionUpdated(
       const ToolbarActionsModel::ActionId& id) override {}
-
-  void OnToolbarVisibleCountChanged() override {}
 
   void OnToolbarModelInitialized() override { ++initialized_count_; }
 
@@ -490,8 +486,6 @@ TEST_F(ToolbarActionsModelUnitTest, PinnedStateIsTransferredToIncognito) {
 
   // Pinning from the original profile transfers to the incognito profile, so
   // pinning B results in a change.
-  // TODO(devlin): That seems questionable. It's not a leak (since it's not
-  // incognito -> on-the-record), but it still seems uncharacteristic.
   toolbar_model()->SetActionVisibility(browser_action_b()->id(), true);
   EXPECT_THAT(incognito_model->pinned_action_ids(),
               ::testing::ElementsAre(browser_action_c()->id(),
@@ -536,8 +530,6 @@ TEST_F(ToolbarActionsModelUnitTest,
                              browser_action_c()->id()));
 
   // Moving extension C to index 0 affects both profiles.
-  // As above, this is questionable.
-  // TODO(https://crbug.com/1203833): Rationalize this.
   toolbar_model()->MovePinnedAction(browser_action_c()->id(), 0);
   EXPECT_THAT(
       toolbar_model()->pinned_action_ids(),
@@ -1085,28 +1077,28 @@ TEST_F(ToolbarActionsModelUnitTest, UnloadedExtensionsPinnedStatePreserved) {
       ::testing::ElementsAre(browser_action_a()->id(), browser_action_b()->id(),
                              browser_action_c()->id()));
 
-  // Repeat the unload, reload flow, but move a pinned action between the
-  // unload and the reload.
+  // Repeat the unload, reload flow, but move a pinned action
+  // (https://crbug.com/1203899) and unpin an action
+  // (https://crbug.com/1205561) between the unload and the reload.
   service()->DisableExtension(browser_action_a()->id(),
                               extensions::disable_reason::DISABLE_USER_ACTION);
   toolbar_model()->MovePinnedAction(browser_action_b()->id(), 1u);
+  toolbar_model()->SetActionVisibility(browser_action_b()->id(), false);
 
-  // Interim: state should be C, B.
+  // Interim: state should include both B and C, but only C should be pinned.
   EXPECT_THAT(toolbar_model()->action_ids(),
               ::testing::UnorderedElementsAre(browser_action_b()->id(),
                                               browser_action_c()->id()));
   EXPECT_THAT(toolbar_model()->pinned_action_ids(),
-              ::testing::ElementsAre(browser_action_c()->id(),
-                                     browser_action_b()->id()));
+              ::testing::ElementsAre(browser_action_c()->id()));
 
-  // Reload - state should be A, C, B.
+  // Reload - state should include all of A, B, C, with pinned order of A, C.
   service()->EnableExtension(browser_action_a()->id());
   EXPECT_THAT(toolbar_model()->action_ids(),
               ::testing::UnorderedElementsAre(browser_action_a()->id(),
                                               browser_action_b()->id(),
                                               browser_action_c()->id()));
-  EXPECT_THAT(
-      toolbar_model()->pinned_action_ids(),
-      ::testing::ElementsAre(browser_action_a()->id(), browser_action_c()->id(),
-                             browser_action_b()->id()));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              ::testing::ElementsAre(browser_action_a()->id(),
+                                     browser_action_c()->id()));
 }

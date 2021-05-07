@@ -11,6 +11,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/class_property.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -29,8 +30,10 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/view_class_properties.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/capture_client.h"
@@ -284,13 +287,6 @@ void Button::SetShowInkDropWhenHotTracked(bool value) {
 
 bool Button::GetShowInkDropWhenHotTracked() const {
   return show_ink_drop_when_hot_tracked_;
-}
-
-void Button::SetInkDropBaseColor(SkColor color) {
-  if (color == ink_drop_base_color_)
-    return;
-  ink_drop_base_color_ = color;
-  OnPropertyChanged(&ink_drop_base_color_, kPropertyEffectsNone);
 }
 
 void Button::SetHasInkDropActionOnClick(bool value) {
@@ -574,18 +570,12 @@ void Button::OnBlur() {
     SchedulePaint();
 }
 
-SkColor Button::GetInkDropBaseColor() const {
-  return InkDropHostView::GetInkDropBaseColor();
-}
-
 void Button::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
 Button::Button(PressedCallback callback)
-    : AnimationDelegateViews(this),
-      callback_(std::move(callback)),
-      ink_drop_base_color_(gfx::kPlaceholderColor) {
+    : AnimationDelegateViews(this), callback_(std::move(callback)) {
   SetFocusBehavior(PlatformStyle::kDefaultFocusBehavior);
   SetProperty(kIsButtonProperty, true);
   hover_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
@@ -600,8 +590,9 @@ Button::Button(PressedCallback callback)
         return ink_drop;
       },
       base::Unretained(this)));
-  SetInkDropBaseColorCallback(base::BindRepeating(
-      [](Button* button) { return button->ink_drop_base_color_; }, this));
+  // TODO(pbos): Investigate not setting a default color so that we can DCHECK
+  // if one hasn't been set.
+  SetInkDropBaseColor(gfx::kPlaceholderColor);
 }
 
 void Button::RequestFocusFromEvent() {
@@ -613,6 +604,14 @@ void Button::NotifyClick(const ui::Event& event) {
   if (has_ink_drop_action_on_click_) {
     AnimateInkDrop(InkDropState::ACTION_TRIGGERED,
                    ui::LocatedEvent::FromIfValid(&event));
+  }
+
+  // If we have an associated help context ID, notify that system that we have
+  // been activated.
+  const ui::ElementIdentifier element_id = GetProperty(kElementIdentifierKey);
+  if (element_id) {
+    views::ElementTrackerViews::GetInstance()->NotifyViewActivated(element_id,
+                                                                   this);
   }
 
   if (callback_)
@@ -693,7 +692,6 @@ ADD_PROPERTY_METADATA(PressedCallback, Callback)
 ADD_PROPERTY_METADATA(bool, AnimateOnStateChange)
 ADD_PROPERTY_METADATA(bool, HasInkDropActionOnClick)
 ADD_PROPERTY_METADATA(bool, HideInkDropWhenShowingContextMenu)
-ADD_PROPERTY_METADATA(SkColor, InkDropBaseColor, ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(bool, InstallFocusRingOnFocus)
 ADD_PROPERTY_METADATA(bool, RequestFocusOnPress)
 ADD_PROPERTY_METADATA(ButtonState, State)

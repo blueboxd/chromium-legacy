@@ -1710,6 +1710,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCustomElement) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCustomElementEmptySlot) {
+  RunHtmlTest(FILE_PATH_LITERAL("custom-element-empty-slot.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCustomElementWithAriaOwnsOutside) {
   RunHtmlTest(FILE_PATH_LITERAL("custom-element-with-aria-owns-outside.html"));
 }
@@ -2940,6 +2945,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, HiddenTable) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, IgnoredCrash) {
   RunRegressionTest(FILE_PATH_LITERAL("ignored-crash.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MissingParent) {
+  RunRegressionTest(FILE_PATH_LITERAL("missing-parent.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, RemovePseudoContent) {

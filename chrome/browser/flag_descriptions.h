@@ -995,9 +995,6 @@ extern const char kOmniboxDisableCGIParamMatchingDescription[];
 extern const char kOmniboxDefaultTypedNavigationsToHttpsName[];
 extern const char kOmniboxDefaultTypedNavigationsToHttpsDescription[];
 
-extern const char kOmniboxKeywordSpaceTriggeringName[];
-extern const char kOmniboxKeywordSpaceTriggeringDescription[];
-
 extern const char kOmniboxKeywordSpaceTriggeringSettingName[];
 extern const char kOmniboxKeywordSpaceTriggeringSettingDescription[];
 
@@ -1358,6 +1355,9 @@ extern const char kSplitCacheByNetworkIsolationKeyDescription[];
 extern const char kStoragePressureEventName[];
 extern const char kStoragePressureEventDescription[];
 
+extern const char kStoreHoursAndroidName[];
+extern const char kStoreHoursAndroidDescription[];
+
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
 
@@ -1438,6 +1438,11 @@ extern const char kTopChromeTouchUiDescription[];
 
 extern const char kThreadedScrollingName[];
 extern const char kThreadedScrollingDescription[];
+
+extern const char
+    kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[];
+extern const char
+    kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesDescription[];
 
 extern const char kTouchDragDropName[];
 extern const char kTouchDragDropDescription[];
@@ -1685,17 +1690,11 @@ extern const char kChromeShareHighlightsAndroidDescription[];
 extern const char kChromeShareLongScreenshotName[];
 extern const char kChromeShareLongScreenshotDescription[];
 
-extern const char kChromeShareQRCodeName[];
-extern const char kChromeShareQRCodeDescription[];
-
 extern const char kChromeShareScreenshotName[];
 extern const char kChromeShareScreenshotDescription[];
 
 extern const char kChromeSharingHubName[];
 extern const char kChromeSharingHubDescription[];
-
-extern const char kChromeSharingHubV15Name[];
-extern const char kChromeSharingHubV15Description[];
 
 extern const char kClipboardSuggestionContentHiddenName[];
 extern const char kClipboardSuggestionContentHiddenDescription[];
@@ -1826,9 +1825,6 @@ extern const char kOfflineIndicatorChoiceDescription[];
 
 extern const char kOfflineIndicatorV2Name[];
 extern const char kOfflineIndicatorV2Description[];
-
-extern const char kOfflinePagesCtName[];
-extern const char kOfflinePagesCtDescription[];
 
 extern const char kOfflinePagesCtV2Name[];
 extern const char kOfflinePagesCtV2Description[];
@@ -2108,6 +2104,9 @@ extern const char kOmniboxPedalSuggestionsDescription[];
 
 extern const char kOmniboxPedalsBatch2Name[];
 extern const char kOmniboxPedalsBatch2Description[];
+
+extern const char kOmniboxPedalsBatch2NonEnglishName[];
+extern const char kOmniboxPedalsBatch2NonEnglishDescription[];
 
 extern const char kOmniboxPedalsDefaultIconColoredName[];
 extern const char kOmniboxPedalsDefaultIconColoredDescription[];
@@ -2763,6 +2762,9 @@ extern const char kScalableStatusAreaDescription[];
 
 extern const char kScanAppMediaLinkName[];
 extern const char kScanAppMediaLinkDescription[];
+
+extern const char kScanAppSearchablePdfName[];
+extern const char kScanAppSearchablePdfDescription[];
 
 extern const char kScanAppStickySettingsName[];
 extern const char kScanAppStickySettingsDescription[];

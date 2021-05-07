@@ -144,7 +144,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
   bool CanShowIconInToolbar() const override;
-  void OnToolbarActionViewDragDone() override;
   views::LabelButton* GetOverflowReferenceView() const override;
   gfx::Size GetToolbarActionSize() override;
   void WriteDragDataForView(View* sender,
@@ -225,10 +224,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
       const ToolbarActionsModel::ActionId& action_id) override;
   void OnToolbarActionRemoved(
       const ToolbarActionsModel::ActionId& action_id) override;
-  void OnToolbarActionLoadFailed() override;
   void OnToolbarActionUpdated(
       const ToolbarActionsModel::ActionId& action_id) override;
-  void OnToolbarVisibleCountChanged() override;
   void OnToolbarModelInitialized() override;
   void OnToolbarPinnedActionsChanged() override;
 

@@ -183,7 +183,7 @@ class TestAbstractRebaselineCommand(BaseTestCase):
         add_manifest_to_mock_filesystem(self.tool.port_factory.get())
         self.assertEqual(
             self.command._file_name_for_expected_result(
-                'console/console-is-a-namespace.any.worker.html',
+                'external/wpt/console/console-is-a-namespace.any.worker.html',
                 'txt',
                 is_wpt=True),
             'external/wpt/console/console-is-a-namespace.any.js.ini')
@@ -1086,8 +1086,8 @@ class TestBaselineSetTest(unittest.TestCase):
         test_baseline_set.add('a/x.html', Build('MOCK Win10'))
         self.assertEqual(str(test_baseline_set), (
             '<TestBaselineSet with:\n'
-            '  a/x.html: Build(builder_name=\'MOCK Mac10.12\', build_number=None), test-mac-mac10.12\n'
-            '  a/x.html: Build(builder_name=\'MOCK Win10\', build_number=None), test-win-win10>'
+            '  a/x.html: Build(builder_name=\'MOCK Mac10.12\', build_number=None, build_id=None), test-mac-mac10.12\n'
+            '  a/x.html: Build(builder_name=\'MOCK Win10\', build_number=None, build_id=None), test-win-win10>'
         ))
 
     def test_getters(self):

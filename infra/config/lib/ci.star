@@ -15,7 +15,7 @@ to set the default value. Can also be accessed through `ci.defaults`.
 
 load("./args.star", "args")
 load("./branches.star", "branches")
-load("./builders.star", "builders", "os_category")
+load("./builders.star", "builders", "os", "os_category")
 
 defaults = args.defaults(
     extends = builders.defaults,
@@ -273,6 +273,7 @@ def chromium_builder(*, name, tree_closing = True, **kwargs):
     )
 
 def chromiumos_builder(*, name, tree_closing = True, **kwargs):
+    kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
     return ci_builder(
         name = name,
         builder_group = "chromium.chromiumos",
@@ -735,6 +736,7 @@ def thin_tester(
         name,
         triggered_by,
         builder_group,
+        os = builders.os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
         tree_closing = True,
         **kwargs):
     return ci.builder(
@@ -742,6 +744,7 @@ def thin_tester(
         builder_group = builder_group,
         triggered_by = triggered_by,
         goma_backend = None,
+        os = os,
         tree_closing = tree_closing,
         **kwargs
     )

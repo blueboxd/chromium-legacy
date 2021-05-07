@@ -148,14 +148,11 @@ public class PageInfoView extends FrameLayout implements OnClickListener {
         public boolean urlTitleShown = true;
         public boolean connectionMessageShown = true;
         public boolean instantAppButtonShown = true;
-        public boolean siteSettingsButtonShown = true;
         public boolean openOnlineButtonShown = true;
-        public boolean cookieControlsShown = true;
 
         public Runnable urlTitleClickCallback;
         public Runnable urlTitleLongClickCallback;
         public Runnable instantAppButtonClickCallback;
-        public Runnable siteSettingsButtonClickCallback;
         public Runnable openOnlineButtonClickCallback;
         public Runnable onUiClosingCallback;
 
@@ -179,7 +176,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener {
     // completely.
     protected ElidedUrlTextView mUrlTitle;
     protected Button mInstantAppButton;
-    protected Button mSiteSettingsButton;
     protected Button mOpenOnlineButton;
     protected Runnable mOnUiClosingCallback;
 
@@ -187,8 +183,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener {
     private TextView mConnectionSummary;
     private TextView mConnectionMessage;
     private TextView mHttpsImageCompressionMessage;
-    private View mCookieControlsSeparator;
-    private CookieControlsView mCookieControlsView;
 
     public PageInfoView(Context context) {
         super(context);
@@ -207,7 +201,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener {
         initPermissions(params);
         initCookies(params);
         initInstantApp(params);
-        initSiteSettings(params);
         initOpenOnline(params);
     }
 
@@ -242,11 +235,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener {
     }
 
     protected void initCookies(PageInfoViewParams params) {
-        mCookieControlsSeparator = findViewById(R.id.page_info_cookie_controls_separator);
-        mCookieControlsView = findViewById(R.id.page_info_cookie_controls_view);
-        initializePageInfoViewChild(mCookieControlsSeparator, params.cookieControlsShown, null);
-        initializePageInfoViewChild(mCookieControlsView, params.cookieControlsShown, null);
-        mOnUiClosingCallback = params.onUiClosingCallback;
+        // TODO(crbug.com/1182193): Remove function and restructure init at the end of cleanup.
     }
 
     protected void initInstantApp(PageInfoViewParams params) {
@@ -255,21 +244,11 @@ public class PageInfoView extends FrameLayout implements OnClickListener {
                 params.instantAppButtonClickCallback);
     }
 
-    protected void initSiteSettings(PageInfoViewParams params) {
-        mSiteSettingsButton = findViewById(R.id.page_info_site_settings_button);
-        initializePageInfoViewChild(mSiteSettingsButton, params.siteSettingsButtonShown,
-                params.siteSettingsButtonClickCallback);
-    }
-
     protected void initOpenOnline(PageInfoViewParams params) {
         mOpenOnlineButton = findViewById(R.id.page_info_open_online_button);
         // The open online button should not fade in.
         initializePageInfoViewChild(mOpenOnlineButton, params.openOnlineButtonShown,
                 params.openOnlineButtonClickCallback);
-    }
-
-    public CookieControlsView getCookieControlsView() {
-        return mCookieControlsView;
     }
 
     // FrameLayout:
@@ -341,9 +320,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener {
         animatableViews.add(mConnectionMessage);
         animatableViews.add(mHttpsImageCompressionMessage);
         animatableViews.add(mInstantAppButton);
-        animatableViews.add(mCookieControlsSeparator);
-        animatableViews.add(mCookieControlsView);
-        animatableViews.add(mSiteSettingsButton);
 
         return animatableViews;
     }

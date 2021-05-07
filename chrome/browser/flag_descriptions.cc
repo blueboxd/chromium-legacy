@@ -1718,12 +1718,6 @@ const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
 
-const char kOmniboxKeywordSpaceTriggeringName[] =
-    "Omnibox Keyword Space Triggering";
-const char kOmniboxKeywordSpaceTriggeringDescription[] =
-    "Controls whether keyword mode can be triggered by space, double space, or "
-    "neither.";
-
 const char kOmniboxKeywordSpaceTriggeringSettingName[] =
     "Omnibox Keyword Space Triggering Setting";
 const char kOmniboxKeywordSpaceTriggeringSettingDescription[] =
@@ -2364,6 +2358,10 @@ const char kStoragePressureEventDescription[] =
     "If enabled, Chrome will dispatch a DOM event, informing applications "
     "about storage pressure (low disk space)";
 
+const char kStoreHoursAndroidName[] = "Store Hours";
+const char kStoreHoursAndroidDescription[] =
+    "When enabled, shows store hours for stores in tab grid view.";
+
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
 const char kSuggestionsWithSubStringMatchDescription[] =
@@ -2485,6 +2483,15 @@ const char kThreadedScrollingDescription[] =
     "force all such scroll events to be handled on the main thread. Note that "
     "this can dramatically hurt scrolling performance of most websites and is "
     "intended for testing purposes only.";
+
+const char kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[] =
+    "Throttle non-visible cross-origin iframes";
+const char
+    kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesDescription[] =
+        "When enabled, all cross-origin iframes with zero visibility (either "
+        "display:none or zero area) will be throttled, regardless of whether "
+        "they are same-process or cross-process. When disabled, only cross-"
+        "process iframes will be throttled.";
 
 const char kTouchDragDropName[] = "Touch initiated drag and drop";
 const char kTouchDragDropDescription[] =
@@ -2904,10 +2911,6 @@ const char kChromeShareLongScreenshotName[] = "Chrome Share Long Screenshots";
 const char kChromeShareLongScreenshotDescription[] =
     "Enables UI to edit and share long screenshots on Android";
 
-const char kChromeShareQRCodeName[] = "Chrome Share QRCodes";
-const char kChromeShareQRCodeDescription[] =
-    "Enables UI to generate and scan QR Codes on Android";
-
 const char kChromeShareScreenshotName[] = "Chrome Share Screenshots";
 const char kChromeShareScreenshotDescription[] =
     "Enables UI to edit and share screenshots";
@@ -2915,10 +2918,6 @@ const char kChromeShareScreenshotDescription[] =
 const char kChromeSharingHubName[] = "Chrome Sharing Hub";
 const char kChromeSharingHubDescription[] =
     "Enables the Chrome Sharing Hub/custom share sheet for Android.";
-
-const char kChromeSharingHubV15Name[] = "Chrome Sharing Hub V1.5";
-const char kChromeSharingHubV15Description[] =
-    "Enables v1.5 of the Chrome Sharing Hub for Android.";
 
 const char kClipboardSuggestionContentHiddenName[] =
     "Clipboard suggestion content hidden";
@@ -3141,9 +3140,6 @@ const char kOfflineIndicatorChoiceDescription[] =
 const char kOfflineIndicatorV2Name[] = "Offline indicator V2";
 const char kOfflineIndicatorV2Description[] =
     "Show a persistent offline indicator when offline.";
-
-const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
-const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
 
 const char kOfflinePagesCtV2Name[] = "Enable Offline Pages CT V2 features.";
 const char kOfflinePagesCtV2Description[] =
@@ -3648,9 +3644,14 @@ const char kOmniboxExperimentalKeywordModeDescription[] =
 
 const char kOmniboxPedalsBatch2Name[] = "Omnibox Pedals batch 2";
 const char kOmniboxPedalsBatch2Description[] =
-    "Enable the second batch of Omnibox Pedals (Safety Check, etc.). "
-    "This flag has no effect unless \"Omnibox Pedal suggestions\" is also "
-    "enabled.";
+    "Enable the second batch of Omnibox Pedals (Safety Check, etc.).";
+
+const char kOmniboxPedalsBatch2NonEnglishName[] =
+    "Omnibox Pedals batch 2 for non-English locales";
+const char kOmniboxPedalsBatch2NonEnglishDescription[] =
+    "Enable the second batch of Omnibox Pedals (Safety Check, etc.) for "
+    "locales other than 'en' and 'en-GB'. This flag has no effect unless "
+    "\"Omnibox Pedals batch 2\" is also enabled.";
 
 const char kOmniboxPedalsDefaultIconColoredName[] =
     "Omnibox Pedals Default Icon Colored";
@@ -4734,6 +4735,12 @@ const char kScanAppMediaLinkName[] = "Show Media app link in Scan app";
 const char kScanAppMediaLinkDescription[] =
     "Enables showing a link in the Scan app to open scanned images in the Media"
     " app.";
+
+extern const char kScanAppSearchablePdfName[] =
+    "Enable saving scans as a searchable PDF.";
+extern const char kScanAppSearchablePdfDescription[] =
+    "Allow selecting Searchable PDF file type in Scan app"
+    " with incorporation of OCR service.";
 
 const char kScanAppStickySettingsName[] = "Enable sticky settings in Scan app";
 const char kScanAppStickySettingsDescription[] =

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -29,6 +30,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
@@ -157,6 +159,16 @@ void MaybeUpdateShelfItems(
 bool IsParentSwitchableContainer(const aura::Window* window) {
   DCHECK(window);
   return window->parent() && IsSwitchableContainer(window->parent());
+}
+
+bool IsApplistActiveInTabletMode(const aura::Window* active_window) {
+  DCHECK(active_window);
+  Shell* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  auto* app_list_controller = shell->app_list_controller();
+  return active_window == app_list_controller->GetWindow();
 }
 
 }  // namespace
@@ -523,12 +535,16 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
   // ensure that after switching desks, we will try to focus a candidate window.
   // We will also update window activation if the currently active window is one
   // in a switchable container. Otherwise, do not update the window activation.
-  // This will prevent some system UI windows like the app list from closing
-  // when switching desks.
+  // This will prevent some ephemeral system UI surfaces such as the app list
+  // and system tray from closing when switching desks. An exception is the app
+  // list in tablet mode, which should gain activation when there are no
+  // windows, as it is treated like a bottom stacked window.
   aura::Window* active_window = window_util::GetActiveWindow();
   const bool update_window_activation =
       in_overview || !active_window ||
-      IsParentSwitchableContainer(active_window);
+      IsParentSwitchableContainer(active_window) ||
+      IsApplistActiveInTabletMode(active_window);
+
   const int starting_desk_index = GetDeskIndex(active_desk());
   animation_ = std::make_unique<DeskActivationAnimation>(
       this, starting_desk_index, target_desk_index, source,
@@ -544,8 +560,17 @@ bool DesksController::ActivateAdjacentDesk(bool going_left,
     return false;
 
   // Try replacing an ongoing desk animation of the same source.
-  if (animation_ && animation_->Replace(going_left, source)) {
-    return true;
+  if (animation_) {
+    if (animation_->Replace(going_left, source))
+      return true;
+
+    // We arrive here if `DeskActivationAnimation::Replace()` fails
+    // due to trying to replace an animation before the original animation has
+    // finished taking their screenshots. We can continue with creating a new
+    // animation in `ActivateDesk()`, but we need to clean up some desk state.
+    ActivateDeskInternal(desks()[animation_->ending_desk_index()].get(),
+                         /*update_window_activation=*/false);
+    animation_.reset();
   }
 
   const Desk* desk_to_activate = going_left ? GetPreviousDesk() : GetNextDesk();
@@ -938,8 +963,13 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
       [desk](const std::unique_ptr<Desk>& d) { return d.get() == desk; });
   DCHECK(iter != desks_.end());
 
-  // Used by accessibility to indicate the desk that has been removed.
-  const int removed_desk_number = std::distance(desks_.begin(), iter) + 1;
+  const int removed_desk_index = std::distance(desks_.begin(), iter);
+  // Update workspaces of windows in desks that have higher indices than the
+  // removed desk since indices of those desks shift by one.
+  for (int i = removed_desk_index + 1; i < int{desks_.size()}; i++) {
+    for (auto* window : desks_[i]->windows())
+      window->SetProperty(aura::client::kWindowWorkspaceKey, i - 1);
+  }
 
   // Record |desk|'s lifetime before it's removed from |desks_|.
   auto* non_const_desk = const_cast<Desk*>(desk);
@@ -1065,9 +1095,6 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   ReportDesksCountHistogram();
   ReportNumberOfWindowsPerDeskHistogram();
 
-  int active_desk_number = GetDeskIndex(active_desk_) + 1;
-  if (active_desk_number == removed_desk_number)
-    active_desk_number++;
   Shell::Get()
       ->accessibility_controller()
       ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(

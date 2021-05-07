@@ -258,6 +258,12 @@ const base::Feature kOmniboxSearchReadyIncognito{
 const base::Feature kOmniboxPedalsBatch2{"OmniboxPedalsBatch2",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable the second batch of Pedals (Safety Check, etc.)
+// for non-English locales (English locales are 'en' and 'en-GB').
+// This feature is only meaningful if `OmniboxPedalsBatch2` is enabled.
+const base::Feature kOmniboxPedalsBatch2NonEnglish{
+    "OmniboxPedalsBatch2NonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature that enables use of the colored version of the default Pedal icon.
 const base::Feature kOmniboxPedalsDefaultIconColored{
     "OmniboxPedalsDefaultIconColored", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -289,11 +295,6 @@ const base::Feature kIntranetRedirectBehaviorPolicyRollout{
 // Android's built-in voice recognition service. Only works on Android.
 const base::Feature kOmniboxAssistantVoiceSearch{
     "OmniboxAssistantVoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to control whether space, double space, or neither triggers
-// keyword mode. When disabled, space triggering is disabled.
-const base::Feature kKeywordSpaceTriggering{"OmniboxKeywordSpaceTriggering",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, a setting is added to chrome://settings/searchEngines to
 // control whether <space> can be used to trigger keyword mode.

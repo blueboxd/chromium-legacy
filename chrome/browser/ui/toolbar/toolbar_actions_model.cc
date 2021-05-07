@@ -99,33 +99,29 @@ void ToolbarActionsModel::OnExtensionLoaded(
   // We don't want to add the same extension twice. It may have already been
   // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
   // hides the browser action and then disables and enables the extension.
-  if (!HasAction(extension->id()))
-    AddExtension(extension);
+  if (!HasAction(extension->id()) && ShouldAddExtension(extension))
+    AddAction(extension->id());
 }
 
 void ToolbarActionsModel::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionReason reason) {
-  RemoveExtension(extension);
+  RemoveAction(extension->id());
 }
 
 void ToolbarActionsModel::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
+  if (profile_->IsOffTheRecord()) {
+    // The on-the-record version will update the prefs; incognito is read-only.
+    return;
+  }
+
   // Remove the extension id from the ordered list, if it exists (the extension
   // might not be represented in the list because it might not have an icon).
   RemovePref(extension->id());
-}
-
-void ToolbarActionsModel::OnLoadFailure(
-    content::BrowserContext* browser_context,
-    const base::FilePath& extension_path,
-    const std::string& error) {
-  for (ToolbarActionsModel::Observer& observer : observers_) {
-    observer.OnToolbarActionLoadFailed();
-  }
 }
 
 void ToolbarActionsModel::OnExtensionManagementSettingsChanged() {
@@ -147,9 +143,6 @@ void ToolbarActionsModel::RemovePref(const ActionId& action_id) {
 
 void ToolbarActionsModel::OnReady() {
   InitializeActionList();
-
-  load_error_reporter_observation_.Observe(
-      extensions::LoadErrorReporter::GetInstance());
 
   // Wait until the extension system is ready before observing any further
   // changes so that the toolbar buttons can be shown in their stable ordering
@@ -176,13 +169,6 @@ bool ToolbarActionsModel::ShouldAddExtension(
   // In this case, we don't care about the browser action visibility, because
   // we want to show each extension regardless.
   return extension_action_manager_->GetExtensionAction(*extension) != nullptr;
-}
-
-void ToolbarActionsModel::AddExtension(const extensions::Extension* extension) {
-  if (!ShouldAddExtension(extension))
-    return;
-
-  AddAction(extension->id());
 }
 
 void ToolbarActionsModel::AddAction(const ActionId& action_id) {
@@ -236,6 +222,8 @@ void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
   // out-of-bounds access, size_t wraps, etc). Keep this a hard CHECK (not a
   // DCHECK).
   CHECK(!pinned_action_ids_.empty());
+  DCHECK(!profile_->IsOffTheRecord())
+      << "Changing action position is disallowed in incognito.";
 
   auto current_position_on_toolbar = std::find(
       pinned_action_ids_.begin(), pinned_action_ids_.end(), action_id);
@@ -297,11 +285,6 @@ void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
   // The |pinned_action_ids_| should be updated as a result of updating the
   // preference.
   DCHECK(pinned_action_ids_ == GetFilteredPinnedActionIds());
-}
-
-void ToolbarActionsModel::RemoveExtension(
-    const extensions::Extension* extension) {
-  RemoveAction(extension->id());
 }
 
 // Combine the currently enabled extensions that have browser actions (which
@@ -383,16 +366,21 @@ void ToolbarActionsModel::SetActionVisibility(const ActionId& action_id,
                                               bool is_now_visible) {
   DCHECK_NE(is_now_visible, IsActionPinned(action_id));
   DCHECK(!IsActionForcePinned(action_id));
-  auto new_pinned_action_ids = pinned_action_ids_;
+  DCHECK(!profile_->IsOffTheRecord())
+      << "Changing action pin state is disallowed in incognito.";
+
+  auto stored_pinned_action_ids = extension_prefs_->GetPinnedExtensions();
+  DCHECK_NE(is_now_visible,
+            base::Contains(stored_pinned_action_ids, action_id));
   if (is_now_visible) {
-    new_pinned_action_ids.push_back(action_id);
+    stored_pinned_action_ids.push_back(action_id);
   } else {
-    base::Erase(new_pinned_action_ids, action_id);
+    base::Erase(stored_pinned_action_ids, action_id);
   }
-  extension_prefs_->SetPinnedExtensions(new_pinned_action_ids);
+  extension_prefs_->SetPinnedExtensions(stored_pinned_action_ids);
   // The |pinned_action_ids_| should be updated as a result of updating the
   // preference.
-  DCHECK(pinned_action_ids_ == new_pinned_action_ids);
+  DCHECK(pinned_action_ids_ == GetFilteredPinnedActionIds());
 }
 
 const extensions::Extension* ToolbarActionsModel::GetExtensionById(

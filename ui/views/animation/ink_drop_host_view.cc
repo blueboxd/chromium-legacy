@@ -26,7 +26,7 @@
 namespace views {
 
 // static
-constexpr gfx::Size InkDropHostView::kDefaultInkDropSize;
+constexpr gfx::Size InkDropHostView::kDefaultSquareInkDropSize;
 
 InkDropHostView::InkDropHostViewEventHandlerDelegate::
     InkDropHostViewEventHandlerDelegate(InkDropHostView* host_view)
@@ -45,8 +45,27 @@ bool InkDropHostView::InkDropHostViewEventHandlerDelegate::
   return host_view_->ink_drop_mode_ == InkDropMode::ON;
 }
 
+InkDropHostView::ViewLayerTransformObserver::ViewLayerTransformObserver(
+    InkDropHostView* host)
+    : host_(host) {
+  observation_.Observe(host);
+}
+
+InkDropHostView::ViewLayerTransformObserver::~ViewLayerTransformObserver() =
+    default;
+
+void InkDropHostView::ViewLayerTransformObserver::OnViewLayerTransformed(
+    View* observed_view) {
+  DCHECK_EQ(observed_view, host_);
+  // Notify the ink drop that we have transformed so it can adapt
+  // accordingly.
+  if (host_->HasInkDrop())
+    host_->GetInkDrop()->HostTransformChanged(host_->GetTransform());
+}
+
 InkDropHostView::InkDropHostView()
-    : ink_drop_event_handler_delegate_(this),
+    : host_view_transform_observer_(this),
+      ink_drop_event_handler_delegate_(this),
       ink_drop_event_handler_(this, &ink_drop_event_handler_delegate_) {}
 
 InkDropHostView::~InkDropHostView() {
@@ -162,8 +181,12 @@ InkDropHostView::GetCreateInkDropMaskCallback() const {
 SkColor InkDropHostView::GetInkDropBaseColor() const {
   if (ink_drop_base_color_callback_)
     return ink_drop_base_color_callback_.Run();
-  NOTREACHED();
-  return gfx::kPlaceholderColor;
+  DCHECK(ink_drop_base_color_);
+  return ink_drop_base_color_.value_or(gfx::kPlaceholderColor);
+}
+
+void InkDropHostView::SetInkDropBaseColor(SkColor color) {
+  ink_drop_base_color_ = color;
 }
 
 void InkDropHostView::SetInkDropBaseColorCallback(
@@ -231,6 +254,10 @@ void InkDropHostView::AnimateInkDrop(InkDropState state,
   GetEventHandler()->AnimateInkDrop(state, event);
 }
 
+bool InkDropHostView::HasInkDrop() const {
+  return !!ink_drop_;
+}
+
 InkDrop* InkDropHostView::GetInkDrop() {
   if (!ink_drop_) {
     if (ink_drop_mode_ == InkDropMode::OFF)
@@ -293,36 +320,16 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ink_drop_mask_.reset();
 }
 
-std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropForSquareRipple(
+std::unique_ptr<InkDropRipple> InkDropHostView::CreateSquareInkDropRipple(
     const gfx::Point& center_point,
     const gfx::Size& size) const {
+  constexpr float kLargeInkDropScale = 1.333f;
+  const gfx::Size large_size = gfx::ScaleToCeiledSize(size, kLargeInkDropScale);
   auto ripple = std::make_unique<SquareInkDropRipple>(
-      CalculateLargeInkDropSize(size), ink_drop_large_corner_radius_, size,
+      large_size, ink_drop_large_corner_radius_, size,
       ink_drop_small_corner_radius_, center_point, GetInkDropBaseColor(),
       GetInkDropVisibleOpacity());
   return ripple;
-}
-
-bool InkDropHostView::HasInkDrop() const {
-  return !!ink_drop_;
-}
-
-// static
-gfx::Size InkDropHostView::CalculateLargeInkDropSize(
-    const gfx::Size& small_size) {
-  // The scale factor to compute the large size of the default
-  // SquareInkDropRipple.
-  constexpr float kLargeInkDropScale = 1.333f;
-  return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
-}
-
-void InkDropHostView::OnLayerTransformed(const gfx::Transform& old_transform,
-                                         ui::PropertyChangeReason reason) {
-  View::OnLayerTransformed(old_transform, reason);
-
-  // Notify the ink drop that we have transformed so it can adapt accordingly.
-  if (HasInkDrop())
-    GetInkDrop()->HostTransformChanged(GetTransform());
 }
 
 const InkDropEventHandler* InkDropHostView::GetEventHandler() const {
@@ -384,6 +391,7 @@ ADD_PROPERTY_METADATA(base::RepeatingCallback<std::unique_ptr<InkDropMask>()>,
 ADD_PROPERTY_METADATA(base::RepeatingCallback<SkColor()>,
                       InkDropBaseColorCallback)
 ADD_READONLY_PROPERTY_METADATA(bool, Highlighted)
+ADD_PROPERTY_METADATA(SkColor, InkDropBaseColor, ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(float, InkDropVisibleOpacity)
 ADD_PROPERTY_METADATA(base::Optional<float>, InkDropHighlightOpacity)
 ADD_PROPERTY_METADATA(int, InkDropLargeCornerRadius)

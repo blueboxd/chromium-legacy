@@ -4313,6 +4313,10 @@
       'sandbox_linux_unittests': {},
     },
 
+    'linux_lacros_chrome_browsertests_version_skew': {
+      'lacros_chrome_browsertests': { },
+    },
+
     'linux_lacros_cq_gtests': {
       'browser_tests': {
         'swarming': {
@@ -7213,6 +7217,14 @@
       },
     },
 
+    'lacros_all_tast_tests_eve': {
+      'lacros_all_tast_tests': {
+        'variants': [
+          'LACROS_EVE',
+        ]
+      },
+    },
+
     # TODO(crbug.com/1195415): Add EVE variant once HW arrives and is deployed.
     'lacros_device_or_vm_tests': {
       'lacros_smoke_tast_tests': {
@@ -7257,18 +7269,18 @@
       },
     },
 
-    'lacros_smoke_tast_tests_amd64_generic': {
-      'lacros_smoke_tast_tests': {
-        'variants': [
-          'LACROS_AMD64_GENERIC',
-        ]
-      },
-    },
-
     'lacros_smoke_tast_tests_eve': {
       'lacros_smoke_tast_tests': {
         'variants': [
           'LACROS_EVE',
+        ]
+      },
+    },
+
+    'linux-lacros-version-skew-tests': {
+      'linux_lacros_chrome_browsertests_version_skew': {
+        'variants': [
+          'LACROS_VERSION_SKEW_CANARY',
         ]
       },
     },

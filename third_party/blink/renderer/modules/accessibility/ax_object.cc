@@ -472,6 +472,8 @@ int32_t ToAXMarkerType(DocumentMarker::MarkerType marker_type) {
   return static_cast<int32_t>(result);
 }
 
+// static
+bool AXObject::is_loading_inline_boxes_ = false;
 unsigned AXObject::number_of_live_ax_objects_ = 0;
 
 AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
@@ -528,7 +530,9 @@ void AXObject::Init(AXObject* parent) {
       << "\n* Parent = " << parent_->ToString(true, true)
       << "\n* Child = " << ToString(true, true);
 
-  SetNeedsToUpdateChildren();  // Should be called after role_ is set.
+  // This is one after the role_ is computed, because the role is used to
+  // determine whether an AXObject can have children.
+  children_dirty_ = CanHaveChildren();
 
   // Ensure that the aria-owns relationship is set before attempting
   // to update cached attribute values.
@@ -562,6 +566,11 @@ void AXObject::Detach() {
 #if defined(AX_FAIL_FAST_BUILD)
   SANITIZER_CHECK(!is_adding_children_) << ToString(true, true);
 #endif
+
+  CHECK(!is_loading_inline_boxes_)
+      << "Should not be attempting to detach object while in the middle of "
+         "recursively loading inline text boxes: "
+      << ToString(true, true);
 
   // Clear any children and call DetachFromParent() on them so that
   // no children are left with dangling pointers to their parent.
@@ -631,10 +640,8 @@ bool AXObject::IsMissingParent() const {
   if (!parent_)
     return !IsRoot();
 
-  DCHECK(!parent_->IsDetached())
-      << "Parent was detached:\n"
-      << "* Child = " << ToString(true, true)
-      << "\n* Parent = " << parent_->ToString(true, true);
+  if (parent_->IsDetached())
+    return true;
 
   return false;
 }
@@ -2388,11 +2395,6 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     return true;
   }
 
-  // <slot>s and their children are included in the tree.
-  if (CachedParentObject() &&
-      IsA<HTMLSlotElement>(CachedParentObject()->GetNode()))
-    return true;
-
   // Allow the browser side ax tree to access "visibility: [hidden|collapse]"
   // and "display: none" nodes. This is useful for APIs that return the node
   // referenced by aria-labeledby and aria-describedby.
@@ -2416,17 +2418,34 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (GetLayoutObject() && IsAriaHidden())
     return true;
 
+  // Custom elements and their children are included in the tree.
+  // <slot>s and their children are included in the tree.
+  // This checks to see if this a child one of those.
+  if (Node* parent_node = LayoutTreeBuilderTraversal::Parent(*node)) {
+    if (parent_node->IsCustomElement() || IsA<HTMLSlotElement>(parent_node))
+      return true;
+  }
+
   Element* element = GetElement();
   if (!element)
     return false;
 
-  // <slot>s and their children are included in the tree.
-  // TODO(accessibility) Consider including all shadow content; however, this
-  // can actually be a lot of nodes inside of a web component, e.g. svg.
-  if (IsA<HTMLSlotElement>(element))
+  // Custom elements and their children are included in the tree.
+  if (element->IsCustomElement())
     return true;
 
-  if (element->IsCustomElement())
+  // <slot>s and their children are included in the tree.
+  // Detailed explanation:
+  // <slot> elements are placeholders marking locations in a shadow tree where
+  // users of a web component can insert their own custom nodes. Inserted nodes
+  // (also known as distributed nodes) become children of their respective slots
+  // in the accessibility tree. In other words, the accessibility tree mirrors
+  // the flattened DOM tree or the layout tree, not the original DOM tree.
+  // Distributed nodes still maintain their parent relations and computed style
+  // information with their original location in the DOM. Therefore, we need to
+  // ensure that in the accessibility tree no remnant information from the
+  // unflattened DOM tree remains, such as the cached parent.
+  if (IsA<HTMLSlotElement>(element))
     return true;
 
   // Include all pseudo element content. Any anonymous subtree is included
@@ -3217,7 +3236,12 @@ AccessibilityOrientation AXObject::Orientation() const {
   return kAccessibilityOrientationUndefined;
 }
 
-void AXObject::LoadInlineTextBoxes() {}
+void AXObject::LoadInlineTextBoxes() {
+  base::AutoReset<bool> reentrancy_protector(&is_loading_inline_boxes_, true);
+  LoadInlineTextBoxesRecursive();
+}
+
+void AXObject::LoadInlineTextBoxesRecursive() {}
 
 AXObject* AXObject::NextOnLine() const {
   return nullptr;
@@ -4067,29 +4091,11 @@ AXObject* AXObject::ParentObject() const {
   // detached, but the children still exist. One example of this is when
   // a <select size="1"> changes to <select size="2">, where the
   // Role::kMenuListPopup is detached.
-  if (!parent_) {
+  if (IsMissingParent()) {
     DCHECK(!IsVirtualObject())
         << "A virtual object must have a parent, and cannot exist without one. "
            "The parent is set when the object is constructed.";
-    if (IsMissingParent())
-      RepairMissingParent();
-  } else {
-    // If the cached parent is detached, it means that when ClearChildren() was
-    // called, the parent did not find this as a child, and could not
-    // DetachFromParent() on the child.
-    // Hint: one way to debug this illegal condition when it it occurs, is to
-    // locally patch ComputeAccessibilityIsIgnoredButIncludedInTree() so
-    // that it returns true for all objects. This should allow ClearChildren()
-    // on the parent to find the children and call DetachFromParent() on them.
-    DCHECK(!parent_->IsDetached())
-        << "Cached parent cannot be detached:"
-        << "\n* |this| = " << ToString(true, true)
-        << "\n* GetNode() = " << GetNode()
-        << "\n* GetLayoutObject() = " << GetLayoutObject()
-        << "\n* Parent: " << parent_->ToString(true, true)
-        << "\n* GetParentNodeForComputeParent() = "
-        << GetParentNodeForComputeParent(GetNode())
-        << "\n* OwnerShadowHost(): " << GetNode()->OwnerShadowHost();
+    RepairMissingParent();
   }
 
   return parent_;
@@ -4209,15 +4215,14 @@ void AXObject::ClearChildren() const {
 
   // Loop through AXObject children.
 #if defined(AX_FAIL_FAST_BUILD)
-  SANITIZER_CHECK(!is_adding_children_)
-      << "Should not be attempting to clear children while in the middle of "
-         "adding children on parent: "
-      << ToString(true, true);
-  SANITIZER_CHECK(!is_loading_inline_boxes_)
-      << "Should not be attempting to clear children while in the middle of "
-         "iterating children to load inline text boxes on the same object."
+  CHECK(!is_adding_children_)
+      << "Should not attempt to simultaneosly add and clear children on: "
       << ToString(true, true);
 #endif
+
+  CHECK(!is_loading_inline_boxes_) << "Should not attempt to clear children "
+                                      "while loading inline text boxes: "
+                                   << ToString(true, true);
 
   for (const auto& child : children_) {
     if (child->CachedParentObject() == this)

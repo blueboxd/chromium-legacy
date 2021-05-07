@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -55,6 +56,21 @@ Checkbox::Checkbox(const std::u16string& label, PressedCallback callback)
   SetHasInkDropActionOnClick(true);
   views::InkDrop::UseInkDropWithoutAutoHighlight(this,
                                                  /*highlight_on_hover=*/false);
+  SetCreateInkDropRippleCallback(base::BindRepeating(
+      [](Checkbox* host) {
+        // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
+        return host->CreateSquareInkDropRipple(
+            host->image()->GetMirroredContentsBounds().CenterPoint(),
+            gfx::Size(21, 21));
+      },
+      this));
+  SetInkDropBaseColorCallback(base::BindRepeating(
+      [](Checkbox* host) {
+        // Usually ink-drop ripples match the text color. Checkboxes use the
+        // color of the unchecked, enabled icon.
+        return host->GetIconImageColor(IconState::ENABLED);
+      },
+      this));
 
   // Limit the checkbox height to match the legacy appearance.
   const gfx::Size preferred_size(LabelButton::CalculatePreferredSize());
@@ -153,18 +169,6 @@ std::unique_ptr<LabelButtonBorder> Checkbox::CreateDefaultBorder() const {
 void Checkbox::OnThemeChanged() {
   LabelButton::OnThemeChanged();
   UpdateImage();
-}
-
-std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
-  // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
-  return CreateInkDropForSquareRipple(
-      image()->GetMirroredContentsBounds().CenterPoint(), gfx::Size(21, 21));
-}
-
-SkColor Checkbox::GetInkDropBaseColor() const {
-  // Usually ink-drop ripples match the text color. Checkboxes use the color of
-  // the unchecked, enabled icon.
-  return GetIconImageColor(IconState::ENABLED);
 }
 
 SkPath Checkbox::GetFocusRingPath() const {

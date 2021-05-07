@@ -1724,13 +1724,16 @@
         ],
       },
       'linux-cfm-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'test_suites': {
           'gtest_tests': 'linux_cfm_gtests',
         },
       },
       'linux-chromeos-dbg': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
@@ -3207,7 +3210,7 @@
       },
       'linux-blink-optional-highdpi-rel-dummy': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_web_tests_high_dpi_isolated_scripts',
@@ -3215,7 +3218,7 @@
       },
       'linux-blink-rel-dummy': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
@@ -3325,6 +3328,14 @@
         },
         'test_suites': {
           'gtest_tests': 'linux_lacros_gtests',
+        },
+      },
+      'linux-lacros-version-skew-fyi': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux-lacros-version-skew-tests',
         },
       },
       'linux-perfetto-rel': {
@@ -6549,7 +6560,7 @@
           'chrome',
         ],
         'test_suites': {
-          'gtest_tests': 'lacros_smoke_tast_tests_amd64_generic',
+          'gtest_tests': 'lacros_all_tast_tests_eve',
           'skylab_tests': 'lacros_skylab_x86_64',
         },
         'swarming': {

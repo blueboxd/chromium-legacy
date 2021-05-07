@@ -359,6 +359,12 @@ NotificationInputContainerMD::NotificationInputContainerMD(
 
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   SetInkDropVisibleOpacity(1);
+  SetInkDropBaseColorCallback(base::BindRepeating(
+      [](views::View* host) {
+        return host->GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_NotificationInkDropBase);
+      },
+      this));
 
   AddChildView(ink_drop_container_);
 
@@ -401,18 +407,6 @@ void NotificationInputContainerMD::RemoveLayerBeneathView(ui::Layer* layer) {
   ink_drop_container_->RemoveLayerBeneathView(layer);
   textfield_->DestroyLayer();
   button_->DestroyLayer();
-}
-
-std::unique_ptr<views::InkDropRipple>
-NotificationInputContainerMD::CreateInkDropRipple() const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      GetInkDropVisibleOpacity());
-}
-
-SkColor NotificationInputContainerMD::GetInkDropBaseColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_NotificationInkDropBase);
 }
 
 void NotificationInputContainerMD::OnThemeChanged() {
@@ -577,6 +571,19 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   SetCreateInkDropCallback(base::BindRepeating(
       [](InkDropHostView* host) -> std::unique_ptr<views::InkDrop> {
         return std::make_unique<NotificationInkDropImpl>(host, host->size());
+      },
+      this));
+  SetCreateInkDropRippleCallback(base::BindRepeating(
+      [](InkDropHostView* host) -> std::unique_ptr<views::InkDropRipple> {
+        return std::make_unique<views::FloodFillInkDropRipple>(
+            host->size(), host->GetInkDropCenterBasedOnLastEvent(),
+            host->GetInkDropBaseColor(), host->GetInkDropVisibleOpacity());
+      },
+      this));
+  SetInkDropBaseColorCallback(base::BindRepeating(
+      [](views::View* host) {
+        return host->GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_NotificationBackgroundActive);
       },
       this));
 
@@ -1479,22 +1486,10 @@ void NotificationViewMD::RemoveBackgroundAnimation() {
   AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 }
 
-std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      GetPreferredSize(), GetInkDropCenterBasedOnLastEvent(),
-      GetInkDropBaseColor(), GetInkDropVisibleOpacity());
-}
-
 std::vector<views::View*> NotificationViewMD::GetChildrenForLayerAdjustment()
     const {
   return {header_row_, block_all_button_, dont_block_button_,
           settings_done_button_};
-}
-
-SkColor NotificationViewMD::GetInkDropBaseColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_NotificationBackgroundActive);
 }
 
 void NotificationViewMD::InkDropAnimationStarted() {

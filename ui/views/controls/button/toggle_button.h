@@ -69,8 +69,6 @@ class VIEWS_EXPORT ToggleButton : public Button {
   // Button:
   void NotifyClick(const ui::Event& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
-  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
-  SkColor GetInkDropBaseColor() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

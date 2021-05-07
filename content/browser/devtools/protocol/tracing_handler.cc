@@ -24,6 +24,7 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/traced_value.h"
 #include "base/trace_event/tracing_agent.h"
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
@@ -101,7 +102,7 @@ std::unique_ptr<base::Value> ConvertDictKeyStyle(const base::Value& value) {
   const base::ListValue* list = nullptr;
   if (value.GetAsList(&list)) {
     std::unique_ptr<base::ListValue> out_list(new base::ListValue());
-    for (const auto& key : *list)
+    for (const auto& key : list->GetList())
       out_list->Append(ConvertDictKeyStyle(key));
     return std::move(out_list);
   }

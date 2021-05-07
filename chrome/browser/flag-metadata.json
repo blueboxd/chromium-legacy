@@ -569,11 +569,6 @@
     "expiry_milestone": 94
   },
   {
-    "name": "chrome-share-qr-code",
-    "owners": [ "kmilka", "tgupta" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "chrome-share-screenshot",
     "owners": [ "jeffreycohen", "kristipark", "chrome-sharing-eng@google.com" ],
     "expiry_milestone": 92
@@ -581,12 +576,7 @@
   {
     "name": "chrome-sharing-hub",
     "owners": [ "kmilka", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 92
-  },
-  {
-    "name": "chrome-sharing-hub-v1-5",
-    "owners": [ "sophey", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "chrome-tips-in-main-menu",
@@ -2443,6 +2433,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-store-hours",
+    "owners": [ "jawaid@google.com" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "enable-subresource-redirect",
     "owners": [ "rajendrant", "mcrouse", "tbansal" ],
     "expiry_milestone": 92
@@ -2545,6 +2540,11 @@
   {
     "name": "enable-tflite-language-detection",
     "owners": [ "mcrouse@chromium.org", "chrome-intelligence-core@google.com" ],
+    "expiry_milestone": 94
+  },
+  {
+    "name": "enable-throttle-display-none-and-visibility-hidden-cross-origin-iframes",
+    "owners": [ "wjmaclean@chromium.org", "alexmos@chromium.org", "creis@chromium.org" ],
     "expiry_milestone": 94
   },
   {
@@ -3811,11 +3811,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "offline-pages-ct",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "offline-pages-ct-suppress-completed-notification",
     "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
@@ -3989,6 +3984,11 @@
     "name": "omnibox-pedals-batch2",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "omnibox-pedals-batch2-nonenglish",
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "omnibox-pedals-default-icon-colored",
@@ -4605,6 +4605,11 @@
     "name": "scan-app-media-link",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "scan-app-searchable-pdf",
+    "owners": [ "kmoed", "cros-peripherals@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "scan-app-sticky-settings",

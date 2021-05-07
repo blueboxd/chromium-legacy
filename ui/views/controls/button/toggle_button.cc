@@ -137,6 +137,19 @@ ToggleButton::ToggleButton(PressedCallback callback)
   SetHasInkDropActionOnClick(true);
   views::InkDrop::UseInkDropForSquareRipple(this,
                                             /*highlight_on_hover=*/false);
+  SetCreateInkDropRippleCallback(base::BindRepeating(
+      [](ToggleButton* host) {
+        gfx::Rect rect = host->thumb_view_->GetLocalBounds();
+        rect.Inset(-ThumbView::GetShadowOutsets());
+        return host->CreateSquareInkDropRipple(rect.CenterPoint());
+      },
+      this));
+  SetInkDropBaseColorCallback(base::BindRepeating(
+      [](ToggleButton* host) {
+        return host->GetTrackColor(host->GetIsOn() || host->HasFocus());
+      },
+      this));
+
   SetAddInkDropLayerCallback(base::BindRepeating(
       &InkDropHostView::AddInkDropLayer, base::Unretained(thumb_view_)));
   SetRemoveInkDropLayerCallback(base::BindRepeating(
@@ -320,16 +333,6 @@ void ToggleButton::PaintButtonContents(gfx::Canvas* canvas) {
       GetTrackColor(true), GetTrackColor(false), color_ratio));
   canvas->DrawRoundRect(track_rect, track_rect.height() / 2, track_flags);
   canvas->Restore();
-}
-
-std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
-  gfx::Rect rect = thumb_view_->GetLocalBounds();
-  rect.Inset(-ThumbView::GetShadowOutsets());
-  return CreateInkDropForSquareRipple(rect.CenterPoint());
-}
-
-SkColor ToggleButton::GetInkDropBaseColor() const {
-  return GetTrackColor(GetIsOn() || HasFocus());
 }
 
 void ToggleButton::AnimationProgressed(const gfx::Animation* animation) {

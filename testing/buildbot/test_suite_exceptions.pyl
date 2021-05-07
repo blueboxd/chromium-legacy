@@ -219,7 +219,6 @@
   'blink_web_tests': {
     'remove_from': [
       'Mac10.11 Tests',
-      'Mac10.13 Tests', # crbug.com/1205669
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
     ],
@@ -684,6 +683,9 @@
         },
       },
       'linux-chromeos-dbg': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
+        ],
         'swarming': {
           'shards': 30,
         },
@@ -1766,6 +1768,22 @@
         # These are slow on the TSan bots for some reason, crbug.com/794372
         'swarming': {
           'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
+        },
+      },
+      'Mac11 Tests': {
+        'swarming': {
+          'shards': 6,
+          'dimension_sets': [{
+            'os': 'Mac-11|Mac-10.16',
+            'cpu': 'x86-64',
+            # TODO(crbug.com/1176803): The Mac 11 pool seems to be an odd
+            # mix of machines where some of them are 3x slower than others,
+            # which really messes with the scheduling. Until we can figure
+            # out what to do about that, we'll just have those machines for
+            # one test suite, and run all of the other test suites on the
+            # faster machines.
+            'machine_type': 'n1-highcpu-4',
+          }],
         },
       },
       'ToTLinuxTSan': {

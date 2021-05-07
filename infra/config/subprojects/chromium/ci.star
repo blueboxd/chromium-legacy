@@ -528,6 +528,7 @@ ci.android_builder(
     execution_timeout = 4 * time.hour,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -582,6 +583,7 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -737,6 +739,7 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
     notifies = ["cronet"],
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -850,6 +853,7 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -930,6 +934,7 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -985,7 +990,7 @@ ci.android_fyi_builder(
         short_name = "64",
     ),
     cq_mirrors_console_view = "mirrors",
-    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    reclient_jobs = 150,
     execution_timeout = 5 * time.hour,
     main_console_view = main_console_if_on_branch(),
     reclient_instance = "rbe-chromium-trusted",
@@ -1005,6 +1010,7 @@ ci.android_fyi_builder(
     # build.
     execution_timeout = 4 * time.hour,
     reclient_instance = "rbe-chromium-trusted",
+    reclient_jobs = 150,
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_DEFAULT,
@@ -1454,7 +1460,7 @@ ci.chromium_builder(
         short_name = "off",
     ),
     cores = 32,
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = False,
 
     # See https://crbug.com/1153349#c22, as we update symbol_level=2, build
@@ -1516,7 +1522,7 @@ ci.chromium_builder(
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
     main_console_view = main_console_if_on_branch(),
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = False,
 )
 
@@ -1879,7 +1885,22 @@ ci.cipd_3pp_builder(
     schedule = "with 6h interval",
     triggered_by = [],
     properties = {
+        # TODO(hypan): Remove this property after chromium_3pp is
+        # migrated to a recipe module (crrev.com/c/2870555)
         "platform": "linux-amd64",
+        "$build/chromium_3pp": {
+            "platform": "linux-amd64",
+            "preprocess": [{
+                "name": "third_party/android_deps",
+                "cmd": [
+                    "{CHECKOUT}/src/third_party/android_deps/fetch_all.py",
+                    "-v",
+                    "--ignore-vulnerabilities",
+                ],
+            }],
+            "gclient_config": "chromium",
+            "gclient_apply_config": ["android"],
+        },
     },
 )
 
@@ -3075,6 +3096,13 @@ ci.fyi_builder(
             ],
         },
     },
+)
+
+ci.fyi_builder(
+    name = "linux-lacros-version-skew-fyi",
+    console_view_entry = consoles.console_view_entry(
+        category = "default",
+    ),
 )
 
 ci.fyi_builder(
@@ -5382,7 +5410,9 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac11 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    # TODO(crbug.com/1206401): Reenable on the branches when we have
+    # sufficient capacity.
+    # branch_selector = branches.STANDARD_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "mac",

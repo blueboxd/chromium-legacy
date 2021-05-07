@@ -15,6 +15,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/cpu.h"
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -22,6 +23,7 @@
 #include "base/process/launch.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_suite.h"

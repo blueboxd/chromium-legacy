@@ -126,6 +126,16 @@ Node* GetClosestNodeForLayoutObject(const LayoutObject* layout_object) {
   return node ? node : GetClosestNodeForLayoutObject(layout_object->Parent());
 }
 
+// Return true if display locked, false otherwise.
+// Also returns false if not a safe time to perform the check.
+bool IsDisplayLocked(const Node* node) {
+  if (!node)
+    return false;
+  if (node->GetDocument().IsFlatTreeTraversalForbidden())
+    return false;  // Cannot safely perform this check now.
+  return DisplayLockUtilities::NearestLockedExclusiveAncestor(*node);
+}
+
 bool IsActive(Document& document) {
   return document.IsActive() && !document.IsDetached();
 }
@@ -276,16 +286,14 @@ bool IsTextRelevantForAccessibility(const LayoutText& layout_text) {
 
 bool IsShadowContentRelevantForAccessibility(const Node* node) {
   DCHECK(node->ContainingShadowRoot());
-  // All author shadow content is relevant.
-  if (!node->IsInUserAgentShadowRoot())
-    return true;
 
   // Don't use non-<option> descendants of an AXMenuList.
   // If the UseAXMenuList flag is on, we use a specialized class AXMenuList
   // for handling the user-agent shadow DOM exposed by a <select> element.
   // That class adds a mock AXMenuListPopup, which adds AXMenuListOption
   // children for <option> descendants only.
-  if (AXObjectCacheImpl::UseAXMenuList() && !IsA<HTMLOptionElement>(node)) {
+  if (AXObjectCacheImpl::UseAXMenuList() && node->IsInUserAgentShadowRoot() &&
+      !IsA<HTMLOptionElement>(node)) {
     // Find any ancestor <select> if it is present.
     Node* host = node->OwnerShadowHost();
     auto* select_element = DynamicTo<HTMLSelectElement>(host);
@@ -606,7 +614,7 @@ AXObject* AXObjectCacheImpl::Get(const LayoutObject* layout_object) {
   if (!ax_id)
     return node ? Get(node) : nullptr;
 
-  if ((node && DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) ||
+  if (IsDisplayLocked(node) ||
       !IsLayoutObjectRelevantForAccessibility(*layout_object)) {
     // Change from AXLayoutObject -> AXNodeObject.
     // We previously saved the node in the cache with its layout object,
@@ -663,20 +671,22 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
       // objects that are no longer relevant.
       Invalidate(layout_id);
     } else {
-      // Layout object is irrelevant, but node object is still relevant.
+      // Layout object is irrelevant, but node object can still be relevant.
+      if (!node_id) {
+        Remove(layout_object);
+        return nullptr;
+      }
       layout_object = nullptr;
       layout_id = 0;
     }
   }
 
-  if (layout_id &&
-      DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+  if (layout_id && IsDisplayLocked(node)) {
     // Change from AXLayoutObject -> AXNodeObject.
     // The node is in a display locked subtree, but we've previously put it in
     // the cache with its layout object.
     Invalidate(layout_id);
-  } else if (layout_object && node_id && !layout_id &&
-             !DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+  } else if (layout_object && node_id && !layout_id && !IsDisplayLocked(node)) {
     // Change from AXNodeObject -> AXLayoutObject.
     // Has a layout object but no layout_id, meaning that when the AXObject was
     // originally created only for Node*, the LayoutObject* didn't exist yet.
@@ -970,7 +980,7 @@ AXObject* AXObjectCacheImpl::CreateAndInit(Node* node,
   // a locked subtree, which are created based on its node.
   LayoutObject* layout_object = node->GetLayoutObject();
   if (layout_object && IsLayoutObjectRelevantForAccessibility(*layout_object) &&
-      !DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+      !IsDisplayLocked(node)) {
     return CreateAndInit(layout_object, parent_if_known, use_axid);
   }
 
@@ -1138,10 +1148,15 @@ AXObject* AXObjectCacheImpl::CreateAndInit(LayoutObject* layout_object,
   // Example: parent calls Init() => ComputeAccessibilityIsIgnored() =>
   // CanSetFocusAttribute() => CanBeActiveDescendant() =>
   // IsARIAControlledByTextboxWithActiveDescendant() => GetOrCreate().
-  if (layout_object_mapping_.at(layout_object))
-    return Get(layout_object);
+  if (layout_object_mapping_.at(layout_object)) {
+    AXObject* result = Get(layout_object);
+    DCHECK(result) << "Missing cached AXObject for " << layout_object;
+    return result;
+  }
 
   AXObject* new_obj = CreateFromRenderer(layout_object);
+
+  DCHECK(new_obj) << "Could not create AXObject for " << layout_object;
 
   // Will crash later if we have two objects for the same layoutObject.
   DCHECK(!layout_object_mapping_.at(layout_object))
@@ -1728,6 +1743,41 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {
       &AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout, node);
 }
 
+bool AXObjectCacheImpl::IsStillInTree(AXObject* obj) {
+  // Return an AXObject for the node if the AXObject is still in the tree.
+  // If there is a viable included parent, that means it's still in the tree.
+  // Otherwise, repair missing parent, or prune the object if no viable parent
+  // can be found. For example, through CSS changes, an ancestor became an
+  // image, which is always a leaf; therefore, no descendants are "in the tree".
+
+  if (!obj)
+    return false;
+
+  if (obj->IsMissingParent()) {
+    // Parent is missing. Attempt to repair it with a viable recomputed parent.
+    AXObject* ax_parent = obj->ComputeParent();
+    if (!IsStillInTree(ax_parent)) {
+      // Parent is unrepairable, meaning that this AXObject can no longer be
+      // attached to the tree and is no longer viable. Prune it now.
+      Remove(obj);
+      return false;
+    }
+    obj->SetParent(ax_parent);
+    return true;
+  }
+
+  if (!obj->LastKnownIsIncludedInTreeValue()) {
+    // Current object was not included in the tree, therefore, recursively
+    // keep checking up a level until a viable included parent is found.
+    if (!IsStillInTree(obj->CachedParentObject())) {
+      Remove(obj);
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
     Node* node) {
   if (!node || !node->isConnected())
@@ -1905,8 +1955,11 @@ void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* optional_node,
       << "Unclean document at lifecycle " << document->Lifecycle().ToString();
 #endif  // DCHECK_IS_ON()
 
-  if (obj)
+  if (obj) {
+    if (!IsStillInTree(obj))
+      return;  // Object is no longer in tree, and therefore not viable.
     obj->ChildrenChanged();
+  }
 
   if (optional_node)
     relation_cache_->UpdateRelatedTree(optional_node, obj);

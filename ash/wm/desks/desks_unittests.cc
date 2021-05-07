@@ -485,6 +485,80 @@ TEST_F(DesksTest, RemoveDeskWithEmptyName) {
   EXPECT_EQ(1u, controller->desks().size());
 }
 
+// Tests that removing a non-active desk updates the window workspaces for
+// desks restore correctly.
+TEST_F(DesksTest, RemovingNonActiveDeskUpdatesWindowWorkspaces) {
+  auto* controller = DesksController::Get();
+
+  // Create two new desks.
+  NewDesk();
+  NewDesk();
+  EXPECT_EQ(3u, controller->desks().size());
+
+  // Create one window in each desk.
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  for (int i = 0; i < 3; i++) {
+    windows.push_back(CreateAppWindow());
+    controller->SendToDeskAtIndex(windows[i].get(), i);
+    EXPECT_EQ(i, windows[i]->GetProperty(aura::client::kWindowWorkspaceKey));
+  }
+
+  // Switch to the third desk.
+  ActivateDesk(controller->desks()[2].get());
+
+  // Close the second desk.
+  RemoveDesk(controller->desks()[1].get());
+  EXPECT_EQ(2u, controller->desks().size());
+
+  // The window in the first desk remain unaffected by the second desk removal.
+  EXPECT_EQ(0, windows[0]->GetProperty(aura::client::kWindowWorkspaceKey));
+  // The window in the removed second desk should move to the active desk, the
+  // third desk, which just becomes the second desk after the removal.
+  EXPECT_EQ(1, windows[1]->GetProperty(aura::client::kWindowWorkspaceKey));
+  // The window in the third desk update its workspace to index - 1.
+  EXPECT_EQ(1, windows[2]->GetProperty(aura::client::kWindowWorkspaceKey));
+}
+
+// Tests that removing an active desk updates the window workspaces for desks
+// restore correctly.
+TEST_F(DesksTest, RemovingActiveDeskUpdatesWindowWorkspaces) {
+  auto* controller = DesksController::Get();
+
+  // Create three new desks.
+  NewDesk();
+  NewDesk();
+  NewDesk();
+  EXPECT_EQ(4u, controller->desks().size());
+
+  // Create one window in each desk.
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  for (int i = 0; i < 4; i++) {
+    windows.push_back(CreateAppWindow());
+    controller->SendToDeskAtIndex(windows[i].get(), i);
+    EXPECT_EQ(i, windows[i]->GetProperty(aura::client::kWindowWorkspaceKey));
+  }
+
+  // Switch to the second desk.
+  const Desk* desk_2 = controller->desks()[1].get();
+  ActivateDesk(desk_2);
+
+  // Close the second desk.
+  RemoveDesk(desk_2);
+  EXPECT_EQ(3u, controller->desks().size());
+
+  // The previous desk (first) becomes active after closing the second desk.
+  EXPECT_EQ(controller->desks()[0].get(), controller->active_desk());
+
+  // The window in the first desk remain unaffected by the second desk removal.
+  EXPECT_EQ(0, windows[0]->GetProperty(aura::client::kWindowWorkspaceKey));
+  // The window from the removed second desk moves to the active, first desk.
+  EXPECT_EQ(0, windows[1]->GetProperty(aura::client::kWindowWorkspaceKey));
+  // The desk indices of the third and forth desks are decreased by one, so
+  // the workspace values of windows in those desks are reduced by one.
+  EXPECT_EQ(1, windows[2]->GetProperty(aura::client::kWindowWorkspaceKey));
+  EXPECT_EQ(2, windows[3]->GetProperty(aura::client::kWindowWorkspaceKey));
+}
+
 // Test that gesture taps do not reset the button state to normal when the
 // button is disabled. https://crbug.com/1084241.
 TEST_F(DesksTest, GestureTapOnNewDeskButton) {
@@ -1261,7 +1335,7 @@ TEST_F(DesksTest, MinimizedWindow) {
 
 // Tests that the app list stays open when switching desks. Regression test for
 // http://crbug.com/1138982.
-TEST_F(DesksTest, AppListStaysOpen) {
+TEST_F(DesksTest, AppListStaysOpenInClamshell) {
   auto* controller = DesksController::Get();
   NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
@@ -1279,6 +1353,29 @@ TEST_F(DesksTest, AppListStaysOpen) {
   // Switch back to desk 1. Test that the app list is still open.
   ActivateDesk(controller->desks()[0].get());
   EXPECT_TRUE(app_list_controller->IsVisible(base::nullopt));
+}
+
+// Tests that the app list correctly loses focus in tablet mode when switching
+// desks. Regression test for https://crbug.com/1206030.
+TEST_F(DesksTest, AppListActivationInTablet) {
+  auto* controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+
+  // Create one app window on desk 1.
+  auto window = CreateAppWindow(gfx::Rect(400, 400));
+  ASSERT_EQ(window.get(), window_util::GetActiveWindow());
+
+  // Enter tablet mode and switch to desk 2. Verify the app list has activation
+  // as there are no app windows.
+  TabletModeControllerTestApi().EnterTabletMode();
+  ActivateDesk(controller->desks()[1].get());
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  ASSERT_EQ(app_list_controller->GetWindow(), window_util::GetActiveWindow());
+
+  // Switch back to desk 1. `window` should have activation now.
+  ActivateDesk(controller->desks()[0].get());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
 TEST_P(DesksTest, DragWindowToDesk) {
@@ -5268,6 +5365,61 @@ TEST_F(DesksTest, DragNewDeskWhileSnappingBack) {
   EXPECT_EQ(desks_bar_view->GetDragDeskMiniViewForTesting(), mini_view_2);
   StartDragDeskPreview(mini_view_1, event_generator);
   EXPECT_EQ(desks_bar_view->GetDragDeskMiniViewForTesting(), mini_view_1);
+}
+
+// Tests that the right desk containers are visible when switching between desks
+// really fast. Regression test for https://crbug.com/1194757.
+TEST_F(DesksTest, FastDeskSwitches) {
+  // Add 3 more desks and add a couple windows on each one.
+  CreateTestWindow();
+  CreateTestWindow();
+
+  for (int i = 0; i < 3; ++i) {
+    NewDesk();
+    CreateTestWindow();
+    CreateTestWindow();
+  }
+
+  // Start at the rightmost, 4th desk.
+  auto* desks_controller = DesksController::Get();
+  ASSERT_EQ(4u, desks_controller->desks().size());
+  desks_controller->ActivateDesk(desks_controller->desks()[3].get(),
+                                 DesksSwitchSource::kUserSwitch);
+
+  ui::ScopedAnimationDurationScaleMode normal_anim(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Activate the first 2 desks very quickly, without waiting for screenshots to
+  // be taken.
+  desks_controller->ActivateAdjacentDesk(
+      /*going_left=*/true, DesksSwitchSource::kDeskSwitchShortcut);
+  desks_controller->ActivateAdjacentDesk(
+      /*going_left=*/true, DesksSwitchSource::kDeskSwitchShortcut);
+
+  // Let the last desk animation to complete.
+  desks_controller->ActivateAdjacentDesk(
+      /*going_left=*/true, DesksSwitchSource::kDeskSwitchShortcut);
+  // Note that `DeskController::ActivateAdjacentDesk()` will trigger two
+  // `OnDeskSwitchAnimationFinished()` calls. The first is from the previous
+  // animation which we destroy since its screenshots have not been taken yet.
+  // The second is the animation to the first desk that we want to wait to take
+  // the screenshots and animate.
+  DeskSwitchAnimationWaiter waiter;
+  waiter.Wait();
+
+  // Check the desk containers. Test that only the first desk container is
+  // visible, but they should all be opaque.
+  std::vector<aura::Window*> desk_containers =
+      desks_util::GetDesksContainers(Shell::GetPrimaryRootWindow());
+  ASSERT_EQ(8u, desk_containers.size());
+  EXPECT_TRUE(desk_containers[0]->IsVisible());
+  EXPECT_EQ(1.f, desk_containers[0]->layer()->opacity());
+
+  for (size_t i = 1; i < desk_containers.size(); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Desk #%lu", i + 1));
+    EXPECT_FALSE(desk_containers[i]->IsVisible());
+    EXPECT_EQ(1.f, desk_containers[i]->layer()->opacity());
+  }
 }
 
 // A test class that uses a mock time test environment.

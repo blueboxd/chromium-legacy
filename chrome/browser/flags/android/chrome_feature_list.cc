@@ -163,10 +163,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDontAutoHideBrowserControls,
     &kChromeShareHighlightsAndroid,
     &kChromeShareLongScreenshot,
-    &kChromeShareQRCode,
     &kChromeShareScreenshot,
     &kChromeSharingHub,
-    &kChromeSharingHubV15,
     &kChromeStartupDelegate,
     &kChromeSurveyNextAndroid,
     &kCommandLineOnNonRooted,
@@ -229,6 +227,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
+    &kStoreHoursAndroid,
     &kSwapPixelFormatToFixConvertFromTranslucent,
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
@@ -279,7 +278,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &language::kTranslateIntent,
     &messages::kMessagesForAndroidInfrastructure,
     &offline_pages::kOfflineIndicatorFeature,
-    &offline_pages::kOfflinePagesCTFeature,    // See crbug.com/620421.
     &offline_pages::kOfflinePagesCTV2Feature,  // See crbug.com/734753.
     &offline_pages::kOfflinePagesDescriptiveFailStatusFeature,
     &offline_pages::kOfflinePagesDescriptivePendingStatusFeature,
@@ -438,17 +436,11 @@ const base::Feature kChromeShareHighlightsAndroid{
 const base::Feature kChromeShareLongScreenshot{
     "ChromeShareLongScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kChromeShareQRCode{"ChromeShareQRCode",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kChromeShareScreenshot{"ChromeShareScreenshot",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeSharingHub{"ChromeSharingHub",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kChromeSharingHubV15{"ChromeSharingHubV15",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeStartupDelegate{"ChromeStartupDelegate",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -637,6 +629,9 @@ const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
 
 const base::Feature kSpecialUserDecision{"SpecialUserDecision",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kStoreHoursAndroid{"StoreHoursAndroid",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSwapPixelFormatToFixConvertFromTranslucent{
     "SwapPixelFormatToFixConvertFromTranslucent",

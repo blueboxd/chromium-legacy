@@ -116,15 +116,18 @@ class MemoriesServiceTest : public testing::Test {
         visit.url_row.typed_count(), visit.visit_row.visit_time,
         visit.url_row.hidden(), history::VisitSource::SOURCE_BROWSED);
 
-    auto& visit_copy =
-        memories_service_->GetOrCreateIncompleteVisit(next_navigation_id_);
-    visit_copy.visit_row = visit.visit_row;
-    visit_copy.url_row = visit.url_row;
-    visit_copy.context_annotations = visit.context_annotations;
-    visit_copy.status.history_rows = true;
-    visit_copy.status.navigation_ended = true;
-    visit_copy.status.navigation_end_signals = true;
-    memories_service_->CompleteVisitIfReady(next_navigation_id_);
+    auto& incomplete_visit_context_annotations =
+        memories_service_->GetOrCreateIncompleteVisitContextAnnotations(
+            next_navigation_id_);
+    incomplete_visit_context_annotations.visit_row = visit.visit_row;
+    incomplete_visit_context_annotations.url_row = visit.url_row;
+    incomplete_visit_context_annotations.context_annotations =
+        visit.context_annotations;
+    incomplete_visit_context_annotations.status.history_rows = true;
+    incomplete_visit_context_annotations.status.navigation_ended = true;
+    incomplete_visit_context_annotations.status.navigation_end_signals = true;
+    memories_service_->CompleteVisitContextAnnotationsIfReady(
+        next_navigation_id_);
     next_navigation_id_++;
   }
 
@@ -174,8 +177,10 @@ class MemoriesServiceTest : public testing::Test {
         cluster->add_visit_ids(visit_id);
     }
     if (!clustered_visit_ids.empty()) {
-      response.mutable_clusters(0)->mutable_keywords()->Add("keyword 1");
-      response.mutable_clusters(0)->mutable_keywords()->Add("keyword 2");
+      response.mutable_clusters(0)->mutable_keywords()->Add("apples");
+      // We had a bug where we couldn't match against uppercase keywords,
+      // so we therefore want to test against an uppercase keyword.
+      response.mutable_clusters(0)->mutable_keywords()->Add("Red Oranges");
     }
     test_url_loader_factory_.AddResponse(kFakeEndpoint,
                                          response.SerializeAsString());
@@ -242,8 +247,8 @@ TEST_F(MemoriesServiceTest, QueryMemoriesEmptyQuery) {
             EXPECT_EQ(response.clusters[0]->top_visits[1]->page_title,
                       "Github title");
             ASSERT_EQ(response.clusters[0]->keywords.size(), 2u);
-            EXPECT_EQ(response.clusters[0]->keywords[0], u"keyword 1");
-            EXPECT_EQ(response.clusters[0]->keywords[1], u"keyword 2");
+            EXPECT_EQ(response.clusters[0]->keywords[0], u"apples");
+            EXPECT_EQ(response.clusters[0]->keywords[1], u"Red Oranges");
             EXPECT_FALSE(response.clusters[1]->id.is_empty());
             ASSERT_EQ(response.clusters[1]->top_visits.size(), 1u);
             EXPECT_EQ(response.clusters[1]->top_visits[0]->id, 4);
@@ -264,14 +269,15 @@ TEST_F(MemoriesServiceTest, QueryMemoriesEmptyQuery) {
   run_loop_.Run();
 }
 
-TEST_F(MemoriesServiceTest, QueryMemories) {
+TEST_F(MemoriesServiceTest, QueryMemoriesMatchingNonEmptyQuery) {
   EnableMemoriesWithEndpoint(kFakeEndpoint);
 
   AddVisit(0, GURL{"https://google.com"}, u"Google title", 2, IntToTime(2), 3);
   AddVisit(0, GURL{"https://github.com"}, u"Github title", 4, IntToTime(4), 5);
 
   auto query_params = mojom::QueryParams::New();
-  query_params->query = "Keyword";
+  // Verify that we can match against the "Red Oranges" uppercase keyword.
+  query_params->query = "orang";
 
   EXPECT_FALSE(test_url_loader_factory_.IsPending(kFakeEndpoint));
   memories_service_->QueryMemories(
@@ -299,8 +305,39 @@ TEST_F(MemoriesServiceTest, QueryMemories) {
             EXPECT_EQ(response.clusters[0]->top_visits[1]->page_title,
                       "Github title");
             ASSERT_EQ(response.clusters[0]->keywords.size(), 2u);
-            EXPECT_EQ(response.clusters[0]->keywords[0], u"keyword 1");
-            EXPECT_EQ(response.clusters[0]->keywords[1], u"keyword 2");
+            EXPECT_EQ(response.clusters[0]->keywords[0], u"apples");
+            EXPECT_EQ(response.clusters[0]->keywords[1], u"Red Oranges");
+            run_loop_quit_.Run();
+          }),
+      &task_tracker_);
+
+  VerifyHardcodedTestDataInUrlLoaderRequest();
+  InjectHardcodedTestDataToUrlLoaderResponse({{2, 4}, {4}});
+
+  // Verify the callback is invoked.
+  run_loop_.Run();
+}
+
+TEST_F(MemoriesServiceTest, QueryMemoriesNonMatchingNonEmptyQuery) {
+  EnableMemoriesWithEndpoint(kFakeEndpoint);
+
+  AddVisit(0, GURL{"https://google.com"}, u"Google title", 2, IntToTime(2), 3);
+  AddVisit(0, GURL{"https://github.com"}, u"Github title", 4, IntToTime(4), 5);
+
+  auto query_params = mojom::QueryParams::New();
+  query_params->query = "should_not_match_anything";
+
+  EXPECT_FALSE(test_url_loader_factory_.IsPending(kFakeEndpoint));
+  memories_service_->QueryMemories(
+      std::move(query_params),
+      // This "expect" block is not run until after the fake response is sent
+      // further down in this method.
+      base::BindLambdaForTesting(
+          [&](MemoriesService::QueryMemoriesResponse response) {
+            // Verify that the continuation query params is nullptr.
+            ASSERT_FALSE(!!response.query_params);
+            // Verify the parsed response.
+            EXPECT_TRUE(response.clusters.empty());
             run_loop_quit_.Run();
           }),
       &task_tracker_);
@@ -633,12 +670,14 @@ TEST_F(MemoriesServiceTest, QueryMemoriesWithHistoryDbWithPendingRequest) {
   run_loop_.Run();
 }
 
-TEST_F(MemoriesServiceTest, CompleteVisitIfReady) {
+TEST_F(MemoriesServiceTest, CompleteVisitContextAnnotationsIfReady) {
   auto test = [&](RecordingStatus status, bool expected_complete) {
-    auto& visit = memories_service_->GetOrCreateIncompleteVisit(0);
-    visit.status = status;
-    memories_service_->CompleteVisitIfReady(0);
-    EXPECT_NE(memories_service_->HasIncompleteVisit(0), expected_complete);
+    auto& incomplete_visit_context_annotations =
+        memories_service_->GetOrCreateIncompleteVisitContextAnnotations(0);
+    incomplete_visit_context_annotations.status = status;
+    memories_service_->CompleteVisitContextAnnotationsIfReady(0);
+    EXPECT_NE(memories_service_->HasIncompleteVisitContextAnnotations(0),
+              expected_complete);
   };
 
   // Complete cases:
@@ -684,10 +723,12 @@ TEST_F(MemoriesServiceTest, CompleteVisitIfReady) {
   }
 
   auto test_dcheck = [&](RecordingStatus status) {
-    auto& visit = memories_service_->GetOrCreateIncompleteVisit(0);
-    visit.status = status;
-    EXPECT_DCHECK_DEATH(memories_service_->CompleteVisitIfReady(0));
-    EXPECT_TRUE(memories_service_->HasIncompleteVisit(0));
+    auto& incomplete_visit_context_annotations =
+        memories_service_->GetOrCreateIncompleteVisitContextAnnotations(0);
+    incomplete_visit_context_annotations.status = status;
+    EXPECT_DCHECK_DEATH(
+        memories_service_->CompleteVisitContextAnnotationsIfReady(0));
+    EXPECT_TRUE(memories_service_->HasIncompleteVisitContextAnnotations(0));
   };
 
   // Impossible cases:
@@ -707,28 +748,31 @@ TEST_F(MemoriesServiceTest, CompleteVisitIfReady) {
   }
 }
 
-TEST_F(MemoriesServiceTest, CompleteVisitIfReadyWhenFeatureDisabled) {
+TEST_F(MemoriesServiceTest,
+       CompleteVisitContextAnnotationsIfReadyWhenFeatureDisabled) {
   {
-    // When the feature is disabled, the incomplete visit should be removed but
-    // not added to visits.
+    // When the feature is disabled, the `IncompleteVisitContextAnnotations`
+    // should be removed but not added to visits.
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(kMemories);
-    auto& visit = memories_service_->GetOrCreateIncompleteVisit(0);
-    visit.status = {true, true, true};
-    memories_service_->CompleteVisitIfReady(0);
-    EXPECT_FALSE(memories_service_->HasIncompleteVisit(0));
+    auto& incomplete_visit_context_annotations =
+        memories_service_->GetOrCreateIncompleteVisitContextAnnotations(0);
+    incomplete_visit_context_annotations.status = {true, true, true};
+    memories_service_->CompleteVisitContextAnnotationsIfReady(0);
+    EXPECT_FALSE(memories_service_->HasIncompleteVisitContextAnnotations(0));
     EXPECT_TRUE(memories_service_test_api_->GetVisits().empty());
   }
 
   {
-    // When the feature is enabled, the incomplete visit should be removed and
-    // added to visits.
+    // When the feature is enabled, the `IncompleteVisitContextAnnotations`
+    // should be removed and added to visits.
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(kMemories);
-    auto& visit = memories_service_->GetOrCreateIncompleteVisit(0);
-    visit.status = {true, true, true};
-    memories_service_->CompleteVisitIfReady(0);
-    EXPECT_FALSE(memories_service_->HasIncompleteVisit(0));
+    auto& incomplete_visit_context_annotations =
+        memories_service_->GetOrCreateIncompleteVisitContextAnnotations(0);
+    incomplete_visit_context_annotations.status = {true, true, true};
+    memories_service_->CompleteVisitContextAnnotationsIfReady(0);
+    EXPECT_FALSE(memories_service_->HasIncompleteVisitContextAnnotations(0));
     EXPECT_EQ(memories_service_test_api_->GetVisits().size(), 1u);
   }
 }

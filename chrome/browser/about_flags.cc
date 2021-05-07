@@ -1193,23 +1193,6 @@ const FeatureEntry::FeatureVariation kOmniboxBookmarkPathsVariations[] = {
         nullptr,
     },
 };
-
-const FeatureEntry::FeatureVariation
-    kOmniboxKeywordSpaceTriggeringVariations[] = {
-        {
-            "Single Space",
-            (FeatureEntry::FeatureParam[]){},
-            0,
-            nullptr,
-        },
-        {
-            "Double Space",
-            (FeatureEntry::FeatureParam[]){
-                {"KeywordSpaceTriggeringDoubleSpace", "true"}},
-            1,
-            nullptr,
-        }};
-
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) ||
         // defined(OS_WIN)
 
@@ -3266,18 +3249,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeShareLongScreenshotName,
      flag_descriptions::kChromeShareLongScreenshotDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeShareLongScreenshot)},
-    {"chrome-share-qr-code", flag_descriptions::kChromeShareQRCodeName,
-     flag_descriptions::kChromeShareQRCodeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeShareQRCode)},
     {"chrome-share-screenshot", flag_descriptions::kChromeShareScreenshotName,
      flag_descriptions::kChromeShareScreenshotDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeShareScreenshot)},
     {"chrome-sharing-hub", flag_descriptions::kChromeSharingHubName,
      flag_descriptions::kChromeSharingHubDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHub)},
-    {"chrome-sharing-hub-v1-5", flag_descriptions::kChromeSharingHubV15Name,
-     flag_descriptions::kChromeSharingHubV15Description, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHubV15)},
     {"webnotes-stylize", flag_descriptions::kWebNotesStylizeName,
      flag_descriptions::kWebNotesStylizeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kWebNotesStylize)},
@@ -3804,9 +3781,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
-    {"offline-pages-ct", flag_descriptions::kOfflinePagesCtName,
-     flag_descriptions::kOfflinePagesCtDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTFeature)},
     {"offline-pages-ct-v2", flag_descriptions::kOfflinePagesCtV2Name,
      flag_descriptions::kOfflinePagesCtV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTV2Feature)},
@@ -4266,6 +4240,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-pedals-batch2", flag_descriptions::kOmniboxPedalsBatch2Name,
      flag_descriptions::kOmniboxPedalsBatch2Description, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch2)},
+    {"omnibox-pedals-batch2-nonenglish",
+     flag_descriptions::kOmniboxPedalsBatch2NonEnglishName,
+     flag_descriptions::kOmniboxPedalsBatch2NonEnglishDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch2NonEnglish)},
     {"omnibox-pedals-default-icon-colored",
      flag_descriptions::kOmniboxPedalsDefaultIconColoredName,
      flag_descriptions::kOmniboxPedalsDefaultIconColoredDescription, kOsDesktop,
@@ -4338,12 +4316,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDisableCGIParamMatchingName,
      flag_descriptions::kOmniboxDisableCGIParamMatchingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kDisableCGIParamMatching)},
-    {"omnibox-keyword-space-triggering",
-     flag_descriptions::kOmniboxKeywordSpaceTriggeringName,
-     flag_descriptions::kOmniboxKeywordSpaceTriggeringDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kKeywordSpaceTriggering,
-                                    kOmniboxKeywordSpaceTriggeringVariations,
-                                    "OmniboxBundledExperimentV1")},
     {"omnibox-keyword-space-triggering-setting",
      flag_descriptions::kOmniboxKeywordSpaceTriggeringSettingName,
      flag_descriptions::kOmniboxKeywordSpaceTriggeringSettingDescription,
@@ -4858,6 +4830,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCriticalPersistedTabDataName,
      flag_descriptions::kCriticalPersistedTabDataDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCriticalPersistedTabData)},
+
+    {"enable-store-hours", flag_descriptions::kStoreHoursAndroidName,
+     flag_descriptions::kStoreHoursAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kStoreHoursAndroid)},
 
     {"enable-tab-grid-layout", flag_descriptions::kTabGridLayoutAndroidName,
      flag_descriptions::kTabGridLayoutAndroidDescription, kOsAndroid,
@@ -6364,6 +6340,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"scan-app-media-link", flag_descriptions::kScanAppMediaLinkName,
      flag_descriptions::kScanAppMediaLinkDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppMediaLink)},
+    {"scan-app-searchable-pdf", flag_descriptions::kScanAppSearchablePdfName,
+     flag_descriptions::kScanAppSearchablePdfDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kScanAppSearchablePdf)},
     {"scan-app-sticky-settings", flag_descriptions::kScanAppStickySettingsName,
      flag_descriptions::kScanAppStickySettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppStickySettings)},
@@ -7262,6 +7241,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoName,
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUpdateHistoryEntryPointsInIncognito)},
+
+    {"enable-throttle-display-none-and-visibility-hidden-cross-origin-iframes",
+     flag_descriptions::
+         kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName,
+     flag_descriptions::
+         kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         blink::features::
+             kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes)}
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -7362,6 +7362,8 @@ Called by update_bad_message_reasons.py.-->
       label="CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP"/>
   <int value="12" label="CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP"/>
   <int value="13" label="CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM"/>
+  <int value="14" label="CPMD_BAD_ORIGIN_PASSWORD_FORM_CLEARED"/>
+  <int value="15" label="CPMD_BAD_ORIGIN_CHECK_SAFE_BROWSING_REPUTATION"/>
 </enum>
 
 <enum name="BadSyncDataReason">
@@ -32385,7 +32387,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3878" label="PrefixedStorageQuotaThirdPartyContext"/>
   <int value="3879" label="RequestedFileSystemPersistentThirdPartyContext"/>
   <int value="3880" label="PrefixedStorageInfoThirdPartyContext"/>
-  <int value="3881" label="CrossOriginEmbedderPolicyCorsOrCredentialless"/>
+  <int value="3881" label="CrossOriginEmbedderPolicyCredentialless"/>
   <int value="3882" label="PostMessageFromSecureToSecure"/>
   <int value="3883" label="PostMessageFromInsecureToInsecure"/>
   <int value="3884" label="WebAppManifestProtocolHandlers"/>
@@ -67590,6 +67592,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="74" label="MainThreadTaskQueueIPCTracking"/>
   <int value="75" label="NetworkingUnfreezable"/>
   <int value="76" label="WakeLock"/>
+  <int value="77" label="InternalInputBlocking"/>
+  <int value="78" label="WebGL"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

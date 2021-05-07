@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
@@ -37,9 +38,13 @@ class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
                        CompositorElementId element_id);
 
   const TransformPaintPropertyNode* ScrollTranslation() const {
+    DCHECK(!IsTombstone());
     return data_->scroll_translation_;
   }
-  CompositorElementId ElementId() const { return data_->element_id_; }
+  CompositorElementId ElementId() const {
+    DCHECK(!IsTombstone());
+    return data_->element_id_;
+  }
 
   // Paints the scrollbar into the internal paint record, for non-composited
   // scrollbar.
@@ -48,12 +53,6 @@ class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
   // Create or reuse the cc scrollbar layer, for composited scrollbar.
   scoped_refptr<cc::ScrollbarLayerBase> CreateOrReuseLayer(
       cc::ScrollbarLayerBase* existing_layer) const;
-
-  // DisplayItem
-  bool Equals(const DisplayItem&) const override;
-#if DCHECK_IS_ON()
-  void PropertiesAsJSON(JSONObject&) const override;
-#endif
 
   // Records a scrollbar into a GraphicsContext. Must check
   // PaintController::UseCachedItem() before calling this function.
@@ -67,6 +66,12 @@ class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
                      CompositorElementId element_id);
 
  private:
+  friend class DisplayItem;
+  bool EqualsForUnderInvalidationImpl(const ScrollbarDisplayItem&) const;
+#if DCHECK_IS_ON()
+  void PropertiesAsJSONImpl(JSONObject&) const;
+#endif
+
   struct Data {
     scoped_refptr<cc::Scrollbar> scrollbar_;
     const TransformPaintPropertyNode* scroll_translation_;
@@ -80,6 +85,13 @@ class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
   // affect performance much because ScrollbarDisplayItems are rare in the
   // painted result.
   std::unique_ptr<Data> data_;
+};
+
+template <>
+struct DowncastTraits<ScrollbarDisplayItem> {
+  static bool AllowFrom(const DisplayItem& i) {
+    return !i.IsTombstone() && i.IsScrollbar();
+  }
 };
 
 }  // namespace blink

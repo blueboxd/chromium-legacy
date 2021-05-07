@@ -42,6 +42,8 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 
+using testing::_;
+
 namespace policy {
 
 namespace {
@@ -380,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerBrowserTest, PrintingRestricted) {
   DlpContentManager* manager = helper_.GetContentManager();
 
   SetupDlpRulesManager();
-  EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern)
+  EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern(_, _, _))
       .Times(2)
       .WillRepeatedly(testing::Return(src_pattern));
 
@@ -399,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerBrowserTest, PrintingRestricted) {
 
   // Check that IsPrintingRestricted emitted an event.
   EXPECT_TRUE(manager->IsPrintingRestricted(web_contents));
-  EXPECT_EQ(events.size(), 1);
+  EXPECT_EQ(events.size(), 1u);
   EXPECT_THAT(events[0],
               IsDlpPolicyEvent(CreatePrintingRestrictedDlpEvent(src_pattern)));
 
@@ -411,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerBrowserTest, PrintingRestricted) {
                        /*print_only_selection=*/false);
   EXPECT_TRUE(
       display_service_tester.GetNotification(kPrintBlockedNotificationId));
-  EXPECT_EQ(events.size(), 2);
+  EXPECT_EQ(events.size(), 2u);
   EXPECT_THAT(events[1],
               IsDlpPolicyEvent(CreatePrintingRestrictedDlpEvent(src_pattern)));
 }
@@ -422,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerBrowserTest, PrintingNotRestricted) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   SetupDlpRulesManager();
-  EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern).Times(0);
+  EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern(_, _, _)).Times(0);
 
   std::vector<DlpPolicyEvent> events;
   SetReportQueueForReportingManager(helper_.GetReportingManager(), events);

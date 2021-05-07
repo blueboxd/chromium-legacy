@@ -105,12 +105,6 @@ const char kConversionMeasurementDebugModeDescription[] =
     "reporting delays and noise. Only works if the Conversion Measurement API "
     "is already enabled.";
 
-const char kDefaultChromeAppUninstallSyncName[] =
-    "Default Chrome app uninstall sync";
-const char kDefaultChromeAppUninstallSyncDescription[] =
-    "Synchronizes uninstallation of default Chrome apps across Chrome OS "
-    "devices.";
-
 const char kDeprecateMenagerieAPIName[] = "Deprecate Menagerie API on Android";
 const char kDeprecateMenagerieAPIDescription[] =
     "If enabled, the legacy Menagerie API for profile data will be replaced by "
@@ -1658,10 +1652,6 @@ const char kUpdateHoverAtBeginFrameName[] = "Update hover at the begin frame";
 const char kUpdateHoverAtBeginFrameDescription[] =
     "Recompute hover state at BeginFrame for layout and scroll based mouse "
     "moves, rather than old timing-based mechanism.";
-
-const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
-const char kUseMultiloginEndpointDescription[] =
-    "Use Gaia OAuth multilogin for identity consistency.";
 
 const char kOmniboxAdaptiveSuggestionsCountName[] =
     "Adaptive Omnibox Suggestions count";

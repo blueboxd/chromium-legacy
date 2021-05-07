@@ -18,17 +18,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_installer.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_mime_types_service.h"
+#include "chrome/browser/ash/crostini/crostini_mime_types_service_factory.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -493,18 +493,16 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
 const base::Value* GetContainerPrefValue(Profile* profile,
                                          const ContainerId& container_id,
                                          const std::string& key) {
-  const base::ListValue* containers =
+  const base::Value* containers =
       profile->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
   if (!containers) {
     return nullptr;
   }
-  auto it = std::find_if(
-      containers->begin(), containers->end(),
-      [&](const auto& dict) { return MatchContainerDict(dict, container_id); });
-  if (it == containers->end()) {
-    return nullptr;
+  for (const auto& dict : containers->GetList()) {
+    if (MatchContainerDict(dict, container_id))
+      return dict.FindKey(key);
   }
-  return it->FindKey(key);
+  return nullptr;
 }
 
 void UpdateContainerPref(Profile* profile,

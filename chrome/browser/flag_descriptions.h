@@ -96,9 +96,6 @@ extern const char kConversionMeasurementApiDescription[];
 extern const char kConversionMeasurementDebugModeName[];
 extern const char kConversionMeasurementDebugModeDescription[];
 
-extern const char kDefaultChromeAppUninstallSyncName[];
-extern const char kDefaultChromeAppUninstallSyncDescription[];
-
 extern const char kDeprecateMenagerieAPIName[];
 extern const char kDeprecateMenagerieAPIDescription[];
 
@@ -970,9 +967,6 @@ extern const char kNotificationSchedulerImmediateBackgroundTaskDescription[];
 
 extern const char kNotificationsSystemFlagName[];
 extern const char kNotificationsSystemFlagDescription[];
-
-extern const char kUseMultiloginEndpointName[];
-extern const char kUseMultiloginEndpointDescription[];
 
 extern const char kOmniboxAdaptiveSuggestionsCountName[];
 extern const char kOmniboxAdaptiveSuggestionsCountDescription[];

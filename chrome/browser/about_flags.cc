@@ -2653,10 +2653,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionsOnChromeUrlsName,
      flag_descriptions::kExtensionsOnChromeUrlsDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)},
-    {"default-chrome-app-uninstall-sync",
-     flag_descriptions::kDefaultChromeAppUninstallSyncName,
-     flag_descriptions::kDefaultChromeAppUninstallSyncDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(extensions_features::kDefaultChromeAppUninstallSync)},
 #endif  // ENABLE_EXTENSIONS
     {"enable-history-manipulation-intervention",
      flag_descriptions::kHistoryManipulationIntervention,
@@ -5106,10 +5102,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
-     flag_descriptions::kUseMultiloginEndpointDescription,
-     kOsMac | kOsWin | kOsLinux, FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
-
     {"enable-new-profile-picker", flag_descriptions::kNewProfilePickerName,
      flag_descriptions::kNewProfilePickerDescription,
      kOsMac | kOsWin | kOsLinux,

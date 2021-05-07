@@ -34,6 +34,7 @@ ScrollbarDisplayItem::ScrollbarDisplayItem(
 }
 
 sk_sp<const PaintRecord> ScrollbarDisplayItem::Paint() const {
+  DCHECK(!IsTombstone());
   auto* scrollbar = data_->scrollbar_.get();
   if (data_->record_) {
     DCHECK(!scrollbar->NeedsRepaintPart(
@@ -58,6 +59,7 @@ sk_sp<const PaintRecord> ScrollbarDisplayItem::Paint() const {
 
 scoped_refptr<cc::ScrollbarLayerBase> ScrollbarDisplayItem::CreateOrReuseLayer(
     cc::ScrollbarLayerBase* existing_layer) const {
+  DCHECK(!IsTombstone());
   // This function is called when the scrollbar is composited. We don't need
   // record_ which is for non-composited scrollbars.
   data_->record_ = nullptr;
@@ -82,24 +84,19 @@ scoped_refptr<cc::ScrollbarLayerBase> ScrollbarDisplayItem::CreateOrReuseLayer(
   return layer;
 }
 
-bool ScrollbarDisplayItem::Equals(const DisplayItem& other) const {
-  if (!DisplayItem::Equals(other))
-    return false;
-
+bool ScrollbarDisplayItem::EqualsForUnderInvalidationImpl(
+    const ScrollbarDisplayItem& other) const {
+  DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
   // Don't check scrollbar_ because it's always newly created when we repaint
   // a scrollbar (including forced repaint for PaintUnderInvalidationChecking).
   // Don't check record_ because it's lazily created, and the DCHECKs in Paint()
   // can catch most under-invalidation cases.
-  const auto& other_scrollbar_item =
-      static_cast<const ScrollbarDisplayItem&>(other);
-  return data_->scroll_translation_ ==
-             other_scrollbar_item.data_->scroll_translation_ &&
-         data_->element_id_ == other_scrollbar_item.data_->element_id_;
+  return data_->scroll_translation_ == other.data_->scroll_translation_ &&
+         data_->element_id_ == other.data_->element_id_;
 }
 
 #if DCHECK_IS_ON()
-void ScrollbarDisplayItem::PropertiesAsJSON(JSONObject& json) const {
-  DisplayItem::PropertiesAsJSON(json);
+void ScrollbarDisplayItem::PropertiesAsJSONImpl(JSONObject& json) const {
   json.SetString("scrollTranslation",
                  String::Format("%p", data_->scroll_translation_));
 }

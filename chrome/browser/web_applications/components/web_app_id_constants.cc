@@ -33,6 +33,10 @@ const char kGmailAppId[] = "fmgjjmmmlfnkbppncabfkddbjimcfncm";
 const char kGoogleCalendarAppId[] = "kjbdgfilnfhdoflbpgamdcdgpehopbep";
 
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
+//     "https://mail.google.com/chat/"))
+const char kGoogleChatAppId[] = "mdpkiolbdkhdjpekfbkbmhigcaggjagi";
+
+// Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "https://docs.google.com/document/?usp=installed_webapp"))
 const char kGoogleDocsAppId[] = "mpnpojknpmmopombnjdcgaaiekajbnjb";
 
@@ -47,6 +51,10 @@ const char kGoogleKeepAppId[] = "eilembjdkfgodjkcjnpgpaenohkicgjd";
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "https://www.google.com/maps?force=tt&source=ttpwa"))
 const char kGoogleMapsAppId[] = "mnhkaebcjjhencmpkapnbdaogjamfbcj";
+
+// Generated as: web_app::GenerateAppIdFromURL(GURL(
+//     "https://meet.google.com/landing"))
+const char kGoogleMeetAppId[] = "bajlehempfanmhccpdneohefomicoklp";
 
 // Generated as: web_app::GenerateAppIdFromURL(GURL(
 //     "https://news.google.com/?lfhs=2"))

@@ -10,10 +10,8 @@
 namespace blink {
 
 DisplayItemList::~DisplayItemList() {
-  for (auto& item : *this) {
-    (void)item;  // MSVC incorrectly reports this variable as unused.
-    item.~DisplayItem();
-  }
+  for (auto& item : *this)
+    item.Destruct();
 }
 
 #if DCHECK_IS_ON()
@@ -51,7 +49,7 @@ std::unique_ptr<JSONArray> DisplayItemList::DisplayItemsAsJSON(
       }
 
       if ((flags & kShowPaintRecords) && item.IsDrawing()) {
-        const auto& drawing_item = static_cast<const DrawingDisplayItem&>(item);
+        const auto& drawing_item = To<DrawingDisplayItem>(item);
         if (const auto* record = drawing_item.GetPaintRecord().get())
           json->SetArray("record", RecordAsJSON(*record));
       }

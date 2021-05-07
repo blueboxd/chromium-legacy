@@ -583,7 +583,7 @@ void AccessibilityWinBrowserTest::CheckTextAtOffset(
     LONG expected_start_offset,
     LONG expected_end_offset,
     const std::wstring& expected_text) {
-  testing::Message message;
+  ::testing::Message message;
   message << "While checking for \'" << expected_text << "\' at "
           << expected_start_offset << '-' << expected_end_offset << '.';
   SCOPED_TRACE(message);
@@ -3683,12 +3683,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
   // Place an e acute, and two emoticons in the text field.
-  ExecuteScript(
-      uR"SCRIPT(
+  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
       const input = document.querySelector('input');
       input.value =
           'e\u0301\uD83D\uDC69\u200D\u2764\uFE0F\u200D\uD83D\uDC69\uD83D\uDC36';
-      )SCRIPT");
+      )SCRIPT"));
   waiter.WaitForNotification();
 
   LONG n_characters;
@@ -4036,11 +4035,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
   // Add a blank line at the end of the textarea.
-  ExecuteScript(
-      uR"SCRIPT(
+  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
       const textarea = document.querySelector('textarea');
       textarea.value += '\n';
-      )SCRIPT");
+      )SCRIPT"));
   waiter.WaitForNotification();
 
   // The second last line should have an additional trailing newline. Also,

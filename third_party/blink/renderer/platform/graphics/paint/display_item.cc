@@ -4,18 +4,61 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 
 struct SameSizeAsDisplayItem {
-  virtual ~SameSizeAsDisplayItem() = default;  // Allocate vtable pointer.
   void* pointer;
   IntRect rect;
   uint32_t i1;
   uint32_t i2;
 };
 ASSERT_SIZE(DisplayItem, SameSizeAsDisplayItem);
+
+void DisplayItem::Destruct() {
+  if (IsTombstone())
+    return;
+  if (auto* drawing = DynamicTo<DrawingDisplayItem>(this)) {
+    drawing->~DrawingDisplayItem();
+  } else if (auto* foreign_layer = DynamicTo<ForeignLayerDisplayItem>(this)) {
+    foreign_layer->~ForeignLayerDisplayItem();
+  } else {
+    To<ScrollbarDisplayItem>(this)->~ScrollbarDisplayItem();
+  }
+}
+
+bool DisplayItem::EqualsForUnderInvalidation(const DisplayItem& other) const {
+  DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
+  SECURITY_CHECK(!IsTombstone());
+  if (client_ != other.client_ || type_ != other.type_ ||
+      fragment_ != other.fragment_ ||
+      raster_effect_outset_ != other.raster_effect_outset_ ||
+      draws_content_ != other.draws_content_ ||
+      is_cacheable_ != other.is_cacheable_)
+    return false;
+
+  if (visual_rect_ != other.visual_rect_ &&
+      // Change of empty visual rect doesn't matter.
+      (visual_rect_.IsEmpty() && other.visual_rect_.IsEmpty()) &&
+      // Visual rect of a DrawingDisplayItem not drawing content doesn't matter.
+      (!IsDrawing() || draws_content_))
+    return false;
+
+  if (auto* drawing = DynamicTo<DrawingDisplayItem>(this)) {
+    return drawing->EqualsForUnderInvalidationImpl(
+        To<DrawingDisplayItem>(other));
+  }
+  if (auto* foreign_layer = DynamicTo<ForeignLayerDisplayItem>(this)) {
+    return foreign_layer->EqualsForUnderInvalidationImpl(
+        To<ForeignLayerDisplayItem>(other));
+  }
+  return To<ScrollbarDisplayItem>(this)->EqualsForUnderInvalidationImpl(
+      To<ScrollbarDisplayItem>(other));
+}
 
 #if DCHECK_IS_ON()
 
@@ -164,15 +207,22 @@ WTF::String DisplayItem::AsDebugString() const {
 }
 
 void DisplayItem::PropertiesAsJSON(JSONObject& json) const {
-  if (IsTombstone())
-    json.SetBoolean("ISTOMBSTONE", true);
-
   json.SetString("id", GetId().ToString());
   json.SetString("visualRect", VisualRect().ToString());
   if (GetRasterEffectOutset() != RasterEffectOutset::kNone) {
     json.SetDouble(
         "outset",
         GetRasterEffectOutset() == RasterEffectOutset::kHalfPixel ? 0.5 : 1);
+  }
+
+  if (IsTombstone()) {
+    json.SetBoolean("ISTOMBSTONE", true);
+  } else if (auto* drawing = DynamicTo<DrawingDisplayItem>(this)) {
+    drawing->PropertiesAsJSONImpl(json);
+  } else if (auto* foreign_layer = DynamicTo<ForeignLayerDisplayItem>(this)) {
+    foreign_layer->PropertiesAsJSONImpl(json);
+  } else {
+    To<ScrollbarDisplayItem>(this)->PropertiesAsJSONImpl(json);
   }
 }
 

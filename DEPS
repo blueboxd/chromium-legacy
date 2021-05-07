@@ -961,12 +961,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '25122d4def51426b0fe4ebd45fe5d7d3ee8cba12',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'a174dc2a7a92856ad39ae3c0e2890e856151d7ab',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e77e3c879a3f795161d3efa096c9caa33c7a0c2b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'f9be70c9e6d8c602479323c12f6bc2d1797faf4f',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1416,7 +1416,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'IFKk3HKRVi_NvWa_9abMZahaAGY7hGQ0MzuloLf6TkgC'
+              'version': 'UJM-8JuP3RR55BXmMADjW1ym0ak_RyS4QYOpqVcZp9gC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1525,7 +1525,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '0bd8b8110bc1a388649e504de1e673114e91013f',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@42d8716d02941f47870776a9c273de1effc51b1a',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@91d26efa92b7de8b699964c0d33bf06ecf5f4b67',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '732a76d9d3c70d6aa487216495eeb28518349c3a',

@@ -2869,6 +2869,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInteractiveWindowCycleList,
      flag_descriptions::kInteractiveWindowCycleListDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kInteractiveWindowCycleList)},
+    {"enable-compositing-based-throttling",
+     flag_descriptions::kCompositingBasedThrottling,
+     flag_descriptions::kCompositingBasedThrottlingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCompositingBasedThrottling)},
     {"bluetooth-aggressive-appearance-filter",
      flag_descriptions::kBluetoothAggressiveAppearanceFilterName,
      flag_descriptions::kBluetoothAggressiveAppearanceFilterDescription,
@@ -7271,6 +7275,11 @@ class FlagsStateSingleton : public flags_ui::FlagsState::Delegate {
     flags_state_ = std::make_unique<flags_ui::FlagsState>(entries, this);
   }
 
+  void RestoreDefaultState() {
+    flags_state_ =
+        std::make_unique<flags_ui::FlagsState>(kFeatureEntries, this);
+  }
+
  private:
   // flags_ui::FlagsState::Delegate:
   bool ShouldExcludeFlag(const flags_ui::FlagsStorage* storage,
@@ -7483,8 +7492,7 @@ ScopedFeatureEntries::ScopedFeatureEntries(
 ScopedFeatureEntries::~ScopedFeatureEntries() {
   GetEntriesForTesting()->clear();  // IN-TEST
   // Restore the flag state to the production flags.
-  FlagsStateSingleton::GetInstance()->RebuildState(
-      *GetEntriesForTesting());  // IN-TEST
+  FlagsStateSingleton::GetInstance()->RestoreDefaultState();
 }
 
 const FeatureEntry* GetFeatureEntries(size_t* count) {

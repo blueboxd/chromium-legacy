@@ -299,7 +299,7 @@ static void SetUpGLibLogHandler() {
 // NOINLINE so it's possible to tell what thread was unresponsive by inspecting
 // the callstack.
 NOINLINE void ResetThread_IO(
-    std::unique_ptr<BrowserProcessSubThread> io_thread) {
+    std::unique_ptr<BrowserProcessIOThread> io_thread) {
   io_thread.reset();
 }
 
@@ -1044,9 +1044,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
 
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI))
-    BrowserProcessSubThread::ProcessHostCleanUp();
-
   if (parts_) {
     TRACE_EVENT0("shutdown",
                  "BrowserMainLoop::Subsystem:PostMainMessageLoopRun");
@@ -1071,6 +1068,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   memory_pressure_monitor_.reset();
 
   ShutDownNetworkService();
+
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI))
+    BrowserProcessIOThread::ProcessHostCleanUp();
 
 #if defined(OS_MAC)
   BrowserCompositorMac::DisableRecyclingForShutdown();

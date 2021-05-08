@@ -248,6 +248,7 @@ interface AppHistoryEntry : EventTarget
     getter sameDocument
     getter url
     method constructor
+    method getState
 interface AppHistoryNavigateEvent : Event
     attribute @@toStringTag
     getter canRespond
@@ -5706,8 +5707,6 @@ interface Navigator
     method getInstalledRelatedApps
     method getUserMedia
     method javaEnabled
-    method openTCPSocket
-    method openUDPSocket
     method queryHandwritingRecognizerSupport
     method registerProtocolHandler
     method requestMIDIAccess
@@ -8526,14 +8525,6 @@ interface SyncManager
     method constructor
     method getTags
     method register
-interface TCPSocket
-    attribute @@toStringTag
-    getter readable
-    getter remoteAddress
-    getter remotePort
-    getter writable
-    method close
-    method constructor
 interface TaskAttributionTiming : PerformanceEntry
     attribute @@toStringTag
     getter containerId
@@ -8802,10 +8793,6 @@ interface TrustedTypePolicyFactory : EventTarget
     method isScript
     method isScriptURL
     setter onbeforecreatepolicy
-interface UDPSocket
-    attribute @@toStringTag
-    method close
-    method constructor
 interface UIEvent : Event
     attribute @@toStringTag
     getter detail

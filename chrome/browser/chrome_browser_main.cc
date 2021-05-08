@@ -55,7 +55,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/registration.h"
@@ -125,6 +124,7 @@
 #include "components/language/core/common/language_experiments.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
+#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
@@ -315,10 +315,6 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-
-#if BUILDFLAG(ENABLE_PAK_FILE_INTEGRITY_CHECKS)
-#include "chrome/browser/resources_integrity.h"
-#endif
 
 namespace {
 
@@ -923,9 +919,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       *base::CommandLine::ForCurrentProcess());
 
   browser_process_->browser_policy_connector()->OnResourceBundleCreated();
-#if BUILDFLAG(ENABLE_PAK_FILE_INTEGRITY_CHECKS)
-  CheckPakFileIntegrity();
-#endif
 
 // Android does first run in Java instead of native.
 // Chrome OS has its own out-of-box-experience code.
@@ -1804,6 +1797,7 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // not finish.
   NOTREACHED();
 #else
+
   browser_shutdown::RestartMode restart_mode =
       browser_shutdown::RestartMode::kNoRestart;
 
@@ -1817,8 +1811,21 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   }
 
   browser_process_->PostDestroyThreads();
-  // browser_shutdown takes care of deleting browser_process, so we need to
-  // release it.
+
+  // We need to do this check as late as possible, but due to modularity, this
+  // may be the last point in Chrome. This would be more effective if done at a
+  // higher level on the stack, so that it is impossible for an early return to
+  // bypass this code. Perhaps we need a *final* hook that is called on all
+  // paths from content/browser/browser_main.
+  //
+  // Since we use |browser_process_|'s local state for this CHECK, it must be
+  // done before |browser_process_| is released.
+  metrics::CleanExitBeacon::EnsureCleanShutdown(
+      browser_process_->local_state());
+
+  // The below call to browser_shutdown::ShutdownPostThreadsStop() deletes
+  // |browser_process_|. We release it so that we don't keep holding onto an
+  // invalid reference.
   ignore_result(browser_process_.release());
 
 #if BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
@@ -1841,13 +1848,6 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
 
   process_singleton_.reset();
   device_event_log::Shutdown();
-
-  // We need to do this check as late as possible, but due to modularity, this
-  // may be the last point in Chrome.  This would be more effective if done at
-  // a higher level on the stack, so that it is impossible for an early return
-  // to bypass this code.  Perhaps we need a *final* hook that is called on all
-  // paths from content/browser/browser_main.
-  CHECK(metrics::MetricsService::UmaMetricsProperlyShutdown());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   arc::StabilityMetricsManager::Shutdown();

@@ -104,6 +104,7 @@ void ExpectEquality(const ExplodedFrameState& expected,
   EXPECT_EQ(expected.scroll_anchor_simhash, actual.scroll_anchor_simhash);
   EXPECT_EQ(expected.app_history_key, actual.app_history_key);
   EXPECT_EQ(expected.app_history_id, actual.app_history_id);
+  EXPECT_EQ(expected.app_history_state, actual.app_history_state);
   ExpectEquality(expected.http_body, actual.http_body);
   ExpectEquality(expected.children, actual.children);
 }
@@ -141,6 +142,7 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->scroll_anchor_simhash = 12345;
     frame_state->app_history_key = u"abcd";
     frame_state->app_history_id = u"wxyz";
+    frame_state->app_history_state = base::nullopt;
   }
 
   void PopulateHttpBody(
@@ -197,8 +199,8 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->document_sequence_number = 456;
     frame_state->page_scale_factor = 2.0f;
 
-    frame_state->document_state.push_back(base::UTF8ToUTF16(
-        "\n\r?% WebKit serialized form state version 8 \n\r=&"));
+    frame_state->document_state.push_back(
+        u"\n\r?% WebKit serialized form state version 8 \n\r=&");
     frame_state->document_state.push_back(u"form key");
     frame_state->document_state.push_back(u"1");
     frame_state->document_state.push_back(u"foo");
@@ -210,10 +212,9 @@ class PageStateSerializationTest : public testing::Test {
     if (version >= 29) {
       frame_state->app_history_key = u"abcdef";
       frame_state->app_history_id = u"uvwxyz";
-    } else {
-      frame_state->app_history_key = base::nullopt;
-      frame_state->app_history_id = base::nullopt;
     }
+    if (version >= 30)
+      frame_state->app_history_state = u"js_serialized_state";
 
     if (!is_child) {
       frame_state->http_body.http_content_type = u"foo/bar";
@@ -459,9 +460,8 @@ TEST_F(PageStateSerializationTest, ScrollAnchorSelectorLengthLimited) {
   ExplodedPageState input;
   PopulateFrameState(&input.top);
 
-  std::string excessive_length_string(kMaxScrollAnchorSelectorLength + 1, 'a');
-
-  input.top.scroll_anchor_selector = base::UTF8ToUTF16(excessive_length_string);
+  input.top.scroll_anchor_selector =
+      std::u16string(kMaxScrollAnchorSelectorLength + 1, u'a');
 
   std::string encoded;
   EncodePageState(input, &encoded);
@@ -592,6 +592,10 @@ TEST_F(PageStateSerializationTest, BackwardsCompat_v28) {
 
 TEST_F(PageStateSerializationTest, BackwardsCompat_v29) {
   TestBackwardsCompat(29);
+}
+
+TEST_F(PageStateSerializationTest, BackwardsCompat_v30) {
+  TestBackwardsCompat(30);
 }
 
 // Add your new backwards compat test for future versions *above* this

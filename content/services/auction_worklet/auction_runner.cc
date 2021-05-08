@@ -11,7 +11,6 @@
 #include "content/services/auction_worklet/bidder_worklet.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/seller_worklet.h"
-#include "content/services/auction_worklet/trusted_bidding_signals.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
@@ -65,23 +64,8 @@ void AuctionRunner::StartBidding() {
         browser_signals_->top_frame_origin,
         browser_signals_->seller.Serialize(), auction_start_time_,
         &auction_v8_helper_,
-        base::BindOnce(&AuctionRunner::OnBidderScriptLoaded,
+        base::BindOnce(&AuctionRunner::OnGenerateBidComplete,
                        base::Unretained(this), bid_state));
-    if (bidder->group->trusted_bidding_signals_url.has_value()) {
-      bid_state->trusted_bidding_signals =
-          std::make_unique<TrustedBiddingSignals>(
-              url_loader_factory_.get(),
-              bidder->group->trusted_bidding_signals_keys.has_value()
-                  ? bidder->group->trusted_bidding_signals_keys.value()
-                  : std::vector<std::string>(),
-              browser_signals_->top_frame_origin.host(),
-              bidder->group->trusted_bidding_signals_url.value_or(GURL()),
-              &auction_v8_helper_,
-              base::BindOnce(&AuctionRunner::OnTrustedSignalsLoaded,
-                             base::Unretained(this), bid_state));
-    } else {
-      OnTrustedSignalsLoaded(bid_state, false, base::nullopt);
-    }
   }
 
   // Also initiate the script fetch for the seller script.
@@ -92,64 +76,21 @@ void AuctionRunner::StartBidding() {
                      base::Unretained(this)));
 }
 
-void AuctionRunner::OnBidderScriptLoaded(
+void AuctionRunner::OnGenerateBidComplete(
     BidState* state,
-    bool load_result,
-    base::Optional<std::string> error_msg) {
-  DCHECK(!state->bidder_script_loaded);
-  DCHECK(!state->failed);
-
-  if (error_msg.has_value())
-    errors_.push_back(std::move(error_msg).value());
-
-  state->bidder_script_loaded = true;
-  if (!load_result) {
-    state->failed = true;
-
-    // No point in waiting for trusted signals (if any) if we don't have a
-    // bidder script that looks at them.
-    state->trusted_bidding_signals.reset();
-    state->trusted_signals_loaded = true;
-  }
-
-  MaybeRunBid(state);
-}
-
-void AuctionRunner::OnTrustedSignalsLoaded(
-    BidState* state,
-    bool load_result,
-    base::Optional<std::string> error_msg) {
-  DCHECK(!state->trusted_signals_loaded);
-
-  if (error_msg.has_value())
-    errors_.push_back(std::move(error_msg).value());
-
-  state->trusted_signals_loaded = true;
-  if (!load_result)
-    state->trusted_bidding_signals.reset();
-
-  MaybeRunBid(state);
-}
-
-void AuctionRunner::MaybeRunBid(BidState* state) {
-  if (!state->trusted_signals_loaded || !state->bidder_script_loaded)
-    return;
+    base::Optional<BidderWorklet::Bid> bid,
+    std::vector<std::string> error_msgs) {
+  DCHECK(!state->bid_generate_complete);
+  DCHECK_GT(outstanding_bids_, 0);
 
   --outstanding_bids_;
-  if (!state->failed)
-    RunBid(state);
+
+  errors_.insert(errors_.end(), error_msgs.begin(), error_msgs.end());
+  state->bid_generate_complete = true;
+  state->bid_result = std::move(bid);
 
   if (ReadyToScore())
     ScoreOne();
-}
-
-void AuctionRunner::RunBid(BidState* state) {
-  base::TimeTicks start = base::TimeTicks::Now();
-  state->bid_result =
-      state->bidder_worklet->GenerateBid(state->trusted_bidding_signals.get());
-  if (state->bid_result.error_msg.has_value())
-    errors_.push_back(std::move(state->bid_result.error_msg).value());
-  state->bid_duration = base::TimeTicks::Now() - start;
 }
 
 void AuctionRunner::OnSellerWorkletLoaded(
@@ -172,39 +113,38 @@ void AuctionRunner::OnSellerWorkletLoaded(
 void AuctionRunner::ScoreOne() {
   size_t num_bidders = bid_states_.size();
 
-  // Skip over failed ones.
-  while (seller_considering_ < num_bidders &&
-         (bid_states_[seller_considering_].failed ||
-          !bid_states_[seller_considering_].bid_result.success)) {
-    ++seller_considering_;
-  }
-
-  if (seller_considering_ < num_bidders) {
+  // Find next valid bid to score, if any.
+  while (seller_considering_ < num_bidders) {
     BidState* bid_state = &bid_states_[seller_considering_];
-    bid_state->score_result = ScoreBid(bid_state);
-    ++seller_considering_;
-    // If there is still some left, score them too, but let the event loop
-    // roll first.
-    if (seller_considering_ < num_bidders) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AuctionRunner::ScoreOne, base::Unretained(this)));
-      return;
+
+    // Skip over bidders that produced no valid bid.
+    if (!bid_state->bid_result) {
+      ++seller_considering_;
+      continue;
     }
+
+    ScoreBid(bid_state);
+    return;
   }
 
-  if (seller_considering_ == num_bidders)
-    CompleteAuction();
+  DCHECK_EQ(seller_considering_, num_bidders);
+  CompleteAuction();
 }
 
-SellerWorklet::ScoreResult AuctionRunner::ScoreBid(const BidState* state) {
-  SellerWorklet::ScoreResult result = seller_worklet_->ScoreAd(
-      state->bid_result.ad, state->bid_result.bid, *auction_config_,
+void AuctionRunner::ScoreBid(const BidState* state) {
+  seller_worklet_->ScoreAd(
+      state->bid_result->ad, state->bid_result->bid, *auction_config_,
       browser_signals_->top_frame_origin.host(), state->bidder->group->owner,
-      AdRenderFingerprint(state), state->bid_duration);
-  if (result.error_msg.has_value())
-    errors_.push_back(std::move(result.error_msg).value());
-  return result;
+      AdRenderFingerprint(state), state->bid_result->bid_duration,
+      base::BindOnce(&AuctionRunner::OnBidScored, base::Unretained(this)));
+}
+
+void AuctionRunner::OnBidScored(SellerWorklet::ScoreResult score_result) {
+  bid_states_[seller_considering_].score_result = score_result;
+  if (score_result.error_msg.has_value())
+    errors_.push_back(std::move(score_result.error_msg).value());
+  ++seller_considering_;
+  ScoreOne();
 }
 
 std::string AuctionRunner::AdRenderFingerprint(const BidState* state) {
@@ -238,36 +178,51 @@ void AuctionRunner::CompleteAuction() {
   }
 
   if (best_bid) {
-    SellerWorklet::Report seller_report = ReportSellerResult(best_bid);
-    BidderWorklet::ReportWinResult bidder_report =
-        ReportBidWin(best_bid, seller_report);
-    ReportSuccess(best_bid, bidder_report, seller_report);
+    // Will eventually send a report to the seller and clean up `this`.
+    ReportSellerResult(best_bid);
   } else {
     FailAuction();
   }
 }
 
-SellerWorklet::Report AuctionRunner::ReportSellerResult(
-    const BidState* best_bid) {
-  SellerWorklet::Report result = seller_worklet_->ReportResult(
+void AuctionRunner::ReportSellerResult(const BidState* best_bid) {
+  DCHECK(best_bid->bid_result);
+  seller_worklet_->ReportResult(
       *auction_config_, browser_signals_->top_frame_origin.host(),
-      best_bid->bidder->group->owner, best_bid->bid_result.render_url,
-      AdRenderFingerprint(best_bid), best_bid->bid_result.bid,
-      best_bid->score_result.score);
-  if (result.error_msg.has_value())
-    errors_.push_back(std::move(result.error_msg).value());
-  return result;
+      best_bid->bidder->group->owner, best_bid->bid_result->render_url,
+      AdRenderFingerprint(best_bid), best_bid->bid_result->bid,
+      best_bid->score_result.score,
+      base::BindOnce(&AuctionRunner::OnReportSellerResultComplete,
+                     base::Unretained(this), best_bid));
 }
 
-BidderWorklet::ReportWinResult AuctionRunner::ReportBidWin(
+void AuctionRunner::OnReportSellerResultComplete(
     const BidState* best_bid,
-    const SellerWorklet::Report& seller_report) {
-  BidderWorklet::ReportWinResult result = best_bid->bidder_worklet->ReportWin(
-      seller_report.signals_for_winner, best_bid->bid_result.render_url,
-      AdRenderFingerprint(best_bid), best_bid->bid_result.bid);
-  if (result.error_msg.has_value())
-    errors_.push_back(std::move(result.error_msg).value());
-  return result;
+    SellerWorklet::Report seller_report) {
+  if (seller_report.error_msg.has_value())
+    errors_.push_back(std::move(seller_report.error_msg).value());
+  ReportBidWin(best_bid, std::move(seller_report));
+}
+
+void AuctionRunner::ReportBidWin(const BidState* best_bid,
+                                 SellerWorklet::Report seller_report) {
+  DCHECK(best_bid->bid_result);
+  std::string signals_for_winner = seller_report.signals_for_winner;
+  best_bid->bidder_worklet->ReportWin(
+      signals_for_winner, best_bid->bid_result->render_url,
+      AdRenderFingerprint(best_bid), best_bid->bid_result->bid,
+      base::BindOnce(&AuctionRunner::OnReportBidWinComplete,
+                     base::Unretained(this), best_bid,
+                     std::move(seller_report)));
+}
+
+void AuctionRunner::OnReportBidWinComplete(
+    const BidState* best_bid,
+    SellerWorklet::Report seller_report,
+    BidderWorklet::ReportWinResult bidder_report) {
+  if (bidder_report.error_msg.has_value())
+    errors_.push_back(std::move(bidder_report.error_msg).value());
+  ReportSuccess(best_bid, bidder_report, seller_report);
 }
 
 void AuctionRunner::FailAuction() {
@@ -282,8 +237,10 @@ void AuctionRunner::ReportSuccess(
     const BidState* state,
     const BidderWorklet::ReportWinResult& bidder_report,
     const SellerWorklet::Report& seller_report) {
+  DCHECK(state->bid_result);
+
   std::move(callback_).Run(
-      state->bid_result.render_url, state->bidder->group->owner,
+      state->bid_result->render_url, state->bidder->group->owner,
       state->bidder->group->name,
       mojom::WinningBidderReport::New(bidder_report.success,
                                       bidder_report.report_url),

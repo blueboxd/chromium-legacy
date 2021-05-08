@@ -16,14 +16,11 @@
 #include "content/services/auction_worklet/bidder_worklet.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/seller_worklet.h"
-#include "content/services/auction_worklet/trusted_bidding_signals.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 
 namespace auction_worklet {
-
-class TrustedBiddingSignals;
 
 // An AuctionRunner loads and runs the bidder and seller worklets, along with
 // their reporting phases and produces the result via a callback.
@@ -57,23 +54,13 @@ class AuctionRunner {
 
     mojom::BiddingInterestGroup* bidder = nullptr;
 
-    // true if loading of the bidder script failed, meaning that no bidding
-    // will actually be done.
-    bool failed = false;
+    // true if the generateBid() callback passed to the BidderWorklet's
+    // constructor has been invoked. This may indicated either successful
+    // generation of a bid, or failure to load or run the script.
+    bool bid_generate_complete = false;
 
-    // true if there is no outstanding load of trusted bidding signals pending
-    // for this bidder (including if none were configured or it failed; in such
-    // cases `trusted_bidding_signals` will be null).
-    bool trusted_signals_loaded = false;
-
-    // true if there is no outstanding load of the bidder script pending
-    // (including if the load failed).
-    bool bidder_script_loaded = false;
-
-    std::unique_ptr<TrustedBiddingSignals> trusted_bidding_signals;
     std::unique_ptr<BidderWorklet> bidder_worklet;
-    BidderWorklet::BidResult bid_result;
-    base::TimeDelta bid_duration;
+    base::Optional<BidderWorklet::Bid> bid_result;
     SellerWorklet::ScoreResult score_result;
   };
 
@@ -86,36 +73,41 @@ class AuctionRunner {
   ~AuctionRunner();
 
   void StartBidding();
-  void OnBidderScriptLoaded(BidState* state,
-                            bool load_result,
-                            base::Optional<std::string> error_msg);
-  void OnTrustedSignalsLoaded(BidState* state,
-                              bool load_result,
-                              base::Optional<std::string> error_msg);
-  void MaybeRunBid(BidState* state);
-  void RunBid(BidState* state);
+  void OnGenerateBidComplete(BidState* state,
+                             base::Optional<BidderWorklet::Bid> bid,
+                             std::vector<std::string> errors_msgs);
 
   // True if all bid results and the seller script load are complete.
   bool ReadyToScore() const { return outstanding_bids_ == 0 && seller_loaded_; }
   void OnSellerWorkletLoaded(bool load_result,
                              base::Optional<std::string> error_msg);
 
-  // Lets the seller score a single outstanding bid, if any, and then either
-  // re-queues itself on event loop if there is more to check, or proceeds to
-  // selecting the winner and running reporting worklets.
+  // Calls into the seller to asynchronously each of outstanding bids, in
+  // series. Once there are no outstanding bids, proceeds to selecting the
+  // winner and running the Worklets reporting methods.
   //
   // Destroys `this` (indirectly), upon wrapping up the auction if all bids have
   // been scored (including if there were none).
   void ScoreOne();
-  SellerWorklet::ScoreResult ScoreBid(const BidState* state);
+  void ScoreBid(const BidState* state);
+  // Callback from ScoreBid().
+  void OnBidScored(SellerWorklet::ScoreResult score_result);
+
   std::string AdRenderFingerprint(const BidState* state);
   base::Optional<std::string> PerBuyerSignals(const BidState* state);
 
-  void CompleteAuction();  // Indirectly deletes `this`.
-  SellerWorklet::Report ReportSellerResult(const BidState* state);
-  BidderWorklet::ReportWinResult ReportBidWin(
-      const BidState* state,
-      const SellerWorklet::Report& seller_report);
+  void CompleteAuction();  // Indirectly deletes `this`, if there's no winner.
+
+  // Sequence of asynchronous methods to call into the bidder/seller results to
+  // report a a win, Will ultimately invoke ReportSuccess(), which will delete
+  // the auction.
+  void ReportSellerResult(const BidState* state);
+  void OnReportSellerResultComplete(const BidState* best_bid,
+                                    SellerWorklet::Report seller_report);
+  void ReportBidWin(const BidState* state, SellerWorklet::Report seller_report);
+  void OnReportBidWinComplete(const BidState* best_bid,
+                              SellerWorklet::Report seller_report,
+                              BidderWorklet::ReportWinResult bidder_report);
 
   // Destroys `this`.
   void FailAuction();

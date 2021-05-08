@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/offer_notification_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/virtual_card_manual_fallback_icon_view.h"
 #include "chrome/browser/ui/views/autofill/save_address_profile_icon_view.h"
 #include "chrome/browser/ui/views/file_system_access/file_system_access_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
@@ -54,7 +56,7 @@ void PageActionIconController::Init(const PageActionIconParams& params,
   auto add_page_action_icon = [&params, this](PageActionIconType type,
                                               auto icon) {
     icon->SetVisible(false);
-    icon->SetInkDropVisibleOpacity(
+    icon->ink_drop()->SetVisibleOpacity(
         params.page_action_icon_delegate->GetPageActionInkDropVisibleOpacity());
     if (params.icon_color)
       icon->SetIconColor(*params.icon_color);
@@ -212,6 +214,12 @@ void PageActionIconController::Init(const PageActionIconParams& params,
         DCHECK(base::FeatureList::IsEnabled(features::kWebAuthConditionalUI));
         add_page_action_icon(
             type, std::make_unique<WebAuthnIconView>(
+                      params.command_updater, params.icon_label_bubble_delegate,
+                      params.page_action_icon_delegate));
+        break;
+      case PageActionIconType::kVirtualCardManualFallback:
+        add_page_action_icon(
+            type, std::make_unique<autofill::VirtualCardManualFallbackIconView>(
                       params.command_updater, params.icon_label_bubble_delegate,
                       params.page_action_icon_delegate));
         break;

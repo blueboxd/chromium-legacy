@@ -1470,8 +1470,8 @@ public class StartSurfaceTest {
     @DisableIf.Build(sdk_is_less_than = M, message = "https://crbug.com/1170553")
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1170553")
     @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
-    public void
-    testOmnibox_FocusedOnNewTabInSingleSurface() {
+    @DisabledTest(message = "http://crbug/1205998 - the NoInstant_Return version is flaky.")
+    public void testOmnibox_FocusedOnNewTabInSingleSurface() {
         if (!mImmediateReturn) {
             pressHomePageButton();
         }
@@ -1706,6 +1706,7 @@ public class StartSurfaceTest {
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single/exclude_mv_tiles/false"
             + "/new_home_surface_from_home_button/hide_mv_tiles_and_tab_switcher"})
+    @DisabledTest(message = "http://crbug/1206081 - the Instant_Return version is flaky.")
     public void testNewSurfaceFromHomeButton(){
         // clang-format on
         assumeTrue(mImmediateReturn);

@@ -17858,6 +17858,7 @@ Called by update_debug_scenarios.py.-->
   <int value="36" label="BeFunky (PWA)"/>
   <int value="37" label="Clipchamp (PWA)"/>
   <int value="38" label="GeForce NOW (PWA)"/>
+  <int value="39" label="Zoom (PWA)"/>
 </enum>
 
 <enum name="DemoModeAppLaunchSource">
@@ -24379,6 +24380,7 @@ Called by update_document_policy_enum.py.-->
   <int value="856" label="DataLeakPreventionReportingEnabled"/>
   <int value="857" label="AdditionalDnsQueryTypesEnabled"/>
   <int value="858" label="TripleDESEnabled"/>
+  <int value="859" label="CloudUserPolicyMerge"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -32511,6 +32513,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="81" label="DisplayCapture"/>
   <int value="82" label="InterestCohort"/>
   <int value="83" label="SharedAutofill"/>
+  <int value="84" label="DirectSockets"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -45744,6 +45747,7 @@ from previous Chrome versions.
       label="AutofillSuppressCreditCardSaveForAssistant:enabled"/>
   <int value="-953215709" label="StorageAccessAPI:enabled"/>
   <int value="-952996862" label="ArcUseHighMemoryDalvikProfile:enabled"/>
+  <int value="-952971446" label="WebAssemblyCodeProtection:disabled"/>
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-950793721" label="TranslateUI2016Q2:disabled"/>
   <int value="-950411190"
@@ -45998,6 +46002,7 @@ from previous Chrome versions.
   <int value="-727860269" label="WebAuthenticationBle:disabled"/>
   <int value="-726892130" label="AndroidMessagesIntegration:disabled"/>
   <int value="-726567328" label="disable-virtual-keyboard"/>
+  <int value="-725264428" label="CompositingBasedThrottling:enabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
   <int value="-721685663" label="WebViewMixedContentAutoupgrades:enabled"/>
@@ -47705,6 +47710,7 @@ from previous Chrome versions.
   <int value="781785788" label="ClipboardSuggestionContentHidden:disabled"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
   <int value="783270752" label="AndroidHistoryManager:enabled"/>
+  <int value="785273919" label="CompositingBasedThrottling:disabled"/>
   <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="788130042" label="PrivacySandboxSettings2:enabled"/>
@@ -48070,12 +48076,14 @@ from previous Chrome versions.
   <int value="1126956909" label="UseXpsForPrintingFromPdf:disabled"/>
   <int value="1127085005" label="TreatUnsafeDownloadsAsActive:enabled"/>
   <int value="1127183523" label="PassiveEventListenersDueToFling:enabled"/>
+  <int value="1127402319" label="WebAssemblyCodeProtection:enabled"/>
   <int value="1127427821" label="OmniboxEntitySuggestions:disabled"/>
   <int value="1127954225" label="EnableDnsProxy:enabled"/>
   <int value="1128874009" label="ScalableStatusArea:disabled"/>
   <int value="1129542111" label="CastAllowAllIPs:disabled"/>
   <int value="1129888794" label="ash-touch-hud"/>
   <int value="1132521402" label="ConnectivityDiagnosticsWebUi:enabled"/>
+  <int value="1132737110" label="WebAssemblyCodeProtectionPku:disabled"/>
   <int value="1133207726" label="MediaInspectorLogging:enabled"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
   <int value="1135728116" label="PluginVmShowCameraPermissions:enabled"/>
@@ -48258,6 +48266,7 @@ from previous Chrome versions.
   <int value="1285169797" label="ClipboardHistoryNudgeSessionReset:disabled"/>
   <int value="1285905715" label="WebXRHitTest:enabled"/>
   <int value="1287625114" label="EnableIncognitoShortcutOnDesktop:disabled"/>
+  <int value="1287947083" label="WebAssemblyCodeProtectionPku:enabled"/>
   <int value="1288612648" label="PluginVmFullscreen:enabled"/>
   <int value="1288713607" label="EcheSWAResizing:disabled"/>
   <int value="1289433604" label="RecoverFromNeverSaveAndroid:enabled"/>
@@ -58692,6 +58701,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="605" label="Assistant: Notifications"/>
   <int value="606" label="Assistant: Voice Input"/>
   <int value="607" label="Assistant: Train voice model"/>
+  <int value="608" label="Search: Quick Answers On/Off"/>
   <int value="700" label="Manage Android Preferences"/>
   <int value="701" label="Remove Play Store"/>
   <int value="702" label="Turn On Play Store"/>
@@ -58874,6 +58884,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="505" label="Wallpaper (Deprecated)"/>
   <int value="506" label="Wallpaper Images (Deprecated)"/>
   <int value="600" label="Assistant"/>
+  <int value="601" label="Search"/>
   <int value="700" label="App Management"/>
   <int value="701" label="App Details"/>
   <int value="702" label="Google Play Store"/>

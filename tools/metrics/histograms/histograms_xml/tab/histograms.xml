@@ -149,6 +149,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Tab.HorizontalSizeClassUsed" enum="iOSSizeClassForReporting"
     expires_after="M77">
+  <obsolete>
+    Obsolete in M92. Replaced by IOS.MultiWindow.Configuration.
+  </obsolete>
   <owner>pkl@chromium.org</owner>
   <summary>
     [iOS] Used on iOS 9+ iPad to report the usage of Compact or Regular
@@ -210,6 +213,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Tab.PageLoadInHorizontalSizeClass"
     enum="iOSSizeClassForReporting" expires_after="M77">
+  <obsolete>
+    Obsolete in M92. Wasn't being recorded correctly anyway.
+  </obsolete>
   <owner>pkl@chromium.org</owner>
   <summary>
     [iOS] Used on iOS 9+ iPad to report the usage of Compact or Regular
@@ -1949,6 +1955,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     endpoint is called for every Tab when we enter the Tab grid switcher and is
     cached with a time to live of 1 hour.
   </summary>
+</histogram>
+
+<histogram name="Tabs.Startup.TabCount.{TabType}" units="count"
+    expires_after="2022-05-04">
+  <owner>davidjm@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>Records the number of {TabType} Tabs loaded on startup.</summary>
+  <token key="TabType">
+    <variant name="Incognito" summary="Incognito"/>
+    <variant name="Regular" summary="Regular"/>
+  </token>
 </histogram>
 
 <histogram name="Tabs.StateTransfer.NumberOfOtherTabsActivatedBeforeMadeActive"

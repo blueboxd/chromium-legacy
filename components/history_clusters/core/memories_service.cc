@@ -32,8 +32,8 @@ std::vector<history::Cluster> FilterClustersMatchingQuery(
   // Extract query nodes from the query string.
   query_parser::QueryNodeVector query_nodes;
   query_parser::QueryParser::ParseQueryNodes(
-      base::UTF8ToUTF16(query), query_parser::MatchingAlgorithm::DEFAULT,
-      &query_nodes);
+      base::UTF8ToUTF16(query),
+      query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH, &query_nodes);
 
   std::vector<history::Cluster> matching_clusters;
   base::ranges::copy_if(clusters, std::back_inserter(matching_clusters),
@@ -89,7 +89,7 @@ std::vector<history_clusters::mojom::MemoryPtr> ClustersToMojom(
 // Form a `QueryMemoriesResponse` containing `clusters` and continuation query
 // params meant to be used in a follow-up request. `query_params` are the params
 // used to get `clusters` from `QueryMemories()`.
-// TODO(mahmadi): At the moment, the recency threshold of |query_params| is
+// TODO(mahmadi): At the moment, the recency threshold of `query_params` is
 //  ignored and continuation query params is set to nullptr. The service does
 //  not support paging.
 MemoriesService::QueryMemoriesResponse FormQueryMemoriesResponse(
@@ -114,14 +114,10 @@ MemoriesService::MemoriesService(
     history::HistoryService* history_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : history_service_(history_service) {
-  base::Optional<DebugLoggerCallback> debug_logger;
-  if (DebugLoggingEnabled()) {
-    debug_logger = base::BindRepeating(&MemoriesService::NotifyDebugMessage,
-                                       weak_ptr_factory_.GetWeakPtr());
-  }
-
   remote_model_helper_ = std::make_unique<MemoriesRemoteModelHelper>(
-      url_loader_factory, debug_logger);
+      url_loader_factory,
+      base::BindRepeating(&MemoriesService::NotifyDebugMessage,
+                          weak_ptr_factory_.GetWeakPtr()));
   remote_model_helper_weak_factory_ =
       std::make_unique<base::WeakPtrFactory<MemoriesRemoteModelHelper>>(
           remote_model_helper_.get());
@@ -140,8 +136,6 @@ void MemoriesService::RemoveObserver(Observer* obs) {
 }
 
 void MemoriesService::NotifyDebugMessage(const std::string& message) const {
-  DCHECK(DebugLoggingEnabled()) << "Callers must ensure logging is enabled.";
-
   for (Observer& obs : observers_) {
     obs.OnMemoriesDebugMessage(message);
   }
@@ -175,7 +169,7 @@ void MemoriesService::CompleteVisitContextAnnotationsIfReady(int64_t nav_id) {
       (visit_context_annotations.status.ukm_page_end_signals ||
        !visit_context_annotations.status.expect_ukm_page_end_signals)) {
     if (base::FeatureList::IsEnabled(kMemories)) {
-      if (StoreVisitsInHistoryDb())
+      if (kPersistContextAnnotationsInHistoryDb.Get())
         history_service_->AddAnnotatedVisit(
             {visit_context_annotations.visit_row.visit_id,
              visit_context_annotations.context_annotations,
@@ -194,12 +188,12 @@ void MemoriesService::QueryMemories(
     mojom::QueryParamsPtr query_params,
     base::OnceCallback<void(QueryMemoriesResponse)> callback,
     base::CancelableTaskTracker* task_tracker) {
-  // |QueryMemories| has 4 steps:
+  // `QueryMemories` has 4 steps:
   // 1. Get visits either asynchronously from the history db or synchronously
-  //    from |visits_|.
-  // 2. Ask |remote_model_helper_| to convert the visits to memories.
-  // 3. Filter memories matching |query_params| and create.
-  // 4. Run |callback| with the continuation query params and matched memories.
+  //    from `visits_`.
+  // 2. Ask `remote_model_helper_` to convert the visits to memories.
+  // 3. Filter memories matching `query_params` and create.
+  // 4. Run `callback` with the continuation query params and matched memories.
 
   // Copy `query_params->query` because `query_params` is about to be moved.
   auto query_string = query_params->query;
@@ -211,11 +205,11 @@ void MemoriesService::QueryMemories(
                                               std::move(query_params)))
                          .Then(std::move(callback)));
 
-  if (StoreVisitsInHistoryDb()) {
+  if (kPersistContextAnnotationsInHistoryDb.Get()) {
     history_service_->GetAnnotatedVisits(
-        MaxVisitsToCluster(),
+        kMaxVisitsToCluster.Get(),
         base::BindOnce(
-            // This echo callback is necessary to copy the |AnnotatedVisit|
+            // This echo callback is necessary to copy the `AnnotatedVisit`
             // refs.
             [](std::vector<history::AnnotatedVisit> visits) { return visits; })
             .Then(std::move(on_visits_callback)),

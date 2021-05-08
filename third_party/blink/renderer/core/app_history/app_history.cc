@@ -144,6 +144,9 @@ void AppHistory::CloneFromPrevious(AppHistory& previous) {
     new_item->SetItemSequenceNumber(old_item->ItemSequenceNumber());
     new_item->SetDocumentSequenceNumber(old_item->DocumentSequenceNumber());
     new_item->SetURL(old_item->Url());
+    new_item->SetAppHistoryKey(old_item->GetAppHistoryKey());
+    new_item->SetAppHistoryId(old_item->GetAppHistoryId());
+    new_item->SetAppHistoryState(old_item->GetAppHistoryState());
     entries_.emplace_back(
         MakeGarbageCollected<AppHistoryEntry>(GetSupplementable(), new_item));
   }
@@ -204,11 +207,29 @@ ScriptPromise AppHistory::navigate(ScriptState* script_state,
                                    const String& url,
                                    AppHistoryNavigateOptions* options,
                                    ExceptionState& exception_state) {
+  if (!GetSupplementable()->GetFrame()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "navigate() may not be called in a "
+                                      "detached window");
+    return ScriptPromise();
+  }
+
   KURL completed_url(GetSupplementable()->Url(), url);
   if (!completed_url.IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Invalid url");
     return ScriptPromise();
+  }
+
+  navigate_serialized_state_ = nullptr;
+  if (options->hasState()) {
+    navigate_serialized_state_ = SerializedScriptValue::Serialize(
+        script_state->GetIsolate(), options->state().V8Value(),
+        SerializedScriptValue::SerializeOptions(
+            SerializedScriptValue::kForStorage),
+        exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
   }
 
   base::AutoReset<Member<ScriptPromiseResolver>> promise(
@@ -232,11 +253,12 @@ ScriptPromise AppHistory::navigate(ScriptState* script_state,
   // bypassing ScriptPromiseResolver and managing our own v8::Promise::Resolver,
   // special case detach here.
   if (!GetSupplementable()->GetFrame()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
-                                           "Navigation was aborted"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
+                                      "Navigation was aborted");
+    return ScriptPromise();
   }
+  if (navigate_serialized_state_)
+    current()->GetItem()->SetAppHistoryState(navigate_serialized_state_);
   return navigate_method_call_promise_resolver_->Promise();
 }
 
@@ -312,6 +334,8 @@ bool AppHistory::DispatchNavigateEvent(const KURL& url,
       promise = ScriptPromise::CastUndefined(script_state);
     NavigateReaction::React(script_state, promise,
                             navigate_method_call_promise_resolver_);
+  } else {
+    navigate_serialized_state_.reset();
   }
 
   if (navigate_event->defaultPrevented() && promise.IsEmpty()) {

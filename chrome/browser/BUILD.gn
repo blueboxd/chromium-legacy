@@ -96,7 +96,6 @@ buildflag_header("buildflags") {
     "ENABLE_CHROMIUM_UPDATER=$enable_chromium_updater",
     "ENABLE_APP_SESSION_SERVICE=$enable_app_session_service",
     "USE_THIN_LTO=$use_thin_lto",
-    "ENABLE_PAK_FILE_INTEGRITY_CHECKS=$enable_pak_file_integrity_checks",
   ]
   if (is_win) {
     flags += [ "ENABLE_SEGMENT_HEAP=$enable_segment_heap" ]
@@ -1604,8 +1603,6 @@ static_library("browser") {
     "sharing/web_push/web_push_common.h",
     "sharing/web_push/web_push_sender.cc",
     "sharing/web_push/web_push_sender.h",
-    "sharing_hub/sharing_hub_features.cc",
-    "sharing_hub/sharing_hub_features.h",
     "shell_integration.cc",
     "shell_integration.h",
     "signin/about_signin_internals_factory.cc",
@@ -3898,8 +3895,6 @@ static_library("browser") {
       "resource_coordinator/tab_metrics_logger.h",
       "resource_coordinator/usage_clock.cc",
       "resource_coordinator/usage_clock.h",
-      "resources_integrity.cc",
-      "resources_integrity.h",
       "safe_browsing/generated_safe_browsing_pref.cc",
       "safe_browsing/generated_safe_browsing_pref.h",
       "search/background/ntp_background_data.cc",
@@ -4023,6 +4018,14 @@ static_library("browser") {
       "sharing/sharing_ui_controller.h",
       "sharing/sms/sms_remote_fetcher_ui_controller.cc",
       "sharing/sms/sms_remote_fetcher_ui_controller.h",
+      "sharing_hub/sharing_hub_features.cc",
+      "sharing_hub/sharing_hub_features.h",
+      "sharing_hub/sharing_hub_model.cc",
+      "sharing_hub/sharing_hub_model.h",
+      "sharing_hub/sharing_hub_service.cc",
+      "sharing_hub/sharing_hub_service.h",
+      "sharing_hub/sharing_hub_service_factory.cc",
+      "sharing_hub/sharing_hub_service_factory.h",
       "signin/signin_promo.cc",
       "signin/signin_promo.h",
       "signin/signin_ui_util.cc",
@@ -4256,10 +4259,6 @@ static_library("browser") {
         "//extensions/browser/api:api_implementations",
         "//extensions/common:mojom",
       ]
-    }
-
-    if (enable_pak_file_integrity_checks) {
-      deps += [ "//chrome:packed_resources_integrity" ]
     }
 
     if (is_posix || is_fuchsia) {
@@ -4689,6 +4688,8 @@ static_library("browser") {
     sources += [
       "apps/app_service/fake_lacros_web_apps_host.cc",
       "apps/app_service/fake_lacros_web_apps_host.h",
+      "apps/app_service/web_apps_publisher_host.cc",
+      "apps/app_service/web_apps_publisher_host.h",
       "chrome_browser_main_parts_lacros.cc",
       "chrome_browser_main_parts_lacros.h",
       "feedback/show_feedback_page_lacros.cc",
@@ -5572,8 +5573,8 @@ static_library("browser") {
     }
     if (is_win || is_mac || is_linux || is_chromeos) {
       sources += [
-        "printing/print_backend_service.cc",
-        "printing/print_backend_service.h",
+        "printing/print_backend_service_manager.cc",
+        "printing/print_backend_service_manager.h",
       ]
       deps += [ "//chrome/services/printing/public/mojom" ]
     }

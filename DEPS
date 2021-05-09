@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'dabb2891c4a1be107ac5a5617eb8fda0f5b89b34',
+  'skia_revision': '028de13d6f9a541335688affe553cb539fbefe06',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '26b3915b54cf190bc8fc636166a9b44fb0bb3a30',
+  'dawn_revision': '26468c4071756b016468fc6c2729f702955acdcf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -372,11 +372,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    '5f51521620a9229a8e7956a5a302031d3fc28b5f',
+  'libcxxabi_revision':    '767de317f97343db64af048e3d198ab8b10fee5d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    'd6f21e01ceaa70347605dbce8cc3b95b3fab9462',
+  'libunwind_revision':    '7846d256355e40273f7cc192c8f5893e8665a1f9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -643,7 +643,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'yNhA4rASrN0j74_ydJx-9U82_rC9iKe9I9YAOlK6RP0C',
+          'version': 'p0ewBQmfANIplrphEq2-2uHvF_8dnhDKvudlL_OKSXkC',
         },
       ],
       'dep_type': 'cipd',
@@ -654,7 +654,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': '5LTZ9PC0M6cenI-Pxgy9HT_A7wW5ndvtJnDj7-x6gqkC',
+          'version': 'grmbjC5ErnSRCMgWWEFAI9Vt4O2_yXt2gTFtKWOK83UC',
         },
       ],
       'dep_type': 'cipd',
@@ -665,7 +665,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'p2ptAnGgNjbSa19WzyJl86znKnQ3YE7gHls64VXV0l4C',
+          'version': '0ha7qFkY9xSWjRtk6F7eLYfHOEFOsBuga8buY-2KSTAC',
         },
       ],
       'dep_type': 'cipd',
@@ -1624,7 +1624,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@aaf4eec47e548d7e8291492a29f8db30f4db4331',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9bc808f1b38cc73a50c73817de0bab618457f7b4',
     'condition': 'checkout_src_internal',
   },
 
@@ -1643,7 +1643,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'ji5QCbNg1UP9xidlR09UsND7KdkU2ttnsrWtSzHDKt4C',
+        'version': 'gJ3nfGlZWCWCqvwGdFzeOBIK-ICoiS_YP3GpiBT6mUQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1654,7 +1654,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '4eM3TKKJfP_Tw989ChhlqlzKD0ndEkcDLjGYkoTfFtYC',
+        'version': 'pRy6lrIQ69T7xPXPZWt4GPh_xJw7Lvzfm6tmlff59kIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

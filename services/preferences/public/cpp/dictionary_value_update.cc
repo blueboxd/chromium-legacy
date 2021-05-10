@@ -28,11 +28,11 @@ bool DictionaryValueUpdate::HasKey(base::StringPiece key) const {
 }
 
 size_t DictionaryValueUpdate::size() const {
-  return value_->size();
+  return value_->DictSize();
 }
 
 bool DictionaryValueUpdate::empty() const {
-  return value_->empty();
+  return value_->DictEmpty();
 }
 
 void DictionaryValueUpdate::Clear() {

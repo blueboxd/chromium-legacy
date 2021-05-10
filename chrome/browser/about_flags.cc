@@ -3419,6 +3419,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
      SINGLE_VALUE_TYPE(webapps::switches::kBypassAppBannerEngagementChecks)},
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+    {"allow-default-web-app-migration-for-chrome-os-managed-users",
+     flag_descriptions::kAllowDefaultWebAppMigrationForChromeOsManagedUsersName,
+     flag_descriptions::
+         kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         web_app::kAllowDefaultWebAppMigrationForChromeOsManagedUsers)},
     {"enable-default-chat-web-app", flag_descriptions::kDefaultChatWebAppName,
      flag_descriptions::kDefaultChatWebAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(web_app::kDefaultChatWebApp)},
@@ -3784,6 +3791,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
+    {"offline-pages-ct", flag_descriptions::kOfflinePagesCtName,
+     flag_descriptions::kOfflinePagesCtDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTFeature)},
     {"offline-pages-ct-v2", flag_descriptions::kOfflinePagesCtV2Name,
      flag_descriptions::kOfflinePagesCtV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTV2Feature)},

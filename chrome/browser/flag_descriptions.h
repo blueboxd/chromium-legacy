@@ -1823,6 +1823,9 @@ extern const char kOfflineIndicatorChoiceDescription[];
 extern const char kOfflineIndicatorV2Name[];
 extern const char kOfflineIndicatorV2Description[];
 
+extern const char kOfflinePagesCtName[];
+extern const char kOfflinePagesCtDescription[];
+
 extern const char kOfflinePagesCtV2Name[];
 extern const char kOfflinePagesCtV2Description[];
 
@@ -2872,6 +2875,10 @@ extern const char kWifiSyncAndroidDescription[];
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+extern const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[];
+extern const char
+    kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[];
+
 extern const char kDefaultChatWebAppName[];
 extern const char kDefaultChatWebAppDescription[];
 

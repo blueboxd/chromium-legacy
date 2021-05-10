@@ -40,9 +40,22 @@ namespace {
 // mark users as being in either the control or the experiment group to allow
 // for aggregation of UKM metrics.
 const char kTriggerScriptExperimentSyntheticFieldTrialName[] =
-    "AutofillAssistantLiteScriptExperiment";
+    "AutofillAssistantTriggerScriptExperiment";
 const char kTriggerScriptExperimentGroup[] = "Experiment";
 const char kTriggerScriptControlGroup[] = "Control";
+
+// The maximum number of items to be kept in the cache. If this number is
+// exceeded, the entry that hasn't been accessed the longest is automatically
+// removed.
+constexpr size_t kMaxFailedTriggerScriptsCacheSize = 100;
+constexpr size_t kMaxUserDenylistedCacheSize = 100;
+
+// The duration for which cache entries are considered fresh. Stale entries in
+// the cache are ignored.
+constexpr base::TimeDelta kMaxFailedTriggerScriptsCacheDuration =
+    base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kMaxUserDenylistedCacheDuration =
+    base::TimeDelta::FromHours(1);
 
 // Creates a service request sender that serves the pre-specified response.
 // Creation may fail (return null) if the parameter fails to decode.
@@ -87,18 +100,57 @@ const scoped_refptr<StarterHeuristic> GetOrCreateStarterHeuristic() {
   return *starter_heuristic;
 }
 
+// The cache of failed trigger script fetches is shared across all instances and
+// initialized on first use.
+base::HashingMRUCache<std::string, base::TimeTicks>*
+GetOrCreateFailedTriggerScriptFetchesCache() {
+  static base::NoDestructor<base::HashingMRUCache<std::string, base::TimeTicks>>
+      cached_failed_trigger_script_fetches(kMaxFailedTriggerScriptsCacheSize);
+  return cached_failed_trigger_script_fetches.get();
+}
+
+// Goes through the |cache| and removes entries that have gone stale, i.e.,
+// entries that were added before |cutoff_ticks|.
+void ClearStaleCacheEntries(
+    base::HashingMRUCache<std::string, base::TimeTicks>* cache,
+    base::TimeTicks cutoff_ticks) {
+  // Go in reverse order until the oldest entry is younger than |cutoff_ticks|.
+  for (auto it = cache->rbegin(); it != cache->rend();) {
+    if (it->second > cutoff_ticks) {
+      return;
+    }
+    it = cache->Erase(it);
+  }
+}
+
+// Returns true if |cache| has an entry for |url| that is younger than
+// |cutoff_ticks|, false otherwise. Does not change the order of the cache.
+bool HasFreshCacheEntry(
+    const base::HashingMRUCache<std::string, base::TimeTicks>& cache,
+    const GURL& url,
+    base::TimeTicks cutoff_ticks) {
+  std::string domain = url_utils::GetOrganizationIdentifyingDomain(url);
+  auto it = cache.Peek(domain);
+  return (it != cache.end() && (it->second > cutoff_ticks));
+}
+
 }  // namespace
 
 Starter::Starter(content::WebContents* web_contents,
                  StarterPlatformDelegate* platform_delegate,
                  ukm::UkmRecorder* ukm_recorder,
-                 base::WeakPtr<RuntimeManagerImpl> runtime_manager)
+                 base::WeakPtr<RuntimeManagerImpl> runtime_manager,
+                 const base::TickClock* tick_clock)
     : content::WebContentsObserver(web_contents),
       next_ukm_source_id_(ukm::GetSourceIdForWebContentsDocument(web_contents)),
+      cached_failed_trigger_script_fetches_(
+          GetOrCreateFailedTriggerScriptFetchesCache()),
+      user_denylisted_domains_(kMaxUserDenylistedCacheSize),
       platform_delegate_(platform_delegate),
       ukm_recorder_(ukm_recorder),
       runtime_manager_(runtime_manager),
-      starter_heuristic_(GetOrCreateStarterHeuristic()) {
+      starter_heuristic_(GetOrCreateStarterHeuristic()),
+      tick_clock_(tick_clock) {
   CheckSettings();
 }
 
@@ -143,11 +195,11 @@ void Starter::DidFinishNavigation(
       }
       // Note: this will record for the current domain, not the target domain.
       // There seems to be no way to avoid this.
-      Metrics::RecordLiteScriptStarted(
+      Metrics::RecordTriggerScriptStarted(
           ukm_recorder_, next_ukm_source_id_,
           navigation_handle->IsErrorPage()
-              ? Metrics::LiteScriptStarted::LITE_SCRIPT_NAVIGATION_ERROR
-              : Metrics::LiteScriptStarted::LITE_SCRIPT_NAVIGATED_AWAY);
+              ? Metrics::TriggerScriptStarted::NAVIGATION_ERROR
+              : Metrics::TriggerScriptStarted::NAVIGATED_AWAY);
       CancelPendingStartup(base::nullopt);
     } else {
       // Regular startup was interrupted (most likely during the onboarding).
@@ -173,6 +225,16 @@ void Starter::DidFinishNavigation(
 void Starter::MaybeStartImplicitlyForUrl(const GURL& url) {
   if (!fetch_trigger_scripts_on_navigation_ || IsStartupPending() ||
       platform_delegate_->IsRegularScriptRunning() || !url.is_valid()) {
+    return;
+  }
+
+  // If we have failed to fetch a trigger script for this domain before, or if
+  // the user has denylisted the domain, don't try again.
+  base::TimeTicks now_ticks = tick_clock_->NowTicks();
+  if (HasFreshCacheEntry(*cached_failed_trigger_script_fetches_, url,
+                         now_ticks - kMaxFailedTriggerScriptsCacheDuration) ||
+      HasFreshCacheEntry(user_denylisted_domains_, url,
+                         now_ticks - kMaxUserDenylistedCacheDuration)) {
     return;
   }
 
@@ -234,8 +296,12 @@ void Starter::CheckSettings() {
   bool prev_fetch_trigger_scripts_on_navigation =
       fetch_trigger_scripts_on_navigation_;
   fetch_trigger_scripts_on_navigation_ =
-      base::FeatureList::IsEnabled(
-          features::kAutofillAssistantInChromeTriggering) &&
+      ((base::FeatureList::IsEnabled(
+            features::kAutofillAssistantInCCTTriggering) &&
+        is_custom_tab_) ||
+       (base::FeatureList::IsEnabled(
+            features::kAutofillAssistantInTabTriggering) &&
+        !is_custom_tab_)) &&
       proactive_help_setting_enabled && msbb_setting_enabled;
 
   // If there is a pending startup, re-check that the settings are still
@@ -255,12 +321,12 @@ void Starter::CheckSettings() {
         }
         // Trigger scripts are not allowed to persist when transitioning from
         // CCT to regular tab.
-        CancelPendingStartup(Metrics::LiteScriptFinishedState::
-                                 LITE_SCRIPT_CCT_TO_TAB_NOT_SUPPORTED);
+        CancelPendingStartup(
+            Metrics::TriggerScriptFinishedState::CCT_TO_TAB_NOT_SUPPORTED);
         return;
       default:
-        CancelPendingStartup(Metrics::LiteScriptFinishedState::
-                                 LITE_SCRIPT_DISABLED_PROACTIVE_HELP_SETTING);
+        CancelPendingStartup(Metrics::TriggerScriptFinishedState::
+                                 DISABLED_PROACTIVE_HELP_SETTING);
         return;
     }
   } else if (!prev_fetch_trigger_scripts_on_navigation &&
@@ -272,7 +338,7 @@ void Starter::CheckSettings() {
 void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
   DCHECK(trigger_context);
   DCHECK(!trigger_context->GetDirectAction());
-  CancelPendingStartup(Metrics::LiteScriptFinishedState::LITE_SCRIPT_CANCELED);
+  CancelPendingStartup(Metrics::TriggerScriptFinishedState::CANCELED);
   pending_trigger_context_ = std::move(trigger_context);
 
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -298,9 +364,9 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
       !startup_url.has_value()) {
     // Fail immediately if there is no deeplink domain to wait for.
     // Note: this will record the impression for the current domain.
-    Metrics::RecordLiteScriptStarted(
+    Metrics::RecordTriggerScriptStarted(
         ukm_recorder_, next_ukm_source_id_,
-        Metrics::LiteScriptStarted::LITE_SCRIPT_NO_INITIAL_URL);
+        Metrics::TriggerScriptStarted::NO_INITIAL_URL);
     OnStartDone(/* start_regular_script = */ false);
     return;
   }
@@ -315,7 +381,7 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
   // Record startup metrics for trigger scripts as soon as possible to establish
   // a baseline.
   if (IsTriggerScriptContext(*pending_trigger_context_)) {
-    Metrics::RecordLiteScriptStarted(
+    Metrics::RecordTriggerScriptStarted(
         ukm_recorder_, next_ukm_source_id_, startup_mode,
         platform_delegate_->GetFeatureModuleInstalled(),
         platform_delegate_->GetIsFirstTimeUser());
@@ -337,7 +403,7 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
 }
 
 void Starter::CancelPendingStartup(
-    base::Optional<Metrics::LiteScriptFinishedState> state) {
+    base::Optional<Metrics::TriggerScriptFinishedState> state) {
   if (!IsStartupPending()) {
     return;
   }
@@ -415,12 +481,11 @@ void Starter::StartTriggerScript() {
       service_request_sender = CreateBase64TriggerScriptRequestSender(
           script_parameters.GetBase64TriggerScriptsResponseProto().value());
       if (!service_request_sender) {
-        Metrics::RecordLiteScriptFinished(
+        Metrics::RecordTriggerScriptFinished(
             ukm_recorder_, next_ukm_source_id_, UNSPECIFIED_TRIGGER_UI_TYPE,
-            Metrics::LiteScriptFinishedState::
-                LITE_SCRIPT_BASE64_DECODING_ERROR);
+            Metrics::TriggerScriptFinishedState::BASE64_DECODING_ERROR);
         OnTriggerScriptFinished(
-            Metrics::LiteScriptFinishedState::LITE_SCRIPT_BASE64_DECODING_ERROR,
+            Metrics::TriggerScriptFinishedState::BASE64_DECODING_ERROR,
             std::move(pending_trigger_context_), base::nullopt);
         return;
       }
@@ -459,16 +524,45 @@ void Starter::StartTriggerScript() {
 }
 
 void Starter::OnTriggerScriptFinished(
-    Metrics::LiteScriptFinishedState state,
+    Metrics::TriggerScriptFinishedState state,
     std::unique_ptr<TriggerContext> trigger_context,
     base::Optional<TriggerScriptProto> trigger_script) {
+  // Update caches on error or user-cancel.
+  if (trigger_script_coordinator_) {
+    std::string domain = url_utils::GetOrganizationIdentifyingDomain(
+        trigger_script_coordinator_->GetDeeplink());
+    switch (state) {
+      case Metrics::TriggerScriptFinishedState::NO_TRIGGER_SCRIPT_AVAILABLE:
+      case Metrics::TriggerScriptFinishedState::GET_ACTIONS_FAILED:
+        cached_failed_trigger_script_fetches_->Put(domain,
+                                                   tick_clock_->NowTicks());
+        ClearStaleCacheEntries(
+            cached_failed_trigger_script_fetches_,
+            tick_clock_->NowTicks() - kMaxFailedTriggerScriptsCacheDuration);
+        break;
+      case Metrics::TriggerScriptFinishedState::PROMPT_FAILED_CANCEL_SESSION:
+        user_denylisted_domains_.Put(domain, tick_clock_->NowTicks());
+        ClearStaleCacheEntries(
+            &user_denylisted_domains_,
+            tick_clock_->NowTicks() - kMaxUserDenylistedCacheDuration);
+        break;
+      default: {
+        auto cache_it = cached_failed_trigger_script_fetches_->Peek(domain);
+        if (cache_it != cached_failed_trigger_script_fetches_->end()) {
+          cached_failed_trigger_script_fetches_->Erase(cache_it);
+        }
+        break;
+      }
+    }
+  }
+
   // Delete the coordinator asynchronously, to give this notification time to
   // end gracefully.
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&Starter::DeleteTriggerScriptCoordinator,
                                 weak_ptr_factory_.GetWeakPtr()));
 
-  if (state != Metrics::LiteScriptFinishedState::LITE_SCRIPT_PROMPT_SUCCEEDED) {
+  if (state != Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED) {
     OnStartDone(/* start_regular_script = */ false);
     return;
   }

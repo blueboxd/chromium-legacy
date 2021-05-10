@@ -8,11 +8,13 @@
 #include <memory>
 #include <string>
 #include "base/base64url.h"
+#include "base/containers/mru_cache.h"
 #include "base/strings/string_piece.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/tick_clock.h"
 #include "components/autofill_assistant/browser/fake_starter_platform_delegate.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_website_login_manager.h"
@@ -35,15 +37,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
-namespace {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Eq;
+using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Optional;
+using ::testing::Pair;
 using ::testing::Pointee;
 using ::testing::Property;
+using ::testing::UnorderedElementsAre;
 using ::testing::WithArg;
 using ::testing::WithArgs;
 
@@ -51,6 +55,12 @@ const char kExampleDeeplink[] = "https://www.example.com";
 
 class StarterTest : public content::RenderViewHostTestHarness {
  public:
+  StarterTest()
+      : content::RenderViewHostTestHarness(
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  ~StarterTest() override = default;
+
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
@@ -66,14 +76,28 @@ class StarterTest : public content::RenderViewHostTestHarness {
 
     starter_ = std::make_unique<Starter>(
         web_contents(), &fake_platform_delegate_, &ukm_recorder_,
-        mock_runtime_manager_.GetWeakPtr());
+        mock_runtime_manager_.GetWeakPtr(),
+        task_environment()->GetMockTickClock());
   }
 
   void TearDown() override {
+    // We need to clear the static cache to avoid cross-talk between tests.
+    GetFailedTriggerFetchesCacheForTest()->Clear();
+
     // Note: it is important to reset the starter explicitly here to ensure that
     // destructors are called on the right thread, as required by devtools.
     starter_.reset();
     RenderViewHostTestHarness::TearDown();
+  }
+
+  base::HashingMRUCache<std::string, base::TimeTicks>*
+  GetFailedTriggerFetchesCacheForTest() {
+    return starter_->cached_failed_trigger_script_fetches_;
+  }
+
+  base::HashingMRUCache<std::string, base::TimeTicks>*
+  GetUserDenylistedCacheForTest() const {
+    return &starter_->user_denylisted_domains_;
   }
 
  protected:
@@ -139,37 +163,39 @@ class StarterTest : public content::RenderViewHostTestHarness {
     return !ukm_recorder_.GetEntriesByName(entry_name).empty();
   }
 
-  bool UkmLiteScriptStarted(Metrics::LiteScriptStarted state,
-                            const GURL& source_url = GURL(kExampleDeeplink)) {
+  bool UkmTriggerScriptStarted(
+      Metrics::TriggerScriptStarted state,
+      const GURL& source_url = GURL(kExampleDeeplink)) {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptStarted",
                              "LiteScriptStarted", static_cast<int64_t>(state),
                              source_url);
   }
 
-  bool UkmLiteScriptFinished(Metrics::LiteScriptFinishedState state,
-                             const GURL& source_url = GURL(kExampleDeeplink)) {
+  bool UkmTriggerScriptFinished(
+      Metrics::TriggerScriptFinishedState state,
+      const GURL& source_url = GURL(kExampleDeeplink)) {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptFinished",
                              "LiteScriptFinished", static_cast<int64_t>(state),
                              source_url);
   }
 
-  bool UkmLiteScriptOnboarding(
-      Metrics::LiteScriptOnboarding result,
+  bool UkmTriggerScriptOnboarding(
+      Metrics::TriggerScriptOnboarding result,
       const GURL& source_url = GURL(kExampleDeeplink)) {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptOnboarding",
                              "LiteScriptOnboarding",
                              static_cast<int64_t>(result), source_url);
   }
 
-  bool UkmLiteScriptStarted() {
+  bool UkmTriggerScriptStarted() {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptStarted");
   }
 
-  bool UkmLiteScriptFinished() {
+  bool UkmTriggerScriptFinished() {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptFinished");
   }
 
-  bool UkmLiteScriptOnboarding() {
+  bool UkmTriggerScriptOnboarding() {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptOnboarding");
   }
 
@@ -247,9 +273,9 @@ TEST_F(StarterTest, RegularScriptFailsWithoutInitialUrl) {
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(params), options));
 
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -267,10 +293,10 @@ TEST_F(StarterTest, TriggerScriptFailsWithoutInitialUrl) {
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(params), options));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_NO_INITIAL_URL));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::NO_INITIAL_URL));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -288,10 +314,10 @@ TEST_F(StarterTest, FailWithoutMandatoryScriptParameter) {
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(params), options));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_MANDATORY_PARAMETER_MISSING));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(UkmTriggerScriptStarted(
+      Metrics::TriggerScriptStarted::MANDATORY_PARAMETER_MISSING));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -313,10 +339,10 @@ TEST_F(StarterTest, FailWhenFeatureDisabled) {
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(params), options));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_FEATURE_DISABLED));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::FEATURE_DISABLED));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -344,9 +370,9 @@ TEST_F(StarterTest, RegularStartupForReturningUsersSucceeds) {
               Eq(0));
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(0));
   EXPECT_THAT(fake_platform_delegate_.GetOnboardingAccepted(), Eq(true));
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -377,9 +403,9 @@ TEST_F(StarterTest, RegularStartupForFirstTimeUsersSucceeds) {
               Eq(1));
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(1));
   EXPECT_THAT(fake_platform_delegate_.GetOnboardingAccepted(), Eq(true));
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_FOREGROUND_INSTALLATION_SUCCEEDED,
@@ -471,9 +497,9 @@ TEST_F(StarterTest, RegularStartupFailsIfDfmInstallationFails) {
               Eq(1));
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(0));
   EXPECT_THAT(fake_platform_delegate_.GetOnboardingAccepted(), Eq(false));
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_FOREGROUND_INSTALLATION_FAILED,
@@ -499,9 +525,9 @@ TEST_F(StarterTest, RegularStartupFailsIfOnboardingRejected) {
       std::make_unique<ScriptParameters>(script_parameters), options));
 
   EXPECT_THAT(fake_platform_delegate_.GetOnboardingAccepted(), Eq(false));
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -528,10 +554,10 @@ TEST_F(StarterTest, RpcTriggerScriptFailsIfMsbbIsDisabled) {
       std::make_unique<ScriptParameters>(script_parameters),
       TriggerContext::Options()));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_PROACTIVE_TRIGGERING_DISABLED));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(UkmTriggerScriptStarted(
+      Metrics::TriggerScriptStarted::PROACTIVE_TRIGGERING_DISABLED));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -555,10 +581,10 @@ TEST_F(StarterTest, RpcTriggerScriptFailsIfProactiveHelpIsDisabled) {
       std::make_unique<ScriptParameters>(script_parameters),
       TriggerContext::Options()));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_PROACTIVE_TRIGGERING_DISABLED));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(UkmTriggerScriptStarted(
+      Metrics::TriggerScriptStarted::PROACTIVE_TRIGGERING_DISABLED));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -608,12 +634,12 @@ TEST_F(StarterTest, RpcTriggerScriptSucceeds) {
       std::make_unique<ScriptParameters>(script_parameters), options));
 
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(1));
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_FIRST_TIME_USER));
-  EXPECT_TRUE(UkmLiteScriptFinished(
-      Metrics::LiteScriptFinishedState::LITE_SCRIPT_PROMPT_SUCCEEDED));
-  EXPECT_TRUE(UkmLiteScriptOnboarding(
-      Metrics::LiteScriptOnboarding::LITE_SCRIPT_ONBOARDING_SEEN_AND_ACCEPTED));
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::FIRST_TIME_USER));
+  EXPECT_TRUE(UkmTriggerScriptFinished(
+      Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED));
+  EXPECT_TRUE(UkmTriggerScriptOnboarding(
+      Metrics::TriggerScriptOnboarding::ONBOARDING_SEEN_AND_ACCEPTED));
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -638,11 +664,11 @@ TEST_F(StarterTest, Base64TriggerScriptFailsForInvalidBase64) {
       std::make_unique<ScriptParameters>(script_parameters),
       TriggerContext::Options()));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_RETURNING_USER));
-  EXPECT_TRUE(UkmLiteScriptFinished(
-      Metrics::LiteScriptFinishedState::LITE_SCRIPT_BASE64_DECODING_ERROR));
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::RETURNING_USER));
+  EXPECT_TRUE(UkmTriggerScriptFinished(
+      Metrics::TriggerScriptFinishedState::BASE64_DECODING_ERROR));
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -668,10 +694,10 @@ TEST_F(StarterTest, Base64TriggerScriptFailsIfProactiveHelpIsDisabled) {
       std::make_unique<ScriptParameters>(script_parameters),
       TriggerContext::Options()));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_PROACTIVE_TRIGGERING_DISABLED));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(UkmTriggerScriptStarted(
+      Metrics::TriggerScriptStarted::PROACTIVE_TRIGGERING_DISABLED));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -711,12 +737,12 @@ TEST_F(StarterTest, Base64TriggerScriptSucceeds) {
       std::make_unique<ScriptParameters>(script_parameters), options));
 
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(1));
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_FIRST_TIME_USER));
-  EXPECT_TRUE(UkmLiteScriptFinished(
-      Metrics::LiteScriptFinishedState::LITE_SCRIPT_PROMPT_SUCCEEDED));
-  EXPECT_TRUE(UkmLiteScriptOnboarding(
-      Metrics::LiteScriptOnboarding::LITE_SCRIPT_ONBOARDING_SEEN_AND_ACCEPTED));
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::FIRST_TIME_USER));
+  EXPECT_TRUE(UkmTriggerScriptFinished(
+      Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED));
+  EXPECT_TRUE(UkmTriggerScriptOnboarding(
+      Metrics::TriggerScriptOnboarding::ONBOARDING_SEEN_AND_ACCEPTED));
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -745,11 +771,11 @@ TEST_F(StarterTest, CancelPendingTriggerScriptWhenTransitioningFromCctToTab) {
   EXPECT_CALL(*mock_trigger_script_ui_delegate_, HideTriggerScript);
   fake_platform_delegate_.is_custom_tab_ = false;
   starter_->CheckSettings();
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_RETURNING_USER));
-  EXPECT_TRUE(UkmLiteScriptFinished(
-      Metrics::LiteScriptFinishedState::LITE_SCRIPT_CCT_TO_TAB_NOT_SUPPORTED));
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::RETURNING_USER));
+  EXPECT_TRUE(UkmTriggerScriptFinished(
+      Metrics::TriggerScriptFinishedState::CCT_TO_TAB_NOT_SUPPORTED));
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
 }
 
 TEST_F(StarterTest, CancelPendingTriggerScriptWhenHandlingNewStartupRequest) {
@@ -774,8 +800,8 @@ TEST_F(StarterTest, CancelPendingTriggerScriptWhenHandlingNewStartupRequest) {
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(script_parameters),
       TriggerContext::Options{}));
-  EXPECT_TRUE(UkmLiteScriptFinished(
-      Metrics::LiteScriptFinishedState::LITE_SCRIPT_CANCELED));
+  EXPECT_TRUE(
+      UkmTriggerScriptFinished(Metrics::TriggerScriptFinishedState::CANCELED));
 }
 
 TEST_F(StarterTest, RegularStartupFailsIfNavigationDuringOnboarding) {
@@ -796,9 +822,9 @@ TEST_F(StarterTest, RegularStartupFailsIfNavigationDuringOnboarding) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.different.com"));
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -836,13 +862,13 @@ TEST_F(StarterTest, TriggerScriptStartupFailsIfNavigationDuringOnboarding) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.different.com"));
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_FIRST_TIME_USER));
-  EXPECT_TRUE(UkmLiteScriptFinished(
-      Metrics::LiteScriptFinishedState::LITE_SCRIPT_PROMPT_FAILED_NAVIGATE));
-  EXPECT_TRUE(UkmLiteScriptOnboarding(
-      Metrics::LiteScriptOnboarding::
-          LITE_SCRIPT_ONBOARDING_SEEN_AND_INTERRUPTED_BY_NAVIGATION));
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::FIRST_TIME_USER));
+  EXPECT_TRUE(UkmTriggerScriptFinished(
+      Metrics::TriggerScriptFinishedState::PROMPT_FAILED_NAVIGATE));
+  EXPECT_TRUE(UkmTriggerScriptOnboarding(
+      Metrics::TriggerScriptOnboarding::
+          ONBOARDING_SEEN_AND_INTERRUPTED_BY_NAVIGATION));
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -877,9 +903,9 @@ TEST_F(StarterTest, RegularStartupAllowsCertainNavigationsDuringOnboarding) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.different.com"));
 
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -910,9 +936,9 @@ TEST_F(StarterTest, RegularStartupIgnoresLastCommittedUrl) {
       std::make_unique<ScriptParameters>(script_parameters),
       TriggerContext::Options{}));
 
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -924,7 +950,7 @@ TEST_F(StarterTest, ImplicitStartupOnSupportedDomain) {
   SetupPlatformDelegateForReturningUser();
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
-      features::kAutofillAssistantInChromeTriggering);
+      features::kAutofillAssistantInCCTTriggering);
   starter_->CheckSettings();
 
   EXPECT_CALL(*mock_trigger_script_service_request_sender_,
@@ -956,14 +982,14 @@ TEST_F(StarterTest, ImplicitStartupOnSupportedDomain) {
       ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
   task_environment()->RunUntilIdle();
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_RETURNING_USER,
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::RETURNING_USER,
+                              GURL("https://www.some-website.com/cart")));
+  EXPECT_TRUE(UkmTriggerScriptFinished(
+      Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED,
       GURL("https://www.some-website.com/cart")));
-  EXPECT_TRUE(UkmLiteScriptFinished(
-      Metrics::LiteScriptFinishedState::LITE_SCRIPT_PROMPT_SUCCEEDED,
-      GURL("https://www.some-website.com/cart")));
-  EXPECT_TRUE(UkmLiteScriptOnboarding(
-      Metrics::LiteScriptOnboarding::LITE_SCRIPT_ONBOARDING_ALREADY_ACCEPTED,
+  EXPECT_TRUE(UkmTriggerScriptOnboarding(
+      Metrics::TriggerScriptOnboarding::ONBOARDING_ALREADY_ACCEPTED,
       GURL("https://www.some-website.com/cart")));
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
@@ -976,7 +1002,7 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfSettingDisabled) {
   SetupPlatformDelegateForReturningUser();
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
-      features::kAutofillAssistantInChromeTriggering);
+      features::kAutofillAssistantInCCTTriggering);
   fake_platform_delegate_.proactive_help_enabled_ = false;
   starter_->CheckSettings();
 
@@ -992,7 +1018,7 @@ TEST_F(StarterTest, ImplicitStartupOnCurrentUrlAfterSettingEnabled) {
   fake_platform_delegate_.proactive_help_enabled_ = false;
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
-      features::kAutofillAssistantInChromeTriggering);
+      features::kAutofillAssistantInCCTTriggering);
   starter_->CheckSettings();
 
   EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
@@ -1013,11 +1039,11 @@ TEST_F(StarterTest, ImplicitStartupOnCurrentUrlAfterSettingEnabled) {
   starter_->CheckSettings();
   task_environment()->RunUntilIdle();
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_RETURNING_USER,
-      GURL("https://www.some-website.com/cart")));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::RETURNING_USER,
+                              GURL("https://www.some-website.com/cart")));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -1064,11 +1090,11 @@ TEST_F(StarterTest, StartTriggerScriptBeforeRedirectRecordsUkmForTargetUrl) {
   simulator->Redirect(GURL("https://signin.example.com"));
   simulator->Commit();
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_RETURNING_USER,
-      GURL("https://signin.example.com")));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::RETURNING_USER,
+                              GURL("https://signin.example.com")));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -1112,11 +1138,11 @@ TEST_F(StarterTest, RedirectFailsDuringPendingTriggerScriptStart) {
   // Note that this impression is recorded for the last URL that a navigation-
   // start event occurred for. We never reached the target domain, so this is
   // unfortunately the best we can do.
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_NAVIGATION_ERROR,
-      GURL("https://redirect.com/to/www/example/com")));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(
+      UkmTriggerScriptStarted(Metrics::TriggerScriptStarted::NAVIGATION_ERROR,
+                              GURL("https://redirect.com/to/www/example/com")));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -1156,11 +1182,10 @@ TEST_F(StarterTest, StartTriggerScriptDuringRedirectRecordsUkmForTargetUrl) {
   simulator->Redirect(GURL(kExampleDeeplink));
   simulator->Commit();
 
-  EXPECT_TRUE(UkmLiteScriptStarted(
-      Metrics::LiteScriptStarted::LITE_SCRIPT_RETURNING_USER,
-      GURL(kExampleDeeplink)));
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_TRUE(UkmTriggerScriptStarted(
+      Metrics::TriggerScriptStarted::RETURNING_USER, GURL(kExampleDeeplink)));
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -1196,9 +1221,9 @@ TEST_F(StarterTest, RegularStartupDoesNotWaitForNavigationToFinish) {
   simulator->Redirect(GURL(kExampleDeeplink));
   simulator->Commit();
 
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -1213,7 +1238,7 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfAlreadyRunning) {
   fake_platform_delegate_.is_regular_script_running_ = true;
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
-      features::kAutofillAssistantInChromeTriggering);
+      features::kAutofillAssistantInCCTTriggering);
   starter_->CheckSettings();
   std::map<std::string, std::string> script_parameters = {
       {"ENABLED", "true"},
@@ -1226,9 +1251,9 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfAlreadyRunning) {
       ->NavigateAndCommit(GURL("https://www.example.com/cart"));
 
   task_environment()->RunUntilIdle();
-  EXPECT_FALSE(UkmLiteScriptStarted());
-  EXPECT_FALSE(UkmLiteScriptFinished());
-  EXPECT_FALSE(UkmLiteScriptOnboarding());
+  EXPECT_FALSE(UkmTriggerScriptStarted());
+  EXPECT_FALSE(UkmTriggerScriptFinished());
+  EXPECT_FALSE(UkmTriggerScriptOnboarding());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -1237,8 +1262,392 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfAlreadyRunning) {
                                      0u);
 }
 
+TEST_F(StarterTest, FailedTriggerScriptFetchesForImplicitStartupAreCached) {
+  SetupPlatformDelegateForReturningUser();
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_,
+              OnSendRequest(
+                  GURL("https://automate-pa.googleapis.com/v1/triggers"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_FORBIDDEN, std::string()));
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, ShowTriggerScript).Times(0);
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  // Implicit startup by navigating to an autofill-assistant-enabled site.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(*GetFailedTriggerFetchesCacheForTest(),
+              UnorderedElementsAre(
+                  Pair("some-website.com",
+                       task_environment()->GetMockTickClock()->NowTicks())));
+
+  // Since we failed to communicate with the backend, we won't try again for the
+  // same domain or sub-domain.
+  PrepareTriggerScriptRequestSender();
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/checkout"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://some-website.com/signin"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://signin.some-website.com"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  // Navigations to different autofill-assistant-enabled URLs will still trigger
+  // implicit startup.
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(1);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.different-website.com/cart"));
+  task_environment()->RunUntilIdle();
+}
+
+TEST_F(StarterTest,
+       CancelingTriggerScriptsDenylistsTheDomainForImplicitStartup) {
+  SetupPlatformDelegateForReturningUser();
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_,
+              OnSendRequest(
+                  GURL("https://automate-pa.googleapis.com/v1/triggers"), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK,
+                                   CreateTriggerScriptResponseForTest()));
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, ShowTriggerScript)
+      .WillOnce([&]() {
+        ASSERT_TRUE(trigger_script_coordinator_ != nullptr);
+        trigger_script_coordinator_->PerformTriggerScriptAction(
+            TriggerScriptProto::CANCEL_SESSION);
+      });
+
+  // Implicit startup by navigating to an autofill-assistant-enabled site.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(*GetUserDenylistedCacheForTest(),
+              UnorderedElementsAre(
+                  Pair("some-website.com",
+                       task_environment()->GetMockTickClock()->NowTicks())));
+
+  // Since the user chose CANCEL_SESSION, subsequent navigations to the same
+  // domain or sub-domains should not trigger implicit startup.
+  PrepareTriggerScriptRequestSender();
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/checkout"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://some-website.com/signin"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://signin.some-website.com"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  // Navigations to different autofill-assistant-enabled URLs will still trigger
+  // implicit startup.
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(1);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.different-website.com/cart"));
+  task_environment()->RunUntilIdle();
+}
+
+TEST_F(StarterTest, EmptyTriggerScriptFetchesForImplicitStartupAreCached) {
+  SetupPlatformDelegateForReturningUser();
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_,
+              OnSendRequest(
+                  GURL("https://automate-pa.googleapis.com/v1/triggers"), _, _))
+      .WillOnce(
+          WithArg<2>([&](ServiceRequestSender::ResponseCallback& callback) {
+            // Empty response == no trigger scripts available.
+            std::move(callback).Run(net::HTTP_OK, std::string());
+          }));
+
+  // Implicit startup by navigating to an autofill-assistant-enabled site.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(*GetFailedTriggerFetchesCacheForTest(),
+              UnorderedElementsAre(
+                  Pair("some-website.com",
+                       task_environment()->GetMockTickClock()->NowTicks())));
+
+  // Subsequent navigations to the same domain should not talk to the backend
+  // again. This includes navigations to subdomains etc.
+  PrepareTriggerScriptRequestSender();
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/checkout"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://some-website.com/signin"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://signin.some-website.com"));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  // However, explicit requests still communicate with the backend.
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(1);
+  std::map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"},
+      {"ORIGINAL_DEEPLINK", "https://www.some-website.com/cart"}};
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters),
+      TriggerContext::Options{}));
+}
+
+TEST_F(StarterTest, FailedExplicitTriggerFetchesAreCached) {
+  std::map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"}};
+  std::vector<std::string> unsupported_sites = {
+      "https://www.example.com", "https://signing.example.com",
+      "https://different.com", "https://different.com/test?q=12345"};
+  for (const auto& url : unsupported_sites) {
+    content::WebContentsTester::For(web_contents())
+        ->NavigateAndCommit(GURL(url));
+    PrepareTriggerScriptRequestSender();
+    PrepareTriggerScriptUiDelegate();
+    // Send empty response == no trigger script available. Note that explicit
+    // start requests like these will always attempt to talk to the backend, no
+    // matter the cache contents.
+    EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+        .WillOnce(RunOnceCallback<2>(net::HTTP_OK, std::string()));
+    script_parameters["ORIGINAL_DEEPLINK"] = url;
+    starter_->Start(std::make_unique<TriggerContext>(
+        std::make_unique<ScriptParameters>(script_parameters),
+        TriggerContext::Options{}));
+  }
+  // Cache should contain one entry per organization-identifying domain.
+  base::TimeTicks now_ticks =
+      task_environment()->GetMockTickClock()->NowTicks();
+  EXPECT_THAT(*GetFailedTriggerFetchesCacheForTest(),
+              UnorderedElementsAre(Pair("example.com", now_ticks),
+                                   Pair("different.com", now_ticks)));
+}
+
+TEST_F(StarterTest, FailedImplicitTriggerFetchesAreCached) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  std::vector<std::string> implicit_unsupported_sites = {
+      "https://www.example-shopping-site.com/cart",
+      "https://different-shopping-site.com/cart"};
+  for (const auto& url : implicit_unsupported_sites) {
+    PrepareTriggerScriptRequestSender();
+    PrepareTriggerScriptUiDelegate();
+    // Send empty response == no trigger script available.
+    EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+        .WillOnce(RunOnceCallback<2>(net::HTTP_OK, std::string()));
+    content::WebContentsTester::For(web_contents())
+        ->NavigateAndCommit(GURL(url));
+    task_environment()->RunUntilIdle();
+  }
+  // Failed attempts to start implicitly are added to the cache.
+  base::TimeTicks now_ticks =
+      task_environment()->GetMockTickClock()->NowTicks();
+  EXPECT_THAT(
+      *GetFailedTriggerFetchesCacheForTest(),
+      UnorderedElementsAre(Pair("example-shopping-site.com", now_ticks),
+                           Pair("different-shopping-site.com", now_ticks)));
+}
+
+TEST_F(StarterTest, FailedTriggerFetchesCacheEntriesExpire) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  GetFailedTriggerFetchesCacheForTest()->Put(
+      "example.com", task_environment()->GetMockTickClock()->NowTicks());
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, std::string()));
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(1));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  // Since the request failed again, the cache entry should be updated with the
+  // new time.
+  EXPECT_THAT(
+      *GetFailedTriggerFetchesCacheForTest(),
+      UnorderedElementsAre(Pair(
+          "example.com", task_environment()->GetMockTickClock()->NowTicks())));
+}
+
+TEST_F(StarterTest, UserDenylistedCacheUpdateAndExpire) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK,
+                                   CreateTriggerScriptResponseForTest()));
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, ShowTriggerScript)
+      .WillOnce([&]() {
+        trigger_script_coordinator_->PerformTriggerScriptAction(
+            TriggerScriptProto::CANCEL_SESSION);
+      });
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(
+      *GetUserDenylistedCacheForTest(),
+      UnorderedElementsAre(Pair(
+          "example.com", task_environment()->GetMockTickClock()->NowTicks())));
+
+  PrepareTriggerScriptRequestSender();
+  PrepareTriggerScriptUiDelegate();
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK,
+                                   CreateTriggerScriptResponseForTest()));
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, ShowTriggerScript)
+      .WillOnce([&]() {
+        trigger_script_coordinator_->PerformTriggerScriptAction(
+            TriggerScriptProto::CANCEL_SESSION);
+      });
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(1));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  // Since the request was cancelled again, the cache entry should have been
+  // updated with the new time.
+  EXPECT_THAT(
+      *GetUserDenylistedCacheForTest(),
+      UnorderedElementsAre(Pair(
+          "example.com", task_environment()->GetMockTickClock()->NowTicks())));
+}
+
+TEST_F(StarterTest, RemoveEntryFromCacheOnSuccessForExplicitRequest) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+  GetFailedTriggerFetchesCacheForTest()->Put(
+      "example.com", task_environment()->GetMockTickClock()->NowTicks());
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK,
+                                   CreateTriggerScriptResponseForTest()));
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, ShowTriggerScript)
+      .WillOnce([&]() {
+        trigger_script_coordinator_->PerformTriggerScriptAction(
+            TriggerScriptProto::ACCEPT);
+      });
+  std::map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"},
+      {"ORIGINAL_DEEPLINK", "https://www.example.com"}};
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters),
+      TriggerContext::Options{}));
+  EXPECT_THAT(*GetFailedTriggerFetchesCacheForTest(), IsEmpty());
+}
+
+TEST_F(StarterTest, ImplicitInCctTriggeringSmokeTest) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_custom_tab_ = true;
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+}
+
+TEST_F(StarterTest, ImplicitInTabTriggeringSmokeTest) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_custom_tab_ = false;
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInTabTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+}
+
+TEST_F(StarterTest, ImplicitInCctTriggeringDoesNotTriggerInTab) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_custom_tab_ = false;
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+}
+
+TEST_F(StarterTest, ImplicitInTabTriggeringDoesNotTriggerInCct) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_custom_tab_ = true;
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInTabTriggering);
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+}
+
 TEST(MultipleStarterTest, HeuristicUsedByMultipleInstances) {
-  content::BrowserTaskEnvironment task_environment;
+  content::BrowserTaskEnvironment task_environment(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
   content::RenderViewHostTestEnabler rvh_test_enabler;
   content::TestBrowserContext browser_context;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -1255,11 +1664,13 @@ TEST(MultipleStarterTest, HeuristicUsedByMultipleInstances) {
 
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
-      features::kAutofillAssistantInChromeTriggering);
+      features::kAutofillAssistantInCCTTriggering);
   Starter starter_01(web_contents_01.get(), &fake_platform_delegate_01,
-                     &ukm_recorder, mock_runtime_manager.GetWeakPtr());
+                     &ukm_recorder, mock_runtime_manager.GetWeakPtr(),
+                     task_environment.GetMockTickClock());
   Starter starter_02(web_contents_02.get(), &fake_platform_delegate_02,
-                     &ukm_recorder, mock_runtime_manager.GetWeakPtr());
+                     &ukm_recorder, mock_runtime_manager.GetWeakPtr(),
+                     task_environment.GetMockTickClock());
 
   auto service_request_sender_01 =
       std::make_unique<NiceMock<MockServiceRequestSender>>();
@@ -1281,5 +1692,65 @@ TEST(MultipleStarterTest, HeuristicUsedByMultipleInstances) {
   task_environment.RunUntilIdle();
 }
 
-}  // namespace
+TEST_F(StarterTest, StaleCacheEntriesAreRemovedOnInsertingNewEntries) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
+  starter_->CheckSettings();
+  base::TimeTicks t0 = task_environment()->GetMockTickClock()->NowTicks();
+  GetFailedTriggerFetchesCacheForTest()->Put("failed-t0.com", t0);
+  GetUserDenylistedCacheForTest()->Put("denylisted-t0.com", t0);
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(30));
+  base::TimeTicks t1 = task_environment()->GetMockTickClock()->NowTicks();
+  EXPECT_THAT(*GetFailedTriggerFetchesCacheForTest(),
+              UnorderedElementsAre(Pair("failed-t0.com", t0)));
+  EXPECT_THAT(*GetUserDenylistedCacheForTest(),
+              UnorderedElementsAre(Pair("denylisted-t0.com", t0)));
+  GetFailedTriggerFetchesCacheForTest()->Put("failed-t1.com", t1);
+  GetUserDenylistedCacheForTest()->Put("denylisted-t1.com", t1);
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(30));
+  base::TimeTicks t2 = task_environment()->GetMockTickClock()->NowTicks();
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, std::string()));
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  // failed-t0.com should have been removed from the cache due to going stale.
+  EXPECT_THAT(
+      *GetFailedTriggerFetchesCacheForTest(),
+      UnorderedElementsAre(Pair("failed-t1.com", t1), Pair("example.com", t2)));
+  // denylisted-t0.com is stale and will be removed the next time a domain is
+  // denylisted.
+  EXPECT_THAT(*GetUserDenylistedCacheForTest(),
+              UnorderedElementsAre(Pair("denylisted-t0.com", t0),
+                                   Pair("denylisted-t1.com", t1)));
+
+  PrepareTriggerScriptRequestSender();
+  PrepareTriggerScriptUiDelegate();
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK,
+                                   CreateTriggerScriptResponseForTest()));
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, ShowTriggerScript)
+      .WillOnce([&]() {
+        ASSERT_TRUE(trigger_script_coordinator_ != nullptr);
+        trigger_script_coordinator_->PerformTriggerScriptAction(
+            TriggerScriptProto::CANCEL_SESSION);
+      });
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://supported.com/cart"));
+  task_environment()->RunUntilIdle();
+
+  // No change to the failed fetches cache.
+  EXPECT_THAT(
+      *GetFailedTriggerFetchesCacheForTest(),
+      UnorderedElementsAre(Pair("failed-t1.com", t1), Pair("example.com", t2)));
+  // denylisted-t0.com should have been removed due to going stale.
+  EXPECT_THAT(*GetUserDenylistedCacheForTest(),
+              UnorderedElementsAre(Pair("denylisted-t1.com", t1),
+                                   Pair("supported.com", t2)));
+}
+
 }  // namespace autofill_assistant

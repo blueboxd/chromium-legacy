@@ -258,6 +258,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "chrome/browser/apps/app_service/app_platform_metrics_service.h"
+#include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
@@ -417,6 +418,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_data_service.h"
 #include "chrome/browser/sessions/session_service_log.h"
 #endif
 namespace {
@@ -1000,6 +1002,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   RegisterSessionServiceLogProfilePrefs(registry);
+  SessionDataService::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1100,6 +1103,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   app_list::AppListSyncableService::RegisterProfilePrefs(registry);
   app_list::ArcAppReinstallSearchProvider::RegisterProfilePrefs(registry);
   apps::AppPlatformMetricsService::RegisterProfilePrefs(registry);
+  apps::webapk_prefs::RegisterProfilePrefs(registry);
   arc::prefs::RegisterProfilePrefs(registry);
   ArcAppListPrefs::RegisterProfilePrefs(registry);
   certificate_manager::CertificatesHandler::RegisterProfilePrefs(registry);

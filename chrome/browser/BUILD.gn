@@ -96,6 +96,7 @@ buildflag_header("buildflags") {
     "ENABLE_CHROMIUM_UPDATER=$enable_chromium_updater",
     "ENABLE_APP_SESSION_SERVICE=$enable_app_session_service",
     "USE_THIN_LTO=$use_thin_lto",
+    "ENABLE_PAK_FILE_INTEGRITY_CHECKS=$enable_pak_file_integrity_checks",
   ]
   if (is_win) {
     flags += [ "ENABLE_SEGMENT_HEAP=$enable_segment_heap" ]
@@ -1525,8 +1526,6 @@ static_library("browser") {
     "sessions/restore_on_startup_policy_handler.h",
     "sessions/session_common_utils.cc",
     "sessions/session_common_utils.h",
-    "sessions/session_data_deleter.cc",
-    "sessions/session_data_deleter.h",
     "sessions/session_tab_helper_factory.cc",
     "sessions/session_tab_helper_factory.h",
     "sessions/tab_restore_service_factory.cc",
@@ -3895,6 +3894,8 @@ static_library("browser") {
       "resource_coordinator/tab_metrics_logger.h",
       "resource_coordinator/usage_clock.cc",
       "resource_coordinator/usage_clock.h",
+      "resources_integrity.cc",
+      "resources_integrity.h",
       "safe_browsing/generated_safe_browsing_pref.cc",
       "safe_browsing/generated_safe_browsing_pref.h",
       "search/background/ntp_background_data.cc",
@@ -4261,6 +4262,10 @@ static_library("browser") {
       ]
     }
 
+    if (enable_pak_file_integrity_checks) {
+      deps += [ "//chrome:packed_resources_integrity" ]
+    }
+
     if (is_posix || is_fuchsia) {
       sources += [
         "chrome_browser_main_posix.cc",
@@ -4335,6 +4340,8 @@ static_library("browser") {
       "apps/app_service/webapk/webapk_install_task.h",
       "apps/app_service/webapk/webapk_manager.cc",
       "apps/app_service/webapk/webapk_manager.h",
+      "apps/app_service/webapk/webapk_prefs.cc",
+      "apps/app_service/webapk/webapk_prefs.h",
       "apps/icon_standardizer.cc",
       "apps/icon_standardizer.h",
       "browser_process_platform_part_chromeos.cc",
@@ -6237,6 +6244,8 @@ static_library("browser") {
 
   if (enable_session_service) {
     sources += [
+      "sessions/session_data_deleter.cc",
+      "sessions/session_data_deleter.h",
       "sessions/session_data_service.cc",
       "sessions/session_data_service.h",
       "sessions/session_data_service_factory.cc",

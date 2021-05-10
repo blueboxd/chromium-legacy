@@ -24,10 +24,10 @@ StrikeDatabaseIntegratorBase::StrikeDatabaseIntegratorBase(
     StrikeDatabase* strike_database)
     : strike_database_(strike_database) {}
 
-StrikeDatabaseIntegratorBase::~StrikeDatabaseIntegratorBase() {}
+StrikeDatabaseIntegratorBase::~StrikeDatabaseIntegratorBase() = default;
 
 bool StrikeDatabaseIntegratorBase::IsMaxStrikesLimitReached(
-    const std::string& id) {
+    const std::string& id) const {
   CheckIdUniqueness(id);
   return GetStrikes(id) >= GetMaxStrikesLimit();
 }
@@ -41,6 +41,12 @@ int StrikeDatabaseIntegratorBase::AddStrikes(int strikes_increase,
                                              const std::string& id) {
   CheckIdUniqueness(id);
   int num_strikes = strike_database_->AddStrikes(strikes_increase, GetKey(id));
+  // If a new strike entry was created, run the routine to limit the number of
+  // stored entries. This is a noop for most strike counters.
+  if (num_strikes == strikes_increase) {
+    LimitNumberOfStoredEntries();
+  }
+
   base::UmaHistogramCounts1000(
       "Autofill.StrikeDatabase.NthStrikeAdded." + GetProjectPrefix(),
       num_strikes);
@@ -58,7 +64,7 @@ int StrikeDatabaseIntegratorBase::RemoveStrikes(int strike_decrease,
   return strike_database_->RemoveStrikes(strike_decrease, GetKey(id));
 }
 
-int StrikeDatabaseIntegratorBase::GetStrikes(const std::string& id) {
+int StrikeDatabaseIntegratorBase::GetStrikes(const std::string& id) const {
   CheckIdUniqueness(id);
   return strike_database_->GetStrikes(GetKey(id));
 }
@@ -72,16 +78,69 @@ void StrikeDatabaseIntegratorBase::ClearAllStrikes() {
   strike_database_->ClearAllStrikesForProject(GetProjectPrefix());
 }
 
+size_t StrikeDatabaseIntegratorBase::CountEntries() const {
+  return base::ranges::count_if(GetStrikeCache(), [&](const auto& entry) {
+    return strike_database_->GetPrefixFromKey(entry.first) ==
+           GetProjectPrefix();
+  });
+}
+
+void StrikeDatabaseIntegratorBase::LimitNumberOfStoredEntries() {
+  if (!NumberOfEntriesExceedsLimits()) {
+    return;
+  }
+
+  DCHECK(GetMaximumEntries().has_value());
+  DCHECK(!GetMaximumEntriesAfterCleanup().has_value() ||
+         GetMaximumEntriesAfterCleanup() <= GetMaximumEntries());
+
+  size_t maximum_size = GetMaximumEntriesAfterCleanup().has_value()
+                            ? GetMaximumEntriesAfterCleanup().value()
+                            : GetMaximumEntries().value();
+
+  std::vector<std::pair<std::string, int64_t>> entries;
+  entries.reserve(GetStrikeCache().size());
+  for (const auto& entry : GetStrikeCache()) {
+    if (strike_database_->GetPrefixFromKey(entry.first) != GetProjectPrefix()) {
+      continue;
+    }
+    entries.emplace_back(entry.first, entry.second.last_update_timestamp());
+  }
+
+  if (entries.size() <= maximum_size) {
+    return;
+  }
+  size_t elements_to_delete = entries.size() - maximum_size;
+
+  std::vector<std::string> keys_to_delete;
+
+  // Sort by timestamp.
+  std::sort(entries.begin(), entries.end(),
+            [](auto& a, auto& b) { return a.second < b.second; });
+
+  for (size_t i = 0; i < elements_to_delete; i++) {
+    keys_to_delete.push_back(entries.at(i).first);
+  }
+
+  ClearStrikesForKeys(keys_to_delete);
+}
+
+bool StrikeDatabaseIntegratorBase::NumberOfEntriesExceedsLimits() const {
+  if (!GetMaximumEntries().has_value()) {
+    return false;
+  }
+
+  return CountEntries() > GetMaximumEntries();
+}
+
 void StrikeDatabaseIntegratorBase::RemoveExpiredStrikes() {
-  if (!GetExpiryTimeMicros().has_value()) {
+  if (!GetExpiryTimeDelta().has_value()) {
     // Strikes don't expire.
     return;
   }
   std::vector<std::string> expired_keys;
   for (auto entry : strike_database_->strike_map_cache_) {
-    if (AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds() -
-            entry.second.last_update_timestamp() >
-        GetExpiryTimeMicros().value()) {
+    if (GetEntryAge(entry.second) > GetExpiryTimeDelta().value()) {
       if (strike_database_->GetStrikes(entry.first) > 0) {
         expired_keys.push_back(entry.first);
         base::UmaHistogramCounts1000(
@@ -102,8 +161,38 @@ void StrikeDatabaseIntegratorBase::RemoveExpiredStrikes() {
   }
 }
 
-std::string StrikeDatabaseIntegratorBase::GetKey(const std::string& id) {
+void StrikeDatabaseIntegratorBase::ClearStrikesForKeys(
+    const std::vector<std::string>& keys) {
+  strike_database_->ClearStrikesForKeys(keys);
+}
+
+std::string StrikeDatabaseIntegratorBase::GetIdFromKey(
+    const std::string& key) const {
+  std::string prefix = GetProjectPrefix() + kKeyDeliminator;
+  if (!base::StartsWith(key, prefix)) {
+    return std::string();
+  }
+  return key.substr(prefix.length(), std::string::npos);
+}
+
+base::TimeDelta StrikeDatabaseIntegratorBase::GetEntryAge(
+    const StrikeData& strike_data) {
+  return AutofillClock::Now() - base::Time::FromDeltaSinceWindowsEpoch(
+                                    base::TimeDelta::FromMicroseconds(
+                                        strike_data.last_update_timestamp()));
+}
+
+std::string StrikeDatabaseIntegratorBase::GetKey(const std::string& id) const {
   return GetProjectPrefix() + kKeyDeliminator + id;
+}
+
+base::Optional<size_t> StrikeDatabaseIntegratorBase::GetMaximumEntries() const {
+  return base::nullopt;
+}
+
+base::Optional<size_t>
+StrikeDatabaseIntegratorBase::GetMaximumEntriesAfterCleanup() const {
+  return base::nullopt;
 }
 
 }  // namespace autofill

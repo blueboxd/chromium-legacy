@@ -183,7 +183,7 @@ void FontSettingsEventRouter::OnFontPrefChanged(
 
   base::ListValue args;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set(key, pref->GetValue()->CreateDeepCopy());
+  dict->Set(key, base::Value::ToUniquePtrValue(pref->GetValue()->Clone()));
   args.Append(std::move(dict));
 
   extensions::preference_helpers::DispatchEventToExtensions(
@@ -299,9 +299,9 @@ void FontSettingsGetFontListFunction::FontListHasLoaded(
 ExtensionFunction::ResponseValue
 FontSettingsGetFontListFunction::CopyFontsToResult(base::ListValue* fonts) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
-  for (auto it = fonts->begin(); it != fonts->end(); ++it) {
-    base::ListValue* font_list_value;
-    if (!it->GetAsList(&font_list_value)) {
+  for (const auto& entry : fonts->GetList()) {
+    const base::ListValue* font_list_value;
+    if (!entry.GetAsList(&font_list_value)) {
       NOTREACHED();
       return Error("");
     }
@@ -354,7 +354,8 @@ ExtensionFunction::ResponseAction GetFontPrefExtensionFunction::Run() {
           profile, extension_id(), GetPrefName(), kIncognito);
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->Set(GetKey(), pref->GetValue()->CreateDeepCopy());
+  result->Set(GetKey(),
+              base::Value::ToUniquePtrValue(pref->GetValue()->Clone()));
   result->SetString(kLevelOfControlKey, level_of_control);
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(result))));

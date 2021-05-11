@@ -5407,14 +5407,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_ANDROID)
-    {"autofill-assistant-proactive-help",
-     flag_descriptions::kAutofillAssistantProactiveHelpName,
-     flag_descriptions::kAutofillAssistantProactiveHelpDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill_assistant::features::kAutofillAssistantProactiveHelp)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"deprecate-menagerie-api", flag_descriptions::kDeprecateMenagerieAPIName,
      flag_descriptions::kDeprecateMenagerieAPIDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(switches::kDeprecateMenagerieAPI)},
@@ -6958,6 +6950,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafetyCheckWeakPasswordsName,
      flag_descriptions::kSafetyCheckWeakPasswordsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSafetyCheckWeakPasswords)},
+
+#if !defined(OS_ANDROID)
+    {"settings-landing-page-redesign",
+     flag_descriptions::kSettingsLandingPageRedesignName,
+     flag_descriptions::kSettingsLandingPageRedesignDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSettingsLandingPageRedesign)},
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
     {"continuous-feeds", flag_descriptions::kContinuousFeedsName,

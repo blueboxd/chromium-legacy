@@ -311,11 +311,6 @@
     "expiry_milestone": 94
   },
   {
-    "name": "autofill-assistant-proactive-help",
-    "owners": [ "//components/autofill_assistant/OWNERS" ],
-    "expiry_milestone": 91
-  },
-  {
     "name": "autofill-auto-trigger-manual-fallback-for-cards",
     "owners": ["siashah", "siyua"],
     "expiry_milestone": 98
@@ -4741,6 +4736,11 @@
     // This is required by test teams to verify functionality on devices which
     // have no access to commandline flags.
     "expiry_milestone": -1
+  },
+  {
+    "name": "settings-landing-page-redesign",
+    "owners": [ "dpapad@chromium.org", "johntlee@chromium.org" ],
+    "expiry_milestone": 95
   },
   {
     "name": "settings-refresh",

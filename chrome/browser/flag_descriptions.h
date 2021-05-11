@@ -1645,9 +1645,6 @@ extern const char kAutofillAccessoryViewDescription[];
 extern const char kAutofillAssistantDirectActionsName[];
 extern const char kAutofillAssistantDirectActionsDescription[];
 
-extern const char kAutofillAssistantProactiveHelpName[];
-extern const char kAutofillAssistantProactiveHelpDescription[];
-
 extern const char kAutofillUseMobileLabelDisambiguationName[];
 extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 
@@ -2953,6 +2950,9 @@ extern const char kDirectManipulationStylusDescription[];
 
 extern const char kWebuiFeedbackName[];
 extern const char kWebuiFeedbackDescription[];
+
+extern const char kSettingsLandingPageRedesignName[];
+extern const char kSettingsLandingPageRedesignDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)

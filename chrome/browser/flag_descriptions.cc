@@ -2837,11 +2837,6 @@ const char kAutofillAssistantDirectActionsName[] =
 const char kAutofillAssistantDirectActionsDescription[] =
     "When enabled, expose direct actions from the Autofill Assistant.";
 
-const char kAutofillAssistantProactiveHelpName[] =
-    "Autofill Assistant proactive help";
-const char kAutofillAssistantProactiveHelpDescription[] =
-    "When enabled, allows the Autofill Assistant to proactively trigger.";
-
 const char kAutofillUseMobileLabelDisambiguationName[] =
     "Autofill Uses Mobile Label Disambiguation";
 const char kAutofillUseMobileLabelDisambiguationDescription[] =
@@ -5066,6 +5061,12 @@ const char kWebuiFeedbackName[] = "WebUI Feedback";
 const char kWebuiFeedbackDescription[] =
     "If enabled, Chrome will show the Feedback WebUI, as opposed to Chrome "
     "App Feedback UI, when clicking on \"Report an issue...\"";
+
+const char kSettingsLandingPageRedesignName[] =
+    "Settings Landing Page Redesign";
+const char kSettingsLandingPageRedesignDescription[] =
+    "Changes the layout of the chrome://settings page to only show one section "
+    "at a time.";
 
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)

@@ -989,6 +989,7 @@
     },
     'filesapp': {
       'filepath': 'chrome/browser/ash/drive|' \
+                  'chrome/browser/ash/file_system_provider|' \
                   'chrome/browser/chromeos/extensions/file_manager|' \
                   'chrome/browser/chromeos/extensions/file_system_provider|' \
                   'chrome/browser/chromeos/file_manager|' \
@@ -1003,7 +1004,8 @@
       'filepath': 'third_party/freetype/README.chromium',
     },
     'fsp': {
-      'filepath': 'chrome/browser/chromeos/extensions/file_system_provider|' \
+      'filepath': 'chrome/browser/ash/file_system_provider|' \
+                  'chrome/browser/chromeos/extensions/file_system_provider|' \
                   'chrome/browser/chromeos/file_system_provider|' \
                   'chrome/test/data/extensions/api_test/file_system_provider'
     },
@@ -1685,7 +1687,8 @@
                   '|chromeos/components/proximity_auth/'
     },
     'smb': {
-      'filepath': 'chrome/browser/chromeos/file_system_provider'\
+      'filepath': 'chrome/browser/ash/file_system_provider' \
+                  '|chrome/browser/chromeos/file_system_provider'\
                   '|chrome/browser/chromeos/smb_client'\
                   '|chromeos/dbus/fake_smb_provider_client'\
                   '|chromeos/dbus/smb_provider_client',
@@ -2123,9 +2126,7 @@
     'aura_compositor': ['jbauman+watch@chromium.org',
                         'kalyan.kondapally@intel.com'],
     'autoclick': ['katie+watch@chromium.org'],
-    'autofill': ['anthonyvd+autofillwatch@chromium.org',
-                 'ftirelo+autofillwatch@chromium.org',
-                 'rogerm+autofillwatch@chromium.org',
+    'autofill': ['ftirelo+autofillwatch@chromium.org',
                  'tmartino+autofillwatch@chromium.org'],
     'autofill_assistant': ['autofill_assistant+watch@google.com'],
     'autofill_payments': ['armalhotra+autofillwatch@google.com',
@@ -2647,7 +2648,6 @@
                          'vasilii+watchlistpasswordmanager@chromium.org'],
     'payments': ['rouslan+payments@chromium.org',
                  'gogerald+paymentswatch@chromium.org',
-                 'anthonyvd+paymentswatch@chromium.org',
                  'maxlg+paymentswatch@chromium.org',
                  'nburris+paymentswatch@chromium.org'],
     'pdf': ['pdf-reviews@chromium.org'],

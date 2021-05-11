@@ -105,6 +105,7 @@ export class ActionManager {
         break;
       case SwitchAccessMenuAction.ITEM_SCAN:
         Navigator.byItem.restart();
+        ActionManager.exitAllMenus();
         break;
       // Point scan actions:
       case SwitchAccessMenuAction.LEFT_CLICK:
@@ -117,7 +118,6 @@ export class ActionManager {
       // Item scan actions:
       default:
         ActionManager.instance.performActionOnCurrentNode_(action);
-        ActionManager.exitCurrentMenu();
     }
   }
 
@@ -275,8 +275,7 @@ export class ActionManager {
    */
   performActionOnCurrentNode_(action) {
     if (!this.actionNode_.hasAction(action)) {
-      // Refresh the actions in the menu.
-      this.openCurrentMenu_();
+      ActionManager.refreshMenuUnconditionally();
       return;
     }
 
@@ -285,16 +284,17 @@ export class ActionManager {
     // not close the menu bubble until we receive the ActionResponse CLOSE_MENU.
     // If we receive a different response, we re-enter the menu.
     Navigator.byItem.exitIfInGroup(MenuManager.menuAutomationNode);
+
     const response = this.actionNode_.performAction(action);
     if (response === SAConstants.ActionResponse.CLOSE_MENU) {
-      MenuManager.close();
+      ActionManager.exitAllMenus();
     } else {
       Navigator.byItem.jumpToSwitchAccessMenu();
     }
 
     switch (response) {
       case SAConstants.ActionResponse.RELOAD_MENU:
-        this.openCurrentMenu_();
+        ActionManager.refreshMenuUnconditionally();
         break;
       case SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU:
         if (SwitchAccess.instance.improvedTextInputEnabled()) {

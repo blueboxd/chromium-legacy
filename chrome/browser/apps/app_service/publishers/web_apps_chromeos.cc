@@ -25,8 +25,8 @@
 #include "chrome/browser/apps/app_service/web_apps_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -138,7 +138,7 @@ void WebAppsChromeOs::Initialize() {
 
   media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
 
-  notification_display_service_.Add(
+  notification_display_service_.Observe(
       NotificationDisplayServiceFactory::GetForProfile(profile()));
 
   badge_manager_ = badging::BadgeManagerFactory::GetForProfile(profile());
@@ -611,7 +611,8 @@ void WebAppsChromeOs::OnNotificationClosed(const std::string& notification_id) {
 
 void WebAppsChromeOs::OnNotificationDisplayServiceDestroyed(
     NotificationDisplayService* service) {
-  notification_display_service_.Remove(service);
+  DCHECK(notification_display_service_.IsObservingSource(service));
+  notification_display_service_.Reset();
 }
 
 bool WebAppsChromeOs::MaybeAddNotification(const std::string& app_id,

@@ -1333,6 +1333,18 @@ class BBJSONGenerator(object):
       # Values specified under $mixin_append should be appended to existing
       # lists, rather than replacing them.
       mixin_append = mixin['$mixin_append']
+
+      # Append swarming named cache and delete swarming key, since it's under
+      # another layer of dict.
+      if 'named_caches' in mixin_append.get('swarming', {}):
+        new_test['swarming'].setdefault('named_caches', [])
+        new_test['swarming']['named_caches'].extend(
+            mixin_append['swarming']['named_caches'])
+        if len(mixin_append['swarming']) > 1:
+          raise BBGenErr('Only named_caches is supported under swarming key in '
+                         '$mixin_append, but there are: %s' %
+                         sorted(mixin_append['swarming'].keys()))
+        del mixin_append['swarming']
       for key in mixin_append:
         new_test.setdefault(key, [])
         if not isinstance(mixin_append[key], list):
@@ -1630,6 +1642,12 @@ class BBJSONGenerator(object):
       for test in suite.values():
         assert isinstance(test, dict)
         seen_mixins = seen_mixins.union(test.get('mixins', set()))
+
+    for variant in self.variants:
+      # Unpack the variant from variants.pyl if it's string based.
+      if isinstance(variant, str):
+        variant = self.variants[variant]
+      seen_mixins = seen_mixins.union(variant.get('mixins', set()))
 
     missing_mixins = set(self.mixins.keys()) - seen_mixins
     if missing_mixins:

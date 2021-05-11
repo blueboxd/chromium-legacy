@@ -47,11 +47,11 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/crostini/crostini_test_helper.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -4612,7 +4612,7 @@ class ChromeShelfControllerDemoModeTest : public ChromeShelfControllerTest {
     ChromeShelfControllerTest::SetUp();
 
     // Fake Demo Mode.
-    demo_mode_test_helper_ = std::make_unique<chromeos::DemoModeTestHelper>();
+    demo_mode_test_helper_ = std::make_unique<ash::DemoModeTestHelper>();
     demo_mode_test_helper_->InitializeSession();
   }
 
@@ -4623,7 +4623,7 @@ class ChromeShelfControllerDemoModeTest : public ChromeShelfControllerTest {
   }
 
  private:
-  std::unique_ptr<chromeos::DemoModeTestHelper> demo_mode_test_helper_;
+  std::unique_ptr<ash::DemoModeTestHelper> demo_mode_test_helper_;
 };
 
 TEST_F(ChromeShelfControllerDemoModeTest, PinnedAppsOnline) {
@@ -4652,7 +4652,7 @@ TEST_F(ChromeShelfControllerDemoModeTest, PinnedAppsOnline) {
   AppendPrefValue(&policy_value, online_only_appinfo.package_name);
 
   // If the device is offline, extension2 and onlineonly should be unpinned.
-  chromeos::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
+  ash::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
       {extension2_->id(), online_only_appinfo.package_name});
 
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -4705,7 +4705,7 @@ TEST_F(ChromeShelfControllerDemoModeTest, PinnedAppsOffline) {
   AppendPrefValue(&policy_value, online_only_appinfo.package_name);
 
   // If the device is offline, extension2 and onlineonly should be unpinned.
-  chromeos::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
+  ash::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
       {extension2_->id(), online_only_appinfo.package_name});
 
   profile()->GetTestingPrefService()->SetManagedPref(

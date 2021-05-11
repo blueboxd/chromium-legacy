@@ -592,6 +592,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "chrome-tips-in-main-menu-new-badge",
+    "owners": [ "dfried" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "chromeos-direct-video-decoder",
     "owners": [ "chromeos-gfx-video@google.com" ],
     // TODO(b/159825227): remove when the "old" video decoder is fully launched.
@@ -1934,7 +1939,7 @@
   {
     "name": "enable-image-reader",
     "owners": [ "vikassoni", "liberato" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 95
   },
   {
     "name": "enable-immersive-fullscreen-toolbar",
@@ -2105,8 +2110,8 @@
   },
   {
     "name": "enable-navigation-predictor",
-    "owners": [ "tbansal", "ryansturm", "instant-nav@google.com" ],
-    "expiry_milestone": 90
+    "owners": [ "spelchat", "ryansturm", "instant-nav@google.com" ],
+    "expiry_milestone": 94
   },
   {
     "name": "enable-network-logging-to-file",
@@ -2222,10 +2227,6 @@
     "name": "enable-penetrating-image-selection",
     "owners": [ "benwgold", "flackr" ],
     "expiry_milestone": 95
-  },
-  { "name": "enable-phone-hub",
-    "owners": [ "better-together-dev@google.com", "tjohnsonkanu", "khorimoto" ],
-    "expiry_milestone": 90
   },
   {
     "name": "enable-pixel-canvas-recording",
@@ -3279,14 +3280,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "insert-key-toggle-mode",
-    "owners": [ "snianu@microsoft.com", "ericlaw@microsoft.com" ],
-    // This flag is temporary as we want to eventually remove the support for
-    // Overwrite mode when insert key is pressed. Currently it is disabled
-    // by-default.
-    "expiry_milestone": 91
-  },
-  {
     "name": "installable-ink-drop",
     "owners": [ "collinbaker", "pbos" ],
     "expiry_milestone": 90
@@ -3630,6 +3623,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "messages-for-android-update-password",
+    "owners": [ "pavely", "lazzzis" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "messages-save-card-infobar",
     "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
     "expiry_milestone": 83
@@ -3741,7 +3739,7 @@
   {
     "name": "new-shortcut-mapping",
     "owners": [ "oshima", "afakhry" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 93
   },
   {
     "name": "new-tabstrip-animation",
@@ -3802,11 +3800,6 @@
     "name": "ntp-shopping-tasks-module",
     "owners": [ "aee", "mahmadi", "tiborg" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "ntp-webui",
-    "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 88
   },
   {
     "name": "offline-indicator-choice",
@@ -4571,7 +4564,7 @@
   {
     "name": "restrict-gamepad-access",
     "owners": [ "//device/gamepad/OWNERS", "jameshollyer@chromium.org" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 96
   },
   {
     "name": "run-video-capture-service-in-browser",
@@ -4716,6 +4709,11 @@
     "name": "select-to-speak-navigation-control",
     "owners": [ "joelriley@google.com" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "send-tab-to-self-v2",
+    "owners": ["kmilka", "chrome-sharing-eng@google.com"],
+    "expiry_milestone": 95
   },
   {
     "name": "send-tab-to-self-when-signed-in",

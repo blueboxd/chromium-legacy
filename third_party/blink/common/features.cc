@@ -203,11 +203,6 @@ const base::Feature kPurgeRendererMemoryWhenBackgrounded {
 #endif
 };
 
-// Enables toggling overwrite mode when insert key is pressed.
-// https://crbug.com/1030231.
-const base::Feature kInsertKeyToggleMode = {"InsertKeyToggleMode",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables Raw Clipboard. https://crbug.com/897289.
 const base::Feature kRawClipboard{"RawClipboard",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
@@ -888,6 +883,11 @@ const base::Feature kScopeMemoryCachePerContext{
 // elements.
 const base::Feature kEnablePenetratingImageSelection{
     "EnablePenetratingImageSelection", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, permits shared/root element transitions. See
+// https://github.com/WICG/shared-element-transitions.
+const base::Feature kDocumentTransition{"DocumentTransition",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used to configure a per-origin allowlist of performance.mark events that are
 // permitted to be included in slow reports traces. See crbug.com/1181774.

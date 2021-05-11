@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import './cellular_info.js';
-import './diagnostics_card.js';
 import './diagnostics_fonts_css.js';
 import './diagnostics_shared_css.js';
 import './ethernet_info.js';
@@ -17,7 +16,8 @@ import {getNetworkHealthProvider} from './mojo_interface_provider.js';
 /**
  * @fileoverview
  * 'network-info' is responsible for observing a network guid and
- * displaying a specialized network card (Ethernet, WiFi, Cellular).
+ * displaying specialized data points for a supported network type
+ * (Ethernet, WiFi, Cellular).
  */
 Polymer({
   is: 'network-info',
@@ -54,6 +54,9 @@ Polymer({
     if (!this.guid) {
       return;
     }
+    // TODO(michaelcheco): Reset observer when the real
+    // observeNetwork implementation is added.
+
     // Calling observeNetwork will trigger onNetworkStateChanged.
     this.networkHealthProvider_.observeNetwork(this, this.guid);
   },
@@ -64,12 +67,6 @@ Polymer({
    */
   onNetworkStateChanged(network) {
     this.network_ = network;
-  },
-
-  /** @override */
-  detached() {
-    // TODO(michaelcheco): Stop observing guid when the real
-    // observeNetwork implementation is added.
   },
 
   /**

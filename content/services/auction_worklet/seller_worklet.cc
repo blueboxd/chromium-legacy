@@ -111,68 +111,38 @@ bool AppendAuctionConfig(AuctionV8Helper* const v8_helper,
 //
 // TODO(mmenke): Remove once this class switches over to using Mojo.
 
-void InvokeScoreAdCallbackAsync(
-    base::OnceCallback<void(SellerWorklet::ScoreResult)> callback,
-    SellerWorklet::ScoreResult score_result) {
+void InvokeScoreAdCallbackAsync(SellerWorklet::ScoreAdCallback callback,
+                                double score,
+                                const std::vector<std::string>& errors) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(score_result)));
+      FROM_HERE, base::BindOnce(std::move(callback), score, errors));
 }
 
 void InvokeReportResultCallbackAsync(
-    base::OnceCallback<void(SellerWorklet::Report)> callback,
-    SellerWorklet::Report report) {
+    SellerWorklet::ReportResultCallback callback,
+    const base::Optional<std::string>& signals_for_winner,
+    const base::Optional<GURL>& report_url,
+    const std::vector<std::string>& errors) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(report)));
+      FROM_HERE, base::BindOnce(std::move(callback), signals_for_winner,
+                                report_url, errors));
 }
 
 }  // namespace
 
-SellerWorklet::ScoreResult::ScoreResult() = default;
-
-SellerWorklet::ScoreResult::ScoreResult(double score)
-    : success(true), score(score) {
-  DCHECK_GT(score, 0);
-}
-
-SellerWorklet::ScoreResult::ScoreResult(base::Optional<std::string> error_msg)
-    : error_msg(std::move(error_msg)) {}
-
-SellerWorklet::ScoreResult::ScoreResult(const ScoreResult& other) = default;
-SellerWorklet::ScoreResult::ScoreResult(ScoreResult&& other) = default;
-SellerWorklet::ScoreResult::~ScoreResult() = default;
-SellerWorklet::ScoreResult& SellerWorklet::ScoreResult::operator=(
-    const ScoreResult&) = default;
-SellerWorklet::ScoreResult& SellerWorklet::ScoreResult::operator=(
-    ScoreResult&&) = default;
-
-SellerWorklet::Report::Report() = default;
-
-SellerWorklet::Report::Report(std::string signals_for_winner, GURL report_url)
-    : success(true),
-      signals_for_winner(std::move(signals_for_winner)),
-      report_url(std::move(report_url)) {}
-
-SellerWorklet::Report::Report(base::Optional<std::string> error_msg)
-    : error_msg(std::move(error_msg)) {}
-
-SellerWorklet::Report::Report(const Report& other) = default;
-SellerWorklet::Report::Report(Report&& other) = default;
-SellerWorklet::Report::~Report() = default;
-SellerWorklet::Report& SellerWorklet::Report::operator=(const Report&) =
-    default;
-SellerWorklet::Report& SellerWorklet::Report::operator=(Report&&) = default;
-
 SellerWorklet::SellerWorklet(
+    AuctionV8Helper* v8_helper,
     network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& script_source_url,
-    AuctionV8Helper* v8_helper,
     LoadWorkletCallback load_worklet_callback)
-    : script_source_url_(script_source_url), v8_helper_(v8_helper) {
-  DCHECK(load_worklet_callback);
+    : v8_helper_(v8_helper),
+      script_source_url_(script_source_url),
+      load_worklet_callback_(std::move(load_worklet_callback)) {
+  DCHECK(load_worklet_callback_);
   worklet_loader_ = std::make_unique<WorkletLoader>(
       url_loader_factory, script_source_url, v8_helper,
-      base::BindOnce(&SellerWorklet::OnDownloadComplete, base::Unretained(this),
-                     std::move(load_worklet_callback)));
+      base::BindOnce(&SellerWorklet::OnDownloadComplete,
+                     base::Unretained(this)));
 }
 
 SellerWorklet::~SellerWorklet() = default;
@@ -181,11 +151,11 @@ void SellerWorklet::ScoreAd(
     const std::string& ad_metadata_json,
     double bid,
     const blink::mojom::AuctionAdConfig& auction_config,
-    const std::string& browser_signal_top_window_hostname,
+    const url::Origin& browser_signal_top_window_origin,
     const url::Origin& browser_signal_interest_group_owner,
     const std::string& browser_signal_ad_render_fingerprint,
-    base::TimeDelta browser_signal_bidding_duration,
-    base::OnceCallback<void(ScoreResult)> callback) {
+    uint32_t browser_signal_bidding_duration_msecs,
+    ScoreAdCallback callback) {
   callback = base::BindOnce(&InvokeScoreAdCallbackAsync, std::move(callback));
 
   AuctionV8Helper::FullIsolateScope isolate_scope(v8_helper_);
@@ -197,14 +167,16 @@ void SellerWorklet::ScoreAd(
 
   std::vector<v8::Local<v8::Value>> args;
   if (!v8_helper_->AppendJsonValue(context, ad_metadata_json, &args)) {
-    std::move(callback).Run(ScoreResult());
+    std::move(callback).Run(0 /* score */,
+                            std::vector<std::string>() /* errors */);
     return;
   }
 
   args.push_back(gin::ConvertToV8(isolate, bid));
 
   if (!AppendAuctionConfig(v8_helper_, context, auction_config, &args)) {
-    std::move(callback).Run(ScoreResult());
+    std::move(callback).Run(0 /* score */,
+                            std::vector<std::string>() /* errors */);
     return;
   }
 
@@ -214,16 +186,16 @@ void SellerWorklet::ScoreAd(
   v8::Local<v8::Object> browser_signals = v8::Object::New(isolate);
   gin::Dictionary browser_signals_dict(isolate, browser_signals);
   if (!browser_signals_dict.Set("topWindowHostname",
-                                browser_signal_top_window_hostname) ||
+                                browser_signal_top_window_origin.host()) ||
       !browser_signals_dict.Set(
           "interestGroupOwner",
           browser_signal_interest_group_owner.Serialize()) ||
       !browser_signals_dict.Set("adRenderFingerprint",
                                 browser_signal_ad_render_fingerprint) ||
-      !browser_signals_dict.Set(
-          "biddingDurationMsec",
-          browser_signal_bidding_duration.InMilliseconds())) {
-    std::move(callback).Run(ScoreResult());
+      !browser_signals_dict.Set("biddingDurationMsec",
+                                browser_signal_bidding_duration_msecs)) {
+    std::move(callback).Run(0 /* score */,
+                            std::vector<std::string>() /* errors */);
     return;
   }
   args.push_back(browser_signals);
@@ -235,35 +207,40 @@ void SellerWorklet::ScoreAd(
            ->RunScript(context, worklet_script_->Get(isolate), "scoreAd", args,
                        error_msg_out)
            .ToLocal(&score_ad_result)) {
-    std::move(callback).Run(ScoreResult(std::move(error_msg_out)));
+    std::vector<std::string> errors;
+    if (error_msg_out)
+      errors.emplace_back(std::move(error_msg_out).value());
+    std::move(callback).Run(0 /* score */, errors);
     return;
   }
 
   if (!gin::ConvertFromV8(isolate, score_ad_result, &score) ||
       std::isnan(score) || !std::isfinite(score)) {
-    std::move(callback).Run(ScoreResult(
-        base::StrCat({script_source_url_.spec(),
-                      " scoreAd() did not return a valid number."})));
+    std::move(callback).Run(
+        0 /* score */, std::vector<std::string>{base::StrCat(
+                           {script_source_url_.spec(),
+                            " scoreAd() did not return a valid number."})});
     return;
   }
 
   if (score <= 0) {
-    std::move(callback).Run(ScoreResult());
+    std::move(callback).Run(0 /* score */,
+                            std::vector<std::string>() /* errors */);
     return;
   }
 
-  std::move(callback).Run(ScoreResult(score));
+  std::move(callback).Run(score, std::vector<std::string>() /* errors */);
 }
 
 void SellerWorklet::ReportResult(
     const blink::mojom::AuctionAdConfig& auction_config,
-    const std::string& browser_signal_top_window_hostname,
+    const url::Origin& browser_signal_top_window_origin,
     const url::Origin& browser_signal_interest_group_owner,
     const GURL& browser_signal_render_url,
     const std::string& browser_signal_ad_render_fingerprint,
     double browser_signal_bid,
     double browser_signal_desirability,
-    base::OnceCallback<void(Report)> callback) {
+    ReportResultCallback callback) {
   callback =
       base::BindOnce(&InvokeReportResultCallbackAsync, std::move(callback));
 
@@ -281,14 +258,16 @@ void SellerWorklet::ReportResult(
 
   std::vector<v8::Local<v8::Value>> args;
   if (!AppendAuctionConfig(v8_helper_, context, auction_config, &args)) {
-    std::move(callback).Run(Report());
+    std::move(callback).Run(base::nullopt /* signals_for_winner */,
+                            base::nullopt /* report_url */,
+                            std::vector<std::string>() /* errors */);
     return;
   }
 
   v8::Local<v8::Object> browser_signals = v8::Object::New(isolate);
   gin::Dictionary browser_signals_dict(isolate, browser_signals);
   if (!browser_signals_dict.Set("topWindowHostname",
-                                browser_signal_top_window_hostname) ||
+                                browser_signal_top_window_origin.host()) ||
       !browser_signals_dict.Set(
           "interestGroupOwner",
           browser_signal_interest_group_owner.Serialize()) ||
@@ -298,7 +277,9 @@ void SellerWorklet::ReportResult(
                                 browser_signal_ad_render_fingerprint) ||
       !browser_signals_dict.Set("bid", browser_signal_bid) ||
       !browser_signals_dict.Set("desirability", browser_signal_desirability)) {
-    std::move(callback).Run(Report());
+    std::move(callback).Run(base::nullopt /* signals_for_winner */,
+                            base::nullopt /* report_url */,
+                            std::vector<std::string>() /* errors */);
     return;
   }
   args.push_back(browser_signals);
@@ -309,7 +290,11 @@ void SellerWorklet::ReportResult(
            ->RunScript(context, worklet_script_->Get(isolate), "reportResult",
                        args, error_msg_out)
            .ToLocal(&signals_for_winner_value)) {
-    std::move(callback).Run(Report(std::move(error_msg_out)));
+    std::vector<std::string> errors;
+    if (error_msg_out)
+      errors.emplace_back(std::move(error_msg_out).value());
+    std::move(callback).Run(base::nullopt /* signals_for_winner */,
+                            base::nullopt /* report_url */, errors);
     return;
   }
 
@@ -321,18 +306,22 @@ void SellerWorklet::ReportResult(
     signals_for_winner = "null";
   }
 
-  std::move(callback).Run(
-      Report(signals_for_winner, report_bindings.report_url()));
+  std::move(callback).Run(signals_for_winner, report_bindings.report_url(),
+                          std::vector<std::string>() /* errors */);
 }
 
 void SellerWorklet::OnDownloadComplete(
-    LoadWorkletCallback load_worklet_callback,
     std::unique_ptr<v8::Global<v8::UnboundScript>> worklet_script,
     base::Optional<std::string> error_msg) {
+  DCHECK(load_worklet_callback_);
+
   worklet_loader_.reset();
   worklet_script_ = std::move(worklet_script);
-  std::move(load_worklet_callback)
-      .Run(worklet_script_ != nullptr, std::move(error_msg));
+  std::vector<std::string> errors;
+  if (error_msg)
+    errors.emplace_back(std::move(error_msg).value());
+  std::move(load_worklet_callback_)
+      .Run(worklet_script_ != nullptr /* success */, errors);
 }
 
 }  // namespace auction_worklet

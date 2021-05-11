@@ -194,7 +194,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   WidgetBaseClient* client() { return client_; }
 
-  void SetToolTipText(const String& tooltip_text, TextDirection dir);
+  void UpdateTooltipUnderCursor(const String& tooltip_text, TextDirection dir);
 
   // Posts a task with the given delay, then calls ScheduleAnimation() on the
   // WidgetBaseClient.
@@ -286,6 +286,11 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   void SetVisibleViewportSizeInDIPs(const gfx::Size& size) {
     visible_viewport_size_in_dips_ = size;
   }
+
+  // Some touch start which can trigger pointerdown will not be sent to the main
+  // thread. And following touchend can't be dispatched. We want to count those
+  // touchstart, touchend and pointerdown for EventTiming.
+  void CountDroppedPointerDownForEventTiming(unsigned count);
 
   // Converts from DIPs to Blink coordinate space (ie. Viewport/Physical
   // pixels).
@@ -379,6 +384,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   bool initialized_ = false;
 
   // The client which handles behaviour specific to the type of widget.
+  // It's the owner of the widget and will outlive this class.
   WidgetBaseClient* const client_;
 
   mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_;

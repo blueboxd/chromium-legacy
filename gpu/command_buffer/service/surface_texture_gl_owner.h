@@ -32,7 +32,7 @@ class GPU_GLES2_EXPORT SurfaceTextureGLOwner : public TextureOwner {
       const base::RepeatingClosure& frame_available_cb) override;
   gl::ScopedJavaSurface CreateJavaSurface() const override;
   void UpdateTexImage() override;
-  void EnsureTexImageBound() override;
+  void EnsureTexImageBound(GLuint service_id) override;
   void ReleaseBackBuffers() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
@@ -43,13 +43,14 @@ class GPU_GLES2_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   void RunWhenBufferIsAvailable(base::OnceClosure callback) override;
 
  protected:
-  void OnTextureDestroyed(gles2::AbstractTexture*) override;
+  void ReleaseResources() override;
 
  private:
   friend class TextureOwner;
   friend class SurfaceTextureTransformTest;
 
-  SurfaceTextureGLOwner(std::unique_ptr<gles2::AbstractTexture> texture);
+  SurfaceTextureGLOwner(std::unique_ptr<gles2::AbstractTexture> texture,
+                        scoped_refptr<SharedContextState> context_state);
   ~SurfaceTextureGLOwner() override;
 
   static bool DecomposeTransform(float matrix[16],

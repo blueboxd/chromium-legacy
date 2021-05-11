@@ -922,6 +922,14 @@ const FeatureEntry::Choice kMemlogSamplingRateChoices[] = {
      heap_profiling::kMemlogSamplingRate5MB},
 };
 
+const FeatureEntry::FeatureVariation kMemoriesVariations[] = {{
+    "Persist Context",
+    (FeatureEntry::FeatureParam[]){
+        {"MemoriesPersistContextAnnotationsInHistoryDb", "true"}},
+    1,
+    nullptr,
+}};
+
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
     defined(OS_WIN)
 const FeatureEntry::FeatureParam kOmniboxDocumentProviderServerScoring[] = {
@@ -1486,6 +1494,13 @@ const FeatureEntry::FeatureVariation kNtpShoppingTasksModuleVariations[] = {
     {"- Fake Data", kNtpShoppingTasksModuleFakeData,
      base::size(kNtpShoppingTasksModuleFakeData),
      "t3329139" /* variation_id */},
+};
+
+const FeatureEntry::FeatureParam kNtpDriveModuleFakeData[] = {
+    {ntp_features::kNtpDriveModuleDataParam, "fake"}};
+const FeatureEntry::FeatureVariation kNtpDriveModuleVariations[] = {
+    {"- Fake Data", kNtpDriveModuleFakeData,
+     base::size(kNtpDriveModuleFakeData), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpRepeatableQueriesInsertPositionStart[] = {
@@ -3700,7 +3715,7 @@ const FeatureEntry kFeatureEntries[] = {
          "disallowFetchForDocWrittenScriptsInMainFrame=false")},
     {"document-transition", flag_descriptions::kDocumentTransitionName,
      flag_descriptions::kDocumentTransitionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kDocumentTransition)},
+     FEATURE_VALUE_TYPE(blink::features::kDocumentTransition)},
 #if defined(OS_WIN)
     {"use-winrt-midi-api", flag_descriptions::kUseWinrtMidiApiName,
      flag_descriptions::kUseWinrtMidiApiDescription, kOsWin,
@@ -4461,7 +4476,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"memories", flag_descriptions::kMemoriesName,
      flag_descriptions::kMemoriesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(history_clusters::kMemories)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::kMemories,
+                                    kMemoriesVariations,
+                                    "Memories")},
 
     {"memories-debug", flag_descriptions::kMemoriesDebugName,
      flag_descriptions::kMemoriesDebugDescription, kOsDesktop,
@@ -4640,7 +4657,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"ntp-drive-module", flag_descriptions::kNtpDriveModuleName,
      flag_descriptions::kNtpDriveModuleDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpDriveModule)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpDriveModule,
+                                    kNtpDriveModuleVariations,
+                                    "DesktopNtpModules")},
 
     {"ntp-recipe-tasks-module", flag_descriptions::kNtpRecipeTasksModuleName,
      flag_descriptions::kNtpRecipeTasksModuleDescription, kOsDesktop,
@@ -4728,6 +4747,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-tips-in-main-menu", flag_descriptions::kChromeTipsInMainMenuName,
      flag_descriptions::kChromeTipsInMainMenuDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeTipsInMainMenu)},
+
+    {"chrome-tips-in-main-menu-new-badge",
+     flag_descriptions::kChromeTipsInMainMenuNewBadgeName,
+     flag_descriptions::kChromeTipsInMainMenuNewBadgeDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kChromeTipsInMainMenuNewBadge)},
 #endif
 
     {"tab-hover-card-images", flag_descriptions::kTabHoverCardImagesName,
@@ -5525,10 +5549,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"printer-status-dialog", flag_descriptions::kPrinterStatusDialogName,
      flag_descriptions::kPrinterStatusDialogDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrinterStatusDialog)},
-
-    {"enable-phone-hub", flag_descriptions::kPhoneHubName,
-     flag_descriptions::kPhoneHubDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kPhoneHub)},
 
     {"wifi-sync-allow-deletes", flag_descriptions::kWifiSyncAllowDeletesName,
      flag_descriptions::kWifiSyncAllowDeletesDescription, kOsCrOS,
@@ -6722,6 +6742,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidSaveCardName,
      flag_descriptions::kMessagesForAndroidSaveCardDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidSaveCard)},
+    {"messages-for-android-update-password",
+     flag_descriptions::kMessagesForAndroidUpdatePasswordName,
+     flag_descriptions::kMessagesForAndroidUpdatePasswordDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidUpdatePassword)},
 #endif
 
 #if defined(OS_ANDROID)
@@ -6827,11 +6852,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSCTAuditingVariations,
                                     "SCTAuditingVariations")},
 #endif  // !defined(OS_ANDROID)
-
-    {"insert-key-toggle-mode", flag_descriptions::kInsertKeyToggleModeName,
-     flag_descriptions::kInsertKeyToggleModeDescription,
-     kOsWin | kOsLinux | kOsCrOS,
-     FEATURE_VALUE_TYPE(blink::features::kInsertKeyToggleMode)},
 
 #if defined(OS_ANDROID)
     {"enable-autofill-password-account-indicator-footer",
@@ -6954,9 +6974,8 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
 #endif  // defined(OS_ANDROID)
 
-    // TODO(crbug.com/1155358): Enable Chrome Labs for ChromeOS
     {"chrome-labs", flag_descriptions::kChromeLabsName,
-     flag_descriptions::kChromeLabsDescription, kOsLinux | kOsMac | kOsWin,
+     flag_descriptions::kChromeLabsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeLabs)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6997,6 +7016,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfWhenSignedInName,
      flag_descriptions::kSendTabToSelfWhenSignedInDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
+
+    {"send-tab-to-self-v2", flag_descriptions::kSendTabToSelfV2Name,
+     flag_descriptions::kSendTabToSelfV2Description, kOsAll,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfV2)},
 
 #if defined(OS_ANDROID)
     {"mobile-pwa-install-use-bottom-sheet",

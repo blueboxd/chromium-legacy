@@ -172,6 +172,7 @@ try_.builder(
     name = "branch-config-verifier",
     executable = "recipe:branch_configuration/tester",
     main_list_view = "try",
+    os = os.LINUX_BIONIC_REMOVE,
     properties = {
         "branch_script": "infra/config/scripts/branch.py",
         "branch_types": ["standard", "lts"],
@@ -1235,6 +1236,10 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = "linux-lacros-version-skew-fyi",
+)
+
+try_.chromium_linux_builder(
     name = "linux-layout-tests-edit-ng",
 )
 
@@ -1654,7 +1659,7 @@ try_.chromium_mac_ios_builder(
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
-    coverage_test_types = ["unit"],
+    coverage_test_types = ["overall", "unit"],
     tryjob = try_.job(),
 )
 
@@ -1680,7 +1685,7 @@ try_.chromium_mac_ios_builder(
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
-    coverage_test_types = ["unit"],
+    coverage_test_types = ["overall", "unit"],
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/ios/.+",
@@ -1847,11 +1852,12 @@ try_.chromium_win_builder(
 try_.chromium_win_builder(
     name = "win10_chromium_x64_rel_ng",
     branch_selector = branches.STANDARD_MILESTONE,
-    goma_jobs = goma.jobs.J150,
+    goma_jobs = goma.jobs.J300,
     os = os.WINDOWS_10,
     cores = 16,
     ssd = True,
     use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
     tryjob = try_.job(),
 )

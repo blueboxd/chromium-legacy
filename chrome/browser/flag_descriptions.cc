@@ -461,6 +461,12 @@ const char kChromeTipsInMainMenuDescription[] =
     "Enables 'Tips for Chrome' in main menu; the menu item will take users to "
     "an official Google site with information about the latest and most "
     "popular Chrome features.";
+
+const char kChromeTipsInMainMenuNewBadgeName[] =
+    "Show 'New' promo badge on 'Tips for Chrome' in Help portion of main menu.";
+const char kChromeTipsInMainMenuNewBadgeDescription[] =
+    "Enables 'New' promo badge on 'Tips for Chrome' in main menu; experiment to"
+    " test the value of this user education feature.";
 #endif
 
 const char kCompositingBasedThrottling[] = "Compositing-based Throttling";
@@ -1447,11 +1453,6 @@ const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";
 
-const char kInsertKeyToggleModeName[] = "Insert key toggles Overwrite mode";
-const char kInsertKeyToggleModeDescription[] =
-    "Toggles Overwrite mode on or off each time the Insert key is pressed in a "
-    "text editor.";
-
 const char kInstalledAppsInCbdName[] = "Installed Apps in Clear Browsing Data";
 const char kInstalledAppsInCbdDescription[] =
     "Adds the installed apps warning dialog to the clear browsing data flow "
@@ -2199,6 +2200,11 @@ const char kSendTabToSelfWhenSignedInName[] = "Send tab to self when signed-in";
 const char kSendTabToSelfWhenSignedInDescription[] =
     "Makes the tab sharing feature also available for users who have \"only\" "
     "signed-in to their Google Account (as opposed to having enabled Sync).";
+
+extern const char kSendTabToSelfV2Name[] = "Send tab to self 2.0";
+extern const char kSendTabToSelfV2Description[] =
+    "Enables new received tab "
+    "UI shown next to the profile icon instead of using system notifications.";
 
 const char kSidePanelName[] = "Side panel";
 const char kSidePanelDescription[] = "Host some content in a side panel.";
@@ -3114,19 +3120,27 @@ const char kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[] =
 const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
 const char kMessagesForAndroidInfrastructureDescription[] =
     "When enabled, will initialize Messages UI infrastructure";
+
 const char kMessagesForAndroidPasswordsName[] = "Passwords Messages UI";
 const char kMessagesForAndroidPasswordsDescription[] =
-    "When enabled, password infobars will use the new Messages UI.";
+    "When enabled, password prompt will use the new Messages UI.";
+
 const char kMessagesForAndroidPopupBlockedName[] = "Popup Blocked Messages UI";
 const char kMessagesForAndroidPopupBlockedDescription[] =
-    "When enabled, popup blocked infobars will use the new Messages UI.";
+    "When enabled, popup blocked prompt will use the new Messages UI.";
+
 const char kMessagesForAndroidSafetyTipName[] = "Safety Tip Messages UI";
 const char kMessagesForAndroidSafetyTipDescription[] =
-    "When enabled, safety tip infobars will use the new Messages UI.";
+    "When enabled, safety tip prompt will use the new Messages UI.";
 
 extern const char kMessagesForAndroidSaveCardName[] = "Save Card Messages UI";
 extern const char kMessagesForAndroidSaveCardDescription[] =
-    "When enabled, save card infobars will use the new Messages UI.";
+    "When enabled, save card prompt will use the new Messages UI.";
+
+const char kMessagesForAndroidUpdatePasswordName[] =
+    "Update password Messages UI";
+const char kMessagesForAndroidUpdatePasswordDescription[] =
+    "When enabled, update password prompt will use the new Messages UI.";
 
 const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
 const char kOfflineIndicatorChoiceDescription[] =
@@ -4700,11 +4714,6 @@ const char kNearbySharingDeviceContactsDescription[] =
 const char kNearbySharingWebRtcName[] = "Nearby Sharing WebRTC";
 const char kNearbySharingWebRtcDescription[] =
     "Enables use of WebRTC in Nearby Share.";
-
-const char kPhoneHubName[] = "Enable Phone Hub";
-const char kPhoneHubDescription[] =
-    "Provides a UI for users to view information about their Android phone "
-    "and perform phone-side actions within Chrome OS.";
 
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
 const char kReduceDisplayNotificationsDescription[] =

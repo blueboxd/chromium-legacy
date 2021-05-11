@@ -28,6 +28,7 @@ js_type_check("closure_compile_module") {
     ":memory_card",
     ":mojo_interface_provider",
     ":mojo_utils",
+    ":network_card",
     ":network_info",
     ":network_list",
     ":overview_card",
@@ -58,6 +59,7 @@ js_library("battery_status_card") {
 
 js_library("cellular_info") {
   deps = [
+    ":data_point",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -187,12 +189,21 @@ js_library("mojo_utils") {
   ]
 }
 
+js_library("network_card") {
+  deps = [
+    ":diagnostics_card",
+    ":diagnostics_types",
+    ":network_info",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("network_info") {
   deps = [
     ":cellular_info",
-    ":diagnostics_card",
     ":diagnostics_types",
     ":ethernet_info",
+    ":mojo_interface_provider",
     ":wifi_info",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -203,6 +214,7 @@ js_library("network_list") {
     ":connectivity_card",
     ":diagnostics_types",
     ":mojo_interface_provider",
+    ":network_card",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -283,6 +295,7 @@ html_to_js("web_components") {
     "ethernet_info.js",
     "icons.js",
     "memory_card.js",
+    "network_card.js",
     "network_info.js",
     "network_list.js",
     "overview_card.js",

@@ -2485,7 +2485,7 @@ void RenderWidgetHostImpl::ShowPopup(const gfx::Rect& initial_rect,
   std::move(callback).Run();
 }
 
-void RenderWidgetHostImpl::SetToolTipText(
+void RenderWidgetHostImpl::UpdateTooltipUnderCursor(
     const std::u16string& tooltip_text,
     base::i18n::TextDirection text_direction_hint) {
   if (!GetView())
@@ -2516,7 +2516,7 @@ void RenderWidgetHostImpl::SetToolTipText(
       base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
     }
   }
-  view_->SetTooltipText(wrapped_tooltip_text);
+  view_->UpdateTooltipUnderCursor(wrapped_tooltip_text);
 }
 
 void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {

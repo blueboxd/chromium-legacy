@@ -49,7 +49,7 @@ import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoMainController;
 import org.chromium.components.page_info.PageInfoRowView;
 import org.chromium.components.page_info.PageInfoSubpageController;
-import org.chromium.components.page_info.PageInfoViewV2;
+import org.chromium.components.page_info.PageInfoView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.GURL;
@@ -154,7 +154,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
      */
     @Override
     public void initOfflinePageUiParams(
-            PageInfoViewV2.Params viewParams, Consumer<Runnable> runAfterDismiss) {
+            PageInfoView.Params viewParams, Consumer<Runnable> runAfterDismiss) {
         if (isShowingOfflinePage() && OfflinePageUtils.isConnected()) {
             viewParams.openOnlineButtonClickCallback = () -> {
                 runAfterDismiss.accept(() -> {
@@ -252,13 +252,13 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
 
     @NonNull
     @Override
-    public void getFavicon(String url, Callback<Drawable> callback) {
+    public void getFavicon(GURL url, Callback<Drawable> callback) {
         Resources resources = mContext.getResources();
         int size = resources.getDimensionPixelSize(R.dimen.page_info_favicon_size);
         new FaviconHelper().getLocalFaviconImageForURL(mProfile, url, size, (image, iconUrl) -> {
             if (image != null) {
                 callback.onResult(new BitmapDrawable(resources, image));
-            } else if (UrlUtilities.isInternalScheme(new GURL(url))) {
+            } else if (UrlUtilities.isInternalScheme(url)) {
                 callback.onResult(
                         AppCompatResources.getDrawable(mContext, R.drawable.chromelogo16));
             } else {

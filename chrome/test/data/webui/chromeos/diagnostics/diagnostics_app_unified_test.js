@@ -18,6 +18,7 @@ import {fakeSystemDataProviderTestSuite} from './fake_system_data_provider_test.
 import {fakeSystemRoutineContollerTestSuite} from './fake_system_routine_controller_test.js';
 import {memoryCardTestSuite} from './memory_card_test.js';
 import {fakeMojoProviderTestSuite} from './mojo_interface_provider_test.js';
+import {networkCardTestSuite} from './network_card_test.js';
 import {networkInfoTestSuite} from './network_info_test.js';
 import {networkListTestSuite} from './network_list_test.js';
 import {overviewCardTestSuite} from './overview_card_test.js';
@@ -50,6 +51,7 @@ runSuite('FakeNetworkHealthProvider', fakeNetworkHealthProviderTestSuite);
 runSuite('FakeSystemDataProvider', fakeSystemDataProviderTestSuite);
 runSuite('FakeSystemRoutineContoller', fakeSystemRoutineContollerTestSuite);
 runSuite('MemoryCard', memoryCardTestSuite);
+runSuite('NetworkCard', networkCardTestSuite);
 runSuite('NetworkInfo', networkInfoTestSuite);
 runSuite('NetworkList', networkListTestSuite);
 runSuite('OverviewCard', overviewCardTestSuite);

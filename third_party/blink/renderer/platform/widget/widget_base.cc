@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
@@ -816,9 +817,10 @@ void WidgetBase::SetCursor(const ui::Cursor& cursor) {
   }
 }
 
-void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
-  widget_host_->SetToolTipText(tooltip_text.IsEmpty() ? "" : tooltip_text,
-                               ToBaseTextDirection(dir));
+void WidgetBase::UpdateTooltipUnderCursor(const String& tooltip_text,
+                                          TextDirection dir) {
+  widget_host_->UpdateTooltipUnderCursor(
+      tooltip_text.IsEmpty() ? "" : tooltip_text, ToBaseTextDirection(dir));
 }
 
 void WidgetBase::ShowVirtualKeyboard() {
@@ -1505,6 +1507,10 @@ bool WidgetBase::ComputePreferCompositingToLCDText() {
     return true;
   return false;
 #endif
+}
+
+void WidgetBase::CountDroppedPointerDownForEventTiming(unsigned count) {
+  client_->CountDroppedPointerDownForEventTiming(count);
 }
 
 gfx::PointF WidgetBase::DIPsToBlinkSpace(const gfx::PointF& point) {

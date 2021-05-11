@@ -219,7 +219,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.ImportController.DeviceYanked" enum="Boolean"
-    expires_after="M92">
+    expires_after="M102">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -229,7 +229,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.ImportController.ImportCancelled"
-    enum="BooleanCanceled" expires_after="M92">
+    enum="BooleanCanceled" expires_after="M102">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -465,7 +465,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.DisplayTime" units="ms"
-    expires_after="M92">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -476,14 +476,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.FileType" enum="PhotoEditorFileType"
-    expires_after="M92">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: the type of the file opened.</summary>
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.LoadMode" enum="PhotoEditorLoadMode"
-    expires_after="M92">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: the way the image has been loaded.</summary>
@@ -497,7 +497,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.SaveResult"
-    enum="PhotoEditorSaveResult" expires_after="M92">
+    enum="PhotoEditorSaveResult" expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -506,14 +506,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.SaveTime" units="ms"
-    expires_after="M92">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: time to save an image to a file.</summary>
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.Size.MB" units="MBytes"
-    expires_after="M92">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -523,7 +523,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.Size.MPix" units="MPixels"
-    expires_after="M92">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -533,7 +533,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.Tool" enum="PhotoEditorToolType"
-    expires_after="M92">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: the button which the user clicked.</summary>
@@ -653,6 +653,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.SuggestApps.CloseDialog"
     enum="SuggestAppsDialogCloseReason" expires_after="M92">
+  <obsolete>
+    Removed in M90. Files.app no longer displays CWS dialog.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -662,6 +665,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.SuggestApps.Install"
     enum="SuggestAppsDialogInstall" expires_after="2021-08-09">
+  <obsolete>
+    Removed in M90. Files.app no longer displays CWS dialog.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -672,6 +678,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.SuggestApps.Load" enum="SuggestAppsDialogLoad"
     expires_after="2021-08-09">
+  <obsolete>
+    Removed in M90. Files.app no longer displays CWS dialog.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -682,6 +691,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FileBrowser.SuggestApps.LoadTime" units="ms"
     expires_after="M92">
+  <obsolete>
+    Removed in M90. Files.app no longer displays CWS dialog.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

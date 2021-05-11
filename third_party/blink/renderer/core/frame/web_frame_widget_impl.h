@@ -498,7 +498,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetWindowRect(const gfx::Rect& window_rect);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
 
-  void SetToolTipText(const String& tooltip_text, TextDirection dir);
+  void UpdateTooltipUnderCursor(const String& tooltip_text, TextDirection dir);
 
   void ShowVirtualKeyboardOnElementFocus();
   void ProcessTouchAction(WebTouchAction touch_action);
@@ -664,7 +664,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                          cc::PaintBenchmarkResult& result) override;
   KURL GetURLForDebugTrace() override;
   float GetTestingDeviceScaleFactorOverride() override;
-
+  void CountDroppedPointerDownForEventTiming(unsigned count) override;
   // mojom::blink::FrameWidget overrides.
   void DragTargetDragEnter(const WebDragData&,
                            const gfx::PointF& point_in_viewport,

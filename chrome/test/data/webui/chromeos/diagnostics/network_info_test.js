@@ -56,32 +56,6 @@ export function networkInfoTestSuite() {
   }
 
   /**
-   * Returns the wifi-info element.
-   * @return {!WifiInfoElement}
-   */
-  function getWifiInfo() {
-    return /** @type {!WifiInfoElement} */ (networkInfoElement.$$('#wifiInfo'));
-  }
-
-  /**
-   * Returns the cellular-info element.
-   * @return {!CellularInfoElement}
-   */
-  function getCellularInfo() {
-    return /** @type {!CellularInfoElement} */ (
-        networkInfoElement.$$('#cellularInfo'));
-  }
-
-  /**
-   * Returns the ethernet-info element.
-   * @return {!EthernetInfoElement}
-   */
-  function getEthernetInfo() {
-    return /** @type {!EthernetInfoElement} */ (
-        networkInfoElement.$$('#ethernetInfo'));
-  }
-
-  /**
    * @param {string} guid
    * @return {!Promise}
    */
@@ -90,37 +64,38 @@ export function networkInfoTestSuite() {
     return flushTasks();
   }
 
-  test('NetworkStatePopulated', () => {
-    return initializeNetworkInfo('wifiGuid').then(() => {
-      dx_utils.assertElementContainsText(
-          networkInfoElement.$$('#guid'), fakeWifiNetwork.guid);
-    });
-  });
-
   test('CorrectInfoElementShown', () => {
     return initializeNetworkInfo('wifiGuid')
         .then(() => {
           // wifi-info should be visible.
-          assertTrue(isVisible(getWifiInfo()));
-
-          assertFalse(isVisible(getEthernetInfo()));
-          assertFalse(isVisible(getCellularInfo()));
+          assertTrue(
+              isVisible(dx_utils.getWifiInfoElement(networkInfoElement)));
+          assertFalse(
+              isVisible(dx_utils.getEthernetInfoElement(networkInfoElement)));
+          assertFalse(
+              isVisible(dx_utils.getCellularInfoElement(networkInfoElement)));
           return changeGuid('cellularGuid');
         })
         .then(() => {
           // cellular-info should be visible.
-          assertTrue(isVisible(getCellularInfo()));
+          assertTrue(
+              isVisible(dx_utils.getCellularInfoElement(networkInfoElement)));
 
-          assertFalse(isVisible(getWifiInfo()));
-          assertFalse(isVisible(getEthernetInfo()));
+          assertFalse(
+              isVisible(dx_utils.getWifiInfoElement(networkInfoElement)));
+          assertFalse(
+              isVisible(dx_utils.getEthernetInfoElement(networkInfoElement)));
           return changeGuid('ethernetGuid');
         })
         .then(() => {
           // ethernet-info should be visible.
-          assertTrue(isVisible(getEthernetInfo()));
+          assertTrue(
+              isVisible(dx_utils.getEthernetInfoElement(networkInfoElement)));
 
-          assertFalse(isVisible(getWifiInfo()));
-          assertFalse(isVisible(getCellularInfo()));
+          assertFalse(
+              isVisible(dx_utils.getWifiInfoElement(networkInfoElement)));
+          assertFalse(
+              isVisible(dx_utils.getCellularInfoElement(networkInfoElement)));
         });
   });
 }

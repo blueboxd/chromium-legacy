@@ -155,26 +155,16 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaApp) {
 // params. This exercises only web_applications logic.
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
   WaitForTestSystemAppInstall();
-  content::WebContents* app;
-  {
-    auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
-
-    // Add the 800x600 PNG image to launch params.
-    params.launch_files.push_back(TestFile(kFilePng800x600));
-
-    app = LaunchApp(std::move(params));
-  }
+  content::WebContents* app = LaunchAppWithFile(web_app::SystemAppType::MEDIA,
+                                                TestFile(kFilePng800x600));
   PrepareAppForTest(app);
 
   EXPECT_EQ("800x600", WaitForImageAlt(app, kFilePng800x600));
 
   // Relaunch with a different file. This currently re-uses the existing window,
   // so we don't wait for page load here.
-  {
-    auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
-    params.launch_files = {TestFile(kFileJpeg640x480)};
-    LaunchAppWithoutWaiting(std::move(params));
-  }
+  LaunchAppWithFileWithoutWaiting(web_app::SystemAppType::MEDIA,
+                                  TestFile(kFileJpeg640x480));
 
   EXPECT_EQ("640x480", WaitForImageAlt(app, kFileJpeg640x480));
 }
@@ -260,9 +250,8 @@ void clickAppBarButton(content::WebContents* app, const std::string& selector) {
 
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, LoadsInkForImageAnnotation) {
   WaitForTestSystemAppInstall();
-  auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
-  params.launch_files = {TestFile(kFileJpeg640x480)};
-  content::WebContents* app = LaunchApp(std::move(params));
+  content::WebContents* app = LaunchAppWithFile(web_app::SystemAppType::MEDIA,
+                                                TestFile(kFileJpeg640x480));
   PrepareAppForTest(app);
 
   // Ensure test image loaded.
@@ -298,9 +287,8 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, LoadsInkForImageAnnotation) {
 // information panel.
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, InformationPanel) {
   WaitForTestSystemAppInstall();
-  auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
-  params.launch_files = {TestFile(kFileJpeg640x480)};
-  content::WebContents* app = LaunchApp(std::move(params));
+  content::WebContents* app = LaunchAppWithFile(web_app::SystemAppType::MEDIA,
+                                                TestFile(kFileJpeg640x480));
   PrepareAppForTest(app);
 
   // Ensure test image loaded.
@@ -351,16 +339,9 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, InformationPanel) {
 // Test that the MediaApp can load RAW files passed on launch params.
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, HandleRawFiles) {
   WaitForTestSystemAppInstall();
-
-  content::WebContents* web_ui;
-  {
-    auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
-
-    // Add the handcrafted RAW file to launch params and launch.
-    params.launch_files.push_back(TestFile(kRaw378x272));
-    web_ui = LaunchApp(std::move(params));
-    PrepareAppForTest(web_ui);
-  }
+  content::WebContents* web_ui =
+      LaunchAppWithFile(web_app::SystemAppType::MEDIA, TestFile(kRaw378x272));
+  PrepareAppForTest(web_ui);
 
   EXPECT_EQ("378x272", WaitForImageAlt(web_ui, kRaw378x272));
 
@@ -382,20 +363,15 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, HandleRawFiles) {
 
   // Launch with a file that has a different name to ensure the rotated version
   // of the file is detected robustly.
-  {
-    auto clearFileParams = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
-    clearFileParams.launch_files = {TestFile(kFileJpeg640x480)};
-    LaunchAppWithoutWaiting(std::move(clearFileParams));
-  }
+  LaunchAppWithFileWithoutWaiting(web_app::SystemAppType::MEDIA,
+                                  TestFile(kFileJpeg640x480));
+
   EXPECT_EQ("640x480", WaitForImageAlt(web_ui, kFileJpeg640x480));
 
-  {
-    auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
+  // Add the handcrafted RAW file to launch params and launch.
+  LaunchAppWithFileWithoutWaiting(web_app::SystemAppType::MEDIA,
+                                  TestFile(kRaw378x272));
 
-    // Add the handcrafted RAW file to launch params and launch.
-    params.launch_files.push_back(TestFile(kRaw378x272));
-    LaunchAppWithoutWaiting(std::move(params));
-  }
   // Width and height should be swapped now.
   EXPECT_EQ("272x378", WaitForImageAlt(web_ui, kRaw378x272));
 }

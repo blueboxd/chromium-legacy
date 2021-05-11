@@ -403,20 +403,15 @@
   },
   {
     "prefix": "main-threaded-percent-based-scrolling",
-    "bases": ["fast/events/continuous-platform-wheelevent-in-scrolling-div.html",
-              "fast/events/mouse-wheel-main-frame-scroll.html",
-              "fast/events/scroll-in-scaled-page-with-overflow-hidden.html",
-              "fast/events/wheel/mouse-wheel-scroll-latching.html",
-              "fast/events/wheel/wheelevent-basic.html",
-              "fast/events/wheel/wheelevent-in-scrolling-div.html",
-              "fast/scrolling/percentage-mousewheel-scroll.html",
-              "fast/scrolling/percentage-mousewheel-scroll-on-iframe.html"],
+    "bases": ["fast/events/wheel",
+              "fast/scrolling",
+              "virtual/percent-based-scrolling"],
     "args": ["--enable-features=PercentBasedScrolling"]
   },
   {
     "prefix": "compositor-threaded-percent-based-scrolling",
-    "bases": ["fast/scrolling/scrollbars",
-              "virtual/main-threaded-percent-based-scrolling",
+    "bases": ["fast/events/wheel",
+              "fast/scrolling",
               "virtual/percent-based-scrolling"],
     "args": ["--enable-features=PercentBasedScrolling",
              "--enable-threaded-compositing",
@@ -1035,7 +1030,7 @@
   {
     "prefix": "document-transition",
     "bases": ["wpt_internal/document-transition"],
-    "args": ["--enable-features=DocumentTransition",
+    "args": ["--enable-blink-features=DocumentTransition",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]
   },

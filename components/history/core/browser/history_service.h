@@ -19,7 +19,6 @@
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
-#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -501,7 +500,9 @@ class HistoryService : public KeyedService {
   // Clusters ------------------------------------------------------------------
 
   // Add a `AnnotatedVisitRow`.
-  void AddAnnotatedVisit(const AnnotatedVisitRow& row);
+  void AddContextAnnotationsForVisit(
+      VisitID visit_id,
+      const VisitContextAnnotations& visit_context_annotations);
 
   // Get all `AnnotatedVisitRow`s and map them to `AnnotatedVisit`s.
   using GetAnnotatedVisitsCallback =

@@ -1031,7 +1031,6 @@
       'android-pie-x86-rel',
       'android-pie-arm64-rel', # https://crbug.com/1010211
       'ToTAndroid',
-      'ToTAndroidCFI',
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
       'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
@@ -1166,6 +1165,17 @@
       'Linux TSan Tests': {
         'swarming': {
           'shards': 2,
+        },
+      },
+      'Mac11 Tests': {
+        # TODO(crbug.com/1206401): Restore to defaults when there is enough
+        # capacity.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'machine_type': 'n1-standard-4',
+            }
+          ],
         },
       },
       'android-11-x86-fyi-rel': {
@@ -2434,8 +2444,7 @@
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      'ToTAndroid',
-      'ToTAndroidCFI'
+      'ToTAndroid'
     ]
   },
   'performance_test_suite': {

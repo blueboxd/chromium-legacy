@@ -8,8 +8,13 @@
 #include <string>
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/scope_set.h"
@@ -80,22 +85,96 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           }
         }
       })");
+constexpr char kFakeData[] = R"({
+  "item": [
+    {
+      "itemId": "foo",
+      "url": "https://docs.google.com",
+      "driveItem": {
+        "title": "foo doc",
+        "mimeType": "application/vnd.google-apps.document"
+      },
+      "justification": {
+        "displayText": { "textSegment": [{"text": "You opened yesterday"}]}
+      }
+    },
+    {
+      "itemId": "bar",
+      "url": "https://sheets.google.com",
+      "driveItem": {
+        "title": "bar sheet",
+        "mimeType": "application/vnd.google-apps.spreadsheet"
+      },
+      "justification": {
+        "displayText": { "textSegment": [{"text": "You opened today"}]}
+      }
+    },
+    {
+      "itemId": "baz",
+      "url": "https://slides.google.com",
+      "driveItem": {
+        "title": "baz slides",
+        "mimeType": "application/vnd.google-apps.presentation"
+      },
+      "justification": {
+        "displayText": { "textSegment": [{"text": "You opened on Monday"}]}
+      }
+    }
+  ]
+}
+)";
 }  // namespace
+
+// static
+const char DriveService::kLastDismissedTimePrefName[] =
+    "NewTabPage.Drive.LastDimissedTime";
+
+// static
+const base::TimeDelta DriveService::kDismissDuration =
+    base::TimeDelta::FromDays(14);
 
 DriveService::~DriveService() = default;
 
 DriveService::DriveService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     signin::IdentityManager* identity_manager,
-    const std::string& application_locale)
+    const std::string& application_locale,
+    PrefService* pref_service)
     : url_loader_factory_(std::move(url_loader_factory)),
       identity_manager_(identity_manager),
-      application_locale_(application_locale) {}
+      application_locale_(application_locale),
+      pref_service_(pref_service) {}
+
+// static
+void DriveService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterTimePref(kLastDismissedTimePrefName, base::Time());
+}
 
 void DriveService::GetDriveFiles(GetFilesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   callbacks_.push_back(std::move(callback));
   if (callbacks_.size() > 1) {
+    return;
+  }
+
+  // Bail if module is still dismissed.
+  if (!pref_service_->GetTime(kLastDismissedTimePrefName).is_null() &&
+      base::Time::Now() - pref_service_->GetTime(kLastDismissedTimePrefName) <
+          kDismissDuration) {
+    for (auto& callback : callbacks_) {
+      std::move(callback).Run(std::vector<drive::mojom::FilePtr>());
+    }
+    callbacks_.clear();
+    return;
+  }
+
+  // Skip fetch and jump straight to data parsing when serving fake data.
+  if (base::GetFieldTrialParamValueByFeature(
+          ntp_features::kNtpDriveModule,
+          ntp_features::kNtpDriveModuleDataParam) == "fake") {
+    data_decoder::DataDecoder::ParseJsonIsolated(
+        kFakeData, base::BindOnce(&DriveService::OnJsonParsed,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -105,6 +184,14 @@ void DriveService::GetDriveFiles(GetFilesCallback callback) {
                      weak_factory_.GetWeakPtr()),
       signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
       signin::ConsentLevel::kSync);
+}
+
+void DriveService::DismissModule() {
+  pref_service_->SetTime(kLastDismissedTimePrefName, base::Time::Now());
+}
+
+void DriveService::RestoreModule() {
+  pref_service_->SetTime(kLastDismissedTimePrefName, base::Time());
 }
 
 void DriveService::OnTokenReceived(GoogleServiceAuthError error,

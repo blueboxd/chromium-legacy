@@ -2405,6 +2405,9 @@ Press an assigned switch to remove assignment.
   <message name="IDS_SETTINGS_INTERNET_NETWORK_RENAME_DIALOG_CANCEL" desc="Settings > Internet > Network details >Rename profile dialog: The Label for the dialog cancel button to rename an eSIM cellular network">
     Cancel
   </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_RENAME_INPUT_TITLE" desc="Settings > Internet > Network details >Rename profile dialog: The title for the dialog input that renames an eSIM cellular network.">
+    New profile name
+  </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_RENAME_INPUT_SUBTITLE" desc="Settings > Internet > Network details >Rename profile dialog: The Label for the dialog input that renames an eSIM cellular network, informing the user that letters, numbers and special characters are allowed.">
     Name can use letters, numbers, and special characters
   </message>
@@ -3141,7 +3144,7 @@ Press an assigned switch to remove assignment.
     Remove eSIM profiles before Powerwash
   </message>
   <message name="IDS_SETTINGS_FACTORY_RESET_ESIM_WARNING" desc="Warning text in the 'Factory Reset' window informing the user that the eSIM profiles they have installed won't be removed by a factory reset. Contains a url to the mobile data subpage.">
-    Powerwashing your device won't remove your eSIM profiles. Go to <ph name="LINK_BEGIN">&lt;a&gt;</ph>Mobile Settings<ph name="LINK_END">&lt;/a&gt;</ph> to manually remove these profiles.
+    Powerwashing your device won't remove your eSIM profiles. Go to <ph name="LINK_BEGIN">&lt;a href="#"&gt;</ph>Mobile Settings<ph name="LINK_END">&lt;/a&gt;</ph> to manually remove these profiles.
   </message>
   <message name="IDS_SETTINGS_FACTORY_RESET_ESIM_LIST_TITLE" desc="Title for the list showing installed eSIM profiles in the 'Factory Reset' window.">
     Active profiles

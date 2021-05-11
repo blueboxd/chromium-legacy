@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/app_service/app_service_app_window_shelf_controller.h"
@@ -194,8 +194,8 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
     state = apps::InstanceState::kDestroyed;
   }
 
-  std::unique_ptr<apps::Instance> instance =
-      std::make_unique<apps::Instance>(app_id, window);
+  std::unique_ptr<apps::Instance> instance = std::make_unique<apps::Instance>(
+      app_id, std::make_unique<apps::Instance::InstanceKey>(window));
   instance->SetLaunchId(launch_id);
   instance->UpdateState(state, base::Time::Now());
 

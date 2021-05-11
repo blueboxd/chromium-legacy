@@ -29,8 +29,8 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
-#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -754,8 +754,9 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
     window = app_window_to_aura_window_[app_window];
   }
   std::vector<std::unique_ptr<apps::Instance>> deltas;
-  auto instance =
-      std::make_unique<apps::Instance>(app_window->extension_id(), window);
+  auto instance = std::make_unique<apps::Instance>(
+      app_window->extension_id(),
+      std::make_unique<apps::Instance::InstanceKey>(window));
   instance->SetLaunchId(GetLaunchId(app_window));
   instance->UpdateState(new_state, base::Time::Now());
   instance->SetBrowserContext(app_window->browser_context());

@@ -11,6 +11,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -36,11 +37,12 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 
-using proximity_auth::ScreenlockState;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+// TODO(https://crbug.com/1164001): remove after moving to ash::
+using ::chromeos::TPMTokenLoader;
+using ::proximity_auth::ScreenlockState;
 
 // The maximum allowed backoff interval when waiting for cryptohome to start.
 uint32_t kMaxCryptohomeBackoffIntervalMs = 10000u;
@@ -631,4 +633,4 @@ void EasyUnlockServiceSignin::ShowInitialUserPodState() {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

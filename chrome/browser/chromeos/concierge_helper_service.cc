@@ -9,7 +9,6 @@
 #include "base/optional.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -30,7 +29,7 @@ void OnSetVmCpuRestriction(
 // If the service is already available, runs the callback immediately.
 void WaitForConciergeToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
-  auto* client = DBusThreadManager::Get()->GetConciergeClient();
+  auto* client = ConciergeClient::Get();
   if (!client) {
     LOG(WARNING) << "ConciergeClient is not available";
     std::move(callback).Run(false);
@@ -47,7 +46,7 @@ void SetVmCpuRestriction(
     return;
   }
 
-  auto* client = DBusThreadManager::Get()->GetConciergeClient();
+  auto* client = ConciergeClient::Get();
   if (!client) {
     LOG(WARNING) << "ConciergeClient is not available";
     OnSetVmCpuRestriction(base::nullopt);

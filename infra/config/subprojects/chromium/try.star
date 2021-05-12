@@ -854,6 +854,7 @@ try_.chromium_chromiumos_builder(
     tryjob = try_.job(),
     use_clang_coverage = True,
     os = os.LINUX_BIONIC_REMOVE,
+    coverage_test_types = ["unit", "overall"],
 )
 
 try_.chromium_chromiumos_builder(
@@ -1282,6 +1283,7 @@ try_.chromium_linux_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
 )
 
 # Experimental builder to check dual coverage on linux platform.
@@ -2081,9 +2083,11 @@ try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel-rts",
     goma_jobs = goma.jobs.J300,
     builderless = False,
+    cores = 16,
     tryjob = try_.job(
         experiment_percentage = 5,
     ),
+    ssd = True,
     os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 

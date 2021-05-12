@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -109,29 +108,27 @@ void LaunchPluginVmAppImpl(Profile* profile,
       std::make_move_iterator(file_paths.end()),
       google::protobuf::RepeatedFieldBackInserter(request.mutable_files()));
 
-  chromeos::DBusThreadManager::Get()
-      ->GetCiceroneClient()
-      ->LaunchContainerApplication(
-          std::move(request),
-          base::BindOnce(
-              [](const std::string& app_id, LaunchPluginVmAppCallback callback,
-                 base::Optional<
-                     vm_tools::cicerone::LaunchContainerApplicationResponse>
-                     response) {
-                if (!response || !response->success()) {
-                  LOG(ERROR) << "Failed to launch application. "
-                             << (response ? response->failure_reason()
-                                          : "Empty response.");
-                  std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
-                                          "Failed to launch " + app_id);
-                  return;
-                }
+  chromeos::CiceroneClient::Get()->LaunchContainerApplication(
+      std::move(request),
+      base::BindOnce(
+          [](const std::string& app_id, LaunchPluginVmAppCallback callback,
+             base::Optional<
+                 vm_tools::cicerone::LaunchContainerApplicationResponse>
+                 response) {
+            if (!response || !response->success()) {
+              LOG(ERROR) << "Failed to launch application. "
+                         << (response ? response->failure_reason()
+                                      : "Empty response.");
+              std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
+                                      "Failed to launch " + app_id);
+              return;
+            }
 
-                FocusAllPluginVmWindows();
+            FocusAllPluginVmWindows();
 
-                std::move(callback).Run(LaunchPluginVmAppResult::SUCCESS, "");
-              },
-              std::move(app_id), std::move(callback)));
+            std::move(callback).Run(LaunchPluginVmAppResult::SUCCESS, "");
+          },
+          std::move(app_id), std::move(callback)));
 }
 
 }  // namespace

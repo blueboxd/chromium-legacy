@@ -671,6 +671,9 @@ const char kWebAppsCrosapiInternalName[] = "web-apps-crosapi";
 
 const FeatureEntry::Choice kLacrosStabilityChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kLacrosStabilityLeastStableDescription,
+     crosapi::browser_util::kLacrosStabilitySwitch,
+     crosapi::browser_util::kLacrosStabilityLeastStable},
     {flag_descriptions::kLacrosStabilityLessStableDescription,
      crosapi::browser_util::kLacrosStabilitySwitch,
      crosapi::browser_util::kLacrosStabilityLessStable},
@@ -1519,7 +1522,6 @@ const FeatureEntry::FeatureVariation kNtpRepeatableQueriesVariations[] = {
 
 #if !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kEnterpriseRealtimeExtensionRequestParam[] = {
-    {"with_erp", "false"},
     {"with_erp", "true"}};
 const FeatureEntry::FeatureVariation
     kEnterpriseRealtimeExtensionRequestVariation[] = {
@@ -5168,9 +5170,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDestroyProfileOnBrowserClose)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-fs-nosymfollow", flag_descriptions::kFsNosymfollowName,
-     flag_descriptions::kFsNosymfollowDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFsNosymfollow)},
     {"enable-arc-unified-audio-focus",
      flag_descriptions::kEnableArcUnifiedAudioFocusName,
      flag_descriptions::kEnableArcUnifiedAudioFocusDescription, kOsCrOS,
@@ -6425,13 +6424,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingWebRtcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingWebRtc)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if defined(OS_ANDROID)
-    {"android-managed-by-menu-item",
-     flag_descriptions::kAndroidManagedByMenuItemName,
-     flag_descriptions::kAndroidManagedByMenuItemDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidManagedByMenuItem)},
-#endif  // defined(OS_ANDROID)
 
     {"app-cache", flag_descriptions::kAppCacheName,
      flag_descriptions::kAppCacheDescription, kOsAll,

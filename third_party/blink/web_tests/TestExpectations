@@ -1069,8 +1069,6 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pas
 ### Tests failing with LayoutNGBlockFragmentation enabled:
 crbug.com/1146973 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-009.html [ Failure ]
 crbug.com/1206618 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Failure ]
-crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
-crbug.com/1130451 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
 crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
 crbug.com/1206618 virtual/layout_ng_block_frag/fast/multicol/dynamic/static-becomes-relpos-has-abspos.html [ Failure ]
@@ -1269,6 +1267,9 @@ crbug.com/929098 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/c
 crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Pass ]
 
 crbug.com/1205953 external/wpt/css/css-will-change/will-change-fixpos-cb-position-1.html [ Failure ]
+crbug.com/1207788 external/wpt/css/css-will-change/will-change-stacking-context-mask-1.html [ Failure ]
+crbug.com/1207789 external/wpt/css/css-will-change/will-change-fixpos-cb-transform-style-1.html [ Failure ]
+crbug.com/1207789 external/wpt/css/css-will-change/will-change-fixpos-cb-contain-1.html [ Failure ]
 
 # color() function not implemented
 crbug.com/1068610 external/wpt/css/css-color/predefined-008.html [ Failure ]
@@ -2490,9 +2491,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-encoded-transform/idlharness.https.window.html [ Failure Crash ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc-encoded-transform/idlharness.https.window.html [ Failure Crash ]
-crbug.com/626703 external/wpt/css/css-will-change/will-change-stacking-context-mask-1.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-will-change/will-change-fixpos-cb-transform-style-1.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-will-change/will-change-fixpos-cb-contain-1.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/Create-valid-url-binaryType-blob.any.worker.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/Close-undefined.any.worker.html?wpt_flags=h2 [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/binaryType-wrong-value.any.worker.html?wpt_flags=h2 [ Timeout ]
@@ -5847,7 +5845,7 @@ crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/events/whee
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheel-in-scrollbar.html [ Failure ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-ctrl.html [ Failure ]
+crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-ctrl.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
 # Timeout only for compositor-threaded
@@ -5864,7 +5862,7 @@ crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/s
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/wheel-scroll-latching-on-scrollbar.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/hover-during-scroll.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/overflow-scrollability.html [ Failure ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure ]
+crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-height-chaining.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/no-hover-during-smooth-keyboard-scroll.html [ Failure ]
@@ -5877,7 +5875,7 @@ crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/e
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-window.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-document.html [ Failure ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure ]
+crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-window.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Failure ]
 
@@ -6865,3 +6863,8 @@ crbug.com/1207849 virtual/plz-service-worker/external/wpt/service-workers/servic
 crbug.com/1207851 virtual/plz-service-worker/external/wpt/service-workers/idlharness.https.any.sharedworker.html [ Pass Failure Timeout ]
 crbug.com/1207851 virtual/plz-service-worker/external/wpt/service-workers/idlharness.https.any.serviceworker.html [ Pass Failure Timeout ]
 crbug.com/1207851 virtual/plz-dedicated-worker/external/wpt/service-workers/idlharness.https.any.serviceworker.html [ Pass Failure Timeout ]
+
+# Sheriff 2021-05-10
+crbug.com/1207709 [ Mac10.13 ] external/wpt/resource-timing/document-domain-no-impact-opener.html [ Pass Failure ]
+crbug.com/1207709 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/resource-timing/document-domain-no-impact-opener.html [ Pass Failure ]
+crbug.com/1207709 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Pass Failure ]

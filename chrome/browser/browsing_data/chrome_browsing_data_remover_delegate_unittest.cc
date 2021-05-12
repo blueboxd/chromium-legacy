@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -697,8 +698,8 @@ class RemoveDownloadsTester {
  public:
   explicit RemoveDownloadsTester(TestingProfile* testing_profile)
       : download_manager_(new content::MockDownloadManager()) {
-    content::BrowserContext::SetDownloadManagerForTesting(
-        testing_profile, base::WrapUnique(download_manager_));
+    testing_profile->SetDownloadManagerForTesting(
+        base::WrapUnique(download_manager_));
     std::unique_ptr<ChromeDownloadManagerDelegate> delegate =
         std::make_unique<ChromeDownloadManagerDelegate>(testing_profile);
     chrome_download_manager_delegate_ = delegate.get();
@@ -1426,7 +1427,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveExternalProtocolData) {
   EXPECT_FALSE(
       profile->GetPrefs()
           ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
-          ->empty());
+          ->DictEmpty());
 
   BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                 constants::DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
@@ -1434,7 +1435,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveExternalProtocolData) {
   EXPECT_TRUE(
       profile->GetPrefs()
           ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
-          ->empty());
+          ->DictEmpty());
 }
 
 // Check that clearing browsing data (either history or cookies with other site
@@ -1448,20 +1449,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 
   // Clear history and ensure the stored isolated origins are cleared.
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_HISTORY, false);
   EXPECT_TRUE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 
   // Re-add foo.com to stored isolated origins.
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 
   // Now clear cookies and other site data, and ensure foo.com is cleared.
   // Note that this uses a short time period to document that time ranges are
@@ -1470,26 +1474,30 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
                                 constants::DATA_TYPE_SITE_DATA, false);
   EXPECT_TRUE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 
   // Re-add foo.com.
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 
   // Clear the isolated origins data type.
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_ISOLATED_ORIGINS, false);
   EXPECT_TRUE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 
   // Re-add foo.com.
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 
   // Clear both history and site data, and ensure the stored isolated origins
   // are cleared.
@@ -1498,7 +1506,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
       constants::DATA_TYPE_HISTORY | constants::DATA_TYPE_SITE_DATA, false);
   EXPECT_TRUE(
       prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->empty());
+          ->GetList()
+          .empty());
 }
 
 // Test that clearing history deletes favicons not associated with bookmarks.
@@ -2967,7 +2976,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   // Test we wiped all the elements left.
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_SITE_USAGE_DATA, false);
-  EXPECT_TRUE(prefs->GetDictionary(kPermissionActionsPrefPath)->empty());
+  EXPECT_TRUE(prefs->GetDictionary(kPermissionActionsPrefPath)->DictEmpty());
 }
 
 class ChromeBrowsingDataRemoverDelegateEnabledPasswordsTest

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -416,7 +417,7 @@ int FindInPage(WebContents* tab,
 
 void DownloadURL(Browser* browser, const GURL& download_url) {
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser->profile());
+      browser->profile()->GetDownloadManager();
   std::unique_ptr<content::DownloadTestObserver> observer(
       new content::DownloadTestObserverTerminal(
           download_manager, 1,

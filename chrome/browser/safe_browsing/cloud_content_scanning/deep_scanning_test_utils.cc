@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
@@ -405,7 +406,7 @@ void SetAnalysisConnector(PrefService* prefs,
                           bool machine_scope) {
   ListPrefUpdate settings_list(prefs, ConnectorPref(connector));
   DCHECK(settings_list.Get());
-  if (!settings_list->empty())
+  if (!settings_list->GetList().empty())
     settings_list->Clear();
 
   settings_list->Append(*base::JSONReader::Read(pref_value));
@@ -423,7 +424,7 @@ void SetOnSecurityEventReporting(
                                enterprise_connectors::kOnSecurityEventPref);
   DCHECK(settings_list.Get());
   if (enabled) {
-    if (settings_list->empty()) {
+    if (settings_list->GetList().empty()) {
       base::Value settings(base::Value::Type::DICTIONARY);
 
       settings.SetKey(enterprise_connectors::kKeyServiceProvider,

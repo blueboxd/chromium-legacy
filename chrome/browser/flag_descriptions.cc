@@ -2799,11 +2799,6 @@ const char kAndroidLayoutChangeTabReparentingDescription[] =
     "the UI layout updates to the proper one and the current tabs are "
     "reparented instead of reloaded.";
 
-const char kAndroidManagedByMenuItemName[] = "Managed by menu item";
-const char kAndroidManagedByMenuItemDescription[] =
-    "whether policies have been applied to this browser at the profile or "
-    "machine level.";
-
 const char kAndroidSurfaceControlName[] = "Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
     " Enables SurfaceControl to manage the buffer queue for the "
@@ -4535,13 +4530,6 @@ const char kFrameThrottleFps20[] = "20 fps";
 const char kFrameThrottleFps25[] = "25 fps";
 const char kFrameThrottleFps30[] = "30 fps";
 
-const char kFsNosymfollowName[] =
-    "Prevent symlink traversal on user-supplied filesystems.";
-const char kFsNosymfollowDescription[] =
-    "Causes user-supplied filesystems to be mounted with the 'nosymfollow'"
-    " option, so the chromuimos LSM denies symlink traversal on the"
-    " filesystem.";
-
 const char kFullRestoreName[] = "Full restore";
 const char kFullRestoreDescription[] = "Chrome OS full restore";
 
@@ -4626,10 +4614,9 @@ const char kLacrosPrimaryDescription[] =
 const char kLacrosStabilityName[] = "Lacros stability";
 const char kLacrosStabilityDescription[] = "Frequency of Lacros updates.";
 
-const char kLacrosStabilityLessStableDescription[] =
-    "More frequent updates / less stable";
-const char kLacrosStabilityMoreStableDescription[] =
-    "Less frequent updates / more stable";
+const char kLacrosStabilityLeastStableDescription[] = "Daily updates";
+const char kLacrosStabilityLessStableDescription[] = "Weekly updates";
+const char kLacrosStabilityMoreStableDescription[] = "Monthly updates";
 
 const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =

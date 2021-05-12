@@ -20,6 +20,8 @@
 #include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
@@ -33,6 +35,7 @@
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/missive/missive_client.h"
+#include "chromeos/dbus/os_install/os_install_client.h"
 #include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -94,6 +97,8 @@ void InitializeDBus() {
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
   InitializeDBusClient<CdmFactoryDaemonClient>(bus);
+  InitializeDBusClient<CiceroneClient>(bus);
+  InitializeDBusClient<ConciergeClient>(bus);  // depends on CiceroneClient.
   InitializeDBusClient<CrasAudioClient>(bus);
   InitializeDBusClient<CrosHealthdClient>(bus);
   InitializeDBusClient<CryptohomeMiscClient>(bus);
@@ -108,6 +113,7 @@ void InitializeDBus() {
   InitializeDBusClient<MachineLearningClient>(bus);
   InitializeDBusClient<MediaAnalyticsClient>(bus);
   InitializeDBusClient<MissiveClient>(bus);
+  InitializeDBusClient<OsInstallClient>(bus);
   InitializeDBusClient<PciguardClient>(bus);
   InitializeDBusClient<PermissionBrokerClient>(bus);
   InitializeDBusClient<PowerManagerClient>(bus);
@@ -171,6 +177,7 @@ void ShutdownDBus() {
   PowerManagerClient::Shutdown();
   PermissionBrokerClient::Shutdown();
   PciguardClient::Shutdown();
+  OsInstallClient::Shutdown();
   MediaAnalyticsClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
@@ -184,6 +191,8 @@ void ShutdownDBus() {
   CryptohomeMiscClient::Shutdown();
   CrosHealthdClient::Shutdown();
   CrasAudioClient::Shutdown();
+  ConciergeClient::Shutdown();
+  CiceroneClient::Shutdown();
   CdmFactoryDaemonClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();

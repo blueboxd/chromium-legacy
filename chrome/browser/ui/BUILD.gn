@@ -4008,10 +4008,13 @@ static_library("ui") {
       "views/page_info/page_info_hover_button.h",
       "views/page_info/page_info_main_view.cc",
       "views/page_info/page_info_main_view.h",
+      "views/page_info/page_info_navigation_handler.h",
       "views/page_info/page_info_new_bubble_view.cc",
       "views/page_info/page_info_new_bubble_view.h",
       "views/page_info/page_info_security_content_view.cc",
       "views/page_info/page_info_security_content_view.h",
+      "views/page_info/page_info_view_factory.cc",
+      "views/page_info/page_info_view_factory.h",
       "views/page_info/page_switcher_view.cc",
       "views/page_info/page_switcher_view.h",
       "views/page_info/permission_icon.cc",
@@ -4289,6 +4292,10 @@ static_library("ui") {
       "views/translate/translate_icon_view.h",
       "views/update_recommended_message_box.cc",
       "views/update_recommended_message_box.h",
+      "views/user_education/feature_promo_bubble_owner.cc",
+      "views/user_education/feature_promo_bubble_owner.h",
+      "views/user_education/feature_promo_bubble_owner_impl.cc",
+      "views/user_education/feature_promo_bubble_owner_impl.h",
       "views/user_education/feature_promo_bubble_params.cc",
       "views/user_education/feature_promo_bubble_params.h",
       "views/user_education/feature_promo_bubble_timeout.cc",
@@ -4778,6 +4785,12 @@ static_library("ui") {
       "//services/device/public/mojom:usb",
     ]
 
+    if (is_chromeos) {
+      sources += [
+        "webui/print_preview/print_preview_handler_chromeos.cc",
+        "webui/print_preview/print_preview_handler_chromeos.h",
+      ]
+    }
     if (is_chromeos_lacros) {
       sources += [
         "webui/print_preview/local_printer_handler_lacros.cc",
@@ -4788,8 +4801,6 @@ static_library("ui") {
       sources += [
         "webui/print_preview/local_printer_handler_chromeos.cc",
         "webui/print_preview/local_printer_handler_chromeos.h",
-        "webui/print_preview/print_preview_handler_chromeos.cc",
-        "webui/print_preview/print_preview_handler_chromeos.h",
       ]
     } else {
       sources += [

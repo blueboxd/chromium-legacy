@@ -22,7 +22,9 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -95,13 +97,18 @@ class PluginVmFilesTest : public testing::Test {
   struct ScopedDBusThreadManager {
     ScopedDBusThreadManager() {
       chromeos::DBusThreadManager::Initialize();
+      chromeos::CiceroneClient::InitializeFake();
+      chromeos::ConciergeClient::InitializeFake();
       chromeos::SeneschalClient::InitializeFake();
     }
     ~ScopedDBusThreadManager() {
       chromeos::SeneschalClient::Shutdown();
+      chromeos::ConciergeClient::Shutdown();
+      chromeos::CiceroneClient::Shutdown();
       chromeos::DBusThreadManager::Shutdown();
     }
   } dbus_thread_manager_;
+
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   FakePluginVmFeatures fake_plugin_vm_features_;
@@ -171,9 +178,8 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
   ASSERT_FALSE(launch_plugin_vm_callback.is_null());
 
   LaunchContainerApplicationCallback cicerone_response_callback;
-  static_cast<chromeos::FakeCiceroneClient*>(
-      chromeos::DBusThreadManager::Get()->GetCiceroneClient())
-      ->SetOnLaunchContainerApplicationCallback(base::BindLambdaForTesting(
+  chromeos::FakeCiceroneClient::Get()->SetOnLaunchContainerApplicationCallback(
+      base::BindLambdaForTesting(
           [&](const vm_tools::cicerone::LaunchContainerApplicationRequest&
                   request,
               LaunchContainerApplicationCallback callback) {

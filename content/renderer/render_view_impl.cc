@@ -147,7 +147,7 @@ void RenderViewImpl::Initialize(
 
   if (local_main_frame) {
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
-        agent_scheduling_group_, this, compositor_deps, opener_frame,
+        agent_scheduling_group_, this, opener_frame,
         params->type != mojom::ViewWidgetType::kTopLevel,
         std::move(params->replication_state), params->devtools_main_frame_token,
         std::move(params->main_frame->get_local_params()));
@@ -411,44 +411,6 @@ WebView* RenderViewImpl::CreateView(
   }
 
   return view->GetWebView();
-}
-
-blink::WebPagePopup* RenderViewImpl::CreatePopup(
-    blink::WebLocalFrame* creator) {
-  mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget;
-  mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget_receiver =
-      blink_widget.InitWithNewEndpointAndPassReceiver();
-
-  mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
-  mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
-      blink_widget_host_receiver =
-          blink_widget_host.InitWithNewEndpointAndPassReceiver();
-
-  mojo::PendingAssociatedRemote<blink::mojom::PopupWidgetHost>
-      blink_popup_widget_host;
-  mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
-      blink_popup_widget_host_receiver =
-          blink_popup_widget_host.InitWithNewEndpointAndPassReceiver();
-
-  RenderFrameImpl::FromWebFrame(creator)->GetFrameHost()->CreateNewPopupWidget(
-      std::move(blink_popup_widget_host_receiver),
-      std::move(blink_widget_host_receiver), std::move(blink_widget));
-  blink::WebFrameWidget* opener_widget =
-      RenderFrameImpl::FromWebFrame(creator)->GetLocalRootWebFrameWidget();
-
-  // The returned WebPagePopup is self-referencing, so the pointer here is not
-  // an owning pointer. It is de-referenced by calling Close().
-  blink::WebPagePopup* popup = blink::WebPagePopup::Create(
-      std::move(blink_popup_widget_host), std::move(blink_widget_host),
-      std::move(blink_widget_receiver),
-      agent_scheduling_group_.agent_group_scheduler().DefaultTaskRunner());
-  popup->InitializeCompositing(agent_scheduling_group_.agent_group_scheduler(),
-                               compositor_deps_->GetTaskGraphRunner(),
-                               opener_widget->GetOriginalScreenInfos(),
-                               /*settings=*/nullptr,
-                               compositor_deps_->GetMainThreadPipeline(),
-                               compositor_deps_->GetCompositorThreadPipeline());
-  return popup;
 }
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {

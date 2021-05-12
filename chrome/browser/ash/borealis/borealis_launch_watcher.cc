@@ -6,7 +6,6 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace borealis {
 
@@ -14,11 +13,11 @@ BorealisLaunchWatcher::BorealisLaunchWatcher(Profile* profile,
                                              std::string vm_name)
     : owner_id_(chromeos::ProfileHelper::GetUserIdHashFromProfile(profile)),
       vm_name_(vm_name) {
-  chromeos::DBusThreadManager::Get()->GetCiceroneClient()->AddObserver(this);
+  chromeos::CiceroneClient::Get()->AddObserver(this);
 }
 
 BorealisLaunchWatcher::~BorealisLaunchWatcher() {
-  chromeos::DBusThreadManager::Get()->GetCiceroneClient()->RemoveObserver(this);
+  chromeos::CiceroneClient::Get()->RemoveObserver(this);
 }
 
 void BorealisLaunchWatcher::AwaitLaunch(OnLaunchCallback callback) {

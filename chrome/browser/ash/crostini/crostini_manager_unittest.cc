@@ -34,9 +34,11 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/fake_anomaly_detector_client.h"
@@ -189,11 +191,11 @@ class CrostiniManagerTest : public testing::Test {
             TestingBrowserProcess::GetGlobal())),
         browser_part_(g_browser_process->platform_part()) {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::CiceroneClient::InitializeFake();
+    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
-    fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
-        chromeos::DBusThreadManager::Get()->GetCiceroneClient());
-    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
-        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
+    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
     fake_anomaly_detector_client_ =
         static_cast<chromeos::FakeAnomalyDetectorClient*>(
             chromeos::DBusThreadManager::Get()->GetAnomalyDetectorClient());
@@ -201,6 +203,8 @@ class CrostiniManagerTest : public testing::Test {
 
   ~CrostiniManagerTest() override {
     chromeos::SeneschalClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
+    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -265,9 +269,9 @@ class CrostiniManagerTest : public testing::Test {
         user_manager::UserManager::Get());
   }
 
-  // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
+  // Owned by chromeos::DBusThreadManager
   chromeos::FakeAnomalyDetectorClient* fake_anomaly_detector_client_;
 
   std::unique_ptr<base::RunLoop>

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
@@ -2125,8 +2126,7 @@ void NearbySharingServiceImpl::ReceivePayloads(
   mutual_acceptance_timeout_alarm_.Cancel();
 
   base::FilePath download_path =
-      DownloadPrefs::FromDownloadManager(
-          content::BrowserContext::GetDownloadManager(profile_))
+      DownloadPrefs::FromDownloadManager(profile_->GetDownloadManager())
           ->DownloadPath();
 
   // Register payload path for all valid file payloads.
@@ -3144,8 +3144,7 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
   }
 
   base::FilePath download_path =
-      DownloadPrefs::FromDownloadManager(
-          content::BrowserContext::GetDownloadManager(profile_))
+      DownloadPrefs::FromDownloadManager(profile_->GetDownloadManager())
           ->DownloadPath();
 
   base::ThreadPool::PostTaskAndReplyWithResult(

@@ -41434,6 +41434,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="15" label="Add to Reading List"/>
   <int value="16" label="Add to Bookmarks"/>
   <int value="17" label="Close Tab"/>
+  <int value="18" label="Edit Bookmark"/>
 </enum>
 
 <enum name="IOSMenuScenario">
@@ -68141,6 +68142,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="kTriggerExtensionRequest">
     A new extension request is added
   </int>
+  <int value="5" label="kTriggerExtensionRequest">
+    A new extension request is added and uploaded with ERP.
+  </int>
 </enum>
 
 <enum name="RequestAction">
@@ -76868,6 +76872,8 @@ would be helpful to identify which type is being sent.
   <int value="21" label="Media notification next track button."/>
   <int value="22" label="Media notification seek forward button."/>
   <int value="23" label="Media notification seek backward button."/>
+  <int value="24" label="Price drop notification visit site button."/>
+  <int value="25" label="Price drop notification turn off alert button."/>
 </enum>
 
 <enum name="SystemNotificationType">

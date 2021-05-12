@@ -186,6 +186,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Clipboard>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ClipboardHistory>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ContentProtection>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Crosapi>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceAttributes>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
@@ -226,8 +227,8 @@ constexpr bool HasDuplicatedUuid() {
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 25,
-    "if you add a new crosapi, please add it to the version map here");
+    crosapi::mojom::Crosapi::Version_ == 26,
+    "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");
 
@@ -238,6 +239,7 @@ const base::Feature kLacrosAllowOnStableChannel{
     "LacrosAllowOnStableChannel", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kLacrosStabilitySwitch[] = "lacros-stability";
+const char kLacrosStabilityLeastStable[] = "least-stable";
 const char kLacrosStabilityLessStable[] = "less-stable";
 const char kLacrosStabilityMoreStable[] = "more-stable";
 

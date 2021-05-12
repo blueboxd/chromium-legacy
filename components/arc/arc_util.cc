@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/concierge_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -75,7 +74,7 @@ void OnSetArcVmCpuRestriction(
 }
 
 void SetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state) {
-  auto* client = chromeos::DBusThreadManager::Get()->GetConciergeClient();
+  auto* client = chromeos::ConciergeClient::Get();
   if (!client) {
     LOG(ERROR) << "ConciergeClient is not available";
     return;

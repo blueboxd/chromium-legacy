@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import './onboarding_landing_page.js';
 import './shimless_rma_shared_css.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getShimlessRmaService} from './mojo_interface_provider.js';
+import {CurrentState, NextState, PrevState, RmadErrorCode, RmaState, ShimlessRmaServiceInterface} from './shimless_rma_types.js'
 
 /**
  * @typedef {{
@@ -19,12 +23,11 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 let PageInfo;
 
 /**
- * // TODO(joonbug): update type to <RmaState, PageInfo> using a Map.
- * @type {!Object<number, !PageInfo>}
+ * @type {!Object<!RmaState, !PageInfo>}
  */
 const StateComponentMapping = {
-  // TODO(joonbug): Update with enum and actual componentId.
-  0: {componentIs: 'component1'},
+  [RmaState.kUnknown]: {componentIs: 'badcomponent'},
+  [RmaState.kWelcomeScreen]: {componentIs: 'onboarding-landing-page'},
 };
 
 /**
@@ -51,26 +54,109 @@ export class ShimlessRmaElement extends PolymerElement {
         type: Object,
         value: {},
       },
+      /**
+       * @private
+       * @type {ShimlessRmaServiceInterface}
+       */
+      shimlessRmaService_: {
+        type: Object,
+        value: {},
+      },
     };
   }
 
   /** @override */
   ready() {
     super.ready();
+    this.shimlessRmaService_ = getShimlessRmaService();
     this.fetchState_().then((state) => this.loadState_(state));
   }
 
   /** @private */
   fetchState_() {
-    // TODO(joonbug): fetch from fake
-    return Promise.resolve(0);
+    return this.shimlessRmaService_.getCurrentState();
   }
 
   /** @private */
+  fetchNextState_() {
+    return this.shimlessRmaService_.getNextState();
+  }
+
+  /** @private */
+  fetchPrevState_() {
+    return this.shimlessRmaService_.getPrevState();
+  }
+
+  /**
+   * @private
+   * @param { !CurrentState } state
+   */
   loadState_(state) {
-    const pageInfo = StateComponentMapping[state];
+    const pageInfo = StateComponentMapping[state.currentState];
     this.currentPage_ = pageInfo;
     // TODO(joonbug): Load component
+  }
+
+  /**
+   * @private
+   * @param { !NextState } state
+   */
+  loadNextState_(state) {
+    const pageInfo = StateComponentMapping[state.nextState];
+    this.currentPage_ = pageInfo;
+    // TODO(joonbug): Load component
+  }
+
+  /**
+   * @private
+   * @param { !PrevState } state
+   */
+  loadPrevState_(state) {
+    const pageInfo = StateComponentMapping[state.prevState];
+    this.currentPage_ = pageInfo;
+    this.showComponent_(pageInfo.componentIs);
+  }
+
+  /**
+   * @param {string} componentIs
+   * @private
+   */
+  showComponent_(componentIs) {
+    let component = this.shadowRoot.querySelector(`#${componentIs}`);
+    if (component === null) {
+      component = this.loadComponent_(componentIs);
+    }
+
+    this.hideAllComponents_();
+    component.hidden = false;
+  }
+
+  /**
+   * Utility method to bulk hide all contents.
+   */
+  hideAllComponents_() {
+    const components = this.shadowRoot.querySelectorAll('.shimless-content');
+    Array.from(components).map((c) => c.hidden = true);
+  }
+
+  /**
+   * @param {string} componentIs
+   * @private
+   */
+  loadComponent_(componentIs) {
+    const shimlessBody = this.shadowRoot.querySelector('#contentContainer');
+
+    let component = document.createElement(componentIs);
+    component.setAttribute('id', componentIs);
+    component.setAttribute('class', 'shimless-content');
+    component.hidden = true;
+
+    if (!component) {
+      console.error('Failed to create ' + componentIs);
+    }
+
+    shimlessBody.appendChild(component);
+    return component;
   }
 
   /** @protected */
@@ -86,12 +172,14 @@ export class ShimlessRmaElement extends PolymerElement {
   /** @protected */
   onBackBtnClicked_() {
     // TODO(joonbug): fill with action
+    this.fetchPrevState_().then((state) => this.loadPrevState_(state));
     return;
   }
 
   /** @protected */
   onNextBtnClicked_() {
     // TODO(joonbug): fill with action
+    this.fetchNextState_().then((state) => this.loadNextState_(state));
     return;
   }
 

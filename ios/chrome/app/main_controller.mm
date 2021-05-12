@@ -1216,7 +1216,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       id<BrowserInterfaceProvider> sceneInterface =
           sceneState.interfaceProvider;
 
-      if (didShowActivityIndicator) {
+      if (willShowActivityIndicator) {
         // User interaction still needs to be disabled as a way to
         // force reload all the web states and to reset NTPs.
         sceneInterface.mainInterface.userInteractionEnabled = NO;
@@ -1224,7 +1224,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
         // TODO(crbug.com/1045047): Use HandlerForProtocol after commands
         // protocol clean up.
-        if (sceneInterface.mainInterface.browser) {
+        if (didShowActivityIndicator && sceneInterface.mainInterface.browser) {
           id<BrowserCommands> handler = static_cast<id<BrowserCommands>>(
               sceneInterface.mainInterface.browser->GetCommandDispatcher());
           [handler showActivityOverlay:NO];

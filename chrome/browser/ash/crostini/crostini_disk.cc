@@ -20,12 +20,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/base/text/bytes_formatting.h"
 
 namespace {
 chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::DBusThreadManager::Get()->GetConciergeClient();
+  return chromeos::ConciergeClient::Get();
 }
 
 std::string FormatBytes(const int64_t value) {

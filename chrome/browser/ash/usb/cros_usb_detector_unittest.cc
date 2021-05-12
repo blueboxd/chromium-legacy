@@ -27,7 +27,9 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -129,11 +131,11 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
  public:
   CrosUsbDetectorTest() {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::CiceroneClient::InitializeFake();
+    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
-    fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
-        chromeos::DBusThreadManager::Get()->GetCiceroneClient());
-    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
-        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
+    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
     fake_vm_plugin_dispatcher_client_ =
         static_cast<chromeos::FakeVmPluginDispatcherClient*>(
             chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
@@ -147,6 +149,8 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   ~CrosUsbDetectorTest() override {
     chromeos::disks::DiskMountManager::Shutdown();
     chromeos::SeneschalClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
+    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -276,9 +280,9 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   chromeos::disks::MockDiskMountManager* mock_disk_mount_manager_;
   chromeos::disks::DiskMountManager::DiskMap disks_;
 
-  // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
+  // Owned by chromeos::DBusThreadManager
   chromeos::FakeVmPluginDispatcherClient* fake_vm_plugin_dispatcher_client_;
 
   TestCrosUsbDeviceObserver usb_device_observer_;

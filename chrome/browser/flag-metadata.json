@@ -123,11 +123,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "android-managed-by-menu-item",
-    "owners": [ "gangwu@google.com", "twellington" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "android-multiple-display",
     "owners": [ "lazzzis@google.com", "twellington" ],
     "expiry_milestone": 87
@@ -1106,7 +1101,7 @@
       "chrome-apps-platform-rationalization@google.com",
       "quickoffice-chrome-eng@google.com"
     ],
-    "expiry_milestone": 88
+    "expiry_milestone": 95
   },
   {
     "name": "disable-threaded-scrolling",
@@ -1829,11 +1824,6 @@
     "name": "enable-fre-ui-module-ios",
     "owners": [ "tinazwang", "gambard" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "enable-fs-nosymfollow",
-    "owners": [ "mortonm@chromium.org" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-ftp",
@@ -3492,11 +3482,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "media-app",
-    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "media-app-annotation",
     "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
     "expiry_milestone": 93
@@ -4572,12 +4557,12 @@
       "bdea",
       "chrome-safebrowsing-core@google.com"
     ],
-    "expiry_milestone": 91
+    "expiry_milestone": 93
   },
   {
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 93
   },
   {
     "name": "safety-check-chrome-cleaner-child",

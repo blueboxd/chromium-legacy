@@ -82,11 +82,11 @@ namespace crostini {
 namespace {
 
 chromeos::CiceroneClient* GetCiceroneClient() {
-  return chromeos::DBusThreadManager::Get()->GetCiceroneClient();
+  return chromeos::CiceroneClient::Get();
 }
 
 chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::DBusThreadManager::Get()->GetConciergeClient();
+  return chromeos::ConciergeClient::Get();
 }
 
 chromeos::AnomalyDetectorClient* GetAnomalyDetectorClient() {

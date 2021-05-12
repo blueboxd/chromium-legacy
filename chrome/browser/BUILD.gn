@@ -2168,6 +2168,7 @@ static_library("browser") {
     "//components/safe_browsing/content/browser",
     "//components/safe_browsing/content/browser:client_side_detection",
     "//components/safe_browsing/content/password_protection",
+    "//components/safe_browsing/content/web_ui",
     "//components/safe_browsing/core:download_file_types_proto",
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core:file_type_policies",
@@ -2869,6 +2870,7 @@ static_library("browser") {
       "android/signin/web_signin_bridge.h",
       "android/startup_bridge.cc",
       "android/startup_bridge.h",
+      "android/survey/http_client_type.cc",
       "android/survey/http_client_type.h",
       "android/survey/survey_http_client.cc",
       "android/survey/survey_http_client.h",
@@ -3125,6 +3127,10 @@ static_library("browser") {
       "permissions/permission_update_infobar_delegate_android.cc",
       "permissions/permission_update_infobar_delegate_android.h",
       "platform_util_android.cc",
+      "policy/browser_dm_token_storage_android.cc",
+      "policy/browser_dm_token_storage_android.h",
+      "policy/chrome_browser_cloud_management_controller_android.cc",
+      "policy/chrome_browser_cloud_management_controller_android.h",
       "policy/cloud/user_policy_signin_service_mobile.cc",
       "policy/cloud/user_policy_signin_service_mobile.h",
       "policy/policy_service_factory_android.cc",
@@ -4763,6 +4769,7 @@ static_library("browser") {
       "//chromeos/lacros",
       "//chromeos/ui/frame",
       "//components/account_manager_core",
+      "//ui/platform_window",
     ]
   }
 

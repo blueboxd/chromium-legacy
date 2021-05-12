@@ -160,7 +160,7 @@ const base::Feature kCapabilityDelegationPaymentRequest{
     "CapabilityDelegationPaymentRequest", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kClickPointerEvent{"ClickPointerEvent",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCompositeBGColorAnimation{
     "CompositeBGColorAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -651,7 +651,7 @@ const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
 // platforms. This flag is used only as a "kill switch" as we migrate towards
 // requiring 'crossOriginIsolated'.
 const base::Feature kSharedArrayBufferOnDesktop{
-    "SharedArrayBufferOnDesktop", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SharedArrayBufferOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Signed HTTP Exchange prefetch cache for navigations
 // https://crbug.com/968427

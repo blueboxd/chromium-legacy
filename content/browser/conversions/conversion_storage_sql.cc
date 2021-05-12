@@ -57,12 +57,14 @@ const base::FilePath::CharType kDatabasePath[] =
 //
 // Version 5 - 2021/04/30 - https://crrev.com/c/2860056
 //
-// Version 5 drops the conversions.attribution_credit column.
-const int kCurrentVersionNumber = 5;
+// Version 6 - 2021/05/06 - https://crrev.com/c/2878235
+//
+// Version 6 adds the impression.priority column.
+const int kCurrentVersionNumber = 6;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int kCompatibleVersionNumber = 5;
+const int kCompatibleVersionNumber = 6;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database. No versions are
@@ -164,8 +166,8 @@ void ConversionStorageSql::StoreImpression(
       "(impression_data, impression_origin, conversion_origin, "
       "conversion_destination, "
       "reporting_origin, impression_time, expiry_time, source_type, "
-      "attributed_truthfully) "
-      "VALUES (?,?,?,?,?,?,?,?,?)";
+      "attributed_truthfully, priority) "
+      "VALUES (?,?,?,?,?,?,?,?,?,?)";
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertImpressionSql));
   statement.BindString(0, impression.impression_data());
@@ -177,6 +179,7 @@ void ConversionStorageSql::StoreImpression(
   statement.BindTime(6, impression.expiry_time());
   statement.BindInt(7, static_cast<int>(impression.source_type()));
   statement.BindInt(8, 1 /*true*/);
+  statement.BindInt64(9, impression.priority());
   statement.Run();
 
   transaction.Commit();
@@ -213,7 +216,7 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
   // past their expiry time.
   const char kGetMatchingImpressionsSql[] =
       "SELECT impression_id, impression_data, impression_origin, "
-      "conversion_origin, impression_time, expiry_time "
+      "conversion_origin, impression_time, expiry_time, priority "
       "FROM impressions "
       "WHERE conversion_destination = ? AND reporting_origin = ? "
       "AND active = 1 AND expiry_time > ? AND source_type = ?"
@@ -242,9 +245,7 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
       continue;
     base::Time impression_time = statement.ColumnTime(4);
     base::Time expiry_time = statement.ColumnTime(5);
-
-    // TODO(1200448): Replace with the attribution_source_priority in database.
-    int64_t attribution_source_priority = 0;
+    int64_t attribution_source_priority = statement.ColumnInt64(6);
 
     StorableImpression impression(impression_data, impression_origin,
                                   conversion_origin, reporting_origin,
@@ -345,24 +346,29 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
 }
 
 std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
-    base::Time max_report_time) {
+    base::Time max_report_time,
+    int limit) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return {};
 
-  // Get all entries in the conversions table with a |report_time| less than
-  // |expired_at| and their matching information from the impression table.
+  // Get at most |limit| entries in the conversions table with a |report_time|
+  // less than |max_report_time| and their matching information from the
+  // impression table. Negatives are treated as no limit
+  // (https://sqlite.org/lang_select.html#limitoffset).
   const char kGetExpiredConversionsSql[] =
       "SELECT C.conversion_data, C.conversion_time, "
       "C.report_time, "
       "C.conversion_id, I.impression_origin, I.conversion_origin, "
       "I.reporting_origin, I.impression_data, I.impression_time, "
-      "I.expiry_time, I.impression_id, I.source_type "
+      "I.expiry_time, I.impression_id, I.source_type, I.priority "
       "FROM conversions C JOIN impressions I ON "
-      "C.impression_id = I.impression_id WHERE C.report_time <= ?";
+      "C.impression_id = I.impression_id WHERE C.report_time <= ? "
+      "LIMIT ?";
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kGetExpiredConversionsSql));
   statement.BindTime(0, max_report_time);
+  statement.BindInt(1, limit);
 
   std::vector<ConversionReport> conversions;
   while (statement.Step()) {
@@ -381,9 +387,7 @@ std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
     int64_t impression_id = statement.ColumnInt64(10);
     StorableImpression::SourceType source_type =
         static_cast<StorableImpression::SourceType>(statement.ColumnInt(11));
-
-    // TODO(1200448): Replace with the attribution_source_priority in database.
-    int64_t attribution_source_priority = 0;
+    int64_t attribution_source_priority = statement.ColumnInt64(12);
 
     // Ensure origins are valid before continuing. This could happen if there is
     // database corruption.
@@ -412,13 +416,14 @@ std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
   return conversions;
 }
 
-std::vector<StorableImpression> ConversionStorageSql::GetActiveImpressions() {
+std::vector<StorableImpression> ConversionStorageSql::GetActiveImpressions(
+    int limit) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return {};
 
   return GetImpressions(ImpressionFilter::kOnlyActive, clock_->Now(),
-                        /*start_impression_id=*/0, /*num_impressions=*/INT_MAX);
+                        /*start_impression_id=*/0, /*num_impressions=*/limit);
 }
 
 int ConversionStorageSql::DeleteExpiredImpressions() {
@@ -746,11 +751,12 @@ std::vector<StorableImpression> ConversionStorageSql::GetImpressions(
     base::Time min_expiry_time,
     int64_t start_impression_id,
     int num_impressions) {
-  DCHECK_GE(num_impressions, 0);
+  // Negatives are treated as no limit
+  // (https://sqlite.org/lang_select.html#limitoffset).
   const char kGetImpressionsSql[] =
       "SELECT impression_data, impression_origin, conversion_origin, "
       "reporting_origin, impression_time, expiry_time, impression_id, "
-      "source_type "
+      "source_type, priority "
       "FROM impressions "
       "WHERE impression_id >= ? AND active >= ? AND expiry_time > ? "
       "LIMIT ?";
@@ -775,9 +781,7 @@ std::vector<StorableImpression> ConversionStorageSql::GetImpressions(
     int64_t impression_id = statement.ColumnInt64(6);
     StorableImpression::SourceType source_type =
         static_cast<StorableImpression::SourceType>(statement.ColumnInt(7));
-
-    // TODO(1200448): Replace with the attribution_source_priority in database.
-    int64_t attribution_source_priority = 0;
+    int64_t attribution_source_priority = statement.ColumnInt64(8);
 
     StorableImpression impression(impression_data, impression_origin,
                                   conversion_destination, reporting_origin,
@@ -949,7 +953,8 @@ bool ConversionStorageSql::CreateSchema() {
       "active INTEGER DEFAULT 1,"
       "conversion_destination TEXT NOT NULL,"
       "source_type INTEGER NOT NULL,"
-      "attributed_truthfully INTEGER NOT NULL)";
+      "attributed_truthfully INTEGER NOT NULL,"
+      "priority INTEGER NOT NULL)";
   if (!db_->Execute(kImpressionTableSql))
     return false;
 

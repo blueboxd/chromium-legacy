@@ -23,6 +23,8 @@
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_client.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -47,6 +49,8 @@ class PluginVmManagerImplTest : public testing::Test {
  public:
   PluginVmManagerImplTest() {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::CiceroneClient::InitializeFake();
+    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
     testing_profile_ = std::make_unique<TestingProfile>();
     test_helper_ = std::make_unique<PluginVmTestHelper>(testing_profile_.get());
@@ -73,6 +77,8 @@ class PluginVmManagerImplTest : public testing::Test {
     test_helper_.reset();
     testing_profile_.reset();
     chromeos::SeneschalClient::Shutdown();
+    chromeos::ConciergeClient::Shutdown();
+    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     // TODO(yusukes): Fix the shutdown order.
     chromeos::DlcserviceClient::Shutdown();
@@ -84,8 +90,7 @@ class PluginVmManagerImplTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
   }
   chromeos::FakeConciergeClient& ConciergeClient() {
-    return *static_cast<chromeos::FakeConciergeClient*>(
-        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    return *chromeos::FakeConciergeClient::Get();
   }
   chromeos::FakeSeneschalClient& SeneschalClient() {
     return *chromeos::FakeSeneschalClient::Get();

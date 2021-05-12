@@ -575,6 +575,22 @@ MediaAppUIBrowserTest.OverwriteOriginalIPC = async () => {
       handle.lastWritable.writes[0], {position: 0, size: 'Foo'.length});
 };
 
+MediaAppUIBrowserTest.RejectZeroByteWrites = async () => {
+  const directory = await launchWithFiles([await createTestImageFile()]);
+  const handle = directory.files[0];
+
+  const EMPTY_DATA = '';
+  const message = {overwriteLastFile: EMPTY_DATA};
+  const testResponse = await sendTestMessage(message);
+
+  assertEquals(
+      testResponse.testQueryResult,
+      'overwriteOriginal failed Error:' +
+          ' EmptyWriteError: overwrite-file: saveBlobToFile():' +
+          ' Refusing to write zero bytes.');
+  assertEquals(handle.lastWritable.writes.length, 0);
+};
+
 // Tests that OverwriteOriginal shows a file picker (and writes to that file) if
 // the write attempt to the original file fails.
 MediaAppUIBrowserTest.OverwriteOriginalPickerFallback = async () => {
@@ -656,7 +672,7 @@ MediaAppUIBrowserTest.CrossContextErrors = async () => {
   let caughtError = {};
 
   try {
-    const message = {overwriteLastFile: 'Foo'};
+    const message = {overwriteLastFile: 'Foo', rethrow: true};
     await sendTestMessage(message);
   } catch (e) {
     caughtError = e;
@@ -1119,22 +1135,26 @@ MediaAppUIBrowserTest.RelatedFiles = async () => {
     {name: 'subtitles.vtt'},
     {name: 'text.txt', type: 'text/plain'},
     {name: 'world.webm', type: 'video/webm'},
+    {name: 'x.avi'},
+    {name: 'y.3gp'},
+    {name: 'z.mpg'},
   ];
   const directory = await createMockTestDirectory(testFiles);
-  const [html, jpg, gif, emkv, mkv, MKV, ext, other, vtt, txt, webm] =
-      directory.getFilesSync();
+  const files = directory.getFilesSync();
+  const [html, jpg, gif, emkv, mkv, MKV, ext, other, vtt, txt] = files;
+  const [webm, avi, y3gp, mpg] = files.slice(10);
 
   await loadFilesWithoutSendingToGuest(directory, mkv);
-  assertFilesToBe([mkv, MKV, vtt, webm, jpg, gif], 'mkv');
+  assertFilesToBe([mkv, MKV, vtt, webm, avi, y3gp, mpg, jpg, gif], 'mkv');
 
   await loadFilesWithoutSendingToGuest(directory, jpg);
-  assertFilesToBe([jpg, gif, mkv, MKV, vtt, webm], 'jpg');
+  assertFilesToBe([jpg, gif, mkv, MKV, vtt, webm, avi, y3gp, mpg], 'jpg');
 
   await loadFilesWithoutSendingToGuest(directory, gif);
-  assertFilesToBe([gif, mkv, MKV, vtt, webm, jpg], 'gif');
+  assertFilesToBe([gif, mkv, MKV, vtt, webm, avi, y3gp, mpg, jpg], 'gif');
 
   await loadFilesWithoutSendingToGuest(directory, webm);
-  assertFilesToBe([webm, jpg, gif, mkv, MKV, vtt], 'webm');
+  assertFilesToBe([webm, avi, y3gp, mpg, jpg, gif, mkv, MKV, vtt], 'webm');
 
   await loadFilesWithoutSendingToGuest(directory, txt);
   assertFilesToBe([txt, other], 'txt');

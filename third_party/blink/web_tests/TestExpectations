@@ -1092,6 +1092,7 @@ crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-br
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/static-child-becomes-fixedpos.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/tall-line-in-short-block.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/transform-with-fixedpos.html [ Failure ]
+crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 
 ### With LayoutNGFragmentTraversal (and LayoutNGFragmentItem) enabled:
@@ -3750,6 +3751,12 @@ crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Fa
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-ref.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-credentialless.tentative.https.html [ Pass Failure ]
+crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-require-corp.tentative.https.html [ Pass Failure ]
+crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-credentialless.tentative.https.html [ Pass Failure ]
+crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-require-corp.tentative.https.html [ Pass Failure ]
+crbug.com/626703 [ Linux ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-credentialless.tentative.https.html [ Pass Failure ]
+crbug.com/626703 [ Linux ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-require-corp.tentative.https.html [ Pass Failure ]
 
 # Synthetic modules report the wrong location in errors
 crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
@@ -4126,6 +4133,7 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algori
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-minimum-contribution-baseline-shim-vertical-rl.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-minimum-contribution-baseline-shim.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/percent-padding-margin-resolution-grid-item-update.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/flex-content-sized-columns-resize.html [ Failure ]
 
 ### Tests *expected* to be failing with LayoutNGGrid enabled:
 crbug.com/1108097 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-004.html [ Failure ]
@@ -4137,7 +4145,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/embedded/image-emb
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/extensibility/foreignObject/will-change-in-foreign-object-paint-order.html [ Pass Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/interact/manual/event-attribute-001-manual.svg [ Skip ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/linking/reftests/url-reference-local-textpath.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/linking/reftests/use-descendant-combinator-003.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/linking/scripted/href-mpath-element.html [ Timeout ]
@@ -4153,7 +4160,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/path/bearing/absol
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/path/bearing/relative.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/path/bearing/zero.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/path/closepath/segment-completing.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/path/distance/pathLength-zero.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/pservers/reftests/meshgradient-basic-001.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/pservers/reftests/meshgradient-basic-002.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/pservers/reftests/meshgradient-basic-003.svg [ Failure ]
@@ -4191,7 +4197,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/text/reftests/text
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/text/reftests/text-text-anchor-203.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/text/scripted/getsubstringlength-emoji-ligatures.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/text/scripted/textpath-textlength-text-anchor-001.tentative.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/types/scripted/SVGAnimatedEnumeration-SVGFEMorphologyElement.html [ Pass Crash ]
 crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/types/scripted/SVGAnimatedEnumeration-SVGMaskElement.html [ Pass Crash ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/ems-display-none.svg [ Failure ]
@@ -4217,7 +4222,6 @@ crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/tspa
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/use-detach.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/use-event-handler-on-use-element.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/animations/animate-text-nested-transforms.html [ Timeout ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/longTextOnPath.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/smallFonts.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textAnchor2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textAnchor3.svg [ Failure ]
@@ -4227,11 +4231,8 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textEffect.svg [ Fai
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textEffect2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textEffect3.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textFeatures.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textGlyphOrientationHorizontal.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textLayout2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPath.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPath2.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPath3.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPathSpaces.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/verticalText.svg [ Failure ]
@@ -4271,10 +4272,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-hit-test.svg [ Fail
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-letter-spacing.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-linking.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-match-highlight.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/textPath-change-id2.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/textPath-change-reference2-pattern.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/textPath-change-reference2-using-baseval.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/textPath-change-reference2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-rotated-gradient.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/transformed-outlines.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/use-event-handler-on-referenced-element.svg [ Failure ]
@@ -4326,7 +4323,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/bidi-text-query.svg [ Fail
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/caret-in-svg-text.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/columns-do-not-apply.html [ Pass Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/combining-character-queries.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/degenerate-text-path.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/empty-text-node-crash.html [ Pass Crash ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/getcharnumatposition-multiple-fragments.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/getextentofchar-nonbmp.html [ Failure ]
@@ -4334,7 +4330,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/lengthAdjust-text-metrics.
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/ligature-queries.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/non-invertible-matrix-text.svg [ Pass Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/obb-paintserver.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/removing-id-on-path.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-background-color.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-doubleclick.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-1.html [ Failure ]
@@ -4376,9 +4371,7 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-decorations-in-scaled
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-getSubStringLength.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-outline-2.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/textPathBoundsBug.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-path-middle-align.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/textpath-outline.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/textpath-startoffset.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/textquery-collapsed-whitespace.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-repaint-rects.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-selection-align-01-b.svg [ Failure ]
@@ -4466,12 +4459,10 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/pservers-pattern-01
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/render-elems-07-t.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/render-elems-08-t.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-align-02-b.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-align-04-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-align-05-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-align-06-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-deco-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-intro-03-b.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-path-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-spacing-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-text-03-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-text-08-b.svg [ Failure ]
@@ -5861,17 +5852,18 @@ crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/n
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/scroll-animation-on-by-default.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/wheel-scroll-latching-on-scrollbar.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/hover-during-scroll.html [ Failure ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/overflow-scrollability.html [ Failure ]
+crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/overflow-scrollability.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-height-chaining.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/no-hover-during-smooth-keyboard-scroll.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scroll-animation-on-by-default.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-scroll-latching-on-scrollbar.html [ Failure ]
+crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
 
 # fast/scrolling/events
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-document.html [ Failure ]
-crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure ]
+crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Timeout ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-window.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-document.html [ Failure ]
@@ -6199,6 +6191,10 @@ virtual/scroll-unification/fast/scrolling/scrollbars/dsf-ready/mouse-interaction
 
 # Sheriff 2020-09-21
 crbug.com/1130500 [ Mac10.13 Debug ] virtual/plz-dedicated-worker/external/wpt/xhr/xhr-timeout-longtask.any.worker.html [ Pass Failure ]
+
+# Rebase and reenable after https://crrev.com/c/2887508 landed.
+crbug.com/1207867 inspector-protocol/runtime/runtime-command-line-api-can-be-overriden.js [ Pass Failure ]
+crbug.com/1207867 http/tests/devtools/console/console-tainted-globals.js [ Pass Failure ]
 
 # Sheriff 2020-09-22
 crbug.com/1130533 [ Mac ] external/wpt/xhr/xhr-timeout-longtask.any.html [ Pass Failure ]
@@ -6701,9 +6697,6 @@ crbug.com/1198698 external/wpt/clear-site-data/storage.https.html [ Pass Timeout
 # Sheriff 2021-04-14
 crbug.com/1198828 [ Win ] virtual/scroll-unification/fast/events/mouse-events-on-node-deletion.html [ Pass Failure ]
 
-# Test to fix as part of the PlzServiceWorker project.
-crbug.com/1198443 virtual/plz-service-worker/http/tests/serviceworker/clients-openwindow.html [ Pass Failure ]
-
 # Sheriff 2021-04-15
 crbug.com/1199380 virtual/scroll-unification-prefer_compositing_to_lcd_text/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 crbug.com/1194460 virtual/scroll-unification/fast/events/mouseenter-mouseleave-chained-listeners.html [ Skip ]
@@ -6868,3 +6861,6 @@ crbug.com/1207851 virtual/plz-dedicated-worker/external/wpt/service-workers/idlh
 crbug.com/1207709 [ Mac10.13 ] external/wpt/resource-timing/document-domain-no-impact-opener.html [ Pass Failure ]
 crbug.com/1207709 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/resource-timing/document-domain-no-impact-opener.html [ Pass Failure ]
 crbug.com/1207709 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Pass Failure ]
+
+# Sheriff 2021-05-12
+crbug.com/1095540 [ Linux Debug ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]

@@ -16,10 +16,10 @@
 #include "base/test/gmock_move_support.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_test_helper.h"
+#include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/plugin_vm/fake_plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_test_helper.h"
-#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
-#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -27,9 +27,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -131,11 +129,11 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
  public:
   CrosUsbDetectorTest() {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
-    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
-    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
+    fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
+        chromeos::DBusThreadManager::Get()->GetCiceroneClient());
+    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
     fake_vm_plugin_dispatcher_client_ =
         static_cast<chromeos::FakeVmPluginDispatcherClient*>(
             chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
@@ -149,8 +147,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   ~CrosUsbDetectorTest() override {
     chromeos::disks::DiskMountManager::Shutdown();
     chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

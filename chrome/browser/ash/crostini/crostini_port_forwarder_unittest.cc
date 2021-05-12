@@ -7,10 +7,8 @@
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
+#include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
@@ -40,8 +38,6 @@ class CrostiniPortForwarderTest : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
     chromeos::PermissionBrokerClient::InitializeFake();
     profile_ = std::make_unique<TestingProfile>();
@@ -64,8 +60,6 @@ class CrostiniPortForwarderTest : public testing::Test {
     test_helper_.reset();
     profile_.reset();
     chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

@@ -5,6 +5,7 @@
 #ifndef MEDIA_RENDERERS_VIDEO_FRAME_YUV_MAILBOXES_HOLDER_H_
 #define MEDIA_RENDERERS_VIDEO_FRAME_YUV_MAILBOXES_HOLDER_H_
 
+#include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
@@ -16,7 +17,7 @@ class RasterContextProvider;
 
 namespace media {
 
-class VideoFrameYUVMailboxesHolder {
+class MEDIA_EXPORT VideoFrameYUVMailboxesHolder {
  public:
   VideoFrameYUVMailboxesHolder();
   ~VideoFrameYUVMailboxesHolder();
@@ -31,19 +32,29 @@ class VideoFrameYUVMailboxesHolder {
   void VideoFrameToMailboxes(
       const VideoFrame* video_frame,
       viz::RasterContextProvider* raster_context_provider,
-      gpu::Mailbox mailboxes[]);
+      gpu::Mailbox mailboxes[SkYUVAInfo::kMaxPlanes]);
 
-  // Like VideoFrameToMailboxes but imports the textures from the mailboxes and
-  // returns the planes as a set of YUVA GrBackendTextures.
-  GrYUVABackendTextures VideoFrameToSkiaTextures(
+  // Returns a YUV SkImage for the specified video frame.
+  sk_sp<SkImage> VideoFrameToSkImage(
       const VideoFrame* video_frame,
       viz::RasterContextProvider* raster_context_provider);
 
+  // Creates SkSurfaces for each plane for the specified video frame. Returns
+  // true only if surfaces for all planes were created.
+  bool VideoFrameToPlaneSkSurfaces(
+      const VideoFrame* video_frame,
+      viz::RasterContextProvider* raster_context_provider,
+      sk_sp<SkSurface> surfaces[SkYUVAInfo::kMaxPlanes]);
+
   SkYUVAPixmaps VideoFrameToSkiaPixmaps(const VideoFrame* video_frame);
 
-  SkYUVAInfo::PlaneConfig plane_config() const { return plane_config_; }
+  SkYUVAInfo::PlaneConfig plane_config() const {
+    return yuva_info_.planeConfig();
+  }
 
-  SkYUVAInfo::Subsampling subsampling() const { return subsampling_; }
+  SkYUVAInfo::Subsampling subsampling() const {
+    return yuva_info_.subsampling();
+  }
 
   // Utility to convert a gfx::ColorSpace to a SkYUVColorSpace.
   static SkYUVColorSpace ColorSpaceToSkYUVColorSpace(
@@ -53,24 +64,39 @@ class VideoFrameYUVMailboxesHolder {
   static std::tuple<SkYUVAInfo::PlaneConfig, SkYUVAInfo::Subsampling>
   VideoPixelFormatToSkiaValues(VideoPixelFormat video_format);
 
+  // Utility to populate a SkYUVAInfo from a video frame.
+  static SkYUVAInfo VideoFrameGetSkYUVAInfo(const VideoFrame* video_frame);
+
  private:
   static constexpr size_t kMaxPlanes =
       static_cast<size_t>(SkYUVAInfo::kMaxPlanes);
 
-  void ImportTextures();
-  size_t NumPlanes() {
-    return static_cast<size_t>(SkYUVAInfo::NumPlanes(plane_config_));
-  }
+  // Like VideoFrameToMailboxes but imports the textures from the mailboxes and
+  // returns the planes as a set of YUVA GrBackendTextures. If |for_surface| is
+  // true, then select color types and pixel formats that are renderable as
+  // SkSurfaces.
+  GrYUVABackendTextures VideoFrameToSkiaTextures(
+      const VideoFrame* video_frame,
+      viz::RasterContextProvider* raster_context_provider,
+      bool for_surface);
+
+  void ImportTextures(bool for_surface);
 
   scoped_refptr<viz::RasterContextProvider> provider_;
   bool imported_textures_ = false;
-  SkYUVAInfo::PlaneConfig plane_config_ = SkYUVAInfo::PlaneConfig::kUnknown;
-  SkYUVAInfo::Subsampling subsampling_ = SkYUVAInfo::Subsampling::kUnknown;
   bool created_shared_images_ = false;
   gfx::Size cached_video_size_;
   gfx::ColorSpace cached_video_color_space_;
+
+  // The properties of the most recently received video frame.
+  size_t num_planes_ = 0;
+  SkYUVAInfo yuva_info_;
+  SkISize plane_sizes_[SkYUVAInfo::kMaxPlanes];
+
+  // Populated by VideoFrameToMailboxes.
   std::array<gpu::MailboxHolder, kMaxPlanes> holders_;
 
+  // Populated by ImportTextures.
   struct YUVPlaneTextureInfo {
     GrGLTextureInfo texture = {0, 0};
     bool is_shared_image = false;

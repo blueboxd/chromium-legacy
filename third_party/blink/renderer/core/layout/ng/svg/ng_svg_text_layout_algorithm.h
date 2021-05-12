@@ -31,7 +31,7 @@ class NGSVGTextLayoutAlgorithm {
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
   void ApplyTextLengthAttribute(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
-  HeapVector<SVGTextLengthContext> CollectTextLengthAncestors(
+  Vector<SVGTextLengthContext> CollectTextLengthAncestors(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items,
       wtf_size_t index,
       const LayoutObject* layout_object) const;
@@ -43,7 +43,7 @@ class NGSVGTextLayoutAlgorithm {
   void AdjustPositionsXY(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
   void ApplyAnchoring(const NGFragmentItemsBuilder::ItemWithOffsetList& items);
-  void PositionOnPath();
+  void PositionOnPath(const NGFragmentItemsBuilder::ItemWithOffsetList& items);
 
   float ScalingFactorAt(const NGFragmentItemsBuilder::ItemWithOffsetList& items,
                         wtf_size_t addressable_index) const;
@@ -65,7 +65,9 @@ class NGSVGTextLayoutAlgorithm {
     bool middle = false;
     bool anchored_chunk = false;
 
+    bool in_text_path = false;
     bool text_length_resolved = false;
+    float baseline_shift = 0.0f;
     float inline_size = 0.0f;
     float length_adjust_scale = 1.0f;
     wtf_size_t item_index = WTF::kNotFound;

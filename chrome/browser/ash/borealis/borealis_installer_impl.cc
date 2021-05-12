@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -154,7 +155,7 @@ class BorealisInstallerImpl::Uninstallation
     request.set_cryptohome_id(
         chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
     request.set_disk_path(uninstall_info_->vm_name);
-    chromeos::ConciergeClient::Get()->DestroyDiskImage(
+    chromeos::DBusThreadManager::Get()->GetConciergeClient()->DestroyDiskImage(
         std::move(request), base::BindOnce(&Uninstallation::OnDiskRemoved,
                                            weak_factory_.GetWeakPtr()));
   }

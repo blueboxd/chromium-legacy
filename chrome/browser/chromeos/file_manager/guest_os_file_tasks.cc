@@ -19,12 +19,12 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/ash/crostini/crostini_mime_types_service_factory.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -152,7 +152,7 @@ void FindGuestOsApps(
     std::vector<guest_os::GuestOsRegistryService::VmType>* vm_types) {
   // Ensure all files can be shared with VMs.
   storage::FileSystemContext* file_system_context =
-      util::GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
+      util::GetFileManagerFileSystemContext(profile);
   base::FilePath dummy_vm_mount("/");
   base::FilePath not_used;
   for (const GURL& file_url : file_urls) {

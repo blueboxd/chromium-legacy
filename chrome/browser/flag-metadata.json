@@ -281,11 +281,6 @@
     "expiry_milestone": 94
   },
   {
-    "name": "audio-player-js-modules",
-    "owners": [ "lucmult", "jboulic", "simmonsjosh" ],
-    "expiry_milestone": 91
-  },
-  {
     "name": "audio-worklet-realtime-thread",
     "owners": [ "//third_party/blink/renderer/modules/webaudio/OWNERS" ],
     "expiry_milestone": 90
@@ -2693,11 +2688,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-webgl2-compute-context",
-    "owners": [ "webgl-team@google.com" ],
-    "expiry_milestone": 91
-  },
-  {
     "name": "enable-webrtc-capture-multi-channel-audio-processing",
     "owners": [ "saza" ],
     "expiry_milestone": 123
@@ -2879,11 +2869,6 @@
     "name": "files-filters-in-recents",
     "owners": [ "simmonsjosh@google.com", "benhartney@google.com" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "files-js-modules",
-    "owners": [ "lucmult", "jboulic", "simmonsjosh" ],
-    "expiry_milestone": 91
   },
   {
     "name": "files-ng",
@@ -5264,11 +5249,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "video-player-js-modules",
-    "owners": [ "lucmult", "jboulic", "simmonsjosh" ],
-    "expiry_milestone": 91
-  },
-  {
     "name": "video-tutorials",
     "owners": [ "shaktisahu"],
     "expiry_milestone": 93
@@ -5423,6 +5403,11 @@
     "name": "window-naming",
     "owners": [ "ellyjones" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "wipe-data-on-child-account-signin",
+    "owners": [ "aliceywang", "msarda", "triploblastic" ],
+    "expiry_milestone": 95
   },
   {
     "name": "xsurface-metrics-reporting",

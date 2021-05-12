@@ -913,6 +913,9 @@ extern const char kMobileIdentityConsistencyDescription[];
 extern const char kMobileIdentityConsistencyFREName[];
 extern const char kMobileIdentityConsistencyFREDescription[];
 
+extern const char kWipeDataOnChildAccountSigninName[];
+extern const char kWipeDataOnChildAccountSigninDescription[];
+
 extern const char kMobileIdentityConsistencyVarName[];
 extern const char kMobileIdentityConsistencyVarDescription[];
 
@@ -2534,15 +2537,6 @@ extern const char kTrimOnFreezeDescription[];
 
 extern const char kTrimOnMemoryPressureName[];
 extern const char kTrimOnMemoryPressureDescription[];
-
-extern const char kFilesJsModulesName[];
-extern const char kFilesJsModulesDescription[];
-
-extern const char kAudioPlayerJsModulesName[];
-extern const char kAudioPlayerJsModulesDescription[];
-
-extern const char kVideoPlayerJsModulesName[];
-extern const char kVideoPlayerJsModulesDescription[];
 
 extern const char kEcheSWAName[];
 extern const char kEcheSWADescription[];

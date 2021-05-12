@@ -6,16 +6,18 @@
 
 #include "base/files/file_util.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_service.h"
 
 namespace crostini {
 
 AnsibleManagementTestHelper::AnsibleManagementTestHelper(Profile* profile)
     : profile_(profile) {
-  fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
+  fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
+      chromeos::DBusThreadManager::Get()->GetCiceroneClient());
 }
 
 void AnsibleManagementTestHelper::SetUpAnsiblePlaybookPreference() {

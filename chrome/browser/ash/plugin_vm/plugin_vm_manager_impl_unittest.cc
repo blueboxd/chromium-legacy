@@ -23,8 +23,6 @@
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -49,8 +47,6 @@ class PluginVmManagerImplTest : public testing::Test {
  public:
   PluginVmManagerImplTest() {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
     testing_profile_ = std::make_unique<TestingProfile>();
     test_helper_ = std::make_unique<PluginVmTestHelper>(testing_profile_.get());
@@ -77,8 +73,6 @@ class PluginVmManagerImplTest : public testing::Test {
     test_helper_.reset();
     testing_profile_.reset();
     chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     // TODO(yusukes): Fix the shutdown order.
     chromeos::DlcserviceClient::Shutdown();
@@ -90,7 +84,8 @@ class PluginVmManagerImplTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
   }
   chromeos::FakeConciergeClient& ConciergeClient() {
-    return *chromeos::FakeConciergeClient::Get();
+    return *static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
   chromeos::FakeSeneschalClient& SeneschalClient() {
     return *chromeos::FakeSeneschalClient::Get();
@@ -327,6 +322,34 @@ TEST_F(PluginVmManagerImplTest, LaunchPluginVmFromSuspending) {
   EXPECT_CALL(callback, Run(true));
   NotifyVmToolsStateChanged(
       vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED);
+}
+
+TEST_F(PluginVmManagerImplTest, LaunchPluginVmInterrupted) {
+  test_helper_->AllowPluginVm();
+
+  // Skip StartVm call.
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
+  NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_OUTDATED);
+  MockLaunchPluginVmCallback callback1;
+  plugin_vm_manager_->LaunchPluginVm(callback1.Get());
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+
+  // VM is shown, but we are waiting for tools to be installed. If the VM is
+  // suspended now, we consider the launch to have failed.
+  EXPECT_CALL(callback1, Run(false));
+  NotifyVmStateChanged(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED);
+  task_environment_.RunUntilIdle();
+
+  MockLaunchPluginVmCallback callback2;
+  EXPECT_CALL(callback2, Run(true));
+  plugin_vm_manager_->LaunchPluginVm(callback2.Get());
+  NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED);
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmManagerImplTest, LaunchPluginVmInvalidLicense) {

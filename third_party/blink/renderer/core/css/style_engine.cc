@@ -1677,7 +1677,8 @@ void StyleEngine::VisionDeficiencyChanged() {
   MarkViewportStyleDirty();
 }
 
-void StyleEngine::ApplyVisionDeficiencyStyle(ComputedStyle* layout_view_style) {
+void StyleEngine::ApplyVisionDeficiencyStyle(
+    scoped_refptr<ComputedStyle> layout_view_style) {
   LoadVisionDeficiencyFilter();
   if (vision_deficiency_filter_) {
     FilterOperations ops;
@@ -2372,9 +2373,9 @@ void StyleEngine::UpdateViewportStyle() {
 
   viewport_style_dirty_ = false;
 
-  ComputedStyle* viewport_style = resolver_->StyleForViewport();
+  scoped_refptr<ComputedStyle> viewport_style = resolver_->StyleForViewport();
   if (ComputedStyle::ComputeDifference(
-          viewport_style, GetDocument().GetLayoutView()->Style()) !=
+          viewport_style.get(), GetDocument().GetLayoutView()->Style()) !=
       ComputedStyle::Difference::kEqual) {
     GetDocument().GetLayoutView()->SetStyle(std::move(viewport_style));
   }
@@ -2436,11 +2437,11 @@ void StyleEngine::ChangeRenderingForHTMLSelect(HTMLSelectElement& select) {
   // will fail for SetNeedsStyleRecalc below.
   if (Element* parent = select.GetStyleRecalcParent()) {
     style_recalc_root_.SubtreeModified(*parent);
-  } else {
-    // If the <select> does not have a recalc parent, we are in the unlikely
-    // situation where the <select> is a direct child of the Document node.
-    DCHECK(GetDocument() == select.parentNode());
-    DCHECK(GetDocument().documentElement() == select);
+  } else if (GetDocument() == select.parentNode()) {
+    // Style recalc parent being null either means the select element is not
+    // part of the flat tree or the document root node. In the latter case all
+    // dirty bits will be cleared by DetachLayoutTree() and we can clear the
+    // recalc root.
     style_recalc_root_.Clear();
   }
   select.SetNeedsStyleRecalc(

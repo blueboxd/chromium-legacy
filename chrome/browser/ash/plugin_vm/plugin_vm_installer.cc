@@ -28,6 +28,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_service.h"
@@ -57,7 +58,7 @@ constexpr char kSetupTimeHistogram[] = "PluginVm.SetupTime";
 constexpr char kHomeDirectory[] = "/home";
 
 chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::ConciergeClient::Get();
+  return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
 constexpr char kIsoSignature[] = "CD001";

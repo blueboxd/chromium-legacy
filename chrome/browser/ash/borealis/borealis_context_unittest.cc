@@ -15,9 +15,7 @@
 #include "chrome/browser/ash/borealis/borealis_shutdown_monitor.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_chunneld_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -32,8 +30,6 @@ class BorealisContextTest : public testing::Test {
  public:
   BorealisContextTest() {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
 
     profile_ = std::make_unique<TestingProfile>();
@@ -62,8 +58,6 @@ class BorealisContextTest : public testing::Test {
   ~BorealisContextTest() override {
     borealis_context_.reset();  // must destroy before DBusThreadManager
     chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -89,7 +83,8 @@ class BorealisContextTest : public testing::Test {
 };
 
 TEST_F(BorealisContextTest, ConciergeFailure) {
-  auto* concierge_client = chromeos::FakeConciergeClient::Get();
+  auto* concierge_client = static_cast<chromeos::FakeConciergeClient*>(
+      chromeos::DBusThreadManager::Get()->GetConciergeClient());
 
   concierge_client->NotifyConciergeStopped();
   histogram_tester_.ExpectUniqueSample(
@@ -103,7 +98,8 @@ TEST_F(BorealisContextTest, ConciergeFailure) {
 }
 
 TEST_F(BorealisContextTest, CiceroneFailure) {
-  auto* cicerone_client = chromeos::FakeCiceroneClient::Get();
+  auto* cicerone_client = static_cast<chromeos::FakeCiceroneClient*>(
+      chromeos::DBusThreadManager::Get()->GetCiceroneClient());
 
   cicerone_client->NotifyCiceroneStopped();
   histogram_tester_.ExpectUniqueSample(

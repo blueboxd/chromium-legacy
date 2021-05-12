@@ -17,6 +17,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace borealis {
 
@@ -74,7 +75,7 @@ void CreateDiskImage::RunInternal(BorealisContext* context) {
   request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
   request.set_disk_size(0);
 
-  chromeos::ConciergeClient::Get()->CreateDiskImage(
+  chromeos::DBusThreadManager::Get()->GetConciergeClient()->CreateDiskImage(
       std::move(request), base::BindOnce(&CreateDiskImage::OnCreateDiskImage,
                                          weak_factory_.GetWeakPtr(), context));
 }
@@ -129,7 +130,7 @@ void StartBorealisVm::RunInternal(BorealisContext* context) {
                        chromeos::features::kExoPointerLock)
                        ? "enabled"
                        : "disabled");
-  chromeos::ConciergeClient::Get()->StartTerminaVm(
+  chromeos::DBusThreadManager::Get()->GetConciergeClient()->StartTerminaVm(
       std::move(request), base::BindOnce(&StartBorealisVm::OnStartBorealisVm,
                                          weak_factory_.GetWeakPtr(), context));
 }

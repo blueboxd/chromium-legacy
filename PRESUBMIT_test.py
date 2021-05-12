@@ -79,6 +79,49 @@ class BadExtensionsTest(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
+class CheckForSuperfluousStlIncludesInHeadersTest(unittest.TestCase):
+  def testGoodFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      # The check is not smart enough to figure out which definitions correspond
+      # to which header.
+      MockFile('other/path/foo.h',
+               ['#include <string>',
+                'std::vector']),
+      # The check is not smart enough to do IWYU.
+      MockFile('other/path/bar.h',
+               ['#include "base/check.h"',
+                'std::vector']),
+      MockFile('other/path/qux.h',
+               ['#include "base/stl_util.h"',
+                'foobar']),
+      # The check is only for header files.
+      MockFile('other/path/not_checked.cc',
+               ['#include <vector>',
+                'bazbaz']),
+    ]
+    results = PRESUBMIT.CheckForSuperfluousStlIncludesInHeaders(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
+
+  def testBadFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('other/path/foo.h',
+               ['#include <vector>',
+                'vector']),
+      MockFile('other/path/bar.h',
+               ['#include <limits>',
+                '#include <set>',
+                'no_std_namespace']),
+    ]
+    results = PRESUBMIT.CheckForSuperfluousStlIncludesInHeaders(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertTrue('foo.h: Includes STL' in results[0].message)
+    self.assertTrue('bar.h: Includes STL' in results[0].message)
+
+
 class CheckSingletonInHeadersTest(unittest.TestCase):
   def testSingletonInArbitraryHeader(self):
     diff_singleton_h = ['base::subtle::AtomicWord '
@@ -2242,8 +2285,6 @@ class BannedTypeCheckTest(unittest.TestCase):
                ['using namespace std;  // nocheck']),
       MockFile('some/cpp/comment/file.cc',
                ['  // A comment about `using namespace std;`']),
-      MockFile('utf8/to/utf16/banned.cc', [r'UTF8ToUTF16("Hello \" World")']),
-      MockFile('utf8/to/utf16/allowed.cc', ['UTF8ToUTF16(kHello + "World")']),
     ]
 
     results = PRESUBMIT.CheckNoBannedFunctions(input_api, MockOutputApi())
@@ -2259,9 +2300,6 @@ class BannedTypeCheckTest(unittest.TestCase):
     self.assertFalse('some/cpp/nocheck/file.cc' in results[1].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[0].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[1].message)
-    self.assertTrue('utf8/to/utf16/banned.cc' in results[0].message)
-    self.assertFalse('utf8/to/utf16/allowed.cc' in results[0].message)
-    self.assertFalse('utf8/to/utf16/allowed.cc' in results[1].message)
 
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()

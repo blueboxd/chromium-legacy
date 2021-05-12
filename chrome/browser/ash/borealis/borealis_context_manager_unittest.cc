@@ -18,9 +18,7 @@
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
@@ -105,23 +103,20 @@ class BorealisContextManagerTest : public testing::Test {
   void SetUp() override {
     CreateProfile();
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
     histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   void TearDown() override {
     chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     profile_.reset();
     histogram_tester_.reset();
   }
 
   void SendVmStoppedSignal() {
-    auto* concierge_client = chromeos::FakeConciergeClient::Get();
+    auto* concierge_client = static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
 
     vm_tools::concierge::VmStoppedSignal signal;
     signal.set_name("test_vm_name");
@@ -302,7 +297,8 @@ TEST_F(BorealisContextManagerTest, ShutDownCancelsRequestsAndTerminatesVm) {
   task_environment_.RunUntilIdle();
 
   chromeos::FakeConciergeClient* fake_concierge_client =
-      chromeos::FakeConciergeClient::Get();
+      static_cast<chromeos::FakeConciergeClient*>(
+          chromeos::DBusThreadManager::Get()->GetConciergeClient());
   EXPECT_GE(fake_concierge_client->stop_vm_call_count(), 1);
   histogram_tester_->ExpectTotalCount(kBorealisShutdownNumAttemptsHistogram, 1);
   histogram_tester_->ExpectUniqueSample(kBorealisShutdownResultHistogram,
@@ -329,7 +325,8 @@ TEST_F(BorealisContextManagerTest, FailureToShutdownReportsError) {
   response.set_success(false);
   response.set_failure_reason("expected failure");
   chromeos::FakeConciergeClient* fake_concierge_client =
-      chromeos::FakeConciergeClient::Get();
+      static_cast<chromeos::FakeConciergeClient*>(
+          chromeos::DBusThreadManager::Get()->GetConciergeClient());
   fake_concierge_client->set_stop_vm_response(std::move(response));
 
   ShutdownCallbackHandler shutdown_callback_handler;
@@ -436,7 +433,8 @@ TEST_F(BorealisContextManagerTest, LogVmStoppedWhenUnexpected) {
 
 TEST_F(BorealisContextManagerTest, VmShutsDownAfterChromeCrashes) {
   chromeos::FakeConciergeClient* fake_concierge_client =
-      chromeos::FakeConciergeClient::Get();
+      static_cast<chromeos::FakeConciergeClient*>(
+          chromeos::DBusThreadManager::Get()->GetConciergeClient());
   profile_->set_last_session_exited_cleanly(false);
   BorealisContextManagerImpl context_manager(profile_.get());
   task_environment_.RunUntilIdle();

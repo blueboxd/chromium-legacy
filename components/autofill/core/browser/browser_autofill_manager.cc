@@ -220,29 +220,6 @@ void LogLanguageMetrics(const translate::LanguageState* language_state) {
   }
 }
 
-bool IsAddressForm(FieldTypeGroup field_type_group) {
-  switch (field_type_group) {
-    case FieldTypeGroup::kName:
-    case FieldTypeGroup::kNameBilling:
-    case FieldTypeGroup::kEmail:
-    case FieldTypeGroup::kCompany:
-    case FieldTypeGroup::kAddressHome:
-    case FieldTypeGroup::kAddressBilling:
-    case FieldTypeGroup::kPhoneHome:
-    case FieldTypeGroup::kPhoneBilling:
-      return true;
-    case FieldTypeGroup::kCreditCard:
-    case FieldTypeGroup::kTransaction:
-    case FieldTypeGroup::kPasswordField:
-    case FieldTypeGroup::kUsernameField:
-    case FieldTypeGroup::kNoGroup:
-    case FieldTypeGroup::kUnfillable:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
 // Finds the first field in |form_structure| with |field.value|=|value|.
 AutofillField* FindFirstFieldWithValue(const FormStructure& form_structure,
                                        const std::u16string& value) {
@@ -702,6 +679,23 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
     return;
   }
 
+  // Log interaction time metrics for the ablation study.
+  if (!initial_interaction_timestamp_.is_null()) {
+    base::TimeDelta time_from_interaction_to_submission =
+        AutofillTickClock::NowTicks() - initial_interaction_timestamp_;
+    DenseSet<FormType> form_types = submitted_form->GetFormTypes();
+    bool card_form = base::Contains(form_types, FormType::kCreditCardForm);
+    bool address_form = base::Contains(form_types, FormType::kAddressForm);
+    if (card_form) {
+      credit_card_form_event_logger_->SetTimeFromInteractionToSubmission(
+          time_from_interaction_to_submission);
+    }
+    if (address_form) {
+      address_form_event_logger_->SetTimeFromInteractionToSubmission(
+          time_from_interaction_to_submission);
+    }
+  }
+
   // However, if Autofill has recognized a field as CVC, that shouldn't be
   // saved.
   FormData form_for_autocomplete = submitted_form->ToFormData();
@@ -956,7 +950,7 @@ void BrowserAutofillManager::OnQueryFormFieldAutofillImpl(
       case SuppressReason::kNotSuppressed:
         break;
 
-      case SuppressReason::kCreditCardsAblation:
+      case SuppressReason::kAblation:
         autocomplete_history_manager_->CancelPendingQueries(this);
         external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                                   autoselect_first_suggestion);
@@ -1979,19 +1973,17 @@ void BrowserAutofillManager::OnFormProcessed(
   LogDeveloperEngagementUkm(client()->GetUkmRecorder(),
                             client()->GetUkmSourceId(), form_structure);
 
-  // Log the type of form that was parsed.
-  bool card_form = false;
-  bool address_form = false;
   for (const auto& field : form_structure) {
-    if (field->Type().group() == FieldTypeGroup::kCreditCard) {
-      card_form = true;
-    } else if (IsAddressForm(field->Type().group())) {
-      address_form = true;
-    } else if (field->Type().html_type() == HTML_TYPE_ONE_TIME_CODE) {
+    if (field->Type().html_type() == HTML_TYPE_ONE_TIME_CODE) {
       has_observed_one_time_code_field_ = true;
+      break;
     }
   }
 
+  // Log the type of form that was parsed.
+  DenseSet<FormType> form_types = form_structure.GetFormTypes();
+  bool card_form = base::Contains(form_types, FormType::kCreditCardForm);
+  bool address_form = base::Contains(form_types, FormType::kAddressForm);
   if (card_form) {
     credit_card_form_event_logger_->OnDidParseForm(form_structure);
   }
@@ -2527,7 +2519,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   DCHECK(context);
 
   // Need to refresh models before using the form_event_loggers.
-  bool is_autofill_possible = RefreshDataModels();
+  RefreshDataModels();
 
   bool got_autofillable_form =
       GetCachedFormAndField(form, field, &context->form_structure,
@@ -2574,9 +2566,10 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   // We skip populating autofill data, but might generate warnings and or
   // signin promo to show over the unavailable renderer. That seems a mistake.
 
-  if (!is_autofill_possible || !driver()->RendererIsAvailable() ||
-      !got_autofillable_form)
+  if (!driver()->RendererIsAvailable() || !got_autofillable_form ||
+      !IsAutofillEnabled()) {
     return;
+  }
 
   context->is_autofill_available = true;
 
@@ -2584,18 +2577,38 @@ void BrowserAutofillManager::GetAvailableSuggestions(
     *suggestions =
         GetCreditCardSuggestions(field, context->focused_field->Type(),
                                  &context->should_display_gpay_logo);
-
-    // Logic for disabling/ablating credit card autofill.
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillCreditCardAblationExperiment) &&
-        !suggestions->empty()) {
-      context->suppress_reason = SuppressReason::kCreditCardsAblation;
-      suggestions->clear();
-      return;
-    }
   } else {
     *suggestions = GetProfileSuggestions(*context->form_structure, field,
                                          *context->focused_field);
+  }
+
+  // Ablation experiment:
+  FormTypeForAblationStudy form_type = context->is_filling_credit_card
+                                           ? FormTypeForAblationStudy::kPayment
+                                           : FormTypeForAblationStudy::kAddress;
+  // If ablation_group is AblationGroup::kDefault or AblationGroup::kControl,
+  // no ablation happens in the following.
+  AblationGroup ablation_group = client()->GetAblationStudy().GetAblationGroup(
+      client()->GetLastCommittedURL(), form_type);
+  context->ablation_group = ablation_group;
+  // Note that we don't set the ablation group if there are no suggestions.
+  // In that case we stick to kDefault.
+  context->conditional_ablation_group =
+      !suggestions->empty() ? ablation_group : AblationGroup::kDefault;
+
+  if (context->is_filling_credit_card) {
+    credit_card_form_event_logger_->SetAblationStatus(
+        context->ablation_group, context->conditional_ablation_group);
+  } else {
+    address_form_event_logger_->SetAblationStatus(
+        context->ablation_group, context->conditional_ablation_group);
+  }
+
+  if (!suggestions->empty() && ablation_group == AblationGroup::kAblation) {
+    // Logic for disabling/ablating autofill.
+    context->suppress_reason = SuppressReason::kAblation;
+    suggestions->clear();
+    return;
   }
 
   // Returns early if no suggestion is available or suggestions are not for

@@ -698,8 +698,9 @@ _BANNED_CPP_FUNCTIONS = (
     (
       r'/\bstd::function\b',
       (
-        'std::function is banned. Instead use base::Callback which directly',
-        'supports Chromium\'s weak pointers, ref counting and more.',
+        'std::function is banned. Instead use base::OnceCallback or ',
+        'base::RepeatingCallback, which directly support Chromium\'s weak ',
+        'pointers, ref counting and more.',
       ),
       False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Do not warn in third_party folders.
@@ -946,15 +947,6 @@ _BANNED_CPP_FUNCTIONS = (
           'ScopedObserver is deprecated.',
           'Please use base::ScopedObservation for observing a single source,',
           'or base::ScopedMultiSourceObservation for observing multple sources',
-      ),
-      False,
-      (),
-    ),
-    (
-      r'/\bUTF8ToUTF16\("(\\.|[^\\"])*"\)',
-      (
-       'base::UTF8ToUTF16 should not be used with a string literal.',
-       'Consider using a UTF16 string literal (u"...") instead.',
       ),
       False,
       (),
@@ -4346,6 +4338,50 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
     errors.append('%s:%d %s macro is used without including build/'
                   'build_config.h.'
                   % (f.LocalPath(), found_line_number, found_macro))
+  if errors:
+    return [output_api.PresubmitPromptWarning('\n'.join(errors))]
+  return []
+
+
+def CheckForSuperfluousStlIncludesInHeaders(input_api, output_api):
+  stl_include_re = input_api.re.compile(
+      r'^#include\s+<'
+      r'algorithm|'
+      r'array|'
+      r'limits|'
+      r'list|'
+      r'map|'
+      r'memory|'
+      r'queue|'
+      r'set|'
+      r'string|'
+      r'unordered_map|'
+      r'unordered_set|'
+      r'utility|'
+      r'vector>')
+  std_namespace_re = input_api.re.compile(r'std::')
+  errors = []
+  for f in input_api.AffectedFiles():
+    if not _IsCPlusPlusHeaderFile(input_api, f.LocalPath()):
+      continue
+
+    uses_std_namespace = False
+    has_stl_include = False
+    for line in f.NewContents():
+      if has_stl_include and uses_std_namespace:
+        break
+
+      if not has_stl_include and stl_include_re.search(line):
+        has_stl_include = True
+        continue
+
+      if not uses_std_namespace and std_namespace_re.search(line):
+        uses_std_namespace = True
+        continue
+
+    if has_stl_include and not uses_std_namespace:
+      errors.append('%s: Includes STL header(s) but does not reference std::'
+                    % f.LocalPath())
   if errors:
     return [output_api.PresubmitPromptWarning('\n'.join(errors))]
   return []

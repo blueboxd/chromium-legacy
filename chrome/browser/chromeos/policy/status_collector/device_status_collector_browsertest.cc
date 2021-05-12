@@ -39,6 +39,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
@@ -46,7 +47,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/common/chrome_content_client.h"
@@ -57,8 +57,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -860,18 +858,11 @@ class DeviceStatusCollectorTest : public testing::Test {
     chromeos::AttestationClient::InitializeFake();
     chromeos::TpmManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
-
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
     chromeos::SeneschalClient::InitializeFake();
   }
 
   ~DeviceStatusCollectorTest() override {
     chromeos::SeneschalClient::Shutdown();
-    // |testing_profile_| must be destroyed while ConciergeClient is alive.
-    testing_profile_.reset();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
     chromeos::LoginState::Shutdown();
     chromeos::TpmManagerClient::Shutdown();
     chromeos::AttestationClient::Shutdown();

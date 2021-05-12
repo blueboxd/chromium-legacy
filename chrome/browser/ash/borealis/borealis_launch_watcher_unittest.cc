@@ -8,9 +8,7 @@
 
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,14 +36,11 @@ class BorealisLaunchWatcherTest : public testing::Test {
  protected:
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
+    fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
+        chromeos::DBusThreadManager::Get()->GetCiceroneClient());
   }
 
   void TearDown() override {
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     profile_.reset();
   }

@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/account_id/account_id.h"
@@ -498,13 +499,14 @@ ArcSessionManager::ArcSessionManager(
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->AddObserver(this);
   ResetStabilityMetrics();
-  chromeos::ConciergeClient::Get()->AddVmObserver(this);
+  chromeos::DBusThreadManager::Get()->GetConciergeClient()->AddVmObserver(this);
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  chromeos::ConciergeClient::Get()->RemoveVmObserver(this);
+  chromeos::DBusThreadManager::Get()->GetConciergeClient()->RemoveVmObserver(
+      this);
 
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->RemoveObserver(this);

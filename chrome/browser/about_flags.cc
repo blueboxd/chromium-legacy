@@ -4056,13 +4056,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(ui_devtools::switches::kEnableUiDevTools)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"enable-autofill-credit-card-ablation-experiment",
-     flag_descriptions::kEnableAutofillCreditCardAblationExperimentDisplayName,
-     flag_descriptions::kEnableAutofillCreditCardAblationExperimentDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillCreditCardAblationExperiment)},
-
 #if defined(OS_ANDROID)
     {"enable-autofill-manual-fallback",
      flag_descriptions::kAutofillManualFallbackAndroidName,
@@ -4108,15 +4101,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-filters-in-recents", flag_descriptions::kFiltersInRecentsName,
      flag_descriptions::kFiltersInRecentsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecents)},
-    {"files-js-modules", flag_descriptions::kFilesJsModulesName,
-     flag_descriptions::kFilesJsModulesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFilesJsModules)},
-    {"audio-player-js-modules", flag_descriptions::kAudioPlayerJsModulesName,
-     flag_descriptions::kAudioPlayerJsModulesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAudioPlayerJsModules)},
-    {"video-player-js-modules", flag_descriptions::kVideoPlayerJsModulesName,
-     flag_descriptions::kVideoPlayerJsModulesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kVideoPlayerJsModules)},
     {"files-ng", flag_descriptions::kFilesNGName,
      flag_descriptions::kFilesNGDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
@@ -5409,6 +5393,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"deprecate-menagerie-api", flag_descriptions::kDeprecateMenagerieAPIName,
      flag_descriptions::kDeprecateMenagerieAPIDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(switches::kDeprecateMenagerieAPI)},
+    {"wipe-data-on-child-account-signin",
+     flag_descriptions::kWipeDataOnChildAccountSigninName,
+     flag_descriptions::kWipeDataOnChildAccountSigninDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(switches::kWipeDataOnChildAccountSignin)},
     {"mobile-identity-consistency",
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,

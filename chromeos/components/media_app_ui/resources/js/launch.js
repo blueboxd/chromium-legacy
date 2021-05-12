@@ -7,6 +7,8 @@ import {assertCast, MessagePipe} from './message_pipe.m.js';
 import {DeleteFileMessage, FileContext, LoadFilesMessage, Message, NavigateMessage, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileMessage, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.m.js';
 import {mediaAppPageHandler} from './mojo_api_bootstrap.js';
 
+const EMPTY_WRITE_ERROR_NAME = 'EmptyWriteError';
+
 /**
  * Sort order for files in the navigation ring.
  * @enum
@@ -124,6 +126,9 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   try {
     await saveBlobToFile(originalHandle, overwrite.blob);
   } catch (/** @type {!DOMException|!Error} */ e) {
+    if (e.name === EMPTY_WRITE_ERROR_NAME) {
+      throw e;
+    }
     // TODO(b/160843424): Collect UMA.
     console.warn('Showing a picker due to', e);
     return pickFileForFailedOverwrite(originalHandle.name, e.name, overwrite);
@@ -478,9 +483,15 @@ function getMimeTypeFromFilename(filename) {
     'xslt': 'text/xml',
     'mpeg': 'video/mpeg',
     'mpg': 'video/mpeg',
-    // Add .mkv explicitly because it is not a web-supported type, but is in
-    // common use on ChromeOS.
-    'mkv': 'video/x-matroska'
+
+    // Add more video file types. These are not web-supported types, but are
+    // supported on ChromeOS, and have file handlers in media_web_app_info.cc.
+    'mkv': 'video/x-matroska',
+    '3gp': 'video/3gpp',
+    'mov': 'video/quicktime',
+    'avi': 'video/x-msvideo',
+    'mpeg4': 'video/mp4',
+    'mpg4': 'video/mp4',
   };
 
   const fileParts = filename.split('.');
@@ -519,6 +530,13 @@ function fileHandleForToken(token) {
  * @return {!Promise<undefined>}
  */
 async function saveBlobToFile(handle, data) {
+  if (data.size === 0) {
+    // Bugs or error states in the app could cause an unexpected write of zero
+    // bytes to a file, which could cause data loss. Reject it here.
+    const error = new Error('saveBlobToFile(): Refusing to write zero bytes.');
+    error.name = EMPTY_WRITE_ERROR_NAME;
+    throw error;
+  }
   const writer = await handle.createWritable();
   await writer.write(data);
   await writer.truncate(data.size);

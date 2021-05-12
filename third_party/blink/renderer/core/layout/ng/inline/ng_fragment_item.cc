@@ -21,15 +21,13 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGFragmentItem {
-  Member<void*> member;
-  union {
-    NGFragmentItem::TextItem text_;
-    NGFragmentItem::GeneratedTextItem generated_text_;
-    NGFragmentItem::LineItem line_;
-    NGFragmentItem::BoxItem box_;
-  };
+  struct {
+    void* pointer;
+    NGTextOffset text_offset;
+  } type_data;
   PhysicalRect rect;
   NGInkOverflow ink_overflow;
+  void* pointer;
   wtf_size_t sizes[2];
   unsigned flags;
 };
@@ -136,11 +134,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
   DCHECK_EQ(IsFormattingContextRoot(), box.IsFormattingContextRoot());
 }
 
-// |type_| will be re-initialized in another constructor called inside
-// this one.
 NGFragmentItem::NGFragmentItem(NGLogicalLineItem&& line_item,
-                               WritingMode writing_mode)
-    : type_(0) {
+                               WritingMode writing_mode) {
   DCHECK(line_item.CanCreateFragmentItem());
 
   if (line_item.inline_item) {
@@ -322,18 +317,12 @@ bool NGFragmentItem::IsListMarker() const {
   return layout_object_ && layout_object_->IsLayoutNGOutsideListMarker();
 }
 
-void NGFragmentItem::ConvertToSVGText(const PhysicalRect& unscaled_rect,
-                                      const FloatRect& scaled_rect,
-                                      float length_adjust_scale,
-                                      float angle) {
+void NGFragmentItem::ConvertToSVGText(std::unique_ptr<NGSVGFragmentData> data,
+                                      const PhysicalRect& unscaled_rect,
+                                      bool is_hidden) {
   DCHECK(RuntimeEnabledFeatures::SVGTextNGEnabled());
   DCHECK_EQ(Type(), kText);
-  auto data = std::make_unique<NGSVGFragmentData>();
-  data->shape_result = std::move(text_.shape_result);
-  data->text_offset = std::move(text_.text_offset);
-  data->rect = scaled_rect;
-  data->length_adjust_scale = length_adjust_scale;
-  data->angle = angle;
+  is_hidden_for_paint_ = is_hidden;
   text_.~TextItem();
   new (&svg_text_) SVGTextItem();
   svg_text_.data = std::move(data);
@@ -376,13 +365,11 @@ NGFragmentItem::BoxItem::BoxItem(const BoxItem& other)
     : box_fragment(other.box_fragment->PostLayout()),
       descendants_count(other.descendants_count) {}
 
-NGFragmentItem::BoxItem::BoxItem(const NGPhysicalBoxFragment* box_fragment,
-                                 wtf_size_t descendants_count)
-    : box_fragment(box_fragment), descendants_count(descendants_count) {}
-
-void NGFragmentItem::BoxItem::Trace(Visitor* visitor) const {
-  visitor->Trace(box_fragment);
-}
+NGFragmentItem::BoxItem::BoxItem(
+    scoped_refptr<const NGPhysicalBoxFragment> box_fragment,
+    wtf_size_t descendants_count)
+    : box_fragment(std::move(box_fragment)),
+      descendants_count(descendants_count) {}
 
 const NGPhysicalBoxFragment* NGFragmentItem::BoxItem::PostLayout() const {
   if (box_fragment)
@@ -412,10 +399,8 @@ inline const LayoutBox* NGFragmentItem::InkOverflowOwnerBox() const {
 }
 
 inline LayoutBox* NGFragmentItem::MutableInkOverflowOwnerBox() {
-  if (Type() == kBox) {
-    return DynamicTo<LayoutBox>(
-        const_cast<LayoutObject*>(layout_object_.Get()));
-  }
+  if (Type() == kBox)
+    return DynamicTo<LayoutBox>(const_cast<LayoutObject*>(layout_object_));
   return nullptr;
 }
 
@@ -566,18 +551,36 @@ AffineTransform NGFragmentItem::BuildSVGTransformForBoundingBox() const {
   DCHECK_EQ(Type(), kSVGText);
   const NGSVGFragmentData& svg_data = *svg_text_.data;
   AffineTransform transform;
-  if (svg_data.angle != 0.0f) {
+  if (svg_data.angle == 0.0f)
+    return transform;
+  transform.Rotate(svg_data.angle);
+  const SimpleFontData* font_data =
+      To<LayoutSVGInlineText>(GetLayoutObject())->ScaledFont().PrimaryFont();
+  if (svg_data.in_text_path) {
+    // https://svgwg.org/svg2-draft/text.html#TextpathLayoutRules
+    // The rotation should be about the center of the baseline.
+    const auto font_baseline = Style().GetFontBaseline();
+    float ascent =
+        font_data
+            ? font_data->GetFontMetrics().FixedAscent(font_baseline).ToFloat()
+            : 0.0f;
+    // |x| points the center of the baseline.  See |NGSVGTextLayoutAlgorithm::
+    // PositionOnPath()|.
+    float x = svg_data.rect.X();
+    float y = svg_data.rect.Y() + ascent;
+    transform.Translate(-svg_data.rect.Width() / 2, svg_data.baseline_shift);
+    transform.SetE(transform.E() + x);
+    transform.SetF(transform.F() + y);
+    transform.Translate(-x, -y);
+  } else {
     // https://svgwg.org/svg2-draft/text.html#TextElementRotateAttribute
     // > The supplemental rotation, in degrees, about the current text position
     //
     // TODO(crbug.com/1179585): The following code is equivalent to the legacy
     // SVG. That is to say, rotation around the left edge of the baseline.
     // However it doesn't look correct for RTL and vertical text.
-    const SimpleFontData* font_data =
-        To<LayoutSVGInlineText>(GetLayoutObject())->ScaledFont().PrimaryFont();
     float ascent =
         font_data ? font_data->GetFontMetrics().FixedAscent().ToFloat() : 0.0f;
-    transform.Rotate(svg_data.angle);
     float y = svg_data.rect.Y() + ascent;
     transform.SetE(transform.E() + svg_data.rect.X());
     transform.SetF(transform.F() + y);
@@ -896,15 +899,6 @@ unsigned NGFragmentItem::TextOffsetForPoint(
                                  : size.inline_size - point_in_line_direction;
   DCHECK_EQ(1u, TextLength());
   return inline_offset <= size.inline_size / 2 ? StartOffset() : EndOffset();
-}
-
-void NGFragmentItem::Trace(Visitor* visitor) const {
-  visitor->Trace(layout_object_);
-  // Looking up Type() inside Trace() here is safe since |type_| is const.
-  if (Type() == kLine)
-    visitor->Trace(line_);
-  else if (Type() == kBox)
-    visitor->Trace(box_);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const NGFragmentItem& item) {

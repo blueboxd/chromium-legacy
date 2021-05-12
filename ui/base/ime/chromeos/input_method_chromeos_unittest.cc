@@ -35,14 +35,12 @@
 #include "ui/events/test/keyboard_layout.h"
 #include "ui/gfx/geometry/rect.h"
 
-using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 
 namespace ui {
 namespace {
 
-const std::u16string kSampleText = base::UTF8ToUTF16(
-    "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
+const std::u16string kSampleText = u"あいうえお";
 
 using KeyEventCallback = IMEEngineHandlerInterface::KeyEventDoneCallback;
 
@@ -1328,6 +1326,17 @@ TEST_F(InputMethodChromeOSTest, CommitTextThenKeyEventOnlyInsertsOnce) {
       .Run(/*handled=*/true);
 
   EXPECT_EQ(fake_text_input_client.text(), u"a");
+}
+
+TEST_F(InputMethodChromeOSTest, AddsAndClearsGrammarFragments) {
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  std::vector<GrammarFragment> fragments;
+  fragments.emplace_back(gfx::Range(0, 1), "fake");
+  fragments.emplace_back(gfx::Range(3, 10), "test");
+  ime_->AddGrammarFragments(fragments);
+  EXPECT_EQ(get_grammar_fragments(), fragments);
+  ime_->ClearGrammarFragments(gfx::Range(0, 10));
+  EXPECT_EQ(get_grammar_fragments().size(), 0u);
 }
 
 }  // namespace ui

@@ -66,7 +66,7 @@ DBusThreadManager::DBusThreadManager(ClientSet client_set,
     base::Thread::Options thread_options;
     thread_options.message_pump_type = base::MessagePumpType::IO;
     dbus_thread_ = std::make_unique<base::Thread>("D-Bus thread");
-    dbus_thread_->StartWithOptions(thread_options);
+    dbus_thread_->StartWithOptions(std::move(thread_options));
 
     // Create the connection to the system bus.
     dbus::Bus::Options system_bus_options;
@@ -146,6 +146,14 @@ CecServiceClient* DBusThreadManager::GetCecServiceClient() {
 
 ChunneldClient* DBusThreadManager::GetChunneldClient() {
   return clients_browser_ ? clients_browser_->chunneld_client_.get() : nullptr;
+}
+
+CiceroneClient* DBusThreadManager::GetCiceroneClient() {
+  return clients_browser_ ? clients_browser_->cicerone_client_.get() : nullptr;
+}
+
+ConciergeClient* DBusThreadManager::GetConciergeClient() {
+  return clients_browser_ ? clients_browser_->concierge_client_.get() : nullptr;
 }
 
 CrosDisksClient* DBusThreadManager::GetCrosDisksClient() {
@@ -342,6 +350,18 @@ DBusThreadManagerSetter::~DBusThreadManagerSetter() = default;
 void DBusThreadManagerSetter::SetChunneldClient(
     std::unique_ptr<ChunneldClient> client) {
   DBusThreadManager::Get()->clients_browser_->chunneld_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetCiceroneClient(
+    std::unique_ptr<CiceroneClient> client) {
+  DBusThreadManager::Get()->clients_browser_->cicerone_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetConciergeClient(
+    std::unique_ptr<ConciergeClient> client) {
+  DBusThreadManager::Get()->clients_browser_->concierge_client_ =
       std::move(client);
 }
 

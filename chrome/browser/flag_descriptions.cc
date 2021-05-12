@@ -610,11 +610,6 @@ const char kEnableAutofillAddressSavePromptName[] =
 const char kEnableAutofillAddressSavePromptDescription[] =
     "Enable the Autofill address save prompts.";
 
-const char kEnableAutofillCreditCardAblationExperimentDisplayName[] =
-    "Credit card autofill ablation experiment.";
-const char kEnableAutofillCreditCardAblationExperimentDescription[] =
-    "If enabled, credit card autofill suggestions will not display.";
-
 const char kEnableAutofillCreditCardAuthenticationName[] =
     "Allow using platform authenticators to retrieve server cards";
 const char kEnableAutofillCreditCardAuthenticationDescription[] =
@@ -1560,6 +1555,11 @@ const char kMobileIdentityConsistencyVarName[] =
 const char kMobileIdentityConsistencyVarDescription[] =
     "Enables stronger identity consistency on mobile with different UI "
     "variations";
+
+const char kWipeDataOnChildAccountSigninName[] =
+    "Wipe Data On Child account signin";
+const char kWipeDataOnChildAccountSigninDescription[] =
+    "Wipe Data from previous account when signing in a child account";
 
 const char kMobileIdentityConsistencyFREName[] =
     "Mobile identity consistency FRE";
@@ -4465,18 +4465,6 @@ const char kMagnifierContinuousMouseFollowingModeSettingDescription[] =
 const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
 const char kFilesAppCopyImageDescription[] =
     "Enables the Files App to copy images selected to the system clipboard";
-
-const char kFilesJsModulesName[] = "Enable JS Modules for Files app";
-const char kFilesJsModulesDescription[] =
-    "Enable running Files app using JS Modules.";
-
-const char kAudioPlayerJsModulesName[] = "Enable JS Modules for Audio Player";
-const char kAudioPlayerJsModulesDescription[] =
-    "Enable running Audio Player app using JS Modules.";
-
-const char kVideoPlayerJsModulesName[] = "Enable JS Modules for Video Player";
-const char kVideoPlayerJsModulesDescription[] =
-    "Enable running Video Player app using JS Modules.";
 
 const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =

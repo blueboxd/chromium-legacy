@@ -5,7 +5,6 @@
 #include "chromeos/components/local_search_service/index.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 
 namespace chromeos {
@@ -31,7 +30,8 @@ std::string IndexIdBasedHistogramPrefix(IndexId index_id) {
 }
 
 void OnSearchPerformedDone(const std::string& histogram_string) {
-  UMA_HISTOGRAM_BOOLEAN(histogram_string + ".NumberSearchPerformedDone", true);
+  base::UmaHistogramBoolean(histogram_string + ".NumberSearchPerformedDone",
+                            true);
 }
 
 }  // namespace
@@ -52,6 +52,12 @@ void Index::SetReporterRemote(
     mojo::PendingRemote<mojom::SearchMetricsReporter> reporter_remote) {
   DCHECK(!reporter_remote_.is_bound());
   reporter_remote_.Bind(std::move(reporter_remote));
+}
+
+void Index::SetSearchParams(const SearchParams& search_params,
+                            SetSearchParamsCallback callback) {
+  search_params_ = search_params;
+  std::move(callback).Run();
 }
 
 void Index::MaybeLogSearchResultsStats(ResponseStatus status,

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/cull_rect_updater.h"
 
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -159,7 +160,7 @@ void CullRectUpdater::UpdateForDescendants(PaintLayer& layer,
 
   // Then stacked children (which may not be direct children in PaintLayer
   // hierarchy) in paint order.
-  PaintLayerPaintOrderIterator iterator(layer, kStackedChildren);
+  PaintLayerPaintOrderIterator iterator(&layer, kStackedChildren);
   while (PaintLayer* child = iterator.Next())
     UpdateRecursively(*child, layer, force_update_children);
 }

@@ -4998,13 +4998,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(OS_ANDROID)
-    {"background-task-component-update",
-     flag_descriptions::kBackgroundTaskComponentUpdateName,
-     flag_descriptions::kBackgroundTaskComponentUpdateDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kBackgroundTaskComponentUpdate)},
-#endif
-
-#if defined(OS_ANDROID)
     {"enable-use-aaudio-driver", flag_descriptions::kEnableUseAaudioDriverName,
      flag_descriptions::kEnableUseAaudioDriverDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kUseAAudioDriver)},
@@ -5436,14 +5429,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantLauncherIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if defined(TOOLKIT_VIEWS)
-
-    {"enable-new-badge-on-menu-items",
-     flag_descriptions::kEnableNewBadgeOnMenuItemsName,
-     flag_descriptions::kEnableNewBadgeOnMenuItemsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(views::features::kEnableNewBadgeOnMenuItems)},
-#endif  // defined(TOOLKIT_VIEWS)
 
     {"strict-origin-isolation", flag_descriptions::kStrictOriginIsolationName,
      flag_descriptions::kStrictOriginIsolationDescription, kOsAll,

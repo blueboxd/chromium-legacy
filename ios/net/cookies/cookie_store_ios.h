@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "ios/net/cookies/cookie_cache.h"
 #import "ios/net/cookies/system_cookie_store.h"
 #include "net/cookies/cookie_access_result.h"
@@ -99,6 +98,8 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteAllMatchingInfoAsync(net::CookieDeletionInfo delete_info,
                                   DeleteCallback callback) override;
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;
+  void DeleteMatchingCookiesAsync(DeletePredicate predicate,
+                                  DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;
   CookieChangeDispatcher& GetChangeDispatcher() override;
   void SetCookieableSchemes(const std::vector<std::string>& schemes,

@@ -154,7 +154,7 @@ consoles.console_view(
 
 consoles.console_view(
     name = "chromium.chromiumos",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     ordering = {
         None: ["default"],
         "default": consoles.ordering(short_names = ["ful", "rel"]),
@@ -1567,6 +1567,28 @@ ci.chromium_builder(
 )
 
 ci.chromium_builder(
+    name = "mac-arm64-archive-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "mac|arm",
+        short_name = "dbg",
+    ),
+    cores = 12,
+    main_console_view = "main",
+    os = os.MAC_DEFAULT,
+)
+
+ci.chromium_builder(
+    name = "mac-arm64-archive-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "mac|arm",
+        short_name = "rel",
+    ),
+    main_console_view = "main",
+    cores = 12,
+    os = os.MAC_DEFAULT,
+)
+
+ci.chromium_builder(
     name = "mac-official",
     builderless = False,
     # TODO(https://crbug.com/1072012) Use the default console view and add
@@ -1744,7 +1766,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-amd64-generic-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release|x64",
         short_name = "rel",
@@ -1765,7 +1787,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-arm-generic-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "arm",
@@ -1777,7 +1799,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-kevin-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "kvn",
@@ -1856,7 +1878,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "linux-chromeos-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "default",
         short_name = "rel",
@@ -1895,12 +1917,10 @@ ci.chromiumos_builder(
 # For Chromebox for meetings(CfM)
 ci.chromiumos_builder(
     name = "linux-cfm-rel",
-    branch_selector = branches.ALL_BRANCHES,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "cfm",
     ),
-    cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
 )
 
@@ -1912,6 +1932,7 @@ ci.cipd_3pp_builder(
         category = "3pp|linux",
         short_name = "amd64",
     ),
+    notifies = ["chromium-3pp-packager"],
     schedule = "with 6h interval",
     triggered_by = [],
     properties = {
@@ -5533,22 +5554,6 @@ ci.mac_ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     main_console_view = "main",
-)
-
-ci.memory_builder(
-    name = "Android CFI",
-    console_view_entry = consoles.console_view_entry(
-        # TODO(https://crbug.com/1008094) When this builder is not consistently
-        # failing, remove the console_view value
-        console_view = "chromium.android.fyi",
-        category = "memory",
-        short_name = "cfi",
-    ),
-    cores = 32,
-    # TODO(https://crbug.com/919430) Remove the larger timeout once compile
-    # times have been brought down to reasonable level
-    execution_timeout = 4 * time.hour + 30 * time.minute,
-    tree_closing = False,
 )
 
 ci.memory_builder(

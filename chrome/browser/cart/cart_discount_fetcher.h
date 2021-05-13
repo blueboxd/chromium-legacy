@@ -20,13 +20,14 @@ struct MerchantIdAndDiscounts {
  public:
   std::string merchant_id;
   std::vector<cart_db::DiscountInfoProto> discount_list;
+  std::string highest_discount_string;
 
   explicit MerchantIdAndDiscounts(
       std::string merchant_id,
-      std::vector<cart_db::DiscountInfoProto> discount_list);
-  MerchantIdAndDiscounts(const MerchantIdAndDiscounts& other) = delete;
-  MerchantIdAndDiscounts& operator=(const MerchantIdAndDiscounts& other) =
-      delete;
+      std::vector<cart_db::DiscountInfoProto> discount_list,
+      std::string discount_string);
+  MerchantIdAndDiscounts(const MerchantIdAndDiscounts& other);
+  MerchantIdAndDiscounts& operator=(const MerchantIdAndDiscounts& other);
   MerchantIdAndDiscounts(MerchantIdAndDiscounts&& other);
   MerchantIdAndDiscounts& operator=(MerchantIdAndDiscounts&& other);
   ~MerchantIdAndDiscounts();
@@ -45,20 +46,23 @@ class CartDiscountFetcher {
 
   virtual void Fetch(
       std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
-      CartDiscountFetcherCallback callback);
+      CartDiscountFetcherCallback callback,
+      std::vector<CartDB::KeyAndValue> proto_pairs);
 
  private:
   friend class CartDiscountFetcherTest;
   // TODO(meiliang): Add param a list of carts to fetch.
   static void fetchForDiscounts(
       std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
-      CartDiscountFetcherCallback callback);
+      CartDiscountFetcherCallback callback,
+      std::vector<CartDB::KeyAndValue> proto_pairs);
   static void OnDiscountsAvailable(
       std::unique_ptr<EndpointFetcher> endpoint_fetcher,
       CartDiscountFetcherCallback callback,
       std::unique_ptr<EndpointResponse> responses);
   static std::unique_ptr<EndpointFetcher> CreateEndpointFetcher(
-      std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
+      std::vector<CartDB::KeyAndValue> proto_pairs);
   static std::string generatePostData(
       std::vector<CartDB::KeyAndValue> proto_pairs,
       base::Time current_timestamp);

@@ -649,6 +649,8 @@ _BANNED_CPP_FUNCTIONS = (
          'array_buffer_contents\.(cc|h)',
        '^gin/array_buffer\.(cc|h)',
        '^chrome/services/sharing/nearby/',
+       # gRPC provides some C++ libraries that use std::shared_ptr<>.
+       '^chromeos/services/libassistant/grpc/',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
        '.*fuchsia.*test\.(cc|h)',
        _THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -4345,7 +4347,7 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
 
 def CheckForSuperfluousStlIncludesInHeaders(input_api, output_api):
   stl_include_re = input_api.re.compile(
-      r'^#include\s+<'
+      r'^#include\s+<('
       r'algorithm|'
       r'array|'
       r'limits|'
@@ -4358,7 +4360,7 @@ def CheckForSuperfluousStlIncludesInHeaders(input_api, output_api):
       r'unordered_map|'
       r'unordered_set|'
       r'utility|'
-      r'vector>')
+      r'vector)>')
   std_namespace_re = input_api.re.compile(r'std::')
   errors = []
   for f in input_api.AffectedFiles():

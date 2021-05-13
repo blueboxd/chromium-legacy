@@ -241,10 +241,12 @@ class WebNavigationApiTestWithContextType
     : public WebNavigationApiTest,
       public testing::WithParamInterface<ContextType> {
  protected:
-  bool RunTest(const char* name) WARN_UNUSED_RESULT {
+  bool RunTest(const char* name,
+               bool allow_in_incognito = false) WARN_UNUSED_RESULT {
     return RunExtensionTest(
         {.name = name},
-        {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
+        {.allow_in_incognito = allow_in_incognito,
+         .load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 };
 
@@ -267,9 +269,9 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, ClientRedirect) {
   ASSERT_TRUE(RunTest("webnavigation/clientRedirect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, ServerRedirect) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webnavigation/serverRedirect")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/serverRedirect")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, FormSubmission) {
@@ -289,15 +291,15 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Download) {
   ASSERT_TRUE(result) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType,
+                       ServerRedirectSingleProcess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("webnavigation/serverRedirectSingleProcess"))
-      << message_;
+  ASSERT_TRUE(RunTest("webnavigation/serverRedirectSingleProcess")) << message_;
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(tab));
@@ -332,8 +334,8 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, IFrame) {
   ASSERT_TRUE(RunTest("webnavigation/iframe")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SrcDoc) {
-  ASSERT_TRUE(RunExtensionTest("webnavigation/srcdoc")) << message_;
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, SrcDoc) {
+  ASSERT_TRUE(RunTest("webnavigation/srcdoc")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, OpenTab) {
@@ -344,8 +346,8 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, ReferenceFragment) {
   ASSERT_TRUE(RunTest("webnavigation/referenceFragment")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
-  ASSERT_TRUE(RunExtensionTest("webnavigation/simpleLoad")) << message_;
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, SimpleLoad) {
+  ASSERT_TRUE(RunTest("webnavigation/simpleLoad")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Failures) {
@@ -356,12 +358,12 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, FilteredTest) {
   ASSERT_TRUE(RunTest("webnavigation/filtered")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, UserAction) {
   content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("webnavigation/userAction")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/userAction")) << message_;
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(tab));
@@ -396,10 +398,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
-
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, RequestOpenTab) {
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("webnavigation/requestOpenTab")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/requestOpenTab")) << message_;
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(tab));
@@ -430,11 +431,11 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlank) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, TargetBlank) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("webnavigation/targetBlank")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/targetBlank")) << message_;
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(tab));
@@ -465,13 +466,12 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlank) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlankIncognito) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType,
+                       TargetBlankIncognito) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest({.name = "webnavigation/targetBlank"},
-                               {.allow_in_incognito = true}))
-      << message_;
+  ASSERT_TRUE(RunTest("webnavigation/targetBlank", true)) << message_;
 
   ResultCatcher catcher;
 
@@ -602,10 +602,10 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Crash) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Xslt) {
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Xslt) {
   content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webnavigation/xslt")) << message_;
+  ASSERT_TRUE(RunTest("webnavigation/xslt")) << message_;
 }
 
 }  // namespace extensions

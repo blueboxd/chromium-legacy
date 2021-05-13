@@ -80,7 +80,6 @@ test("components_unittests") {
     "//components/component_updater/installer_policies:unit_tests",
     "//components/consent_auditor:unit_tests",
     "//components/content_capture/common:unit_tests",
-    "//components/content_creation/notes/core:unit_tests",
     "//components/content_settings/core/browser:unit_tests",
     "//components/content_settings/core/common:unit_tests",
     "//components/crash/core/common:unit_tests",
@@ -345,7 +344,10 @@ test("components_unittests") {
     ]
 
     if (!is_win) {  # !iOS and !Windows
-      deps += [ "//components/cast:unit_tests" ]
+      deps += [
+        "//components/cast:unit_tests",
+        "//components/cast_streaming:unit_tests",
+      ]
     }
 
     if (!is_fuchsia) {  # !iOS and !Fuchsia
@@ -380,6 +382,7 @@ test("components_unittests") {
       "//components/cdm/browser:unit_tests",
       "//components/component_updater/android:embedded_component_loader_java",
       "//components/component_updater/android:embedded_component_loader_unittests",
+      "//components/content_creation/notes/core:unit_tests",
       "//components/crash/android:java",
       "//components/crash/android:unit_tests",
       "//components/download/internal/common:internal_java",

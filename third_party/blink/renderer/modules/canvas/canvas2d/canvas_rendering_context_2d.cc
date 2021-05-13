@@ -146,7 +146,8 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
           &CanvasRenderingContext2D::TryRestoreContextEvent),
       should_prune_local_font_cache_(false),
       random_generator_((uint32_t)base::RandUint64()),
-      bernoulli_distribution_(kRasterMetricProbability) {
+      bernoulli_distribution_(kRasterMetricProbability),
+      color_params_(attrs.color_space, attrs.pixel_format, attrs.alpha) {
   if (canvas->GetDocument().GetSettings() &&
       canvas->GetDocument().GetSettings()->GetAntialiasedClips2dCanvasEnabled())
     clip_antialiasing_ = kAntiAliased;
@@ -313,10 +314,6 @@ void CanvasRenderingContext2D::DispatchContextRestoredEvent(TimerBase*) {
 
 void CanvasRenderingContext2D::WillDrawImage(CanvasImageSource* source) const {
   canvas()->WillDrawImageTo2DContext(source);
-}
-
-CanvasColorParams CanvasRenderingContext2D::GetCanvas2DColorParams() const {
-  return CanvasRenderingContext::CanvasRenderingContextColorParams();
 }
 
 bool CanvasRenderingContext2D::WritePixels(const SkImageInfo& orig_info,
@@ -540,7 +537,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
 
   // Map the <canvas> font into the text style. If the font uses keywords like
   // larger/smaller, these will work relative to the canvas.
-  scoped_refptr<ComputedStyle> font_style;
+  ComputedStyle* font_style;
   const ComputedStyle* computed_style = canvas()->EnsureComputedStyle();
   if (computed_style) {
     auto i = fonts_resolved_using_current_style_.find(new_font);
@@ -566,7 +563,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
 
       font_style->SetFontDescription(element_font_description);
       canvas()->GetDocument().GetStyleEngine().ComputeFont(
-          *canvas(), font_style.get(), *parsed_style);
+          *canvas(), font_style, *parsed_style);
 
       // We need to reset Computed and Adjusted size so we skip zoom and
       // minimum font size.
@@ -1151,8 +1148,8 @@ CanvasRenderingContext2D::getContextAttributes() const {
   CanvasRenderingContext2DSettings* settings =
       CanvasRenderingContext2DSettings::Create();
   settings->setAlpha(CreationAttributes().alpha);
+  settings->setColorSpace(GetCanvas2DColorParams().GetColorSpaceAsString());
   if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
-    settings->setColorSpace(GetCanvas2DColorParams().GetColorSpaceAsString());
     settings->setPixelFormat(GetCanvas2DColorParams().GetPixelFormatAsString());
   }
   settings->setDesynchronized(Host()->LowLatencyEnabled());

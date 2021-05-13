@@ -41,30 +41,6 @@
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
-      'chromeos-betty-pi-arc-chrome-beta': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'mixins': [
-          'chromeos-betty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
-          'isolated_scripts': 'chromeos_isolated_scripts',
-        },
-      },
-      'chromeos-betty-pi-arc-chrome-ltc': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'mixins': [
-          'chromeos-betty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
-          'isolated_scripts': 'chromeos_isolated_scripts',
-        },
-      },
       'chromeos-betty-pi-arc-chrome-lts': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -77,57 +53,7 @@
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
-      'chromeos-betty-pi-arc-chrome-stable': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'mixins': [
-          'chromeos-betty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
-          'isolated_scripts': 'chromeos_isolated_scripts',
-        },
-      },
       'chromeos-eve-chrome': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'eve',
-              'pool': 'chrome.tests',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
-      'chromeos-eve-chrome-beta': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'eve',
-              'pool': 'chrome.tests',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
-      'chromeos-eve-chrome-ltc': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -165,25 +91,6 @@
         },
         'os_type': 'chromeos'
       },
-      'chromeos-eve-chrome-stable': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'eve',
-              'pool': 'chrome.tests',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
       'chromeos-kevin-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -203,61 +110,7 @@
         },
         'os_type': 'chromeos'
       },
-      'chromeos-kevin-chrome-beta': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              'pool': 'chrome.tests',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
-      'chromeos-kevin-chrome-ltc': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              'pool': 'chrome.tests',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
       'chromeos-kevin-chrome-lts': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              'pool': 'chrome.tests',
-            },
-          ],
-        },
-        'os_type': 'chromeos'
-      },
-      'chromeos-kevin-chrome-stable': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -304,28 +157,6 @@
           'isolated_scripts': 'chrome_sizes',
         },
       },
-      'linux-chromeos-beta': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_sandbox',
-          'linux_symbols',
-          'symupload'
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'linux-xenial',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'ssd': '0',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
       'linux-chromeos-chrome': {
         'additional_compile_targets': [
           'chrome',
@@ -349,51 +180,7 @@
           'isolated_scripts': 'chrome_sizes',
         },
       },
-      'linux-chromeos-ltc': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_sandbox',
-          'linux_symbols',
-          'symupload'
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'linux-xenial',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'ssd': '0',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
       'linux-chromeos-lts': {
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_sandbox',
-          'linux_symbols',
-          'symupload'
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
-          'linux-xenial',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'ssd': '0',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
-      'linux-chromeos-stable': {
         'additional_compile_targets': [
           'chrome',
           'chrome_sandbox',
@@ -506,6 +293,20 @@
         ],
       },
       'mac-archive-rel': {
+        'mixins': ['mac-archive-rel-args'],
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'mac-arm64-archive-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'mac-arm64-archive-rel': {
         'mixins': ['mac-archive-rel-args'],
         'additional_compile_targets': [
           'all',
@@ -3761,7 +3562,7 @@
           'all',
         ],
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',
@@ -3772,7 +3573,7 @@
           'all',
         ],
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',
@@ -3783,7 +3584,7 @@
           'all',
         ],
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',
@@ -3794,7 +3595,7 @@
           'all',
         ],
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',
@@ -5337,21 +5138,6 @@
     'name': 'chromium.memory',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'Android CFI': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-        },
-      },
       'Linux ASan LSan Tests (1)': {
         'mixins': [
           'linux-bionic',

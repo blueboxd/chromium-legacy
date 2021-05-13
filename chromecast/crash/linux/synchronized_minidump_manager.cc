@@ -248,13 +248,18 @@ bool SynchronizedMinidumpManager::AcquireLockFile() {
 
   // The lockfile is open and locked. Parse it to provide subclasses with a
   // record of all the current dumps.
-  if (!ParseFiles()) {
+  bool create_lockfiles = false;
+  if (!base::PathExists(metadata_path_)) {
+    LOG(INFO) << "Metadata doesn't exist.";
+    create_lockfiles = true;
+  } else if (!ParseFiles()) {
     LOG(ERROR) << "Lockfile did not parse correctly. ";
-    if (!InitializeFiles() || !ParseFiles()) {
-      LOG(ERROR) << "Failed to create a new lock file!";
-      ReleaseLockFile();
-      return false;
-    }
+    create_lockfiles = true;
+  }
+  if (create_lockfiles && (!InitializeFiles() || !ParseFiles())) {
+    LOG(ERROR) << "Failed to create a new lock file!";
+    ReleaseLockFile();
+    return false;
   }
 
   DCHECK(dumps_);
@@ -308,7 +313,7 @@ bool SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
   DCHECK(metadata);
   std::string lockfile;
 
-  for (const auto& elem : *dumps) {
+  for (const auto& elem : dumps->GetList()) {
     std::string dump_info;
     bool ret = base::JSONWriter::Write(elem, &dump_info);
     RCHECK(ret, false);
@@ -375,7 +380,7 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
 std::vector<std::unique_ptr<DumpInfo>> SynchronizedMinidumpManager::GetDumps() {
   std::vector<std::unique_ptr<DumpInfo>> dumps;
 
-  for (const auto& elem : *dumps_) {
+  for (const auto& elem : dumps_->GetList()) {
     dumps.push_back(std::unique_ptr<DumpInfo>(new DumpInfo(&elem)));
   }
 

@@ -88,13 +88,6 @@ const char kNewTabPageLocationOverride[] = "newtab_page_location_override";
 // determine the state of the profile icon for icon format changes.
 const char kProfileIconVersion[] = "profile.icon_version";
 
-// Used to determine if the last session exited cleanly. Set to false when
-// first opened, and to true when closing. On startup if the value is false,
-// it means the profile didn't exit cleanly.
-// DEPRECATED: this is replaced by kSessionExitType and exists for backwards
-// compatibility.
-const char kSessionExitedCleanly[] = "profile.exited_cleanly";
-
 // A string pref whose values is one of the values defined by
 // |ProfileImpl::kPrefExitTypeXXX|. Set to |kPrefExitTypeCrashed| on startup and
 // one of |kPrefExitTypeNormal| or |kPrefExitTypeSessionEnded| during
@@ -2693,9 +2686,11 @@ const char kAppShortcutsVersion[] = "apps.shortcuts_version";
 // re-created.
 const char kAppShortcutsArch[] = "apps.shortcuts_arch";
 
-// A boolean pref that enables the (private) pepper GetDeviceID() call and
-// enables the use of remote attestation for content protection.
-const char kEnableDRM[] = "settings.privacy.drm_enabled";
+// This references a default content setting value which we expose through the
+// preferences extensions API and also used for migration of the old
+// |kEnableDRM| preference.
+const char kProtectedContentDefault[] =
+    "profile.default_content_setting_values.protected_media_identifier";
 
 // An integer per-profile pref that signals if the watchdog extension is
 // installed and active. We need to know if the watchdog extension active for

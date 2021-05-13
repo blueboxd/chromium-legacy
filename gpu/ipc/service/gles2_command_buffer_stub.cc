@@ -62,7 +62,7 @@ namespace gpu {
 
 GLES2CommandBufferStub::GLES2CommandBufferStub(
     GpuChannel* channel,
-    const GPUCreateCommandBufferConfig& init_params,
+    const mojom::CreateCommandBufferParams& init_params,
     CommandBufferId command_buffer_id,
     SequenceId sequence_id,
     int32_t stream_id,
@@ -79,7 +79,7 @@ GLES2CommandBufferStub::~GLES2CommandBufferStub() = default;
 
 gpu::ContextResult GLES2CommandBufferStub::Initialize(
     CommandBufferStub* share_command_buffer_stub,
-    const GPUCreateCommandBufferConfig& init_params,
+    const mojom::CreateCommandBufferParams& init_params,
     base::UnsafeSharedMemoryRegion shared_state_shm) {
   TRACE_EVENT0("gpu", "GLES2CommandBufferStub::Initialize");
   UpdateActiveUrl();
@@ -442,9 +442,6 @@ void GLES2CommandBufferStub::OnGpuSwitched(
 bool GLES2CommandBufferStub::HandleMessage(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GLES2CommandBufferStub, message)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_TakeFrontBuffer, OnTakeFrontBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ReturnFrontBuffer,
-                        OnReturnFrontBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateImage, OnCreateImage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyImage, OnDestroyImage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateGpuFenceFromHandle,

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
@@ -661,7 +662,7 @@ PaintResult PaintLayerPainter::PaintChildren(
   if (paint_layer_.GetLayoutObject().ChildPaintBlockedByDisplayLock())
     return result;
 
-  PaintLayerPaintOrderIterator iterator(paint_layer_, children_to_visit);
+  PaintLayerPaintOrderIterator iterator(&paint_layer_, children_to_visit);
   while (PaintLayer* child = iterator.Next()) {
     // If this Layer should paint into its own backing or a grouped backing,
     // that will be done via CompositedLayerMapping::PaintContents() and
@@ -679,7 +680,7 @@ PaintResult PaintLayerPainter::PaintChildren(
 
     if (const auto* layers_painting_overlay_overflow_controls_after =
             iterator.LayersPaintingOverlayOverflowControlsAfter(child)) {
-      for (auto* reparent_overflow_controls_layer :
+      for (auto& reparent_overflow_controls_layer :
            *layers_painting_overlay_overflow_controls_after) {
         DCHECK(reparent_overflow_controls_layer
                    ->NeedsReorderOverlayOverflowControls());

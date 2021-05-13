@@ -17,41 +17,20 @@
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
-      'chromeos-betty-pi-arc-chrome-beta': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
-      'chromeos-betty-pi-arc-chrome-ltc': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
       'chromeos-betty-pi-arc-chrome-lts': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
-      'chromeos-betty-pi-arc-chrome-stable': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official',
-      'chromeos-eve-chrome-beta': 'chromeos_eve_include_unwind_tables_official',
-      'chromeos-eve-chrome-ltc': 'chromeos_eve_include_unwind_tables_official',
       'chromeos-eve-chrome-lts': 'chromeos_eve_include_unwind_tables_official',
-      'chromeos-eve-chrome-stable': 'chromeos_eve_include_unwind_tables_official',
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official',
-      'chromeos-kevin-chrome-beta': 'chromeos_kevin_include_unwind_tables_official',
-      'chromeos-kevin-chrome-ltc': 'chromeos_kevin_include_unwind_tables_official',
       'chromeos-kevin-chrome-lts': 'chromeos_kevin_include_unwind_tables_official',
-      'chromeos-kevin-chrome-stable': 'chromeos_kevin_include_unwind_tables_official',
       'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official',
       # Don't include unwind tables for linux-/mac-/win-/win64-chrome builders.
       # They monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_goma',
-      'linux64-trunk': 'official_goma',
-      'linux-chrome-beta': 'official_goma',
-      'linux-chrome-stable': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
-      'linux-chromeos-beta': 'official_goma_chromeos_include_unwind_tables',
-      'linux-chromeos-ltc': 'official_goma_chromeos_include_unwind_tables',
       'linux-chromeos-lts': 'official_goma_chromeos_include_unwind_tables',
-      'linux-chromeos-stable': 'official_goma_chromeos_include_unwind_tables',
       'mac-chrome': 'official_goma_mac',
-      'mac-chrome-beta': 'official_goma_mac',
-      'mac-chrome-stable': 'official_goma_mac',
       'win-chrome': 'official_goma_x86',
-      'win-chrome-beta': 'official_goma_x86',
-      'win-chrome-stable': 'official_goma_x86',
       'win64-chrome': 'official_goma_x64',
-      'win64-chrome-beta': 'official_goma_x64',
-      'win64-chrome-stable': 'official_goma_x64',
     },
     'chrome.pgo': {
       'linux-pgo': 'official_goma_linux_pgo',
@@ -81,6 +60,8 @@
       'linux-official': 'official_optimize_goma',
       'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-dbg': 'debug_bot',
+      'mac-arm64-archive-rel': 'release_bot_mac_strip_minimal_symbols_arm64',
+      'mac-arm64-archive-dbg': 'debug_bot_arm64',
       'mac-official': 'official_optimize_goma',
       'win32-official': 'x86_official_optimize_goma',
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
@@ -120,7 +101,6 @@
 
       'android-marshmallow-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google',
       'android-marshmallow-x86-rel-non-cq': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google',
-      'android-marshmallow-x86-rel-rts': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_webview_google',
       'android-nougat-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
       # running on CQ.
@@ -549,7 +529,6 @@
     },
 
     'chromium.memory': {
-      'Android CFI': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'Linux ASan LSan Builder': 'asan_lsan_release_trybot',
       'Linux CFI': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'Linux Chromium OS ASan LSan Builder': 'asan_lsan_chromeos_release_trybot',
@@ -812,6 +791,7 @@
       'android-marshmallow-arm64-rel-dual-coverage': 'gpu_tests_android_release_trybot_arm64_resource_allowlisting_fastbuild_java_coverage',
       'android-marshmallow-x86-rel': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google',
       'android-marshmallow-x86-rel-non-cq': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google',
+      'android-marshmallow-x86-rel-rts': 'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google',
       'android-nougat-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_google',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
@@ -1028,13 +1008,13 @@
       'linux-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_invert_fieldtrials',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-lacros-fyi-rel': 'lacros_on_linux_release_trybot',
+      'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot',
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
       'linux-mbi-mode-per-render-process-host-rel': 'gpu_tests_release_trybot_mbi_mode_per_render_process_host',
       'linux-mbi-mode-per-site-instance-rel': 'gpu_tests_release_trybot_mbi_mode_per_site_instance',
       'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
-      'linux-rel-dual-coverage': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-rel-orchestrator': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-rel-reclient': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient',
       'linux-rel-rts': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
@@ -2004,6 +1984,10 @@
       'debug_bot',
     ],
 
+    'debug_bot_arm64': [
+      'debug_bot', 'arm64',
+    ],
+
     'debug_bot_blink': [
       'debug_bot_blink',
     ],
@@ -2647,6 +2631,10 @@
 
     'release_bot_mac_strip_minimal_symbols': [
       'release_bot', 'mac_strip', 'minimal_symbols',
+    ],
+
+    'release_bot_mac_strip_minimal_symbols_arm64': [
+      'release_bot', 'mac_strip', 'minimal_symbols', 'arm64',
     ],
 
     'release_bot_mac_strip_minimal_symbols_deterministic': [

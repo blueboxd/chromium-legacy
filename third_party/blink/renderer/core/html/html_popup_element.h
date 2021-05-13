@@ -43,12 +43,13 @@ class HTMLPopupElement final : public HTMLElement {
   void SetNeedsRepositioningForSelectMenu(bool flag);
   bool NeedsRepositioningForSelectMenu() const;
   void SetOwnerSelectMenuElement(HTMLSelectMenuElement*);
-  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
-      const StyleRecalcContext&) final;
+  ComputedStyle* CustomStyleForLayoutObject(const StyleRecalcContext&) final;
 
   void Trace(Visitor*) const override;
 
  private:
+  class PopupResizeDelegate;
+
   void ScheduleHideEvent();
   void MarkStyleDirty();
   void focus(const FocusParams& params) override;
@@ -72,8 +73,12 @@ class HTMLPopupElement final : public HTMLElement {
   static const HTMLPopupElement* NearestOpenAncestralPopup(Node*);
 
   bool open_;
+  // |being_shown_| is set to true when .show() is called, to let the resize
+  // observer know not to fire.
+  bool being_shown_;
   bool had_initiallyopen_when_parsed_;
   WeakMember<Element> invoker_;
+  Member<ResizeObserver> resize_observer_;
 
   bool needs_repositioning_for_select_menu_;
   WeakMember<HTMLSelectMenuElement> owner_select_menu_element_;

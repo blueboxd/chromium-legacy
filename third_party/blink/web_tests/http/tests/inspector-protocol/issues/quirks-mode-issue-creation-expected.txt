@@ -4,7 +4,7 @@ Inspector issue: {
         code : QuirksModeIssue
         details : {
             quirksModeIssueDetails : {
-                documentNodeId : 3
+                documentNodeId : <number>
                 frameId : <string>
                 isLimitedQuirksMode : false
                 loaderId : <string>
@@ -18,7 +18,7 @@ Inspector issue: {
         code : QuirksModeIssue
         details : {
             quirksModeIssueDetails : {
-                documentNodeId : 5
+                documentNodeId : <number>
                 frameId : <string>
                 isLimitedQuirksMode : true
                 loaderId : <string>
@@ -32,7 +32,7 @@ Inspector issue: {
         code : QuirksModeIssue
         details : {
             quirksModeIssueDetails : {
-                documentNodeId : 7
+                documentNodeId : <number>
                 frameId : <string>
                 isLimitedQuirksMode : false
                 loaderId : <string>

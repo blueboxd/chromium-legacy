@@ -182,21 +182,31 @@ suite('CellularNetworksList', function() {
             cellularSetup.CellularSetupPageName.ESIM_FLOW_UI);
       });
 
-  test('Show EID and QR code popup', async () => {
+  test('Show EID and QR code dialog', async () => {
     eSimManagerRemote.addEuiccForTest(1);
     init();
     addESimSlot();
     await flushAsync();
-    let eidPopup = cellularNetworkList.$$('.eid-popup');
-    assertFalse(!!eidPopup);
-    const eidPopupBtn = cellularNetworkList.$$('#eidPopupButton');
-    assertTrue(!!eidPopupBtn);
+    let eidDialog = cellularNetworkList.$$('.eid-dialog');
+    assertFalse(!!eidDialog);
 
-    eidPopupBtn.click();
+    const tripleDot = cellularNetworkList.$$('#moreESim');
+    assertTrue(!!tripleDot);
+    tripleDot.click();
     await flushAsync();
 
-    eidPopup = cellularNetworkList.$$('.eid-popup');
-    assertTrue(!!eidPopup);
+    const actionMenu =
+        cellularNetworkList.shadowRoot.querySelector('cr-action-menu');
+    assertTrue(!!actionMenu);
+    assertTrue(actionMenu.open);
+
+    const showEidBtn = actionMenu.querySelector('button');
+    assertTrue(!!showEidBtn);
+    showEidBtn.click();
+    await flushAsync();
+
+    eidDialog = cellularNetworkList.$$('.eid-dialog');
+    assertTrue(!!eidDialog);
   });
 
   test('Install pending eSIM profile', async () => {

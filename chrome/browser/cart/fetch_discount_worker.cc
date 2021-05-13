@@ -114,19 +114,22 @@ void FetchDiscountWorker::ReadyToFetch(
   backend_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FetchInBackground, std::move(pending_factory),
-                     std::move(fetcher), std::move(done_fetching_callback)),
+                     std::move(fetcher), std::move(done_fetching_callback),
+                     std::move(proto_pairs)),
       base::TimeDelta::FromMilliseconds(delay_fetch_ms));
 }
 
 void FetchDiscountWorker::FetchInBackground(
     std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
     std::unique_ptr<CartDiscountFetcher> fetcher,
-    AfterFetchingCallback after_fetching_callback) {
+    AfterFetchingCallback after_fetching_callback,
+    std::vector<CartDB::KeyAndValue> proto_pairs) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   auto done_fetching_callback = base::BindOnce(
       &DoneFetchingInBackground, std::move(after_fetching_callback));
-  fetcher->Fetch(std::move(pending_factory), std::move(done_fetching_callback));
+  fetcher->Fetch(std::move(pending_factory), std::move(done_fetching_callback),
+                 std::move(proto_pairs));
 }
 
 // TODO(meiliang): Follow up to use BindPostTask.
@@ -185,12 +188,14 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
       continue;
     }
 
-    std::string merchant_id = discounts.at(cart_url).merchant_id;
+    const MerchantIdAndDiscounts& merchant_discounts = discounts.at(cart_url);
+    std::string merchant_id = merchant_discounts.merchant_id;
     cart_discount_proto->set_merchant_id(merchant_id);
 
-    std::vector<cart_db::DiscountInfoProto> discount_infos =
-        discounts.at(cart_url).discount_list;
-    cart_discount_proto->set_discount_text("discount");
+    const std::vector<cart_db::DiscountInfoProto>& discount_infos =
+        merchant_discounts.discount_list;
+    cart_discount_proto->set_discount_text(
+        merchant_discounts.highest_discount_string);
     *cart_discount_proto->mutable_discount_info() = {discount_infos.begin(),
                                                      discount_infos.end()};
 

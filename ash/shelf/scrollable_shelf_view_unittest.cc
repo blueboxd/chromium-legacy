@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/scrollable_shelf_constants.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
@@ -612,8 +613,7 @@ TEST_P(ScrollableShelfViewRTLTest, VerifyActivateIconRippleOnVerySmallDisplay) {
   UpdateDisplay("60x601");
 
   // Activate a shelf icon's ink drop. Verify that no crash happens.
-  views::InkDropHostView* icon = test_api_->GetButton(0);
-  auto* ink_drop = icon->ink_drop()->GetInkDrop();
+  auto* ink_drop = test_api_->GetButton(0)->ink_drop()->GetInkDrop();
   ink_drop->SnapToActivated();
   EXPECT_EQ(views::InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
 }
@@ -836,7 +836,7 @@ TEST_F(ScrollableShelfViewTest, CheckRoundedCornersAfterLongPress) {
 // Verifies that doing a mousewheel scroll on the scrollable shelf does scroll
 // forward.
 TEST_P(ScrollableShelfViewRTLTest, ScrollWithMouseWheel) {
-  // The scroll threshold. Taken from |KScrollOffsetThreshold| in
+  // The scroll threshold. Taken from |kScrollOffsetThreshold| in
   // scrollable_shelf_view.cc.
   constexpr int scroll_threshold = 20;
   AddAppShortcutsUntilOverflow();
@@ -956,7 +956,8 @@ TEST_P(ScrollableShelfViewRTLTest, ScrollsByMouseWheelEvent) {
 
   GetEventGenerator()->MoveMouseTo(
       scrollable_shelf_view_->GetBoundsInScreen().CenterPoint());
-  constexpr int scroll_threshold = ScrollableShelfView::KScrollOffsetThreshold;
+  constexpr int scroll_threshold =
+      scrollable_shelf_constants::kScrollOffsetThreshold;
 
   // Verifies that it should not scroll the shelf backward anymore if the layout
   // strategy is kShowRightArrowButton.

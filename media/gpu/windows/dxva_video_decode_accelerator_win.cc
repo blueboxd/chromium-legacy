@@ -321,6 +321,10 @@ bool ConfigChangeDetector::IsYUV420() const {
   return false;
 }
 
+bool ConfigChangeDetector::is_vp9_resilient_mode() const {
+  return false;
+}
+
 // Provides functionality to detect H.264 stream configuration changes.
 // TODO(ananta)
 // Move this to a common place so that all VDA's can use this.
@@ -508,6 +512,9 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
       color_space_ = fhdr.GetColorSpace();
 
       gfx::Size new_size(fhdr.frame_width, fhdr.frame_height);
+      if (!gfx::Rect(new_size).Contains(visible_rect_)) {
+        visible_rect_ = gfx::Rect(new_size);
+      }
       if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
           size_ != new_size) {
         pending_config_changed_ = true;
@@ -515,6 +522,8 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
                  << new_size.ToString();
       }
       size_ = new_size;
+
+      is_resilient_mode_ |= fhdr.error_resilient_mode;
 
       // Resolution changes can happen on any frame technically, so wait for a
       // keyframe before signaling the config change.
@@ -539,11 +548,14 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
                                                : color_space_;
   }
 
+  bool is_vp9_resilient_mode() const override { return is_resilient_mode_; }
+
  private:
   gfx::Size size_;
   bool pending_config_changed_ = false;
   gfx::Rect visible_rect_;
   VideoColorSpace color_space_;
+  bool is_resilient_mode_ = false;
   Vp9Parser parser_;
 };
 
@@ -661,6 +673,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
           !workarounds.disable_accelerated_vp8_decode),
       enable_accelerated_vp9_decode_(
           !workarounds.disable_accelerated_vp9_decode),
+      disallow_vp9_resilient_dxva_decoding_(
+          workarounds.disallow_vp9_resilient_dxva_decoding),
       processing_config_changed_(false),
       use_empty_video_hdr_metadata_(workarounds.use_empty_video_hdr_metadata) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
@@ -2327,6 +2341,12 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   HRESULT hr = CheckConfigChanged(sample.Get(), &config_changed);
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to check video stream config",
                                   PLATFORM_FAILURE, );
+
+  if (disallow_vp9_resilient_dxva_decoding_ &&
+      config_change_detector_->is_vp9_resilient_mode()) {
+    RETURN_AND_NOTIFY_ON_HR_FAILURE(
+        E_FAIL, "Incompatible GPU for VP9 resilient mode", PLATFORM_FAILURE, );
+  }
 
   // https://crbug.com/1160623 -- non 4:2:0 content hangs the decoder.
   RETURN_AND_NOTIFY_ON_FAILURE(

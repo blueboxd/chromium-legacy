@@ -2844,11 +2844,6 @@ const char kAppMenuMobileSiteOptionDescription[] =
     "When enabled, app menu should show 'Mobile site' when showing desktop "
     "site, instead of showing 'Desktop Site' with checkbox";
 
-const char kBackgroundTaskComponentUpdateName[] =
-    "Background Task Component Updates";
-const char kBackgroundTaskComponentUpdateDescription[] =
-    "Schedule component updates with BackgroundTaskScheduler";
-
 const char kBentoOfflineName[] =
     "Enables an experiment for Offline Bento content on Android";
 const char kBentoOfflineDescription[] =
@@ -4978,12 +4973,6 @@ const char kTextfieldFocusOnTapUpName[] = "Focus UI text fields on touch-up";
 const char kTextfieldFocusOnTapUpDescription[] =
     "When enabled, Views-based text fields take focus on touch-up instead of "
     "touch-down. This includes the Omnibox.";
-
-const char kEnableNewBadgeOnMenuItemsName[] =
-    "Enable 'New' badge on menu items";
-const char kEnableNewBadgeOnMenuItemsDescription[] =
-    "When enabled, allows 'New' badge to help users identify menu items which "
-    "access new functionality.";
 
 #endif  // defined(TOOLKIT_VIEWS)
 

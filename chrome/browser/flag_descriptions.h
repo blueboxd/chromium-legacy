@@ -1651,9 +1651,6 @@ extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 extern const char kAppMenuMobileSiteOptionName[];
 extern const char kAppMenuMobileSiteOptionDescription[];
 
-extern const char kBackgroundTaskComponentUpdateName[];
-extern const char kBackgroundTaskComponentUpdateDescription[];
-
 extern const char kBentoOfflineName[];
 extern const char kBentoOfflineDescription[];
 
@@ -2908,9 +2905,6 @@ extern const char kInstallableInkDropDescription[];
 
 extern const char kTextfieldFocusOnTapUpName[];
 extern const char kTextfieldFocusOnTapUpDescription[];
-
-extern const char kEnableNewBadgeOnMenuItemsName[];
-extern const char kEnableNewBadgeOnMenuItemsDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS)
 

@@ -569,6 +569,19 @@
       "use_ozone": true
     }
   },
+  "linux-lacros-version-skew-fyi": {
+    "gn_args": {
+      "chromeos_is_browser_only": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "ozone_platform": "wayland",
+      "ozone_platform_wayland": true,
+      "target_os": "chromeos",
+      "use_goma": true,
+      "use_gtk": false,
+      "use_ozone": true
+    }
+  },
   "linux-layout-tests-edit-ng": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -643,20 +656,6 @@
     }
   },
   "linux-rel": {
-    "gn_args": {
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_dummy_lastchange": true,
-      "use_goma": true
-    }
-  },
-  "linux-rel-dual-coverage": {
     "gn_args": {
       "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
       "dcheck_always_on": true,

@@ -4,7 +4,7 @@
   await dp.Audits.enable();
 
   dp.Audits.onIssueAdded(issue => {
-    testRunner.log(issue.params, "Inspector issue: ");
+    testRunner.log(issue.params, "Inspector issue: ", ['documentNodeId', 'frameId', 'loaderId']);
   });
 
   await page.navigate('../resources/quirks-mode.html');

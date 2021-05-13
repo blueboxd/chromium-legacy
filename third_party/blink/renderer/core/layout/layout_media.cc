@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/layout_media.h"
 
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -40,6 +41,11 @@ LayoutMedia::LayoutMedia(HTMLMediaElement* video) : LayoutImage(video) {
 }
 
 LayoutMedia::~LayoutMedia() = default;
+
+void LayoutMedia::Trace(Visitor* visitor) const {
+  visitor->Trace(children_);
+  LayoutImage::Trace(visitor);
+}
 
 HTMLMediaElement* LayoutMedia::MediaElement() const {
   NOT_DESTROYED();

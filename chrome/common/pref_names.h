@@ -41,7 +41,6 @@ extern const char kChromeCleanerScanCompletionTime[];
 extern const char kNewTabPageLocationOverride[];
 extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
-extern const char kSessionExitedCleanly[];
 extern const char kSessionExitType[];
 #if !defined(OS_ANDROID)
 extern const char kManagedSerialAllowAllPortsForUrls[];
@@ -912,7 +911,7 @@ extern const char kAppListLocalState[];
 extern const char kAppShortcutsVersion[];
 extern const char kAppShortcutsArch[];
 
-extern const char kEnableDRM[];
+extern const char kProtectedContentDefault[];
 
 extern const char kWatchdogExtensionActive[];
 

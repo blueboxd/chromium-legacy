@@ -275,8 +275,8 @@ class WindowCycleView : public views::WidgetDelegateView,
                         public ui::ImplicitAnimationObserver,
                         public ui::CompositorAnimationObserver {
  public:
-  explicit WindowCycleView(aura::Window* root_window,
-                           const WindowCycleList::WindowList& windows)
+  WindowCycleView(aura::Window* root_window,
+                  const WindowCycleList::WindowList& windows)
       : root_window_(root_window) {
     const bool is_interactive_alt_tab_mode_allowed =
         Shell::Get()
@@ -658,20 +658,17 @@ class WindowCycleView : public views::WidgetDelegateView,
       x_offset = base::ClampToRange(x_offset, minimum_x, 0);
 
       // If the user has dragged, offset the container based on how much they
-      // have dragged.
-      if (features::IsInteractiveWindowCycleListEnabled()) {
-        // Cap |horizontal_distance_dragged_| based on the available distance
-        // from the container to the left and right boundaries.
-        float clamped_horizontal_distance_dragged =
-            base::ClampToRange(horizontal_distance_dragged_,
-                               static_cast<float>(minimum_x - x_offset),
-                               static_cast<float>(-x_offset));
-        if (horizontal_distance_dragged_ != clamped_horizontal_distance_dragged)
-          EndFling();
+      // have dragged. Cap |horizontal_distance_dragged_| based on the available
+      // distance from the container to the left and right boundaries.
+      float clamped_horizontal_distance_dragged =
+          base::ClampToRange(horizontal_distance_dragged_,
+                             static_cast<float>(minimum_x - x_offset),
+                             static_cast<float>(-x_offset));
+      if (horizontal_distance_dragged_ != clamped_horizontal_distance_dragged)
+        EndFling();
 
-        horizontal_distance_dragged_ = clamped_horizontal_distance_dragged;
-        x_offset += horizontal_distance_dragged_;
-      }
+      horizontal_distance_dragged_ = clamped_horizontal_distance_dragged;
+      x_offset += horizontal_distance_dragged_;
     }
     content_container_bounds.set_x(x_offset);
 

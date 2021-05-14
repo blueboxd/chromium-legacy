@@ -23,6 +23,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/screen.h"
 #include "ui/views/accessibility/accessibility_alert_window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_event_manager.h"
@@ -30,13 +31,8 @@
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#endif
+#include "ui/wm/public/activation_client.h"
 
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
@@ -48,13 +44,13 @@ void AutomationManagerAura::Enable() {
   enabled_ = true;
   Reset(false);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Seed the views::AXAuraObjCache with per-display root windows so
   // GetTopLevelWindows() returns the correct values when automation is enabled
   // with multiple displays connected.
-  for (aura::Window* root : ash::Shell::GetAllRootWindows())
-    cache_->OnRootWindowObjCreated(root);
-#endif
+  if (send_window_state_on_enable_) {
+    for (auto* host : aura::Env::GetInstance()->window_tree_hosts())
+      cache_->OnRootWindowObjCreated(host->window());
+  }
 
   // Send this event immediately to push the initial desktop tree state.
   pending_events_.push_back({tree_->GetRoot()->GetUniqueId(),
@@ -65,14 +61,26 @@ void AutomationManagerAura::Enable() {
   // ordering of two base::Singletons.
   cache_->SetDelegate(this);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  aura::Window* active_window = ash::window_util::GetActiveWindow();
+  const display::Display& display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  aura::Window* root_window = nullptr;
+  for (auto* host : aura::Env::GetInstance()->window_tree_hosts()) {
+    if (display.id() == host->GetDisplayId()) {
+      root_window = host->window();
+      break;
+    }
+  }
+
+  aura::Window* active_window = nullptr;
+  if (root_window) {
+    active_window = ::wm::GetActivationClient(root_window)->GetActiveWindow();
+  }
+
   if (active_window) {
     views::AXAuraObjWrapper* focus = cache_->GetOrCreate(active_window);
     if (focus)
       PostEvent(focus->GetUniqueId(), ax::mojom::Event::kChildrenChanged);
   }
-#endif
 
   if (!automation_event_router_observer_.IsObserving() &&
       !automation_event_router_interface_) {
@@ -205,15 +213,12 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
     alert_window_.reset();
   } else {
     tree_serializer_ = std::make_unique<AuraAXTreeSerializer>(tree_.get());
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    ash::Shell* shell = ash::Shell::Get();
-    // Windows within the overlay container get moved to the new monitor when
-    // the primary display gets swapped.
-    alert_window_ = std::make_unique<views::AccessibilityAlertWindow>(
-        shell->GetContainer(shell->GetPrimaryRootWindow(),
-                            ash::kShellWindowId_OverlayContainer),
-        cache_.get());
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    const auto& hosts = aura::Env::GetInstance()->window_tree_hosts();
+    if (!hosts.empty()) {
+      alert_window_ = std::make_unique<views::AccessibilityAlertWindow>(
+          hosts[0]->window(), cache_.get());
+    }
   }
 }
 
@@ -297,10 +302,19 @@ void AutomationManagerAura::SendPendingEvents() {
 
 void AutomationManagerAura::PerformHitTest(
     const ui::AXActionData& original_action) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   ui::AXActionData action = original_action;
-  aura::Window* root_window =
-      ash::window_util::GetRootWindowAt(action.target_point);
+  // Get the display nearest the point.
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(action.target_point);
+
+  aura::Window* root_window = nullptr;
+  for (auto* host : aura::Env::GetInstance()->window_tree_hosts()) {
+    if (display.id() == host->GetDisplayId()) {
+      root_window = host->window();
+      break;
+    }
+  }
+
   if (!root_window)
     return;
 
@@ -351,9 +365,8 @@ void AutomationManagerAura::PerformHitTest(
     views::View* root_view = widget->GetRootView();
     views::View* hit_view =
         root_view->GetEventHandlerForPoint(action.target_point);
-    if (hit_view) {
+    if (hit_view)
       obj_to_send_event = cache_->GetOrCreate(hit_view);
-    }
   }
 
   // Otherwise, fire the event directly on the Window.
@@ -363,7 +376,6 @@ void AutomationManagerAura::PerformHitTest(
     PostEvent(obj_to_send_event->GetUniqueId(), action.hit_test_event_to_fire,
               action.request_id);
   }
-#endif
 }
 
 void AutomationManagerAura::OnSerializeFailure(ax::mojom::Event event_type,

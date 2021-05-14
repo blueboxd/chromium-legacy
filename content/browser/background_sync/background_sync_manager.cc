@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -128,7 +129,7 @@ SyncAndNotificationPermissions GetBackgroundSyncPermission(
     return {PermissionStatus::DENIED, PermissionStatus::DENIED};
 
   PermissionController* permission_controller =
-      BrowserContext::GetPermissionController(browser_context);
+      browser_context->GetPermissionController();
   DCHECK(permission_controller);
 
   // The requesting origin always matches the embedding origin.
@@ -1344,18 +1345,17 @@ void BackgroundSyncManager::DispatchSyncEvent(
     return;
   }
 
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
 
   int request_id = active_version->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::SYNC, repeating_callback,
+      ServiceWorkerMetrics::EventType::SYNC, std::move(split_callback.first),
       parameters_->max_sync_event_duration,
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
   active_version->endpoint()->DispatchSyncEvent(
       tag, last_chance, parameters_->max_sync_event_duration,
       base::BindOnce(&OnSyncEventFinished, active_version, request_id,
-                     std::move(repeating_callback)));
+                     std::move(split_callback.second)));
 
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kBackgroundSync)) {
@@ -1387,18 +1387,17 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
     return;
   }
 
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
 
   int request_id = active_version->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::PERIODIC_SYNC, repeating_callback,
-      parameters_->max_sync_event_duration,
+      ServiceWorkerMetrics::EventType::PERIODIC_SYNC,
+      std::move(split_callback.first), parameters_->max_sync_event_duration,
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
   active_version->endpoint()->DispatchPeriodicSyncEvent(
       tag, parameters_->max_sync_event_duration,
       base::BindOnce(&OnSyncEventFinished, active_version, request_id,
-                     std::move(repeating_callback)));
+                     std::move(split_callback.second)));
 
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kPeriodicBackgroundSync)) {

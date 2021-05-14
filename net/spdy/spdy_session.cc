@@ -150,7 +150,7 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
     return kVaryIsEmpty;
   if (value == kStar)
     return kVaryIsStar;
-  std::string lowercase_value = ToLowerASCII(value);
+  std::string lowercase_value = base::ToLowerASCII(value);
   if (lowercase_value == kAcceptEncoding)
     return kVaryIsAcceptEncoding;
   // Both comma and newline delimiters occur in the wild.
@@ -187,11 +187,6 @@ class GreasedBufferProducer : public SpdyBufferProducer {
     auto serialized_frame = std::make_unique<spdy::SpdySerializedFrame>(
         buffered_spdy_framer_->SerializeFrame(frame));
     return std::make_unique<SpdyBuffer>(std::move(serialized_frame));
-  }
-
-  size_t EstimateMemoryUsage() const override {
-    return base::trace_event::EstimateMemoryUsage(
-        greased_http2_frame_->payload);
   }
 
  private:
@@ -1798,9 +1793,6 @@ size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
          base::trace_event::EstimateMemoryUsage(pooled_aliases_) +
          base::trace_event::EstimateMemoryUsage(active_streams_) +
          base::trace_event::EstimateMemoryUsage(created_streams_) +
-         base::trace_event::EstimateMemoryUsage(write_queue_) +
-         base::trace_event::EstimateMemoryUsage(in_flight_write_) +
-         base::trace_event::EstimateMemoryUsage(buffered_spdy_framer_) +
          base::trace_event::EstimateMemoryUsage(initial_settings_) +
          base::trace_event::EstimateMemoryUsage(stream_send_unstall_queue_) +
          base::trace_event::EstimateMemoryUsage(priority_dependency_state_);

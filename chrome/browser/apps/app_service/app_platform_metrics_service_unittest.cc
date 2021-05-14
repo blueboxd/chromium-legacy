@@ -78,6 +78,9 @@ class AppPlatformMetricsServiceTest : public testing::Test {
     base::TimeDelta forward_by = start_time - base::Time::Now();
     EXPECT_LT(base::TimeDelta(), forward_by);
     task_environment_.AdvanceClock(forward_by);
+    GetPrefService()->SetInteger(
+        kAppPlatformMetricsDayId,
+        start_time.UTCMidnight().since_origin().InDaysFloored());
 
     chromeos::PowerManagerClient::InitializeFake();
     app_platform_metrics_service_ =
@@ -196,7 +199,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
   std::unique_ptr<Browser> CreateBrowserWithAuraWindow1() {
     std::unique_ptr<aura::Window> window = std::make_unique<aura::Window>(
         &delegate1_, aura::client::WINDOW_TYPE_NORMAL);
-    window->set_id(0);
+    window->SetId(0);
     window->Init(ui::LAYER_TEXTURED);
     Browser::CreateParams params(&testing_profile_, true);
     params.type = Browser::TYPE_NORMAL;
@@ -209,7 +212,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
   std::unique_ptr<Browser> CreateBrowserWithAuraWindow2() {
     std::unique_ptr<aura::Window> window = std::make_unique<aura::Window>(
         &delegate2_, aura::client::WINDOW_TYPE_NORMAL);
-    window->set_id(0);
+    window->SetId(0);
     window->Init(ui::LAYER_TEXTURED);
     Browser::CreateParams params(&testing_profile_, true);
     params.type = Browser::TYPE_NORMAL;

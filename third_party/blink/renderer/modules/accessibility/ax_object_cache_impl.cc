@@ -2048,7 +2048,10 @@ void AXObjectCacheImpl::ProcessInvalidatedObjects(Document& document) {
     if (new_object) {
       // Any owned objects need to reset their parent_ to point to the
       // new object.
-      relation_cache_->UpdateAriaOwnsWithCleanLayout(new_object, true);
+      if (AXObject::HasARIAOwns(DynamicTo<Element>(node)) &&
+          AXRelationCache::IsValidOwner(new_object)) {
+        relation_cache_->UpdateAriaOwnsWithCleanLayout(new_object, true);
+      }
     } else {
       // Failed to create, so remove object completely.
       RemoveAXID(current);
@@ -2116,7 +2119,12 @@ void AXObjectCacheImpl::ProcessInvalidatedObjects(Document& document) {
       if (new_object &&
           new_object->ShouldUseLayoutObjectTraversalForChildren() !=
               did_use_layout_object_traversal) {
-        // TODO(accessibility) Need test for this.
+        // TODO(accessibility) Add test or remove code.
+        SANITIZER_CHECK(false)
+            << "This should no longer be possible, an object only uses layout "
+               "object traversal if it is the descendant of a pseudo element, "
+               "and that never changes: "
+            << new_object->ToString(true, true);
         DCHECK(!HashTraits<AXID>::IsDeletedValue(ax_id));
         pending_children_changed_ids.insert(ax_id);
       }

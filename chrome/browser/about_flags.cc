@@ -544,6 +544,9 @@ const FeatureEntry::FeatureParam kForceDark_SelectiveGeneralInversion[] = {
     {"text_lightness_threshold", "150"},
     {"background_lightness_threshold", "205"}};
 
+const FeatureEntry::FeatureParam kForceDark_IncreaseTextContrast[] = {
+    {"increase_text_contrast", "true"}};
+
 const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
     {"with simple HSL-based inversion", kForceDark_SimpleHsl,
      base::size(kForceDark_SimpleHsl), nullptr},
@@ -558,7 +561,9 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
      base::size(kForceDark_SelectiveElementInversion), nullptr},
     {"with selective inversion of everything",
      kForceDark_SelectiveGeneralInversion,
-     base::size(kForceDark_SelectiveGeneralInversion), nullptr}};
+     base::size(kForceDark_SelectiveGeneralInversion), nullptr},
+    {"with increased text contrast", kForceDark_IncreaseTextContrast,
+     base::size(kForceDark_IncreaseTextContrast), nullptr}};
 #endif  // !OS_CHROMEOS
 
 const FeatureEntry::FeatureParam kMBIModeLegacy[] = {{"mode", "legacy"}};
@@ -2882,10 +2887,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
-    {"ash-enable-interactive-window-cycle-list",
-     flag_descriptions::kInteractiveWindowCycleList,
-     flag_descriptions::kInteractiveWindowCycleListDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kInteractiveWindowCycleList)},
     {"enable-compositing-based-throttling",
      flag_descriptions::kCompositingBasedThrottling,
      flag_descriptions::kCompositingBasedThrottlingDescription, kOsCrOS,
@@ -3463,6 +3464,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     kDesktopPWAsAttentionBadgingCrOSVariations,
                                     "DesktopPWAsAttentionBadgingCrOS")},
 #endif
+    {"enable-desktop-pwas-prefix-app-name-in-window-title",
+     flag_descriptions::kDesktopPWAsPrefixAppNameInWindowTitleName,
+     flag_descriptions::kDesktopPWAsPrefixAppNameInWindowTitleDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(features::kPrefixWebAppWindowsWithAppName)},
     {"enable-desktop-pwas-remove-status-bar",
      flag_descriptions::kDesktopPWAsRemoveStatusBarName,
      flag_descriptions::kDesktopPWAsRemoveStatusBarDescription, kOsDesktop,
@@ -5218,26 +5223,6 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::assistant::features::kAssistantBetterOnboarding)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-    {"remote-copy-receiver", flag_descriptions::kRemoteCopyReceiverName,
-     flag_descriptions::kRemoteCopyReceiverDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(kRemoteCopyReceiver)},
-    {"remote-copy-image-notification",
-     flag_descriptions::kRemoteCopyImageNotificationName,
-     flag_descriptions::kRemoteCopyImageNotificationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(kRemoteCopyImageNotification)},
-    {"remote-copy-persistent-notification",
-     flag_descriptions::kRemoteCopyPersistentNotificationName,
-     flag_descriptions::kRemoteCopyPersistentNotificationDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(kRemoteCopyPersistentNotification)},
-    {"remote-copy-progress-notification",
-     flag_descriptions::kRemoteCopyProgressNotificationName,
-     flag_descriptions::kRemoteCopyProgressNotificationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(kRemoteCopyProgressNotification)},
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
-
     {"restrict-gamepad-access", flag_descriptions::kRestrictGamepadAccessName,
      flag_descriptions::kRestrictGamepadAccessDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kRestrictGamepadAccess)},
@@ -5249,11 +5234,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"sharing-prefer-vapid", flag_descriptions::kSharingPreferVapidName,
      flag_descriptions::kSharingPreferVapidDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingPreferVapid)},
-
-    {"sharing-qr-code-generator",
-     flag_descriptions::kSharingQRCodeGeneratorName,
-     flag_descriptions::kSharingQRCodeGeneratorDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(kSharingQRCodeGenerator)},
 
     {"sharing-send-via-sync", flag_descriptions::kSharingSendViaSyncName,
      flag_descriptions::kSharingSendViaSyncDescription, kOsAll,
@@ -5678,11 +5658,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutoScreenBrightnessDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAutoScreenBrightness)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    {"audio-worklet-realtime-thread",
-     flag_descriptions::kAudioWorkletRealtimeThreadName,
-     flag_descriptions::kAudioWorkletRealtimeThreadDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kAudioWorkletRealtimeThread)},
 
     {"privacy-sandbox-settings", flag_descriptions::kPrivacySandboxSettingsName,
      flag_descriptions::kPrivacySandboxSettingsDescription,
@@ -6423,12 +6398,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableGoogleIssuedCardName,
      flag_descriptions::kAutofillEnableGoogleIssuedCardDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableGoogleIssuedCard)},
-
-#if defined(TOOLKIT_VIEWS)
-    {"textfield-focus-on-tap-up", flag_descriptions::kTextfieldFocusOnTapUpName,
-     flag_descriptions::kTextfieldFocusOnTapUpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(views::features::kTextfieldFocusOnTapUp)},
-#endif  // defined(TOOLKIT_VIEWS)
 
     {"permission-chip", flag_descriptions::kPermissionChipName,
      flag_descriptions::kPermissionChipDescription, kOsDesktop,
@@ -7243,7 +7212,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(
          blink::features::
-             kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes)}
+             kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-input-in-diagnostics-app",
+     flag_descriptions::kEnableInputInDiagnosticsAppName,
+     flag_descriptions::kEnableInputInDiagnosticsAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableInputInDiagnosticsApp)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

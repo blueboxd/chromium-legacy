@@ -19,7 +19,8 @@
       android:layout_width="match_parent"
       android:layout_height="@dimen/feed_management_header_height"
       tools:ignore="UseCompoundDrawables" >
-      <ImageView
+    <ImageView
+          android:id="@+id/follow_management_back_arrow"
           android:layout_width="@dimen/follow_arrow_size"
           android:layout_height="@dimen/follow_arrow_size"
           android:layout_margin="@dimen/follow_margin"
@@ -30,6 +31,7 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_gravity="center"
+          android:layout_marginStart="@dimen/follow_margin"
           style="@style/TextAppearance.Headline.Primary"
           android:text="@string/follow_manage_following" />
   </LinearLayout>

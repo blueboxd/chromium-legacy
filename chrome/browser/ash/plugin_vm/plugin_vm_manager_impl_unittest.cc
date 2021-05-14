@@ -24,10 +24,10 @@
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
-#include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
@@ -70,6 +70,7 @@ class PluginVmManagerImplTest : public testing::Test {
   }
 
   ~PluginVmManagerImplTest() override {
+    chromeos::DlcserviceClient::Shutdown();
     histogram_tester_.reset();
     chrome_shelf_controller_.reset();
     shelf_model_.reset();
@@ -80,8 +81,6 @@ class PluginVmManagerImplTest : public testing::Test {
     chromeos::ConciergeClient::Shutdown();
     chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
-    // TODO(yusukes): Fix the shutdown order.
-    chromeos::DlcserviceClient::Shutdown();
   }
 
  protected:

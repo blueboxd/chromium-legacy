@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/tray_event_filter.h"
 
-#include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_util.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -57,10 +57,8 @@ void TrayEventFilter::OnTouchEvent(ui::TouchEvent* event) {
 
 void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
   // Users in a capture session may be trying to capture tray bubble(s).
-  if (features::IsCaptureModeEnabled() &&
-      CaptureModeController::Get()->IsActive()) {
+  if (capture_mode_util::IsCaptureModeActive())
     return;
-  }
 
   // The hit target window for the virtual keyboard isn't the same as its
   // views::Widget.
@@ -69,8 +67,10 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
       views::Widget::GetTopLevelWidgetForNativeView(target);
   const aura::Window* container =
       target ? GetContainerForWindow(target) : nullptr;
+  // TODO(https://crbug.com/1208083): Replace some of this logic with
+  // bubble_utils::ShouldCloseBubbleForEvent().
   if (target && container) {
-    const int container_id = container->id();
+    const int container_id = container->GetId();
     // Don't process events that occurred inside an embedded menu, for example
     // the right-click menu in a popup notification.
     if (container_id == kShellWindowId_MenuContainer)
@@ -78,7 +78,7 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
     // Don't process events that occurred inside a popup notification
     // from message center.
     if (container_id == kShellWindowId_ShelfContainer &&
-        target->type() == aura::client::WINDOW_TYPE_POPUP &&
+        target->GetType() == aura::client::WINDOW_TYPE_POPUP &&
         target_widget->GetName() ==
             AshMessagePopupCollection::kMessagePopupWidgetName) {
       return;
@@ -107,7 +107,7 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
     // |bounds| so that events located outside the bubble's visual bounds are
     // treated as outside of the bubble.
     int bubble_container_id =
-        GetContainerForWindow(bubble_widget->GetNativeWindow())->id();
+        GetContainerForWindow(bubble_widget->GetNativeWindow())->GetId();
     if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
         bubble_container_id == kShellWindowId_SettingBubbleContainer) {
       bounds.Intersect(bubble_widget->GetWorkAreaBoundsInScreen());

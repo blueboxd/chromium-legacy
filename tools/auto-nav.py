@@ -5,7 +5,7 @@
 This script runs Chrome and automatically navigates through the given list of
 URLs the specified number of times.
 
-Usage: vpython auto-nav.py <chrome dir> <number of navigations> <url> <url> ...
+Usage: vpython3 auto-nav.py <chrome dir> <number of navigations> <url> <url> ...
 
 Optional flags:
 * --interval <seconds>, -i <seconds>: specify a number of seconds to wait
@@ -26,7 +26,7 @@ script, which would cause an unrecognized-argument error.
 """
 
 # [VPYTHON:BEGIN]
-# python_version: "2.7"
+# python_version: "3.8"
 # wheel: <
 #   name: "infra/python/wheels/selenium-py2_py3"
 #   version: "version:3.14.0"
@@ -37,7 +37,7 @@ script, which would cause an unrecognized-argument error.
 # >
 # wheel: <
 #   name: "infra/python/wheels/psutil/${vpython_platform}"
-#   version: "version:5.6.2"
+#   version: "version:5.7.2"
 # >
 # [VPYTHON:END]
 
@@ -46,16 +46,17 @@ import os
 import subprocess
 import sys
 import time
+import urllib
 
 try:
   import psutil
   from selenium import webdriver
 except ImportError:
-  print('Error importing required modules. Run with vpython instead of python.')
+  print('Error importing required modules. Run with vpython3 instead of python.')
   sys.exit(1)
 
 DEFAULT_INTERVAL = 1
-
+EXIT_CODE_ERROR = 1
 
 # Splits list |positional_args| into two lists: |urls| and |chrome_args|, where
 # arguments starting with '-' are treated as chrome args, and the rest as URLs.
@@ -115,7 +116,12 @@ def ParseArgs():
   if not args.url:
     parser.print_usage()
     print(os.path.basename(__file__) + ': error: missing URL argument')
-    exit(1)
+    exit(EXIT_CODE_ERROR)
+  for url in args.url:
+    if not urllib.parse.urlparse(url).scheme:
+      print(os.path.basename(__file__) +
+            ': error: URL is missing required scheme (e.g., "https://"): ' + url)
+      exit(EXIT_CODE_ERROR)
   return [args, chrome_args]
 
 
@@ -126,7 +132,7 @@ def ExitIfNotFound(path, error_message=None):
     print('File not found: {}.'.format(path))
     if error_message:
       print(error_message)
-    exit()
+    exit(EXIT_CODE_ERROR)
 
 
 def main():
@@ -152,7 +158,7 @@ def main():
 
   if args.start_prompt:
     driver.get(args.url[0])
-    raw_input('Press Enter to begin navigation...')
+    input('Press Enter to begin navigation...')
 
   # Start IdleWakeups, if using, passing the browser process's ID as its target.
   # IdleWakeups will monitor the browser process and its children. Other running
@@ -179,7 +185,7 @@ def main():
       time.sleep(interval)
 
   if args.exit_prompt:
-    raw_input('Press Enter to exit...')
+    input('Press Enter to exit...')
   driver.quit()
 
   # Print IdleWakeups' output, if using.

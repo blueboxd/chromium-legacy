@@ -10,6 +10,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/full_restore/full_restore_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "base/containers/contains.h"
@@ -25,7 +26,7 @@ namespace {
 bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
                                             int container_id) {
   for (; window; window = window->parent()) {
-    if (window->id() >= container_id)
+    if (window->GetId() >= container_id)
       return true;
   }
   return false;
@@ -33,7 +34,7 @@ bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
 
 bool BelongsToContainerWithId(const aura::Window* window, int container_id) {
   for (; window; window = window->parent()) {
-    if (window->id() == container_id)
+    if (window->GetId() == container_id)
       return true;
   }
   return false;
@@ -65,11 +66,11 @@ bool AshFocusRules::IsToplevelWindow(const aura::Window* window) const {
 
   // The window must exist within a container that supports activation.
   // The window cannot be blocked by a modal transient.
-  return base::Contains(activatable_container_ids_, window->parent()->id());
+  return base::Contains(activatable_container_ids_, window->parent()->GetId());
 }
 
 bool AshFocusRules::SupportsChildActivation(const aura::Window* window) const {
-  return base::Contains(activatable_container_ids_, window->id());
+  return base::Contains(activatable_container_ids_, window->GetId());
 }
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
@@ -93,7 +94,7 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
 
   const aura::Window* const parent = window->parent();
   return desks_util::IsDeskContainer(parent) ||
-         parent->id() == kShellWindowId_LockScreenContainer;
+         parent->GetId() == kShellWindowId_LockScreenContainer;
 }
 
 bool AshFocusRules::CanActivateWindow(const aura::Window* window) const {
@@ -102,6 +103,12 @@ bool AshFocusRules::CanActivateWindow(const aura::Window* window) const {
     return true;
 
   if (window->GetProperty(full_restore::kLaunchedFromFullRestoreKey))
+    return false;
+
+  // Special case during Full Restore that prevents the app list from being
+  // activated during tablet mode if the topmost window of any root window is a
+  // Full Restore'd window. See http://crbug/1202923.
+  if (!FullRestoreController::CanActivateAppList(window))
     return false;
 
   if (!BaseFocusRules::CanActivateWindow(window))

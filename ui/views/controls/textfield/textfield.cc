@@ -763,19 +763,9 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
-  static const bool kTakeFocusOnTapUp =
-      base::FeatureList::IsEnabled(features::kTextfieldFocusOnTapUp);
-
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      if (!kTakeFocusOnTapUp) {
-        RequestFocusForGesture(event->details());
-        event->SetHandled();
-      }
-      break;
     case ui::ET_GESTURE_TAP:
-      if (kTakeFocusOnTapUp)
-        RequestFocusForGesture(event->details());
+      RequestFocusForGesture(event->details());
       if (controller_ && controller_->HandleGestureEvent(this, *event)) {
         event->SetHandled();
         return;
@@ -881,7 +871,7 @@ bool Textfield::CanHandleAccelerators() const {
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  SelectAll(PlatformStyle::kTextfieldScrollsToStartOnFocusChange);
+  SelectAll(false);
 }
 
 bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
@@ -1098,11 +1088,6 @@ void Textfield::OnBlur() {
 
   gfx::RenderText* render_text = GetRenderText();
   render_text->set_focused(false);
-
-  // If necessary, yank the cursor to the logical start of the textfield.
-  if (PlatformStyle::kTextfieldScrollsToStartOnFocusChange &&
-      !render_text->multiline())
-    model_->MoveCursorTo(gfx::SelectionModel(0, gfx::CURSOR_FORWARD));
 
   if (GetInputMethod()) {
     GetInputMethod()->DetachTextInputClient(this);

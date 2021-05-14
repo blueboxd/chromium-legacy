@@ -14,7 +14,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -661,14 +661,19 @@ void SmbFileSystem::HandleGetDeleteListCallback(
     return;
   }
 
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   for (int i = 0; i < delete_list.entries_size(); ++i) {
     const base::FilePath entry_path(delete_list.entries(i));
     bool is_last_entry = (i == delete_list.entries_size() - 1);
 
-    auto reply =
-        base::BindOnce(&SmbFileSystem::HandleDeleteEntryCallback, AsWeakPtr(),
-                       copyable_callback, list_error, is_last_entry);
+    // The `reply` callbacks will run `callback` only once, but we need to bind
+    // it into each reply callback, so we must SplitOnceCallback() to each
+    // `reply`.
+    auto split_callback = base::SplitOnceCallback(std::move(callback));
+    callback = std::move(split_callback.first);
+
+    auto reply = base::BindOnce(&SmbFileSystem::HandleDeleteEntryCallback,
+                                AsWeakPtr(), std::move(split_callback.second),
+                                list_error, is_last_entry);
 
     SmbTask task = base::BindOnce(
         &SmbProviderClient::DeleteEntry, GetWeakSmbProviderClient(),

@@ -166,7 +166,7 @@ class FakeArcWindowDelegate : public ArcImeService::ArcWindowDelegate {
   bool IsInArcAppWindow(const aura::Window* window) const override {
     if (!window)
       return false;
-    return arc_window_id_.count(window->id());
+    return arc_window_id_.count(window->GetId());
   }
 
   void RegisterFocusObserver() override {}
@@ -550,6 +550,19 @@ TEST_F(ArcImeServiceTest, SetComposingRegion) {
       gfx::Rect(), gfx::Range(0, 100), std::u16string(100, 'a'),
       gfx::Range(0, 0), false);
   instance_->SetCompositionFromExistingText(gfx::Range(50, 101), {});
+  EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
+}
+
+TEST_F(ArcImeServiceTest, ExtendSelectionAndDeleteThenSetComposingRegion) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+  instance_->OnCursorRectChangedWithSurroundingText(
+      gfx::Rect(), gfx::Range(0, 100), std::u16string(100, 'a'),
+      gfx::Range(100, 100), false);
+
+  instance_->ExtendSelectionAndDelete(1, 0);
+  const gfx::Range composing_range(0, 99);
+  instance_->SetCompositionFromExistingText(composing_range, {});
+
   EXPECT_EQ(composing_range, fake_arc_ime_bridge_->composing_range());
 }
 

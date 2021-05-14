@@ -152,6 +152,9 @@ class COMPONENT_EXPORT(EVDEV) EventDeviceInfo {
   // Determine whether there's a touchscreen on this device.
   bool HasTouchscreen() const;
 
+  // Determine whether there's a stylus garage switch on this device.
+  bool HasStylusSwitch() const;
+
   // Determine whether there's a gamepad on this device.
   bool HasGamepad() const;
 
@@ -160,6 +163,11 @@ class COMPONENT_EXPORT(EVDEV) EventDeviceInfo {
 
   // Determine if this is a dedicated device for a stylus button.
   bool IsStylusButtonDevice() const;
+
+  // Determine whether this is a dedicated device for microphone mute hw switch
+  // on Chrome OS. The switch disables the internal microphone feed. The input
+  // device is used to track the mute switch state.
+  bool IsMicrophoneMuteSwitchDevice() const;
 
   // The device type (internal or external.)
   InputDeviceType device_type() const { return device_type_; }

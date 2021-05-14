@@ -290,6 +290,10 @@ const base::Feature kEnableDnsProxy{"EnableDnsProxy",
 const base::Feature kEnableHostnameSetting{"EnableHostnameSetting",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the input device cards will be shown in the diagnostics app.
+const base::Feature kEnableInputInDiagnosticsApp{
+    "EnableInputInDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables LocalSearchService to be initialized.
 const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -365,7 +369,7 @@ const base::Feature kFilesZipUnpack{"FilesZipUnpack",
 // Enables or disables handle of `closeView` message from Gaia. The message is
 // supposed to end the flow.
 const base::Feature kGaiaCloseViewMessage{"GaiaCloseViewMessage",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the Gaia reauth endpoint with deleted user customization page.
 const base::Feature kGaiaReauthEndpoint{"GaiaReauthEndpoint",
@@ -473,6 +477,11 @@ const base::Feature kLacrosSupport{"LacrosSupport",
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables notification of when a microphone-using app is launched while the
+// microphone is muted.
+const base::Feature kMicMuteNotifications{"MicMuteNotifications",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
@@ -840,6 +849,10 @@ bool IsGaiaReauthEndpointEnabled() {
   return base::FeatureList::IsEnabled(kGaiaReauthEndpoint);
 }
 
+bool IsInputInDiagnosticsAppEnabled() {
+  return base::FeatureList::IsEnabled(kEnableInputInDiagnosticsApp);
+}
+
 bool IsInputNoiseCancellationUiEnabled() {
   return base::FeatureList::IsEnabled(kEnableInputNoiseCancellationUi);
 }
@@ -851,6 +864,10 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsKerberosSettingsSectionEnabled() {
   return base::FeatureList::IsEnabled(kKerberosSettingsSection);
+}
+
+bool IsMicMuteNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kMicMuteNotifications);
 }
 
 bool IsMinimumChromeVersionEnabled() {

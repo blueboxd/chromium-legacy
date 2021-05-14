@@ -13,11 +13,11 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <QuartzCore/QuartzCore.h>
 
-typedef enum {
+typedef NS_ENUM(unsigned int, CATransactionPhase) {
   kCATransactionPhasePreLayout,
   kCATransactionPhasePreCommit,
   kCATransactionPhasePostCommit,
-} CATransactionPhase;
+};
 
 API_AVAILABLE(macos(10.11))
 @interface CATransaction ()

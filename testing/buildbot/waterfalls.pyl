@@ -138,6 +138,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'lacros_smoke_tast_tests_eve',
@@ -152,6 +153,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
+          'linux-bionic',
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_sizes',
@@ -166,7 +168,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'swarming': {
           'dimension_sets': [
@@ -2199,7 +2201,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
-          'isolated_scripts': 'gpu_dawn_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts_win_intel',
         },
       },
       'Dawn Win10 x64 DEPS Release (NVIDIA)': {
@@ -2221,7 +2223,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
-          'isolated_scripts': 'gpu_dawn_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts_win_intel',
         },
       },
       'Dawn Win10 x64 Release (NVIDIA)': {
@@ -2245,7 +2247,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
-          'isolated_scripts': 'gpu_dawn_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts_win_intel',
         },
       },
       'Dawn Win10 x86 DEPS Release (NVIDIA)': {
@@ -2267,7 +2269,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
-          'isolated_scripts': 'gpu_dawn_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts_win_intel',
         },
       },
       'Dawn Win10 x86 Release (NVIDIA)': {
@@ -3385,7 +3387,7 @@
       },
       'Chromium Linux Goma RBE Staging': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'all',
@@ -3396,7 +3398,7 @@
       },
       'Chromium Linux Goma RBE Staging (clobber)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'all',
@@ -3407,7 +3409,7 @@
       },
       'Chromium Linux Goma RBE Staging (dbg)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'all',
@@ -3418,7 +3420,7 @@
       },
       'Chromium Linux Goma RBE Staging (dbg) (clobber)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'all',
@@ -4922,16 +4924,6 @@
         },
       },
       'linux-bionic-rel': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
-        },
-      },
-      'linux-experimental-next-rel': {
         'mixins': [
           'linux-bionic',
         ],

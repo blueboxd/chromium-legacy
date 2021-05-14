@@ -105,7 +105,7 @@
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
@@ -1081,7 +1081,7 @@ class ChromeShelfControllerTest : public BrowserWithTestWindowTest {
   TestBrowserWindow* CreateTestBrowserWindowAura() {
     std::unique_ptr<aura::Window> window(
         new aura::Window(nullptr, aura::client::WINDOW_TYPE_NORMAL));
-    window->set_id(0);
+    window->SetId(0);
     window->Init(ui::LAYER_TEXTURED);
     aura::client::ParentWindowWithContext(window.get(), GetContext(),
                                           gfx::Rect(200, 200));

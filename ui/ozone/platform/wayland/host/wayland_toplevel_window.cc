@@ -218,7 +218,7 @@ std::string WaylandToplevelWindow::GetWindowUniqueId() const {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return window_unique_id_;
 #else
-  return std::string();
+  return wm_class_class_;
 #endif
 }
 
@@ -239,6 +239,10 @@ bool WaylandToplevelWindow::ShouldUseNativeFrame() const {
   return use_native_frame_ && const_cast<WaylandToplevelWindow*>(this)
                                   ->connection()
                                   ->xdg_decoration_manager_v1();
+}
+
+bool WaylandToplevelWindow::ShouldUpdateWindowShape() const {
+  return true;
 }
 
 base::Optional<std::vector<gfx::Rect>> WaylandToplevelWindow::GetWindowShape()

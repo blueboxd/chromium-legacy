@@ -37,7 +37,7 @@ const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
 // TODO (crbug.com/1166910): Remove once the HandwritingRecognition API is more
 // widely available (likely M92).
 const base::Feature kHandwritingRecognitionWebPlatformApi{
-    "HandwritingRecognitionWebPlatformApi", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HandwritingRecognitionWebPlatformApi", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether the HandwritingRecognition API can be enabled. Disabling this feature
 // disables both the origin trial and the mojo interface. Defaults to enabled
@@ -382,9 +382,6 @@ const base::Feature kWebFontsCacheAwareTimeoutAdaption {
 const base::Feature kBlockingFocusWithoutUserActivation{
     "BlockingFocusWithoutUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAudioWorkletRealtimeThread{
-    "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // A server-side switch for the REALTIME_AUDIO thread priority of
 // RealtimeAudioWorkletThread object. When disabled, it will use the NORMAL
 // priority thread.
@@ -449,6 +446,20 @@ const base::FeatureParam<int> kForceDarkTextLightnessThresholdParam{
 // Can also set to -1 to let Blink's internal settings control the value
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
+
+const base::FeatureParam<ForceDarkIncreaseTextContrast>::Option
+    forcedark_increase_text_contrast_options[] = {
+        {ForceDarkIncreaseTextContrast::kUseBlinkSettings,
+         "use_blink_settings_for_method"},
+        {ForceDarkIncreaseTextContrast::kFalse, "false"},
+        {ForceDarkIncreaseTextContrast::kTrue, "true"}};
+
+// Should text contrast be increased.
+const base::FeatureParam<ForceDarkIncreaseTextContrast>
+    kForceDarkIncreaseTextContrastParam{
+        &kForceWebContentsDarkMode, "increase_text_contrast",
+        ForceDarkIncreaseTextContrast::kUseBlinkSettings,
+        &forcedark_increase_text_contrast_options};
 
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
 const base::Feature kWebRtcUseMinMaxVEADimensions {
@@ -813,6 +824,15 @@ const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
 // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/URLProtocolHandler/explainer.md
 const base::Feature kWebAppEnableProtocolHandlers{
     "WebAppEnableProtocolHandlers", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether web apps are able to be treated as note-taking apps. Controls parsing
+// of "note_taking" dictionary field and "new_note_url" entry in web app
+// manifests. Also controls whether the parsed field is used in browser. See
+// incubation spec:
+// https://wicg.github.io/manifest-incubations/#note_taking-member
+// TODO(crbug.com/1185678): Enable by default after M92 branches.
+const base::Feature kWebAppNoteTaking{"WebAppNoteTaking",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled NV12 frames on a GPU will be forwarded to libvpx encoders
 // without conversion to I420.

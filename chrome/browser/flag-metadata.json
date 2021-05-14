@@ -234,11 +234,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "ash-enable-interactive-window-cycle-list",
-    "owners": [ "chinsenj", "tclaiborne" ],
-    "expiry_milestone": 91
-  },
-  {
     "name": "ash-enable-pip-rounded-corners",
     "owners": [ "edcourtney" ],
     "expiry_milestone": 90
@@ -279,11 +274,6 @@
     "name": "assistant-intent-translate-info",
     "owners": [ "jds", "chrome-language" ],
     "expiry_milestone": 94
-  },
-  {
-    "name": "audio-worklet-realtime-thread",
-    "owners": [ "//third_party/blink/renderer/modules/webaudio/OWNERS" ],
-    "expiry_milestone": 90
   },
   {
     "name": "auto-screen-brightness",
@@ -1140,7 +1130,7 @@
   {
     "name": "dns-httpssvc",
     "owners": [ "dmcardle", "ericorth" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 93
   },
   {
     "name": "dns-over-https",
@@ -1659,6 +1649,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "enable-desktop-pwas-prefix-app-name-in-window-title",
+    "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 98
+  },
+  {
     "name": "enable-desktop-pwas-protocol-handling",
     "owners": [ "samtan@microsoft.com", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 95
@@ -1935,6 +1930,11 @@
     "name": "enable-inline-update-flow",
     "owners": [ "nyquist", "dtrainor" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "enable-input-in-diagnostics-app",
+    "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
+    "expiry_milestone": 98
   },
   {
     "name": "enable-input-noise-cancellation-ui",
@@ -4741,11 +4741,6 @@
     "expiry_milestone": 87
   },
   {
-    "name": "sharing-qr-code-generator",
-    "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "sharing-send-via-sync",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 86
@@ -4832,16 +4827,6 @@
     "name": "site-isolation-trial-opt-out",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "smart-dim-model-v3",
-    "owners": [ "alanlxl", "amoylan", "jiameng" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "smart-dim-new-ml-agent",
-    "owners": [ "alanlxl", "amoylan" ],
-    "expiry_milestone": 90
   },
   {
     "name": "smart-suggestion-for-large-downloads",
@@ -4969,11 +4954,6 @@
     "name": "text-fragment-color-change",
     "owners": [ "cheickcisse@google.com" ],
     "expiry_milestone": 92
-  },
-  {
-    "name": "textfield-focus-on-tap-up",
-    "owners": [ "collinbaker" ],
-    "expiry_milestone": 86
   },
   {
     "name": "texture-layer-skip-wait-for-activation",

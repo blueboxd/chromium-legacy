@@ -110,7 +110,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
 
-BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAudioWorkletThreadRealtimePriority;
 
@@ -127,6 +126,9 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkTextLightnessThresholdParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkBackgroundLightnessThresholdParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    ForceDarkIncreaseTextContrast>
+    kForceDarkIncreaseTextContrastParam;
 
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
@@ -325,6 +327,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLinkCapturing;
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableProtocolHandlers;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppNoteTaking;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcLibvpxEncodeNV12;
 

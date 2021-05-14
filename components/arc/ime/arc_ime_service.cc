@@ -549,7 +549,7 @@ void ArcImeService::EnsureCaretNotInRect(const gfx::Rect& rect_in_screen) {
   aura::Window* top_level_window = focused_arc_window_->GetToplevelWindow();
   // If the window is not a notification, the window move is handled by
   // Android.
-  if (top_level_window->type() != aura::client::WINDOW_TYPE_POPUP)
+  if (top_level_window->GetType() != aura::client::WINDOW_TYPE_POPUP)
     return;
   wm::EnsureWindowNotInRect(top_level_window, rect_in_screen);
 }
@@ -628,7 +628,7 @@ bool ArcImeService::ShouldDoLearning() {
 bool ArcImeService::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  if (!range.IsBoundedBy(text_range_))
+  if (text_range_.IsValid() && !range.IsBoundedBy(text_range_))
     return false;
 
   InvalidateSurroundingTextAndSelectionRange();

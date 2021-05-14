@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
@@ -462,6 +463,8 @@ void LocalDOMWindow::ReportPermissionsPolicyViolation(
     GetFrame()->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kViolation,
         mojom::blink::ConsoleMessageLevel::kError, body->message()));
+
+    CountPermissionsPolicyViolation(feature);
   }
 }
 
@@ -593,6 +596,16 @@ void LocalDOMWindow::CountUse(mojom::WebFeature feature) {
     return;
   if (auto* loader = GetFrame()->Loader().GetDocumentLoader())
     loader->CountUse(feature);
+}
+
+void LocalDOMWindow::CountPermissionsPolicyViolation(
+    mojom::blink::PermissionsPolicyFeature feature) const {
+  if (!GetFrame())
+    return;
+  if (auto* loader = GetFrame()->Loader().GetDocumentLoader()) {
+    loader->GetUseCounter().CountPermissionsPolicyViolation(feature,
+                                                            *GetFrame());
+  }
 }
 
 void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(

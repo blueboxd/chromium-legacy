@@ -9,7 +9,6 @@
 #include <cstring>
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -498,6 +497,15 @@ bool EventDeviceInfo::IsStylusButtonDevice() const {
   return false;
 }
 
+bool EventDeviceInfo::IsMicrophoneMuteSwitchDevice() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return HasSwEvent(SW_MUTE_DEVICE) && (device_type_ == INPUT_DEVICE_UNKNOWN ||
+                                        device_type_ == INPUT_DEVICE_INTERNAL);
+#else
+  return false;
+#endif
+}
+
 bool IsInKeyboardBlockList(input_id input_id_) {
   for (const auto& blocklist_id : kKeyboardBlocklist) {
     if (input_id_.vendor == blocklist_id.vendor &&
@@ -543,6 +551,11 @@ bool EventDeviceInfo::HasTablet() const {
 
 bool EventDeviceInfo::HasTouchscreen() const {
   return HasAbsXY() && HasDirect();
+}
+
+bool EventDeviceInfo::HasStylusSwitch() const {
+  return HasSwEvent(SW_PEN_INSERTED) && (device_type_ == INPUT_DEVICE_UNKNOWN ||
+                                         device_type_ == INPUT_DEVICE_INTERNAL);
 }
 
 bool EventDeviceInfo::HasGamepad() const {

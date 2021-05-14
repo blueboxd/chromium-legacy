@@ -337,6 +337,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="OptimizationGuide.ModelExecutor.RunCount.{OptimizationTarget}"
     units="count" expires_after="M94">
+  <obsolete>
+    Removed 2021-May.
+  </obsolete>
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -585,6 +588,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records whether the Download Service notified whether a model download has
     succeeded or failed.
+  </summary>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PredictionModelDownloadManager.ReplaceFileError"
+    enum="PlatformFileError" expires_after="M94">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Records the exact error whenever writing a model file fails at the step
+    where the model is moved from the scratch directory to its final location.
+    Recorded every time a model file is downloaded and being processed for
+    storage.
   </summary>
 </histogram>
 

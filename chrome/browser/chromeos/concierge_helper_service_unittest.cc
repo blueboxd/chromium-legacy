@@ -10,8 +10,7 @@
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "dbus/bus.h"
 #include "dbus/object_proxy.h"
@@ -79,14 +78,12 @@ class ConciergeHelperServiceTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    DBusThreadManager::GetSetterForTesting();
     TestConciergeClient::Initialize();
     service_ = ConciergeHelperService::GetForBrowserContext(&profile_);
   }
 
   void TearDown() override {
     ConciergeClient::Shutdown();  // deletes the client created in SetUp().
-    DBusThreadManager::Shutdown();
   }
 
  protected:

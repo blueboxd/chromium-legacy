@@ -2797,9 +2797,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webassembly-simd", flag_descriptions::kEnableWasmSimdName,
      flag_descriptions::kEnableWasmSimdDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblySimd)},
-    {"enable-webassembly-threads", flag_descriptions::kEnableWasmThreadsName,
-     flag_descriptions::kEnableWasmThreadsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebAssemblyThreads)},
     {"enable-webassembly-tiering", flag_descriptions::kEnableWasmTieringName,
      flag_descriptions::kEnableWasmTieringDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyTiering)},
@@ -7220,6 +7217,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableInputInDiagnosticsAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableInputInDiagnosticsApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_ANDROID)
+    {"link-doctor-deprecation-android",
+     flag_descriptions::kLinkDoctorDeprecationAndroidName,
+     flag_descriptions::kLinkDoctorDeprecationAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kLinkDoctorDeprecationAndroid)}
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

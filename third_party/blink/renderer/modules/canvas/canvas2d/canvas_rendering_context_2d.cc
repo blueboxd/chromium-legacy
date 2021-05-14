@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -155,10 +156,20 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
   ValidateStateStack();
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+V8RenderingContext* CanvasRenderingContext2D::AsV8RenderingContext() {
+  return MakeGarbageCollected<V8RenderingContext>(this);
+}
+
+#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
 void CanvasRenderingContext2D::SetCanvasGetContextResult(
     RenderingContext& result) {
   result.SetCanvasRenderingContext2D(this);
 }
+
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
@@ -537,7 +548,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
 
   // Map the <canvas> font into the text style. If the font uses keywords like
   // larger/smaller, these will work relative to the canvas.
-  ComputedStyle* font_style;
+  scoped_refptr<ComputedStyle> font_style;
   const ComputedStyle* computed_style = canvas()->EnsureComputedStyle();
   if (computed_style) {
     auto i = fonts_resolved_using_current_style_.find(new_font);
@@ -563,7 +574,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
 
       font_style->SetFontDescription(element_font_description);
       canvas()->GetDocument().GetStyleEngine().ComputeFont(
-          *canvas(), font_style, *parsed_style);
+          *canvas(), font_style.get(), *parsed_style);
 
       // We need to reset Computed and Adjusted size so we skip zoom and
       // minimum font size.

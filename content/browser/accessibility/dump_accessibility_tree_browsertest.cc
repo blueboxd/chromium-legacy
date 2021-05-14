@@ -1596,14 +1596,22 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityGraphicsRoles) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityContenteditableBr) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "LayoutNG");  // Should be default.
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-br.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
-                       AccessibilityContenteditableBrDisableNGLayout) {
-  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-br-disable-ng-layout.html"));
+                       AccessibilityContenteditableBr) {
+  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-br.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityContenteditableFontSize) {
+  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-font-size.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
+                       AccessibilityContenteditableFontSize) {
+  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-font-size.html"));
 }
 
 #if defined(OS_ANDROID) || defined(OS_MAC)
@@ -1622,8 +1630,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityContenteditableDocsLi) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "LayoutNG");  // Should be default.
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-docs-li.html"));
 }
 
@@ -1635,11 +1641,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityContenteditableLiContainsPresentation) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "LayoutNG");  // Should be default.
   RunHtmlTest(
       FILE_PATH_LITERAL("contenteditable-li-contains-presentation.html"));
 }
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
                        AccessibilityContenteditableLiContainsPresentation) {
   RunHtmlTest(FILE_PATH_LITERAL(
@@ -1648,15 +1653,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityContenteditableSpans) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "LayoutNG");  // Should be default.
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-spans.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeWithoutLayoutNGTest,
-                       AccessibilityContenteditableSpansDisableNGLayout) {
-  RunHtmlTest(
-      FILE_PATH_LITERAL("contenteditable-spans-disable-ng-layout.html"));
+                       AccessibilityContenteditableSpans) {
+  RunHtmlTest(FILE_PATH_LITERAL("contenteditable-spans.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -1712,6 +1714,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCustomElement) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCustomElementEmptySlot) {
   RunHtmlTest(FILE_PATH_LITERAL("custom-element-empty-slot.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCustomElementHidden) {
+  RunHtmlTest(FILE_PATH_LITERAL("custom-element-hidden.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCustomElementRemoveNodes) {
+  RunHtmlTest(FILE_PATH_LITERAL("custom-element-remove-nodes.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,

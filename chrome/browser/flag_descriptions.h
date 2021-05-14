@@ -684,9 +684,6 @@ extern const char kEnableWasmLazyCompilationDescription[];
 extern const char kEnableWasmSimdName[];
 extern const char kEnableWasmSimdDescription[];
 
-extern const char kEnableWasmThreadsName[];
-extern const char kEnableWasmThreadsDescription[];
-
 extern const char kEnableWasmTieringName[];
 extern const char kEnableWasmTieringDescription[];
 
@@ -867,6 +864,9 @@ extern const char kLegacyTLSEnforcedDescription[];
 
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
+
+extern const char kLinkDoctorDeprecationAndroidName[];
+extern const char kLinkDoctorDeprecationAndroidDescription[];
 
 extern const char kLiteVideoName[];
 extern const char kLiteVideoDescription[];

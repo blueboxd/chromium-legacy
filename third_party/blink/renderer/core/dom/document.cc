@@ -84,6 +84,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_interest_cohort.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_elementcreationoptions_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlscriptelement_svgscriptelement.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -1043,6 +1045,30 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
       QualifiedName(g_null_atom, name, g_null_atom), this);
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+AtomicString GetTypeExtension(
+    Document* document,
+    const V8UnionElementCreationOptionsOrString* string_or_options) {
+  DCHECK(string_or_options);
+
+  switch (string_or_options->GetContentType()) {
+    case V8UnionElementCreationOptionsOrString::ContentType::
+        kElementCreationOptions: {
+      const ElementCreationOptions* options =
+          string_or_options->GetAsElementCreationOptions();
+      if (options->hasIs())
+        return AtomicString(options->is());
+      return AtomicString();
+    }
+    case V8UnionElementCreationOptionsOrString::ContentType::kString:
+      UseCounter::Count(document,
+                        WebFeature::kDocumentCreateElement2ndArgStringHandling);
+      return AtomicString(string_or_options->GetAsString());
+  }
+  NOTREACHED();
+  return AtomicString();
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 AtomicString GetTypeExtension(
     Document* document,
     const StringOrElementCreationOptions& string_or_options) {
@@ -1064,15 +1090,26 @@ AtomicString GetTypeExtension(
 
   return AtomicString();
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
 Element* Document::CreateElementForBinding(
     const AtomicString& local_name,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8UnionElementCreationOptionsOrString* string_or_options,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const StringOrElementCreationOptions& string_or_options,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  if (!string_or_options) {
+    return CreateElementForBinding(local_name, exception_state);
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (string_or_options.IsNull()) {
     return CreateElementForBinding(local_name, exception_state);
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // 1. If localName does not match Name production, throw InvalidCharacterError
   if (!IsValidElementName(this, local_name)) {
@@ -1089,8 +1126,10 @@ Element* Document::CreateElementForBinding(
                            ? html_names::xhtmlNamespaceURI
                            : g_null_atom);
 
+#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   bool create_builtin = string_or_options.IsElementCreationOptions() ||
                         string_or_options.IsString();
+#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // 3.
   const AtomicString& is = GetTypeExtension(this, string_or_options);
@@ -1098,7 +1137,12 @@ Element* Document::CreateElementForBinding(
   // 5. Let element be the result of creating an element given ...
   Element* element =
       CreateElement(q_name, CreateElementFlags::ByCreateElement(),
-                    create_builtin ? is : g_null_atom);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                    is
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                    create_builtin ? is : g_null_atom
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      );
 
   return element;
 }
@@ -1143,10 +1187,18 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 Element* Document::createElementNS(
     const AtomicString& namespace_uri,
     const AtomicString& qualified_name,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8UnionElementCreationOptionsOrString* string_or_options,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const StringOrElementCreationOptions& string_or_options,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  DCHECK(string_or_options);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (string_or_options.IsNull())
     return createElementNS(namespace_uri, qualified_name, exception_state);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // 1. Validate and extract
   QualifiedName q_name(
@@ -1154,8 +1206,10 @@ Element* Document::createElementNS(
   if (q_name == QualifiedName::Null())
     return nullptr;
 
+#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   bool create_builtin = string_or_options.IsElementCreationOptions() ||
                         string_or_options.IsString();
+#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // 2.
   const AtomicString& is = GetTypeExtension(this, string_or_options);
@@ -1171,7 +1225,12 @@ Element* Document::createElementNS(
   // 3. Let element be the result of creating an element
   Element* element =
       CreateElement(q_name, CreateElementFlags::ByCreateElement(),
-                    create_builtin ? is : g_null_atom);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                    is
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                    create_builtin ? is : g_null_atom
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      );
 
   return element;
 }
@@ -2479,7 +2538,7 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
     focused_element_->blur();
 }
 
-const ComputedStyle* Document::StyleForPage(int32_t page_index) {
+scoped_refptr<const ComputedStyle> Document::StyleForPage(uint32_t page_index) {
   UpdateDistributionForUnknownReasons();
 
   AtomicString page_name;
@@ -2514,7 +2573,7 @@ bool Document::IsPageBoxVisible(uint32_t page_index) {
 
 void Document::GetPageDescription(uint32_t page_index,
                                   WebPrintPageDescription* description) {
-  const ComputedStyle* style = StyleForPage(page_index);
+  scoped_refptr<const ComputedStyle> style = StyleForPage(page_index);
 
   double width = description->size.Width();
   double height = description->size.Height();
@@ -2626,7 +2685,7 @@ void Document::Initialize() {
   DCHECK_EQ(lifecycle_.GetState(), DocumentLifecycle::kInactive);
   DCHECK(!ax_object_cache_ || this != &AXObjectCacheOwner());
 
-  layout_view_ = MakeGarbageCollected<LayoutView>(this);
+  layout_view_ = new LayoutView(this);
   SetLayoutObject(layout_view_);
 
   layout_view_->SetStyle(GetStyleResolver().StyleForViewport());
@@ -2830,6 +2889,13 @@ Document& Document::AXObjectCacheOwner() const {
   return *doc;
 }
 
+static ui::AXMode ComputeAXModeFromAXContexts(Vector<AXContext*> ax_contexts) {
+  ui::AXMode ax_mode = 0;
+  for (AXContext* context : ax_contexts)
+    ax_mode |= context->GetAXMode();
+  return ax_mode;
+}
+
 void Document::AddAXContext(AXContext* context) {
   // The only case when |&cache_owner| is not |this| is when this is a
   // pop-up. We want pop-ups to share the AXObjectCache of their parent
@@ -2843,11 +2909,16 @@ void Document::AddAXContext(AXContext* context) {
     return;
 
   ax_contexts_.push_back(context);
-  if (ax_contexts_.size() != 1)
+  if (ax_contexts_.size() != 1) {
+    DCHECK(ax_object_cache_);
+    ax_object_cache_->SetAXMode(ComputeAXModeFromAXContexts(ax_contexts_));
     return;
+  }
 
-  if (!ax_object_cache_)
-    ax_object_cache_ = AXObjectCache::Create(*this);
+  if (!ax_object_cache_) {
+    ax_object_cache_ =
+        AXObjectCache::Create(*this, ComputeAXModeFromAXContexts(ax_contexts_));
+  }
 }
 
 void Document::RemoveAXContext(AXContext* context) {
@@ -2856,8 +2927,12 @@ void Document::RemoveAXContext(AXContext* context) {
                    [&context](const auto& item) { return item == context; });
   if (iter != ax_contexts_.end())
     ax_contexts_.erase(iter);
-  if (ax_contexts_.size() == 0)
+  if (ax_contexts_.size() == 0) {
     ClearAXObjectCache();
+  } else {
+    DCHECK(ax_object_cache_);
+    ax_object_cache_->SetAXMode(ComputeAXModeFromAXContexts(ax_contexts_));
+  }
 }
 
 void Document::ClearAXObjectCache() {
@@ -2876,8 +2951,10 @@ void Document::ClearAXObjectCache() {
   // to invalidate / reset the AXObjectCache while keeping it around. We
   // should rewrite that as a method on AXObjectCache rather than destroying
   // and recreating it here.
-  if (ax_contexts_.size() > 0 && GetLayoutView())
-    ax_object_cache_ = AXObjectCache::Create(*this);
+  if (ax_contexts_.size() > 0 && GetLayoutView()) {
+    ax_object_cache_ =
+        AXObjectCache::Create(*this, ComputeAXModeFromAXContexts(ax_contexts_));
+  }
 }
 
 AXObjectCache* Document::ExistingAXObjectCache() const {
@@ -6248,6 +6325,16 @@ KURL Document::OpenSearchDescriptionURL() {
   return KURL();
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+V8HTMLOrSVGScriptElement* Document::currentScriptForBinding() const {
+  if (current_script_stack_.IsEmpty())
+    return nullptr;
+  ScriptElementBase* script_element_base = current_script_stack_.back();
+  if (!script_element_base)
+    return nullptr;
+  return script_element_base->AsV8HTMLOrSVGScriptElement();
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void Document::currentScriptForBinding(
     HTMLScriptElementOrSVGScriptElement& script_element) const {
   if (!current_script_stack_.IsEmpty()) {
@@ -6255,6 +6342,7 @@ void Document::currentScriptForBinding(
       script_element_base->SetScriptElementForBinding(script_element);
   }
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void Document::PushCurrentScript(ScriptElementBase* new_current_script) {
   current_script_stack_.push_back(new_current_script);
@@ -7805,7 +7893,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(did_associate_form_controls_timer_);
   visitor->Trace(user_action_elements_);
   visitor->Trace(svg_extensions_);
-  visitor->Trace(layout_view_);
   visitor->Trace(document_animations_);
   visitor->Trace(timeline_);
   visitor->Trace(pending_animations_);

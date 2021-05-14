@@ -31,7 +31,8 @@ enum class FlushPolicy;
 class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
  public:
   class CopyOrMoveImpl;
-  using CopyProgressCallback = FileSystemOperation::CopyProgressCallback;
+  using CopyOrMoveProgressCallback =
+      FileSystemOperation::CopyOrMoveProgressCallback;
   using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
   using ErrorBehavior = FileSystemOperation::ErrorBehavior;
 
@@ -84,14 +85,15 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
     DISALLOW_COPY_AND_ASSIGN(StreamCopyHelper);
   };
 
-  CopyOrMoveOperationDelegate(FileSystemContext* file_system_context,
-                              const FileSystemURL& src_root,
-                              const FileSystemURL& dest_root,
-                              OperationType operation_type,
-                              CopyOrMoveOption option,
-                              ErrorBehavior error_behavior,
-                              const CopyProgressCallback& progress_callback,
-                              StatusCallback callback);
+  CopyOrMoveOperationDelegate(
+      FileSystemContext* file_system_context,
+      const FileSystemURL& src_root,
+      const FileSystemURL& dest_root,
+      OperationType operation_type,
+      CopyOrMoveOption option,
+      ErrorBehavior error_behavior,
+      const CopyOrMoveProgressCallback& progress_callback,
+      StatusCallback callback);
   ~CopyOrMoveOperationDelegate() override;
 
   // RecursiveOperationDelegate overrides:
@@ -129,7 +131,9 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
                                           base::File::Error error);
   void DidRemoveSourceForMove(StatusCallback callback, base::File::Error error);
 
-  void OnCopyFileProgress(const FileSystemURL& src_url, int64_t size);
+  void OnCopyFileProgress(const FileSystemURL& src_url,
+                          const FileSystemURL& dest_url,
+                          int64_t size);
   FileSystemURL CreateDestURL(const FileSystemURL& src_url) const;
 
 #if DCHECK_IS_ON()
@@ -142,7 +146,7 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
   OperationType operation_type_;
   CopyOrMoveOption option_;
   ErrorBehavior error_behavior_;
-  CopyProgressCallback progress_callback_;
+  CopyOrMoveProgressCallback progress_callback_;
   StatusCallback callback_;
 
   std::map<CopyOrMoveImpl*, std::unique_ptr<CopyOrMoveImpl>> running_copy_set_;

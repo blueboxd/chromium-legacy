@@ -9357,6 +9357,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Completed"/>
 </enum>
 
+<enum name="BooleanStored">
+  <int value="0" label="Not Stored"/>
+  <int value="1" label="Stored"/>
+</enum>
+
 <enum name="BooleanStreamed">
   <int value="0" label="Not streamed"/>
   <int value="1" label="Streamed"/>
@@ -32474,6 +32479,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3907" label="V8Screens_Oncurrentscreenchange_AttributeGetter"/>
   <int value="3908" label="V8Screens_Oncurrentscreenchange_AttributeSetter"/>
   <int value="3909" label="RTCOfferAnswerOptionsVoiceActivityDetection"/>
+  <int value="3910" label="MultiColAndListItem"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32566,7 +32572,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="70" label="StorageAccessAPI"/>
   <int value="71" label="ClientHintUAFullVersion"/>
   <int value="72" label="TrustTokenRedemption"/>
-  <int value="73" label="ConversionMeasurement"/>
+  <int value="73" label="AttributionReporting"/>
   <int value="74" label="ClientHintUAPlatformVersion"/>
   <int value="75" label="CrossOriginIsolated"/>
   <int value="76" label="ClipboardRead"/>
@@ -32812,6 +32818,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="26" label="Opened native back-of-card pulldown menu. (iOS Only)"/>
   <int value="27" label="Closed native back-of-card pulldown menu. (iOS Only)"/>
   <int value="28" label="Tapped manage reactions"/>
+  <int value="29" label="Tapped on share for an article"/>
 </enum>
 
 <enum name="FeedUserCommandType">
@@ -43646,6 +43653,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="12" label="BlockList"/>
 </enum>
 
+<enum name="LinkGenerationSharedStatus">
+  <int value="0" label="Generation succeeded, shared text"/>
+  <int value="1" label="Generation succeeded, shared link"/>
+  <int value="2" label="Generation failed (shared text)"/>
+</enum>
+
 <enum name="LinkMonitorFailureType">
   <int value="0" label="Local MAC Address Not Found"/>
   <int value="1" label="Client Startup Failure"/>
@@ -48119,6 +48132,7 @@ from previous Chrome versions.
   <int value="1079032226" label="ParallelDownloading:enabled"/>
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1082054180" label="PersistentWindowBounds:disabled"/>
+  <int value="1082840061" label="LinkDoctorDeprecationAndroid:disabled"/>
   <int value="1083020187" label="FractionalScrollOffsets:enabled"/>
   <int value="1083201516" label="PersistentWindowBounds:enabled"/>
   <int value="1084365949" label="ReleaseNotesNotification:disabled"/>
@@ -48888,6 +48902,7 @@ from previous Chrome versions.
   <int value="1736698988" label="FsNosymfollow:disabled"/>
   <int value="1738520473" label="SystemTrayMicGainSetting:disabled"/>
   <int value="1739456903" label="PWAFullCodeCache:enabled"/>
+  <int value="1739782037" label="LinkDoctorDeprecationAndroid:enabled"/>
   <int value="1741855651"
       label="OmniboxTabSwitchSuggestionsDedicatedRow:disabled"/>
   <int value="1742398600"

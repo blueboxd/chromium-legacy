@@ -495,12 +495,15 @@ bool IsNodeRelevantForAccessibility(const Node* node,
 bool AXObjectCacheImpl::use_ax_menu_list_ = false;
 
 // static
-AXObjectCache* AXObjectCacheImpl::Create(Document& document) {
-  return MakeGarbageCollected<AXObjectCacheImpl>(document);
+AXObjectCache* AXObjectCacheImpl::Create(Document& document,
+                                         const ui::AXMode& ax_mode) {
+  return MakeGarbageCollected<AXObjectCacheImpl>(document, ax_mode);
 }
 
-AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
+AXObjectCacheImpl::AXObjectCacheImpl(Document& document,
+                                     const ui::AXMode& ax_mode)
     : document_(document),
+      ax_mode_(ax_mode),
       modification_count_(0),
       validation_message_axid_(0),
       active_aria_modal_dialog_(nullptr),
@@ -596,9 +599,16 @@ AXObject* AXObjectCacheImpl::GetOrCreateFocusedObjectFromNode(Node* node) {
   return obj;
 }
 
-
 AXObject* AXObjectCacheImpl::FocusedObject() {
   return GetOrCreateFocusedObjectFromNode(FocusedElement());
+}
+
+const ui::AXMode& AXObjectCacheImpl::GetAXMode() {
+  return ax_mode_;
+}
+
+void AXObjectCacheImpl::SetAXMode(const ui::AXMode& ax_mode) {
+  ax_mode_ = ax_mode;
 }
 
 AXObject* AXObjectCacheImpl::Get(const LayoutObject* layout_object) {
@@ -3514,7 +3524,6 @@ void AXObjectCacheImpl::RequestAOMEventListenerPermission() {
 void AXObjectCacheImpl::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(accessible_node_mapping_);
-  visitor->Trace(layout_object_mapping_);
   visitor->Trace(node_object_mapping_);
   visitor->Trace(active_aria_modal_dialog_);
 

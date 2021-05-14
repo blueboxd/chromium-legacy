@@ -185,7 +185,7 @@ void ElementRuleCollector::CollectMatchingRulesForList(
     context.is_inside_visited_link =
         rule_data->LinkMatchType() == CSSSelector::kMatchVisited;
     DCHECK(!context.is_inside_visited_link ||
-           inside_link_ == EInsideLink::kInsideVisitedLink);
+           inside_link_ != EInsideLink::kNotInsideLink);
     if (!checker.Match(context, result)) {
       rejected++;
       continue;
@@ -227,7 +227,7 @@ void ElementRuleCollector::CollectMatchingRules(
     bool matching_tree_boundary_rules) {
   DCHECK(match_request.rule_set);
 
-  SelectorChecker checker(style_, nullptr, pseudo_style_request_, mode_,
+  SelectorChecker checker(style_.get(), nullptr, pseudo_style_request_, mode_,
                           matching_ua_rules_);
 
   Element& element = context_.GetElement();
@@ -273,7 +273,11 @@ void ElementRuleCollector::CollectMatchingRules(
     CollectMatchingRulesForList(match_request.rule_set->LinkPseudoClassRules(),
                                 match_request, checker);
   }
-  if (inside_link_ == EInsideLink::kInsideVisitedLink) {
+  if (inside_link_ != EInsideLink::kNotInsideLink) {
+    // Collect rules for visited links regardless of whether they affect
+    // rendering to prevent sniffing of visited links via CSS transitions.
+    // If the visited or unvisited style changes and an affected property has a
+    // transition rule, we create a transition even if it has no visible effect.
     CollectMatchingRulesForList(match_request.rule_set->VisitedDependentRules(),
                                 match_request, checker);
   }
@@ -302,7 +306,7 @@ void ElementRuleCollector::CollectMatchingRules(
 
 void ElementRuleCollector::CollectMatchingShadowHostRules(
     const MatchRequest& match_request) {
-  SelectorChecker checker(style_, nullptr, pseudo_style_request_, mode_,
+  SelectorChecker checker(style_.get(), nullptr, pseudo_style_request_, mode_,
                           matching_ua_rules_);
 
   CollectMatchingRulesForList(match_request.rule_set->ShadowHostRules(),
@@ -314,8 +318,8 @@ void ElementRuleCollector::CollectMatchingPartPseudoRules(
     PartNames& part_names,
     bool for_shadow_pseudo) {
   PartRequest request{part_names, for_shadow_pseudo};
-  SelectorChecker checker(style_, &part_names, pseudo_style_request_, mode_,
-                          matching_ua_rules_);
+  SelectorChecker checker(style_.get(), &part_names, pseudo_style_request_,
+                          mode_, matching_ua_rules_);
 
   CollectMatchingRulesForList(match_request.rule_set->PartPseudoRules(),
                               match_request, checker, &request);

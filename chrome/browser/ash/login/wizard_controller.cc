@@ -533,7 +533,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
         base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                             weak_factory_.GetWeakPtr())));
 
-    append(std::make_unique<chromeos::DemoPreferencesScreen>(
+    append(std::make_unique<DemoPreferencesScreen>(
         oobe_ui->GetView<DemoPreferencesScreenHandler>(),
         base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                             weak_factory_.GetWeakPtr())));
@@ -556,11 +556,11 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<EnrollmentScreenHandler>(),
       base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                           weak_factory_.GetWeakPtr())));
-  append(std::make_unique<chromeos::ResetScreen>(
+  append(std::make_unique<ResetScreen>(
       oobe_ui->GetView<ResetScreenHandler>(), oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnResetScreenExit,
                           weak_factory_.GetWeakPtr())));
-  append(std::make_unique<chromeos::DemoSetupScreen>(
+  append(std::make_unique<DemoSetupScreen>(
       oobe_ui->GetView<DemoSetupScreenHandler>(),
       base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
@@ -610,7 +610,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
 
   if (CanShowHIDDetectionScreen()) {
-    append(std::make_unique<chromeos::HIDDetectionScreen>(
+    append(std::make_unique<HIDDetectionScreen>(
         oobe_ui->GetView<HIDDetectionScreenHandler>(),
         base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
                             weak_factory_.GetWeakPtr())));
@@ -1063,7 +1063,7 @@ void WizardController::OnScreenExit(OobeScreenId screen,
   VLOG(1) << "Wizard screen " << screen
           << " exited with reason: " << exit_reason;
   // Do not perform checks and record stats for the skipped screen.
-  if (exit_reason == chromeos::BaseScreen::kNotApplicable)
+  if (exit_reason == BaseScreen::kNotApplicable)
     return;
   DCHECK(current_screen_->screen_id() == screen);
 

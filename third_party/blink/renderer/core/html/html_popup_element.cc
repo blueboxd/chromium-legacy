@@ -261,9 +261,8 @@ const HTMLPopupElement* HTMLPopupElement::NearestOpenAncestralPopup(
     if (const auto* invoker = popup->invoker_.Get())
       anchors_and_invokers.Set(invoker, popup);
   }
-  // TODO(masonf) Should this be a flat tree parent traversal?
   for (Node* current_node = start_node; current_node;
-       current_node = current_node->ParentOrShadowHostNode()) {
+       current_node = FlatTreeTraversal::Parent(*current_node)) {
     // Parent popup element (or the start_node itself, if <popup>).
     if (auto* popup = DynamicTo<HTMLPopupElement>(current_node)) {
       if (popup->open())
@@ -297,9 +296,15 @@ void HTMLPopupElement::HandleLightDismiss(const Event& event) {
   auto& document = target_node->GetDocument();
   DCHECK(document.PopupShowing());
   const AtomicString& event_type = event.type();
-  if (event_type == event_type_names::kClick ||
+  if (event_type == event_type_names::kMousedown ||
       event_type == event_type_names::kScroll) {
-    // For click or scroll, hide everything up to the clicked/scrolled element.
+    // - For scroll, hide everything up to the scrolled element, to allow
+    //   scrolling within a popup.
+    // - For mousedown, hide everything up to the clicked element. We do
+    //   this on mousedown, rather than mouseup/click, for two reasons:
+    //    1. This mirrors typical platform popups, which dismiss on mousedown.
+    //    2. This allows a mouse-drag that starts on a popup and finishes off
+    //       the popup, without light-dismissing the popup.
     document.HideAllPopupsUntil(NearestOpenAncestralPopup(target_node));
   } else if (event_type == event_type_names::kKeydown) {
     const KeyboardEvent* key_event = DynamicTo<KeyboardEvent>(event);
@@ -337,9 +342,10 @@ void HTMLPopupElement::SetOwnerSelectMenuElement(
 
 // TODO(crbug.com/1197720): The popup position should be provided by the new
 // anchored positioning scheme.
-ComputedStyle* HTMLPopupElement::CustomStyleForLayoutObject(
+scoped_refptr<ComputedStyle> HTMLPopupElement::CustomStyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
-  ComputedStyle* style = OriginalStyleForLayoutObject(style_recalc_context);
+  scoped_refptr<ComputedStyle> style =
+      OriginalStyleForLayoutObject(style_recalc_context);
   if (NeedsRepositioningForSelectMenu())
     AdjustPopupPositionForSelectMenu(*style);
   return style;

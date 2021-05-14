@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -31,9 +32,9 @@ using animation_test_helpers::CreateSimpleKeyframeEffectForTest;
 
 class StyleResolverTest : public PageTestBase {
  protected:
-  ComputedStyle* StyleForId(AtomicString id) {
+  scoped_refptr<ComputedStyle> StyleForId(AtomicString id) {
     Element* element = GetDocument().getElementById(id);
-    auto* style = GetStyleEngine().GetStyleResolver().ResolveStyle(
+    auto style = GetStyleEngine().GetStyleResolver().ResolveStyle(
         element, StyleRecalcContext());
     DCHECK(style);
     return style;
@@ -274,7 +275,12 @@ TEST_F(StyleResolverTest,
   EXPECT_EQ("20px", ComputedValue("font-size", *StyleForId("target")));
 
   // Bump the animation time to ensure a transition reversal.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  transition->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(50),
+                             ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   transition->setCurrentTime(CSSNumberish::FromDouble(50));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   transition->pause();
   UpdateAllLifecyclePhasesForTest();
   const String before_reversal_font_size =
@@ -318,7 +324,12 @@ TEST_F(StyleResolverTest, NonCachableStyleCheckDoesNotAffectBaseComputedStyle) {
   EXPECT_TRUE(transition);
 
   // Advance to the midpoint of the transition.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  transition->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(500),
+                             ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   transition->setCurrentTime(CSSNumberish::FromDouble(500));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ("rgb(0, 64, 0)", ComputedValue("color", *StyleForId("target")));
   EXPECT_TRUE(element_animations->BaseComputedStyle());
@@ -357,7 +368,7 @@ TEST_P(StyleResolverFontRelativeUnitTest,
 
   div->SetNeedsAnimationStyleRecalc();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  ComputedStyle* computed_style = StyleForId("div");
+  auto computed_style = StyleForId("div");
 
   EXPECT_TRUE(computed_style->HasFontRelativeUnits());
   ASSERT_TRUE(div->GetElementAnimations());
@@ -381,9 +392,8 @@ TEST_P(StyleResolverFontRelativeUnitTest,
   EXPECT_EQ("50px", ComputedValue("height", *StyleForId("div")));
 
   div->SetNeedsAnimationStyleRecalc();
-
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  ComputedStyle* computed_style = StyleForId("div");
+  auto computed_style = StyleForId("div");
 
   EXPECT_TRUE(computed_style->HasFontRelativeUnits());
   ASSERT_TRUE(div->GetElementAnimations());
@@ -589,7 +599,7 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
   )HTML");
 
   GetDocument().GetStyleEngine().UpdateActiveStyle();
-  const ComputedStyle* page_style =
+  scoped_refptr<const ComputedStyle> page_style =
       GetDocument().GetStyleResolver().StyleForPage(0, "");
   ASSERT_TRUE(page_style);
   const CSSValue* computed_value = ComputedStyleUtils::ComputedPropertyValue(
@@ -626,7 +636,7 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
   StyleRequest target_text_style_request = pseudo_style_request;
   target_text_style_request.pseudo_id = kPseudoIdTargetText;
 
-  ComputedStyle* target_text_style =
+  scoped_refptr<ComputedStyle> target_text_style =
       GetDocument().GetStyleResolver().ResolveStyle(GetDocument().body(),
                                                     StyleRecalcContext(),
                                                     target_text_style_request);
@@ -635,7 +645,7 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
   StyleRequest selection_style_style_request = pseudo_style_request;
   selection_style_style_request.pseudo_id = kPseudoIdSelection;
 
-  ComputedStyle* selection_style =
+  scoped_refptr<ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
           GetDocument().body(), StyleRecalcContext(),
           selection_style_style_request);
@@ -649,7 +659,8 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
   ASSERT_TRUE(image);
   EXPECT_TRUE(image->IsPendingImage());
 
-  for (const auto* pseudo_style : {target_text_style, selection_style}) {
+  for (const auto* pseudo_style :
+       {target_text_style.get(), selection_style.get()}) {
     // Check that the color applies.
     EXPECT_EQ(Color(0, 128, 0),
               pseudo_style->VisitedDependentColor(GetCSSPropertyColor()));

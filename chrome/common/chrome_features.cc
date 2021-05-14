@@ -238,7 +238,7 @@ const base::Feature kPreinstalledWebAppInstallation{
 // Updates the default set of pinned apps in the Chrome OS shelf for new
 // profiles.
 const base::Feature kDefaultPinnedAppsUpdate2021Q2{
-    "DefaultPinnedAppsUpdate2021Q2", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DefaultPinnedAppsUpdate2021Q2", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enable using tab sharing infobars for desktop capture.
@@ -610,6 +610,12 @@ const base::Feature kInvalidatorUniqueOwnerName{
 const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+const base::Feature kLinkDoctorDeprecationAndroid{
+    "LinkDoctorDeprecationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
 
 // Enables LiteVideos, a data-saving optimization that throttles media requests
 // to reduce the bitrate of adaptive media streams. Only for Lite mode users

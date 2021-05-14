@@ -28,6 +28,7 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -80,7 +81,6 @@ class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PointerLockOptions;
 class PseudoElement;
-class StyleRequest;
 class ResizeObservation;
 class ResizeObserver;
 class ScrollIntoViewOptions;
@@ -93,6 +93,8 @@ class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
+class StyleRequest;
+class V8UnionBooleanOrScrollIntoViewOptions;
 
 enum class CSSPropertyID;
 enum class CSSValueID;
@@ -241,6 +243,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   // Trusted Types variant for explicit setAttribute() use.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void setAttribute(const AtomicString& name,
+                    const V8TrustedString* trusted_string,
+                    ExceptionState& exception_state) {
+    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), trusted_string,
+                       exception_state);
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setAttribute(const AtomicString& name,
                     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
                         string_or_trusted,
@@ -248,6 +258,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     SetAttributeHinted(name, WeakLowercaseIfNecessary(name), string_or_trusted,
                        exception_state);
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Returns attributes that should be checked against Trusted Types
   virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
@@ -258,11 +269,18 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                  const AtomicString& namespace_uri,
                                  const AtomicString& qualified_name,
                                  ExceptionState&);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void setAttributeNS(const AtomicString& namespace_uri,
+                      const AtomicString& qualified_name,
+                      const V8TrustedString* trusted_string,
+                      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setAttributeNS(
       const AtomicString& namespace_uri,
       const AtomicString& qualified_name,
       const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
       ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool toggleAttribute(const AtomicString&, ExceptionState&);
   bool toggleAttribute(const AtomicString&, bool force, ExceptionState&);
@@ -301,7 +319,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // when not interested in style attribute or one of the SVG attributes.
   AttributeCollection AttributesWithoutUpdate() const;
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void scrollIntoView(const V8UnionBooleanOrScrollIntoViewOptions* arg);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void scrollIntoView(ScrollIntoViewOptionsOrBoolean);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void scrollIntoView(bool align_to_top = true);
   void scrollIntoViewWithOptions(const ScrollIntoViewOptions*);
   void ScrollIntoViewNoVisualUpdate(const ScrollIntoViewOptions*);
@@ -744,15 +766,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   //
   // This is appropriate to use if the cached version is invalid in a given
   // situation.
-  ComputedStyle* UncachedStyleForPseudoElement(const StyleRequest&);
+  scoped_refptr<ComputedStyle> UncachedStyleForPseudoElement(
+      const StyleRequest&);
 
   // This is the same as UncachedStyleForPseudoElement, except that the caller
   // must provide an appropriate StyleRecalcContext such that e.g. @container
   // queries are evaluated correctly.
   //
   // See StyleRecalcContext for more information.
-  ComputedStyle* StyleForPseudoElement(const StyleRecalcContext&,
-                                       const StyleRequest&);
+  scoped_refptr<ComputedStyle> StyleForPseudoElement(const StyleRecalcContext&,
+                                                     const StyleRequest&);
 
   virtual bool CanGeneratePseudoElement(PseudoId) const;
 
@@ -858,7 +881,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  ComputedStyle* StyleForLayoutObject(const StyleRecalcContext&);
+  scoped_refptr<ComputedStyle> StyleForLayoutObject(const StyleRecalcContext&);
 
   bool HasID() const;
   bool HasClass() const;
@@ -986,7 +1009,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   virtual void WillRecalcStyle(const StyleRecalcChange);
   virtual void DidRecalcStyle(const StyleRecalcChange);
-  virtual ComputedStyle* CustomStyleForLayoutObject(const StyleRecalcContext&);
+  virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
+      const StyleRecalcContext&);
 
   virtual NamedItemType GetNamedItemType() const {
     return NamedItemType::kNone;
@@ -1017,7 +1041,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
-  ComputedStyle* OriginalStyleForLayoutObject(const StyleRecalcContext&);
+  scoped_refptr<ComputedStyle> OriginalStyleForLayoutObject(
+      const StyleRecalcContext&);
 
   // Step 4 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
   Node* InsertAdjacent(const String& where, Node* new_child, ExceptionState&);
@@ -1078,7 +1103,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // these changes can be directly propagated to this element (the child).
   // If these conditions are met, propagates the changes to the current style
   // and returns the new style. Otherwise, returns null.
-  ComputedStyle* PropagateInheritedProperties();
+  scoped_refptr<ComputedStyle> PropagateInheritedProperties();
 
   const ComputedStyle* EnsureOwnComputedStyle(
       const StyleRecalcContext&,
@@ -1180,11 +1205,18 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                           WTF::AtomicStringTable::WeakResult hint,
                           const AtomicString& value,
                           ExceptionState& = ASSERT_NO_EXCEPTION);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void SetAttributeHinted(const AtomicString& name,
+                          WTF::AtomicStringTable::WeakResult hint,
+                          const V8TrustedString* trusted_string,
+                          ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetAttributeHinted(
       const AtomicString& name,
       WTF::AtomicStringTable::WeakResult hint,
       const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
       ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameHinted(
       const AtomicString& name,
       WTF::AtomicStringTable::WeakResult hint) const;

@@ -363,6 +363,7 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_V2_HEARTS = "InterestFeedV2Hearts";
     public static final String INTEREST_FEED_V2_AUTOPLAY = "InterestFeedV2Autoplay";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
+    public static final String LINK_DOCTOR_DEPRECATION_ANDROID = "LinkDoctorDeprecationAndroid";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
     public static final String MARK_HTTP_AS = "MarkHttpAs";
@@ -446,6 +447,7 @@ public abstract class ChromeFeatureList {
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SHARE_BUTTON_IN_TOP_TOOLBAR = "ShareButtonInTopToolbar";
     public static final String SHARED_CLIPBOARD_UI = "SharedClipboardUI";
+    public static final String SHARED_HIGHLIGHTING_V2 = "SharedHighlightingV2";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SMART_SUGGESTION_FOR_LARGE_DOWNLOADS =
             "SmartSuggestionForLargeDownloads";

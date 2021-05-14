@@ -3718,7 +3718,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   DCHECK(external_mount_points);
   auto backend = std::make_unique<chromeos::FileSystemBackend>(
       Profile::FromBrowserContext(browser_context),
-      std::make_unique<chromeos::file_system_provider::BackendDelegate>(),
+      std::make_unique<ash::file_system_provider::BackendDelegate>(),
       std::make_unique<chromeos::MTPFileSystemBackendDelegate>(
           storage_partition_path),
       std::make_unique<arc::ArcContentFileSystemBackendDelegate>(),
@@ -4265,15 +4265,15 @@ ChromeContentBrowserClient::GetDevToolsBackgroundServiceExpirations(
   DCHECK(expiration_dict);
 
   base::flat_map<int, base::Time> expiration_times;
-  for (const auto& it : *expiration_dict) {
+  for (const auto& it : expiration_dict->DictItems()) {
     // key.
     int service = 0;
     bool did_convert = base::StringToInt(it.first, &service);
     DCHECK(did_convert);
 
     // value.
-    DCHECK(it.second->is_int());
-    base::TimeDelta delta = base::TimeDelta::FromMinutes(it.second->GetInt());
+    DCHECK(it.second.is_int());
+    base::TimeDelta delta = base::TimeDelta::FromMinutes(it.second.GetInt());
     base::Time expiration_time = base::Time::FromDeltaSinceWindowsEpoch(delta);
 
     expiration_times[service] = expiration_time;

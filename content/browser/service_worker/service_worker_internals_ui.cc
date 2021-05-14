@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -432,7 +433,12 @@ void ServiceWorkerInternalsHandler::OnJavascriptDisallowed() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-ServiceWorkerInternalsHandler::~ServiceWorkerInternalsHandler() = default;
+ServiceWorkerInternalsHandler::~ServiceWorkerInternalsHandler() {
+  // ServiceWorkerInternalsHandler can be destroyed without
+  // OnJavascriptDisallowed() ever being called (https://crbug.com/1199198).
+  // Call it to ensure that `this` is removed as an observer.
+  OnJavascriptDisallowed();
+}
 
 void ServiceWorkerInternalsHandler::OnRunningStateChanged() {
   FireWebUIListener("running-state-changed");
@@ -725,8 +731,11 @@ void ServiceWorkerInternalsHandler::UnregisterWithScope(
 
   // ServiceWorkerContextWrapper::UnregisterServiceWorker doesn't work here
   // because that reduces a status code to boolean.
+  // TODO(crbug.com/1199077): Update this when ServiceWorkerInternalsHandler
+  // implements StorageKey.
   context->context()->UnregisterServiceWorker(
-      scope, /*is_immediate=*/false,
+      scope, storage::StorageKey(url::Origin::Create(scope)),
+      /*is_immediate=*/false,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }
 

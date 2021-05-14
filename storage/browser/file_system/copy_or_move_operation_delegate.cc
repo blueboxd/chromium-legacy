@@ -731,7 +731,7 @@ CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
     OperationType operation_type,
     CopyOrMoveOption option,
     ErrorBehavior error_behavior,
-    const CopyProgressCallback& progress_callback,
+    const CopyOrMoveProgressCallback& progress_callback,
     StatusCallback callback)
     : RecursiveOperationDelegate(file_system_context),
       src_root_(src_root),
@@ -781,12 +781,13 @@ void CopyOrMoveOperationDelegate::RunRecursively() {
 
 void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
                                               StatusCallback callback) {
+  FileSystemURL dest_url = CreateDestURL(src_url);
+
   if (!progress_callback_.is_null()) {
-    progress_callback_.Run(FileSystemOperation::BEGIN_COPY_ENTRY, src_url,
-                           FileSystemURL(), 0);
+    progress_callback_.Run(FileSystemOperation::CopyOrMoveProgressType::kBegin,
+                           src_url, dest_url, 0);
   }
 
-  FileSystemURL dest_url = CreateDestURL(src_url);
   std::unique_ptr<CopyOrMoveImpl> impl;
   if (same_file_system_ &&
       (file_system_context()
@@ -796,7 +797,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
     impl = std::make_unique<CopyOrMoveOnSameFileSystemImpl>(
         operation_runner(), operation_type_, src_url, dest_url, option_,
         base::BindRepeating(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                            weak_factory_.GetWeakPtr(), src_url));
+                            weak_factory_.GetWeakPtr(), src_url, dest_url));
   } else {
     // Cross filesystem case.
     base::File::Error error = base::File::FILE_ERROR_FAILED;
@@ -805,8 +806,9 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
             dest_root_.type(), &error);
     if (error != base::File::FILE_OK) {
       if (!progress_callback_.is_null())
-        progress_callback_.Run(FileSystemOperation::ERROR_COPY_ENTRY, src_url,
-                               dest_url, 0);
+        progress_callback_.Run(
+            FileSystemOperation::CopyOrMoveProgressType::kError, src_url,
+            dest_url, 0);
 
       std::move(callback).Run(error);
       return;
@@ -824,7 +826,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
             dest_url, option_, std::move(reader), std::move(writer),
             base::BindRepeating(
                 &CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                weak_factory_.GetWeakPtr(), src_url));
+                weak_factory_.GetWeakPtr(), src_url, dest_url));
       }
     }
 
@@ -833,7 +835,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
           operation_runner(), operation_type_, src_url, dest_url, option_,
           validator_factory,
           base::BindRepeating(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                              weak_factory_.GetWeakPtr(), src_url));
+                              weak_factory_.GetWeakPtr(), src_url, dest_url));
     }
   }
 
@@ -861,13 +863,14 @@ void CopyOrMoveOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
     return;
   }
 
+  FileSystemURL dest_url = CreateDestURL(src_url);
+
   if (!progress_callback_.is_null()) {
-    progress_callback_.Run(FileSystemOperation::BEGIN_COPY_ENTRY, src_url,
-                           FileSystemURL(), 0);
+    progress_callback_.Run(FileSystemOperation::CopyOrMoveProgressType::kBegin,
+                           src_url, dest_url, 0);
   }
 
-  ProcessDirectoryInternal(src_url, CreateDestURL(src_url),
-                           std::move(callback));
+  ProcessDirectoryInternal(src_url, dest_url, std::move(callback));
 }
 
 void CopyOrMoveOperationDelegate::PostProcessDirectory(
@@ -902,12 +905,13 @@ void CopyOrMoveOperationDelegate::DidCopyOrMoveFile(
 
   if (!progress_callback_.is_null() && error != base::File::FILE_OK &&
       error != base::File::FILE_ERROR_NOT_A_FILE)
-    progress_callback_.Run(FileSystemOperation::ERROR_COPY_ENTRY, src_url,
-                           dest_url, 0);
+    progress_callback_.Run(FileSystemOperation::CopyOrMoveProgressType::kError,
+                           src_url, dest_url, 0);
 
   if (!progress_callback_.is_null() && error == base::File::FILE_OK) {
-    progress_callback_.Run(FileSystemOperation::END_COPY_ENTRY, src_url,
-                           dest_url, 0);
+    progress_callback_.Run(
+        FileSystemOperation::CopyOrMoveProgressType::kEndCopy, src_url,
+        dest_url, 0);
   }
 
   std::move(callback).Run(error);
@@ -950,8 +954,9 @@ void CopyOrMoveOperationDelegate::DidCreateDirectory(
     StatusCallback callback,
     base::File::Error error) {
   if (!progress_callback_.is_null() && error == base::File::FILE_OK) {
-    progress_callback_.Run(FileSystemOperation::END_COPY_ENTRY, src_url,
-                           dest_url, 0);
+    progress_callback_.Run(
+        FileSystemOperation::CopyOrMoveProgressType::kEndCopy, src_url,
+        dest_url, 0);
   }
 
   std::move(callback).Run(error);
@@ -1008,10 +1013,12 @@ void CopyOrMoveOperationDelegate::DidRemoveSourceForMove(
 
 void CopyOrMoveOperationDelegate::OnCopyFileProgress(
     const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
     int64_t size) {
   if (!progress_callback_.is_null()) {
-    progress_callback_.Run(FileSystemOperation::PROGRESS, src_url,
-                           FileSystemURL(), size);
+    progress_callback_.Run(
+        FileSystemOperation::CopyOrMoveProgressType::kProgress, src_url,
+        dest_url, size);
   }
 }
 

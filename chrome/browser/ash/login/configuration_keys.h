@@ -65,9 +65,11 @@ void FilterConfiguration(const base::Value& configuration,
 // source migration is finished.
 namespace ash {
 namespace configuration {
+using ::chromeos::configuration::kEnableDemoMode;
 using ::chromeos::configuration::kEnrollmentAssetId;
 using ::chromeos::configuration::kEnrollmentAutoAttributes;
 using ::chromeos::configuration::kEnrollmentLocation;
+using ::chromeos::configuration::kSkipHIDDetection;
 }  // namespace configuration
 }  // namespace ash
 

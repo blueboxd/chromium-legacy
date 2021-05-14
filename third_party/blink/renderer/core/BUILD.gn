@@ -1200,6 +1200,7 @@ fuzzer_test("text_resource_decoder_fuzzer") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "accessibility/ax_context_test.cc",
     "app_history/app_history_test.cc",
     "clipboard/clipboard_utilities_test.cc",
     "content_capture/content_capture_test.cc",
@@ -1332,6 +1333,7 @@ source_set("unit_tests") {
     "layout/layout_block_test.cc",
     "layout/layout_box_model_object_test.cc",
     "layout/layout_box_test.cc",
+    "layout/layout_embedded_content_test.cc",
     "layout/layout_flexible_box_test.cc",
     "layout/layout_grid_test.cc",
     "layout/layout_image_test.cc",

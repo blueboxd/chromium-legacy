@@ -123,83 +123,111 @@ class FileSystemOperation {
   // fails some of the operations.
   enum ErrorBehavior { ERROR_BEHAVIOR_ABORT, ERROR_BEHAVIOR_SKIP };
 
-  // Used for progress update callback for Copy().
+  // Used for progress update callback for Copy() and Move().
   //
-  // BEGIN_COPY_ENTRY is fired for each copy creation beginning (for both
-  // file and directory).
-  // The |source_url| is the URL of the source entry. |size| should not be
+  // Note that Move() has both a same-filesystem (1) and a cross-filesystem (2)
+  // implementation.
+  // 1) Requires metadata updates. Depending on the underlying implementation:
+  // - we either only update the metadata of (or in other words, rename) the
+  // moving directory
+  // - or the directories are recursively copied + deleted, while the files are
+  // moved by having their metadata updated.
+  // 2) Degrades into copy + delete: each entry is copied and deleted
+  // recursively.
+  //
+  // kBegin is fired at the start of each copy or move operation (for
+  // both file and directory). The |source_url| and the |destination_url| are
+  // the URLs of the source and the destination entries. |size| should not be
   // used.
   //
-  // END_COPY_ENTRY is fired for each copy creation finishing (for both
-  // file and directory).
-  // The |source_url| is the URL of the source entry. The |destination_url| is
-  // the URL of the destination entry. |size| should not be used.
+  // kProgress is fired periodically during file transfer (not fired for
+  // same-filesystem move and directory copy/move).
+  // The |source_url| and the |destination_url| are the URLs of the source and
+  // the destination entries. |size| is the number of cumulative copied bytes
+  // for the currently copied file. Both at beginning and ending of file
+  // transfer, PROGRESS event should be called. At beginning, |size| should be
+  // 0. At ending, |size| should be the size of the file.
   //
-  // PROGRESS is fired periodically during file copying (not fired for
-  // directory copy).
-  // The |source_url| is the URL of the source file. |size| is the number
-  // of cumulative copied bytes for the currently copied file.
-  // Both at beginning and ending of file copying, PROGRESS event should be
-  // called. At beginning, |size| should be 0. At ending, |size| should be
-  // the size of the file.
+  // kEndCopy is fired for each destination entry that has been successfully
+  // copied (for both file and directory). The |source_url| and the
+  // |destination_url| are the URLs of the source and the destination entries.
+  // |size| should not be used.
   //
-  // Here is an example callback sequence of recursive copy. Suppose
-  // there are a/b/c.txt (100 bytes) and a/b/d.txt (200 bytes), and trying to
-  // copy a to x recursively, then the progress update sequence will be:
+  // kEndMove is fired for each entry that has been successfully moved (for both
+  // file and directory), in the case of a same-filesystem move. The
+  // |source_url| and the |destination_url| are the URLs of the source and the
+  // destination entries. |size| should not be used.
   //
-  // BEGIN_COPY_ENTRY a  (starting create "a" directory in x/).
-  // END_COPY_ENTRY a x/a (creating "a" directory in x/ is finished).
+  // kEndRemoveSource, applies in the Move() case only, and is fired for each
+  // source entry that has been successfully removed from its source location
+  // (for both file and directory). The |source_url| is the URL of the source
+  // entry. |destination_url| and |size| should not be used.
   //
-  // BEGIN_COPY_ENTRY a/b (starting create "b" directory in x/a).
-  // END_COPY_ENTRY a/b x/a/b (creating "b" directory in x/a/ is finished).
+  // When moving files, the expected events are as follows.
+  // Copy: kBegin -> kProgress -> ... -> kProgress -> kEndCopy.
+  // Move (same-filesystem): kBegin -> kEndMove.
+  // Move (cross-filesystem): kBegin -> kProgress -> ... -> kProgress ->
+  // kEndCopy -> kEndRemoveSource.
   //
-  // BEGIN_COPY_ENTRY a/b/c.txt (starting to copy "c.txt" in x/a/b/).
-  // PROGRESS a/b/c.txt 0 (The first PROGRESS's |size| should be 0).
-  // PROGRESS a/b/c.txt 10
+  // Here is an example callback sequence of for a copy or a cross-filesystem
+  // move. Suppose there are a/b/c.txt (100 bytes) and a/b/d.txt (200 bytes),
+  // and trying to transfer a to x recursively, then the progress update
+  // sequence will be:
+  //
+  // kBegin a x/a (starting create "a" directory in x/).
+  // kEndCopy a x/a (creating "a" directory in x/ is finished).
+  //
+  // kBegin a/b x/a/b (starting create "b" directory in x/a).
+  // kEndCopy a/b x/a/b (creating "b" directory in x/a/ is
+  //                     finished).
+  //
+  // kBegin a/b/c.txt x/a/b/c.txt (starting to transfer "c.txt" in
+  //                               x/a/b/).
+  // kProgress a/b/c.txt x/a/b/c.txt 0 (The first kProgress's |size|
+  //                                    should be 0).
+  // kProgress a/b/c.txt x/a/b/c.txt 10
   //    :
-  // PROGRESS a/b/c.txt 90
-  // PROGRESS a/b/c.txt 100 (The last PROGRESS's |size| should be the size of
-  //                         the file).
-  // END_COPY_ENTRY a/b/c.txt x/a/b/c.txt (copying "c.txt" is finished).
+  // kProgress a/b/c.txt x/a/b/c.txt 90
+  // kProgress a/b/c.txt x/a/b/c.txt 100 (The last kProgress's |size| should be
+  //                                      the size of the file).
+  // kEndCopy a/b/c.txt x/a/b/c.txt (transferring "c.txt" is
+  //                                 finished).
+  // kEndRemoveSource a/b/c.txt ("copy + delete" move case).
   //
-  // BEGIN_COPY_ENTRY a/b/d.txt (starting to copy "d.txt" in x/a/b).
-  // PROGRESS a/b/d.txt 0 (The first PROGRESS's |size| should be 0).
-  // PROGRESS a/b/d.txt 10
+  // kBegin a/b/d.txt x/a/b/d.txt (starting to transfer "d.txt" in x/a/b).
+  // kProgress a/b/d.txt x/a/b/d.txt 0 (The first kProgress's |size| should be
+  //                                    0).
+  // kProgress a/b/d.txt x/a/b/d.txt 10
   //    :
-  // PROGRESS a/b/d.txt 190
-  // PROGRESS a/b/d.txt 200 (The last PROGRESS's |size| should be the size of
-  //                         the file).
-  // END_COPY_ENTRY a/b/d.txt x/a/b/d.txt (copy "d.txt" is finished).
+  // kProgress a/b/d.txt x/a/b/d.txt 190
+  // kProgress a/b/d.txt x/a/b/d.txt 200 (The last kProgress's |size| should be
+  //                                      the size of the file).
+  // kEndCopy a/b/d.txt x/a/b/d.txt (transferring "d.txt" is
+  // finished).
+  // kEndRemoveSource a/b/d.txt ("copy + delete" move case).
+  //
+  // kEndRemoveSource a/b ("copy + delete" move case).
+  //
+  // kEndRemoveSource a ("copy + delete" move case).
   //
   // Note that event sequence of a/b/c.txt and a/b/d.txt can be interlaced,
-  // because they can be done in parallel. Also PROGRESS events are optional,
+  // because they can be done in parallel. Also kProgress events are optional,
   // so they may not be appeared.
   // All the progress callback invocation should be done before StatusCallback
   // given to the Copy is called. Especially if an error is found before first
   // progres callback invocation, the progress callback may NOT invoked for the
   // copy.
   //
-  // Note for future extension. Currently this callback is only supported on
-  // Copy(). We can extend this to Move(), because Move() is sometimes
-  // implemented as "copy then delete."
-  // In more precise, Move() usually can be implemented either 1) by updating
-  // the metadata of resource (e.g. root of moving directory tree), or 2) by
-  // copying directory tree and them removing the source tree.
-  // For 1)'s case, we can simply add BEGIN_MOVE_ENTRY and END_MOVE_ENTRY
-  // for root directory.
-  // For 2)'s case, we can add BEGIN_DELETE_ENTRY and END_DELETE_ENTRY for each
-  // entry.
-  // For both cases, we probably won't need to use PROGRESS event because
-  // these operations should be done quickly (at least much faster than copying
-  // usually).
-  enum CopyProgressType {
-    BEGIN_COPY_ENTRY,
-    END_COPY_ENTRY,
-    PROGRESS,
-    ERROR_COPY_ENTRY
+  enum class CopyOrMoveProgressType {
+    kBegin = 0,
+    kProgress,
+    kEndCopy,
+    kEndMove,
+    kEndRemoveSource,
+    kError,
   };
-  using CopyProgressCallback =
-      base::RepeatingCallback<void(CopyProgressType type,
+  using CopyOrMoveProgressCallback =
+      base::RepeatingCallback<void(CopyOrMoveProgressType type,
                                    const FileSystemURL& source_url,
                                    const FileSystemURL& destination_url,
                                    int64_t size)>;
@@ -268,8 +296,8 @@ class FileSystemOperation {
   // |error_behavior| specifies whether this continues operation after it
   // failed an operation or not.
   // |progress_callback| is periodically called to report the progress
-  // update. See also the comment of CopyProgressCallback. This callback is
-  // optional.
+  // update. See also the comment of CopyOrMoveProgressCallback. This callback
+  // is optional.
   //
   // For recursive case this internally creates new FileSystemOperations and
   // calls:
@@ -283,13 +311,18 @@ class FileSystemOperation {
                     const FileSystemURL& dest_path,
                     CopyOrMoveOption option,
                     ErrorBehavior error_behavior,
-                    const CopyProgressCallback& progress_callback,
+                    const CopyOrMoveProgressCallback& progress_callback,
                     StatusCallback callback) = 0;
 
   // Moves a file or directory from |src_path| to |dest_path|. A new file
   // or directory is created at |dest_path| as needed.
   // |option| specifies the minor behavior of Copy(). See CopyOrMoveOption's
   // comment for details.
+  // |error_behavior| specifies whether this continues operation after it
+  // failed an operation or not.
+  // |progress_callback| is periodically called to report the progress
+  // update. See also the comment of CopyProgressCallback. This callback is
+  // optional.
   //
   // For recursive case this internally creates new FileSystemOperations and
   // calls:
@@ -304,6 +337,8 @@ class FileSystemOperation {
   virtual void Move(const FileSystemURL& src_path,
                     const FileSystemURL& dest_path,
                     CopyOrMoveOption option,
+                    ErrorBehavior error_behavior,
+                    const CopyOrMoveProgressCallback& progress_callback,
                     StatusCallback callback) = 0;
 
   // Checks if a directory is present at |path|.

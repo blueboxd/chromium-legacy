@@ -209,11 +209,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'bd816d3c5298f6eada11e18fc9e4ad08214c0dfc',
+  'skia_revision': 'df2dbad1a87db58aa98298260d79289084ed039c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'c383cd6b3544f5a415b4440938c450c0fa573914',
+  'v8_revision': 'fbfee7d5ec19039556516026ce8fd8b5287024cf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -225,7 +225,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'c4d054c6ad41fbb069e42355d31699c00e20d00f',
+  'swiftshader_revision': 'af907708adb3f728b2a28afaa12acbdd7c6d5cc2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -256,7 +256,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '0a8e07a6bb7d505b677349c0977f44ab33a46861',
+  'nacl_revision': '396568256d32df1d5a602c9b0dcca76f90f01b13',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'e48d57cb6b09c4a5594ad0cd8e9c775b1ff682a9',
+  'catapult_revision': 'a532699d20b76c97dbb0b00e60849dc1e4b2e935',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'ede1b93b2ca1f3eebcd0ceae063cabef56cbb7c3',
+  'devtools_frontend_revision': 'b3075270b014afa0dd17994685c5a3c979b311ea',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'dc3b066f39ea538086fd00ae3ec8f4448fe63fbd',
+  'dawn_revision': '53abfc95f4ab84f396eb2e5f800d90c2aad6b606',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -966,7 +966,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '74e3d80019d91baf14ad4871e4c85b2b543022fc',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'cd152033d0a33281e28848a551c7a39e93e91e49',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1332,7 +1332,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '655e5480afbd232c73a1ea33b23dddc40eb12f01',
+    Var('chromium_git') + '/openscreen' + '@' + '57144ca610b6723422b55e0ead1325750fee101e',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1438,7 +1438,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'SktLtWkTDNmNlXnJkVj0D35AJ51CBZt2pJ5fWWX9cugC'
+              'version': 'WNXEl7yxDUmMN9Rkovz3EfBwNd26BEXmanIIz_jO2DgC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1547,7 +1547,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'acfce46e428cc084b4bd0164e1b019261a8dbeda',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@c2ff8ac8b1624d8446d4f07043dbda1ea136f412',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@2ecea20656b9be3f80a7d965753a90327f715732',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '732a76d9d3c70d6aa487216495eeb28518349c3a',
@@ -1601,7 +1601,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': '6gOkUwwapS1GyCkAQb7-gPiKnvzdUOyDzkT4NzmnYJEC',
+          'version': 'BLHYEUi0wOYe5D_InWXtD8US7l_PMOrKHLuKt16L46QC',
         },
       ],
       'dep_type': 'cipd',
@@ -1611,7 +1611,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'oodEEBUIHfKw18_-31PAsu3SFiLqvtsFDgbn6ohK5R4C',
+          'version': 'P9wyIW02W7EqtyT9cZJj6g0HOcjRHAhN5KECwmhgRjUC',
         },
       ],
       'dep_type': 'cipd',
@@ -1621,7 +1621,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': '43qoaMWgldhQiaXzcCNggSSWDmZQTNrK0cGEt5yysgsC',
+          'version': 'qofjOtuSqFXnMKjZ9c7c-oVh9HeWjGW4h4F3y-vrfEkC',
         },
       ],
       'dep_type': 'cipd',
@@ -1635,7 +1635,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@560af3e85876b0f1371f1ecbda73b4ffa4e5bc44',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6fc2c1a9d9510690f01fc2c1afa29fcce0a5db57',
     'condition': 'checkout_src_internal',
   },
 
@@ -3614,7 +3614,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_ios and checkout_src_internal',
     'action': [
-        'python',
+        'python3',
         'src/build/landmines.py',
         '--landmine-scripts',
         'src/ios_internal/build/get_landmines.py',
@@ -3628,7 +3628,7 @@ hooks = [
     'name': 'disable_depot_tools_selfupdate',
     'pattern': '.',
     'action': [
-        'python',
+        'python3',
         'src/third_party/depot_tools/update_depot_tools_toggle.py',
         '--disable',
     ],
@@ -3662,7 +3662,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_nacl',
     'action': [
-        'python',
+        'python3',
         'src/build/download_nacl_toolchains.py',
         '--mode', 'nacl_core_sdk',
         'sync', '--extract',
@@ -3672,35 +3672,35 @@ hooks = [
     'name': 'sysroot_arm',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_arm',
-    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'src/build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=arm'],
   },
   {
     'name': 'sysroot_arm64',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_arm64',
-    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'src/build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=arm64'],
   },
   {
     'name': 'sysroot_x86',
     'pattern': '.',
     'condition': 'checkout_linux and (checkout_x86 or checkout_x64)',
-    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'src/build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x86'],
   },
   {
     'name': 'sysroot_mips',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_mips',
-    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'src/build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=mips'],
   },
   {
     'name': 'sysroot_mips64',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_mips64',
-    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'src/build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=mips64el'],
   },
 
@@ -3708,7 +3708,7 @@ hooks = [
     'name': 'sysroot_x64',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_x64',
-    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'src/build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x64'],
   },
   {
@@ -3729,7 +3729,7 @@ hooks = [
     'name': 'win_toolchain',
     'pattern': '.',
     'condition': 'checkout_win',
-    'action': ['python', 'src/build/vs_toolchain.py', 'update', '--force'],
+    'action': ['python3', 'src/build/vs_toolchain.py', 'update', '--force'],
   },
   {
     # Update the Mac toolchain if necessary.
@@ -3744,7 +3744,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_fuchsia',
     'action': [
-      'python',
+      'python3',
       'src/build/fuchsia/update_sdk.py',
       '--default-bucket={fuchsia_sdk_bucket}',
     ],
@@ -3763,7 +3763,7 @@ hooks = [
     'name': 'clang_tot',
     'pattern': '.',
     'condition': 'llvm_force_head_revision',
-    'action': ['python', 'src/tools/clang/scripts/build.py',
+    'action': ['python3', 'src/tools/clang/scripts/build.py',
                '--llvm-force-head-revision',
                '--with-android={checkout_android}',
                '--with-fuchsia={checkout_fuchsia}'],
@@ -3773,7 +3773,7 @@ hooks = [
     'name': 'clang_coverage',
     'pattern': '.',
     'condition': 'checkout_clang_coverage_tools',
-    'action': ['python', 'src/tools/clang/scripts/update.py',
+    'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=coverage_tools'],
   },
   {
@@ -3782,7 +3782,7 @@ hooks = [
     'name': 'clang_tidy',
     'pattern': '.',
     'condition': 'checkout_clang_tidy',
-    'action': ['python', 'src/tools/clang/scripts/update.py',
+    'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=clang-tidy'],
   },
   {
@@ -3792,7 +3792,7 @@ hooks = [
     'name': 'lld/mac',
     'pattern': '.',
     'condition': 'host_os == "mac" and (checkout_win or checkout_fuchsia)',
-    'action': ['python', 'src/tools/clang/scripts/update.py',
+    'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=lld_mac'],
   },
   {
@@ -3800,7 +3800,7 @@ hooks = [
     'name': 'objdump/mac',
     'pattern': '.',
     'condition': 'checkout_mac and host_os != "mac"',
-    'action': ['python', 'src/tools/clang/scripts/update.py',
+    'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=objdump'],
   },
   {
@@ -4067,7 +4067,8 @@ hooks = [
     'name': 'checkout_telemetry_binary_dependencies',
     'condition': 'checkout_telemetry_dependencies',
     'pattern': '.',
-    'action': [ 'python',
+    # TODO(1208648): Flip to vpython3 when that is working.
+    'action': [ 'vpython',
                 'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
     ],
   },
@@ -4077,7 +4078,8 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_linux and not checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'python',
+    # TODO(1208648): Flip to vpython3 when that is working.
+    'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4088,7 +4090,8 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_win and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'python',
+    # TODO(1208648): Flip to vpython3 when that is working.
+    'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4099,7 +4102,8 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_mac and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'python',
+    # TODO(1208648): Flip to vpython3 when that is working.
+    'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4110,7 +4114,8 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
-    'action': [ 'python',
+    # TODO(1208648): Flip to vpython3 when that is working.
+    'action': [ 'vpython',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4170,7 +4175,7 @@ hooks = [
     'name': 'Fetch WPR archive files',
     'pattern': '.',
     'condition': 'checkout_android and (checkout_wpr_archives or checkout_src_internal)',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/chrome/test/data/android/manage_wpr_archives.py',
                 'download',
     ],
@@ -4179,7 +4184,7 @@ hooks = [
     'name': 'Fetch Android AFDO profile',
     'pattern': '.',
     'condition': 'checkout_android or checkout_linux',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chrome/android/profiles/newest.txt',
                 '--local_state=src/chrome/android/profiles/local.txt',
@@ -4260,7 +4265,7 @@ hooks = [
     'name': 'vr_test_apks',
     'pattern': '.',
     'condition': 'checkout_android',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/third_party/gvr-android-sdk/test-apks/update.py',
     ],
   },
@@ -4269,7 +4274,7 @@ hooks = [
     'name': 'ar_test_apks',
     'pattern': '.',
     'condition': 'checkout_android',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/third_party/arcore-android-sdk/test-apks/update.py',
     ],
   },
@@ -4288,7 +4293,7 @@ hooks = [
     'name': 'Fetch ChromeOS-specific orderfile for Chrome',
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/orderfile.newest.txt',
                 '--local_state=src/chromeos/profiles/orderfile.local.txt',
@@ -4301,7 +4306,7 @@ hooks = [
     'name': 'Fetch Chrome OS AFDO profiles (from Intel Atom cores)',
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/atom.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/atom.afdo.local.txt',
@@ -4313,7 +4318,7 @@ hooks = [
     'name': 'Fetch Chrome OS AFDO profiles (from Intel big cores)',
     'pattern': '.',
     'condition': 'checkout_chromeos or checkout_simplechrome',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/download_optimization_profile.py',
                 '--newest_state=src/chromeos/profiles/bigcore.afdo.newest.txt',
                 '--local_state=src/chromeos/profiles/bigcore.afdo.local.txt',
@@ -4326,7 +4331,7 @@ hooks = [
     'name': 'doclava',
     'pattern': '.',
     'condition': 'checkout_android',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/build/android/download_doclava.py',
     ],
   },
@@ -4336,7 +4341,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_fuchsia',
     'action': [
-      'python',
+      'python3',
       'src/build/fuchsia/update_images.py',
       '--boot-images={checkout_fuchsia_boot_images}',
       '--default-bucket={fuchsia_images_bucket}',
@@ -4419,7 +4424,7 @@ hooks = [
     'name': 'Fetch PGO profiles for win32',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_win',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/update_pgo_profiles.py',
                 '--target=win32',
                 'update',
@@ -4430,7 +4435,7 @@ hooks = [
     'name': 'Fetch PGO profiles for win64',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_win',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/update_pgo_profiles.py',
                 '--target=win64',
                 'update',
@@ -4441,7 +4446,7 @@ hooks = [
     'name': 'Fetch PGO profiles for mac',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_mac',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/update_pgo_profiles.py',
                 '--target=mac',
                 'update',
@@ -4452,7 +4457,7 @@ hooks = [
     'name': 'Fetch PGO profiles for linux',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_linux',
-    'action': [ 'python',
+    'action': [ 'python3',
                 'src/tools/update_pgo_profiles.py',
                 '--target=linux',
                 'update',

@@ -34,9 +34,9 @@ void ProjectorControllerImpl::OnSpeechRecognitionAvailable(bool available) {
 
 void ProjectorControllerImpl::OnTranscription(
     const std::u16string& text,
-    base::Optional<base::TimeDelta> start_time,
-    base::Optional<base::TimeDelta> end_time,
-    const base::Optional<std::vector<base::TimeDelta>>& word_offsets,
+    absl::optional<base::TimeDelta> start_time,
+    absl::optional<base::TimeDelta> end_time,
+    const absl::optional<std::vector<base::TimeDelta>>& word_offsets,
     bool is_final) {
   std::string transcript = base::UTF16ToUTF8(text);
 
@@ -130,6 +130,10 @@ void ProjectorControllerImpl::OnSelfieCamPressed(bool enabled) {
 
 void ProjectorControllerImpl::OnMagnifierButtonPressed(bool enabled) {
   ui_controller_->OnMagnifierButtonPressed(enabled);
+}
+
+void ProjectorControllerImpl::OnChangeMarkerColorPressed(SkColor new_color) {
+  ui_controller_->OnChangeMarkerColorPressed(new_color);
 }
 
 void ProjectorControllerImpl::SetProjectorUiControllerForTest(

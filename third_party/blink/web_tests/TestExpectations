@@ -5835,12 +5835,8 @@ crbug.com/1053903 external/wpt/webxr/events_referenceSpace_reset_inline.https.ht
 # fast/events/wheel
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/events/wheel/wheel-in-scrollbar.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-ctrl.html [ Failure ]
-crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
-crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheel-in-scrollbar.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-ctrl.html [ Failure Timeout ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
 # Timeout only for compositor-threaded
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Timeout ]
 
@@ -5848,7 +5844,6 @@ crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/event
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/hover-during-scroll.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/overflow-scrollability.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure ]
-crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-height-chaining.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/no-hover-during-smooth-keyboard-scroll.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/scroll-animation-on-by-default.html [ Failure ]
@@ -5856,7 +5851,6 @@ crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/w
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/hover-during-scroll.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/overflow-scrollability.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Timeout ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-height-chaining.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/no-hover-during-smooth-keyboard-scroll.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scroll-animation-on-by-default.html [ Failure ]
@@ -5867,11 +5861,9 @@ crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrol
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-document.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Timeout ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-window.html [ Failure ]
-crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-document.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-window.html [ Failure ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Failure ]
 
 ### END PERCENT BASED SCROLLING TEST FAILURES
 
@@ -6881,3 +6873,23 @@ crbug.com/1095540 [ Linux Debug ] virtual/compositor-threaded-percent-based-scro
 # Sheriff 2021-05-13
 crbug.com/1208774 [ Mac ] external/wpt/webcodecs/videoDecoder-codec-specific.any.html?h264_annexb [ Pass Failure ]
 crbug.com/1208774 [ Mac ] external/wpt/webcodecs/videoDecoder-codec-specific.any.worker.html?h264_annexb [ Pass Failure ]
+
+# For SkiaRenderer on MacOS
+crbug.com/1208173 [ Mac ] animations/animation-paused-hardware.html [ Failure ]
+crbug.com/1208173 [ Mac ] animations/missing-values-first-keyframe.html [ Failure ]
+crbug.com/1208173 [ Mac ] animations/missing-values-last-keyframe.html [ Failure ]
+crbug.com/1208173 [ Mac ] css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/1208173 [ Mac ] external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1208173 [ Mac ] external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
+crbug.com/1208173 [ Mac ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
+crbug.com/1208173 [ Mac ] svg/custom/svg-root-with-opacity.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-image.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/oopr-canvas2d/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
+crbug.com/1208173 [ Mac ] virtual/synchronous_html_parser/svg/filters/feDisplacementMap.svg [ Failure ]
+crbug.com/1208173 [ Mac10.14 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
+

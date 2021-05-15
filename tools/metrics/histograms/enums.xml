@@ -13667,6 +13667,9 @@ Called by update_net_error_codes.py.-->
   <int value="33" label="Read later"/>
   <int value="34" label="Shop with Google Lens Chip"/>
   <int value="35" label="Translate with Google Lens Chip"/>
+  <int value="36" label="Share an highlighted text"/>
+  <int value="37" label="Remove an highlighted text"/>
+  <int value="38" label="Learn more about the shared highlighting feature"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -40404,6 +40407,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="pointerup"/>
 </enum>
 
+<enum name="InputMethodApiOperation">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="CommitText_MoveCursorAfterText"/>
+  <int value="2" label="CommitText_MoveCursorBeforeText"/>
+  <int value="3" label="SetCompositionText"/>
+  <int value="4" label="DeleteSurroundingText"/>
+</enum>
+
 <enum name="InputMethodCategory">
   <int value="0" label="Unkown"/>
   <int value="1" label="XKB">XKeyboard</int>
@@ -58759,7 +58770,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="23" label="Disconnect Tether Network"/>
   <int value="24" label="Wi-Fi: Metered Network"/>
   <int value="25" label="Cellular: Metered Network"/>
-  <int value="26" label="Cellular: Add Network"/>
+  <int value="26" label="Cellular: Add eSIM Network"/>
   <int value="27" label="Cellular: Remove Network eSIM Profile"/>
   <int value="28" label="Cellular: Rename Network eSIM Profile"/>
   <int value="29" label="Wi-Fi: Hidden Network"/>

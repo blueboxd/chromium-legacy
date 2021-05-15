@@ -161,7 +161,7 @@ NSPoint clickedLocation;
   DCHECK([keyPath isEqual:@"visible"]);
   DCHECK_EQ(object, self);
   DCHECK_EQ(context, nil);
-  if ([[change objectForKey:NSKeyValueChangeNewKey] boolValue])
+  if ([change[NSKeyValueChangeNewKey] boolValue])
     base::debug::DumpWithoutCrashing();
 }
 

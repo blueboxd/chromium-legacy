@@ -51,6 +51,8 @@
 
 namespace {
 
+using ::testing::Return;
+
 // Allows for default hour to pass + random delay between 30 and 60 seconds.
 constexpr int kUpdateFetchHintsTimeSecs = 61 * 60;  // 1 hours and 1 minutes.
 
@@ -2451,6 +2453,38 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       HintsFetchedAtNavigationTime_FetchNotAttempted) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory({HintsFetcherEndState::kFetchFailed}));
+  base::HistogramTester histogram_tester;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 0);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
+      optimization_guide::RaceNavigationFetchAttemptStatus::
+          kRaceNavigationFetchNotAttempted,
+      1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
        HintsFetchedAtNavigationTime_HasComponentHintButNotFetched) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
@@ -2962,6 +2996,11 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   }
 
   {
+    ON_CALL(*navigation_handle, NavigationStart)
+        .WillByDefault(Return(base::TimeTicks::Now()));
+
+    EXPECT_CALL(*navigation_handle, NavigationStart);
+
     base::HistogramTester histogram_tester;
     hints_manager()->SetHintsFetcherFactoryForTesting(
         BuildTestHintsFetcherFactory(
@@ -2976,6 +3015,16 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
     // Should not be recorded since we are not attempting a new fetch.
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 0);
+
+    OptimizationGuideNavigationData* navigation_data =
+        OptimizationGuideNavigationData::GetFromNavigationHandle(
+            navigation_handle.get());
+    // Set hints fetch end.so we can figure out if hints fetch start was set.
+    navigation_data->set_hints_fetch_end(base::TimeTicks::Now());
+    EXPECT_TRUE(navigation_data->hints_fetch_latency().has_value());
+    EXPECT_EQ(navigation_data->hints_fetch_attempt_status(),
+              optimization_guide::RaceNavigationFetchAttemptStatus::
+                  kRaceNavigationFetchAlreadyInProgress);
   }
 }
 

@@ -1298,12 +1298,21 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
   ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder
       race_navigation_recorder(navigation_handle);
 
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+
   // We expect that if the URL is being fetched for, we have already run through
   // the logic to decide if we also require fetching hints for the host.
   if (IsHintBeingFetchedForNavigation(url)) {
     race_navigation_recorder.set_race_attempt_status(
         optimization_guide::RaceNavigationFetchAttemptStatus::
             kRaceNavigationFetchAlreadyInProgress);
+
+    // Just set the hints fetch start to the start of the navigation, so we can
+    // track whether the hint came back before commit or not.
+    navigation_data->set_hints_fetch_start(
+        navigation_handle->NavigationStart());
     return;
   }
 
@@ -1338,11 +1347,7 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
       "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches",
       page_navigation_hints_fetchers_.size());
 
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
-  navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
-  it->second->FetchOptimizationGuideServiceHints(
+  bool fetch_attempted = it->second->FetchOptimizationGuideServiceHints(
       hosts, urls, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       g_browser_process->GetApplicationLocale(),
@@ -1351,11 +1356,18 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
           ui_weak_ptr_factory_.GetWeakPtr(), navigation_data->GetWeakPtr(), url,
           base::flat_set<GURL>({url}),
           base::flat_set<std::string>({url.host()})));
+  if (fetch_attempted) {
+    navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
 
-  if (!hosts.empty() && !urls.empty()) {
+    if (!hosts.empty() && !urls.empty()) {
+      race_navigation_recorder.set_race_attempt_status(
+          optimization_guide::RaceNavigationFetchAttemptStatus::
+              kRaceNavigationFetchHostAndURL);
+    }
+  } else {
     race_navigation_recorder.set_race_attempt_status(
         optimization_guide::RaceNavigationFetchAttemptStatus::
-            kRaceNavigationFetchHostAndURL);
+            kRaceNavigationFetchNotAttempted);
   }
 }
 

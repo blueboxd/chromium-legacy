@@ -1191,11 +1191,6 @@ const char kExperimentalAccessibilityLabelsDescription[] =
     "Enables experimental accessibility labels feature. Note that this only "
     "enables the feature, and enabling the service is a profile preference.";
 
-const char kExperimentalExtensionApisName[] = "Experimental Extension APIs";
-const char kExperimentalExtensionApisDescription[] =
-    "Enables experimental extension APIs. Note that the extension gallery "
-    "doesn't allow you to upload extensions that use experimental APIs.";
-
 const char kExperimentalWebPlatformFeaturesName[] =
     "Experimental Web Platform features";
 const char kExperimentalWebPlatformFeaturesDescription[] =
@@ -3177,12 +3172,6 @@ const char kOfflinePagesLivePageSharingName[] =
 const char kOfflinePagesLivePageSharingDescription[] =
     "Enables to share current loaded page as offline page by saving as MHTML "
     "first.";
-
-const char kOffliningRecentPagesName[] =
-    "Enable offlining of recently visited pages";
-const char kOffliningRecentPagesDescription[] =
-    "Enable storing recently visited pages locally for offline use. Requires "
-    "Offline Pages to be enabled.";
 
 const char kAndroidPartnerCustomizationPhenotypeName[] =
     "Use homepage and bookmarks from partner customization";

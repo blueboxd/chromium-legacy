@@ -408,7 +408,8 @@ crbug.com/963223 [ win nvidia angle-vulkan passthrough ] conformance/rendering/o
 crbug.com/angleproject/2930 [ win nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/1082826 [ win nvidia angle-vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
 crbug.com/1148120 [ win7 nvidia angle-vulkan passthrough ] conformance/canvas/viewport-unchanged-upon-resize.html [ Failure ]
-crbug.com/1197905 [ win nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-size.html [ Failure ]
+crbug.com/1197905 [ win7 nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-size.html [ Failure ]
+crbug.com/1209189 [ win nvidia angle-vulkan passthrough ] conformance/glsl/constructors/glsl-construct-vec-mat-index.html [ Failure ]
 
 # Flaky since crbug.com/1017162
 crbug.com/1017162 [ win nvidia angle-vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
@@ -686,6 +687,10 @@ crbug.com/1187332 [ android android-pixel-4 ] conformance/textures/misc/texture-
 
 # Misc failures
 crbug.com/angleproject/2988 [ android angle-opengles ] conformance/context/context-size-change.html [ Failure ]
+
+# Failing webgl passthrough test on nexus 5x.
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
+crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 ############
 # ChromeOS #

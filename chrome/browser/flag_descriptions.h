@@ -696,9 +696,6 @@ extern const char kExpensiveBackgroundTimerThrottlingDescription[];
 extern const char kExperimentalAccessibilityLabelsName[];
 extern const char kExperimentalAccessibilityLabelsDescription[];
 
-extern const char kExperimentalExtensionApisName[];
-extern const char kExperimentalExtensionApisDescription[];
-
 extern const char kExperimentalWebPlatformFeaturesName[];
 extern const char kExperimentalWebPlatformFeaturesDescription[];
 
@@ -1843,9 +1840,6 @@ extern const char kOfflinePagesPrefetchingDescription[];
 
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
-
-extern const char kOffliningRecentPagesName[];
-extern const char kOffliningRecentPagesDescription[];
 
 extern const char kPageInfoDiscoverabilityName[];
 extern const char kPageInfoDiscoverabilityDescription[];

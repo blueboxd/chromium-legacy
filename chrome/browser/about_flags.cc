@@ -2663,9 +2663,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableNaCl)},
 #endif  // ENABLE_NACL
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"extension-apis", flag_descriptions::kExperimentalExtensionApisName,
-     flag_descriptions::kExperimentalExtensionApisDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableExperimentalExtensionApis)},
     {"extension-checkup", flag_descriptions::kExtensionsCheckupName,
      flag_descriptions::kExtensionsCheckupDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(extensions_features::kExtensionsCheckup,
@@ -3807,9 +3804,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInterestFeedNoticeCardAutoDismissName,
      flag_descriptions::kInterestFeedNoticeCardAutoDismissDescription,
      kOsAndroid, FEATURE_VALUE_TYPE(feed::kInterestFeedNoticeCardAutoDismiss)},
-    {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
-     flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
     {"offline-pages-ct", flag_descriptions::kOfflinePagesCtName,
      flag_descriptions::kOfflinePagesCtDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTFeature)},

@@ -87,29 +87,48 @@ function OnClickHighlighted() {
   OnClickImpl(this);
 }
 
-// Get an initial list of all highlighted_collapsible_groups.
-let highlighted_collapsible_groups = document.getElementsByClassName(
-    "highlighted_collapsible_group");
-let highlighted_list = [];
-for (elem of highlighted_collapsible_groups) {
-  highlighted_list.push(elem);
-}
+// Repeatedly bubble up the highlighted_collapsible_group class as long as all
+// siblings are highlighted.
+let found_element_to_convert = false;
+do {
+  found_element_to_convert = false;
+  // Get an initial list of all highlighted_collapsible_groups.
+  let highlighted_collapsible_groups = document.getElementsByClassName(
+      "highlighted_collapsible_group");
+  let highlighted_list = [];
+  for (elem of highlighted_collapsible_groups) {
+    highlighted_list.push(elem);
+  }
 
-// Bubble up the highlighted_collapsible_group class.
-while (highlighted_list.length) {
-  elem = highlighted_list.shift();
-  if (elem.tagName == 'BODY') {
-    continue;
+  // Bubble up the highlighted_collapsible_group class.
+  while (highlighted_list.length) {
+    elem = highlighted_list.shift();
+    if (elem.tagName == 'BODY') {
+      continue;
+    }
+    if (elem.classList.contains("content")) {
+      highlighted_list.push(elem.previousElementSibling);
+      continue;
+    }
+    if (elem.classList.contains("collapsible_group")) {
+      found_element_to_convert = true;
+      elem.classList.add("highlighted_collapsible_group");
+      elem.classList.remove("collapsible_group");
+    }
+
+    sibling_elements = elem.parentElement.children;
+    let found_non_highlighted_group = false;
+    for (e of sibling_elements) {
+      if (e.classList.contains("collapsible_group")) {
+        found_non_highlighted_group = true;
+        break
+      }
+    }
+    if (!found_non_highlighted_group) {
+      highlighted_list.push(elem.parentElement);
+    }
   }
-  if (elem.classList.contains("content")) {
-    highlighted_list.push(elem.previousElementSibling);
-  }
-  if (elem.classList.contains("collapsible_group")) {
-    elem.classList.add("highlighted_collapsible_group");
-    elem.classList.remove("collapsible_group");
-  }
-  highlighted_list.push(elem.parentElement);
-}
+} while (found_element_to_convert);
 
 // Apply OnClick listeners so [highlighted_]collapsible_groups properly
 // shrink/expand.
@@ -443,23 +462,46 @@ def AddStatsToStr(s, stats):
   return '%s (%d/%d)' % (s, stats.passed_builds, stats.total_builds)
 
 
-def OutputAffectedUrls(removed_urls):
+def OutputAffectedUrls(removed_urls, orphaned_urls=None):
   """Outputs URLs of affected expectations for easier consumption by the user.
 
-  Outputs both a string suitable for passing to Chrome via the command line to
-  open all bugs in the browser and a string suitable for copying into the CL
-  description to associate the CL with all the affected bugs.
+  Outputs the following:
+
+  1. A string suitable for passing to Chrome via the command line to
+     open all bugs in the browser.
+  2. A string suitable for copying into the CL description to associate the CL
+     with all the affected bugs.
+  3. A string containing any bugs that should be closable since there are no
+     longer any associated expectations.
 
   Args:
     removed_urls: A set or list of strings containing bug URLs.
+    orphaned_urls: A subset of |removed_urls| whose bugs no longer have any
+        corresponding expectations.
   """
   removed_urls = list(removed_urls)
   removed_urls.sort()
-  _OutputUrlsForCommandLine(removed_urls)
-  _OutputUrlsForClDescription(removed_urls)
+  orphaned_urls = orphaned_urls or []
+  orphaned_urls = list(orphaned_urls)
+  orphaned_urls.sort()
+  _OutputAffectedUrls(removed_urls, orphaned_urls)
+  _OutputUrlsForClDescription(removed_urls, orphaned_urls)
 
 
-def _OutputUrlsForCommandLine(urls, file_handle=None):
+def _OutputAffectedUrls(affected_urls, orphaned_urls, file_handle=None):
+  """Outputs |urls| for opening in a browser as affected bugs.
+
+  Args:
+    affected_urls: A list of strings containing URLs to output.
+    orphaned_urls: A list of strings containing URLs to output as closable.
+    file_handle: A file handle to write the string to. Defaults to stdout.
+  """
+  _OutputUrlsForCommandLine(affected_urls, "Affected bugs", file_handle)
+  if orphaned_urls:
+    _OutputUrlsForCommandLine(orphaned_urls, "Closable bugs", file_handle)
+
+
+def _OutputUrlsForCommandLine(urls, description, file_handle=None):
   """Outputs |urls| for opening in a browser.
 
   The output string is meant to be passed to a browser via the command line in
@@ -469,6 +511,7 @@ def _OutputUrlsForCommandLine(urls, file_handle=None):
 
   Args:
     urls: A list of strings containing URLs to output.
+    description: A description of the URLs to be output.
     file_handle: A file handle to write the string to. Defaults to stdout.
   """
   file_handle = file_handle or sys.stdout
@@ -477,45 +520,62 @@ def _OutputUrlsForCommandLine(urls, file_handle=None):
     return url.startswith('https://') or url.startswith('http://')
 
   urls = [u if _StartsWithHttp(u) else 'https://%s' % u for u in urls]
-  file_handle.write('Affected bugs: %s\n' % ' '.join(urls))
+  file_handle.write('%s: %s\n' % (description, ' '.join(urls)))
 
 
-def _OutputUrlsForClDescription(urls, file_handle=None):
+def _OutputUrlsForClDescription(affected_urls, orphaned_urls, file_handle=None):
   """Outputs |urls| for use in a CL description.
 
   Output adheres to the line length recommendation and max number of bugs per
   line supported in Gerrit.
 
   Args:
-    urls: A list of strings containing URLs to output.
+    affected_urls: A list of strings containing URLs to output.
+    orphaned_urls: A list of strings containing URLs to output as closable.
     file_handle: A file handle to write the string to. Defaults to stdout.
   """
+
+  def AddBugTypeToOutputString(urls, prefix):
+    output_str = ''
+    current_line = ''
+    bugs_on_line = 0
+
+    urls = collections.deque(urls)
+
+    while len(urls):
+      current_bug = urls.popleft()
+      current_bug = current_bug.split('crbug.com/', 1)[1]
+      # Handles cases like crbug.com/angleproject/1234.
+      current_bug = current_bug.replace('/', ':')
+
+      # First bug on the line.
+      if not current_line:
+        current_line = '%s %s' % (prefix, current_bug)
+      # Bug or length limit hit for line.
+      elif (
+          len(current_line) + len(current_bug) + 2 > MAX_CHARACTERS_PER_CL_LINE
+          or bugs_on_line >= MAX_BUGS_PER_LINE):
+        output_str += current_line + '\n'
+        bugs_on_line = 0
+        current_line = '%s %s' % (prefix, current_bug)
+      # Can add to current line.
+      else:
+        current_line += ', %s' % current_bug
+
+      bugs_on_line += 1
+
+    output_str += current_line + '\n'
+    return output_str
+
   file_handle = file_handle or sys.stdout
-  urls = collections.deque(urls)
+  affected_but_not_closable = set(affected_urls) - set(orphaned_urls)
+  affected_but_not_closable = list(affected_but_not_closable)
+  affected_but_not_closable.sort()
 
   output_str = ''
-  current_line = ''
-  bugs_on_line = 0
-  while len(urls):
-    current_bug = urls.popleft()
-    current_bug = current_bug.split('crbug.com/', 1)[1]
-    # Handles cases like crbug.com/angleproject/1234.
-    current_bug = current_bug.replace('/', ':')
+  if affected_but_not_closable:
+    output_str += AddBugTypeToOutputString(affected_but_not_closable, 'Bug:')
+  if orphaned_urls:
+    output_str += AddBugTypeToOutputString(orphaned_urls, 'Fixed:')
 
-    # First bug on the line.
-    if not current_line:
-      current_line = 'Bug: %s' % current_bug
-    # Bug or length limit hit for line.
-    elif (len(current_line) + len(current_bug) + 2 > MAX_CHARACTERS_PER_CL_LINE
-          or bugs_on_line >= MAX_BUGS_PER_LINE):
-      output_str += current_line + '\n'
-      bugs_on_line = 0
-      current_line = 'Bug: %s' % current_bug
-    # Can add to current line.
-    else:
-      current_line += ', %s' % current_bug
-
-    bugs_on_line += 1
-
-  output_str += current_line + '\n'
   file_handle.write('Affected bugs for CL description:\n%s' % output_str)

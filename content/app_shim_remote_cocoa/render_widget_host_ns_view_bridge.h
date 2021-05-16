@@ -67,7 +67,7 @@ class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
   void ShowDictionaryOverlay(ui::mojom::AttributedStringPtr attributed_string,
                              const gfx::Point& baseline_point) override;
   void LockKeyboard(
-      const base::Optional<std::vector<uint32_t>>& uint_dom_codes) override;
+      const absl::optional<std::vector<uint32_t>>& uint_dom_codes) override;
   void UnlockKeyboard() override;
   void ShowSharingServicePicker(
       const std::string& title,
@@ -80,8 +80,9 @@ class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
   bool IsPopup() const { return !!popup_window_; }
 
   // display::DisplayObserver implementation.
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override;
+  void OnDisplayAdded(const display::Display&) override;
+  void OnDisplayRemoved(const display::Display&) override;
+  void OnDisplayMetricsChanged(const display::Display&, uint32_t) override;
 
   // The NSView used for input and display.
   base::scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view_;

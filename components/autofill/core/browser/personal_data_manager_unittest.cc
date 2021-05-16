@@ -7389,7 +7389,27 @@ TEST_F(PersonalDataManagerTest, OnAccountsCookieDeletedByUserAction) {
       prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
 }
 
-TEST_F(PersonalDataManagerTest, SaveProfileStrikes) {
+TEST_F(PersonalDataManagerTest, SaveProfileUpdateStrikes) {
+  std::string guid = "a21f010a-eac1-41fc-aee9-c06bbedfb292";
+
+  EXPECT_FALSE(personal_data_->IsProfileUpdateBlocked(guid));
+
+  personal_data_->AddStrikeToBlockProfileUpdate(guid);
+  EXPECT_FALSE(personal_data_->IsProfileUpdateBlocked(guid));
+
+  personal_data_->AddStrikeToBlockProfileUpdate(guid);
+  EXPECT_FALSE(personal_data_->IsProfileUpdateBlocked(guid));
+
+  // After the third strike, the guid should be blocked.
+  personal_data_->AddStrikeToBlockProfileUpdate(guid);
+  EXPECT_TRUE(personal_data_->IsProfileUpdateBlocked(guid));
+
+  // Until the strikes are removed again.
+  personal_data_->RemoveStrikesToBlockProfileUpdate(guid);
+  EXPECT_FALSE(personal_data_->IsProfileUpdateBlocked(guid));
+}
+
+TEST_F(PersonalDataManagerTest, SaveProfileSaveStrikes) {
   GURL domain("https://www.block.me/index.html");
 
   EXPECT_FALSE(personal_data_->IsNewProfileImportBlockedForDomain(domain));
@@ -7479,7 +7499,7 @@ TEST_F(PersonalDataManagerTest, ClearUrlsFromBrowsingHistoryInTimeRange) {
   history::DeletionInfo deletion_info(
       history::DeletionTimeRange(base::Time::Min(), end_of_deletion), false,
       deleted_urls, {},
-      base::make_optional<std::set<GURL>>({first_url, second_url}));
+      absl::make_optional<std::set<GURL>>({first_url, second_url}));
 
   personal_data_->OnURLsDeleted(/*history_service=*/nullptr, deletion_info);
 

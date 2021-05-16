@@ -147,11 +147,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
-  base::Optional<SkColor> GetBackgroundColor() override;
-  void OnSynchronizedDisplayPropertiesChanged(bool rotation) override;
+  absl::optional<SkColor> GetBackgroundColor() override;
 
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
+  const std::vector<display::Display>& GetDisplays() const override;
+  void UpdateScreenInfo(gfx::NativeView view) override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
   void DidNavigate() override;
@@ -163,7 +164,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Returns true when running on a recent enough OS for unaccelerated pointer
   // events.
   static bool IsUnadjustedMouseMovementSupported();
-  bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
+  bool LockKeyboard(absl::optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
@@ -296,11 +297,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
         .max_time_between_phase_ended_and_momentum_phase_began();
   }
 
-  // Update the size, scale factor, color profile, vsync parameters, and any
-  // other properties of the NSView or its NSScreen. Propagate these to the
-  // RenderWidgetHostImpl as well.
-  void UpdateNSViewAndDisplayProperties();
-
   // RenderWidgetHostNSViewHostHelper implementation.
   id GetRootBrowserAccessibilityElement() override;
   id GetFocusedBrowserAccessibilityElement() override;
@@ -334,7 +330,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                                bool attached_to_window) override;
   void OnWindowFrameInScreenChanged(
       const gfx::Rect& window_frame_in_screen_dip) override;
-  void OnDisplayChanged(const display::Display& display) override;
+  void OnDisplaysChanged(const display::DisplayList& display_list) override;
   void BeginKeyboardEvent() override;
   void EndKeyboardEvent() override;
   void ForwardKeyboardEventWithCommands(
@@ -519,7 +515,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
   bool HasFallbackSurface() const override;
-  base::Optional<DisplayFeature> GetDisplayFeature() override;
+  absl::optional<DisplayFeature> GetDisplayFeature() override;
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
 
@@ -565,9 +561,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The frame of the window in the global display::Screen coordinate system
   // (where the origin is the upper-left corner of Screen::GetPrimaryDisplay).
   gfx::Rect window_frame_in_screen_dip_;
-
-  // Cached copy of the display information pushed to us from the NSView.
-  display::Display display_;
 
   // Whether or not the NSView's NSWindow is the key window.
   bool is_window_key_ = false;
@@ -671,7 +664,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Represents a feature of the physical display whose offset and mask_length
   // are expressed in DIPs relative to the view. See display_feature.h for more
   // details.
-  base::Optional<DisplayFeature> display_feature_;
+  absl::optional<DisplayFeature> display_feature_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

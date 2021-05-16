@@ -267,7 +267,7 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
 }
 
 bool RenderWidgetHostViewEventHandler::LockKeyboard(
-    base::Optional<base::flat_set<ui::DomCode>> codes) {
+    absl::optional<base::flat_set<ui::DomCode>> codes) {
   aura::Window* root_window = window_->GetRootWindow();
   if (!root_window)
     return false;
@@ -526,7 +526,7 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
     mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
         mouse_wheel_event, should_route_event);
 
-    base::Optional<blink::WebGestureEvent> maybe_synthetic_fling_cancel;
+    absl::optional<blink::WebGestureEvent> maybe_synthetic_fling_cancel;
     if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
       maybe_synthetic_fling_cancel =
           ui::MakeWebGestureEventFlingCancel(mouse_wheel_event);
@@ -959,7 +959,7 @@ bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
     const blink::WebMouseEvent& event) {
   if (event.GetType() == blink::WebInputEvent::Type::kMouseMove &&
       synthetic_move_position_.has_value()) {
-    if (IsFractionalScaleFactor(host_view_->current_device_scale_factor())) {
+    if (IsFractionalScaleFactor(host_view_->GetCurrentDeviceScaleFactor())) {
       // For fractional scale factors, the conversion from pixels to dip and
       // vice versa could result in off by 1 or 2 errors which hurts us because
       // the artificial move to center event cause the cursor to bounce around

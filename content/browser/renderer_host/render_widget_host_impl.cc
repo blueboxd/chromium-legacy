@@ -29,7 +29,6 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -114,6 +113,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_base.h"
 #include "storage/browser/file_system/isolated_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
@@ -1014,7 +1014,7 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // The root widget's window segments are computed here - child frames just
   // use the value provided from the parent.
   if (is_top_most_widget) {
-    base::Optional<DisplayFeature> display_feature = view_->GetDisplayFeature();
+    absl::optional<DisplayFeature> display_feature = view_->GetDisplayFeature();
     if (display_feature) {
       visual_properties.root_widget_window_segments =
           display_feature->ComputeWindowSegments(
@@ -1824,7 +1824,7 @@ float RenderWidgetHostImpl::GetDeviceScaleFactor() {
   return GetScaleFactorForView(view_.get());
 }
 
-base::Optional<cc::TouchAction> RenderWidgetHostImpl::GetAllowedTouchAction() {
+absl::optional<cc::TouchAction> RenderWidgetHostImpl::GetAllowedTouchAction() {
   return input_router_->AllowedTouchAction();
 }
 
@@ -2031,14 +2031,6 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   blink::ScreenInfo current_screen_info;
   GetScreenInfo(&current_screen_info);
 
-  // TODO(enne): RenderWidgetHostViewMac caches the ScreenInfo and chooses
-  // not to change it during resizes.  This means that the RWHV::GetScreenInfo
-  // returned might be stale wrt GetAllDisplays() below.  Fix this.
-  // For now, just return the legacy screen info for mac.
-#if defined(OS_MAC)
-  return blink::ScreenInfos(current_screen_info);
-#else
-
   // If this widget has not been connected to a view yet (or has been
   // disconnected), the display code may be using a fake primary display.
   // In these cases, temporarily return the legacy screen info until
@@ -2056,12 +2048,10 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
     return blink::ScreenInfos(current_screen_info);
   }
 
-  display::Screen* screen = display::Screen::GetScreen();
-  if (!screen) {
-    return blink::ScreenInfos(current_screen_info);
-  }
-
-  const std::vector<display::Display>& displays = screen->GetAllDisplays();
+  // Get displays from RenderWidgetHostView, not directly from display::Screen.
+  // This helps maintain consistency with the legacy singular GetScreenInfo().
+  // For example, Mac may cache display info from a remote process NSWindow.
+  const std::vector<display::Display>& displays = view_->GetDisplays();
 
   // Just return the legacy singular ScreenInfo, if its id is invalid or if the
   // display::Screen is not initialized; each of which occurs in various tests.
@@ -2073,9 +2063,8 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
     return blink::ScreenInfos(current_screen_info);
   }
 
-  // If we get here, we are asserting that the current display as reported
-  // by the RenderWidgetHostView is inside of GetAllDisplays().
-
+  // Build multi-screen info from the displays returned by RenderWidgetHostView,
+  // ensure its legacy singular screen info struct is included in this set.
   blink::ScreenInfos result;
   bool current_display_added = false;
   for (const auto& display : displays) {
@@ -2122,7 +2111,6 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
 
   // Fall back to legacy screen info, if we are in a bad state.
   return blink::ScreenInfos(current_screen_info);
-#endif
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
@@ -2905,7 +2893,7 @@ void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
 }
 
 bool RenderWidgetHostImpl::RequestKeyboardLock(
-    base::Optional<base::flat_set<ui::DomCode>> codes) {
+    absl::optional<base::flat_set<ui::DomCode>> codes) {
   if (!delegate_) {
     CancelKeyboardLock();
     return false;
@@ -3091,10 +3079,10 @@ RenderWidgetHostImpl::GetFrameWidgetInputHandler() {
   return frame_widget_input_handler_.get();
 }
 
-base::Optional<blink::VisualProperties>
+absl::optional<blink::VisualProperties>
 RenderWidgetHostImpl::LastComputedVisualProperties() const {
   if (!old_visual_properties_)
-    return base::nullopt;
+    return absl::nullopt;
   return *old_visual_properties_;
 }
 
@@ -3534,7 +3522,7 @@ bool RenderWidgetHostImpl::LockKeyboard() {
   // KeyboardLock can be activated and deactivated several times per request,
   // for example when a fullscreen tab loses and gains focus multiple times,
   // so we need to retain a copy of the keys requested.
-  base::Optional<base::flat_set<ui::DomCode>> copy = keyboard_keys_to_lock_;
+  absl::optional<base::flat_set<ui::DomCode>> copy = keyboard_keys_to_lock_;
   return view_->LockKeyboard(std::move(copy));
 }
 

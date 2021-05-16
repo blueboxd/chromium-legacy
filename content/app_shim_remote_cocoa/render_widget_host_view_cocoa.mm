@@ -164,7 +164,7 @@ void ExtractUnderlines(NSAttributedString* string,
 // Private methods:
 @interface RenderWidgetHostViewCocoa () {
   bool _keyboardLockActive;
-  base::Optional<base::flat_set<ui::DomCode>> _lockedKeys;
+  absl::optional<base::flat_set<ui::DomCode>> _lockedKeys;
 
   API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<NSCandidateListTouchBarItem> _candidateListTouchBarItem;
@@ -848,7 +848,7 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 }
 
-- (void)lockKeyboard:(base::Optional<base::flat_set<ui::DomCode>>)keysToLock {
+- (void)lockKeyboard:(absl::optional<base::flat_set<ui::DomCode>>)keysToLock {
   // TODO(joedow): Integrate System-level keyboard hook into this method.
   _lockedKeys = std::move(keysToLock);
   _keyboardLockActive = true;
@@ -1374,11 +1374,13 @@ void ExtractUnderlines(NSAttributedString* string,
   if (!enclosingWindow)
     return;
 
+  display::Screen* screen = display::Screen::GetScreen();
   // TODO(ccameron): This will call [enclosingWindow screen], which may return
   // nil. Do that call here to avoid sending bogus display info to the host.
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(self);
-  _host->OnDisplayChanged(display);
+  display::DisplayList display_list(screen->GetAllDisplays(),
+                                    screen->GetPrimaryDisplay().id(),
+                                    screen->GetDisplayNearestView(self).id());
+  _host->OnDisplaysChanged(display_list);
 }
 
 // This will be called when the NSView's NSWindow moves from one NSScreen to

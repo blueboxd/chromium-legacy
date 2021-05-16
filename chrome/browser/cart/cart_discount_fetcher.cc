@@ -294,10 +294,11 @@ std::string CartDiscountFetcher::generatePostData(
     cart_dict->SetInteger("cartAbandonedTimeMinutes",
                           cart_abandoned_time_mintues);
 
-    // TODO(meiliang): Set real rawMerchantOffers.
+    // Set rawMerchantOffers.
     auto offer_list = std::make_unique<base::ListValue>();
-    offer_list->Append("offer1");
-    offer_list->Append("offer2");
+    for (const auto& product_proto : cart_proto.product_infos()) {
+      offer_list->Append(product_proto.product_id());
+    }
     cart_dict->SetList("rawMerchantOffers", std::move(offer_list));
 
     // Add cart_dict to cart_list.
@@ -317,7 +318,7 @@ void CartDiscountFetcher::OnDiscountsAvailable(
     CartDiscountFetcherCallback callback,
     std::unique_ptr<EndpointResponse> responses) {
   CartDiscountMap cart_discount_map;
-  base::Optional<base::Value> value =
+  absl::optional<base::Value> value =
       base::JSONReader::Read(responses->response);
   if (!value || !value.has_value() || !value->is_dict()) {
     NOTREACHED() << "Response is not valid or does not have value or it is "

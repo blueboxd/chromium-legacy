@@ -47,22 +47,22 @@ namespace content {
 // static
 RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
     RenderWidgetHost* widget,
-    const blink::ScreenInfo& screen_info) {
+    const blink::ScreenInfo& parent_screen_info) {
   RenderWidgetHostViewChildFrame* view =
-      new RenderWidgetHostViewChildFrame(widget, screen_info);
+      new RenderWidgetHostViewChildFrame(widget, parent_screen_info);
   view->Init();
   return view;
 }
 
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host,
-    const blink::ScreenInfo& screen_info)
+    const blink::ScreenInfo& parent_screen_info)
     : RenderWidgetHostViewBase(widget_host),
       frame_sink_id_(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
       frame_connector_(nullptr),
-      screen_info_(screen_info) {
+      parent_screen_info_(parent_screen_info) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
@@ -131,8 +131,17 @@ void RenderWidgetHostViewChildFrame::SetFrameConnector(
     SetParentFrameSinkId(parent_view->GetFrameSinkId());
   }
 
-  set_current_device_scale_factor(
+  // Initialize a display struct as needed, to cache the scale factor.
+  // TODO(crbug.com/1182855): Use the parent_view's entire display::DisplayList.
+  if (display_list_.displays().empty()) {
+    display_list_ = display::DisplayList(
+        {display::Display(display::kDefaultDisplayId)},
+        display::kDefaultDisplayId, display::kDefaultDisplayId);
+  }
+  display::Display current_display = *display_list_.GetCurrentDisplayIterator();
+  current_display.set_device_scale_factor(
       frame_connector_->screen_info().device_scale_factor);
+  display_list_.UpdateDisplay(current_display);
 
   auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
   if (root_view) {
@@ -316,10 +325,10 @@ void RenderWidgetHostViewChildFrame::UpdateBackgroundColor() {
   }
 }
 
-base::Optional<DisplayFeature>
+absl::optional<DisplayFeature>
 RenderWidgetHostViewChildFrame::GetDisplayFeature() {
   NOTREACHED();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void RenderWidgetHostViewChildFrame::SetDisplayFeatureForTesting(
@@ -353,7 +362,7 @@ void RenderWidgetHostViewChildFrame::SendInitialPropertiesIfNeeded() {
   if (initial_properties_sent_ || !frame_connector_)
     return;
   UpdateViewportIntersection(frame_connector_->intersection_state(),
-                             base::nullopt);
+                             absl::nullopt);
   SetIsInert();
   UpdateInheritedEffectiveTouchAction();
   UpdateRenderThrottlingStatus();
@@ -442,7 +451,7 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
 
 void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     const blink::mojom::ViewportIntersectionState& intersection_state,
-    const base::Optional<blink::VisualProperties>& visual_properties) {
+    const absl::optional<blink::VisualProperties>& visual_properties) {
   if (host()) {
     host()->SetIntersectsViewport(
         !intersection_state.viewport_intersection.IsEmpty());
@@ -840,7 +849,7 @@ void RenderWidgetHostViewChildFrame::
     const cc::RenderFrameMetadata& metadata =
         host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
     selection_controller_client_->UpdateSelectionBoundsIfNeeded(
-        metadata.selection, current_device_scale_factor());
+        metadata.selection, GetCurrentDeviceScaleFactor());
   }
 }
 
@@ -908,9 +917,11 @@ RenderWidgetHostViewChildFrame::FilterInputEvent(
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(
     blink::ScreenInfo* screen_info) {
+  // TODO(crbug.com/1182855): Propagate screen infos from the parent on changes
+  // and on connection init; avoid lazily updating the local cache like this.
   if (frame_connector_)
-    screen_info_ = frame_connector_->screen_info();
-  *screen_info = screen_info_;
+    parent_screen_info_ = frame_connector_->screen_info();
+  *screen_info = parent_screen_info_;
 }
 
 void RenderWidgetHostViewChildFrame::EnableAutoResize(

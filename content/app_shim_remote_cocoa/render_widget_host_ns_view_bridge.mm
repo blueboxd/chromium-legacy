@@ -215,9 +215,17 @@ void RenderWidgetHostNSViewBridge::SetShowingContextMenu(bool showing) {
   [cocoa_view_ setShowingContextMenu:showing];
 }
 
+void RenderWidgetHostNSViewBridge::OnDisplayAdded(const display::Display&) {
+  [cocoa_view_ updateScreenProperties];
+}
+
+void RenderWidgetHostNSViewBridge::OnDisplayRemoved(const display::Display&) {
+  [cocoa_view_ updateScreenProperties];
+}
+
 void RenderWidgetHostNSViewBridge::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t changed_metrics) {
+    const display::Display&,
+    uint32_t) {
   // Note that -updateScreenProperties is also be called by the notification
   // NSWindowDidChangeBackingPropertiesNotification (some of these calls
   // will be redundant).
@@ -257,8 +265,8 @@ void RenderWidgetHostNSViewBridge::ShowDictionaryOverlay(
 }
 
 void RenderWidgetHostNSViewBridge::LockKeyboard(
-    const base::Optional<std::vector<uint32_t>>& uint_dom_codes) {
-  base::Optional<base::flat_set<ui::DomCode>> dom_codes;
+    const absl::optional<std::vector<uint32_t>>& uint_dom_codes) {
+  absl::optional<base::flat_set<ui::DomCode>> dom_codes;
   if (uint_dom_codes) {
     dom_codes.emplace();
     for (const auto& uint_dom_code : *uint_dom_codes)

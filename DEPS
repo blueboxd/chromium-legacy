@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'bc7c754ce3957640efdfd39aea8ff700a8cc6f26',
+  'skia_revision': 'f91ce0201328509877cc3b080423075fe12a5a41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '16c5925f7baa81c68fa9706289d05e839bb7a5fb',
+  'devtools_frontend_revision': '910162b7cb75a0faf0787af086968a3a1811f8d5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -730,7 +730,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'WpOMGKPknIvtLmyme5NOnOsAJCTFE_iqJ3DPKH5DXv4C',
+          'version': '5wEAJbMDQJnCxXbN6hMn66IR4akg1G25HQtc_8_7Vz0C',
       },
     ],
     'condition': 'checkout_android',

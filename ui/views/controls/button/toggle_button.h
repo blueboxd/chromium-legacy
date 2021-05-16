@@ -5,9 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_TOGGLE_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_TOGGLE_BUTTON_H_
 
-#include <memory>
-
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/button/button.h"
 
@@ -28,14 +26,14 @@ class VIEWS_EXPORT ToggleButton : public Button {
   void SetIsOn(bool is_on);
   bool GetIsOn() const;
 
-  void SetThumbOnColor(const base::Optional<SkColor>& thumb_on_color);
-  base::Optional<SkColor> GetThumbOnColor() const;
-  void SetThumbOffColor(const base::Optional<SkColor>& thumb_off_color);
-  base::Optional<SkColor> GetThumbOffColor() const;
-  void SetTrackOnColor(const base::Optional<SkColor>& track_on_color);
-  base::Optional<SkColor> GetTrackOnColor() const;
-  void SetTrackOffColor(const base::Optional<SkColor>& track_off_color);
-  base::Optional<SkColor> GetTrackOffColor() const;
+  void SetThumbOnColor(const absl::optional<SkColor>& thumb_on_color);
+  absl::optional<SkColor> GetThumbOnColor() const;
+  void SetThumbOffColor(const absl::optional<SkColor>& thumb_off_color);
+  absl::optional<SkColor> GetThumbOffColor() const;
+  void SetTrackOnColor(const absl::optional<SkColor>& track_on_color);
+  absl::optional<SkColor> GetTrackOnColor() const;
+  void SetTrackOffColor(const absl::optional<SkColor>& track_off_color);
+  absl::optional<SkColor> GetTrackOffColor() const;
 
   void SetAcceptsEvents(bool accepts_events);
   bool GetAcceptsEvents() const;
@@ -77,8 +75,8 @@ class VIEWS_EXPORT ToggleButton : public Button {
 
   gfx::SlideAnimation slide_animation_{this};
   ThumbView* thumb_view_;
-  base::Optional<SkColor> track_on_color_;
-  base::Optional<SkColor> track_off_color_;
+  absl::optional<SkColor> track_on_color_;
+  absl::optional<SkColor> track_off_color_;
 
   // When false, this button won't accept input. Different from View::SetEnabled
   // in that the view retains focus when this is false but not when disabled.

@@ -3883,7 +3883,7 @@ class WidgetShadowTest : public WidgetTest {
   }
 
  protected:
-  base::Optional<Widget::InitParams::Type> override_type_;
+  absl::optional<Widget::InitParams::Type> override_type_;
   std::string name_;
   bool force_child_ = false;
 

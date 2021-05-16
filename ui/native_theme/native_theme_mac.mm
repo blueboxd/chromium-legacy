@@ -160,7 +160,7 @@ SkColor NativeThemeMac::GetSystemColorDeprecated(ColorId color_id,
     }
   }
 
-  base::Optional<SkColor> os_color = GetOSColor(color_id, color_scheme);
+  absl::optional<SkColor> os_color = GetOSColor(color_id, color_scheme);
   if (os_color.has_value())
     return os_color.value();
 
@@ -169,7 +169,7 @@ SkColor NativeThemeMac::GetSystemColorDeprecated(ColorId color_id,
   return apply_processing ? ApplySystemControlTint(color) : color;
 }
 
-base::Optional<SkColor> NativeThemeMac::GetOSColor(
+absl::optional<SkColor> NativeThemeMac::GetOSColor(
     ColorId color_id,
     ColorScheme color_scheme) const {
   ScopedCurrentNSAppearance scoped_nsappearance(
@@ -216,7 +216,7 @@ base::Optional<SkColor> NativeThemeMac::GetOSColor(
           NSColor.controlAlternatingRowBackgroundColors[1]);
 
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -232,7 +232,7 @@ void NativeThemeMac::Paint(cc::PaintCanvas* canvas,
                            const gfx::Rect& rect,
                            const ExtraParams& extra,
                            ColorScheme color_scheme,
-                           const base::Optional<SkColor>& accent_color) const {
+                           const absl::optional<SkColor>& accent_color) const {
   ColorScheme color_scheme_updated = color_scheme;
   if (color_scheme_updated == ColorScheme::kDefault)
     color_scheme_updated = GetDefaultSystemColorScheme();
@@ -483,7 +483,7 @@ void NativeThemeMac::PaintMacScrollbarThumb(
   paint_canvas.DrawRoundRect(bounds, radius, flags);
 }
 
-base::Optional<SkColor> NativeThemeMac::GetScrollbarColor(
+absl::optional<SkColor> NativeThemeMac::GetScrollbarColor(
     ScrollbarPart part,
     ColorScheme color_scheme,
     const ScrollbarExtraParams& extra_params) const {
@@ -518,7 +518,7 @@ base::Optional<SkColor> NativeThemeMac::GetScrollbarColor(
                      : SkColorSetRGB(0xED, 0xED, 0xED);
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 SkColor NativeThemeMac::GetSystemButtonPressedColor(SkColor base_color) const {

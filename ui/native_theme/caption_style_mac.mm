@@ -18,9 +18,9 @@
 
 namespace ui {
 // static
-base::Optional<CaptionStyle> CaptionStyle::FromSystemSettings() {
+absl::optional<CaptionStyle> CaptionStyle::FromSystemSettings() {
   if (!base::FeatureList::IsEnabled(features::kSystemCaptionStyle))
-    return base::nullopt;
+    return absl::nullopt;
 
   CaptionStyle style;
 

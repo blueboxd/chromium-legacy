@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "chrome/browser/ash/guest_os/guest_os_diagnostics.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace guest_os {
 
@@ -29,6 +30,8 @@ DiagnosticsBuilder::EntryBuilder::EntryBuilder(const std::string& requirement)
     : entry_{mojom::DiagnosticEntry::New(requirement,
                                          Status::kPass,
                                          /*explanation=*/nullptr)} {}
+DiagnosticsBuilder::EntryBuilder::EntryBuilder(int requirement_message_id)
+    : EntryBuilder(l10n_util::GetStringUTF8(requirement_message_id)) {}
 DiagnosticsBuilder::EntryBuilder::EntryBuilder(EntryBuilder&&) = default;
 DiagnosticsBuilder::EntryBuilder::~EntryBuilder() = default;
 
@@ -41,7 +44,7 @@ void DiagnosticsBuilder::EntryBuilder::SetNotApplicable() {
 
 DiagnosticsBuilder::EntryBuilder& DiagnosticsBuilder::EntryBuilder::SetFail(
     const std::string& explanation,
-    const absl::optional<std::string>& learn_more_link) {
+    const absl::optional<GURL>& learn_more_link) {
   DCHECK_EQ(entry_->status, Status::kPass)
       << "SetFail() should only be called on a builder in the initial state";
 
@@ -54,10 +57,24 @@ DiagnosticsBuilder::EntryBuilder& DiagnosticsBuilder::EntryBuilder::SetFail(
 
 void DiagnosticsBuilder::EntryBuilder::OverrideTopError(
     const std::string& error,
-    const absl::optional<std::string>& learn_more_link) {
+    const absl::optional<GURL>& learn_more_link) {
   DCHECK_EQ(entry_->status, Status::kFail);
 
   overridden_top_error_ = mojom::DiagnosticMessage::New(error, learn_more_link);
+}
+
+DiagnosticsBuilder::EntryBuilder& DiagnosticsBuilder::EntryBuilder::SetFail(
+    int explanation_message_id,
+    const absl::optional<GURL>& learn_more_link) {
+  return SetFail(l10n_util::GetStringUTF8(explanation_message_id),
+                 learn_more_link);
+}
+
+void DiagnosticsBuilder::EntryBuilder::OverrideTopError(
+    int error_message_id,
+    const absl::optional<GURL>& learn_more_link) {
+  return OverrideTopError(l10n_util::GetStringUTF8(error_message_id),
+                          learn_more_link);
 }
 
 void DiagnosticsBuilder::AddEntry(EntryBuilder entry_builder) {

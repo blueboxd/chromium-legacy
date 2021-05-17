@@ -4851,6 +4851,21 @@
             ]
         }
     ],
+    "MobileIdentityConsistencyPromos": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MobileIdentityConsistencyPromos"
+                    ]
+                }
+            ]
+        }
+    ],
     "MojoInlineMessagePayloads": [
         {
             "platforms": [
@@ -6954,6 +6969,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ServiceManagerForBackgroundPrefetch"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SettingsRefresh": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SettingsRefresh"
                     ]
                 }
             ]

@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '53abfc95f4ab84f396eb2e5f800d90c2aad6b606',
+  'dawn_revision': '75de5533986817fb5d300154386e0137ea16c1f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1574,7 +1574,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'a03bb38c0e771a0b404753b8e65250e98719870f',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'b5d672ae298c181d58e46c3cfb8743c42b88f386',
+    Var('webrtc_git') + '/src.git' + '@' + '95aaf287bbd40801afc4cbaa6e8863b7140a6376',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1665,7 +1665,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'a3VfC20sobwTZPUxSMjCOWNAftRKZ7NYXpP8VP9F2nAC',
+        'version': '9zc43a0AjNTWuBWkWn1qnJKdXwP4iNPXPM-luJxVUvUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -10,7 +10,7 @@ import {BarcodeScanner} from '../../models/barcode.js';
 import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
 import * as nav from '../../nav.js';
 import * as state from '../../state.js';
-import {Mode} from '../../type.js';
+import {Facing, Mode, Resolution} from '../../type.js';
 import * as util from '../../util.js';
 import {windowController} from '../../window_controller.js';
 
@@ -77,6 +77,12 @@ export class Preview {
      */
     this.scanner_ = null;
 
+    /**
+     * @type {!Facing}
+     * @private
+     */
+    this.facing_ = Facing.NOT_SET;
+
     window.addEventListener('resize', () => this.onWindowStatusChanged_());
 
     windowController.addListener(() => this.onWindowStatusChanged_());
@@ -90,6 +96,13 @@ export class Preview {
   }
 
   /**
+   * @return {!HTMLVideoElement}
+   */
+  get video() {
+    return this.video_;
+  }
+
+  /**
    * Current active stream.
    * @return {?MediaStream}
    */
@@ -98,19 +111,61 @@ export class Preview {
   }
 
   /**
-   * @return {!HTMLVideoElement}
+   * @return {!MediaStreamTrack}
    */
-  get video() {
-    return this.video_;
+  getVideoTrack_() {
+    const stream = assertInstanceof(this.stream, MediaStream);
+    return stream.getVideoTracks()[0];
   }
 
   /**
-   * Whether the opened camera supports PTZ controls.
+   * @return {!Facing}
+   */
+  getFacing() {
+    return this.facing_;
+  }
+
+  /**
+   * @private
+   */
+  async updateFacing_() {
+    if (!(await DeviceOperator.isSupported())) {
+      this.facing_ = Facing.NOT_SET;
+      return;
+    }
+    const {facingMode} = this.getVideoTrack_().getSettings();
+    if (facingMode === undefined) {
+      this.facing_ = Facing.EXTERNAL;
+      return;
+    }
+    switch (facingMode) {
+      case 'user':
+        this.facing_ = Facing.USER;
+        return;
+      case 'environment':
+        this.facing_ = Facing.ENVIRONMENT;
+        return;
+      default:
+        throw new Error('Unknown facing: ' + facingMode);
+    }
+  }
+
+  /**
+   * If the preview camera support PTZ controls.
    * @return {boolean}
    */
   isSupportPTZ() {
-    const {pan, tilt, zoom} = this.stream.getVideoTracks()[0].getCapabilities();
+    const {pan, tilt, zoom} = this.getVideoTrack_().getCapabilities();
     return pan !== undefined || tilt !== undefined || zoom !== undefined;
+  }
+
+  /**
+   * Preview resolution.
+   * @return {!Resolution}
+   */
+  getResolution() {
+    const {videoWidth, videoHeight} = this.video_;
+    return new Resolution(videoWidth, videoHeight);
   }
 
   /**
@@ -170,6 +225,7 @@ export class Preview {
           this.onNewStreamNeeded_();
         }
       }, 100);
+      await this.updateFacing_();
       this.scanner_ = new BarcodeScanner(this.video_, (value) => {
         barcodeChip.show(value);
       });
@@ -178,8 +234,7 @@ export class Preview {
 
       const deviceOperator = await DeviceOperator.getInstance();
       if (deviceOperator !== null) {
-        const deviceId =
-            this.stream_.getVideoTracks()[0].getSettings().deviceId;
+        const {deviceId} = this.getVideoTrack_().getSettings();
         const isSuccess =
             await deviceOperator.setCameraFrameRotationEnabledAtSource(
                 deviceId, false);
@@ -189,17 +244,6 @@ export class Preview {
               'The camera is probably being used by another app.');
         }
       }
-
-      const track = this.stream.getVideoTracks()[0];
-      const settings = track.getSettings();
-      const {pan, tilt, zoom} = track.getCapabilities();
-      // PTZ function is excluded from builtin camera until we set up its AVL
-      // calibration standard.
-      const isBuiltinCamera = settings.facingMode !== undefined;
-      state.set(
-          state.State.HAS_PTZ_SUPPORT,
-          !isBuiltinCamera &&
-              (pan !== undefined || tilt !== undefined || zoom !== undefined));
 
       state.set(state.State.STREAMING, true);
     } catch (e) {
@@ -222,7 +266,7 @@ export class Preview {
     this.video_.pause();
     this.disableShowMetadata_();
     if (this.stream_ !== null) {
-      const track = this.stream_.getVideoTracks()[0];
+      const track = this.getVideoTrack_();
       const {deviceId} = track.getSettings();
       track.stop();
       const deviceOperator = await DeviceOperator.getInstance();
@@ -404,7 +448,7 @@ export class Preview {
     // recalculate them in every callback.
     const {videoWidth, videoHeight} = this.video_;
     const resolution = `${videoWidth}x${videoHeight}`;
-    const videoTrack = this.stream_.getVideoTracks()[0];
+    const videoTrack = this.getVideoTrack_();
     const deviceName = videoTrack.label;
 
     // Currently there is no easy way to calculate the fps of a video element.
@@ -516,7 +560,7 @@ export class Preview {
       return;
     }
 
-    const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
+    const {deviceId} = this.getVideoTrack_().getSettings();
     const isSuccess = await deviceOperator.removeMetadataObserver(
         deviceId, this.metadataObserverId_);
     if (!isSuccess) {
@@ -563,7 +607,7 @@ export class Preview {
     const x = event.offsetX / this.video_.offsetWidth;
     const y = event.offsetY / this.video_.offsetHeight;
     const constraints = {advanced: [{pointsOfInterest: [{x, y}]}]};
-    const track = this.stream.getVideoTracks()[0];
+    const track = this.getVideoTrack_();
     const focus = (async () => {
       try {
         await track.applyConstraints(constraints);

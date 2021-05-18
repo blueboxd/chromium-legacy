@@ -233,9 +233,6 @@ extern const char kChromeLabsDescription[];
 extern const char kCompositeAfterPaintName[];
 extern const char kCompositeAfterPaintDescription[];
 
-extern const char kComputePressureAPIName[];
-extern const char kComputePressureAPIDescription[];
-
 extern const char kContextMenuGoogleLensChipName[];
 extern const char kContextMenuGoogleLensChipDescription[];
 
@@ -332,9 +329,6 @@ extern const char kForceColorProfileDescription[];
 
 extern const char kDynamicColorGamutName[];
 extern const char kDynamicColorGamutDescription[];
-
-extern const char kCompositedLayerBordersName[];
-extern const char kCompositedLayerBordersDescription[];
 
 extern const char kCooperativeSchedulingName[];
 extern const char kCooperativeSchedulingDescription[];
@@ -2270,9 +2264,6 @@ extern const char kAshEnablePipRoundedCornersDescription[];
 
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
-
-extern const char kAshSwapSideVolumeButtonsForOrientationName[];
-extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
 
 extern const char kAshSwipingFromLeftEdgeToGoBackName[];
 extern const char kAshSwipingFromLeftEdgeToGoBackDescription[];

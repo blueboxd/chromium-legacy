@@ -2714,7 +2714,8 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
   PushPaintArtifactToCompositor(repainted);
   size_t total_animations_count = 0;
   ForAllNonThrottledLocalFrameViews(
-      [this, &total_animations_count](LocalFrameView& frame_view) {
+      [this, &needed_update,
+       &total_animations_count](LocalFrameView& frame_view) {
         if (auto* scrollable_area = frame_view.GetScrollableArea())
           scrollable_area->UpdateCompositorScrollAnimations();
         if (const auto* animating_scrollable_areas =
@@ -2722,18 +2723,16 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
           for (PaintLayerScrollableArea* area : *animating_scrollable_areas)
             area->UpdateCompositorScrollAnimations();
         }
+        Document& document = frame_view.GetLayoutView()->GetDocument();
         {
           // Updating animations can notify ready promises which could mutate
           // the DOM. We should delay these until we have finished the lifecycle
           // update. https://crbug.com/1196781
           ScriptForbiddenScope forbid_script;
-          frame_view.GetLayoutView()
-              ->GetDocument()
-              .GetDocumentAnimations()
-              .UpdateAnimations(DocumentLifecycle::kPaintClean,
-                                paint_artifact_compositor_.get());
+          document.GetDocumentAnimations().UpdateAnimations(
+              DocumentLifecycle::kPaintClean, paint_artifact_compositor_.get(),
+              needed_update);
         }
-        Document& document = frame_view.GetLayoutView()->GetDocument();
         total_animations_count +=
             document.GetDocumentAnimations().GetAnimationsCount();
       });
@@ -4878,6 +4877,11 @@ void LocalFrameView::RunPaintBenchmark(int repeat_count,
       // quantization when the time is very small.
       base::LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
       do {
+        // Force a paint with everything cached before a small invalidation
+        // test to better simulate real-world scenarios.
+        if (mode == PaintBenchmarkMode::kSmallInvalidation)
+          RunPaintLifecyclePhase(PaintBenchmarkMode::kForcePaint);
+
         RunPaintLifecyclePhase(mode);
         timer.NextLap();
       } while (!timer.HasTimeLimitExpired());
@@ -4896,6 +4900,8 @@ void LocalFrameView::RunPaintBenchmark(int repeat_count,
       run_benchmark(PaintBenchmarkMode::kSubsequenceCachingDisabled);
   result.record_time_partial_invalidation_ms =
       run_benchmark(PaintBenchmarkMode::kPartialInvalidation);
+  result.record_time_small_invalidation_ms =
+      run_benchmark(PaintBenchmarkMode::kSmallInvalidation);
   result.raster_invalidation_and_convert_time_ms =
       run_benchmark(PaintBenchmarkMode::kForceRasterInvalidationAndConvert);
   result.paint_artifact_compositor_update_time_ms =

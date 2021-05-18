@@ -26,7 +26,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
-#include "chrome/browser/history_clusters/memories_service_factory.h"
+#include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -40,10 +40,10 @@
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -233,9 +233,9 @@ history::HistoryService* ChromeAutocompleteProviderClient::GetHistoryService() {
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
-history_clusters::MemoriesService*
-ChromeAutocompleteProviderClient::GetMemoriesService() {
-  return MemoriesServiceFactory::GetForBrowserContext(profile_);
+history_clusters::HistoryClustersService*
+ChromeAutocompleteProviderClient::GetHistoryClustersService() {
+  return HistoryClustersServiceFactory::GetForBrowserContext(profile_);
 }
 
 scoped_refptr<history::TopSites>

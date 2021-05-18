@@ -6107,6 +6107,9 @@ others/histograms.xml -->
   <int value="3" label="SilentUpdate"/>
   <int value="4" label="ConfirmableMerge"/>
   <int value="5" label="SuppressedNewProfile"/>
+  <int value="6" label="ConfirmableMergeAndSilentUpdate"/>
+  <int value="7" label="SuppressedConfirmableMerge"/>
+  <int value="8" label="SuppressedConfirmableMergeAndSilentUpdate"/>
 </enum>
 
 <enum name="AutofillProfileSyncChangeOrigin">
@@ -7316,6 +7319,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="241" label="PAYMENTS_WITHOUT_PERMISSION"/>
   <int value="242" label="WEB_BUNDLE_INVALID_NAVIGATION_URL"/>
   <int value="243" label="WCI_INVALID_DOWNLOAD_IMAGE_RESULT"/>
+  <int value="244" label="MDDH_NULL_CAPTURE_HANDLE_CONFIG"/>
+  <int value="245" label="MDDH_INVALID_CAPTURE_HANDLE"/>
+  <int value="246" label="MDDH_INVALID_ALL_ORIGINS_PERMITTED"/>
+  <int value="247" label="MDDH_INVALID_PERMITTED_ORIGIN"/>
+  <int value="248" label="MDDH_NOT_TOP_LEVEL"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -12252,6 +12260,7 @@ histogram as enum -->
   <int value="7" label="WebSmartPaste"/>
   <int value="8" label="Svg"/>
   <int value="9" label="Filenames"/>
+  <int value="10" label="Png"/>
 </enum>
 
 <enum name="ClipboardFormatWrite">
@@ -12818,6 +12827,7 @@ Called by update_net_error_codes.py.-->
   <int value="16"
       label="Custom property contains different value types in keyframe
              animation"/>
+  <int value="17" label="Compositor property animations have no effect"/>
 </enum>
 
 <enum name="CompositorFrameSinkSubmitResult">
@@ -17740,6 +17750,7 @@ Called by update_debug_scenarios.py.-->
   <int value="42" label="DiagnosticsApp"/>
   <int value="43" label="PrintManagementApp"/>
   <int value="45" label="ShimlessRMAApp"/>
+  <int value="46" label="OSFeedbackApp"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -32498,6 +32509,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3908" label="V8Screens_Oncurrentscreenchange_AttributeSetter"/>
   <int value="3909" label="RTCOfferAnswerOptionsVoiceActivityDetection"/>
   <int value="3910" label="MultiColAndListItem"/>
+  <int value="3911" label="CaptureHandle"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39168,6 +39180,22 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3"
       label="HSTS should have been enabled via the header, was not, but it
              matched the static list."/>
+</enum>
+
+<enum name="HTMLMediaElement_ProgressEventTimerState">
+  <int value="0" label="networkState is not NETWORK_LOADING."/>
+  <int value="1" label="MediaShouldBeOpaque() is true."/>
+  <int value="2" label="progress event was scheduled."/>
+  <int value="3" label="No progress. The stalled event was scheduled."/>
+  <int value="4"
+      label="No progress. No stalled event scheduled because a Media Source
+             Attachment is used."/>
+  <int value="5"
+      label="No progress. No stalled event scheduled because there was recent
+             progress."/>
+  <int value="6"
+      label="No progress. No stalled event scheduled because it was already
+             scheduled."/>
 </enum>
 
 <enum name="HttpAuthCount">
@@ -68588,6 +68616,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="14" label="Mock"/>
 </enum>
 
+<enum name="RestoreAction">
+  <int value="0" label="Restore is clicked"/>
+  <int value="1" label="Cancel is clicked"/>
+  <int value="2" label="Notification is closed by the user"/>
+  <int value="3" label="Notification is closed not by the user"/>
+</enum>
+
 <enum name="RestoredCachedStyleSheet">
   <int value="0" label="No usable cache found"/>
   <int value="1" label="Cached StyleSheetContents was reused"/>
@@ -73583,6 +73618,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="41" label="UMA_WEB_FEED_UNFOLLOW_SUCCESS"/>
   <int value="42" label="UMA_WEB_FEED_UNFOLLOW_FAILURE"/>
   <int value="43" label="UMA_LANGUAGE_SPLIT_RESTART"/>
+  <int value="44" label="UMA_AUTOFILL_VIRTUAL_CARD_FILLED"/>
 </enum>
 
 <enum name="SnapshotItemId">
@@ -75593,6 +75629,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="9" label="Ineligible due to disallowed by robots rules"/>
   <int value="10" label="Ineligible due to robots rules fetch timeout"/>
   <int value="11" label="Ineligible due to logged-in page"/>
+  <int value="12"
+      label="Ineligible due to disabled by first k subresource limit"/>
 </enum>
 
 <enum name="SubresourceRedirectRobotsRulesReceiveResult">

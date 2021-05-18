@@ -256,23 +256,18 @@
     "expiry_milestone": 98
   },
   {
-    "name": "ash-swap-side-volume-buttons-for-orientation",
-    "owners": [ "minch" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "ash-window-follow-cursor-multi-display",
     "owners": [ "shidi", "tclaiborne" ],
     "expiry_milestone": 96
   },
   {
     "name": "assistant-intent-page-url",
-    "owners": [ "jds", "chrome-language" ],
+    "owners": [ "jds", "chrome-language@google.com" ],
     "expiry_milestone": 94
   },
   {
     "name": "assistant-intent-translate-info",
-    "owners": [ "jds", "chrome-language" ],
+    "owners": [ "jds", "chrome-language@google.com" ],
     "expiry_milestone": 94
   },
   {
@@ -627,26 +622,13 @@
     "expiry_milestone": 95
   },
   {
-    "name": "composited-layer-borders",
-    "owners": [ "ccameron" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90
   },
   {
-    "name": "compute-pressure",
-    "owners": [ "pwnall", "oyiptong" ],
-    "expiry_milestone": 96
-  },
-  {
     "name": "content-languages-in-language-picker",
-    "owners": [
-      "basiaz",
-      "chrome-language"
-    ],
+    "owners": [ "basiaz", "chrome-language@google.com" ],
     "expiry_milestone": 93
   },
   {
@@ -969,11 +951,11 @@
   {
     "name": "detect-target-embedding-lookalikes",
     "owners": [ "jdeblasio", "meacer" ],
-    "expiry_milestone": 89
+    "expiry_milestone": 93
   },
   {
     "name": "detected-source-language-option",
-    "owners": [ "cuianthony", "chrome-language" ],
+    "owners": [ "cuianthony", "chrome-language@google.com" ],
     "expiry_milestone": 93
   },
   {
@@ -4091,12 +4073,12 @@
   },
   {
     "name": "override-language-prefs-for-href-translate",
-    "owners": [ "sclittle", "chrome-language" ],
+    "owners": [ "sclittle", "chrome-language@google.com" ],
     "expiry_milestone": 91
   },
   {
     "name": "override-site-prefs-for-href-translate",
-    "owners": [ "sclittle", "chrome-language" ],
+    "owners": [ "sclittle", "chrome-language@google.com" ],
     "expiry_milestone": 91
   },
   {
@@ -5251,7 +5233,7 @@
   },
   {
     "name": "voice-button-in-top-toolbar",
-    "owners": [ "jds", "chrome-language" ],
+    "owners": [ "jds", "chrome-language@google.com" ],
     "expiry_milestone": 93
   },
   {

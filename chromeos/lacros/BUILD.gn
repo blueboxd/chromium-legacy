@@ -59,16 +59,10 @@ if (is_chromeos_device) {
     # A list of tests that are known to work reliably.
     # TODO(crbug.com/1158590): use --attr-expr instead of hard-coding the tests.
     tast_tests = [
-      # TODO(crbug.com/1202407): Enable this test again.
-      #"lacros.AudioPlay",
-
-      # TODO(crbug.com/1208845): Enable this test again.
-      #"lacros.AppLauncherLaunch",
-
+      "lacros.AppLauncherLaunch",
+      "lacros.AudioPlay",
       "lacros.Basic",
-
-      # TODO(crbug.com/1205526): Enable this test again.
-      #"lacros.ShelfLaunch",
+      "lacros.ShelfLaunch",
     ]
   }
 
@@ -76,7 +70,7 @@ if (is_chromeos_device) {
     # The following expression filters out all non-critical tests. See the link
     # below for more details:
     # https://chromium.googlesource.com/chromiumos/platform/tast/+/main/docs/test_attributes.md
-    tast_attr_expr = "\"group:mainline\" && \"dep:lacros\""
+    tast_attr_expr = "\"group:mainline\" && (\"dep:lacros\" || \"dep:lacros_stable\" || \"dep:lacros_unstable\")"
 
     tast_disabled_tests = [
       # Chromium CI/CQ is meant to test the tip of the trunk or branch, but

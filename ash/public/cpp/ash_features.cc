@@ -99,9 +99,6 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSwapSideVolumeButtonsForOrientation{
-    "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -115,6 +112,9 @@ const base::Feature kFullscreenAlertBubble{"EnableFullscreenBubble",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kVerticalSplitScreen{"VerticalSplitScreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebUITabStripTabDragIntegration{
@@ -235,10 +235,6 @@ bool IsTrilinearFilteringEnabled() {
   return use_trilinear_filtering;
 }
 
-bool IsSwapSideVolumeButtonsForOrientationEnabled() {
-  return base::FeatureList::IsEnabled(kSwapSideVolumeButtonsForOrientation);
-}
-
 bool IsBackgroundBlurEnabled() {
   bool enabled_by_feature_flag =
       base::FeatureList::IsEnabled(kEnableBackgroundBlur);
@@ -281,6 +277,10 @@ bool IsStylusBatteryStatusEnabled() {
 
 bool IsDisplayIdentificationEnabled() {
   return base::FeatureList::IsEnabled(kDisplayIdentification);
+}
+
+bool IsVerticalSplitScreenEnabled() {
+  return base::FeatureList::IsEnabled(kVerticalSplitScreen);
 }
 
 bool IsWebUITabStripTabDragIntegrationEnabled() {

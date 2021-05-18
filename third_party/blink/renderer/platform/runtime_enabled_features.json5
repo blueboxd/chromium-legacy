@@ -338,6 +338,11 @@
       name: "CapabilityDelegationPaymentRequest",
     },
     {
+      name: "CaptureHandle",
+      depends_on: ["GetDisplayMedia"],
+      status: {"Android": "", "default": "experimental"},
+    },
+    {
       name: "CaptureTimeInCsrc",
       status: "stable",
     },
@@ -384,9 +389,8 @@
     },
     {
       name: "ComputePressure",
-      // No status because this blink runtime feature doesn't work by itself.
-      // It's controlled by the corresponding Chromium feature which needs to
-      // be enabled to make the whole feature work.
+      origin_trial_feature_name: "ComputePressure",
+      status: "experimental",
     },
     {
       name: "ConsolidatedMovementXY",

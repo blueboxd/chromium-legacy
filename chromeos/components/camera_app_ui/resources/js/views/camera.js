@@ -29,12 +29,13 @@ import {PerfLogger} from '../perf.js';
 import * as sound from '../sound.js';
 import * as state from '../state.js';
 import * as toast from '../toast.js';
-import {ErrorLevel, ErrorType} from '../type.js';
 import {
   CanceledError,
+  ErrorLevel,
+  ErrorType,
   Facing,
   Mode,
-  Resolution,  // eslint-disable-line no-unused-vars
+  Resolution,
   ViewName,
 } from '../type.js';
 import * as util from '../util.js';
@@ -383,7 +384,7 @@ export class Camera extends View {
     };
 
     this.addConfigureCompleteListener_(async () => {
-      if (!this.preview_.isSupportPTZ()) {
+      if (!state.get(state.State.ENABLE_PTZ)) {
         highlight(false);
         return;
       }
@@ -705,8 +706,30 @@ export class Camera extends View {
             }
           }
           const stream = await this.preview_.open(constraints);
+          this.facingMode_ = this.preview_.getFacing();
 
-          this.facingMode_ = await this.options_.updateValues(stream);
+          const enablePTZ = (() => {
+            if (!this.preview_.isSupportPTZ()) {
+              return false;
+            }
+            if (deviceOperator === null) {
+              // All fake VCD support PTZ controls.
+              return true;
+            }
+            if (this.facingMode_ !== Facing.EXTERNAL) {
+              // PTZ function is excluded from builtin camera until we set up
+              // its AVL calibration standard.
+              return false;
+            }
+            return this.modes_.isSupportPTZ(
+                mode,
+                captureR,
+                this.preview_.getResolution(),
+            );
+          })();
+          state.set(state.State.ENABLE_PTZ, enablePTZ);
+
+          this.options_.updateValues(stream, this.facingMode_);
           factory.setPreviewStream(stream);
           factory.setFacing(this.facingMode_);
           await factory.setupExtraStreams(constraints, captureR);

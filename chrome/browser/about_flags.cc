@@ -2581,9 +2581,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccelerated2dCanvasName,
      flag_descriptions::kAccelerated2dCanvasDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAccelerated2dCanvas)},
-    {"composited-layer-borders", flag_descriptions::kCompositedLayerBordersName,
-     flag_descriptions::kCompositedLayerBordersDescription, kOsAll,
-     SINGLE_VALUE_TYPE(cc::switches::kShowCompositedLayerBorders)},
     {"overlay-strategies", flag_descriptions::kOverlayStrategiesName,
      flag_descriptions::kOverlayStrategiesDescription, kOsAll,
      MULTI_VALUE_TYPE(kOverlayStrategiesChoices)},
@@ -5272,11 +5269,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
 
-    {"ash-swap-side-volume-buttons-for-orientation",
-     flag_descriptions::kAshSwapSideVolumeButtonsForOrientationName,
-     flag_descriptions::kAshSwapSideVolumeButtonsForOrientationDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kSwapSideVolumeButtonsForOrientation)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5729,10 +5721,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFontAccessPersistentDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kFontAccessPersistent)},
 
-    {"compute-pressure", flag_descriptions::kComputePressureAPIName,
-     flag_descriptions::kComputePressureAPIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kComputePressure)},
-
     {"mouse-subframe-no-implicit-capture",
      flag_descriptions::kMouseSubframeNoImplicitCaptureName,
      flag_descriptions::kMouseSubframeNoImplicitCaptureDescription, kOsAll,
@@ -5953,7 +5941,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLensCameraAssistedSearchDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kLensCameraAssistedSearch,
                                     kLensCameraAssistedSearchVariations,
-                                    "LensCameraAssistedSearch")},
+                                    "OmniboxAssistantVoiceSearch")},
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

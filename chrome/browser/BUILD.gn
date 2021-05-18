@@ -576,10 +576,10 @@ static_library("browser") {
     "history/top_sites_factory.h",
     "history/web_history_service_factory.cc",
     "history/web_history_service_factory.h",
+    "history_clusters/history_clusters_service_factory.cc",
+    "history_clusters/history_clusters_service_factory.h",
     "history_clusters/history_clusters_tab_helper.cc",
     "history_clusters/history_clusters_tab_helper.h",
-    "history_clusters/memories_service_factory.cc",
-    "history_clusters/memories_service_factory.h",
     "icon_loader.cc",
     "icon_loader.h",
     "icon_manager.cc",
@@ -3830,6 +3830,8 @@ static_library("browser") {
       "policy/device_account_initializer.h",
       "policy/local_sync_policy_handler.cc",
       "policy/local_sync_policy_handler.h",
+      "privacy_sandbox/generated_floc_pref.cc",
+      "privacy_sandbox/generated_floc_pref.h",
       "process_singleton_modal_dialog_lock.cc",
       "process_singleton_modal_dialog_lock.h",
       "process_singleton_startup_lock.cc",
@@ -4311,16 +4313,12 @@ static_library("browser") {
       "apps/app_service/app_service_proxy_chromeos.h",
       "apps/app_service/app_shortcut_item.cc",
       "apps/app_service/app_shortcut_item.h",
-      "apps/app_service/app_web_contents_data.cc",
-      "apps/app_service/app_web_contents_data.h",
       "apps/app_service/arc_activity_adaptive_icon_impl.cc",
       "apps/app_service/arc_activity_adaptive_icon_impl.h",
       "apps/app_service/arc_icon_once_loader.cc",
       "apps/app_service/arc_icon_once_loader.h",
       "apps/app_service/file_utils.cc",
       "apps/app_service/file_utils.h",
-      "apps/app_service/media_requests.cc",
-      "apps/app_service/media_requests.h",
       "apps/app_service/menu_util.cc",
       "apps/app_service/menu_util.h",
       "apps/app_service/paused_apps.cc",
@@ -4780,6 +4778,15 @@ static_library("browser") {
       "//chromeos/ui/frame",
       "//components/account_manager_core",
       "//ui/platform_window",
+    ]
+  }
+
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    sources += [
+      "apps/app_service/app_web_contents_data.cc",
+      "apps/app_service/app_web_contents_data.h",
+      "apps/app_service/media_requests.cc",
+      "apps/app_service/media_requests.h",
     ]
   }
 

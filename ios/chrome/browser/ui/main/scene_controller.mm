@@ -364,6 +364,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       self.sceneState.appState.shouldShowDefaultBrowserPromo &&
       (parameters.postOpeningAction == NO_ACTION);
   self.sceneState.appState.shouldShowDefaultBrowserPromo = shouldShowPromo;
+
+  if (parameters.openedViaFirstPartyScheme) {
+    DefaultBrowserSceneAgent* sceneAgent =
+        [DefaultBrowserSceneAgent agentFromScene:self.sceneState];
+    [sceneAgent.nonModalScheduler logUserEnteredAppViaFirstPartyScheme];
+  }
 }
 
 #pragma mark - SceneStateObserver
@@ -896,6 +902,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Decide if the First Run UI needs to run.
   const bool firstRun = ShouldPresentFirstRunExperience();
 
+  if (!firstRun) {
+    [self reconcileEulaAsAccepted];
+  }
+
   Browser* browser;
   if (launchMode == ApplicationMode::INCOGNITO) {
     browser = self.incognitoInterface.browser;
@@ -1196,16 +1206,24 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 // Sets a LocalState pref marking the TOS EULA as accepted.
-- (void)markEulaAsAccepted {
-  PrefService* prefs = GetApplicationContext()->GetLocalState();
-  if (!prefs->GetBoolean(prefs::kEulaAccepted))
-    prefs->SetBoolean(prefs::kEulaAccepted, true);
-  prefs->CommitPendingWrite();
+// If this function is called, the EULA flag is not set but the FRE was not
+// displayed.
+// This can only happen if the EULA flag has not been set correctly on a
+// previous
+- (void)reconcileEulaAsAccepted {
+  static dispatch_once_t once_token = 0;
+  dispatch_once(&once_token, ^{
+    PrefService* prefs = GetApplicationContext()->GetLocalState();
+    if (!FirstRun::IsChromeFirstRun() &&
+        !prefs->GetBoolean(prefs::kEulaAccepted)) {
+      prefs->SetBoolean(prefs::kEulaAccepted, true);
+      prefs->CommitPendingWrite();
+      base::UmaHistogramBoolean("IOS.ReconcileEULAPref", true);
+    }
+  });
 }
 
 - (void)handleFirstRunUIWillFinish {
-  [self markEulaAsAccepted];
-
   DCHECK(self.sceneState.presentingFirstRunUI);
   _firstRunUIBlocker.reset();
   self.sceneState.presentingFirstRunUI = NO;

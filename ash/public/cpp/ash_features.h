@@ -127,12 +127,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
-// Enables side volume button control based on screen orientation feature.
-// TODO(https://crbug.com/937907): Remove this after the feature is fully
-// launched.
-ASH_PUBLIC_EXPORT extern const base::Feature
-    kSwapSideVolumeButtonsForOrientation;
-
 // Enables background blur for the app list, shelf, unified system tray,
 // autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
 // may have choppier app list animations while in this mode. crbug.com/765292.
@@ -157,6 +151,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kFullscreenAlertBubble;
 
 // Enables battery indicator for styluses in the palette tray
 ASH_PUBLIC_EXPORT extern const base::Feature kStylusBatteryStatus;
+
+// Enables vertical split screen for clamshell mode. This allows users to snap
+// top and bottom when the screen is in portrait orientation, while snap left
+// and right when the screen is in landscape orientation.
+ASH_PUBLIC_EXPORT extern const base::Feature kVerticalSplitScreen;
 
 // Enables special handling of Chrome tab drags from a WebUI tab strip.
 // These will be treated similarly to a window drag, showing split view
@@ -231,8 +230,6 @@ ASH_PUBLIC_EXPORT bool IsSeparateNetworkIconsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
-ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
-
 ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
 
 ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
@@ -248,6 +245,8 @@ ASH_PUBLIC_EXPORT bool AreContextualNudgesEnabled();
 ASH_PUBLIC_EXPORT bool IsStylusBatteryStatusEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayIdentificationEnabled();
+
+ASH_PUBLIC_EXPORT bool IsVerticalSplitScreenEnabled();
 
 ASH_PUBLIC_EXPORT bool IsWebUITabStripTabDragIntegrationEnabled();
 

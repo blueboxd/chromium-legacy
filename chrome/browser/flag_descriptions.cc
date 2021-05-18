@@ -390,11 +390,6 @@ const char kCompositeAfterPaintDescription[] =
     "A new algorithm to create compositing layers. "
     "See http://bit.ly/composite-after-paint.";
 
-const char kComputePressureAPIName[] = "Compute Pressure API";
-const char kComputePressureAPIDescription[] =
-    "Enables the experimental Compute Pressure API, giving websites access "
-    "to device compute performance data.";
-
 const char kContextMenuGoogleLensChipName[] =
     "Google Lens powered image search for surfaced as a chip below the context "
     "menu.";
@@ -532,11 +527,6 @@ const char kDynamicColorGamutName[] = "Dynamic color gamut";
 const char kDynamicColorGamutDescription[] =
     "Displays in wide color when the content is wide. When the content is "
     "not wide, displays sRGB";
-
-const char kCompositedLayerBordersName[] = "Composited render layer borders";
-const char kCompositedLayerBordersDescription[] =
-    "Renders a border around composited Render Layers to help debug and study "
-    "layer compositing.";
 
 const char kCooperativeSchedulingName[] = "Cooperative Scheduling";
 const char kCooperativeSchedulingDescription[] =
@@ -3930,13 +3920,6 @@ const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
 const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
-
-const char kAshSwapSideVolumeButtonsForOrientationName[] =
-    "Swap side volume buttons to match screen orientation.";
-const char kAshSwapSideVolumeButtonsForOrientationDescription[] =
-    "Make the side volume button that's closer to the top/right always "
-    "increase the volume and the button that's closer to the bottom/left "
-    "always decrease the volume.";
 
 const char kAshSwipingFromLeftEdgeToGoBackName[] =
     "Swping from the left edge of the display to go back to the previous page.";

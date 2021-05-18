@@ -969,7 +969,7 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
   if (overlay_processor_)
     overlay_processor_->OverlayPresentationComplete();
   if (renderer_)
-    renderer_->SwapBuffersComplete();
+    renderer_->SwapBuffersComplete(std::move(release_fence));
 
   // It's possible to receive multiple calls to DidReceiveSwapBuffersAck()
   // before DidReceivePresentationFeedback(). Ensure that we're not setting
@@ -1044,6 +1044,9 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
+  if (renderer_)
+    renderer_->BuffersPresented();
+
   if (pending_presentation_group_timings_.empty()) {
     DLOG(ERROR) << "Received unexpected PresentationFeedback";
     return;

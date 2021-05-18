@@ -125,20 +125,8 @@
 
       <!-- The AudioPlayer app pages and scripts. -->
       <include name="IDR_AUDIO_PLAYER_MANIFEST" file="audio_player/manifest.json" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_BACKGROUND_JS" file="audio_player/js/background_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_BACKGROUND_HTML" file="audio_player/background.html" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_AUDIO_PLAYER_HTML" file="audio_player/elements/audio_player.html" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_AUDIO_PLAYER_JS" file="audio_player/elements/audio_player.js" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_CONTROL_PANEL_HTML" file="audio_player/elements/control_panel.html" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_CONTROL_PANEL_JS" file="audio_player/elements/control_panel.js" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_REPEAT_BUTTON_HTML" file="audio_player/elements/repeat_button.html" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_REPEAT_BUTTON_JS" file="audio_player/elements/repeat_button.js" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_TRACK_LIST_HTML" file="audio_player/elements/track_list.html" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ELEMENTS_TRACK_LIST_JS" file="audio_player/elements/track_list.js" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_METADATA_WORKER_JS" file="audio_player/js/metadata_worker.js" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER" file="audio_player/audio_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_MODULE" file="audio_player/audio_player_module.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_JS" file="audio_player/js/audio_player_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ICON_FAVICON_16" file="audio_player/icons/audio-player-favicon-16.png" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ICON_FAVICON_32" file="audio_player/icons/audio-player-favicon-32.png" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ICON_16" file="audio_player/icons/audio-player-16.png" type="BINDATA" />
@@ -160,12 +148,6 @@
       <!-- Custom cursors (which grit cannot inline). -->
       <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="gallery/images/100/cursor_crop.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_GALLERY_2X_CURSOR_CROP" file="gallery/images/200/cursor_crop.png" type="BINDATA" />
-
-      <!-- Chrome Webstore widget dialog -->
-      <include name="IDR_FILE_MANAGER_WEBSTORE_WIDGET_APP_INSTALLER_JS" file="file_manager/cws_widget/app_installer.js" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_WEBSTORE_WIDGET_CWS_WEBVIEW_CLIENT_JS" file="file_manager/cws_widget/cws_webview_client.js" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_WEBSTORE_WIDGET_CWS_WIDGET_CONTAINER_JS" file="file_manager/cws_widget/cws_widget_container.js" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_WEBSTORE_WIDGET_CWS_WIDGET_CONTAINER_ERROR_DIALOG_JS" file="file_manager/cws_widget/cws_widget_container_error_dialog.js" type="BINDATA" />
 
       <!-- Image loader extension manifest and scripts. -->
       <if expr="chromeos">

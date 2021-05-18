@@ -917,6 +917,45 @@ TEST_F(PrivacySandboxSettingsTest, GetFlocResetExplanationForDisplay) {
   }
 }
 
+TEST_F(PrivacySandboxSettingsTest, GetFlocStatusForDisplay) {
+  // Check the status of the user's FLoC is correctly returned. This depends
+  // on whether the FLoC origin trial feature is enabled, and whether the user
+  // has FLoC enabled.
+  feature_list()->InitWithFeatures(
+      {blink::features::kInterestCohortAPIOriginTrial}, {});
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxFlocEnabled, true);
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxApisEnabled, true);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_ACTIVE),
+            privacy_sandbox_settings()->GetFlocStatusForDisplay());
+
+  // The Privacy Sandbox APIs pref & FLoC pref should disable the trial when
+  // either is disabled.
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxApisEnabled, false);
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE),
+      privacy_sandbox_settings()->GetFlocStatusForDisplay());
+
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxApisEnabled, true);
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxFlocEnabled, false);
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE),
+      privacy_sandbox_settings()->GetFlocStatusForDisplay());
+
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxFlocEnabled, true);
+  feature_list()->Reset();
+  feature_list()->InitWithFeatures(
+      {}, {blink::features::kInterestCohortAPIOriginTrial});
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_PRIVACY_SANDBOX_FLOC_STATUS_ELIGIBLE_NOT_ACTIVE),
+            privacy_sandbox_settings()->GetFlocStatusForDisplay());
+}
+
 TEST_F(PrivacySandboxSettingsTest, ReconciliationOutcome) {
   // Check that reconciling preferences has the appropriate outcome based on
   // the current user cookie settings.
@@ -1337,6 +1376,11 @@ TEST_F(PrivacySandboxSettingsTest, MetricsLoggingOccursCorrectly) {
   // The histogram should start off empty.
   histograms.ExpectTotalCount(histogram_name, 0);
 
+  // For buckets that do not explicitly mention FLoC, it is assumed to be on,
+  // or its state is irrelevant, i.e. overriden by the Privacy Sandbox pref.
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxFlocEnabled, true);
+
   SetupTestState(
       /*privacy_sandbox_available=*/true,
       /*privacy_sandbox_enabled=*/true,
@@ -1510,6 +1554,64 @@ TEST_F(PrivacySandboxSettingsTest, MetricsLoggingOccursCorrectly) {
       histogram_name,
       static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
                            kPSDisabledPolicyBlockAll),
+      1);
+
+  // Disable FLoC and test the buckets that reflect a disabled FLoC state.
+  profile()->GetTestingPrefService()->SetBoolean(
+      prefs::kPrivacySandboxFlocEnabled, false);
+
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 9);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSEnabledFlocDisabledAllowAll),
+      1);
+
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 10);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSEnabledFlocDisabledBlock3P),
+      1);
+
+  SetupTestState(
+      /*privacy_sandbox_available=*/true,
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_BLOCK,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+
+  privacy_sandbox_settings()->MaybeReconcilePrivacySandboxPref();
+
+  histograms.ExpectTotalCount(histogram_name, 11);
+  histograms.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                           kPSEnabledFlocDisabledBlockAll),
       1);
 }
 

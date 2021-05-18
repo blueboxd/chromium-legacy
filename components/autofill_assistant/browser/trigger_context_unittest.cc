@@ -33,7 +33,8 @@ TEST(TriggerContextTest, Create) {
       /* is_cct = */ true,
       /* onboarding_shown = */ true,
       /* is_direct_action = */ true,
-      /* initial_url = */ "https://www.example.com"};
+      /* initial_url = */ "https://www.example.com",
+      /* is_in_chrome_triggered = */ true};
   EXPECT_THAT(context.GetScriptParameters().ToProto(),
               UnorderedElementsAreArray(std::map<std::string, std::string>(
                   {{"key_a", "value_a"}, {"key_b", "value_b"}})));
@@ -42,9 +43,15 @@ TEST(TriggerContextTest, Create) {
   EXPECT_TRUE(context.GetOnboardingShown());
   EXPECT_TRUE(context.GetDirectAction());
   EXPECT_EQ(context.GetInitialUrl(), "https://www.example.com");
+  EXPECT_TRUE(context.GetInChromeTriggered());
+  EXPECT_EQ(context.GetTriggerUIType(),
+            TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE);
 
   context.SetOnboardingShown(false);
   EXPECT_FALSE(context.GetOnboardingShown());
+  context.SetTriggerUIType(TriggerScriptProto::SHOPPING_CART_FIRST_TIME_USER);
+  EXPECT_EQ(context.GetTriggerUIType(),
+            TriggerScriptProto::SHOPPING_CART_FIRST_TIME_USER);
 }
 
 TEST(TriggerContextTest, MergeEmpty) {
@@ -55,6 +62,9 @@ TEST(TriggerContextTest, MergeEmpty) {
   EXPECT_FALSE(merged.GetCCT());
   EXPECT_FALSE(merged.GetOnboardingShown());
   EXPECT_FALSE(merged.GetDirectAction());
+  EXPECT_FALSE(merged.GetInChromeTriggered());
+  EXPECT_EQ(merged.GetTriggerUIType(),
+            TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE);
 }
 
 TEST(TriggerContextTest, MergeEmptyWithNonEmpty) {
@@ -73,6 +83,9 @@ TEST(TriggerContextTest, MergeEmptyWithNonEmpty) {
   EXPECT_FALSE(merged.GetCCT());
   EXPECT_FALSE(merged.GetOnboardingShown());
   EXPECT_FALSE(merged.GetDirectAction());
+  EXPECT_FALSE(merged.GetInChromeTriggered());
+  EXPECT_EQ(merged.GetTriggerUIType(),
+            TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE);
 }
 
 TEST(TriggerContextTest, MergeNonEmptyWithNonEmpty) {
@@ -89,7 +102,10 @@ TEST(TriggerContextTest, MergeNonEmptyWithNonEmpty) {
       /* is_cct = */ true,
       /* onboarding_shown = */ true,
       /* is_direct_action = */ true,
-      /* initial_url = */ "https://www.example.com"};
+      /* initial_url = */ "https://www.example.com",
+      /* is_in_chrome_triggered = */ true};
+  context2.SetTriggerUIType(
+      TriggerScriptProto::SHOPPING_CHECKOUT_FIRST_TIME_USER);
 
   // Adding empty to make sure empty contexts are properly skipped.
   TriggerContext empty;
@@ -102,6 +118,9 @@ TEST(TriggerContextTest, MergeNonEmptyWithNonEmpty) {
   EXPECT_TRUE(merged.GetOnboardingShown());
   EXPECT_TRUE(merged.GetDirectAction());
   EXPECT_EQ(merged.GetInitialUrl(), "https://www.example.com");
+  EXPECT_TRUE(merged.GetInChromeTriggered());
+  EXPECT_EQ(merged.GetTriggerUIType(),
+            TriggerScriptProto::SHOPPING_CHECKOUT_FIRST_TIME_USER);
 }
 
 TEST(TriggerContextTest, HasExperimentId) {

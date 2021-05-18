@@ -178,7 +178,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Whether or not privacy sandbox apis are enabled, including the current state
     of cookie settings, and if it is disabled by policy. Recorded on profile
-    startup.
+    startup. Values 8, 9, and 10 were added with M92.
   </summary>
 </histogram>
 
@@ -376,7 +376,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Settings.StartupPageLoadSettings" enum="SessionStartupPref"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>mpearson@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

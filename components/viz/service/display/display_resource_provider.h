@@ -121,6 +121,13 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
       return resource_->sync_token();
     }
 
+    // Sets the given |release_fence| onto this resource.
+    // This is propagated to ReturnedResource when the resource is freed.
+    void SetReleaseFence(gfx::GpuFenceHandle release_fence);
+
+    // Returns true iff this resource has a read lock fence set.
+    bool HasReadLockFence() const;
+
    protected:
     ChildResource* resource() { return resource_; }
 
@@ -329,6 +336,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // SkiaRenderer specific details about this resource. Added to ChildResource
     // to avoid map lookups further down the pipeline.
     std::unique_ptr<ExternalUseClient::ImageContext> image_context;
+
+    // A release fence to propagate to ReturnedResource so clients may
+    // use it.
+    gfx::GpuFenceHandle release_fence;
 
    private:
     // Tracks if a sync token needs to be waited on before using the resource.

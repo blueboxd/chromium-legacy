@@ -223,6 +223,21 @@ std::u16string PrivacySandboxSettings::GetFlocResetExplanationForDisplay()
       IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, floc_compute_days);
 }
 
+std::u16string PrivacySandboxSettings::GetFlocStatusForDisplay() const {
+  const bool floc_feature_enabled = base::FeatureList::IsEnabled(
+      blink::features::kInterestCohortAPIOriginTrial);
+  const bool floc_setting_enabled = IsFlocAllowed();
+  if (floc_setting_enabled) {
+    return floc_feature_enabled
+               ? l10n_util::GetStringUTF16(
+                     IDS_PRIVACY_SANDBOX_FLOC_STATUS_ACTIVE)
+               : l10n_util::GetStringUTF16(
+                     IDS_PRIVACY_SANDBOX_FLOC_STATUS_ELIGIBLE_NOT_ACTIVE);
+  }
+
+  return l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE);
+}
+
 bool PrivacySandboxSettings::IsConversionMeasurementAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& reporting_origin) const {
@@ -528,19 +543,28 @@ void PrivacySandboxSettings::LogPrivacySandboxState() {
   }
 
   if (pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled)) {
+    const bool floc_enabled =
+        pref_service_->GetBoolean(prefs::kPrivacySandboxFlocEnabled);
+
     if (default_cookie_setting == ContentSetting::CONTENT_SETTING_BLOCK) {
       RecordPrivacySandboxHistogram(
-          PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
-              kPSEnabledBlockAll);
+          floc_enabled ? PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                             kPSEnabledBlockAll
+                       : PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                             kPSEnabledFlocDisabledBlockAll);
     } else if (cookie_controls_mode_value ==
                content_settings::CookieControlsMode::kBlockThirdParty) {
       RecordPrivacySandboxHistogram(
-          PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
-              kPSEnabledBlock3P);
+          floc_enabled ? PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                             kPSEnabledBlock3P
+                       : PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                             kPSEnabledFlocDisabledBlock3P);
     } else {
       RecordPrivacySandboxHistogram(
-          PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
-              kPSEnabledAllowAll);
+          floc_enabled ? PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                             kPSEnabledAllowAll
+                       : PrivacySandboxSettings::SettingsPrivacySandboxEnabled::
+                             kPSEnabledFlocDisabledAllowAll);
     }
   } else {
     if (default_cookie_setting == ContentSetting::CONTENT_SETTING_BLOCK) {

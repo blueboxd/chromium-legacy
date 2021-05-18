@@ -115,6 +115,13 @@ class ApkAnalyzerTest(unittest.TestCase):
         expected_name=('$$Outlined$AnimatedProgressBar$$Lambda$0'),
     )
 
+  def testLambdaNormalizer_externalSyntheticOutlineLambda(self):
+    self.assertNormalizedTo(
+        class_path='AutofillAssistant$$Lambda$2$$ExternalSyntheticOutline0',
+        expected_outer_class='AutofillAssistant',
+        expected_name=('$$Outlined$AutofillAssistant$$Lambda$0'),
+    )
+
   def testLambdaNormalizer_internalSyntheticLambda(self):
     self.assertNormalizedTo(
         class_path=
@@ -122,6 +129,15 @@ class ApkAnalyzerTest(unittest.TestCase):
         'package.AnimatedProgressBar$$InternalSyntheticLambda$3$81073ff626580374a45b03cb5c962b81fe2a950064649dc98bf006e85619e92f$0',
         expected_outer_class='package.AnimatedProgressBar',
         expected_name='package.AnimatedProgressBar$$Lambda$0',
+    )
+
+  def testLambdaNormalizer_internalSyntheticOutlineLambda(self):
+    self.assertNormalizedTo(
+        class_path=
+        # pylint: disable=line-too-long
+        'package.ChromeActivity$$Lambda$28$$InternalSyntheticOutline$807$cbe941dd7bdbd82d4d93f21de2ea4e38c4468513f97dc90dcb54501b2fc335a6$0',
+        expected_outer_class='package.ChromeActivity',
+        expected_name='package.ChromeActivity$$Lambda$0',
     )
 
   def testLambdaNormalizer_oldLambdaFormat(self):

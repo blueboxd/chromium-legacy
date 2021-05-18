@@ -44,6 +44,11 @@ constexpr base::Feature kRecordBackForwardCacheMetricsWithoutEnabling{
     "RecordBackForwardCacheMetricsWithoutEnabling",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Removes the time limit for cached content. This is used on bots to identify
+// accidentally passing tests.
+constexpr base::Feature kBackForwardCacheNoTimeEviction{
+    "BackForwardCacheNoTimeEviction", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // BackForwardCache:
 //
 // After the user navigates away from a document, the old one goes into the
@@ -74,6 +79,10 @@ class CONTENT_EXPORT BackForwardCacheImpl
     ~Entry();
 
     void WriteIntoTrace(perfetto::TracedValue context);
+    // Indicates whether or not all the |render_view_hosts| in this entry have
+    // received the acknowledgement from renderer that it finished running
+    // handlers.
+    bool AllRenderViewHostsReceivedAckFromRenderer();
 
     // The main document being stored.
     std::unique_ptr<RenderFrameHostImpl> render_frame_host;

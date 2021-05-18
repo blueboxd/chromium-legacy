@@ -178,28 +178,38 @@ class LambdaNormalizer:
       return outer_class, full_name
 
     # Example: package.AnimatedProgressBar$$InternalSyntheticLambda$3$81073ff6$0
+    # Example: package.Class$$Lambda$2$$InternalSyntheticOutline$8$cbe941dd782$0
     match = re.fullmatch(
-        r'(.+)\$\$InternalSyntheticLambda\$\d+\$[0-9a-f]+\$\d+', class_path)
+        # The base_name group needs to be non-greedy/minimal (using +?) since we
+        # want it to not include $$Lambda$28 when present.
+        r'(?P<base_name>.+?)(\$\$Lambda\$\d+)?'
+        r'\$\$InternalSynthetic(Lambda|Outline)'
+        r'\$\d+\$[0-9a-f]+\$\d+',
+        class_path)
     if match:
       new_name = self._GetLambdaName(class_path=class_path,
-                                     base_name=match.group(1))
+                                     base_name=match.group('base_name'))
       return outer_class, full_name.replace(class_path, new_name)
     # Example: AnimatedProgressBar$$ExternalSyntheticLambda0
-    match = re.fullmatch(r'(.+)\$\$ExternalSyntheticLambda\d+', class_path)
+    # Example: AutofillAssistant$$Lambda$2$$ExternalSyntheticOutline0
+    match = re.fullmatch(
+        r'(?P<base_name>.+?)(\$\$Lambda\$\d+)?'
+        r'\$\$ExternalSynthetic(Lambda|Outline)\d+', class_path)
     if match:
       new_name = self._GetLambdaName(class_path=class_path,
-                                     base_name=match.group(1),
+                                     base_name=match.group('base_name'),
                                      prefix=_OUTLINED_PREFIX)
       return outer_class, full_name.replace(class_path, new_name)
     # Example: package.FirebaseInstallationsRegistrar$$Lambda$1
-    match = re.fullmatch(r'(.+)\$\$Lambda\$\d+', class_path)
+    match = re.fullmatch(r'(?P<base_name>.+)\$\$Lambda\$\d+', class_path)
     if match:
       # Although these are already valid names, re-number them to avoid name
       # collisions with renamed InternalSyntheticLambdas.
       new_name = self._GetLambdaName(class_path=class_path,
-                                     base_name=match.group(1))
+                                     base_name=match.group('base_name'))
       return outer_class, full_name.replace(class_path, new_name)
     # Example: org.-$$Lambda$StackAnimation$Nested1$kjevdDQ8V2zqCrdieLqWLHzk
+    # Assume that the last portion of the name after $ is the hash identifier.
     match = re.fullmatch(
         r'(?P<package>.+)-\$\$Lambda\$(?P<class>[^$]+)(?P<nested>.*)\$[^$]+',
         class_path)

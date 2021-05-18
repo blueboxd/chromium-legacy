@@ -1871,7 +1871,6 @@ if (!is_android) {
         "//ui/file_manager/audio_player/js:modulize_runtime_data",
         "//ui/file_manager/file_manager/background/js:modulize_runtime_data",
         "//ui/file_manager/file_manager/common/js:modulize_runtime_data",
-        "//ui/file_manager/file_manager/cws_widget:modulize_runtime_data",
         "//ui/file_manager/file_manager/externs:modulize_runtime_data",
         "//ui/file_manager/file_manager/externs/background:modulize_runtime_data",
         "//ui/file_manager/file_manager/foreground/elements:modulize_runtime_data",
@@ -6596,6 +6595,10 @@ static_library("test_support_unit") {
     ]
 
     deps += [ "//ash:test_support" ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/lacros:test_support" ]
   }
 }
 

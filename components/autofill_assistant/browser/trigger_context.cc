@@ -12,12 +12,14 @@ TriggerContext::Options::Options(const std::string& _experiment_ids,
                                  bool _is_cct,
                                  bool _onboarding_shown,
                                  bool _is_direct_action,
-                                 const std::string& _initial_url)
+                                 const std::string& _initial_url,
+                                 bool _is_in_chrome_triggered)
     : experiment_ids(_experiment_ids),
       is_cct(_is_cct),
       onboarding_shown(_onboarding_shown),
       is_direct_action(_is_direct_action),
-      initial_url(_initial_url) {}
+      initial_url(_initial_url),
+      is_in_chrome_triggered(_is_in_chrome_triggered) {}
 
 TriggerContext::Options::Options() = default;
 TriggerContext::Options::~Options() = default;
@@ -33,7 +35,8 @@ TriggerContext::TriggerContext(
                      options.is_cct,
                      options.onboarding_shown,
                      options.is_direct_action,
-                     options.initial_url) {}
+                     options.initial_url,
+                     options.is_in_chrome_triggered) {}
 
 TriggerContext::TriggerContext(
     std::unique_ptr<ScriptParameters> script_parameters,
@@ -41,12 +44,14 @@ TriggerContext::TriggerContext(
     bool is_cct,
     bool onboarding_shown,
     bool is_direct_action,
-    const std::string& initial_url)
+    const std::string& initial_url,
+    bool is_in_chrome_triggered)
     : script_parameters_(std::move(script_parameters)),
       experiment_ids_(std::move(experiment_ids)),
       cct_(is_cct),
       onboarding_shown_(onboarding_shown),
       direct_action_(is_direct_action),
+      is_in_chrome_triggered_(is_in_chrome_triggered),
       initial_url_(initial_url) {}
 
 TriggerContext::TriggerContext(std::vector<const TriggerContext*> contexts)
@@ -67,8 +72,12 @@ TriggerContext::TriggerContext(std::vector<const TriggerContext*> contexts)
     cct_ |= context->GetCCT();
     onboarding_shown_ |= context->GetOnboardingShown();
     direct_action_ |= context->GetDirectAction();
+    is_in_chrome_triggered_ |= context->GetInChromeTriggered();
     if (initial_url_.empty()) {
       initial_url_ = context->GetInitialUrl();
+    }
+    if (trigger_ui_type_ == TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE) {
+      trigger_ui_type_ = context->GetTriggerUIType();
     }
   }
 }
@@ -109,6 +118,19 @@ void TriggerContext::SetOnboardingShown(bool onboarding_shown) {
 
 bool TriggerContext::GetDirectAction() const {
   return direct_action_;
+}
+
+bool TriggerContext::GetInChromeTriggered() const {
+  return is_in_chrome_triggered_;
+}
+
+TriggerScriptProto::TriggerUIType TriggerContext::GetTriggerUIType() const {
+  return trigger_ui_type_;
+}
+
+void TriggerContext::SetTriggerUIType(
+    TriggerScriptProto::TriggerUIType trigger_ui_type) {
+  trigger_ui_type_ = trigger_ui_type;
 }
 
 }  // namespace autofill_assistant

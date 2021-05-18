@@ -119,7 +119,7 @@ class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
     content::WebContentsTester::For(web_contents())->TestSetIsLoading(false);
   }
 
-  void AssertRecordedFinishedState(TriggerUIType type,
+  void AssertRecordedFinishedState(TriggerScriptProto::TriggerUIType type,
                                    Metrics::TriggerScriptFinishedState state) {
     auto entries =
         ukm_recorder_.GetEntriesByName("AutofillAssistant.LiteScriptFinished");
@@ -133,7 +133,7 @@ class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
 
   // Make sure that an UKM entry with |state| has been recorded
   // |expected_times|, and has been associated each time with |type|.
-  void AssertRecordedShownToUserState(TriggerUIType type,
+  void AssertRecordedShownToUserState(TriggerScriptProto::TriggerUIType type,
                                       Metrics::TriggerScriptShownToUser state,
                                       int expected_times) {
     auto entries = ukm_recorder_.GetEntriesByName(
@@ -152,7 +152,7 @@ class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
   }
 
   void AssertRecordedTriggerScriptOnboardingState(
-      TriggerUIType type,
+      TriggerScriptProto::TriggerUIType type,
       Metrics::TriggerScriptOnboarding state,
       int expected_times) {
     auto entries = ukm_recorder_.GetEntriesByName(
@@ -221,6 +221,7 @@ TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
         ClientContextProto expected_client_context;
         expected_client_context.mutable_chrome()->set_chrome_version(
             version_info::GetProductNameAndVersionForUserAgent());
+        expected_client_context.set_is_in_chrome_triggered(true);
         EXPECT_THAT(request.client_context(), Eq(expected_client_context));
       });
 
@@ -232,7 +233,8 @@ TEST_F(TriggerScriptCoordinatorTest, StartSendsOnlyApprovedFields) {
                           /* is_cct = */ true,
                           /* onboarding_shown = */ true,
                           /* is_direct_action = */ true,
-                          /* initial_url = */ "https://www.example.com"),
+                          /* initial_url = */ "https://www.example.com",
+                          /* is_in_chrome_triggered = */ true),
                       mock_callback_.Get());
 }
 
@@ -245,7 +247,7 @@ TEST_F(TriggerScriptCoordinatorTest, StopOnBackendRequestFailed) {
   coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
                       mock_callback_.Get());
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::GET_ACTIONS_FAILED);
 }
 
@@ -258,7 +260,7 @@ TEST_F(TriggerScriptCoordinatorTest, StopOnParsingError) {
   coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
                       mock_callback_.Get());
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::GET_ACTIONS_PARSE_ERROR);
 }
 
@@ -272,7 +274,7 @@ TEST_F(TriggerScriptCoordinatorTest, StopOnNoTriggerScriptsAvailable) {
   coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
                       mock_callback_.Get());
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::NO_TRIGGER_SCRIPT_AVAILABLE);
 }
 
@@ -425,7 +427,7 @@ TEST_F(TriggerScriptCoordinatorTest, PerformTriggerScriptActionCancelSession) {
   TriggerScriptProto* script = response.add_trigger_scripts();
   *script->mutable_trigger_condition()->mutable_selector() =
       ToSelectorProto("#selector");
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -446,7 +448,7 @@ TEST_F(TriggerScriptCoordinatorTest, PerformTriggerScriptActionCancelSession) {
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
   coordinator_->PerformTriggerScriptAction(TriggerScriptProto::CANCEL_SESSION);
   AssertRecordedFinishedState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptFinishedState::PROMPT_FAILED_CANCEL_SESSION);
 }
 
@@ -455,7 +457,7 @@ TEST_F(TriggerScriptCoordinatorTest, PerformTriggerScriptActionCancelForever) {
   TriggerScriptProto* script = response.add_trigger_scripts();
   *script->mutable_trigger_condition()->mutable_selector() =
       ToSelectorProto("#selector");
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -476,7 +478,7 @@ TEST_F(TriggerScriptCoordinatorTest, PerformTriggerScriptActionCancelForever) {
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
   coordinator_->PerformTriggerScriptAction(TriggerScriptProto::CANCEL_FOREVER);
   AssertRecordedFinishedState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptFinishedState::PROMPT_FAILED_CANCEL_FOREVER);
 }
 
@@ -485,7 +487,8 @@ TEST_F(TriggerScriptCoordinatorTest, PerformTriggerScriptActionAccept) {
   TriggerScriptProto* script = response.add_trigger_scripts();
   *script->mutable_trigger_condition()->mutable_selector() =
       ToSelectorProto("#selector");
-  script->set_trigger_ui_type(CHECKOUT_RETURNING_USER);
+  script->set_trigger_ui_type(
+      TriggerScriptProto::SHOPPING_CHECKOUT_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -508,7 +511,7 @@ TEST_F(TriggerScriptCoordinatorTest, CancelOnNavigateAway) {
   TriggerScriptProto* script = response.add_trigger_scripts();
   *script->mutable_trigger_condition()->mutable_selector() =
       ToSelectorProto("#selector");
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -541,7 +544,7 @@ TEST_F(TriggerScriptCoordinatorTest, CancelOnNavigateAway) {
       Run(Metrics::TriggerScriptFinishedState::PROMPT_FAILED_NAVIGATE, _, _));
   SimulateNavigateToUrl(GURL("https://example.different.com/page"));
   AssertRecordedFinishedState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptFinishedState::PROMPT_FAILED_NAVIGATE);
 }
 
@@ -550,7 +553,7 @@ TEST_F(TriggerScriptCoordinatorTest, IgnoreNavigationEventsWhileNotStarted) {
   TriggerScriptProto* script = response.add_trigger_scripts();
   *script->mutable_trigger_condition()->mutable_selector() =
       ToSelectorProto("#selector");
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -586,7 +589,7 @@ TEST_F(TriggerScriptCoordinatorTest, IgnoreNavigationEventsWhileNotStarted) {
           _));
   SimulateWebContentsVisibilityChanged(content::Visibility::VISIBLE);
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::NO_TRIGGER_SCRIPT_AVAILABLE);
 }
 
@@ -594,7 +597,7 @@ TEST_F(TriggerScriptCoordinatorTest, BottomSheetClosedWithSwipe) {
   GetTriggerScriptsResponseProto response;
   TriggerScriptProto* script = response.add_trigger_scripts();
   script->set_on_swipe_to_dismiss(TriggerScriptProto::NOT_NOW);
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -609,8 +612,8 @@ TEST_F(TriggerScriptCoordinatorTest, BottomSheetClosedWithSwipe) {
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
   coordinator_->OnBottomSheetClosedWithSwipe();
   AssertRecordedShownToUserState(
-      CART_RETURNING_USER, Metrics::TriggerScriptShownToUser::SWIPE_DISMISSED,
-      1);
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
+      Metrics::TriggerScriptShownToUser::SWIPE_DISMISSED, 1);
 }
 
 TEST_F(TriggerScriptCoordinatorTest, TimeoutAfterInvisibleForTooLong) {
@@ -618,7 +621,8 @@ TEST_F(TriggerScriptCoordinatorTest, TimeoutAfterInvisibleForTooLong) {
   TriggerScriptProto* script = response.add_trigger_scripts();
   *script->mutable_trigger_condition()->mutable_selector() =
       ToSelectorProto("#selector");
-  script->set_trigger_ui_type(CHECKOUT_RETURNING_USER);
+  script->set_trigger_ui_type(
+      TriggerScriptProto::SHOPPING_CHECKOUT_RETURNING_USER);
   response.set_timeout_ms(3000);
   response.set_trigger_condition_check_interval_ms(1000);
   std::string serialized_response;
@@ -646,7 +650,7 @@ TEST_F(TriggerScriptCoordinatorTest, TimeoutAfterInvisibleForTooLong) {
           _));
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::TRIGGER_CONDITION_TIMEOUT);
 }
 
@@ -655,7 +659,7 @@ TEST_F(TriggerScriptCoordinatorTest, TimeoutResetsAfterTriggerScriptShown) {
   TriggerScriptProto* script = response.add_trigger_scripts();
   *script->mutable_trigger_condition()->mutable_selector() =
       ToSelectorProto("#selector");
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   response.set_timeout_ms(3000);
   response.set_trigger_condition_check_interval_ms(1000);
   std::string serialized_response;
@@ -692,7 +696,7 @@ TEST_F(TriggerScriptCoordinatorTest, TimeoutResetsAfterTriggerScriptShown) {
           _));
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::TRIGGER_CONDITION_TIMEOUT);
 }
 
@@ -766,7 +770,7 @@ TEST_F(TriggerScriptCoordinatorTest, KeyboardEventTriggersOutOfScheduleCheck) {
           _));
   task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::TRIGGER_CONDITION_TIMEOUT);
 }
 
@@ -859,7 +863,7 @@ TEST_F(TriggerScriptCoordinatorTest,
 TEST_F(TriggerScriptCoordinatorTest, OnTriggerScriptFailedToShow) {
   GetTriggerScriptsResponseProto response;
   TriggerScriptProto* script = response.add_trigger_scripts();
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -877,7 +881,8 @@ TEST_F(TriggerScriptCoordinatorTest, OnTriggerScriptFailedToShow) {
   coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
                       mock_callback_.Get());
   AssertRecordedFinishedState(
-      CART_RETURNING_USER, Metrics::TriggerScriptFinishedState::FAILED_TO_SHOW);
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
+      Metrics::TriggerScriptFinishedState::FAILED_TO_SHOW);
 }
 
 TEST_F(TriggerScriptCoordinatorTest, OnProactiveHelpSettingDisabled) {
@@ -904,7 +909,7 @@ TEST_F(TriggerScriptCoordinatorTest, OnProactiveHelpSettingDisabled) {
   SimulateWebContentsInteractabilityChanged(false);
   SimulateWebContentsInteractabilityChanged(true);
   AssertRecordedFinishedState(
-      UNSPECIFIED_TRIGGER_UI_TYPE,
+      TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE,
       Metrics::TriggerScriptFinishedState::DISABLED_PROACTIVE_HELP_SETTING);
 }
 
@@ -953,7 +958,7 @@ TEST_F(TriggerScriptCoordinatorTest, PauseAndResumeOnTabSwitch) {
 TEST_F(TriggerScriptCoordinatorTest, OnboardingShownAndAccepted) {
   GetTriggerScriptsResponseProto response;
   auto* script = response.add_trigger_scripts();
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -976,10 +981,10 @@ TEST_F(TriggerScriptCoordinatorTest, OnboardingShownAndAccepted) {
 
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(1));
   AssertRecordedTriggerScriptOnboardingState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptOnboarding::ONBOARDING_SEEN_AND_ACCEPTED, 1);
   AssertRecordedFinishedState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED);
 }
 
@@ -989,7 +994,7 @@ TEST_F(TriggerScriptCoordinatorTest,
 
   GetTriggerScriptsResponseProto response;
   auto* script = response.add_trigger_scripts();
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -1027,18 +1032,18 @@ TEST_F(TriggerScriptCoordinatorTest,
 
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(4));
   AssertRecordedTriggerScriptOnboardingState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptOnboarding::ONBOARDING_SEEN_AND_REJECTED, 1);
   AssertRecordedTriggerScriptOnboardingState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptOnboarding::ONBOARDING_SEEN_AND_ACCEPTED, 1);
   AssertRecordedTriggerScriptOnboardingState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptOnboarding::
           ONBOARDING_SEEN_AND_INTERRUPTED_BY_NAVIGATION,
       1);
   AssertRecordedFinishedState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED);
 }
 
@@ -1048,7 +1053,7 @@ TEST_F(TriggerScriptCoordinatorTest,
 
   GetTriggerScriptsResponseProto response;
   auto* script = response.add_trigger_scripts();
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -1073,17 +1078,17 @@ TEST_F(TriggerScriptCoordinatorTest,
 
   EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(1));
   AssertRecordedTriggerScriptOnboardingState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptOnboarding::ONBOARDING_SEEN_AND_REJECTED, 1);
   AssertRecordedFinishedState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptFinishedState::BOTTOMSHEET_ONBOARDING_REJECTED);
 }
 
 TEST_F(TriggerScriptCoordinatorTest, OnboardingNotShown) {
   GetTriggerScriptsResponseProto response;
   auto* script = response.add_trigger_scripts();
-  script->set_trigger_ui_type(CART_RETURNING_USER);
+  script->set_trigger_ui_type(TriggerScriptProto::SHOPPING_CART_RETURNING_USER);
   std::string serialized_response;
   response.SerializeToString(&serialized_response);
 
@@ -1104,10 +1109,10 @@ TEST_F(TriggerScriptCoordinatorTest, OnboardingNotShown) {
   coordinator_->PerformTriggerScriptAction(TriggerScriptProto::ACCEPT);
 
   AssertRecordedTriggerScriptOnboardingState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptOnboarding::ONBOARDING_ALREADY_ACCEPTED, 1);
   AssertRecordedFinishedState(
-      CART_RETURNING_USER,
+      TriggerScriptProto::SHOPPING_CART_RETURNING_USER,
       Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED);
 }
 

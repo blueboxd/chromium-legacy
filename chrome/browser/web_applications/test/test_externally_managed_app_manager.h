@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_EXTERNALLY_MANAGED_APP_MANAGER_H_
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
@@ -52,6 +51,8 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
   void SetInstallResultCode(InstallResultCode result_code);
 
   // ExternallyManagedAppManager:
+  void InstallNow(ExternalInstallOptions install_options,
+                  OnceInstallCallback callback) override;
   void Install(ExternalInstallOptions install_options,
                OnceInstallCallback callback) override;
   void InstallApps(std::vector<ExternalInstallOptions> install_options_list,

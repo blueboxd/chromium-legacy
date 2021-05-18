@@ -151,29 +151,54 @@ class StarterTest : public content::RenderViewHostTestHarness {
   // Returns a serialized GetTriggerScriptsResponseProto containing a single
   // trigger script without any trigger conditions. As such, it will be shown
   // immediately upon startup.
-  std::string CreateTriggerScriptResponseForTest() {
+  std::string CreateTriggerScriptResponseForTest(
+      TriggerScriptProto::TriggerUIType trigger_ui_type =
+          TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE) {
     GetTriggerScriptsResponseProto get_trigger_scripts_response;
-    get_trigger_scripts_response.add_trigger_scripts();
+    get_trigger_scripts_response.add_trigger_scripts()->set_trigger_ui_type(
+        trigger_ui_type);
     std::string serialized_get_trigger_scripts_response;
     get_trigger_scripts_response.SerializeToString(
         &serialized_get_trigger_scripts_response);
     return serialized_get_trigger_scripts_response;
   }
 
-  // Returns true if a specific |state| was recorded for |entry_name| and
-  // |metric_name|.
-  bool RecordedUkmMetric(base::StringPiece entry_name,
-                         base::StringPiece metric_name,
-                         int64_t expected_state,
-                         const GURL& source_url) {
+  // Returns true if all |expected_impressions| were recorded, and there were no
+  // other impressions for the same metric. |expected_impressions| may contain
+  // duplicate values if multiple equivalent impressions are expected.
+  // Impressions can be specified in any order.
+  bool RecordedUkmMetric(
+      base::StringPiece entry_name,
+      base::StringPiece metric_name,
+      const std::vector<std::pair<GURL, int64_t>>& expected_impressions) {
     auto entries = ukm_recorder_.GetEntriesByName(entry_name);
-    if (entries.size() != 1) {
+    if (entries.size() != expected_impressions.size()) {
+      LOG(ERROR) << "Expected " << expected_impressions.size()
+                 << " impressions, but got " << entries.size();
       return false;
     }
-    ukm_recorder_.ExpectEntrySourceHasUrl(entries[0], source_url);
-    const int64_t* actual_state =
-        ukm_recorder_.GetEntryMetric(entries[0], metric_name);
-    return actual_state != nullptr && *actual_state == expected_state;
+
+    auto remaining_impressions = expected_impressions;
+    while (!remaining_impressions.empty()) {
+      auto it =
+          std::find_if(entries.begin(), entries.end(), [&](const auto& entry) {
+            const ukm::UkmSource* src =
+                ukm_recorder_.GetSourceForSourceId(entry->source_id);
+            CHECK(src != nullptr);
+            return *ukm_recorder_.GetEntryMetric(entry, metric_name) ==
+                       remaining_impressions.begin()->second &&
+                   src->url() == remaining_impressions.begin()->first;
+          });
+      if (it == entries.end()) {
+        LOG(ERROR) << "Impression not recorded: "
+                   << remaining_impressions.begin()->first << ": "
+                   << remaining_impressions.begin()->second;
+        return false;
+      }
+
+      remaining_impressions.erase(remaining_impressions.begin());
+    }
+    return true;
   }
 
   // Returns whether anything was recorded for |entry_name|.
@@ -185,16 +210,16 @@ class StarterTest : public content::RenderViewHostTestHarness {
       Metrics::TriggerScriptStarted state,
       const GURL& source_url = GURL(kExampleDeeplink)) {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptStarted",
-                             "LiteScriptStarted", static_cast<int64_t>(state),
-                             source_url);
+                             "LiteScriptStarted",
+                             {{source_url, static_cast<int64_t>(state)}});
   }
 
   bool UkmTriggerScriptFinished(
       Metrics::TriggerScriptFinishedState state,
       const GURL& source_url = GURL(kExampleDeeplink)) {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptFinished",
-                             "LiteScriptFinished", static_cast<int64_t>(state),
-                             source_url);
+                             "LiteScriptFinished",
+                             {{source_url, static_cast<int64_t>(state)}});
   }
 
   bool UkmTriggerScriptOnboarding(
@@ -202,7 +227,24 @@ class StarterTest : public content::RenderViewHostTestHarness {
       const GURL& source_url = GURL(kExampleDeeplink)) {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptOnboarding",
                              "LiteScriptOnboarding",
-                             static_cast<int64_t>(result), source_url);
+                             {{source_url, static_cast<int64_t>(result)}});
+  }
+
+  bool UkmInChromeTriggerAction(
+      const std::vector<std::pair<GURL, Metrics::InChromeTriggerAction>>&
+          expected_impressions) {
+    std::vector<std::pair<GURL, int64_t>> transformed_expected_impressions;
+    std::transform(expected_impressions.begin(), expected_impressions.end(),
+                   std::back_inserter(transformed_expected_impressions),
+                   [&](const auto& impression) {
+                     return std::make_pair(
+                         impression.first,
+                         static_cast<int64_t>(impression.second));
+                   });
+
+    return RecordedUkmMetric("AutofillAssistant.InChromeTriggering",
+                             "InChromeTriggerAction",
+                             transformed_expected_impressions);
   }
 
   bool UkmTriggerScriptStarted() {
@@ -215,6 +257,10 @@ class StarterTest : public content::RenderViewHostTestHarness {
 
   bool UkmTriggerScriptOnboarding() {
     return RecordedUkmMetric("AutofillAssistant.LiteScriptOnboarding");
+  }
+
+  bool UkmInChromeTriggerAction() {
+    return RecordedUkmMetric("AutofillAssistant.InChromeTriggering");
   }
 
   // Simulates a navigation from the last committed URL to urls[size-1] along
@@ -638,16 +684,25 @@ TEST_F(StarterTest, RpcTriggerScriptSucceeds) {
             GetTriggerScriptsRequestProto request;
             ASSERT_TRUE(request.ParseFromString(request_body));
             EXPECT_THAT(request.url(), Eq(GURL(kExampleDeeplink)));
-            std::move(callback).Run(net::HTTP_OK,
-                                    CreateTriggerScriptResponseForTest());
+            EXPECT_FALSE(request.client_context().is_in_chrome_triggered());
+            std::move(callback).Run(
+                net::HTTP_OK,
+                CreateTriggerScriptResponseForTest(
+                    TriggerScriptProto::SHOPPING_CART_FIRST_TIME_USER));
           }));
   GetTriggerScriptsResponseProto get_trigger_scripts_response;
   get_trigger_scripts_response.ParseFromString(
-      CreateTriggerScriptResponseForTest());
-  EXPECT_CALL(mock_start_regular_script_callback_,
-              Run(GURL(kExampleDeeplink),
-                  Pointee(Property(&TriggerContext::GetOnboardingShown, true)),
-                  Optional(get_trigger_scripts_response.trigger_scripts(0))));
+      CreateTriggerScriptResponseForTest(
+          TriggerScriptProto::SHOPPING_CART_FIRST_TIME_USER));
+  EXPECT_CALL(
+      mock_start_regular_script_callback_,
+      Run(GURL(kExampleDeeplink),
+          Pointee(AllOf(
+              Property(&TriggerContext::GetOnboardingShown, true),
+              Property(&TriggerContext::GetInChromeTriggered, false),
+              Property(&TriggerContext::GetTriggerUIType,
+                       TriggerScriptProto::SHOPPING_CART_FIRST_TIME_USER))),
+          Optional(get_trigger_scripts_response.trigger_scripts(0))));
 
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(script_parameters), options));
@@ -982,8 +1037,11 @@ TEST_F(StarterTest, ImplicitStartupOnSupportedDomain) {
             ASSERT_TRUE(request.ParseFromString(request_body));
             EXPECT_THAT(request.url(),
                         Eq(GURL("https://www.some-website.com/cart")));
-            std::move(callback).Run(net::HTTP_OK,
-                                    CreateTriggerScriptResponseForTest());
+            EXPECT_TRUE(request.client_context().is_in_chrome_triggered());
+            std::move(callback).Run(
+                net::HTTP_OK,
+                CreateTriggerScriptResponseForTest(
+                    TriggerScriptProto::SHOPPING_CART_RETURNING_USER));
           }));
   EXPECT_CALL(*mock_trigger_script_ui_delegate_, ShowTriggerScript)
       .WillOnce([&]() {
@@ -991,10 +1049,15 @@ TEST_F(StarterTest, ImplicitStartupOnSupportedDomain) {
         trigger_script_coordinator_->PerformTriggerScriptAction(
             TriggerScriptProto::ACCEPT);
       });
-  EXPECT_CALL(mock_start_regular_script_callback_,
-              Run(GURL("https://www.some-website.com/cart"),
-                  Pointee(Property(&TriggerContext::GetOnboardingShown, false)),
-                  testing::Ne(absl::nullopt)));
+  EXPECT_CALL(
+      mock_start_regular_script_callback_,
+      Run(GURL("https://www.some-website.com/cart"),
+          Pointee(AllOf(
+              Property(&TriggerContext::GetOnboardingShown, false),
+              Property(&TriggerContext::GetInChromeTriggered, true),
+              Property(&TriggerContext::GetTriggerUIType,
+                       TriggerScriptProto::SHOPPING_CART_RETURNING_USER))),
+          testing::Ne(absl::nullopt)));
 
   // Implicit startup by navigating to an autofill-assistant-enabled site.
   content::WebContentsTester::For(web_contents())
@@ -1010,6 +1073,12 @@ TEST_F(StarterTest, ImplicitStartupOnSupportedDomain) {
   EXPECT_TRUE(UkmTriggerScriptOnboarding(
       Metrics::TriggerScriptOnboarding::ONBOARDING_ALREADY_ACCEPTED,
       GURL("https://www.some-website.com/cart")));
+  EXPECT_TRUE(UkmInChromeTriggerAction(
+      {{GURL(kExampleDeeplink),
+        Metrics::InChromeTriggerAction::NO_HEURISTIC_MATCH},
+       {GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED}}));
+
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -1030,6 +1099,8 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfSettingDisabled) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.some-website.com/cart"));
   task_environment()->RunUntilIdle();
+
+  EXPECT_FALSE(UkmInChromeTriggerAction());
 }
 
 TEST_F(StarterTest, ImplicitStartupOnCurrentUrlAfterSettingEnabled) {
@@ -1063,6 +1134,9 @@ TEST_F(StarterTest, ImplicitStartupOnCurrentUrlAfterSettingEnabled) {
                               GURL("https://www.some-website.com/cart")));
   EXPECT_FALSE(UkmTriggerScriptFinished());
   EXPECT_FALSE(UkmTriggerScriptOnboarding());
+  EXPECT_TRUE(UkmInChromeTriggerAction(
+      {{GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED}}));
   histogram_tester_.ExpectUniqueSample(
       "Android.AutofillAssistant.FeatureModuleInstallation",
       Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 1u);
@@ -1273,6 +1347,7 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfAlreadyRunning) {
   EXPECT_FALSE(UkmTriggerScriptStarted());
   EXPECT_FALSE(UkmTriggerScriptFinished());
   EXPECT_FALSE(UkmTriggerScriptOnboarding());
+  EXPECT_FALSE(UkmInChromeTriggerAction());
   histogram_tester_.ExpectTotalCount(
       "Android.AutofillAssistant.FeatureModuleInstallation", 0u);
   histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
@@ -1326,6 +1401,22 @@ TEST_F(StarterTest, FailedTriggerScriptFetchesForImplicitStartupAreCached) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.different-website.com/cart"));
   task_environment()->RunUntilIdle();
+
+  EXPECT_TRUE(UkmInChromeTriggerAction(
+      {{GURL(kExampleDeeplink),
+        Metrics::InChromeTriggerAction::NO_HEURISTIC_MATCH},
+       {GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED},
+       {GURL("https://www.some-website.com/checkout"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN},
+       {GURL("https://some-website.com/signin"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN},
+       {GURL("https://signin.some-website.com"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN},
+       {GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN},
+       {GURL("https://www.different-website.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED}}));
 }
 
 TEST_F(StarterTest,
@@ -1379,6 +1470,22 @@ TEST_F(StarterTest,
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.different-website.com/cart"));
   task_environment()->RunUntilIdle();
+
+  EXPECT_TRUE(UkmInChromeTriggerAction(
+      {{GURL(kExampleDeeplink),
+        Metrics::InChromeTriggerAction::NO_HEURISTIC_MATCH},
+       {GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED},
+       {GURL("https://www.some-website.com/checkout"),
+        Metrics::InChromeTriggerAction::USER_DENYLISTED_DOMAIN},
+       {GURL("https://some-website.com/signin"),
+        Metrics::InChromeTriggerAction::USER_DENYLISTED_DOMAIN},
+       {GURL("https://signin.some-website.com"),
+        Metrics::InChromeTriggerAction::USER_DENYLISTED_DOMAIN},
+       {GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::USER_DENYLISTED_DOMAIN},
+       {GURL("https://www.different-website.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED}}));
 }
 
 TEST_F(StarterTest, EmptyTriggerScriptFetchesForImplicitStartupAreCached) {
@@ -1432,6 +1539,20 @@ TEST_F(StarterTest, EmptyTriggerScriptFetchesForImplicitStartupAreCached) {
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(script_parameters),
       TriggerContext::Options{}));
+
+  EXPECT_TRUE(UkmInChromeTriggerAction(
+      {{GURL(kExampleDeeplink),
+        Metrics::InChromeTriggerAction::NO_HEURISTIC_MATCH},
+       {GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED},
+       {GURL("https://www.some-website.com/checkout"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN},
+       {GURL("https://some-website.com/signin"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN},
+       {GURL("https://signin.some-website.com"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN},
+       {GURL("https://www.some-website.com/cart"),
+        Metrics::InChromeTriggerAction::CACHE_HIT_UNSUPPORTED_DOMAIN}}));
 }
 
 TEST_F(StarterTest, FailedExplicitTriggerFetchesAreCached) {
@@ -1463,6 +1584,7 @@ TEST_F(StarterTest, FailedExplicitTriggerFetchesAreCached) {
   EXPECT_THAT(*GetFailedTriggerFetchesCacheForTest(),
               UnorderedElementsAre(Pair("example.com", now_ticks),
                                    Pair("different.com", now_ticks)));
+  EXPECT_FALSE(UkmInChromeTriggerAction());
 }
 
 TEST_F(StarterTest, FailedImplicitTriggerFetchesAreCached) {
@@ -1491,6 +1613,13 @@ TEST_F(StarterTest, FailedImplicitTriggerFetchesAreCached) {
       *GetFailedTriggerFetchesCacheForTest(),
       UnorderedElementsAre(Pair("example-shopping-site.com", now_ticks),
                            Pair("different-shopping-site.com", now_ticks)));
+  EXPECT_TRUE(UkmInChromeTriggerAction(
+      {{GURL(kExampleDeeplink),
+        Metrics::InChromeTriggerAction::NO_HEURISTIC_MATCH},
+       {GURL("https://www.example-shopping-site.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED},
+       {GURL("https://different-shopping-site.com/cart"),
+        Metrics::InChromeTriggerAction::TRIGGER_SCRIPT_REQUESTED}}));
 }
 
 TEST_F(StarterTest, FailedTriggerFetchesCacheEntriesExpire) {

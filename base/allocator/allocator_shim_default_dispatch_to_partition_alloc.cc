@@ -17,6 +17,7 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 #include "base/bits.h"
+#include "base/compiler_specific.h"
 #include "base/memory/nonscannable_memory.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
@@ -30,8 +31,6 @@
 using base::allocator::AllocatorDispatch;
 
 namespace {
-
-std::atomic<bool> g_initialization_lock{false};
 
 // We can't use a "static local" or a base::LazyInstance, as:
 // - static local variables call into the runtime on Windows, which is not
@@ -63,6 +62,7 @@ class LeakySingleton {
 
   std::atomic<T*> instance_;
   alignas(T) uint8_t instance_buffer_[sizeof(T)];
+  std::atomic<bool> initialization_lock_;
 };
 
 template <typename T, typename Constructor>
@@ -88,7 +88,7 @@ T* LeakySingleton<T, Constructor>::GetSlowPath() {
   // Lock.
   bool expected = false;
   // Semantically equivalent to base::Lock::Acquire().
-  while (!g_initialization_lock.compare_exchange_strong(
+  while (!initialization_lock_.compare_exchange_strong(
       expected, true, std::memory_order_acquire, std::memory_order_acquire)) {
     expected = false;
   }
@@ -97,7 +97,7 @@ T* LeakySingleton<T, Constructor>::GetSlowPath() {
   // Someone beat us.
   if (instance) {
     // Unlock.
-    g_initialization_lock.store(false, std::memory_order_release);
+    initialization_lock_.store(false, std::memory_order_release);
     return instance;
   }
 
@@ -105,7 +105,7 @@ T* LeakySingleton<T, Constructor>::GetSlowPath() {
   instance_.store(instance, std::memory_order_release);
 
   // Unlock.
-  g_initialization_lock.store(false, std::memory_order_release);
+  initialization_lock_.store(false, std::memory_order_release);
 
   return instance;
 }
@@ -184,14 +184,14 @@ class AlignedPartitionConstructor {
 };
 
 LeakySingleton<base::ThreadSafePartitionRoot, AlignedPartitionConstructor>
-    g_aligned_root = {};
+    g_aligned_root CONSTINIT = {};
 #endif  // BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
 
 // Original g_root_ if it was replaced by ConfigurePartitionRefCountSupport().
 std::atomic<base::ThreadSafePartitionRoot*> g_original_root_(nullptr);
 
-LeakySingleton<base::ThreadSafePartitionRoot, MainPartitionConstructor> g_root =
-    {};
+LeakySingleton<base::ThreadSafePartitionRoot, MainPartitionConstructor> g_root
+    CONSTINIT = {};
 base::ThreadSafePartitionRoot* Allocator() {
   return g_root.Get();
 }
@@ -350,28 +350,28 @@ void* PartitionRealloc(const AllocatorDispatch*,
                        void* address,
                        size_t size,
                        void* context) {
-#if defined(OS_MAC)
+#if defined(OS_APPLE)
   if (!base::IsManagedByPartitionAlloc(address)) {
     // A memory region allocated by the system allocator is passed in this
     // function.  Forward the request to `realloc` which supports zone-
     // dispatching so that it appropriately selects the right zone.
     return realloc(address, size);
   }
-#endif  // defined(OS_MAC)
+#endif  // defined(OS_APPLE)
 
   return Allocator()->ReallocFlags(base::PartitionAllocNoHooks, address,
                                    MaybeAdjustSize(size), "");
 }
 
 void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
-#if defined(OS_MAC)
+#if defined(OS_APPLE)
   if (!base::IsManagedByPartitionAlloc(address)) {
     // A memory region allocated by the system allocator is passed in this
     // function.  Forward the request to `free` which supports zone-
     // dispatching so that it appropriately selects the right zone.
     return free(address);
   }
-#endif  // defined(OS_MAC)
+#endif  // defined(OS_APPLE)
 
   base::ThreadSafePartitionRoot::FreeNoHooks(address);
 }
@@ -379,18 +379,23 @@ void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
 size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
                                 void* address,
                                 void* context) {
-#if defined(OS_MAC)
+#if defined(OS_APPLE)
   if (!base::IsManagedByPartitionAlloc(address)) {
     // The object pointed to by `address` is not allocated by the
     // PartitionAlloc.  The return value `0` means that the pointer does not
     // belong to this malloc zone.
     return 0;
   }
-#endif  // defined(OS_MAC)
+#endif  // defined(OS_APPLE)
 
   // TODO(lizeb): Returns incorrect values for aligned allocations.
   const size_t size = base::ThreadSafePartitionRoot::GetUsableSize(address);
+#if defined(OS_APPLE)
+  // The object pointed to by `address` is allocated by the PartitionAlloc.
+  // So, this function must not return zero so that the malloc zone dispatcher
+  // finds the appropriate malloc zone.
   PA_DCHECK(size);
+#endif  // defined(OS_APPLE)
   return size;
 }
 

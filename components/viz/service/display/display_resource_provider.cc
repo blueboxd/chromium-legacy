@@ -456,6 +456,18 @@ DisplayResourceProvider::ScopedReadLockSharedImage::operator=(
   return *this;
 }
 
+void DisplayResourceProvider::ScopedReadLockSharedImage::SetReleaseFence(
+    gfx::GpuFenceHandle release_fence) {
+  DCHECK(resource_);
+  resource_->release_fence = std::move(release_fence);
+}
+
+bool DisplayResourceProvider::ScopedReadLockSharedImage::HasReadLockFence()
+    const {
+  DCHECK(resource_);
+  return resource_->transferable.read_lock_fences_enabled;
+}
+
 void DisplayResourceProvider::ScopedReadLockSharedImage::Reset() {
   if (!resource_provider_)
     return;

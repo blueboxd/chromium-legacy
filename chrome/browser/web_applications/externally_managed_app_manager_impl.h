@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_MANAGER_IMPL_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -42,6 +41,8 @@ class ExternallyManagedAppManagerImpl : public ExternallyManagedAppManager {
   ~ExternallyManagedAppManagerImpl() override;
 
   // ExternallyManagedAppManager:
+  void InstallNow(ExternalInstallOptions install_options,
+                  OnceInstallCallback callback) override;
   void Install(ExternalInstallOptions install_options,
                OnceInstallCallback callback) override;
   void InstallApps(std::vector<ExternalInstallOptions> install_options_list,

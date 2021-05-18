@@ -40,7 +40,7 @@ const gfx::VectorIcon& GetVectorIconForType(ServerFieldType type) {
   // TODO(crbug.com/1167060): Update icons upon having final mocks.
   switch (type) {
     case NAME_FULL_WITH_HONORIFIC_PREFIX:
-      return kUserAccountAvatarIcon;
+      return kAccountCircleIcon;
     case EMAIL_ADDRESS:
       return vector_icons::kEmailIcon;
     case PHONE_HOME_WHOLE_NUMBER:
@@ -198,9 +198,11 @@ UpdateAddressProfileView::UpdateAddressProfileView(
               /*horizontal=*/0));
 
   views::Label* subtitle_label = AddChildView(std::make_unique<views::Label>(
-      GetDescriptionForProfileToUpdate(
-          *controller_->GetOriginalProfile(),
-          g_browser_process->GetApplicationLocale()),
+      // TODO(crbug.com/1167060): Pass proper `include_address_and_contacts`
+      // value and handle empty description if needed.
+      GetProfileDescription(*controller_->GetOriginalProfile(),
+                            g_browser_process->GetApplicationLocale(),
+                            /*include_address_and_contacts=*/true),
       views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
   subtitle_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 

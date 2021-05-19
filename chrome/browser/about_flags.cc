@@ -589,6 +589,19 @@ const FeatureEntry::FeatureVariation kIntensiveWakeUpThrottlingVariations[] = {
      base::size(kIntensiveWakeUpThrottlingAfter10Seconds), nullptr},
 };
 
+const FeatureEntry::FeatureParam kFencedFramesImplementationTypeShadowDOM[] = {
+    {"implementation_type", "shadow_dom"}};
+const FeatureEntry::FeatureParam kFencedFramesImplementationTypeMPArch[] = {
+    {"implementation_type", "mparch"}};
+
+const FeatureEntry::FeatureVariation
+    kFencedFramesImplementationTypeVariations[] = {
+        {"with ShadowDOM", kFencedFramesImplementationTypeShadowDOM,
+         base::size(kFencedFramesImplementationTypeShadowDOM), nullptr},
+        {"with multiple page architecture",
+         kFencedFramesImplementationTypeMPArch,
+         base::size(kFencedFramesImplementationTypeMPArch), nullptr}};
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_Immediate[] = {
     {"baseline_tab_suggestions", "true"},
@@ -1573,22 +1586,6 @@ const FeatureEntry::FeatureVariation
         {"(Force automatic translation of blocked sites for hrefTranslate)",
          kOverridePrefsForHrefTranslateForceAuto,
          base::size(kOverridePrefsForHrefTranslateForceAuto), nullptr}};
-
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kEphemeralTabOpenPeek[] = {
-    {"ephemeral_tab_open_mode", "0"}};
-const FeatureEntry::FeatureParam kEphemeralTabOpenHalf[] = {
-    {"ephemeral_tab_open_mode", "1"}};
-const FeatureEntry::FeatureParam kEphemeralTabOpenFull[] = {
-    {"ephemeral_tab_open_mode", "2"}};
-const FeatureEntry::FeatureVariation kEphemeralTabOpenVariations[] = {
-    {"Open at peek state", kEphemeralTabOpenPeek,
-     base::size(kEphemeralTabOpenPeek), nullptr},
-    {"Open at half state", kEphemeralTabOpenHalf,
-     base::size(kEphemeralTabOpenHalf), nullptr},
-    {"Open at full state", kEphemeralTabOpenFull,
-     base::size(kEphemeralTabOpenFull), nullptr}};
-#endif
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
@@ -5163,15 +5160,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseAngleDescription, kOsWin,
      MULTI_VALUE_TYPE(kUseAngleChoices)},
 #endif
-#if defined(OS_ANDROID)
-    {"enable-ephemeral-tab-bottom-sheet",
-     flag_descriptions::kEphemeralTabUsingBottomSheetName,
-     flag_descriptions::kEphemeralTabUsingBottomSheetDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kEphemeralTabUsingBottomSheet,
-         kEphemeralTabOpenVariations,
-         "EphemeralTabOpenMode")},
-#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
@@ -5542,7 +5530,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-fenced-frames", flag_descriptions::kEnableFencedFramesName,
      flag_descriptions::kEnableFencedFramesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kFencedFrames)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kFencedFrames,
+                                    kFencedFramesImplementationTypeVariations,
+                                    "FencedFrames")},
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,
      flag_descriptions::kEnablePortalsDescription, kOsAll,
@@ -6689,13 +6679,21 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(language::kDesktopDetailedLanguageSettings)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"pwa-update-dialog-for-name-and-icon",
+     flag_descriptions::kPwaUpdateDialogForNameAndIconName,
+     flag_descriptions::kPwaUpdateDialogForNameAndIconDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kPwaUpdateDialogForNameAndIcon)},
+#endif
+
     {"sync-autofill-wallet-offer-data",
      flag_descriptions::kSyncAutofillWalletOfferDataName,
      flag_descriptions::kSyncAutofillWalletOfferDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncAutofillWalletOfferData)},
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if (defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+     defined(OS_CHROMEOS)) &&                                   \
+    BUILDFLAG(ENABLE_PRINTING)
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},

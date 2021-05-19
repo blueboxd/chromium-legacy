@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_string.h"
+#include "base/time/time.h"
+#include "chrome/browser/federated_learning/floc_id_provider_factory.h"
 #include "chrome/browser/privacy_sandbox/android/jni_headers/PrivacySandboxBridge_jni.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
@@ -44,6 +46,12 @@ static jboolean JNI_PrivacySandboxBridge_IsFlocEnabled(JNIEnv* env) {
       ->IsFlocAllowed();
 }
 
+static jboolean JNI_PrivacySandboxBridge_IsFlocIdResettable(JNIEnv* env) {
+  return PrivacySandboxSettingsFactory::GetForProfile(
+             ProfileManager::GetActiveUserProfile())
+      ->IsFlocIdResettable();
+}
+
 static ScopedJavaLocalRef<jstring> JNI_PrivacySandboxBridge_GetFlocStatusString(
     JNIEnv* env) {
   return ConvertUTF16ToJavaString(env,
@@ -58,4 +66,15 @@ static ScopedJavaLocalRef<jstring> JNI_PrivacySandboxBridge_GetFlocGroupString(
                                   PrivacySandboxSettingsFactory::GetForProfile(
                                       ProfileManager::GetActiveUserProfile())
                                       ->GetFlocIdForDisplay());
+}
+
+static ScopedJavaLocalRef<jstring> JNI_PrivacySandboxBridge_GetFlocUpdateString(
+    JNIEnv* env) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  return ConvertUTF16ToJavaString(
+      env,
+      PrivacySandboxSettingsFactory::GetForProfile(profile)
+          ->GetFlocIdNextUpdateForDisplay(
+              federated_learning::FlocIdProviderFactory::GetForProfile(profile),
+              profile->GetOriginalProfile()->GetPrefs(), base::Time::Now()));
 }

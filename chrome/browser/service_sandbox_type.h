@@ -97,8 +97,22 @@ content::GetServiceSandboxType<media::mojom::SpeechRecognitionService>() {
 }
 #endif  // !defined(OS_ANDROID)
 
+// mirroring::mojom::MirroringService
+#if defined(OS_MAC)
+namespace mirroring {
+namespace mojom {
+class MirroringService;
+}
+}  // namespace mirroring
+template <>
+inline sandbox::policy::SandboxType
+content::GetServiceSandboxType<mirroring::mojom::MirroringService>() {
+  return sandbox::policy::SandboxType::kMirroring;
+}
+#endif  // OS_MAC
+
 // printing::mojom::PrintingService
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 namespace printing {
 namespace mojom {
 class PrintingService;
@@ -110,7 +124,7 @@ inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<printing::mojom::PrintingService>() {
   return sandbox::policy::SandboxType::kPdfConversion;
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // printing::mojom::PrintBackendService
 #if (defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \

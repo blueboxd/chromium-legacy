@@ -28,12 +28,20 @@ public class PrivacySandboxBridge {
         return PrivacySandboxBridgeJni.get().isFlocEnabled();
     }
 
+    public static boolean isFlocIdResettable() {
+        return PrivacySandboxBridgeJni.get().isFlocIdResettable();
+    }
+
     public static String getFlocStatusString() {
         return PrivacySandboxBridgeJni.get().getFlocStatusString();
     }
 
     public static String getFlocGroupString() {
         return PrivacySandboxBridgeJni.get().getFlocGroupString();
+    }
+
+    public static String getFlocUpdateString() {
+        return PrivacySandboxBridgeJni.get().getFlocUpdateString();
     }
 
     @NativeMethods
@@ -43,7 +51,9 @@ public class PrivacySandboxBridge {
         boolean isPrivacySandboxManaged();
         void setPrivacySandboxEnabled(boolean enabled);
         boolean isFlocEnabled();
+        boolean isFlocIdResettable();
         String getFlocStatusString();
         String getFlocGroupString();
+        String getFlocUpdateString();
     }
 }

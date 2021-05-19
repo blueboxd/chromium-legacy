@@ -2071,6 +2071,12 @@ const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
 const char kPullToRefreshEnabledTouchscreen[] = "Enabled for touchscreen only";
 
+const char kPwaUpdateDialogForNameAndIconName[] =
+    "Enable PWA install update dialog for name/icon changes";
+const char kPwaUpdateDialogForNameAndIconDescription[] =
+    "Enable a confirmation dialog that shows up when a PWA changes its "
+    "icon/name";
+
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
@@ -3012,12 +3018,6 @@ const char kEnableCommandLineOnNoRootedDescription[] =
 const char kEnableUseAaudioDriverName[] = "Use AAudio Driver";
 const char kEnableUseAaudioDriverDescription[] =
     "Enable the use of AAudio, if supported by the current Android version.";
-
-const char kEphemeralTabUsingBottomSheetName[] =
-    "An ephemeral Preview Tab using the bottom sheet";
-const char kEphemeralTabUsingBottomSheetDescription[] =
-    "Enable a 'Preview page/image' at a linked page into the bottom sheet. "
-    "No other flags are needed for this feature.";
 
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =

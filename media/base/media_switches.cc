@@ -340,7 +340,7 @@ const base::Feature kD3D11PrintCodecOnCrash{"D3D11PrintCodecOnCrash",
 
 // Enable The D3D11 Video decoder.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Tell D3D11VideoDecoder to ignore workarounds for zero copy.  Requires that
 // kD3D11VideoDecoder is enabled.
@@ -862,6 +862,10 @@ const base::Feature kUseFakeDeviceForMediaStream{
 // estimations.
 const base::Feature kBresenhamCadence{"BresenhamCadence",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Display the playback speed button on the media controls.
+const base::Feature kPlaybackSpeedButton{"PlaybackSpeedButton",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

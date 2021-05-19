@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_text_control_multi_line.h"
 #include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -121,21 +122,18 @@ LayoutBlockFlow* LayoutObjectFactory::CreateBlockFlow(
 // static
 LayoutBlock* LayoutObjectFactory::CreateBlockForLineClamp(
     Node& node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   return CreateObject<LayoutBlock, LayoutNGBlockFlow,
                       LayoutDeprecatedFlexibleBox>(node, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFlexibleBox(Node& node,
-                                                    const ComputedStyle& style,
                                                     LegacyLayout legacy) {
   return CreateObject<LayoutBlock, LayoutNGFlexibleBox, LayoutFlexibleBox>(
       node, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateGrid(Node& node,
-                                             const ComputedStyle& style,
                                              LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGGridEnabled();
   if (disable_ng_for_type)
@@ -145,7 +143,6 @@ LayoutBlock* LayoutObjectFactory::CreateGrid(Node& node,
 }
 
 LayoutBlock* LayoutObjectFactory::CreateMath(Node& node,
-                                             const ComputedStyle& style,
                                              LegacyLayout legacy) {
   DCHECK(IsA<MathMLElement>(node));
   DCHECK_NE(legacy, LegacyLayout::kForce);
@@ -183,7 +180,6 @@ LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
 }
 
 LayoutBlock* LayoutObjectFactory::CreateTable(Node& node,
-                                              const ComputedStyle& style,
                                               LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
   if (disable_ng_for_type)
@@ -194,14 +190,12 @@ LayoutBlock* LayoutObjectFactory::CreateTable(Node& node,
 
 LayoutTableCaption* LayoutObjectFactory::CreateTableCaption(
     Node& node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   return CreateObject<LayoutTableCaption, LayoutNGTableCaption>(node, legacy);
 }
 
 LayoutBlockFlow* LayoutObjectFactory::CreateTableCell(
     Node& node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   if (RuntimeEnabledFeatures::LayoutNGTableEnabled()) {
     return CreateObject<LayoutBlockFlow, LayoutNGTableCell, LayoutTableCell>(
@@ -213,7 +207,6 @@ LayoutBlockFlow* LayoutObjectFactory::CreateTableCell(
 }
 
 LayoutBox* LayoutObjectFactory::CreateTableColumn(Node& node,
-                                                  const ComputedStyle& style,
                                                   LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
   if (disable_ng_for_type)
@@ -223,7 +216,6 @@ LayoutBox* LayoutObjectFactory::CreateTableColumn(Node& node,
 }
 
 LayoutBox* LayoutObjectFactory::CreateTableRow(Node& node,
-                                               const ComputedStyle& style,
                                                LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
   if (disable_ng_for_type)
@@ -233,7 +225,6 @@ LayoutBox* LayoutObjectFactory::CreateTableRow(Node& node,
 }
 
 LayoutBox* LayoutObjectFactory::CreateTableSection(Node& node,
-                                                   const ComputedStyle& style,
                                                    LegacyLayout legacy) {
   bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGTableEnabled();
   if (disable_ng_for_type)
@@ -243,13 +234,11 @@ LayoutBox* LayoutObjectFactory::CreateTableSection(Node& node,
 }
 
 LayoutObject* LayoutObjectFactory::CreateButton(Node& node,
-                                                const ComputedStyle& style,
                                                 LegacyLayout legacy) {
   return CreateObject<LayoutBlock, LayoutNGButton, LayoutButton>(node, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
-                                                 const ComputedStyle& style,
                                                  LegacyLayout legacy) {
   return CreateObject<LayoutBlock, LayoutNGFieldset, LayoutFieldset>(node,
                                                                      legacy);
@@ -257,14 +246,12 @@ LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
 
 LayoutBlockFlow* LayoutObjectFactory::CreateFileUploadControl(
     Node& node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   return CreateObject<LayoutBlockFlow, LayoutNGBlockFlow,
                       LayoutFileUploadControl>(node, legacy);
 }
 
 LayoutObject* LayoutObjectFactory::CreateSliderTrack(Node& node,
-                                                     const ComputedStyle& style,
                                                      LegacyLayout legacy) {
   return CreateObject<LayoutBlock, LayoutNGBlockFlow, LayoutSliderTrack>(
       node, legacy);
@@ -272,7 +259,6 @@ LayoutObject* LayoutObjectFactory::CreateSliderTrack(Node& node,
 
 LayoutObject* LayoutObjectFactory::CreateTextControlInnerEditor(
     Node& node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   return CreateObject<LayoutBlockFlow, LayoutNGTextControlInnerEditor,
                       LayoutTextControlInnerEditor>(node, legacy);
@@ -280,7 +266,6 @@ LayoutObject* LayoutObjectFactory::CreateTextControlInnerEditor(
 
 LayoutObject* LayoutObjectFactory::CreateTextControlMultiLine(
     Node& node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   return CreateObject<LayoutBlockFlow, LayoutNGTextControlMultiLine,
                       LayoutTextControlMultiLine>(node, legacy);
@@ -288,7 +273,6 @@ LayoutObject* LayoutObjectFactory::CreateTextControlMultiLine(
 
 LayoutObject* LayoutObjectFactory::CreateTextControlSingleLine(
     Node& node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   return CreateObject<LayoutBlockFlow, LayoutNGTextControlSingleLine,
                       LayoutTextControlSingleLine>(node, legacy);
@@ -307,6 +291,13 @@ LayoutText* LayoutObjectFactory::CreateText(Node* node,
   if (force_legacy)
     layout_text->SetForceLegacyLayout();
   return layout_text;
+}
+
+LayoutText* LayoutObjectFactory::CreateTextCombine(
+    Node* node,
+    scoped_refptr<StringImpl> str,
+    LegacyLayout legacy) {
+  return new LayoutTextCombine(node, str);
 }
 
 LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(
@@ -329,26 +320,22 @@ LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(
 }
 
 LayoutProgress* LayoutObjectFactory::CreateProgress(Node* node,
-                                                    const ComputedStyle& style,
                                                     LegacyLayout legacy) {
   return CreateObject<LayoutProgress, LayoutNGProgress>(*node, legacy);
 }
 
 LayoutRubyAsBlock* LayoutObjectFactory::CreateRubyAsBlock(
     Node* node,
-    const ComputedStyle& style,
     LegacyLayout legacy) {
   return CreateObject<LayoutRubyAsBlock, LayoutNGRubyAsBlock>(*node, legacy);
 }
 
 LayoutObject* LayoutObjectFactory::CreateRubyText(Node* node,
-                                                  const ComputedStyle& style,
                                                   LegacyLayout legacy) {
   return CreateObject<LayoutRubyText, LayoutNGRubyText>(*node, legacy);
 }
 
 LayoutObject* LayoutObjectFactory::CreateSVGText(Node& node,
-                                                 const ComputedStyle& style,
                                                  LegacyLayout legacy) {
   const bool disable_ng_for_type = !RuntimeEnabledFeatures::SVGTextNGEnabled();
   return CreateObject<LayoutBlockFlow, LayoutNGSVGText, LayoutSVGText>(
@@ -376,8 +363,7 @@ LayoutBox* LayoutObjectFactory::CreateAnonymousTableWithParent(
                             ? LegacyLayout::kForce
                             : LegacyLayout::kAuto;
 
-  LayoutBlock* new_table =
-      CreateTable(parent.GetDocument(), *new_style, legacy);
+  LayoutBlock* new_table = CreateTable(parent.GetDocument(), legacy);
   new_table->SetDocumentForAnonymous(&parent.GetDocument());
   new_table->SetStyle(std::move(new_style));
   return new_table;
@@ -391,8 +377,7 @@ LayoutBox* LayoutObjectFactory::CreateAnonymousTableSectionWithParent(
   LegacyLayout legacy =
       parent.ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
 
-  LayoutBox* new_section =
-      CreateTableSection(parent.GetDocument(), *new_style, legacy);
+  LayoutBox* new_section = CreateTableSection(parent.GetDocument(), legacy);
   new_section->SetDocumentForAnonymous(&parent.GetDocument());
   new_section->SetStyle(std::move(new_style));
   return new_section;
@@ -405,7 +390,7 @@ LayoutBox* LayoutObjectFactory::CreateAnonymousTableRowWithParent(
           parent.StyleRef(), EDisplay::kTableRow);
   LegacyLayout legacy =
       parent.ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
-  LayoutBox* new_row = CreateTableRow(parent.GetDocument(), *new_style, legacy);
+  LayoutBox* new_row = CreateTableRow(parent.GetDocument(), legacy);
   new_row->SetDocumentForAnonymous(&parent.GetDocument());
   new_row->SetStyle(std::move(new_style));
   return new_row;
@@ -418,8 +403,7 @@ LayoutBlockFlow* LayoutObjectFactory::CreateAnonymousTableCellWithParent(
           parent.StyleRef(), EDisplay::kTableCell);
   LegacyLayout legacy =
       parent.ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
-  LayoutBlockFlow* new_cell =
-      CreateTableCell(parent.GetDocument(), *new_style, legacy);
+  LayoutBlockFlow* new_cell = CreateTableCell(parent.GetDocument(), legacy);
   new_cell->SetDocumentForAnonymous(&parent.GetDocument());
   new_cell->SetStyle(std::move(new_style));
   return new_cell;

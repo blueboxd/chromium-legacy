@@ -380,29 +380,6 @@ mojom::HttpRawRequestResponseInfoPtr BuildRawRequestResponseInfo(
   return info;
 }
 
-bool ShouldSniffContent(net::URLRequest* url_request,
-                        const mojom::URLResponseHead& response) {
-  const std::string& mime_type = response.mime_type;
-
-  std::string content_type_options;
-  url_request->GetResponseHeaderByName("x-content-type-options",
-                                       &content_type_options);
-
-  bool sniffing_blocked =
-      base::LowerCaseEqualsASCII(content_type_options, "nosniff");
-  bool we_would_like_to_sniff =
-      net::ShouldSniffMimeType(url_request->url(), mime_type);
-
-  if (!sniffing_blocked && we_would_like_to_sniff) {
-    // We're going to look at the data before deciding what the content type
-    // is.  That means we need to delay sending the response started IPC.
-    VLOG(1) << "To buffer: " << url_request->url().spec();
-    return true;
-  }
-
-  return false;
-}
-
 // Concerning headers that consumers probably shouldn't be allowed to set.
 // Gathering numbers on these before adding them to kUnsafeHeaders.
 const struct {
@@ -1064,7 +1041,8 @@ bool URLLoader::CanConnectToAddressSpace(
   if (options_ & mojom::kURLLoadOptionBlockLocalRequest &&
       IsLessPublicAddressSpace(resource_address_space,
                                network::mojom::IPAddressSpace::kPublic)) {
-    DVLOG(1) << "CORS-RFC1918 check: failed due to loader options.";
+    // Unconditionally block requests to non-public address spaces when the URL
+    // loader options say so.
     return false;
   }
 
@@ -1073,62 +1051,43 @@ bool URLLoader::CanConnectToAddressSpace(
   // a factory) or the URLLoaderFactory's params. We prefer the factory params
   // over the request params, as the former always come from the browser
   // process.
-  //
-  // We use a raw pointer instead of a const-ref to a StructPtr in order to be
-  // able to assign a new value to the variable. A ternary operator would let us
-  // define a const-ref but would prevent logging which branch was taken.
-  const mojom::ClientSecurityState* security_state =
-      factory_params_->client_security_state.get();
-  if (security_state) {
-    DVLOG(1) << "CORS-RFC1918 check: using factory client security state.";
-  } else {
-    DVLOG(1) << "CORS-RFC1918 check: using request client security state.";
-    security_state = request_client_security_state_.get();
-  }
+  const mojom::ClientSecurityStatePtr& security_state =
+      factory_params_->client_security_state
+          ? factory_params_->client_security_state
+          : request_client_security_state_;
 
   if (!security_state) {
-    DVLOG(1) << "CORS-RFC1918 check: skipped, missing client security state.";
+    // Missing security state: allow all requests.
     return true;
   }
 
-  DVLOG(1) << "CORS-RFC1918 check: running against client security state = { "
-           << "is_web_secure_context: " << security_state->is_web_secure_context
-           << ", ip_address_space: " << security_state->ip_address_space
-           << ", private_network_request_policy: "
-           << security_state->private_network_request_policy << " }.";
+  if (!IsLessPublicAddressSpace(resource_address_space,
+                                security_state->ip_address_space)) {
+    // Resource is no less public than the initiator.
+    return true;
+  }
 
   bool is_warning = false;
   // We use a switch statement to force this code to be amended when values are
   // added to the PrivateNetworkRequestPolicy enum.
   switch (security_state->private_network_request_policy) {
     case mojom::PrivateNetworkRequestPolicy::kAllow:
-      DVLOG(1) << "CORS-RFC1918 check: unconditionally allowed.";
+      // Policy tells us to allow all.
       return true;
-    case mojom::PrivateNetworkRequestPolicy::kWarnFromInsecureToMorePrivate:
+    case mojom::PrivateNetworkRequestPolicy::kWarn:
       is_warning = true;
       break;
-    case mojom::PrivateNetworkRequestPolicy::kBlockFromInsecureToMorePrivate:
+    case mojom::PrivateNetworkRequestPolicy::kBlock:
       is_warning = false;
       break;
   }
 
-  if (!security_state->is_web_secure_context &&
-      IsLessPublicAddressSpace(resource_address_space,
-                               security_state->ip_address_space)) {
-    DVLOG(1) << "CORS-RFC1918 check: failed,"
-             << (is_warning ? "but not enforcing blocking of insecure private "
-                              "network request."
-                            : "blocking insecure private network request.");
-    if (auto* devtools_observer = GetDevToolsObserver()) {
-      devtools_observer->OnPrivateNetworkRequest(
-          devtools_request_id(), url_request_->url(), is_warning,
-          resource_address_space, security_state->Clone());
-    }
-    return is_warning;
+  if (auto* devtools_observer = GetDevToolsObserver()) {
+    devtools_observer->OnPrivateNetworkRequest(
+        devtools_request_id(), url_request_->url(), is_warning,
+        resource_address_space, security_state->Clone());
   }
-
-  DVLOG(1) << "CORS-RFC1918 check: success.";
-  return true;
+  return is_warning;
 }
 
 int URLLoader::OnConnected(net::URLRequest* url_request,
@@ -1470,7 +1429,10 @@ void URLLoader::ContinueOnResponseStarted() {
     }
   }
   if ((options_ & mojom::kURLLoadOptionSniffMimeType)) {
-    if (ShouldSniffContent(url_request_.get(), *response_)) {
+    if (ShouldSniffContent(url_request_->url(), *response_)) {
+      // We're going to look at the data before deciding what the content type
+      // is.  That means we need to delay sending the response started IPC.
+      VLOG(1) << "Will sniff content for mime type: " << url_request_->url();
       is_more_mime_sniffing_needed_ = true;
     } else if (response_->mime_type.empty()) {
       // Ugg.  The server told us not to sniff the content but didn't give us

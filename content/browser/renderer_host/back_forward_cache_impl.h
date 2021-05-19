@@ -44,6 +44,11 @@ constexpr base::Feature kRecordBackForwardCacheMetricsWithoutEnabling{
     "RecordBackForwardCacheMetricsWithoutEnabling",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Removes the time limit for cached content. This is used on bots to identify
+// accidentally passing tests.
+constexpr base::Feature kBackForwardCacheNoTimeEviction{
+    "BackForwardCacheNoTimeEviction", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // BackForwardCache:
 //
 // After the user navigates away from a document, the old one goes into the
@@ -104,6 +109,16 @@ class CONTENT_EXPORT BackForwardCacheImpl
     blink::mojom::PageRestoreParamsPtr page_restore_params;
 
     DISALLOW_COPY_AND_ASSIGN(Entry);
+  };
+
+  // UnloadSupportStrategy is possible actions to take against pages with
+  // "unload" handlers.
+  // TODO(crbug.com/1201653): Consider making this private.
+  enum class UnloadSupportStrategy {
+    kAlways,
+    kOptInHeaderRequired,
+    // TODO(crbug.com/1201653): Consider removing `kNo` to simplify code a bit.
+    kNo,
   };
 
   // Returns whether MediaSessionImpl::OnServiceCreated is allowed for the
@@ -306,6 +321,8 @@ class CONTENT_EXPORT BackForwardCacheImpl
            std::vector<std::string>  // URL's path prefix
            >
       blocked_urls_;
+
+  const UnloadSupportStrategy unload_strategy_;
 
   base::WeakPtrFactory<BackForwardCacheImpl> weak_factory_;
 

@@ -2428,10 +2428,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "D3D11VideoDecoder",
-                        "D3D11VideoDecoderCopyPictures"
+                    "name": "Disabled",
+                    "disable_features": [
+                        "D3D11VideoDecoder"
                     ]
                 }
             ]
@@ -3392,13 +3391,11 @@
                     "name": "Enabled",
                     "params": {
                         "availability": "any",
-                        "ephemeral_tab_open_mode": "1",
                         "event_trigger": "name:ephemeral_tab_triggered;comparator:<2;window:90;storage:90",
                         "event_used": "name:ephemeral_tab_used;comparator:==0;window:90;storage:90",
                         "session_rate": "any"
                     },
                     "enable_features": [
-                        "EphemeralTabUsingBottomSheet",
                         "IPH_EphemeralTab"
                     ]
                 }
@@ -8821,17 +8818,14 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "avx2_allowed": "false",
-                        "extra_saturation_margin": "5",
-                        "gain_applier_speech_frames_threshold": "6",
-                        "initial_saturation_margin": "20",
-                        "level_estimator_speech_frames_threshold": "6",
+                        "adjacent_speech_frames_threshold": "12",
+                        "avx2_allowed": "true",
+                        "dry_run": "false",
                         "max_gain_change_db_per_second": "3",
-                        "max_output_noise_level_dbfs": "-55",
+                        "max_output_noise_level_dbfs": "-50",
                         "neon_allowed": "true",
                         "sse2_allowed": "true",
-                        "use_peaks_not_rms": "false",
-                        "vad_probability_attack": "0.3"
+                        "vad_reset_period_ms": "1500"
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"

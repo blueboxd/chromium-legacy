@@ -33,14 +33,8 @@ void InfobarOverlayBrowserAgent::AddInfobarInteractionHandler(
   // installer is gauranteed to be non-null.
   AddInstaller(interaction_handler->CreateBannerCallbackInstaller(),
                OverlayModality::kInfobarBanner);
-  // Add the detail sheet and modal installers.  Not all InfobarTypes support
-  // sheet and modal UI, so the installers must be checked before being added.
-  std::unique_ptr<OverlayRequestCallbackInstaller> detail_sheet_installer =
-      interaction_handler->CreateDetailSheetCallbackInstaller();
-  if (detail_sheet_installer) {
-    AddInstaller(std::move(detail_sheet_installer),
-                 OverlayModality::kInfobarModal);
-  }
+  // Add the modal installers.  Not all InfobarTypes support modal UI, so the
+  // installer must be checked before being added.
   std::unique_ptr<OverlayRequestCallbackInstaller> modal_installer =
       interaction_handler->CreateModalCallbackInstaller();
   if (modal_installer) {
@@ -64,11 +58,11 @@ InfobarInteractionHandler* InfobarOverlayBrowserAgent::GetInteractionHandler(
 InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
     OverlayVisibilityObserver(Browser* browser,
                               InfobarOverlayBrowserAgent* browser_agent)
-    : browser_agent_(browser_agent), scoped_observer_(this) {
+    : browser_agent_(browser_agent) {
   DCHECK(browser_agent_);
-  scoped_observer_.Add(
+  scoped_observations_.AddObservation(
       OverlayPresenter::FromBrowser(browser, OverlayModality::kInfobarBanner));
-  scoped_observer_.Add(
+  scoped_observations_.AddObservation(
       OverlayPresenter::FromBrowser(browser, OverlayModality::kInfobarModal));
 }
 
@@ -104,5 +98,5 @@ void InfobarOverlayBrowserAgent::OverlayVisibilityObserver::DidHideOverlay(
 
 void InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
     OverlayPresenterDestroyed(OverlayPresenter* presenter) {
-  scoped_observer_.Remove(presenter);
+  scoped_observations_.RemoveObservation(presenter);
 }

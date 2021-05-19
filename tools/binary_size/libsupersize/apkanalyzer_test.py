@@ -122,6 +122,14 @@ class ApkAnalyzerTest(unittest.TestCase):
         expected_name=('$$Outlined$AutofillAssistant$$Lambda$0'),
     )
 
+  def testLambdaNormalizer_externalSyntheticLambdaWithExtraText(self):
+    self.assertNormalizedTo(
+        # pylint: disable=line-too-long
+        class_path='ContextMenuCoordinator$$Lambda$1$$ExternalSyntheticThrowCCEIfNotNull0',
+        expected_outer_class='ContextMenuCoordinator',
+        expected_name=('$$Outlined$ContextMenuCoordinator$$Lambda$0'),
+    )
+
   def testLambdaNormalizer_internalSyntheticLambda(self):
     self.assertNormalizedTo(
         class_path=

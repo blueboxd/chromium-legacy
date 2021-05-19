@@ -3185,10 +3185,6 @@ const char kPageInfoHistoryDescription[] =
     "Enable a history sub page to the page info menu, and a button to forget "
     "a site, removing all preferences and history.";
 
-const char kPageInfoV2Name[] = "Page info version two";
-const char kPageInfoV2Description[] =
-    "Enable the second version of the page info menu.";
-
 extern const char kPageInfoV2DesktopName[];
 extern const char kPageInfoV2DesktopDescription[];
 
@@ -4938,6 +4934,10 @@ const char kDesktopInProductHelpSnoozeName[] =
 const char kDesktopInProductHelpSnoozeDescription[] =
     "Snoozing an in-product help promo closes it and schedules it to be shown "
     "later. When enabled, this functionality is allowed on supported promos.";
+
+const char kDownloadShelfWebUI[] = "Download Shelf WebUI";
+const char kDownloadShelfWebUIDescription[] =
+    "Replaces the Views download shelf with a WebUI download shelf.";
 
 const char kEnableMDRoundedCornersOnDialogsName[] =
     "MD corners on secondary UI";

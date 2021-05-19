@@ -56,10 +56,16 @@ void ProjectorControllerImpl::OnTranscription(
 void ProjectorControllerImpl::SetProjectorToolsVisible(bool is_visible) {
   // TODO(yilkal): Projector toolbar shouldn't be shown if soda is not
   // available.
-  if (is_visible)
+  if (is_visible) {
     ui_controller_->ShowToolbar();
-  else
-    ui_controller_->CloseToolbar();
+    OnRecordingStarted();
+    return;
+  }
+
+  OnRecordingEnded();
+  if (client_->IsSelfieCamVisible())
+    client_->CloseSelfieCam();
+  ui_controller_->CloseToolbar();
 }
 
 bool ProjectorControllerImpl::IsEligible() const {
@@ -98,20 +104,6 @@ void ProjectorControllerImpl::SaveScreencast(
   metadata_controller_->SaveMetadata(saved_video_path);
 }
 
-void ProjectorControllerImpl::OnRecordButtonPressed() {
-  // TODO(crbug.com/1165435): Start the recording session and update the button
-  // visibility based on recording state after integrating with capture mode and
-  // recording service.
-  OnRecordingStarted();
-}
-
-void ProjectorControllerImpl::OnStopRecordButtonPressed() {
-  // TODO(crbug.com/1165435): Stop the recording session and update the button
-  // visibility based on recording state after integrating with capture mode and
-  // recording service.
-  OnRecordingEnded();
-}
-
 void ProjectorControllerImpl::OnLaserPointerPressed() {
   ui_controller_->OnLaserPointerPressed();
 }
@@ -126,6 +118,16 @@ void ProjectorControllerImpl::OnClearAllMarkersPressed() {
 
 void ProjectorControllerImpl::OnSelfieCamPressed(bool enabled) {
   ui_controller_->OnSelfieCamPressed(enabled);
+
+  DCHECK_NE(client_, nullptr);
+  if (enabled == client_->IsSelfieCamVisible())
+    return;
+
+  if (enabled) {
+    client_->ShowSelfieCam();
+    return;
+  }
+  client_->CloseSelfieCam();
 }
 
 void ProjectorControllerImpl::OnMagnifierButtonPressed(bool enabled) {

@@ -345,6 +345,10 @@ const base::Feature kFontAccess{"FontAccess",
 const base::Feature kFontAccessPersistent{"FontAccessPersistent",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Kill switch for the Compute Pressure API. https://crbug.com/1067627
+const base::Feature kComputePressure{"ComputePressure",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Prefetch request properties are updated to be privacy-preserving. See
 // crbug.com/988956.
 const base::Feature kPrefetchPrivacyChanges{"PrefetchPrivacyChanges",
@@ -939,7 +943,7 @@ const base::Feature kManagedConfiguration{"ManagedConfiguration",
 // have their rendering throttled on display:none or zero-area.
 const base::Feature kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes{
     "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the Fledge Interest Group API, i.e. if disabled, the
 // API exposure will be disabled regardless of the OT config.

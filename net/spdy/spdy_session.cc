@@ -299,15 +299,15 @@ base::Value NetLogSpdyInitializedParams(NetLogSource source) {
 
 base::Value NetLogSpdySendSettingsParams(const spdy::SettingsMap* settings) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  base::ListValue settings_list;
+  std::vector<base::Value> settings_list;
   for (auto it = settings->begin(); it != settings->end(); ++it) {
     const spdy::SpdySettingsId id = it->first;
     const uint32_t value = it->second;
-    settings_list.AppendString(
+    settings_list.emplace_back(
         base::StringPrintf("[id:%u (%s) value:%u]", id,
                            spdy::SettingsIdToString(id).c_str(), value));
   }
-  dict.SetKey("settings", std::move(settings_list));
+  dict.SetKey("settings", base::Value(std::move(settings_list)));
   return dict;
 }
 
@@ -930,7 +930,6 @@ SpdySession::SpdySession(
     bool enable_ping_based_connection_checking,
     bool is_http2_enabled,
     bool is_quic_enabled,
-    bool is_trusted_proxy,
     size_t session_max_recv_window_size,
     int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
@@ -999,7 +998,6 @@ SpdySession::SpdySession(
           enable_ping_based_connection_checking),
       is_http2_enabled_(is_http2_enabled),
       is_quic_enabled_(is_quic_enabled),
-      is_trusted_proxy_(is_trusted_proxy),
       enable_push_(IsPushEnabled(initial_settings)),
       support_websocket_(false),
       connection_at_risk_of_loss_time_(
@@ -2104,44 +2102,33 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
   // Cross-origin push validation.
   GURL associated_url(associated_it->second->url());
   if (associated_url.GetOrigin() != gurl.GetOrigin()) {
-    if (is_trusted_proxy_) {
-      if (!gurl.SchemeIs(url::kHttpScheme)) {
-        RecordSpdyPushedStreamFateHistogram(
-            SpdyPushedStreamFate::kNonHttpSchemeFromTrustedProxy);
-        EnqueueResetStreamFrame(
-            stream_id, request_priority, spdy::ERROR_CODE_REFUSED_STREAM,
-            "Only http scheme allowed for cross origin push by trusted proxy.");
-        return;
-      }
-    } else {
-      if (!gurl.SchemeIs(url::kHttpsScheme)) {
-        RecordSpdyPushedStreamFateHistogram(
-            SpdyPushedStreamFate::kNonHttpsPushedScheme);
-        EnqueueResetStreamFrame(stream_id, request_priority,
-                                spdy::ERROR_CODE_REFUSED_STREAM,
-                                "Pushed URL must have https scheme.");
-        return;
-      }
-      if (!associated_url.SchemeIs(url::kHttpsScheme)) {
-        RecordSpdyPushedStreamFateHistogram(
-            SpdyPushedStreamFate::kNonHttpsAssociatedScheme);
-        EnqueueResetStreamFrame(stream_id, request_priority,
-                                spdy::ERROR_CODE_REFUSED_STREAM,
-                                "Associated URL must have https scheme.");
-        return;
-      }
-      SSLInfo ssl_info;
-      CHECK(GetSSLInfo(&ssl_info));
-      if (!CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
-                   associated_url.host(), gurl.host(),
-                   spdy_session_key_.network_isolation_key())) {
-        RecordSpdyPushedStreamFateHistogram(
-            SpdyPushedStreamFate::kCertificateMismatch);
-        EnqueueResetStreamFrame(stream_id, request_priority,
-                                spdy::ERROR_CODE_REFUSED_STREAM,
-                                "Certificate does not match pushed URL.");
-        return;
-      }
+    if (!gurl.SchemeIs(url::kHttpsScheme)) {
+      RecordSpdyPushedStreamFateHistogram(
+          SpdyPushedStreamFate::kNonHttpsPushedScheme);
+      EnqueueResetStreamFrame(stream_id, request_priority,
+                              spdy::ERROR_CODE_REFUSED_STREAM,
+                              "Pushed URL must have https scheme.");
+      return;
+    }
+    if (!associated_url.SchemeIs(url::kHttpsScheme)) {
+      RecordSpdyPushedStreamFateHistogram(
+          SpdyPushedStreamFate::kNonHttpsAssociatedScheme);
+      EnqueueResetStreamFrame(stream_id, request_priority,
+                              spdy::ERROR_CODE_REFUSED_STREAM,
+                              "Associated URL must have https scheme.");
+      return;
+    }
+    SSLInfo ssl_info;
+    CHECK(GetSSLInfo(&ssl_info));
+    if (!CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
+                 associated_url.host(), gurl.host(),
+                 spdy_session_key_.network_isolation_key())) {
+      RecordSpdyPushedStreamFateHistogram(
+          SpdyPushedStreamFate::kCertificateMismatch);
+      EnqueueResetStreamFrame(stream_id, request_priority,
+                              spdy::ERROR_CODE_REFUSED_STREAM,
+                              "Certificate does not match pushed URL.");
+      return;
     }
   }
 

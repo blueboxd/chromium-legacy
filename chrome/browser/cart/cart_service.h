@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/cart/cart_db.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
+#include "chrome/browser/cart/cart_discount_link_fetcher.h"
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
@@ -54,11 +55,9 @@ class CartService : public history::HistoryServiceObserver,
   void DeleteCart(const std::string& domain);
   // Only load carts with fake data in the database.
   void LoadCartsWithFakeData(CartDB::LoadCallback callback);
-  // Gets called when discounts are available for the given domain.
-  void UpdateDiscounts(
-      const std::string& domain,
-      const double timestamp,
-      const std::vector<cart_db::DiscountInfoProto> discount_infos);
+  // Gets called when discounts are available for the given cart_url.
+  void UpdateDiscounts(const GURL& cart_url,
+                       cart_db::ChromeCartContentProto new_proto);
   // Gets called when a single cart in module is temporarily hidden.
   void HideCart(const GURL& cart_url, CartDB::OperationCallback callback);
   // Gets called when restoring the temporarily hidden single cart.
@@ -95,12 +94,15 @@ class CartService : public history::HistoryServiceObserver,
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
+  // Returns whether a discount with |rule_id| is used or not.
+  bool IsDiscountUsed(const std::string& rule_id);
   // KeyedService:
   void Shutdown() override;
 
  private:
   friend class CartServiceFactory;
   friend class CartServiceTest;
+  friend class CartServiceDiscountTest;
   FRIEND_TEST_ALL_PREFIXES(CartHandlerNtpModuleFakeDataTest,
                            TestEnableFakeData);
 
@@ -141,20 +143,29 @@ class CartService : public history::HistoryServiceObserver,
                  bool success,
                  std::vector<CartDB::KeyAndValue> proto_pairs);
 
-  // A callback to handle updating discount for a cart.
-  void OnUpdateDiscount(
-      const std::string& domain,
-      const std::vector<cart_db::DiscountInfoProto> discount_infos,
-      const double timestamp,
-      bool success,
-      std::vector<CartDB::KeyAndValue> proto_pairs);
   // Gets called when users has enabled the rule-based discount feature.
   void StartGettingDiscount();
+  // A callback to fetch discount URL.
+  void OnGetDiscountURL(const GURL& default_cart_url,
+                        base::OnceCallback<void(const ::GURL&)> callback,
+                        bool success,
+                        std::vector<CartDB::KeyAndValue> proto_pairs);
+  // A callback to return discount URL when it is fetched.
+  void OnDiscountURLFetched(const GURL& default_cart_url,
+                            base::OnceCallback<void(const ::GURL&)> callback,
+                            const cart_db::ChromeCartContentProto& cart_proto,
+                            const GURL& discount_url);
 
   // A callback to decide if there are partner carts.
   void HasPartnerCarts(base::OnceCallback<void(bool)> callback,
                        bool success,
                        std::vector<CartDB::KeyAndValue> proto_pairs);
+  // Set discount_link_fetcher_ for testing purpose.
+  void SetCartDiscountLinkFetcherForTesting(
+      std::unique_ptr<CartDiscountLinkFetcher> discount_link_fetcher);
+
+  void CacheUsedDiscounts(const cart_db::ChromeCartContentProto& proto);
+  void CleanUpDiscounts(cart_db::ChromeCartContentProto proto);
 
   Profile* profile_;
   std::unique_ptr<CartDB> cart_db_;
@@ -164,6 +175,7 @@ class CartService : public history::HistoryServiceObserver,
   absl::optional<base::Value> domain_name_mapping_;
   absl::optional<base::Value> domain_cart_url_mapping_;
   std::unique_ptr<FetchDiscountWorker> fetch_discount_worker_;
+  std::unique_ptr<CartDiscountLinkFetcher> discount_link_fetcher_;
   base::WeakPtrFactory<CartService> weak_ptr_factory_{this};
 };
 

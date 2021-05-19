@@ -183,7 +183,7 @@ class LambdaNormalizer:
         # The base_name group needs to be non-greedy/minimal (using +?) since we
         # want it to not include $$Lambda$28 when present.
         r'(?P<base_name>.+?)(\$\$Lambda\$\d+)?'
-        r'\$\$InternalSynthetic(Lambda|Outline)'
+        r'\$\$InternalSynthetic[a-zA-Z0-9_]+'
         r'\$\d+\$[0-9a-f]+\$\d+',
         class_path)
     if match:
@@ -192,9 +192,10 @@ class LambdaNormalizer:
       return outer_class, full_name.replace(class_path, new_name)
     # Example: AnimatedProgressBar$$ExternalSyntheticLambda0
     # Example: AutofillAssistant$$Lambda$2$$ExternalSyntheticOutline0
+    # Example: ContextMenuCoord$$Lambda$2$$ExternalSyntheticThrowCCEIfNotNull0
     match = re.fullmatch(
         r'(?P<base_name>.+?)(\$\$Lambda\$\d+)?'
-        r'\$\$ExternalSynthetic(Lambda|Outline)\d+', class_path)
+        r'\$\$ExternalSynthetic[a-zA-Z0-9_]+', class_path)
     if match:
       new_name = self._GetLambdaName(class_path=class_path,
                                      base_name=match.group('base_name'),
@@ -221,7 +222,10 @@ class LambdaNormalizer:
       new_name = self._GetLambdaName(class_path=class_path, base_name=base_name)
       outer_class = package_name + class_name
       return outer_class, full_name.replace(class_path, new_name)
-    assert False, 'No valid match for lambda ' + class_path
+    assert False, (
+        'No valid match for new lambda name format: ' + class_path + '\n'
+        'Please update https://crbug.com/1208385 with this error so we can '
+        'update the lambda normalization code.')
 
 
 # Visible for testing.

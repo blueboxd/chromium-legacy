@@ -6096,10 +6096,14 @@ others/histograms.xml -->
   <int value="0" label="Undefined"/>
   <int value="1" label="UserNotAsked"/>
   <int value="2" label="Accpeted"/>
-  <int value="3" label="Edited"/>
-  <int value="4" label="Declined"/>
-  <int value="5" label="Never"/>
-  <int value="6" label="Ignored"/>
+  <int value="3" label="Declined"/>
+  <int value="4" label="EditAccepted"/>
+  <int value="5" label="EditDeclined"/>
+  <int value="6" label="Never"/>
+  <int value="7" label="Ignored"/>
+  <int value="8" label="MessageTimeout"/>
+  <int value="9" label="MessageDeclined"/>
+  <int value="10" label="AutoDeclined"/>
 </enum>
 
 <enum name="AutofillProfileImportEditedType">
@@ -32532,6 +32536,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3913" label="GetBBoxForText"/>
   <int value="3914" label="SVGTextHangingFromPath"/>
   <int value="3915" label="ClientHintsPrefersColorScheme"/>
+  <int value="3916" label="OverscrollBehaviorWillBeFixed"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32637,6 +32642,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="83" label="SharedAutofill"/>
   <int value="84" label="DirectSockets"/>
   <int value="85" label="ClientHintPrefersColorScheme"/>
+  <int value="86" label="WindowPlacement"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -45746,6 +45752,7 @@ from previous Chrome versions.
   <int value="-1117104514" label="smbfs-file-shares"/>
   <int value="-1116278039" label="ShelfAppScaling:disabled"/>
   <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
+  <int value="-1113373128" label="WebUIDownloadShelf:enabled"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
   <int value="-1109826787" label="AccessibilityExposeDisplayNone:enabled"/>
   <int value="-1108636917" label="DetectedSourceLanguageOption:enabled"/>
@@ -49423,6 +49430,7 @@ from previous Chrome versions.
   <int value="2098714203" label="enable-generic-sensors"/>
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
   <int value="2099945365" label="OmniboxAssistantVoiceSearch:enabled"/>
+  <int value="2101124624" label="WebUIDownloadShelf:disabled"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104340988" label="CrostiniUsername:disabled"/>
   <int value="2104439359"

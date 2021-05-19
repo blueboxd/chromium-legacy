@@ -894,11 +894,9 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_LT(requested_size, actual_capacity);
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  if (features::IsPartitionAllocGigaCageEnabled()) {
-    for (size_t offset = 0; offset < requested_size; ++offset) {
-      EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
-                slot_start);
-    }
+  for (size_t offset = 0; offset < requested_size; ++offset) {
+    EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
+              slot_start);
   }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
   allocator.root()->Free(ptr);
@@ -915,11 +913,9 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_EQ(requested_size, actual_capacity);
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  if (features::IsPartitionAllocGigaCageEnabled()) {
-    for (size_t offset = 0; offset < requested_size; offset += 877) {
-      EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
-                slot_start);
-    }
+  for (size_t offset = 0; offset < requested_size; offset += 877) {
+    EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
+              slot_start);
   }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
   allocator.root()->Free(ptr);
@@ -941,11 +937,9 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_EQ(requested_size + SystemPageSize(), actual_capacity);
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  if (features::IsPartitionAllocGigaCageEnabled()) {
-    for (size_t offset = 0; offset < requested_size; offset += 4999) {
-      EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
-                slot_start);
-    }
+  for (size_t offset = 0; offset < requested_size; offset += 4999) {
+    EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
+              slot_start);
   }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
@@ -960,11 +954,9 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
   EXPECT_EQ(predicted_capacity, actual_capacity);
   EXPECT_EQ(requested_size, actual_capacity);
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  if (features::IsPartitionAllocGigaCageEnabled()) {
-    for (size_t offset = 0; offset < requested_size; offset += 4999) {
-      EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
-                slot_start);
-    }
+  for (size_t offset = 0; offset < requested_size; offset += 4999) {
+    EXPECT_EQ(PartitionAllocGetSlotStart(static_cast<char*>(ptr) + offset),
+              slot_start);
   }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
@@ -998,9 +990,6 @@ TEST_F(PartitionAllocTest, AllocGetSizeAndOffsetAndStart) {
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
 TEST_F(PartitionAllocTest, GetSlotStartMultiplePages) {
-  if (!features::IsPartitionAllocGigaCageEnabled())
-    return;
-
   const size_t real_size = 80;
   const size_t requested_size = real_size - kExtraAllocSize;
   // Double check we don't end up with 0 or negative size.
@@ -2620,7 +2609,7 @@ TEST_F(PartitionAllocTest, OverrideHooks) {
 TEST_F(PartitionAllocTest, Alignment) {
   std::vector<void*> allocated_ptrs;
 
-  for (size_t size = 1; size <= base::SystemPageSize(); size <<= 1) {
+  for (size_t size = 1; size <= base::PartitionPageSize(); size <<= 1) {
     // All allocations which are not direct-mapped occupy contiguous slots of a
     // span, starting on a page boundary. This means that allocations are first
     // rounded up to the nearest bucket size, then have an address of the form:
@@ -2725,11 +2714,12 @@ void VerifyAlignment(PartitionRoot<ThreadSafe>* root,
 #define MAYBE_AlignedAllocations AlignedAllocations
 #endif
 TEST_F(PartitionAllocTest, MAYBE_AlignedAllocations) {
-  size_t alloc_sizes[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
-  size_t alignemnts[] = {8, 16, 32, 64, 256, 1024, 4096, 8192};
+  size_t alloc_sizes[] = {1,     10,    100,    1000,   10000,
+                          60000, 70000, 130000, 500000, 900000};
+  size_t max_alignment = 1048576;
 
   for (size_t alloc_size : alloc_sizes) {
-    for (size_t alignment : alignemnts) {
+    for (size_t alignment = 1; alignment <= max_alignment; alignment <<= 1) {
       VerifyAlignment(aligned_allocator.root(), alloc_size, alignment);
 
       // AlignedAllocFlags() can't be called on regular allocator, if there are
@@ -2883,8 +2873,7 @@ TEST_F(PartitionAllocTest, MAYBE_Bookkeeping) {
         PartitionRoot<ThreadSafe>::GetDirectMapMetadataAndGuardPagesSize();
     size_t alignment = PageAllocationGranularity();
 #if defined(PA_HAS_64_BITS_POINTERS)
-    if (features::IsPartitionAllocGigaCageEnabled())
-      alignment = kSuperPageSize;
+    alignment = kSuperPageSize;
 #endif
     size_t expected_direct_map_size =
         bits::AlignUp(aligned_size + surrounding_pages_size, alignment);
@@ -3044,24 +3033,24 @@ TEST_F(PartitionAllocTest, FastPathOrReturnNull) {
   size_t allocation_size = 64;
   // The very first allocation is never a fast path one, since it needs a new
   // super page and a new partition page.
-  EXPECT_FALSE(allocator.root()->AllocFlagsNoHooks(
-      PartitionAllocFastPathOrReturnNull, allocation_size));
-  void* ptr = allocator.root()->AllocFlagsNoHooks(0, allocation_size);
+  EXPECT_FALSE(allocator.root()->AllocFlags(PartitionAllocFastPathOrReturnNull,
+                                            allocation_size, ""));
+  void* ptr = allocator.root()->AllocFlags(0, allocation_size, "");
   ASSERT_TRUE(ptr);
 
   // Next one is, since the partition page has been activated.
-  void* ptr2 = allocator.root()->AllocFlagsNoHooks(
-      PartitionAllocFastPathOrReturnNull, allocation_size);
+  void* ptr2 = allocator.root()->AllocFlags(PartitionAllocFastPathOrReturnNull,
+                                            allocation_size, "");
   EXPECT_TRUE(ptr2);
 
   // First allocation of a different bucket is slow.
-  EXPECT_FALSE(allocator.root()->AllocFlagsNoHooks(
-      PartitionAllocFastPathOrReturnNull, 2 * allocation_size));
+  EXPECT_FALSE(allocator.root()->AllocFlags(PartitionAllocFastPathOrReturnNull,
+                                            2 * allocation_size, ""));
 
   size_t allocated_size = 2 * allocation_size;
   std::vector<void*> ptrs;
-  while (void* new_ptr = allocator.root()->AllocFlagsNoHooks(
-             PartitionAllocFastPathOrReturnNull, allocation_size)) {
+  while (void* new_ptr = allocator.root()->AllocFlags(
+             PartitionAllocFastPathOrReturnNull, allocation_size, "")) {
     ptrs.push_back(new_ptr);
     allocated_size += allocation_size;
   }

@@ -121,7 +121,7 @@ bool IsSwitchAccessPointScanningEnabled() {
 
 const base::Feature kExperimentalAccessibilityDictationListening{
     "ExperimentalAccessibilityDictationListening",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsExperimentalAccessibilityDictationListeningEnabled() {
   return base::FeatureList::IsEnabled(
@@ -160,5 +160,14 @@ bool IsSelectToSpeakNavigationControlEnabled() {
       ::features::kSelectToSpeakNavigationControl);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_ANDROID)
+const base::Feature kComputeAXMode{"ComputeAXMode",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsComputeAXModeEnabled() {
+  return base::FeatureList::IsEnabled(::features::kComputeAXMode);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace features

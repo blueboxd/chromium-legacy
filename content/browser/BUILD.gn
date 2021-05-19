@@ -1023,6 +1023,8 @@ source_set("browser") {
     "interest_group/ad_auction.h",
     "interest_group/ad_auction_service_impl.cc",
     "interest_group/ad_auction_service_impl.h",
+    "interest_group/auction_runner.cc",
+    "interest_group/auction_runner.h",
     "interest_group/auction_url_loader_factory_proxy.cc",
     "interest_group/auction_url_loader_factory_proxy.h",
     "interest_group/interest_group_manager.cc",
@@ -2224,16 +2226,6 @@ source_set("browser") {
       "zygote_host/zygote_host_impl_linux.cc",
       "zygote_host/zygote_host_impl_linux.h",
     ]
-
-    if (ozone_platform_x11 || use_x11) {
-      sources += [
-        "gpu_data_manager_visual_proxy_ozone_linux.cc",
-        "gpu_data_manager_visual_proxy_ozone_linux.h",
-      ]
-      if (use_x11) {
-        deps += [ "//ui/base/x:gl" ]
-      }
-    }
 
     public_deps += [ "//components/services/font/public/mojom" ]
 

@@ -415,10 +415,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       StartServiceWorkerForNavigationHintCallback callback,
       blink::ServiceWorkerStatusCode code);
 
-  void RecordStartServiceWorkerForNavigationHintResult(
-      StartServiceWorkerForNavigationHintCallback callback,
-      StartServiceWorkerForNavigationHintResult result);
-
   void DidFindRegistrationForMessageDispatch(
       blink::TransferableMessage message,
       const GURL& source_origin,
@@ -433,41 +429,15 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       ServiceWorkerContext::ResultCallback result_callback,
       blink::ServiceWorkerStatusCode service_worker_status);
 
-  // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
   CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
       BrowserContext* browser_context);
-
-  void SetUpLoaderFactoryForUpdateCheckOnUI(
-      const GURL& scope,
-      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
-          callback);
-
-  // This method completes the remaining work of
-  // SetUpLoaderFactoryForUpdateCheckOnUI() on Core thread: Binds the pending
-  // network factory receiver and creates the loader factory bundle for update
-  // check.
-  void DidSetUpLoaderFactoryForUpdateCheck(
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> remote,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
-      bool bypass_redirect_checks,
-      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
-          callback);
 
   // This is used as a callback of GetRegisteredOrigins when initialising to
   // store a list of origins that have registered service workers.
   void DidGetRegisteredOrigins(const std::vector<url::Origin>& origins);
 
-  static void DidGetRegisteredOriginsForGetInstalledRegistrationOrigins(
-      absl::optional<std::string> host_filter,
-      GetInstalledRegistrationOriginsCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback,
-      const std::vector<url::Origin>& origins);
-
   // Temporary for https://crbug.com/1161153.
-  void PerformStorageCleanupOnUIThread(
-      base::OnceClosure callback,
-      scoped_refptr<base::TaskRunner> callback_runner);
   void StartServiceWorkerAndDispatchMessageOnUIThread(
       const GURL& scope,
       blink::TransferableMessage message,
@@ -508,10 +478,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void ClearUserDataForAllRegistrationsByKeyPrefixOnUIThread(
       const std::string& key_prefix,
       StatusCallback callback);
-  void GetInstalledRegistrationOriginsOnUIThread(
-      absl::optional<std::string> host_filter,
-      GetInstalledRegistrationOriginsCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
 
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.

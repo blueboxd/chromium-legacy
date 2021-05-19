@@ -1901,6 +1901,26 @@
             ]
         }
     ],
+    "ChromeTipsInMainMenu": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithNewBadgePromo",
+                    "enable_features": [
+                        "ChromeTipsInMainMenu",
+                        "ChromeTipsInMainMenuNewBadge"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClickAsPointerEvent": [
         {
             "platforms": [
@@ -4120,10 +4140,11 @@
                 {
                     "name": "G2_20201202",
                     "params": {
-                        "BlockedTypes": "28",
-                        "Gen": "2",
-                        "Max": "10",
-                        "Rho": "100"
+                        "BlockedHashes": "44033, 44289, 286465, 680961, 681473, 693249, 693505,693761, 694017, 696065, 880129, 881409, 881665, 881921",
+                        "BlockedTypes": "13, 25, 28",
+                        "Gen": "5",
+                        "Max": "40",
+                        "Rho": "19"
                     },
                     "enable_features": [
                         "IdentifiabilityStudy"
@@ -5391,6 +5412,29 @@
             ]
         }
     ],
+    "OmniboxUpdatedConnectionSecurityIndicatorsIPH": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:updated_connection_security_indicators_iph_trigger;comparator:==0;window:360;storage:360",
+                        "event_used": "name:updated_connection_security_indicators_iph_opened;comparator:==0;window:360;storage:360",
+                        "session_rate": "any"
+                    },
+                    "enable_features": [
+                        "IPH_UpdatedConnectionSecurityIndicators"
+                    ]
+                }
+            ]
+        }
+    ],
     "OneCopyRasterBufferPlaybackNormalThreadPriority": [
         {
             "platforms": [
@@ -5674,22 +5718,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PageInfoDiscoverability"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PageInfoV2": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PageInfoV2"
                     ]
                 }
             ]

@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/strike_database_base.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill {
 
@@ -94,19 +95,21 @@ class StrikeDatabaseIntegratorBase {
   FRIEND_TEST_ALL_PREFIXES(ChromeBrowsingDataRemoverDelegateTest,
                            StrikeDatabaseEmptyOnAutofillRemoveEverything);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
-                           NonExpiringStrikesDoNotExpire);
-  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
-                           RemoveExpiredStrikesTest);
+                           ClearStrikesForKeys);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
                            GetKeyForStrikeDatabaseIntegratorUniqueIdTest);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
-                           RemoveExpiredStrikesUniqueIdTest);
+                           IdFromKey);
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+                           NonExpiringStrikesDoNotExpire);
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+                           RemoveExpiredStrikesOnlyConsidersCurrentIntegrator);
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+                           RemoveExpiredStrikesTest);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
                            RemoveExpiredStrikesTestLogsUMA);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
-                           IdFromKey);
-  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
-                           ClearStrikesForKeys);
+                           RemoveExpiredStrikesUniqueIdTest);
   friend class SaveCardInfobarEGTestHelper;
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;

@@ -1481,7 +1481,9 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleFakeData[] = {
     {ntp_features::kNtpChromeCartModuleDataParam, "fake"},
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleAbandonedCartDiscount[] = {
-    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"}};
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"},
+    {"partner-merchant-pattern",
+     "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"}};
 const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
     {"- Fake Data And Discount", kNtpChromeCartModuleFakeData,
      base::size(kNtpChromeCartModuleFakeData), nullptr},
@@ -6259,9 +6261,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"page-info-version-2", flag_descriptions::kPageInfoV2Name,
-     flag_descriptions::kPageInfoV2Description, kOsAndroid,
-     FEATURE_VALUE_TYPE(page_info::kPageInfoV2)},
     {"page-info-discoverability",
      flag_descriptions::kPageInfoDiscoverabilityName,
      flag_descriptions::kPageInfoDiscoverabilityDescription, kOsAndroid,
@@ -7219,8 +7218,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"link-doctor-deprecation-android",
      flag_descriptions::kLinkDoctorDeprecationAndroidName,
      flag_descriptions::kLinkDoctorDeprecationAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kLinkDoctorDeprecationAndroid)}
+     FEATURE_VALUE_TYPE(features::kLinkDoctorDeprecationAndroid)},
 #endif
+
+#if defined(TOOLKIT_VIEWS)
+    {"download-shelf-webui", flag_descriptions::kDownloadShelfWebUI,
+     flag_descriptions::kDownloadShelfWebUIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUIDownloadShelf)},
+#endif  // defined(TOOLKIT_VIEWS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

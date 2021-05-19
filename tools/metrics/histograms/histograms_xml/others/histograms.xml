@@ -3545,6 +3545,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Conversions.Report.HttpResponseOrNetErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-10-17">
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Error info for sending a conversion report, recorded for each sent report.
+    The HTTP response code is recorded if there is no net error code for the
+    request, or the net error code indicates there was a response code failusre.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.ReportRetrySucceed" enum="BooleanSuccess"
     expires_after="M95">
   <owner>johnidel@chromium.org</owner>
@@ -8759,7 +8770,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Lens.ImageClassification.ClassificationTime.EarlyTerminatedMs"
-    units="ms" expires_after="2021-07-04">
+    units="ms" expires_after="2021-11-14">
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <summary>
@@ -9312,6 +9323,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Process handling errors of ml-service. Emitted when there is error in
     process handling. For example, &quot;failed to spawning worker process&quot;
     etc. Only used in Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="MachineLearningService.TextSuggester.Suggest.Event"
+    enum="BooleanError" expires_after="2022-05-31">
+  <owner>curtismcmullan@chromium.org</owner>
+  <owner>amoylan@chromium.org</owner>
+  <summary>
+    The result of a text suggester request, which can be OK or ERROR.
   </summary>
 </histogram>
 
@@ -13549,7 +13569,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SB2.RemoteCall.CanCheckUrl" enum="BooleanCanCheckUrl"
-    expires_after="2021-09-12">
+    expires_after="2021-11-14">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -14648,7 +14668,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SiteEngagementService.EngagementType"
-    enum="SiteEngagementServiceEngagementType" expires_after="2021-09-12">
+    enum="SiteEngagementServiceEngagementType" expires_after="2021-11-14">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -14983,15 +15003,28 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SiteIsolation.SavedUserTriggeredIsolatedOrigins.Size"
-    units="origins" expires_after="2021-09-30">
+    units="origins" expires_after="2021-11-30">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
     The number of currently saved user-triggered isolated sites. This includes
     sites where the user has entered a password while using Site Isolation for
-    password sites (which is the target Site Isolation mode for Android).
+    password sites (which is a currently active site isolation mode on Android).
     Recorded once on browser startup.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.SavedWebTriggeredIsolatedOrigins.Size"
+    units="origins" expires_after="2021-11-30">
+  <owner>alexmos@chromium.org</owner>
+  <owner>creis@chromium.org</owner>
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    The number of currently saved web-triggered isolated sites. This includes
+    sites that were isolated due to Cross-Origin-Opener-Policy headers, which is
+    a heuristic used for site isolation on Android. Recorded once on browser
+    startup.
   </summary>
 </histogram>
 
@@ -15744,7 +15777,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SupervisedUsers.ExtensionsMayRequestPermissions"
-    enum="BooleanEnabled" expires_after="2021-09-12">
+    enum="BooleanEnabled" expires_after="2021-11-14">
   <owner>tobyhuang@chromium.org</owner>
   <owner>cros-families@google.com</owner>
   <summary>
@@ -18427,7 +18460,7 @@ regressions. -->
 </histogram>
 
 <histogram name="Webapp.Update.ManifestUpdateResult.DefaultApp"
-    enum="WebAppManifestUpdateResult" expires_after="M92">
+    enum="WebAppManifestUpdateResult" expires_after="M96">
   <owner>alancutter@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>

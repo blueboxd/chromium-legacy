@@ -10,6 +10,7 @@
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
@@ -477,18 +478,13 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
 
 #if defined(PA_HAS_64_BITS_POINTERS)
     // Reserve address space for partition alloc.
-    if (features::IsPartitionAllocGigaCageEnabled())
-      internal::PartitionAddressSpace::Init();
+    internal::PartitionAddressSpace::Init();
 #endif
 
     allow_aligned_alloc =
         opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
     allow_cookies = opts.cookies == PartitionOptions::Cookies::kAllowed;
-    // Allow ref-count if it's expressly allowed *and* GigaCage is enabled.
-    // Without GigaCage it'd be unused, thus wasteful.
-    allow_ref_count =
-        (opts.ref_count == PartitionOptions::RefCount::kAllowed) &&
-        features::IsPartitionAllocGigaCageEnabled();
+    allow_ref_count = opts.ref_count == PartitionOptions::RefCount::kAllowed;
 
     // Cookies and ref-count mess up alignment needed for AlignedAlloc, making
     // those options incompatible. However, ref-count is acceptable in the
@@ -734,7 +730,6 @@ bool PartitionRoot<thread_safe>::TryReallocInPlace(void* ptr,
     void* slot_start = AdjustPointerForExtrasSubtract(ptr);
     internal::PartitionRefCount* old_ref_count;
     if (allow_ref_count) {
-      PA_DCHECK(features::IsPartitionAllocGigaCageEnabled());
       old_ref_count = internal::PartitionRefCountPointer(slot_start);
     }
 #endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
@@ -773,8 +768,9 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
 #else
   bool no_hooks = flags & PartitionAllocNoHooks;
   if (UNLIKELY(!ptr)) {
-    return no_hooks ? AllocFlagsNoHooks(flags, new_size)
-                    : AllocFlags(flags, new_size, type_name);
+    return no_hooks ? AllocFlagsNoHooks(flags, new_size, PartitionPageSize())
+                    : AllocFlagsInternal(flags, new_size, PartitionPageSize(),
+                                         type_name);
   }
 
   if (UNLIKELY(!new_size)) {
@@ -826,8 +822,9 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
 
   // This realloc cannot be resized in-place. Sadness.
-  void* ret = no_hooks ? AllocFlagsNoHooks(flags, new_size)
-                       : AllocFlags(flags, new_size, type_name);
+  void* ret = no_hooks ? AllocFlagsNoHooks(flags, new_size, PartitionPageSize())
+                       : AllocFlagsInternal(flags, new_size,
+                                            PartitionPageSize(), type_name);
   if (!ret) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;

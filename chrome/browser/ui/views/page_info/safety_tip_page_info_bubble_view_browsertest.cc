@@ -260,6 +260,8 @@ class SafetyTipPageInfoBubbleViewBrowserTest
     switch (ui_status()) {
       case UIStatus::kDisabled:
         disabled_features.push_back(security_state::features::kSafetyTipUI);
+        disabled_features.push_back(
+            lookalikes::features::kDetectTargetEmbeddingLookalikes);
         break;
       case UIStatus::kEnabledWithDefaultFeatures:
         enabled_features.emplace_back(security_state::features::kSafetyTipUI,
@@ -271,8 +273,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             base::FieldTrialParams({{"suspicioussites", "true"},
                                     {"topsites", "false"},
                                     {"editdistance", "false"},
-                                    {"editdistance_siteengagement", "false"},
-                                    {"targetembedding", "false"}}));
+                                    {"editdistance_siteengagement", "false"}}));
         break;
       case UIStatus::kEnabledWithAllFeatures:
         enabled_features.emplace_back(
@@ -280,8 +281,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             base::FieldTrialParams({{"suspicioussites", "true"},
                                     {"topsites", "true"},
                                     {"editdistance", "true"},
-                                    {"editdistance_siteengagement", "true"},
-                                    {"targetembedding", "true"}}));
+                                    {"editdistance_siteengagement", "true"}}));
         enabled_features.emplace_back(
             lookalikes::features::kDetectTargetEmbeddingLookalikes,
             base::FieldTrialParams());
@@ -606,7 +606,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
       browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 
   // ...but suppressed by the allowlist.
-  reputation::SetSafetyTipAllowlistPatterns({"site1.com/"}, {});
+  reputation::SetSafetyTipAllowlistPatterns({"site1.com/"}, {}, {});
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
@@ -874,7 +874,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(IsUIShowingOrAllFeaturesEnabled());
 
   // ...but suppressed by the allowlist.
-  reputation::SetSafetyTipAllowlistPatterns({"xn--googl-fsa.sk/"}, {});
+  reputation::SetSafetyTipAllowlistPatterns({"xn--googl-fsa.sk/"}, {}, {});
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
@@ -891,7 +891,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   // This domain is one edit distance from one of a top 500 domain.
   const GURL kNavigatedUrl = GetURL("gooogle.com");
 
-  reputation::SetSafetyTipAllowlistPatterns({}, {"google\\.com"});
+  reputation::SetSafetyTipAllowlistPatterns({}, {"google\\.com"}, {});
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
@@ -904,11 +904,34 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // distance when enabled, and not otherwise.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnEditDistance) {
-  // This domain is an edit distance of one from the top 500.
+  // This domain is an edit distance from google.com.
   const GURL kNavigatedUrl = GetURL("goooglé.com");
+  const GURL kTargetUrl = GetURL("google.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kTargetUrl, kHighEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_EQ(IsUIShowing(), AreLookalikeWarningsEnabled());
+}
+
+// Tests that Safety Tips trigger on lookalike domains with tail embedding when
+// enabled, and not otherwise.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggersOnTailEmbedding) {
+  // Tail-embedding has the canonical domain at the very end of the lookalike.
+  const GURL kNavigatedUrl = GetURL("accounts-google.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(IsUIShowingOrDisabled());
+}
+
+// Tests that Safety Tips don't trigger on lookalike domains with non-tail
+// target embedding.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       DoesntTriggersOnGenericTargetEmbedding) {
+  const GURL kNavigatedUrl = GetURL("google.com.evil.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
 }
 
 // Tests that the SafetyTipShown histogram triggers correctly.

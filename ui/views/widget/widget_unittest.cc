@@ -4068,6 +4068,18 @@ bool CanHaveCompositingManager() {
 #endif
 }
 
+bool ExpectWidgetTransparency(Widget::InitParams::WindowOpacity opacity) {
+  switch (opacity) {
+    case Widget::InitParams::WindowOpacity::kOpaque:
+      return false;
+    case Widget::InitParams::WindowOpacity::kTranslucent:
+      return true;
+    case Widget::InitParams::WindowOpacity::kInferred:
+      ADD_FAILURE() << "WidgetOpacity must be explicitly set";
+      return false;
+  }
+}
+
 class CompositingWidgetTest : public DesktopWidgetTest {
  public:
   CompositingWidgetTest()
@@ -4124,13 +4136,10 @@ class CompositingWidgetTest : public DesktopWidgetTest {
                 should_be_transparent);
 
       if (CanHaveCompositingManager()) {
-        if (HasCompositingManager() &&
-            (widget_type == Widget::InitParams::TYPE_DRAG ||
-             widget_type == Widget::InitParams::TYPE_WINDOW)) {
+        if (HasCompositingManager() && ExpectWidgetTransparency(opacity))
           EXPECT_TRUE(widget->IsTranslucentWindowOpacitySupported());
-        } else {
+        else
           EXPECT_FALSE(widget->IsTranslucentWindowOpacitySupported());
-        }
       }
     }
   }
@@ -4145,11 +4154,8 @@ class CompositingWidgetTest : public DesktopWidgetTest {
 
 }  // namespace
 
-// Test opacity when compositing is enabled.
-TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetInferOpacity) {
-  CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kInferred);
-}
-
+// Only test manually set opacity via kOpaque or kTranslucent.  kInferred is
+// unpredictable and depends on the platform and window type.
 TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetOpaque) {
   CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kOpaque);
 }

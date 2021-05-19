@@ -80,10 +80,12 @@
   BOOL animated = self.baseNavigationController.topViewController != nil;
   [self.baseNavigationController setViewControllers:@[ self.viewController ]
                                            animated:animated];
+  if (@available(iOS 13, *)) {
+    self.viewController.modalInPresentation = YES;
+  }
 }
 
 - (void)stop {
-  // TODO(crbug.com/1189840): Display the sync errors infobar.
   self.delegate = nil;
   self.viewController = nil;
   self.mediator = nil;

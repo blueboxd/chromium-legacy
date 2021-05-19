@@ -144,11 +144,15 @@ public class FeedSurfaceMediator
     private class FeedSurfaceHeaderSelectedCallback implements OnSectionHeaderSelectedListener {
         @Override
         public void onSectionHeaderSelected(int index) {
+            PropertyListModel<PropertyModel, PropertyKey> headerList =
+                    mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY);
+            if (index >= headerList.size()) {
+                Log.e(TAG, "Attempted to select a Tab with an invalid index");
+                return;
+            }
             mSectionHeaderModel.set(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY, index);
             Runnable onSelectCallback =
-                    mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
-                            .get(index)
-                            .get(SectionHeaderProperties.ON_SELECT_CALLBACK_KEY);
+                    headerList.get(index).get(SectionHeaderProperties.ON_SELECT_CALLBACK_KEY);
             if (onSelectCallback != null) {
                 onSelectCallback.run();
             }
@@ -1024,6 +1028,7 @@ public class FeedSurfaceMediator
     private ScrollState getScrollStateForAutoScrollToTop() {
         ScrollState state = new ScrollState();
         state.position = 1;
+        state.lastPosition = 5;
         return state;
     }
 

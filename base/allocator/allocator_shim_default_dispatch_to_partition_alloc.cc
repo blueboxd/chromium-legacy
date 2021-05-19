@@ -123,19 +123,12 @@ class MainPartitionConstructor {
     !BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
           base::PartitionOptions::ThreadCache::kEnabled,
 #elif BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
-          // With ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL, if GigaCage is enabled,
-          // this partition is only temporary until BackupRefPtr is
-          // re-configured at run-time. Leave the ability to have a thread cache
-          // to the main partition. (Note that
-          // ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL implies that
+          // With ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL, this partition is only
+          // temporary until BackupRefPtr is re-configured at run-time. Leave
+          // the ability to have a thread cache to the main partition. (Note
+          // that ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL implies that
           // USE_BACKUP_REF_PTR is true.)
-          //
-          // Note that it is ok to use RefCount::kEnabled below regardless of
-          // the GigaCage check, because the constructor will disable ref-count
-          // if GigaCage is disabled.
-          base::features::IsPartitionAllocGigaCageEnabled()
-              ? base::PartitionOptions::ThreadCache::kDisabled
-              : base::PartitionOptions::ThreadCache::kEnabled,
+          base::PartitionOptions::ThreadCache::kDisabled,
 #else
       // Other tests, such as the ThreadCache tests create a thread cache, and
       // only one is supported at a time.
@@ -265,7 +258,9 @@ void* AllocateAlignedMemory(size_t alignment, size_t size) {
   if (alignment <= base::kAlignment) {
     // This is mandated by |posix_memalign()| and friends, so should never fire.
     PA_CHECK(base::bits::IsPowerOfTwo(alignment));
-    return Allocator()->AllocFlagsNoHooks(0, size);
+    // TODO(bartekn): See if the compiler optimizes branches down the stack on
+    // Mac, where PartitionPageSize() isn't constexpr.
+    return Allocator()->AllocFlagsNoHooks(0, size, base::PartitionPageSize());
   }
 
   return AlignedAllocator()->AlignedAllocFlags(base::PartitionAllocNoHooks,
@@ -278,14 +273,16 @@ namespace base {
 namespace internal {
 
 void* PartitionMalloc(const AllocatorDispatch*, size_t size, void* context) {
-  return Allocator()->AllocFlagsNoHooks(0, MaybeAdjustSize(size));
+  return Allocator()->AllocFlagsNoHooks(0, MaybeAdjustSize(size),
+                                        PartitionPageSize());
 }
 
 void* PartitionMallocUnchecked(const AllocatorDispatch*,
                                size_t size,
                                void* context) {
   return Allocator()->AllocFlagsNoHooks(base::PartitionAllocReturnNull,
-                                        MaybeAdjustSize(size));
+                                        MaybeAdjustSize(size),
+                                        PartitionPageSize());
 }
 
 void* PartitionCalloc(const AllocatorDispatch*,
@@ -293,7 +290,8 @@ void* PartitionCalloc(const AllocatorDispatch*,
                       size_t size,
                       void* context) {
   const size_t total = base::CheckMul(n, MaybeAdjustSize(size)).ValueOrDie();
-  return Allocator()->AllocFlagsNoHooks(base::PartitionAllocZeroFill, total);
+  return Allocator()->AllocFlagsNoHooks(base::PartitionAllocZeroFill, total,
+                                        PartitionPageSize());
 }
 
 void* PartitionMemalign(const AllocatorDispatch*,
@@ -459,13 +457,6 @@ alignas(base::ThreadSafePartitionRoot) uint8_t
         base::ThreadSafePartitionRoot)];
 
 void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
-  // If GigaCage is disabled, don't configure a new partition with ref-count
-  // enabled, as it'll be ineffective thus wasteful (increased fragmentation).
-  // Furthermore, in this case, the main partition has thread cache enabled, so
-  // creating one more here simply wouldn't work.
-  if (!base::features::IsPartitionAllocGigaCageEnabled())
-    return;
-
   auto* current_root = g_root.Get();
   current_root->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
                             PartitionPurgeDiscardUnusedSystemPages);

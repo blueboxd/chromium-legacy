@@ -10,10 +10,11 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
-#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -28,33 +29,28 @@ namespace {
 
 constexpr int kColumnSetId = 0;
 constexpr int kIconSize = 16;
-
-int AddressDetailsIconSize() {
-  // Use the line height of the body small text. This allows the icons to adapt
-  // if the user changes the font size.
-  return views::style::GetLineHeight(views::style::CONTEXT_LABEL,
-                                     views::style::STYLE_PRIMARY);
-}
+constexpr int kValuesLabelWidth = 190;
 
 const gfx::VectorIcon& GetVectorIconForType(ServerFieldType type) {
-  // TODO(crbug.com/1167060): Update icons upon having final mocks.
   switch (type) {
     case NAME_FULL_WITH_HONORIFIC_PREFIX:
       return kAccountCircleIcon;
+    case ADDRESS_HOME_ADDRESS:
+      return vector_icons::kLocationOnIcon;
     case EMAIL_ADDRESS:
       return vector_icons::kEmailIcon;
     case PHONE_HOME_WHOLE_NUMBER:
       return vector_icons::kCallIcon;
     default:
+      NOTREACHED();
       return vector_icons::kLocationOnIcon;
   }
 }
 
-// Creates a view that displays all values in `diff_map`. `are_new_values`
-// decides which set of values from `diff_map` are displayed.
+// Creates a view that displays all values in `diff`. `are_new_values`
+// decides which set of values from `diff` are displayed.
 std::unique_ptr<views::View> CreateValuesView(
-    const base::flat_map<ServerFieldType,
-                         std::pair<std::u16string, std::u16string>>& diff_map,
+    const std::vector<ProfileValueDifference>& diff,
     bool are_new_values,
     ui::NativeTheme::ColorId icon_color) {
   auto view = std::make_unique<views::View>();
@@ -70,12 +66,9 @@ std::unique_ptr<views::View> CreateValuesView(
                   DISTANCE_CONTROL_LIST_VERTICAL),
               /*horizontal=*/0));
 
-  for (ServerFieldType type : kVisibleTypesForProfileDifferences) {
-    const auto it = diff_map.find(type);
-    if (it == diff_map.end())
-      continue;
+  for (const ProfileValueDifference& diff_entry : diff) {
     const std::u16string& value =
-        are_new_values ? it->second.first : it->second.second;
+        are_new_values ? diff_entry.first_value : diff_entry.second_value;
     // Don't add rows for empty original values.
     if (value.empty())
       continue;
@@ -83,7 +76,7 @@ std::unique_ptr<views::View> CreateValuesView(
         view->AddChildView(std::make_unique<views::View>());
     value_row->SetLayoutManager(std::make_unique<views::FlexLayout>())
         ->SetOrientation(views::LayoutOrientation::kHorizontal)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+        .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
         .SetIgnoreDefaultMainAxisMargins(true)
         .SetCollapseMargins(true)
         .SetDefault(
@@ -95,32 +88,36 @@ std::unique_ptr<views::View> CreateValuesView(
 
     auto icon_view = std::make_unique<views::ImageView>();
     icon_view->SetImage(ui::ImageModel::FromVectorIcon(
-        GetVectorIconForType(type), icon_color, AddressDetailsIconSize()));
+        GetVectorIconForType(diff_entry.type), icon_color, kIconSize));
 
     value_row->AddChildView(std::move(icon_view));
-    value_row->AddChildView(
-        std::make_unique<views::Label>(value, views::style::CONTEXT_LABEL));
+    auto label_view =
+        std::make_unique<views::Label>(value, views::style::CONTEXT_LABEL);
+    label_view->SetMultiLine(true);
+    label_view->SizeToFit(kValuesLabelWidth);
+    label_view->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    value_row->AddChildView(std::move(label_view));
   }
   return view;
 }
 
 // Add a row in `layout` that contains a label and a view displays all the
 // values in `values`. Labels are added only if `show_row_label` is true.
-void AddValuesRow(
-    views::GridLayout* layout,
-    const base::flat_map<ServerFieldType,
-                         std::pair<std::u16string, std::u16string>>& diff_map,
-    bool show_row_label,
-    views::Button::PressedCallback edit_button_callback) {
+void AddValuesRow(views::GridLayout* layout,
+                  const std::vector<ProfileValueDifference>& diff,
+                  bool show_row_label,
+                  views::Button::PressedCallback edit_button_callback) {
   bool are_new_values = !!edit_button_callback;
   layout->StartRow(/*vertical_resize=*/views::GridLayout::kFixedSize,
                    kColumnSetId);
 
-  // TODO(crbug.com/1167060): Use internationalized string.
   if (show_row_label) {
     std::unique_ptr<views::Label> label(new views::Label(
-        are_new_values ? u"New" : u"Old", views::style::CONTEXT_LABEL,
-        views::style::STYLE_SECONDARY));
+        l10n_util::GetStringUTF16(
+            are_new_values
+                ? IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_NEW_VALUES_SECTION_LABEL
+                : IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_OLD_VALUES_SECTION_LABEL),
+        views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
     layout->AddView(std::move(label), /*col_span=*/1, /*row_span=*/1,
                     /*h_align=*/views::GridLayout::LEADING,
                     /*v_align=*/views::GridLayout::LEADING);
@@ -128,7 +125,7 @@ void AddValuesRow(
   ui::NativeTheme::ColorId icon_color =
       are_new_values ? ui::NativeTheme::kColorId_ProminentButtonColor
                      : ui::NativeTheme::kColorId_SecondaryIconColor;
-  layout->AddView(CreateValuesView(diff_map, are_new_values, icon_color),
+  layout->AddView(CreateValuesView(diff, are_new_values, icon_color),
                   /*col_span=*/1,
                   /*row_span=*/1,
                   /*h_align=*/views::GridLayout::FILL,
@@ -138,25 +135,30 @@ void AddValuesRow(
         views::CreateVectorImageButtonWithNativeTheme(
             std::move(edit_button_callback), vector_icons::kEditIcon,
             kIconSize);
-    // TODO(crbug.com/1167060): Use internationalized string.
-    edit_button->SetAccessibleName(u"Edit Address");
+
+    edit_button->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_SAVE_ADDRESS_PROMPT_EDIT_BUTTON_TOOLTIP));
+    edit_button->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_SAVE_ADDRESS_PROMPT_EDIT_BUTTON_TOOLTIP));
     layout->AddView(std::move(edit_button), /*col_span=*/1, /*row_span=*/1,
                     /*h_align=*/views::GridLayout::LEADING,
                     /*v_align=*/views::GridLayout::LEADING);
   }
 }
 
-// Returns true if there is there is at least one entry in `diff_map` with
+// Returns true if there is there is at least one entry in `diff` with
 // non-empty second value.
-bool HasNonEmptySecondValues(
-    const base::flat_map<ServerFieldType,
-                         std::pair<std::u16string, std::u16string>>& diff_map) {
-  return base::ranges::any_of(
-      diff_map,
-      [](const std::pair<autofill::ServerFieldType,
-                         std::pair<std::u16string, std::u16string>>& entry) {
-        return !entry.second.second.empty();
-      });
+bool HasNonEmptySecondValues(const std::vector<ProfileValueDifference>& diff) {
+  return base::ranges::any_of(diff, [](const ProfileValueDifference& entry) {
+    return !entry.second_value.empty();
+  });
+}
+
+// Returns true if there is an entry coressponding to type ADDRESS_HOME_ADDRESS.
+bool HasAddressEntry(const std::vector<ProfileValueDifference>& diff) {
+  return base::ranges::any_of(diff, [](const ProfileValueDifference& entry) {
+    return entry.type == ADDRESS_HOME_ADDRESS;
+  });
 }
 
 }  // namespace
@@ -185,6 +187,14 @@ UpdateAddressProfileView::UpdateAddressProfileView(
       base::Unretained(controller_),
       AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined));
 
+  SetTitle(controller_->GetWindowTitle());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_OK_BUTTON_LABEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_CANCEL_BUTTON_LABEL));
+
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
@@ -197,28 +207,25 @@ UpdateAddressProfileView::UpdateAddressProfileView(
                   DISTANCE_CONTROL_LIST_VERTICAL),
               /*horizontal=*/0));
 
-  views::Label* subtitle_label = AddChildView(std::make_unique<views::Label>(
-      // TODO(crbug.com/1167060): Pass proper `include_address_and_contacts`
-      // value and handle empty description if needed.
-      GetProfileDescription(*controller_->GetOriginalProfile(),
-                            g_browser_process->GetApplicationLocale(),
-                            /*include_address_and_contacts=*/true),
-      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
-  subtitle_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  std::vector<ProfileValueDifference> profile_diff = GetProfileDifferenceForUi(
+      controller_->GetProfileToSave(), *controller_->GetOriginalProfile(),
+      g_browser_process->GetApplicationLocale());
+
+  std::u16string subtitle = GetProfileDescription(
+      *controller_->GetOriginalProfile(),
+      g_browser_process->GetApplicationLocale(),
+      /*include_address_and_contacts=*/!HasAddressEntry(profile_diff));
+  if (!subtitle.empty()) {
+    views::Label* subtitle_label = AddChildView(std::make_unique<views::Label>(
+        subtitle, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
+    subtitle_label->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
+  }
 
   views::View* main_content_view =
       AddChildView(std::make_unique<views::View>());
 
-  base::flat_map<ServerFieldType, std::pair<std::u16string, std::u16string>>
-      profile_diff_map = AutofillProfileComparator::GetProfileDifferenceMap(
-          controller_->GetProfileToSave(), *controller_->GetOriginalProfile(),
-          autofill::ServerFieldTypeSet(
-              std::begin(kVisibleTypesForProfileDifferences),
-              std::end(kVisibleTypesForProfileDifferences)),
-          g_browser_process->GetApplicationLocale());
-
-  bool has_non_empty_original_values =
-      HasNonEmptySecondValues(profile_diff_map);
+  bool has_non_empty_original_values = HasNonEmptySecondValues(profile_diff);
 
   // Build the GridLayout column set.
   views::GridLayout* layout = main_content_view->SetLayoutManager(
@@ -250,7 +257,7 @@ UpdateAddressProfileView::UpdateAddressProfileView(
       /*fixed_width=*/0, /*min_width=*/0);
 
   AddValuesRow(
-      layout, profile_diff_map,
+      layout, profile_diff,
       /*show_row_label=*/has_non_empty_original_values,
       /*edit_button_callback=*/
       base::BindRepeating(
@@ -261,7 +268,7 @@ UpdateAddressProfileView::UpdateAddressProfileView(
     layout->AddPaddingRow(views::GridLayout::kFixedSize,
                           ChromeLayoutProvider::Get()->GetDistanceMetric(
                               DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE));
-    AddValuesRow(layout, profile_diff_map, /*show_row_label=*/true,
+    AddValuesRow(layout, profile_diff, /*show_row_label=*/true,
                  /*edit_button_callback=*/{});
   }
 }

@@ -1844,9 +1844,6 @@ extern const char kPageInfoDiscoverabilityDescription[];
 extern const char kPageInfoHistoryName[];
 extern const char kPageInfoHistoryDescription[];
 
-extern const char kPageInfoV2Name[];
-extern const char kPageInfoV2Description[];
-
 extern const char kPhotoPickerVideoSupportName[];
 extern const char kPhotoPickerVideoSupportDescription[];
 
@@ -2885,12 +2882,14 @@ extern const char kZeroCopyVideoCaptureDescription[];
 extern const char kDesktopInProductHelpSnoozeName[];
 extern const char kDesktopInProductHelpSnoozeDescription[];
 
+extern const char kDownloadShelfWebUI[];
+extern const char kDownloadShelfWebUIDescription[];
+
 extern const char kEnableMDRoundedCornersOnDialogsName[];
 extern const char kEnableMDRoundedCornersOnDialogsDescription[];
 
 extern const char kInstallableInkDropName[];
 extern const char kInstallableInkDropDescription[];
-
 #endif  // defined(TOOLKIT_VIEWS)
 
 // Random platform combinations -----------------------------------------------

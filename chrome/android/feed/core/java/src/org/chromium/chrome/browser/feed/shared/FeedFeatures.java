@@ -32,8 +32,7 @@ public final class FeedFeatures {
      * @return Whether the WebFeed UI is enabled.
      */
     public static boolean isWebFeedUIEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)
-                && getPrefService().getBoolean(Pref.ENABLE_WEB_FEED_UI);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED);
     }
 
     /**
@@ -43,7 +42,7 @@ public final class FeedFeatures {
     public static boolean isAutoScrollToTopEnabled() {
         CommandLine commandLine = CommandLine.getInstance();
         if (commandLine == null) return false;
-        return commandLine.hasSwitch("feed_auto_scroll_to_top");
+        return commandLine.hasSwitch("feed-screenshot-mode");
     }
 
     private static PrefService getPrefService() {

@@ -15,13 +15,14 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/interest_group/ad_auction_service_impl.h"
+#include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/auction_url_loader_factory_proxy.h"
 #include "content/browser/interest_group/interest_group_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
-#include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
+#include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -65,46 +66,6 @@ bool IsAuctionValid(const blink::mojom::AuctionAdConfig& config) {
   }
 
   return true;
-}
-
-struct ValidatedResult {
-  bool is_valid_auction_result = false;
-  std::string ad_json;
-};
-
-ValidatedResult ValidateAuctionResult(
-    const std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>& bidders,
-    const GURL& render_url,
-    const url::Origin& owner,
-    const std::string& name) {
-  ValidatedResult result;
-  if (!render_url.is_valid() || !render_url.SchemeIs(url::kHttpsScheme))
-    return result;
-
-  for (const auto& bidder : bidders) {
-    // Auction winner must be one of the bidders and bidder must have ads.
-    if (bidder->group->owner != owner || bidder->group->name != name ||
-        !bidder->group->ads) {
-      continue;
-    }
-    // `render_url` must be one of the winning bidder's ads.
-    for (const auto& ad : bidder->group->ads.value()) {
-      if (ad->render_url == render_url) {
-        result.is_valid_auction_result = true;
-        if (ad->metadata) {
-          //`metadata` is already in JSON so no quotes are needed.
-          result.ad_json = base::StringPrintf(
-              R"({"render_url":"%s","metadata":%s})", render_url.spec().c_str(),
-              ad->metadata.value().c_str());
-        } else {
-          result.ad_json = base::StringPrintf(R"({"render_url":"%s"})",
-                                              render_url.spec().c_str());
-        }
-        return result;
-      }
-    }
-  }
-  return result;
 }
 
 }  // namespace
@@ -157,13 +118,6 @@ void AdAuction::StartAuction() {
   ReadNextInterestGroup();
 }
 
-void AdAuction::OnServiceCrash() {
-  // This cancels any pending async callbacks.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
-  OnAuctionFailed();
-}
-
 void AdAuction::ReadNextInterestGroup() {
   DCHECK(!pending_buyers_.empty());
 
@@ -201,17 +155,9 @@ void AdAuction::StartWorklets() {
   DCHECK(pending_buyers_.empty());
   DCHECK(!bidders_.empty());
 
+  // TODO(mmenke): This should be top frame origin, not frame origin.
   auto browser_signals = auction_worklet::mojom::BrowserSignals::New(
       ad_auction_service_->origin(), config_->seller);
-
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
-  url_loader_factory_proxy_ = std::make_unique<AuctionURLLoaderFactoryProxy>(
-      url_loader_factory.InitWithNewPipeAndPassReceiver(),
-      base::BindRepeating(&AdAuctionServiceImpl::GetFrameURLLoaderFactory,
-                          base::Unretained(ad_auction_service_)),
-      base::BindRepeating(&AdAuctionServiceImpl::GetTrustedURLLoaderFactory,
-                          base::Unretained(ad_auction_service_)),
-      browser_signals->top_frame_origin, *config_, bidders_);
 
   std::vector<auction_worklet::mojom::BiddingInterestGroupPtr> bidders_copy;
   bidders_copy.reserve(bidders_.size());
@@ -219,21 +165,21 @@ void AdAuction::StartWorklets() {
     bidders_copy.emplace_back(bidder.Clone());
 
   // `config_` is no longer needed after this point, so pass ownership of it
-  // over to the worklet, instead of copying it.
-  ad_auction_service_->GetWorkletService()->RunAuction(
-      std::move(url_loader_factory), std::move(config_),
-      std::move(bidders_copy), std::move(browser_signals),
+  // over to the AuctionRunner, instead of copying it.
+  auction_runner_ = AuctionRunner::CreateAndStart(
+      ad_auction_service_, std::move(config_), std::move(bidders_copy),
+      std::move(browser_signals), ad_auction_service_->origin(),
       base::BindOnce(&AdAuction::WorkletComplete,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AdAuction::WorkletComplete(
-    const GURL& render_url,
-    const url::Origin& owner,
-    const std::string& name,
-    auction_worklet::mojom::WinningBidderReportPtr bidder_report,
-    auction_worklet::mojom::SellerReportPtr seller_report,
-    const std::vector<std::string>& errors) {
+void AdAuction::WorkletComplete(const GURL& render_url,
+                                const std::string& ad_metadata,
+                                const url::Origin& owner,
+                                const std::string& name,
+                                const GURL& bidder_report_url,
+                                const GURL& seller_report_url,
+                                const std::vector<std::string>& errors) {
   DCHECK(callback_);
 
   // Forward debug information to devtools.
@@ -244,28 +190,21 @@ void AdAuction::WorkletComplete(
         error);
   }
 
-  // Check if returned winner's information is valid.
-  ValidatedResult result =
-      ValidateAuctionResult(bidders_, render_url, owner, name);
-  if (!result.is_valid_auction_result) {
+  if (!render_url.is_valid()) {
     OnAuctionFailed();
     return;
   }
 
-  absl::optional<GURL> bidder_report_url;
-  if (bidder_report->report_requested && bidder_report->report_url.is_valid() &&
-      bidder_report->report_url.SchemeIs(url::kHttpsScheme)) {
-    bidder_report_url = bidder_report->report_url;
-  }
+  absl::optional<GURL> opt_bidder_report_url;
+  if (bidder_report_url.is_valid())
+    opt_bidder_report_url = bidder_report_url;
 
-  absl::optional<GURL> seller_report_url;
-  if (seller_report->success && seller_report->report_url.is_valid() &&
-      seller_report->report_url.SchemeIs(url::kHttpsScheme)) {
-    seller_report_url = seller_report->report_url;
-  }
+  absl::optional<GURL> opt_seller_report_url;
+  if (seller_report_url.is_valid())
+    opt_seller_report_url = seller_report_url;
 
   ad_auction_service_->GetInterestGroupManager()->RecordInterestGroupWin(
-      owner, name, result.ad_json);
+      owner, name, ad_metadata);
   // TODO(qingxin): Decide if we should record a bid if the auction fails, or
   // the interest group doesn't make a bid.
   for (const auto& bidder : bidders_) {
@@ -273,8 +212,8 @@ void AdAuction::WorkletComplete(
         bidder->group->owner, bidder->group->name);
   }
 
-  std::move(callback_).Run(this, render_url, bidder_report_url,
-                           seller_report_url);
+  std::move(callback_).Run(this, render_url, opt_bidder_report_url,
+                           opt_seller_report_url);
 }
 
 void AdAuction::OnAuctionFailed() {

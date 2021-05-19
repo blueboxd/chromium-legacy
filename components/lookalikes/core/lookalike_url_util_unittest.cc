@@ -7,7 +7,21 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/lookalikes/core/features.h"
+#include "components/reputation/core/safety_tip_test_utils.h"
+#include "components/reputation/core/safety_tips_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+std::string TargetEmbeddingTypeToString(TargetEmbeddingType type) {
+  switch (type) {
+    case TargetEmbeddingType::kNone:
+      return "kNone";
+    case TargetEmbeddingType::kInterstitial:
+      return "kInterstitial";
+    case TargetEmbeddingType::kSafetyTip:
+      return "kSafetyTip";
+  }
+  NOTREACHED();
+}
 
 TEST(LookalikeUrlUtilTest, IsEditDistanceAtMostOne) {
   const struct TestCase {
@@ -139,7 +153,7 @@ struct TargetEmbeddingHeuristicTestCase {
   const TargetEmbeddingType expected_type;
 };
 
-TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
+TEST(LookalikeUrlUtilTest, TargetEmbedding) {
   const std::vector<DomainInfo> kEngagedSites = {
       GetDomainInfo(GURL("https://highengagement.com")),
       GetDomainInfo(GURL("https://highengagement.inthesubdomain.com")),
@@ -278,12 +292,15 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       {"google.com.google.com", "", TargetEmbeddingType::kNone},
       {"www.google.com.google.com", "", TargetEmbeddingType::kNone},
 
-      // Detect embeddings at the end of the domain, too.
-      {"www-google.com", "google.com", TargetEmbeddingType::kInterstitial},
+      // Detect embeddings at the end of the domain, too, but as a Safety Tip.
+      {"www-google.com", "google.com", TargetEmbeddingType::kSafetyTip},
       {"www-highengagement.com", "highengagement.com",
-       TargetEmbeddingType::kInterstitial},
+       TargetEmbeddingType::kSafetyTip},
       {"subdomain-highengagement.com", "subdomain.highengagement.com",
-       TargetEmbeddingType::kInterstitial},
+       TargetEmbeddingType::kSafetyTip},
+      // If the match duplicates the TLD, it's not quite tail-embedding.
+      {"google-com.com", "google.com", TargetEmbeddingType::kInterstitial},
+      // If there are multiple options, it should choose the more severe one.
       {"google-com.google-com.com", "google.com",
        TargetEmbeddingType::kInterstitial},
       {"subdomain.google-com.google-com.com", "google.com",
@@ -300,14 +317,17 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       // works for domains on the list, but not for others.
       {"office.com-foo.com", "office.com", TargetEmbeddingType::kInterstitial},
       {"example-office.com", "", TargetEmbeddingType::kNone},
-      {"example-google.com", "google.com", TargetEmbeddingType::kInterstitial},
+      {"example-google.com", "google.com", TargetEmbeddingType::kSafetyTip},
   };
+
+  reputation::InitializeBlankLookalikeAllowlistForTesting();
+  auto* config_proto = reputation::GetSafetyTipsRemoteConfigProto();
 
   for (auto& test_case : kTestCases) {
     std::string safe_hostname;
     TargetEmbeddingType embedding_type = GetTargetEmbeddingType(
         test_case.hostname, kEngagedSites,
-        base::BindRepeating(&IsGoogleScholar), &safe_hostname);
+        base::BindRepeating(&IsGoogleScholar), config_proto, &safe_hostname);
     if (test_case.expected_type != TargetEmbeddingType::kNone) {
       EXPECT_EQ(safe_hostname, test_case.expected_safe_host)
           << test_case.hostname << " should trigger on "
@@ -315,17 +335,41 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
           << (safe_hostname.empty() ? "it didn't trigger at all."
                                     : "triggered on " + safe_hostname);
       EXPECT_EQ(embedding_type, test_case.expected_type)
-          << test_case.hostname << " should trigger on "
+          << test_case.hostname << " should trigger "
+          << TargetEmbeddingTypeToString(test_case.expected_type) << " against "
           << test_case.expected_safe_host << " but it returned "
-          << (embedding_type == TargetEmbeddingType::kNone
-                  ? "kNone."
-                  : "something unexpected");
+          << TargetEmbeddingTypeToString(embedding_type);
     } else {
       EXPECT_EQ(embedding_type, TargetEmbeddingType::kNone)
-          << test_case.hostname << " unexpectedly triggered on "
+          << test_case.hostname << " unexpectedly triggered "
+          << TargetEmbeddingTypeToString(embedding_type) << " against "
           << safe_hostname;
     }
   }
+}
+
+TEST(LookalikeUrlUtilTest, TargetEmbeddingIgnoresComponentWordlist) {
+  const std::vector<DomainInfo> kEngagedSites = {
+      GetDomainInfo(GURL("https://commonword.com")),
+      GetDomainInfo(GURL("https://uncommonword.com")),
+  };
+
+  reputation::SetSafetyTipAllowlistPatterns({}, {}, {"commonword"});
+  auto* config_proto = reputation::GetSafetyTipsRemoteConfigProto();
+  TargetEmbeddingType embedding_type;
+  std::string safe_hostname;
+
+  // Engaged sites using uncommon words are still blocked.
+  embedding_type = GetTargetEmbeddingType(
+      "uncommonword.com.evil.com", kEngagedSites,
+      base::BindRepeating(&IsGoogleScholar), config_proto, &safe_hostname);
+  EXPECT_EQ(embedding_type, TargetEmbeddingType::kInterstitial);
+
+  // But engaged sites using common words are not blocked.
+  embedding_type = GetTargetEmbeddingType(
+      "commonword.com.evil.com", kEngagedSites,
+      base::BindRepeating(&IsGoogleScholar), config_proto, &safe_hostname);
+  EXPECT_EQ(embedding_type, TargetEmbeddingType::kNone);
 }
 
 struct GetETLDPlusOneTestCase {

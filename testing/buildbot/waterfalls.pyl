@@ -145,6 +145,22 @@
         },
         'os_type': 'chromeos',
       },
+      'lacros-arm-generic-chrome': {
+        'additional_compile_targets': [
+          'chrome',
+          'lacros_version_metadata',
+          'linux_symbols',
+          'symupload',
+          'strip_chrome_binary'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chrome_sizes',
+        },
+        'os_type': 'chromeos',
+      },
       'linux-chrome': {
         'additional_compile_targets': [
           'chrome',
@@ -2689,8 +2705,11 @@
           'gtest_tests': 'chromium_android_gtests',
         },
         'mixins': [
+          'enable_resultdb',
+          'pie_fleet',
           'walleye',
         ],
+        'os_type': 'android',
       },
       'android-backuprefptr-arm64-fyi-rel': {
         'test_suites': {
@@ -2698,8 +2717,10 @@
         },
         'mixins': [
           'enable_resultdb',
+          'pie_fleet',
           'walleye',
         ],
+        'os_type': 'android',
       },
       'android-code-coverage': {
         'mixins': [

@@ -186,13 +186,6 @@ extern const char kAccessibilityImageLabelsOnlyOnWifi[];
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kAccessibilityFocusHighlightEnabled[];
 #endif
-extern const char kAccessibilityCaptionsTextSize[];
-extern const char kAccessibilityCaptionsTextFont[];
-extern const char kAccessibilityCaptionsTextColor[];
-extern const char kAccessibilityCaptionsTextOpacity[];
-extern const char kAccessibilityCaptionsBackgroundColor[];
-extern const char kAccessibilityCaptionsTextShadow[];
-extern const char kAccessibilityCaptionsBackgroundOpacity[];
 #if !defined(OS_ANDROID)
 extern const char kLiveCaptionEnabled[];
 extern const char kLiveCaptionLanguageCode[];
@@ -1134,6 +1127,7 @@ extern const char kCartModuleHidden[];
 extern const char kCartModuleWelcomeSurfaceShownTimes[];
 extern const char kCartDiscountAcknowledged[];
 extern const char kCartDiscountEnabled[];
+extern const char kCartUsedDiscounts[];
 #endif
 
 #if defined(OS_ANDROID)

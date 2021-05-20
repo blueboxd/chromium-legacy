@@ -169,6 +169,8 @@ CONTENT_EXPORT extern const base::FeatureParam<bool>
     kSiteIsolationForCrossOriginOpenerPolicyShouldPersistParam;
 CONTENT_EXPORT extern const base::FeatureParam<int>
     kSiteIsolationForCrossOriginOpenerPolicyMaxSitesParam;
+CONTENT_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam;
 CONTENT_EXPORT extern const base::Feature
     kSkipEarlyCommitPendingForCrashedFrame;
 CONTENT_EXPORT extern const base::Feature kWebOTP;
@@ -269,7 +271,11 @@ CONTENT_EXPORT extern const char
     kSendWebUIJavaScriptErrorReportsSendToProductionVariation[];
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kWebUIJavaScriptErrorReportsSendToProductionParam;
-#endif
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+CONTENT_EXPORT extern const base::Feature kAuraWindowSubtreeCapture;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 CONTENT_EXPORT extern const base::Feature kWebRtcPipeWireCapturer;

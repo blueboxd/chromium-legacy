@@ -4,6 +4,7 @@
 
 #include "content/services/auction_worklet/bidder_worklet.h"
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -49,6 +50,40 @@ bool AppendJsonValueOrNull(AuctionV8Helper* const v8_helper,
     args->push_back(v8::Null(isolate));
   }
   return true;
+}
+
+// Creates a V8 array containing information about the passed in previous wins.
+// Array is sorted by time, earliest wins first. Modifies order of `prev_wins`
+// input vector. This should should be harmless, since each list of previous
+// wins is only used for a single bid in a single auction, and its order is
+// unspecified, anyways.
+v8::MaybeLocal<v8::Value> CreatePrevWinsArray(
+    AuctionV8Helper* v8_helper,
+    v8::Local<v8::Context> context,
+    base::Time auction_start_time,
+    std::vector<mojom::PreviousWinPtr>& prev_wins) {
+  std::sort(prev_wins.begin(), prev_wins.end(),
+            [](const mojom::PreviousWinPtr& prev_win1,
+               const mojom::PreviousWinPtr& prev_win2) {
+              return prev_win1->time < prev_win2->time;
+            });
+  std::vector<v8::Local<v8::Value>> prev_wins_v8;
+  v8::Isolate* isolate = v8_helper->isolate();
+  for (const auto& prev_win : prev_wins) {
+    int64_t time_delta = (auction_start_time - prev_win->time).InSeconds();
+    // Don't give negative times if clock has changed since last auction win.
+    if (time_delta < 0)
+      time_delta = 0;
+    v8::Local<v8::Value> win_values[2];
+    win_values[0] = v8::Number::New(isolate, time_delta);
+    if (!v8_helper->CreateValueFromJson(context, prev_win->ad_json)
+             .ToLocal(&win_values[1])) {
+      return v8::MaybeLocal<v8::Value>();
+    }
+    prev_wins_v8.push_back(
+        v8::Array::New(isolate, win_values, base::size(win_values)));
+  }
+  return v8::Array::New(isolate, prev_wins_v8.data(), prev_wins_v8.size());
 }
 
 }  // namespace
@@ -164,22 +199,18 @@ void BidderWorklet::ReportWin(
 
   // An empty return value indicates an exception was thrown. Any other return
   // value indicates no exception.
-  absl::optional<std::string> error_msg_out;
+  std::vector<std::string> errors_out;
   if (v8_helper_
           ->RunScript(context, worklet_script_->Get(isolate), "reportWin", args,
-                      error_msg_out)
+                      errors_out)
           .IsEmpty()) {
-    std::vector<std::string> errors;
-    if (error_msg_out)
-      errors.push_back(std::move(error_msg_out).value());
-    std::move(callback).Run(absl::nullopt /* report_url */, errors);
+    std::move(callback).Run(absl::nullopt /* report_url */, errors_out);
     return;
   }
 
   // This covers both the case where a report URL was provided, and the case one
   // was not.
-  std::move(callback).Run(report_bindings.report_url(),
-                          std::vector<std::string>() /* errors */);
+  std::move(callback).Run(report_bindings.report_url(), errors_out);
 }
 
 void BidderWorklet::OnScriptDownloaded(
@@ -190,7 +221,10 @@ void BidderWorklet::OnScriptDownloaded(
   if (worklet_script == nullptr) {
     // Abort loading trusted bidding signals, if it hasn't completed already.
     trusted_bidding_signals_.reset();
-    InvokeBidCallbackOnError(std::move(error_msg));
+    std::vector<std::string> errors;
+    if (error_msg.has_value())
+      errors.emplace_back(std::move(error_msg).value());
+    InvokeBidCallbackOnError(std::move(errors));
     return;
   }
 
@@ -300,27 +334,16 @@ void BidderWorklet::GenerateBidIfReady() {
     return;
   }
 
-  std::vector<v8::Local<v8::Value>> prev_wins_v8;
-  for (const auto& prev_win : bidding_interest_group_->signals->prev_wins) {
-    int64_t time_delta = (auction_start_time_ - prev_win->time).InSeconds();
-    // Don't give negative times if clock has changed since last auction win.
-    // Clock changes do mean times can be out of numerical order, despite being
-    // in chronological order.
-    if (time_delta < 0)
-      time_delta = 0;
-    v8::Local<v8::Value> win_values[2];
-    win_values[0] = v8::Number::New(isolate, time_delta);
-    if (!v8_helper_->CreateValueFromJson(context, prev_win->ad_json)
-             .ToLocal(&win_values[1])) {
-      InvokeBidCallbackOnError();
-      return;
-    }
-    prev_wins_v8.push_back(
-        v8::Array::New(isolate, win_values, base::size(win_values)));
+  v8::Local<v8::Value> prev_wins;
+  if (!CreatePrevWinsArray(v8_helper_, context, auction_start_time_,
+                           bidding_interest_group_->signals->prev_wins)
+           .ToLocal(&prev_wins)) {
+    InvokeBidCallbackOnError();
+    return;
   }
+
   v8::Maybe<bool> result = browser_signals->Set(
-      context, gin::StringToV8(isolate, "prevWins"),
-      v8::Array::New(isolate, prev_wins_v8.data(), prev_wins_v8.size()));
+      context, gin::StringToV8(isolate, "prevWins"), prev_wins);
   if (result.IsNothing() || !result.FromJust()) {
     InvokeBidCallbackOnError();
     return;
@@ -329,19 +352,20 @@ void BidderWorklet::GenerateBidIfReady() {
   args.push_back(browser_signals);
 
   v8::Local<v8::Value> generate_bid_result;
-  absl::optional<std::string> error_msg_out;
+  std::vector<std::string> errors_out;
   if (!v8_helper_
            ->RunScript(context, worklet_script_->Get(isolate), "generateBid",
-                       args, error_msg_out)
+                       args, errors_out)
            .ToLocal(&generate_bid_result)) {
-    InvokeBidCallbackOnError(std::move(error_msg_out));
+    InvokeBidCallbackOnError(std::move(errors_out));
     return;
   }
 
   if (!generate_bid_result->IsObject()) {
-    InvokeBidCallbackOnError(
+    errors_out.push_back(
         base::StrCat({script_source_url_.spec(),
                       " generateBid() return value not an object."}));
+    InvokeBidCallbackOnError(std::move(errors_out));
     return;
   }
 
@@ -356,56 +380,57 @@ void BidderWorklet::GenerateBidIfReady() {
       !v8_helper_->ExtractJson(context, ad_object, &ad_json) ||
       !result_dict.Get("bid", &bid) ||
       !result_dict.Get("render", &render_url_string)) {
-    InvokeBidCallbackOnError(
+    errors_out.push_back(
         base::StrCat({script_source_url_.spec(),
                       " generateBid() return value has incorrect structure."}));
+    InvokeBidCallbackOnError(std::move(errors_out));
     return;
   }
 
   if (bid <= 0 || std::isnan(bid) || !std::isfinite(bid)) {
-    InvokeBidCallbackOnError();
+    InvokeBidCallbackOnError(std::move(errors_out));
     return;
   }
 
   GURL render_url(render_url_string);
   if (!render_url.is_valid() || !render_url.SchemeIs(url::kHttpsScheme)) {
-    return InvokeBidCallbackOnError(base::StrCat(
+    errors_out.push_back(base::StrCat(
         {script_source_url_.spec(),
          " generateBid() returned render_url isn't a valid https:// URL."}));
+    InvokeBidCallbackOnError(std::move(errors_out));
     return;
   }
 
   // `render_url` must be in `ad_render_urls`.
   for (const auto& ad : *interest_group.ads) {
     if (render_url == ad->render_url) {
-      std::vector<std::string> errors;
       if (trusted_bidding_signals_error_msg_) {
-        errors.emplace_back(
+        errors_out.emplace_back(
             std::move(trusted_bidding_signals_error_msg_).value());
       }
       std::move(load_bidder_worklet_and_generate_bid_callback_)
           .Run(mojom::BidderWorkletBid::New(
                    std::move(ad_json), bid, std::move(render_url),
                    base::TimeTicks::Now() - start /* bid_duration */),
-               errors);
+               errors_out);
       return;
     }
   }
-  InvokeBidCallbackOnError(
+  errors_out.push_back(
       base::StrCat({script_source_url_.spec(),
                     " generateBid() returned render_url isn't one "
                     "of the registered creative URLs."}));
+  InvokeBidCallbackOnError(std::move(errors_out));
 }
 
 void BidderWorklet::InvokeBidCallbackOnError(
-    absl::optional<std::string> error_msg) {
-  std::vector<std::string> errors;
-  if (error_msg)
-    errors.emplace_back(std::move(error_msg).value());
-  if (trusted_bidding_signals_error_msg_)
-    errors.emplace_back(std::move(trusted_bidding_signals_error_msg_).value());
+    std::vector<std::string> error_msgs) {
+  if (trusted_bidding_signals_error_msg_) {
+    error_msgs.emplace_back(
+        std::move(trusted_bidding_signals_error_msg_).value());
+  }
   std::move(load_bidder_worklet_and_generate_bid_callback_)
-      .Run(mojom::BidderWorkletBidPtr(), errors);
+      .Run(mojom::BidderWorkletBidPtr(), error_msgs);
 }
 
 }  // namespace auction_worklet

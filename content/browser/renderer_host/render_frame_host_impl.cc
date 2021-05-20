@@ -63,6 +63,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/data_url_blob_reader.h"
 #include "content/browser/download/mhtml_generation_manager.h"
+#include "content/browser/feature_observer.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
@@ -236,6 +237,7 @@
 #include "third_party/blink/public/common/loader/inter_process_time_ticks_converter.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -1696,38 +1698,14 @@ bool RenderFrameHostImpl::IsDescendantOf(RenderFrameHost* ancestor) {
   return false;
 }
 
-namespace {
-
-template <typename RfhType>
-RenderFrameHostImpl::FrameIterationCallbackImpl ContinueIterationWrapper(
-    base::RepeatingCallback<void(RfhType*)> on_frame) {
-  return base::BindRepeating(
-      [](base::RepeatingCallback<void(RfhType*)> on_frame,
-         RenderFrameHostImpl* rfh) {
-        on_frame.Run(rfh);
-        return RenderFrameHost::FrameIterationAction::kContinue;
-      },
-      on_frame);
-}
-
-}  // namespace
-
 void RenderFrameHostImpl::ForEachRenderFrameHost(
     FrameIterationCallback on_frame) {
-  // There's no automatic conversion from FrameIterationCallback to
-  // FrameIterationCallbackImpl, so this wrapper just forwards the
-  // RenderFrameHost argument.
-  FrameIterationCallbackImpl on_frame_impl = base::BindRepeating(
-      [](FrameIterationCallback on_frame, RenderFrameHostImpl* rfh) {
-        return on_frame.Run(rfh);
-      },
-      on_frame);
-  ForEachRenderFrameHost(on_frame_impl);
+  ForEachRenderFrameHost(FrameIterationWrapper(on_frame));
 }
 
 void RenderFrameHostImpl::ForEachRenderFrameHost(
     FrameIterationAlwaysContinueCallback on_frame) {
-  ForEachRenderFrameHost(ContinueIterationWrapper(on_frame));
+  ForEachRenderFrameHost(FrameIterationWrapper(on_frame));
 }
 
 void RenderFrameHostImpl::ForEachRenderFrameHost(
@@ -1737,7 +1715,7 @@ void RenderFrameHostImpl::ForEachRenderFrameHost(
 
 void RenderFrameHostImpl::ForEachRenderFrameHost(
     FrameIterationAlwaysContinueCallbackImpl on_frame) {
-  ForEachRenderFrameHost(ContinueIterationWrapper(on_frame));
+  ForEachRenderFrameHost(FrameIterationWrapper(on_frame));
 }
 
 void RenderFrameHostImpl::ForEachRenderFrameHostIncludingSpeculative(
@@ -1747,8 +1725,7 @@ void RenderFrameHostImpl::ForEachRenderFrameHostIncludingSpeculative(
 
 void RenderFrameHostImpl::ForEachRenderFrameHostIncludingSpeculative(
     FrameIterationAlwaysContinueCallbackImpl on_frame) {
-  ForEachRenderFrameHostIncludingSpeculative(
-      ContinueIterationWrapper(on_frame));
+  ForEachRenderFrameHostIncludingSpeculative(FrameIterationWrapper(on_frame));
 }
 
 void RenderFrameHostImpl::ForEachRenderFrameHostImpl(
@@ -2527,14 +2504,23 @@ void RenderFrameHostImpl::InitializePrivateNetworkRequestPolicy() {
     return;
   }
 
+  const PolicyContainerPolicies& policies = policy_container_host_->policies();
+
   // For now, we always allow private network requests from secure contexts;
   // depending on a feature flag, we show a warning in DevTools.
-  if (policy_container_host_->policies().is_web_secure_context) {
+  if (policies.is_web_secure_context) {
     private_network_request_policy_ =
         base::FeatureList::IsEnabled(
             features::kWarnAboutSecurePrivateNetworkRequests)
             ? network::mojom::PrivateNetworkRequestPolicy::kWarn
             : network::mojom::PrivateNetworkRequestPolicy::kAllow;
+    return;
+  }
+
+  // Requests from non-secure contexts in the unknown address space are allowed.
+  if (policies.ip_address_space == network::mojom::IPAddressSpace::kUnknown) {
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
     return;
   }
 
@@ -7082,7 +7068,7 @@ void RenderFrameHostImpl::CommitNavigation(
           url::kFileScheme,
           FileURLLoaderFactory::Create(
               browser_context->GetPath(),
-              BrowserContext::GetSharedCorsOriginAccessList(browser_context),
+              browser_context->GetSharedCorsOriginAccessList(),
               file_factory_priority));
     }
 

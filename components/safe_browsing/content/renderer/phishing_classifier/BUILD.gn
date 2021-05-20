@@ -4,6 +4,8 @@
 
 import("//build/config/features.gni")
 import("//components/safe_browsing/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
 source_set("phishing_classifier") {
   if (safe_browsing_mode != 0) {
@@ -26,6 +28,7 @@ source_set("phishing_classifier") {
       "scorer.h",
     ]
     deps = [
+      "//base",
       "//cc/paint",
       "//components/paint_preview/common",
       "//components/safe_browsing:buildflags",
@@ -39,6 +42,10 @@ source_set("phishing_classifier") {
       "//skia",
       "//third_party/blink/public:blink_headers",
       "//third_party/smhasher:murmurhash3",
+      "//third_party/tflite",
+      "//third_party/tflite:tflite_public_headers",
+      "//third_party/tflite-support",
+      "//third_party/tflite-support:tflite-support-proto",
       "//ui/base",
       "//ui/gfx/geometry:geometry",
       "//url",
@@ -81,4 +88,23 @@ source_set("unit_tests_support") {
     ":phishing_classifier",
     "//testing/gmock",
   ]
+}
+
+if (use_libfuzzer) {
+  fuzzer_test("client_side_phishing_fuzzer") {
+    sources = [ "client_side_phishing_fuzzer.cc" ]
+    deps = [
+      ":client_side_phishing_fuzzer_proto",
+      ":phishing_classifier",
+      "//base:base",
+      "//skia",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
+
+  fuzzable_proto_library("client_side_phishing_fuzzer_proto") {
+    proto_in_dir = "//"
+    sources = [ "client_side_phishing_fuzzer.proto" ]
+    deps = [ "//components/safe_browsing/core:csd_proto" ]
+  }
 }

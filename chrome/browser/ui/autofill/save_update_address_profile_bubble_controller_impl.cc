@@ -26,7 +26,14 @@ SaveUpdateAddressProfileBubbleControllerImpl::
 }
 
 SaveUpdateAddressProfileBubbleControllerImpl::
-    ~SaveUpdateAddressProfileBubbleControllerImpl() = default;
+    ~SaveUpdateAddressProfileBubbleControllerImpl() {
+  // `address_profile_save_prompt_callback_` must have been invoked before
+  // destroying the controller to inform the backend of the output of the
+  // save/update flow. It's either invoked upon user action when accepting
+  // or rejecting the flow, or in cases when users ignore it, it's invoked
+  // when the web contents are destroyed.
+  DCHECK(address_profile_save_prompt_callback_.is_null());
+}
 
 void SaveUpdateAddressProfileBubbleControllerImpl::OfferSave(
     const AutofillProfile& profile,
@@ -71,16 +78,17 @@ void SaveUpdateAddressProfileBubbleControllerImpl::OnUserDecision(
     AutofillClient::SaveAddressProfileOfferUserDecision decision) {
   set_bubble_view(nullptr);
 
-  std::move(address_profile_save_prompt_callback_)
-      .Run(decision, address_profile_);
+  if (address_profile_save_prompt_callback_) {
+    std::move(address_profile_save_prompt_callback_)
+        .Run(decision, address_profile_);
+  }
 }
 
 void SaveUpdateAddressProfileBubbleControllerImpl::OnEditButtonClicked() {
   EditAddressProfileDialogControllerImpl::CreateForWebContents(web_contents());
   EditAddressProfileDialogControllerImpl* controller =
       EditAddressProfileDialogControllerImpl::FromWebContents(web_contents());
-  controller->OfferEdit(address_profile_,
-                        /*is_update=*/original_profile_.has_value(),
+  controller->OfferEdit(address_profile_, GetOriginalProfile(),
                         std::move(address_profile_save_prompt_callback_));
   HideBubble();
 }
@@ -110,6 +118,12 @@ SaveUpdateAddressProfileBubbleControllerImpl::GetPageActionIconTootip() const {
 AutofillBubbleBase*
 SaveUpdateAddressProfileBubbleControllerImpl::GetSaveBubbleView() const {
   return bubble_view();
+}
+
+void SaveUpdateAddressProfileBubbleControllerImpl::WebContentsDestroyed() {
+  AutofillBubbleControllerBase::WebContentsDestroyed();
+
+  OnUserDecision(AutofillClient::SaveAddressProfileOfferUserDecision::kIgnored);
 }
 
 PageActionIconType

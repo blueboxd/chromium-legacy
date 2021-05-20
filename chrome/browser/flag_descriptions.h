@@ -1164,6 +1164,9 @@ extern const char kPermissionChipRequestTypeSensitiveDescription[];
 extern const char kPermissionPredictionsName[];
 extern const char kPermissionPredictionsDescription[];
 
+extern const char kPlaybackSpeedButtonName[];
+extern const char kPlaybackSpeedButtonDescription[];
+
 extern const char kPointerLockOptionsName[];
 extern const char kPointerLockOptionsDescription[];
 
@@ -1977,6 +1980,8 @@ extern const char kVideoTutorialsInstantFetchDescription[];
 
 extern const char kAdaptiveButtonInTopToolbarName[];
 extern const char kAdaptiveButtonInTopToolbarDescription[];
+extern const char kAdaptiveButtonInTopToolbarCustomizationName[];
+extern const char kAdaptiveButtonInTopToolbarCustomizationDescription[];
 extern const char kShareButtonInTopToolbarName[];
 extern const char kShareButtonInTopToolbarDescription[];
 extern const char kVoiceButtonInTopToolbarName[];
@@ -2665,6 +2670,11 @@ extern const char kLacrosStabilityLeastStableDescription[];
 extern const char kLacrosStabilityLessStableDescription[];
 extern const char kLacrosStabilityMoreStableDescription[];
 
+extern const char kLacrosSelectionName[];
+extern const char kLacrosSelectionDescription[];
+extern const char kLacrosSelectionRootfsDescription[];
+extern const char kLacrosSelectionStatefulDescription[];
+
 extern const char kLacrosSupportName[];
 extern const char kLacrosSupportDescription[];
 
@@ -2704,6 +2714,12 @@ extern const char kMediaAppVideoDescription[];
 extern const char kMeteredShowToggleName[];
 extern const char kMeteredShowToggleDescription[];
 
+extern const char kMicrophoneMuteNotificationsName[];
+extern const char kMicrophoneMuteNotificationsDescription[];
+
+extern const char kMicrophoneMuteSwitchDeviceName[];
+extern const char kMicrophoneMuteSwitchDeviceDescription[];
+
 extern const char kMultilingualTypingName[];
 extern const char kMultilingualTypingDescription[];
 
@@ -2730,9 +2746,6 @@ extern const char kArcGhostWindowDescription[];
 
 extern const char kArcResizeLockName[];
 extern const char kArcResizeLockDescription[];
-
-extern const char kScalableStatusAreaName[];
-extern const char kScalableStatusAreaDescription[];
 
 extern const char kScanAppMediaLinkName[];
 extern const char kScanAppMediaLinkDescription[];
@@ -3020,6 +3033,11 @@ extern const char kSendWebUIJavaScriptErrorReportsDescription[];
 extern const char kUIDebugToolsName[];
 extern const char kUIDebugToolsDescription[];
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+extern const char kAuraWindowSubtreeCaptureName[];
+extern const char kAuraWindowSubtreeCaptureDescription[];
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 extern const char kWebrtcPipeWireCapturerName[];

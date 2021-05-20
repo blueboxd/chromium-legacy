@@ -116,6 +116,11 @@
       status: "stable",
     },
     {
+      name: "AccessibilityAriaTouchPassthrough",
+      status: "experimental",
+      origin_trial_feature_name: "AccessibilityAriaTouchPassthrough",
+    },
+    {
       name: "AccessibilityAriaVirtualContent",
       status: "experimental",
     },
@@ -201,6 +206,10 @@
     },
     {
       name: "AudioVideoTracks",
+      status: "experimental",
+    },
+    {
+      name: "AutofillShadowDOM",
       status: "experimental",
     },
     {
@@ -339,6 +348,7 @@
     },
     {
       name: "CaptureHandle",
+      origin_trial_feature_name: "CaptureHandle",
       depends_on: ["GetDisplayMedia"],
       status: {"Android": "", "default": "experimental"},
     },
@@ -1247,6 +1257,10 @@
     {
       name: "MediaCapabilitiesSpatialAudio",
       status: "test",
+    },
+    {
+      name: "MediaCapabilitiesWebRtc",
+      status: "experimental",
     },
     {
       name: "MediaCapture",

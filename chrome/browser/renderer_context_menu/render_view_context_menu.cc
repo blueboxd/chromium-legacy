@@ -73,8 +73,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
@@ -1066,8 +1068,9 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContextMenu.SelectedOptionDesktop.MisspelledWord", enum_id,
         GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
-  } else if (!params_.selection_text.empty() &&
-             params_.media_type == ContextMenuDataMediaType::kNone) {
+  } else if ((!params_.selection_text.empty() ||
+              params_.opened_from_highlight) &&
+              params_.media_type == ContextMenuDataMediaType::kNone) {
     // Probably just text.
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContextMenu.SelectedOptionDesktop.SelectedText", enum_id,

@@ -3128,6 +3128,8 @@ static_library("browser") {
       "permissions/permission_update_infobar_delegate_android.cc",
       "permissions/permission_update_infobar_delegate_android.h",
       "platform_util_android.cc",
+      "policy/android/cloud_management_shared_preferences.cc",
+      "policy/android/cloud_management_shared_preferences.h",
       "policy/browser_dm_token_storage_android.cc",
       "policy/browser_dm_token_storage_android.h",
       "policy/chrome_browser_cloud_management_controller_android.cc",
@@ -3395,12 +3397,12 @@ static_library("browser") {
   } else {
     #!is_android
     sources += [
-      "accessibility/caption_controller.cc",
-      "accessibility/caption_controller.h",
-      "accessibility/caption_controller_factory.cc",
-      "accessibility/caption_controller_factory.h",
       "accessibility/invert_bubble_prefs.cc",
       "accessibility/invert_bubble_prefs.h",
+      "accessibility/live_caption_controller.cc",
+      "accessibility/live_caption_controller.h",
+      "accessibility/live_caption_controller_factory.cc",
+      "accessibility/live_caption_controller_factory.h",
       "accessibility/live_caption_speech_recognition_host.cc",
       "accessibility/live_caption_speech_recognition_host.h",
       "apps/app_service/app_icon_factory.cc",
@@ -3571,6 +3573,7 @@ static_library("browser") {
       "enterprise/connectors/analysis/analysis_service_settings.h",
       "enterprise/connectors/analysis/content_analysis_delegate.cc",
       "enterprise/connectors/analysis/content_analysis_delegate.h",
+      "enterprise/connectors/analysis/content_analysis_delegate_base.h",
       "enterprise/connectors/analysis/content_analysis_dialog.cc",
       "enterprise/connectors/analysis/content_analysis_dialog.h",
       "enterprise/connectors/common.cc",

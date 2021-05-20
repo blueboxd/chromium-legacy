@@ -19,6 +19,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "components/safe_browsing/buildflags.h"
@@ -84,6 +85,8 @@ bool PhishingClassifier::is_ready() const {
 
 void PhishingClassifier::BeginClassification(const std::u16string* page_text,
                                              DoneCallback done_callback) {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("safe_browsing", "PhishingClassification",
+                                    this);
   DCHECK(is_ready());
 
   // The RenderView should have called CancelPendingClassification() before
@@ -166,7 +169,11 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     ExtractVisualFeatures();
 #else
-    VisualExtractionFinished(true);
+    if (scorer_->HasVisualTfLiteModel()) {
+      ExtractVisualFeatures();
+    } else {
+      VisualExtractionFinished(true);
+    }
 #endif
   } else {
     RunFailureCallback();
@@ -176,6 +183,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
 void PhishingClassifier::ExtractVisualFeatures() {
   DCHECK(content::RenderThread::IsMainThread());
   base::TimeTicks start_time = base::TimeTicks::Now();
+  TRACE_EVENT0("safe_browsing", "ExtractVisualFeatures");
 
   blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
   gfx::SizeF viewport_size = frame->View()->VisualViewportSize();
@@ -243,7 +251,9 @@ void PhishingClassifier::VisualExtractionFinished(bool success) {
       base::BindOnce(&PhishingClassifier::OnVisualTargetsMatched,
                      weak_factory_.GetWeakPtr()));
 #else
-  RunCallback(*verdict);
+  scorer_->ApplyVisualTfLiteModel(
+      *bitmap_, base::BindOnce(&PhishingClassifier::OnVisualTfLiteModelDone,
+                               weak_factory_.GetWeakPtr(), std::move(verdict)));
 #endif
 }
 
@@ -256,10 +266,39 @@ void PhishingClassifier::OnVisualTargetsMatched(
   base::UmaHistogramTimes("SBClientPhishing.VisualComparisonTime",
                           base::TimeTicks::Now() - visual_matching_start_);
 
+  scorer_->ApplyVisualTfLiteModel(
+      *bitmap_, base::BindOnce(&PhishingClassifier::OnVisualTfLiteModelDone,
+                               weak_factory_.GetWeakPtr(), std::move(verdict)));
+}
+
+void PhishingClassifier::OnVisualTfLiteModelDone(
+    std::unique_ptr<ClientPhishingRequest> verdict,
+    std::vector<double> result) {
+  if (static_cast<int>(result.size()) > scorer_->tflite_thresholds().size()) {
+    // Model is misconfigured, so bail out.
+    RunFailureCallback();
+    return;
+  }
+
+  verdict->set_tflite_model_version(scorer_->tflite_model_version());
+  for (size_t i = 0; i < result.size(); i++) {
+    ClientPhishingRequest::CategoryScore* category =
+        verdict->add_tflite_model_scores();
+    category->set_label(scorer_->tflite_thresholds().at(i).label());
+    category->set_value(result[i]);
+
+    if (result[i] >= scorer_->tflite_thresholds().at(i).threshold()) {
+      verdict->set_is_phishing(true);
+      verdict->set_is_tflite_match(true);
+    }
+  }
+
   RunCallback(*verdict);
 }
 
 void PhishingClassifier::RunCallback(const ClientPhishingRequest& verdict) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("safe_browsing", "PhishingClassification",
+                                  this);
   std::move(done_callback_).Run(verdict);
   Clear();
 }

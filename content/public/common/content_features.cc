@@ -107,7 +107,7 @@ const base::Feature kBlockCredentialedSubresources{
 //  - https://wicg.github.io/cors-rfc1918/#integration-fetch
 //  - kBlockInsecurePrivateNetworkRequestsForNavigations
 const base::Feature kBlockInsecurePrivateNetworkRequests{
-    "BlockInsecurePrivateNetworkRequests", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BlockInsecurePrivateNetworkRequests", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When both kBlockInsecurePrivateNetworkRequestsForNavigations and
 // kBlockInsecurePrivateNetworkRequests are enabled, navigations initiated
@@ -735,6 +735,12 @@ const base::FeatureParam<int>
     kSiteIsolationForCrossOriginOpenerPolicyMaxSitesParam{
         &kSiteIsolationForCrossOriginOpenerPolicy, "stored_sites_max_size",
         100};
+// This feature param controls the period of time for which the stored sites
+// should remain valid. Only used when persistence is also enabled.
+const base::FeatureParam<base::TimeDelta>
+    kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam{
+        &kSiteIsolationForCrossOriginOpenerPolicy, "expiration_timeout",
+        base::TimeDelta::FromDays(7)};
 
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
@@ -1044,6 +1050,16 @@ const base::FeatureParam<bool>
     kWebUIJavaScriptErrorReportsSendToProductionParam{
         &kSendWebUIJavaScriptErrorReports,
         kSendWebUIJavaScriptErrorReportsSendToProductionVariation, true};
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Controls whether the new subtree capture path is used for window capturing on
+// ChromeOS Ash, instead of the legacy SlowWindowCapturerChromeOS
+// implementation.
+// TODO(crbug.com/1210549): remove once we have determined the new path is
+// stable.
+const base::Feature kAuraWindowSubtreeCapture{"AuraWindowSubtreeCapture",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(WEBRTC_USE_PIPEWIRE)

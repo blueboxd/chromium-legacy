@@ -98,6 +98,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private AutocompleteController mAutocomplete;
     private long mUrlFocusTime;
     private boolean mEnableAdaptiveSuggestionsCount;
+    private boolean mShouldCacheSuggestions;
 
     @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
             SuggestionVisibilityState.ALLOWED})
@@ -151,7 +152,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
     public AutocompleteMediator(@NonNull Context context, @NonNull AutocompleteDelegate delegate,
             @NonNull UrlBarEditingTextStateProvider textProvider,
-            @NonNull AutocompleteController autocompleteController,
             @NonNull PropertyModel listPropertyModel, @NonNull Handler handler,
             @NonNull ActivityLifecycleDispatcher lifecycleDispatcher,
             @NonNull Supplier<ModalDialogManager> modalDialogManagerSupplier,
@@ -168,15 +168,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
         mModalDialogManagerSupplier = modalDialogManagerSupplier;
-        mAutocomplete = autocompleteController;
-        mAutocomplete.setOnSuggestionsReceivedListener(this);
         mHandler = handler;
         mDataProvider = locationBarDataProvider;
         mBringTabToFrontCallback = bringTabToFrontCallback;
         mTabWindowManagerSupplier = tabWindowManagerSupplier;
         mSuggestionModels = mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
-        mDropdownViewInfoListBuilder = new DropdownItemViewInfoListBuilder(
-                mAutocomplete, activityTabSupplier, bookmarkState);
+        mDropdownViewInfoListBuilder =
+                new DropdownItemViewInfoListBuilder(activityTabSupplier, bookmarkState);
         mDropdownViewInfoListBuilder.setShareDelegateSupplier(shareDelegateSupplier);
         mDropdownViewInfoListManager = new DropdownItemViewInfoListManager(mSuggestionModels);
     }
@@ -200,7 +198,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     public void destroy() {
         if (mAutocomplete != null) {
             stopAutocomplete(false);
-            mAutocomplete.destroy();
+            mAutocomplete.removeOnSuggestionsReceivedListener(this);
         }
         mDropdownViewInfoListBuilder.destroy();
         if (mLifecycleDispatcher != null) {
@@ -294,13 +292,15 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     }
 
     /**
-     * Sets to show cached zero suggest results. This will start both caching zero suggest results
-     * in shared preferences and also attempt to show them when appropriate without needing native
-     * initialization.
-     * @param showCachedZeroSuggestResults Whether cached zero suggest should be shown.
+     * Show cached zero suggest results.
+     * Enables Autocomplete subsystem to offer most recently presented suggestions in the event
+     * where Native counterpart is not yet initialized.
+     *
+     * Note: the only supported page context right now is the ANDROID_SEARCH_WIDGET.
      */
-    void setShowCachedZeroSuggestResults(boolean showCachedZeroSuggestResults) {
-        if (showCachedZeroSuggestResults) mAutocomplete.startCachedZeroSuggest();
+    void startCachedZeroSuggest() {
+        if (mNativeInitialized) return;
+        onSuggestionsReceived(CachedZeroSuggestionsManager.readFromCache(), "");
     }
 
     /** Notify the mediator that a item selection is pending and should be accepted. */
@@ -384,7 +384,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @param profile The profile to be used.
      */
     void setAutocompleteProfile(Profile profile) {
-        mAutocomplete.setProfile(profile);
+        if (mAutocomplete != null) {
+            stopAutocomplete(true);
+            mAutocomplete.removeOnSuggestionsReceivedListener(this);
+        }
+        mAutocomplete = AutocompleteControllerFactory.getController(profile);
+
+        mAutocomplete.addOnSuggestionsReceivedListener(this);
         mDropdownViewInfoListBuilder.setProfile(profile);
     }
 
@@ -707,6 +713,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             return;
         }
 
+        if (mShouldCacheSuggestions) {
+            CachedZeroSuggestionsManager.saveToCache(autocompleteResult);
+        }
+
         final List<AutocompleteMatch> newSuggestions = autocompleteResult.getSuggestionsList();
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
@@ -857,6 +867,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 && (mDataProvider.hasTab() || mDataProvider.isInOverviewAndShowingOmnibox())) {
             int pageClassification =
                     mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
+            mShouldCacheSuggestions =
+                    pageClassification == PageClassification.ANDROID_SEARCH_WIDGET_VALUE;
             mAutocomplete.startZeroSuggest(mDataProvider.getProfile(),
                     mUrlBarEditingTextProvider.getTextWithAutocomplete(),
                     mDataProvider.getCurrentUrl(), pageClassification, mDataProvider.getTitle());
@@ -915,18 +927,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             mAutocomplete.start(mDataProvider.getProfile(), mDataProvider.getCurrentUrl(),
                     mDataProvider.getPageClassification(false), query, -1, false, null, false);
         }
-    }
-
-    /**
-     * Sets the autocomplete controller for the location bar.
-     *
-     * @param controller The controller that will handle autocomplete/omnibox suggestions.
-     * @note Only used for testing.
-     */
-    public void setAutocompleteControllerForTest(AutocompleteController controller) {
-        if (mAutocomplete != null) stopAutocomplete(true);
-        mAutocomplete = controller;
-        mDropdownViewInfoListBuilder.setAutocompleteControllerForTest(controller);
     }
 
     /**
@@ -1074,6 +1074,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * Cancel any pending autocomplete actions.
      */
     private void cancelAutocompleteRequests() {
+        mShouldCacheSuggestions = false;
         if (mCurrentAutocompleteRequest != null) {
             mHandler.removeCallbacks(mCurrentAutocompleteRequest);
             mCurrentAutocompleteRequest = null;

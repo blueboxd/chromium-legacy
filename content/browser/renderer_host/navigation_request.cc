@@ -128,6 +128,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/common/net/ip_address_space_util.h"
+#include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -5128,15 +5129,24 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
     return;
   }
 
+  const PolicyContainerPolicies& policies =
+      policy_container_navigation_bundle_->FinalPolicies();
+
   // Requests initiated from secure contexts are never blocked; depending
   // on a feature flag, we show a warning in DevTools.
-  if (policy_container_navigation_bundle_->FinalPolicies()
-          .is_web_secure_context) {
+  if (policies.is_web_secure_context) {
     private_network_request_policy_ =
         base::FeatureList::IsEnabled(
             features::kWarnAboutSecurePrivateNetworkRequests)
             ? network::mojom::PrivateNetworkRequestPolicy::kWarn
             : network::mojom::PrivateNetworkRequestPolicy::kAllow;
+    return;
+  }
+
+  // Requests from non-secure contexts in the unknown address space are allowed.
+  if (policies.ip_address_space == network::mojom::IPAddressSpace::kUnknown) {
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
     return;
   }
 

@@ -118,14 +118,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // be coalesced into one update.
   void StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame);
 
-  // Registers a watcher to observe changes in the
-  // blink::RendererPreferences.
-  void RegisterRendererPreferenceWatcher(
-      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher);
-
-  // Returns the current instance of blink::RendererPreferences.
-  const blink::RendererPreferences& GetRendererPreferences() const;
-
   // blink::WebViewClient implementation --------------------------------------
 
   blink::WebView* CreateView(
@@ -140,7 +132,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const absl::optional<blink::WebImpression>& impression) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   void OnPageFrozenChanged(bool frozen) override;
-  void DidUpdateRendererPreferences() override;
 
   // RenderView implementation -------------------------------------------------
 

@@ -700,6 +700,18 @@ const FeatureEntry::Choice kLacrosStabilityChoices[] = {
      crosapi::browser_util::kLacrosStabilityMoreStable},
 };
 
+const char kLacrosSelectionInternalName[] = "lacros-selection";
+
+const FeatureEntry::Choice kLacrosSelectionChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kLacrosSelectionStatefulDescription,
+     crosapi::browser_util::kLacrosSelectionSwitch,
+     crosapi::browser_util::kLacrosSelectionStateful},
+    {flag_descriptions::kLacrosSelectionRootfsDescription,
+     crosapi::browser_util::kLacrosSelectionSwitch,
+     crosapi::browser_util::kLacrosSelectionRootfs},
+};
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2609,6 +2621,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kReaderModeDiscoverabilityVariations,
                                     "ReaderMode")},
 #endif  // !defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-aura-window-subtree-capture",
+     flag_descriptions::kAuraWindowSubtreeCaptureName,
+     flag_descriptions::kAuraWindowSubtreeCaptureDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAuraWindowSubtreeCapture)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if defined(WEBRTC_USE_PIPEWIRE)
     {"enable-webrtc-pipewire-capturer",
      flag_descriptions::kWebrtcPipeWireCapturerName,
@@ -2964,6 +2982,9 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosStabilityInternalName, flag_descriptions::kLacrosStabilityName,
      flag_descriptions::kLacrosStabilityDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kLacrosStabilityChoices)},
+    {kLacrosSelectionInternalName, flag_descriptions::kLacrosSelectionName,
+     flag_descriptions::kLacrosSelectionDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kLacrosSelectionChoices)},
     {kWebAppsCrosapiInternalName, flag_descriptions::kWebAppsCrosapiName,
      flag_descriptions::kWebAppsCrosapiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebAppsCrosapi)},
@@ -3026,6 +3047,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"wake-on-wifi-allowed", flag_descriptions::kWakeOnWifiAllowedName,
      flag_descriptions::kWakeOnWifiAllowedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kWakeOnWifiAllowed)},
+    {"microphone-mute-notifications",
+     flag_descriptions::kMicrophoneMuteNotificationsName,
+     flag_descriptions::kMicrophoneMuteNotificationsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kMicMuteNotifications)},
+    {"microphone-mute-switch-device",
+     flag_descriptions::kMicrophoneMuteSwitchDeviceName,
+     flag_descriptions::kMicrophoneMuteSwitchDeviceDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE("enable-microphone-mute-switch-device")},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_CHROMEOS)
@@ -3230,9 +3259,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"adaptive-button-in-top-toolbar",
      flag_descriptions::kAdaptiveButtonInTopToolbarName,
      flag_descriptions::kAdaptiveButtonInTopToolbarDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kAdaptiveButtonInTopToolbar,
-                                    kAdaptiveButtonInTopToolbarVariations,
-                                    "AdaptiveButtonInTopToolbar")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kAdaptiveButtonInTopToolbar,
+         kAdaptiveButtonInTopToolbarVariations,
+         "AdaptiveButtonInTopToolbar")},
+    {"adaptive-button-in-top-toolbar-customization",
+     flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationName,
+     flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kAdaptiveButtonInTopToolbarCustomization)},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
@@ -7021,10 +7057,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(net::features::kSplitCacheByNetworkIsolationKey)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-scalable-status-area", flag_descriptions::kScalableStatusAreaName,
-     flag_descriptions::kScalableStatusAreaDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kScalableStatusArea)},
-
     {"enable-show-date-in-tray", flag_descriptions::kShowDateInTrayName,
      flag_descriptions::kShowDateInTrayDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShowDateInTrayButton)},
@@ -7224,6 +7256,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadShelfWebUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebUIDownloadShelf)},
 #endif  // defined(TOOLKIT_VIEWS)
+
+    {"playback-speed-button", flag_descriptions::kPlaybackSpeedButtonName,
+     flag_descriptions::kPlaybackSpeedButtonDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kPlaybackSpeedButton)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

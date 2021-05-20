@@ -2022,6 +2022,10 @@ const char kPermissionPredictionsDescription[] =
     "chrome://flags/#quiet-notification-prompts and `Safe Browsing Enhanced "
     "Protection` to be enabled.";
 
+const char kPlaybackSpeedButtonName[] = "Playback Speed Button";
+const char kPlaybackSpeedButtonDescription[] =
+    "Enable the playback speed button on the media controls.";
+
 const char kPointerLockOptionsName[] = "Enables pointer lock options";
 const char kPointerLockOptionsDescription[] =
     "Enables pointer lock unadjustedMovement. When unadjustedMovement is set "
@@ -3446,6 +3450,10 @@ const char kVideoTutorialsInstantFetchDescription[] =
 const char kAdaptiveButtonInTopToolbarName[] = "Adaptive button in top toolbar";
 const char kAdaptiveButtonInTopToolbarDescription[] =
     "Enables showing an adaptive action button in the top toolbar";
+const char kAdaptiveButtonInTopToolbarCustomizationName[] =
+    "Adaptive button in top toolbar customization";
+const char kAdaptiveButtonInTopToolbarCustomizationDescription[] =
+    "Enables UI for customizing the adaptive action button in the top toolbar";
 const char kShareButtonInTopToolbarName[] = "Share button in top toolbar";
 const char kShareButtonInTopToolbarDescription[] =
     "Enables UI to initiate sharing from the top toolbar. Enabling Adaptive "
@@ -4577,6 +4585,13 @@ const char kLacrosStabilityLeastStableDescription[] = "Daily updates";
 const char kLacrosStabilityLessStableDescription[] = "Weekly updates";
 const char kLacrosStabilityMoreStableDescription[] = "Monthly updates";
 
+const char kLacrosSelectionName[] = "Lacros selection";
+const char kLacrosSelectionDescription[] =
+    "Choosing between rootfs or stateful Lacros.";
+
+const char kLacrosSelectionRootfsDescription[] = "Rootfs";
+const char kLacrosSelectionStatefulDescription[] = "Stateful";
+
 const char kLacrosSupportName[] = "Lacros support";
 const char kLacrosSupportDescription[] =
     "Support for the experimental lacros-chrome browser. Please note that the "
@@ -4639,6 +4654,18 @@ const char kMeteredShowToggleDescription[] =
     "The toggle allows users to set whether a network should be considered "
     "metered for purposes of bandwith usage (e.g. for automatic updates).";
 
+const char kMicrophoneMuteNotificationsName[] = "Microphone Mute Notifications";
+const char kMicrophoneMuteNotificationsDescription[] =
+    "Enables notifications that are shown when an app tries to use microphone "
+    "while audio input is muted.";
+
+const char kMicrophoneMuteSwitchDeviceName[] = "Microphone Mute Switch Device";
+const char kMicrophoneMuteSwitchDeviceDescription[] =
+    "Support for detecting the state of hardware microphone mute toggle. Only "
+    "effective on devices that have a microphone mute toggle. Enabling the "
+    "flag does not affect the toggle functionality, it only affects how the "
+    "System UI handles the mute toggle state.";
+
 const char kMultilingualTypingName[] = "Multilingual typing on CrOS";
 const char kMultilingualTypingDescription[] =
     "Enables support for multilingual assistive typing on Chrome OS.";
@@ -4679,11 +4706,6 @@ const char kArcResizeLockName[] = "Resize Lock for Android apps";
 const char kArcResizeLockDescription[] =
     "Enable compatibility mode for Android apps that are not optimized for "
     "large screens, and impose restrictions on resizing the apps";
-
-const char kScalableStatusAreaName[] = "Enable Scalable Status Area";
-const char kScalableStatusAreaDescription[] =
-    "Showing important notification icons in status area when the screen is "
-    "sufficiently large.";
 
 const char kScanAppMediaLinkName[] = "Show Media app link in Scan app";
 const char kScanAppMediaLinkDescription[] =
@@ -5132,6 +5154,13 @@ const char kUIDebugToolsName[] = "Debugging tools for UI";
 const char kUIDebugToolsDescription[] =
     "Enables additional keyboard shortcuts to help debugging.";
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kAuraWindowSubtreeCaptureName[] = "ChromeOS Window Subtree Capture";
+const char kAuraWindowSubtreeCaptureDescription[] =
+    "Enables capture of ChromeOS Aura windows using subtree capture. When "
+    "disabled, the legacy slow capturer will be used.";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 const char kWebrtcPipeWireCapturerName[] = "WebRTC PipeWire support";

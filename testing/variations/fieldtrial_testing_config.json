@@ -567,6 +567,21 @@
             ]
         }
     ],
+    "AndroidMessagesPopupBlocked": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MessagesForAndroidPopupBlocked"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidMessagesSavePassword": [
         {
             "platforms": [
@@ -5409,6 +5424,25 @@
             ]
         }
     ],
+    "OmniboxPedalsBatch2": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Batch2Colored",
+                    "enable_features": [
+                        "OmniboxPedalsBatch2",
+                        "OmniboxPedalsDefaultIconColored"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxUpdatedConnectionSecurityIndicatorsIPH": [
         {
             "platforms": [
@@ -5538,7 +5572,8 @@
                         "mode": "always-new-tab"
                     },
                     "enable_features": [
-                        "AdaptiveButtonInTopToolbar"
+                        "AdaptiveButtonInTopToolbar",
+                        "AdaptiveButtonInTopToolbarCustomization"
                     ]
                 },
                 {
@@ -5547,7 +5582,8 @@
                         "mode": "always-share"
                     },
                     "enable_features": [
-                        "AdaptiveButtonInTopToolbar"
+                        "AdaptiveButtonInTopToolbar",
+                        "AdaptiveButtonInTopToolbarCustomization"
                     ]
                 },
                 {
@@ -5556,7 +5592,8 @@
                         "mode": "always-voice"
                     },
                     "enable_features": [
-                        "AdaptiveButtonInTopToolbar"
+                        "AdaptiveButtonInTopToolbar",
+                        "AdaptiveButtonInTopToolbarCustomization"
                     ]
                 },
                 {

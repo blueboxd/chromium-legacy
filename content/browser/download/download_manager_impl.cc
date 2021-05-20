@@ -1154,7 +1154,9 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() {
         it.second->GetDangerType() !=
             download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED &&
         it.second->GetDangerType() !=
-            download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
+            download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS &&
+        it.second->GetDangerType() !=
+            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE) {
       ++count;
     }
   }
@@ -1298,7 +1300,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
             FileURLLoaderFactory::Create(
                 browser_context_->GetPath(),
-                BrowserContext::GetSharedCorsOriginAccessList(browser_context_),
+                browser_context_->GetSharedCorsOriginAccessList(),
                 // USER_VISIBLE because download should progress
                 // even when there is high priority work to do.
                 base::TaskPriority::USER_VISIBLE));

@@ -2,7 +2,7 @@
 // automatically expire flags, as part of the review process, and to clean up
 // flags that have become obsolete or unused. For more details, see:
 //
-//    https://chromium.googlesource.com/chromium/src/+/master/docs/flag_ownership.md
+//    https://chromium.googlesource.com/chromium/src/+/main/docs/flag_ownership.md
 //
 // This file is a list of json objects; each object contains these keys:
 //
@@ -56,7 +56,12 @@
   {
     "name": "adaptive-button-in-top-toolbar",
     "owners": [ "bttk", "chrome-segmentation-platform@google.com" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 94
+  },
+  {
+    "name": "adaptive-button-in-top-toolbar-customization",
+    "owners": [ "bttk", "chrome-segmentation-platform@google.com" ],
+    "expiry_milestone": 94
   },
   {
     "name": "add-to-homescreen-iph",
@@ -1331,6 +1336,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-aura-window-subtree-capture",
+    "owners": [ "jophba" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "enable-auto-select",
     "owners": ["croissant-eng"],
     "expiry_milestone": 95
@@ -2308,11 +2318,6 @@
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-scalable-status-area",
-    "owners": [ "leandre" ],
-    "expiry_milestone": 91
   },
   {
     "name": "enable-sharesheet",
@@ -3338,6 +3343,11 @@
     "expiry_milestone": 130
   },
   {
+    "name": "lacros-selection",
+    "owners": [ "kimjae", "erikchen", "lacros-team@google.com" ],
+    "expiry_milestone": 130
+  },
+  {
     "name": "lacros-stability",
     "owners": [ "jamescook", "erikchen", "lacros-team@google.com" ],
     // Once Lacros is launched, this flag can be removed. Until then, this
@@ -3595,6 +3605,16 @@
     "expiry_milestone": 95
   },
   {
+    "name": "microphone-mute-notifications",
+    "owners": ["tbarzic", "rtiknoff", "amehfooz"],
+    "expiry_milestone": 94
+  },
+  {
+    "name": "microphone-mute-switch-device",
+    "owners": ["tbarzic", "rtiknoff", "amehfooz"],
+    "expiry_milestone": 94
+  },
+  {
     "name": "minutes-delay-to-restore-gaia-cookies-if-deleted",
     "owners": ["fernandex", "chrome-signin-team"],
     "expiry_milestone": 99
@@ -3847,7 +3867,7 @@
   {
     "name": "omnibox-disable-cgi-param-matching",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 96
   },
   {
     "name": "omnibox-drive-suggestions",
@@ -4206,6 +4226,11 @@
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "playback-speed-button",
+    "owners": [ "steimel", "media-dev" ],
+    "expiry_milestone": 100
   },
   {
     "name": "pluginvm-fullscreen",

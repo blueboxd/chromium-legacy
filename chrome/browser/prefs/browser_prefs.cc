@@ -226,7 +226,7 @@
 #include "components/permissions/contexts/geolocation_permission_context_android.h"
 #include "components/query_tiles/tile_service_prefs.h"
 #else  // defined(OS_ANDROID)
-#include "chrome/browser/accessibility/caption_controller.h"
+#include "chrome/browser/accessibility/live_caption_controller.h"
 #include "chrome/browser/cart/cart_service.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
@@ -425,6 +425,11 @@
 namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+// Deprecated 5/2021
+const char kFeatureUsageDailySampleESim[] = "feature_usage.daily_sample.ESim";
+const char kFeatureUsageDailySampleFingerprint[] =
+    "feature_usage.daily_sample.Fingerprint";
+
 // Deprecated 12/2020
 const char kLocalSearchServiceSyncMetricsDailySample[] =
     "local_search_service_sync.metrics.daily_sample";
@@ -583,6 +588,8 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kLocalSearchServiceSyncMetricsHelpAppCount, 0);
   registry->RegisterIntegerPref(kLocalSearchServiceSyncMetricsCrosSettingsCount,
                                 0);
+
+  registry->RegisterInt64Pref(kFeatureUsageDailySampleESim, 0);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
@@ -700,6 +707,10 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kToolbarSize, -1);
 #endif
   registry->RegisterBooleanPref(kSessionExitedCleanly, true);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterInt64Pref(kFeatureUsageDailySampleFingerprint, 0);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -798,7 +809,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   ash::cert_provisioning::RegisterLocalStatePrefs(registry);
   chromeos::CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(registry);
-  chromeos::CellularMetricsLogger::RegisterLocalStatePrefs(registry);
   ash::ChromeUserManagerImpl::RegisterPrefs(registry);
   crosapi::browser_util::RegisterLocalStatePrefs(registry);
   chromeos::CupsPrintersManager::RegisterLocalStatePrefs(registry);
@@ -1069,7 +1079,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #else   // defined(OS_ANDROID)
   AppShortcutManager::RegisterProfilePrefs(registry);
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
-  captions::CaptionController::RegisterProfilePrefs(registry);
+  captions::LiveCaptionController::RegisterProfilePrefs(registry);
   ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   DriveService::RegisterProfilePrefs(registry);
@@ -1252,6 +1262,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kLocalSearchServiceSyncMetricsDailySample);
   local_state->ClearPref(kLocalSearchServiceSyncMetricsCrosSettingsCount);
   local_state->ClearPref(kLocalSearchServiceSyncMetricsHelpAppCount);
+
+  // Added 5/2021
+  local_state->ClearPref(kFeatureUsageDailySampleESim);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
@@ -1414,6 +1427,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kToolbarSize);
 #endif
   profile_prefs->ClearPref(kSessionExitedCleanly);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 05/2021
+  profile_prefs->ClearPref(kFeatureUsageDailySampleFingerprint);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

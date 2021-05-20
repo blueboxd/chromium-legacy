@@ -1281,6 +1281,7 @@ component("base") {
       "files/file_path_watcher_linux.cc",
       "files/file_path_watcher_linux.h",
       "files/file_util_linux.cc",
+      "files/scoped_file_linux.cc",
       "process/internal_linux.cc",
       "process/internal_linux.h",
       "process/memory_linux.cc",
@@ -1937,6 +1938,8 @@ component("base") {
         "allocator/partition_allocator/starscan/starscan_fwd.h",
         "allocator/partition_allocator/starscan/stats_collector.cc",
         "allocator/partition_allocator/starscan/stats_collector.h",
+        "allocator/partition_allocator/starscan/write_protector.cc",
+        "allocator/partition_allocator/starscan/write_protector.h",
         "allocator/partition_allocator/thread_cache.cc",
         "allocator/partition_allocator/thread_cache.h",
         "allocator/partition_allocator/yield_processor.h",
@@ -3325,7 +3328,10 @@ test("base_unittests") {
   }
 
   if (is_linux || is_chromeos) {
-    sources += [ "debug/proc_maps_linux_unittest.cc" ]
+    sources += [
+      "debug/proc_maps_linux_unittest.cc",
+      "files/scoped_file_linux_unittest.cc",
+    ]
   }
 
   if (is_mac) {

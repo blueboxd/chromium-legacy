@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -410,10 +411,20 @@ void WebAppIntegrationBrowserTestBase::ExecuteAction(
 
   if (action_base == "add_policy_app_internal_tabbed") {
     AddPolicyAppInternal(action_param,
-                         base::Value(kDefaultLaunchContainerTabValue));
+                         base::Value(kDefaultLaunchContainerTabValue),
+                         /*create_shortcut=*/true);
+  } else if (action_base == "add_policy_app_internal_tabbed_no_shortcut") {
+    AddPolicyAppInternal(action_param,
+                         base::Value(kDefaultLaunchContainerTabValue),
+                         /*create_shortcut=*/false);
   } else if (action_base == "add_policy_app_internal_windowed") {
     AddPolicyAppInternal(action_param,
-                         base::Value(kDefaultLaunchContainerWindowValue));
+                         base::Value(kDefaultLaunchContainerWindowValue),
+                         /*create_shortcut=*/true);
+  } else if (action_base == "add_policy_app_internal_windowed_no_shortcut") {
+    AddPolicyAppInternal(action_param,
+                         base::Value(kDefaultLaunchContainerWindowValue),
+                         /*create_shortcut=*/false);
   } else if (action_base == "close_pwa") {
     ClosePWA();
   } else if (action_base == "install_create_shortcut_tabbed") {
@@ -509,7 +520,8 @@ void WebAppIntegrationBrowserTestBase::ExecuteAction(
 // Automated Testing Actions
 void WebAppIntegrationBrowserTestBase::AddPolicyAppInternal(
     const std::string& action_param,
-    base::Value default_launch_container) {
+    base::Value default_launch_container,
+    const bool create_shortcut) {
   GURL url = GetInstallableAppURL(action_param);
   auto* web_app_registrar =
       WebAppProvider::Get(profile())->registrar().AsWebAppRegistrar();
@@ -530,6 +542,7 @@ void WebAppIntegrationBrowserTestBase::AddPolicyAppInternal(
     item.SetKey(kUrlKey, base::Value(url.spec()));
     item.SetKey(kDefaultLaunchContainerKey,
                 std::move(default_launch_container));
+    item.SetKey(kCreateDesktopShortcutKey, base::Value(create_shortcut));
     ListPrefUpdate update(profile()->GetPrefs(),
                           prefs::kWebAppInstallForceList);
     update->Append(item.Clone());

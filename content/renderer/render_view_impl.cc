@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "cc/trees/ukm_manager.h"
-#include "content/child/webthemeengine_impl_default.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -363,7 +362,7 @@ WebView* RenderViewImpl::CreateView(
   DCHECK_EQ(GetRoutingID(), creator_frame->render_view()->GetRoutingID());
 
   view_params->window_was_created_with_opener = true;
-  view_params->renderer_preferences = GetRendererPreferences();
+  view_params->renderer_preferences = webview_->GetRendererPreferences();
   view_params->web_preferences = webview_->GetWebPreferences();
   view_params->view_id = reply->route_id;
 
@@ -451,16 +450,6 @@ void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
                               this, &RenderViewImpl::SendFrameStateUpdates);
 }
 
-void RenderViewImpl::RegisterRendererPreferenceWatcher(
-    mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
-  GetWebView()->RegisterRendererPreferenceWatcher(std::move(watcher));
-}
-
-const blink::RendererPreferences& RenderViewImpl::GetRendererPreferences()
-    const {
-  return webview_->GetRendererPreferences();
-}
-
 void RenderViewImpl::OnPageFrozenChanged(bool frozen) {
   if (frozen) {
     // Make sure browser has the latest info before the page is frozen. If the
@@ -483,18 +472,6 @@ int RenderViewImpl::GetRoutingID() {
 
 blink::WebView* RenderViewImpl::GetWebView() {
   return webview_;
-}
-
-void RenderViewImpl::DidUpdateRendererPreferences() {
-#if defined(OS_WIN)
-  // Update Theme preferences on Windows.
-  const blink::RendererPreferences& renderer_prefs = GetRendererPreferences();
-  WebThemeEngineDefault::cacheScrollBarMetrics(
-      renderer_prefs.vertical_scroll_bar_width_in_dips,
-      renderer_prefs.horizontal_scroll_bar_height_in_dips,
-      renderer_prefs.arrow_bitmap_height_vertical_scroll_bar_in_dips,
-      renderer_prefs.arrow_bitmap_width_horizontal_scroll_bar_in_dips);
-#endif
 }
 
 }  // namespace content

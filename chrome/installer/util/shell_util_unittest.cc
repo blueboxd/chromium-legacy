@@ -42,6 +42,7 @@ const wchar_t kOtherIco[] = L"other.ico";
 const wchar_t kTestProgid[] = L"TestApp";
 const wchar_t kTestOpenCommand[] = L"C:\\test.exe";
 const wchar_t kTestApplicationName[] = L"Test Application";
+const wchar_t kTestApplicationDescription[] = L"Application Description";
 const wchar_t kTestFileTypeName[] = L"Test File Type";
 const wchar_t kTestIconPath[] = L"D:\\test.ico";
 const wchar_t* kTestFileExtensions[] = {
@@ -60,6 +61,9 @@ class ShellUtilShortcutTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     chrome_exe_ = temp_dir_.GetPath().Append(installer::kChromeExe);
     EXPECT_EQ(0, base::WriteFile(chrome_exe_, "", 0));
+
+    chrome_proxy_exe_ = temp_dir_.GetPath().Append(installer::kChromeProxyExe);
+    EXPECT_EQ(0, base::WriteFile(chrome_proxy_exe_, "", 0));
 
     manganese_exe_ = temp_dir_.GetPath().Append(kManganeseExe);
     EXPECT_EQ(0, base::WriteFile(manganese_exe_, "", 0));
@@ -221,6 +225,7 @@ class ShellUtilShortcutTest : public testing::Test {
   std::unique_ptr<base::ScopedPathOverride> common_startup_override_;
 
   base::FilePath chrome_exe_;
+  base::FilePath chrome_proxy_exe_;
   base::FilePath manganese_exe_;
   base::FilePath iron_exe_;
   base::FilePath other_ico_;
@@ -419,7 +424,8 @@ TEST_F(ShellUtilShortcutTest, RemoveChromeShortcut) {
   ASSERT_TRUE(base::PathExists(shortcut_path));
 
   ASSERT_TRUE(ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                         ShellUtil::CURRENT_USER, chrome_exe_));
+                                         ShellUtil::CURRENT_USER,
+                                         {chrome_exe_}));
   ASSERT_FALSE(base::PathExists(shortcut_path));
   ASSERT_TRUE(base::PathExists(shortcut_path.DirName()));
 }
@@ -434,7 +440,8 @@ TEST_F(ShellUtilShortcutTest, RemoveSystemLevelChromeShortcut) {
   ASSERT_TRUE(base::PathExists(shortcut_path));
 
   ASSERT_TRUE(ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                         ShellUtil::SYSTEM_LEVEL, chrome_exe_));
+                                         ShellUtil::SYSTEM_LEVEL,
+                                         {chrome_exe_}));
   ASSERT_FALSE(base::PathExists(shortcut_path));
   ASSERT_TRUE(base::PathExists(shortcut_path.DirName()));
 }
@@ -474,11 +481,230 @@ TEST_F(ShellUtilShortcutTest, RemoveMultipleChromeShortcuts) {
 
   // Remove shortcuts that target "chrome.exe".
   ASSERT_TRUE(ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                         ShellUtil::CURRENT_USER, chrome_exe_));
+                                         ShellUtil::CURRENT_USER,
+                                         {chrome_exe_}));
   ASSERT_FALSE(base::PathExists(shortcut1_path));
   ASSERT_FALSE(base::PathExists(shortcut2_path));
   ASSERT_TRUE(base::PathExists(shortcut3_path));
   ASSERT_TRUE(base::PathExists(shortcut1_path.DirName()));
+}
+
+TEST_F(ShellUtilShortcutTest, RemoveMultiTargetShortcuts) {
+  // Shortcut 1: targets "chrome.exe"; no arguments.
+  test_properties_.set_shortcut_name(L"Chrome 1");
+  test_properties_.set_arguments(L"");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut1_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut1_path));
+
+  // Shortcut 2: targets "chrome_proxy.exe"; no arguments.
+  test_properties_.set_shortcut_name(L"Chrome Proxy 2");
+  test_properties_.set_target(chrome_proxy_exe_);
+  test_properties_.set_arguments(L"");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut2_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut2_path));
+
+  // Shortcut 3: targets "chrome_proxy.exe"; has arguments; icon set to
+  // "other.ico".
+  test_properties_.set_shortcut_name(L"Chrome Proxy 3");
+  test_properties_.set_target(chrome_proxy_exe_);
+  test_properties_.set_arguments(L"--profile-directory=\"Profile 2\"");
+  test_properties_.set_icon(other_ico_, 0);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut3_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut3_path));
+
+  // Shortcut 4: targets "iron.exe"; has arguments; icon set to "chrome.exe".
+  test_properties_.set_shortcut_name(L"Iron 4");
+  test_properties_.set_target(iron_exe_);
+  test_properties_.set_icon(chrome_exe_, 3);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut4_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut4_path));
+
+  // Shortcut 5: targets "manganese.exe"; has arguments; icon set to
+  // "chrome.exe".
+  test_properties_.set_shortcut_name(L"Manganese 5");
+  test_properties_.set_target(manganese_exe_);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut5_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut5_path));
+
+  // Remove per-user shortcuts that target "chrome.exe", "chrome_proxy.exe" and
+  // "iron.exe".
+  ASSERT_TRUE(ShellUtil::RemoveShortcuts(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, ShellUtil::CURRENT_USER,
+      {chrome_exe_, chrome_proxy_exe_, iron_exe_}));
+  ASSERT_FALSE(base::PathExists(shortcut1_path));
+  ASSERT_FALSE(base::PathExists(shortcut2_path));
+  ASSERT_FALSE(base::PathExists(shortcut3_path));
+  ASSERT_FALSE(base::PathExists(shortcut4_path));
+  ASSERT_TRUE(base::PathExists(shortcut5_path));
+}
+
+TEST_F(ShellUtilShortcutTest, RemoveSystemLevelMultiTargetShortcuts) {
+  test_properties_.level = ShellUtil::SYSTEM_LEVEL;
+  // Shortcut 1: targets "chrome.exe"; no arguments.
+  test_properties_.set_shortcut_name(L"Chrome 1");
+  test_properties_.set_arguments(L"");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut1_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut1_path));
+
+  // Shortcut 2: targets "chrome_proxy.exe"; no arguments.
+  test_properties_.set_shortcut_name(L"Chrome Proxy 2");
+  test_properties_.set_target(chrome_proxy_exe_);
+  test_properties_.set_arguments(L"");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut2_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut2_path));
+
+  // Shortcut 3: targets "chrome_proxy.exe"; has arguments; icon set to
+  // "other.ico".
+  test_properties_.set_shortcut_name(L"Chrome Proxy 3");
+  test_properties_.set_target(chrome_proxy_exe_);
+  test_properties_.set_arguments(L"--profile-directory=\"Profile 2\"");
+  test_properties_.set_icon(other_ico_, 0);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut3_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut3_path));
+
+  // Shortcut 4: targets "iron.exe"; has arguments; icon set to "chrome.exe".
+  test_properties_.set_shortcut_name(L"Iron 4");
+  test_properties_.set_target(iron_exe_);
+  test_properties_.set_icon(chrome_exe_, 3);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut4_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut4_path));
+
+  // Shortcut 5: targets "manganese.exe"; has arguments; icon set to
+  // "chrome.exe".
+  test_properties_.set_shortcut_name(L"Manganese 5");
+  test_properties_.set_target(manganese_exe_);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut5_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut5_path));
+
+  // Remove system level shortcuts that target "chrome.exe", "chrome_proxy.exe"
+  // and "iron.exe".
+  ASSERT_TRUE(ShellUtil::RemoveShortcuts(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, ShellUtil::SYSTEM_LEVEL,
+      {chrome_exe_, chrome_proxy_exe_, iron_exe_}));
+  ASSERT_FALSE(base::PathExists(shortcut1_path));
+  ASSERT_FALSE(base::PathExists(shortcut2_path));
+  ASSERT_FALSE(base::PathExists(shortcut3_path));
+  ASSERT_FALSE(base::PathExists(shortcut4_path));
+  ASSERT_TRUE(base::PathExists(shortcut5_path));
+}
+
+TEST_F(ShellUtilShortcutTest, RemoveAllShortcutsMultipleLocations) {
+  // Shortcut 1: targets "chrome.exe"; desktop shortcut.
+  test_properties_.set_shortcut_name(L"Chrome Desktop 1");
+  test_properties_.set_target(chrome_exe_);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut1_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut1_path));
+
+  // Shortcut 2: targets "chrome_proxy.exe"; start menu shortcut.
+  test_properties_.set_shortcut_name(L"Chrome Proxy Startup 2");
+  test_properties_.set_target(chrome_proxy_exe_);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut2_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut2_path));
+
+  // Shortcut 3: targets "iron.exe"; has arguments; icon set to "chrome.exe".
+  test_properties_.set_shortcut_name(L"Iron 3");
+  test_properties_.set_target(iron_exe_);
+  test_properties_.set_icon(chrome_exe_, 3);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut3_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut3_path));
+
+  ShellUtil::RemoveAllShortcuts(ShellUtil::CURRENT_USER,
+                                {chrome_exe_, chrome_proxy_exe_});
+  ASSERT_FALSE(base::PathExists(shortcut1_path));
+  ASSERT_FALSE(base::PathExists(shortcut2_path));
+  ASSERT_TRUE(base::PathExists(shortcut3_path));
+}
+
+TEST_F(ShellUtilShortcutTest, RemoveAllShortcutsSystemLevelMultipleLocations) {
+  test_properties_.level = ShellUtil::SYSTEM_LEVEL;
+  // Shortcut 1: targets "chrome.exe"; desktop shortcut.
+  test_properties_.set_shortcut_name(L"Chrome Desktop 1");
+  test_properties_.set_target(chrome_exe_);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut1_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut1_path));
+
+  // Shortcut 2: targets "chrome_proxy.exe"; start menu shortcut.
+  test_properties_.set_shortcut_name(L"Chrome Proxy Startup 2");
+  test_properties_.set_target(chrome_proxy_exe_);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut2_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut2_path));
+
+  // Shortcut 3: targets "iron.exe"; has arguments; icon set to "chrome.exe".
+  test_properties_.set_shortcut_name(L"Iron 3");
+  test_properties_.set_target(iron_exe_);
+  test_properties_.set_icon(chrome_exe_, 3);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_,
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut3_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut3_path));
+
+  ShellUtil::RemoveAllShortcuts(ShellUtil::SYSTEM_LEVEL,
+                                {chrome_exe_, chrome_proxy_exe_});
+  ASSERT_FALSE(base::PathExists(shortcut1_path));
+  ASSERT_FALSE(base::PathExists(shortcut2_path));
+  ASSERT_TRUE(base::PathExists(shortcut3_path));
 }
 
 TEST_F(ShellUtilShortcutTest, RetargetShortcutsWithArgs) {
@@ -777,13 +1003,13 @@ TEST_F(ShellUtilShortcutTest, CreateMultipleStartMenuShortcutsAndRemoveFolder) {
   ASSERT_TRUE(base::PathExists(chrome_shortcut_folder));
   ASSERT_TRUE(ShellUtil::RemoveShortcuts(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
-      ShellUtil::CURRENT_USER, chrome_exe_));
+      ShellUtil::CURRENT_USER, {chrome_exe_}));
   ASSERT_FALSE(base::PathExists(chrome_shortcut_folder));
 
   ASSERT_TRUE(base::PathExists(chrome_apps_shortcut_folder));
   ASSERT_TRUE(ShellUtil::RemoveShortcuts(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
-      ShellUtil::CURRENT_USER, chrome_exe_));
+      ShellUtil::CURRENT_USER, {chrome_exe_}));
   ASSERT_FALSE(base::PathExists(chrome_apps_shortcut_folder));
 }
 
@@ -802,7 +1028,7 @@ TEST_F(ShellUtilShortcutTest,
   ASSERT_TRUE(base::PathExists(shortcut_path));
   ASSERT_TRUE(
       ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
-                                 ShellUtil::CURRENT_USER, chrome_exe_));
+                                 ShellUtil::CURRENT_USER, {chrome_exe_}));
   // The shortcut should be removed but the "Start Menu" root directory should
   // remain.
   ASSERT_TRUE(base::PathExists(fake_start_menu_.GetPath()));
@@ -831,7 +1057,8 @@ TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
   // |other_chrome_exe| and RemoveChromeShortcut() is being told that the
   // removed shortcut should point to |chrome_exe_|.
   ASSERT_TRUE(ShellUtil::RemoveShortcuts(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                         ShellUtil::CURRENT_USER, chrome_exe_));
+                                         ShellUtil::CURRENT_USER,
+                                         {chrome_exe_}));
   ASSERT_TRUE(base::PathExists(shortcut_path));
   ASSERT_TRUE(base::PathExists(shortcut_path.DirName()));
 }
@@ -870,14 +1097,6 @@ class ShellUtilRegistryTest : public testing::Test {
   }
 
   base::FilePath& chrome_exe() { return chrome_exe_; }
-
-  std::wstring url_associations_key_name() {
-    std::wstring browser_installation_key =
-        install_static::GetBaseAppName().append(
-            ShellUtil::GetCurrentInstallationSuffix(chrome_exe()));
-    return std::wstring(ShellUtil::kRegStartMenuInternet) + L"\\" +
-           browser_installation_key + L"\\Capabilities\\URLAssociations";
-  }
 
  private:
   registry_util::RegistryOverrideManager registry_overrides_;
@@ -1057,36 +1276,90 @@ TEST_F(ShellUtilRegistryTest, GetFileAssociationsAndAppName) {
   EXPECT_EQ(file_associations_and_app_name.file_associations, FileExtensions());
 }
 
+TEST_F(ShellUtilRegistryTest, GetApplicationInfoForProgId) {
+  ShellUtil::ApplicationInfo empty_application_info(
+      ShellUtil::GetApplicationInfoForProgId(kTestProgid));
+  EXPECT_TRUE(empty_application_info.application_name.empty());
+
+  // Add application class and test that GetApplicationInfoForProgId returns
+  // the registered application properties.
+  EXPECT_TRUE(ShellUtil::AddApplicationClass(
+      std::wstring(kTestProgid), OpenCommand(), kTestApplicationName,
+      kTestApplicationDescription, base::FilePath(kTestIconPath)));
+
+  ShellUtil::ApplicationInfo app_info(
+      ShellUtil::GetApplicationInfoForProgId(kTestProgid));
+
+  EXPECT_EQ(kTestProgid, app_info.prog_id);
+
+  EXPECT_EQ(app_info.application_description, app_info.file_type_name);
+  EXPECT_EQ(base::FilePath(kTestIconPath), app_info.file_type_icon_path);
+  EXPECT_EQ(0, app_info.file_type_icon_index);
+
+  EXPECT_EQ(L"\"C:\\test.exe\" --single-argument %1", app_info.command_line);
+
+  if (base::win::GetVersion() >= base::win::Version::WIN8)
+    EXPECT_EQ(L"", app_info.app_id);
+
+  EXPECT_EQ(kTestApplicationName, app_info.application_name);
+  EXPECT_EQ(kTestApplicationDescription, app_info.application_description);
+  EXPECT_EQ(L"", app_info.publisher_name);
+
+  EXPECT_EQ(base::FilePath(kTestIconPath), app_info.application_icon_path);
+  EXPECT_EQ(0, app_info.application_icon_index);
+}
+
 TEST_F(ShellUtilRegistryTest, AddAppProtocolAssociations) {
-  // Create protocol associations.
-  std::wstring app_progid1 = L"app_progid1";
-  std::wstring app_progid2 = L"app_progid2";
+  // Create test protocol associations.
+  const std::wstring app_progid = L"app_progid1";
+  const std::vector<std::wstring> app_protocols = {L"web+test", L"mailto"};
 
-  ShellUtil::ProtocolAssociations protocol_associations;
-  protocol_associations.associations[L"web+test"] = app_progid1;
-  protocol_associations.associations[L"mailto"] = app_progid2;
+  ASSERT_TRUE(ShellUtil::AddAppProtocolAssociations(app_protocols, app_progid));
 
-  ASSERT_TRUE(ShellUtil::AddAppProtocolAssociations(protocol_associations,
-                                                    chrome_exe()));
-
-  // Ensure that the registry keys have been correctly set.
+  // Ensure that classes were created for each protocol.
+  // HKEY_CURRENT_USER\Software\Classes\<protocol>\URL Protocol
   base::win::RegKey key;
   std::wstring value;
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
                                     L"Software\\Classes\\web+test", KEY_READ));
   EXPECT_TRUE(key.HasValue(L"URL Protocol"));
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER,
+                                    L"Software\\Classes\\mailto", KEY_READ));
+  EXPECT_TRUE(key.HasValue(L"URL Protocol"));
+
+  // Ensure that URLAssociations entries were created for each protocol.
+  // "<root_hkey>\Software\[CompanyPathName\]ProductPathName[install_suffix]\AppProtocolHandlers\|prog_id|\Capabilities\URLAssociations\<protocol>".
+  std::wstring capabilities_path(install_static::GetRegistryPath());
+  capabilities_path.append(ShellUtil::kRegAppProtocolHandlers);
+  capabilities_path.push_back(base::FilePath::kSeparators[0]);
+  capabilities_path.append(app_progid);
+  capabilities_path.append(L"\\Capabilities");
+
+  const std::wstring url_associations_key_name =
+      capabilities_path + L"\\URLAssociations";
 
   HKEY root = base::win::GetVersion() == base::win::Version::WIN7
                   ? HKEY_LOCAL_MACHINE
                   : HKEY_CURRENT_USER;
   ASSERT_EQ(ERROR_SUCCESS,
-            key.Open(root, url_associations_key_name().c_str(), KEY_READ));
+            key.Open(root, url_associations_key_name.c_str(), KEY_READ));
 
   ASSERT_EQ(ERROR_SUCCESS, key.ReadValue(L"web+test", &value));
-  EXPECT_EQ(app_progid1, std::wstring(value));
+  EXPECT_EQ(app_progid, std::wstring(value));
 
   ASSERT_EQ(ERROR_SUCCESS, key.ReadValue(L"mailto", &value));
-  EXPECT_EQ(app_progid2, std::wstring(value));
+  EXPECT_EQ(app_progid, std::wstring(value));
+
+  // Ensure that app was registered correctly under RegisteredApplications.
+  // <root hkey>\RegisteredApplications\<prog_id>
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      key.Open(root,
+               std::wstring(ShellUtil::kRegRegisteredApplications).c_str(),
+               KEY_READ));
+
+  ASSERT_EQ(ERROR_SUCCESS, key.ReadValue(app_progid.c_str(), &value));
+  EXPECT_EQ(capabilities_path, std::wstring(value));
 }
 
 TEST_F(ShellUtilRegistryTest, ToAndFromCommandLineArgument) {
@@ -1097,9 +1370,6 @@ TEST_F(ShellUtilRegistryTest, ToAndFromCommandLineArgument) {
   ShellUtil::ProtocolAssociations protocol_associations;
   protocol_associations.associations[L"web+test"] = app_progid1;
   protocol_associations.associations[L"mailto"] = app_progid2;
-
-  ASSERT_TRUE(ShellUtil::AddAppProtocolAssociations(protocol_associations,
-                                                    chrome_exe()));
 
   // Ensure the above protocol_associations creates correct command line
   // arguments correctly.
@@ -1116,45 +1386,39 @@ TEST_F(ShellUtilRegistryTest, ToAndFromCommandLineArgument) {
             parsed_protocol_associations.value().associations[L"web+test"]);
 }
 
-TEST_F(ShellUtilRegistryTest, DoesAppProtocolAssocationExist) {
-  std::wstring app_progid = L"app_progid";
-  ShellUtil::ProtocolAssociations protocol_associations;
-  protocol_associations.associations[L"web+test"] = app_progid;
-
-  // Create protocol associations and ensure that
-  // DoesAppProtocolAssociationExist returns true.
-  ASSERT_TRUE(ShellUtil::AddAppProtocolAssociations(protocol_associations,
-                                                    chrome_exe()));
-  EXPECT_TRUE(ShellUtil::DoesAppProtocolAssociationExist(
-      L"web+test", app_progid, chrome_exe()));
-
-  // Delete protocol associations and ensure that
-  // DoesAppProtocolAssociationExist returns false.
-  ASSERT_TRUE(ShellUtil::RemoveAppProtocolAssociations({L"web+test"},
-                                                       chrome_exe(), false));
-  EXPECT_FALSE(ShellUtil::DoesAppProtocolAssociationExist(
-      L"web+test", app_progid, chrome_exe()));
-}
-
 TEST_F(ShellUtilRegistryTest, RemoveAppProtocolAssociations) {
-  std::wstring app_progid = L"app_progid";
-  ShellUtil::ProtocolAssociations protocol_associations;
-  protocol_associations.associations[L"web+test"] = app_progid;
-  ASSERT_TRUE(ShellUtil::AddAppProtocolAssociations(protocol_associations,
-                                                    chrome_exe()));
+  // Create test protocol associations.
+  const std::wstring app_progid = L"app_progid1";
+  const std::vector<std::wstring> app_protocols = {L"web+test"};
+
+  ASSERT_TRUE(ShellUtil::AddAppProtocolAssociations(app_protocols, app_progid));
 
   // Delete associations and ensure that the protocol entry does not exist.
-  EXPECT_TRUE(ShellUtil::RemoveAppProtocolAssociations({L"web+test"},
-                                                       chrome_exe(), false));
+  EXPECT_TRUE(ShellUtil::RemoveAppProtocolAssociations(app_progid, false));
+
+  // Ensure that the software registration key was removed.
+  // "<root_hkey>\Software\[CompanyPathName\]ProductPathName[install_suffix]\AppProtocolHandlers\|prog_id|".
+  std::wstring capabilities_path(install_static::GetRegistryPath());
+  capabilities_path.append(ShellUtil::kRegAppProtocolHandlers);
+  capabilities_path.push_back(base::FilePath::kSeparators[0]);
+  capabilities_path.append(app_progid);
 
   HKEY root = base::win::GetVersion() == base::win::Version::WIN7
                   ? HKEY_LOCAL_MACHINE
                   : HKEY_CURRENT_USER;
   base::win::RegKey key;
-  std::wstring value;
-  ASSERT_EQ(ERROR_SUCCESS,
-            key.Open(root, url_associations_key_name().c_str(), KEY_READ));
-  EXPECT_FALSE(key.HasValue(L"web+test"));
+
+  ASSERT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(root, capabilities_path.c_str(), KEY_READ));
+
+  // Ensure that the RegisteredApplications entry was removed.
+  // <root hkey>\RegisteredApplications\<prog_id>
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      key.Open(root,
+               std::wstring(ShellUtil::kRegRegisteredApplications).c_str(),
+               KEY_READ));
+  EXPECT_FALSE(key.HasValue(app_progid.c_str()));
 
   // Protocol class entry should still exist after the deleted association is
   // removed so that other associations are not affected.

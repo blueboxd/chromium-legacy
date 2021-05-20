@@ -54,14 +54,9 @@ void SpeculationHostImpl::UpdateSpeculationCandidates(
   if (render_frame_host()->GetParent())
     return;
 
-  // Only one update per document is allowed for now.
-  // TODO(ryansturm): Add support for updates. https://crbug.com/1190338
-  if (received_update_)
-    return;
-  received_update_ = true;
-
   // Let `delegate_` process the candidates that it is interested in.
-  delegate_->ProcessCandidates(candidates);
+  if (delegate_)
+    delegate_->ProcessCandidates(candidates);
 
   // TODO(crbug.com/1197133): process prerender candidates.
 }

@@ -24,6 +24,11 @@
     max-width: 400px;
   }
 
+  .info-header {
+    color: var(--cr-secondary-text-color);
+    font-weight: 500;
+  }
+
   .label-wrapper {
     display: block;
   }
@@ -45,8 +50,16 @@
     padding-top: 8px;
   }
 
+  .updated-toggle-button {
+    font-weight: 500;
+  }
+
   #flocCard {
     margin-top: var(--cr-section-vertical-margin);
+  }
+
+  #flocExplanation {
+    margin-block-end: 8px;
   }
 
   #overscroll {
@@ -99,7 +112,8 @@
     <p>$i18n{privacySandboxPageExplanation2Phase2}</p>
   </template>
   <div class="card">
-    <settings-toggle-button id="apiToggleButton" class="hr"
+    <settings-toggle-button id="apiToggleButton"
+        class$="[[apiToggleButtonClass_()]]"
         pref="{{prefs.privacy_sandbox.apis_enabled}}"
         label="$i18n{privacySandboxPageSettingTitle}"
         on-change="onApiToggleButtonChange_">
@@ -131,7 +145,7 @@
           $i18n{privacySandboxPageSettingExplanation1Phase2}
         </div>
       </div>
-      <div class="cr-row continuation">
+      <div class="cr-row continuation box-last">
         <div class="secondary">
           <ul>
             <li>
@@ -153,15 +167,18 @@
         <img class="card-banner" alt=""
             src="./images/privacy_sandbox_floc_banner.svg">
       </picture>
-      <settings-toggle-button pref="{{prefs.generated.floc_enabled}}"
-          label="$i18n{privacySandboxPageFlocHeading}">
+      <settings-toggle-button id="flocToggleButton"
+          class="updated-toggle-button"
+          pref="{{prefs.generated.floc_enabled}}"
+          label="$i18n{privacySandboxPageFlocHeading}"
+          on-change="onFlocToggleButtonChange_">
       </settings-toggle-button>
-      <div class="cr-row continuation">
+      <div id="flocExplanation" class="cr-row continuation">
         <div class="secondary">$i18nRaw{privacySandboxPageFlocExplanation}</div>
       </div>
       <div class="cr-row continuation">
         <div class="label-wrapper">
-          <div>$i18n{privacySandboxPageFlocStatus}</div>
+          <div class="info-header">$i18n{privacySandboxPageFlocStatus}</div>
           <div id="flocStatus" class="cr-secondary-text">
             [[flocId_.trialStatus]]
           </div>
@@ -169,13 +186,15 @@
       </div>
       <div class="cr-row continuation">
         <div class="label-wrapper">
-          <div>$i18n{privacySandboxPageFlocCohort}</div>
+          <div class="info-header">$i18n{privacySandboxPageFlocCohort}</div>
           <div id="flocId" class="cr-secondary-text">[[flocId_.cohort]]</div>
         </div>
       </div>
       <div class="cr-row continuation">
         <div class="label-wrapper">
-          <div>$i18n{privacySandboxPageFlocCohortNextUpdate}</div>
+          <div class="info-header">
+            $i18n{privacySandboxPageFlocCohortNextUpdate}
+          </div>
           <div id="flocUpdatedOn" class="cr-secondary-text">
             [[flocId_.nextUpdate]]
           </div>

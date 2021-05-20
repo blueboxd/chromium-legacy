@@ -81,6 +81,12 @@ Polymer({
   },
 
   /** @private */
+  apiToggleButtonClass_: function() {
+    return this.privacySandboxSettings2Enabled_ ? 'hr updated-toggle-button' :
+                                                  'hr';
+  },
+
+  /** @private */
   onFlocChanged_: function() {
     this.privacySandboxBrowserProxy_.getFlocId().then(id => this.flocId_ = id);
   },
@@ -96,6 +102,7 @@ Polymer({
   /** @private */
   onResetFlocClick_: function() {
     this.privacySandboxBrowserProxy_.resetFlocId();
+    this.metricsBrowserProxy_.recordAction('Settings.PrivacySandbox.ResetFloc');
   },
 
   /**
@@ -108,5 +115,16 @@ Polymer({
         privacySandboxApisEnabled ? 'Settings.PrivacySandbox.ApisEnabled' :
                                     'Settings.PrivacySandbox.ApisDisabled');
     this.setPrefValue('privacy_sandbox.manually_controlled', true);
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onFlocToggleButtonChange_(event) {
+    const flocEnabled = event.target.checked;
+    this.metricsBrowserProxy_.recordAction(
+        flocEnabled ? 'Settings.PrivacySandbox.FlocEnabled' :
+                      'Settings.PrivacySandbox.FlocDisabled');
   },
 });

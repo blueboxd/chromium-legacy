@@ -177,8 +177,9 @@ class AutofillMetrics {
 
   // These values are persisted to UMA logs. Entries should not be renumbered
   // and numeric values should never be reused. This is the subset of field
-  // types that can be changed in a profile change/store dialog.
-  enum class EditedFieldTypeForMetrics {
+  // types that can be changed in a profile change/store dialog or are affected
+  // in a profile merge operation.
+  enum class SettingsVisibleFieldTypeForMetrics {
     kUndefined = 0,
     kName = 1,
     kEmailAddress = 2,
@@ -1605,15 +1606,30 @@ class AutofillMetrics {
   static void LogNewProfileImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
+  // Logs that a specific type was edited in a save prompt.
+  static void LogNewProfileEditedType(ServerFieldType edited_type);
+
+  // Logs the number of edited fields for an accepted profile save.
+  static void LogNewProfileNumberOfEditedFields(int number_of_edited_fields);
+
   // Logs the user decision for updating an exiting profile.
   static void LogProfileUpdateImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs that a specific type was edited in an update prompts.
-  static void LogNewProfileEditedType(ServerFieldType edited_type);
+  // Logs that a specific type changed in a profile update which was accepted
+  // without manual edits.
+  static void LogProfileUpdateAffectedType(ServerFieldType affected_type);
 
-  // Logs that a specific type was edited in an update prompts.
+  // Logs that a specific type was edited in an update prompt.
   static void LogProfileUpdateEditedType(ServerFieldType edited_type);
+
+  // Logs the number of edited fields for an accepted profile update.
+  static void LogUpdateProfileNumberOfEditedFields(int number_of_edited_fields);
+
+  // Logs the number of changed fields for a profile update that is accepted
+  // without manual edits.
+  static void LogUpdateProfileNumberOfAffectedFields(
+      int number_of_affected_fields);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);

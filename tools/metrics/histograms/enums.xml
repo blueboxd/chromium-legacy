@@ -1010,10 +1010,10 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="AddAccountStarted">
     User has tapped |Add account to device| from expanded account list.
   </int>
-  <int value="3" label="StartedIncognitoSession">
-    User tapped the button from the expanded account list to open the incognito
-    interstitial then confirmed opening the page in the incognito tab by tapping
-    |Continue| in the incognito interstitial.
+  <int value="3" label="StartedIncognitoSession (deprecated)">
+    Deprecated 05/2021. User tapped the button from the expanded account list to
+    open the incognito interstitial then confirmed opening the page in the
+    incognito tab by tapping |Continue| in the incognito interstitial.
   </int>
   <int value="4" label="SignedInWithDefaultAccount">
     User has selected the default account and signed in with it.
@@ -6115,20 +6115,6 @@ others/histograms.xml -->
   <int value="10" label="AutoDeclined"/>
 </enum>
 
-<enum name="AutofillProfileImportEditedType">
-  <int value="0" label="Undefined"/>
-  <int value="1" label="Name"/>
-  <int value="2" label="Email"/>
-  <int value="3" label="Phone"/>
-  <int value="4" label="City"/>
-  <int value="5" label="Country"/>
-  <int value="6" label="Zip"/>
-  <int value="7" label="State"/>
-  <int value="8" label="StreetAddress"/>
-  <int value="9" label="DependentLocality"/>
-  <int value="10" label="HonorificPrefix"/>
-</enum>
-
 <enum name="AutofillProfileImportType">
   <int value="0" label="Unspecified"/>
   <int value="1" label="NewProfile"/>
@@ -6375,6 +6361,20 @@ others/histograms.xml -->
   <int value="14"
       label="user not selected suggestion, user didn't change form, no form
              submitted"/>
+</enum>
+
+<enum name="AutofillSettingsVisibleTypes">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Name"/>
+  <int value="2" label="Email"/>
+  <int value="3" label="Phone"/>
+  <int value="4" label="City"/>
+  <int value="5" label="Country"/>
+  <int value="6" label="Zip"/>
+  <int value="7" label="State"/>
+  <int value="8" label="StreetAddress"/>
+  <int value="9" label="DependentLocality"/>
+  <int value="10" label="HonorificPrefix"/>
 </enum>
 
 <enum name="AutofillSubmissionSource">
@@ -15826,8 +15826,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="5" label="CreateContainer"/>
   <int value="6" label="SetupContainer"/>
   <int value="7" label="StartContainer"/>
-  <int value="8" label="FetchSshKeys"/>
-  <int value="9" label="MountContainer"/>
+  <int value="8" label="FetchSshKeys (Obsolete crbug/1198006)"/>
+  <int value="9" label="MountContainer (Obsolete crbug/1198006)"/>
   <int value="10" label="ConfigureContainer"/>
 </enum>
 
@@ -38957,6 +38957,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="kArcDownload"/>
   <int value="6" label="kPrintedPdf"/>
   <int value="7" label="kDiagnosticsLog"/>
+  <int value="8" label="kLacrosDownload"/>
 </enum>
 
 <enum name="HoldingSpacePodAction">
@@ -45186,6 +45187,7 @@ from previous Chrome versions.
   <int value="-1578503491" label="EnableContinueReading:disabled"/>
   <int value="-1578295753" label="UserMediaScreenCapturing:disabled"/>
   <int value="-1576408607" label="ChromeTipsInMainMenu:enabled"/>
+  <int value="-1576014168" label="DesktopPWAsSubApps:enabled"/>
   <int value="-1575868447" label="RemoveNtpFakebox:enabled"/>
   <int value="-1575772949" label="DesktopPWAsLinkCapturing:disabled"/>
   <int value="-1575554415" label="AndroidPaymentAppsFilter:enabled"/>
@@ -49332,6 +49334,7 @@ from previous Chrome versions.
   <int value="1985584246" label="PageInfoHistory:enabled"/>
   <int value="1986031201" label="SwipingFromLeftEdgeToGoBack:disabled"/>
   <int value="1988506961" label="EnableManualSaving:enabled"/>
+  <int value="1988679118" label="DesktopPWAsSubApps:disabled"/>
   <int value="1988810119" label="AutofillDropdownLayout:enabled"/>
   <int value="1989051182" label="view-passwords:enabled"/>
   <int value="1989877708" label="PostScriptPrinting:enabled"/>
@@ -67597,6 +67600,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="Permanent node update received without a server-defined unique
              tag"/>
   <int value="13" label="Unsupported permanent folder server tag"/>
+  <int value="14"
+      label="Node is descendant of root node, without permanent folder"/>
 </enum>
 
 <enum name="RemoteCommandExecutionStatus">

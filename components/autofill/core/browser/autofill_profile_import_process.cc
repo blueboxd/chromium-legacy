@@ -303,19 +303,42 @@ void ProfileImportProcess::CollectMetrics() const {
              import_type_ ==
                  AutofillProfileImportType::kConfirmableMergeAndSilentUpdate) {
     AutofillMetrics::LogProfileUpdateImportDecision(user_decision_);
+
+    if (user_decision_ == UserDecision::kAccepted) {
+      DCHECK(merge_candidate_.has_value() && import_candidate_.has_value());
+
+      const std::vector<ProfileValueDifference> merge_difference =
+          AutofillProfileComparator::GetSettingsVisibleProfileDifference(
+              import_candidate_.value(), merge_candidate_.value(), app_locale_);
+
+      for (const auto& difference : merge_difference) {
+        AutofillMetrics::LogProfileUpdateAffectedType(difference.type);
+      }
+
+      AutofillMetrics::LogUpdateProfileNumberOfAffectedFields(
+          merge_difference.size());
+    }
   }
 
   // If the profile was edited by the user, record a histogram of edited types.
   if (user_decision_ == UserDecision::kEditAccepted) {
-    for (const auto& difference :
-         AutofillProfileComparator::GetSettingsVisibleProfileDifference(
-             import_candidate_.value(), confirmed_import_candidate_.value(),
-             app_locale_)) {
+    const std::vector<ProfileValueDifference> edit_difference =
+        AutofillProfileComparator::GetSettingsVisibleProfileDifference(
+            import_candidate_.value(), confirmed_import_candidate_.value(),
+            app_locale_);
+    for (const auto& difference : edit_difference) {
       if (import_type_ == AutofillProfileImportType::kNewProfile) {
         AutofillMetrics::LogNewProfileEditedType(difference.type);
       } else {
         AutofillMetrics::LogProfileUpdateEditedType(difference.type);
       }
+    }
+    if (import_type_ == AutofillProfileImportType::kNewProfile) {
+      AutofillMetrics::LogNewProfileNumberOfEditedFields(
+          edit_difference.size());
+    } else {
+      AutofillMetrics::LogUpdateProfileNumberOfEditedFields(
+          edit_difference.size());
     }
   }
 }

@@ -1983,7 +1983,13 @@
     Unlock
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for enter PIN dialog.">
-    Enter SIM PIN
+    Enter PIN
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION" desc="Settings > Internet > Network details > Lock/unlock SIM card: Description for enter PIN dialog.">
+    Anyone using this device will need to enter the PIN to connect to this mobile network
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION_TEXT_LABEL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for the text input.">
+    Enter at least 4 numbers
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for change PIN dialog.">
     Change SIM PIN
@@ -1992,7 +1998,7 @@
     Connect to this network to change SIM lock setting
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for SIM locked dialog.">
-    SIM Card is locked
+    SIM card is locked
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title informing the user to enter a PIN provided by the carrier in order unlock network">
     Enter the 8-digit PIN Unblocking Key provided by your carrier
@@ -2007,7 +2013,7 @@
     Enter PIN
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_OLD_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering an old (current) PIN.">
-    Enter old PIN
+    Enter current PIN
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_NEW_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a new PIN.">
     Enter new PIN
@@ -4443,12 +4449,6 @@
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_START_CONTAINER" desc="Text shown in the crostini terminal when it is starting the Linux container">
     Starting the Linux container
-  </message>
-  <message name="IDS_CROSTINI_TERMINAL_STATUS_FETCH_SSH_KEYS" desc="Text shown in the crostini terminal when it is fetching the Linux container ssh keys">
-    Fetching the Linux container ssh keys
-  </message>
-  <message name="IDS_CROSTINI_TERMINAL_STATUS_MOUNT_CONTAINER" desc="Text shown in the crostini terminal when it is mounting container sshfs (ssh filesystem)">
-    Mounting the Linux container sshfs
   </message>
   <message name="IDS_CROSTINI_TERMINAL_STATUS_CONNECT_CONTAINER" desc="Text shown in the crostini terminal when it is connecting to the container">
     Connecting to the container

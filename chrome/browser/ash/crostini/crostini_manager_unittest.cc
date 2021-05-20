@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -244,6 +245,8 @@ class CrostiniManagerTest : public testing::Test {
     chromeos::CryptohomeMiscClient::InitializeFake();
     chromeos::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(false);
     policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
+    TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
+        std::make_unique<SystemNotificationHelper>());
   }
 
   void TearDown() override {
@@ -505,6 +508,21 @@ TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
   histogram_tester.ExpectTotalCount(kCrostiniCorruptionHistogram, 0);
 }
 
+TEST_F(CrostiniManagerTest, StartTerminaVmLowDiskNotification) {
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+  NotificationDisplayServiceTester notification_service(nullptr);
+
+  EnsureTerminaInstalled();
+  crostini_manager()->StartTerminaVm(
+      ContainerId::GetDefault().vm_name, disk_path, 0,
+      base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
+  run_loop()->Run();
+
+  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
+  auto notification = notification_service.GetNotification("crostini_low_disk");
+  EXPECT_NE(absl::nullopt, notification);
+}
+
 TEST_F(CrostiniManagerTest, OnStartTremplinRecordsRunningVm) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
   const std::string owner_id = CryptohomeIdForProfile(profile());
@@ -722,18 +740,6 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
-  void OnSshKeysFetched(bool success) override {
-    if (abort_on_ssh_keys_fetched_) {
-      Abort();
-    }
-  }
-
-  void OnContainerMounted(bool success) override {
-    if (abort_on_container_mounted_) {
-      Abort();
-    }
-  }
-
  protected:
   void ExpectCrostiniRestartResult(CrostiniResult result) {
     EXPECT_EQ(1, restart_crostini_callback_count_);
@@ -767,8 +773,6 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   bool abort_on_container_created_ = false;
   bool abort_on_container_started_ = false;
   bool abort_on_container_setup_ = false;
-  bool abort_on_ssh_keys_fetched_ = false;
-  bool abort_on_container_mounted_ = false;
   bool abort_then_stop_vm_ = false;
 
   int restart_crostini_callback_count_ = 0;
@@ -1048,7 +1052,6 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForLxdStarted) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreated) {
   abort_on_container_created_ = true;
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1064,7 +1067,6 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreated) {
 TEST_F(CrostiniManagerRestartTest, TimeoutDuringCreateContainer) {
   fake_cicerone_client_->set_send_create_lxd_container_response_delay(
       base::TimeDelta::Max());
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1079,7 +1081,6 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringCreateContainer) {
 TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForContainerCreated) {
   fake_cicerone_client_->set_send_notify_lxd_container_created_signal_delay(
       base::TimeDelta::Max());
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1101,7 +1102,6 @@ TEST_F(CrostiniManagerRestartTest, HeartbeatKeepsCreateContainerFromTimingOut) {
   signal.set_vm_name(ContainerId::GetDefault().vm_name);
   signal.set_owner_id(CryptohomeIdForProfile(profile()));
 
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1126,7 +1126,6 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreatedError) {
   abort_on_container_started_ = true;
   fake_cicerone_client_->set_lxd_container_created_signal_status(
       vm_tools::cicerone::LxdContainerCreatedSignal::UNKNOWN);
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
@@ -1142,7 +1141,6 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreatedError) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnContainerStarted) {
   abort_on_container_started_ = true;
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1157,7 +1155,6 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerStarted) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnContainerSetup) {
   abort_on_container_setup_ = true;
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1173,7 +1170,6 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerSetup) {
 TEST_F(CrostiniManagerRestartTest, TimeoutDuringContainerSetup) {
   fake_cicerone_client_->set_send_set_up_lxd_container_user_response_delay(
       base::TimeDelta::Max());
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1190,7 +1186,6 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringContainerSetup) {
 TEST_F(CrostiniManagerRestartTest, TimeoutDuringStartContainer) {
   fake_cicerone_client_->set_send_start_lxd_container_response_delay(
       base::TimeDelta::Max());
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
@@ -1205,7 +1200,6 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringStartContainer) {
 TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForContainerStarted) {
   fake_cicerone_client_->set_send_container_started_signal_delay(
       base::TimeDelta::Max());
-  // Use termina/penguin names to allow fetch ssh keys.
   restart_id_ = crostini_manager()->RestartCrostini(
       ContainerId::GetDefault(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,

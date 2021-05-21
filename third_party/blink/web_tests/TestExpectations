@@ -1268,8 +1268,6 @@ crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/ren
 
 crbug.com/1205953 external/wpt/css/css-will-change/will-change-fixpos-cb-position-1.html [ Failure ]
 crbug.com/1207788 external/wpt/css/css-will-change/will-change-stacking-context-mask-1.html [ Failure ]
-crbug.com/1207789 external/wpt/css/css-will-change/will-change-fixpos-cb-transform-style-1.html [ Failure ]
-crbug.com/1207789 external/wpt/css/css-will-change/will-change-fixpos-cb-contain-1.html [ Failure ]
 
 # color() function not implemented
 crbug.com/1068610 external/wpt/css/css-color/predefined-008.html [ Failure ]
@@ -3899,7 +3897,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textEffect2.svg [ Fa
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textEffect3.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textFeatures.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textLayout2.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textOnPath.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/verticalTextOnPath.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/xmlSpace.svg [ Failure ]
@@ -4121,8 +4118,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/pservers-grad-11-b.
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/pservers-pattern-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/render-elems-07-t.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/render-elems-08-t.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-align-02-b.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-align-06-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-deco-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-spacing-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-text-03-b.svg [ Failure ]

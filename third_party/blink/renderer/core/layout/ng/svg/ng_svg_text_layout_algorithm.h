@@ -5,11 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_SVG_NG_SVG_TEXT_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_SVG_NG_SVG_TEXT_LAYOUT_ALGORITHM_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 
 namespace blink {
 
-struct SVGTextLengthContext;
+struct SVGTextContentRange;
 
 class NGSVGTextLayoutAlgorithm {
   STACK_ALLOCATED();
@@ -31,14 +32,9 @@ class NGSVGTextLayoutAlgorithm {
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
   void ApplyTextLengthAttribute(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
-  Vector<SVGTextLengthContext> CollectTextLengthAncestors(
-      const NGFragmentItemsBuilder::ItemWithOffsetList& items,
-      wtf_size_t index,
-      const LayoutObject* layout_object) const;
   void ResolveTextLength(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items,
-      const SVGTextLengthContext& length_context,
-      wtf_size_t j_plus_1,
+      const SVGTextContentRange& range,
       Vector<wtf_size_t>& resolved_descendant_node_starts);
   void AdjustPositionsXY(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);

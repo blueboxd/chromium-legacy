@@ -68,6 +68,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
@@ -697,9 +698,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"default-browser-promo-non-modal",
      flag_descriptions::kDefaultPromoNonModalName,
      flag_descriptions::kDefaultPromoNonModalDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kDefaultPromoNonModal,
-                                    kDefaultPromoNonModalVariations,
-                                    "DefaultPromoNonModal")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kDefaultPromoNonModal,
+         kDefaultPromoNonModalVariations,
+         "IOSDefaultBrowserNonModalPromoExperiment")},
     {"default-browser-promo-tailored",
      flag_descriptions::kDefaultPromoTailoredName,
      flag_descriptions::kDefaultPromoTailoredDescription, flags_ui::kOsIos,
@@ -742,7 +744,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableAccountWalletStorage)},
-
+    {"reading-list-messages", flag_descriptions::kReadingListMessagesName,
+     flag_descriptions::kReadingListMessagesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kReadingListMessages)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

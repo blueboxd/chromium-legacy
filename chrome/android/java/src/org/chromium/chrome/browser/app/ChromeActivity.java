@@ -244,16 +244,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                    SnackbarManageable, SceneChangeObserver,
                    StatusBarColorController.StatusBarColorProvider, AppMenuDelegate, AppMenuBlocker,
                    MenuOrKeyboardActionController, CompositorViewHolder.Initializer {
-    /**
-     * No control container to inflate during initialization.
-     */
-    public static final int NO_CONTROL_CONTAINER = -1;
-
-    /**
-     * No toolbar layout to inflate during initialization.
-     */
-    public static final int NO_TOOLBAR_LAYOUT = -1;
-
     private C mComponent;
 
     /** Used to access the {@link ShareDelegate} from {@link WindowAndroid}. */
@@ -481,7 +471,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         this::getActivityTabStartupMetricsTracker,
                         /* CompositorViewHolder.Initializer */ this,
                         /* ChromeActivityNativeDelegate */ this, getModalDialogManagerSupplier(),
-                        getBrowserControlsManager(), this::getSavedInstanceState)
+                        getBrowserControlsManager(), this::getSavedInstanceState,
+                        mManualFillingComponentSupplier.get().getBottomInsetSupplier())
                 : overridenCommonsFactory.create(this, mRootUiCoordinator::getBottomSheetController,
                         getTabModelSelectorSupplier(), getBrowserControlsManager(),
                         getBrowserControlsManager(), getBrowserControlsManager(),
@@ -494,7 +485,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         this::getActivityTabStartupMetricsTracker,
                         /* CompositorViewHolder.Initializer */ this,
                         /* ChromeActivityNativeDelegate */ this, getModalDialogManagerSupplier(),
-                        getBrowserControlsManager(), this::getSavedInstanceState);
+                        getBrowserControlsManager(), this::getSavedInstanceState,
+                        mManualFillingComponentSupplier.get().getBottomInsetSupplier());
 
         return createComponent(commonsModule);
     }
@@ -565,7 +557,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
 
             bottomContainer.initialize(getBrowserControlsManager(),
-                    getWindowAndroid().getApplicationBottomInsetProvider());
+                    getWindowAndroid().getApplicationBottomInsetProvider(),
+                    mManualFillingComponentSupplier.get().getBottomInsetSupplier());
             getLifecycleDispatcher().register(bottomContainer);
 
             // Should be called after TabModels are initialized.
@@ -648,7 +641,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 TraceEvent.begin("setContentView(R.layout.main)");
                 setContentView(R.layout.main);
                 TraceEvent.end("setContentView(R.layout.main)");
-                if (getControlContainerLayoutId() != NO_CONTROL_CONTAINER) {
+                if (getControlContainerLayoutId() != ActivityUtils.NO_RESOURCE_ID) {
                     ViewStub toolbarContainerStub =
                             ((ViewStub) findViewById(R.id.control_container_stub));
 
@@ -671,7 +664,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
                 // Inflate the correct toolbar layout for the device.
                 int toolbarLayoutId = getToolbarLayoutId();
-                if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
+                if (toolbarLayoutId != ActivityUtils.NO_RESOURCE_ID && controlContainer != null) {
                     controlContainer.initWithToolbar(toolbarLayoutId);
                 }
             }
@@ -833,21 +826,21 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return The resource id for the layout to use for {@link ControlContainer}. 0 by default.
      */
     protected int getControlContainerLayoutId() {
-        return NO_CONTROL_CONTAINER;
+        return ActivityUtils.NO_RESOURCE_ID;
     }
 
     /**
      * @return The resource id that contains how large the browser controls are.
      */
     public int getControlContainerHeightResource() {
-        return NO_CONTROL_CONTAINER;
+        return ActivityUtils.NO_RESOURCE_ID;
     }
 
     /**
      * @return The layout ID for the toolbar to use.
      */
     protected int getToolbarLayoutId() {
-        return NO_TOOLBAR_LAYOUT;
+        return ActivityUtils.NO_RESOURCE_ID;
     }
 
     @Override
@@ -1075,6 +1068,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         getManualFillingComponent().onResume();
     }
 
+    private void ensurePictureInPictureController() {
+        if (mPictureInPictureController == null) {
+            mPictureInPictureController = new PictureInPictureController(
+                    this, getActivityTabProvider(), getFullscreenManager());
+        }
+    }
+
     @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
@@ -1084,12 +1084,24 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Can be in finishing state. No need to attempt PIP.
         if (isActivityFinishingOrDestroyed()) return;
 
-        if (mPictureInPictureController == null) {
-            mPictureInPictureController = new PictureInPictureController(
-                    this, getActivityTabProvider(), getFullscreenManager());
-        }
-
+        ensurePictureInPictureController();
         mPictureInPictureController.attemptPictureInPicture();
+        // The attempt might not be successful.  If it is, then `onPictureInPictureModeChanged` will
+        // let us know later.
+    }
+
+    /**
+     * When we're notified that Picture-in-Picture mode has changed, make sure that the controller
+     * is kept up-to-date.
+     */
+    @Override
+    public void onPictureInPictureModeChanged(boolean inPicture, Configuration newConfig) {
+        if (inPicture) {
+            ensurePictureInPictureController();
+            mPictureInPictureController.onEnteredPictureInPictureMode();
+        } else if (mPictureInPictureController != null) {
+            mPictureInPictureController.cleanup();
+        }
     }
 
     @Override
@@ -1995,6 +2007,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         compositorViewHolder.setBrowserControlsManager(mBrowserControlsManagerSupplier.get());
         compositorViewHolder.setUrlBar(urlBar);
         compositorViewHolder.setInsetObserverView(getInsetObserverView());
+        compositorViewHolder.setAutofillUiBottomInsetSupplier(
+                mManualFillingComponentSupplier.get().getBottomInsetSupplier());
         compositorViewHolder.setTopUiThemeColorProvider(
                 mRootUiCoordinator.getTopUiThemeColorProvider());
         compositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this);
@@ -2010,7 +2024,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mContextualSearchManager != null) {
             mContextualSearchManager.initialize(contentContainer, layoutManager,
                     mRootUiCoordinator.getBottomSheetController(), compositorViewHolder,
-                    getControlContainerHeightResource() == NO_CONTROL_CONTAINER
+                    getControlContainerHeightResource() == ActivityUtils.NO_RESOURCE_ID
                             ? 0f
                             : getResources().getDimension(getControlContainerHeightResource()),
                     getToolbarManager(), getActivityType());
@@ -2505,13 +2519,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
     }
 
-    /** @return the theme ID to use. */
-    public static int getThemeId() {
-        boolean useLowEndTheme = SysUtils.isLowEndDevice();
-        return (useLowEndTheme ? R.style.Theme_Chromium_WithWindowAnimation_LowEnd
-                               : R.style.Theme_Chromium_WithWindowAnimation);
-    }
-
     /**
      * Looks up the Chrome activity of the given web contents. This can be null. Should never be
      * cached, because web contents can change activities, e.g., when user selects "Open in Chrome"
@@ -2531,7 +2538,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     private void setLowEndTheme() {
-        if (getThemeId() == R.style.Theme_Chromium_WithWindowAnimation_LowEnd) {
+        if (ActivityUtils.getThemeId() == R.style.Theme_Chromium_WithWindowAnimation_LowEnd) {
             setTheme(R.style.Theme_Chromium_WithWindowAnimation_LowEnd);
         }
     }
@@ -2657,7 +2664,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public boolean supportsAppMenu() {
         // Derived classes that disable the toolbar should also have the Menu disabled without
         // having to explicitly disable the Menu as well.
-        return getToolbarLayoutId() != NO_TOOLBAR_LAYOUT;
+        return getToolbarLayoutId() != ActivityUtils.NO_RESOURCE_ID;
     }
 
     /**

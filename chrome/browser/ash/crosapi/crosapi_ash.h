@@ -26,6 +26,7 @@ class ClipboardHistoryAsh;
 class ContentProtectionAsh;
 class DeviceAttributesAsh;
 class DownloadControllerAsh;
+class DriveIntegrationServiceAsh;
 class FeedbackAsh;
 class FileManagerAsh;
 class IdleServiceAsh;
@@ -77,6 +78,8 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::HoldingSpaceService> receiver) override;
   void BindDownloadController(
       mojo::PendingReceiver<mojom::DownloadController> receiver) override;
+  void BindDriveIntegrationService(
+      mojo::PendingReceiver<mojom::DriveIntegrationService> receiver) override;
   void BindFileManager(
       mojo::PendingReceiver<mojom::FileManager> receiver) override;
   void BindIdleService(
@@ -140,6 +143,10 @@ class CrosapiAsh : public mojom::Crosapi {
 
   TaskManagerAsh* task_manager_ash() { return task_manager_ash_.get(); }
 
+  KeystoreServiceAsh* keystore_service_ash() {
+    return keystore_service_ash_.get();
+  }
+
  private:
   // Called when a connection is lost.
   void OnDisconnected();
@@ -152,6 +159,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<ContentProtectionAsh> content_protection_ash_;
   std::unique_ptr<DeviceAttributesAsh> device_attributes_ash_;
   std::unique_ptr<DownloadControllerAsh> download_controller_ash_;
+  std::unique_ptr<DriveIntegrationServiceAsh> drive_integration_service_ash_;
   std::unique_ptr<FeedbackAsh> feedback_ash_;
   std::unique_ptr<FileManagerAsh> file_manager_ash_;
   std::unique_ptr<IdleServiceAsh> idle_service_ash_;

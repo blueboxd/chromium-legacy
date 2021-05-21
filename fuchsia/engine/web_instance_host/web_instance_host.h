@@ -16,8 +16,19 @@ namespace cr_fuchsia {
 
 // Helper class that allows web_instance Components to be launched based on
 // caller-supplied |CreateContextParams|.
-// Note that Components using this class must include the "web_instance.cmx" in
-// their package, for the implementation to read the sandbox services from.
+//
+// Note that Components using this class must:
+// 1. Include the "web_instance.cmx" in their package, for the implementation
+//    to read the sandbox services from.
+// 2. List the fuchsia.sys.Environment & .Loader services in their sandbox.
+//
+// To ensure proper product data registration, Components using the class must:
+// * Have the same version and channel as WebEngine.
+// * Include the following services in their manifest:
+//   * "fuchsia.feedback.ComponentDataRegister"
+//   * "fuchsia.feedback.CrashReportingProductRegister"
+// * Instantiate the class on a thread with an async_dispatcher.
+// TODO(crbug.com/1211174): Remove these requirements.
 class WebInstanceHost {
  public:
   // Component URL used to launch WebEngine instances to host Contexts.

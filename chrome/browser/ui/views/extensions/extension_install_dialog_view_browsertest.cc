@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
   CloseAndWait(delegate_view->GetWidget());
 }
 
-// Regression test for https://crbug.com/1201060: Ensures that while an
+// Regression test for https://crbug.com/1201031: Ensures that while an
 // ExtensionInstallDialogView is visible, it does not (and cannot) refer to its
 // originator tab/WebContents after the tab's closure.
 //
@@ -297,10 +297,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest,
     int tab1_idx = tab_strip_model->GetIndexOfWebContents(originator_contents);
     content::WebContentsDestroyedWatcher tab_destroyed_watcher(
         tab_strip_model->GetWebContentsAt(tab1_idx));
-    tab_strip_model->CloseWebContentsAt(tab1_idx, TabStripModel::CLOSE_NONE);
-    tab_destroyed_watcher.Wait();
     EXPECT_TRUE(tab_strip_model->CloseWebContentsAt(tab1_idx,
                                                     TabStripModel::CLOSE_NONE));
+    tab_destroyed_watcher.Wait();
   }
 
   class TabAddedObserver : public TabStripModelObserver {
@@ -337,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest,
 
   // The dialog remains visible even though |originator_contents| is gone. Note
   // that this doesn't seem quite intuitive, but this is how things are at the
-  // moment. See crbug.com/1201060 for details.
+  // moment. See crbug.com/1201031 for details.
   EXPECT_TRUE(delegate_view->GetVisible());
 
   EXPECT_EQ(nullptr,

@@ -75,6 +75,7 @@ declare_args() {
   use_backup_ref_ptr_fake = false
   enable_runtime_backup_ref_ptr_control = false
   put_ref_count_in_previous_slot = false
+  enable_brp_directmap_support = false
 
   # Enable additional safety checks for BackupRefPtr that are too expensive to
   # have on by default.
@@ -132,6 +133,10 @@ assert(
 assert(
     use_backup_ref_ptr || !put_ref_count_in_previous_slot,
     "Can't put ref count in the previous slot if BackupRefPtr isn't enabled at all")
+
+assert(
+    use_backup_ref_ptr || !enable_brp_directmap_support,
+    "Can't enable backup ref ptr directmap support if BackupRefPtr isn't enabled at all")
 
 # Determines whether libevent should be dep.
 dep_libevent =
@@ -286,6 +291,7 @@ component("base") {
     "cpu.cc",
     "cpu.h",
     "critical_closure.h",
+    "cxx17_backports.h",
     "dcheck_is_on.h",
     "debug/activity_analyzer.cc",
     "debug/activity_analyzer.h",
@@ -857,6 +863,8 @@ component("base") {
     "time/tick_clock.h",
     "time/time.cc",
     "time/time.h",
+    "time/time_delta_from_string.cc",
+    "time/time_delta_from_string.h",
     "time/time_override.cc",
     "time/time_override.h",
     "time/time_to_iso8601.cc",
@@ -2497,6 +2505,8 @@ should_enable_backup_ref_ptr_slow_checks =
     enable_backup_ref_ptr_slow_checks && should_use_backup_ref_ptr
 should_put_ref_count_in_previous_slot =
     put_ref_count_in_previous_slot && should_use_backup_ref_ptr
+should_enable_brp_directmap_support =
+    enable_brp_directmap_support && should_use_backup_ref_ptr
 should_use_brp_pool_blocklist =
     use_brp_pool_blocklist && should_use_backup_ref_ptr
 should_never_remove_from_brp_pool_from_blocklist =
@@ -2524,6 +2534,7 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL=$should_enable_runtime_backup_ref_ptr_control",
     "ENABLE_BACKUP_REF_PTR_SLOW_CHECKS=$should_enable_backup_ref_ptr_slow_checks",
     "PUT_REF_COUNT_IN_PREVIOUS_SLOT=$should_put_ref_count_in_previous_slot",
+    "ENABLE_BRP_DIRECTMAP_SUPPORT=$should_enable_brp_directmap_support",
     "USE_BRP_POOL_BLOCKLIST=$should_use_brp_pool_blocklist",
     "NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST=$should_never_remove_from_brp_pool_from_blocklist",
     "USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC=$use_dedicated_partition_for_aligned_alloc",
@@ -2957,6 +2968,7 @@ test("base_unittests") {
     "containers/unique_ptr_adapters_unittest.cc",
     "containers/vector_buffer_unittest.cc",
     "cpu_unittest.cc",
+    "cxx17_backports_unittest.cc",
     "debug/activity_analyzer_unittest.cc",
     "debug/activity_tracker_unittest.cc",
     "debug/alias_unittest.cc",
@@ -3207,6 +3219,7 @@ test("base_unittests") {
     "threading/thread_unittest.cc",
     "threading/watchdog_unittest.cc",
     "time/pr_time_unittest.cc",
+    "time/time_delta_from_string_unittest.cc",
     "time/time_unittest.cc",
     "timer/elapsed_timer_unittest.cc",
     "timer/hi_res_timer_manager_unittest.cc",
@@ -3684,6 +3697,7 @@ test("base_unittests") {
     }
 
     deps += [
+      "//third_party/perfetto/include/perfetto/trace_processor:storage",
       "//third_party/perfetto/protos/perfetto/trace:lite",
       "//third_party/perfetto/protos/perfetto/trace/interned_data:lite",
       "//third_party/perfetto/protos/perfetto/trace/track_event:lite",

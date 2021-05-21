@@ -28,6 +28,9 @@ namespace syncer {
 
 namespace {
 
+constexpr base::TimeDelta kLocalChangeNudgeDelayForTest =
+    TimeDelta::FromMilliseconds(1);
+
 bool IsConfigRelatedUpdateOriginValue(
     sync_pb::SyncEnums::GetUpdatesOrigin origin) {
   switch (origin) {
@@ -82,26 +85,6 @@ bool IsActionableError(const SyncProtocolError& error) {
 }
 
 }  // namespace
-
-ConfigurationParams::ConfigurationParams()
-    : origin(sync_pb::SyncEnums::UNKNOWN_ORIGIN) {}
-
-ConfigurationParams::ConfigurationParams(
-    sync_pb::SyncEnums::GetUpdatesOrigin origin,
-    ModelTypeSet types_to_download,
-    base::OnceClosure ready)
-    : origin(origin),
-      types_to_download(types_to_download),
-      ready_task(std::move(ready)) {
-  DCHECK(!ready_task.is_null());
-}
-
-ConfigurationParams::ConfigurationParams(ConfigurationParams&&) = default;
-
-ConfigurationParams& ConfigurationParams::operator=(ConfigurationParams&&) =
-    default;
-
-ConfigurationParams::~ConfigurationParams() = default;
 
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
@@ -254,11 +237,14 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
     observer.OnSyncCycleEvent(event);
 }
 
-void SyncSchedulerImpl::ScheduleConfiguration(ConfigurationParams params) {
+void SyncSchedulerImpl::ScheduleConfiguration(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+    ModelTypeSet types_to_download,
+    base::OnceClosure ready_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConfigRelatedUpdateOriginValue(params.origin));
+  DCHECK(IsConfigRelatedUpdateOriginValue(origin));
   DCHECK_EQ(CONFIGURATION_MODE, mode_);
-  DCHECK(!params.ready_task.is_null());
+  DCHECK(!ready_task.is_null());
   DCHECK(started_) << "Scheduler must be running to configure.";
   SDVLOG(2) << "Reconfiguring syncer.";
 
@@ -267,13 +253,14 @@ void SyncSchedulerImpl::ScheduleConfiguration(ConfigurationParams params) {
   DCHECK(!pending_configure_params_);
 
   // Only reconfigure if we have types to download.
-  if (!params.types_to_download.Empty()) {
-    pending_configure_params_ =
-        std::make_unique<ConfigurationParams>(std::move(params));
+  if (!types_to_download.Empty()) {
+    // Cache configuration parameters since TrySyncCycleJob() posts a task.
+    pending_configure_params_ = std::make_unique<ConfigurationParams>(
+        origin, types_to_download, std::move(ready_task));
     TrySyncCycleJob();
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
-    std::move(params.ready_task).Run();
+    std::move(ready_task).Run();
   }
 }
 
@@ -409,21 +396,27 @@ const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
 
 void SyncSchedulerImpl::ForceShortNudgeDelayForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Set the default nudge delay to 0 because the default is used as a floor
-  // for override values, and we don't want the below override to be ignored.
-  nudge_tracker_.SetDefaultNudgeDelay(TimeDelta::FromMilliseconds(0));
   // Only protocol types can have their delay customized.
-  const ModelTypeSet protocol_types = syncer::ProtocolTypes();
-  const base::TimeDelta short_nudge_delay = TimeDelta::FromMilliseconds(1);
-  std::map<ModelType, base::TimeDelta> nudge_delays;
-  for (ModelType type : protocol_types) {
-    nudge_delays[type] = short_nudge_delay;
+  for (ModelType type : syncer::ProtocolTypes()) {
+    nudge_tracker_.SetLocalChangeDelayIgnoringMinForTest(
+        type, kLocalChangeNudgeDelayForTest);
   }
-  nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
   // We should prevent further changing of nudge delays so if we use real server
   // for integration test then server is not able to increase delays.
   force_short_nudge_delay_for_test_ = true;
 }
+
+SyncSchedulerImpl::ConfigurationParams::ConfigurationParams(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin,
+    ModelTypeSet types_to_download,
+    base::OnceClosure ready)
+    : origin(origin),
+      types_to_download(types_to_download),
+      ready_task(std::move(ready)) {
+  DCHECK(!ready_task.is_null());
+}
+
+SyncSchedulerImpl::ConfigurationParams::~ConfigurationParams() = default;
 
 void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -847,7 +840,10 @@ void SyncSchedulerImpl::OnReceivedCustomNudgeDelays(
   if (force_short_nudge_delay_for_test_)
     return;
 
-  nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
+  for (const auto& type_and_delay : nudge_delays) {
+    nudge_tracker_.UpdateLocalChangeDelay(type_and_delay.first,
+                                          type_and_delay.second);
+  }
 }
 
 void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {

@@ -365,7 +365,8 @@ inline LayoutPoint ToLayoutPoint(
     // Add the amount of block-size previously (in previous fragmentainers)
     // consumed by the container fragment. This will map the child's offset
     // nicely into the flow thread coordinate system used by the legacy engine.
-    LayoutUnit consumed = previous_container_break_token->ConsumedBlockSize();
+    LayoutUnit consumed =
+        previous_container_break_token->ConsumedBlockSizeForLegacy();
     if (container_fragment.Style().IsHorizontalWritingMode())
       offset.top += consumed;
     else
@@ -1082,8 +1083,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     // Update logical height, unless this fragment is past the block-end of the
     // generating node (happens with overflow).
     if (previous_break_token && !previous_break_token->IsAtBlockEnd()) {
-      box_->SetLogicalHeight(fragment_logical_size.block_size +
-                             previous_break_token->ConsumedBlockSize());
+      box_->SetLogicalHeight(
+          fragment_logical_size.block_size +
+          previous_break_token->ConsumedBlockSizeForLegacy());
     } else {
       DCHECK_EQ(fragment_logical_size.block_size, LayoutUnit());
     }
@@ -1242,6 +1244,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
   LayoutUnit flow_thread_offset;
   bool has_processed_first_column_in_flow_thread = false;
   bool should_append_fragmentainer_group = false;
+  bool should_expand_last_set = false;
 
   if (IsResumingLayout(previous_container_break_token)) {
     // This multicol container is nested inside another fragmentation context,
@@ -1256,7 +1259,8 @@ void NGBlockNode::PlaceChildrenInFlowThread(
       // We also create break tokens for spanners, so we need to check.
       if (token->InputNode() == *this) {
         previous_column_break_token = token;
-        flow_thread_offset = previous_column_break_token->ConsumedBlockSize();
+        flow_thread_offset =
+            previous_column_break_token->ConsumedBlockSizeForLegacy();
 
         // We're usually resuming layout into a column set that has already been
         // started in an earlier fragment, but in some cases the column set
@@ -1312,14 +1316,23 @@ void NGBlockNode::PlaceChildrenInFlowThread(
       // found a spanner first, we won't do that, since we'll move to another
       // column set (if there's more column content at all).
       should_append_fragmentainer_group = false;
+
+      // If there is no column set after the spanner, we should expand the last
+      // column set to encompass any columns that were created after the
+      // spanner.
+      should_expand_last_set = !pending_column_set;
       continue;
     }
 
     DCHECK(!child_box);
 
     LogicalSize logical_size = converter.ToLogical(child_fragment.Size());
-    logical_size.block_size =
-        ClampedToValidFragmentainerCapacity(logical_size.block_size);
+    if (child_fragment.HasLayoutOverflow()) {
+      // Don't clamp the fragmentainer to a block size of 1 if it is truly a
+      // zero-height column.
+      logical_size.block_size =
+          ClampedToValidFragmentainerCapacity(logical_size.block_size);
+    }
 
     if (has_processed_first_column_in_flow_thread) {
       // Non-uniform fragmentainer widths not supported by legacy layout.
@@ -1369,6 +1382,15 @@ void NGBlockNode::PlaceChildrenInFlowThread(
       // same column set as we used there.
       flow_thread->AppendNewFragmentainerGroupFromNG();
       should_append_fragmentainer_group = false;
+    } else if (should_expand_last_set) {
+      if (logical_size.block_size > LayoutUnit()) {
+        auto* last_set = flow_thread->LastMultiColumnSet();
+        last_set->LastFragmentainerGroup().ExtendColumnBlockSizeFromNG(
+            logical_size.block_size);
+        last_set->EndFlow(flow_thread_offset + logical_size.block_size);
+        last_set->FinishLayoutFromNG();
+      }
+      should_expand_last_set = false;
     }
 
     flow_thread->SetCurrentColumnBlockSizeFromNG(logical_size.block_size);
@@ -1418,8 +1440,10 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
     const NGFragmentItems& items,
     const NGBlockBreakToken* previous_break_token) const {
   LayoutUnit previously_consumed_block_size;
-  if (previous_break_token)
-    previously_consumed_block_size = previous_break_token->ConsumedBlockSize();
+  if (previous_break_token) {
+    previously_consumed_block_size =
+        previous_break_token->ConsumedBlockSizeForLegacy();
+  }
   bool initial_container_is_flipped = Style().IsFlippedBlocksWritingMode();
   for (NGInlineCursor cursor(container, items); cursor; cursor.MoveToNext()) {
     if (const NGPhysicalBoxFragment* child = cursor.Current().BoxFragment()) {

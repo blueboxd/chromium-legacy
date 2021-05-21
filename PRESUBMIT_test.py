@@ -2288,6 +2288,8 @@ class BannedTypeCheckTest(unittest.TestCase):
                ['using namespace std;  // nocheck']),
       MockFile('some/cpp/comment/file.cc',
                ['  // A comment about `using namespace std;`']),
+      MockFile('some/cpp/macro/file.h',
+               ['DISALLOW_COPY_AND_ASSIGN(foo)']),
     ]
 
     results = PRESUBMIT.CheckNoBannedFunctions(input_api, MockOutputApi())
@@ -2303,6 +2305,8 @@ class BannedTypeCheckTest(unittest.TestCase):
     self.assertFalse('some/cpp/nocheck/file.cc' in results[1].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[0].message)
     self.assertFalse('some/cpp/comment/file.cc' in results[1].message)
+    self.assertTrue('some/cpp/macro/file.h' in results[0].message)
+    self.assertFalse('some/cpp/macro/file.h' in results[1].message)
 
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
@@ -2354,32 +2358,12 @@ class BannedTypeCheckTest(unittest.TestCase):
     error_paths = ['third_party/blink', 'content']
     test_cases = [
       {
-        'type': 'mojo::AssociatedBinding<>;',
-        'file': 'file1.c'
-      },
-      {
-        'type': 'mojo::AssociatedBindingSet<>;',
-        'file': 'file2.c'
-      },
-      {
-        'type': 'mojo::AssociatedInterfacePtr<>',
-        'file': 'file3.cc'
-      },
-      {
         'type': 'mojo::AssociatedInterfacePtrInfo<>',
         'file': 'file4.cc'
       },
       {
         'type': 'mojo::AssociatedInterfaceRequest<>',
         'file': 'file5.cc'
-      },
-      {
-        'type': 'mojo::Binding<>',
-        'file': 'file6.cc'
-      },
-      {
-        'type': 'mojo::BindingSet<>',
-        'file': 'file7.cc'
       },
       {
         'type': 'mojo::InterfacePtr<>',
@@ -2396,34 +2380,6 @@ class BannedTypeCheckTest(unittest.TestCase):
       {
         'type': 'mojo::MakeRequest()',
         'file': 'file11.cc'
-      },
-      {
-        'type': 'mojo::MakeRequestAssociatedWithDedicatedPipe()',
-        'file': 'file12.cc'
-      },
-      {
-        'type': 'mojo::MakeStrongBinding()<>',
-        'file': 'file13.cc'
-      },
-      {
-        'type': 'mojo::MakeStrongAssociatedBinding()<>',
-        'file': 'file14.cc'
-      },
-      {
-        'type': 'mojo::StrongAssociatedBinding<>',
-        'file': 'file15.cc'
-      },
-      {
-        'type': 'mojo::StrongBinding<>',
-        'file': 'file16.cc'
-      },
-      {
-        'type': 'mojo::StrongAssociatedBindingSet<>',
-        'file': 'file17.cc'
-      },
-      {
-        'type': 'mojo::StrongBindingSet<>',
-        'file': 'file18.cc'
       },
     ]
 

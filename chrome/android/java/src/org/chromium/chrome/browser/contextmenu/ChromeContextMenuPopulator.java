@@ -97,6 +97,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private static final String SEARCH_BY_IMAGE_MENU_ITEM_KEY = "searchByImageMenuItem";
     private static final String LENS_SUPPORT_STATUS_HISTOGRAM_NAME =
             "ContextMenu.LensSupportStatus";
+    private static final String SHARED_HIGHLIGHTING_SUPPORT_URL =
+            "https://support.google.com/chrome?=shared_highlighting";
 
     // True when the tracker indicates IPH in the form of "new" label needs to be shown.
     private Boolean mShowEphemeralTabNewLabel;
@@ -221,27 +223,18 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
          * @param action The action that the user selected (e.g. ACTION_SAVE_IMAGE).
          */
         static void record(WebContents webContents, ContextMenuParams params, @Action int action) {
-            String histogramName;
-            if (params.isVideo()) {
-                histogramName = "ContextMenu.SelectedOptionAndroid.Video";
-            } else if (params.isImage()) {
-                if (LensUtils.isInShoppingAllowlist(params.getPageUrl())) {
-                    String shoppingHistogramName = params.isAnchor()
-                            ? "ContextMenu.SelectedOptionAndroid.ImageLink.ShoppingDomain"
-                            : "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain";
-                    RecordHistogram.recordEnumeratedHistogram(
-                            shoppingHistogramName, action, Action.NUM_ENTRIES);
-                }
-                histogramName = params.isAnchor() ? "ContextMenu.SelectedOptionAndroid.ImageLink"
-                                                  : "ContextMenu.SelectedOptionAndroid.Image";
-
-            } else if (params.getOpenedFromHighlight()) {
-                histogramName = "ContextMenu.SelectedOptionAndroid.SharedHighlightingInteraction";
-            } else {
-                assert params.isAnchor();
-                histogramName = "ContextMenu.SelectedOptionAndroid.Link";
-            }
+            String histogramName = String.format("ContextMenu.SelectedOptionAndroid.%s",
+                    ContextMenuUtils.getContextMenuTypeForHistogram(params));
             RecordHistogram.recordEnumeratedHistogram(histogramName, action, Action.NUM_ENTRIES);
+
+            if (!params.isVideo() && params.isImage()
+                    && LensUtils.isInShoppingAllowlist(params.getPageUrl())) {
+                String shoppingHistogramName = params.isAnchor()
+                        ? "ContextMenu.SelectedOptionAndroid.ImageLink.ShoppingDomain"
+                        : "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain";
+                RecordHistogram.recordEnumeratedHistogram(
+                        shoppingHistogramName, action, Action.NUM_ENTRIES);
+            }
             if (params.isAnchor()
                     && PerformanceHintsObserver.getPerformanceClassForURL(
                                webContents, params.getLinkUrl())
@@ -755,6 +748,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mItemDelegate.removeHighlighting();
         } else if (itemId == R.id.contextmenu_learn_more) {
             recordContextMenuSelection(ContextMenuUma.Action.LEARN_MORE);
+            mItemDelegate.onOpenInNewTab(
+                    new GURL(SHARED_HIGHLIGHTING_SUPPORT_URL), mParams.getReferrer());
         } else {
             assert false;
         }

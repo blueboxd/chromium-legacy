@@ -2134,7 +2134,7 @@
   {
     "name": "enable-oop-print-drivers",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "enable-oop-rasterization",
@@ -4435,6 +4435,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "reading-list-messages",
+    "owners": [ "thegreenfrog@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "record-snapshot-size",
     "owners": ["edchin","bling-flags@google.com"],
     "expiry_milestone": 91
@@ -4878,7 +4883,7 @@
   {
     "name": "sms-receiver-cross-device",
     "owners": [ "goto", "yigu", "web-identity@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 96
   },
   {
     "name": "snapshot-draw-view",
@@ -5356,6 +5361,11 @@
   {
     "name": "webui-tab-strip",
     "owners": [ "tluk", "collinbaker", "johntlee" ],
+    "expiry_milestone": 99
+  },
+  {
+    "name": "webui-tab-strip-ntb-in-tab-strip",
+    "owners": [ "yuhengh", "tluk", "romanarora" ],
     "expiry_milestone": 99
   },
   {

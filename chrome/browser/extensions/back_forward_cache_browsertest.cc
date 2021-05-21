@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
@@ -38,8 +39,10 @@ class ExtensionBackForwardCacheBrowserTest : public ExtensionBrowserTest {
   }
 
   void RunChromeRuntimeTest(const std::string& action) {
-    ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("back_forward_cache")
-                                  .AppendASCII("content_script")));
+    const Extension* extension =
+        LoadExtension(test_data_dir_.AppendASCII("back_forward_cache")
+                          .AppendASCII("content_script"));
+    ASSERT_TRUE(extension);
 
     ASSERT_TRUE(embedded_test_server()->Start());
     GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -56,7 +59,8 @@ class ExtensionBackForwardCacheBrowserTest : public ExtensionBrowserTest {
         static_cast<int>(
             back_forward_cache::DisabledReasonId::kExtensionMessaging);
 
-    EXPECT_TRUE(ExecJs(rfh_a, action));
+    EXPECT_TRUE(ExecJs(
+        rfh_a, base::StringPrintf(action.c_str(), extension->id().c_str())));
 
     EXPECT_EQ(0, histogram_tester_.GetBucketCount(
                      "BackForwardCache.HistoryNavigationOutcome."
@@ -135,9 +139,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheExtensionsDisabledBrowserTest,
 }
 
 // Test content script injection disallow the back forward cache.
+// TODO(https://crbug.com/1204751): Very flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_ScriptDisallowed DISABLED_ScriptDisallowed
+#else
+#define MAYBE_ScriptDisallowed ScriptDisallowed
+#endif
 IN_PROC_BROWSER_TEST_F(
     ExtensionBackForwardCacheContentScriptDisabledBrowserTest,
-    ScriptDisallowed) {
+    MAYBE_ScriptDisallowed) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("back_forward_cache")
                                 .AppendASCII("content_script")));
 
@@ -307,8 +317,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
 // entering bfcache.
 IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
                        ChromeRuntimeConnectUsage) {
-  RunChromeRuntimeTest(
-      "chrome.runtime.connect('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');");
+  RunChromeRuntimeTest("chrome.runtime.connect('%s');");
 }
 
 // Test if the chrome.runtime.sendMessage API is called, the page is prevented
@@ -316,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
                        ChromeRuntimeSendMessageUsage) {
   RunChromeRuntimeTest(
-      "chrome.runtime.sendMessage('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'some "
+      "chrome.runtime.sendMessage('%s', 'some "
       "message');");
 }
 
@@ -325,8 +334,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     ExtensionBackForwardCacheContentScriptDisabledBrowserTest,
     ChromeRuntimeConnectUsage) {
-  RunChromeRuntimeTest(
-      "chrome.runtime.connect('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');");
+  RunChromeRuntimeTest("chrome.runtime.connect('%s');");
 
   // Validate also that the not restored reason is `IsolatedWorldScript` due to
   // the extension injecting a content script.

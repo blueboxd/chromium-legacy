@@ -69,18 +69,30 @@ std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetEmailAddress()
 
 std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetDescription()
     const {
-  // TODO(crbug.com/1167062): Pass proper `include_address_and_contacts` value
-  // and handle in UI empty description if needed.
   return GetProfileDescription(
       original_profile_ ? *original_profile_ : profile_, locale_,
       /*include_address_and_contacts=*/true);
 }
 
+std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetSubtitle() {
+  DCHECK(original_profile_);
+  std::vector<ProfileValueDifference> differences =
+      GetProfileDifferenceForUi(original_profile_.value(), profile_, locale_);
+  bool address_updated =
+      std::find_if(differences.begin(), differences.end(),
+                   [](const ProfileValueDifference& diff) {
+                     return diff.type == ADDRESS_HOME_ADDRESS;
+                   }) != differences.end();
+  return GetProfileDescription(
+      original_profile_.value(), locale_,
+      /*include_address_and_contacts=*/!address_updated);
+}
+
 std::u16string
 AutofillSaveUpdateAddressProfileDelegateIOS::GetMessageActionText() const {
-  // TODO(crbug.com/1167062): Replace with proper localized string.
-  return original_profile_ ? std::u16string(u"Update...")
-                           : std::u16string(u"Save...");
+  return l10n_util::GetStringUTF16(
+      original_profile_ ? IDS_IOS_AUTOFILL_UPDATE_ADDRESS_MESSAGE_PRIMARY_ACTION
+                        : IDS_IOS_AUTOFILL_SAVE_ADDRESS_MESSAGE_PRIMARY_ACTION);
 }
 
 const autofill::AutofillProfile*
@@ -110,10 +122,21 @@ bool AutofillSaveUpdateAddressProfileDelegateIOS::EditAccepted() {
   return true;
 }
 
-void AutofillSaveUpdateAddressProfileDelegateIOS::SetProfileRawInfo(
+void AutofillSaveUpdateAddressProfileDelegateIOS::SetProfileInfo(
     const ServerFieldType& type,
-    const std::u16string& data) {
-  profile_.SetRawInfo(type, data);
+    const std::u16string& value) {
+  // Since the country field is a text field, we should use SetInfo() to make
+  // sure they get converted to country codes.
+  if (type == autofill::ADDRESS_HOME_COUNTRY) {
+    profile_.SetInfoWithVerificationStatus(
+        type, value, locale_,
+        autofill::structured_address::VerificationStatus::kUserVerified);
+    return;
+  }
+
+  profile_.SetRawInfoWithVerificationStatus(
+      type, value,
+      autofill::structured_address::VerificationStatus::kUserVerified);
 }
 
 bool AutofillSaveUpdateAddressProfileDelegateIOS::Accept() {
@@ -145,9 +168,9 @@ int AutofillSaveUpdateAddressProfileDelegateIOS::GetIconId() const {
 
 std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetMessageText()
     const {
-  // TODO(crbug.com/1167062): Replace with proper localized string.
-  return original_profile_ ? std::u16string(u"Update Address?")
-                           : std::u16string(u"Save Address?");
+  return l10n_util::GetStringUTF16(
+      original_profile_ ? IDS_IOS_AUTOFILL_UPDATE_ADDRESS_MESSAGE_TITLE
+                        : IDS_IOS_AUTOFILL_SAVE_ADDRESS_MESSAGE_TITLE);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -168,15 +191,6 @@ int AutofillSaveUpdateAddressProfileDelegateIOS::GetButtons() const {
 
 std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetButtonLabel(
     InfoBarButton button) const {
-  if (button == BUTTON_OK) {
-    // TODO(crbug.com/1167062): Replace with proper localized string.
-    return std::u16string(u"Save");
-  }
-
-  if (button == BUTTON_CANCEL) {
-    // TODO(crbug.com/1167062): Replace with proper localized string.
-    return std::u16string(u"No Thanks");
-  }
 
   NOTREACHED() << "Unsupported button label requested.";
   return std::u16string();

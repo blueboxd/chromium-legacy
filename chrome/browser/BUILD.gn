@@ -1264,6 +1264,8 @@ static_library("browser") {
     "prefetch/no_state_prefetch/no_state_prefetch_link_manager_factory.h",
     "prefetch/no_state_prefetch/no_state_prefetch_manager_factory.cc",
     "prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h",
+    "prefetch/no_state_prefetch/no_state_prefetch_navigation_throttle.cc",
+    "prefetch/no_state_prefetch/no_state_prefetch_navigation_throttle.h",
     "prefetch/no_state_prefetch/no_state_prefetch_tab_helper.cc",
     "prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h",
     "prefetch/pref_names.cc",
@@ -2168,9 +2170,7 @@ static_library("browser") {
     "//components/safe_browsing/content/browser:client_side_detection",
     "//components/safe_browsing/content/password_protection",
     "//components/safe_browsing/content/web_ui",
-    "//components/safe_browsing/core:download_file_types_proto",
     "//components/safe_browsing/core:features",
-    "//components/safe_browsing/core:file_type_policies",
     "//components/safe_browsing/core:public",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/browser/sync",
@@ -2713,6 +2713,8 @@ static_library("browser") {
       "android/feed/v2/feed_stream.h",
       "android/feed/v2/refresh_task_scheduler_impl.cc",
       "android/feed/v2/refresh_task_scheduler_impl.h",
+      "android/feed/v2/rss_links_fetcher.cc",
+      "android/feed/v2/rss_links_fetcher.h",
       "android/feed/v2/web_feed_bridge.cc",
       "android/feedback/connectivity_checker.cc",
       "android/feedback/screenshot_mode.h",
@@ -3079,6 +3081,8 @@ static_library("browser") {
       "password_manager/android/auto_signin_first_run_dialog_android.h",
       "password_manager/android/auto_signin_prompt_controller.cc",
       "password_manager/android/auto_signin_prompt_controller.h",
+      "password_manager/android/biometric_authenticator_android.cc",
+      "password_manager/android/biometric_authenticator_android.h",
       "password_manager/android/credential_android.cc",
       "password_manager/android/credential_android.h",
       "password_manager/android/credential_leak_controller_android.cc",
@@ -3114,8 +3118,6 @@ static_library("browser") {
       "password_manager/android/save_password_message_delegate.h",
       "password_manager/android/update_password_infobar_delegate_android.cc",
       "password_manager/android/update_password_infobar_delegate_android.h",
-      "password_manager/biometric_authenticator_android.cc",
-      "password_manager/biometric_authenticator_android.h",
       "password_manager/password_scripts_fetcher_factory.cc",
       "password_manager/password_scripts_fetcher_factory.h",
       "payments/android/payment_app_service_bridge.cc",
@@ -3301,6 +3303,7 @@ static_library("browser") {
       "//components/feed:buildflags",
       "//components/feed:feature_list",
       "//components/feed/core/v2:feed_core_v2",
+      "//components/feed/mojom:mojo_bindings",
       "//components/image_fetcher/core:metrics",
       "//components/infobars/android",
       "//components/installedapp/android",
@@ -6542,6 +6545,13 @@ static_library("browser") {
     sources += [
       "component_updater/hyphenation_component_installer.cc",
       "component_updater/hyphenation_component_installer.h",
+    ]
+  }
+
+  if (safe_browsing_mode != 0) {
+    deps += [
+      "//components/safe_browsing/core:download_file_types_proto",
+      "//components/safe_browsing/core:file_type_policies",
     ]
   }
 }

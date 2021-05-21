@@ -18,6 +18,7 @@ mojom("mojom") {
     "crosapi.mojom",
     "device_attributes.mojom",
     "download_controller.mojom",
+    "drive_integration_service.mojom",
     "feedback.mojom",
     "file_manager.mojom",
     "holding_space_service.mojom",
@@ -76,6 +77,10 @@ mojom("mojom") {
           mojom = "crosapi.mojom.CapabilityAccess"
           cpp = "::apps::mojom::CapabilityAccessPtr"
           move_only = true
+        },
+        {
+          mojom = "crosapi.mojom.IconType"
+          cpp = "::apps::mojom::IconType"
         },
       ]
       traits_headers = [

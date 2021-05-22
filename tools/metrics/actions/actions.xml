@@ -12234,6 +12234,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="LinkNavigationOpenedInForegroundTab">
+  <owner>meiliang@chromium.org</owner>
+  <owner>sbirch@chromium.org</owner>
+  <description>
+    Recorded any time the user opens a link which navigates into a new forground
+    tab.
+  </description>
+</action>
+
 <action name="LinkOpenedInNewTab">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -28407,6 +28416,8 @@ should be able to be added at any place in this file.
   <suffix name="OpenItemInIncognitoTab"
       label="Open a suggested item in an incognito tab."/>
   <suffix name="OpenItemInNewTab" label="Open a suggested item in a new tab."/>
+  <suffix name="OpenItemInNewTabInGroup"
+      label="Open a suggested item in a new tab in group."/>
   <suffix name="OpenItemInNewWindow"
       label="Open a suggested item in a new window."/>
   <suffix name="RemoveItem" label="Remove a suggested item."/>

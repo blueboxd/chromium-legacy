@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '8447f13c6d4b572733691c2a28a8b6999123b926',
+  'skia_revision': 'ec9d0e865d77538089fcb56fa5cfb144caffa802',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -221,15 +221,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1f1e0e6c1020027b63f930361870af86a1e32f5c',
+  'angle_revision': 'c229ccfeea64ffd3682976f6075d1593d992998f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'cbfa971a1850adcf8453777bcbf68c2ff5cd2375',
+  'swiftshader_revision': 'b46b97c10c10fbd5dc0ff1d1d101839cbc76a995',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '4fd3f635cab0e35582baf9de03c3666036b52733',
+  'pdfium_revision': '25c21ebc7468665a87e05cb1efadc104da81049a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '10f6bd19184400b77623c0b13948754cd77d1d02',
+  'devtools_frontend_revision': '9e2b403ec44bd5d2a03f45c79bc0a14b331c0590',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7e5947056393202c48b5e47850b712fb4bff7f7c',
+  'dawn_revision': 'fa725baf17fb74e6feeffe399d53a7e4e0fa8ca6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -573,7 +573,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '73c27ca0f0eb6cfe4ec607d3706ef58fe10ca56b',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'ddb161b1691443763d83506fccefd582056531d9',
       'condition': 'checkout_ios',
   },
 
@@ -1263,7 +1263,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/mig/${{platform}}',
-              'version': '2V-uHus2XTSwiuuV13_KdzamwmCswCXfWm5PDBuhC6sC',
+              'version': 'vJgfh6ZaBQ_Re5o4LFapZr-dYRdfM-GjXEbilySNcNQC',
           },
       ],
       'condition': 'host_os == "linux" and checkout_mac',
@@ -1635,7 +1635,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a0ac0fff8747c4140ca563ce40d6ea6e5124c5b8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e0d6b5679c5d8630389f68261caedc6b03175f4c',
     'condition': 'checkout_src_internal',
   },
 

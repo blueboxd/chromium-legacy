@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
@@ -304,6 +303,13 @@ void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
 
   auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
   lifecycle_unit->SetRecentlyAudible(audible_helper->WasRecentlyAudible());
+}
+
+
+void TabLifecycleUnitSource::OnBrowserRemoved(Browser* browser) {
+  // An active browser may be removed without OnBrowserNoLongerActive() being
+  // invoked. crbug.com/1206458
+  UpdateFocusedTab();
 }
 
 void TabLifecycleUnitSource::OnBrowserSetLastActive(Browser* browser) {

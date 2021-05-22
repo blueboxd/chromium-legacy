@@ -1569,7 +1569,7 @@
     },
     {
       'name': 'DisableSpdy',
-      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['file://components/policy/resources/OWNERS', 'bnc@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-53', 'chrome_os:11-53', 'android:30-53'],
@@ -3412,7 +3412,7 @@
     },
     {
       'name': 'AutoFillEnabled',
-      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['file://components/autofill/OWNERS', 'sebsg@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [
@@ -4308,7 +4308,7 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> instead.
 
-       Setting the policy means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> bypasses any proxy for the list of hosts given here. This policy only takes effect if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy isn't specified and you selected a <ph name="PROXY_MODE_ENUM_FIXED_SERVERS">fixed_servers</ph> with <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph>.
+       Setting the policy means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> bypasses any proxy for the list of hosts given here. This policy only takes effect if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy isn't specified and you specified either <ph name="PROXY_MODE_ENUM_FIXED_SERVERS">fixed_servers</ph> or <ph name="PROXY_MODE_ENUM_PAC_SCRIPT">pac_script</ph> for <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph>.
 
        Leave this policy unset if you selected any other mode for setting proxy policies.
 
@@ -4342,7 +4342,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': { "ProxyMode": "direct", "ProxyPacUrl": "https://internal.site/example.pac", "ProxyServer": "123.123.123.123:8080", "ProxyBypassList": "https://www.example1.com,https://www.example2.com,https://internalsite/", "ProxyServerMode": 2 },
+      'example_value': { "ProxyMode": "fixed_servers", "ProxyServer": "123.123.123.123:8080", "ProxyBypassList": "https://www.example1.com,https://www.example2.com,https://internalsite/" },
       'id': 116,
       'caption': '''Proxy settings''',
       'tags': ['system-security'],
@@ -4354,15 +4354,15 @@
          * <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD">ProxyMode</ph>, which lets you specify the proxy server Chrome uses and prevents users from changing proxy settings
          * <ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD">ProxyPacUrl</ph>, a URL to a proxy .pac file
          * <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD">ProxyServer</ph>, a URL of the proxy server
-         * <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD">ProxyBypassList</ph>, a list of proxy hosts that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> bypasses
+         * <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD">ProxyBypassList</ph>, a list of hosts for which the proxy will be bypassed
 
-       The <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD">ProxyServerMode</ph> field is deprecated in favor of the <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD">ProxyMode</ph> field, which lets you specify the proxy server Chrome uses and prevents users from changing proxy settings.
+       The <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD">ProxyServerMode</ph> field is deprecated in favor of the <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD">ProxyMode</ph> field.
 
         For <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD">ProxyMode</ph>, if you choose the value:
           * <ph name="PROXY_MODE_ENUM_DIRECT">direct</ph>, a proxy is never used and all other fields are ignored.
           * <ph name="PROXY_MODE_ENUM_SYSTEM">system</ph>, the systems's proxy is used and all other fields are ignored.
           * <ph name="PROXY_MODE_ENUM_AUTO_DETECT">auto_detect</ph>, all other fields are ignored.
-          * <ph name="PROXY_MODE_ENUM_FIXED_SERVER">fixed_server</ph>, the <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD">ProxyServer</ph> and <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD">ProxyBypassList</ph> fields are used.
+          * <ph name="PROXY_MODE_ENUM_FIXED_SERVERS">fixed_servers</ph>, the <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD">ProxyServer</ph> and <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD">ProxyBypassList</ph> fields are used.
           * <ph name="PROXY_MODE_ENUM_PAC_SCRIPT">pac_script</ph>, the <ph name="PROXY_BYPASS_LIST_PROXY_PAC_URL">ProxyPacUrl</ph> and <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD">ProxyBypassList</ph> fields are used.
 
       Note: For more detailed examples, visit The Chromium Projects ( https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett ).''',
@@ -8489,7 +8489,7 @@
     },
     {
       'name': 'URLWhitelist',
-      'owners': ['file://components/policy/resources/OWNERS', 'atwilson@chromium.org'],
+      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -8523,7 +8523,7 @@
     },
     {
       'name': 'URLBlocklist',
-      'owners': ['file://components/policy/resources/OWNERS', 'pastarmovj@chromium.org'],
+      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -8555,7 +8555,7 @@
     },
     {
       'name': 'URLAllowlist',
-      'owners': ['file://components/policy/resources/OWNERS', 'pastarmovj@chromium.org'],
+      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -8767,7 +8767,7 @@
     },
     {
       'name': 'OpenNetworkConfiguration',
-      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['pmarko@chromium.org', 'file://components/policy/resources/OWNERS'],
       'type': 'string',
       'schema': { 'type': 'string' },
       'url_schema': 'https://chromium.googlesource.com/chromium/src/+/HEAD/components/onc/docs/onc_spec.md',
@@ -8785,7 +8785,7 @@
     },
     {
       'name': 'DeviceOpenNetworkConfiguration',
-      'owners': ['file://components/policy/resources/OWNERS', 'pmarko@chromium.org'],
+      'owners': ['pmarko@chromium.org', 'file://components/policy/resources/OWNERS'],
       'type': 'string',
       'schema': { 'type': 'string' },
       'url_schema': 'https://chromium.googlesource.com/chromium/src/+/HEAD/components/onc/docs/onc_spec.md',
@@ -10263,7 +10263,7 @@
     },
     {
       'name': 'DeviceReleaseLtsTag',
-      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['vsavu@google.com', 'file://components/policy/resources/OWNERS'],
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:86-'],
@@ -15012,7 +15012,7 @@
     },
     {
       'name': 'KeyPermissions',
-      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['pmarko@chromium.org', 'miersh@google.com', 'omorsi@google.com'],
       'type': 'dict',
       'schema': {
         'type': 'object',
@@ -15292,7 +15292,7 @@
     },
     {
       'name': 'UsbDetachableWhitelist',
-      'owners': ['vpalatin@chromium.org', 'poromov@chromium.org'],
+      'owners': ['vpalatin@chromium.org', 'hendrich@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -15333,7 +15333,7 @@
     },
     {
       'name': 'UsbDetachableAllowlist',
-      'owners': ['file://components/policy/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['vpalatin@chromium.org', 'hendrich@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -15833,7 +15833,7 @@
     },
     {
       'name': 'EnableMediaRouter',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['file://components/media_router/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:52-', 'chrome_os:52-', 'android:52-'],
@@ -15851,7 +15851,7 @@
     },
     {
       'name': 'ShowCastIconInToolbar',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['file://components/media_router/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:58-', 'chrome_os:58-'],
@@ -15871,7 +15871,7 @@
     },
     {
       'name': 'MediaRouterCastAllowAllIPs',
-      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['file://components/media_router/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
@@ -19277,7 +19277,7 @@
     },
     {
       'name': 'AllowedLanguages',
-      'owners': ['hendrich@chromium.org', 'file://components/policy/resources/OWNERS', 'poromov@chromium.org'],
+      'owners': ['hendrich@chromium.org', 'pmarko@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -19342,7 +19342,7 @@
     },
     {
       'name': 'ExtensionInstallEventLoggingEnabled',
-      'owners': ['file://components/policy/resources/OWNERS', 'hendrich@chromium.org'],
+      'owners': ['swapnilgupta@google.com', 'file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:85-'],
@@ -25927,6 +25927,94 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       In <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 92, this policy may be used to preview the change and test for incompatibilities. In <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 93 and later, it may be used to temporarily retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.
       ''',
     },
+    {
+      'name': 'ManagedAccountsSigninRestriction',
+      'owners': ['ydago@chromium.org', 'pastarmovj@chromium.org'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'primary_account',
+          'primary_account_strict',
+          'affiliated_device',
+          'none',
+        ]
+      },
+      'future_on': ['chrome_os', 'chrome.*'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'name': 'PrimaryAccount',
+          'value': 'primary_account',
+          'caption': 'A Managed account must be a primary account',
+        },
+        {
+          'name': 'PrimaryAccountStrict',
+          'value': 'primary_account_strict',
+          'caption': 'A Managed account must be a primary account and have no secondary accounts',
+        },
+        {
+          'name': 'AffiliatedDevice',
+          'value': 'affiliated_device',
+          'caption': 'Managed accounts must be on an affiliated managed device',
+        },
+        {
+          'name': 'None',
+          'value': 'none',
+          'caption': 'No restrictions on managed accounts',
+        },
+      ],
+      'default': 'none',
+      'example_value': 'primary_account',
+      'id': 860,
+      'caption': '''Add restrictions on managed accounts''',
+      'tags': [],
+      'desc': '''
+      This policy requires <ph name="SIGNIN_INTERCEPTION_ENABLED_POLICY_NAME">SigninInterceptionEnabled</ph> to be set to True to take effect.
+
+      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> at the machine level, all managed accounts will be forced to be primary.
+      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT">'primary_account'</ph> on an account, that account will always be a primary account, but may have secondary accounts in its profile.
+
+      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT">'primary_account_strict'</ph> at the machine level, all managed accounts will be forced to be primary.
+      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_STRICT">'primary_account_strict'</ph> on an account, that account will always be a primary account and will not have any secondary accounts in its profile.
+
+      If this policy is set to <ph name="POLICY_VALUE_NONE">'none'</ph> or not set, managed accounts have no restrictions. This may result in a managed account being a secondary account, which disables its ability to receive policies set on the account by the admin.
+    ''',
+    },
+    {
+      'name': 'LockIconInAddressBarEnabled',
+      'owners': ['meacer@chromium.org', 'trusty-transport@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Use lock icon for secure connections',
+        },
+        {
+          'value': False,
+          'caption': 'Use default icons for secure connections',
+        },
+      ],
+      'future_on': ['chrome.*', 'chrome_os', 'android'],
+      # TODO(crbug.com/1210228): Support dynamic_refresh: True
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'default': False,
+      'example_value': True,
+      'id': 861,
+      'caption': '''Enable lock icon in the omnibox for secure connections''',
+      'tags': [],
+      'desc': '''This policy controls the treatment for lock icon in the omnibox.
+       From Chrome M93, there is a new omnibox icon for secure connections.
+       If the policy is Enabled, Chrome will use the existing lock icon for secure connections.
+       If the policy is Disabled or not set, Chrome will use the default icon for secure connections.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -26858,6 +26946,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 859,
+  'highest_id_currently_used': 861,
   'highest_atomic_group_id_currently_used': 40
 }

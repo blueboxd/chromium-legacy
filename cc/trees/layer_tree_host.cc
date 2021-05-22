@@ -25,7 +25,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -67,6 +66,7 @@
 #include "cc/trees/transform_node.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "cc/trees/ukm_manager.h"
+#include "components/viz/common/features.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
@@ -639,6 +639,11 @@ void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
   events_metrics_manager_.SaveActiveEventMetrics();
+}
+
+void LayerTreeHost::SetTargetLocalSurfaceId(
+    const viz::LocalSurfaceId& target_local_surface_id) {
+  proxy_->SetTargetLocalSurfaceId(target_local_surface_id);
 }
 
 bool LayerTreeHost::RequestedMainFramePendingForTesting() const {
@@ -1267,6 +1272,13 @@ void LayerTreeHost::SetViewportRectAndScale(
       device_scale_factor_ = device_scale_factor;
       device_scale_factor_changed = true;
     }
+  }
+
+  // If a new viz::LocalSurfaceId has been provided, and the viewport has
+  // changed, we need not begin new frames until it has activated.
+  if (previous_local_surface_id != local_surface_id_from_parent &&
+      device_viewport_rect_changed && features::IsSurfaceSyncThrottling()) {
+    SetTargetLocalSurfaceId(local_surface_id_from_parent);
   }
 
   if (device_viewport_rect_changed || painted_device_scale_factor_changed ||

@@ -139,6 +139,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void RenderProcessGone() override;
   void Destroy() override;
   void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override;
+  void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
+                                 const gfx::Rect& bounds) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ProcessAckedTouchEvent(
@@ -164,6 +166,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DidStopFlinging() override;
   void OnInterstitialPageAttached() override;
   void OnInterstitialPageGoingAway() override;
+  bool CanSynchronizeVisualProperties() override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
   void OnDidNavigateMainFrameToNewPage() override;
@@ -597,6 +600,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   SurfaceIdChangedCallbackList surface_id_changed_callbacks_;
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
+
+  bool is_surface_sync_throttling_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_{this};
 

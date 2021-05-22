@@ -1194,7 +1194,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
           initWithBrowser:browser
-                presenter:self.mainInterface.bvc
+                presenter:self.currentInterface.bvc
                dispatcher:welcomeHandler];
   self.welcomeToChromeController = welcomeToChrome;
   UINavigationController* navController =
@@ -1205,9 +1205,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   CGRect appFrame = [[UIScreen mainScreen] bounds];
   [[navController view] setFrame:appFrame];
   self.sceneState.presentingFirstRunUI = YES;
-  [self.mainInterface.viewController presentViewController:navController
-                                                  animated:NO
-                                                completion:nil];
+  [self.currentInterface.viewController presentViewController:navController
+                                                     animated:NO
+                                                   completion:nil];
 }
 
 // Shows the first run UI.
@@ -1588,6 +1588,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   if (self.signinCoordinator != nil || !ios::GetChromeBrowserProvider()
                                             ->GetChromeIdentityService()
                                             ->HasIdentities()) {
+    return;
+  }
+
+  // Suppress iPad web sign-in.
+  // TODO(crbug.com/1211794): Remove iPad suppression once the UI is adapted.
+  if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
     return;
   }
 

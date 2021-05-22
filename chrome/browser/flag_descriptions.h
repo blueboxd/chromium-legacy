@@ -564,6 +564,9 @@ extern const char kDeprecateAltClickDescription[];
 extern const char kDiagnosticsAppName[];
 extern const char kDiagnosticsAppDescription[];
 
+extern const char kDiagnosticsAppNavigationName[];
+extern const char kDiagnosticsAppNavigationDescription[];
+
 extern const char kDisableKeepaliveFetchName[];
 extern const char kDisableKeepaliveFetchDescription[];
 
@@ -746,12 +749,6 @@ extern const char kForceDirectionRtl[];
 
 extern const char kForceUiDirectionName[];
 extern const char kForceUiDirectionDescription[];
-
-extern const char kFormControlsDarkModeName[];
-extern const char kFormControlsDarkModeDescription[];
-
-extern const char kFormControlsRefreshName[];
-extern const char kFormControlsRefreshDescription[];
 
 extern const char kGlobalMediaControlsName[];
 extern const char kGlobalMediaControlsDescription[];

@@ -3244,6 +3244,11 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   command_line->AppendSwitchASCII(switches::kProcessType,
                                   switches::kRendererProcess);
 
+  // Call this as early as possible so that --extension-process will show early
+  // in process listings. See https://crbug.com/1211558 for details.
+  GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
+                                                                GetID());
+
 #if defined(OS_WIN)
   command_line->AppendArg(switches::kPrefetchArgumentRenderer);
 #endif  // defined(OS_WIN)
@@ -3264,9 +3269,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
            .empty()) {
     command_line->AppendSwitch(switches::kNoZygote);
   }
-
-  GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
-                                                                GetID());
 
 #if defined(OS_WIN)
   command_line->AppendSwitchASCII(
@@ -3867,6 +3869,10 @@ void RenderProcessHostImpl::Cleanup() {
   // shutdown delay has now been cancelled.
   CancelAllProcessShutdownDelays();
 
+  // Use `DeleteSoon` to delete `this` RenderProcessHost *after* the tasks
+  // that are *already* queued on the UI thread have been given a chance to run
+  // (this may include IPC handling tasks that depend on the existence of
+  // RenderProcessHost and/or ChildProcessSecurityPolicyImpl::SecurityState).
 #ifndef NDEBUG
   is_self_deleted_ = true;
 #endif

@@ -5548,6 +5548,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDiagnosticsAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDiagnosticsApp)},
 
+    {"diagnostics-app-navigation",
+     flag_descriptions::kDiagnosticsAppNavigationName,
+     flag_descriptions::kDiagnosticsAppNavigationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kDiagnosticsAppNavigation)},
+
     {"enable-hostname-setting", flag_descriptions::kEnableHostnameSettingName,
      flag_descriptions::kEnableHostnameSettingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableHostnameSetting)},
@@ -5679,17 +5684,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          policy::features::kPolicyBlocklistThrottleRequiresPoliciesLoaded)},
-
-#if !defined(OS_ANDROID)
-    {"form-controls-dark-mode", flag_descriptions::kFormControlsDarkModeName,
-     flag_descriptions::kFormControlsDarkModeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kCSSColorSchemeUARendering)},
-#endif  // !defined(OS_ANDROID)
-
-    {"form-controls-refresh", flag_descriptions::kFormControlsRefreshName,
-     flag_descriptions::kFormControlsRefreshDescription,
-     kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kFormControlsRefresh)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"auto-screen-brightness", flag_descriptions::kAutoScreenBrightnessName,

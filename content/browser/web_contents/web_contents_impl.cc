@@ -4432,11 +4432,27 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   RenderFrameHost* source_render_frame_host = RenderFrameHost::FromID(
       params.source_render_process_id, params.source_render_frame_id);
 
-  // Prevent frams that are not active from opening new windows, tabs, popups,
+  // Prevent frames that are not active from opening new windows, tabs, popups,
   // etc.
   if (params.disposition != WindowOpenDisposition::CURRENT_TAB &&
       source_render_frame_host && !source_render_frame_host->IsCurrent()) {
     return nullptr;
+  }
+
+  if (params.frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId) {
+    if (auto* frame_tree_node =
+            FrameTreeNode::GloballyFindByID(params.frame_tree_node_id)) {
+      // If a frame tree node ID is specified and it exists, ensure it is for a
+      // node within this WebContents. Note: this WebContents could be hosting
+      // multiple frame trees (e.g. prerendering) so it's not enough to check
+      // against this->frame_tree_.
+      FrameTree* frame_tree = frame_tree_node->frame_tree();
+      CHECK_EQ(frame_tree->controller().GetWebContents(), this);
+    } else {
+      // If the node doesn't exist it was probably removed from its frame tree.
+      // In that case, abort since continuing would navigate the root frame.
+      return nullptr;
+    }
   }
 
   WebContents* new_contents = delegate_->OpenURLFromTab(this, params);

@@ -2271,6 +2271,7 @@ if (!is_android) {
         "../browser/extensions/extension_modules_apitest.cc",
         "../browser/extensions/extension_override_apitest.cc",
         "../browser/extensions/extension_resource_request_policy_apitest.cc",
+        "../browser/extensions/extension_security_exploit_browsertest.cc",
         "../browser/extensions/extension_shared_array_buffer_browsertest.cc",
         "../browser/extensions/extension_startup_browsertest.cc",
         "../browser/extensions/extension_storage_apitest.cc",
@@ -4173,6 +4174,7 @@ test("unit_tests") {
       "../browser/install_verification/win/module_list_unittest.cc",
       "../browser/install_verification/win/module_verification_test.cc",
       "../browser/install_verification/win/module_verification_test.h",
+      "../browser/media/cdm_pref_service_impl_test.cc",
       "../browser/metrics/antivirus_metrics_provider_win_unittest.cc",
       "../browser/performance_manager/mechanisms/working_set_trimmer_win_unittest.cc",
       "../browser/performance_monitor/metric_evaluator_helper_win_unittest.cc",
@@ -4547,6 +4549,7 @@ test("unit_tests") {
     assert(toolkit_views)
     sources += [ "../browser/ui/startup/credential_provider_signin_info_fetcher_win_unittest.cc" ]
     deps += [
+      "//chrome:packed_resources_integrity",
       "//chrome/browser/win/conflicts:unit_tests",
       "//chrome/test:credential_provider_test_utils",
     ]
@@ -5987,6 +5990,7 @@ test("unit_tests") {
       "../browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h",
       "../browser/safe_browsing/cloud_content_scanning/deep_scanning_utils_unittest.cc",
       "../browser/safe_browsing/cloud_content_scanning/file_analysis_request_unittest.cc",
+      "../browser/safe_browsing/cloud_content_scanning/multipart_data_pipe_getter_unittest.cc",
       "../browser/safe_browsing/cloud_content_scanning/multipart_uploader_unittest.cc",
       "../browser/safe_browsing/download_protection/deep_scanning_request_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_service_unittest.cc",
@@ -6053,6 +6057,7 @@ test("unit_tests") {
       "//components/safe_browsing/core:features_unittest",
       "//components/safe_browsing/core:ping_manager_unittest",
       "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
+      "//components/safe_browsing/core/browser/download:unittests",
       "//components/safe_browsing/core/browser/sync:unittests",
       "//components/safe_browsing/core/db:v4_test_util",
     ]
@@ -8188,4 +8193,48 @@ proto_library("messaging_test_proto") {
 proto_library("profile_proto_db_test_proto") {
   sources =
       [ "../browser/persisted_state_db/profile_proto_db_test_proto.proto" ]
+}
+
+# This target is defined for Lacros testing.
+# See //chrome/test/base/chromeos/README.md for more information.
+if (is_chromeos_ash) {
+  assert(use_aura)
+
+  _target_name = "test_ash_chrome"
+  executable(_target_name) {
+    output_name = _target_name
+
+    sources = [
+      "//chrome/app/chrome_exe_main_aura.cc",
+      "//chrome/app/chrome_main_delegate.cc",
+      "//chrome/app/chrome_main_delegate.h",
+      "base/chromeos/fake_ash_test_chrome_browser_main_extra_parts.cc",
+      "base/chromeos/fake_ash_test_chrome_browser_main_extra_parts.h",
+      "base/chromeos/test_chrome_base.cc",
+      "base/chromeos/test_chrome_base.h",
+      "base/chromeos/test_chrome_main.cc",
+    ]
+    deps = [
+      "//chromeos/services/machine_learning/public/cpp:stub",
+
+      # On Linux, link the dependencies (libraries) that make up actual
+      # Chromium functionality directly into the executable.
+      "//chrome:browser_dependencies",
+      "//chrome:child_dependencies",
+
+      # For the sampling profiler.
+      # The way it's currently implemented requires us to keep it, but from a
+      # technical perspective it shouldn't be necessary
+      "//chrome/common/profiler",
+      "//content/public/app",
+
+      # For headless mode.
+      "//headless:headless_shell_lib",
+    ]
+    data = [ "$root_out_dir/resources.pak" ]
+    data_deps = [
+      # The step's output are needed at runtime, so we also need a data_dep.
+      "//chrome:packed_resources",
+    ]
+  }
 }

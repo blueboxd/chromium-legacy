@@ -88,11 +88,11 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserTest,
   // Click the app menu button, displaying the target element.
   EXPECT_CALL_IN_SCOPE(completed, Run, {
     app_menu_button->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_PRESSED,
-                                               ui::VKEY_RETURN, ui::EF_NONE,
+                                               ui::VKEY_SPACE, ui::EF_NONE,
                                                ui::EventTimeForNow()));
 
     app_menu_button->OnKeyReleased(ui::KeyEvent(ui::ET_KEY_RELEASED,
-                                                ui::VKEY_RETURN, ui::EF_NONE,
+                                                ui::VKEY_SPACE, ui::EF_NONE,
                                                 ui::EventTimeForNow()));
   });
 

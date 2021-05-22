@@ -48,6 +48,18 @@ bool ProfileImportProcess::prompt_shown() const {
   return prompt_shown_;
 }
 
+bool ProfileImportProcess::UserDeclined() const {
+  return user_decision_ == UserDecision::kDeclined ||
+         user_decision_ == UserDecision::kEditDeclined ||
+         user_decision_ == UserDecision::kMessageDeclined;
+  ;
+}
+
+bool ProfileImportProcess::UserAccepted() const {
+  return user_decision_ == UserDecision::kAccepted ||
+         user_decision_ == UserDecision::kEditAccepted;
+}
+
 void ProfileImportProcess::DetermineProfileImportType() {
   AutofillProfileComparator comparator(app_locale_);
   bool is_mergeable_with_existing_profile = false;
@@ -212,6 +224,20 @@ void ProfileImportProcess::SetUserDecision(
       // If the import candidate is supplied, the 'edited_profile' must be
       // supplied.
       DCHECK(edited_profile.has_value());
+
+      // Make sure the verification status of all settings-visible non-empty
+      // fields in the edited profile are set to kUserVerified.
+      for (auto type : GetUserVisibleTypes()) {
+        std::u16string value = edited_profile->GetRawInfo(type);
+        if (!value.empty() &&
+            edited_profile->GetVerificationStatus(type) ==
+                structured_address::VerificationStatus::kNoStatus) {
+          edited_profile->SetRawInfoWithVerificationStatus(
+              type, value,
+              structured_address::VerificationStatus::kUserVerified);
+        };
+      }
+
       edited_profile->FinalizeAfterImport();
       // The `edited_profile` has to have the same `guid` as the original import
       // candidate.

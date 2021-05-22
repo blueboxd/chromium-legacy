@@ -78,7 +78,6 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -151,6 +150,7 @@ const char kAccelWindowSnap[] = "Ash.Accelerators.WindowSnap";
 namespace {
 
 using base::UserMetricsAction;
+using chromeos::WindowStateType;
 using chromeos::input_method::InputMethodManager;
 using message_center::Notification;
 using message_center::SystemNotificationWarningLevel;
@@ -356,20 +356,14 @@ void RecordImeSwitchByModeChangeKey() {
                             ImeSwitchType::kModeChangeKey);
 }
 
-void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
+void RecordCycleBackwardMru(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
-
-  Shell::Get()->window_cycle_controller()->HandleCycleWindow(
-      WindowCycleController::WindowCyclingDirection::kBackward);
 }
 
-void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
+void RecordCycleForwardMru(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_NextWindow_Tab"));
-
-  Shell::Get()->window_cycle_controller()->HandleCycleWindow(
-      WindowCycleController::WindowCyclingDirection::kForward);
 }
 
 void HandleActivateDesk(const ui::Accelerator& accelerator,
@@ -1691,6 +1685,14 @@ bool CanHandleTouchHud() {
   return RootWindowController::ForTargetRootWindow()->touch_hud_debug();
 }
 
+bool CanUnpinWindow() {
+  // WindowStateType::kTrustedPinned does not allow the user to press a key to
+  // exit pinned mode.
+  WindowState* window_state = WindowState::ForActiveWindow();
+  return window_state &&
+         window_state->GetStateType() == WindowStateType::kPinned;
+}
+
 void HandleTouchHudClear() {
   RootWindowController::ForTargetRootWindow()->touch_hud_debug()->Clear();
 }
@@ -2141,7 +2143,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case TOUCH_HUD_MODE_CHANGE:
       return CanHandleTouchHud();
     case UNPIN:
-      return accelerators::CanUnpinWindow();
+      return CanUnpinWindow();
     case WINDOW_CYCLE_SNAP_LEFT:
     case WINDOW_CYCLE_SNAP_RIGHT:
       return CanHandleWindowSnap();
@@ -2249,10 +2251,12 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     }
     case CYCLE_BACKWARD_MRU:
-      HandleCycleBackwardMRU(accelerator);
+      RecordCycleBackwardMru(accelerator);
+      accelerators::CycleBackwardMru();
       break;
     case CYCLE_FORWARD_MRU:
-      HandleCycleForwardMRU(accelerator);
+      RecordCycleForwardMru(accelerator);
+      accelerators::CycleForwardMru();
       break;
     case DESKS_ACTIVATE_DESK_LEFT:
       HandleActivateDesk(accelerator, /*activate_left=*/true);

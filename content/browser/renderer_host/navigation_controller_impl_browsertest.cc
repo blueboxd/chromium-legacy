@@ -2789,8 +2789,7 @@ class InitialEmptyDocNavigationControllerBrowserTest
     EXPECT_FALSE(capturer.did_replace_entry());
 
     // Check both NavigationHandle and LoadCommittedDetails for whether this was
-    // considered same-document, as these have diverged in the past (since only
-    // the latter is affected by IsURLSameDocumentNavigation).
+    // considered same-document, as these have diverged in the past.
     // See https://crbug.com/1193134.
     EXPECT_EQ(expect_same_document, capturer.is_same_document());
     EXPECT_EQ(expect_same_document,
@@ -3126,8 +3125,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     EXPECT_TRUE(controller.GetLastCommittedEntry());
 
     // Check both NavigationHandle and LoadCommittedDetails for whether this was
-    // considered same-document, as these have diverged in the past (since only
-    // the latter is affected by IsURLSameDocumentNavigation).
+    // considered same-document, as these have diverged in the past.
     // See https://crbug.com/1193134.
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_TRUE(load_details_observer.load_details().is_same_document);
@@ -16380,6 +16378,31 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
   EXPECT_TRUE(ExecJs(shell(), "history.pushState('', 'test', '#foo1')"));
   EXPECT_FALSE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+}
+
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       URLLoadReturnsNavigationHandle) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  base::WeakPtr<NavigationHandle> navigation =
+      shell()->web_contents()->GetController().LoadURLWithParams(
+          NavigationController::LoadURLParams(url));
+
+  // The returned NavigationHandle should be valid.
+  EXPECT_TRUE(navigation);
+
+  // Start the navigation and ensure that the NavigationHandle we saw matches
+  // the one TestNavigationManager saw.
+  ASSERT_TRUE(navigation_manager.WaitForRequestStart());
+  EXPECT_TRUE(navigation);
+  EXPECT_EQ(navigation->GetNavigationId(),
+            navigation_manager.GetNavigationHandle()->GetNavigationId());
+
+  // Commit navigation and ensure that the weak ptr to NavigationHandle was
+  // invalidated.
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_FALSE(navigation);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

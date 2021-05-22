@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
-#include "base/stl_util.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -424,6 +423,7 @@ ui::NativeTheme::ExtraParams CocoaScrollBar::GetPainterParams() const {
   }
   params.scrollbar_extra.is_overlay =
       GetScrollerStyle() == NSScrollerStyleOverlay;
+  params.scrollbar_extra.scale_from_dip = 1.0f;
   return params;
 }
 

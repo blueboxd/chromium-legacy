@@ -96,7 +96,6 @@ buildflag_header("buildflags") {
     "ENABLE_CHROMIUM_UPDATER=$enable_chromium_updater",
     "ENABLE_APP_SESSION_SERVICE=$enable_app_session_service",
     "USE_THIN_LTO=$use_thin_lto",
-    "ENABLE_PAK_FILE_INTEGRITY_CHECKS=$enable_pak_file_integrity_checks",
   ]
   if (is_win) {
     flags += [ "ENABLE_SEGMENT_HEAP=$enable_segment_heap" ]
@@ -1051,6 +1050,8 @@ static_library("browser") {
     "password_manager/password_store_factory.h",
     "password_manager/password_store_utils.cc",
     "password_manager/password_store_utils.h",
+    "payments/payment_credential_factory.cc",
+    "payments/payment_credential_factory.h",
     "performance_hints/performance_hints_features.cc",
     "performance_hints/performance_hints_features.h",
     "performance_hints/performance_hints_observer.cc",
@@ -3840,6 +3841,8 @@ static_library("browser") {
       "policy/device_account_initializer.h",
       "policy/local_sync_policy_handler.cc",
       "policy/local_sync_policy_handler.h",
+      "policy/managed_account_policy_handler.cc",
+      "policy/managed_account_policy_handler.h",
       "privacy_sandbox/generated_floc_pref.cc",
       "privacy_sandbox/generated_floc_pref.h",
       "process_singleton_modal_dialog_lock.cc",
@@ -4290,7 +4293,9 @@ static_library("browser") {
       ]
     }
 
-    if (enable_pak_file_integrity_checks) {
+    # On Windows, the hashes are embedded in //chrome:chrome_initial rather
+    # than here in :chrome_dll.
+    if (!is_win) {
       deps += [ "//chrome:packed_resources_integrity" ]
     }
 
@@ -4840,6 +4845,8 @@ static_library("browser") {
       "install_verification/win/module_list.h",
       "install_verification/win/module_verification_common.cc",
       "install_verification/win/module_verification_common.h",
+      "media/cdm_pref_service_impl.cc",
+      "media/cdm_pref_service_impl.h",
       "media/webrtc/window_icon_util_win.cc",
       "media_galleries/win/mtp_device_delegate_impl_win.cc",
       "media_galleries/win/mtp_device_delegate_impl_win.h",
@@ -4959,6 +4966,7 @@ static_library("browser") {
     deps += [
       ":chrome_process_finder",
       "//base/win:base_win_buildflags",
+      "//chrome/app:chrome_exe_main_exports",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/safe_browsing/chrome_cleaner",
       "//chrome/browser/safe_browsing/chrome_cleaner:public",
@@ -5469,8 +5477,6 @@ static_library("browser") {
       "media/offscreen_tab.h",
       "payments/chrome_payment_request_delegate.cc",
       "payments/chrome_payment_request_delegate.h",
-      "payments/payment_credential_factory.cc",
-      "payments/payment_credential_factory.h",
       "payments/payment_request_display_manager_factory.cc",
       "payments/payment_request_display_manager_factory.h",
       "payments/payment_request_factory.cc",
@@ -6552,6 +6558,7 @@ static_library("browser") {
     deps += [
       "//components/safe_browsing/core:download_file_types_proto",
       "//components/safe_browsing/core:file_type_policies",
+      "//components/safe_browsing/core/browser/download:download_stats",
     ]
   }
 }

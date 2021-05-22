@@ -1416,7 +1416,8 @@ class ComputedStyle : public ComputedStyleBase,
   // Will-change utility functions.
   bool HasWillChangeCompositingHint() const;
   bool HasWillChangeOpacityHint() const {
-    return WillChangeProperties().Contains(CSSPropertyID::kOpacity);
+    return WillChangeProperties().Contains(CSSPropertyID::kOpacity) ||
+           WillChangeProperties().Contains(CSSPropertyID::kAliasWebkitOpacity);
   }
   bool HasWillChangeTransformHint() const;
   bool HasWillChangeFilterHint() const {
@@ -2602,9 +2603,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   mojom::blink::ColorScheme UsedColorScheme() const {
-    return RuntimeEnabledFeatures::CSSColorSchemeUARenderingEnabled()
-               ? ComputedColorScheme()
-               : mojom::blink::ColorScheme::kLight;
+    return ComputedColorScheme();
   }
 
   mojom::blink::ColorScheme UsedColorSchemeForInitialColors() const {

@@ -23,12 +23,13 @@
 - (void)loadView {
   self.customSpacingAfterImage = 30;
   self.helpButtonAvailable = YES;
+  self.helpButtonAccessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_HELP_ACCESSIBILITY_LABEL);
   self.primaryActionAvailable = YES;
   self.secondaryActionAvailable = YES;
   self.imageHasFixedSize = YES;
   self.showDismissBarButton = NO;
   self.dismissBarButtonSystemItem = UIBarButtonSystemItemCancel;
-  self.capitalizeTitle = NO;
   if (@available(iOS 13.4, *)) {
     self.pointerInteractionEnabled = YES;
   }

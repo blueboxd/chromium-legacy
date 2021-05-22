@@ -189,12 +189,7 @@ VideoFrame* MakeVideoFrame(ScriptState* script_state,
   video_frame_init->setTimestamp(proto.timestamp());
   video_frame_init->setDuration(proto.duration());
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   auto* source = MakeGarbageCollected<V8CanvasImageSource>(image_bitmap);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  CanvasImageSourceUnion source;
-  source.SetImageBitmap(image_bitmap);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   return VideoFrame::Create(script_state, source, video_frame_init,
                             IGNORE_EXCEPTION_FOR_TESTING);
@@ -202,7 +197,8 @@ VideoFrame* MakeVideoFrame(ScriptState* script_state,
 
 AudioData* MakeAudioData(ScriptState* script_state,
                          const wc_fuzzer::AudioDataInit& proto) {
-  if (proto.channels().size() > media::limits::kMaxChannels)
+  if (!proto.channels().size() ||
+      proto.channels().size() > media::limits::kMaxChannels)
     return nullptr;
 
   if (proto.length() > media::limits::kMaxSamplesPerPacket)

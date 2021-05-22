@@ -396,8 +396,6 @@ class FormStructure {
   }
 
   FormGlobalId global_id() const { return {host_frame_, unique_renderer_id_}; }
-  LocalFrameToken host_frame() const { return host_frame_; }
-  FormRendererId unique_renderer_id() const { return unique_renderer_id_; }
 
   bool ShouldSkipFieldVisibleForTesting(const FormFieldData& field) const {
     return ShouldSkipField(field);
@@ -657,10 +655,12 @@ class FormStructure {
 
   bool value_from_dynamic_change_form_ = false;
 
-  // An unique identifier of the fame.
+  // A unique identifier of the containing frame.
+  // This value must not be leaked to other renderer processes.
   LocalFrameToken host_frame_;
 
-  // An identifier that is unique among the form from the same frame.
+  // An identifier of the form that is unique among the forms from the same
+  // frame.
   FormRendererId unique_renderer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);

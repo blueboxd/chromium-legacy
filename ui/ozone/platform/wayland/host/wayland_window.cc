@@ -121,12 +121,11 @@ void WaylandWindow::UpdateBufferScale(bool update_bounds) {
   ui_scale_ = output->GetUIScaleFactor();
 
   int32_t old_scale = buffer_scale();
-  root_surface_->SetBufferScale(new_scale, update_bounds);
+  root_surface_->SetBufferScale(new_scale);
   if (primary_subsurface_)
-    primary_subsurface_->wayland_surface()->SetBufferScale(new_scale,
-                                                           update_bounds);
+    primary_subsurface_->wayland_surface()->SetBufferScale(new_scale);
   for (auto& subsurface : wayland_subsurfaces_)
-    subsurface->wayland_surface()->SetBufferScale(new_scale, update_bounds);
+    subsurface->wayland_surface()->SetBufferScale(new_scale);
 
   // We need to keep DIP size of the window the same whenever the scale changes.
   if (update_bounds)
@@ -185,9 +184,11 @@ bool WaylandWindow::StartDrag(const ui::OSExchangeData& data,
                               gfx::NativeCursor cursor,
                               bool can_grab_pointer,
                               WmDragHandler::Delegate* delegate) {
+  if (!connection_->data_drag_controller()->StartSession(data, operation))
+    return false;
+
   DCHECK(!drag_handler_delegate_);
   drag_handler_delegate_ = delegate;
-  connection()->data_drag_controller()->StartSession(data, operation);
 
   base::RunLoop drag_loop(base::RunLoop::Type::kNestableTasksAllowed);
   drag_loop_quit_closure_ = drag_loop.QuitClosure();

@@ -9,7 +9,7 @@ This file is used to generate a comprehensive list of Chrome UKM metrics
 along with a detailed description for each metric.
 
 See the following doc for details on how to add entries to this file:
-https://chromium.googlesource.com/chromium/src.git/+/master/services/metrics/ukm_api.md
+https://chromium.googlesource.com/chromium/src.git/+/main/services/metrics/ukm_api.md
 
 Events may be marked with the attribute singular="True" to indicate that
 the event will only occur once per source, and multiple entries will just
@@ -8958,7 +8958,7 @@ be describing additional metrics about the same event.
       back; E.g., mp4, avi, mp3, etc.
     </summary>
   </metric>
-  <metric name="FinalPipelineStatus">
+  <metric name="FinalPipelineStatus" enum="PipelineStatus">
     <summary>
       media::PipelineStatus enum value. Always 0 if the playback succeeded; all
       other values indicate the playback ended in an error.
@@ -8989,6 +8989,12 @@ be describing additional metrics about the same event.
     <summary>
       ID which corresponds to a given WebMediaPlayerImpl instance. May be linked
       with Media.BasicPlayback events to understand a playback more deeply.
+    </summary>
+  </metric>
+  <metric name="RendererType" enum="MediaRendererType">
+    <summary>
+      Type of media::Renderer used for the playback. In most cases we do not
+      support dynamically changing RendererType during one playback.
     </summary>
   </metric>
   <metric name="TimeToFirstFrame">
@@ -9902,9 +9908,35 @@ be describing additional metrics about the same event.
       |top_urls_|.
     </summary>
   </metric>
+  <metric name="BucketedPathHash">
+    <summary>
+      The anchor element's href URL path is hashed, then bucketed using 10
+      different buckets. The bucket ({0, 1, ..., 9}) the hash falls into is
+      logged in this field.
+    </summary>
+  </metric>
   <metric name="ContainsImage">
     <summary>
       1 if the anchor element contains an image.
+    </summary>
+  </metric>
+  <metric name="FontSize">
+    <summary>
+      The bucketed font size of the anchor element, according to its computed
+      style. 1 corresponds to a pixel font size in [0, 10), 2 corresponds to a
+      fonts size in [10, 18) and 3 is logged when the font size is 18 pixels or
+      larger.
+    </summary>
+  </metric>
+  <metric name="HasTextSibling">
+    <summary>
+      1 if the anchor element has an immediate text sibling, 0 otherwise.
+    </summary>
+  </metric>
+  <metric name="IsBold">
+    <summary>
+      1 if the anchor's computed style's font-weight is greater than 500, 0
+      otherwise.
     </summary>
   </metric>
   <metric name="IsInIframe">
@@ -9917,6 +9949,25 @@ be describing additional metrics about the same event.
       1 if the anchor element's target URL and the document's source URL only
       differ by one number, and the target URL increments that number in the
       source URL by 1.
+    </summary>
+  </metric>
+  <metric name="NavigationStartToLinkLoggedMs">
+    <summary>
+      The time in ms between navigation start and the moment this entry was
+      logged. Exponentially bucketed using GetExponentialBucketMin a value of
+      1.3.
+    </summary>
+  </metric>
+  <metric name="PathDepth">
+    <summary>
+      The number of slashes in the anchor element's href URL path. Truncated at
+      5.
+    </summary>
+  </metric>
+  <metric name="PathLength">
+    <summary>
+      The number of characters in the anchor element's href URL path. Buckets of
+      size 10, truncated at 100.
     </summary>
   </metric>
   <metric name="PercentClickableArea">

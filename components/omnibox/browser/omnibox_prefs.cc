@@ -6,7 +6,6 @@
 
 #include "base/check.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -34,6 +33,11 @@ const char kIntranetRedirectBehavior[] = "browser.intranet_redirect_behavior";
 // Boolean that controls whether scoped search mode can be triggered by <space>.
 const char kKeywordSpaceTriggeringEnabled[] =
     "omnibox.keyword_space_triggering_enabled";
+
+// Boolean that specifies whether the omnibox should display a lock icon for
+// secure connections.
+const char kLockIconInAddressBarEnabled[] =
+    "omnibox.lock_icon_in_address_bar_enabled";
 
 // A dictionary of visibility preferences for suggestion groups. The key is the
 // suggestion group ID serialized as a string, and the value is

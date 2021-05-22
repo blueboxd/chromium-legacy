@@ -19,6 +19,7 @@ mojom("mojom") {
     "audio_parameters.mojom",
     "audio_stream_factory.mojom",
     "capture_handle.mojom",
+    "cdm_pref_service.mojom",
     "cdm_service.mojom",
     "cdm_storage.mojom",
     "content_decryption_module.mojom",
@@ -547,6 +548,15 @@ mojom("mojom") {
       traits_headers = [ "cdm_capability_mojom_traits.h" ]
       traits_sources = [ "cdm_capability_mojom_traits.cc" ]
       traits_public_deps = [ "//media" ]
+    },
+    {
+      types = [
+        {
+          mojom = "media.mojom.RendererType"
+          cpp = "::media::RendererType"
+        },
+      ]
+      traits_headers = [ "media_types_enum_mojom_traits.h" ]
     },
   ]
 

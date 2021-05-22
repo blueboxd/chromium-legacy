@@ -266,9 +266,6 @@ CHAR_LIMIT guidelines:
       </message>
 
       <!-- Sign-in, sync and personalization preferences -->
-      <message name="IDS_PREFS_SECTION_ACCOUNT" desc="Title for the group of account-related entries in Settings. [CHAR_LIMIT=32]">
-        Account
-      </message>
       <message name="IDS_PREFS_SECTION_ACCOUNT_AND_GOOGLE_SERVICES" desc="Title for the group of account-related entries and google services in Settings. [CHAR_LIMIT=32]">
         You and Google
       </message>
@@ -2885,6 +2882,8 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DISCOVER_NO_CARDS_INSTRUCTIONS" desc="Message body for the article feed on the New Tab Page. Instructs the user to come back later when new feed content is available. Please translate 'stories' to match its use in TC ID 792300740424433300. Also see TC ID 7331961212006720987 for the corresponding message in Discover.">Check back later for new stories</message>
       <message name="IDS_DISCOVER_CANT_REFRESH" desc="Message title for the article feed on the New Tab Page. Shown when feed content is not available because there is no internet connection. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278). Also see TC ID 6114827482740570724 for the corresponding message in Discover.">Can't refresh Discover</message>
       <message name="IDS_DISCOVER_CANT_REFRESH_INSTRUCTIONS" desc="Message body for the article feed on the New Tab Page. Instructs the user to wait and try to refresh the feed once the internet connection returns. Please translate 'stories' to match its use in TC ID 792300740424433300. Also see TC ID 6114827482740570724 for the corresponding message in Discover.">Check back later for new stories</message>
+      <message name="IDS_WEB_FEED_NO_CARDS_TITLE" desc="Message title for the user-customizable web feed on the New Tab Page. Shown when the user either has not followed any websites or when the user has followed some websites but the sites do not have any new articles. Please translate 'stories' to match its use in TC ID 792300740424433300.">You'll find stories here</message>
+      <message name="IDS_WEB_FEED_NO_CARDS_INSTRUCTIONS" desc="Message body for the user-customizable web feed on the New Tab Page. Shown when the user either has not followed any websites or when the user has followed some websites but the sites do not have any new articles. Instructs the user to follow more sites or check back later. Please translate 'Follow' (with capital F) to match its use in TC ID 4108314971463891922.">To follow a site, go to the site, open the Chrome menu, and tap Follow.</message>
 
       <!-- Explore sites strings -->
       <message name="IDS_EXPLORE_SITES_TITLE" desc="Title of a section showing different categories, each with a number of popular websites">
@@ -4407,6 +4406,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <message name="IDS_CABLEV2_GET_ASSERTION_NOTIFICATION_BODY" desc="The title of a notification shown on Android that informs the user that a website wishes to use their phone to sign them in on another computer.">
         Your computer wants to use this device to sign in to a site
+      </message>
+
+      <message name="IDS_CABLEV2_BLE_ENABLE_TITLE" desc="The title of a screen that'll appear on a phone when we need to enable Bluetooth on the device. This screen will appear for a couple of seconds to give context, then a prompt will appear to allow the user to confirm that they wish to enable Bluetooth. Bluetooth is a radio technology commonly found in phones.">
+        Switching on Bluetooth…
+      </message>
+
+      <message name="IDS_CABLEV2_BLE_ENABLE_BODY" desc="The subheading on a screen that'll appear on a phone when we need to enable Bluetooth on the device. This screen will appear for a couple of seconds to give context, then a prompt will appear to allow the user to confirm that they wish to enable Bluetooth. Bluetooth is a radio technology commonly found in phones. This subheading is informing the user that, if they opt to turn on Bluetooth for this operation, it'll automatically be switched off again afterwards.">
+        We'll switch it back off after we are done
       </message>
 
       <!-- QR Code -->

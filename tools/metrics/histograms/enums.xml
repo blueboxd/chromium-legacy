@@ -7096,7 +7096,7 @@ Called by update_bad_message_reasons.py.-->
 <!-- Generated from content/browser/bad_message.h.
 Called by update_bad_message_reasons.py.-->
 
-  <int value="0" label="NC_IN_PAGE_NAVIGATION"/>
+  <int value="0" label="OBSOLETE_NC_IN_PAGE_NAVIGATION"/>
   <int value="1" label="RFH_CAN_COMMIT_URL_BLOCKED"/>
   <int value="2" label="RFH_CAN_ACCESS_FILES_OF_PAGE_STATE"/>
   <int value="3" label="RFH_SANDBOX_FLAGS"/>
@@ -7379,6 +7379,10 @@ Called by update_bad_message_reasons.py.-->
   <int value="11" label="ESWMF_BAD_EVENT_ACK"/>
   <int value="12" label="MHVG_INVALID_PLUGIN_FRAME_ID"/>
   <int value="13" label="EMF_INVALID_CHANNEL_SOURCE_TYPE"/>
+  <int value="14" label="EMF_NO_EXTENSION_ID_FOR_EXTENSION_SOURCE"/>
+  <int value="15" label="EMF_INVALID_EXTENSION_ID_FOR_EXTENSION_SOURCE"/>
+  <int value="16" label="EMF_INVALID_EXTENSION_ID_FOR_CONTENT_SCRIPT"/>
+  <int value="17" label="EMF_INVALID_EXTENSION_ID_FOR_WORKER_CONTEXT"/>
 </enum>
 
 <enum name="BadMessageReasonGuestView">
@@ -8802,6 +8806,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanHasToken">
   <int value="0" label="Lacks token"/>
   <int value="1" label="Has token"/>
+</enum>
+
+<enum name="BooleanHasUserGesture">
+  <int value="0" label="Does not have user gesture"/>
+  <int value="1" label="Has user gesture"/>
 </enum>
 
 <enum name="BooleanHasWithheldHosts">
@@ -12450,7 +12459,7 @@ In case of new special images, values 3 to 9 can be used. -->
 
 <enum name="ClipboardHistoryDisplayFormat">
   <int value="0" label="Text"/>
-  <int value="1" label="Bitmap"/>
+  <int value="1" label="Png"/>
   <int value="2" label="Html"/>
   <int value="3" label="File"/>
 </enum>
@@ -14869,7 +14878,7 @@ Called by update_net_error_codes.py.-->
   <summary>
     List of currently defined Cr50 flash log event types. The latest and
     greatest set can be found in
-    https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/include/flash_log.h
+    https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/main/include/flash_log.h
     (enum flash_event_type and enum nvmem_failure_type). Note that NVMEM errors
     are logged as subevents of flash log event 5, we register them offset by
     200.
@@ -14911,7 +14920,7 @@ Called by update_net_error_codes.py.-->
 <enum name="CrasClientType">
   <summary>
     List of the client type of CRAS. The list can be found in
-    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/common/cras_types.h
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/main/cras/src/common/cras_types.h
     (enum CRAS_CLIENT_TYPE).
   </summary>
   <int value="0" label="CRAS_CLIENT_TYPE_UNKNOWN">Unknown client.</int>
@@ -14935,7 +14944,7 @@ Called by update_net_error_codes.py.-->
 <enum name="CrasDeviceType">
   <summary>
     List of the device type of CRAS. The list can be found in
-    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_server_metrics.c
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/main/cras/src/server/cras_server_metrics.c
     (enum CRAS_METRICS_DEVICE_TYPE).
   </summary>
   <int value="0" label="CRAS_METRICS_DEVICE_INTERNAL_SPEAKER"/>
@@ -15118,7 +15127,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <summary>
     List of known battery indicator supports in Bluetooth Hands-free profile.
     This list should be aligned with CRAS:
-    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_hfp_slc.h
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/main/cras/src/server/cras_hfp_slc.h
   </summary>
   <int value="0" label="CRAS_HFP_BATTERY_INDICATOR_NONE"/>
   <int value="1" label="CRAS_HFP_BATTERY_INDICATOR_HFP"/>
@@ -15134,7 +15143,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <summary>
     List of codec ids used for SCO audio, in Bluetooth Hands-free profile. This
     list should be aligned with CRAS:
-    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_hfp_slc.h
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/main/cras/src/server/cras_hfp_slc.h
   </summary>
   <int value="0" label="HFP_CODEC_UNUSED"/>
   <int value="1" label="HFP_CODEC_ID_CVSD"/>
@@ -15145,7 +15154,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <summary>
     List of results(success or error code) of setting up a SCO connection for
     Bluetooth Hands-free profile. This list should be aligned with CRAS:
-    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_server_metrics.h
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/main/cras/src/server/cras_server_metrics.h
   </summary>
   <int value="0" label="SKT_SUCCESS"/>
   <int value="1" label="SKT_CONNECTION_ERROR"/>
@@ -23358,6 +23367,12 @@ Called by update_document_policy_enum.py.-->
   <int value="8" label="Dlp interruption"/>
   <int value="9" label="Low disk space"/>
   <int value="10" label="HDCP interruption"/>
+  <int value="11" label="Recording service closing"/>
+  <int value="12" label="Viz video capturer disconnected"/>
+  <int value="13" label="Failed audio encoder initialization"/>
+  <int value="14" label="Failed video encoder initialization"/>
+  <int value="15" label="Audio encoding error"/>
+  <int value="16" label="Video encoding error"/>
 </enum>
 
 <enum name="EnhancedBookmarkViewMode">
@@ -24652,6 +24667,8 @@ Called by update_document_policy_enum.py.-->
   <int value="857" label="AdditionalDnsQueryTypesEnabled"/>
   <int value="858" label="TripleDESEnabled"/>
   <int value="859" label="CloudUserPolicyMerge"/>
+  <int value="860" label="ManagedAccountRestriction"/>
+  <int value="861" label="LockIconInAddressBarEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -25912,6 +25929,7 @@ Called by update_extension_histograms.py.-->
   <int value="475" label="FILE_MANAGER_PRIVATE_ON_DRIVE_CONFIRM_DIALOG"/>
   <int value="476" label="TTS_ENGINE_ON_SPEAK_WITH_AUDIO_STREAM"/>
   <int value="477" label="ACCESSIBILITY_PRIVATE_ON_SHOW_CHROMEVOX_TUTORIAL"/>
+  <int value="478" label="STORAGE_SESSION_ON_CHANGE"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -32702,6 +32720,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3920" label="AccessibilityTouchPassthroughSet"/>
   <int value="3921" label="TextFragmentBlockedByForceLoadAtTop"/>
   <int value="3922" label="UrnDocumentAccessedCookies"/>
+  <int value="3923" label="FontFaceAscentOverride"/>
+  <int value="3924" label="FontFaceDescentOverride"/>
+  <int value="3925" label="FontFaceLineGapOverride"/>
+  <int value="3926" label="FontFaceSizeAdjust"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38620,7 +38642,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="HardwareVerifierQualificationStatus">
   <summary>
     List of the possible qualification status of a component. This is defined in
-    https://chromium.googlesource.com/chromiumos/platform2/+/refs/heads/master/hardware_verifier/proto/hardware_verifier.proto
+    https://chromium.googlesource.com/chromiumos/platform2/+/refs/heads/main/hardware_verifier/proto/hardware_verifier.proto
     (enum QualificationStatus).
   </summary>
   <int value="0" label="UNQUALIFIED">Unqualified</int>
@@ -40730,7 +40752,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     (i.e. extension with ID "jkghodnilhceideoidjikpgommlajknk" and defined in
     google_xkb_manifest.json [1]), although InputMethod.ID2 histogram is
     recorded for open-source Chromium OS and third-party IME extensions as well.
-    [1] https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/resources/chromeos/input_method/google_xkb_manifest.json?q=google_xkb_manifest.json
+    [1] https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/resources/chromeos/input_method/google_xkb_manifest.json?q=google_xkb_manifest.json
   -->
 
   <int value="-2082426075" label="xkb:cz:qwerty:cze"/>
@@ -48011,6 +48033,7 @@ from previous Chrome versions.
   <int value="674627327" label="MagnifierNewFocusFollowing:enabled"/>
   <int value="674788251" label="EnableNewBadgeOnMenuItems:enabled"/>
   <int value="677866592" label="ClickToCallUI:disabled"/>
+  <int value="677883800" label="DiagnosticsAppNavigation:disabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="680070635"
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
@@ -48715,6 +48738,7 @@ from previous Chrome versions.
   <int value="1288713607" label="EcheSWAResizing:disabled"/>
   <int value="1289433604" label="RecoverFromNeverSaveAndroid:enabled"/>
   <int value="1289495171" label="AssistantBetterOnboarding:disabled"/>
+  <int value="1290904214" label="DiagnosticsAppNavigation:enabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
   <int value="1291761696" label="CCTModuleDexLoading:disabled"/>
   <int value="1291966558" label="ScrollAnchoring:disabled"/>
@@ -51865,6 +51889,19 @@ Called by update_use_counter_css.py.-->
 <enum name="MediaRecorderVEAUsed">
   <int value="0" label="Not used"/>
   <int value="1" label="Used"/>
+</enum>
+
+<enum name="MediaRendererType">
+  <int value="0" label="kDefault"/>
+  <int value="1" label="kMojo"/>
+  <int value="2" label="kMediaPlayer"/>
+  <int value="3" label="kCourier"/>
+  <int value="4" label="kFlinging"/>
+  <int value="5" label="kCast"/>
+  <int value="6" label="kMediaFoundation"/>
+  <int value="7" label="kFuchsia"/>
+  <int value="8" label="kRemoting"/>
+  <int value="9" label="kCastStreaming"/>
 </enum>
 
 <enum name="MediaResponseCacheType">
@@ -77071,6 +77108,7 @@ would be helpful to identify which type is being sent.
   <int value="47" label="OS Priority Preferences"/>
   <int value="48" label="Sharing Message"/>
   <int value="49" label="Autofill Wallet Offer"/>
+  <int value="50" label="Workspace Desk"/>
 </enum>
 
 <enum name="SyncModelTypeStoreInitResult">

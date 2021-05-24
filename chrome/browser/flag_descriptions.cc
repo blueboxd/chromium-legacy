@@ -973,22 +973,6 @@ const char kBlockInsecurePrivateNetworkRequestsDescription[] =
     "public. This is a first step towards full enforcement of CORS-RFC1918: "
     "https://wicg.github.io/cors-rfc1918";
 
-const char kCrossOriginOpenerPolicyReportingName[] =
-    "Cross Origin Opener Policy reporting";
-const char kCrossOriginOpenerPolicyReportingDescription[] =
-    "Enables Cross Origin Opener Policy reporting.";
-
-const char kCrossOriginOpenerPolicyAccessReportingName[] =
-    "Cross Origin Opener Policy access reporting";
-const char kCrossOriginOpenerPolicyAccessReportingDescription[] =
-    "Enables Cross Origin Opener Policy access reporting.";
-
-const char kCrossOriginIsolatedName[] = "crossOriginIsolated";
-const char kCrossOriginIsolatedDescription[] =
-    "Marks some BrowsingContext groups as \"crossOriginIsolated\". They can "
-    "only host documents using a compatible set of {Origin,COOP,COEP}, "
-    "effectively isolating.";
-
 const char kDeprecateAltClickName[] =
     "Enable Alt+Click deprecation notifications";
 const char kDeprecateAltClickDescription[] =
@@ -4237,6 +4221,11 @@ const char kEnableHostnameSettingDescription[] =
     "Enables the ability to set the Chrome OS hostname, the name of the device "
     "that is exposed to the local network";
 
+const char kEnableGeneratedWebApksName[] = "Generated WebAPKs";
+const char kEnableGeneratedWebApksDescription[] =
+    "When enabled, generates and installs a WebAPK inside ARC for each "
+    "installed and eligible PWA.";
+
 const char kEnableGesturePropertiesDBusServiceName[] =
     "Enable gesture properties D-Bus service";
 const char kEnableGesturePropertiesDBusServiceDescription[] =
@@ -4558,6 +4547,11 @@ const char kImeSystemEmojiPickerName[] = "System emoji picker";
 const char kImeSystemEmojiPickerDescription[] =
     "Controls whether a System emoji picker, or the virtual keyboard is used "
     "for inserting emoji.";
+
+const char kCrosLanguageSettingsImeOptionsInSettingsName[] =
+    "Ime settings in settings";
+const char kCrosLanguageSettingsImeOptionsInSettingsDescription[] =
+    "Adds IME settings to the settings menu";
 
 const char kIntentHandlingSharingName[] = "Intent handling for sharing";
 const char kIntentHandlingSharingDescription[] =

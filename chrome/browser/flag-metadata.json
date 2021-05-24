@@ -766,21 +766,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "cross-origin-isolated",
-    "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
-    "expiry_milestone": 88
-  },
-  {
-    "name": "cross-origin-opener-policy-access-reporting",
-    "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
-    "expiry_milestone": 88
-  },
-  {
-    "name": "cross-origin-opener-policy-reporting",
-    "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "crostini-disk-resizing",
     "owners": [ "davidmunro@google.com", "nverne" ],
     "expiry_milestone": 93
@@ -1533,8 +1518,13 @@
   },
   {
     "name": "enable-cros-ime-system-emoji-picker",
-    "owners": [ "essential-inputs-team@google.com" ],
+    "owners": [ "jopalmer", "essential-inputs-team@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "enable-cros-language-settings-ime-options-in-settings",
+    "owners": [ "jopalmer", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "enable-cros-language-settings-update-2",
@@ -1823,6 +1813,11 @@
     // This flag enables the rolling set of upcoming V8 features, for early
     // testing by JavaScript developers.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-generated-webapks",
+    "owners": [ "tsergeant@chromium.org" ],
+    "expiry_milestone": 95
   },
   {
     "name": "enable-generic-sensor-extra-classes",

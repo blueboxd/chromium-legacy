@@ -1226,20 +1226,14 @@ class HighCacheSizeBackForwardCacheBrowserTest
   }
 
   // The number of pages the BackForwardCache can hold per tab.
-  const size_t kBackForwardCacheSize = 10;
+  // The number 5 was picked since Android ASAN trybot failed to keep more than
+  // 6 pages in memory.
+  const size_t kBackForwardCacheSize = 5;
 };
 
-// TODO(crbug.com/1184360): Disabled on Android for being flaky.
-#if defined(OS_ANDROID)
-#define MAYBE_CacheEvictionWithIncreasedCacheSize \
-  DISABLED_CacheEvictionWithIncreasedCacheSize
-#else
-#define MAYBE_CacheEvictionWithIncreasedCacheSize \
-  CacheEvictionWithIncreasedCacheSize
-#endif
 // Test documents are evicted from the BackForwardCache at some point.
 IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
-                       MAYBE_CacheEvictionWithIncreasedCacheSize) {
+                       CacheEvictionWithIncreasedCacheSize) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -2178,14 +2172,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
-// Flaky on Linux: https://crbug.com/1054194
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_DoesNotCacheIfRecordingAudio DISABLED_DoesNotCacheIfRecordingAudio
-#else
-#define MAYBE_DoesNotCacheIfRecordingAudio DoesNotCacheIfRecordingAudio
-#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       MAYBE_DoesNotCacheIfRecordingAudio) {
+                       DoesNotCacheIfRecordingAudio) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   BackForwardCacheDisabledTester tester;
@@ -2200,7 +2188,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ("success", EvalJs(current_frame_host(), R"(
     new Promise(resolve => {
       navigator.mediaDevices.getUserMedia({audio: true})
-        .then(m => { resolve("success"); })
+        .then(m => { window.keepaliveMedia = m; resolve("success"); })
         .catch(() => { resolve("error"); });
     });
   )"));
@@ -5214,8 +5202,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithUnfreezableLoading,
 
 // Disabled on Android, since we have problems starting up the websocket test
 // server in the host
-// TODO(crbug.com/1200285): Fix flakiness on macOS.
-#if defined(OS_ANDROID) || defined(OS_MAC)
+#if defined(OS_ANDROID)
 #define MAYBE_WebSocketNotCached DISABLED_WebSocketNotCached
 #else
 #define MAYBE_WebSocketNotCached WebSocketNotCached

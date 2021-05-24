@@ -549,15 +549,6 @@ extern const char kEnableWindowsGamingInputDataFetcherDescription[];
 extern const char kBlockInsecurePrivateNetworkRequestsName[];
 extern const char kBlockInsecurePrivateNetworkRequestsDescription[];
 
-extern const char kCrossOriginOpenerPolicyReportingName[];
-extern const char kCrossOriginOpenerPolicyReportingDescription[];
-
-extern const char kCrossOriginOpenerPolicyAccessReportingName[];
-extern const char kCrossOriginOpenerPolicyAccessReportingDescription[];
-
-extern const char kCrossOriginIsolatedName[];
-extern const char kCrossOriginIsolatedDescription[];
-
 extern const char kDeprecateAltClickName[];
 extern const char kDeprecateAltClickDescription[];
 
@@ -2450,6 +2441,9 @@ extern const char kEnableEncryptionMigrationDescription[];
 extern const char kEnableHostnameSettingName[];
 extern const char kEnableHostnameSettingDescription[];
 
+extern const char kEnableGeneratedWebApksName[];
+extern const char kEnableGeneratedWebApksDescription[];
+
 extern const char kEnableGesturePropertiesDBusServiceName[];
 extern const char kEnableGesturePropertiesDBusServiceDescription[];
 
@@ -2648,6 +2642,9 @@ extern const char kImeMozcProtoDescription[];
 
 extern const char kImeServiceDecoderName[];
 extern const char kImeServiceDecoderDescription[];
+
+extern const char kCrosLanguageSettingsImeOptionsInSettingsName[];
+extern const char kCrosLanguageSettingsImeOptionsInSettingsDescription[];
 
 extern const char kImeSystemEmojiPickerName[];
 extern const char kImeSystemEmojiPickerDescription[];

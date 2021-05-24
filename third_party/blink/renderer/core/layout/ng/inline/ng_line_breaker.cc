@@ -157,6 +157,18 @@ void CollectCharIndex(void* context,
   index_list->push_back(char_index);
 }
 
+float ComputeWordWidth(const ShapeResult& shape_result,
+                       wtf_size_t start_offset,
+                       wtf_size_t end_offset) {
+  const wtf_size_t offset_adjust = shape_result.StartIndex();
+  const float start_position =
+      shape_result.CachedPositionForOffset(start_offset - offset_adjust);
+  const float end_position =
+      shape_result.CachedPositionForOffset(end_offset - offset_adjust);
+  return IsLtr(shape_result.Direction()) ? end_position - start_position
+                                         : start_position - end_position;
+}
+
 }  // namespace
 
 inline void NGLineBreaker::ClearNeedsLayout(const NGInlineItem& item) {
@@ -351,8 +363,7 @@ void NGLineBreaker::RecalcClonedBoxDecorations() {
 // |position_|
 LayoutUnit NGLineBreaker::AddHyphen(NGInlineItemResults* item_results,
                                     wtf_size_t index,
-                                    NGInlineItemResult* item_result,
-                                    const NGInlineItem& item) {
+                                    NGInlineItemResult* item_result) {
   DCHECK(!HasHyphen());
   DCHECK_EQ(index,
             static_cast<wtf_size_t>(item_result - item_results->begin()));
@@ -360,14 +371,7 @@ LayoutUnit NGLineBreaker::AddHyphen(NGInlineItemResults* item_results,
   hyphen_index_ = index;
 
   if (!item_result->hyphen_string) {
-    DCHECK(!item_result->hyphen_shape_result);
-    DCHECK(item.Style());
-    const ComputedStyle& style = *item.Style();
-    DCHECK(!item_result->hyphen_string);
-    item_result->hyphen_string = style.HyphenString();
-    HarfBuzzShaper shaper(item_result->hyphen_string);
-    item_result->hyphen_shape_result =
-        shaper.Shape(&style.GetFont(), style.Direction());
+    item_result->ShapeHyphen();
     has_any_hyphens_ = true;
   }
   DCHECK(item_result->hyphen_string);
@@ -383,14 +387,13 @@ LayoutUnit NGLineBreaker::AddHyphen(NGInlineItemResults* item_results,
                                     wtf_size_t index) {
   NGInlineItemResult* item_result = &(*item_results)[index];
   DCHECK(item_result->item);
-  return AddHyphen(item_results, index, item_result, *item_result->item);
+  return AddHyphen(item_results, index, item_result);
 }
 
 LayoutUnit NGLineBreaker::AddHyphen(NGInlineItemResults* item_results,
-                                    NGInlineItemResult* item_result,
-                                    const NGInlineItem& item) {
+                                    NGInlineItemResult* item_result) {
   return AddHyphen(item_results, item_result - item_results->begin(),
-                   item_result, item);
+                   item_result);
 }
 
 // Remove the hyphen string from the |NGInlineItemResult|.
@@ -416,11 +419,11 @@ void NGLineBreaker::RestoreLastHyphen(NGInlineItemResults* item_results) {
   DCHECK(has_any_hyphens_);
   for (NGInlineItemResult& item_result : base::Reversed(*item_results)) {
     DCHECK(item_result.item);
-    const NGInlineItem& item = *item_result.item;
     if (item_result.hyphen_string) {
-      AddHyphen(item_results, &item_result, item);
+      AddHyphen(item_results, &item_result);
       return;
     }
+    const NGInlineItem& item = *item_result.item;
     if (item.Type() == NGInlineItem::kText ||
         item.Type() == NGInlineItem::kAtomicInline)
       return;
@@ -960,7 +963,7 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     if (UNLIKELY(result.is_hyphenated)) {
       NGInlineItemResults* item_results = line_info->MutableResults();
       const LayoutUnit hyphen_inline_size =
-          AddHyphen(item_results, item_result, item);
+          AddHyphen(item_results, item_result);
       // If the hyphen overflows, retry with the reduced available width.
       if (!result.is_overflow && inline_size <= available_width) {
         const LayoutUnit space_for_hyphen =
@@ -1085,10 +1088,6 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
   if (fast_min_content_item_ == &item)
     return false;
 
-  // Hyphenation is not supported yet.
-  if (hyphenation_)
-    return false;
-
   absl::optional<LineBreakType> saved_line_break_type;
   if (break_anywhere_if_overflow_ && !override_break_anywhere_) {
     saved_line_break_type = break_iterator_.BreakType();
@@ -1102,9 +1101,11 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
   const String& text = Text();
   float min_width = 0;
   unsigned last_end_offset = 0;
+  unsigned end_offset = start_offset + 1;
+  absl::optional<LayoutUnit> hyphen_inline_size;
   while (start_offset < item.EndOffset()) {
-    unsigned end_offset = break_iterator_.NextBreakOpportunity(
-        start_offset + 1, item.EndOffset());
+    end_offset =
+        break_iterator_.NextBreakOpportunity(end_offset, item.EndOffset());
 
     unsigned non_hangable_run_end = end_offset;
     if (item.Style()->WhiteSpace() != EWhiteSpace::kBreakSpaces) {
@@ -1118,19 +1119,60 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
     if (end_offset >= item.EndOffset())
       break;
 
-    // Inserting a hyphenation character is not supported yet.
-    // TODO (jfernandez): Maybe we need to use 'end_offset' here ?
-    if (text[non_hangable_run_end - 1] == kSoftHyphenCharacter)
-      return false;
+    // Ignore soft-hyphen opportunities if `hyphens: none`.
+    bool has_hyphen = text[non_hangable_run_end - 1] == kSoftHyphenCharacter;
+    if (has_hyphen && !enable_soft_hyphen_) {
+      ++end_offset;
+      if (end_offset < item.EndOffset())
+        continue;
+      has_hyphen = false;
+    }
 
-    float start_position = shape_result.CachedPositionForOffset(
-        start_offset - shape_result.StartIndex());
-    float end_position = shape_result.CachedPositionForOffset(
-        non_hangable_run_end - shape_result.StartIndex());
-    float word_width = IsLtr(shape_result.Direction())
-                           ? end_position - start_position
-                           : start_position - end_position;
-    min_width = std::max(word_width, min_width);
+    if (UNLIKELY(hyphenation_)) {
+      // When 'hyphens: auto', compute all hyphenation opportunities.
+      if (!hyphen_inline_size) {
+        if (!item_result->hyphen_shape_result)
+          item_result->ShapeHyphen();
+        hyphen_inline_size = item_result->HyphenInlineSize();
+      }
+      wtf_size_t word_len = non_hangable_run_end - start_offset;
+      const StringView word(text, start_offset, word_len);
+      Vector<wtf_size_t, 8> locations = hyphenation_->HyphenLocations(word);
+      // |locations| is a list of hyphenation points in the descending order.
+      // Append 0 to process all parts the same way.
+      DCHECK(std::is_sorted(locations.rbegin(), locations.rend()));
+      DCHECK(!locations.Contains(0u));
+      DCHECK(!locations.Contains(word_len));
+      locations.push_back(0);
+      LayoutUnit max_part_width;
+      for (const wtf_size_t location : locations) {
+        LayoutUnit part_width = LayoutUnit::FromFloatCeil(ComputeWordWidth(
+            shape_result, start_offset + location, start_offset + word_len));
+        if (has_hyphen)
+          part_width += *hyphen_inline_size;
+        max_part_width = std::max(part_width, max_part_width);
+        word_len = location;
+        has_hyphen = true;
+      }
+      min_width = std::max(max_part_width.ToFloat(), min_width);
+    } else {
+      float word_width =
+          ComputeWordWidth(shape_result, start_offset, non_hangable_run_end);
+
+      // Append hyphen-width to `word_width` if the word is hyphenated.
+      if (has_hyphen) {
+        if (!hyphen_inline_size) {
+          if (!item_result->hyphen_shape_result)
+            item_result->ShapeHyphen();
+          hyphen_inline_size = item_result->HyphenInlineSize();
+        }
+        word_width =
+            (LayoutUnit::FromFloatCeil(word_width) + *hyphen_inline_size)
+                .ToFloat();
+      }
+
+      min_width = std::max(word_width, min_width);
+    }
 
     last_end_offset = non_hangable_run_end;
     // TODO (jfernandez): I think that having the non_hangable_run_end
@@ -1140,6 +1182,7 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
            IsBreakableSpace(text[start_offset])) {
       ++start_offset;
     }
+    end_offset = start_offset + 1;
   }
 
   if (saved_line_break_type.has_value())

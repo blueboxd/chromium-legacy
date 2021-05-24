@@ -38,12 +38,8 @@ bool WorkerResourceFetcherProperties::IsPaused() const {
   return global_scope_->IsContextPaused();
 }
 
-WebURLLoader::DeferType WorkerResourceFetcherProperties::DeferType() const {
-  return global_scope_->DeferType();
-}
-
-bool WorkerResourceFetcherProperties::IsLoadDeferred() const {
-  return global_scope_->IsLoadDeferred();
+LoaderFreezeMode WorkerResourceFetcherProperties::FreezeMode() const {
+  return global_scope_->GetLoaderFreezeMode();
 }
 
 const KURL& WorkerResourceFetcherProperties::WebBundlePhysicalUrl() const {

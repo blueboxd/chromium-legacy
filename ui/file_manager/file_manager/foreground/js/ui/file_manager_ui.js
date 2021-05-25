@@ -6,7 +6,7 @@
 // #import {VolumeManager} from '../../../externs/volume_manager.m.js';
 // #import {FileGrid} from './file_grid.m.js';
 // #import {FileTable} from './file_table.m.js';
-// #import {FilesToast} from '../../elements/files_toast.m.js';
+// #import {FilesToast} from '../../elements/files_toast.js';
 // #import {Banners} from './banners.m.js';
 // #import {DirectoryTree} from './directory_tree.m.js';
 // #import {FilesPasswordDialog} from '../../elements/files_password_dialog.m.js';
@@ -21,7 +21,7 @@
 // #import {FilesMenuItem} from './files_menu.m.js';
 // #import {decorate, define as crUiDefine} from 'chrome://resources/js/cr/ui.m.js';
 // #import {MenuItem} from 'chrome://resources/js/cr/ui/menu_item.m.js';
-// #import {FilesTooltip} from '../../elements/files_tooltip.m.js';
+// #import {FilesTooltip} from '../../elements/files_tooltip.js';
 // #import {assertInstanceof} from 'chrome://resources/js/assert.m.js';
 // #import {DialogType} from '../dialog_type.m.js';
 // #import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';

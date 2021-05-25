@@ -88,6 +88,7 @@
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_key_delegate_service_provider.h"
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
+#include "chrome/browser/chromeos/dbus/dlp_files_policy_service_provider.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/encrypted_reporting_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
@@ -402,6 +403,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<MojoConnectionServiceProvider>()));
 
+    dlp_files_policy_service_ = CrosDBusService::Create(
+        system_bus, dlp::kDlpFilesPolicyServiceName,
+        dbus::ObjectPath(dlp::kDlpFilesPolicyServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<DlpFilesPolicyServiceProvider>()));
+
     if (arc::IsArcVmEnabled()) {
       libvda_service_ = CrosDBusService::Create(
           system_bus, libvda::kLibvdaServiceName,
@@ -497,6 +504,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> smb_fs_service_;
   std::unique_ptr<CrosDBusService> lock_to_single_user_service_;
   std::unique_ptr<CrosDBusService> mojo_connection_service_;
+  std::unique_ptr<CrosDBusService> dlp_files_policy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -869,15 +877,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // In case of multi-profiles --login-profile will contain user_id_hash.
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
-
-    // Before creating a session, migrate user data if required. The migration
-    // will happen at this timing only if lacros chrome was enabled via
-    // chrome://flags. In other cases, migration will happen upon login
-    // asynchronously. This migration has to complete before profile is created
-    // and chrome starts accessing those user data files, thus we pass
-    // async=false.
-    ash::BrowserDataMigrator::MaybeMigrate(
-        account_id, user_id_hash, false /* async */, base::DoNothing());
 
     session_manager::SessionManager::Get()->CreateSessionForRestart(
         account_id, user_id_hash);

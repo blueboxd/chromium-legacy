@@ -269,6 +269,12 @@ void EventRouter::AddListenerForServiceWorker(const std::string& extension_id,
   }
 }
 
+void EventRouter::AddLazyListenerForMainThread(const std::string& extension_id,
+                                               const std::string& event_name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  AddLazyEventListener(event_name, extension_id);
+}
+
 void EventRouter::RemoveListenerForMainThread(
     mojom::EventListenerParamPtr param,
     const std::string& event_name) {
@@ -309,6 +315,13 @@ void EventRouter::RemoveListenerForServiceWorker(
   } else {
     mojo::ReportBadMessage(kRemoveEventListenerWithInvalidExtensionID);
   }
+}
+
+void EventRouter::RemoveLazyListenerForMainThread(
+    const std::string& extension_id,
+    const std::string& event_name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RemoveLazyEventListener(event_name, extension_id);
 }
 
 void EventRouter::AddEventListener(const std::string& event_name,
@@ -851,27 +864,22 @@ void EventRouter::DoDispatchEventToSenderBookkeeping(
     events::HistogramValue histogram_value,
     const std::string& event_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(https://crbug.com/897946): Remove after investigating the bug.
-  if (ExtensionsBrowserClient::Get()->IsShuttingDown()) {
-    LOG(ERROR)
-        << "Event dispatched while shutting down extensions browser client.";
-    return;
-  }
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
-  DCHECK(ExtensionRegistry::Get(browser_context));
+
+  auto* registry = ExtensionRegistry::Get(browser_context);
+  DCHECK(registry);
   const Extension* extension =
-      ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
-          extension_id);
+      registry->enabled_extensions().GetByID(extension_id);
   if (!extension)
     return;
+
   EventRouter* event_router = EventRouter::Get(browser_context);
   DCHECK(event_router);
   event_router->IncrementInFlightEvents(
       browser_context, RenderProcessHost::FromID(render_process_id), extension,
       event_id, event_name, service_worker_version_id);
-  event_router->ReportEvent(histogram_value, extension,
-                            false /* did_enqueue */);
+  event_router->ReportEvent(histogram_value, extension, /*did_enqueue=*/false);
 }
 
 void EventRouter::IncrementInFlightEvents(BrowserContext* context,

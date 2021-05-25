@@ -46,7 +46,6 @@ js_library("commands") {
     ":image_util",
     ":image_view",
     ":viewport",
-    "//ui/file_manager/file_manager/foreground/elements:files_toast",
   ]
 }
 
@@ -133,7 +132,6 @@ js_library("image_editor_toolbar") {
   deps = [
     ":image_util",
     "//ui/file_manager/file_manager/common/js:util",
-    "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
     "//ui/file_manager/gallery/js/:gallery_util",
   ]
   externs_list = [ "//ui/file_manager/file_manager/externs/paper_elements.js" ]

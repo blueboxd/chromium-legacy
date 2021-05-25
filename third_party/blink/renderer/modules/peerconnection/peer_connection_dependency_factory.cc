@@ -60,7 +60,7 @@
 #include "third_party/webrtc/api/call/call_factory_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"
-#include "third_party/webrtc/api/video_track_source_proxy.h"
+#include "third_party/webrtc/api/video_track_source_proxy_factory.h"
 #include "third_party/webrtc/media/engine/fake_video_codec_factory.h"
 #include "third_party/webrtc/media/engine/multiplex_codec_factory.h"
 #include "third_party/webrtc/media/engine/webrtc_media_engine.h"
@@ -417,8 +417,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
           blink::features::kWebRtcHideLocalIpsWithMdns)) {
     // Note that MdnsResponderAdapter is created on the main thread to have
     // access to the connector to the service manager.
-    // TODO(crbug.com/1178670): Pass MojoBindingContext and use its BIB to bind.
-    mdns_responder = std::make_unique<MdnsResponderAdapter>();
+    mdns_responder =
+        std::make_unique<MdnsResponderAdapter>(*GetSupplementable());
   }
 #endif  // BUILDFLAG(ENABLE_MDNS)
   PostCrossThreadTask(
@@ -721,8 +721,8 @@ PeerConnectionDependencyFactory::CreateVideoTrackSourceProxy(
   if (!PeerConnectionFactoryCreated())
     CreatePeerConnectionFactory();
 
-  return webrtc::VideoTrackSourceProxy::Create(GetSignalingThread(),
-                                               GetNetworkThread(), source)
+  return webrtc::CreateVideoTrackSourceProxy(GetSignalingThread(),
+                                             GetNetworkThread(), source)
       .get();
 }
 

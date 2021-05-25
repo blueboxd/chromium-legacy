@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/ambient.gni")
 import("//chromeos/components/sensors/buildflags.gni")
@@ -728,6 +727,8 @@ component("ash") {
     "projector/projector_metadata_controller.h",
     "projector/projector_metadata_model.cc",
     "projector/projector_metadata_model.h",
+    "projector/projector_metrics.cc",
+    "projector/projector_metrics.h",
     "projector/projector_ui_controller.cc",
     "projector/projector_ui_controller.h",
     "projector/ui/projector_bar_view.cc",
@@ -1584,6 +1585,8 @@ component("ash") {
     "wm/gestures/back_gesture/back_gesture_event_handler.h",
     "wm/gestures/back_gesture/back_gesture_metrics.cc",
     "wm/gestures/back_gesture/back_gesture_metrics.h",
+    "wm/gestures/wm_fling_handler.cc",
+    "wm/gestures/wm_fling_handler.h",
     "wm/gestures/wm_gesture_handler.cc",
     "wm/gestures/wm_gesture_handler.h",
     "wm/immersive_context_ash.cc",
@@ -1993,8 +1996,7 @@ component("ash") {
   }
 }
 
-# TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
-python2_action("dbus_service_files") {
+action("dbus_service_files") {
   sources = [
     "dbus/org.chromium.DisplayService.conf",
     "dbus/org.chromium.GesturePropertiesService.conf",

@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -247,7 +246,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(
           this, profile_prefs, std::move(store),
           data_use_measurement::ChromeDataUseMeasurement::GetInstance(),
-          db_task_runner, commit_delay, GetClient(),
+          db_task_runner, commit_delay,
           version_info::GetChannelString(chrome::GetChannel()),
           embedder_support::GetUserAgent());
   data_reduction_proxy::DataReductionProxySettings::
@@ -280,52 +279,4 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
         std::make_unique<subresource_redirect::OriginRobotsRulesCache>(
             url_loader_factory, litepages_service_bypass_decider_->AsWeakPtr());
   }
-}
-
-std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
-DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
-    content::NavigationHandle* handle,
-    const net::HttpResponseHeaders* headers) {
-  if (!data_reduction_proxy_service())
-    return nullptr;
-  // TODO(721403): Need to fill in:
-  //  - request_info_
-  auto data = std::make_unique<data_reduction_proxy::DataReductionProxyData>();
-  data->set_request_url(handle->GetURL());
-  data->set_used_data_reduction_proxy(false);
-
-  if (!headers || headers->IsRedirect(nullptr))
-    return data;
-
-  const auto session_key =
-      data_reduction_proxy::DataReductionProxyRequestOptions::
-          GetSessionKeyFromRequestHeaders(GetProxyRequestHeaders());
-  if (session_key)
-    data->set_session_key(session_key.value());
-  return data;
-}
-
-// static
-data_reduction_proxy::Client DataReductionProxyChromeSettings::GetClient() {
-#if defined(OS_ANDROID)
-  return data_reduction_proxy::Client::CHROME_ANDROID;
-#elif defined(OS_MAC)
-  return data_reduction_proxy::Client::CHROME_MAC;
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
-  return data_reduction_proxy::Client::CHROME_CHROMEOS;
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
-  return data_reduction_proxy::Client::CHROME_LINUX;
-#elif defined(OS_WIN)
-  return data_reduction_proxy::Client::CHROME_WINDOWS;
-#elif defined(OS_FREEBSD)
-  return data_reduction_proxy::Client::CHROME_FREEBSD;
-#elif defined(OS_OPENBSD)
-  return data_reduction_proxy::Client::CHROME_OPENBSD;
-#elif defined(OS_SOLARIS)
-  return data_reduction_proxy::Client::CHROME_SOLARIS;
-#elif defined(OS_QNX)
-  return data_reduction_proxy::Client::CHROME_QNX;
-#else
-  return data_reduction_proxy::Client::UNKNOWN;
-#endif
 }

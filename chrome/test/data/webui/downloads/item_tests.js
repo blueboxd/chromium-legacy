@@ -22,10 +22,10 @@ suite('item tests', function() {
     document.body.innerHTML = '';
 
     // This isn't strictly necessary, but is a probably good idea.
-    BrowserProxy.instance_ = new TestDownloadsProxy;
+    BrowserProxy.setInstance(new TestDownloadsProxy());
 
-    testIconLoader = new TestIconLoader;
-    IconLoader.instance_ = testIconLoader;
+    testIconLoader = new TestIconLoader();
+    IconLoader.setInstance(testIconLoader);
 
     item = document.createElement('downloads-item');
     document.body.appendChild(item);
@@ -102,7 +102,7 @@ suite('item tests', function() {
                state: States.ASYNC_SCANNING,
              }));
     flush();
-    assertNotEquals(item.$$('#openNow'), null);
+    assertNotEquals(item.shadowRoot.querySelector('#openNow'), null);
 
     loadTimeData.overrideValues({'allowOpenNow': false});
     item.set('data', createDownload({
@@ -111,7 +111,7 @@ suite('item tests', function() {
                state: States.ASYNC_SCANNING,
              }));
     flush();
-    assertEquals(item.$$('#openNow'), null);
+    assertEquals(item.shadowRoot.querySelector('#openNow'), null);
   });
 
   test('undo is shown in toast', () => {

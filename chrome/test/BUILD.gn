@@ -1163,7 +1163,6 @@ if (!is_android) {
       "../browser/content_settings/content_settings_browsertest.cc",
       "../browser/crash_recovery_browsertest.cc",
       "../browser/custom_handlers/protocol_handler_registry_browsertest.cc",
-      "../browser/data_reduction_proxy/data_reduction_proxy_browsertest.cc",
       "../browser/data_saver/data_saver_browsertest.cc",
       "../browser/data_saver/data_saver_holdback_browsertest.cc",
       "../browser/data_saver/data_saver_webapis_browsertest.cc",
@@ -2394,6 +2393,7 @@ if (!is_android) {
           "../browser/extensions/api/system_display/system_display_chromeos_apitest.cc",
           "../browser/extensions/api/terminal/terminal_private_apitest.cc",
           "../browser/extensions/api/terminal/terminal_private_browsertest.cc",
+          "../browser/extensions/api/virtual_keyboard_private/virtual_keyboard_private_apitest.cc",
         ]
 
         deps += [ "//chrome/browser/error_reporting:test_support" ]
@@ -3846,7 +3846,6 @@ test("unit_tests") {
     "../browser/notifications/persistent_notification_handler_unittest.cc",
     "../browser/notifications/platform_notification_service_unittest.cc",
     "../browser/optimization_guide/optimization_guide_hints_manager_unittest.cc",
-    "../browser/optimization_guide/optimization_guide_navigation_data_unittest.cc",
     "../browser/optimization_guide/optimization_guide_top_host_provider_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_manager_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_model_download_manager_unittest.cc",
@@ -3854,8 +3853,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/core/amp_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/core/ukm_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.cc",
-    "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h",
     "../browser/page_load_metrics/observers/document_write_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/from_gws_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/live_tab_count_page_load_metrics_observer_unittest.cc",

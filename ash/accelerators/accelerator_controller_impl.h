@@ -21,7 +21,6 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_map.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -156,6 +155,9 @@ class ASH_EXPORT AcceleratorControllerImpl
   static constexpr const char* kVolumeButtonSideBottom = "bottom";
 
   AcceleratorControllerImpl();
+  AcceleratorControllerImpl(const AcceleratorControllerImpl&) = delete;
+  AcceleratorControllerImpl& operator=(const AcceleratorControllerImpl&) =
+      delete;
   ~AcceleratorControllerImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -168,7 +170,7 @@ class ASH_EXPORT AcceleratorControllerImpl
 
   // A list of possible ways in which an accelerator should be restricted before
   // processing. Any target registered with this controller should respect
-  // restrictions by calling |GetCurrentAcceleratorRestriction| during
+  // restrictions by calling GetAcceleratorProcessingRestriction() during
   // processing.
   enum AcceleratorProcessingRestriction {
     // Process the accelerator normally.
@@ -223,16 +225,9 @@ class ASH_EXPORT AcceleratorControllerImpl
   // is always handled and will never be passed to an window/web contents.
   bool IsReserved(const ui::Accelerator& accelerator) const;
 
-  // Returns the restriction for the current context.
-  AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
-
   // Provides access to the ExitWarningHandler for testing.
   ExitWarningHandler* GetExitWarningHandlerForTest() {
     return &exit_warning_handler_;
-  }
-
-  AcceleratorHistoryImpl* accelerator_history() {
-    return accelerator_history_.get();
   }
 
   // Overridden from ui::AcceleratorTarget:
@@ -252,11 +247,6 @@ class ASH_EXPORT AcceleratorControllerImpl
                                    int dialog_text_id,
                                    base::OnceClosure on_accept_callback,
                                    base::OnceClosure on_cancel_callback);
-
-  // Read the side volume button location info from local file under
-  // kSideVolumeButtonLocationFilePath, parse and write it into
-  // |side_volume_button_location_|.
-  void ParseSideVolumeButtonLocationInfo();
 
   // Remove the observers.
   void Shutdown();
@@ -315,6 +305,11 @@ class ASH_EXPORT AcceleratorControllerImpl
   // Returns true if the side volume buttons should be swapped. See
   // SideVolumeButonLocation for the details.
   bool ShouldSwapSideVolumeButtons(int source_device_id) const;
+
+  // Read the side volume button location info from local file under
+  // kSideVolumeButtonLocationFilePath, parse and write it into
+  // |side_volume_button_location_|.
+  void ParseSideVolumeButtonLocationInfo();
 
   // The metrics recorded include accidental volume adjustments (defined as a
   // sequence of volume button events in close succession starting with a
@@ -395,8 +390,6 @@ class ASH_EXPORT AcceleratorControllerImpl
 
   // The initial volume percentage when volume adjust starts.
   int initial_volume_percent_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerImpl);
 };
 
 }  // namespace ash

@@ -574,7 +574,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                 .inRoot(withDecorView(withClassName(containsString("Popup"))))
                 .perform(click());
         onView(allOf(withId(org.chromium.chrome.R.id.spinner), withChild(withText("Select"))))
-                .perform(click());
+                .perform(scrollTo(), click());
         onData(anything())
                 .atPosition(1 /* address of Adam, 0 is SELECT (empty) */)
                 .inRoot(withDecorView(withClassName(containsString("Popup"))))
@@ -813,6 +813,7 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1213197")
     public void testEditOfServerCard() throws Exception {
         String profileId = mHelper.addDummyProfile("Adam West", "adamwest@google.com");
         mHelper.addServerCreditCard(mHelper.createDummyCreditCard(

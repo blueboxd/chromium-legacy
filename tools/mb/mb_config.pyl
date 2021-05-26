@@ -479,6 +479,7 @@
       'Mac FYI arm64 Release (Apple DTK)': 'gpu_fyi_tests_release_trybot_arm64',
       'Mac FYI GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
       'Optional Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
+      'Optional Android Release (Pixel 4)': 'gpu_tests_android_release_trybot',
       'Win10 FYI x64 SkiaRenderer Dawn Release (NVIDIA)': 'gpu_tests_sk_dawn_release_trybot',
     },
 
@@ -573,6 +574,7 @@
 
     'chromium.perf.calibration': {
       'linux-perf-calibration': 'official_goma_linux_perf',
+      'android-pixel2-perf-calibration': 'official_goma_minimal_symbols_android_arm64',
     },
 
     'chromium.perf.fyi': {
@@ -995,6 +997,7 @@
       'gpu-try-linux-nvidia-rel': 'gpu_tests_release_trybot',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
+      'linux-1mbu-compile-fyi-rel': 'release_trybot',
       'linux-annotator-rel': 'release_trybot',
       'linux-autofill-assistant': 'autofill_assistant_release_trybot',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
@@ -2615,6 +2618,8 @@
       'release_bot_blink',
       'enable_v8_oilpan',
       'dcheck_always_on',
+      # Assignment checks during prefinalizers is currently only enabled in DCHECK builds.
+      'enable_v8_oilpan_check_assignments_in_prefinalizers',
       # Live byte verification is currently only enabled in DCHECK builds.
       'enable_v8_oilpan_live_byte_verification',
     ],
@@ -3120,6 +3125,10 @@
 
     'enable_v8_oilpan': {
       'gn_args': 'enable_blink_heap_use_v8_oilpan=true',
+    },
+
+    'enable_v8_oilpan_check_assignments_in_prefinalizers': {
+      'gn_args': 'cppgc_enable_check_assignments_in_prefinalizers=true',
     },
 
     'enable_v8_oilpan_live_byte_verification': {

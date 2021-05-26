@@ -244,7 +244,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     : version_id_(version_id),
       registration_id_(registration->id()),
       script_url_(script_url),
-      origin_(registration->origin()),
+      origin_(registration->key().origin()),
       scope_(registration->scope()),
       script_type_(script_type),
       fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
@@ -875,12 +875,10 @@ void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
     CHECK(base::Contains(controllees_to_be_evicted_, client_uuid));
     // TODO(crbug.com/1021718): Remove DumpWithoutCrashing once we confirm the
     // cause of the crash.
-    static auto* no_controllee_reason = base::debug::AllocateCrashKeyString(
-        "no_controllee_reason", base::debug::CrashKeySize::Size32);
     BackForwardCacheCanStoreDocumentResult can_store;
     can_store.No(controllees_to_be_evicted_.at(client_uuid));
-    base::debug::ScopedCrashKeyString scoped_no_controllee_reason(
-        no_controllee_reason, can_store.ToString());
+    SCOPED_CRASH_KEY_STRING32("RestoreForBFCache", "no_controllee_reason",
+                              can_store.ToString());
     base::debug::DumpWithoutCrashing();
     return;
   }

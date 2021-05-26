@@ -16,6 +16,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
@@ -121,6 +122,40 @@ aura::Window* GetSiblingToStackBelow(aura::Window* window) {
   return nullptr;
 }
 
+// If `window`'s saved window info makes the `window` out-of-bounds for the
+// display, manually restore its bounds. Also ensures that at least 30% of the
+// window is visible to handle the case where the display a window is restored
+// to is drastically smaller than the pre-restore display.
+void MaybeRestoreOutOfBoundsWindows(aura::Window* window) {
+  std::unique_ptr<full_restore::WindowInfo> window_info = GetWindowInfo(window);
+  if (!window_info)
+    return;
+
+  gfx::Rect current_bounds =
+      window_info->current_bounds.value_or(gfx::Rect(0, 0));
+  if (current_bounds.IsEmpty())
+    return;
+
+  const auto& closest_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
+  gfx::Rect display_area = closest_display.work_area();
+  if (display_area.Contains(current_bounds))
+    return;
+
+  AdjustBoundsToEnsureMinimumWindowVisibility(display_area, &current_bounds);
+
+  auto* window_state = WindowState::Get(window);
+  if (window_state->HasRestoreBounds()) {
+    // When a `window` is in maximized, minimized, or snapped its restore bounds
+    // are saved in `WindowInfo.current_bounds` and its
+    // maximized/minimized/snapped bounds are determined by the system, so apply
+    // this adjustment to `window`'s restore bounds instead.
+    window_state->SetRestoreBoundsInScreen(current_bounds);
+  } else {
+    window->SetBoundsInScreen(current_bounds, closest_display);
+  }
+}
+
 }  // namespace
 
 FullRestoreController::FullRestoreController() {
@@ -212,7 +247,15 @@ void FullRestoreController::OnWidgetInitialized(views::Widget* widget) {
   if (window->GetProperty(full_restore::kParentToHiddenContainerKey))
     return;
 
-  UpdateAndObserveWindow(widget->GetNativeWindow());
+  UpdateAndObserveWindow(window);
+
+  // If the restored bounds are out of the screen, move the window to the bounds
+  // manually as most widget types force windows to be within the work area on
+  // creation.
+  // TODO(chinsenj|sammiequon): The Files app uses async Mojo calls to activate
+  // and set its bounds, making this approach not work. In the future, we'll
+  // need to address the Files app.
+  MaybeRestoreOutOfBoundsWindows(window);
 }
 
 void FullRestoreController::OnARCTaskReadyForUnparentedWindow(
@@ -256,22 +299,22 @@ void FullRestoreController::OnWindowStackingChanged(aura::Window* window) {
 
 void FullRestoreController::OnWindowVisibilityChanged(aura::Window* window,
                                                       bool visible) {
-  if (!windows_observation_.IsObservingSource(window) &&
-      !to_be_shown_windows_.contains(window)) {
+  // `OnWindowVisibilityChanged` fires for children of a window as well, but we
+  // are only interested in the window we originally observed.
+  if (!windows_observation_.IsObservingSource(window))
     return;
-  }
+
+  if (!visible || !to_be_shown_windows_.contains(window))
+    return;
 
   to_be_shown_windows_.erase(window);
 
-  // Arc app geometry is ready at this point so restore state type.
-  if (IsArcWindow(window))
-    RestoreStateTypeAndClearLaunchedKey(window);
+  RestoreStateTypeAndClearLaunchedKey(window);
 
-  // Early return if `window` isn't visible, we're not in tablet mode, or the
-  // app list is null.
+  // Early return if we're not in tablet mode, or the app list is null.
   aura::Window* app_list_window =
       Shell::Get()->app_list_controller()->GetWindow();
-  if (!visible || !Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode() ||
       !app_list_window) {
     return;
   }
@@ -291,9 +334,12 @@ void FullRestoreController::UpdateAndObserveWindow(aura::Window* window) {
   DCHECK(window->parent());
   windows_observation_.AddObservation(window);
 
-  // Only restore state type for arc apps once their geometry is ready.
-  if (!IsArcWindow(window))
-    RestoreStateTypeAndClearLaunchedKey(window);
+  // Unless minimized, snap state and activation unblock are done when the
+  // window is first shown, which will be async for exo apps.
+  if (WindowState::Get(window)->IsMinimized())
+    window->SetProperty(full_restore::kLaunchedFromFullRestoreKey, false);
+  else
+    to_be_shown_windows_.insert(window);
 
   int32_t* activation_index =
       window->GetProperty(full_restore::kActivationIndexKey);

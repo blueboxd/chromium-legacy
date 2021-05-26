@@ -4,10 +4,10 @@
 
 #include <string.h>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -17,6 +17,18 @@
 #include "services/test/echo/public/mojom/echo.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+// Provides sandbox for echo::mojom::EchoService.
+namespace echo {
+namespace mojom {
+class EchoService;
+}
+}  // namespace echo
+template <>
+inline sandbox::policy::SandboxType
+content::GetServiceSandboxType<echo::mojom::EchoService>() {
+  return sandbox::policy::SandboxType::kUtility;
+}
 
 namespace content {
 

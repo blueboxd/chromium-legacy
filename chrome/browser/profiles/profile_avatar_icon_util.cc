@@ -9,13 +9,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -363,13 +363,9 @@ constexpr size_t kPlaceholderAvatarIndex = 0;
 #endif
 
 ui::ImageModel GetGuestAvatar(int size) {
-  if (base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
     return ui::ImageModel::FromVectorIcon(
         kUserAccountAvatarIcon, ui::NativeTheme::kColorId_AvatarIconGuest,
         size);
-  }
-  return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon,
-                                        gfx::kGoogleGrey500, size);
 }
 
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
@@ -438,28 +434,12 @@ gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
     return gfx::Image();
   }
 
-  if (base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
-    // Get a higher res than 16px so it looks good after cropping to a circle.
-    gfx::Image icon =
-        entry->GetAvatarIcon(kAvatarIconSize, /*download_high_res=*/false);
-    return profiles::GetSizedAvatarIcon(
-        icon, /*is_rectangle=*/true, kMenuAvatarIconSize, kMenuAvatarIconSize,
-        profiles::SHAPE_CIRCLE);
-  }
-
-  constexpr int kOldMenuAvatarIconSize = 38;
+  // Get a higher res than 16px so it looks good after cropping to a circle.
   gfx::Image icon =
-      entry->GetAvatarIcon(kOldMenuAvatarIconSize, /*download_high_res=*/false);
-
-  // The image might be too large and need to be resized, e.g. if this is a
-  // signed-in user using the GAIA profile photo.
-  if (icon.Width() > kOldMenuAvatarIconSize ||
-      icon.Height() > kOldMenuAvatarIconSize) {
-    icon = profiles::GetSizedAvatarIcon(icon, /*is_rectangle=*/true,
-                                        kOldMenuAvatarIconSize,
-                                        kOldMenuAvatarIconSize);
-  }
-  return icon;
+      entry->GetAvatarIcon(kAvatarIconSize, /*download_high_res=*/false);
+  return profiles::GetSizedAvatarIcon(icon, /*is_rectangle=*/true,
+                                      kMenuAvatarIconSize, kMenuAvatarIconSize,
+                                      profiles::SHAPE_CIRCLE);
 }
 #endif
 

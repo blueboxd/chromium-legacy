@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 
+#include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -44,9 +44,6 @@ const struct {
     {"com.google.android.apps.maps", "lneaknkopdijkpnocmklfnjbeapigfbh"},
     // Calculator
     {"com.google.android.calculator", "joodangkbfjnajiiifokapkpmhfnpleo"},
-    // Chrome Remote Desktop
-    {"com.google.chromeremotedesktop", "gbchcmhmhahfdphkhkmpfmihenigjmpp"},
-    {"com.google.chromeremotedesktop", "cdjikkcakjcdjemakobkmijmikhkegcj"},
     // Google Calender
     {"com.google.android.calendar", "ejjicmeblgpmajnghnpcppodonldlgfn"},
     {"com.google.android.calendar", "fpgfohogebplgnamlafljlcidjedbdeb"},

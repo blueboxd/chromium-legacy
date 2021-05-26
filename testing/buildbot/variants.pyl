@@ -424,7 +424,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.11',
+          'revision': 'version:92.0.4515.19',
         }
       ],
     },
@@ -448,7 +448,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.78',
+          'revision': 'version:91.0.4472.81',
         }
       ],
     },
@@ -461,18 +461,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M89/out/Release',
+      '../../weblayer_instrumentation_test_M90/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=89',
+      '--impl-version=90',
     ],
-    'identifier': 'with_impl_from_89',
+    'identifier': 'with_impl_from_90',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.129',
+          'location': 'weblayer_instrumentation_test_M90',
+          'revision': 'version:90.0.4430.225',
         }
       ],
     },
@@ -496,7 +496,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.11',
+          'revision': 'version:92.0.4515.19',
         }
       ],
     },
@@ -520,7 +520,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.78',
+          'revision': 'version:91.0.4472.81',
         }
       ],
     },
@@ -533,18 +533,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M89/out/Release',
+      '../../weblayer_instrumentation_test_M90/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=89',
+      '--impl-version=90',
     ],
-    'identifier': 'with_impl_from_89',
+    'identifier': 'with_impl_from_90',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.129',
+          'location': 'weblayer_instrumentation_test_M90',
+          'revision': 'version:90.0.4430.225',
         }
       ],
     },
@@ -568,7 +568,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.11',
+          'revision': 'version:92.0.4515.19',
         }
       ],
     },
@@ -592,7 +592,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.78',
+          'revision': 'version:91.0.4472.81',
         }
       ],
     },
@@ -603,20 +603,20 @@
       '--test-runner-outdir',
       '.',
       '--client-outdir',
-      '../../weblayer_instrumentation_test_M89/out/Release',
+      '../../weblayer_instrumentation_test_M90/out/Release',
       '--implementation-outdir',
       '.',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--client-version=89',
+      '--client-version=90',
     ],
-    'identifier': 'with_client_from_89',
+    'identifier': 'with_client_from_90',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M89',
-          'revision': 'version:89.0.4389.129',
+          'location': 'weblayer_instrumentation_test_M90',
+          'revision': 'version:90.0.4430.225',
         }
       ],
     },

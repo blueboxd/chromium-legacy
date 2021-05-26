@@ -329,6 +329,8 @@ static_library("browser") {
     "component_updater/mei_preload_component_installer.h",
     "component_updater/pepper_flash_component_installer.cc",
     "component_updater/pepper_flash_component_installer.h",
+    "component_updater/pki_metadata_component_installer.cc",
+    "component_updater/pki_metadata_component_installer.h",
     "component_updater/pnacl_component_installer.cc",
     "component_updater/pnacl_component_installer.h",
     "component_updater/recovery_component_installer.cc",
@@ -1676,10 +1678,6 @@ static_library("browser") {
     "ssl/connection_help_tab_helper.h",
     "ssl/insecure_form/insecure_form_controller_client.cc",
     "ssl/insecure_form/insecure_form_controller_client.h",
-    "ssl/insecure_sensitive_input_driver.cc",
-    "ssl/insecure_sensitive_input_driver.h",
-    "ssl/insecure_sensitive_input_driver_factory.cc",
-    "ssl/insecure_sensitive_input_driver_factory.h",
     "ssl/known_interception_disclosure_infobar_delegate.cc",
     "ssl/known_interception_disclosure_infobar_delegate.h",
     "ssl/sct_reporting_service.cc",
@@ -2429,6 +2427,7 @@ static_library("browser") {
       "//chromeos/timezone",
       "//chromeos/tpm",
       "//components/arc/mojom",
+      "//components/certificate_transparency",
       "//components/drive",
       "//components/quirks",
       "//components/session_manager/core",
@@ -3974,8 +3973,6 @@ static_library("browser") {
       "search/promos/promo_service_factory.cc",
       "search/promos/promo_service_factory.h",
       "search/promos/promo_service_observer.h",
-      "search/repeatable_queries/repeatable_queries_service_factory.cc",
-      "search/repeatable_queries/repeatable_queries_service_factory.h",
       "search/search_engine_base_url_tracker.cc",
       "search/search_engine_base_url_tracker.h",
       "search/search_suggest/search_suggest_data.cc",
@@ -4617,6 +4614,7 @@ static_library("browser") {
       "//ash/public/cpp",
       "//ash/public/cpp/external_arc",
       "//build:chromeos_buildflags",
+      "//chrome/browser/ash/crosapi",
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos/power/ml/smart_dim",
       "//chrome/browser/nearby_sharing:share_target",
@@ -4687,7 +4685,10 @@ static_library("browser") {
       "//ui/ozone",
       "//ui/wm/public",
     ]
-    allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
+    allow_circular_includes_from += [
+      "//chrome/browser/ash/crosapi",
+      "//chrome/browser/chromeos",
+    ]
 
     if (use_allocator == "tcmalloc") {
       deps += [ "//chrome/common/performance_manager/mojom" ]

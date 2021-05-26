@@ -695,9 +695,6 @@ extern const char kFilteringScrollPredictionDescription[];
 extern const char kFractionalScrollOffsetsName[];
 extern const char kFractionalScrollOffsetsDescription[];
 
-extern const char kFreezeUserAgentName[];
-extern const char kFreezeUserAgentDescription[];
-
 extern const char kForceEffectiveConnectionTypeName[];
 extern const char kForceEffectiveConnectionTypeDescription[];
 extern const char kEffectiveConnectionTypeUnknownDescription[];
@@ -908,9 +905,6 @@ extern const char kUsernameFirstFlowDescription[];
 
 extern const char kNewCanvas2DAPIName[];
 extern const char kNewCanvas2DAPIDescription[];
-
-extern const char kNewProfilePickerName[];
-extern const char kNewProfilePickerDescription[];
 
 extern const char kSignInProfileCreationName[];
 extern const char kSignInProfileCreationDescription[];
@@ -1203,6 +1197,9 @@ extern const char kReadLaterNewBadgePromoDescription[];
 
 extern const char kRecordWebAppDebugInfoName[];
 extern const char kRecordWebAppDebugInfoDescription[];
+
+extern const char kReduceUserAgentName[];
+extern const char kReduceUserAgentDescription[];
 
 extern const char kRestrictGamepadAccessName[];
 extern const char kRestrictGamepadAccessDescription[];
@@ -1800,9 +1797,6 @@ extern const char kOfflinePagesCtDescription[];
 
 extern const char kOfflinePagesCtV2Name[];
 extern const char kOfflinePagesCtV2Description[];
-
-extern const char kOfflinePagesCTSuppressNotificationsName[];
-extern const char kOfflinePagesCTSuppressNotificationsDescription[];
 
 extern const char kOfflinePagesDescriptiveFailStatusName[];
 extern const char kOfflinePagesDescriptiveFailStatusDescription[];

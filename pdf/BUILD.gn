@@ -179,6 +179,7 @@ if (enable_pdf) {
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
       "//printing",
+      "//third_party/blink/public:blink_headers",
       "//third_party/blink/public/common:headers",
       "//third_party/icu",
       "//third_party/pdfium",
@@ -276,6 +277,13 @@ if (enable_pdf) {
       "//ui/base/cursor/mojom:cursor_type",
       "//ui/gfx",
     ]
+
+    if (is_linux || is_chromeos) {
+      sources += [
+        "ppapi_migration/pdfium_font_linux.cc",
+        "ppapi_migration/pdfium_font_linux.h",
+      ]
+    }
   }
 
   source_set("out_of_process_instance") {

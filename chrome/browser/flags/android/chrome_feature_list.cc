@@ -54,7 +54,6 @@
 #include "content/public/common/content_features.h"
 #include "device/fido/features.h"
 #include "media/base/media_switches.h"
-#include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/ui_base_features.h"
 
@@ -269,8 +268,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kPrefetchNotificationSchedulingIntegration,
     &kWebNotesStylize,
     &features::kDnsOverHttps,
-    &net::features::kSameSiteByDefaultCookies,
-    &net::features::kCookiesWithoutSameSiteMustBeSecure,
     &notifications::features::kUseChimeAndroidSdk,
     &paint_preview::kPaintPreviewDemo,
     &paint_preview::kPaintPreviewShowOnStartup,
@@ -297,6 +294,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kEditPasswordsInSettings,
     &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
+    &password_manager::features::kUseNewHeaderForLegacySavePasswordBubble,
     &performance_hints::features::kContextMenuPerformanceInfo,
     &query_tiles::features::kQueryTilesGeoFilter,
     &query_tiles::features::kQueryTiles,

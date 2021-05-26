@@ -815,6 +815,14 @@ bool AVIFImageDecoder::UpdateDemuxer() {
     if (!decoder_)
       return false;
 
+    // For simplicity, use a hardcoded maxThreads of 2, independent of the image
+    // size and processor count. Note: even if we want maxThreads to depend on
+    // the image size, it is impossible to do so because maxThreads is passed to
+    // dav1d_open() inside avifDecoderParse(), but the image size is not known
+    // until avifDecoderParse() returns successfully. See
+    // https://github.com/AOMediaCodec/libavif/issues/636.
+    decoder_->maxThreads = 2;
+
     // TODO(wtc): Currently libavif always prioritizes the animation, but that's
     // not correct. It should instead select animation or still image based on
     // the preferred and major brands listed in the file.
@@ -998,10 +1006,12 @@ bool AVIFImageDecoder::UpdateDemuxer() {
     int clap_height;
     if (!ValidateClapProperty(container, clap_width, clap_height,
                               clap_leftmost_, clap_topmost_)) {
-      return false;
+      DVLOG(1) << "Ignore the 'clap' property and show the full image";
+      ignore_clap_ = true;
+    } else {
+      width = clap_width;
+      height = clap_height;
     }
-    width = clap_width;
-    height = clap_height;
   }
   return SetSize(width, height);
 }
@@ -1034,7 +1044,7 @@ avifResult AVIFImageDecoder::DecodeImage(size_t index) {
   }
 
   decoded_image_ = image;
-  if (image->transformFlags & AVIF_TRANSFORM_CLAP)
+  if ((image->transformFlags & AVIF_TRANSFORM_CLAP) && !ignore_clap_)
     CropDecodedImage();
   return AVIF_RESULT_OK;
 }

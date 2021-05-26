@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -41,6 +43,9 @@ enum ScorerCreationStatus {
   SCORER_FAIL_MODEL_PARSE_ERROR,
   SCORER_FAIL_MODEL_MISSING_FIELDS,
   SCORER_FAIL_MAP_VISUAL_TFLITE_MODEL,
+  SCORER_FAIL_FLATBUFFER_INVALID_REGION,
+  SCORER_FAIL_FLATBUFFER_INVALID_MAPPING,
+  SCORER_FAIL_FLATBUFFER_FAILED_VERIFY,
   SCORER_STATUS_MAX  // Always add new values before this one.
 };
 
@@ -255,6 +260,42 @@ Scorer* Scorer::Create(const base::StringPiece& model_str,
   return scorer.release();
 }
 
+/* static */
+Scorer* Scorer::Create(base::ReadOnlySharedMemoryRegion region,
+                       base::File visual_tflite_model) {
+  std::unique_ptr<Scorer> scorer(new Scorer());
+
+  if (!region.IsValid()) {
+    RecordScorerCreationStatus(SCORER_FAIL_FLATBUFFER_INVALID_REGION);
+    return nullptr;
+  }
+
+  base::ReadOnlySharedMemoryMapping mapping = region.Map();
+  if (!mapping.IsValid()) {
+    RecordScorerCreationStatus(SCORER_FAIL_FLATBUFFER_INVALID_MAPPING);
+    return nullptr;
+  }
+
+  flatbuffers::Verifier verifier(
+      reinterpret_cast<const uint8_t*>(mapping.memory()), mapping.size());
+  if (!flat::VerifyClientSideModelBuffer(verifier)) {
+    RecordScorerCreationStatus(SCORER_FAIL_FLATBUFFER_FAILED_VERIFY);
+    return nullptr;
+  }
+
+  // Only do this part if the visual model file exists
+  if (visual_tflite_model.IsValid() && !scorer->visual_tflite_model_.Initialize(
+                                           std::move(visual_tflite_model))) {
+    RecordScorerCreationStatus(SCORER_FAIL_MAP_VISUAL_TFLITE_MODEL);
+    return nullptr;
+  }
+
+  RecordScorerCreationStatus(SCORER_SUCCESS);
+  scorer->flatbuffer_model_ = flat::GetClientSideModel(mapping.memory());
+  scorer->flatbuffer_mapping_ = std::move(mapping);
+  return scorer.release();
+}
+
 double Scorer::ComputeScore(const FeatureMap& features) const {
   double logodds = 0.0;
   for (int i = 0; i < model_.rule_size(); ++i) {
@@ -286,8 +327,8 @@ void Scorer::ApplyVisualTfLiteModel(
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&ApplyVisualTfLiteModelHelper, bitmap,
-                       model_.tflite_model_input_width(),
-                       model_.tflite_model_input_height(),
+                       model_.tflite_metadata().input_width(),
+                       model_.tflite_metadata().input_height(),
                        std::string(reinterpret_cast<const char*>(
                                        visual_tflite_model_.data()),
                                    visual_tflite_model_.length())),
@@ -334,12 +375,12 @@ float Scorer::threshold_probability() const {
 }
 
 int Scorer::tflite_model_version() const {
-  return model_.tflite_model_version();
+  return model_.tflite_metadata().model_version();
 }
 
-const google::protobuf::RepeatedPtrField<ClientSideModel::Threshold>&
+const google::protobuf::RepeatedPtrField<TfLiteModelMetadata::Threshold>&
 Scorer::tflite_thresholds() const {
-  return model_.tflite_thresholds();
+  return model_.tflite_metadata().thresholds();
 }
 
 double Scorer::ComputeRuleScore(const ClientSideModel::Rule& rule,

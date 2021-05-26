@@ -194,7 +194,7 @@ class LayoutAttributesStack final {
   HeapVector<Member<LayoutAttributesIterator>> stack_;
 };
 
-bool HasUpdated(const NGSVGCharacterData& data) {
+bool HasUpdated(const NGSvgCharacterData& data) {
   return data.HasX() || data.HasY() || data.HasDx() || data.HasDy() ||
          data.HasRotate() || data.anchored_chunk;
 }
@@ -218,7 +218,7 @@ bool HasValidTextLength(const LayoutObject& layout_object) {
 
 }  // anonymous namespace
 
-NGSVGTextLayoutAttributesBuilder::NGSVGTextLayoutAttributesBuilder(
+NGSvgTextLayoutAttributesBuilder::NGSvgTextLayoutAttributesBuilder(
     NGInlineNode ifc)
     : block_flow_(To<LayoutBlockFlow>(ifc.GetLayoutBox())) {}
 
@@ -229,7 +229,7 @@ NGSVGTextLayoutAttributesBuilder::NGSVGTextLayoutAttributesBuilder(
 // resolve_dy, "rotate" of result[], and "anchored chunk" of result[].
 //
 // [1]: https://svgwg.org/svg2-draft/text.html#TextLayoutAlgorithm
-void NGSVGTextLayoutAttributesBuilder::Build(
+void NGSvgTextLayoutAttributesBuilder::Build(
     const String& ifc_text_content,
     const Vector<NGInlineItem>& items) {
   LayoutAttributesStack attr_stack;
@@ -275,7 +275,7 @@ void NGSVGTextLayoutAttributesBuilder::Build(
         first_char_in_text_path = false;
         DCHECK(text_path_start);
         if (addressable_index != *text_path_start) {
-          text_path_range_list_.push_back(SVGTextContentRange{
+          text_path_range_list_.push_back(SvgTextContentRange{
               object, *text_path_start, addressable_index - 1});
         }
         text_path_start.reset();
@@ -283,7 +283,7 @@ void NGSVGTextLayoutAttributesBuilder::Build(
       if (text_length_stack.size() > 0u &&
           text_length_stack.back().layout_object == object) {
         text_length_range_list_.push_back(
-            SVGTextContentRange{object, text_length_stack.back().start_index,
+            SvgTextContentRange{object, text_length_stack.back().start_index,
                                 addressable_index - 1});
         text_length_stack.pop_back();
       }
@@ -294,7 +294,7 @@ void NGSVGTextLayoutAttributesBuilder::Build(
 
     StringView item_string(ifc_text_content, item.StartOffset(), item.Length());
     for (unsigned i = 0; i < item.Length();) {
-      NGSVGCharacterData data;
+      NGSvgCharacterData data;
 
       // 2.2. Set the "anchored chunk" flag of result[index] to true.
       // 1.6.1.1. If i < new_check_count, then set the "anchored chunk" flag
@@ -376,24 +376,24 @@ void NGSVGTextLayoutAttributesBuilder::Build(
     DCHECK_EQ(text_length_stack.back().layout_object, block_flow_);
     DCHECK_EQ(text_length_stack.back().start_index, 0u);
     text_length_range_list_.push_back(
-        SVGTextContentRange{block_flow_, 0u, addressable_index - 1});
+        SvgTextContentRange{block_flow_, 0u, addressable_index - 1});
     text_length_stack.pop_back();
   }
   attr_stack.Pop();
 }
 
-Vector<std::pair<unsigned, NGSVGCharacterData>>
-NGSVGTextLayoutAttributesBuilder::CharacterDataList() {
+Vector<std::pair<unsigned, NGSvgCharacterData>>
+NGSvgTextLayoutAttributesBuilder::CharacterDataList() {
   return std::move(resolved_);
 }
 
-Vector<SVGTextContentRange>
-NGSVGTextLayoutAttributesBuilder::TextLengthRangeList() {
+Vector<SvgTextContentRange>
+NGSvgTextLayoutAttributesBuilder::TextLengthRangeList() {
   return std::move(text_length_range_list_);
 }
 
-Vector<SVGTextContentRange>
-NGSVGTextLayoutAttributesBuilder::TextPathRangeList() {
+Vector<SvgTextContentRange>
+NGSvgTextLayoutAttributesBuilder::TextPathRangeList() {
   return std::move(text_path_range_list_);
 }
 

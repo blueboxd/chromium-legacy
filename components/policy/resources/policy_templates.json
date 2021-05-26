@@ -8803,7 +8803,7 @@
     },
     {
       'name': 'DeviceKerberosEncryptionTypes',
-      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/authpolicy/OWNERS'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -8850,7 +8850,7 @@
     },
     {
       'name': 'DeviceUserPolicyLoopbackProcessingMode',
-      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/authpolicy/OWNERS'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -8893,7 +8893,7 @@
     },
     {
       'name': 'DeviceMachinePasswordChangeRate',
-      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/authpolicy/OWNERS'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 9999 },
       'supported_on': ['chrome_os:66-'],
@@ -8916,7 +8916,7 @@
     },
     {
       'name': 'DeviceGpoCacheLifetime',
-      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/authpolicy/OWNERS'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 9999 },
       'supported_on': ['chrome_os:73-'],
@@ -8939,7 +8939,7 @@
     },
     {
       'name': 'DeviceAuthDataCacheLifetime',
-      'owners': ['file://chrome/browser/ash/authpolicy/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/authpolicy/OWNERS'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0, 'maximum': 9999 },
       'supported_on': ['chrome_os:73-'],
@@ -18676,7 +18676,7 @@
       'id': 421,
       'caption': '''Allow devices to run virtual machines on Chrome OS''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy to Enabled lets the device run virtual machines on <ph name="PRODUCT_OS_NAME">$2<ex>Chrome OS</ex></ph>. <ph name="VIRTUAL_MACHINES_ALLOWED_POLICY_NAME">VirtualMachinesAllowed</ph> and <ph name="CROSTINI_ALLOWED_POLICY_NAME">CrostiniAllowed</ph> must be Enabled to use <ph name="PRODUCT_CROSTINI_NAME">$6<ex>Crostini</ex></ph>. Setting the policy to Disabled means the device can't run virtual machines. Changing it to Disabled starts applying the policy to starting new virtual machines, not those already running.
+      'desc': '''Setting the policy to Enabled lets the device run virtual machines on <ph name="PRODUCT_OS_NAME">$2<ex>Chrome OS</ex></ph>. <ph name="VIRTUAL_MACHINES_ALLOWED_POLICY_NAME">VirtualMachinesAllowed</ph> and <ph name="CROSTINI_ALLOWED_POLICY_NAME">CrostiniAllowed</ph> must be Enabled to use <ph name="PRODUCT_CROSTINI_NAME">Crostini</ph>. Setting the policy to Disabled means the device can't run virtual machines. Changing it to Disabled starts applying the policy to starting new virtual machines, not those already running.
 
       When this policy is not set on a managed device, the device can't run virtual machines. Unmanaged devices can run virtual machines.''',
     },
@@ -18694,7 +18694,7 @@
       'id': 481,
       'caption': '''User is enabled to run Crostini''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy to Enabled or leaving it unset lets users run <ph name="PRODUCT_CROSTINI_NAME">$6<ex>Crostini</ex></ph>, as long as <ph name="VIRTUAL_MACHINES_ALLOWED_POLICY_NAME">VirtualMachinesAllowed</ph> and <ph name="CROSTINI_ALLOWED_POLICY_NAME">CrostiniAllowed</ph> are set to Enabled. Setting the policy to Disabled turns <ph name="PRODUCT_CROSTINI_NAME">$6<ex>Crostini</ex></ph> off for the user. Changing it to Disabled starts applying the policy to starting new <ph name="PRODUCT_CROSTINI_NAME">$6<ex>Crostini</ex></ph> containers, not those already running.''',
+      'desc': '''Setting the policy to Enabled or leaving it unset lets users run <ph name="PRODUCT_CROSTINI_NAME">Crostini</ph>, as long as <ph name="VIRTUAL_MACHINES_ALLOWED_POLICY_NAME">VirtualMachinesAllowed</ph> and <ph name="CROSTINI_ALLOWED_POLICY_NAME">CrostiniAllowed</ph> are set to Enabled. Setting the policy to Disabled turns <ph name="PRODUCT_CROSTINI_NAME">Crostini</ph> off for the user. Changing it to Disabled starts applying the policy to starting new <ph name="PRODUCT_CROSTINI_NAME">Crostini</ph> containers, not those already running.''',
     },
     {
       'name': 'DeviceUnaffiliatedCrostiniAllowed',
@@ -18710,7 +18710,7 @@
       'id': 482,
       'caption': '''Allow unaffiliated users to use Crostini''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy to Enabled or leaving it unset lets all users use <ph name="PRODUCT_CROSTINI_NAME">$6<ex>Crostini</ex></ph> as long as all 3 policies, <ph name="VIRTUAL_MACHINES_ALLOWED_POLICY_NAME">VirtualMachinesAllowed</ph>, <ph name="CROSTINI_ALLOWED_POLICY_NAME">CrostiniAllowed</ph>, and <ph name="DEVICE_UNAFFILIATED_CROSTINI_ALLOWED_POLICY_NAME">DeviceUnaffiliatedCrostiniAllowed</ph> are set to Enabled. Setting the policy to Disabled means unaffiliated users can't use <ph name="PRODUCT_CROSTINI_NAME">$6<ex>Crostini</ex></ph>. Changing it to Disabled starts applying the policy to starting new <ph name="PRODUCT_CROSTINI_NAME">$6<ex>Crostini</ex></ph> containers, not those already running.''',
+      'desc': '''Setting the policy to Enabled or leaving it unset lets all users use <ph name="PRODUCT_CROSTINI_NAME">Crostini</ph> as long as all 3 policies, <ph name="VIRTUAL_MACHINES_ALLOWED_POLICY_NAME">VirtualMachinesAllowed</ph>, <ph name="CROSTINI_ALLOWED_POLICY_NAME">CrostiniAllowed</ph>, and <ph name="DEVICE_UNAFFILIATED_CROSTINI_ALLOWED_POLICY_NAME">DeviceUnaffiliatedCrostiniAllowed</ph> are set to Enabled. Setting the policy to Disabled means unaffiliated users can't use <ph name="PRODUCT_CROSTINI_NAME">Crostini</ph>. Changing it to Disabled starts applying the policy to starting new <ph name="PRODUCT_CROSTINI_NAME">Crostini</ph> containers, not those already running.''',
     },
     {
       'name': 'CrostiniExportImportUIAllowed',
@@ -21839,7 +21839,7 @@
     },
     {
       'name': 'KerberosEnabled',
-      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'fsandrade@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/kerberos/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:87-'],
@@ -21860,7 +21860,7 @@
     },
     {
       'name': 'KerberosRememberPasswordEnabled',
-      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/kerberos/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:87-'],
@@ -21881,7 +21881,7 @@
     },
     {
       'name': 'KerberosAddAccountsAllowed',
-      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/kerberos/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:87-'],
@@ -21902,7 +21902,7 @@
     },
     {
       'name': 'KerberosAccounts',
-      'owners': ['file://chrome/browser/ash/kerberos/OWNERS', 'tomdobro@chromium.org'],
+      'owners': ['fsandrade@chromium.org', 'file://chrome/browser/ash/kerberos/OWNERS'],
       'type': 'dict',
       'schema': {
         'type': 'array',

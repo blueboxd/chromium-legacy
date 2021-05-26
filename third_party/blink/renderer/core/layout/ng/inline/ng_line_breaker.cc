@@ -220,7 +220,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       break_token_(break_token),
       break_iterator_(text_content_),
       shaper_(text_content_),
-      spacing_(text_content_),
+      spacing_(text_content_, is_svg_text_),
       leading_floats_(leading_floats),
       handled_leading_floats_index_(handled_leading_floats_index),
       base_direction_(node_.BaseDirection()) {
@@ -1479,9 +1479,7 @@ void NGLineBreaker::ComputeTrailingCollapsibleSpace(NGLineInfo* line_info) {
 
   trailing_whitespace_ = WhitespaceState::kNone;
   const String& text = Text();
-  NGInlineItemResults* item_results = line_info->MutableResults();
-  for (auto it = item_results->rbegin(); it != item_results->rend(); ++it) {
-    NGInlineItemResult& item_result = *it;
+  for (auto& item_result : base::Reversed(*line_info->MutableResults())) {
     DCHECK(item_result.item);
     const NGInlineItem& item = *item_result.item;
     if (item.EndCollapseType() == NGInlineItem::kOpaqueToCollapsing)
@@ -2444,7 +2442,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
       DCHECK_EQ(enable_soft_hyphen_, style.GetHyphens() != Hyphens::kNone);
       DCHECK_EQ(break_iterator_.Locale(), style.LocaleForLineBreakIterator());
     }
-    ShapeResultSpacing<String> spacing(spacing_.Text());
+    ShapeResultSpacing<String> spacing(spacing_.Text(), is_svg_text_);
     spacing.SetSpacing(style.GetFont().GetFontDescription());
     DCHECK_EQ(spacing.LetterSpacing(), spacing_.LetterSpacing());
     DCHECK_EQ(spacing.WordSpacing(), spacing_.WordSpacing());

@@ -27,42 +27,42 @@ class NGInlineNode;
 // textLength.
 //
 // [1] https://svgwg.org/svg2-draft/text.html#TextLayoutAlgorithm
-class NGSVGTextLayoutAttributesBuilder final {
+class NGSvgTextLayoutAttributesBuilder final {
   STACK_ALLOCATED();
 
  public:
-  explicit NGSVGTextLayoutAttributesBuilder(NGInlineNode ifc);
+  explicit NGSvgTextLayoutAttributesBuilder(NGInlineNode ifc);
 
   void Build(const String& ifc_text_content, const Vector<NGInlineItem>& items);
 
   // This function can be called just once after Build().
-  Vector<std::pair<unsigned, NGSVGCharacterData>> CharacterDataList();
+  Vector<std::pair<unsigned, NGSvgCharacterData>> CharacterDataList();
   // This function can be called just once after Build().
-  Vector<SVGTextContentRange> TextLengthRangeList();
+  Vector<SvgTextContentRange> TextLengthRangeList();
   // This function can be called just once after Build().
-  Vector<SVGTextContentRange> TextPathRangeList();
+  Vector<SvgTextContentRange> TextPathRangeList();
 
  private:
   LayoutBlockFlow* block_flow_;
 
   // The result of Build().
   // A list of a pair of addressable character index and an
-  // NGSVGCharacterData. This is named 'resolved' because this is
+  // NGSvgCharacterData. This is named 'resolved' because this is
   // the outcome of '3. Resolve character positioning'.
-  Vector<std::pair<unsigned, NGSVGCharacterData>> resolved_;
+  Vector<std::pair<unsigned, NGSvgCharacterData>> resolved_;
 
   // The result of Build().
   // A list of a pair of start addressable character index and end
   // addressable character index (inclusive) for an SVGTextContentElement
   // with textLength.
   // This is used in "5. Apply ‘textLength’ attribute".
-  Vector<SVGTextContentRange> text_length_range_list_;
+  Vector<SvgTextContentRange> text_length_range_list_;
 
   // The result of Build().
   // A list of a pair of start addressable character index and end
   // addressable character index (inclusive) for a <textPath>.
   // This is used in "8. Position on path".
-  Vector<SVGTextContentRange> text_path_range_list_;
+  Vector<SvgTextContentRange> text_path_range_list_;
 };
 
 }  // namespace blink

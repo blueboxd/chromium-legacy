@@ -196,6 +196,8 @@ class CORE_EXPORT NGPhysicalFragment
            !layout_object_->IsTableCellLegacy();
   }
 
+  bool IsGridNG() const { return layout_object_->IsLayoutNGGrid(); }
+
   bool IsTextControlContainer() const;
   bool IsTextControlPlaceholder() const;
 
@@ -330,18 +332,6 @@ class CORE_EXPORT NGPhysicalFragment
 
   bool ShouldClipOverflowAlongBothAxis() const {
     return IsCSSBox() && layout_object_->ShouldClipOverflowAlongBothAxis();
-  }
-
-  bool IsFragmentationContextRoot() const {
-    // We have no bit that tells us whether this is a fragmentation context
-    // root, so some additional checking is necessary here, to make sure that
-    // we're actually establishing one. We check that we're not a custom layout
-    // box, as specifying columns on such a box has no effect. Note that
-    // specifying columns together with a display value of e.g. 'flex', 'grid'
-    // or 'table' also has no effect, but we don't need to check for that here,
-    // since such display types don't create a block flow (block container).
-    return IsCSSBox() && Style().SpecifiesColumns() && IsBlockFlow() &&
-           !layout_object_->IsLayoutNGCustom();
   }
 
   // Return whether we can traverse this fragment and its children directly, for

@@ -1011,10 +1011,10 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
     CollectInlinesInternal(&items_builder, nullptr);
     String ifc_text_content = items_builder.ToString();
 
-    NGSVGTextLayoutAttributesBuilder svg_attr_builder(*this);
+    NGSvgTextLayoutAttributesBuilder svg_attr_builder(*this);
     svg_attr_builder.Build(ifc_text_content, items);
 
-    auto svg_data = std::make_unique<SVGInlineNodeData>();
+    auto svg_data = std::make_unique<SvgInlineNodeData>();
     svg_data->character_data_list = svg_attr_builder.CharacterDataList();
     svg_data->text_length_range_list = svg_attr_builder.TextLengthRangeList();
     svg_data->text_path_range_list = svg_attr_builder.TextPathRangeList();
@@ -1246,7 +1246,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
   // Provide full context of the entire node to the shaper.
   ReusingTextShaper shaper(data, previous_items);
-  ShapeResultSpacing<String> spacing(text_content);
+  ShapeResultSpacing<String> spacing(text_content, IsSVGText());
 
   DCHECK(!data->segments ||
          data->segments->EndOffset() == text_content.length());
@@ -1897,19 +1897,19 @@ bool NGInlineNode::ShouldReportLetterSpacingUseCounterForTesting(
                                              block_flow);
 }
 
-const Vector<std::pair<unsigned, NGSVGCharacterData>>&
-NGInlineNode::SVGCharacterDataList() const {
+const Vector<std::pair<unsigned, NGSvgCharacterData>>&
+NGInlineNode::SvgCharacterDataList() const {
   DCHECK(IsSVGText());
   return Data().svg_node_data_->character_data_list;
 }
 
-const Vector<SVGTextContentRange>& NGInlineNode::SVGTextLengthRangeList()
+const Vector<SvgTextContentRange>& NGInlineNode::SvgTextLengthRangeList()
     const {
   DCHECK(IsSVGText());
   return Data().svg_node_data_->text_length_range_list;
 }
 
-const Vector<SVGTextContentRange>& NGInlineNode::SVGTextPathRangeList() const {
+const Vector<SvgTextContentRange>& NGInlineNode::SvgTextPathRangeList() const {
   DCHECK(IsSVGText());
   return Data().svg_node_data_->text_path_range_list;
 }

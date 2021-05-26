@@ -878,7 +878,7 @@ void Node::Prepend(
 
   if (Node* node =
           ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state))
-    this_node->InsertBefore(node, firstChild(), exception_state);
+    this_node->InsertBefore(node, this_node->firstChild(), exception_state);
 }
 
 void Node::Append(
@@ -900,69 +900,47 @@ void Node::Append(
 void Node::Before(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
-  Node* parent = parentNode();
+  ContainerNode* parent = parentNode();
   if (!parent)
     return;
-  auto* parent_node = DynamicTo<ContainerNode>(parent);
-  if (!parent_node) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kHierarchyRequestError,
-        "This node type does not support this method.");
-    return;
-  }
   Node* viable_previous_sibling = FindViablePreviousSibling(*this, nodes);
   if (Node* node =
           ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state)) {
-    parent_node->InsertBefore(node,
-                              viable_previous_sibling
-                                  ? viable_previous_sibling->nextSibling()
-                                  : parent->firstChild(),
-                              exception_state);
+    parent->InsertBefore(node,
+                         viable_previous_sibling
+                             ? viable_previous_sibling->nextSibling()
+                             : parent->firstChild(),
+                         exception_state);
   }
 }
 
 void Node::After(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
-  Node* parent = parentNode();
+  ContainerNode* parent = parentNode();
   if (!parent)
     return;
-  auto* parent_node = DynamicTo<ContainerNode>(parent);
-  if (!parent_node) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kHierarchyRequestError,
-        "This node type does not support this method.");
-    return;
-  }
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
   if (Node* node =
           ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state))
-    parent_node->InsertBefore(node, viable_next_sibling, exception_state);
+    parent->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
 void Node::ReplaceWith(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
-  Node* parent = parentNode();
+  ContainerNode* parent = parentNode();
   if (!parent)
     return;
-  auto* parent_node = DynamicTo<ContainerNode>(parent);
-  if (!parent_node) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kHierarchyRequestError,
-        "This node type does not support this method.");
-    return;
-  }
-
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
   Node* node =
       ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state);
   if (exception_state.HadException())
     return;
-  if (parent_node == parentNode())
-    parent_node->ReplaceChild(node, this, exception_state);
+  if (parent == parentNode())
+    parent->ReplaceChild(node, this, exception_state);
   else
-    parent_node->InsertBefore(node, viable_next_sibling, exception_state);
+    parent->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
 // https://dom.spec.whatwg.org/#dom-parentnode-replacechildren
@@ -991,13 +969,13 @@ void Node::ReplaceChildren(
 
   // 3. Replace all with node within this.
   ChildListMutationScope mutation(*this);
-  while (Node* first_child = firstChild()) {
-    removeChild(first_child, exception_state);
+  while (Node* first_child = this_node->firstChild()) {
+    this_node->RemoveChild(first_child, exception_state);
     if (exception_state.HadException())
       return;
   }
 
-  appendChild(node, exception_state);
+  this_node->AppendChild(node, exception_state);
 }
 
 void Node::remove(ExceptionState& exception_state) {

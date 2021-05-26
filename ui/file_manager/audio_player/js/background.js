@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {BackgroundBaseImpl} from '../../file_manager/background/js/background_base.m.js';
-// #import {SingletonAppWindowWrapper} from '../../file_manager/background/js/app_window_wrapper.m.js';
-// #import * as wrappedUtil from '../../file_manager/common/js/util.m.js'; const {util} = wrappedUtil;
-// #import {FileType} from '../../file_manager/common/js/file_type.m.js';
-// clang-format on
+import {SingletonAppWindowWrapper} from '../../file_manager/background/js/app_window_wrapper.m.js';
+import {BackgroundBaseImpl} from '../../file_manager/background/js/background_base.m.js';
+import {FileType} from '../../file_manager/common/js/file_type.m.js';
+import {util} from '../../file_manager/common/js/util.m.js';
 
 /**
  * Icon of the audio player.
@@ -23,7 +21,7 @@ const AUDIO_PLAYER_ICON = 'icons/audio-player-192.png';
  * @type {!string}
  * @const
  */
-const AUDIO_PLAYER_MODULE_APP_URL = 'audio_player_module.html';
+const AUDIO_PLAYER_APP_URL = 'audio_player.html';
 
 /**
  * Configuration of the audio player.
@@ -77,7 +75,7 @@ window.background = new AudioPlayerBackground();
  */
 const getAudioPlayer = new Promise(async (resolve) => {
   await window.background.ready();
-  const url = AUDIO_PLAYER_MODULE_APP_URL;
+  const url = AUDIO_PLAYER_APP_URL;
   resolve(new SingletonAppWindowWrapper(url, audioPlayerCreateOptions));
 });
 
@@ -87,7 +85,7 @@ const getAudioPlayer = new Promise(async (resolve) => {
  *     playing.
  * @return {!Promise} Promise to be fulfilled on success, or rejected on error.
  */
-/* #export */ async function open(urls) {
+export async function open(urls) {
   let position = 0;
   const startUrl = (position < urls.length) ? urls[position] : '';
 
@@ -139,7 +137,7 @@ const getAudioPlayer = new Promise(async (resolve) => {
 
     audioPlayer.setIcon(AUDIO_PLAYER_ICON);
     audioPlayer.rawAppWindow.focus();
-    return AUDIO_PLAYER_MODULE_APP_URL;
+    return AUDIO_PLAYER_APP_URL;
   } catch (error) {
     console.error('Launch failed: ' + (error.stack || error));
     throw error;

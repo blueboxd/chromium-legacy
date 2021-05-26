@@ -426,6 +426,20 @@ crbug.com/1155161 svg/masking/mask-of-root.html [ Failure ]
 # Failures due to pointerMove building synthetic events without button information (main thread only).
 crbug.com/1056778 fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
 
+# Awaiting implementation of FeComponentTransfer for CanvasFilter
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.discrete.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.discrete.worker.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.gamma.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.gamma.worker.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.linear.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.linear.worker.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.table.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.table.worker.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.discrete.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.gamma.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.linear.html [ Failure ]
+crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.table.html [ Failure ]
+
 # Most of these fail due to subpixel differences, but a couple are real failures.
 crbug.com/1044742 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/1044742 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-parent.html [ Failure ]
@@ -4243,7 +4257,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-with-geometric-precis
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/tspan-multiple-outline.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/tspan-multiple-outline-vertical.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/tspan-outline.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/word-spacing-leading-ws.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/transforms/text-with-pattern-with-svg-transform.svg [ Failure ]
@@ -7000,4 +7013,7 @@ crbug.com/1209223 virtual/synchronous_html_parser/external/wpt/html/semantics/fo
 crbug.com/1209223 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure ]
 crbug.com/1209223 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Failure ]
 
-crbug.com/1213120 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Pass Failure ]
+# Sheriff on 2021-05-26
+crbug.com/1213322 [ Mac ] external/wpt/css/css-values/minmax-percentage-serialize.html [ Pass Failure ]
+crbug.com/1213322 [ Mac ] external/wpt/html/browsers/the-window-object/named-access-on-the-window-object/window-named-properties.html [ Pass Failure ]
+crbug.com/1213322 [ Mac ] virtual/css-calc-infinity-and-nan/external/wpt/css/css-values/minmax-percentage-serialize.html [ Pass Failure ]

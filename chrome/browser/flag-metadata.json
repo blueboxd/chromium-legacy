@@ -506,6 +506,11 @@
     "expiry_milestone": 91
   },
   {
+    "name": "cellular-forbid-attach-apn",
+    "owners": [ "hsuregan", "cros-connectivity@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "cellular-use-attach-apn",
     "owners": [ "vpalatin", "ejcaruso", "chromeos-cellular-platform@google.com" ],
     "expiry_milestone": 95
@@ -728,12 +733,12 @@
   {
     "name": "continuous-feeds",
     "owners": [ "//chrome/browser/continuous_search/OWNERS" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 94
   },
   {
     "name": "continuous-search",
     "owners": [ "//chrome/browser/continuous_search/OWNERS" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 94
   },
   {
     "name": "conversion-measurement-api",
@@ -1689,11 +1694,6 @@
     "name": "enable-dns-proxy",
     "owners": [ "garrick", "jasongustaman", "cros-networking@google.com" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "enable-encryption-migration",
-    "owners": [ "fukino" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-ephemeral-guest-profiles-on-desktop",
@@ -4459,12 +4459,12 @@
   {
     "name": "related-searches",
     "owners": [ "ayman", "donnd" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 97
   },
   {
     "name": "related-searches-ui",
     "owners": [ "ayman", "donnd" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 97
   },
   {
     "name": "release-notes-notification",

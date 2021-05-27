@@ -56,7 +56,7 @@ inline PhysicalRect ComputeBoxRect(const NGInlineCursor& cursor,
                                    const PhysicalOffset& paint_offset,
                                    const PhysicalOffset& parent_offset) {
   PhysicalRect box_rect;
-  if (const auto* svg_data = cursor.CurrentItem()->SVGFragmentData())
+  if (const auto* svg_data = cursor.CurrentItem()->SvgFragmentData())
     box_rect = PhysicalRect::FastAndLossyFromFloatRect(svg_data->rect);
   else
     box_rect = cursor.CurrentItem()->RectInContainerFragment();
@@ -170,7 +170,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   IntRect visual_rect;
   const LayoutSVGInlineText* svg_inline_text = nullptr;
   float scaling_factor = 1.0f;
-  if (text_item.Type() == NGFragmentItem::kSVGText) {
+  if (text_item.Type() == NGFragmentItem::kSvgText) {
     svg_inline_text = To<LayoutSVGInlineText>(layout_object);
     scaling_factor = svg_inline_text->ScalingFactor();
     DCHECK_NE(scaling_factor, 0.0f);
@@ -272,10 +272,10 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
     state_saver.emplace(context);
     context.Scale(1 / scaling_factor, 1 / scaling_factor);
   }
-  if (text_item.HasSVGTransformForPaint()) {
+  if (text_item.HasSvgTransformForPaint()) {
     if (!state_saver)
       state_saver.emplace(context);
-    context.ConcatCTM(text_item.BuildSVGTransformForPaint());
+    context.ConcatCTM(text_item.BuildSvgTransformForPaint());
   }
   NGTextPainter text_painter(context, font, fragment_paint_info, visual_rect,
                              text_origin, box_rect, is_horizontal);
@@ -334,52 +334,22 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   const unsigned length = fragment_paint_info.to - fragment_paint_info.from;
-  if (!highlight_painter.Selection() ||
-      !highlight_painter.Selection()->ShouldPaintSelectedTextOnly()) {
-    // Paint text decorations except line-through.
-    absl::optional<TextDecorationInfo> decoration_info;
+  const unsigned start_offset = fragment_paint_info.from;
+  const unsigned end_offset = fragment_paint_info.to;
+
+  if (LIKELY(!highlight_painter.Selection())) {
     bool has_line_through_decoration = false;
-    if (style.TextDecorationsInEffect() != TextDecoration::kNone &&
-        // Ellipsis should not have text decorations. This is not defined, but 4
-        // impls do this.
-        !text_item.IsEllipsis()) {
-      PhysicalOffset local_origin = box_rect.offset;
-      LayoutUnit width = box_rect.Width();
-      absl::optional<AppliedTextDecoration> selection_text_decoration =
-          UNLIKELY(highlight_painter.Selection())
-              ? absl::optional<AppliedTextDecoration>(
-                    highlight_painter.Selection()
-                        ->GetSelectionStyle()
-                        .selection_text_decoration)
-              : absl::nullopt;
-
-      decoration_info.emplace(box_rect.offset, local_origin, width,
-                              style.GetFontBaseline(), style,
-                              selection_text_decoration, nullptr);
-      NGTextDecorationOffset decoration_offset(decoration_info->Style(),
-                                               text_item.Style(), nullptr);
-      text_painter.PaintDecorationsExceptLineThrough(
-          decoration_offset, decoration_info.value(), paint_info,
-          style.AppliedTextDecorations(), text_style,
-          &has_line_through_decoration);
-    }
-
-    unsigned start_offset = fragment_paint_info.from;
-    unsigned end_offset = fragment_paint_info.to;
-
-    if (UNLIKELY(highlight_painter.Selection())) {
-      highlight_painter.Selection()->PaintSuppressingTextProperWhereSelected(
-          text_painter, start_offset, end_offset, length, text_style, node_id);
-    } else {
-      text_painter.Paint(start_offset, end_offset, length, text_style, node_id);
-    }
-
-    // Paint line-through decoration if needed.
+    text_painter.PaintDecorationsExceptLineThrough(
+        text_item, paint_info, style, text_style, box_rect, absl::nullopt,
+        &has_line_through_decoration);
+    text_painter.Paint(start_offset, end_offset, length, text_style, node_id);
     if (has_line_through_decoration) {
       text_painter.PaintDecorationsOnlyLineThrough(
-          decoration_info.value(), paint_info, style.AppliedTextDecorations(),
-          text_style);
+          text_item, paint_info, style, text_style, box_rect, absl::nullopt);
     }
+  } else if (!highlight_painter.Selection()->ShouldPaintSelectedTextOnly()) {
+    highlight_painter.Selection()->PaintSuppressingTextProperWhereSelected(
+        text_painter, start_offset, end_offset, length, text_style, node_id);
   }
 
   // 3. Paint CSS highlight overlays, such as ::selection and ::target-text.
@@ -395,9 +365,20 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
           context, node, document, style, rotation);
     }
 
+    bool has_line_through_decoration = false;
+    text_painter.PaintDecorationsExceptLineThrough(
+        text_item, paint_info, style, text_style, box_rect,
+        highlight_painter.SelectionDecoration(), &has_line_through_decoration);
+
     // Paint only the text that is selected.
     highlight_painter.Selection()->PaintSelectedText(text_painter, length,
                                                      text_style, node_id);
+
+    if (has_line_through_decoration) {
+      text_painter.PaintDecorationsOnlyLineThrough(
+          text_item, paint_info, style, text_style, box_rect,
+          highlight_painter.SelectionDecoration());
+    }
   }
 
   if (paint_info.phase != PaintPhase::kForeground)

@@ -141,17 +141,10 @@ class InputMethod {
   // 0 if there is no focused client.
   virtual int GetTextInputFlags() const = 0;
 
-  // Checks if the focused text input client supports inline composition.
-  virtual bool CanComposeInline() const = 0;
-
   // Returns true if we know for sure that a candidate window (or IME suggest,
   // etc.) is open.  Returns false if no popup window is open or the detection
   // of IME popups is not supported.
   virtual bool IsCandidatePopupOpen() const = 0;
-
-  // Check whether text entered into the focused text input client should be
-  // used to improve typing suggestions for the user.
-  virtual bool GetClientShouldDoLearning() = 0;
 
   // Displays an on screen keyboard if enabled.
   virtual void ShowVirtualKeyboardIfEnabled() = 0;

@@ -246,6 +246,10 @@ void HoldingSpaceKeyedService::AddNearbyShare(
   AddItemOfType(HoldingSpaceItem::Type::kNearbyShare, nearby_share_path);
 }
 
+void HoldingSpaceKeyedService::AddScan(const base::FilePath& file_path) {
+  AddItemOfType(HoldingSpaceItem::Type::kScan, file_path);
+}
+
 void HoldingSpaceKeyedService::AddScreenRecording(
     const base::FilePath& screen_recording_file) {
   AddItemOfType(HoldingSpaceItem::Type::kScreenRecording,
@@ -294,6 +298,12 @@ void HoldingSpaceKeyedService::AddItemOfType(
   AddItem(HoldingSpaceItem::CreateFileBackedItem(
       type, file_path, file_system_url, progress,
       base::BindOnce(&holding_space_util::ResolveImage, &thumbnail_loader_)));
+}
+
+void HoldingSpaceKeyedService::CancelItem(const HoldingSpaceItem* item) {
+  // Currently it is only possible to cancel download type items.
+  if (HoldingSpaceItem::IsDownload(item->type()) && downloads_delegate_)
+    downloads_delegate_->Cancel(item);
 }
 
 void HoldingSpaceKeyedService::Shutdown() {
@@ -347,8 +357,10 @@ void HoldingSpaceKeyedService::InitializeDelegates() {
     return;
 
   // The `HoldingSpaceDownloadsDelegate` monitors the status of downloads.
-  delegates_.push_back(std::make_unique<HoldingSpaceDownloadsDelegate>(
-      this, &holding_space_model_));
+  auto downloads_delegate = std::make_unique<HoldingSpaceDownloadsDelegate>(
+      this, &holding_space_model_);
+  downloads_delegate_ = downloads_delegate.get();
+  delegates_.push_back(std::move(downloads_delegate));
 
   // The `HoldingSpaceFileSystemDelegate` monitors the file system for changes.
   delegates_.push_back(std::make_unique<HoldingSpaceFileSystemDelegate>(
@@ -369,6 +381,7 @@ void HoldingSpaceKeyedService::InitializeDelegates() {
 }
 
 void HoldingSpaceKeyedService::ShutdownDelegates() {
+  downloads_delegate_ = nullptr;
   delegates_.clear();
 }
 

@@ -2263,6 +2263,9 @@ extern const char kCategoricalSearchDescription[];
 extern const char kCdmFactoryDaemonName[];
 extern const char kCdmFactoryDaemonDescription[];
 
+extern const char kCellularForbidAttachApnName[];
+extern const char kCellularForbidAttachApnDescription[];
+
 extern const char kCellularUseAttachApnName[];
 extern const char kCellularUseAttachApnDescription[];
 
@@ -2415,9 +2418,6 @@ extern const char kEnableDnsProxyDescription[];
 
 extern const char kDnsProxyEnableDOHName[];
 extern const char kDnsProxyEnableDOHDescription[];
-
-extern const char kEnableEncryptionMigrationName[];
-extern const char kEnableEncryptionMigrationDescription[];
 
 extern const char kEnableHostnameSettingName[];
 extern const char kEnableHostnameSettingDescription[];

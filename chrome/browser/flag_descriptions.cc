@@ -3924,6 +3924,14 @@ const char kCdmFactoryDaemonName[] = "CDM Factory Daemon";
 const char kCdmFactoryDaemonDescription[] =
     "Use the CDM daemon instead of the library CDM";
 
+const char kCellularForbidAttachApnName[] = "Forbid Use Attach APN";
+const char kCellularForbidAttachApnDescription[] =
+    "If enabled, the value of |kCellularUseAttachApn| should have no effect "
+    "and the LTE attach APN configuration will not be sent to the modem. This "
+    "flag exists because the |kCellularUseAttachApn| flag can be enabled "
+    "by command-line arguments via board overlays which takes precedence over "
+    "finch configs, which may be needed to turn off the Attach APN feature.";
+
 const char kCellularUseAttachApnName[] = "Cellular use Attach APN";
 const char kCellularUseAttachApnDescription[] =
     "Use the mobile operator database to set explicitly an Attach APN "
@@ -4181,12 +4189,6 @@ const char kDnsProxyEnableDOHName[] =
 const char kDnsProxyEnableDOHDescription[] =
     "When enabled, the DNS proxy will perform DNS-over-HTTPS in accordance "
     "with the Chrome OS SecureDNS settings.";
-
-const char kEnableEncryptionMigrationName[] =
-    "Enable encryption migration of user data";
-const char kEnableEncryptionMigrationDescription[] =
-    "If enabled and the device supports ARC, the user will be asked to update "
-    "the encryption of user data when the user signs in.";
 
 const char kEnableHostnameSettingName[] = "Enable setting the device hostname";
 const char kEnableHostnameSettingDescription[] =

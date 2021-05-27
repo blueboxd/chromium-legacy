@@ -351,11 +351,6 @@ public class VoiceRecognitionHandlerTest {
         }
 
         @Override
-        public Profile getProfile() {
-            return null;
-        }
-
-        @Override
         public UrlBarData getUrlBarData() {
             return UrlBarData.EMPTY;
         }
@@ -484,7 +479,7 @@ public class VoiceRecognitionHandlerTest {
         private IntentCallback mCallback;
 
         public TestWindowAndroid(Context context) {
-            super(context);
+            super(context, /* listenToActivityState= */ true);
         }
 
         public void setCancelableIntentSuccess(boolean success) {

@@ -70,13 +70,14 @@ std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
 bool HoldingSpaceItem::IsDownload(HoldingSpaceItem::Type type) {
   switch (type) {
     case Type::kArcDownload:
-    case Type::kDiagnosticsLog:
     case Type::kDownload:
     case Type::kLacrosDownload:
       return true;
+    case Type::kDiagnosticsLog:
     case Type::kNearbyShare:
     case Type::kPinnedFile:
     case Type::kPrintedPdf:
+    case Type::kScan:
     case Type::kScreenRecording:
     case Type::kScreenshot:
       return false;
@@ -186,6 +187,10 @@ bool HoldingSpaceItem::UpdateProgress(const absl::optional<float>& progress) {
   }
 
   progress_ = progress;
+
+  if (progress_ == 1.f)
+    paused_ = false;
+
   return true;
 }
 
@@ -206,8 +211,21 @@ bool HoldingSpaceItem::IsScreenCapture() const {
     case Type::kNearbyShare:
     case Type::kPinnedFile:
     case Type::kPrintedPdf:
+    case Type::kScan:
       return false;
   }
+}
+
+bool HoldingSpaceItem::IsPaused() const {
+  return paused_;
+}
+
+bool HoldingSpaceItem::UpdatePause(bool paused) {
+  if (!IsInProgress() || paused_ == paused)
+    return false;
+
+  paused_ = paused;
+  return true;
 }
 
 HoldingSpaceItem::HoldingSpaceItem(Type type,

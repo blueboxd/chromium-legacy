@@ -140,6 +140,10 @@ class MockHoldingSpaceClient : public HoldingSpaceClient {
               (const base::FilePath& file_path),
               (override));
   MOCK_METHOD(void,
+              CancelItems,
+              (const std::vector<const HoldingSpaceItem*>& items),
+              (override));
+  MOCK_METHOD(void,
               CopyImageToClipboard,
               (const HoldingSpaceItem& item, SuccessCallback callback),
               (override));
@@ -959,7 +963,8 @@ INSTANTIATE_TEST_SUITE_P(
                       HoldingSpaceItem::Type::kDownload,
                       HoldingSpaceItem::Type::kLacrosDownload,
                       HoldingSpaceItem::Type::kNearbyShare,
-                      HoldingSpaceItem::Type::kPrintedPdf));
+                      HoldingSpaceItem::Type::kPrintedPdf,
+                      HoldingSpaceItem::Type::kScan));
 
 // Tests how download chips are updated during item addition, removal and
 // initialization.

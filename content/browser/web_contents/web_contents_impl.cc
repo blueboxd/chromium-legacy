@@ -4431,8 +4431,8 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   RenderFrameHost* source_render_frame_host = RenderFrameHost::FromID(
       params.source_render_process_id, params.source_render_frame_id);
 
-  // Prevent frames that are not active from opening new windows, tabs, popups,
-  // etc.
+  // Prevent frames that are not active (e.g. a prerendering page) from opening
+  // new windows, tabs, popups, etc.
   if (params.disposition != WindowOpenDisposition::CURRENT_TAB &&
       source_render_frame_host && !source_render_frame_host->IsCurrent()) {
     return nullptr;
@@ -4447,6 +4447,19 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
       // against this->frame_tree_.
       FrameTree* frame_tree = frame_tree_node->frame_tree();
       CHECK_EQ(frame_tree->controller().GetWebContents(), this);
+
+      if (blink::features::IsPrerender2Enabled()) {
+        // Prerendering is generally hidden from embedders. If the navigation is
+        // targeting a frame in a prerendering frame tree, we shouldn't run that
+        // navigation through the embedder delegate. Instead, we just navigate
+        // directly on the prerendering frame tree.
+        if (frame_tree->type() == FrameTree::Type::kPrerender) {
+          DCHECK_EQ(params.disposition, WindowOpenDisposition::CURRENT_TAB);
+          frame_tree->controller().LoadURLWithParams(
+              NavigationController::LoadURLParams(params));
+          return this;
+        }
+      }
     } else {
       // If the node doesn't exist it was probably removed from its frame tree.
       // In that case, abort since continuing would navigate the root frame.
@@ -6604,6 +6617,7 @@ void WebContentsImpl::RunJavaScriptDialog(
     const std::u16string& message,
     const std::u16string& default_prompt,
     JavaScriptDialogType dialog_type,
+    bool disable_third_party_subframe_suppresion,
     JavaScriptDialogCallback response_callback) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RunJavaScriptDialog",
                         "render_frame_host", render_frame_host);
@@ -6641,7 +6655,8 @@ void WebContentsImpl::RunJavaScriptDialog(
   bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
   bool suppress_this_message = should_suppress || !has_handlers;
 
-  if (GetContentClient()->browser()->SuppressDifferentOriginSubframeJSDialogs(
+  if (!disable_third_party_subframe_suppresion &&
+      GetContentClient()->browser()->SuppressDifferentOriginSubframeJSDialogs(
           GetBrowserContext())) {
     // We can't check for opaque origin cases, default to allowing them to
     // trigger dialogs.

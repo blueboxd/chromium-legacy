@@ -72,15 +72,7 @@ int DummyInputMethod::GetTextInputFlags() const {
   return 0;
 }
 
-bool DummyInputMethod::CanComposeInline() const {
-  return true;
-}
-
 bool DummyInputMethod::IsCandidatePopupOpen() const {
-  return false;
-}
-
-bool DummyInputMethod::GetClientShouldDoLearning() {
   return false;
 }
 

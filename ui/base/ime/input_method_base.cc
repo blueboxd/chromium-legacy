@@ -96,16 +96,6 @@ int InputMethodBase::GetTextInputFlags() const {
   return client ? client->GetTextInputFlags() : 0;
 }
 
-bool InputMethodBase::CanComposeInline() const {
-  TextInputClient* client = GetTextInputClient();
-  return client ? client->CanComposeInline() : true;
-}
-
-bool InputMethodBase::GetClientShouldDoLearning() {
-  TextInputClient* client = GetTextInputClient();
-  return client && client->ShouldDoLearning();
-}
-
 void InputMethodBase::ShowVirtualKeyboardIfEnabled() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnShowVirtualKeyboardIfEnabled();

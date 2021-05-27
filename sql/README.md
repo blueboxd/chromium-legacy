@@ -1,5 +1,6 @@
 # SQLite abstraction layer
 
+[TOC]
 
 ## SQLite for system designers
 
@@ -133,6 +134,30 @@ TODO: Present a simplified model that's sufficient for most database design.
 
 The following pieces of advice usually come up in code reviews.
 
+
+### Quickly iterating on SQL statements
+
+[The SQLite shell](https://sqlite.org/cli.html) offers quick feedback for
+converging on valid SQL statement syntax, and avoiding SQLite features that are
+disabled in Chrome. In addition, the
+[`EXPLAIN`](https://www.sqlite.org/lang_explain.html) and
+[`EXPLAIN QUERY PLAN`](https://www.sqlite.org/eqp.html) statements show the
+results of SQLite's query planner and optimizer, which are very helpful for
+reasoning about the performance of complex queries.
+
+The following commands set up SQLite shells using Chrome's build of SQLite.
+
+```sh
+autoninja -C out/Default sqlite_shell sqlite_dev_shell
+```
+
+* `sqlite_shell` runs the SQLite build that we ship in Chrome. It offers the
+  ground truth on whether a SQL statement can be used in Chrome code or not.
+* `sqlite_dev_shell` enables the `EXPLAIN` and `EXPLAIN QUERY PLAN` statements,
+  as well as a few features used by [Perfetto](https://perfetto.dev/)'s analysis
+  tools.
+
+
 ### SQL style
 
 SQLite queries are usually embedded as string literals in C++ code. The
@@ -251,12 +276,21 @@ using `sql::Statement::ColumnTime()`.
 Column types should not include information ignored by SQLite, such as numeric
 precision or scale specifiers, or string length specifiers.
 
-Columns should have the `NOT NULL` constraint whenever possible. This saves
-maintainers from having to reason about the less intuitive cases of
-[`NULL` handling](https://sqlite.org/nulls.html).
+Columns should have
+[`NOT NULL` constraints](https://sqlite.org/lang_createtable.html#not_null_constraints)
+whenever possible. This saves maintainers from having to reason about the less
+intuitive cases of [`NULL` handling](https://sqlite.org/nulls.html).
 
-Columns should avoid `DEFAULT` values. This moves the burden of checking that
-`INSERT` statements aren't missing any columns from the code reviewer to SQLite.
+`NOT NULL` constraints must be explicitly stated in column definitions that
+include `PRIMARY KEY` specifiers. For historical reasons, SQLite
+[allows NULL primary keys](https://sqlite.org/lang_createtable.html#the_primary_key)
+in most cases.  When a table's primary key is composed of multiple columns,
+each column's definition should have a `NOT NULL` constraint.
+
+Columns should avoid `DEFAULT` values. Columns that have `NOT NULL` constraints
+and lack a `DEFAULT` value are easier to review and maintain, as SQLite takes
+over the burden of checking that `INSERT` statements aren't missing these
+columns.
 
 Surrogate primary keys should use the column type `INTEGER PRIMARY KEY`, to take
 advantage of SQLite's rowid optimizations.

@@ -38,6 +38,7 @@ class FileSystemURL;
 
 namespace ash {
 
+class HoldingSpaceDownloadsDelegate;
 class HoldingSpaceKeyedServiceDelegate;
 
 // Browser context keyed service that:
@@ -97,6 +98,9 @@ class HoldingSpaceKeyedService : public crosapi::mojom::HoldingSpaceService,
   // Adds a nearby share item backed by the provided absolute file path.
   void AddNearbyShare(const base::FilePath& nearby_share_path);
 
+  // Adds a scanned item backed by the provided absolute file path.
+  void AddScan(const base::FilePath& file_path);
+
   // Adds a screen recording item backed by the provided absolute file path.
   void AddScreenRecording(const base::FilePath& screen_recording_path);
 
@@ -115,6 +119,9 @@ class HoldingSpaceKeyedService : public crosapi::mojom::HoldingSpaceService,
   void AddItemOfType(HoldingSpaceItem::Type type,
                      const base::FilePath& file_path,
                      const absl::optional<float>& progress = 1.f);
+
+  // Attempts to cancel the specified holding space `item`.
+  void CancelItem(const HoldingSpaceItem* item);
 
   // Returns the `profile_` associated with this service.
   Profile* profile() { return profile_; }
@@ -171,6 +178,9 @@ class HoldingSpaceKeyedService : public crosapi::mojom::HoldingSpaceService,
   // each tasked with an independent area of responsibility on behalf of the
   // service. They operate autonomously of one another.
   std::vector<std::unique_ptr<HoldingSpaceKeyedServiceDelegate>> delegates_;
+
+  // The delegate, owned by `delegates_`, responsible for downloads.
+  HoldingSpaceDownloadsDelegate* downloads_delegate_ = nullptr;
 
   // This class supports any number of connections. This allows the client to
   // have multiple, potentially thread-affine, remotes.

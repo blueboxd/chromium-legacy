@@ -375,7 +375,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     protected ActivityWindowAndroid createWindowAndroid() {
         return new ChromeWindow(/* activity= */ this, mActivityTabProvider,
-                mCompositorViewHolderSupplier, getModalDialogManagerSupplier());
+                mCompositorViewHolderSupplier, getModalDialogManagerSupplier(),
+                mManualFillingComponentSupplier);
     }
 
     @Override
@@ -449,7 +450,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier,
                 this::getContextualSearchManager, getTabModelSelectorSupplier(),
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
-                new OneshotSupplierImpl<>(), () -> null, mBrowserControlsManagerSupplier.get());
+                new OneshotSupplierImpl<>(),
+                () -> null, mBrowserControlsManagerSupplier.get(), getWindowAndroid());
     }
 
     private NotificationManagerProxy getNotificationManagerProxy() {

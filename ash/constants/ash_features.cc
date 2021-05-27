@@ -171,6 +171,15 @@ const base::Feature kPreferConstantFrameRate{"PreferConstantFrameRate",
 const base::Feature kCdmFactoryDaemon{"CdmFactoryDaemon",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, the value of |kCellularUseAttachApn| should have no effect and
+// and the LTE attach APN configuration will not be sent to the modem. This
+// flag exists because the |kCellularUseAttachApn| flag can be enabled
+// by command-line arguments via board overlays which takes precedence over
+// server-side field trial config, which may be needed to turn off the Attach
+// APN feature.
+const base::Feature kCellularForbidAttachApn{"CellularForbidAttachApn",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, send the LTE attach APN configuration to the modem.
 const base::Feature kCellularUseAttachApn{"CellularUseAttachApn",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -495,10 +504,6 @@ const base::Feature kMicMuteNotifications{"MicMuteNotifications",
 const base::Feature kMinimumChromeVersion{"MinimumChromeVersion",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether new OOBE layout is shown or not.
-const base::Feature kNewOobeLayout{"NewOobeLayout",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether image annotation is enabled in the ChromeOS media app.
 const base::Feature kMediaAppAnnotation{"MediaAppAnnotation",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -519,10 +524,18 @@ const base::Feature kMediaAppVideoControls{"MediaAppVideoControls",
 const base::Feature kMultilingualTyping{"MultilingualTyping",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether new OOBE layout is shown or not.
+const base::Feature kNewOobeLayout{"NewOobeLayout",
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables support for specific enabled web apps to be treated as note-taking
 // apps on Chrome OS.
 const base::Feature kNoteTakingForEnabledWebApps{
     "NoteTakingForEnabledWebApps", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables new notifications UI and grouped notifications.
+const base::Feature kNotificationsRefresh{"NotificationsRefresh",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable on-device grammar check service.
 const base::Feature kOnDeviceGrammarCheck{"OnDeviceGrammarCheck",
@@ -547,11 +560,6 @@ const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
 // Provides a UI for users to view information about their Android phone
 // and perform phone-side actions within Chrome OS.
 const base::Feature kPhoneHub{"PhoneHub", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables PIN setup in OOBE for Family Link users on all devices supporting low
-// entropy credentials regardless the form factor.
-const base::Feature kPinSetupForFamilyLink{"PinSetupForFamilyLink",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPinSetupForManagedUsers{"PinSetupForManagedUsers",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -927,10 +935,6 @@ bool IsSamlReauthenticationOnLockscreenEnabled() {
   return base::FeatureList::IsEnabled(kEnableSamlReauthenticationOnLockscreen);
 }
 
-bool IsPinSetupForFamilyLinkEnabled() {
-  return base::FeatureList::IsEnabled(kPinSetupForFamilyLink);
-}
-
 bool IsPinSetupForManagedUsersEnabled() {
   return base::FeatureList::IsEnabled(kPinSetupForManagedUsers);
 }
@@ -1015,12 +1019,18 @@ bool ShouldUseQuickAnswersTextAnnotator() {
 
 bool ShouldUseV1DeviceSync() {
   return !ShouldUseV2DeviceSync() ||
-         !base::FeatureList::IsEnabled(features::kDisableCryptAuthV1DeviceSync);
+         !base::FeatureList::IsEnabled(kDisableCryptAuthV1DeviceSync);
 }
 
 bool ShouldUseV2DeviceSync() {
-  return base::FeatureList::IsEnabled(features::kCryptAuthV2Enrollment) &&
-         base::FeatureList::IsEnabled(features::kCryptAuthV2DeviceSync);
+  return base::FeatureList::IsEnabled(kCryptAuthV2Enrollment) &&
+         base::FeatureList::IsEnabled(kCryptAuthV2DeviceSync);
+}
+
+bool ShouldUseAttachApn() {
+  // See comment on |kCellularForbidAttachApn| for details.
+  return !base::FeatureList::IsEnabled(kCellularForbidAttachApn) &&
+         base::FeatureList::IsEnabled(kCellularUseAttachApn);
 }
 
 }  // namespace features

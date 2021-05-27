@@ -883,6 +883,10 @@ static_library("browser_tests_runner") {
   if (is_win) {
     deps += [ "//chrome/installer/util:strings" ]
   }
+
+  if (is_android) {
+    deps += [ "//ui/compositor" ]
+  }
 }
 
 if (!is_android) {
@@ -3353,7 +3357,6 @@ if (!is_android) {
         "../browser/ui/views/crostini/crostini_package_install_failure_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_recovery_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_uninstaller_view_browsertest.cc",
-        "../browser/ui/views/crostini/crostini_update_component_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_update_filesystem_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_dialog_bounds_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
@@ -8317,17 +8320,15 @@ if (is_chromeos_ash) {
       "../browser/ash/child_accounts/time_limit_consistency_test/consistency_test_utils.h",
       "../browser/ash/child_accounts/time_limit_consistency_test/proto_matcher.h",
       "../browser/ash/child_accounts/time_limit_consistency_test/run_all_unittests.cc",
-      "../browser/ash/child_accounts/time_limit_override.cc",
-      "../browser/ash/child_accounts/time_limit_override.h",
       "../browser/ash/child_accounts/time_limit_test_utils.cc",
       "../browser/ash/child_accounts/time_limit_test_utils.h",
-      "../browser/ash/child_accounts/usage_time_limit_processor.cc",
-      "../browser/ash/child_accounts/usage_time_limit_processor.h",
     ]
     deps = [
       ":consistency_golden_proto",
       "//base",
       "//base/test:test_support",
+      "//chrome/browser",
+      "//chrome/browser/chromeos",
       "//chromeos/settings",
       "//testing/gmock",
       "//testing/gtest",

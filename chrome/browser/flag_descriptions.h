@@ -372,9 +372,6 @@ extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
 extern const char kEnableAutofillCreditCardAuthenticationName[];
 extern const char kEnableAutofillCreditCardAuthenticationDescription[];
 
-extern const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[];
-extern const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[];
-
 extern const char kEnableAutofillCreditCardUploadFeedbackName[];
 extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 
@@ -1209,9 +1206,6 @@ extern const char kMBIModeDescription[];
 
 extern const char kIntensiveWakeUpThrottlingName[];
 extern const char kIntensiveWakeUpThrottlingDescription[];
-
-extern const char kPrinterStatusName[];
-extern const char kPrinterStatusDescription[];
 
 extern const char kPrinterStatusDialogName[];
 extern const char kPrinterStatusDialogDescription[];
@@ -2298,9 +2292,6 @@ extern const char kCrostiniUseBusterImageDescription[];
 
 extern const char kCrostiniGpuSupportName[];
 extern const char kCrostiniGpuSupportDescription[];
-
-extern const char kCrostiniUseDlcName[];
-extern const char kCrostiniUseDlcDescription[];
 
 extern const char kCrostiniResetLxdDbName[];
 extern const char kCrostiniResetLxdDbDescription[];

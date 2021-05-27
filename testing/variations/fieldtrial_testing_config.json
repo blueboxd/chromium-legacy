@@ -552,6 +552,24 @@
             ]
         }
     ],
+    "AndroidMediaPickerVideoSupport": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "animate_thumbnails": "false"
+                    },
+                    "enable_features": [
+                        "PhotoPickerVideoSupport"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidMediaProcessPriority": [
         {
             "platforms": [
@@ -964,21 +982,6 @@
                         "AutofillFixFillableFieldTypes",
                         "AutofillSectionUponRedundantNameInfo",
                         "AutofillUseAlternativeStateNameMap"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillDownstreamCvcPromptUseGooglePayLogo": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "AutofillDownstreamCvcPromptUseGooglePayLogo",
-                    "enable_features": [
-                        "AutofillDownstreamCvcPromptUseGooglePayLogo"
                     ]
                 }
             ]
@@ -4104,25 +4107,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSSharedHighlightingColorChange"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSStartSurface": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "ShrinkLogo",
-                    "params": {
-                        "ReturnToStartSurfaceInactiveDurationInSeconds": "0",
-                        "shrink_logo": "true"
-                    },
-                    "enable_features": [
-                        "StartSurface"
                     ]
                 }
             ]
@@ -8219,6 +8203,23 @@
                     "enable_features": [
                         "V8Sparkplug",
                         "V8TurboProp"
+                    ]
+                }
+            ]
+        }
+    ],
+    "V8WasmMemoryProtection": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledPku",
+                    "enable_features": [
+                        "WebAssemblyCodeProtectionPku"
                     ]
                 }
             ]

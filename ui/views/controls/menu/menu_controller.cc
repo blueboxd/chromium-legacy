@@ -21,6 +21,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -2137,8 +2138,20 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   }
 
   if (show) {
-    item->GetSubmenu()->ShowAt(owner_, bounds, do_capture,
-                               native_view_for_gestures_);
+    MenuHost::InitParams params;
+    params.parent = owner_;
+    params.bounds = bounds;
+    params.do_capture = do_capture;
+    params.native_view_for_gestures = native_view_for_gestures_;
+
+    if (item->GetParentMenuItem()) {
+      params.menu_type = ui::MenuType::kChildMenu;
+    } else if (state_.context_menu) {
+      params.menu_type = ui::MenuType::kRootContextMenu;
+    } else {
+      params.menu_type = ui::MenuType::kRootMenu;
+    }
+    item->GetSubmenu()->ShowAt(params);
 
     // Figure out if the mouse is under the menu; if so, remember the mouse
     // location so we can ignore the first mouse move event(s) with that

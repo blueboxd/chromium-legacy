@@ -42,6 +42,7 @@
 #include "ui/views/widget/widget_utils.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/aura/null_window_targeter.h"
@@ -612,7 +613,11 @@ class MenuControllerTest : public ViewsTestBase,
     SubmenuView* sub_menu = parent_item->GetSubmenu();
 
     parent_item->SetBoundsRect(parent_bounds);
-    sub_menu->ShowAt(owner(), parent_item->bounds(), false);
+    MenuHost::InitParams params;
+    params.parent = owner();
+    params.bounds = parent_item->bounds();
+    params.do_capture = false;
+    sub_menu->ShowAt(params);
     gfx::Rect final_bounds = CalculateBubbleMenuBounds(options, item);
     final_bounds.Inset(border_and_shadow_insets);
     sub_menu->Close();
@@ -780,7 +785,11 @@ class MenuControllerTest : public ViewsTestBase,
       button->SetFocusBehavior(View::FocusBehavior::ALWAYS);
       item_view->AddChildView(button);
     }
-    menu_item()->GetSubmenu()->ShowAt(owner(), menu_item()->bounds(), false);
+    MenuHost::InitParams params;
+    params.parent = owner();
+    params.bounds = menu_item()->bounds();
+    params.do_capture = false;
+    menu_item()->GetSubmenu()->ShowAt(params);
     return item_view;
   }
 
@@ -1667,7 +1676,11 @@ TEST_F(MenuControllerTest, AsynchronousCancelDuringDrag) {
 // the MenuHost does not crash as the drag completes.
 TEST_F(MenuControllerTest, AsynchronousDragHostDeleted) {
   SubmenuView* submenu = menu_item()->GetSubmenu();
-  submenu->ShowAt(owner(), menu_item()->bounds(), false);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = menu_item()->bounds();
+  params.do_capture = false;
+  submenu->ShowAt(params);
   MenuHost* host = GetMenuHost(submenu);
   MenuHostOnDragWillStart(host);
   submenu->Close();
@@ -1680,7 +1693,11 @@ TEST_F(MenuControllerTest, AsynchronousDragHostDeleted) {
 // access a destroyed MenuController. This test should not cause a crash.
 TEST_F(MenuControllerTest, HostReceivesInputBeforeDestruction) {
   SubmenuView* submenu = menu_item()->GetSubmenu();
-  submenu->ShowAt(owner(), menu_item()->bounds(), false);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = menu_item()->bounds();
+  params.do_capture = false;
+  submenu->ShowAt(params);
   gfx::Point location(submenu->bounds().bottom_right());
   location.Offset(1, 1);
 
@@ -1724,7 +1741,11 @@ TEST_F(MenuControllerTest, PreserveGestureForOwner) {
   controller->Run(owner(), nullptr, item, gfx::Rect(),
                   MenuAnchorPosition::kBottomCenter, false, false);
   SubmenuView* sub_menu = item->GetSubmenu();
-  sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), true);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  params.do_capture = true;
+  sub_menu->ShowAt(params);
 
   gfx::Point location(sub_menu->bounds().bottom_left().x(),
                       sub_menu->bounds().bottom_left().y() + 10);
@@ -1775,8 +1796,12 @@ TEST_F(MenuControllerTest, ForwardsEventsToNativeViewForGestures) {
                   MenuAnchorPosition::kBottomCenter, false, false,
                   child_window.get());
   SubmenuView* sub_menu = item->GetSubmenu();
-  sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), true,
-                   child_window.get());
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = item->bounds();
+  params.do_capture = false;
+  params.native_view_for_gestures = child_window.get();
+  sub_menu->ShowAt(params);
 
   gfx::Point location(sub_menu->bounds().bottom_left().x(),
                       sub_menu->bounds().bottom_left().y() + 10);
@@ -1825,7 +1850,11 @@ TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
   // Show a sub menu and touch outside of it.
   MenuItemView* item = menu_item();
   SubmenuView* sub_menu = item->GetSubmenu();
-  sub_menu->ShowAt(owner(), item->bounds(), false);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = item->bounds();
+  params.do_capture = false;
+  sub_menu->ShowAt(params);
   gfx::Point location(sub_menu->bounds().bottom_right());
   location.Offset(1, 1);
   ui::TouchEvent touch_event(
@@ -1869,7 +1898,11 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
   // Show a sub menu to target with a pointer selection. However have the event
   // occur outside of the bounds of the entire menu.
   SubmenuView* sub_menu = item->GetSubmenu();
-  sub_menu->ShowAt(owner(), item->bounds(), false);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = item->bounds();
+  params.do_capture = false;
+  sub_menu->ShowAt(params);
   gfx::Point location(sub_menu->bounds().bottom_right());
   location.Offset(1, 1);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, location, location,
@@ -1901,7 +1934,11 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
   // outside of the bounds of the entire menu.
   MenuItemView* item = menu_item();
   SubmenuView* sub_menu = item->GetSubmenu();
-  sub_menu->ShowAt(owner(), item->bounds(), false);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = item->bounds();
+  params.do_capture = false;
+  sub_menu->ShowAt(params);
   gfx::Point location(sub_menu->bounds().bottom_right());
   location.Offset(1, 1);
   ui::TouchEvent event(ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
@@ -1936,7 +1973,11 @@ TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
   // Show a sub menu to target with a pointer selection. However have the event
   // occur outside of the bounds of the entire menu.
   SubmenuView* sub_menu = item->GetSubmenu();
-  sub_menu->ShowAt(owner(), item->bounds(), true);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = item->bounds();
+  params.do_capture = true;
+  sub_menu->ShowAt(params);
   gfx::Point location(sub_menu->bounds().bottom_right());
   location.Offset(1, 1);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, location, location,
@@ -1972,7 +2013,11 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
 
   // Show a sub menu to target with a tap event.
   SubmenuView* sub_menu = item->GetSubmenu();
-  sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), true);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  params.do_capture = true;
+  sub_menu->ShowAt(params);
 
   gfx::Point location(sub_menu->bounds().CenterPoint());
   ui::GestureEvent event(location.x(), location.y(), 0, ui::EventTimeForNow(),
@@ -2413,7 +2458,11 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
   base_menu->SetBounds(0, 0, 200, 200);
   SubmenuView* base_submenu = base_menu->GetSubmenu();
   base_submenu->SetBounds(0, 0, 200, 200);
-  base_submenu->ShowAt(owner(), gfx::Rect(0, 0, 200, 200), false);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.do_capture = false;
+  base_submenu->ShowAt(params);
   GetMenuHost(base_submenu)
       ->SetContentsView(base_submenu->GetScrollViewContainer());
 
@@ -2430,7 +2479,10 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
   base_submenu->AddChildView(sub_menu_item.get());
   SubmenuView* sub_menu_view = sub_menu_item->GetSubmenu();
   sub_menu_view->SetBounds(0, 50, 50, 50);
-  sub_menu_view->ShowAt(owner(), gfx::Rect(0, 50, 50, 50), false);
+  params.parent = owner();
+  params.bounds = gfx::Rect(0, 50, 50, 50);
+  params.do_capture = false;
+  sub_menu_view->ShowAt(params);
   GetMenuHost(sub_menu_view)
       ->SetContentsView(sub_menu_view->GetScrollViewContainer());
 
@@ -2454,7 +2506,10 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
 
   SubmenuView* nested_menu_submenu = nested_menu_item_1->GetSubmenu();
   nested_menu_submenu->SetBounds(0, 0, 100, 100);
-  nested_menu_submenu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), false);
+  params.parent = owner();
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  params.do_capture = false;
+  nested_menu_submenu->ShowAt(params);
   GetMenuHost(nested_menu_submenu)
       ->SetContentsView(nested_menu_submenu->GetScrollViewContainer());
 
@@ -2519,7 +2574,11 @@ TEST_F(MenuControllerTest, DragFromViewIntoMenuAndExit) {
 
   std::unique_ptr<View> drag_view = std::make_unique<View>();
   drag_view->SetBoundsRect(gfx::Rect(0, 500, 100, 100));
-  sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), false);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  params.do_capture = false;
+  sub_menu->ShowAt(params);
   gfx::Point press_location(drag_view->bounds().CenterPoint());
   gfx::Point drag_location(first_item->bounds().CenterPoint());
   gfx::Point release_location(200, 50);
@@ -2551,6 +2610,81 @@ TEST_F(MenuControllerTest, DragFromViewIntoMenuAndExit) {
   ProcessMouseReleased(sub_menu, release_event);
 }
 
+// Tests that |MenuHost::InitParams| are correctly forwarded to the created
+// |aura::Window|.
+TEST_F(MenuControllerTest, AuraWindowIsInitializedWithMenuHostInitParams) {
+  SubmenuView* sub_menu = menu_item()->GetSubmenu();
+
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  params.do_capture = false;
+  params.menu_type = ui::MenuType::kRootMenu;
+  sub_menu->ShowAt(params);
+
+  aura::Window* window = sub_menu->GetWidget()->GetNativeWindow();
+  EXPECT_EQ(ui::MenuType::kRootMenu,
+            window->GetProperty(aura::client::kMenuType));
+}
+
+// Tests that |aura::Window| has the correct properties when a context menu is
+// shown.
+TEST_F(MenuControllerTest, ContextMenuInitializesAuraWindowWhenShown) {
+  SubmenuView* sub_menu = menu_item()->GetSubmenu();
+
+  // Checking that context menu properties are calculated correctly.
+  menu_controller()->Run(owner(), nullptr, menu_item(), menu_item()->bounds(),
+                         MenuAnchorPosition::kTopLeft, true, false);
+  OpenMenu(menu_item());
+
+  aura::Window* window = sub_menu->GetWidget()->GetNativeWindow();
+  EXPECT_EQ(ui::MenuType::kRootContextMenu,
+            window->GetProperty(aura::client::kMenuType));
+
+  // Checking that child menu properties are calculated correctly.
+  MenuItemView* const child_menu = menu_item()->GetSubmenu()->GetMenuItemAt(0);
+  child_menu->CreateSubmenu();
+  ASSERT_NE(nullptr, child_menu->GetParentMenuItem());
+  menu_controller()->Run(owner(), nullptr, child_menu, child_menu->bounds(),
+                         MenuAnchorPosition::kTopRight, false, false);
+  OpenMenu(child_menu);
+
+  ASSERT_NE(nullptr, child_menu->GetWidget());
+  window = child_menu->GetSubmenu()->GetWidget()->GetNativeWindow();
+
+  EXPECT_EQ(ui::MenuType::kChildMenu,
+            window->GetProperty(aura::client::kMenuType));
+}
+
+// Tests that |aura::Window| has the correct properties when a root or a child
+// menu is shown.
+TEST_F(MenuControllerTest, RootAndChildMenusInitializeAuraWindowWhenShown) {
+  SubmenuView* sub_menu = menu_item()->GetSubmenu();
+
+  // Checking that root menu properties are calculated correctly.
+  menu_controller()->Run(owner(), nullptr, menu_item(), menu_item()->bounds(),
+                         MenuAnchorPosition::kTopLeft, false, false);
+  OpenMenu(menu_item());
+
+  aura::Window* window = sub_menu->GetWidget()->GetNativeWindow();
+  EXPECT_EQ(ui::MenuType::kRootMenu,
+            window->GetProperty(aura::client::kMenuType));
+
+  // Checking that child menu properties are calculated correctly.
+  MenuItemView* const child_menu = menu_item()->GetSubmenu()->GetMenuItemAt(0);
+  child_menu->CreateSubmenu();
+  ASSERT_NE(nullptr, child_menu->GetParentMenuItem());
+  menu_controller()->Run(owner(), nullptr, child_menu, child_menu->bounds(),
+                         MenuAnchorPosition::kTopRight, false, false);
+  OpenMenu(child_menu);
+
+  ASSERT_NE(nullptr, child_menu->GetWidget());
+  window = child_menu->GetSubmenu()->GetWidget()->GetNativeWindow();
+
+  EXPECT_EQ(ui::MenuType::kChildMenu,
+            window->GetProperty(aura::client::kMenuType));
+}
+
 #endif  // defined(USE_AURA)
 
 // Tests that having the MenuController deleted during OnMousePressed does not
@@ -2571,7 +2705,11 @@ TEST_F(MenuControllerTest, NoUseAfterFreeWhenMenuCanceledOnMousePress) {
 
   controller->Run(owner(), nullptr, item.get(), item->bounds(),
                   MenuAnchorPosition::kTopLeft, false, false);
-  sub_menu->ShowAt(owner(), item->bounds(), true);
+  MenuHost::InitParams params;
+  params.parent = owner();
+  params.bounds = item->bounds();
+  params.do_capture = true;
+  sub_menu->ShowAt(params);
 
   // Simulate a mouse press in the middle of the |closing_widget|.
   gfx::Point location(canceling_view->bounds().CenterPoint());

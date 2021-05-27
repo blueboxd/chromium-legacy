@@ -632,11 +632,6 @@ const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
     "When enabled, a footer indicating user's e-mail address will appear at "
     "the bottom of SaveCardInfoBar.";
 
-const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[] =
-    "Enable Google Pay branding on CVC prompt on Android";
-const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[] =
-    "If enabled, show the Google Pay logo on CVC prompt on Android.";
-
 const char kEnableAutofillCreditCardUploadFeedbackName[] =
     "Enable feedback for credit card upload flow";
 const char kEnableAutofillCreditCardUploadFeedbackDescription[] =
@@ -2098,10 +2093,6 @@ const char kIntensiveWakeUpThrottlingDescription[] =
     "When enabled, wake ups from DOM Timers are limited to 1 per minute in a "
     "page that has been hidden for 5 minutes. For additional details, see "
     "https://www.chromestatus.com/feature/4718288976216064.";
-
-const char kPrinterStatusName[] = "Show printer Status";
-const char kPrinterStatusDescription[] =
-    "Enables printer status icons and labels for saved and nearby printers";
 
 const char kPrinterStatusDialogName[] =
     "Show printer status on destination dialog";
@@ -3982,11 +3973,6 @@ const char kCrostiniUseBusterImageDescription[] =
 
 const char kCrostiniGpuSupportName[] = "Crostini GPU Support";
 const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
-
-const char kCrostiniUseDlcName[] = "Crostini Use DLC";
-const char kCrostiniUseDlcDescription[] =
-    "Download the termina VM using the new DLC service instead of the old "
-    "component updater.";
 
 const char kCrostiniResetLxdDbName[] = "Crostini Reset LXD DB on launch";
 const char kCrostiniResetLxdDbDescription[] =

@@ -20,7 +20,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/base/load_flags.h"
@@ -104,7 +103,7 @@ TEST_F(ConversionNetworkSenderTest, ReportSent_CallbackFired) {
   EXPECT_TRUE(SentReportInfosEqual(
       {{
           .report_url = GURL(kReportUrl),
-          .report_body = R"({"source_event_id":"1","trigger_data":1})",
+          .report_body = R"({"source_event_id":"1","trigger_data":"1"})",
           .http_response_code = 200,
       }},
       sent_reports_));
@@ -136,7 +135,7 @@ TEST_F(ConversionNetworkSenderTest, ReportRequestHangs_TimesOut) {
   EXPECT_TRUE(SentReportInfosEqual(
       {{
           .report_url = GURL(kReportUrl),
-          .report_body = R"({"source_event_id":"1","trigger_data":1})",
+          .report_body = R"({"source_event_id":"1","trigger_data":"1"})",
           .http_response_code = 0,
       }},
       sent_reports_));
@@ -216,7 +215,7 @@ TEST_F(ConversionNetworkSenderTest, ReportSent_QueryParamsSetCorrectly) {
   EXPECT_TRUE(test_url_loader_factory_.IsPending(
       "https://a.com/.well-known/attribution-reporting/report-attribution",
       &pending_request));
-  EXPECT_EQ(R"({"source_event_id":"100","trigger_data":5})",
+  EXPECT_EQ(R"({"source_event_id":"100","trigger_data":"5"})",
             network::GetUploadData(*pending_request));
 }
 
@@ -260,7 +259,7 @@ TEST_F(ConversionNetworkSenderTest, ReportResultsInHttpError_SentCallbackRuns) {
   EXPECT_TRUE(SentReportInfosEqual(
       {{
           .report_url = GURL(kReportUrl),
-          .report_body = R"({"source_event_id":"1","trigger_data":1})",
+          .report_body = R"({"source_event_id":"1","trigger_data":"1"})",
           .http_response_code = net::HttpStatusCode::HTTP_BAD_REQUEST,
       }},
       sent_reports_));

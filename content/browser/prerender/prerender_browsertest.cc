@@ -892,6 +892,63 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ActivatePageWithInnerContents) {
   EXPECT_EQ(GetRequestCount(kInnerContentsUrl), 1);
 }
 
+// Ensure that whether or not a NavigationRequest is for a prerender activation
+// is available in WebContentsObserver::DidStartNavigation.
+class IsActivationObserver : public WebContentsObserver {
+ public:
+  IsActivationObserver(WebContents& web_contents, const GURL& url)
+      : WebContentsObserver(&web_contents), url_(url) {}
+  bool did_navigate() { return did_navigate_; }
+  bool was_activation() { return was_activation_; }
+
+ private:
+  void DidStartNavigation(NavigationHandle* handle) override {
+    if (handle->GetURL() != url_)
+      return;
+    did_navigate_ = true;
+    was_activation_ = handle->IsPrerenderedPageActivation();
+  }
+
+  const GURL url_;
+  bool did_navigate_ = false;
+  bool was_activation_ = false;
+};
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       NavigationRequestIsPrerenderedPageActivation) {
+  const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html");
+
+  test::PrerenderHostObserver prerender_observer(*shell()->web_contents(),
+                                                 kPrerenderingUrl);
+
+  // Navigate to an initial page and start a prerender. Note, AddPrerender will
+  // wait until the prerendered page has finished navigating.
+  {
+    ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+    ASSERT_EQ(web_contents()->GetURL(), kInitialUrl);
+    AddPrerender(kPrerenderingUrl);
+    ASSERT_NE(GetHostForUrl(kPrerenderingUrl),
+              RenderFrameHost::kNoFrameTreeNodeId);
+  }
+
+  IsActivationObserver is_activation_observer(*shell()->web_contents(),
+                                              kPrerenderingUrl);
+
+  // Now navigate the primary page to the prerendered URL so that we activate
+  // the prerender.
+  {
+    ASSERT_TRUE(ExecJs(web_contents()->GetMainFrame(),
+                       JsReplace("location = $1", kPrerenderingUrl)));
+    prerender_observer.WaitForActivation();
+  }
+
+  // Ensure that WebContentsObservers see the correct value for
+  // IsPrerenderedPageActivation in DidStartNavigation.
+  ASSERT_TRUE(is_activation_observer.did_navigate());
+  EXPECT_TRUE(is_activation_observer.was_activation());
+}
+
 // Ensures that if we attempt to open a URL while prerendering with a window
 // disposition other than CURRENT_TAB, we fail.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SuppressOpenURL) {
@@ -1278,6 +1335,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FeatureRestriction_WindowOpen) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RenderFrameHostLifecycleState) {
+  base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/prerender/add_prerender.html");
   const GURL kPrerenderingUrl = GetUrl("/prerender/add_prerender.html");
 
@@ -1306,12 +1364,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RenderFrameHostLifecycleState) {
   // Both rfh_a and rfh_b lifecycle state's should be kActive after activation.
   EXPECT_EQ(LifecycleStateImpl::kActive, rfh_a->lifecycle_state());
   EXPECT_EQ(LifecycleStateImpl::kActive, rfh_b->lifecycle_state());
+
+  // "Navigation.TimeToActivatePrerender" histogram should be recorded on every
+  // prerender activation.
+  histogram_tester.ExpectTotalCount("Navigation.TimeToActivatePrerender", 1u);
 }
 
 // Test that prerender activation is deferred and resumed after the ongoing
 // (in-flight) main-frame navigation in the prerendering frame tree commits.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        SupportActivationWithOngoingMainFrameNavigation) {
+  base::HistogramTester histogram_tester;
+
   // Create a HTTP response to control prerendering main-frame navigation.
   net::test_server::ControllableHttpResponse main_document_response(
       embedded_test_server(), "/main_document");
@@ -1386,6 +1450,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
     EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
     EXPECT_EQ(shell()->web_contents()->GetURL(), kPrerenderingUrl);
   }
+
+  // "Navigation.Prerender.ActivationCommitDeferTime" histogram should be
+  // recorded as PrerenderCommitDeferringCondition defers the navigation.
+  histogram_tester.ExpectTotalCount(
+      "Navigation.Prerender.ActivationCommitDeferTime", 1u);
 }
 
 // Tests that prerendering is gated behind CSP:prefetch-src

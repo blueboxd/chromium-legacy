@@ -103,6 +103,7 @@ struct WebPreferences;
 class AssociatedInterfaceRegistry;
 struct NavigationDownloadPolicy;
 struct RendererPreferences;
+class StorageKey;
 class URLLoaderThrottle;
 }  // namespace blink
 
@@ -184,7 +185,6 @@ class Origin;
 
 namespace storage {
 class FileSystemBackend;
-class StorageKey;
 }  // namespace storage
 
 namespace content {
@@ -527,6 +527,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // given |process_host|.
   virtual bool MayReuseHost(RenderProcessHost* process_host);
 
+  // Returns a number of processes to ignore when deciding whether to reuse
+  // processes when over the process limit. This is useful for embedders that
+  // may want to partly delay when normal pages start reusing processes (e.g.,
+  // if another process type has a large number of processes). Defaults to 0.
+  // Must be less than or equal to the total number of RenderProcessHosts.
+  virtual size_t GetProcessCountToIgnoreForLimit();
+
   // Returns whether a new process should be created or an existing one should
   // be reused based on the URL we want to load. This should return false,
   // unless there is a good reason otherwise.
@@ -685,7 +692,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin,
       const std::string& name,
-      const storage::StorageKey& storage_key,
+      const blink::StorageKey& storage_key,
       BrowserContext* context,
       int render_process_id,
       int render_frame_id);

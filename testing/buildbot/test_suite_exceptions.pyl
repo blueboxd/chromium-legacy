@@ -1094,6 +1094,7 @@
       'Fuchsia x64', # https://crbug.com/961457
       'fuchsia-code-coverage',  # https://crbug.com/961457
       'fuchsia-fyi-arm64-dbg',  # https://crbug.com/961457
+      'fuchsia-fyi-arm64-femu',  # https://crbug.com/961457
       'fuchsia-fyi-arm64-rel',  # https://crbug.com/961457
       'fuchsia-fyi-x64-dbg',  # https://crbug.com/961457
       'fuchsia-fyi-x64-rel',  # https://crbug.com/961457
@@ -1937,6 +1938,12 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
+      'Optional Android Release (Pixel 4)': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
     },
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
@@ -2431,6 +2438,12 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
+      'Optional Android Release (Pixel 4)': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
     },
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
@@ -2536,6 +2549,12 @@
           # only one color space, so disable wide color gamut for the test to
           # work around the issue. See https://crbug.com/1166379 for more
           # information.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+      'Optional Android Release (Pixel 4)': {
+        'args': [
+          # See above.
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },

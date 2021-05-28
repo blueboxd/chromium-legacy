@@ -487,30 +487,6 @@
             ]
         }
     ],
-    "AndroidInProductHelpToolbarButtons": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "NewTabPageButtonIphConfig",
-                    "params": {
-                        "availability": ">=1",
-                        "cohortFeatureName": "ToolbarIphAndroidCohort2",
-                        "event_trigger": "name:ntp_iph_triggered;comparator:==0;window:90;storage:90",
-                        "event_used": "name:homepage_button_clicked;comparator:==0;window:14;storage:90",
-                        "session_rate": "<1"
-                    },
-                    "enable_features": [
-                        "IPH_NewTabPageHomeButton",
-                        "ToolbarIphAndroid",
-                        "ToolbarIphAndroidCohort2"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidInProductHelpToolbarButtons_TabSwitcher": [
         {
             "platforms": [
@@ -527,8 +503,7 @@
                         "session_rate": "<1"
                     },
                     "enable_features": [
-                        "IPH_TabSwitcherButton",
-                        "ToolbarIphAndroidCohort1"
+                        "IPH_TabSwitcherButton"
                     ]
                 }
             ]
@@ -4034,6 +4009,33 @@
             ]
         }
     ],
+    "IOSReduceSessionSize": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled40_11",
+                    "params": {
+                        "session-size": "40"
+                    },
+                    "enable_features": [
+                        "ReduceSessionSize"
+                    ]
+                },
+                {
+                    "name": "Enabled50_11",
+                    "params": {
+                        "session-size": "50"
+                    },
+                    "enable_features": [
+                        "ReduceSessionSize"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSRequestDesktopByDefault": [
         {
             "platforms": [
@@ -5862,21 +5864,6 @@
             ]
         }
     ],
-    "PasswordEditingInSettingsIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EditPasswordsInSettings"
-                    ]
-                }
-            ]
-        }
-    ],
     "PaymentRequestAlwaysAllowJustInTimePaymentApp": [
         {
             "platforms": [
@@ -6682,6 +6669,25 @@
             ]
         }
     ],
+    "RequestDesktopSiteForTablets": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_V2_1280dp",
+                    "params": {
+                        "enabled": "true",
+                        "screen_width_dp": "1280"
+                    },
+                    "enable_features": [
+                        "RequestDesktopSiteForTablets"
+                    ]
+                }
+            ]
+        }
+    ],
     "SCTAuditingPhase1": [
         {
             "platforms": [
@@ -6907,24 +6913,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafetyCheckChromeCleanerChild"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafetyCheckWeakPasswords": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafetyCheckWeakPasswords"
                     ]
                 }
             ]
@@ -7439,28 +7427,6 @@
                     "enable_features": [
                         "SynchronousPageFlipTesting",
                         "UseRealBuffersForPageFlipTest"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncingCompromisedCredentials": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "SyncingCompromisedCredentials",
-                    "enable_features": [
-                        "SyncingCompromisedCredentials"
                     ]
                 }
             ]

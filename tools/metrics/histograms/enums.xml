@@ -16096,6 +16096,17 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="29" label="Need Update"/>
 </enum>
 
+<enum name="CrostiniSshfsResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="NotDefaultContainer"/>
+  <int value="2" label="ContainerNotRunning"/>
+  <int value="3" label="GetSshKeysFailed"/>
+  <int value="4" label="GetContainerInfoFailed"/>
+  <int value="5" label="MountErrorInternal"/>
+  <int value="6" label="MountErrorProgramFailed"/>
+  <int value="7" label="MountErrorOther"/>
+</enum>
+
 <enum name="CrostiniTerminalSetting">
   <int value="0" label="unknown"/>
   <int value="1" label="alt-gr-mode"/>
@@ -44805,6 +44816,7 @@ from previous Chrome versions.
   <int value="-2105498697" label="EnableImeSandbox:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
   <int value="-2104950596" label="HandwritingGesture:enabled"/>
+  <int value="-2103692632" label="EnhancedNetworkVoices:disabled"/>
   <int value="-2102286055" label="WebViewVulkanIntermediateBuffer:disabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
   <int value="-2101338272" label="EnablePciguardUi:disabled"/>
@@ -46080,6 +46092,7 @@ from previous Chrome versions.
   <int value="-1073479583" label="ShowArcFilesApp:disabled"/>
   <int value="-1069628248" label="OmniboxZeroSuggestionsOnSERP:enabled"/>
   <int value="-1069453905" label="CCTModuleUseIntentExtras:disabled"/>
+  <int value="-1068197506" label="EnhancedNetworkVoices:enabled"/>
   <int value="-1067635248" label="SpeculativeResourcePrefetching:disabled"/>
   <int value="-1065227777" label="CrOSAutoSelect:disabled"/>
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
@@ -46563,6 +46576,7 @@ from previous Chrome versions.
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-658319177" label="VaapiAV1Decoder:disabled"/>
   <int value="-657808907" label="CopyLinkToText:disabled"/>
+  <int value="-657656374" label="AppListBubble:disabled"/>
   <int value="-656743717" label="HelpAppDiscoverTab:enabled"/>
   <int value="-654705905" label="ShortcutCustomizationApp:enabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
@@ -47370,6 +47384,7 @@ from previous Chrome versions.
   <int value="59992411" label="ChangePasswordAffiliationInfo:enabled"/>
   <int value="60023885" label="AutofillNoLocalSaveOnUnmaskSuccess:disabled"/>
   <int value="60442188" label="MultilingualTyping:enabled"/>
+  <int value="60461879" label="AppListBubble:enabled"/>
   <int value="61130490" label="WebViewBrotliSupport:enabled"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
   <int value="61466986" label="AsyncDns:disabled"/>
@@ -47777,6 +47792,7 @@ from previous Chrome versions.
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
   <int value="426199960" label="Commander:enabled"/>
   <int value="427184788" label="WebFeed:enabled"/>
+  <int value="427945554" label="StrictExtensionIsolation:enabled"/>
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
@@ -48301,6 +48317,7 @@ from previous Chrome versions.
   <int value="877238334" label="WebUITabStripTabDragIntegration:enabled"/>
   <int value="877257918"
       label="InterestFeedV2ClickAndViewActionsConditionalUpload:enabled"/>
+  <int value="877907263" label="StrictExtensionIsolation:disabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
@@ -77508,6 +77525,11 @@ would be helpful to identify which type is being sent.
   <int value="28" label="Price Drop Alerts"/>
 </enum>
 
+<enum name="TabActivationTypes">
+  <int value="0" label="Activate a tab"/>
+  <int value="1" label="Activate the context menu of a tab"/>
+</enum>
+
 <enum name="TabBackgroundLoadStatus">
   <int value="0" label="Loaded on creation and shown"/>
   <int value="1" label="Loaded on creation and lost"/>
@@ -86572,6 +86594,11 @@ Called by update_scheduler_enums.py.-->
   <int value="51" label="Uninstall app"/>
   <int value="52" label="Show Kaleidoscope"/>
   <int value="53" label="Show tips for Chrome"/>
+</enum>
+
+<enum name="WrongConfigurationMetric">
+  <int value="0" label="Thunderbolt peripheral - wrong cable"/>
+  <int value="1" label="USB4 peripheral - wrong cable"/>
 </enum>
 
 <enum name="XFrameOptions">

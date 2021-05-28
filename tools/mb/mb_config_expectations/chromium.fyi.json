@@ -472,6 +472,7 @@
   },
   "fuchsia-code-coverage": {
     "gn_args": {
+      "fuchsia_code_coverage": true,
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
@@ -486,6 +487,15 @@
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
+      "target_cpu": "arm64",
+      "target_os": "fuchsia",
+      "use_goma": true
+    }
+  },
+  "fuchsia-fyi-arm64-femu": {
+    "gn_args": {
+      "is_component_build": false,
+      "is_debug": false,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "use_goma": true

@@ -52,6 +52,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -2297,6 +2298,18 @@ TEST_F(AcceleratorControllerStartupNotificationTest,
 
   // Notification should not be shown at login.
   SimulateUserLogin("user1@email.com");
+  auto* notification = message_center()->FindVisibleNotificationById(
+      kStartupNewShortcutNotificationId);
+  EXPECT_FALSE(notification);
+}
+
+TEST_F(AcceleratorControllerStartupNotificationTest,
+       StartupNotificationNotShownWhenInGuestMode) {
+  // Set up the shell and controller.
+  SetUpLater(/*improved_shortcuts_enabled=*/true);
+
+  // Notification should not be shown at login.
+  SimulateUserLogin("user1@email.com", user_manager::USER_TYPE_GUEST);
   auto* notification = message_center()->FindVisibleNotificationById(
       kStartupNewShortcutNotificationId);
   EXPECT_FALSE(notification);

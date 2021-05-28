@@ -2365,7 +2365,7 @@ ci.clang_builder(
         short_name = "sim",
     ),
     cores = None,
-    os = os.MAC_10_15,
+    os = os.MAC_10_15_OR_11,
     ssd = True,
     xcode = xcode.x12d4e,
 )
@@ -2378,7 +2378,7 @@ ci.clang_builder(
         short_name = "dev",
     ),
     cores = None,
-    os = os.MAC_10_15,
+    os = os.MAC_10_15_OR_11,
     ssd = True,
     xcode = xcode.x12d4e,
 )
@@ -3107,6 +3107,18 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = "fuchsia-fyi-arm64-femu",
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "fuchsia|a64",
+            short_name = "femu",
+        ),
+    ],
+    notifies = ["cr-fuchsia"],
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+ci.fyi_builder(
     name = "fuchsia-fyi-arm64-rel",
     console_view_entry = [
         consoles.console_view_entry(
@@ -3781,6 +3793,7 @@ ci.fyi_builder(
         max_concurrent_invocations = 1,
     ),
     goma_backend = None,
+    reclient_jobs = 250,
     reclient_instance = "goma-rbe-chromium",
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
     configure_kitchen = True,
@@ -3912,6 +3925,7 @@ ci.fyi_builder(
         max_concurrent_invocations = 1,
     ),
     goma_backend = None,
+    reclient_jobs = 250,
     reclient_instance = "goma-rbe-chromium",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
@@ -3928,6 +3942,7 @@ ci.fyi_builder(
         max_concurrent_invocations = 1,
     ),
     goma_backend = None,
+    reclient_jobs = 250,
     reclient_instance = "goma-rbe-chromium",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
@@ -3943,6 +3958,7 @@ ci.fyi_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
     goma_backend = None,
+    reclient_jobs = 250,
     reclient_instance = "goma-rbe-chromium",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
@@ -4026,7 +4042,7 @@ ci.fyi_coverage_builder(
         short_name = "ios",
     ),
     cores = None,
-    os = os.MAC_10_15,
+    os = os.MAC_10_15_OR_11,
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],

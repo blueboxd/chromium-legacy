@@ -36,7 +36,6 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "components/services/storage/public/mojom/filesystem/directory.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
@@ -118,6 +117,7 @@
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -1024,7 +1024,7 @@ class StoragePartitionImpl::ServiceWorkerCookieAccessObserver
       network::mojom::CookieAccessDetailsPtr details) {
     std::vector<GlobalFrameRoutingId> destinations =
         *service_worker_context->GetWindowClientFrameRoutingIds(
-            storage::StorageKey(url::Origin::Create(details->url)));
+            blink::StorageKey(url::Origin::Create(details->url)));
     if (destinations.empty())
       return;
     RunOrPostTaskOnThread(
@@ -1296,7 +1296,7 @@ void StoragePartitionImpl::Initialize(
 
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory_ &&
-      base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
+      base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
     conversion_manager_ = std::make_unique<ConversionManagerImpl>(
         this, path, special_storage_policy_);
   }

@@ -674,6 +674,7 @@ if (is_android) {
       "../browser/android/customtabs/custom_tabs_browsertest.cc",
       "../browser/android/tab_android_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
+      "../browser/autofill/android/save_address_profile_flow_manager_browsertest.cc",
       "../browser/browsing_data/access_context_audit_browsertest.cc",
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/metrics/metrics_service_user_demographics_browsertest.cc",
@@ -690,6 +691,21 @@ if (is_android) {
       "../browser/ui/autofill/payments/offer_notification_infobar_controller_impl_browsertest.cc",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
+    ]
+
+    sources += [
+      "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
+      "../test/base/chrome_render_view_test.cc",
+      "../test/base/chrome_render_view_test.h",
+    ]
+
+    deps += [
+      "//components/autofill/content/renderer:test_support",
+      "//components/safe_browsing/content/renderer/phishing_classifier:phishing_classifier",
+      "//components/safe_browsing/core:client_model_proto",
+      "//components/safe_browsing/core/fbs:client_model",
+      "//components/spellcheck:buildflags",
+      "//components/spellcheck/renderer:renderer",
     ]
 
     # Add unwind tables in android_browsertests apk to support enabling
@@ -1640,6 +1656,7 @@ if (!is_android) {
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.h",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
+      "../browser/renderer_context_menu/spelling_bubble_model_browsertest.cc",
       "../browser/renderer_context_menu/spelling_menu_observer_browsertest.cc",
       "../browser/renderer_host/render_process_host_chrome_browsertest.cc",
       "../browser/repost_form_warning_browsertest.cc",
@@ -3489,7 +3506,9 @@ if (!is_android) {
         "../renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc",
         "../renderer/safe_browsing/threat_dom_details_browsertest.cc",
       ]
+      deps += [ "//components/safe_browsing/core/fbs:client_model" ]
     }
+
     if (enable_captive_portal_detection) {
       sources += [ "../browser/captive_portal/captive_portal_browsertest.cc" ]
     }
@@ -5593,6 +5612,7 @@ test("unit_tests") {
       "../browser/nearby_sharing/nearby_notification_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_per_session_discovery_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_receive_manager_unittest.cc",
+      "../browser/nearby_sharing/nearby_share_feature_usage_metrics_unittest.cc",
       "../browser/nearby_sharing/nearby_share_profile_info_provider_impl_unittest.cc",
       "../browser/nearby_sharing/nearby_share_settings_unittest.cc",
       "../browser/nearby_sharing/nearby_sharing_service_impl_unittest.cc",
@@ -6387,6 +6407,8 @@ test("unit_tests") {
       "../browser/enterprise/connectors/file_system/box_uploader_test_helper.cc",
       "../browser/enterprise/connectors/file_system/box_uploader_test_helper.h",
       "../browser/enterprise/connectors/file_system/box_uploader_unittest.cc",
+      "../browser/enterprise/connectors/file_system/test_helper.cc",
+      "../browser/enterprise/connectors/file_system/test_helper.h",
     ]
   }
 
@@ -7020,6 +7042,7 @@ if (!is_android) {
       "//components/captive_portal/core:buildflags",
       "//components/content_settings/core/browser",
       "//components/embedder_support",
+      "//components/feature_engagement",
       "//components/find_in_page",
       "//components/google/core/common",
       "//components/history/core/browser",

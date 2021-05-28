@@ -38,6 +38,11 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <owner>cros-oac@google.com</owner>
     <owner>chromeos-fingerprint@google.com</owner>
   </variant>
+  <variant name="NearbyShare" summary="Nearby Share">
+    <owner>nohle@chromium.org</owner>
+    <owner>vecore@chromium.org</owner>
+    <owner>nearby-share-chromeos-eng@google.com</owner>
+  </variant>
 </variants>
 
 <histogram name="ChromeOS.Apps.ExternalProtocolDialog"
@@ -1630,6 +1635,17 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     This value represents the type of a USB Type-C peripheral (the Partner)
     which is connected to a device. It is recorded every time a new peripheral
     is connected.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.TypeC.WrongConfiguration"
+    enum="WrongConfigurationMetric" expires_after="2021-10-31">
+  <owner>pmalani@chromium.org</owner>
+  <owner>chromeos-power@google.com</owner>
+  <summary>
+    This value represents events where a USB Type-C peripheral couldn't be
+    configured correctly, or experienced some other unexpected behaviour. It is
+    recorded every time a new peripheral is connected.
   </summary>
 </histogram>
 

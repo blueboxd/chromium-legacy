@@ -1038,6 +1038,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Navigation.Prerender.ActivationCommitDeferTime" units="ms"
+    expires_after="2022-01-01">
+  <owner>sreejakshetty@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Measures time a PrerenderCommitDeferringCondition defers activation waiting
+    to commit an ongoing mainframe prerender navigation. Logged every time a
+    PrerenderCommitDeferringCondition defers navigation.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.ReadyToCommitUntilCommit2" units="ms"
     expires_after="2021-10-09">
   <owner>clamy@chromium.org</owner>
@@ -1141,6 +1152,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     time a throttle runs.
   </summary>
   <token key="Event" variants="NavigationThrottleEvents"/>
+</histogram>
+
+<histogram name="Navigation.TimeToActivatePrerender" units="ms"
+    expires_after="2022-01-01">
+  <owner>sreejakshetty@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    The time needed to commit a navigation using prerender activation. This is
+    the time from the beginning of NavigationStart to the end of
+    DidCommitPageActivation.
+
+    This metric is logged everytime prerender activation navigation commits.
+  </summary>
 </histogram>
 
 <histogram name="Navigation.TimeToReadyToCommit2" units="ms"

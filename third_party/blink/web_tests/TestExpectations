@@ -384,6 +384,8 @@ crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-reca
 crbug.com/997202 compositing/overflow/scaled-overflow.html [ Failure ]
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
 crbug.com/997202 virtual/threaded-no-composited-antialiasing/animations/skew-notsequential-compositor.html [ Failure Pass ]
+# Only one pixel difference (187,187,187) vs (188,188,188) occasionally.
+crbug.com/1207960 [ Linux ] compositing/perspective-interest-rect.html [ Failure Pass ]
 
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
@@ -425,21 +427,6 @@ crbug.com/1155161 svg/masking/mask-of-root.html [ Failure ]
 
 # Failures due to pointerMove building synthetic events without button information (main thread only).
 crbug.com/1056778 fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
-
-# Awaiting implementation of FeComponentTransfer for CanvasFilter
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.discrete.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.discrete.worker.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.gamma.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.gamma.worker.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.linear.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.linear.worker.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.table.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/offscreen/filters/2d.filter.canvasFilterObject.componentTransfer.table.worker.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.discrete.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.gamma.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.linear.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/element/filters/2d.filter.canvasFilterObject.componentTransfer.table.html [ Failure ]
-crbug.com/1169216 external/wpt/html/canvas/element/manual/filters/canvas-filter-object-component-transfer.html [ Failure ]
 
 # Most of these fail due to subpixel differences, but a couple are real failures.
 crbug.com/1044742 external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
@@ -3996,7 +3983,6 @@ virtual/layout-ng-grid/fast/css-grid-layout/maximize-tracks-definite-indefinite-
 
 ### Tests failing with LayoutNGGrid enabled:
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-safe-001.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-content-alignment-overflow-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-baseline-not-applied-if-sizing-cyclic-dependency-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
@@ -6651,6 +6637,9 @@ crbug.com/1205669 [ Mac10.13 ] external/wpt/input-device-capabilities/idlharness
 crbug.com/1205669 [ Mac10.13 ] external/wpt/periodic-background-sync/idlharness.https.any.html [ Failure ]
 crbug.com/1205669 [ Mac10.13 ] external/wpt/storage/idlharness.https.any.worker.html [ Failure ]
 crbug.com/1205669 [ Mac10.13 ] virtual/threaded/external/wpt/animation-worklet/idlharness.any.worker.html [ Failure ]
+
+# Failing tests when CompositeClipPathAnimation is on
+crbug.com/1179022 virtual/composite-clip-path-animation/css3/masking/clip-path-circle-filter.html [ Failure ]
 
 # Sheriff 2021-05-07
 

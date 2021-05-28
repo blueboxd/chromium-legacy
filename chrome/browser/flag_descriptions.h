@@ -479,6 +479,9 @@ extern const char kEnableSyncRequiresPoliciesLoadedDescription[];
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
 
+extern const char kEnhancedNetworkVoicesName[];
+extern const char kEnhancedNetworkVoicesDescription[];
+
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
 
@@ -1323,6 +1326,9 @@ extern const char kStoragePressureEventDescription[];
 
 extern const char kStoreHoursAndroidName[];
 extern const char kStoreHoursAndroidDescription[];
+
+extern const char kStrictExtensionIsolationName[];
+extern const char kStrictExtensionIsolationDescription[];
 
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
@@ -2193,6 +2199,9 @@ extern const char kAllowRepeatedUpdatesDescription[];
 
 extern const char kAllowScrollSettingsName[];
 extern const char kAllowScrollSettingsDescription[];
+
+extern const char kAppListBubbleName[];
+extern const char kAppListBubbleDescription[];
 
 extern const char kAppServiceAdaptiveIconName[];
 extern const char kAppServiceAdaptiveIconDescription[];

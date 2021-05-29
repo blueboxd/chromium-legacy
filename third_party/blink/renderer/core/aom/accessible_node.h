@@ -122,6 +122,9 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   // Gets the associated document.
   Document* GetDocument() const;
 
+  // Returns the parent of this node.
+  AccessibleNode* GetParent() { return parent_; }
+
   // Children. These are only virtual AccessibleNodes that were added
   // explicitly, never AccessibleNodes from DOM Elements.
   HeapVector<Member<AccessibleNode>> GetChildren() { return children_; }
@@ -345,6 +348,9 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
 
   void appendChild(AccessibleNode*, ExceptionState&);
   void removeChild(AccessibleNode*, ExceptionState&);
+
+  // Called when an accessible node is removed from document.
+  void DetachedFromDocument();
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

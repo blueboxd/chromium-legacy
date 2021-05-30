@@ -225,7 +225,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '21c3054afcd01aa1f142b91a965063abd563bcda',
+  'swiftshader_revision': 'f504d9ef5615cad38cb983b02b5dda6f9b3b613b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -1574,7 +1574,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '43c0f51e87ddec8a014a48428e485b07a3be46f2',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'cbb4421eacb6079cb14f2a53dbe1f520c3d79089',
+    Var('webrtc_git') + '/src.git' + '@' + '6c94d58e34a1f511c18863b01b342342348079eb',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1635,7 +1635,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@956b51ea98dbbc5790312c3ab21a7828aa003fb6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b911c515b8681323b6ed19c2f182fe620355bd23',
     'condition': 'checkout_src_internal',
   },
 
@@ -1665,7 +1665,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'ry1O2mXdXJmcHQtbzt5SeuICgahXIrE4UVUDIoyNI_cC',
+        'version': 'wC4Xf187m_ycbj--Z2WaEARpQn7FN8_mC1sVDCdy0bUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

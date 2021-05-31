@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/audio/audio_device_description.h"
@@ -24,7 +25,10 @@
 
 namespace {
 
+// TODO(crbug.com/1208868): Eliminate code duplication with
+// capture_handle_manager.cc.
 media::mojom::CaptureHandlePtr CreateCaptureHandle(
+    content::WebContents* capturer,
     const url::Origin& capturer_origin,
     const content::DesktopMediaID& captured_id) {
   if (capturer_origin.opaque()) {
@@ -55,6 +59,20 @@ media::mojom::CaptureHandlePtr CreateCaptureHandle(
     return nullptr;
   }
 
+  // Observing CaptureHandle when either the capturing or the captured party
+  // is incognito is disallowed, except for self-capture.
+  if (capturer->GetMainFrame() != captured->GetMainFrame()) {
+    if (capturer->GetBrowserContext()->IsOffTheRecord() ||
+        captured->GetBrowserContext()->IsOffTheRecord()) {
+      return nullptr;
+    }
+  }
+
+  if (!captured_config.expose_origin &&
+      captured_config.capture_handle.empty()) {
+    return nullptr;
+  }
+
   auto result = media::mojom::CaptureHandle::New();
   if (captured_config.expose_origin) {
     result->origin = captured->GetMainFrame()->GetLastCommittedOrigin();
@@ -67,6 +85,7 @@ media::mojom::CaptureHandlePtr CreateCaptureHandle(
 media::mojom::DisplayMediaInformationPtr
 DesktopMediaIDToDisplayMediaInformation(
     content::WebContents* capturer,
+    const url::Origin& capturer_origin,
     const content::DesktopMediaID& media_id) {
   media::mojom::DisplayCaptureSurfaceType display_surface =
       media::mojom::DisplayCaptureSurfaceType::MONITOR;
@@ -95,8 +114,7 @@ DesktopMediaIDToDisplayMediaInformation(
     case content::DesktopMediaID::TYPE_WEB_CONTENTS:
       display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
       cursor = media::mojom::CursorCaptureType::MOTION;
-      capture_handle = CreateCaptureHandle(
-          url::Origin::Create(capturer->GetLastCommittedURL()), media_id);
+      capture_handle = CreateCaptureHandle(capturer, capturer_origin, media_id);
       break;
     case content::DesktopMediaID::TYPE_NONE:
       break;
@@ -206,6 +224,7 @@ std::string DeviceNamePrefix(
 
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::WebContents* web_contents,
+    const url::Origin& capturer_origin,
     blink::MediaStreamDevices* devices,
     const content::DesktopMediaID& media_id,
     blink::mojom::MediaStreamType devices_video_type,
@@ -230,8 +249,8 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
       DeviceNamePrefix(web_contents, devices_video_type, media_id) + device_id;
   auto device =
       blink::MediaStreamDevice(devices_video_type, device_id, device_name);
-  device.display_media_info =
-      DesktopMediaIDToDisplayMediaInformation(web_contents, media_id);
+  device.display_media_info = DesktopMediaIDToDisplayMediaInformation(
+      web_contents, capturer_origin, media_id);
   devices->push_back(device);
   if (capture_audio) {
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {

@@ -149,17 +149,11 @@ class WebAppsChromeOs : public WebAppsBase,
   void StartPublishingWebApps(
       mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote);
 
-  apps::IconEffects GetIconEffects(const WebApp* web_app,
-                                   bool paused,
-                                   bool is_disabled);
-
   // Get the equivalent Chrome app from |arc_package_name| and set the Chrome
   // app badge on the icon effects for the equivalent Chrome apps. If the
   // equivalent ARC app is installed, add the Chrome app badge, otherwise,
   // remove the Chrome app badge.
   void ApplyChromeBadge(const std::string& arc_package_name);
-
-  void SetIconEffect(const std::string& app_id);
 
   // Launches an app in a way specified by |params|. If the app is a system web
   // app, or not opened in tabs, saves the launch parameters.
@@ -177,8 +171,6 @@ class WebAppsChromeOs : public WebAppsBase,
   bool IsWebAppInDisabledList(const std::string& app_id) const;
 
   apps::InstanceRegistry* instance_registry_;
-
-  apps::PausedApps paused_apps_;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
 

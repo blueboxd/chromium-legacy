@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -15,25 +16,41 @@
 namespace content {
 
 namespace {
+// TODO(crbug.com/1208868): Eliminate code duplication with
+// desktop_capture_devices_util.cc.
 media::mojom::CaptureHandlePtr CreateCaptureHandle(
-    const url::Origin& capturer_origin,
-    const blink::mojom::CaptureHandleConfig& capture_handle_config,
-    WebContents* captured) {
-  auto result = media::mojom::CaptureHandle::New();
-
+    RenderFrameHostImpl* capturer,
+    WebContents* captured,
+    const blink::mojom::CaptureHandleConfig& capture_handle_config) {
   if (!captured) {
-    return result;
+    return nullptr;
   }
 
+  if (!capture_handle_config.expose_origin &&
+      capture_handle_config.capture_handle.empty()) {
+    return nullptr;
+  }
+
+  const url::Origin& capturer_origin = capturer->GetLastCommittedOrigin();
   if (!capture_handle_config.all_origins_permitted &&
       std::none_of(capture_handle_config.permitted_origins.begin(),
                    capture_handle_config.permitted_origins.end(),
                    [capturer_origin](const url::Origin& permitted_origin) {
                      return capturer_origin.IsSameOriginWith(permitted_origin);
                    })) {
-    return result;
+    return nullptr;
   }
 
+  // Observing CaptureHandle wheneither the capturing or the captured party
+  // is incognito is disallowed, except for self-capture.
+  if (capturer->GetMainFrame() != captured->GetMainFrame()) {
+    if (capturer->GetBrowserContext()->IsOffTheRecord() ||
+        captured->GetBrowserContext()->IsOffTheRecord()) {
+      return nullptr;
+    }
+  }
+
+  auto result = media::mojom::CaptureHandle::New();
   if (capture_handle_config.expose_origin) {
     result->origin = captured->GetMainFrame()->GetLastCommittedOrigin();
   }
@@ -152,8 +169,7 @@ void CaptureHandleManager::Observer::OnCaptureHandleConfigUpdate(
 
   handle_change_callback_.Run(
       capture_key_.label, capture_key_.type,
-      CreateCaptureHandle(capturer_rfhi->GetLastCommittedOrigin(), config,
-                          web_contents()));
+      CreateCaptureHandle(capturer_rfhi, web_contents(), config));
 }
 
 void CaptureHandleManager::Observer::UpdateCaptureHandleConfig() {
@@ -215,10 +231,10 @@ void CaptureHandleManager::OnTabCaptureStarted(
     // Creating a new tracking session.
     const absl::optional<media::mojom::DisplayMediaInformationPtr>& info =
         captured_device.display_media_info;
-    auto capture_handle =
-        (info.has_value() && info.value() && info.value()->capture_handle)
+    media::mojom::CaptureHandlePtr capture_handle =
+        (info.has_value() && info.value())
             ? info.value()->capture_handle.Clone()
-            : media::mojom::CaptureHandle::New();
+            : nullptr;
     captures_[capture_key] = std::make_unique<CaptureInfo>(
         std::move(observer), std::move(capture_handle),
         std::move(handle_change_callback));

@@ -25,34 +25,10 @@ using apps::IconEffects;
 
 namespace web_app {
 
-namespace {
-
-IconEffects GetIconEffects(const WebApp* web_app) {
-  // TODO(crbug.com/1194709): Keep consistent behavior with WebAppsChromeOs:
-  // Support pausing and Chrome badging, and blocking based on
-  // chromeos_data()->is_disabled.
-  IconEffects icon_effects = IconEffects::kRoundCorners;
-  if (!web_app->is_locally_installed()) {
-    icon_effects |= IconEffects::kBlocked;
-  }
-
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-    icon_effects |= web_app->is_generated_icon()
-                        ? IconEffects::kCrOsStandardMask
-                        : IconEffects::kCrOsStandardIcon;
-  } else {
-    icon_effects |= IconEffects::kResizeAndPad;
-  }
-
-  return icon_effects;
-}
-
-}  // namespace
-
 WebAppsPublisherHost::WebAppsPublisherHost(Profile* profile)
     : profile_(profile),
       provider_(WebAppProvider::Get(profile)),
-      publisher_helper_(profile, apps::mojom::AppType::kWeb) {}
+      publisher_helper_(profile, apps::mojom::AppType::kWeb, this) {}
 
 WebAppsPublisherHost::~WebAppsPublisherHost() = default;
 
@@ -121,8 +97,27 @@ void WebAppsPublisherHost::Uninstall(
     return;
   }
 
-  publisher_helper_.UninstallWebApp(web_app, uninstall_source, clear_site_data,
-                                    report_abuse);
+  publisher_helper().UninstallWebApp(web_app, uninstall_source, clear_site_data,
+                                     report_abuse);
+}
+
+void WebAppsPublisherHost::PauseApp(const std::string& app_id) {
+  publisher_helper().PauseApp(app_id);
+}
+
+void WebAppsPublisherHost::UnpauseApps(const std::string& app_id) {
+  publisher_helper().UnpauseApps(app_id);
+}
+
+void WebAppsPublisherHost::LoadIcon(const std::string& app_id,
+                                    apps::mojom::IconKeyPtr icon_key,
+                                    apps::mojom::IconType icon_type,
+                                    int32_t size_hint_in_dip,
+                                    bool allow_placeholder_icon,
+                                    LoadIconCallback callback) {
+  publisher_helper().LoadIcon(app_id, std::move(icon_key), std::move(icon_type),
+                              size_hint_in_dip, allow_placeholder_icon,
+                              std::move(callback));
 }
 
 void WebAppsPublisherHost::OnWebAppInstalled(const AppId& app_id) {
@@ -131,7 +126,7 @@ void WebAppsPublisherHost::OnWebAppInstalled(const AppId& app_id) {
     return;
   }
 
-  Publish(Convert(web_app, apps::mojom::Readiness::kReady));
+  PublishWebApp(Convert(web_app, apps::mojom::Readiness::kReady));
 }
 
 void WebAppsPublisherHost::OnWebAppManifestUpdated(const AppId& app_id,
@@ -141,7 +136,7 @@ void WebAppsPublisherHost::OnWebAppManifestUpdated(const AppId& app_id,
     return;
   }
 
-  Publish(Convert(web_app, apps::mojom::Readiness::kReady));
+  PublishWebApp(Convert(web_app, apps::mojom::Readiness::kReady));
 }
 
 void WebAppsPublisherHost::OnWebAppWillBeUninstalled(const AppId& app_id) {
@@ -156,7 +151,7 @@ void WebAppsPublisherHost::OnWebAppWillBeUninstalled(const AppId& app_id) {
   auto result = media_requests_.RemoveRequests(app_id);
   ModifyCapabilityAccess(app_id, result.camera, result.microphone);
 
-  Publish(publisher_helper_.ConvertUninstalledWebApp(web_app));
+  PublishWebApp(publisher_helper().ConvertUninstalledWebApp(web_app));
 }
 
 void WebAppsPublisherHost::OnAppRegistrarDestroyed() {
@@ -174,8 +169,8 @@ void WebAppsPublisherHost::OnWebAppLocallyInstalledStateChanged(
   auto app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kWeb;
   app->app_id = app_id;
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(web_app));
-  Publish(std::move(app));
+  app->icon_key = publisher_helper().MakeIconKey(web_app);
+  PublishWebApp(std::move(app));
 }
 
 void WebAppsPublisherHost::OnWebAppLastLaunchTimeChanged(
@@ -186,7 +181,7 @@ void WebAppsPublisherHost::OnWebAppLastLaunchTimeChanged(
     return;
   }
 
-  Publish(publisher_helper_.ConvertLaunchedWebApp(web_app));
+  PublishWebApp(publisher_helper().ConvertLaunchedWebApp(web_app));
 }
 
 void WebAppsPublisherHost::OnContentSettingChanged(
@@ -203,9 +198,9 @@ void WebAppsPublisherHost::OnContentSettingChanged(
       apps::mojom::AppPtr app = apps::mojom::App::New();
       app->app_type = apps::mojom::AppType::kWeb;
       app->app_id = web_app.app_id();
-      publisher_helper_.PopulateWebAppPermissions(&web_app, &app->permissions);
+      publisher_helper().PopulateWebAppPermissions(&web_app, &app->permissions);
 
-      Publish(std::move(app));
+      PublishWebApp(std::move(app));
     }
   }
 }
@@ -273,12 +268,14 @@ const WebApp* WebAppsPublisherHost::GetWebApp(const AppId& app_id) const {
 apps::mojom::AppPtr WebAppsPublisherHost::Convert(
     const WebApp* web_app,
     apps::mojom::Readiness readiness) {
-  apps::mojom::AppPtr app = publisher_helper_.ConvertWebApp(web_app, readiness);
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(web_app));
+  DCHECK(web_app->chromeos_data().has_value());
+  apps::mojom::AppPtr app =
+      publisher_helper().ConvertWebApp(web_app, readiness);
+  app->icon_key = publisher_helper().MakeIconKey(web_app);
   return app;
 }
 
-void WebAppsPublisherHost::Publish(apps::mojom::AppPtr app) {
+void WebAppsPublisherHost::PublishWebApp(apps::mojom::AppPtr app) {
   if (!remote_publisher_) {
     return;
   }

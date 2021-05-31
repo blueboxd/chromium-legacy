@@ -4083,7 +4083,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textFeatures.svg [ F
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textLayout2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/verticalTextOnPath.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/xmlSpace.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/clip-path/clip-path-text.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/clip-path/clip-path-text-and-shape.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/clip-path/clip-path-text-and-stroke.svg [ Failure ]
@@ -6222,7 +6221,6 @@ crbug.com/1161590 external/wpt/html/semantics/forms/textfieldselection/select-ev
 
 # Wpt importer sheriff 2021-01-05
 crbug.com/1163175 external/wpt/css/css-pseudo/first-letter-punctuation-and-space.html [ Failure ]
-crbug.com/1163178 external/wpt/svg/embedded/image-embedding-svg-with-auto-height.svg [ Failure ]
 
 # Sheriff 2020-12-14
 crbug.com/1046784 http/tests/devtools/console/console-context-selector.js [ Pass Timeout ]
@@ -6268,6 +6266,7 @@ crbug.com/1155125 [ Linux ] http/tests/history/replacestate-post-to-get-2.html [
 
 # V8 roll
 crbug.com/961059 fast/workers/worker-shared-asm-buffer.html [ Skip ]
+crbug.com/1202013 http/tests/devtools/console/console-tainted-globals.js [ Pass Failure ]
 
 crbug.com/1170062 [ Linux ] external/wpt/html/canvas/element/manual/shadows/canvas_shadows_001.htm [ Timeout Pass ]
 crbug.com/1170062 [ mac ] external/wpt/html/canvas/element/manual/shadows/canvas_shadows_001.htm [ Timeout Pass ]

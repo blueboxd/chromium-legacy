@@ -67,7 +67,7 @@ WebAppsBase::WebAppsBase(
     : profile_(profile),
       app_service_(nullptr),
       app_type_(GetWebAppType()),
-      publisher_helper_(profile_, app_type_) {
+      publisher_helper_(profile_, app_type_, this) {
   Initialize(app_service);
 }
 
@@ -189,16 +189,9 @@ void WebAppsBase::LoadIcon(const std::string& app_id,
                            int32_t size_hint_in_dip,
                            bool allow_placeholder_icon,
                            LoadIconCallback callback) {
-  DCHECK(provider_);
-
-  if (icon_key) {
-    LoadIconFromWebApp(profile_, icon_type, size_hint_in_dip, app_id,
-                       static_cast<IconEffects>(icon_key->icon_effects),
-                       std::move(callback));
-    return;
-  }
-  // On failure, we still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
+  publisher_helper().LoadIcon(app_id, std::move(icon_key), std::move(icon_type),
+                              size_hint_in_dip, allow_placeholder_icon,
+                              std::move(callback));
 }
 
 void WebAppsBase::Launch(const std::string& app_id,
@@ -347,6 +340,10 @@ void WebAppsBase::OpenNativeSettings(const std::string& app_id) {
   chrome::ShowSiteSettings(profile_, web_app->start_url());
 }
 
+void WebAppsBase::PublishWebApp(apps::mojom::AppPtr app) {
+  Publish(std::move(app), subscribers_);
+}
+
 void WebAppsBase::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -409,7 +406,7 @@ void WebAppsBase::OnWebAppLocallyInstalledStateChanged(
   auto app = apps::mojom::App::New();
   app->app_type = app_type_;
   app->app_id = app_id;
-  app->icon_key = icon_key_factory().MakeIconKey(GetIconEffects(web_app));
+  app->icon_key = publisher_helper().MakeIconKey(web_app);
   Publish(std::move(app), subscribers_);
 }
 

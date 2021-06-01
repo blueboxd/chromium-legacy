@@ -115,8 +115,6 @@ class UserSigninCoordinatorTest : public PlatformTest {
     OCMExpect([user_signin_view_controller_mock_ setDelegate:[OCMArg any]]);
     OCMExpect([user_signin_view_controller_mock_ setUseFirstRunSkipButton:NO]);
     OCMExpect([user_signin_view_controller_mock_
-        setForceEqualVisualWeightDistribution:NO]);
-    OCMExpect([user_signin_view_controller_mock_
         setModalPresentationStyle:UIModalPresentationFormSheet]);
     // Method not used on iOS 12.
     OCMStub([user_signin_view_controller_mock_ presentationController])
@@ -171,6 +169,7 @@ TEST_F(UserSigninCoordinatorTest, StartAndInterruptCoordinator) {
         EXPECT_FALSE(completion_done);
         EXPECT_FALSE(interrupt_done);
         EXPECT_EQ(SigninCoordinatorResultInterrupted, signinResult);
+        EXPECT_EQ(nil, signinCompletionInfo.identity);
         completion_done = true;
       };
   [coordinator_ start];

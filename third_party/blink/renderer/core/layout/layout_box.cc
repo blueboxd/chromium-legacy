@@ -1860,18 +1860,19 @@ IntPoint LayoutBox::ScrollOrigin() const {
   return GetScrollableArea() ? GetScrollableArea()->ScrollOrigin() : IntPoint();
 }
 
-LayoutSize LayoutBox::ScrolledContentOffset() const {
+PhysicalOffset LayoutBox::ScrolledContentOffset() const {
   NOT_DESTROYED();
   DCHECK(IsScrollContainer());
   DCHECK(GetScrollableArea());
-  return LayoutSize(GetScrollableArea()->GetScrollOffset());
+  return PhysicalOffset::FromFloatSizeFloor(
+      GetScrollableArea()->GetScrollOffset());
 }
 
-LayoutSize LayoutBox::PixelSnappedScrolledContentOffset() const {
+IntPoint LayoutBox::PixelSnappedScrolledContentOffset() const {
   NOT_DESTROYED();
   DCHECK(IsScrollContainer());
   DCHECK(GetScrollableArea());
-  return LayoutSize(GetScrollableArea()->ScrollOffsetInt());
+  return IntPoint(GetScrollableArea()->ScrollOffsetInt());
 }
 
 PhysicalRect LayoutBox::ClippingRect(const PhysicalOffset& location) const {
@@ -1973,9 +1974,9 @@ bool LayoutBox::MapVisualRectToContainer(
   // c) Container scroll offset.
   if (container_object->IsBox() && container_object != ancestor &&
       To<LayoutBox>(container_object)->ContainedContentsScroll(*this)) {
-    LayoutSize offset(
+    PhysicalOffset offset(
         -To<LayoutBox>(container_object)->ScrolledContentOffset());
-    transform.PostTranslate(offset.Width(), offset.Height());
+    transform.PostTranslate(offset.left, offset.top);
   }
 
   bool has_perspective = container_object && container_object->HasLayer() &&
@@ -2026,7 +2027,7 @@ bool LayoutBox::MapContentsRectToBoxSpace(
     return true;
 
   if (ContainedContentsScroll(contents))
-    transform_state.Move(PhysicalOffset(-ScrolledContentOffset()));
+    transform_state.Move(-ScrolledContentOffset());
 
   return ApplyBoxClips(transform_state, accumulation, visual_rect_flags);
 }
@@ -3281,6 +3282,8 @@ void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
 
 void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result) {
   const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+  // |layout_results_| is particulary critical when |SideEffectsDisabled|.
+  DCHECK(!result->GetConstraintSpaceForCaching().SideEffectsDisabled());
   layout_results_.push_back(std::move(result));
   CheckDidAddFragment(*this, fragment);
 
@@ -3316,6 +3319,8 @@ void LayoutBox::ReplaceLayoutResult(scoped_refptr<const NGLayoutResult> result,
       NGFragmentItems::ClearAssociatedFragments(this);
     }
   }
+  // |layout_results_| is particulary critical when |SideEffectsDisabled|.
+  DCHECK(!result->GetConstraintSpaceForCaching().SideEffectsDisabled());
   layout_results_[index] = std::move(result);
   CheckDidAddFragment(*this, fragment);
 

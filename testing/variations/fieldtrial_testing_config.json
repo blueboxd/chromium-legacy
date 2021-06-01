@@ -1798,8 +1798,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "ChromeShareScreenshot",
-                        "PreemptiveLinkToTextGeneration"
+                        "ChromeShareScreenshot"
                     ],
                     "min_os_version": "5.1"
                 }
@@ -4942,6 +4941,24 @@
             ]
         }
     ],
+    "MobileIdentityConsistencyVar": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithConsecutiveActiveDismissal",
+                    "params": {
+                        "consecutive_active_dismissal_limit": "3"
+                    },
+                    "enable_features": [
+                        "MobileIdentityConsistencyVar"
+                    ]
+                }
+            ]
+        }
+    ],
     "MojoInlineMessagePayloads": [
         {
             "platforms": [
@@ -5837,6 +5854,22 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PartitionAllocLargeThreadCacheSize"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PartitionAllocPCScanBrowserOnly": [
+        {
+            "platforms": [
+                "android",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PartitionAllocPCScanBrowserOnly"
                     ]
                 }
             ]
@@ -7050,6 +7083,21 @@
             ]
         }
     ],
+    "SharedHighlightingClank": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PreemptiveLinkToTextGeneration"
+                    ]
+                }
+            ]
+        }
+    ],
     "SharedHighlightingIOS": [
         {
             "platforms": [
@@ -7700,7 +7748,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "TextFragmentColorChangeBlink"
+                        "TextFragmentColorChange"
                     ]
                 }
             ]

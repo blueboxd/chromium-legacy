@@ -1530,8 +1530,6 @@ Element* Document::scrollingElement() {
 Element* Document::ScrollingElementNoLayout() {
   if (RuntimeEnabledFeatures::ScrollTopLeftInteropEnabled()) {
     if (InQuirksMode()) {
-      DCHECK(!IsActive() || InStyleRecalc() ||
-             lifecycle_.GetState() >= DocumentLifecycle::kStyleClean);
       HTMLBodyElement* body = FirstBodyElement();
       if (body && body->GetLayoutObject() &&
           body->GetLayoutObject()->IsScrollContainer())
@@ -3298,8 +3296,7 @@ Element* Document::ViewportDefiningElement() const {
   const ComputedStyle* root_style = root_element->GetComputedStyle();
   if (!root_style || root_style->IsEnsuredInDisplayNone())
     return nullptr;
-  if (body_element && root_style->IsOverflowVisibleAlongBothAxes() &&
-      IsA<HTMLHtmlElement>(root_element))
+  if (body_element && root_style->IsOverflowVisibleAlongBothAxes())
     return body_element;
   return root_element;
 }

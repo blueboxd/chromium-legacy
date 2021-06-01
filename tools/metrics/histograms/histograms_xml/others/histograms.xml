@@ -781,7 +781,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.ExistingResourceCorruptionRecovery"
-    units="units" expires_after="2021-09-26">
+    units="units" expires_after="2021-11-28">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -8346,7 +8346,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Kiosk.Launch.CryptohomeFailure" enum="LoginFailureReason"
-    expires_after="2021-09-26">
+    expires_after="2021-11-28">
   <owner>xiyuan@chromium.org</owner>
   <owner>apotapchuk@chromium.org</owner>
   <summary>Tracks cryptohome failure during kiosk launch.</summary>
@@ -12267,7 +12267,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.CookieDomainCount" units="units"
-    expires_after="2021-09-19">
+    expires_after="2021-11-28">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -12278,7 +12278,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.DatabaseSize" units="KiB"
-    expires_after="2021-09-19">
+    expires_after="2021-11-28">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -12289,7 +12289,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.RecordCount" units="units"
-    expires_after="2021-09-19">
+    expires_after="2021-11-28">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -12300,7 +12300,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.StorageOriginCount" units="units"
-    expires_after="2021-09-19">
+    expires_after="2021-11-28">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -12311,7 +12311,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Privacy.AccessContextAudit.TopFrameOriginCount" units="units"
-    expires_after="2021-09-19">
+    expires_after="2021-11-28">
   <owner>msramek@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -18690,7 +18690,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.CacheHit" enum="WebFontCacheHit"
-    expires_after="2021-09-26">
+    expires_after="2021-11-28">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
@@ -18714,7 +18714,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.0.Under10KB" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2022-01-15">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -18724,7 +18724,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.1.10KBTo50KB" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2022-01-15">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -18734,7 +18734,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.2.50KBTo100KB" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2022-01-15">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -18744,7 +18744,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.3.100KBTo1MB" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2022-01-15">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -18754,7 +18754,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.4.Over1MB" units="ms"
-    expires_after="2021-08-15">
+    expires_after="2022-01-15">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -18764,7 +18764,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.LoadError" units="ms"
-    expires_after="2021-06-13">
+    expires_after="2022-01-15">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>

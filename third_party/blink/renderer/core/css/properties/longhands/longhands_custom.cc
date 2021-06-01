@@ -1885,19 +1885,19 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueID::kContent);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style.ContainsSize()) {
+  if ((style.Contain() & kContainsSize) == kContainsSize) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kSize));
   } else {
-    if (style.ContainsInlineSize())
+    if (style.Contain() & kContainsInlineSize)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kInlineSize));
-    else if (style.ContainsBlockSize())
+    else if (style.Contain() & kContainsBlockSize)
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kBlockSize));
   }
-  if (style.ContainsLayout())
+  if (style.Contain() & kContainsLayout)
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kLayout));
-  if (style.ContainsStyle())
+  if (style.Contain() & kContainsStyle)
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kStyle));
-  if (style.ContainsPaint())
+  if (style.Contain() & kContainsPaint)
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kPaint));
   DCHECK(list->length());
   return list;
@@ -1936,6 +1936,43 @@ const CSSValue* ContainIntrinsicSize::CSSValueFromComputedStyleInternal(
       ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
           style.ContainIntrinsicSize().Height(), style),
       CSSValuePair::kDropIdenticalValues);
+}
+
+const CSSValue* ContainerName::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeContainerName(range, context);
+}
+
+const CSSValue* ContainerName::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  if (style.ContainerName().IsNull())
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  return MakeGarbageCollected<CSSCustomIdentValue>(style.ContainerName());
+}
+
+const CSSValue* ContainerType::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeContainerType(range);
+}
+
+const CSSValue* ContainerType::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  if (style.ContainerType() == kContainerTypeNone)
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (style.ContainerType() & kContainerTypeInlineSize)
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kInlineSize));
+  if (style.ContainerType() & kContainerTypeBlockSize)
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kBlockSize));
+  return list;
 }
 
 namespace {

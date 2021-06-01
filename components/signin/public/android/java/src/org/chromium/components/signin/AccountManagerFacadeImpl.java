@@ -112,16 +112,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         assert success : "Can't find observer";
     }
 
-    /**
-     * Returns whether the account cache has already been populated. {@link #tryGetGoogleAccounts()}
-     * and similar methods will return instantly if the cache has been populated, otherwise these
-     * methods may block waiting for the cache to be populated.
-     */
-    @Override
-    public boolean isCachePopulated() {
-        return mFilteredAccounts.get() != null;
-    }
-
     @Override
     public Optional<List<Account>> getGoogleAccounts() {
         return Optional.fromNullable(mFilteredAccounts.get());
@@ -272,14 +262,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     @Override
     public String getAccountGaiaId(String accountEmail) {
         return mDelegate.getAccountGaiaId(accountEmail);
-    }
-
-    /**
-     * Checks whether Google Play services is available.
-     */
-    @Override
-    public boolean isGooglePlayServicesAvailable() {
-        return mDelegate.isGooglePlayServicesAvailable();
     }
 
     private void updateCanOfferExtendedSyncPromos(List<Account> accounts) {

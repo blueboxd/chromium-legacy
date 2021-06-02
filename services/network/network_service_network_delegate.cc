@@ -216,11 +216,9 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     bool allowed_from_caller) {
   bool allowed =
       allowed_from_caller &&
-      network_context_->cookie_manager()
-          ->cookie_settings()
-          .IsCookieAccessAllowed(request.url(),
-                                 request.site_for_cookies().RepresentativeUrl(),
-                                 request.isolation_info().top_frame_origin());
+      network_context_->cookie_manager()->cookie_settings().IsCookieAccessible(
+          cookie, request.url(), request.site_for_cookies().RepresentativeUrl(),
+          request.isolation_info().top_frame_origin());
   if (!allowed)
     return false;
   URLLoader* url_loader = URLLoader::ForRequest(request);
@@ -238,10 +236,10 @@ bool NetworkServiceNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin) const {
-  return !network_context_->cookie_manager()
-              ->cookie_settings()
-              .IsCookieAccessAllowed(url, site_for_cookies.RepresentativeUrl(),
-                                     top_frame_origin);
+  return network_context_->cookie_manager()
+      ->cookie_settings()
+      .IsPrivacyModeEnabled(url, site_for_cookies.RepresentativeUrl(),
+                            top_frame_origin);
 }
 
 bool NetworkServiceNetworkDelegate::
@@ -272,7 +270,7 @@ bool NetworkServiceNetworkDelegate::OnCanQueueReportingReport(
     const url::Origin& origin) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 void NetworkServiceNetworkDelegate::OnCanSendReportingReports(
@@ -304,7 +302,7 @@ bool NetworkServiceNetworkDelegate::OnCanSetReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
@@ -312,7 +310,7 @@ bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(

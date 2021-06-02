@@ -46,7 +46,7 @@ def tryjob(
         add_default_excludes = True):
     """Specifies the details of a tryjob verifier.
 
-    See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/main/lucicfg/doc/README.md#luci.cq_tryjob_verifier
+    See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.cq_tryjob_verifier
     for details on the most of the arguments.
 
     Arguments:
@@ -117,6 +117,9 @@ def try_builder(
     experiments = experiments or {}
     experiments.setdefault("chromium.resultdb.result_sink", 100)
     experiments.setdefault("chromium.resultdb.result_sink.junit_tests", 100)
+
+    # Migrate executable to bbagent incrementally.
+    experiments.setdefault("luci.buildbucket.use_bbagent", 10)
 
     merged_resultdb_bigquery_exports = [
         resultdb.export_test_results(

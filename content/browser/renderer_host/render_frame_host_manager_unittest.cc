@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include <map>
+#include <set>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -590,7 +590,7 @@ TEST_P(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   navigation->Commit();
   TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
   EXPECT_TRUE(ntp_rfh->IsPendingDeletion());
-  EXPECT_TRUE(dest_rfh->IsCurrent());
+  EXPECT_TRUE(dest_rfh->IsActive());
 
   // The new RFH should be able to update its favicons.
   {
@@ -1143,7 +1143,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
 
   // We should be able to navigate forward.
   NavigationSimulator::GoForward(contents());
-  EXPECT_TRUE(main_test_rfh()->IsCurrent());
+  EXPECT_TRUE(main_test_rfh()->IsActive());
 }
 
 // Test that we create RenderFrameProxy objects for the opener chain when
@@ -1603,21 +1603,21 @@ TEST_P(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
 
   // Navigate to new site, simulating onbeforeunload approval.
   auto navigation =
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
   TestRenderFrameHost* rfh2 = contents()->GetSpeculativePrimaryMainFrame();
 
   // Simulate the unload ack, unexpectedly early (before commit).  It should
   // have no effect.
   rfh1->SimulateUnloadACK();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
 
   // The new page commits.
   navigation->set_drop_unload_ack(true);
@@ -1625,7 +1625,7 @@ TEST_P(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetSpeculativePrimaryMainFrame() == nullptr);
-  EXPECT_TRUE(rfh2->IsCurrent());
+  EXPECT_TRUE(rfh2->IsActive());
   EXPECT_TRUE(rfh1->IsPendingDeletion());
 
   // Simulate the unload ack.
@@ -1654,7 +1654,7 @@ TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
   // not deleted on unload.
@@ -1665,7 +1665,7 @@ TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
   TestRenderFrameHost* rfh2 = contents()->GetSpeculativePrimaryMainFrame();
 
   // The new page commits.
@@ -1675,7 +1675,7 @@ TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetSpeculativePrimaryMainFrame() == nullptr);
   EXPECT_TRUE(rfh1->IsPendingDeletion());
-  EXPECT_TRUE(rfh2->IsCurrent());
+  EXPECT_TRUE(rfh2->IsActive());
 
   // Simulate the unload ack.
   rfh1->OnUnloaded();
@@ -1702,7 +1702,7 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
 
   // Increment the number of active frames in rfh1's SiteInstance so that the
   // SiteInstance is not deleted on unload.
@@ -1714,7 +1714,7 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
   TestRenderFrameHost* rfh2 = contents()->GetSpeculativePrimaryMainFrame();
 
   // The new page commits.
@@ -1724,7 +1724,7 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetSpeculativePrimaryMainFrame() == nullptr);
   EXPECT_TRUE(rfh1->IsPendingDeletion());
-  EXPECT_TRUE(rfh2->IsCurrent());
+  EXPECT_TRUE(rfh2->IsActive());
 
   // Simulate the unload ack.
   rfh1->OnUnloaded();
@@ -1748,7 +1748,7 @@ TEST_P(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
-  EXPECT_TRUE(rfh1->IsCurrent());
+  EXPECT_TRUE(rfh1->IsActive());
 
   // Navigate to a new site, starting a cross-site navigation.
   controller().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
@@ -3374,31 +3374,28 @@ TEST_P(RenderFrameHostManagerTest,
 
 class AdTaggingSimulator : public WebContentsObserver {
  public:
-  explicit AdTaggingSimulator(
-      const std::map<GURL, blink::mojom::AdFrameType>& ad_urls,
-      WebContents* web_contents)
+  explicit AdTaggingSimulator(const std::set<GURL>& ad_urls,
+                              WebContents* web_contents)
       : WebContentsObserver(web_contents), ad_urls_(ad_urls) {}
 
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
     auto it = ad_urls_.find(navigation_handle->GetURL());
-    if (it == ad_urls_.end())
-      return;
-    navigation_handle->GetRenderFrameHost()->UpdateAdFrameType(it->second);
+    navigation_handle->GetRenderFrameHost()->UpdateIsAdSubframe(it !=
+                                                                ad_urls_.end());
   }
 
   void SimulateOnFrameIsAdSubframe(RenderFrameHost* rfh) {
-    rfh->UpdateAdFrameType(blink::mojom::AdFrameType::kRootAd);
+    rfh->UpdateIsAdSubframe(true);
   }
 
  private:
-  std::map<GURL, blink::mojom::AdFrameType> ad_urls_;
+  std::set<GURL> ad_urls_;
 };
 
 class AdStatusInterceptingRemoteFrame : public content::FakeRemoteFrame {
  public:
-  void SetReplicatedAdFrameType(
-      blink::mojom::AdFrameType ad_frame_type) override {
-    is_ad_subframe_ = ad_frame_type != blink::mojom::AdFrameType::kNonAd;
+  void SetReplicatedIsAdSubframe(bool is_ad_subframe) override {
+    is_ad_subframe_ = is_ad_subframe;
   }
 
   // These methods reset state back to default when they are called.
@@ -3437,7 +3434,7 @@ class RenderFrameHostManagerAdTaggingSignalTest
 
     if (proxy_host->frame_tree_node()
             ->current_replication_state()
-            .ad_frame_type != blink::mojom::AdFrameType::kNonAd) {
+            .is_ad_subframe) {
       ad_frames_on_proxy_created_.insert(proxy_host);
     }
   }
@@ -3494,8 +3491,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   const GURL kUrlA("http://a.com/");
   const GURL kUrlB("http://b.com/");
 
-  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
-      {kUrlB, blink::mojom::AdFrameType::kRootAd}};
+  std::set<GURL> ad_urls = {kUrlB};
 
   AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
 
@@ -3509,8 +3505,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   ExpectAdStatusOnFrameProxyCreated(
       subframe_node->render_manager()->GetProxyToParent());
 
-  DCHECK_EQ(subframe_node->current_replication_state().ad_frame_type,
-            blink::mojom::AdFrameType::kRootAd);
+  EXPECT_TRUE(subframe_node->current_replication_state().is_ad_subframe);
 }
 
 // A page with top frame A that has subframes B and A1. A1 is an ad iframe that
@@ -3527,12 +3522,11 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   AdTaggingSimulator ad_tagging_simulator({}, contents());
 
   contents()->NavigateAndCommit(kUrlA);
-  DCHECK_EQ(contents()
-                ->GetFrameTree()
-                ->root()
-                ->current_replication_state()
-                .ad_frame_type,
-            blink::mojom::AdFrameType::kNonAd);
+  EXPECT_FALSE(contents()
+                   ->GetFrameTree()
+                   ->root()
+                   ->current_replication_state()
+                   .is_ad_subframe);
 
   AppendChildToFrame("subframe_b", kUrlB, web_contents()->GetMainFrame());
   AppendChildToFrame("subframe_a1", GURL(), web_contents()->GetMainFrame());
@@ -3547,8 +3541,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   RenderFrameProxyHost* proxy_a1_to_b =
       GetProxyHost(subframe_node_a1, subframe_node_b);
 
-  EXPECT_EQ(subframe_node_a1->current_replication_state().ad_frame_type,
-            blink::mojom::AdFrameType::kRootAd);
+  EXPECT_TRUE(subframe_node_a1->current_replication_state().is_ad_subframe);
   ExpectAdSubframeSignalForFrameProxy(proxy_a1_to_b, true);
 }
 
@@ -3565,18 +3558,16 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   const GURL kUrlC("http://c.com/");
   const GURL kUrlD("http://d.com/");
 
-  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
-      {kUrlD, blink::mojom::AdFrameType::kRootAd}};
+  std::set<GURL> ad_urls = {kUrlD};
 
   AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
 
   contents()->NavigateAndCommit(kUrlA);
-  DCHECK_EQ(contents()
-                ->GetFrameTree()
-                ->root()
-                ->current_replication_state()
-                .ad_frame_type,
-            blink::mojom::AdFrameType::kNonAd);
+  EXPECT_FALSE(contents()
+                   ->GetFrameTree()
+                   ->root()
+                   ->current_replication_state()
+                   .is_ad_subframe);
 
   AppendChildToFrame("subframe_b", kUrlB, web_contents()->GetMainFrame());
   AppendChildToFrame("subframe_c", kUrlC, web_contents()->GetMainFrame());
@@ -3585,10 +3576,8 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   FrameTreeNode* subframe_node_b = top_frame_node_a->child_at(0);
   FrameTreeNode* subframe_node_c = top_frame_node_a->child_at(1);
 
-  EXPECT_EQ(subframe_node_b->current_replication_state().ad_frame_type,
-            blink::mojom::AdFrameType::kNonAd);
-  EXPECT_EQ(subframe_node_c->current_replication_state().ad_frame_type,
-            blink::mojom::AdFrameType::kNonAd);
+  EXPECT_FALSE(subframe_node_b->current_replication_state().is_ad_subframe);
+  EXPECT_FALSE(subframe_node_c->current_replication_state().is_ad_subframe);
 
   RenderFrameProxyHost* proxy_c_to_a =
       GetProxyHost(subframe_node_c, top_frame_node_a);
@@ -3606,8 +3595,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   NavigationSimulator::NavigateAndCommitFromDocument(
       kUrlD, subframe_node_c->current_frame_host());
 
-  EXPECT_EQ(subframe_node_c->current_replication_state().ad_frame_type,
-            blink::mojom::AdFrameType::kRootAd);
+  EXPECT_TRUE(subframe_node_c->current_replication_state().is_ad_subframe);
 
   ExpectAdSubframeSignalForFrameProxy(proxy_c_to_a, true);
   ExpectAdSubframeSignalForFrameProxy(proxy_c_to_b, true);
@@ -3630,8 +3618,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest,
   const GURL kUrlB("http://b.com/");
   const GURL kUrlC("http://c.com/");
 
-  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
-      {kUrlB, blink::mojom::AdFrameType::kRootAd}};
+  std::set<GURL> ad_urls = {kUrlB};
 
   AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
 
@@ -3659,9 +3646,7 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
   const GURL kUrlB("http://b.com/");
   const GURL kUrlC("http://c.com/");
 
-  std::map<GURL, blink::mojom::AdFrameType> ad_urls = {
-      {kUrlB, blink::mojom::AdFrameType::kRootAd},
-      {kUrlC, blink::mojom::AdFrameType::kChildAd}};
+  std::set<GURL> ad_urls = {kUrlB, kUrlC};
 
   AdTaggingSimulator ad_tagging_simulator(ad_urls, contents());
 
@@ -3689,10 +3674,8 @@ TEST_P(RenderFrameHostManagerAdTaggingSignalTest, RemoteGrandchildAdTagSignal) {
 
   NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, grandchild_host);
 
-  EXPECT_EQ(subframe_node->current_replication_state().ad_frame_type,
-            blink::mojom::AdFrameType::kRootAd);
-  EXPECT_EQ(grandchild_node->current_replication_state().ad_frame_type,
-            blink::mojom::AdFrameType::kChildAd);
+  EXPECT_TRUE(subframe_node->current_replication_state().is_ad_subframe);
+  EXPECT_TRUE(grandchild_node->current_replication_state().is_ad_subframe);
   ExpectAdSubframeSignalForFrameProxy(proxy_to_main_frame, true);
 }
 

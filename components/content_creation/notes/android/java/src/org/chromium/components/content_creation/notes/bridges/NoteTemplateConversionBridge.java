@@ -48,10 +48,10 @@ public class NoteTemplateConversionBridge {
     }
 
     @CalledByNative
-    private static TextStyle createTextStyle(
-            String fontName, @ColorInt int fontColor, int weight, boolean allCaps, int alignment) {
-        return new TextStyle(
-                fontName, fontColor, weight, allCaps, TextAlignment.fromInteger(alignment));
+    private static TextStyle createTextStyle(String fontName, @ColorInt int fontColor, int weight,
+            boolean allCaps, int alignment, @ColorInt int highlightColor) {
+        return new TextStyle(fontName, fontColor, weight, allCaps,
+                TextAlignment.fromInteger(alignment), highlightColor);
     }
 
     @CalledByNative
@@ -66,10 +66,10 @@ public class NoteTemplateConversionBridge {
      */
     @CalledByNative
     private static NoteTemplate createTemplateAndMaybeAddToList(@Nullable List<NoteTemplate> list,
-            int id, String localizedName, Background mainBackground, TextStyle textStyle,
-            FooterStyle footerStyle) {
-        NoteTemplate template =
-                new NoteTemplate(id, localizedName, mainBackground, textStyle, footerStyle);
+            int id, String localizedName, Background mainBackground, Background contentBackground,
+            TextStyle textStyle, FooterStyle footerStyle) {
+        NoteTemplate template = new NoteTemplate(
+                id, localizedName, mainBackground, contentBackground, textStyle, footerStyle);
 
         if (list != null) {
             list.add(template);

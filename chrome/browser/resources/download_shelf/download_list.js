@@ -76,7 +76,10 @@ export class DownloadListElement extends CustomElement {
               this.items_.findIndex(item => item.id === downloadItem.id);
           if (index >= 0) {
             this.items_[index] = downloadItem;
-            this.updateElements_();
+            const element = this.elements_[index];
+            if (element) {
+              element.onDownloadUpdated(downloadItem);
+            }
           }
         }),
         callbackRouter.onDownloadErased.addListener((downloadId) => {
@@ -129,6 +132,7 @@ export class DownloadListElement extends CustomElement {
     });
   }
 
+  /** @private */
   clear_() {
     while (this.listenerIds_.length) {
       this.apiProxy_.getCallbackRouter().removeListener(

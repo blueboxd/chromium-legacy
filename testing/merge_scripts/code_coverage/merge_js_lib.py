@@ -194,7 +194,7 @@ def _merge_segments(segments_a, segments_b):
   return segments
 
 
-def _get_coverage_paths(input_dir):
+def _get_paths_with_suffix(input_dir, suffix):
   """Gets all JSON files in the input directory.
 
   Args:
@@ -208,7 +208,7 @@ def _get_coverage_paths(input_dir):
   for dir_path, _sub_dirs, file_names in os.walk(input_dir):
     paths.extend([
       os.path.join(dir_path, fn) for fn in file_names
-      if fn.endswith('.cov.json')
+      if fn.endswith(suffix)
     ])
   return paths
 
@@ -221,7 +221,7 @@ def merge_coverage_files(coverage_dir, output_path):
     output_path  (str): Path to the location to output merged coverage.
   """
   coverage_by_path = {}
-  json_files = _get_coverage_paths(coverage_dir)
+  json_files = _get_paths_with_suffix(coverage_dir, '.cov.json')
 
   if not json_files:
     logging.info('No JavaScript coverage files found in %s', coverage_dir)
@@ -258,3 +258,32 @@ def merge_coverage_files(coverage_dir, output_path):
 
   with open(output_path, 'w') as merged_coverage_file:
     return merged_coverage_file.write(json.dumps(coverage_by_path))
+
+
+def write_parsed_scripts(parsed_scripts_dir):
+  """Extract parsed script contents and write back to original folder structure.
+
+  Args:
+    parsed_scripts_dir (str): Directory that contains the raw JavaScript v8
+        coverage files that are identified by their ".js.json" suffix.
+  """
+  scripts = _get_paths_with_suffix(parsed_scripts_dir, '.js.json')
+  output_dir = os.path.join(parsed_scripts_dir, 'parsed')
+
+  if not scripts:
+    logging.info('No raw scripts found in %s', parsed_scripts_dir)
+    return
+
+  for file_path in scripts:
+    script_data = _parse_json_file(file_path)
+
+    if not script_data['url'].startswith('//'):
+      continue
+
+    source_path = os.path.normpath(script_data['url'].replace('//', ''))
+    source_directory = os.path.join(output_dir, os.path.dirname(source_path))
+    if not os.path.exists(source_directory):
+      os.makedirs(source_directory)
+
+    with open(os.path.join(output_dir, source_path), 'w') as f:
+      f.write(script_data['text'])

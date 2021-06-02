@@ -1682,8 +1682,8 @@
   },
   {
     "name": "enable-experimental-accessibility-dictation-extension",
-    "owners": [ "akihiroota" ],
-    "expiry_milestone": 92
+    "owners": [ "akihiroota", "katie" ],
+    "expiry_milestone": 96
   },
   {
     "name": "enable-experimental-accessibility-dictation-listening",
@@ -1693,7 +1693,7 @@
   {
     "name": "enable-experimental-accessibility-dictation-offline",
     "owners": [ "akihiroota", "katie" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 96
   },
   {
     "name": "enable-experimental-accessibility-labels",
@@ -2224,6 +2224,11 @@
     // This flag is used by network administrators to debug
     // network issues related to QUIC. It must not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-quick-action-search-widget-android",
+    "owners": [ "maxtauro@google.com", "ender@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "enable-quick-answers",

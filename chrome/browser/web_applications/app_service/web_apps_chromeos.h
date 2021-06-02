@@ -73,11 +73,6 @@ class WebAppsChromeOs : public WebAppsBase,
   void Initialize();
 
   // apps::mojom::Publisher overrides.
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           apps::mojom::WindowInfoPtr window_info) override;
   void Uninstall(const std::string& app_id,
                  apps::mojom::UninstallSource uninstall_source,
                  bool clear_site_data,
@@ -88,6 +83,10 @@ class WebAppsChromeOs : public WebAppsBase,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
+  void GetMenuModelFromWebAppProvider(const std::string& app_id,
+                                      apps::mojom::MenuType menu_type,
+                                      apps::mojom::MenuItemsPtr menu_items,
+                                      GetMenuModelCallback callback);
   // menu_type is stored as |shortcut_id|.
   void ExecuteContextMenuCommand(const std::string& app_id,
                                  int command_id,
@@ -154,11 +153,6 @@ class WebAppsChromeOs : public WebAppsBase,
   // equivalent ARC app is installed, add the Chrome app badge, otherwise,
   // remove the Chrome app badge.
   void ApplyChromeBadge(const std::string& arc_package_name);
-
-  // Launches an app in a way specified by |params|. If the app is a system web
-  // app, or not opened in tabs, saves the launch parameters.
-  content::WebContents* LaunchAppWithParams(
-      apps::AppLaunchParams params) override;
 
   bool Accepts(const std::string& app_id) override;
 

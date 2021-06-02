@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 
+#include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
@@ -141,6 +142,38 @@ bool ExternalVkImageFactory::CanImportGpuMemoryBuffer(
              ->GetVulkanImplementation()
              ->CanImportGpuMemoryBuffer(memory_buffer_type) ||
          memory_buffer_type == gfx::SHARED_MEMORY_BUFFER;
+}
+
+bool ExternalVkImageFactory::IsSupported(uint32_t usage,
+                                         viz::ResourceFormat format,
+                                         bool thread_safe,
+                                         gfx::GpuMemoryBufferType gmb_type,
+                                         GrContextType gr_context_type,
+                                         bool* allow_legacy_mailbox) {
+  if (gmb_type != gfx::EMPTY_BUFFER && !CanImportGpuMemoryBuffer(gmb_type)) {
+    return false;
+  }
+  // TODO(crbug.com/969114): Not all shared image factory implementations
+  // support concurrent read/write usage.
+  if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
+    return false;
+  }
+  if (thread_safe) {
+    LOG(ERROR) << "ExternalVkImageFactory currently do not support "
+                  "cross-thread usage.";
+    return false;
+  }
+
+#if defined(OS_ANDROID)
+  // Scanout on Android requires explicit fence synchronization which is only
+  // supported by the interop factory.
+  if (usage & SHARED_IMAGE_USAGE_SCANOUT) {
+    return false;
+  }
+#endif
+
+  *allow_legacy_mailbox = false;
+  return true;
 }
 
 }  // namespace gpu

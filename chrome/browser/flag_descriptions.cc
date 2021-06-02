@@ -1371,7 +1371,7 @@ const char kIncognitoClearBrowsingDataDialogForDesktopDescription[] =
     "which upon clicking would show a dialog to close all Incognito windows.";
 
 const char kUpdateHistoryEntryPointsInIncognitoName[] =
-    "Update history entry points in Incongito.";
+    "Update history entry points in Incognito.";
 const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
     "When enabled, the entry points to history UI from Incognito mode will be "
     "removed for iOS and Desktop. An educative placeholder will be shown for "
@@ -2042,6 +2042,11 @@ const char kPwaUpdateDialogForNameAndIconDescription[] =
 
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
+
+const char kQuickActionSearchWidgetAndroidName[] = "Quick Action Search Widget";
+const char kQuickActionSearchWidgetAndroidDescription[] =
+    "When enabled, the quick action search widget will be available to add to "
+    "the homescreen.";
 
 const char kQuietNotificationPromptsName[] =
     "Quieter notification permission prompts";

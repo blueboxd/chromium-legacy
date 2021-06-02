@@ -733,6 +733,29 @@ bool SharedImageBackingFactoryAHB::CanImportGpuMemoryBuffer(
   return memory_buffer_type == gfx::ANDROID_HARDWARE_BUFFER;
 }
 
+bool SharedImageBackingFactoryAHB::IsSupported(
+    uint32_t usage,
+    viz::ResourceFormat format,
+    bool thread_safe,
+    gfx::GpuMemoryBufferType gmb_type,
+    GrContextType gr_context_type,
+    bool* allow_legacy_mailbox) {
+  if (gmb_type != gfx::EMPTY_BUFFER && !CanImportGpuMemoryBuffer(gmb_type)) {
+    return false;
+  }
+  // TODO(crbug.com/969114): Not all shared image factory implementations
+  // support concurrent read/write usage.
+  if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
+    return false;
+  }
+  if (!IsFormatSupported(format)) {
+    return false;
+  }
+
+  *allow_legacy_mailbox = false;
+  return true;
+}
+
 bool SharedImageBackingFactoryAHB::IsFormatSupported(
     viz::ResourceFormat format) {
   DCHECK_GE(format, 0);

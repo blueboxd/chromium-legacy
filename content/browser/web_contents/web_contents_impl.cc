@@ -494,6 +494,24 @@ base::flat_set<WebContentsImpl*>* FullscreenContentsSet(
 bool IsWindowPlacementGranted(RenderFrameHost* host) {
   auto* controller =
       PermissionControllerImpl::FromBrowserContext(host->GetBrowserContext());
+
+  // If the frame's URL is about:blank, its origin may have been inherited.
+  // Unfortunately, many PermissionControllerDelegate implementations of
+  // `GetPermissionStatusForFrame()` use `GetLastCommittedURL()` which does not
+  // consider origin inheritance. In case the URL is about:blank, manually check
+  // the permission status ourselves by deriving a GURL from the Origin.
+  // TODO(crbug.com/698985): Resolve GetLastCommitted[URL|Origin]() usage and
+  // remove this workaround without regressing crbug.com/1210669.
+  if (host->GetLastCommittedURL().IsAboutBlank()) {
+    return controller &&
+           controller->GetPermissionStatus(
+               PermissionType::WINDOW_PLACEMENT,
+               host->GetLastCommittedOrigin().GetURL(),
+               host->GetMainFrame()->GetLastCommittedOrigin().GetURL()) ==
+               blink::mojom::PermissionStatus::GRANTED;
+  }
+
+  // TODO(crbug.com/698985): Resolve GetLastCommitted[URL|Origin]() usage.
   return controller && controller->GetPermissionStatusForFrame(
                            PermissionType::WINDOW_PLACEMENT, host,
                            host->GetLastCommittedURL()) ==
@@ -607,8 +625,8 @@ WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
                         rfh);
   if (!rfh)
     return nullptr;
-  if (!rfh->IsCurrent() && base::FeatureList::IsEnabled(
-                               kCheckWebContentsAccessFromNonCurrentFrame)) {
+  if (!rfh->IsActive() && base::FeatureList::IsEnabled(
+                              kCheckWebContentsAccessFromNonCurrentFrame)) {
     // TODO(crbug.com/1059903): return nullptr here eventually.
     base::debug::DumpWithoutCrashing();
   }
@@ -4434,7 +4452,7 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   // Prevent frames that are not active (e.g. a prerendering page) from opening
   // new windows, tabs, popups, etc.
   if (params.disposition != WindowOpenDisposition::CURRENT_TAB &&
-      source_render_frame_host && !source_render_frame_host->IsCurrent()) {
+      source_render_frame_host && !source_render_frame_host->IsActive()) {
     return nullptr;
   }
 
@@ -6135,13 +6153,19 @@ void WebContentsImpl::OpenColorChooser(
   color_chooser_ = std::make_unique<ColorChooser>(std::move(chooser_receiver),
                                                   std::move(client));
 
-  content::ColorChooser* new_color_chooser =
+  auto new_color_chooser = base::WrapUnique(
       delegate_ ? delegate_->OpenColorChooser(this, color, suggestions)
-                : nullptr;
-  color_chooser_->SetChooser(base::WrapUnique(new_color_chooser));
-
-  if (!new_color_chooser)
+                : nullptr);
+  if (color_chooser_ && new_color_chooser) {
+    color_chooser_->SetChooser(std::move(new_color_chooser));
+  } else if (new_color_chooser) {
+    // OpenColorChooser synchronously called back to DidEndColorChooser.
+    DCHECK(!color_chooser_);
+    new_color_chooser->End();
+  } else if (color_chooser_) {
+    DCHECK(!new_color_chooser);
     color_chooser_.reset();
+  }
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -6215,7 +6239,7 @@ void WebContentsImpl::UpdateFaviconURL(
   // navigation occurs while a page is still loading, the initial page
   // may stop loading and send us updated favicon URLs after the navigation
   // for the new page has committed.
-  if (!source->IsCurrent())
+  if (!source->IsActive())
     return;
 
   observers_.NotifyObservers(&WebContentsObserver::DidUpdateFaviconURL, source,
@@ -6762,7 +6786,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   javascript_dialog_dismiss_notifier_ =
       std::make_unique<JavaScriptDialogDismissNotifier>();
 
-  bool should_suppress = !render_frame_host->IsCurrent() ||
+  bool should_suppress = !render_frame_host->IsActive() ||
                          (delegate_ && delegate_->ShouldSuppressDialogs(this));
   bool has_non_devtools_handlers = delegate_ && dialog_manager_;
   bool has_handlers = page_handlers.size() || has_non_devtools_handlers;

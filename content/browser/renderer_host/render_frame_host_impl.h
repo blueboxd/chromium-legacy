@@ -354,7 +354,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsRenderFrameCreated() override;
   bool IsRenderFrameLive() override;
   LifecycleState GetLifecycleState() override;
-  bool IsCurrent() override;
+  bool IsActive() override;
   bool IsInactiveAndDisallowActivation() override;
   size_t GetProxyCount() override;
   bool HasSelection() override;
@@ -397,7 +397,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                   bool animate) override;
   bool Reload() override;
   bool IsDOMContentLoaded() override;
-  void UpdateAdFrameType(blink::mojom::AdFrameType ad_frame_type) override;
+  void UpdateIsAdSubframe(bool is_ad_subframe) override;
   blink::mojom::AuthenticatorStatus PerformGetAssertionWebAuthSecurityChecks(
       const std::string& relying_party_id,
       const url::Origin& effective_origin) override;

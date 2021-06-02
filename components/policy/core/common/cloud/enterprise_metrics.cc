@@ -189,8 +189,11 @@ const char kUMAPsmHashDanceDifferentResultsComparison[] =
     "Enterprise.AutoEnrollmentPsmHashDanceDifferentResultsComparison";
 const char kUMAPsmSuccessTime[] =
     "Enterprise.AutoEnrollmentPrivateSetMembershipSuccessTime";
-const char kUMAPsmRequestStatus[] =
-    "Enterprise.AutoEnrollmentPrivateSetMembershipRequestStatus";
+const char kUMAPsmResult[] = "Enterprise.AutoEnrollmentPsmResult";
+const char kUMAPsmNetworkErrorCode[] =
+    "Enterprise.AutoEnrollmentPsmRequestNetworkErrorCode";
+const char kUMAPsmDmServerRequestStatus[] =
+    "Enterprise.AutoEnrollmentPsmDmServerRequestStatus";
 
 const char kUMAHashDanceSuccessTime[] =
     "Enterprise.AutoEnrollmentHashDanceSuccessTime";

@@ -28,9 +28,9 @@ void TemplateStore::GetTemplates(GetTemplatesCallback callback) {
 }
 
 std::vector<NoteTemplate> TemplateStore::BuildTemplates() {
-  return {GetClassicTemplate(),    GetFreshTemplate(),
-          GetPowerfulTemplate(),   GetImpactfulTemplate(),
-          GetMonochromeTemplate(), GetBoldTemplate(),
+  return {GetClassicTemplate(),  GetFriendlyTemplate(),   GetFreshTemplate(),
+          GetPowerfulTemplate(), GetImpactfulTemplate(),  GetLovelyTemplate(),
+          GetGroovyTemplate(),   GetMonochromeTemplate(), GetBoldTemplate(),
           GetDreamyTemplate()};
 }
 

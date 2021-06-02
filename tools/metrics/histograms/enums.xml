@@ -17911,6 +17911,7 @@ Called by update_debug_scenarios.py.-->
      please refer to content/common/debug_utils.h. -->
 
   <int value="1" label="kDebugSameDocNavigationDocIdMismatch"/>
+  <int value="2" label="kDebugNonMainFrameWithOldPageInfo"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -32794,6 +32795,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3925" label="FontFaceLineGapOverride"/>
   <int value="3926" label="FontFaceSizeAdjust"/>
   <int value="3927" label="HiddenBackfaceWith3D"/>
+  <int value="3928" label="MainFrameNonSecurePrivateAddressSpace"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46431,6 +46433,7 @@ from previous Chrome versions.
   <int value="-835331907" label="TabOutlinesInLowContrastThemes:disabled"/>
   <int value="-835242361" label="OmniboxAdaptiveSuggestionsCount:enabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
+  <int value="-832806243" label="QuickActionSearchWidgetAndroid:disabled"/>
   <int value="-832780530" label="SecurePaymentConfirmationDebug:enabled"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
   <int value="-831066457" label="IncognitoBrandConsistencyForDesktop:disabled"/>
@@ -46683,6 +46686,7 @@ from previous Chrome versions.
   <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
+  <int value="-609034895" label="QuickActionSearchWidgetAndroid:enabled"/>
   <int value="-608775184" label="PasswordsWeaknessCheck:enabled"/>
   <int value="-608065163" label="PermissionChipRequestTypeSensitive:disabled"/>
   <int value="-607925721" label="WebViewVulkan:disabled"/>
@@ -50209,6 +50213,14 @@ from previous Chrome versions.
   <int value="1" label="kChangeEuidToMlServiceDBusFailed"/>
   <int value="2" label="kChangeEuidBackToRootFailed"/>
   <int value="3" label="kGetWorkerProcessMemoryUsageFailed"/>
+  <int value="4" label="kReapWorkerProcessMaxNumOfRetrialsExceeded"/>
+</enum>
+
+<enum name="MachineLearningServiceReapWorkerProcessErrno">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kECHILD"/>
+  <int value="2" label="kEINTR"/>
+  <int value="3" label="kEINVAL"/>
 </enum>
 
 <enum name="MachineLevelUserCloudPolicyEnrollmentResult">
@@ -59301,9 +59313,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="307" label="Restrict Sign In"/>
   <int value="308" label="Add To User Allowlist"/>
   <int value="309" label="Remove From User Allowlist"/>
-  <int value="310" label="Add Kerberos Ticket"/>
-  <int value="311" label="Remove Kerberos Ticket"/>
-  <int value="312" label="Set Active Kerberos Ticket"/>
+  <int value="310" label="Add Kerberos Ticket (Deprecated)"/>
+  <int value="311" label="Remove Kerberos Ticket (Deprecated)"/>
+  <int value="312" label="Set Active Kerberos Ticket (Deprecated)"/>
   <int value="313" label="Add Fingerprint"/>
   <int value="314" label="Remove Fingerprint"/>
   <int value="315" label="Set Up Parental Controls"/>
@@ -59445,7 +59457,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1705" label="Report an Issue"/>
   <int value="1706" label="View Terms of Service"/>
   <int value="1707" label="Open Diagnostics App"/>
-  <int value="1800" label="View Add Kerberos Ticket V2"/>
+  <int value="1800" label="Add Kerberos Ticket V2"/>
   <int value="1801" label="Remove Kerberos Ticket V2"/>
   <int value="1802" label="Set Active Kerberos Ticket V2"/>
 </enum>
@@ -59528,7 +59540,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="304" label="Security And Sign In"/>
   <int value="305" label="Fingerprint"/>
   <int value="306" label="Manage Other People"/>
-  <int value="307" label="Kerberos Accounts"/>
+  <int value="307" label="Kerberos Accounts (Deprecated)"/>
   <int value="400" label="Pointers"/>
   <int value="401" label="Keyboard"/>
   <int value="402" label="Stylus"/>
@@ -64826,6 +64838,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PrivateSetMembershipStatus">
+  <obsolete>
+    Deprecated since June 2021 and replaced with PsmResult.
+  </obsolete>
   <int value="0" label="Attempt"/>
   <int value="1" label="Successful Determination"/>
   <int value="2" label="Error"/>
@@ -65809,6 +65824,19 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="PsmHashDanceDifferentResultsComparison">
   <int value="0" label="Hash dance true and PSM false"/>
   <int value="1" label="PSM true and Hash dance false"/>
+</enum>
+
+<enum name="PsmResult">
+  <int value="0" label="Successful Determination"/>
+  <int value="1" label="Create RLWE client library Error"/>
+  <int value="2" label="Create RLWE OPRF request library error"/>
+  <int value="3" label="Create RLWE query request library error"/>
+  <int value="4" label="Processing query response library error"/>
+  <int value="5" label="Empty RLWE OPRF response error"/>
+  <int value="6" label="Empty RLWE query response Error"/>
+  <int value="7" label="Connection Error"/>
+  <int value="8" label="Server Error"/>
+  <int value="9" label="Timeout"/>
 </enum>
 
 <enum name="PublicKeyPinFailedDomain">
@@ -67110,9 +67138,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ReceiverAppTypeSet">
-  <int value="0" label="Other"/>
-  <int value="1" label="Web"/>
-  <int value="2" label="Android Tv and Web"/>
+  <int value="0" label="Web"/>
+  <int value="1" label="Android Tv and Web"/>
 </enum>
 
 <enum name="RecentTabsAction">

@@ -89,6 +89,15 @@ bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
          url.SchemeIsCryptographic();
 }
 
+bool CookieSettings::IsCookieAccessible(
+    const net::CanonicalCookie& cookie,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const absl::optional<url::Origin>& top_frame_origin) const {
+  // TODO(https://crbug.com/1203706): Rewrite this to look at the cookie itself.
+  return IsFullCookieAccessAllowed(url, site_for_cookies, top_frame_origin);
+}
+
 bool CookieSettings::ShouldAlwaysAllowCookies(
     const GURL& url,
     const GURL& first_party_url) const {
@@ -98,6 +107,14 @@ bool CookieSettings::ShouldAlwaysAllowCookies(
          (base::Contains(matching_scheme_cookies_allowed_schemes_,
                          url.scheme()) &&
           url.SchemeIs(first_party_url.scheme_piece()));
+}
+
+bool CookieSettings::IsPrivacyModeEnabled(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const absl::optional<url::Origin>& top_frame_origin) const {
+  // TODO(https://crbug.com/1203706): rewrite this to check proper conditions.
+  return !IsFullCookieAccessAllowed(url, site_for_cookies, top_frame_origin);
 }
 
 ContentSetting CookieSettings::GetCookieSettingInternal(

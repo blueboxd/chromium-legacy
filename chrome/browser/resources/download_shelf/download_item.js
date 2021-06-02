@@ -39,6 +39,9 @@ export class DownloadItemElement extends CustomElement {
     this.item_;
 
     /** @private {boolean} */
+    this.downloadUpdated_ = false;
+
+    /** @private {boolean} */
     this.opening_ = false;
 
     /** @property {boolean} */
@@ -51,11 +54,24 @@ export class DownloadItemElement extends CustomElement {
         .addEventListener('click', e => this.onOpenButtonClick_(e));
     this.$('#dropdown-button')
         .addEventListener('click', e => this.onDropdownButtonClick_(e));
-    this.$('#discard-button')
-        .addEventListener('click', e => this.onDiscardButtonClick_(e));
+    const discardButton = this.$('#discard-button');
+    discardButton.innerText = loadTimeData.getString('discardButtonText');
+    discardButton.addEventListener('click', e => this.onDiscardButtonClick_(e));
     this.$('#keep-button')
         .addEventListener('click', e => this.onKeepButtonClick_(e));
     this.addEventListener('contextmenu', e => this.onContextMenu_(e));
+
+    this.$('.progress-indicator').addEventListener('animationend', () => {
+      this.$('.progress-indicator')
+          .classList.remove('download-complete-animation');
+    });
+  }
+
+  /** @param {DownloadItem} item */
+  onDownloadUpdated(item) {
+    this.downloadUpdated_ = true;
+    this.item_ = item;
+    this.update_();
   }
 
   /** @param {DownloadItem} value */
@@ -73,8 +89,8 @@ export class DownloadItemElement extends CustomElement {
   }
 
   /**
-   * @private
    * @return {string}
+   * @private
    */
   get clampedWarningText_() {
     // Views uses ui/gfx/text_elider.cc to elide text given a maximum width.
@@ -120,18 +136,25 @@ export class DownloadItemElement extends CustomElement {
     statusTextElement.innerText = statusText;
 
     downloadElement.dataset.state = item.state;
-    switch (item.state) {
-      case DownloadState.kInProgress:
-        this.progress = item.totalBytes > 0 ?
-            Number(item.receivedBytes) / Number(item.totalBytes) :
-            0;
-        break;
-      case DownloadState.kComplete:
-        this.progress = 1;
-        break;
-      case DownloadState.kInterrupted:
-        this.progress = 0;
-        break;
+    if (item.mode === DownloadMode.kNormal) {
+      switch (item.state) {
+        case DownloadState.kInProgress:
+          this.progress = item.totalBytes > 0 ?
+              Number(item.receivedBytes) / Number(item.totalBytes) :
+              0;
+          break;
+        case DownloadState.kComplete:
+          this.progress = 1;
+          // Only start animation if it's called from OnDownloadUpdated.
+          if (this.downloadUpdated_) {
+            this.$('.progress-indicator')
+                .classList.add('download-complete-animation');
+          }
+          break;
+        case DownloadState.kInterrupted:
+          this.progress = 0;
+          break;
+      }
     }
 
     if (item.isPaused) {
@@ -156,6 +179,8 @@ export class DownloadItemElement extends CustomElement {
 
     this.$('#keep-button').innerText = item.warningConfirmButtonText;
     this.$('#warning-text').innerText = this.clampedWarningText_;
+
+    this.downloadUpdated_ = false;
   }
 
   /** @param {number} value */

@@ -40,4 +40,8 @@ Dumping matched rules:
     }
 Dumping inherited rules: 
     padding-top: 20px;
+*#parent-div* {    regular
+    width: 100px;
+    contain: size layout style;
+}
 

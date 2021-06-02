@@ -1,0 +1,51 @@
+The test verifies functionality of protocol method CSS.getMatchedStylesForNode and CSS.getInlineStylesForNode.
+{
+    error : {
+        code : -32000
+        message : Node is not an Element
+    }
+    id : <number>
+    sessionId : <string>
+}
+{
+    error : {
+        code : -32000
+        message : Node is not an Element
+    }
+    id : <number>
+    sessionId : <string>
+}
+Dumping inline style: 
+{
+    padding-top: 55px;
+    margin-top: 33px !important;
+}
+Dumping matched rules: 
+*#inspected* {    regular
+    margin-left: 10px !important;
+}
+*#inspected* {    regular
+    padding: 10px 20px 30px 40px;
+    padding-top: 50px;
+    padding-right: 20px;
+    padding-bottom: 30px;
+    padding-left: 40px;
+}
+@media (min-width: 1px)
+    *#inspected* {    regular
+        padding-left: 5px;
+        margin-left: 20px;
+        padding-left: 10px;
+        margin-top: 15px !important;
+    }
+@container (min-width: 50px)
+    *#inspected* {    regular
+        padding-right: 10px;
+    }
+Dumping inherited rules: 
+    padding-top: 20px;
+*#parent-div* {    regular
+    width: 100px;
+    contain: size layout style;
+}
+

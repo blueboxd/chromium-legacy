@@ -370,10 +370,14 @@ void NGSvgTextLayoutAlgorithm::ResolveTextLength(
     float length_adjust_scale = text_length / (max_position - min_position);
     for (wtf_size_t k = i; k < j_plus_1; ++k) {
       SvgPerCharacterInfo& info = result_[k];
+      float original_x = *info.x;
+      float original_y = *info.y;
       if (horizontal_)
         *info.x = min_position + (*info.x - min_position) * length_adjust_scale;
       else
         *info.y = min_position + (*info.y - min_position) * length_adjust_scale;
+      info.text_length_shift_x += *info.x - original_x;
+      info.text_length_shift_y += *info.y - original_y;
       if (!info.middle && !info.text_length_resolved) {
         info.length_adjust_scale = length_adjust_scale;
         info.inline_size *= length_adjust_scale;
@@ -401,14 +405,29 @@ void NGSvgTextLayoutAlgorithm::ResolveTextLength(
     // 2.4.5. Let shift = 0.
     shift = 0.0f;
     // 2.4.6. For each index k in the range [i,j]:
-    for (wtf_size_t k = i; k < j_plus_1; ++k) {
+    //  ==> This loop should run in visual order.
+    Vector<wtf_size_t> visual_indexes;
+    visual_indexes.ReserveCapacity(j_plus_1 - i);
+    for (wtf_size_t k = i; k < j_plus_1; ++k)
+      visual_indexes.push_back(k);
+    if (inline_node_.IsBidiEnabled()) {
+      std::sort(visual_indexes.begin(), visual_indexes.end(),
+                [&](wtf_size_t a, wtf_size_t b) {
+                  return result_[a].item_index < result_[b].item_index;
+                });
+    }
+
+    for (wtf_size_t k : visual_indexes) {
       SvgPerCharacterInfo& info = result_[k];
       // 2.4.6.1. Add shift to the x coordinate of the position in result[k], if
       // the "horizontal" flag is true, and to the y coordinate otherwise.
-      if (horizontal_)
+      if (horizontal_) {
         *info.x += shift;
-      else
+        info.text_length_shift_x += shift;
+      } else {
         *info.y += shift;
+        info.text_length_shift_y += shift;
+      }
       // 2.4.6.2. If the "middle" flag for result[k] is not true and k is not a
       // character in a resolved descendant node other than the first character
       // then shift = shift + small-delta.
@@ -448,6 +467,14 @@ void NGSvgTextLayoutAlgorithm::ResolveTextLength(
 
 void NGSvgTextLayoutAlgorithm::AdjustPositionsXY(
     const NGFragmentItemsBuilder::ItemWithOffsetList& items) {
+  // This function moves characters to
+  //   <position specified by x/y attributes>
+  //   + <shift specified by dx/dy attributes>
+  //   + <baseline-shift done in the inline layout>
+  // css_positions_[i].Y() for horizontal_ or css_positions_[i].X() for
+  // !horizontal_ represents baseline-shift because the block offsets of the
+  // normal baseline is 0.
+
   // 1. Let shift be the current adjustment due to the ‘x’ and ‘y’ attributes,
   // initialized to (0,0).
   FloatPoint shift;
@@ -461,13 +488,23 @@ void NGSvgTextLayoutAlgorithm::AdjustPositionsXY(
     // 3.1. If resolved_x[index] is set, then let
     // shift.x = resolved_x[index] − result.x[index].
     // https://github.com/w3c/svgwg/issues/845
-    if (resolve.HasX())
-      shift.SetX(resolve.x * scaling_factor - css_positions_[i].X());
+    if (resolve.HasX()) {
+      shift.SetX(resolve.x * scaling_factor - css_positions_[i].X() -
+                 result_[i].text_length_shift_x);
+      // Take into account of baseline-shift.
+      if (!horizontal_)
+        shift.SetX(shift.X() + css_positions_[i].X());
+    }
     // 3.2. If resolved_y[index] is set, then let
     // shift.y = resolved_y[index] − result.y[index].
     // https://github.com/w3c/svgwg/issues/845
-    if (resolve.HasY())
-      shift.SetY(resolve.y * scaling_factor - css_positions_[i].Y());
+    if (resolve.HasY()) {
+      shift.SetY(resolve.y * scaling_factor - css_positions_[i].Y() -
+                 result_[i].text_length_shift_y);
+      // Take into account of baseline-shift.
+      if (horizontal_)
+        shift.SetY(shift.Y() + css_positions_[i].Y());
+    }
 
     // If this character is the first one in a <textPath>, reset the
     // block-direction shift.

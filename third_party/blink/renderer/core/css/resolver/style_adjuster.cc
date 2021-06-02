@@ -237,7 +237,7 @@ void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyle& style) {
   DCHECK_EQ(style.Display(), EDisplay::kInlineBlock);
   // Set box sizes
   const Font& font = style.GetFont();
-  DCHECK(font.GetFontDescription().IsVerticalAnyUpright());
+  DCHECK(font.GetFontDescription().IsVerticalBaseline());
   const auto one_em = style.ComputedFontSizeAsFixed();
   const auto line_height = style.GetFontHeight().LineHeight();
   const auto size =
@@ -809,6 +809,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // Columns don't apply to svg text elements.
     if (IsA<SVGTextElement>(*element))
       style.ClearMultiCol();
+
+    // TODO(crbug.com/1179585): Copy DominantBaseline to CssDominantBaseline
+    // with some adjustments.
   } else if (element && element->IsMathMLElement()) {
     if (style.Display() == EDisplay::kContents) {
       // https://drafts.csswg.org/css-display/#unbox-mathml

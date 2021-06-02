@@ -411,7 +411,7 @@ const base::Feature kClipboardHistoryScreenshotNudge{
 // Enables copying an image to the system clipboard to support pasting onto
 // different surfaces
 const base::Feature kEnableFilesAppCopyImage{"EnableFilesAppCopyImage",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable a D-Bus service for accessing gesture properties.
 const base::Feature kGesturePropertiesDBusService{
@@ -441,7 +441,7 @@ const base::Feature kHelpAppSearchServiceIntegration{
 
 // Enable or disable IME decoder via Mojo connection on Chrome OS.
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable system emoji picker.
 const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",

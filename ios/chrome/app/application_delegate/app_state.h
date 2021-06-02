@@ -97,6 +97,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // The initialization stage the app is currently at.
 @property(nonatomic, readonly) InitStage initStage;
 
+// This flag is set when the first scene has initialized its UI and never
+// resets.
+@property(nonatomic, readonly) BOOL firstSceneHasInitializedUI;
+
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch
 // the browser.
@@ -157,6 +161,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 // Adds an observer to this app state. The observers will be notified about
 // app state changes per AppStateObserver protocol.
+// The observer will be *immediately* notified about the latest init stage
+// transition, if any such transitions happened (didTransitionFromInitStage),
+// before this method returns.
 - (void)addObserver:(id<AppStateObserver>)observer;
 // Removes the observer. It's safe to call this at any time, including from
 // AppStateObserver callbacks.

@@ -4,22 +4,31 @@
 
 #include "chrome/browser/web_applications/web_app.h"
 
+#include <string>
+
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
 namespace {
 
+// Presubmits and IDEs don't like whitespace at the end of lines.
+std::string RemoveTrailingWhitespace(std::string str) {
+  RE2::GlobalReplace(&str, "\\s+\\n", "\n");
+  return str;
+}
+
 std::string WebAppToPlatformAgnosticString(std::unique_ptr<WebApp> web_app) {
   // Force this to be nullopt to avoid platform specific differences.
   web_app->SetWebAppChromeOsData(absl::nullopt);
   std::stringstream ss;
   ss << *web_app;
-  return ss.str();
+  return RemoveTrailingWhitespace(ss.str());
 }
 
 }  // namespace
@@ -148,28 +157,28 @@ TEST(WebAppTest, EmptyAppToDebugString) {
       WebAppToPlatformAgnosticString(std::make_unique<WebApp>("empty_app"));
   EXPECT_EQ(debug_string,
             R"(app_id: empty_app
-manifest_url: 
+manifest_url:
 manifest_id: nullopt
-name: 
-start_url: 
+name:
+start_url:
 launch_query_params: nullopt
-scope: 
+scope:
 theme_color: none
 background_color: none
-display_mode: 
+display_mode:
 display_override:
-user_display_mode: 
+user_display_mode:
 user_page_ordinal: INVALID[]
 user_launch_ordinal: INVALID[]
 sources:
 is_locally_installed: 1
 is_in_sync_install: 0
 sync_fallback_data:
-  name: 
+  name:
   theme_color: none
-  scope: 
+  scope:
   icon_infos:
-description: 
+description:
 last_badging_time: 1601-01-01 00:00:00.000 UTC
 last_launch_time: 1601-01-01 00:00:00.000 UTC
 install_time: 1601-01-01 00:00:00.000 UTC
@@ -187,8 +196,8 @@ share_target:
   nullopt
 additional_search_terms:
 protocol_handlers:
-note_taking_new_note_url: 
 url_handlers:
+note_taking_new_note_url:
 capture_links: kUndefined
 chromeos_data:
   nullopt
@@ -249,38 +258,54 @@ downloaded_icon_sizes_any: 256
 downloaded_icon_sizes_monochrome: 256
 downloaded_icon_sizes_maskable:
 shortcuts_menu_item_infos:
-  name: shortcut24741963851
-    url: https://example.com/scope1234/shortcut24741963851
+  name: shortcut29001084322
+    url: https://example.com/scope1234/shortcut29001084322
     icons:
       any:
       maskable:
-        url: https://example.com/shortcuts/icon247419638512
-        square_size_px: 28
+        url: https://example.com/shortcuts/icon290010843223
+        square_size_px: 30
+        url: https://example.com/shortcuts/icon290010843221
+        square_size_px: 15
       monochrome:
-        url: https://example.com/shortcuts/icon247419638511
-        square_size_px: 11
-        url: https://example.com/shortcuts/icon247419638510
-        square_size_px: 1
-  name: shortcut24741963850
-    url: https://example.com/scope1234/shortcut24741963850
+        url: https://example.com/shortcuts/icon290010843222
+        square_size_px: 23
+        url: https://example.com/shortcuts/icon290010843220
+        square_size_px: 8
+  name: shortcut29001084321
+    url: https://example.com/scope1234/shortcut29001084321
     icons:
       any:
+        url: https://example.com/shortcuts/icon290010843210
+        square_size_px: 4
       maskable:
-        url: https://example.com/shortcuts/icon247419638500
-        square_size_px: 9
+        url: https://example.com/shortcuts/icon290010843212
+        square_size_px: 24
+        url: https://example.com/shortcuts/icon290010843211
+        square_size_px: 19
       monochrome:
-        url: https://example.com/shortcuts/icon247419638501
-        square_size_px: 18
+  name: shortcut29001084320
+    url: https://example.com/scope1234/shortcut29001084320
+    icons:
+      any:
+        url: https://example.com/shortcuts/icon290010843200
+        square_size_px: 0
+      maskable:
+      monochrome:
+        url: https://example.com/shortcuts/icon290010843202
+        square_size_px: 23
+        url: https://example.com/shortcuts/icon290010843201
+        square_size_px: 16
 downloaded_shortcuts_menu_icons_sizes:
   index: 0:
     any:
     maskable:
   index: 1:
-    any: 58
-    maskable: 160
+    any: 118
+    maskable: 38
   index: 2:
-    any: 113 90
-    maskable: 77 109
+    any: 80 47
+    maskable: 240 164
 file_handlers:
   action: https://example.com/open-13087720410
     accept:
@@ -322,16 +347,12 @@ share_target:
   nullopt
 additional_search_terms:
   Foo_1234_0
-  Foo_1234_1
-  Foo_1234_2
-  Foo_1234_3
 protocol_handlers:
   protocol: web+test244307310 url: https://example.com/244307310
   protocol: web+test244307311 url: https://example.com/244307311
   protocol: web+test244307312 url: https://example.com/244307312
   protocol: web+test244307313 url: https://example.com/244307313
   protocol: web+test244307314 url: https://example.com/244307314
-note_taking_new_note_url: 
 url_handlers:
   origin: https://app-9974471690.com
     has_origin_wildcard: true
@@ -345,6 +366,7 @@ url_handlers:
     has_origin_wildcard: true
     paths:
     exclude_paths:
+note_taking_new_note_url:
 capture_links: kNewClient
 chromeos_data:
   nullopt

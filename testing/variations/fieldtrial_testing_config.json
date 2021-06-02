@@ -1277,34 +1277,6 @@
             ]
         }
     ],
-    "BlinkSchedulerPerAgentSchedulingStudy": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "best-effort_timer-queues_until_onload",
-                    "params": {
-                        "delay_ms": "0",
-                        "method": "best-effort",
-                        "queues": "timer-queues",
-                        "signal": "onload"
-                    },
-                    "enable_features": [
-                        "BlinkSchedulerPerAgentSchedulingExperiments"
-                    ]
-                }
-            ]
-        }
-    ],
     "BrowserJankinessProfiling": [
         {
             "platforms": [
@@ -3584,6 +3556,25 @@
             ]
         }
     ],
+    "ForceAccountIdMigration": [
+        {
+            "platforms": [
+                "android",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ForceAccountIdMigration"
+                    ]
+                }
+            ]
+        }
+    ],
     "ForceSynchronousHTMLParsing": [
         {
             "platforms": [
@@ -5768,6 +5759,29 @@
                     "enable_features": [
                         "PageInfoDiscoverability"
                     ]
+                }
+            ]
+        }
+    ],
+    "PageInfoIPH": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": ">=14",
+                        "event_1": "name:permission_request_shown;comparator:>=3;window:90;storage:90",
+                        "event_trigger": "name:page_info_iph_triggered;comparator:==0;window:90;storage:90",
+                        "event_used": "name:page_info_opened;comparator:==0;window:90;storage:90",
+                        "session_rate": "<1"
+                    },
+                    "enable_features": [
+                        "IPH_PageInfo"
+                    ],
+                    "disable_features": []
                 }
             ]
         }

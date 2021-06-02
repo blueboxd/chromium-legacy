@@ -555,7 +555,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             super.initializeCompositor();
 
             // LocaleManager can only function after the native library is loaded.
-            mLocaleManager = AppHooks.get().getLocaleManager();
+            mLocaleManager = LocaleManager.getInstance();
             mLocaleManager.setSettingsLauncher(SETTINGS_LAUNCHER);
             mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
 
@@ -667,8 +667,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         if (getCompositorViewHolder() == null) return null;
                         return getCompositorViewHolder().getLayerTitleCache();
                     },
-                    mOverviewModeBehaviorSupplier, mLayoutStateProviderOneshotSupplier,
+                    mOverviewModeBehaviorSupplier,
                     mRootUiCoordinator::getTopUiThemeColorProvider);
+            mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
         }
@@ -686,8 +687,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         if (getCompositorViewHolder() == null) return null;
                         return getCompositorViewHolder().getLayerTitleCache();
                     },
-                    mOverviewModeBehaviorSupplier, mLayoutStateProviderOneshotSupplier,
+                    mOverviewModeBehaviorSupplier,
                     mRootUiCoordinator::getTopUiThemeColorProvider);
+            mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
         }

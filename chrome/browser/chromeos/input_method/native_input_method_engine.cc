@@ -520,6 +520,11 @@ void NativeInputMethodEngine::ImeObserver::OnAssistiveWindowButtonClicked(
     case ui::ime::ButtonId::kUndo:
       autocorrect_manager_->UndoAutocorrect();
       break;
+    case ui::ime::ButtonId::kIgnoreSuggestion:
+      if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
+        grammar_manager_->IgnoreSuggestion();
+      }
+      break;
     case ui::ime::ButtonId::kAddToDictionary:
     case ui::ime::ButtonId::kNone:
       ime_base_observer_->OnAssistiveWindowButtonClicked(button);

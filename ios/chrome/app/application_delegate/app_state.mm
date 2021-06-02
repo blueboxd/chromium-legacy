@@ -31,6 +31,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/browsing_data/sessions_storage_util.h"
 #include "ios/chrome/browser/chrome_constants.h"
+#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #include "ios/chrome/browser/crash_report/features.h"
@@ -129,7 +130,7 @@ const NSTimeInterval kMemoryFootprintRecordingTimeInterval = 5;
 // never reset.
 @property(nonatomic, assign) BOOL firstSceneHasActivated;
 
-// This flag is set when the first scene has initialized its UI and never reset.
+// Redefined as readwrite.
 @property(nonatomic, assign) BOOL firstSceneHasInitializedUI;
 
 // The current blocker target if any.
@@ -221,6 +222,15 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)setInitStage:(InitStage)newInitStage {
   DCHECK(newInitStage >= InitStageStart);
   DCHECK(newInitStage <= InitStageFinal);
+  // As of writing this, it seems reasonable for init stages to be strictly
+  // incremented by one only: if a stage needs to be skipped, it can just be a
+  // no-op, but the observers will get a chance to react to it normally. If in
+  // the future these need to be skipped, or go backwards:
+  // 1. Check that all observers will support this change
+  // 2. Keep the previous init stage and modify addObserver: code to send the
+  // previous init stage instead.
+  DCHECK(newInitStage == _initStage + 1 ||
+         (newInitStage == InitStageStart && _initStage == InitStageStart));
   // It's probably a programming error to set the same init stage twice, except
   // for InitStageStart to kick off the startup.
   DCHECK(newInitStage == InitStageStart || _initStage != newInitStage);
@@ -245,11 +255,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     return;
   }
   _applicationInBackground = YES;
-
-  if (self.mainBrowserState) {
-    AuthenticationServiceFactory::GetForBrowserState(self.mainBrowserState)
-        ->OnApplicationDidEnterBackground();
-  }
 
   crash_keys::SetCurrentlyInBackground(true);
 
@@ -481,6 +486,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     [sessionIDs addObject:session.persistentIdentifier];
   }
   sessions_storage_util::MarkSessionsForRemoval(sessionIDs);
+  crash_keys::SetConnectedScenesCount([self connectedScenes].count);
 }
 
 - (void)willResignActiveTabModel {
@@ -532,8 +538,16 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   self.shouldPerformAdditionalDelegateHandling = !URLHandled;
 }
 
-- (void)addObserver:(id<SceneStateObserver>)observer {
+- (void)addObserver:(id<AppStateObserver>)observer {
   [self.observers addObserver:observer];
+
+  if ([observer respondsToSelector:@selector(appState:
+                                       didTransitionFromInitStage:)] &&
+      self.initStage > InitStageStart) {
+    InitStage previousInitStage = static_cast<InitStage>(self.initStage - 1);
+    // Trigger an update on the newly added agent.
+    [observer appState:self didTransitionFromInitStage:previousInitStage];
+  }
 }
 
 - (void)removeObserver:(id<SceneStateObserver>)observer {
@@ -728,6 +742,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     sceneState.presentingModalOverlay =
         (self.uiBlockerTarget != nil) && (self.uiBlockerTarget != sceneState);
   }
+  crash_keys::SetForegroundScenesCount([self foregroundScenes].count);
 }
 
 #pragma mark - Scenes lifecycle
@@ -743,6 +758,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     DCHECK(sceneState);
 
     [self.observers appState:self sceneConnected:sceneState];
+    crash_keys::SetConnectedScenesCount([self connectedScenes].count);
   }
 }
 

@@ -116,6 +116,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     virtual void SetRequireServiceToGetProperties(
         bool require_service_to_get_properties) = 0;
 
+    // Sets a fake traffic counters that can be used in tests.
+    virtual void SetFakeTrafficCounters(base::Value fake_traffic_counters) = 0;
+
    protected:
     virtual ~TestInterface() {}
   };
@@ -218,6 +221,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
   virtual void RequestTrafficCounters(const dbus::ObjectPath& service_path,
                                       ListValueCallback callback,
                                       ErrorCallback error_callback) = 0;
+
+  // Calls the ResetTrafficCounters method.
+  // |callback| is called after the method call succeeds.
+  virtual void ResetTrafficCounters(const dbus::ObjectPath& service_path,
+                                    base::OnceClosure callback,
+                                    ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

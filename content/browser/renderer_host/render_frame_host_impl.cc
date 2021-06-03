@@ -43,6 +43,7 @@
 #include "base/trace_event/optional_trace_event.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/traced_value.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -1819,8 +1820,8 @@ RenderFrameHostImpl* RenderFrameHostImpl::GetParent() {
   return parent_;
 }
 
-PageImpl* RenderFrameHostImpl::GetPage() {
-  return GetMainFrame()->document_associated_data_->owned_page.get();
+PageImpl& RenderFrameHostImpl::GetPage() {
+  return *GetMainFrame()->document_associated_data_->owned_page.get();
 }
 
 std::vector<RenderFrameHost*> RenderFrameHostImpl::GetFramesInSubtree() {
@@ -4314,8 +4315,8 @@ void RenderFrameHostImpl::RunBeforeUnloadConfirm(
 void RenderFrameHostImpl::UpdateFaviconURL(
     std::vector<blink::mojom::FaviconURLPtr> favicon_urls) {
   DCHECK(!GetParent());
-  GetPage()->set_favicon_urls(std::move(favicon_urls));
-  delegate_->UpdateFaviconURL(this, GetPage()->favicon_urls());
+  GetPage().set_favicon_urls(std::move(favicon_urls));
+  delegate_->UpdateFaviconURL(this, GetPage().favicon_urls());
 }
 
 void RenderFrameHostImpl::ScaleFactorChanged(float scale) {
@@ -4388,7 +4389,7 @@ void RenderFrameHostImpl::SetWindowRect(const gfx::Rect& bounds,
 void RenderFrameHostImpl::UpdateManifestURL(
     const absl::optional<GURL>& manifest_url) {
   DCHECK(!GetParent());
-  GetPage()->update_manifest_url(manifest_url.value_or(GURL()));
+  GetPage().update_manifest_url(manifest_url.value_or(GURL()));
 }
 
 void RenderFrameHostImpl::DownloadURL(
@@ -5108,7 +5109,7 @@ void RenderFrameHostImpl::HandleAccessibilityFindInPageTermination() {
 
 // TODO(crbug.com/1213863): Move this method to content::PageImpl.
 void RenderFrameHostImpl::DocumentOnLoadCompleted() {
-  GetPage()->set_is_on_load_completed(true);
+  GetPage().set_is_on_load_completed(true);
   // This message is only sent for top-level frames.
   //
   // TODO(avi): when frame tree mirroring works correctly, add a check here
@@ -8508,9 +8509,17 @@ void RenderFrameHostImpl::ActivateForPrerendering() {
   DCHECK(!is_notifying_activation_for_prerendering_);
   is_notifying_activation_for_prerendering_ = true;
 
+  // Currently cross origin iframes are deferred. So the origin must be same
+  // as the main frame's origin. But if we will decide not to defer the cross
+  // origin iframes, we need to remove the DCHECK_EQ and change the code not
+  // to send |activation_start_time_for_prerendering| to the renderer.
+  DCHECK_EQ(GetLastCommittedOrigin(), GetMainFrame()->GetLastCommittedOrigin());
+
   // Notify the renderer of activation to update the prerendering state and
   // dispatch the prerenderingchange event.
-  GetAssociatedLocalFrame()->ActivateForPrerendering();
+  GetAssociatedLocalFrame()->ActivateForPrerendering(
+      *GetMainFrame()
+           ->document_associated_data_->activation_start_time_for_prerendering);
 
   for (auto& child : children_)
     child->current_frame_host()->ActivateForPrerendering();
@@ -9609,6 +9618,25 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     DCHECK_EQ(navigation_request->is_overriding_user_agent() &&
                   frame_tree_node_->IsMainFrame(),
               params->is_overriding_user_agent);
+    if (navigation_request->IsPrerenderedPageActivation()) {
+      DCHECK(blink::features::IsPrerender2Enabled());
+      // Set the NavigationStart time for
+      // PerformanceNavigationTiming.activationStart.
+      // https://jeremyroman.github.io/alternate-loading-modes/#performance-navigation-timing-extension
+
+      // Currently, prerendering is only supported on same-origin pages. When
+      // supporting cross-origin prerendering (https://crbug.com/1176054), we
+      // need to change this CHECK to "if ()" not to send the activation start
+      // time to the prerendering page so that it is not used to send
+      // identifiers between origins.
+      CHECK_EQ(GetLastCommittedOrigin(),
+               navigation_request->GetOriginForURLLoaderFactory());
+      DCHECK(
+          !document_associated_data_->activation_start_time_for_prerendering);
+      document_associated_data_->activation_start_time_for_prerendering =
+          navigation_request->NavigationStart();
+    }
+
   } else {
     DCHECK_EQ(is_overriding_user_agent_, params->is_overriding_user_agent);
   }
@@ -10952,9 +10980,9 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   auto can_store =
       frame_tree()->controller().GetBackForwardCache().CanStorePageNow(
           top_document);
-  TRACE_EVENT1("navigation",
-               "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
-               "can_store", can_store.ToString());
+  TRACE_EVENT("navigation",
+              "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
+              "render_frame_host", this, "can_store", can_store.ToString());
 
   if (can_store)
     return;
@@ -11349,18 +11377,13 @@ void RenderFrameHostImpl::DisableWebRtcEventLogOutput(int lid) {
 }
 
 bool RenderFrameHostImpl::IsDocumentOnLoadCompletedInMainFrame() {
-  return GetPage()->is_on_load_completed();
-}
-
-// TODO(crbug.com/1192003): Move this method to content::Page when available.
-const GURL& RenderFrameHostImpl::ManifestURL() {
-  return GetPage()->manifest_url();
+  return GetPage().is_on_load_completed();
 }
 
 // TODO(crbug.com/1192003): Move this method to content::Page when available.
 const std::vector<blink::mojom::FaviconURLPtr>&
 RenderFrameHostImpl::FaviconURLs() {
-  return GetPage()->favicon_urls();
+  return GetPage().favicon_urls();
 }
 
 mojo::PendingRemote<network::mojom::CookieAccessObserver>

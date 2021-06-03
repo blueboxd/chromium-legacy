@@ -479,15 +479,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationInitiatorNavigateAway) {
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
 }
 
-// TODO(https://crbug.com/1214964): Test this case with speculationrules.
 // Tests that prerendering triggered by prerendered pages is deferred until
 // activation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderChain) {
   // kInitialUrl prerenders kPrerenderChain1, then kPrerenderChain1 prerenders
   // kPrerenderChain2.
-  const GURL kInitialUrl = GetUrl("/prerender/prerender_chain.html?1");
-  const GURL kPrerenderChain1 = GetUrl("/prerender/prerender_chain.html?2");
-  const GURL kPrerenderChain2 = GetUrl("/prerender/prerender_chain.html?3");
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderChain1 = GetUrl("/prerender/prerender_chain.html?1");
+  const GURL kPrerenderChain2 = GetUrl("/prerender/prerender_chain.html?2");
 
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -499,8 +498,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderChain) {
   EXPECT_TRUE(AddTestUtilJS(prerender_host));
 
   // Add a prerender trigger to the prerendering page.
-  ExecuteScriptAsync(prerender_host,
-                     JsReplace("add_prerender($1)", kPrerenderChain2));
+  EXPECT_TRUE(ExecJs(prerender_host,
+                     JsReplace("add_speculation_rules($1)", kPrerenderChain2)));
+
+  // Speculation rules is processed by the idle task runner in Blink. To ensure
+  // the speculation candidates has been sent by renderer processes, we should
+  // wait until this runner finishes all tasks.
+  EXPECT_TRUE(ExecJs(prerender_host, R"(
+    const idlePromise = new Promise(resolve => requestIdleCallback(resolve));
+    idlePromise;
+  )"));
 
   // Start a navigation request that should not be deferred, and wait it to
   // reach the server. If the prerender request for kPrerenderChain2 is not
@@ -508,7 +515,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderChain) {
   // earlier than the non-deferred one, so we can wait until the latest request
   // reaches the sever to prove that the prerender request for kPrerenderChain2
   // is deferred.
-  ExecuteScriptAsync(prerender_host, "add_iframe_async('/title1.html')");
+  EXPECT_TRUE(ExecJs(prerender_host, "add_iframe_async('/title1.html')",
+                     EvalJsOptions::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
   WaitForRequest(GetUrl("/title1.html"), 1);
 
   // The prerender requests were deferred by Mojo capability control, so
@@ -546,81 +554,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CloseOnPrerendering) {
 
   // Should not crash.
   shell()->Close();
-}
-
-// TODO(https://crbug.com/1214964): Test this case in
-// SpeculationRuleSetTest.DropUnrecognizedRules since non-http(s) speculation
-// candidates are ignored in Blink.
-// Tests that non-http(s) schemes are disallowed for prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, HttpToBlobUrl) {
-  base::HistogramTester histogram_tester;
-
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  // Generate a Blob page and obtain a URL for the Blob page.
-  const char kCreateBlobUrlScript[] =
-      "URL.createObjectURL("
-      "new Blob([\"<h1>hello blob</h1>\"], { type: 'text/html' }));";
-  const std::string blob_url =
-      EvalJs(web_contents(), kCreateBlobUrlScript).ExtractString();
-  const GURL blob_gurl(blob_url);
-
-  // Add <link rel=prerender> that will prerender the Blob page.
-  test::PrerenderHostRegistryObserver observer(*web_contents_impl());
-  AddLinkRelPrerenderAsync(blob_gurl);
-  observer.WaitForTrigger(blob_gurl);
-
-  // A prerender host for the URL should not be registered.
-  EXPECT_FALSE(HasHostForUrl(blob_gurl));
-  histogram_tester.ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderHostFinalStatus",
-      PrerenderHost::FinalStatus::kInvalidSchemeNavigation, 1);
-}
-
-// TODO(https://crbug.com/1214964): Test this case in
-// SpeculationRuleSetTest.DropUnrecognizedRules since non-http(s) speculation
-// candidates are ignored in Blink.
-// Tests that non-http(s) schemes are disallowed for prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, BlobUrlToBlobUrl) {
-  base::HistogramTester histogram_tester;
-
-  // Navigate to an initial page.
-  // This test can not use `about:blank` as the initial url because created
-  // blobs inside the page are populated as opaque and blob to blob prerendering
-  // are alerted as cross-origin prerendering.
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  // Navigate to a dynamically constructed Blob page.
-  const char kCreateBlobUrlScript[] =
-      "URL.createObjectURL(new Blob([\"<script>"
-      "function add_prerender(url) {"
-      "  const link = document.createElement('link');"
-      "  link.rel = 'prerender';"
-      "  link.href= url;"
-      "  document.head.appendChild(link);"
-      "}"
-      "</script>\"], { type: 'text/html' }));";
-  const std::string initial_blob_url =
-      EvalJs(web_contents(), kCreateBlobUrlScript).ExtractString();
-  ASSERT_TRUE(NavigateToURL(shell(), GURL(initial_blob_url)));
-
-  // Create another Blob URL inside the Blob page.
-  const std::string blob_url =
-      EvalJs(web_contents(), kCreateBlobUrlScript).ExtractString();
-  const GURL blob_gurl(blob_url);
-
-  // Add <link rel=prerender> that will prerender the Blob page.
-  test::PrerenderHostRegistryObserver observer(*web_contents_impl());
-  EXPECT_TRUE(ExecJs(web_contents(), JsReplace("add_prerender($1)", blob_url)));
-  observer.WaitForTrigger(blob_gurl);
-
-  // A prerender host for the URL should not be registered.
-  EXPECT_FALSE(HasHostForUrl(blob_gurl));
-  histogram_tester.ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderHostFinalStatus",
-      PrerenderHost::FinalStatus::kInvalidSchemeNavigation, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SameOriginRedirection) {
@@ -751,12 +684,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   const char kCurrentDocumentPrerenderingScript[] = "document.prerendering";
   const char kOnprerenderingchangeObservedScript[] =
       "onprerenderingchange_observed";
+  const char kActivationStartScript[] =
+      "performance.getEntriesByType('navigation')[0].activationStart";
   EXPECT_EQ(true,
             EvalJs(prerender_frame_host, kInitialDocumentPrerenderingScript));
   EXPECT_EQ(false,
             EvalJs(prerender_frame_host, kCurrentDocumentPrerenderingScript));
   EXPECT_EQ(true,
             EvalJs(prerender_frame_host, kOnprerenderingchangeObservedScript));
+  EXPECT_NE(0, EvalJs(prerender_frame_host, kActivationStartScript));
 
   RenderFrameHost* same_origin_render_frame_host =
       FindRenderFrameHost(*prerender_frame_host, kSameOriginSubframeUrl);
@@ -767,6 +703,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                           kCurrentDocumentPrerenderingScript));
   EXPECT_EQ(true, EvalJs(same_origin_render_frame_host,
                          kOnprerenderingchangeObservedScript));
+  EXPECT_NE(0, EvalJs(same_origin_render_frame_host, kActivationStartScript));
 
   RenderFrameHost* cross_origin_render_frame_host =
       FindRenderFrameHost(*prerender_frame_host, kCrossOriginSubframeUrl);
@@ -777,6 +714,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                           kCurrentDocumentPrerenderingScript));
   EXPECT_EQ(false, EvalJs(cross_origin_render_frame_host,
                           kOnprerenderingchangeObservedScript));
+  EXPECT_EQ(0, EvalJs(cross_origin_render_frame_host, kActivationStartScript));
 }
 
 // Makes sure that subframe navigations are deferred if cross-origin redirects
@@ -2433,8 +2371,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Increment the keep alive ref count of the renderer process to keep it alive
   // so it is reused on the back navigation below. The test checks that the
   // session storage state changed in the activated page is correctly propagated
-  // after a back navigation that uses an existing renderer process. (Note: This
-  // is not working correctly now.)
+  // after a back navigation that uses an existing renderer process.
   initial_process_host->IncrementKeepAliveRefCount();
 
   AddPrerender(kPrerenderingUrl);
@@ -2453,13 +2390,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   observer.Wait();
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), kInitialUrl);
 
-  // There is a known issue that when the initial renderer process is reused
-  // after the back navigation, the session storage state changed in the
-  // activated is not correctly propagated to the initial renderer process.
-  // TODO(crbug.com/1197383): Fix this issue.
   EXPECT_EQ(
-      // This should be "activated, initial".
-      "initial",
+      "activated, initial",
       EvalJs(current_frame_host(), "getSessionStorageKeys()").ExtractString());
 }
 
@@ -2623,13 +2555,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBackForwardCacheBrowserTest,
   // the test is testing what is intended.
   ASSERT_EQ(shell()->web_contents()->GetMainFrame(), main_frame.get());
 
-  // There is a known issue that when the initial renderer process is reused
-  // after the back navigation, the session storage state changed in the
-  // activated is not correctly propagated to the initial renderer process.
-  // TODO(crbug.com/1197383): Fix this issue.
   EXPECT_EQ(
-      // This should be "activated, initial".
-      "initial",
+      "activated, initial",
       EvalJs(current_frame_host(), "getSessionStorageKeys()").ExtractString());
 }
 

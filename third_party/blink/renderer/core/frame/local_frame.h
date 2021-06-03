@@ -713,7 +713,7 @@ class CORE_EXPORT LocalFrame final
       const KURL& url_before_redirects,
       bool had_redirect,
       network::mojom::blink::SourceLocationPtr source_location) final;
-  void ActivateForPrerendering() final;
+  void ActivateForPrerendering(base::TimeTicks activation_start) final;
   void BindDevToolsAgent(
       mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host,
       mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver)
@@ -824,6 +824,8 @@ class CORE_EXPORT LocalFrame final
   void DidActivateForPrerendering();
 
   void LoadJavaScriptURL(const KURL& url);
+
+  void SetEvictCachedSessionStorageOnFreezeOrUnload();
 
  private:
   friend class FrameNavigationDisabler;
@@ -1111,6 +1113,8 @@ class CORE_EXPORT LocalFrame final
   // v8 stack at the time of creation. This is updated in `SetAdEvidence()`,
   // allowing the bit to be propagated when a frame navigates cross-origin.
   bool is_subframe_created_by_ad_script_ = false;
+
+  bool evict_cached_session_storage_on_freeze_or_unload_ = false;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

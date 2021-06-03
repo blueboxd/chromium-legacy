@@ -213,6 +213,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerVersionInfo GetInfo();
   Status status() const { return status_; }
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+  const base::UnguessableToken& reporting_source() const {
+    return reporting_source_;
+  }
 
   // This status is set to EXISTS or DOES_NOT_EXIST when the install event has
   // been executed in a new version or when an installed version is loaded from
@@ -463,6 +466,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
   }
 
+  bool initialize_global_scope_after_main_script_loaded() const {
+    return initialize_global_scope_after_main_script_loaded_;
+  }
+
   void set_initialize_global_scope_after_main_script_loaded() {
     DCHECK(!initialize_global_scope_after_main_script_loaded_);
     initialize_global_scope_after_main_script_loaded_ = true;
@@ -621,6 +628,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
           reporting_observer_receiver) {
     reporting_observer_receiver_ = std::move(reporting_observer_receiver);
   }
+
+  // Initializes the global scope of the ServiceWorker on the renderer side.
+  // This is dependant on a number of internal members and should only be called
+  // at a few select points where those members are valid.
+  void InitializeGlobalScope(
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          script_loader_factories,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          subresource_loader_factories);
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
@@ -891,12 +907,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                  GetClientCallback callback,
                                  bool success);
 
-  void InitializeGlobalScope(
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          script_loader_factories,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          subresource_loader_factories);
-
   // When ServiceWorkerTerminationOnNoControlle is enabled and there's no
   // controllee, update the idle delay if the worker is running and we don't
   // have to terminate the worker ASAP (e.g. for activation).
@@ -1135,6 +1145,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Identifier for UKM recording in the service worker thread. Stored here so
   // it can be associated with clients' source IDs.
   const ukm::SourceId ukm_source_id_;
+
+  base::UnguessableToken reporting_source_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 

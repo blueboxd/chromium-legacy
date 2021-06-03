@@ -1490,6 +1490,7 @@ crbug.com/498539 crbug.com/794869 crbug.com/798548 crbug.com/946716 http/tests/d
 crbug.com/889952 fast/selectors/selection-window-inactive.html [ Pass Failure ]
 
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
+crbug.com/1107923 inspector-protocol/debugger/wasm-streaming-url.js [ Pass Timeout Failure ]
 
 # Script let/const redeclaration errors
 crbug.com/1042162 http/tests/inspector-protocol/console/console-let-const-with-api.js [ Pass Failure ]
@@ -2690,7 +2691,6 @@ crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/basic-auth.any.worker.html?
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/stream/tentative/backpressure-send.any.serviceworker.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-020.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/worklets/paint-worklet-credentials.https.html [ Failure Timeout ]
-crbug.com/626703 [ Mac10.14 ] inspector-protocol/debugger/wasm-streaming-url.js [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-images/image-set/image-set-parsing.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/dom/xslt/transformToFragment.tentative.window.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/editing/other/editing-around-select-element.tentative.html?insertText [ Failure Timeout ]
@@ -3527,6 +3527,9 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/encoding/eof-utf-8-three.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-two.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
+crbug.com/1215956 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-credentialless.tentative.https.html [ Pass Failure ]
+crbug.com/1215956 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-require-corp.tentative.https.html [ Pass Failure ]
+crbug.com/1215956 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-none.tentative.https.html [ Pass Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-04.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html [ Failure ]
@@ -3543,12 +3546,6 @@ crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Fa
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-ref.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-credentialless.tentative.https.html [ Pass Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-require-corp.tentative.https.html [ Pass Failure ]
-crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-credentialless.tentative.https.html [ Pass Failure ]
-crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-require-corp.tentative.https.html [ Pass Failure ]
-crbug.com/626703 [ Linux ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-credentialless.tentative.https.html [ Pass Failure ]
-crbug.com/626703 [ Linux ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/iframe-coep-require-corp.tentative.https.html [ Pass Failure ]
 
 # Synthetic modules report the wrong location in errors
 crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
@@ -4344,7 +4341,7 @@ crbug.com/681468 [ Win ] virtual/scalefactor150/fast/hidpi/static/data-suggestio
 crbug.com/681468 [ Win ] virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 crbug.com/681468 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 
-crbug.com/1157857 [ Mac ] virtual/percent-based-scrolling/max-percent-delta-cross-origin-iframes.html [ Pass Timeout ]
+crbug.com/1157857 virtual/percent-based-scrolling/max-percent-delta-cross-origin-iframes.html [ Failure Pass Timeout ]
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/* [ Failure Pass ]
 
@@ -5916,8 +5913,6 @@ crbug.com/1107722 [ Mac ] http/tests/devtools/tracing/timeline-time/timeline-tim
 # Sheriff 2020-07-22
 crbug.com/1107722 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
 crbug.com/1107722 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
-crbug.com/1107923 [ Mac10.15 ] inspector-protocol/debugger/wasm-streaming-url.js [ Pass Timeout Failure ]
-crbug.com/1107923 [ Mac11.0 ] inspector-protocol/debugger/wasm-streaming-url.js [ Pass Timeout Failure ]
 # Failing on Webkit Linux Leak
 crbug.com/1046784 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
 crbug.com/1046784 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
@@ -6924,9 +6919,6 @@ crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/bufferedAmount/bu
 crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/events/018.html?wpt_flags=h2 [ Failure ]
 crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/send/006.html?wpt_flags=h2 [ Failure ]
 
-# Temporarily disable to unblock a WebRTC roll
-crbug.com/webrtc/10686 external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
-
 # Fix to unblock wpt-importer
 crbug.com/1209223 external/wpt/css/css-typed-om/idlharness.html [ Failure ]
 crbug.com/1209223 external/wpt/html/dom/idlharness.https.html?exclude=(Document|Window|HTML.\*) [ Failure ]
@@ -6978,3 +6970,7 @@ crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-lifetime.htm
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-sdes-gcm.html [ Pass Timeout ]
 crbug.com/1215581 [ Mac11.0 ] svg/filters/feImage-preserveAspectRatio-all.svg [ Pass Failure ]
 crbug.com/1215584 [ Mac11.0 ] inspector-protocol/layout-fonts/lang-fallback.js [ Pass Failure ]
+
+# Sheriff 2021-06-03
+crbug.com/1185121 fast/scroll-snap/animate-fling-to-snap-points-1.html [ Pass Failure ]
+crbug.com/1215949 external/wpt/pointerevents/pointerevent_iframe-touch-action-none_touch.html [ Pass Timeout ]

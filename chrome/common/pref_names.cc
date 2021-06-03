@@ -112,12 +112,11 @@ const char kURLsToRestoreOnStartup[] = "session.startup_urls";
 const char kUserFeedbackAllowed[] = "feedback_allowed";
 
 #if !defined(OS_ANDROID)
-// Used to store the value of the SerialAllowAllPortsForUrls policy.
-const char kManagedSerialAllowAllPortsForUrls[] =
+// Replaced by kManagedSerialAllowAllPortsForUrls in M-93.
+const char kManagedProfileSerialAllowAllPortsForUrlsDeprecated[] =
     "profile.managed.serial_allow_all_ports_for_urls";
-
-// Used to store the value of the SerialAllowUsbDevicesForUrls policy.
-const char kManagedSerialAllowUsbDevicesForUrls[] =
+// Replaced by kManagedSerialAllowUsbDevicesForUrls in M-93.
+const char kManagedProfileSerialAllowUsbDevicesForUrlsDeprecated[] =
     "profile.managed.serial_allow_usb_devices_for_urls";
 #endif  // !defined(OS_ANDROID)
 
@@ -1610,6 +1609,16 @@ const char kSuppressDifferentOriginSubframeJSDialogs[] =
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
+#if !defined(OS_ANDROID)
+// Used to store the value of the SerialAllowAllPortsForUrls policy.
+const char kManagedSerialAllowAllPortsForUrls[] =
+    "managed.serial_allow_all_ports_for_urls";
+
+// Used to store the value of the SerialAllowUsbDevicesForUrls policy.
+const char kManagedSerialAllowUsbDevicesForUrls[] =
+    "managed.serial_allow_usb_devices_for_urls";
+#endif  // !defined(OS_ANDROID)
+
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";
 
@@ -1853,11 +1862,6 @@ const char kNtpSearchSuggestionsBlocklist[] =
 const char kNtpSearchSuggestionsImpressions[] =
     "ntp.search_suggestions_impressions";
 const char kNtpSearchSuggestionsOptOut[] = "ntp.search_suggestions_opt_out";
-// Tracks whether the user has chosen to hide the shortcuts tiles on the NTP.
-const char kNtpShortcutsVisible[] = "ntp.shortcust_visible";
-// Tracks whether the user has chosen to use custom links or most visited sites
-// for the shortcut tiles on the NTP.
-const char kNtpUseMostVisitedTiles[] = "ntp.use_most_visited_tiles";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4

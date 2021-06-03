@@ -2332,7 +2332,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // in preparation for a hit test.
   if (reason == DocumentUpdateReason::kHitTest) {
     LocalFrameUkmAggregator& aggregator = EnsureUkmAggregator();
-    aggregator.RecordSample(
+    aggregator.RecordTimerSample(
         static_cast<size_t>(LocalFrameUkmAggregator::kHitTestDocumentUpdate),
         lifecycle_data_.start_time, base::TimeTicks::Now());
   }
@@ -2841,6 +2841,12 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode) {
 
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
+
+  if (RuntimeEnabledFeatures::CullRectUpdateEnabled() &&
+      !ShouldThrottleRendering()) {
+    CullRectUpdater(*layout_view->Layer()).Update();
+  }
+
   paint_frame_count_++;
   ForAllNonThrottledLocalFrameViews(
       [](LocalFrameView& frame_view) {

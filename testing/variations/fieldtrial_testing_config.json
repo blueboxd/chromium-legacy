@@ -2280,7 +2280,9 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "CopyLinkToText"
+                        "CopyLinkToText",
+                        "PreemptiveLinkToTextGeneration",
+                        "SharedHighlightingV2"
                     ]
                 }
             ]
@@ -4131,6 +4133,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSSharedHighlightingColorChange"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSStartSurface": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "ShrinkLogo",
+                    "params": {
+                        "ReturnToStartSurfaceInactiveDurationInSeconds": "0",
+                        "shrink_logo": "true"
+                    },
+                    "enable_features": [
+                        "StartSurface"
                     ]
                 }
             ]
@@ -6318,6 +6339,25 @@
                     },
                     "enable_features": [
                         "ProbabilisticCryptidRenderer"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ProcessHostOnUI": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ProcessHostOnUI"
                     ]
                 }
             ]

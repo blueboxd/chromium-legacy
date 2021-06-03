@@ -32,7 +32,8 @@ struct CONTENT_EXPORT ConversionReport {
   // Impression associated with this conversion report.
   const StorableImpression impression;
 
-  // Data provided at reporting time by the reporting origin.
+  // Data provided at reporting time by the reporting origin. Depending on the
+  // source type, this contains the associated data in the trigger redirect.
   uint64_t conversion_data;
 
   // The time the conversion occurred.
@@ -48,6 +49,9 @@ struct CONTENT_EXPORT ConversionReport {
   // Id assigned by storage to uniquely identify a completed conversion. If
   // null, an ID has not been assigned yet.
   const absl::optional<int64_t> conversion_id;
+
+  // When adding new members, the `ReportsEqual()` testing utility in
+  // `conversion_test_utils.h` should also be updated.
 };
 
 // Only used for logging.

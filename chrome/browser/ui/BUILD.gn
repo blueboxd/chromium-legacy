@@ -400,6 +400,7 @@ static_library("ui") {
     "//chrome/services/qrcode_generator/public/mojom",
     "//components/about_ui",
     "//components/account_id",
+    "//components/accuracy_tips",
     "//components/autofill/content/browser:risk_proto",
     "//components/autofill/core/browser",
     "//components/autofill_assistant/browser/public:public",
@@ -3507,6 +3508,13 @@ static_library("ui") {
       # This is the only component that can interact with gtk.
       deps += [ "//ui/gtk" ]
     }
+  }
+
+  if (is_win || is_mac || is_linux) {
+    sources += [
+      "startup/web_app_protocol_handling_startup_utils.cc",
+      "startup/web_app_protocol_handling_startup_utils.h",
+    ]
   }
 
   if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {

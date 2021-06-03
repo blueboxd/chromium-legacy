@@ -1179,21 +1179,6 @@ RenderFrameHostManager* WebContentsImpl::GetRenderManagerForTesting() {
   return GetRenderManager();
 }
 
-bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
-                                        const IPC::Message& message) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnMessageReceived",
-                        "render_view_host", render_view_host);
-  for (auto& observer : observers_.observer_list()) {
-    // TODO(nick, creis): https://crbug.com/758026: Replace all uses of this
-    // variant of OnMessageReceived with the version that takes a
-    // RenderFrameHost, and then delete it.
-    if (observer.OnMessageReceived(message))
-      return true;
-  }
-
-  return false;
-}
-
 bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                         const IPC::Message& message) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnMessageReceived",
@@ -2616,8 +2601,7 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
 // TODO(dtapuska): Enable barrel button selection drag support on Android.
 // crbug.com/758042
 #if defined(OS_WIN)
-  prefs.barrel_button_for_drag_enabled =
-      base::FeatureList::IsEnabled(features::kDirectManipulationStylus);
+  prefs.barrel_button_for_drag_enabled = true;
 #endif  // defined(OS_WIN)
 
   prefs.enable_scroll_animator =

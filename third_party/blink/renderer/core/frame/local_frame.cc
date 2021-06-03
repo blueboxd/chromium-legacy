@@ -822,9 +822,8 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
     content_capture_manager_ = nullptr;
   }
 
-  if (text_fragment_handler_) {
-    text_fragment_handler_->GetTextFragmentSelectorGenerator()->Detach();
-  }
+  if (text_fragment_handler_)
+    text_fragment_handler_->DidDetachDocumentOrFrame();
 
   GetBackForwardCacheBufferLimitTracker().DidRemoveFrameFromBackForwardCache(
       total_bytes_buffered_while_in_back_forward_cache_);
@@ -861,6 +860,10 @@ void LocalFrame::CheckCompleted() {
 
 BackgroundColorPaintImageGenerator*
 LocalFrame::GetBackgroundColorPaintImageGenerator() {
+  // There is no compositor thread in certain testing environment, and we should
+  // not composite background color animation in those cases.
+  if (!Thread::CompositorThread())
+    return nullptr;
   LocalFrame& local_root = LocalFrameRoot();
   // One background color paint worklet per root frame.
   if (!local_root.background_color_paint_image_generator_) {
@@ -4087,13 +4090,6 @@ InputMethodController& LocalFrame::GetInputMethodController() const {
 TextSuggestionController& LocalFrame::GetTextSuggestionController() const {
   DCHECK(DomWindow());
   return DomWindow()->GetTextSuggestionController();
-}
-
-TextFragmentSelectorGenerator* LocalFrame::GetTextFragmentSelectorGenerator()
-    const {
-  if (!text_fragment_handler_)
-    return nullptr;
-  return text_fragment_handler_->GetTextFragmentSelectorGenerator();
 }
 
 }  // namespace blink

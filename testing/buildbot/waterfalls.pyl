@@ -2041,7 +2041,7 @@
         ],
         'mixins': [
           'enable_resultdb',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2075,7 +2075,7 @@
           'enable_resultdb',
           'ios_restart_device',
           'limited_capacity_bot',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2707,6 +2707,16 @@
           'scripts': 'chromium_win_scripts',
         },
       },
+      'Win x64 Builder (reclient)(cross)': {
+        # Copied from
+        # https://source.chromium.org/chromium/chromium/src/+/7b147a6777cb32d6a12e1716c61a0ed50dc1229a:testing/buildbot/waterfalls.pyl;l=6023-6030
+        'additional_compile_targets': [
+          'pdf_fuzzers'
+        ],
+        'test_suites': {
+          'scripts': 'chromium_win_scripts',
+        },
+      },
       'android-backuprefptr-arm-fyi-rel': {
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
@@ -2866,7 +2876,7 @@
       'ios-asan': {
         'mixins': [
           'enable_resultdb',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2881,7 +2891,7 @@
           'enable_resultdb',
           'ios_output_disabled_tests',
           'isolate_profile_data',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2894,7 +2904,7 @@
       'ios-simulator-cronet': {
         'mixins': [
           'enable_resultdb',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2907,7 +2917,7 @@
       'ios-simulator-multi-window': {
         'mixins': [
           'enable_resultdb',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2921,7 +2931,7 @@
         'mixins': [
           'enable_resultdb',
           'ios_custom_webkit',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_11e608c',
@@ -5109,7 +5119,7 @@
         'mixins': [
           'enable_resultdb',
           'isolate_profile_data',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -5126,7 +5136,7 @@
         'mixins': [
           'enable_resultdb',
           'isolate_profile_data',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -5142,7 +5152,7 @@
         ],
         'mixins': [
           'enable_resultdb',
-          'mac_10.15',
+          'mac_10.15_or_mac_11',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',

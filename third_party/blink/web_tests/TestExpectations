@@ -3923,7 +3923,6 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-a
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-baseline-not-applied-if-sizing-cyclic-dependency-003.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/percent-padding-margin-resolution-grid-item-update.html [ Failure ]
 
 ### Tests *expected* to be failing with LayoutNGGrid enabled:
 crbug.com/1108097 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-004.html [ Failure ]
@@ -5533,8 +5532,6 @@ crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appear
 
 # SwANGLE issues
 crbug.com/1204234 css3/blending/background-blend-mode-single-accelerated-element.html [ Failure ]
-crbug.com/1204234 external/wpt/webxr/light-estimation/xrWebGLBinding_getReflectionCubeMap.https.html [ Failure ]
-crbug.com/1204234 external/wpt/webxr/xrWebGLLayer_opaque_framebuffer_stencil.https.html [ Failure ]
 
 # Upcoming DevTools change
 crbug.com/1006759 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Pass Failure Timeout ]
@@ -6627,11 +6624,6 @@ crbug.com/1095540 [ Linux Debug ] virtual/compositor-threaded-percent-based-scro
 crbug.com/1208774 [ Mac ] external/wpt/webcodecs/videoDecoder-codec-specific.any.html?h264_annexb [ Pass Failure ]
 crbug.com/1208774 [ Mac ] external/wpt/webcodecs/videoDecoder-codec-specific.any.worker.html?h264_annexb [ Pass Failure ]
 
-# To unblock devtools-frontend TypeScript upgrade
-crbug.com/1209833 http/tests/devtools/runtime/runtime-getProperties.js [ Skip ]
-crbug.com/1209833 http/tests/devtools/runtime/runtime-localStorage-getProperties.js [ Skip ]
-crbug.com/1209833 http/tests/devtools/runtime/evaluate-timeout.js [ Skip ]
-
 # For SkiaRenderer on MacOS
 crbug.com/1208173 [ Mac ] animations/animation-paused-hardware.html [ Failure ]
 crbug.com/1208173 [ Mac ] animations/missing-values-first-keyframe.html [ Failure ]
@@ -6977,3 +6969,12 @@ crbug.com/1210687 [ Mac10.15 ] external/wpt/html/user-activation/propagation-cro
 crbug.com/1210687 [ Win ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-event-dispatch.js [ Pass Timeout ]
 crbug.com/1210687 [ Win ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Timeout ]
 crbug.com/1210687 [ Win ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
+
+# Sheriff 2021-06-02
+crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-applyConstraints-remoteVideoTrack.html [ Pass Timeout ]
+crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-createDTMFSender.html [ Pass Failure ]
+crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-datachannel.html [ Pass Timeout ]
+crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-lifetime.html [ Pass Timeout ]
+crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-sdes-gcm.html [ Pass Timeout ]
+crbug.com/1215581 [ Mac11.0 ] svg/filters/feImage-preserveAspectRatio-all.svg [ Pass Failure ]
+crbug.com/1215584 [ Mac11.0 ] inspector-protocol/layout-fonts/lang-fallback.js [ Pass Failure ]

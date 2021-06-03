@@ -43,8 +43,8 @@ extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
 extern const char kSessionExitType[];
 #if !defined(OS_ANDROID)
-extern const char kManagedSerialAllowAllPortsForUrls[];
-extern const char kManagedSerialAllowUsbDevicesForUrls[];
+extern const char kManagedProfileSerialAllowAllPortsForUrlsDeprecated[];
+extern const char kManagedProfileSerialAllowUsbDevicesForUrlsDeprecated[];
 #endif  // !defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kSupervisedUserApprovedExtensions[];
@@ -528,6 +528,11 @@ extern const char kNotificationPermissionActions[];
 extern const char kPermissionActions[];
 extern const char kHadThreeConsecutiveNotificationPermissionDenies[];
 
+#if !defined(OS_ANDROID)
+extern const char kManagedSerialAllowAllPortsForUrls[];
+extern const char kManagedSerialAllowUsbDevicesForUrls[];
+#endif  // !defined(OS_ANDROID)
+
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];
 extern const char kProfilesNumCreated[];
@@ -626,8 +631,6 @@ extern const char kNtpPromoBlocklist[];
 extern const char kNtpSearchSuggestionsBlocklist[];
 extern const char kNtpSearchSuggestionsImpressions[];
 extern const char kNtpSearchSuggestionsOptOut[];
-extern const char kNtpShortcutsVisible[];
-extern const char kNtpUseMostVisitedTiles[];
 #endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
 

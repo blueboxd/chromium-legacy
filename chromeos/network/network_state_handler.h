@@ -446,6 +446,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // set, sorts network list and notifies network list change if required.
   void SyncStubCellularNetworks();
 
+  // Requests traffic counters for a service denoted by |service_path|.
+  void RequestTrafficCounters(const std::string& service_path,
+                              ShillServiceClient::ListValueCallback callback);
+
+  // Resets traffic counters for a service denoted by |service_path|.
+  void ResetTrafficCounters(const std::string& service_path);
+
   bool default_network_is_metered() const {
     return default_network_is_metered_;
   }

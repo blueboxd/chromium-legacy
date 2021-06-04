@@ -20,6 +20,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/ghost_image_view.h"
@@ -32,7 +33,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/metrics_util.h"
-#include "ash/public/cpp/pagination/pagination_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
@@ -56,6 +56,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -302,14 +303,6 @@ void AppsGridView::Init() {
       GetAppListConfig().page_transition_duration(),
       GetAppListConfig().overscroll_page_transition_duration());
 
-  pagination_controller_ = std::make_unique<PaginationController>(
-      &pagination_model_,
-      folder_delegate_ ? PaginationController::SCROLL_AXIS_HORIZONTAL
-                       : PaginationController::SCROLL_AXIS_VERTICAL,
-      folder_delegate_
-          ? base::DoNothing()
-          : base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType),
-      IsTabletMode());
   bounds_animator_->AddObserver(this);
 }
 
@@ -409,20 +402,6 @@ void AppsGridView::DisableFocusForShowingActiveFolder(bool disabled) {
       ax::mojom::Event::kTreeChanged);
 }
 
-void AppsGridView::OnTabletModeChanged(bool started) {
-  pagination_controller_->set_is_tablet_mode(started);
-
-  // Enable/Disable folder icons's background blur based on tablet mode.
-  for (const auto& entry : view_model_.entries()) {
-    auto* item_view = static_cast<AppListItemView*>(entry.view);
-    if (item_view->item()->is_folder())
-      item_view->SetBackgroundBlurEnabled(started);
-  }
-
-  // Prevent context menus from remaining open after a transition
-  CancelContextMenusOnCurrentPage();
-}
-
 void AppsGridView::SetModel(AppListModel* model) {
   if (model_)
     model_->RemoveObserver(this);
@@ -441,6 +420,10 @@ void AppsGridView::SetItemList(AppListItemList* item_list) {
   if (item_list_)
     item_list_->AddObserver(this);
   Update();
+}
+
+bool AppsGridView::IsInFolder() const {
+  return !!folder_delegate_;
 }
 
 void AppsGridView::SetSelectedView(AppListItemView* view) {
@@ -476,7 +459,6 @@ AppListItemView* AppsGridView::GetSelectedView() const {
 }
 
 void AppsGridView::InitiateDrag(AppListItemView* view,
-                                Pointer pointer,
                                 const gfx::Point& location,
                                 const gfx::Point& root_location) {
   DCHECK(view);
@@ -499,8 +481,8 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
 
-void AppsGridView::StartDragAndDropHostDragAfterLongPress(Pointer pointer) {
-  TryStartDragAndDropHostDrag(pointer, drag_start_grid_view_);
+void AppsGridView::StartDragAndDropHostDragAfterLongPress() {
+  TryStartDragAndDropHostDrag(TOUCH, drag_start_grid_view_);
 }
 
 void AppsGridView::TryStartDragAndDropHostDrag(
@@ -520,7 +502,7 @@ void AppsGridView::TryStartDragAndDropHostDrag(
     StartDragAndDropHostDrag(grid_location);
 }
 
-bool AppsGridView::UpdateDragFromItem(Pointer pointer,
+bool AppsGridView::UpdateDragFromItem(bool is_touch,
                                       const ui::LocatedEvent& event) {
   if (!drag_view_)
     return false;  // Drag canceled.
@@ -529,6 +511,7 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
 
   gfx::Point drag_point_in_grid_view;
   ExtractDragLocation(event.root_location(), &drag_point_in_grid_view);
+  const Pointer pointer = is_touch ? TOUCH : MOUSE;
   UpdateDrag(pointer, drag_point_in_grid_view);
   if (!dragging())
     return false;
@@ -863,6 +846,10 @@ void AppsGridView::UpdateDragFromReparentItem(Pointer pointer,
   UpdateDrag(pointer, drag_point);
 }
 
+bool AppsGridView::IsDragging() const {
+  return dragging();
+}
+
 bool AppsGridView::IsDraggedView(const AppListItemView* view) const {
   return drag_view_ == view;
 }
@@ -1166,16 +1153,15 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
     }
   }
 
-  if (pagination_controller_->scroll_axis() ==
-      PaginationController::SCROLL_AXIS_HORIZONTAL) {
-    // Page size including padding pixels. A tile.x + page_width means the same
-    // tile slot in the next page.
-    const int page_width = grid_size.width() + GetPaddingBetweenPages();
-    return gfx::Vector2d(page_width * multiplier, 0);
+  if (IsScrollAxisVertical()) {
+    const int page_height = grid_size.height() + GetPaddingBetweenPages();
+    return gfx::Vector2d(0, page_height * multiplier);
   }
 
-  const int page_height = grid_size.height() + GetPaddingBetweenPages();
-  return gfx::Vector2d(0, page_height * multiplier);
+  // Page size including padding pixels. A tile.x + page_width means the same
+  // tile slot in the next page.
+  const int page_width = grid_size.width() + GetPaddingBetweenPages();
+  return gfx::Vector2d(page_width * multiplier, 0);
 }
 
 void AppsGridView::CalculateIdealBoundsForFolder() {
@@ -3171,8 +3157,7 @@ int AppsGridView::GetPageFlipTargetForDrag(const gfx::Point& drag_point) {
   int new_page_flip_target = -1;
 
   // Drag zones are at the edges of the scroll axis.
-  if (pagination_controller_->scroll_axis() ==
-      PaginationController::SCROLL_AXIS_VERTICAL) {
+  if (IsScrollAxisVertical()) {
     if (drag_point.y() <
         GetAppListConfig().page_flip_zone_size() + GetInsets().top()) {
       new_page_flip_target = pagination_model_.selected_page() - 1;

@@ -1213,9 +1213,6 @@ extern const char kMBIModeDescription[];
 extern const char kIntensiveWakeUpThrottlingName[];
 extern const char kIntensiveWakeUpThrottlingDescription[];
 
-extern const char kPrinterStatusDialogName[];
-extern const char kPrinterStatusDialogDescription[];
-
 extern const char kSafetyTipName[];
 extern const char kSafetyTipDescription[];
 
@@ -1579,6 +1576,9 @@ extern const char kDrawPredictedPointsName[];
 
 extern const char kSanitizerApiName[];
 extern const char kSanitizerApiDescription[];
+
+extern const char kUsePassthroughCommandDecoderName[];
+extern const char kUsePassthroughCommandDecoderDescription[];
 
 // Android --------------------------------------------------------------------
 
@@ -2391,9 +2391,6 @@ extern const char kEnableAssistantLauncherIntegrationDescription[];
 
 extern const char kEnableAssistantLauncherUIName[];
 extern const char kEnableAssistantLauncherUIDescription[];
-
-extern const char kEnableAssistantMediaSessionIntegrationName[];
-extern const char kEnableAssistantMediaSessionIntegrationDescription[];
 
 extern const char kEnableAssistantRoutinesName[];
 extern const char kEnableAssistantRoutinesDescription[];

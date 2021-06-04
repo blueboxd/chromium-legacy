@@ -326,12 +326,6 @@ IN_PROC_BROWSER_TEST_P(StartupTracingTest, DISABLED_TestEnableTracing) {
   CheckOutput(GetExpectedPath(), GetOutputType());
 }
 
-IN_PROC_BROWSER_TEST_P(StartupTracingTest, ContinueAtShutdown) {
-  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
-  StartupTracingController::GetInstance()
-      .set_continue_on_shutdown_for_testing();
-}
-
 class EmergencyStopTracingTest : public StartupTracingTest {};
 
 INSTANTIATE_TEST_SUITE_P(
@@ -343,7 +337,9 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(OutputLocation::kDirectoryWithDefaultBasename)));
 
 // TODO(crbug.com/1197278): Failing on Windows 7 debug builds.
-#if defined(OS_WIN) && DCHECK_IS_ON()
+// TODO(crbug.com/1211717): Failing on Linux TSAN builds.
+#if (defined(OS_WIN) && DCHECK_IS_ON()) || \
+    (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define MAYBE_StopOnUIThread DISABLED_StopOnUIThread
 #else
 #define MAYBE_StopOnUIThread StopOnUIThread

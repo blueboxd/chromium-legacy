@@ -30,4 +30,32 @@ CREATE INDEX rate_limit_conversion_time_idx ON rate_limits(conversion_time);
 
 CREATE INDEX rate_limit_impression_id_idx ON rate_limits(impression_id);
 
+INSERT INTO impressions
+VALUES (1,
+        '9357e17751666f64',
+        'https://a.impression.test',
+        'https://conversion.test',
+        'https://report.test',
+        13245278349693988,
+        13247870349693988,
+        0,
+        1,
+        'https://conversion.test/',
+        0,
+        1,
+        3),
+       (2,
+        '9357e17751666f64',
+        'https://b.impression.test',
+        'https://conversion.test',
+        'https://report.test',
+        13245278349693988,
+        13247870349693988,
+        0,
+        1,
+        'https://conversion.test/',
+        0,
+        1,
+        4);
+
 COMMIT;

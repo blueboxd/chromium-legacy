@@ -7,8 +7,11 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -38,6 +41,7 @@
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model_utils.h"
@@ -168,10 +172,33 @@ PagedAppsGridView::PagedAppsGridView(
       contents_view_(contents_view) {
   DCHECK(contents_view_);
   pagination_model_.AddObserver(this);
+
+  pagination_controller_ = std::make_unique<PaginationController>(
+      &pagination_model_,
+      IsInFolder() ? PaginationController::SCROLL_AXIS_HORIZONTAL
+                   : PaginationController::SCROLL_AXIS_VERTICAL,
+      IsInFolder()
+          ? base::DoNothing()
+          : base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType),
+      IsTabletMode());
 }
 
 PagedAppsGridView::~PagedAppsGridView() {
   pagination_model_.RemoveObserver(this);
+}
+
+void PagedAppsGridView::OnTabletModeChanged(bool started) {
+  pagination_controller_->set_is_tablet_mode(started);
+
+  // Enable/Disable folder icons's background blur based on tablet mode.
+  for (const auto& entry : view_model()->entries()) {
+    auto* item_view = static_cast<AppListItemView*>(entry.view);
+    if (item_view->item()->is_folder())
+      item_view->SetBackgroundBlurEnabled(started);
+  }
+
+  // Prevent context menus from remaining open after a transition
+  CancelContextMenusOnCurrentPage();
 }
 
 void PagedAppsGridView::HandleScrollFromAppListView(const gfx::Vector2d& offset,
@@ -450,7 +477,7 @@ gfx::Size PagedAppsGridView::GetTileViewSize() const {
 }
 
 gfx::Insets PagedAppsGridView::GetTilePadding() const {
-  if (is_in_folder()) {
+  if (IsInFolder()) {
     const int tile_padding_in_folder =
         GetAppListConfig().grid_tile_spacing_in_folder() / 2;
     return gfx::Insets(-tile_padding_in_folder, -tile_padding_in_folder);
@@ -474,6 +501,11 @@ int PagedAppsGridView::GetPaddingBetweenPages() const {
              : GetAppListConfig().page_spacing();
 }
 
+bool PagedAppsGridView::IsScrollAxisVertical() const {
+  return pagination_controller_->scroll_axis() ==
+         PaginationController::SCROLL_AXIS_VERTICAL;
+}
+
 void PagedAppsGridView::MaybeStartCardifiedView() {
   if (!cardified_state_)
     StartAppsGridCardifiedView();
@@ -490,7 +522,7 @@ void PagedAppsGridView::MaybeEndCardifiedView() {
 void PagedAppsGridView::TotalPagesChanged(int previous_page_count,
                                           int new_page_count) {
   // Don't record from folder.
-  if (is_in_folder())
+  if (IsInFolder())
     return;
 
   // Initial setup for the AppList starts with -1 pages. Ignore the page count
@@ -652,7 +684,7 @@ bool PagedAppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {
     gfx::PointF root_location = event.root_location_f();
     return root_location.y() - mouse_drag_start_point_.y();
   };
-  if (!is_in_folder() &&
+  if (!IsInFolder() &&
       (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_SCROLL_BEGIN) &&
       !IsTabletMode() &&
       ((pagination_model_.selected_page() == 0 &&
@@ -665,7 +697,7 @@ bool PagedAppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {
 }
 
 void PagedAppsGridView::MaybeCreateGradientMask() {
-  if (!is_in_folder() && features::IsBackgroundBlurEnabled()) {
+  if (!IsInFolder() && features::IsBackgroundBlurEnabled()) {
     // TODO(newcomer): Improve implementation of the mask layer so we can
     // enable it on all devices https://crbug.com/765292.
     if (!layer()->layer_mask_layer()) {
@@ -685,7 +717,7 @@ void PagedAppsGridView::MaybeCreateGradientMask() {
 void PagedAppsGridView::StartAppsGridCardifiedView() {
   if (!app_list_features::IsNewDragSpecInLauncherEnabled())
     return;
-  if (is_in_folder())
+  if (IsInFolder())
     return;
   DCHECK(!cardified_state_);
   StopObservingImplicitAnimations();
@@ -705,7 +737,7 @@ void PagedAppsGridView::StartAppsGridCardifiedView() {
 void PagedAppsGridView::EndAppsGridCardifiedView() {
   if (!app_list_features::IsNewDragSpecInLauncherEnabled())
     return;
-  if (is_in_folder())
+  if (IsInFolder())
     return;
   DCHECK(cardified_state_);
   StopObservingImplicitAnimations();

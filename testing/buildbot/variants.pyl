@@ -91,18 +91,6 @@
       'ios_runtime_cache_12_4',
     ],
   },
-  'SIM_IPAD_AIR_2_13_5': {
-    'args': [
-      '--platform',
-      'iPad Air 2',
-      '--version',
-      '13.5'
-    ],
-    'identifier': 'iPad Air 2 13.5',
-    'mixins': [
-      'ios_runtime_cache_13_5',
-    ],
-  },
   'SIM_IPAD_AIR_2_13_6': {
     'args': [
       '--platform',
@@ -345,18 +333,6 @@
       'ios_runtime_cache_12_4',
     ],
   },
-  'SIM_IPHONE_X_13_5': {
-    'args': [
-      '--platform',
-      'iPhone X',
-      '--version',
-      '13.5',
-    ],
-    'identifier': 'iPhone X 13.5',
-    'mixins': [
-      'ios_runtime_cache_13_5',
-    ],
-  },
   'SIM_IPHONE_X_13_6': {
     'args': [
       '--platform',
@@ -424,7 +400,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.42',
+          'revision': 'version:92.0.4515.43',
         }
       ],
     },
@@ -448,7 +424,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.95',
+          'revision': 'version:91.0.4472.96',
         }
       ],
     },
@@ -496,7 +472,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.42',
+          'revision': 'version:92.0.4515.43',
         }
       ],
     },
@@ -520,7 +496,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.95',
+          'revision': 'version:91.0.4472.96',
         }
       ],
     },
@@ -568,7 +544,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.42',
+          'revision': 'version:92.0.4515.43',
         }
       ],
     },
@@ -592,7 +568,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.95',
+          'revision': 'version:91.0.4472.96',
         }
       ],
     },

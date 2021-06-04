@@ -613,9 +613,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AppBanners.BeforeInstallEvent"
-    enum="AppBannersBeforeInstallEvent" expires_after="2021-06-01">
+    enum="AppBannersBeforeInstallEvent" expires_after="2022-06-01">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
   <summary>
     App banners promote an application related to the current website, and are
     requested specifically through the current page's HTML. This stat tracks
@@ -3539,6 +3540,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Conversions.RedirectInterceptedFrameDetached" enum="Boolean"
+    expires_after="M95">
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures how often conversions are not handled due to the frame being
+    detached. Recorded when an attribution trigger redirect is received. This is
+    recorded regardless of the Attribution Reporting API being enabled.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.RegisteredConversionsPerPage" units="conversions"
     expires_after="2021-11-07">
   <owner>johnidel@chromium.org</owner>
@@ -5673,8 +5686,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>cros-families-eng@google.com</owner>
   <summary>
     Records whether managed sites approved list and blocked list are enabled for
-    currently active Family Link user. Reports at the beginning of the first
-    active session daily. Ignores the reports during OOBE and sign out.
+    currently active Family Link user. Prior to M93, this metric was recorded at
+    the beginning of first active session daily. In M93, this metric is now also
+    recorded when manual hosts and manual urls policies are changed. Ignores the
+    reports during OOBE and sign out.
   </summary>
 </histogram>
 
@@ -5767,7 +5782,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records what time limit policy types are enabled for the currently active
     Family Link user. Enabling multiple policies would report multiple buckets
-    to UMA. Reports at the beginning of the first active session daily.
+    to UMA. Prior to M93, this metric was recorded at the beginning of first
+    active session daily. In M93, this metric is now also recorded when bed time
+    limit, daily limit, override time limit, apps time limit and web time limit
+    policies are changed. App time limits does not include blocked apps.
   </summary>
 </histogram>
 
@@ -5820,9 +5838,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>xiqiruan@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
-    Records the web filter type for currently active Family Link user. Reports
-    at the beginning of the first active session daily. Ignores the reports
-    during OOBE and sign out.
+    Records the web filter type for currently active Family Link user. Prior to
+    M93, this metric was recorded at the beginning of first active session
+    daily. In M93, this metric is now also recorded when web filter type policy
+    changed. Ignores the reports during OOBE and sign out.
   </summary>
 </histogram>
 

@@ -1746,7 +1746,7 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'fuchsia_x64_isolated_scripts',
+          'isolated_scripts': 'fuchsia_isolated_scripts',
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
         },
       },
@@ -2041,7 +2041,7 @@
         ],
         'mixins': [
           'enable_resultdb',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2075,7 +2075,7 @@
           'enable_resultdb',
           'ios_restart_device',
           'limited_capacity_bot',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2809,9 +2809,12 @@
         'additional_compile_targets': [
           'all',
         ],
+        'browser_config': 'web-engine-shell',
+        'os_type': 'linux',
         'test_suites': {
+          'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+          'isolated_scripts': 'fuchsia_isolated_scripts',
         },
         'mixins': [
           'arm64',
@@ -2876,7 +2879,7 @@
       'ios-asan': {
         'mixins': [
           'enable_resultdb',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2891,7 +2894,7 @@
           'enable_resultdb',
           'ios_output_disabled_tests',
           'isolate_profile_data',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2904,7 +2907,7 @@
       'ios-simulator-cronet': {
         'mixins': [
           'enable_resultdb',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2917,7 +2920,7 @@
       'ios-simulator-multi-window': {
         'mixins': [
           'enable_resultdb',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -2931,10 +2934,10 @@
         'mixins': [
           'enable_resultdb',
           'ios_custom_webkit',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e608c',
+          'xcode_12e262',
           'xctest',
         ],
         'test_suites': {
@@ -4832,7 +4835,7 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'fuchsia_x64_isolated_scripts',
+          'isolated_scripts': 'fuchsia_isolated_scripts',
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
         },
       },
@@ -5119,7 +5122,7 @@
         'mixins': [
           'enable_resultdb',
           'isolate_profile_data',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -5136,7 +5139,7 @@
         'mixins': [
           'enable_resultdb',
           'isolate_profile_data',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',
@@ -5152,7 +5155,7 @@
         ],
         'mixins': [
           'enable_resultdb',
-          'mac_10.15_or_mac_11',
+          'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12d4e',

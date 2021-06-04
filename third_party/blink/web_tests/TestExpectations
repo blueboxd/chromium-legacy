@@ -219,6 +219,10 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
+## prerender test: speculationrules script do not set referrers.
+crbug.com/1215932 virtual/prerender/wpt_internal/prerender/referrer-policy-origin.html [ Failure ]
+crbug.com/1215932 virtual/prerender/wpt_internal/prerender/referrer.html [ Failure ]
+
 ## prerender test: the File System Access API is not supported on Android ##
 crbug.com/1182032 [ Android ] virtual/prerender/wpt_internal/prerender/restriction-local-file-system-access.https.html [ Skip ]
 ## prerender test: Notification constructor is not supported on Android ##
@@ -3786,6 +3790,8 @@ crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-auto-repeat-dyn
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-auto-repeat-dynamic-003.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-items/aspect-ratio-004.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/grid-items/grid-item-inline-contribution-002.tentative.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/grid-items/grid-item-inline-contribution-003.tentative.html [ Failure ]
 crbug.com/1053825 external/wpt/css/css-grid/grid-model/grid-overflow-padding-001.html [ Failure ]
 crbug.com/1053825 external/wpt/css/css-grid/grid-model/grid-overflow-padding-002.html [ Failure ]
 crbug.com/1053825 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-001.html [ Failure ]
@@ -3797,6 +3803,8 @@ crbug.com/935102 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intr
 crbug.com/935102 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Failure ]
 crbug.com/935102 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-003.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-025.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-026.html [ Failure ]
 
 # Bad stretching of svgs without aspect-ratio.
 crbug.com/1114013 external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-5.html [ Failure ]
@@ -3901,6 +3909,8 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repea
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-dynamic-003.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/aspect-ratio-004.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-auto-margin-and-replaced-item-001.html [ Pass ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-inline-contribution-002.tentative.html [ Pass ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-inline-contribution-003.tentative.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-001.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-002.html [ Pass ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-003.html [ Pass ]
@@ -6333,7 +6343,7 @@ crbug.com/1184745 [ Mac ] external/wpt/media-source/mediasource-changetype-play.
 
 # Sheriff 2021-03-08
 crbug.com/1092462 [ Linux ] http/tests/media/media-source/mediasource-duration.html [ Pass Failure ]
-crbug.com/1092462 [ Linux ] virtual/synchronous_html_parser/media/video-seek-past-end-paused.html [ Pass Failure ]
+crbug.com/1092462 [ Linux ] media/video-seek-past-end-paused.html [ Pass Failure ]
 crbug.com/1185675 [ Mac ] virtual/gpu-rasterization/images/color-profile-object.html [ Pass Failure ]
 crbug.com/1185676 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Failure ]
 
@@ -6487,6 +6497,7 @@ crbug.com/1198698 external/wpt/clear-site-data/storage.https.html [ Pass Timeout
 
 # Sheriff 2021-04-14
 crbug.com/1198828 [ Win ] virtual/scroll-unification/fast/events/mouse-events-on-node-deletion.html [ Pass Failure ]
+crbug.com/1198828 [ Linux ] virtual/scroll-unification/fast/events/mouse-events-on-node-deletion.html [ Pass Failure ]
 
 # Sheriff 2021-04-15
 crbug.com/1199380 virtual/scroll-unification-prefer_compositing_to_lcd_text/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
@@ -6680,12 +6691,6 @@ external/wpt/css/css-transforms/group/svg-transform-nested-026.html [ Failure ]
 external/wpt/css/css-transforms/group/svg-transform-nested-027.html [ Failure ]
 external/wpt/css/css-transforms/group/svg-transform-nested-028.html [ Failure ]
 external/wpt/css/css-transforms/group/svg-transform-nested-029.html [ Failure ]
-external/wpt/css/css-transforms/inline-styles/svg-inline-styles-001.html [ Failure ]
-external/wpt/css/css-transforms/inline-styles/svg-inline-styles-002.html [ Failure ]
-external/wpt/css/css-transforms/inline-styles/svg-inline-styles-003.html [ Failure ]
-external/wpt/css/css-transforms/inline-styles/svg-inline-styles-004.html [ Failure ]
-external/wpt/css/css-transforms/inline-styles/svg-inline-styles-012.html [ Failure ]
-external/wpt/css/css-transforms/inline-styles/svg-inline-styles-013.html [ Failure ]
 external/wpt/css/css-transforms/rotate/svg-rotate-3args-invalid-001.html [ Failure ]
 external/wpt/css/css-transforms/rotate/svg-rotate-3args-invalid-003.html [ Failure ]
 external/wpt/css/css-transforms/rotate/svg-rotate-3args-invalid-004.html [ Failure ]
@@ -6919,34 +6924,6 @@ crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/bufferedAmount/bu
 crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/events/018.html?wpt_flags=h2 [ Failure ]
 crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/send/006.html?wpt_flags=h2 [ Failure ]
 
-# Fix to unblock wpt-importer
-crbug.com/1209223 external/wpt/css/css-typed-om/idlharness.html [ Failure ]
-crbug.com/1209223 external/wpt/html/dom/idlharness.https.html?exclude=(Document|Window|HTML.\*) [ Failure ]
-crbug.com/1209223 [ Linux ] external/wpt/html/dom/idlharness.https.html?include=HTML.* [ Failure ]
-crbug.com/1209223 [ Win ] external/wpt/html/dom/idlharness.https.html?include=HTML.* [ Failure ]
-crbug.com/1209223 external/wpt/html/dom/idlharness.worker.html [ Failure ]
-crbug.com/1209223 external/wpt/html/semantics/forms/form-submission-0/newline-normalization.html [ Failure ]
-crbug.com/1209223 external/wpt/html/semantics/forms/the-textarea-element/wrapping-transformation.window.html [ Failure ]
-crbug.com/1209223 external/wpt/payment-handler/idlharness.https.any.serviceworker.html [ Failure ]
-crbug.com/1209223 external/wpt/payment-handler/idlharness.https.any.sharedworker.html [ Failure ]
-crbug.com/1209223 external/wpt/payment-handler/idlharness.https.any.worker.html [ Failure ]
-crbug.com/1209223 external/wpt/payment-request/idlharness.https.window.html [ Failure ]
-crbug.com/1209223 external/wpt/private-click-measurement/idlharness.window.html [ Failure ]
-crbug.com/1209223 external/wpt/url/url-setters-a-area.window.html [ Failure ]
-crbug.com/1209223 external/wpt/url/url-setters.any.html [ Failure ]
-crbug.com/1209223 external/wpt/url/url-setters.any.worker.html [ Failure ]
-crbug.com/1209223 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure ]
-crbug.com/1209223 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Failure ]
-crbug.com/1209223 external/wpt/webxr/idlharness.https.window.html [ Failure ]
-crbug.com/1209223 external/wpt/xhr/formdata/constructor-formelement.html [ Failure ]
-crbug.com/1209223 virtual/plz-dedicated-worker/external/wpt/xhr/formdata/constructor-formelement.html [ Failure ]
-crbug.com/1209223 virtual/shared_array_buffer_on_desktop/external/wpt/xhr/formdata/constructor-formelement.html [ Failure ]
-crbug.com/1209223 [ Mac10.15 ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Timeout ]
-crbug.com/1209223 virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/newline-normalization.html [ Failure ]
-crbug.com/1167095 virtual/synchronous_html_parser/external/wpt/html/semantics/forms/the-textarea-element/wrapping-transformation.window.html [ Failure ]
-crbug.com/1209223 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure ]
-crbug.com/1209223 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Failure ]
-
 # Sheriff on 2021-05-26
 crbug.com/1213322 [ Mac ] external/wpt/css/css-values/minmax-percentage-serialize.html [ Pass Failure ]
 crbug.com/1213322 [ Mac ] external/wpt/html/browsers/the-window-object/named-access-on-the-window-object/window-named-properties.html [ Pass Failure ]
@@ -6968,9 +6945,15 @@ crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-createDTMFSe
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-datachannel.html [ Pass Timeout ]
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-lifetime.html [ Pass Timeout ]
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-sdes-gcm.html [ Pass Timeout ]
-crbug.com/1215581 [ Mac11.0 ] svg/filters/feImage-preserveAspectRatio-all.svg [ Pass Failure ]
 crbug.com/1215584 [ Mac11.0 ] inspector-protocol/layout-fonts/lang-fallback.js [ Pass Failure ]
 
 # Sheriff 2021-06-03
 crbug.com/1185121 fast/scroll-snap/animate-fling-to-snap-points-1.html [ Pass Failure ]
+crbug.com/1176162 [ Linux ] http/tests/devtools/screen-orientation-override.js [ Pass Failure ]
 crbug.com/1215949 external/wpt/pointerevents/pointerevent_iframe-touch-action-none_touch.html [ Pass Timeout ]
+crbug.com/1216139 virtual/bfcache/http/tests/devtools/bfcache/bfcache-elements-update.js [ Pass Failure ]
+
+# TODO(csmartalton): Tessellation improves these tests. Rebaseline after Skia roll.
+skbug.com/10419 [ Fuchsia ] tables/mozilla/bugs/bug2479-3.html [ Pass Failure ]
+skbug.com/10419 [ Fuchsia ] tables/mozilla/bugs/bug7342.html [ Pass Failure ]
+skbug.com/10419 [ Fuchsia ] tables/mozilla/bugs/bug59354.html [ Pass Failure ]

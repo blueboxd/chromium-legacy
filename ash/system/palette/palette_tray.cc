@@ -73,24 +73,6 @@ constexpr gfx::Insets kTitleViewPadding(8, 16, 8, 16);
 // Spacing between buttons in the title view (dp).
 constexpr int kTitleViewChildSpacing = 16;
 
-// Returns true if the |palette_tray| is on an internal display or on every
-// display if requested from the command line.
-bool ShouldShowOnDisplay(PaletteTray* palette_tray) {
-  if (stylus_utils::IsPaletteEnabledOnEveryDisplay())
-    return true;
-
-  // |widget| is null when this function is called from PaletteTray constructor
-  // before it is added to a widget.
-  views::Widget* const widget = palette_tray->GetWidget();
-  if (!widget)
-    return false;
-
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          widget->GetNativeWindow());
-  return display.IsInternal();
-}
-
 class BatteryView : public views::View {
  public:
   BatteryView() {
@@ -290,6 +272,33 @@ bool PaletteTray::ShouldShowPalette() const {
   return is_palette_enabled_ && stylus_utils::HasStylusInput() &&
          (display::Display::HasInternalDisplay() ||
           stylus_utils::IsPaletteEnabledOnEveryDisplay());
+}
+
+bool PaletteTray::ShouldShowOnDisplay() {
+  if (stylus_utils::IsPaletteEnabledOnEveryDisplay())
+    return true;
+
+  // |widget| is null when this function is called from PaletteTray constructor
+  // before it is added to a widget.
+  views::Widget* const widget = GetWidget();
+  if (!widget)
+    return false;
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+
+  if (!display.IsInternal())
+    return false;
+
+  for (const ui::TouchscreenDevice& device :
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.has_stylus && device.target_display_id == display.id()) {
+      return true;
+    }
+  }
+
+  return display_has_stylus_for_testing_;
 }
 
 void PaletteTray::OnStylusEvent(const ui::TouchEvent& event) {
@@ -686,10 +695,15 @@ bool PaletteTray::HasSeenStylus() {
   return local_state_ && local_state_->GetBoolean(prefs::kHasSeenStylus);
 }
 
+void PaletteTray::SetDisplayHasStylusForTesting() {
+  display_has_stylus_for_testing_ = true;
+  UpdateIconVisibility();
+}
+
 void PaletteTray::UpdateIconVisibility() {
   bool visible_preferred =
       is_palette_enabled_ && stylus_utils::HasStylusInput() &&
-      ShouldShowOnDisplay(this) && palette_utils::IsInUserSession();
+      ShouldShowOnDisplay() && palette_utils::IsInUserSession();
   SetVisiblePreferred(visible_preferred);
   if (visible_preferred)
     UpdateLayout();

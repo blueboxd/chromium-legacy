@@ -239,7 +239,8 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
                              CreatePromise(RESOLVED));
   }
 
-  void OnSessionClosed(const std::string& session_id) override {
+  void OnSessionClosed(const std::string& session_id,
+                       CdmSessionClosedReason /*reason*/) override {
     EXPECT_EQ(current_session_id_, session_id);
   }
 
@@ -326,7 +327,8 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
     FAIL() << "Unexpected Message";
   }
 
-  void OnSessionClosed(const std::string& session_id) override {
+  void OnSessionClosed(const std::string& session_id,
+                       CdmSessionClosedReason /*reason*/) override {
     EXPECT_FALSE(session_id.empty());
     FAIL() << "Unexpected Closed";
   }
@@ -2561,9 +2563,9 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEVC) {
   TestMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4HevcVideoOnly,
                          kAppendWholeFile);
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA) || defined(OS_WIN)
-  // On ChromeOS and Windows, HEVC is only supported through EME.
-  // So this unencrypted track cannot be demuxed.
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
+  // HEVC is only supported through EME under this build flag. So this
+  // unencrypted track cannot be demuxed.
   source.set_expected_append_result(
       TestMediaSource::ExpectedAppendResult::kFailure);
   EXPECT_EQ(
@@ -2572,12 +2574,12 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEVC) {
 #else
   PipelineStatus status = StartPipelineWithMediaSource(&source);
   EXPECT_TRUE(status == PIPELINE_OK || status == DECODER_ERROR_NOT_SUPPORTED);
-#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA) || defined(OS_WIN)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 #else
   EXPECT_EQ(
       DEMUXER_ERROR_COULD_NOT_OPEN,
       StartPipelineWithMediaSource(&source, kExpectDemuxerFailure, nullptr));
-#endif
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 }
 
 // Same test as above but using a different mime type.
@@ -2586,9 +2588,9 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEV1) {
   TestMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4Hev1VideoOnly,
                          kAppendWholeFile);
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA) || defined(OS_WIN)
-  // On ChromeOS and Windows, HEVC is only supported through EME.
-  // So this unencrypted track cannot be demuxed.
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
+  // HEVC is only supported through EME under this build flag. So this
+  // unencrypted track cannot be demuxed.
   source.set_expected_append_result(
       TestMediaSource::ExpectedAppendResult::kFailure);
   EXPECT_EQ(
@@ -2597,12 +2599,12 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEV1) {
 #else
   PipelineStatus status = StartPipelineWithMediaSource(&source);
   EXPECT_TRUE(status == PIPELINE_OK || status == DECODER_ERROR_NOT_SUPPORTED);
-#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA) || defined(OS_WIN)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 #else
   EXPECT_EQ(
       DEMUXER_ERROR_COULD_NOT_OPEN,
       StartPipelineWithMediaSource(&source, kExpectDemuxerFailure, nullptr));
-#endif
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 }
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)

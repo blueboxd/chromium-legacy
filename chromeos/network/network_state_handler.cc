@@ -218,6 +218,18 @@ void NetworkStateHandler::SyncStubCellularNetworks() {
   NotifyNetworkListChanged();
 }
 
+void NetworkStateHandler::RequestTrafficCounters(
+    const std::string& service_path,
+    ShillServiceClient::ListValueCallback callback) {
+  shill_property_handler_->RequestTrafficCounters(service_path,
+                                                  std::move(callback));
+}
+
+void NetworkStateHandler::ResetTrafficCounters(
+    const std::string& service_path) {
+  shill_property_handler_->ResetTrafficCounters(service_path);
+}
+
 // static
 std::unique_ptr<NetworkStateHandler> NetworkStateHandler::InitializeForTest() {
   auto handler = base::WrapUnique(new NetworkStateHandler());

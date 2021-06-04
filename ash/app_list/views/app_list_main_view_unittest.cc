@@ -5,11 +5,13 @@
 #include "ash/app_list/views/app_list_main_view.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/app_list/app_list_test_view_delegate.h"
 #include "ash/app_list/model/app_list_test_model.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
@@ -96,7 +98,6 @@ class AppListMainViewTest : public views::ViewsTestBase {
 
   // |point| is in |grid_view|'s coordinates.
   AppListItemView* SimulateInitiateDrag(AppsGridView* grid_view,
-                                        AppsGridView::Pointer pointer,
                                         const gfx::Point& point) {
     AppListItemView* view = GetItemViewAtPointInGrid(grid_view, point);
     DCHECK(view);
@@ -106,7 +107,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     gfx::Point root_window_point = point;
     views::View::ConvertPointToWidget(grid_view, &root_window_point);
 
-    grid_view->InitiateDrag(view, pointer, root_window_point, point);
+    grid_view->InitiateDrag(view, root_window_point, point);
     return view;
   }
 
@@ -184,9 +185,8 @@ class AppListMainViewTest : public views::ViewsTestBase {
   AppListItemView* StartDragForReparent(int index_in_folder) {
     // Start to drag the item in folder.
     views::View* item_view = GetFolderViewModel()->view_at(index_in_folder);
-    AppListItemView* dragged =
-        SimulateInitiateDrag(GetFolderGridView(), AppsGridView::MOUSE,
-                             item_view->bounds().CenterPoint());
+    AppListItemView* dragged = SimulateInitiateDrag(
+        GetFolderGridView(), item_view->bounds().CenterPoint());
     EXPECT_EQ(item_view, dragged);
     EXPECT_TRUE(GetRootGridView()->GetVisible());
     EXPECT_TRUE(GetFolderView()->GetVisible());

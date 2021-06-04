@@ -76,6 +76,37 @@ const char kCellularTestApnUsername3[] = "Test User";
 const char kCellularTestApnPassword3[] = "Test Pass";
 const char kCellularTestApnAttach3[] = "attach";
 
+enum ComparisonType {
+  INTEGER = 0,
+  DOUBLE,
+};
+
+void CompareTrafficCounters(
+    const std::vector<mojom::TrafficCounterPtr>& actual_traffic_counters,
+    const base::Value* expected_traffic_counters,
+    enum ComparisonType comparison_type) {
+  EXPECT_EQ(actual_traffic_counters.size(),
+            expected_traffic_counters->GetList().size());
+  for (size_t i = 0; i < actual_traffic_counters.size(); i++) {
+    auto& actual_tc = actual_traffic_counters[i];
+    auto& expected_tc = expected_traffic_counters->GetList()[i];
+    EXPECT_EQ(actual_tc->source,
+              CrosNetworkConfig::GetTrafficCounterEnumForTesting(
+                  expected_tc.FindKey("source")->GetString()));
+    if (comparison_type == ComparisonType::INTEGER) {
+      EXPECT_EQ(actual_tc->rx_bytes,
+                (size_t)expected_tc.FindKey("rx_bytes")->GetInt());
+      EXPECT_EQ(actual_tc->tx_bytes,
+                (size_t)expected_tc.FindKey("tx_bytes")->GetInt());
+    } else if (comparison_type == ComparisonType::DOUBLE) {
+      EXPECT_EQ(actual_tc->rx_bytes,
+                (size_t)expected_tc.FindKey("rx_bytes")->GetDouble());
+      EXPECT_EQ(actual_tc->tx_bytes,
+                (size_t)expected_tc.FindKey("tx_bytes")->GetDouble());
+    }
+  }
+}
+
 }  // namespace
 
 class CrosNetworkConfigTest : public testing::Test {
@@ -580,6 +611,25 @@ class CrosNetworkConfigTest : public testing::Test {
 
     run_loop.Run();
     return inhibit_lock;
+  }
+
+  void RequestTrafficCountersAndCompareTrafficCounters(
+      const std::string& guid,
+      base::Value traffic_counters,
+      ComparisonType comparison_type) {
+    base::RunLoop run_loop;
+    cros_network_config()->RequestTrafficCounters(
+        guid,
+        base::BindOnce(
+            [](base::Value* expected_traffic_counters, ComparisonType* type,
+               base::OnceClosure quit_closure,
+               std::vector<mojom::TrafficCounterPtr> actual_traffic_counters) {
+              CompareTrafficCounters(actual_traffic_counters,
+                                     expected_traffic_counters, *type);
+              std::move(quit_closure).Run();
+            },
+            &traffic_counters, &comparison_type, run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
   NetworkHandlerTestHelper* helper() { return helper_.get(); }
@@ -1344,6 +1394,39 @@ TEST_F(CrosNetworkConfigTest, CellularInhibitState) {
   EXPECT_EQ(mojom::InhibitReason::kInstallingProfile, cellular->inhibit_reason);
 }
 
+TEST_F(CrosNetworkConfigTest, CellularInhibitState_Connecting) {
+  const char kTestEuiccPath[] = "euicc_path";
+  mojom::DeviceStatePropertiesPtr cellular =
+      GetDeviceStateFromList(mojom::NetworkType::kCellular);
+  ASSERT_TRUE(cellular);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
+  EXPECT_EQ(mojom::InhibitReason::kNotInhibited, cellular->inhibit_reason);
+
+  // Set connect requested on cellular network.
+  NetworkStateHandler* network_state_handler =
+      NetworkHandler::Get()->network_state_handler();
+  const NetworkState* network_state =
+      network_state_handler->GetNetworkStateFromGuid("cellular_guid");
+  network_state_handler->SetNetworkConnectRequested(network_state->path(),
+                                                    true);
+
+  // Verify the inhibit state is not set when connecting if there are no EUICC.
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
+  ASSERT_TRUE(cellular);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
+  EXPECT_EQ(mojom::InhibitReason::kNotInhibited, cellular->inhibit_reason);
+
+  // Verify the adding EUICC sets the inhibit reason correctly.
+  helper()->hermes_manager_test()->AddEuicc(dbus::ObjectPath(kTestEuiccPath),
+                                            "eid", /*is_active=*/true,
+                                            /*physical_slot=*/0);
+  cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
+  ASSERT_TRUE(cellular);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, cellular->device_state);
+  EXPECT_EQ(mojom::InhibitReason::kConnectingToProfile,
+            cellular->inhibit_reason);
+}
+
 TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
   // Assert initial state.
   mojom::DeviceStatePropertiesPtr cellular =
@@ -1633,10 +1716,12 @@ TEST_F(CrosNetworkConfigTest, DeviceListChanged) {
   SetupObserver();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, observer()->device_state_list_changed());
+  NetworkStateHandler* network_state_handler =
+      NetworkHandler::Get()->network_state_handler();
 
   // Disable wifi
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
-      NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
+  network_state_handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), false,
+                                              network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   // This will trigger three device list updates. First when wifi is in the
   // disabling state, next when it's actually disabled, and lastly when
@@ -1644,22 +1729,31 @@ TEST_F(CrosNetworkConfigTest, DeviceListChanged) {
   EXPECT_EQ(3, observer()->device_state_list_changed());
 
   // Enable Tethering
-  NetworkHandler::Get()->network_state_handler()->SetTetherTechnologyState(
+  network_state_handler->SetTetherTechnologyState(
       NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(4, observer()->device_state_list_changed());
 
   // Tests that observers are notified of device state list change
   // when a tether scan begins for a device.
-  NetworkHandler::Get()->network_state_handler()->SetTetherScanState(true);
+  network_state_handler->SetTetherScanState(true);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5, observer()->device_state_list_changed());
 
   // Tests that observers are notified of device state list change
   // when a tether scan completes.
-  NetworkHandler::Get()->network_state_handler()->SetTetherScanState(false);
+  network_state_handler->SetTetherScanState(false);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(6, observer()->device_state_list_changed());
+
+  // Test that observers are notified of device state list change
+  // when a cellular network connection state changes.
+  const NetworkState* network_state =
+      network_state_handler->GetNetworkStateFromGuid("cellular_guid");
+  network_state_handler->SetNetworkConnectRequested(network_state->path(),
+                                                    /*connect_requested=*/true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(7, observer()->device_state_list_changed());
 }
 
 TEST_F(CrosNetworkConfigTest, ActiveNetworksChanged) {
@@ -1804,6 +1898,52 @@ TEST_F(CrosNetworkConfigTest, SetAlwaysOnVpn) {
   EXPECT_EQ(vpn_path(), helper()->GetProfileStringProperty(
                             helper()->ProfilePathUser(),
                             shill::kAlwaysOnVpnServiceProperty));
+}
+
+TEST_F(CrosNetworkConfigTest, RequestTrafficCountersWithIntegerType) {
+  base::Value traffic_counters(base::Value::Type::LIST);
+
+  base::Value chrome_dict(base::Value::Type::DICTIONARY);
+  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
+  chrome_dict.SetKey("rx_bytes", base::Value(12));
+  chrome_dict.SetKey("tx_bytes", base::Value(32));
+  traffic_counters.Append(std::move(chrome_dict));
+
+  base::Value user_dict(base::Value::Type::DICTIONARY);
+  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
+  user_dict.SetKey("rx_bytes", base::Value(90));
+  user_dict.SetKey("tx_bytes", base::Value(87));
+  traffic_counters.Append(std::move(user_dict));
+
+  ASSERT_TRUE(traffic_counters.is_list());
+  ASSERT_EQ(traffic_counters.GetList().size(), (size_t)2);
+  helper()->service_test()->SetFakeTrafficCounters(traffic_counters.Clone());
+
+  RequestTrafficCountersAndCompareTrafficCounters(
+      "wifi1_guid", traffic_counters.Clone(), ComparisonType::INTEGER);
+}
+
+TEST_F(CrosNetworkConfigTest, RequestTrafficCountersWithDoubleType) {
+  base::Value traffic_counters(base::Value::Type::LIST);
+
+  base::Value chrome_dict(base::Value::Type::DICTIONARY);
+  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
+  chrome_dict.SetKey("rx_bytes", base::Value(123456789987.0));
+  chrome_dict.SetKey("tx_bytes", base::Value(3211234567898.0));
+  traffic_counters.Append(std::move(chrome_dict));
+
+  base::Value user_dict(base::Value::Type::DICTIONARY);
+  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
+  user_dict.SetKey("rx_bytes", base::Value(9000000000000000.0));
+  user_dict.SetKey("tx_bytes", base::Value(8765432112345.0));
+  traffic_counters.Append(std::move(user_dict));
+
+  ASSERT_TRUE(traffic_counters.is_list());
+  ASSERT_EQ(traffic_counters.GetList().size(), (size_t)2);
+  helper()->service_test()->SetFakeTrafficCounters(traffic_counters.Clone());
+
+  RequestTrafficCountersAndCompareTrafficCounters(
+      "wifi1_guid", traffic_counters.Clone(), ComparisonType::DOUBLE);
 }
 
 }  // namespace network_config

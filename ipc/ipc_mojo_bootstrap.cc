@@ -164,11 +164,8 @@ class ChannelAssociatedGroupController
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(task_runner_->BelongsToCurrentThread());
-
     connector_ = std::make_unique<mojo::Connector>(
-        std::move(handle), mojo::Connector::SINGLE_THREADED_SEND, task_runner_,
+        std::move(handle), mojo::Connector::SINGLE_THREADED_SEND,
         "IPC Channel");
     connector_->set_incoming_receiver(&dispatcher_);
     connector_->set_connection_error_handler(
@@ -185,6 +182,8 @@ class ChannelAssociatedGroupController
     // operation would only introduce a redundant scheduling step for most
     // messages.
     connector_->set_force_immediate_dispatch(true);
+
+    connector_->StartReceiving(task_runner_);
   }
 
   void Pause() {
@@ -211,7 +210,7 @@ class ChannelAssociatedGroupController
   }
 
   void CreateChannelEndpoints(
-      mojo::AssociatedRemote<mojom::Channel>* sender,
+      mojo::PendingAssociatedRemote<mojom::Channel>* sender,
       mojo::PendingAssociatedReceiver<mojom::Channel>* receiver) {
     mojo::InterfaceId sender_id, receiver_id;
     if (set_interface_id_namespace_bit_) {
@@ -237,8 +236,8 @@ class ChannelAssociatedGroupController
     mojo::ScopedInterfaceEndpointHandle receiver_handle =
         CreateScopedInterfaceEndpointHandle(receiver_id);
 
-    sender->Bind(mojo::PendingAssociatedRemote<mojom::Channel>(
-        std::move(sender_handle), 0));
+    *sender = mojo::PendingAssociatedRemote<mojom::Channel>(
+        std::move(sender_handle), 0);
     *receiver = mojo::PendingAssociatedReceiver<mojom::Channel>(
         std::move(receiver_handle));
   }
@@ -511,6 +510,11 @@ class ChannelAssociatedGroupController
       return client_;
     }
 
+    void CountDroppedMessage() {
+      controller_->lock_.AssertAcquired();
+      ++num_dropped_messages_;
+    }
+
     void AttachClient(mojo::InterfaceEndpointClient* client,
                       scoped_refptr<base::SequencedTaskRunner> runner) {
       controller_->lock_.AssertAcquired();
@@ -520,6 +524,15 @@ class ChannelAssociatedGroupController
 
       task_runner_ = std::move(runner);
       client_ = client;
+
+      CHECK_EQ(num_dropped_messages_, 0u)
+          << "A Channel-associated interface endpoint for "
+          << client->interface_name() << " received undeliverable messages "
+          << "prior to being bound. This means the endpoint was held in a "
+          << "pending state longer than allowed. Channel-associated interface "
+          << "endpoints must be bound ASAP once received; either immediately "
+          << "on the IO or main thread, or after a single task hop from the IO "
+          << "thread to main thread where applicable.";
     }
 
     void DetachClient() {
@@ -673,6 +686,7 @@ class ChannelAssociatedGroupController
     std::unique_ptr<mojo::SequenceLocalSyncEventWatcher> sync_watcher_;
     base::queue<std::pair<uint32_t, MessageWrapper>> sync_messages_;
     uint32_t next_sync_message_id_ = 0;
+    size_t num_dropped_messages_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Endpoint);
   };
@@ -933,8 +947,10 @@ class ChannelAssociatedGroupController
       return;
 
     mojo::InterfaceEndpointClient* client = endpoint->client();
-    if (!client)
+    if (!client) {
+      endpoint->CountDroppedMessage();
       return;
+    }
 
     // Using client->interface_name() is safe here because this is a static
     // string defined for each mojo interface.
@@ -1104,7 +1120,7 @@ class MojoBootstrapImpl : public MojoBootstrap {
 
  private:
   void Connect(
-      mojo::AssociatedRemote<mojom::Channel>* sender,
+      mojo::PendingAssociatedRemote<mojom::Channel>* sender,
       mojo::PendingAssociatedReceiver<mojom::Channel>* receiver) override {
     controller_->Bind(std::move(handle_));
     controller_->CreateChannelEndpoints(sender, receiver);
@@ -1144,7 +1160,7 @@ std::unique_ptr<MojoBootstrap> MojoBootstrap::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner,
     const scoped_refptr<mojo::internal::MessageQuotaChecker>& quota_checker) {
   return std::make_unique<MojoBootstrapImpl>(
-      std::move(handle), new ChannelAssociatedGroupController(
+      std::move(handle), base::MakeRefCounted<ChannelAssociatedGroupController>(
                              mode == Channel::MODE_SERVER, ipc_task_runner,
                              proxy_task_runner, quota_checker));
 }

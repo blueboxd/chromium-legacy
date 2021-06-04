@@ -460,11 +460,6 @@ const base::Feature kInstantTethering{"InstantTethering",
 const base::Feature kEnableInputNoiseCancellationUi{
     "EnableInputNoiseCancellationUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the Kerberos Section in ChromeOS settings. When disabled, Kerberos
-// settings will stay under People Section. https://crbug.com/983041
-const base::Feature kKerberosSettingsSection{"KerberosSettingsSection",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables to use lacros-chrome as a primary web browser on Chrome OS.
 // This works only when LacrosSupport below is enabled.
 // NOTE: Use crosapi::browser_util::IsLacrosPrimary() instead of checking
@@ -572,10 +567,6 @@ const base::Feature kPluginVmShowCameraPermissions{
 // VM app settings.
 const base::Feature kPluginVmShowMicrophonePermissions{
     "PluginVmShowMicrophonePermissions", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Allows print servers to be selected when beyond a specified limit.
-const base::Feature kPrintServerScaling{"PrintServerScaling",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable projector.
 const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -866,10 +857,6 @@ bool IsInputNoiseCancellationUiEnabled() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
-}
-
-bool IsKerberosSettingsSectionEnabled() {
-  return base::FeatureList::IsEnabled(kKerberosSettingsSection);
 }
 
 bool IsMicMuteNotificationsEnabled() {

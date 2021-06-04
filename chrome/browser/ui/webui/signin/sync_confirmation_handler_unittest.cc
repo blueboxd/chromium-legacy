@@ -90,8 +90,8 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
 
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
-    account_info_ =
-        identity_test_env()->MakePrimaryAccountAvailable("foo@example.com");
+    account_info_ = identity_test_env()->MakePrimaryAccountAvailable(
+        "foo@example.com", signin::ConsentLevel::kSync);
     login_ui_service_observation_.Observe(
         LoginUIServiceFactory::GetForProfile(profile()));
   }
@@ -165,13 +165,11 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
 
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile());
-    absl::optional<AccountInfo> primary_account =
-        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-            identity_manager->GetPrimaryAccountInfo(
-                signin::ConsentLevel::kSync));
-    EXPECT_TRUE(primary_account);
+    AccountInfo primary_account = identity_manager->FindExtendedAccountInfo(
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
+    EXPECT_FALSE(primary_account.IsEmpty());
 
-    std::string gaia_picture_url = primary_account->picture_url;
+    std::string gaia_picture_url = primary_account.picture_url;
     std::string expected_picture_url =
         signin::GetAvatarImageURLWithOptions(GURL(gaia_picture_url),
                                              kExpectedProfileImageSize,
@@ -184,7 +182,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     const base::Value* show_enterprise_badge =
         call_data.arg2()->FindKey("showEnterpriseBadge");
     EXPECT_NE(show_enterprise_badge, nullptr);
-    EXPECT_EQ(primary_account->IsManaged(), show_enterprise_badge->GetBool());
+    EXPECT_EQ(primary_account.IsManaged(), show_enterprise_badge->GetBool());
   }
 
  protected:

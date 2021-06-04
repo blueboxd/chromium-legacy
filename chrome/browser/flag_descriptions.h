@@ -822,9 +822,6 @@ extern const char kJavascriptHarmonyDescription[];
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
 
-extern const char kKerberosSettingsSectionName[];
-extern const char kKerberosSettingsSectionDescription[];
-
 extern const char kLegacyTLSEnforcedName[];
 extern const char kLegacyTLSEnforcedDescription[];
 
@@ -1144,9 +1141,6 @@ extern const char kPointerLockOptionsDescription[];
 
 extern const char kPrerender2Name[];
 extern const char kPrerender2Description[];
-
-extern const char kPrintServerScalingName[];
-extern const char kPrintServerScalingDescription[];
 
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];

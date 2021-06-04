@@ -5139,10 +5139,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableArcUnifiedAudioFocusName,
      flag_descriptions::kEnableArcUnifiedAudioFocusDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableUnifiedAudioFocusFeature)},
-    {"enable-kerberos-settings-section",
-     flag_descriptions::kKerberosSettingsSectionName,
-     flag_descriptions::kKerberosSettingsSectionDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kKerberosSettingsSection)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
@@ -5499,10 +5495,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSelectToSpeakNavigationControlName,
      flag_descriptions::kSelectToSpeakNavigationControlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSelectToSpeakNavigationControl)},
-
-    {"print-server-scaling", flag_descriptions::kPrintServerScalingName,
-     flag_descriptions::kPrintServerScalingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kPrintServerScaling)},
 
     {"enable-networking-in-diagnostics-app",
      flag_descriptions::kEnableNetworkingInDiagnosticsAppName,

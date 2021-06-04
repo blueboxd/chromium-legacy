@@ -331,7 +331,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/policy/external_data/handlers/device_wallpaper_image_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/reporting/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/reporting/arc_app_install_event_logger.h"
 #include "chrome/browser/chromeos/policy/reporting/extension_install_event_log_manager_wrapper.h"
@@ -857,8 +857,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::PowerMetricsReporter::RegisterLocalStatePrefs(registry);
   chromeos::platform_keys::KeyPermissionsManagerImpl::RegisterLocalStatePrefs(
       registry);
-  chromeos::power::auto_screen_brightness::MetricsReporter::
-      RegisterLocalStatePrefs(registry);
+  ash::power::auto_screen_brightness::MetricsReporter::RegisterLocalStatePrefs(
+      registry);
   chromeos::Preferences::RegisterPrefs(registry);
   ash::ResetScreen::RegisterPrefs(registry);
   chromeos::SchedulerConfigurationManager::RegisterLocalStatePrefs(registry);

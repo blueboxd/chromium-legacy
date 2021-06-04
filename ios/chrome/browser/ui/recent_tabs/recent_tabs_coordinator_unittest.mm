@@ -145,7 +145,8 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
                       BOOL syncCompleted,
                       BOOL hasForeignSessions) {
     if (signedIn) {
-      identity_test_env_.MakePrimaryAccountAvailable("test@test.com");
+      identity_test_env_.MakePrimaryAccountAvailable(
+          "test@test.com", signin::ConsentLevel::kSync);
     } else if (identity_test_env_.identity_manager()->HasPrimaryAccount(
                    signin::ConsentLevel::kSync)) {
       auto* account_mutator =
@@ -163,8 +164,8 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
             SessionSyncServiceFactory::GetForBrowserState(
                 chrome_browser_state_.get()));
 
-    // Needed by ProfileSyncService's initialization, triggered during
-    // initialization of SyncSetupServiceMock.
+    // Needed by SyncService's initialization, triggered during initialization
+    // of SyncSetupServiceMock.
     ON_CALL(*session_sync_service, GetControllerDelegate())
         .WillByDefault(Return(fake_controller_delegate_.GetWeakPtr()));
     ON_CALL(*session_sync_service, GetGlobalIdMapper())

@@ -25,6 +25,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_status_code.h"
@@ -34,6 +35,7 @@ namespace autofill_assistant {
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::NiceMock;
@@ -53,16 +55,13 @@ const char kFakeDeepLink[] = "https://example.com/q?data=test";
 const char kFakeServerUrl[] =
     "https://www.fake.backend.com/trigger_script_server";
 
-class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
+class TriggerScriptCoordinatorTest : public testing::Test {
  public:
-  TriggerScriptCoordinatorTest()
-      : content::RenderViewHostTestHarness(
-            base::test::TaskEnvironment::MainThreadType::UI,
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~TriggerScriptCoordinatorTest() override = default;
+  TriggerScriptCoordinatorTest() = default;
 
   void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        &browser_context_, nullptr);
     ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
 
     auto mock_request_sender =
@@ -103,9 +102,12 @@ class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
         ukm::GetSourceIdForWebContentsDocument(web_contents()));
   }
 
-  void TearDown() override {
-    coordinator_.reset();
-    RenderViewHostTestHarness::TearDown();
+  void TearDown() override { coordinator_.reset(); }
+
+  content::WebContents* web_contents() { return web_contents_.get(); }
+
+  content::BrowserTaskEnvironment* task_environment() {
+    return &task_environment_;
   }
 
   void SimulateWebContentsVisibilityChanged(content::Visibility visibility) {
@@ -126,6 +128,11 @@ class TriggerScriptCoordinatorTest : public content::RenderViewHostTestHarness {
   }
 
  protected:
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
+  content::TestBrowserContext browser_context_;
+  std::unique_ptr<content::WebContents> web_contents_;
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
   NiceMock<MockServiceRequestSender>* mock_request_sender_;
   NiceMock<MockWebController>* mock_web_controller_;
@@ -1175,6 +1182,33 @@ TEST_F(TriggerScriptCoordinatorTest, RecordUkmsForCurrentUrlIfPossible) {
                    {navigation_ids_[1],
                     {Metrics::TriggerScriptShownToUser::SHOWN_TO_USER,
                      TriggerScriptProto::SHOPPING_CART_RETURNING_USER}}})));
+}
+
+TEST_F(TriggerScriptCoordinatorTest, BackendCanOverrideScriptParameters) {
+  GetTriggerScriptsResponseProto response;
+  response.add_trigger_scripts();
+  auto* param_1 = response.add_script_parameters();
+  param_1->set_name("name_1");
+  param_1->set_value("new_value_1");
+  auto* param_2 = response.add_script_parameters();
+  param_2->set_name("name_2");
+  param_2->set_value("new_value_2");
+  std::string serialized_response;
+  response.SerializeToString(&serialized_response);
+
+  EXPECT_CALL(*mock_request_sender_, OnSendRequest(GURL(kFakeServerUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, serialized_response));
+
+  coordinator_->Start(
+      GURL(kFakeDeepLink),
+      std::make_unique<TriggerContext>(
+          std::make_unique<ScriptParameters>(std::map<std::string, std::string>{
+              {"name_1", "old_value_1"}, {"name_3", "value_3"}}),
+          TriggerContext::Options()),
+      mock_callback_.Get());
+  EXPECT_THAT(coordinator_->GetTriggerContext().GetScriptParameters().ToProto(),
+              ElementsAre(std::make_pair("name_1", "new_value_1"),
+                          std::make_pair("name_2", "new_value_2")));
 }
 
 }  // namespace autofill_assistant

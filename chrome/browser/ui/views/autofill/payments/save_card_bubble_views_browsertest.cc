@@ -58,8 +58,8 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/render_process_host.h"
@@ -172,7 +172,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
         "components/test/data/autofill");
     embedded_test_server()->StartAcceptingConnections();
 
-    SyncServiceFactory::GetAsProfileSyncServiceForProfile(browser()->profile())
+    SyncServiceFactory::GetAsSyncServiceImplForProfile(browser()->profile())
         ->OverrideNetworkForTest(
             fake_server::CreateFakeServerHttpPostProviderFactory(
                 GetFakeServer()->AsWeakPtr()));
@@ -2068,9 +2068,17 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
 }
 
+// Disabled on Linux due to crashes; https://crbug.com/1216300.
+#if defined(OS_LINUX)
+#define MAYBE_ClickingOnCreditCardIconInStatusChipReshowsBubble \
+    DISABLED_ClickingOnCreditCardIconInStatusChipReshowsBubble
+#else
+#define MAYBE_ClickingOnCreditCardIconInStatusChipReshowsBubble \
+    ClickingOnCreditCardIconInStatusChipReshowsBubble
+#endif
 // Ensures that the clicking on the credit card icon will reshow bubble.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
-                       ClickingOnCreditCardIconInStatusChipReshowsBubble) {
+                       MAYBE_ClickingOnCreditCardIconInStatusChipReshowsBubble) {
   FillForm();
   SubmitFormAndWaitForCardLocalSaveBubble();
   ClickOnCloseButton();

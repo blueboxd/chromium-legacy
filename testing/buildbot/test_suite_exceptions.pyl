@@ -273,7 +273,6 @@
         },
       },
       'Mac10.15 Tests': {
-        'ci_only': True,
         'swarming': {
           'dimension_sets': [
             {
@@ -1492,9 +1491,6 @@
       # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
       # exception once there is enough capacity to run these tests.
       'Android FYI Release (Pixel 2)',
-      # TODO(https://crbug.com/1203234): Remove exception once the 1% flake-
-      # rate regression is addressed.
-      'Fuchsia x64' # https://crbug.com/1203236
     ],
   },
   'disk_usage_tast_test': {
@@ -1727,9 +1723,6 @@
       'Linux V8 FYI Release - pointer compression (NVIDIA)',
       'Mac V8 FYI Release (Intel)',
       'Win V8 FYI Release (NVIDIA)',
-      # TODO(https://crbug.com/1203234): Remove exception once the 1% flake-
-      # rate regression is addressed.
-      'Fuchsia x64' # https://crbug.com/1203236
     ],
     'modifications': {
       'ChromeOS FYI Release (amd64-generic)': {
@@ -1796,9 +1789,6 @@
         'swarming': {
           'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
         },
-      },
-      'Mac10.15 Tests': {
-        'ci_only': True,
       },
       'Mac11 Tests': {
         # TODO(crbug.com/1206401): Restore to defaults when there is enough
@@ -2594,11 +2584,6 @@
         ],
       },
     },
-  },
-  'screenshot_sync_tests': {
-    'remove_from': [
-      'Fuchsia x64' # https://crbug.com/1203236
-    ],
   },
   'screenshot_sync_validating_tests': {
     'modifications': {

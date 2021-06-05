@@ -16,8 +16,7 @@ namespace features {
 extern const base::Feature kAccessiblePDFForm;
 extern const base::Feature kPdfIncrementalLoading;
 extern const base::Feature kPdfPartialLoading;
-extern const base::Feature kPdfViewerDocumentProperties;
-extern const base::Feature kPdfViewerPresentationMode;
+extern const base::Feature kPdfUnseasoned;
 extern const base::Feature kPdfXfaSupport;
 extern const base::Feature kTabAcrossPDFAnnotations;
 

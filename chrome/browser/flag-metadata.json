@@ -125,7 +125,12 @@
   {
     "name": "android-detailed-language-settings",
     "owners": [ "perrier", "chrome-language@google.com" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 95
+  },
+  {
+    "name": "android-force-app-language-prompt",
+    "owners": [" perrier", "chrome-language@google.com"],
+    "expiry_milestone": 95
   },
   {
     "name": "android-multiple-display",
@@ -241,7 +246,7 @@
   {
     "name": "ash-enable-pip-rounded-corners",
     "owners": [ "edcourtney" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 96
   },
   {
     "name": "ash-enable-unified-desktop",
@@ -2207,6 +2212,16 @@
     "expiry_milestone": 80
   },
   {
+    "name" : "enable-projector-feature",
+    "owners" : [ "cros-families-eng@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name" : "enable-projector-feature-pod",
+    "owners" : [ "cros-families-eng@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "enable-quic",
     "owners": [ "//net/quic/OWNERS" ],
     // This flag is used by network administrators to debug
@@ -2631,6 +2646,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-webrtc-analog-agc-clipping-control",
+    "owners": [ "alessiob", "silen", "minyue" ],
+    "expiry_milestone": 103
+  },
+  {
     "name": "enable-webrtc-capture-multi-channel-audio-processing",
     "owners": [ "saza" ],
     "expiry_milestone": 123
@@ -2877,6 +2897,11 @@
     "name": "filling-passwords-from-any-origin",
     "owners": [ "fhorschig", "redatawfik" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "focus-follows-cursor",
+    "owners": [ "dandersson", "tclaiborne" ],
+    "expiry_milestone": 100
   },
   {
     "name": "focus-mode",
@@ -4146,16 +4171,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "pdf-viewer-document-properties",
-    "owners": [ "dhoss", "dpapad" ],
-    "expiry_milestone": 92
-  },
-  {
-    "name": "pdf-viewer-presentation-mode",
-    "owners": [ "dpapad" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "pdf-xfa-forms",
     "owners": [ "carlosil", "tsepez" ],
     "expiry_milestone": 94
@@ -4224,11 +4239,6 @@
     "name": "prefer-constant-frame-rate",
     "owners": [ "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "prefetch-notification-scheduling-integration",
-    "owners": [ "hesen" ],
-    "expiry_milestone": 88
   },
   {
     "name": "print-with-reduced-rasterization",

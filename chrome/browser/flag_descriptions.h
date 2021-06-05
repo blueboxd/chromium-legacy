@@ -1512,6 +1512,9 @@ extern const char kWebrtcHideLocalIpsWithMdnsDecription[];
 extern const char kWebrtcHybridAgcName[];
 extern const char kWebrtcHybridAgcDescription[];
 
+extern const char kWebrtcAnalogAgcClippingControlName[];
+extern const char kWebrtcAnalogAgcClippingControlDescription[];
+
 extern const char kWebrtcHwDecodingName[];
 extern const char kWebrtcHwDecodingDescription[];
 
@@ -1586,6 +1589,9 @@ extern const char kAImageReaderDescription[];
 
 extern const char kAndroidDetailedLanguageSettingsName[];
 extern const char kAndroidDetailedLanguageSettingsDescription[];
+
+extern const char kAndroidForceAppLanguagePromptName[];
+extern const char kAndroidForceAppLanguagePromptDescription[];
 
 extern const char kAndroidLayoutChangeTabReparentingName[];
 extern const char kAndroidLayoutChangeTabReparentingDescription[];
@@ -1955,9 +1961,6 @@ extern const char kShareButtonInTopToolbarName[];
 extern const char kShareButtonInTopToolbarDescription[];
 extern const char kVoiceButtonInTopToolbarName[];
 extern const char kVoiceButtonInTopToolbarDescription[];
-
-extern const char kPrefetchNotificationSchedulingIntegrationName[];
-extern const char kPrefetchNotificationSchedulingIntegrationDescription[];
 
 extern const char kInlineUpdateFlowName[];
 extern const char kInlineUpdateFlowDescription[];
@@ -2572,6 +2575,9 @@ extern const char kFilesZipUnpackDescription[];
 extern const char kFiltersInRecentsName[];
 extern const char kFiltersInRecentsDescription[];
 
+extern const char kFocusFollowsCursorName[];
+extern const char kFocusFollowsCursorDescription[];
+
 extern const char kFrameThrottleFpsName[];
 extern const char kFrameThrottleFpsDescription[];
 extern const char kFrameThrottleFpsDefault[];
@@ -2658,6 +2664,12 @@ extern const char kLimitShelfItemsToActiveDeskDescription[];
 
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];
+
+extern const char kProjectorFeaturePodName[];
+extern const char kProjectorFeaturePodDescription[];
+
+extern const char kProjectorName[];
+extern const char kProjectorDescription[];
 
 extern const char kEnableHardwareMirrorModeName[];
 extern const char kEnableHardwareMirrorModeDescription[];
@@ -2963,14 +2975,6 @@ extern const char kPaintPreviewDemoDescription[];
 extern const char kPaintPreviewStartupName[];
 extern const char kPaintPreviewStartupDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-extern const char kPdfViewerDocumentPropertiesName[];
-extern const char kPdfViewerDocumentPropertiesDescription[];
-
-extern const char kPdfViewerPresentationModeName[];
-extern const char kPdfViewerPresentationModeDescription[];
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];

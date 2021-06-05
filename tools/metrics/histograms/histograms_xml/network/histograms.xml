@@ -141,6 +141,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Network.Cellular.ESim.DisableProfile.Result"
+    enum="HermesResponseStatus" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of disabling an eSIM profile. Note that the result
+    for &quot;already disabled&quot; is considered a success for this metric.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.ESim.InstallPendingProfile.Result"
     enum="HermesResponseStatus" expires_after="2022-03-01">
   <owner>azeemarshad@chromium.org</owner>
@@ -252,6 +265,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Network.Cellular.ESim.UninstallProfile.OperationResult"
+    enum="NetworkCellularESimUninstallOperationResult"
+    expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the result of the high-level operation of uninstalling an eSIM
+    profile. This includes several steps before and after the core step of
+    uninstalling the profile.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.ESim.UninstallProfile.Result"
+    enum="HermesResponseStatus" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of uninstalling an eSIM profile. Emitted once the
+    operation completes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.ESim.Usage.Count" enum="NetworkCellularUsage"
     expires_after="2022-03-01">
   <owner>azeemarshad@chromium.org</owner>
@@ -259,6 +298,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Tracks the number of times a ESim cellular network is connected as the only
     network, or with other network or not connected at all.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.InhibitResult"
+    enum="NetworkCellularInhibitResult" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the result of a cellular device inhibit-uninhibit cycle.
+
+    Emitted when uninhibit completes or when any step fails.
   </summary>
 </histogram>
 

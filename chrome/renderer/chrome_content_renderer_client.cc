@@ -397,6 +397,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();
+  WebSecurityPolicy::RegisterURLSchemeAsExtension(
+      WebString::FromASCII(extensions::kExtensionScheme));
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -690,9 +692,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 }
 
-void ChromeContentRendererClient::RenderViewCreated(
-    content::RenderView* render_view) {
-  new prerender::NoStatePrefetchClient(render_view->GetWebView());
+void ChromeContentRendererClient::WebViewCreated(blink::WebView* web_view) {
+  new prerender::NoStatePrefetchClient(web_view);
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
@@ -988,8 +989,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (GURL(frame->GetDocument().Url()).host_piece() ==
             extension_misc::kPdfExtensionId) {
           if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-            auto* render_view = render_frame->GetRenderView();
-            auto* web_view = render_view ? render_view->GetWebView() : nullptr;
+            auto* web_view = render_frame->GetWebView();
             if (web_view) {
               web_view->GetSettings()->SetPreferredColorScheme(
                   blink::mojom::PreferredColorScheme::kLight);

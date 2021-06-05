@@ -56,47 +56,41 @@ const StateComponentMapping = {
     buttonBack: ButtonState.HIDDEN,
   },
   // TODO(joonbug): update to correct RmaState
-  [RmaState.kSelectComponents]: {
-    componentIs: 'onboarding-update-page',
-    btnNext: ButtonState.VISIBLE,
-    btnCancel: ButtonState.VISIBLE,
-    btnBack: ButtonState.VISIBLE,
-  },
   [RmaState.kChooseDestination]: {
     componentIs: 'onboarding-choose-destination-page',
-    btnNext: ButtonState.HIDDEN,
-    btnCancel: ButtonState.VISIBLE,
-    btnBack: ButtonState.VISIBLE,
+    buttonNext: ButtonState.HIDDEN,
+    buttonCancel: ButtonState.VISIBLE,
+    buttonBack: ButtonState.VISIBLE,
   },
   [RmaState.kChooseWriteProtectDisableMethod]: {
     componentIs: 'onboarding-choose-wp-disable-method-page',
-    btnNext: ButtonState.VISIBLE,
-    btnCancel: ButtonState.VISIBLE,
-    btnBack: ButtonState.VISIBLE,
+    buttonNext: ButtonState.VISIBLE,
+    buttonCancel: ButtonState.VISIBLE,
+    buttonBack: ButtonState.VISIBLE,
   },
   [RmaState.kWaitForManualWPDisable]: {
     componentIs: 'onboarding-wait-for-manual-wp-disable-page',
-    btnNext: ButtonState.VISIBLE,
-    btnCancel: ButtonState.HIDDEN,
-    btnBack: ButtonState.VISIBLE,
+    buttonNext: ButtonState.VISIBLE,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.VISIBLE,
   },
   [RmaState.kUpdateChrome]: {
     componentIs: 'onboarding-update-page',
-    btnNext: ButtonState.VISIBLE,
-    btnCancel: ButtonState.VISIBLE,
-    btnBack: ButtonState.VISIBLE,
+    buttonNext: ButtonState.VISIBLE,
+    buttonCancel: ButtonState.VISIBLE,
+    buttonBack: ButtonState.VISIBLE,
   },
   [RmaState.kSelectComponents]: {
     componentIs: 'onboarding-select-components-page',
-    btnNext: ButtonState.HIDDEN,
-    btnCancel: ButtonState.VISIBLE,
-    btnBack: ButtonState.VISIBLE,
+    buttonNext: ButtonState.HIDDEN,
+    buttonCancel: ButtonState.VISIBLE,
+    buttonBack: ButtonState.VISIBLE,
   },
   [RmaState.kEnterRSUWPDisableCode]: {
     componentIs: 'onboarding-enter-rsu-wp-disable-code-page',
-    btnNext: ButtonState.HIDDEN,
-    btnCancel: ButtonState.HIDDEN,
-    btnBack: ButtonState.VISIBLE,
+    buttonNext: ButtonState.HIDDEN,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.VISIBLE,
   },
 
 };
@@ -257,9 +251,8 @@ export class ShimlessRmaElement extends PolymerElement {
     assert(page);
 
     // Acquire promise to check whether current page is ready for next page.
-    const prepPageAdvance = page.onNextButtonClick ||
-        (() => Promise.resolve(
-             {state: RmaState.kUnknown, error: RmadErrorCode.kOk}));
+    const prepPageAdvance =
+        page.onNextButtonClick || (() => Promise.resolve(undefined));
     assert(typeof prepPageAdvance === 'function');
 
     // TODO(gavindodd): Handle stateResult.error

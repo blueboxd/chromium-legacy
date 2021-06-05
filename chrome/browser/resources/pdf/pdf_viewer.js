@@ -177,12 +177,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       },
 
       /** @private */
-      documentPropertiesEnabled_: {
-        type: Boolean,
-        value: false,
-      },
-
-      /** @private */
       fileName_: String,
 
       /** @private */
@@ -223,12 +217,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
       /** @private */
       pdfAnnotationsEnabled_: {
-        type: Boolean,
-        value: false,
-      },
-
-      /** @private */
-      presentationModeEnabled_: {
         type: Boolean,
         value: false,
       },
@@ -600,8 +588,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @private */
   onPresentClick_() {
-    assert(this.presentationModeEnabled_);
-
     const onWheel = e => {
       e.deltaY > 0 ? this.viewport.goToNextPage() :
                      this.viewport.goToPreviousPage();
@@ -641,7 +627,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @private */
   onPropertiesClick_() {
-    assert(this.documentPropertiesEnabled_);
     assert(!this.showPropertiesDialog_);
     this.showPropertiesDialog_ = true;
   }
@@ -755,12 +740,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
   handleStrings(strings) {
     super.handleStrings(strings);
 
-    this.documentPropertiesEnabled_ =
-        loadTimeData.getBoolean('documentPropertiesEnabled');
     this.pdfAnnotationsEnabled_ =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
-    this.presentationModeEnabled_ =
-        loadTimeData.getBoolean('presentationModeEnabled');
     this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
     const presetZoomFactors = this.viewport.presetZoomFactors;
     this.zoomBounds_.min = Math.round(presetZoomFactors[0] * 100);

@@ -377,15 +377,11 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
-  test('SetComponentsRepairStateOK', () => {
+  test('SetComponentListOk', () => {
     let components = [
       {
         component: ComponentType.kKeyboard,
         state: ComponentRepairState.kOriginal
-      },
-      {
-        component: ComponentType.kTrackpad,
-        state: ComponentRepairState.kMissing
       },
     ];
     let states = [
@@ -394,21 +390,17 @@ export function fakeShimlessRmaServiceTestSuite() {
     ];
     service.setStates(states);
 
-    return service.setComponentsRepairState(components).then((state) => {
+    return service.setComponentList(components).then((state) => {
       assertEquals(state.state, RmaState.kUpdateChrome);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
-  test('SetComponentsRepairStateWrongStateFails', () => {
+  test('SetComponentListWrongStateFails', () => {
     let components = [
       {
         component: ComponentType.kKeyboard,
         state: ComponentRepairState.kOriginal
-      },
-      {
-        component: ComponentType.kTrackpad,
-        state: ComponentRepairState.kMissing
       },
     ];
     let states = [
@@ -417,7 +409,7 @@ export function fakeShimlessRmaServiceTestSuite() {
     ];
     service.setStates(states);
 
-    return service.setComponentsRepairState(components).then((state) => {
+    return service.setComponentList(components).then((state) => {
       assertEquals(state.state, RmaState.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
@@ -735,16 +727,102 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
-  test('CutoffBatteryDefaultUndefined', () => {
-    return service.cutoffBattery().then((error) => {
-      assertEquals(error, undefined);
+  test('FinalizeAndRebootOk', () => {
+    let states = [
+      {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.finalizeAndReboot().then((state) => {
+      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
-  test('SetCutoffBatteryUpdatesResult', () => {
-    service.setCutoffBatteryResult(RmadErrorCode.kRequestInvalid);
-    return service.cutoffBattery().then((error) => {
-      assertEquals(error.error, RmadErrorCode.kRequestInvalid);
+  test('FinalizeAndRebootWhenRmaNotRequired', () => {
+    return service.finalizeAndReboot().then((state) => {
+      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
+    });
+  });
+
+  test('FinalizeAndRebootWrongStateFails', () => {
+    let states = [
+      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.finalizeAndReboot().then((state) => {
+      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.error, RmadErrorCode.kRequestInvalid);
+    });
+  });
+
+  test('FinalizeAndShutdownOk', () => {
+    let states = [
+      {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.finalizeAndShutdown().then((state) => {
+      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.error, RmadErrorCode.kOk);
+    });
+  });
+
+  test('FinalizeAndShutdownWhenRmaNotRequired', () => {
+    return service.finalizeAndShutdown().then((state) => {
+      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
+    });
+  });
+
+  test('FinalizeAndShutdownWrongStateFails', () => {
+    let states = [
+      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.finalizeAndShutdown().then((state) => {
+      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.error, RmadErrorCode.kRequestInvalid);
+    });
+  });
+
+  test('CutoffBatteryOk', () => {
+    let states = [
+      {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.cutoffBattery().then((state) => {
+      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.error, RmadErrorCode.kOk);
+    });
+  });
+
+  test('CutoffBatteryWhenRmaNotRequired', () => {
+    return service.cutoffBattery().then((state) => {
+      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
+    });
+  });
+
+  test('CutoffBatteryWrongStateFails', () => {
+    let states = [
+      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+    ];
+    service.setStates(states);
+
+    return service.cutoffBattery().then((state) => {
+      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 

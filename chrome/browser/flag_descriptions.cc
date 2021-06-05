@@ -2635,6 +2635,11 @@ const char kWebrtcHybridAgcName[] = "WebRTC hybrid Agc2/Agc1.";
 const char kWebrtcHybridAgcDescription[] =
     "WebRTC Agc2 digital adaptation with Agc1 analog adaptation.";
 
+const char kWebrtcAnalogAgcClippingControlName[] =
+    "WebRTC Agc1 analog clipping control.";
+const char kWebrtcAnalogAgcClippingControlDescription[] =
+    "WebRTC Agc1 analog clipping controller to reduce saturation.";
+
 const char kWebrtcHwDecodingName[] = "WebRTC hardware video decoding";
 const char kWebrtcHwDecodingDescription[] =
     "Support in WebRTC for decoding video streams using platform hardware.";
@@ -2746,6 +2751,12 @@ const char kAndroidDetailedLanguageSettingsName[] =
     "Detailed Language Settings";
 const char kAndroidDetailedLanguageSettingsDescription[] =
     "Enable the new detailed language settings page";
+
+const char kAndroidForceAppLanguagePromptName[] =
+    "Force second run app language prompt";
+const char kAndroidForceAppLanguagePromptDescription[] =
+    "When enabled the app language prompt to change the UI language will"
+    "always be shown.";
 
 const char kAndroidLayoutChangeTabReparentingName[] =
     "Android Chrome UI phone/tablet layout change tab reparenting";
@@ -3388,12 +3399,6 @@ const char kUseNotificationCompatBuilderDescription[] =
 const char kUserMediaScreenCapturingName[] = "Screen Capture API";
 const char kUserMediaScreenCapturingDescription[] =
     "Allows sites to request a video stream of your screen.";
-
-const char kPrefetchNotificationSchedulingIntegrationName[] =
-    "Enable prefetch notification using notification scheduling system";
-const char kPrefetchNotificationSchedulingIntegrationDescription[] =
-    "if enable prefetch notification service and background task will hook up "
-    "to notification scheduling system in native side";
 
 const char kVideoTutorialsName[] = "Enable video tutorials";
 const char kVideoTutorialsDescription[] = "Show video tutorials in Chrome";
@@ -4445,6 +4450,10 @@ const char kFiltersInRecentsDescription[] =
     "Enable file-type filters (Audio, Images, Videos) in Files App Recents "
     "view.";
 
+const char kFocusFollowsCursorName[] = "Focus follows cursor";
+const char kFocusFollowsCursorDescription[] =
+    "Enable window focusing by moving the cursor.";
+
 const char kFrameThrottleFpsName[] = "Set frame throttling fps.";
 const char kFrameThrottleFpsDescription[] =
     "Set the throttle fps for compositor frame submission.";
@@ -4576,6 +4585,14 @@ const char kLimitShelfItemsToActiveDeskDescription[] =
 const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =
     "Enables listing all external displays' modes in the display settings.";
+
+const char kProjectorFeaturePodName[] = "Show Projector In System Tray";
+const char kProjectorFeaturePodDescription[] =
+    "Enables showing the projector feature pod in system stray";
+
+const char kProjectorName[] = "Enable the Projector feature";
+const char kProjectorDescription[] =
+    "Enables projector feature flag to be used";
 
 const char kEnableHardwareMirrorModeName[] = "Enable Hardware Mirror Mode";
 const char kEnableHardwareMirrorModeDescription[] =
@@ -5054,20 +5071,6 @@ const char kPaintPreviewStartupDescription[] =
     "the tab to be restored on startup, the paint preview will be shown "
     "instead.";
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-
-const char kPdfViewerDocumentPropertiesName[] =
-    "PDF Viewer Document Properties";
-const char kPdfViewerDocumentPropertiesDescription[] =
-    "When enabled, the PDF viewer will include an option in the toolbar's "
-    "overflow menu to open a dialog containing document properties.";
-
-const char kPdfViewerPresentationModeName[] = "PDF Viewer Presentation Mode";
-const char kPdfViewerPresentationModeDescription[] =
-    "When enabled, the PDF viewer will include an option in the toolbar's "
-    "overflow menu to enter Presentation (full screen) Mode.";
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 const char kWebUITabStripName[] = "WebUI tab strip";

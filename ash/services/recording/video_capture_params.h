@@ -38,7 +38,7 @@ class VideoCaptureParams {
       const gfx::Size& frame_sink_size);
 
   // Returns a capture params instance for a recording of a window. The given
-  //|frame_sink_id| is either of that window (if it submits compositor frames
+  // |frame_sink_id| is either of that window (if it submits compositor frames
   // independently), or of the root window it descends from (if it doesn't
   // submit its compositor frames). In the latter case, the window must be
   // identifiable by a valid |subtree_capture_id| (created by calling
@@ -62,9 +62,18 @@ class VideoCaptureParams {
       const gfx::Size& frame_sink_size,
       const gfx::Rect& crop_region);
 
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  gfx::Size current_frame_sink_size() const { return current_frame_sink_size_; }
+
   // Initializes the given |capturer| (passed by ref) according to the capture
   // parameters. The given |capturer| must be bound before calling this.
   void InitializeVideoCapturer(
+      mojo::Remote<viz::mojom::FrameSinkVideoCapturer>& capturer) const;
+
+  // Sets the desired resolution constraints on the given |capturer|. By default
+  // the size of the recorded frame sink is used. Sub classes can override this
+  // behavior if needed.
+  virtual void SetCapturerResolutionConstraints(
       mojo::Remote<viz::mojom::FrameSinkVideoCapturer>& capturer) const;
 
   // Returns the bounds to which a video frame, whose

@@ -126,6 +126,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feed::kInterestFeedV2,
     &feed::kInterestFeedV2Autoplay,
     &feed::kInterestFeedV2Hearts,
+    &feed::kReliabilityLogging,
     &feed::kWebFeed,
     &feed::kXsurfaceMetricsReporting,
     &history::kHideFromApi3Transitions,
@@ -165,7 +166,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kChromeShareLongScreenshot,
     &kChromeShareScreenshot,
     &kChromeSharingHub,
-    &kChromeStartupDelegate,
     &kChromeSurveyNextAndroid,
     &kCommandLineOnNonRooted,
     &kCommerceMerchantViewer,
@@ -243,14 +243,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTestDefaultEnabled,
     &kThemeRefactorAndroid,
     &kToolbarIphAndroid,
-    &kToolbarIphAndroidCohort1,
-    &kToolbarIphAndroidCohort2,
-    &kToolbarIphAndroidCohort3,
-    &kToolbarIphAndroidCohort4,
-    &kToolbarIphAndroidCohort5,
-    &kToolbarIphAndroidCohort6,
-    &kToolbarIphAndroidCohort7,
-    &kToolbarIphAndroidCohort8,
     &kToolbarMicIphAndroid,
     &kTrustedWebActivityLocationDelegation,
     &kTrustedWebActivityNewDisclosure,
@@ -272,8 +264,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &notifications::features::kUseChimeAndroidSdk,
     &paint_preview::kPaintPreviewDemo,
     &paint_preview::kPaintPreviewShowOnStartup,
+    &language::kAppLanguagePrompt,
     &language::kDetailedLanguageSettings,
     &language::kExplicitLanguageAsk,
+    &language::kForceAppLanguagePrompt,
     &language::kTranslateAssistContent,
     &language::kTranslateIntent,
     &messages::kMessagesForAndroidInfrastructure,
@@ -446,9 +440,6 @@ const base::Feature kChromeShareScreenshot{"ChromeShareScreenshot",
 
 const base::Feature kChromeSharingHub{"ChromeSharingHub",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kChromeStartupDelegate{"ChromeStartupDelegate",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeSurveyNextAndroid{"ChromeSurveyNextAndroid",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -683,22 +674,6 @@ const base::Feature kThemeRefactorAndroid{"ThemeRefactorAndroid",
 
 const base::Feature kToolbarIphAndroid{"ToolbarIphAndroid",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort1{
-    "ToolbarIphAndroidCohort1", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort2{
-    "ToolbarIphAndroidCohort2", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort3{
-    "ToolbarIphAndroidCohort3", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort4{
-    "ToolbarIphAndroidCohort4", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort5{
-    "ToolbarIphAndroidCohort5", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort6{
-    "ToolbarIphAndroidCohort6", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort7{
-    "ToolbarIphAndroidCohort7", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kToolbarIphAndroidCohort8{
-    "ToolbarIphAndroidCohort8", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kToolbarMicIphAndroid{"ToolbarMicIphAndroid",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

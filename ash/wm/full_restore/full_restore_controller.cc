@@ -7,7 +7,8 @@
 #include <cstdint>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -355,7 +356,7 @@ void FullRestoreController::OnWindowDestroying(aura::Window* window) {
   windows_observation_.RemoveObservation(window);
 
   if (base::Contains(restore_property_clear_callbacks_, window))
-    ClearLaunchedKey(window, /*is_destroying=*/true);
+    ClearLaunchedKey(window);
 }
 
 void FullRestoreController::UpdateAndObserveWindow(aura::Window* window) {
@@ -526,14 +527,12 @@ void FullRestoreController::RestoreStateTypeAndClearLaunchedKey(
   // is created.
   restore_property_clear_callbacks_.emplace(
       window, base::BindOnce(&FullRestoreController::ClearLaunchedKey,
-                             weak_ptr_factory_.GetWeakPtr(), window,
-                             /*is_destroying=*/false));
+                             weak_ptr_factory_.GetWeakPtr(), window));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, restore_property_clear_callbacks_[window].callback());
 }
 
-void FullRestoreController::ClearLaunchedKey(aura::Window* window,
-                                             bool is_destroying) {
+void FullRestoreController::ClearLaunchedKey(aura::Window* window) {
   DCHECK(window);
   DCHECK(base::Contains(restore_property_clear_callbacks_, window));
 
@@ -542,7 +541,7 @@ void FullRestoreController::ClearLaunchedKey(aura::Window* window,
 
   // If the window is destroying then prevent extra work by not clearing the
   // property.
-  if (!is_destroying)
+  if (!window->is_destroying())
     window->SetProperty(full_restore::kLaunchedFromFullRestoreKey, false);
 }
 

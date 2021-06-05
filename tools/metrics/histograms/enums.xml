@@ -8290,6 +8290,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Blocked"/>
 </enum>
 
+<enum name="BooleanBottomSearchKind">
+  <int value="0" label="Contextual Search"/>
+  <int value="1" label="Related Searches"/>
+</enum>
+
 <enum name="BooleanBounced">
   <int value="0" label="Not Bounced"/>
   <int value="1" label="Bounced"/>
@@ -15613,6 +15618,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="1" label="Click onscreen button"/>
   <int value="2" label="Select the button in the SwitchAccess context menu"/>
   <int value="3" label="ChromeVox gesture"/>
+  <int value="4" label="AccessibilityCommon extension"/>
 </enum>
 
 <enum name="CrosDisksArchiveType">
@@ -17919,6 +17925,7 @@ Called by update_debug_scenarios.py.-->
   <int value="1" label="kDebugSameDocNavigationDocIdMismatch"/>
   <int value="2" label="kDebugNonMainFrameWithOldPageInfo"/>
   <int value="3" label="kDebugBackForwardCacheMetricsMismatch"/>
+  <int value="4" label="kDebugBrowserVsRendererOriginToCommit"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -24775,6 +24782,7 @@ Called by update_document_policy_enum.py.-->
   <int value="860" label="ManagedAccountRestriction"/>
   <int value="861" label="LockIconInAddressBarEnabled"/>
   <int value="862" label="DeviceScheduledReboot"/>
+  <int value="863" label="ReportDeviceLoginLogout"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -26036,6 +26044,7 @@ Called by update_extension_histograms.py.-->
   <int value="476" label="TTS_ENGINE_ON_SPEAK_WITH_AUDIO_STREAM"/>
   <int value="477" label="ACCESSIBILITY_PRIVATE_ON_SHOW_CHROMEVOX_TUTORIAL"/>
   <int value="478" label="STORAGE_SESSION_ON_CHANGE"/>
+  <int value="479" label="ACCESSIBILITY_PRIVATE_ON_TOGGLE_DICTATION"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -32834,6 +32843,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3927" label="HiddenBackfaceWith3D"/>
   <int value="3928" label="MainFrameNonSecurePrivateAddressSpace"/>
   <int value="3929" label="CSSSelectorPseudoHas"/>
+  <int value="3930" label="HTMLMediaElementControlsListNoPlaybackRate"/>
+  <int value="3931" label="DocumentTransition"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -45358,6 +45369,7 @@ from previous Chrome versions.
   <int value="-1740519217" label="disable-software-rasterizer"/>
   <int value="-1740093155" label="UnifiedMediaView:disabled"/>
   <int value="-1738416948" label="OptimizationHints:enabled"/>
+  <int value="-1738015645" label="ForceAppLanguagePrompt:disabled"/>
   <int value="-1737769448" label="WebUITabStripTabDragIntegration:disabled"/>
   <int value="-1736075054" label="EnableFullscreenAppList:enabled"/>
   <int value="-1735643253" label="enable-display-list-2d-canvas"/>
@@ -45552,6 +45564,7 @@ from previous Chrome versions.
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1571525676" label="FilesSWA:disabled"/>
+  <int value="-1570760081" label="FocusFollowsCursor:disabled"/>
   <int value="-1569571629"
       label="AutofillEnableOffersInClankKeyboardAccessory:disabled"/>
   <int value="-1568737447" label="InsecureFormSubmissionInterstitial:enabled"/>
@@ -46080,6 +46093,7 @@ from previous Chrome versions.
   <int value="-1163777157" label="ContextualSearchSimplifiedServer:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
   <int value="-1162636562" label="ReduceHorizontalFlingVelocity:disabled"/>
+  <int value="-1162151469" label="ProjectorFeaturePod:disabled"/>
   <int value="-1161409696" label="MediaRemotingEncrypted:enabled"/>
   <int value="-1161384421" label="ContextualSuggestionsAboveArticles:enabled"/>
   <int value="-1160941363" label="AffiliationBasedMatching:disabled"/>
@@ -46636,6 +46650,7 @@ from previous Chrome versions.
   <int value="-695687521" label="double-buffer-compositing"/>
   <int value="-694622753" label="VizHitTest:disabled"/>
   <int value="-694187898" label="MashOopViz:disabled"/>
+  <int value="-688003116" label="FocusFollowsCursor:enabled"/>
   <int value="-687302378" label="BluetoothFixA2dpPacketSize:enabled"/>
   <int value="-686761381" label="UseHDRTransferFunction:enabled"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
@@ -46724,6 +46739,7 @@ from previous Chrome versions.
       label="ClickToCallContextMenuForSelectedText:enabled"/>
   <int value="-613596048" label="new-canvas-2d-api"/>
   <int value="-613146027" label="ContinuousFeeds:disabled"/>
+  <int value="-612860466" label="Projector:disabled"/>
   <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
@@ -48123,6 +48139,7 @@ from previous Chrome versions.
   <int value="630308195" label="SignInProfileCreation:enabled"/>
   <int value="630776247" label="USBGuard:disabled"/>
   <int value="630947363" label="touch-events"/>
+  <int value="631947048" label="WebRtcAnalogAgcClippingControl:disabled"/>
   <int value="632324382"
       label="ExperimentalAccessibilityDictationListening:disabled"/>
   <int value="632340413" label="network-settings-config"/>
@@ -49081,6 +49098,7 @@ from previous Chrome versions.
       label="OmniboxRemoveSuggestionsFromClipboard:disabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
+  <int value="1446066818" label="WebRtcAnalogAgcClippingControl:enabled"/>
   <int value="1446349255" label="ArcEnableUsap:disabled"/>
   <int value="1446946673" label="DesktopRestructuredLanguageSettings:disabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
@@ -49205,6 +49223,7 @@ from previous Chrome versions.
   <int value="1552753678" label="DnsHttpssvc:disabled"/>
   <int value="1553310752" label="AccessibilityCursorColor:enabled"/>
   <int value="1553422694" label="EnablePalmOnMaxTouchMajor:enabled"/>
+  <int value="1553430984" label="Projector:enabled"/>
   <int value="1553777815" label="enable-search-prefetch-service"/>
   <int value="1556554961" label="DriveFsBidirectionalNativeMessaging:enabled"/>
   <int value="1558410842" label="FilesZipNoNaCl:disabled"/>
@@ -49265,6 +49284,7 @@ from previous Chrome versions.
   <int value="1612446645" label="enable-weak-memorycache"/>
   <int value="1612871297" label="WebPayments:disabled"/>
   <int value="1612974229" label="allow-insecure-localhost"/>
+  <int value="1613738524" label="ForceAppLanguagePrompt:enabled"/>
   <int value="1614309501" label="DataSaverLiteModeRebranding:enabled"/>
   <int value="1614596813" label="CloseButtonsInactiveTabs:disabled"/>
   <int value="1615988672" label="GrantNotificationsToDSE:enabled"/>
@@ -49576,6 +49596,7 @@ from previous Chrome versions.
   <int value="1875156497" label="CaptureMode:enabled"/>
   <int value="1875719680" label="ArcResizeLock:disabled"/>
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
+  <int value="1880144681" label="ProjectorFeaturePod:enabled"/>
   <int value="1880955305" label="enable-preconnect-to-search"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
@@ -56361,6 +56382,25 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="NoProfiles"/>
 </enum>
 
+<enum name="NetworkCellularESimUninstallOperationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Network not found"/>
+  <int value="2" label="Disconnect failed"/>
+  <int value="3" label="Inhibit failed"/>
+  <int value="4" label="Refresh profiles failed"/>
+  <int value="5" label="Disable profile failed"/>
+  <int value="6" label="Uninstall profile failed"/>
+  <int value="7" label="Remove service failed"/>
+</enum>
+
+<enum name="NetworkCellularInhibitResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="UninhibitTimeout"/>
+  <int value="2" label="SetInhibitFailed"/>
+  <int value="3" label="SetInhibitTimeout"/>
+  <int value="4" label="SetInhibitNoDevice"/>
+</enum>
+
 <enum name="NetworkCellularOutOfCreditsReason">
   <int value="0" label="Connect-Disconnect Loop"/>
   <int value="1" label="TX-Queue Congestion"/>
@@ -59646,6 +59686,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Windows Server Edition"/>
   <int value="3" label="Windows Enterprise Edition"/>
   <int value="4" label="Windows Education Edition"/>
+  <int value="5" label="Windows Pro Education Edition">
+    Extracted from home/unknown editions in M93.
+  </int>
 </enum>
 
 <enum name="OSXExceptionHandlerEvents">

@@ -1879,24 +1879,6 @@
             ]
         }
     ],
-    "ChromeStartupDelegate": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enforced_20210304",
-                    "params": {
-                        "enabled": "true"
-                    },
-                    "enable_features": [
-                        "ChromeStartupDelegate"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeTipsInMainMenu": [
         {
             "platforms": [
@@ -3666,6 +3648,22 @@
             ]
         }
     ],
+    "GoogleOnContent": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxMostVisitedTiles",
+                        "OmniboxOnFocusSuggestionsContextualWebOnContent"
+                    ]
+                }
+            ]
+        }
+    ],
     "GwpAsanAndroid": [
         {
             "platforms": [
@@ -5350,8 +5348,6 @@
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
-                        "OmniboxMostVisitedTiles",
-                        "OmniboxOnFocusSuggestionsContextualWebOnContent",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
                     ]
@@ -5782,6 +5778,27 @@
             ]
         }
     ],
+    "PageContentAnnotationsAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "PageContentAnnotationsMemImproved_20210604",
+                    "params": {
+                        "allowed_field_trial_names": "PageContentAnnotationsAndroid",
+                        "write_to_history_service": "false"
+                    },
+                    "enable_features": [
+                        "LoadModelFileForEachExecution",
+                        "OptimizationHintsFieldTrials",
+                        "PageContentAnnotations"
+                    ]
+                }
+            ]
+        }
+    ],
     "PageInfoDiscoverability": [
         {
             "platforms": [
@@ -6031,42 +6048,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PaymentRequestSkipToGPayIfNoCard"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PdfViewerDocumentProperties": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PdfViewerDocumentProperties"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PdfViewerPresentationMode": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PdfViewerPresentationMode"
                     ]
                 }
             ]
@@ -8000,6 +7981,26 @@
             ]
         }
     ],
+    "TrimWebCacheOnMemoryPressureOnly": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TrimWebCacheOnMemoryPressureOnly"
+                    ]
+                }
+            ]
+        }
+    ],
     "TrustTokenOriginTrial": [
         {
             "platforms": [
@@ -8039,6 +8040,26 @@
                     "name": "TurnOffStreamingMediaCaching",
                     "enable_features": [
                         "TurnOffStreamingMediaCachingOnBattery"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UdpSocketPosixAlwaysUpdateBytesReceived": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UdpSocketPosixAlwaysUpdateBytesReceived"
                     ]
                 }
             ]

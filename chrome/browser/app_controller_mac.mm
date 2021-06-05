@@ -1189,7 +1189,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   if (g_browser_process->IsShuttingDown())
     return;
 
-  Profile* lastProfile = [self safeLastProfileForNewWindows];
+  Profile* lastProfile = [self safeProfileForNewWindows:[self lastProfile]];
 
   // Handle the case where we're dispatching a command from a sender that's in a
   // browser window. This means that the command came from a background window
@@ -1550,9 +1550,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   return GetLastProfileMac();
 }
 
-- (Profile*)safeLastProfileForNewWindows {
-  Profile* profile = [self lastProfile];
-
+- (Profile*)safeProfileForNewWindows:(Profile*)profile {
   if (!profile)
     return nullptr;
 
@@ -1565,7 +1563,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 // Returns true if a browser window may be opened for the last active profile.
 - (bool)canOpenNewBrowser {
-  Profile* profile = [self safeLastProfileForNewWindows];
+  Profile* profile = [self safeProfileForNewWindows:[self lastProfile]];
 
   const PrefService* prefs = g_browser_process->local_state();
   return (!profile->IsGuestSession() && !profile->IsEphemeralGuestProfile()) ||
@@ -1584,7 +1582,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   StartupBrowserCreator::MaybeHandleProfileAgnosticUrls(
       urls, base::BindOnce(&OpenUrlsInBrowser, urls,
-                           [self safeLastProfileForNewWindows]));
+                           [self safeProfileForNewWindows:[self lastProfile]]));
 }
 
 - (void)getUrl:(NSAppleEventDescriptor*)event
@@ -1635,12 +1633,13 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender {
-  if (Browser* browser = ActivateBrowser([self lastProfile])) {
+  Profile* lastProfile = [self lastProfile];
+  if (Browser* browser = ActivateBrowser(lastProfile)) {
     // Show options tab in the active browser window.
     chrome::ShowSettings(browser);
   } else if ([self canOpenNewBrowser]) {
     // No browser window, so create one for the options tab.
-    chrome::OpenOptionsWindow([self safeLastProfileForNewWindows]);
+    chrome::OpenOptionsWindow([self safeProfileForNewWindows:lastProfile]);
   } else {
     // No way to create a browser, default to the Profile Picker. On profile
     // selection, it opens the profile on the settings page.
@@ -1650,11 +1649,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
-  if (Browser* browser = ActivateBrowser([self lastProfile])) {
+  Profile* lastProfile = [self lastProfile];
+  if (Browser* browser = ActivateBrowser(lastProfile)) {
     chrome::ShowAboutChrome(browser);
   } else if ([self canOpenNewBrowser]) {
     // No browser window, so create one for the options tab.
-    chrome::OpenAboutWindow([self safeLastProfileForNewWindows]);
+    chrome::OpenAboutWindow([self safeProfileForNewWindows:lastProfile]);
   } else {
     // No way to create a browser, default to the User Manager. On profile
     // selection, it opens the profile on chrome help page.

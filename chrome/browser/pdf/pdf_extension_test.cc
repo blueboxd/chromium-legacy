@@ -47,7 +47,6 @@
 #include "chrome/browser/plugins/plugin_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
-#include "chrome/browser/resources/pdf/ink/buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -93,10 +92,12 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "pdf/buildflags.h"
 #include "pdf/pdf_features.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -401,33 +402,9 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
 
  protected:
   // Hooks to set up feature flags.
-  virtual const std::vector<base::Feature> GetEnabledFeatures() const {
-    std::vector<base::Feature> enabled;
-    if (ShouldEnablePdfViewerPresentationMode()) {
-      enabled.push_back(chrome_pdf::features::kPdfViewerPresentationMode);
-    }
-    if (ShouldEnablePdfViewerDocumentProperties()) {
-      enabled.push_back(chrome_pdf::features::kPdfViewerDocumentProperties);
-    }
-    return enabled;
-  }
+  virtual std::vector<base::Feature> GetEnabledFeatures() const { return {}; }
 
-  virtual const std::vector<base::Feature> GetDisabledFeatures() const {
-    std::vector<base::Feature> disabled;
-    if (!ShouldEnablePdfViewerPresentationMode()) {
-      disabled.push_back(chrome_pdf::features::kPdfViewerPresentationMode);
-    }
-    if (!ShouldEnablePdfViewerDocumentProperties()) {
-      disabled.push_back(chrome_pdf::features::kPdfViewerDocumentProperties);
-    }
-    return disabled;
-  }
-
-  // Hook to set up whether the PdfViewerPresentationMode feature is enabled.
-  virtual bool ShouldEnablePdfViewerPresentationMode() const { return false; }
-
-  // Hook to set up whether the PdfViewerDocumentProperties feature is enabled.
-  virtual bool ShouldEnablePdfViewerDocumentProperties() const { return false; }
+  virtual std::vector<base::Feature> GetDisabledFeatures() const { return {}; }
 
  private:
   WebContents* LoadPdfGetGuestContentsHelper(const GURL& url, bool new_tab) {
@@ -898,39 +875,6 @@ class PDFExtensionJSTestBase : public PDFExtensionTest {
   }
 };
 
-class PDFExtensionDocumentPropertiesEnabledTest
-    : public PDFExtensionJSTestBase {
- public:
-  ~PDFExtensionDocumentPropertiesEnabledTest() override = default;
-
- protected:
-  bool ShouldEnablePdfViewerDocumentProperties() const override { return true; }
-};
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionDocumentPropertiesEnabledTest,
-                       ViewerPropertiesDialog) {
-  // The properties dialog formats some values based on locale.
-  base::test::ScopedRestoreICUDefaultLocale scoped_locale{"en_US"};
-  // This will apply to the new processes spawned within RunTestsInJsModule(),
-  // thus consistently running the test in a well known time zone.
-  content::ScopedTimeZone scoped_time_zone{"America/Los_Angeles"};
-  RunTestsInJsModule("viewer_properties_dialog_test.js", "document_info.pdf");
-}
-
-class PDFExtensionPresentationModeEnabledTest : public PDFExtensionJSTestBase {
- public:
-  ~PDFExtensionPresentationModeEnabledTest() override = default;
-
- protected:
-  bool ShouldEnablePdfViewerPresentationMode() const override { return true; }
-};
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionPresentationModeEnabledTest, Fullscreen) {
-  // Use a PDF document with multiple pages, to exercise navigating between
-  // pages.
-  RunTestsInJsModule("fullscreen_test.js", "test-bookmarks.pdf");
-}
-
 class PDFExtensionJSTest : public PDFExtensionJSTestBase {
  public:
   ~PDFExtensionJSTest() override = default;
@@ -1029,7 +973,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, RedirectsFailInPlugin) {
   RunTestsInJsModule("redirects_fail_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPdfToolbar) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerToolbar) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_toolbar_test.js", "test.pdf");
@@ -1051,6 +995,21 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerThumbnail) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_thumbnail_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Fullscreen) {
+  // Use a PDF document with multiple pages, to exercise navigating between
+  // pages.
+  RunTestsInJsModule("fullscreen_test.js", "test-bookmarks.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPropertiesDialog) {
+  // The properties dialog formats some values based on locale.
+  base::test::ScopedRestoreICUDefaultLocale scoped_locale{"en_US"};
+  // This will apply to the new processes spawned within RunTestsInJsModule(),
+  // thus consistently running the test in a well known time zone.
+  content::ScopedTimeZone scoped_time_zone{"America/Los_Angeles"};
+  RunTestsInJsModule("viewer_properties_dialog_test.js", "document_info.pdf");
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2975,7 +2934,7 @@ class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
   }
 
  protected:
-  const std::vector<base::Feature> GetEnabledFeatures() const override {
+  std::vector<base::Feature> GetEnabledFeatures() const override {
     std::vector<base::Feature> enabled = PDFExtensionTest::GetEnabledFeatures();
     enabled.push_back(chrome_pdf::features::kAccessiblePDFForm);
     return enabled;
@@ -3182,7 +3141,7 @@ class PDFExtensionAccessibilityTreeDumpTest
   }
 
  protected:
-  const std::vector<base::Feature> GetEnabledFeatures() const override {
+  std::vector<base::Feature> GetEnabledFeatures() const override {
     std::vector<base::Feature> enabled = {
         chrome_pdf::features::kAccessiblePDFForm,
     };
@@ -3481,4 +3440,86 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
 
   prerender_helper().NavigatePrimaryPage(pdf_url);
   ASSERT_EQ(web_contents->GetURL(), pdf_url);
+}
+
+class PDFExtensionUnseasonedTest
+    : public PDFExtensionTestWithTestGuestViewManager {
+ protected:
+  static extensions::StreamContainer* GetStreamContainer(
+      WebContents* guest_contents) {
+    extensions::MimeHandlerViewGuest* guest =
+        extensions::MimeHandlerViewGuest::FromWebContents(guest_contents);
+    if (!guest) {
+      ADD_FAILURE() << "No MimeHandlerViewGuest";
+      return nullptr;
+    }
+
+    extensions::StreamContainer* container = guest->GetStreamWeakPtr().get();
+    EXPECT_TRUE(container);
+    return container;
+  }
+
+  // Loads a PDF viewer's guest `WebContents`. Unlike `EnsurePDFHasLoaded()`,
+  // this does not require that the PDF viewer loads completely, which is useful
+  // for testing the (currently) incomplete unseasoned PDF viewer.
+  WebContents* LoadGuestContentsOnly() {
+    if (!ui_test_utils::NavigateToURL(
+            browser(), embedded_test_server()->GetURL("/pdf/test.pdf"))) {
+      ADD_FAILURE() << "Initial navigation failed";
+      return nullptr;
+    }
+
+    WebContents* guest_contents =
+        GetGuestViewManager()->WaitForSingleGuestCreated();
+    if (!guest_contents) {
+      ADD_FAILURE() << "No guest WebContents";
+      return nullptr;
+    }
+
+    WaitForLoadStart(guest_contents);
+    EXPECT_TRUE(content::WaitForLoadStop(guest_contents));
+    return guest_contents;
+  }
+};
+
+class PDFExtensionUnseasonedDisabledTest : public PDFExtensionUnseasonedTest {
+ protected:
+  std::vector<base::Feature> GetDisabledFeatures() const override {
+    std::vector<base::Feature> disabled =
+        PDFExtensionUnseasonedTest::GetDisabledFeatures();
+    disabled.push_back(chrome_pdf::features::kPdfUnseasoned);
+    return disabled;
+  }
+};
+
+class PDFExtensionUnseasonedEnabledTest : public PDFExtensionUnseasonedTest {
+ protected:
+  std::vector<base::Feature> GetEnabledFeatures() const override {
+    std::vector<base::Feature> enabled =
+        PDFExtensionUnseasonedTest::GetEnabledFeatures();
+    enabled.push_back(chrome_pdf::features::kPdfUnseasoned);
+    return enabled;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionUnseasonedDisabledTest,
+                       StreamLoaderRegisteredAsSubresource) {
+  WebContents* guest_contents = LoadGuestContentsOnly();
+  ASSERT_TRUE(guest_contents);
+
+  extensions::StreamContainer* container = GetStreamContainer(guest_contents);
+  ASSERT_TRUE(container);
+
+  EXPECT_FALSE(container->TakeTransferrableURLLoader());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionUnseasonedEnabledTest,
+                       StreamLoaderNotRegisteredAsSubresource) {
+  WebContents* guest_contents = LoadGuestContentsOnly();
+  ASSERT_TRUE(guest_contents);
+
+  extensions::StreamContainer* container = GetStreamContainer(guest_contents);
+  ASSERT_TRUE(container);
+
+  EXPECT_TRUE(container->TakeTransferrableURLLoader());
 }

@@ -977,7 +977,6 @@ if (!is_android) {
       "//chrome/browser/profiling_host:profiling_browsertests",
       "//chrome/browser/resource_coordinator:tab_manager_features",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
-      "//chrome/browser/resources/pdf/ink:buildflags",
       "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
       "//chrome/browser/sharing/proto",
       "//chrome/browser/web_applications:browser_tests",
@@ -1182,6 +1181,7 @@ if (!is_android) {
       "//net",
       "//net:extras",
       "//net:test_support",
+      "//pdf:buildflags",
       "//pdf:features",
       "//ppapi/buildflags",
       "//ppapi/shared_impl:test_support",
@@ -2504,6 +2504,7 @@ if (!is_android) {
         "../browser/extensions/api/desktop_capture/desktop_capture_apitest.cc",
         "../browser/extensions/api/developer_private/developer_private_apitest.cc",
         "../browser/extensions/api/downloads/downloads_api_browsertest.cc",
+        "../browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_apitest.cc",
         "../browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_browsertest.cc",
         "../browser/extensions/api/extension_action/browser_action_apitest.cc",
         "../browser/extensions/api/extension_action/browser_action_browsertest.cc",
@@ -3092,6 +3093,7 @@ if (!is_android) {
         "../browser/ash/login/saml/password_change_extension_browsertest.cc",
         "../browser/ash/login/saml/password_change_success_detection_browsertest.cc",
         "../browser/ash/login/saml/saml_browsertest.cc",
+        "../browser/ash/login/saml/saml_lockscreen_browsertest.cc",
         "../browser/ash/login/saml/security_token_saml_browsertest.cc",
         "../browser/ash/login/saml/test_client_cert_saml_idp_mixin.cc",
         "../browser/ash/login/saml/test_client_cert_saml_idp_mixin.h",
@@ -3572,7 +3574,7 @@ if (!is_android) {
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
         "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
-        "../browser/ui/views/frame/browser_non_client_frame_view_mac_browsertest.cc",
+        "../browser/ui/views/frame/browser_non_client_frame_view_mac_browsertest.mm",
         "../common/profiler/thread_profiler_browsertest.cc",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
@@ -4708,6 +4710,7 @@ test("unit_tests") {
   if (is_chromeos_ash) {
     sources += [
       "../browser/notifications/notification_platform_bridge_chromeos_unittest.cc",
+      "../browser/performance_manager/mechanisms/working_set_trimmer_chromeos_unittest.cc",
       "../browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos_unittest.cc",
       "../browser/performance_manager/policies/userspace_swap_policy_chromeos_unittest.cc",
       "../browser/performance_manager/policies/working_set_trimmer_policy_chromeos_unittest.cc",

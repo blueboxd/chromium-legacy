@@ -929,6 +929,7 @@
         'ReportDeviceVpdInfo',
         'ReportDeviceSystemInfo',
         'ReportDevicePrintJobs',
+        'ReportDeviceLoginLogout',
         'ReportUploadFrequency',
         'ReportArcStatusEnabled',
         'HeartbeatEnabled',
@@ -3588,6 +3589,7 @@
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:55-'],
       'features': {
+        'can_be_recommended': True,
         'dynamic_refresh': True,
         'per_profile': True,
       },
@@ -3595,9 +3597,11 @@
       'id': 347,
       'caption': '''Always Open PDF files externally''',
       'tags': [],
-      'desc': '''Setting the policy to True turns the internal PDF viewer off in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, treats PDF files as a download, and lets users open PDFs with the default application.
+      'desc': '''Setting the policy to Enabled turns the internal PDF viewer off in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, treats PDF files as a download, and lets users open PDFs with the default application.
 
-      Setting the policy to False or leaving it unset means that unless users turns off the PDF plugin, it will open PDF files.''',
+      Setting the policy to Disabled means that unless users turns off the PDF plugin, it will open PDF files.
+
+      If you set the policy, users can't change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If not set, users can choose whether to open PDF externally or not.''',
     },
     {
       'name': 'DisablePluginFinder',
@@ -9937,6 +9941,38 @@
 
       If the policy is set to false or left unset, the information will not be reported.
       If set to true, the device's print jobs will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceLoginLogout',
+      'owners': ['anasr@google.com', 'cros-reporting-team@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Report login/logout events',
+        },
+        {
+          'value': False,
+          'caption': 'Do not report login/logout events',
+        },
+      ],
+      'example_value': False,
+      'default': False,
+      'id': 863,
+      'caption': '''Report login/logout''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report users login/logout events on enrolled devices including failed logins.
+
+      If the policy is set to false or left unset, the information will not be reported.
+      If set to true, the device's login/logout events will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -26452,6 +26488,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceVpdInfo': 'device_reporting.report_vpd_info',
     'ReportDeviceSystemInfo': 'device_reporting.report_system_info',
     'ReportDevicePrintJobs': 'device_reporting.report_print_jobs',
+    'ReportDeviceLoginLogout': 'device_reporting.report_login_logout',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
     'DeviceLoginScreenPowerManagement': 'login_screen_power_management.login_screen_power_management',
     'DeviceChromeVariations': 'device_chrome_variations_type.value',
@@ -26914,6 +26951,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceVpdInfo',
         'ReportDeviceSystemInfo',
         'ReportDevicePrintJobs',
+        'ReportDeviceLoginLogout',
         'ReportUploadFrequency',
         'ReportArcStatusEnabled',
         'HeartbeatEnabled',
@@ -27005,6 +27043,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 862,
+  'highest_id_currently_used': 863,
   'highest_atomic_group_id_currently_used': 40
 }

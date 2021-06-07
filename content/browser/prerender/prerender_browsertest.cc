@@ -47,6 +47,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -294,140 +295,6 @@ class PrerenderBrowserTest : public ContentBrowserTest {
   std::unique_ptr<test::PrerenderTestHelper> prerender_helper_;
 };
 
-// Tests for the legacy prerender trigger of <link rel="prerender"> ============
-
-// TODO(https://crbug.com/1214964): Remove this test when we stop supporting
-// <link rel="prerender">.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, LinkRelPrerender) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
-
-  // Navigate to an initial page.
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-  ASSERT_EQ(web_contents()->GetURL(), kInitialUrl);
-
-  // Add <link rel=prerender> that will prerender `kPrerenderingUrl`.
-  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 0);
-  AddLinkRelPrerender(kPrerenderingUrl);
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
-
-  // A prerender host for the URL should be registered.
-  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl));
-
-  // Activate the prerendered page.
-  NavigatePrimaryPage(kPrerenderingUrl);
-  EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl);
-
-  // The prerender host should be consumed.
-  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
-
-  // Activating the prerendered page should not issue a request.
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
-}
-
-// TODO(https://crbug.com/1214964): Remove this test when we stop supporting
-// <link rel="prerender">.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, LinkRelPrerender_Multiple) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderingUrl1 = GetUrl("/empty.html?prerender1");
-  const GURL kPrerenderingUrl2 = GetUrl("/empty.html?prerender2");
-
-  // TODO(https://crbug.com/1186893): PrerenderHost is not deleted when the
-  // page enters BackForwardCache, though it should be. While this functionality
-  // is not implemented, disable BackForwardCache for testing and wait for the
-  // old RenderFrameHost to be deleted after we navigate away from it.
-  DisableBackForwardCacheForTesting(
-      web_contents(), BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
-
-  // Navigate to an initial page.
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-  ASSERT_EQ(web_contents()->GetURL(), kInitialUrl);
-
-  // Add <link rel=prerender> that will prerender `kPrerenderingUrl1` and
-  // `kPrerenderingUrl2`.
-  ASSERT_EQ(GetRequestCount(kPrerenderingUrl1), 0);
-  ASSERT_EQ(GetRequestCount(kPrerenderingUrl2), 0);
-  AddLinkRelPrerender(kPrerenderingUrl1);
-  AddLinkRelPrerender(kPrerenderingUrl2);
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl1), 1);
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl2), 1);
-
-  // Prerender hosts for `kPrerenderingUrl1` and `kPrerenderingUrl2` should be
-  // registered.
-  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl1));
-  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl2));
-
-  RenderFrameDeletedObserver delete_observer_rfh(
-      web_contents()->GetMainFrame());
-
-  // Activate the prerendered page.
-  NavigatePrimaryPage(kPrerenderingUrl2);
-  EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl2);
-
-  // Other PrerenderHost instances are deleted with the RFH.
-  delete_observer_rfh.WaitUntilDeleted();
-
-  // The prerender hosts should be consumed or destroyed for activation.
-  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl1));
-  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl2));
-
-  // Activating the prerendered page should not issue a request.
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl1), 1);
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl2), 1);
-}
-
-// TODO(https://crbug.com/1214964): Remove this test when we stop supporting
-// <link rel="prerender">.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, LinkRelPrerender_Duplicate) {
-  const GURL kInitialUrl = GetUrl("/prerender/duplicate_prerenders.html");
-  const GURL kPrerenderingUrl1 = GetUrl("/empty.html?1");
-  const GURL kPrerenderingUrl2 = GetUrl("/empty.html?2");
-
-  // TODO(https://crbug.com/1186893): PrerenderHost is not deleted when the
-  // page enters BackForwardCache, though it should be. While this functionality
-  // is not implemented, disable BackForwardCache for testing and wait for the
-  // old RenderFrameHost to be deleted after we navigate away from it.
-  DisableBackForwardCacheForTesting(
-      web_contents(), BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
-
-  // Navigate to a page that initiates prerendering for `kPrerenderingUrl1`
-  // twice. The second prerendering request should be ignored.
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  // Wait until the completion of prerendering.
-  WaitForPrerenderLoadCompletion(kPrerenderingUrl1);
-  WaitForPrerenderLoadCompletion(kPrerenderingUrl2);
-
-  // Requests should be issued once per prerendering URL.
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl1), 1);
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl2), 1);
-
-  // Prerender hosts for `kPrerenderingUrl1` and `kPrerenderingUrl2` should be
-  // registered.
-  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl1));
-  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl2));
-
-  RenderFrameDeletedObserver delete_observer_rfh(
-      web_contents()->GetMainFrame());
-
-  // Activate the prerendered page.
-  NavigatePrimaryPage(kPrerenderingUrl1);
-  EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl1);
-
-  // Other PrerenderHost instances are deleted with the RFH.
-  delete_observer_rfh.WaitUntilDeleted();
-
-  // The prerender hosts should be consumed or destroyed for activation.
-  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl1));
-  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl2));
-
-  // Activating the prerendered page should not issue a request.
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl1), 1);
-  EXPECT_EQ(GetRequestCount(kPrerenderingUrl2), 1);
-}
-
-// END: Tests for the legacy prerender trigger of <link rel="prerender"> =======
-
 // Tests that the speculationrules trigger works.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationRulesPrerender) {
   const GURL kInitialUrl = GetUrl("/empty.html");
@@ -477,6 +344,30 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationInitiatorNavigateAway) {
 
   // The prerender host should be destroyed.
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResponseHeaders) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/set-header?X-Foo: bar");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  ASSERT_EQ(web_contents()->GetURL(), kInitialUrl);
+
+  // Start prerendering `kPrerenderingUrl` and check if `X-Foo` header is
+  // observed.
+  NavigationHandleObserver observer1(web_contents(), kPrerenderingUrl);
+  const int host_id = AddPrerender(kPrerenderingUrl);
+  ASSERT_NE(host_id, RenderFrameHost::kNoFrameTreeNodeId);
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+  EXPECT_TRUE(observer1.has_committed());
+  EXPECT_EQ("bar", observer1.GetNormalizedResponseHeader("x-foo"));
+
+  // Activate the page and check if `X-Foo` header is observed again.
+  NavigationHandleObserver observer2(web_contents(), kPrerenderingUrl);
+  NavigatePrimaryPage(kPrerenderingUrl);
+  EXPECT_TRUE(observer2.has_committed());
+  EXPECT_EQ("bar", observer2.GetNormalizedResponseHeader("x-foo"));
 }
 
 // Tests that prerendering triggered by prerendered pages is deferred until
@@ -2341,6 +2232,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       "activated, initial",
       EvalJs(current_frame_host(), "getSessionStorageKeys()").ExtractString());
 
+  // Speculative fix for the test flakiness (crbug.com/1216038), which may be
+  // caused by the delayed async IPC of Session Storage (StorageArea.Put()).
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     "new Promise(resolve => requestIdleCallback(resolve));"));
+
   // Make sure that the initial renderer process is destroyed. So that the
   // initial renderer process will not be reused after the back forward
   // navigation below.
@@ -2383,6 +2279,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_EQ(
       "activated, initial",
       EvalJs(current_frame_host(), "getSessionStorageKeys()").ExtractString());
+
+  // Speculative fix for the test flakiness (crbug.com/1216038), which may be
+  // caused by the delayed async IPC of Session Storage (StorageArea.Put()).
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     "new Promise(resolve => requestIdleCallback(resolve));"));
 
   // Navigate back to the initial page.
   content::TestNavigationObserver observer(shell()->web_contents());
@@ -2502,6 +2403,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBackForwardCacheBrowserTest,
   EXPECT_EQ(
       "activated, initial",
       EvalJs(current_frame_host(), "getSessionStorageKeys()").ExtractString());
+
+  // Speculative fix for the test flakiness (crbug.com/1216038), which may be
+  // caused by the delayed async IPC of Session Storage (StorageArea.Put()).
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     "new Promise(resolve => requestIdleCallback(resolve));"));
 
   // Navigate back to the initial page.
   shell()->GoBackOrForward(-1);

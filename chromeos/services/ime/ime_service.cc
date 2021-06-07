@@ -21,6 +21,7 @@
 #include "chromeos/services/ime/decoder/decoder_engine.h"
 #include "chromeos/services/ime/decoder/system_engine.h"
 #include "chromeos/services/ime/public/cpp/buildflags.h"
+#include "chromeos/services/ime/rule_based_engine.h"
 
 namespace chromeos {
 namespace ime {
@@ -74,11 +75,40 @@ void ImeService::ConnectToImeEngine(
     mojo::PendingRemote<mojom::InputChannel> from_engine,
     const std::vector<uint8_t>& extra,
     ConnectToImeEngineCallback callback) {
+  // There can only be one client using the decoder at any time. There are two
+  // possible clients: NativeInputMethodEngine (for physical keyboard) and the
+  // XKB extension (for virtual keyboard). The XKB extension may try to
+  // connect the decoder even when it's not supposed to (due to race
+  // conditions), so we must prevent the extension from taking over the
+  // NativeInputMethodEngine connection.
+  //
+  // This is a hack to to determine whether a connection came from
+  // NativeInputMethodEngine or the extension. NativeInputMethodEngine will
+  // send some extra bytes, whereas the extension doesn't. Thus, we can
+  // prevent the extension from taking over the NativeInputMethodEngine's
+  // connection to the decoder. NativeInputMethodEngine will voluntarily give
+  // up its connection when tswitching to tablet mode, allowing the extension
+  // to connect again.
+  // TODO(b/184115850): Create a separate Mojo API for NativeInputMethodEngine
+  // so that we don't need to inspect `extra` to distinguish the client.
+  if (is_privileged_connection_ && extra.size() == 0) {
+    std::move(callback).Run(/*bound=*/false);
+    return;
+  }
+
   if (base::FeatureList::IsEnabled(
           chromeos::features::kSystemLatinPhysicalTyping)) {
     auto system_engine = std::make_unique<SystemEngine>(this);
     bool bound = system_engine->BindRequest(
-        ime_spec, std::move(to_engine_request), std::move(from_engine), extra);
+        ime_spec, std::move(to_engine_request), std::move(from_engine),
+        base::BindOnce(
+            [](bool& is_decoder_receiver_connected) {
+              is_decoder_receiver_connected = false;
+            },
+            std::ref(is_privileged_connection_)));
+    if (bound) {
+      is_privileged_connection_ = extra.size() > 0;
+    }
     input_engine_ = std::move(system_engine);
     std::move(callback).Run(bound);
   } else {
@@ -94,7 +124,7 @@ void ImeService::ConnectToInputMethod(
     const std::string& ime_spec,
     mojo::PendingReceiver<mojom::InputChannel> to_engine,
     ConnectToInputMethodCallback callback) {
-  input_engine_ = InputEngine::Create(ime_spec, std::move(to_engine));
+  input_engine_ = RuleBasedEngine::Create(ime_spec, std::move(to_engine));
   std::move(callback).Run(/*bound=*/input_engine_ != nullptr);
 }
 

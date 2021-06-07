@@ -38,8 +38,11 @@ class AccuracyService : public KeyedService {
   // Shows an accuracy tip UI for web_contents after checking rate limits.
   virtual void MaybeShowAccuracyTip(content::WebContents* web_contents);
 
+  void SetSampleUrlForTesting(const GURL& url);
+
  private:
-  void OnAccuracyTipClosed(AccuracyTipUI::Interaction interaction);
+  void OnAccuracyTipClosed(base::TimeTicks time_opened,
+                           AccuracyTipUI::Interaction interaction);
 
   std::unique_ptr<AccuracyTipUI> ui_;
   GURL sample_url_;

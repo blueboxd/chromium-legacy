@@ -7,9 +7,12 @@
 
 #include "base/scoped_native_library.h"
 #include "chromeos/services/ime/ime_decoder.h"
-#include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
@@ -33,7 +36,7 @@ class SystemEngine : public mojom::InputChannel {
   bool BindRequest(const std::string& ime_spec,
                    mojo::PendingReceiver<mojom::InputChannel> receiver,
                    mojo::PendingRemote<mojom::InputChannel> remote,
-                   const std::vector<uint8_t>& extra);
+                   base::OnceCallback<void()> disconnect_callback);
 
   // mojom::InputChannel:
   void ProcessMessage(const std::vector<uint8_t>& message,
@@ -88,9 +91,6 @@ class SystemEngine : public mojom::InputChannel {
   absl::optional<ImeDecoder::EntryPoints> decoder_entry_points_;
 
   mojo::Receiver<mojom::InputChannel> decoder_channel_receiver_;
-
-  // Whether `decoder_channel_receiver_` is connected.
-  bool is_decoder_receiver_connected_ = false;
 
   // Sequence ID for protobuf messages sent from the engine.
   uint64_t current_seq_id_ = 0;

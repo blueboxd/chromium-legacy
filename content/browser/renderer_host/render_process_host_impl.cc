@@ -2113,9 +2113,13 @@ void RenderProcessHostImpl::BindCacheStorage(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+  // function directly.
   storage_partition_impl_->GetCacheStorageControl()->AddReceiver(
-      cross_origin_embedder_policy, std::move(coep_reporter_remote), origin,
-      storage::mojom::CacheStorageOwner::kCacheAPI, std::move(receiver));
+      cross_origin_embedder_policy, std::move(coep_reporter_remote),
+      blink::StorageKey(origin), storage::mojom::CacheStorageOwner::kCacheAPI,
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindIndexedDB(
@@ -2638,7 +2642,9 @@ void RenderProcessHostImpl::CreateCodeCacheHost(
 
   // There should be at most one CodeCacheHostImpl for any given
   // RenderProcessHost.
-  DCHECK(code_cache_host_receivers_.empty());
+  if (!code_cache_host_receivers_.empty()) {
+    mojo::ReportBadMessage("CodeCacheHost is already bound");
+  }
 
   // Create a new CodeCacheHostImpl and bind it to the given receiver.
   auto code_cache_host = std::make_unique<CodeCacheHostImpl>(

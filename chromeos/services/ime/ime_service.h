@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/ime_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -84,6 +83,10 @@ class ImeService : public mojom::ImeService,
   // Platform delegate for access to privilege resources.
   mojo::Remote<mojom::PlatformAccessProvider> platform_access_;
   mojo::ReceiverSet<mojom::InputEngineManager> manager_receivers_;
+
+  // If the current connection is privileged, then `ConnectToImeEngine` must be
+  // called with a non-empty `extra` in order to override the connection.
+  bool is_privileged_connection_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ImeService);
 };

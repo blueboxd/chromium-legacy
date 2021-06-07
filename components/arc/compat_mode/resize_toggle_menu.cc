@@ -18,6 +18,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -46,8 +47,6 @@ absl::optional<ResizeToggleMenu::CommandId> PredictCurrentMode(
 
 class MenuButtonView : public views::Button {
  public:
-  static constexpr int kBorderThicknessDp = 1;
-
   MenuButtonView(PressedCallback callback,
                  const gfx::VectorIcon& icon,
                  int title_string_id,
@@ -69,10 +68,21 @@ class MenuButtonView : public views::Button {
                      .SetMultiLine(true)
                      .SetMaxLines(2)
                      .Build());
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kBorderThicknessDp)));
     SetPreferredSize(gfx::Size(96, 86));
     SetAccessibleName(l10n_util::GetStringUTF16(title_string_id));
     GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
+
+    constexpr int kBorderThicknessDp = 1;
+    const auto radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+        views::Emphasis::kHigh);
+    SetBorder(views::CreateRoundedRectBorder(kBorderThicknessDp, radius,
+                                             gfx::kPlaceholderColor));
+    SetBackground(
+        views::CreateRoundedRectBackground(gfx::kPlaceholderColor, radius));
+
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+    SetInstallFocusRingOnFocus(true);
+    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(), radius);
   }
   MenuButtonView(const MenuButtonView&) = delete;
   MenuButtonView& operator=(const MenuButtonView&) = delete;
@@ -80,6 +90,8 @@ class MenuButtonView : public views::Button {
 
  private:
   void Layout() override {
+    views::View::Layout();
+
     constexpr int kIconSize = 24;
     constexpr int kIconTopPadding = 17;
 
@@ -93,43 +105,29 @@ class MenuButtonView : public views::Button {
     title_->SetBoundsRect(content_bounds_with_padding);
   }
 
-  void OnFocus() override { SchedulePaint(); }
-
-  void OnBlur() override { SchedulePaint(); }
-
   void OnThemeChanged() override {
     views::Button::OnThemeChanged();
-    const auto color = GetNativeTheme()->GetSystemColor(
+
+    const auto* theme = GetNativeTheme();
+
+    const auto foreground_color = theme->GetSystemColor(
         is_selected_ ? ui::NativeTheme::kColorId_ProminentButtonColor
                      : ui::NativeTheme::kColorId_LabelEnabledColor);
-    icon_view_->SetImage(gfx::CreateVectorIcon(icon_, color));
-    title_->SetEnabledColor(color);
-  }
+    icon_view_->SetImage(gfx::CreateVectorIcon(icon_, foreground_color));
+    title_->SetEnabledColor(foreground_color);
 
-  void PaintButtonContents(gfx::Canvas* canvas) override {
-    auto* const provider = views::LayoutProvider::Get();
-    const int round_radius =
-        provider->GetCornerRadiusMetric(views::Emphasis::kHigh);
+    const auto background_color =
+        is_selected_
+            ? theme->GetSystemColor(
+                  ui::NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor)
+            : SK_ColorTRANSPARENT;
+    background()->SetNativeControlColor(background_color);
 
-    const gfx::Rect content_bounds = GetContentsBounds();
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    if (is_selected_) {
-      flags.setColor(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_MenuItemTargetAlertBackgroundColor));
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-      canvas->DrawRoundRect(content_bounds, round_radius, flags);
-    } else {
-      flags.setColor(SK_ColorTRANSPARENT);
-      flags.setStyle(cc::PaintFlags::kFill_Style);
-      canvas->DrawRoundRect(content_bounds, round_radius, flags);
-
-      flags.setColor(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_MenuBorderColor));
-      flags.setStrokeWidth(kBorderThicknessDp);
-      flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
-      canvas->DrawRoundRect(content_bounds, round_radius, flags);
-    }
+    const auto border_color =
+        is_selected_
+            ? SK_ColorTRANSPARENT
+            : theme->GetSystemColor(ui::NativeTheme::kColorId_MenuBorderColor);
+    border()->set_color(border_color);
   }
 
   // Owned by views hierarchy.

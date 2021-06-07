@@ -72,18 +72,6 @@ final class ProfileOAuth2TokenServiceDelegate {
     }
 
     /**
-     * Called by the native method
-     * ProfileOAuth2TokenServiceDelegate::GetSystemAccountNames()
-     * to list the active account names on device.
-     */
-    @CalledByNative
-    @VisibleForTesting
-    String[] getSystemAccountNames() {
-        return AccountUtils.toAccountNames(mAccountManagerFacade.tryGetGoogleAccounts())
-                .toArray(new String[0]);
-    }
-
-    /**
      * Called by native method AndroidAccessTokenFetcher::Start() to retrieve OAuth2 tokens.
      * @param accountEmail The account email.
      * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
@@ -95,28 +83,30 @@ final class ProfileOAuth2TokenServiceDelegate {
     private void getAccessTokenFromNative(
             String accountEmail, String scope, final long nativeCallback) {
         assert accountEmail != null : "Account email cannot be null!";
-        final Account account = AccountUtils.findAccountByName(
-                mAccountManagerFacade.tryGetGoogleAccounts(), accountEmail);
-        if (account == null) {
-            ThreadUtils.postOnUiThread(() -> {
-                ProfileOAuth2TokenServiceDelegateJni.get().onOAuth2TokenFetched(
-                        null, AccessTokenData.NO_KNOWN_EXPIRATION_TIME, false, nativeCallback);
-            });
-            return;
-        }
-        String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
-        getAccessToken(account, oauth2Scope, new GetAccessTokenCallback() {
-            @Override
-            public void onGetTokenSuccess(AccessTokenData token) {
-                ProfileOAuth2TokenServiceDelegateJni.get().onOAuth2TokenFetched(
-                        token.getToken(), token.getExpirationTimeSecs(), false, nativeCallback);
+        mAccountManagerFacade.tryGetGoogleAccounts(accounts -> {
+            final Account account = AccountUtils.findAccountByName(accounts, accountEmail);
+            if (account == null) {
+                ThreadUtils.postOnUiThread(() -> {
+                    ProfileOAuth2TokenServiceDelegateJni.get().onOAuth2TokenFetched(
+                            null, AccessTokenData.NO_KNOWN_EXPIRATION_TIME, false, nativeCallback);
+                });
+                return;
             }
+            String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
+            getAccessToken(account, oauth2Scope, new GetAccessTokenCallback() {
+                @Override
+                public void onGetTokenSuccess(AccessTokenData token) {
+                    ProfileOAuth2TokenServiceDelegateJni.get().onOAuth2TokenFetched(
+                            token.getToken(), token.getExpirationTimeSecs(), false, nativeCallback);
+                }
 
-            @Override
-            public void onGetTokenFailure(boolean isTransientError) {
-                ProfileOAuth2TokenServiceDelegateJni.get().onOAuth2TokenFetched(null,
-                        AccessTokenData.NO_KNOWN_EXPIRATION_TIME, isTransientError, nativeCallback);
-            }
+                @Override
+                public void onGetTokenFailure(boolean isTransientError) {
+                    ProfileOAuth2TokenServiceDelegateJni.get().onOAuth2TokenFetched(null,
+                            AccessTokenData.NO_KNOWN_EXPIRATION_TIME, isTransientError,
+                            nativeCallback);
+                }
+            });
         });
     }
 
@@ -170,12 +160,15 @@ final class ProfileOAuth2TokenServiceDelegate {
 
     @VisibleForTesting
     @CalledByNative
-    void seedAndReloadAccountsWithPrimaryAccount(@Nullable String accountId) {
+    void seedAndReloadAccountsWithPrimaryAccount(@Nullable String primaryAccountId) {
         ThreadUtils.assertOnUiThread();
-        mAccountTrackerService.seedAccountsIfNeeded(() -> {
-            ProfileOAuth2TokenServiceDelegateJni.get()
-                    .reloadAllAccountsWithPrimaryAccountAfterSeeding(
-                            mNativeProfileOAuth2TokenServiceDelegate, accountId);
+        mAccountManagerFacade.tryGetGoogleAccounts(accounts -> {
+            mAccountTrackerService.seedAccountsIfNeeded(() -> {
+                ProfileOAuth2TokenServiceDelegateJni.get()
+                        .reloadAllAccountsWithPrimaryAccountAfterSeeding(
+                                mNativeProfileOAuth2TokenServiceDelegate, primaryAccountId,
+                                AccountUtils.toAccountNames(accounts).toArray(new String[0]));
+            });
         });
     }
 
@@ -194,6 +187,7 @@ final class ProfileOAuth2TokenServiceDelegate {
         void onOAuth2TokenFetched(String authToken, long expirationTimeSecs,
                 boolean isTransientError, long nativeCallback);
         void reloadAllAccountsWithPrimaryAccountAfterSeeding(
-                long nativeProfileOAuth2TokenServiceDelegateAndroid, @Nullable String accountId);
+                long nativeProfileOAuth2TokenServiceDelegateAndroid, @Nullable String accountId,
+                String[] deviceAccountNames);
     }
 }

@@ -218,6 +218,7 @@
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
+#include "components/full_restore/features.h"
 #include "components/metrics/structured/structured_metrics_features.h"
 #include "media/capture/video/chromeos/video_capture_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
@@ -5278,7 +5279,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"arc-ghost-window", flag_descriptions::kArcGhostWindowName,
      flag_descriptions::kArcGhostWindowDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kArcGhostWindow)},
+     FEATURE_VALUE_TYPE(full_restore::features::kArcGhostWindow)},
 
     {"arc-resize-lock", flag_descriptions::kArcResizeLockName,
      flag_descriptions::kArcResizeLockDescription, kOsCrOS,
@@ -5286,7 +5287,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"full-restore", flag_descriptions::kFullRestoreName,
      flag_descriptions::kFullRestoreDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kFullRestore)},
+     FEATURE_VALUE_TYPE(full_restore::features::kFullRestore)},
 
     {"use-fake-device-for-media-stream",
      flag_descriptions::kUseFakeDeviceForMediaStreamName,
@@ -7216,6 +7217,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFocusFollowsCursorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(::features::kFocusFollowsCursor)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"privacy-review", flag_descriptions::kPrivacyReviewName,
+     flag_descriptions::kPrivacyReviewDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPrivacyReview)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="InputMethod.ActiveCount" units="units"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -237,6 +237,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The user's preference for emoji suggestions. Recorded when
     AssistiveSuggester is initialised. &quot;Enabled&quot; is logged as the
     default value if the user didn't explicitly set it.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.Assistive.UserPref.MultiWord"
+    enum="BooleanEnabled" expires_after="2022-06-05">
+  <owner>curtismcmullan@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    The user's preference for predictive writing suggestions. Recorded when the
+    user is logged in and the AssistiveSuggester is initialised.
+    &quot;Enabled&quot; is logged as the default value if the user didn't
+    explicitly set it.
   </summary>
 </histogram>
 

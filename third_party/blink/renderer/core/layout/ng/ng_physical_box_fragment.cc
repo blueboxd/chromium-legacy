@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
@@ -524,6 +525,9 @@ const LayoutBox* NGPhysicalBoxFragment::OwnerLayoutBox() const {
       DynamicTo<LayoutBox>(GetSelfOrContainerLayoutObject());
   DCHECK(owner_box);
   if (UNLIKELY(IsColumnBox())) {
+    // Adjust the owner for column boxes. Column box fragment's |layout_object_|
+    // is its multicol container, but |LayoutFlowThread::layout_results_|
+    // has the column box fragments.
     owner_box = To<LayoutBox>(owner_box->SlowFirstChild());
     DCHECK(owner_box && owner_box->IsLayoutFlowThread());
   }
@@ -576,6 +580,11 @@ PhysicalOffset NGPhysicalBoxFragment::OffsetFromOwnerLayoutBox() const {
 }
 
 const NGPhysicalBoxFragment* NGPhysicalBoxFragment::PostLayout() const {
+  // While side effects are disabled, new fragments are not copied to
+  // |LayoutBox|. Just return the given fragment.
+  if (NGDisableSideEffectsScope::IsDisabled())
+    return this;
+
   const auto* layout_object = GetSelfOrContainerLayoutObject();
   if (UNLIKELY(!layout_object)) {
     NOTREACHED();

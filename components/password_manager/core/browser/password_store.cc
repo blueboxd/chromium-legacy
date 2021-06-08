@@ -136,38 +136,6 @@ void PasswordStore::CheckReuseRequest::OnReuseCheckDone(
   TRACE_EVENT_NESTABLE_ASYNC_END0("passwords", "CheckReuseRequest", this);
 }
 
-PasswordStore::FormDigest::FormDigest(PasswordForm::Scheme new_scheme,
-                                      const std::string& new_signon_realm,
-                                      const GURL& new_url)
-    : scheme(new_scheme), signon_realm(new_signon_realm), url(new_url) {}
-
-PasswordStore::FormDigest::FormDigest(const PasswordForm& form)
-    : scheme(form.scheme), signon_realm(form.signon_realm), url(form.url) {}
-
-PasswordStore::FormDigest::FormDigest(const autofill::FormData& form)
-    : scheme(PasswordForm::Scheme::kHtml),
-      signon_realm(form.url.GetOrigin().spec()),
-      url(form.url) {}
-
-PasswordStore::FormDigest::FormDigest(const FormDigest& other) = default;
-
-PasswordStore::FormDigest::FormDigest(FormDigest&& other) = default;
-
-PasswordStore::FormDigest& PasswordStore::FormDigest::operator=(
-    const FormDigest& other) = default;
-
-PasswordStore::FormDigest& PasswordStore::FormDigest::operator=(
-    FormDigest&& other) = default;
-
-bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
-  return scheme == other.scheme && signon_realm == other.signon_realm &&
-         url == other.url;
-}
-
-bool PasswordStore::FormDigest::operator!=(const FormDigest& other) const {
-  return !(*this == other);
-}
-
 PasswordStore::PasswordStore()
     : observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
@@ -195,8 +163,8 @@ bool PasswordStore::Init(PrefService* prefs,
 
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
         "passwords", "PasswordStore::InitOnBackgroundSequence", this);
-    base::PostTaskAndReplyWithResult(
-        background_task_runner_.get(), FROM_HERE,
+    background_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this,
                        upload_phished_credentials_to_sync),
         base::BindOnce(&PasswordStore::OnInitCompleted, this));
@@ -276,14 +244,14 @@ void PasswordStore::DisableAutoSignInForOrigins(
                      std::move(completion)));
 }
 
-void PasswordStore::Unblocklist(const PasswordStore::FormDigest& form_digest,
+void PasswordStore::Unblocklist(const PasswordFormDigest& form_digest,
                                 base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::UnblocklistInternal, this,
                               form_digest, std::move(completion)));
 }
 
-void PasswordStore::GetLogins(const FormDigest& form,
+void PasswordStore::GetLogins(const PasswordFormDigest& form,
                               PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("passwords", "PasswordStore::GetLogins",
@@ -437,8 +405,8 @@ void PasswordStore::GetMatchingInsecureCredentials(
     const std::string& signon_realm,
     InsecureCredentialsConsumer* consumer) {
   if (affiliated_match_helper_) {
-    FormDigest form(PasswordForm::Scheme::kHtml, signon_realm,
-                    GURL(signon_realm));
+    PasswordFormDigest form(PasswordForm::Scheme::kHtml, signon_realm,
+                            GURL(signon_realm));
     affiliated_match_helper_->GetAffiliatedAndroidAndWebRealms(
         form,
         base::BindOnce(
@@ -713,8 +681,7 @@ PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form,
                                                     AddLoginError* error) {
   // There is no good way to check if the password is actually up to date, or
   // at least to check if it was actually changed. Assume it is.
-  if (AffiliatedMatchHelper::IsValidAndroidCredential(
-          PasswordStore::FormDigest(form)))
+  if (AffiliatedMatchHelper::IsValidAndroidCredential(PasswordFormDigest(form)))
     ScheduleFindAndUpdateAffiliatedWebLogins(form);
   return AddLoginImpl(form, error);
 }
@@ -730,7 +697,7 @@ PasswordStoreChangeList PasswordStore::UpdateLoginSync(
     const PasswordForm& form,
     UpdateLoginError* error) {
   if (AffiliatedMatchHelper::IsValidAndroidCredential(
-          PasswordStore::FormDigest(form))) {
+          PasswordFormDigest(form))) {
     // Ideally, a |form| would not be updated in any way unless it was ensured
     // that it, as a whole, can be used for a successful login. This, sadly, can
     // not be guaranteed. It might be that |form| just contains updates to some
@@ -909,6 +876,16 @@ void PasswordStore::OnInitCompleted(bool success) {
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordStoreInitResult", success);
   TRACE_EVENT_NESTABLE_ASYNC_END0(
       "passwords", "PasswordStore::InitOnBackgroundSequence", this);
+
+  // TODO(crbug.com/450621): Remove this when enough number of clients switch
+  // to the new version of Chrome.
+  if (!success || shutdown_called_)
+    return;
+  if (prefs_ && !prefs_->GetBoolean(prefs::kWereOldGoogleLoginsRemoved)) {
+    background_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE, base::BindOnce(&PasswordStore::RemoveOldGoogleLogins, this),
+        base::BindOnce(&PasswordStore::MarkOldGoogleLoginsRemoved, this));
+  }
 }
 
 void PasswordStore::PostLoginsTaskAndReplyToConsumerWithResult(
@@ -1089,9 +1066,8 @@ void PasswordStore::DisableAutoSignInForOriginsInternal(
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
-void PasswordStore::UnblocklistInternal(
-    const PasswordStore::FormDigest& form_digest,
-    base::OnceClosure completion) {
+void PasswordStore::UnblocklistInternal(const PasswordFormDigest& form_digest,
+                                        base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords", "PasswordStore::UnblocklistInternal");
 
@@ -1128,7 +1104,7 @@ void PasswordStore::ClearStoreInternal(
 }
 
 std::vector<std::unique_ptr<PasswordForm>> PasswordStore::GetLoginsImpl(
-    const FormDigest& form) {
+    const PasswordFormDigest& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   return FillMatchingLogins(form);
 }
@@ -1170,7 +1146,7 @@ std::vector<std::unique_ptr<PasswordForm>> PasswordStore::GetAllLoginsImpl() {
 
 std::vector<std::unique_ptr<PasswordForm>>
 PasswordStore::GetLoginsWithAffiliationsImpl(
-    const FormDigest& form,
+    const PasswordFormDigest& form,
     const std::vector<std::string>& additional_affiliated_realms) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<PasswordForm>> results(FillMatchingLogins(form));
@@ -1218,7 +1194,7 @@ void PasswordStore::InjectAffiliationAndBrandingInformation(
 
 void PasswordStore::ScheduleGetFilteredLoginsWithAffiliations(
     base::WeakPtr<PasswordStoreConsumer> consumer,
-    const PasswordStore::FormDigest& form,
+    const PasswordFormDigest& form,
     base::Time cutoff,
     const std::vector<std::string>& additional_affiliated_realms) {
   if (consumer) {
@@ -1247,7 +1223,7 @@ std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
     const PasswordForm& primary_key) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<PasswordForm>> candidates(
-      FillMatchingLogins(FormDigest(primary_key)));
+      FillMatchingLogins(PasswordFormDigest(primary_key)));
   for (auto& candidate : candidates) {
     if (ArePasswordFormUniqueKeysEqual(*candidate, primary_key) &&
         !candidate->is_public_suffix_match) {
@@ -1262,7 +1238,7 @@ void PasswordStore::FindAndUpdateAffiliatedWebLogins(
   if (!affiliated_match_helper_)
     return;
   affiliated_match_helper_->GetAffiliatedWebRealms(
-      PasswordStore::FormDigest(added_or_updated_android_form),
+      PasswordFormDigest(added_or_updated_android_form),
       base::BindOnce(&PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl,
                      this, added_or_updated_android_form));
 }
@@ -1289,7 +1265,7 @@ void PasswordStore::UpdateAffiliatedWebLoginsImpl(
       // non-HTML login forms; PSL matches; logins with a different username;
       // and logins with the same password (to avoid generating no-op updates).
       if (!AffiliatedMatchHelper::IsValidWebCredential(
-              FormDigest(*web_login)) ||
+              PasswordFormDigest(*web_login)) ||
           web_login->is_public_suffix_match ||
           web_login->username_value != updated_android_form.username_value ||
           web_login->password_value == updated_android_form.password_value)
@@ -1382,6 +1358,44 @@ void PasswordStore::DestroyOnBackgroundSequence() {
 
   delete reuse_detector_;
   reuse_detector_ = nullptr;
+}
+
+bool PasswordStore::RemoveOldGoogleLogins() {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+
+  std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
+  if (FillAutofillableLogins(&obtained_forms)) {
+    base::Time cutoff;  // the null time
+    static const base::Time::Exploded exploded_cutoff = {
+        2012, 1, 0, 1, 0, 0, 0, 0};  // 00:00 Jan 1 2012
+    bool conversion_success =
+        base::Time::FromUTCExploded(exploded_cutoff, &cutoff);
+    DCHECK(conversion_success);
+
+    auto IsOldGoogleForm =
+        [&cutoff](const std::unique_ptr<PasswordForm>& form) {
+          return (form->scheme == PasswordForm::Scheme::kHtml &&
+                  (form->signon_realm == "http://www.google.com" ||
+                   form->signon_realm == "http://www.google.com/" ||
+                   form->signon_realm == "https://www.google.com" ||
+                   form->signon_realm == "https://www.google.com/")) &&
+                 form->date_created < cutoff;
+        };
+
+    for (const auto& form : obtained_forms) {
+      if (IsOldGoogleForm(form)) {
+        RemoveLoginInternal(*form);
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+void PasswordStore::MarkOldGoogleLoginsRemoved(bool success) {
+  if (success) {
+    prefs_->SetBoolean(prefs::kWereOldGoogleLoginsRemoved, true);
+  }
 }
 
 }  // namespace password_manager

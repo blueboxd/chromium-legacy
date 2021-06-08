@@ -62,6 +62,9 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
       bool migrate,
       ChallengeAttestationOnlyKeystoreCallback callback) override;
   void GetKeyStores(GetKeyStoresCallback callback) override;
+  void SelectClientCertificates(
+      const std::vector<std::vector<uint8_t>>& certificate_authorities,
+      SelectClientCertificatesCallback callback) override;
   void GetCertificates(mojom::KeystoreType keystore,
                        GetCertificatesCallback callback) override;
   void AddCertificate(mojom::KeystoreType keystore,
@@ -86,6 +89,9 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   void GenerateKey(mojom::KeystoreType keystore,
                    mojom::KeystoreSigningAlgorithmPtr algorithm,
                    GenerateKeyCallback callback) override;
+  void RemoveKey(KeystoreType keystore,
+                 const std::vector<uint8_t>& public_key,
+                 RemoveKeyCallback callback) override;
   void Sign(bool is_keystore_provided,
             KeystoreType keystore,
             const std::vector<uint8_t>& public_key,
@@ -111,6 +117,10 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
       std::unique_ptr<std::vector<chromeos::platform_keys::TokenId>>
           platform_keys_token_ids,
       chromeos::platform_keys::Status status);
+  static void DidSelectClientCertificates(
+      SelectClientCertificatesCallback callback,
+      std::unique_ptr<net::CertificateList> matches,
+      chromeos::platform_keys::Status status);
   static void DidGetCertificates(GetCertificatesCallback callback,
                                  std::unique_ptr<net::CertificateList> certs,
                                  chromeos::platform_keys::Status status);
@@ -128,6 +138,8 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   static void DidGenerateKey(GenerateKeyCallback callback,
                              const std::string& public_key,
                              chromeos::platform_keys::Status status);
+  static void DidRemoveKey(RemoveKeyCallback callback,
+                           chromeos::platform_keys::Status status);
   static void DidSign(SignCallback callback,
                       const std::string& signature,
                       chromeos::platform_keys::Status status);

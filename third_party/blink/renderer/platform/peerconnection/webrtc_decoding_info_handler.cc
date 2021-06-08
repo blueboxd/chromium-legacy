@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/renderer/platform/peerconnection/video_codec_factory.h"
+#include "third_party/blink/renderer/platform/peerconnection/webrtc_util.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/webrtc/api/audio_codecs/audio_decoder_factory.h"
 #include "third_party/webrtc/api/audio_codecs/audio_format.h"
@@ -23,42 +24,6 @@
 #include "third_party/webrtc/api/video_codecs/video_decoder_factory.h"
 
 namespace blink {
-
-namespace {
-
-String ExtractCodecNameFromMimeType(const String& mime_type,
-                                    const char* prefix) {
-  if (mime_type.StartsWith(prefix)) {
-    size_t length = mime_type.length() - strlen(prefix) - 1;
-    const String codec_name = mime_type.Right(length);
-    return codec_name;
-  }
-  return "";
-}
-
-webrtc::SdpVideoFormat::Parameters ConvertToSdpVideoFormatParameters(
-    const ParsedContentHeaderFieldParameters& parameters) {
-  webrtc::SdpVideoFormat::Parameters sdp_parameters;
-  for (const auto& parameter : parameters) {
-    sdp_parameters[parameter.name.Utf8()] = parameter.value.Utf8();
-  }
-  return sdp_parameters;
-}
-
-// Composes elements of set<string> to a string with ", " delimiter.
-String StringHashSetToString(const HashSet<String>& string_set) {
-  String result;
-  String delim;
-  for (auto& s : string_set) {
-    result = result + delim + s;
-    if (delim.IsEmpty())
-      delim = ", ";
-  }
-  return result;
-}
-
-}  // namespace
-
 WebrtcDecodingInfoHandler* WebrtcDecodingInfoHandler::Instance() {
   DEFINE_STATIC_LOCAL(WebrtcDecodingInfoHandler, instance, ());
   return &instance;
@@ -84,9 +49,6 @@ WebrtcDecodingInfoHandler::WebrtcDecodingInfoHandler(
     supported_audio_codecs_.insert(
         String::FromUTF8(audio_spec.format.name).LowerASCII());
   }
-  DVLOG(2) << String::Format(
-      "supported_audio_codecs_:[%s]",
-      StringHashSetToString(supported_audio_codecs_).Utf8().c_str());
 }
 
 WebrtcDecodingInfoHandler::~WebrtcDecodingInfoHandler() = default;
@@ -105,7 +67,7 @@ void WebrtcDecodingInfoHandler::DecodingInfo(
     ParsedContentType audio_content_type(audio_mime_type->LowerASCII());
     DCHECK(audio_content_type.IsValid());
     const String codec_name =
-        ExtractCodecNameFromMimeType(audio_content_type.MimeType(), "audio");
+        WebrtcCodecNameFromMimeType(audio_content_type.MimeType(), "audio");
     supported = base::Contains(supported_audio_codecs_, codec_name);
     // Audio is always assumed to be power efficient whenever it is
     // supported.
@@ -121,7 +83,7 @@ void WebrtcDecodingInfoHandler::DecodingInfo(
     ParsedContentType video_content_type(video_mime_type->LowerASCII());
     DCHECK(video_content_type.IsValid());
     const String codec_name =
-        ExtractCodecNameFromMimeType(video_content_type.MimeType(), "video");
+        WebrtcCodecNameFromMimeType(video_content_type.MimeType(), "video");
     const webrtc::SdpVideoFormat::Parameters parameters =
         ConvertToSdpVideoFormatParameters(video_content_type.GetParameters());
     webrtc::SdpVideoFormat sdp_video_format(codec_name.Utf8(), parameters);

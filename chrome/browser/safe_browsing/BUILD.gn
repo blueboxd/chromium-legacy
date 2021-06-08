@@ -80,6 +80,9 @@ static_library("safe_browsing") {
       ]
     }
     deps += [
+      # TODO(crbug.com/1216213): Adding ":ntp_background_proto" is a band-aid
+      # fix, figure out a better solution.
+      "//chrome/browser:ntp_background_proto",
       "//chrome/browser/profiles:profile",
       "//components/paint_preview/buildflags",
       "//extensions/browser",
@@ -154,6 +157,7 @@ static_library("safe_browsing") {
       "//components/safe_browsing/content/browser",
       "//components/safe_browsing/content/browser:client_side_detection",
       "//components/safe_browsing/content/browser:client_side_model_loader",
+      "//components/safe_browsing/content/browser:safe_browsing_service",
       "//components/safe_browsing/content/password_protection",
       "//components/safe_browsing/content/triggers",
       "//components/safe_browsing/content/triggers:ad_popup_trigger",
@@ -163,7 +167,6 @@ static_library("safe_browsing") {
       "//components/safe_browsing/content/triggers:trigger_throttler",
       "//components/safe_browsing/core:csd_proto",
       "//components/safe_browsing/core:file_type_policies",
-      "//components/safe_browsing/core:public",
       "//components/safe_browsing/core:verdict_cache_manager",
       "//components/safe_browsing/core/browser",
       "//components/safe_browsing/core/browser:network_context",
@@ -430,7 +433,7 @@ source_set("test_support") {
       "//chrome/common/safe_browsing:proto",
       "//components/enterprise/common/proto:connectors_proto",
       "//components/safe_browsing:buildflags",
-      "//components/safe_browsing/core:public",
+      "//components/safe_browsing/content/browser:safe_browsing_service",
       "//components/safe_browsing/core/browser:network_context",
       "//components/safe_browsing/core/db:database_manager",
       "//components/safe_browsing/core/db:test_database_manager",

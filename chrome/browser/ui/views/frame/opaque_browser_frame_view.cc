@@ -35,6 +35,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -124,14 +125,11 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
       frame_background_(new views::FrameBackground()) {
   layout_->set_delegate(this);
 
-  // TODO(crbug.com/937121): Remove the call to toggle WCO on by default once
-  // the toggle button functionality is implemented for OpaqueBrowserFrameView.
   web_app::AppBrowserController* controller =
       browser_view->browser()->app_controller();
   if (controller && controller->AppUsesWindowControlsOverlay()) {
-    controller->ToggleWindowControlsOverlayEnabled();
-    layout_->set_window_controls_overlay_enabled(
-        browser_view->IsWindowControlsOverlayEnabled());
+    layout_->SetWindowControlsOverlayEnabled(
+        browser_view->IsWindowControlsOverlayEnabled(), this);
   }
   SetLayoutManager(std::unique_ptr<views::LayoutManager>(layout_));
 
@@ -245,6 +243,22 @@ int OpaqueBrowserFrameView::GetThemeBackgroundXInset() const {
 void OpaqueBrowserFrameView::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
+}
+
+void OpaqueBrowserFrameView::WindowControlsOverlayEnabledChanged() {
+  bool enabled = browser_view()->IsWindowControlsOverlayEnabled();
+  if (enabled) {
+    caption_button_placeholder_container_ =
+        AddChildView(std::make_unique<CaptionButtonPlaceholderContainer>());
+    UpdateCaptionButtonPlaceholderContainerBackground();
+  } else {
+    RemoveChildViewT(caption_button_placeholder_container_);
+    caption_button_placeholder_container_ = nullptr;
+  }
+
+  web_app_frame_toolbar()->OnWindowControlsOverlayEnabledChanged();
+  layout_->SetWindowControlsOverlayEnabled(enabled, this);
+  InvalidateLayout();
 }
 
 gfx::Size OpaqueBrowserFrameView::GetMinimumSize() const {
@@ -378,11 +392,11 @@ bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->IsLoading() : false;
 }
 
-gfx::ImageSkia OpaqueBrowserFrameView::GetFaviconForTabIconView() {
+ui::ImageModel OpaqueBrowserFrameView::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate) {
     LOG(WARNING) << "delegate is null, returning safe default.";
-    return gfx::ImageSkia();
+    return ui::ImageModel();
   }
   return delegate->GetWindowIcon();
 }

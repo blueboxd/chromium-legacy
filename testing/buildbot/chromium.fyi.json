@@ -21403,7 +21403,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21425,7 +21425,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21447,7 +21447,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21469,7 +21469,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21491,7 +21491,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21513,7 +21513,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21535,7 +21535,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21554,7 +21554,7 @@
             {
               "cpu": "arm64",
               "inside_docker": "1",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-20.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -39210,21 +39210,6 @@
       }
     ]
   },
-  "ios13-beta-simulator": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "ios13-sdk-device": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "ios13-sdk-simulator": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "ios14-beta-simulator": {
     "additional_compile_targets": [
       "all"
@@ -52881,6 +52866,21 @@
         },
         "test_id_prefix": "ninja://url:url_unittests/"
       }
+    ]
+  },
+  "ios15-beta-simulator": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "ios15-sdk-device": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "ios15-sdk-simulator": {
+    "additional_compile_targets": [
+      "all"
     ]
   },
   "lacros-amd64-generic-rel-fyi": {

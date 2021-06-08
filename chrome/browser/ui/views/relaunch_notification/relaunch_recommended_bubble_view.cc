@@ -24,10 +24,12 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -83,12 +85,11 @@ bool RelaunchRecommendedBubbleView::ShouldShowCloseButton() const {
   return true;
 }
 
-gfx::ImageSkia RelaunchRecommendedBubbleView::GetWindowIcon() {
-  return gfx::CreateVectorIcon(
-      gfx::IconDescription(vector_icons::kBusinessIcon,
-                           ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE),
-                           gfx::kChromeIconGrey));
+ui::ImageModel RelaunchRecommendedBubbleView::GetWindowIcon() {
+  return ui::ImageModel::FromVectorIcon(
+      vector_icons::kBusinessIcon, gfx::kChromeIconGrey,
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE));
 }
 
 void RelaunchRecommendedBubbleView::Init() {
@@ -120,8 +121,7 @@ void RelaunchRecommendedBubbleView::Init() {
 void RelaunchRecommendedBubbleView::VisibilityChanged(
     views::View* starting_from,
     bool is_visible) {
-  views::Button::AsButton(GetAnchorView())
-      ->ink_drop()
+  views::InkDrop::Get(GetAnchorView())
       ->AnimateToState(is_visible ? views::InkDropState::ACTIVATED
                                   : views::InkDropState::DEACTIVATED,
                        nullptr);

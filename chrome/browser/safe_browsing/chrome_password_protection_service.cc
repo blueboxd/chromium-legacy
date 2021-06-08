@@ -52,6 +52,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/content/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/content/password_protection/password_protection_request_content.h"
+#include "components/safe_browsing/content/triggers/trigger_throttler.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/sync/safe_browsing_primary_account_token_fetcher.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -60,7 +61,6 @@
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
-#include "components/safe_browsing/core/triggers/trigger_throttler.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -377,13 +377,6 @@ ChromePasswordProtectionService::GetUrlDisplayExperiment() const {
       base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings));
   experiment.set_delayed_warnings_mouse_clicks_enabled(
       safe_browsing::kDelayedWarningsEnableMouseClicks.Get());
-  // Actual URL display experiments:
-  experiment.set_reveal_on_hover(base::FeatureList::IsEnabled(
-      omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover));
-  experiment.set_hide_on_interaction(base::FeatureList::IsEnabled(
-      omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction));
-  experiment.set_elide_to_registrable_domain(
-      base::FeatureList::IsEnabled(omnibox::kMaybeElideToRegistrableDomain));
   return experiment;
 }
 

@@ -5241,6 +5241,26 @@ should be able to be added at any place in this file.
   <description>The user selected 'share' option for a Feed card.</description>
 </action>
 
+<action name="ContentSuggestions.Feed.DeviceOrientationChanged.Landscape">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user rotates the device to landscape from the NTP with the feed visible.
+    iOS only.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.DeviceOrientationChanged.Portrait">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user rotates the device to portrait from the NTP with the feed visible.
+    iOS only.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.HeaderAction.ManageActivity">
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -15861,6 +15881,62 @@ should be able to be added at any place in this file.
   <owner>marq@chromium.org</owner>
   <description>
     User selected the iOS Tab Grid incognito panel by tapping the page control.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseAllIncognitoTabsConfirmed">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the incognito iOS tab grid used the Close All control with all
+    available tab items selected and the action sheet that asks for confirmation
+    has been Confirmed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseAllRegularTabsConfirmed">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the regular iOS tab grid used the Close All control with all
+    available tab items selected and the action sheet that asks for confirmation
+    has been Confirmed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseIncognitoTabsConfirmationPresented">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS incognito tab grid used the Close Tabs control and the
+    action sheet that asks for confirmation has been displayed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseRegularTabsConfirmationPresented">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS regular tab grid used the Close Tabs control and the action
+    sheet that asks for confirmation has been displayed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseTabsCanceled">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the Close All control and the action sheet
+    that asks for confirmation has been Canceled.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseTabsConfirmed">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the Close All control and the action sheet
+    that asks for confirmation has been Confirmed.
   </description>
 </action>
 

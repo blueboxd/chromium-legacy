@@ -56,9 +56,9 @@
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/os_feedback_ui/url_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/content/os_feedback_ui/url_constants.h"
 #include "ash/content/shimless_rma/url_constants.h"
 #include "ash/content/shortcut_customization_ui/url_constants.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
@@ -71,7 +71,7 @@
 #include "chrome/browser/ash/web_applications/media_app/media_web_app_info.h"
 #include "chrome/browser/ash/web_applications/os_feedback_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/os_settings_web_app_info.h"
-#include "chrome/browser/ash/web_applications/personalization_app_info.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_info.h"
 #include "chrome/browser/ash/web_applications/print_management_web_app_info.h"
 #include "chrome/browser/ash/web_applications/scanning_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/shimless_rma_system_web_app_info.h"

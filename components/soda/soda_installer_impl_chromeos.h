@@ -5,22 +5,19 @@
 #ifndef COMPONENTS_SODA_SODA_INSTALLER_IMPL_CHROMEOS_H_
 #define COMPONENTS_SODA_SODA_INSTALLER_IMPL_CHROMEOS_H_
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "components/soda/soda_installer.h"
 
 class PrefService;
-class OnDeviceSpeechRecognizerTest;
-
-namespace ash {
-class DictationTest;
-}  // namespace ash
 
 namespace speech {
 
 // Installer of SODA (Speech On-Device API) for the Live Caption feature on
 // ChromeOS.
-class SodaInstallerImplChromeOS : public SodaInstaller {
+class COMPONENT_EXPORT(SODA_INSTALLER) SodaInstallerImplChromeOS
+    : public SodaInstaller {
  public:
   SodaInstallerImplChromeOS();
   ~SodaInstallerImplChromeOS() override;
@@ -43,10 +40,11 @@ class SodaInstallerImplChromeOS : public SodaInstaller {
   bool IsLanguageInstalled(
       const std::string& locale_or_language) const override;
 
- private:
-  friend class ::ash::DictationTest;
-  friend class ::OnDeviceSpeechRecognizerTest;
+  void set_soda_installed_for_test(bool installed) {
+    soda_installed_for_test_ = installed;
+  }
 
+ private:
   // SodaInstaller:
   void InstallSoda(PrefService* global_prefs) override;
   // Here "uninstall" is used in the DLC sense of the term: Uninstallation will

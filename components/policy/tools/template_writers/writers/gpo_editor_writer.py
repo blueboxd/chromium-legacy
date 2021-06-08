@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -31,7 +31,7 @@ class GpoEditorWriter(template_writer.TemplateWriter):
 
     since_version = supported_on.get('since_version', None)
 
-    return not since_version or int(since_version) >= major_version
+    return not since_version or major_version >= int(since_version)
 
   def IsPolicyOnWin7Only(self, policy):
     ''' Returns true if the policy is supported on win7 only.'''

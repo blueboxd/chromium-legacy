@@ -345,8 +345,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest, SplitModeIncognito) {
 
 // TODO(crbug.com/1185226): Change parent class to `ExtensionSettingsApiTest`
 // when chrome.storage.session is released in stable.
+// Flaky across multiple platforms: https://crbug.com/1216449.
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest,
-                       OnChangedNotificationsBetweenBackgroundPages) {
+                       DISABLED_OnChangedNotificationsBetweenBackgroundPages) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher;
@@ -490,8 +491,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest,
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
+// https://crbug.com/1216450: Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-                       OnChangedNotificationsFromSync) {
+                       DISABLED_OnChangedNotificationsFromSync) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;

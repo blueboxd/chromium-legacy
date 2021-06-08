@@ -476,6 +476,10 @@ void WebRuntimeFeatures::EnableRestrictAutomaticLazyImageLoadingToDataSaver(
       SetRestrictAutomaticLazyImageLoadingToDataSaverEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSecurePaymentConfirmationAPIV2(bool enable) {
+  RuntimeEnabledFeatures::SetSecurePaymentConfirmationAPIV2Enabled(enable);
+}
+
 void WebRuntimeFeatures::EnableSecurePaymentConfirmationDebug(bool enable) {
   RuntimeEnabledFeatures::SetSecurePaymentConfirmationDebugEnabled(enable);
 }
@@ -646,6 +650,10 @@ void WebRuntimeFeatures::EnableInstalledApp(bool enable) {
 
 void WebRuntimeFeatures::EnableTransformInterop(bool enable) {
   RuntimeEnabledFeatures::SetTransformInteropEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableBackfaceVisibilityInterop(bool enable) {
+  RuntimeEnabledFeatures::SetBackfaceVisibilityInteropEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableVideoWakeLockOptimisationHiddenMuted(

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -1388,7 +1388,6 @@ Policy1_Part="Caption of policy1."
 ''')
     self.CompareOutputs(output, expected_output)
 
-  @unittest.skip("skipped due to https://crbug.com/1216996")
   def testRemovedPolicy(self):
     # Tests that a deprecated policy gets placed in the special
     # 'RemovedPolicies' group.

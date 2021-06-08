@@ -800,6 +800,13 @@ try_.chromium_chromiumos_builder(
 )
 
 try_.chromium_chromiumos_builder(
+    name = "lacros-arm-generic-rel",
+    builderless = not settings.is_main,
+    main_list_view = "try",
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+try_.chromium_chromiumos_builder(
     name = "linux-chromeos-compile-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
@@ -1691,14 +1698,6 @@ try_.chromium_mac_ios_builder(
 )
 
 try_.chromium_mac_ios_builder(
-    name = "ios13-beta-simulator",
-)
-
-try_.chromium_mac_ios_builder(
-    name = "ios13-sdk-simulator",
-)
-
-try_.chromium_mac_ios_builder(
     name = "ios14-beta-simulator",
     os = os.MAC_11,
 )
@@ -1717,6 +1716,14 @@ try_.chromium_updater_mac_builder(
             ".+/[+]/chrome/updater/.+",
         ],
     ),
+)
+
+try_.chromium_mac_ios_builder(
+    name = "ios15-beta-simulator",
+)
+
+try_.chromium_mac_ios_builder(
+    name = "ios15-sdk-simulator",
 )
 
 try_.chromium_updater_mac_builder(
@@ -1814,6 +1821,7 @@ try_.chromium_win_builder(
     executable = "recipe:chromium_upload_clang",
     goma_backend = None,
     os = os.WINDOWS_ANY,
+    execution_timeout = 6 * time.hour,
 )
 
 try_.chromium_win_builder(

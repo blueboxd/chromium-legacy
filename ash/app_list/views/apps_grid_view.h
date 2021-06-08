@@ -152,7 +152,7 @@ class ASH_EXPORT AppsGridView : public views::View,
   bool IsDragging() const override;
   bool IsDraggedView(const AppListItemView* view) const override;
   bool IsDragViewMoved(const AppListItemView& view) const override;
-  const gfx::Rect& GetIdealBounds(AppListItemView* view) const override;
+  gfx::Rect GetIdealBounds(AppListItemView* view) const override;
 
   void ClearDragState();
   void SetDragViewVisible(bool visible);
@@ -200,9 +200,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Returns the item view of the item at |index|, or nullptr if there is no
   // view at |index|.
   AppListItemView* GetItemViewAt(int index) const;
-
-  // Schedules an animation to show or hide the view.
-  void ScheduleShowHideAnimation(bool show);
 
   // Called to initiate drag for reparenting a folder item in root level grid
   // view.

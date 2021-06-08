@@ -44,6 +44,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/display/screen.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
@@ -522,9 +523,9 @@ bool BrowserNonClientFrameViewChromeOS::ShouldTabIconViewAnimate() const {
   return current_tab && current_tab->IsLoading();
 }
 
-gfx::ImageSkia BrowserNonClientFrameViewChromeOS::GetFaviconForTabIconView() {
+ui::ImageModel BrowserNonClientFrameViewChromeOS::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
-  return delegate ? delegate->GetWindowIcon() : gfx::ImageSkia();
+  return delegate ? delegate->GetWindowIcon() : ui::ImageModel();
 }
 
 void BrowserNonClientFrameViewChromeOS::OnWindowDestroying(
@@ -586,15 +587,12 @@ void BrowserNonClientFrameViewChromeOS::OnImmersiveRevealStarted() {
 }
 
 void BrowserNonClientFrameViewChromeOS::OnImmersiveRevealEnded() {
-  // Ensure the caption button container receives events before the browser view
-  // by placing it higher in the z-order.
-  // [0] - FrameAnimatorView
-  // [1] - BrowserView
-  // [2] - FrameCaptionButtonContainerView
-  const int kCaptionButtonContainerIndex = 2;
-  AddChildViewAt(caption_button_container_, kCaptionButtonContainerIndex);
+  // Ensure the WebAppFrameToolbarView and FrameCaptionButtonContainerView
+  // receive events before the BrowserView by appending instead of inserting
+  // the child views.
   if (web_app_frame_toolbar())
-    AddChildViewAt(web_app_frame_toolbar(), 0);
+    AddChildView(web_app_frame_toolbar());
+  AddChildView(caption_button_container_);
   Layout();
 }
 

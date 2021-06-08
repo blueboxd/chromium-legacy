@@ -458,6 +458,34 @@ const FeatureEntry::FeatureVariation kAdaptiveButtonInTopToolbarVariations[] = {
         nullptr,
     },
 };
+
+const FeatureEntry::FeatureVariation
+    kAdaptiveButtonInTopToolbarCustomizationVariations[] = {
+        {
+            "New Tab",
+            (FeatureEntry::FeatureParam[]){
+                {"default_segment", "new-tab"},
+                {"ignore_segmentation_results", "true"}},
+            1,
+            nullptr,
+        },
+        {
+            "Share",
+            (FeatureEntry::FeatureParam[]){
+                {"default_segment", "share"},
+                {"ignore_segmentation_results", "true"}},
+            1,
+            nullptr,
+        },
+        {
+            "Voice",
+            (FeatureEntry::FeatureParam[]){
+                {"default_segment", "voice"},
+                {"ignore_segmentation_results", "true"}},
+            1,
+            nullptr,
+        },
+};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -3259,8 +3287,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationName,
      flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         chrome::android::kAdaptiveButtonInTopToolbarCustomization)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kAdaptiveButtonInTopToolbarCustomization,
+         kAdaptiveButtonInTopToolbarCustomizationVariations,
+         "OptionalToolbarButtonCustomization")},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
@@ -4401,28 +4431,6 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kDefaultTypedNavigationsToHttps,
          kOmniboxDefaultTypedNavigationsToHttpsVariations,
          "OmniboxDefaultTypedNavigationsToHttps")},
-
-    {"omnibox-ui-sometimes-elide-to-registrable-domain",
-     flag_descriptions::kOmniboxUIMaybeElideToRegistrableDomainName,
-     flag_descriptions::kOmniboxUIMaybeElideToRegistrableDomainDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kMaybeElideToRegistrableDomain)},
-
-    {"omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",
-     flag_descriptions::
-         kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverName,
-     flag_descriptions::
-         kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover)},
-
-    {"omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction",
-     flag_descriptions::
-         kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionName,
-     flag_descriptions::
-         kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction)},
 
     {"omnibox-max-zero-suggest-matches",
      flag_descriptions::kOmniboxMaxZeroSuggestMatchesName,

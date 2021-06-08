@@ -15,19 +15,14 @@ import {PackDialogDelegate} from './pack_dialog.js';
 import {ToolbarDelegate} from './toolbar.js';
 
 
-/**
- * @implements {ActivityLogDelegate}
- * @implements {ActivityLogEventDelegate}
- * @implements {ErrorPageDelegate}
- * @implements {ItemDelegate}
- * @implements {LoadErrorDelegate}
- * @implements {ToolbarDelegate}
- */
-export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
+export class Service implements ActivityLogDelegate, ActivityLogEventDelegate,
+                                ErrorPageDelegate, ItemDelegate,
+                                KeyboardShortcutDelegate, LoadErrorDelegate,
+                                PackDialogDelegate, ToolbarDelegate {
   private isDeleting_: boolean = false;
   private eventsToIgnoreOnce_: Set<string> = new Set();
 
-  getProfileConfiguration() {
+  getProfileConfiguration(): Promise<chrome.developerPrivate.ProfileInfo> {
     return new Promise(function(resolve) {
       chrome.developerPrivate.getProfileConfiguration(resolve);
     });
@@ -52,21 +47,19 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     return chrome.developerPrivate.onProfileStateChanged;
   }
 
-  getExtensionsInfo() {
+  getExtensionsInfo(): Promise<Array<chrome.developerPrivate.ExtensionInfo>> {
     return new Promise(function(resolve) {
       chrome.developerPrivate.getExtensionsInfo(
           {includeDisabled: true, includeTerminated: true}, resolve);
     });
   }
 
-  /** @override */
   getExtensionSize(id: string): Promise<string> {
     return new Promise(function(resolve) {
       chrome.developerPrivate.getExtensionSize(id, resolve);
     });
   }
 
-  /** @override */
   addRuntimeHostPermission(id: string, host: string): Promise<void> {
     return new Promise((resolve, reject) => {
       chrome.developerPrivate.addHostPermission(id, host, () => {
@@ -79,7 +72,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   removeRuntimeHostPermission(id: string, host: string): Promise<void> {
     return new Promise((resolve, reject) => {
       chrome.developerPrivate.removeHostPermission(id, host, () => {
@@ -92,7 +84,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   recordUserAction(metricName: string): void {
     chrome.metricsPrivate.recordUserAction(metricName);
   }
@@ -117,7 +108,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   updateExtensionCommandKeybinding(
       extensionId: string, commandName: string, keybinding: string) {
     chrome.developerPrivate.updateExtensionCommand({
@@ -127,7 +117,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   updateExtensionCommandScope(
       extensionId: string, commandName: string,
       scope: chrome.developerPrivate.CommandScope): void {
@@ -144,7 +133,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
   }
 
 
-  /** @override */
   setShortcutHandlingSuspended(isCapturing: boolean) {
     chrome.developerPrivate.setShortcutHandlingSuspended(isCapturing);
   }
@@ -180,7 +168,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   deleteItem(id: string) {
     if (this.isDeleting_) {
       return;
@@ -196,7 +183,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   setItemEnabled(id: string, isEnabled: boolean) {
     chrome.metricsPrivate.recordUserAction(
         isEnabled ? 'Extensions.ExtensionEnabled' :
@@ -204,7 +190,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     chrome.management.setEnabled(id, isEnabled);
   }
 
-  /** @override */
   setItemAllowedIncognito(id: string, isAllowedIncognito: boolean) {
     chrome.developerPrivate.updateExtensionConfiguration({
       extensionId: id,
@@ -212,7 +197,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   setItemAllowedOnFileUrls(id: string, isAllowedOnFileUrls: boolean) {
     chrome.developerPrivate.updateExtensionConfiguration({
       extensionId: id,
@@ -220,7 +204,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   setItemHostAccess(id: string, hostAccess: chrome.developerPrivate.HostAccess):
       void {
     chrome.developerPrivate.updateExtensionConfiguration({
@@ -229,7 +212,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   setItemCollectsErrors(id: string, collectsErrors: boolean): void {
     chrome.developerPrivate.updateExtensionConfiguration({
       extensionId: id,
@@ -237,7 +219,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   inspectItemView(id: string, view: chrome.developerPrivate.ExtensionView):
       void {
     chrome.developerPrivate.openDevTools({
@@ -253,7 +234,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     window.open(url);
   }
 
-  /** @override */
   reloadItem(id: string): Promise<void> {
     return new Promise(function(resolve, reject) {
       chrome.developerPrivate.reload(
@@ -269,12 +249,10 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   repairItem(id: string): void {
     chrome.developerPrivate.repairExtension(id);
   }
 
-  /** @override */
   showItemOptionsPage(extension: chrome.developerPrivate.ExtensionInfo): void {
     assert(extension && extension.optionsPage);
     if (extension.optionsPage!.openInTab) {
@@ -288,39 +266,33 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     }
   }
 
-  /** @override */
   setProfileInDevMode(inDevMode: boolean) {
     chrome.developerPrivate.updateProfileConfiguration(
         {inDeveloperMode: inDevMode});
   }
 
-  /** @override */
   loadUnpacked(): Promise<boolean> {
     return this.loadUnpackedHelper_();
   }
 
-  /** @override */
   retryLoadUnpacked(retryGuid: string): Promise<boolean> {
     // Attempt to load an unpacked extension, optionally as another attempt at
     // a previously-specified load.
     return this.loadUnpackedHelper_({retryGuid: retryGuid});
   }
 
-  /** @override */
   choosePackRootDirectory(): Promise<string> {
     return this.chooseFilePath_(
         chrome.developerPrivate.SelectType.FOLDER,
         chrome.developerPrivate.FileType.LOAD);
   }
 
-  /** @override */
   choosePrivateKeyPath(): Promise<string> {
     return this.chooseFilePath_(
         chrome.developerPrivate.SelectType.FILE,
         chrome.developerPrivate.FileType.PEM);
   }
 
-  /** @override */
   packExtension(
       rootPath: string, keyPath: string, flag?: number,
       callback?:
@@ -329,7 +301,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     chrome.developerPrivate.packDirectory(rootPath, keyPath, flag, callback);
   }
 
-  /** @override */
   updateAllExtensions(extensions: chrome.developerPrivate.ExtensionInfo[]):
       Promise<string> {
     /**
@@ -361,7 +332,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
         });
   }
 
-  /** @override */
   deleteErrors(
       extensionId: string, errorIds?: number[],
       type?: chrome.developerPrivate.ErrorType) {
@@ -372,7 +342,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   requestFileSource(args: chrome.developerPrivate.RequestFileSourceProperties):
       Promise<chrome.developerPrivate.RequestFileSourceResponse> {
     return new Promise(function(resolve) {
@@ -380,13 +349,12 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   showInFolder(id: string) {
     chrome.developerPrivate.showPath(id);
   }
 
-  /** @override */
-  getExtensionActivityLog(extensionId: string) {
+  getExtensionActivityLog(extensionId: string):
+      Promise<chrome.activityLogPrivate.ActivityResultSet> {
     return new Promise(function(resolve) {
       chrome.activityLogPrivate.getExtensionActivities(
           {
@@ -397,7 +365,6 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   getFilteredExtensionActivityLog(extensionId: string, searchTerm: string) {
     const anyType = chrome.activityLogPrivate.ExtensionActivityFilter.ANY;
 
@@ -445,14 +412,12 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
   deleteActivitiesById(activityIds: string[]): Promise<void> {
     return new Promise(function(resolve) {
       chrome.activityLogPrivate.deleteActivities(activityIds, resolve);
     });
   }
 
-  /** @override */
   deleteActivitiesFromExtension(extensionId: string): Promise<void> {
     return new Promise(function(resolve) {
       chrome.activityLogPrivate.deleteActivitiesByExtension(
@@ -460,12 +425,10 @@ export class Service implements KeyboardShortcutDelegate, PackDialogDelegate {
     });
   }
 
-  /** @override */
-  getOnExtensionActivity() {
+  getOnExtensionActivity(): any {
     return chrome.activityLogPrivate.onExtensionActivity;
   }
 
-  /** @override */
   downloadActivities(rawActivityData: string, fileName: string) {
     const blob = new Blob([rawActivityData], {type: 'application/json'});
     const url = URL.createObjectURL(blob);

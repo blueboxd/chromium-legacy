@@ -36,8 +36,9 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   void OnSpeechRecognitionAvailable(bool available) override;
   void OnTranscription(const media::SpeechRecognitionResult& result) override;
   void OnTranscriptionError() override;
-  void SetProjectorToolsVisible(bool is_visible) override;
-  bool IsEligible() const override;
+
+  void SetProjectorToolsVisible(bool is_visible);
+  bool IsEligible() const;
 
   // Sets Caption bubble state to become opened/closed.
   void SetCaptionBubbleState(bool is_on);
@@ -63,6 +64,8 @@ class ASH_EXPORT ProjectorControllerImpl : public ProjectorController {
   void OnMarkerPressed();
   // Invoked when clear all markers button is pressed.
   void OnClearAllMarkersPressed();
+  // Invoked when the undo button is pressed.
+  void OnUndoPressed();
   // Invoked when selfie cam button is pressed.
   void OnSelfieCamPressed(bool enabled);
   // Invoked when magnifier button is pressed.

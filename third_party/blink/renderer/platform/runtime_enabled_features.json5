@@ -237,6 +237,11 @@
       name: "AutoplayIgnoresWebAudio",
       settable_from_internals: true,
     },
+    // When enabled, enforces new interoperable semantics for 3D transforms.
+    // See crbug.com/1008483.
+    {
+      name: "BackfaceVisibilityInterop",
+    },
     {
       name: "BackForwardCache",
     },
@@ -1855,6 +1860,9 @@
       origin_trial_feature_name: "SecurePaymentConfirmationV2",
       origin_trial_os: ["mac", "win"],
       status: "experimental",
+    },
+    {
+      name: "SecurePaymentConfirmationAPIV2",
     },
     {
       name: "SecurePaymentConfirmationDebug",

@@ -16,6 +16,7 @@ constexpr int kHoldingSpaceBubbleContainerChildSpacing = 8;
 constexpr int kHoldingSpaceBubbleWidth = 360;
 constexpr gfx::Insets kHoldingSpaceChildBubblePadding(16);
 constexpr int kHoldingSpaceChildBubbleChildSpacing = 16;
+constexpr int kHoldingSpaceChipCountPerRow = 2;
 constexpr int kHoldingSpaceChipIconSize = 24;
 constexpr int kHoldingSpaceCornerRadius = 8;
 constexpr int kHoldingSpaceDownloadsChevronIconSize = 20;
@@ -25,6 +26,7 @@ constexpr int kHoldingSpaceFocusInsets = -4;
 constexpr int kHoldingSpaceIconSize = 20;
 constexpr gfx::Size kHoldingSpaceScreenCaptureSize(104, 80);
 constexpr int kHoldingSpaceSectionChildSpacing = 16;
+constexpr int kHoldingSpaceSectionContainerChildSpacing = 8;
 constexpr float kHoldingSpaceSelectedOverlayOpacity = 0.3f;
 constexpr int kHoldingSpaceTrayIconMaxVisiblePreviews = 3;
 constexpr int kHoldingSpaceTrayIconDefaultPreviewSize = 32;
@@ -48,15 +50,17 @@ enum class HoldingSpaceCommandId {
 // View IDs.
 constexpr int kHoldingSpaceDownloadsSectionHeaderId = 1;
 constexpr int kHoldingSpaceFilesAppChipId = 2;
-constexpr int kHoldingSpaceItemCheckmarkId = 3;
-constexpr int kHoldingSpaceItemImageId = 4;
-constexpr int kHoldingSpaceItemPinButtonId = 5;
-constexpr int kHoldingSpacePinnedFilesBubbleId = 6;
-constexpr int kHoldingSpaceRecentFilesBubbleId = 7;
-constexpr int kHoldingSpaceScreenCapturePlayIconId = 8;
-constexpr int kHoldingSpaceTrayDefaultIconId = 9;
-constexpr int kHoldingSpaceTrayDropTargetOverlayId = 10;
-constexpr int kHoldingSpaceTrayPreviewsIconId = 11;
+constexpr int kHoldingSpaceItemCancelButtonId = 3;
+constexpr int kHoldingSpaceItemCheckmarkId = 4;
+constexpr int kHoldingSpaceItemImageId = 5;
+constexpr int kHoldingSpaceItemPinButtonId = 6;
+constexpr int kHoldingSpaceItemPrimaryActionContainerId = 7;
+constexpr int kHoldingSpacePinnedFilesBubbleId = 8;
+constexpr int kHoldingSpaceRecentFilesBubbleId = 9;
+constexpr int kHoldingSpaceScreenCapturePlayIconId = 10;
+constexpr int kHoldingSpaceTrayDefaultIconId = 11;
+constexpr int kHoldingSpaceTrayDropTargetOverlayId = 12;
+constexpr int kHoldingSpaceTrayPreviewsIconId = 13;
 
 // The maximum allowed age for files restored into the holding space model.
 // Note that this is not enforced for pinned items.

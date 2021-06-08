@@ -73,21 +73,6 @@ id<GREYMatcher> PopupBlocker() {
   [ChromeEarlGrey waitForMainTabCount:1];
 }
 
-// Tests that sessionStorage content is available for windows opened by DOM via
-// target="_blank" links.
-- (void)testLinkWithBlankTargetSessionStorage {
-  [ChromeEarlGrey executeJavaScript:@"sessionStorage.setItem('key', 'value');"];
-  [ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenSameURLWithBlankTarget"];
-
-  [ChromeEarlGrey waitForMainTabCount:2];
-  [ChromeEarlGrey waitForWebStateContainingText:"Expected result"];
-
-  id value =
-      [ChromeEarlGrey executeJavaScript:@"sessionStorage.getItem('key');"];
-  GREYAssert([value isEqual:@"value"], @"sessionStorage is not shared");
-}
-
 // Tests tapping a link with target="_blank".
 - (void)testLinkWithBlankTarget {
   [ChromeEarlGrey tapWebStateElementWithID:@"webScenarioWindowOpenRegularLink"];

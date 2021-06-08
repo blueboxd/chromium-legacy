@@ -24,6 +24,8 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -415,6 +417,14 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
                           histogram_value, event_name, std::move(event_args)));
   }
 
+  void BroadcastEvent(extensions::events::HistogramValue histogram_value,
+                      const std::string& event_name,
+                      std::vector<base::Value> event_args) override {
+    extensions::EventRouter::Get(profile_)->BroadcastEvent(
+        std::make_unique<extensions::Event>(histogram_value, event_name,
+                                            std::move(event_args)));
+  }
+
   Profile* const profile_;
   const std::map<base::FilePath, std::unique_ptr<FileWatcher>>* const
       file_watchers_;
@@ -553,6 +563,16 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(arc::prefs::kArcEnabled, callback);
   pref_change_registrar_->Add(arc::prefs::kArcHasAccessToRemovableMedia,
                               callback);
+
+  auto plugin_vm_callback = base::BindRepeating(&EventRouter::OnPluginVmChanged,
+                                                weak_factory_.GetWeakPtr());
+  plugin_vm_subscription_ =
+      std::make_unique<plugin_vm::PluginVmPolicySubscription>(
+          profile_, base::BindRepeating([](base::RepeatingClosure closure,
+                                           bool is_allowed) { closure.Run(); },
+                                        plugin_vm_callback));
+  pref_change_registrar_->Add(plugin_vm::prefs::kPluginVmImageExists,
+                              plugin_vm_callback);
 
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
 
@@ -1024,6 +1044,18 @@ void EventRouter::OnCrostiniChanged(
   event.vm_name = vm_name;
   event.event_type =
       profile_->GetPrefs()->GetBoolean(pref_name) ? pref_true : pref_false;
+  BroadcastEvent(profile_,
+                 extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
+                 file_manager_private::OnCrostiniChanged::kEventName,
+                 file_manager_private::OnCrostiniChanged::Create(event));
+}
+
+void EventRouter::OnPluginVmChanged() {
+  file_manager_private::CrostiniEvent event;
+  event.vm_name = plugin_vm::kPluginVmName;
+  event.event_type = plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile_)
+                         ? file_manager_private::CROSTINI_EVENT_TYPE_ENABLE
+                         : file_manager_private::CROSTINI_EVENT_TYPE_DISABLE;
   BroadcastEvent(profile_,
                  extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
                  file_manager_private::OnCrostiniChanged::kEventName,

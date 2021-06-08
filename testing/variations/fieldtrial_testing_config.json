@@ -113,6 +113,24 @@
             ]
         }
     ],
+    "AgsaGoogleAppBrowserFinchDrivenStudy": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "key": "value"
+                    },
+                    "enable_features": [
+                        "ExperimentsForAgsa"
+                    ]
+                }
+            ]
+        }
+    ],
     "AmpBackgroundTab": [
         {
             "platforms": [
@@ -570,6 +588,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MessagesForAndroidPopupBlocked"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidMessagesSafetyTip": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MessagesForAndroidSafetyTip"
                     ]
                 }
             ]
@@ -2052,29 +2085,6 @@
             ]
         }
     ],
-    "CodeCacheDeduplicationStudy": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_16K",
-                    "params": {
-                        "size": "16384"
-                    },
-                    "enable_features": [
-                        "CodeCacheDeduplicationStudy"
-                    ]
-                }
-            ]
-        }
-    ],
     "ColorProviderRedirection": [
         {
             "platforms": [
@@ -3264,21 +3274,6 @@
                     "name": "CloseAllTabsConfirmationEnabled",
                     "enable_features": [
                         "EnableCloseAllTabsConfirmation"
-                    ]
-                }
-            ]
-        }
-    ],
-    "EnableCsrssLockdown": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableCsrssLockdown"
                     ]
                 }
             ]
@@ -5375,29 +5370,6 @@
             ]
         }
     ],
-    "OmniboxDefaultTypedNavigationsToHttps": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_3secondTimeout",
-                    "params": {
-                        "timeout": "3s"
-                    },
-                    "enable_features": [
-                        "OmniboxDefaultTypedNavigationsToHttps"
-                    ]
-                }
-            ]
-        }
-    ],
     "OmniboxDocumentProviderNonDogfoodExperiments": [
         {
             "platforms": [
@@ -7271,31 +7243,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SignInProfileCreationEnterprise"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SimplifiedUrlDisplay": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "AllDisplayExperimentsEnabled",
-                    "params": {
-                        "enable_keyword_elision": "false"
-                    },
-                    "enable_features": [
-                        "OmniboxUIExperimentElideToRegistrableDomain",
-                        "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",
-                        "OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover",
-                        "SafeBrowsingDelayedWarnings"
                     ]
                 }
             ]

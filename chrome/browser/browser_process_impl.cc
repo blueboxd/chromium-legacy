@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_process_impl.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include <algorithm>
 #include <map>
@@ -35,6 +36,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/accessibility/soda_installer_impl.h"
 #include "chrome/browser/battery/battery_metrics.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_browser_main.h"
@@ -147,6 +149,10 @@
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/message_center/message_center.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/soda/soda_installer_impl_chromeos.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -759,6 +765,14 @@ void BrowserProcessImpl::CreateDevToolsProtocolHandler() {
   // StartupBrowserCreator::LaunchBrowser can be run multiple times when browser
   // is started with several profiles or existing browser process is reused.
   if (!remote_debugging_server_) {
+    if (!local_state_->GetBoolean(prefs::kDevToolsRemoteDebuggingAllowed)) {
+      // Follow content/browser/devtools/devtools_http_handler.cc that reports
+      // its remote debugging port on stderr for symmetry.
+      fputs("\nDevTools remote debugging is disallowed by the system admin.\n",
+            stderr);
+      fflush(stderr);
+      return;
+    }
     remote_debugging_server_ = std::make_unique<RemoteDebuggingServer>();
   }
 #endif
@@ -944,6 +958,7 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 GoogleUpdateSettings::GetCollectStatsConsent());
+  registry->RegisterBooleanPref(prefs::kDevToolsRemoteDebuggingAllowed, true);
 }
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
@@ -1167,6 +1182,15 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // SecurityStateModel code is called.
   security_state::SetSecurityStateClient(new ChromeSecurityStateClient());
 #endif
+
+// Create the global SodaInstaller instance.
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  soda_installer_impl_ = std::make_unique<speech::SodaInstallerImpl>();
+#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  soda_installer_impl_ = std::make_unique<speech::SodaInstallerImplChromeOS>();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void BrowserProcessImpl::CreateIconManager() {

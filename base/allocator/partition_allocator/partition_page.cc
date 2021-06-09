@@ -14,6 +14,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_root.h"
+#include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/bits.h"
 #include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
@@ -138,7 +139,7 @@ DeferredUnmap SlotSpanMetadata<thread_safe>::FreeSlowPath() {
       return PartitionDirectUnmap(this);
     }
 #if DCHECK_IS_ON()
-    freelist_head->CheckFreeList();
+    freelist_head->CheckFreeList(bucket->slot_size);
 #endif
     // If it's the current active slot span, change it. We bounce the slot span
     // to the empty list as a force towards defragmentation.
@@ -245,9 +246,9 @@ void DeferredUnmap::Unmap() {
   // condition.
   uint16_t i = 0;
   while (ptr_as_uintptr < ptr_end) {
-    PA_DCHECK(offset_ptr < EndOfReservationOffsetTable());
+    PA_DCHECK(offset_ptr < GetReservationOffsetTableEnd());
     PA_DCHECK(*offset_ptr == i++);
-    *offset_ptr++ = NotAllocatedOffsetTag();
+    *offset_ptr++ = kOffsetTagNotAllocated;
     ptr_as_uintptr += kSuperPageSize;
   }
 

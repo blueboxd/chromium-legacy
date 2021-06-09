@@ -48,6 +48,7 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
+#include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
 #include "base/bits.h"
@@ -986,7 +987,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
     PA_DCHECK(!slot_span->CanStoreRawSize());
     PA_DCHECK(!slot_span->bucket->is_direct_mapped());
     internal::PartitionFreelistEntry* new_head =
-        slot_span->freelist_head->GetNext();
+        slot_span->freelist_head->GetNext(bucket->slot_size);
     slot_span->SetFreelistHead(new_head);
     slot_span->num_allocated_slots++;
 

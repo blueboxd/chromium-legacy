@@ -191,9 +191,9 @@ void WebAppsChromeOs::GetMenuModel(const std::string& app_id,
 
   if (!is_system_web_app) {
     apps::CreateOpenNewSubmenu(menu_type,
-                               display_mode == apps::mojom::WindowMode::kWindow
-                                   ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
-                                   : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
+                               display_mode == apps::mojom::WindowMode::kBrowser
+                                   ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
+                                   : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
                                &menu_items);
   }
 
@@ -432,19 +432,6 @@ void WebAppsChromeOs::OnWebAppsDisabledModeChanged() {
   }
 }
 
-void WebAppsChromeOs::OnWebAppUserDisplayModeChanged(
-    const AppId& app_id,
-    DisplayMode user_display_mode) {
-  if (GetWebApp(app_id) && Accepts(app_id)) {
-    apps::mojom::AppPtr app = apps::mojom::App::New();
-    app->app_type = app_type();
-    app->app_id = app_id;
-    app->window_mode =
-        publisher_helper().ConvertDisplayModeToWindowMode(user_display_mode);
-    Publish(std::move(app), subscribers());
-  }
-}
-
 void WebAppsChromeOs::UpdateAppDisabledMode(apps::mojom::AppPtr& app) {
   if (provider()->policy_manager().IsDisabledAppsModeHidden()) {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
@@ -652,10 +639,6 @@ apps::mojom::AppPtr WebAppsChromeOs::Convert(const WebApp* web_app,
 
   bool paused = publisher_helper().IsPaused(web_app->app_id());
   app->icon_key = publisher_helper().MakeIconKey(web_app);
-
-  auto display_mode = GetRegistrar()->GetAppUserDisplayMode(web_app->app_id());
-  app->window_mode =
-      publisher_helper().ConvertDisplayModeToWindowMode(display_mode);
 
   apps::mojom::OptionalBool has_notification =
       app_notifications_.HasNotification(web_app->app_id())

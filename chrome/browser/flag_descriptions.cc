@@ -324,10 +324,11 @@ const char kAutofillSaveAndFillVPADescription[] =
     "it will offer to save it. If saved, it will be offered for filling in "
     "fields which expect a VPA.";
 
-const char kAutofillSuggestVirtualCardsOnlyOnFullFormDetectionName[] =
-    "Autofill suggests virtual cards only on full form detection";
-const char kAutofillSuggestVirtualCardsOnlyOnFullFormDetectionDescription[] =
-    "When enabled, merchant bound virtual cards will be suggested only if all "
+const char kAutofillSuggestVirtualCardsOnIncompleteFormName[] =
+    "Autofill suggests virtual cards on incomplete forms";
+const char kAutofillSuggestVirtualCardsOnIncompleteFormDescription[] =
+    "When enabled, merchant bound virtual cards will be suggested even if not "
+    "all "
     "of the card number, exp date and CVC fields are detected in a payment "
     "form.";
 
@@ -491,10 +492,6 @@ const char kEnablePasswordsAccountStorageIPHName[] =
 const char kEnablePasswordsAccountStorageIPHDescription[] =
     "Enables in-product help bubbles about storing passwords in a second, "
     "Gaia-account-scoped storage for signed-in but not syncing users";
-
-const char kFocusMode[] = "Focus Mode";
-const char kFocusModeDescription[] =
-    "If enabled, allows the user to switch to Focus Mode";
 
 const char kFontAccessAPIName[] = "Font Access APIs";
 const char kFontAccessAPIDescription[] =

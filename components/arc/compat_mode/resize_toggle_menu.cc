@@ -165,20 +165,24 @@ ResizeToggleMenu::ResizeToggleMenu(views::Widget* widget,
           widget_, GetAnchorRect(),
           base::BindRepeating(&ResizeToggleMenu::ExecuteCommand,
                               base::Unretained(this))));
-  widget_observation_.Observe(widget_);
+  widget_observations_.AddObservation(widget_);
+  widget_observations_.AddObservation(bubble_widget_);
   bubble_widget_->Show();
 }
 
 ResizeToggleMenu::~ResizeToggleMenu() = default;
 
 void ResizeToggleMenu::OnWidgetClosing(views::Widget* widget) {
-  DCHECK(widget_observation_.IsObservingSource(widget));
-  widget_observation_.Reset();
+  widget_observations_.RemoveAllObservations();
   widget_ = nullptr;
+  bubble_widget_ = nullptr;
 }
 
 void ResizeToggleMenu::OnWidgetBoundsChanged(views::Widget* widget,
                                              const gfx::Rect& new_bounds) {
+  if (widget != widget_)
+    return;
+
   DCHECK(bubble_widget_);
   bubble_widget_->widget_delegate()->AsBubbleDialogDelegate()->SetAnchorRect(
       GetAnchorRect());

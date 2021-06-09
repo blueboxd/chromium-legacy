@@ -8,13 +8,13 @@
 
 #include "chrome/browser/ash/borealis/borealis_context.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
+#include "chrome/browser/ash/borealis/borealis_disk_manager.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/testing/callback_factory.h"
+#include "chrome/browser/ash/borealis/testing/dbus.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
@@ -29,10 +29,32 @@ namespace borealis {
 
 namespace {
 
+class DiskManagerMock : public BorealisDiskManager {
+ public:
+  DiskManagerMock() = default;
+  ~DiskManagerMock() override = default;
+  MOCK_METHOD(
+      void,
+      GetDiskInfo,
+      (base::OnceCallback<void(Expected<GetDiskInfoResponse, std::string>)>),
+      ());
+  MOCK_METHOD(void,
+              RequestSpace,
+              (uint64_t,
+               base::OnceCallback<void(Expected<uint64_t, std::string>)>),
+              ());
+  MOCK_METHOD(void,
+              ReleaseSpace,
+              (uint64_t,
+               base::OnceCallback<void(Expected<uint64_t, std::string>)>),
+              ());
+  MOCK_METHOD(void, SyncDiskSize, (base::OnceCallback<void(std::string)>), ());
+};
+
 using CallbackFactory =
     StrictCallbackFactory<void(BorealisStartupResult, std::string)>;
 
-class BorealisTasksTest : public testing::Test {
+class BorealisTasksTest : public testing::Test, protected FakeVmServicesHelper {
  public:
   BorealisTasksTest() = default;
   ~BorealisTasksTest() override = default;
@@ -43,39 +65,19 @@ class BorealisTasksTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
-    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
-    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
     CreateProfile();
     context_ = BorealisContext::CreateBorealisContextForTesting(profile_.get());
     context_->set_vm_name("borealis");
-
-    chromeos::DlcserviceClient::InitializeFake();
-    fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
-        chromeos::DlcserviceClient::Get());
   }
 
   void TearDown() override {
     context_.reset();  // must destroy before DBus shutdown
     profile_.reset();
-
-    chromeos::DlcserviceClient::Shutdown();
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<BorealisContext> context_;
   content::BrowserTaskEnvironment task_environment_;
-  chromeos::FakeConciergeClient* fake_concierge_client_;
-  chromeos::FakeCiceroneClient* fake_cicerone_client_;
-  // Owned by chromeos::DBusThreadManager
-  chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
 
  private:
   void CreateProfile() {
@@ -86,7 +88,7 @@ class BorealisTasksTest : public testing::Test {
 };
 
 TEST_F(BorealisTasksTest, MountDlcSucceedsAndCallbackRanWithResults) {
-  fake_dlcservice_client_->set_install_error(dlcservice::kErrorNone);
+  FakeDlcserviceClient()->set_install_error(dlcservice::kErrorNone);
 
   CallbackFactory callback_factory;
   EXPECT_CALL(callback_factory, Call(BorealisStartupResult::kSuccess, _));
@@ -101,7 +103,7 @@ TEST_F(BorealisTasksTest, CreateDiskSucceedsAndCallbackRanWithResults) {
   base::FilePath path = base::FilePath("test/path");
   response.set_status(vm_tools::concierge::DISK_STATUS_CREATED);
   response.set_disk_path(path.AsUTF8Unsafe());
-  fake_concierge_client_->set_create_disk_image_response(std::move(response));
+  FakeConciergeClient()->set_create_disk_image_response(std::move(response));
   EXPECT_EQ(context_->disk_path(), base::FilePath());
 
   CallbackFactory callback_factory;
@@ -111,7 +113,7 @@ TEST_F(BorealisTasksTest, CreateDiskSucceedsAndCallbackRanWithResults) {
   task.Run(context_.get(), callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
 
-  EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
+  EXPECT_GE(FakeConciergeClient()->create_disk_image_call_count(), 1);
   EXPECT_EQ(context_->disk_path(), path);
 }
 
@@ -121,7 +123,7 @@ TEST_F(BorealisTasksTest,
   base::FilePath path = base::FilePath("test/path");
   response.set_status(vm_tools::concierge::DISK_STATUS_EXISTS);
   response.set_disk_path(path.AsUTF8Unsafe());
-  fake_concierge_client_->set_create_disk_image_response(std::move(response));
+  FakeConciergeClient()->set_create_disk_image_response(std::move(response));
   EXPECT_EQ(context_->disk_path(), base::FilePath());
 
   CallbackFactory callback_factory;
@@ -131,14 +133,14 @@ TEST_F(BorealisTasksTest,
   task.Run(context_.get(), callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
 
-  EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
+  EXPECT_GE(FakeConciergeClient()->create_disk_image_call_count(), 1);
   EXPECT_EQ(context_->disk_path(), path);
 }
 
 TEST_F(BorealisTasksTest, StartBorealisVmSucceedsAndCallbackRanWithResults) {
   vm_tools::concierge::StartVmResponse response;
   response.set_status(vm_tools::concierge::VM_STATUS_STARTING);
-  fake_concierge_client_->set_start_vm_response(std::move(response));
+  FakeConciergeClient()->set_start_vm_response(std::move(response));
 
   CallbackFactory callback_factory;
   EXPECT_CALL(callback_factory, Call(BorealisStartupResult::kSuccess, _));
@@ -147,14 +149,14 @@ TEST_F(BorealisTasksTest, StartBorealisVmSucceedsAndCallbackRanWithResults) {
   task.Run(context_.get(), callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
 
-  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
+  EXPECT_GE(FakeConciergeClient()->start_termina_vm_call_count(), 1);
 }
 
 TEST_F(BorealisTasksTest,
        StartBorealisVmVmAlreadyRunningAndCallbackRanWithResults) {
   vm_tools::concierge::StartVmResponse response;
   response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
-  fake_concierge_client_->set_start_vm_response(std::move(response));
+  FakeConciergeClient()->set_start_vm_response(std::move(response));
 
   CallbackFactory callback_factory;
   EXPECT_CALL(callback_factory, Call(BorealisStartupResult::kSuccess, _));
@@ -163,7 +165,7 @@ TEST_F(BorealisTasksTest,
   task.Run(context_.get(), callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
 
-  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
+  EXPECT_GE(FakeConciergeClient()->start_termina_vm_call_count(), 1);
 }
 
 TEST_F(BorealisTasksTest,
@@ -179,7 +181,7 @@ TEST_F(BorealisTasksTest,
 
   AwaitBorealisStartup task(context_->profile(), context_->vm_name());
   task.Run(context_.get(), callback_factory.BindOnce());
-  fake_cicerone_client_->NotifyContainerStarted(std::move(signal));
+  FakeCiceroneClient()->NotifyContainerStarted(std::move(signal));
 
   task_environment_.RunUntilIdle();
 }
@@ -196,7 +198,7 @@ TEST_F(BorealisTasksTest,
   EXPECT_CALL(callback_factory, Call(BorealisStartupResult::kSuccess, _));
 
   AwaitBorealisStartup task(context_->profile(), context_->vm_name());
-  fake_cicerone_client_->NotifyContainerStarted(std::move(signal));
+  FakeCiceroneClient()->NotifyContainerStarted(std::move(signal));
   task.Run(context_.get(), callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
 }
@@ -215,11 +217,45 @@ TEST_F(BorealisTasksTest,
   task_environment_.RunUntilIdle();
 }
 
+TEST_F(BorealisTasksTest, SyncBorealisDiskFails) {
+  auto disk_mock = std::make_unique<DiskManagerMock>();
+  EXPECT_CALL(*disk_mock, SyncDiskSize(_))
+      .WillOnce(testing::Invoke(
+          [](base::OnceCallback<void(std::string error)> callback) {
+            std::move(callback).Run("Something went wrong");
+          }));
+
+  CallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory,
+              Call(BorealisStartupResult::kSyncDiskFailed,
+                   "Failed to sync disk: Something went wrong"));
+  context_->SetDiskManagerForTesting(std::move(disk_mock));
+  SyncBorealisDisk task;
+  task.Run(context_.get(), callback_factory.BindOnce());
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(BorealisTasksTest, SyncBorealisDiskSucceeds) {
+  auto disk_mock = std::make_unique<DiskManagerMock>();
+  EXPECT_CALL(*disk_mock, SyncDiskSize(_))
+      .WillOnce(testing::Invoke(
+          [](base::OnceCallback<void(std::string error)> callback) {
+            std::move(callback).Run("");
+          }));
+
+  CallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory, Call(BorealisStartupResult::kSuccess, _));
+  context_->SetDiskManagerForTesting(std::move(disk_mock));
+  SyncBorealisDisk task;
+  task.Run(context_.get(), callback_factory.BindOnce());
+  task_environment_.RunUntilIdle();
+}
+
 class BorealisTasksTestDlc : public BorealisTasksTest,
                              public testing::WithParamInterface<std::string> {};
 
 TEST_P(BorealisTasksTestDlc, MountDlcFailsAndCallbackRanWithResults) {
-  fake_dlcservice_client_->set_install_error(GetParam());
+  FakeDlcserviceClient()->set_install_error(GetParam());
   CallbackFactory callback_factory;
   EXPECT_CALL(callback_factory,
               Call(BorealisStartupResult::kMountFailed, StrNe("")));
@@ -246,7 +282,7 @@ class BorealisTasksTestDiskImage
 TEST_P(BorealisTasksTestDiskImage, CreateDiskFailsAndCallbackRanWithResults) {
   vm_tools::concierge::CreateDiskImageResponse response;
   response.set_status(GetParam());
-  fake_concierge_client_->set_create_disk_image_response(std::move(response));
+  FakeConciergeClient()->set_create_disk_image_response(std::move(response));
   EXPECT_EQ(context_->disk_path(), base::FilePath());
 
   CallbackFactory callback_factory;
@@ -257,7 +293,7 @@ TEST_P(BorealisTasksTestDiskImage, CreateDiskFailsAndCallbackRanWithResults) {
   task.Run(context_.get(), callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
 
-  EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
+  EXPECT_GE(FakeConciergeClient()->create_disk_image_call_count(), 1);
   EXPECT_EQ(context_->disk_path(), base::FilePath());
 }
 
@@ -279,7 +315,7 @@ TEST_P(BorealisTasksTestsStartBorealisVm,
        StartBorealisVmErrorsAndCallbackRanWithResults) {
   vm_tools::concierge::StartVmResponse response;
   response.set_status(GetParam());
-  fake_concierge_client_->set_start_vm_response(std::move(response));
+  FakeConciergeClient()->set_start_vm_response(std::move(response));
 
   CallbackFactory callback_factory;
   EXPECT_CALL(callback_factory,
@@ -289,7 +325,7 @@ TEST_P(BorealisTasksTestsStartBorealisVm,
   task.Run(context_.get(), callback_factory.BindOnce());
   task_environment_.RunUntilIdle();
 
-  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
+  EXPECT_GE(FakeConciergeClient()->start_termina_vm_call_count(), 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(

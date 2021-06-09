@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/scoped_observation.h"
+#include "base/scoped_multi_source_observation.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -61,8 +61,8 @@ class ResizeToggleMenu : public views::WidgetObserver {
 
   ArcResizeLockPrefDelegate* pref_delegate_;
 
-  base::ScopedObservation<views::Widget, views::WidgetObserver>
-      widget_observation_{this};
+  base::ScopedMultiSourceObservation<views::Widget, views::WidgetObserver>
+      widget_observations_{this};
 
   // Store only for testing.
   views::Widget* bubble_widget_{nullptr};

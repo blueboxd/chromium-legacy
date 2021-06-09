@@ -199,9 +199,8 @@ extern const char kAutofillPruneSuggestionsDescription[];
 extern const char kAutofillSaveAndFillVPAName[];
 extern const char kAutofillSaveAndFillVPADescription[];
 
-extern const char kAutofillSuggestVirtualCardsOnlyOnFullFormDetectionName[];
-extern const char
-    kAutofillSuggestVirtualCardsOnlyOnFullFormDetectionDescription[];
+extern const char kAutofillSuggestVirtualCardsOnIncompleteFormName[];
+extern const char kAutofillSuggestVirtualCardsOnIncompleteFormDescription[];
 
 extern const char kAutofillUseImprovedLabelDisambiguationName[];
 extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
@@ -710,9 +709,6 @@ extern const char kFillingAcrossAffiliatedWebsitesDescription[];
 
 extern const char kFillOnAccountSelectName[];
 extern const char kFillOnAccountSelectDescription[];
-
-extern const char kFocusMode[];
-extern const char kFocusModeDescription[];
 
 extern const char kForceTextDirectionName[];
 extern const char kForceTextDirectionDescription[];

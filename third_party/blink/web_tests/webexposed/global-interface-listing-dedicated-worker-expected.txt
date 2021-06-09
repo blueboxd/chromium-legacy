@@ -10,6 +10,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method abort
 [Worker]     method constructor
 [Worker] interface AbortSignal : EventTarget
+[Worker]     static method abort
 [Worker]     attribute @@toStringTag
 [Worker]     getter aborted
 [Worker]     getter onabort
@@ -3130,6 +3131,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter closed
 [Worker]     getter datagramReadable
 [Worker]     getter datagramWritable
+[Worker]     getter datagrams
 [Worker]     getter incomingBidirectionalStreams
 [Worker]     getter incomingUnidirectionalStreams
 [Worker]     getter ready

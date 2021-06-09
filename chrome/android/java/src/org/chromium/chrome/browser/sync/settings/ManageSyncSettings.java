@@ -49,7 +49,7 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.signin.ui.SignOutDialogFragment;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
@@ -73,14 +73,12 @@ import java.util.Set;
 /**
  * Settings fragment to customize Sync options (data types, encryption). Corresponds to
  * chrome://settings/syncSetup/advanced and parts of chrome://settings/syncSetup on desktop.
- * With the MobileIdentityConsistency feature, this fragment is accessible from the main settings
- * view. If the feature is disabled, the entry point is in {@link SyncAndServicesSettings}.
+ * This fragment is accessible from the main settings view.
  */
 public class ManageSyncSettings extends PreferenceFragmentCompat
         implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
                    PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceChangeListener,
-                   ProfileSyncService.SyncStateChangedListener,
-                   SettingsActivity.OnBackPressedListener,
+                   SyncService.SyncStateChangedListener, SettingsActivity.OnBackPressedListener,
                    SignOutDialogFragment.SignOutDialogListener,
                    SyncErrorCardPreference.SyncErrorCardPreferenceListener {
     private static final String IS_FROM_SIGNIN_SCREEN = "ManageSyncSettings.isFromSigninScreen";
@@ -131,7 +129,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     private static final int REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL = 1;
     private static final int REQUEST_CODE_TRUSTED_VAULT_RECOVERABILITY_DEGRADED = 2;
 
-    private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
+    private final SyncService mSyncService = SyncService.get();
 
     private boolean mIsFromSigninScreen;
 
@@ -157,7 +155,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     private PreferenceCategory mSearchAndBrowseCategory;
     private ChromeSwitchPreference mUrlKeyedAnonymizedData;
 
-    private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
+    private SyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     /**
      * Creates an argument bundle for this fragment.
@@ -223,8 +221,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
              * sync request off prior to MOBILE_IDENTITY_CONSISTENCY get a chance to migrate to the
              * new flow.
              */
-            if (!ProfileSyncService.get().isSyncRequested()) {
-                ProfileSyncService.get().setChosenDataTypes(false, new HashSet<>());
+            if (!SyncService.get().isSyncRequested()) {
+                SyncService.get().setChosenDataTypes(false, new HashSet<>());
             }
         }
 
@@ -249,7 +247,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         }
 
         // Prevent sync settings changes from taking effect until the user leaves this screen.
-        mSyncSetupInProgressHandle = mProfileSyncService.getSetupInProgressHandle();
+        mSyncSetupInProgressHandle = mSyncService.getSetupInProgressHandle();
 
         mSearchAndBrowseCategory =
                 (PreferenceCategory) findPreference(PREF_SEARCH_AND_BROWSE_CATEGORY);
@@ -305,7 +303,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
         // Advanced sync consent flow - add a bottom bar and un-hide relevant preferences.
         ViewGroup result = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
-        inflater.inflate(R.layout.sync_and_services_bottom_bar, result, true);
+        inflater.inflate(R.layout.manage_sync_settings_bottom_bar, result, true);
 
         ButtonCompat cancelButton = result.findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(view -> cancelSync());
@@ -321,13 +319,13 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     @Override
     public void onStart() {
         super.onStart();
-        mProfileSyncService.addSyncStateChangedListener(this);
+        mSyncService.addSyncStateChangedListener(this);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mProfileSyncService.removeSyncStateChangedListener(this);
+        mSyncService.removeSyncStateChangedListener(this);
     }
 
     @Override
@@ -345,20 +343,20 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     }
 
     /**
-     * ProfileSyncService.SyncStateChangedListener implementation, listens to sync state changes.
+     * SyncService.SyncStateChangedListener implementation, listens to sync state changes.
      *
      * If the user has just turned on sync, this listener is needed in order to enable
      * the encryption settings once the engine has initialized.
      */
     @Override
     public void syncStateChanged() {
-        // This is invoked synchronously from ProfileSyncService.setChosenDataTypes, postpone the
+        // This is invoked synchronously from SyncService.setChosenDataTypes, postpone the
         // update to let updateSyncStateFromSelectedModelTypes finish saving the state.
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncPreferences);
     }
 
     /**
-     * Gets the current state of data types from {@link ProfileSyncService} and updates UI elements
+     * Gets the current state of data types from {@link SyncService} and updates UI elements
      * from this state.
      */
     private void updateSyncPreferences() {
@@ -380,12 +378,12 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     }
 
     /**
-     * Gets the state from data type checkboxes and saves this state into {@link ProfileSyncService}
+     * Gets the state from data type checkboxes and saves this state into {@link SyncService}
      * and {@link PersonalDataManager}.
      */
     private void updateSyncStateFromSelectedModelTypes() {
         Set<Integer> selectedModelTypes = getSelectedModelTypes();
-        mProfileSyncService.setChosenDataTypes(mSyncEverything.isChecked(), selectedModelTypes);
+        mSyncService.setChosenDataTypes(mSyncEverything.isChecked(), selectedModelTypes);
         // Note: mSyncPaymentsIntegration should be checked if mSyncEverything is checked, but if
         // mSyncEverything was just enabled, then that state may not have propagated to
         // mSyncPaymentsIntegration yet. See crbug.com/972863.
@@ -396,10 +394,10 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         if (!Profile.getLastUsedRegularProfile().isChild()) {
             boolean atLeastOneDataTypeEnabled =
                     mSyncEverything.isChecked() || selectedModelTypes.size() > 0;
-            if (mProfileSyncService.isSyncRequested() && !atLeastOneDataTypeEnabled) {
-                mProfileSyncService.setSyncRequested(false);
-            } else if (!mProfileSyncService.isSyncRequested() && atLeastOneDataTypeEnabled) {
-                mProfileSyncService.setSyncRequested(true);
+            if (mSyncService.isSyncRequested() && !atLeastOneDataTypeEnabled) {
+                mSyncService.setSyncRequested(false);
+            } else if (!mSyncService.isSyncRequested() && atLeastOneDataTypeEnabled) {
+                mSyncService.setSyncRequested(true);
             }
         }
 
@@ -416,7 +414,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
      * modify the encryption state.
      */
     private void updateEncryptionState() {
-        boolean isEngineInitialized = mProfileSyncService.isEngineInitialized();
+        boolean isEngineInitialized = mSyncService.isEngineInitialized();
         mSyncEncryption.setEnabled(isEngineInitialized);
         mSyncEncryption.setSummary(null);
         if (!isEngineInitialized) {
@@ -428,21 +426,21 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             return;
         }
 
-        if (mProfileSyncService.isTrustedVaultKeyRequired()) {
+        if (mSyncService.isTrustedVaultKeyRequired()) {
             // The user cannot manually enter trusted vault keys, so it needs to gets treated as an
             // error.
             closeDialogIfOpen(FRAGMENT_CUSTOM_PASSPHRASE);
             closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
-            setEncryptionErrorSummary(mProfileSyncService.isEncryptEverythingEnabled()
+            setEncryptionErrorSummary(mSyncService.isEncryptEverythingEnabled()
                             ? R.string.sync_error_card_title
                             : R.string.password_sync_error_summary);
             return;
         }
 
-        if (!mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
+        if (!mSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
         }
-        if (mProfileSyncService.isPassphraseRequiredForPreferredDataTypes() && isAdded()) {
+        if (mSyncService.isPassphraseRequiredForPreferredDataTypes() && isAdded()) {
             setEncryptionErrorSummary(R.string.sync_need_passphrase);
         }
     }
@@ -468,9 +466,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     private void displayPassphraseTypeDialog() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
-        PassphraseTypeDialogFragment dialog =
-                PassphraseTypeDialogFragment.create(mProfileSyncService.getPassphraseType(),
-                        mProfileSyncService.isCustomPassphraseAllowed());
+        PassphraseTypeDialogFragment dialog = PassphraseTypeDialogFragment.create(
+                mSyncService.getPassphraseType(), mSyncService.isCustomPassphraseAllowed());
         dialog.show(ft, FRAGMENT_PASSPHRASE_TYPE);
         dialog.setTargetFragment(this, -1);
     }
@@ -501,7 +498,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     /** Returns whether the passphrase successfully decrypted the pending keys. */
     private boolean handleDecryption(String passphrase) {
-        if (passphrase.isEmpty() || !mProfileSyncService.setDecryptionPassphrase(passphrase)) {
+        if (passphrase.isEmpty() || !mSyncService.setDecryptionPassphrase(passphrase)) {
             return false;
         }
         // PassphraseDialogFragment doesn't handle closing itself, so do it here. This is not done
@@ -516,8 +513,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     /** Callback for PassphraseDialogFragment.Listener */
     @Override
     public boolean onPassphraseEntered(String passphrase) {
-        if (!mProfileSyncService.isEngineInitialized()
-                || !mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
+        if (!mSyncService.isEngineInitialized()
+                || !mSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             // If the engine was shut down since the dialog was opened, or the passphrase isn't
             // required anymore, do nothing.
             return false;
@@ -532,11 +529,11 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     /** Callback for PassphraseCreationDialogFragment.Listener */
     @Override
     public void onPassphraseCreated(String passphrase) {
-        if (!mProfileSyncService.isEngineInitialized()) {
+        if (!mSyncService.isEngineInitialized()) {
             // If the engine was shut down since the dialog was opened, do nothing.
             return;
         }
-        mProfileSyncService.setEncryptionPassphrase(passphrase);
+        mSyncService.setEncryptionPassphrase(passphrase);
         // Save the current state of data types - this tells the sync engine to
         // apply our encryption configuration changes.
         updateSyncStateFromSelectedModelTypes();
@@ -545,13 +542,13 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     /** Callback for PassphraseTypeDialogFragment.Listener */
     @Override
     public void onPassphraseTypeSelected(@PassphraseType int type) {
-        if (!mProfileSyncService.isEngineInitialized()) {
+        if (!mSyncService.isEngineInitialized()) {
             // If the engine was shut down since the dialog was opened, do nothing.
             return;
         }
 
-        boolean isAllDataEncrypted = mProfileSyncService.isEncryptEverythingEnabled();
-        boolean isUsingExplicitPassphrase = mProfileSyncService.isUsingExplicitPassphrase();
+        boolean isAllDataEncrypted = mSyncService.isEncryptEverythingEnabled();
+        boolean isUsingExplicitPassphrase = mSyncService.isUsingExplicitPassphrase();
 
         // The passphrase type should only ever be selected if the account doesn't have
         // full encryption enabled. Otherwise both options should be disabled.
@@ -583,11 +580,11 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     }
 
     private void onSyncEncryptionClicked() {
-        if (!mProfileSyncService.isEngineInitialized()) return;
+        if (!mSyncService.isEngineInitialized()) return;
 
-        if (mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
+        if (mSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             displayPassphraseDialog();
-        } else if (mProfileSyncService.isTrustedVaultKeyRequired()) {
+        } else if (mSyncService.isTrustedVaultKeyRequired()) {
             CoreAccountInfo primaryAccountInfo =
                     IdentityServicesProvider.get()
                             .getIdentityManager(Profile.getLastUsedRegularProfile())
@@ -602,10 +599,10 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     }
 
     /**
-     * Gets the current state of data types from {@link ProfileSyncService} and updates the UI.
+     * Gets the current state of data types from {@link SyncService} and updates the UI.
      */
     private void updateDataTypeState() {
-        boolean syncEverything = mProfileSyncService.hasKeepEverythingSynced();
+        boolean syncEverything = mSyncService.hasKeepEverythingSynced();
         mSyncEverything.setChecked(syncEverything);
         if (syncEverything) {
             for (CheckBoxPreference pref : mSyncTypePreferences) {
@@ -615,7 +612,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             return;
         }
 
-        Set<Integer> syncTypes = mProfileSyncService.getChosenDataTypes();
+        Set<Integer> syncTypes = mSyncService.getChosenDataTypes();
         mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
         mSyncAutofill.setEnabled(true);
         mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
@@ -718,8 +715,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
                         primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_RECOVERABILITY_DEGRADED);
                 return;
             case SyncError.SYNC_SETUP_INCOMPLETE:
-                mProfileSyncService.setSyncRequested(true);
-                mProfileSyncService.setFirstSetupComplete(
+                mSyncService.setSyncRequested(true);
+                mSyncService.setFirstSetupComplete(
                         SyncFirstSetupCompleteSource.ADVANCED_FLOW_INTERRUPTED_TURN_SYNC_ON);
                 return;
             case SyncError.NO_ERROR:
@@ -739,8 +736,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     private void confirmSettings() {
         RecordUserAction.record("Signin_Signin_ConfirmAdvancedSyncSettings");
-        ProfileSyncService.get().setFirstSetupComplete(
-                SyncFirstSetupCompleteSource.ADVANCED_FLOW_CONFIRM);
+        SyncService.get().setFirstSetupComplete(SyncFirstSetupCompleteSource.ADVANCED_FLOW_CONFIRM);
         UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram(
                 Profile.getLastUsedRegularProfile());
         // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.

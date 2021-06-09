@@ -397,16 +397,6 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
 
 namespace {
 
-// Given the size that the whole image should draw at, and the input phase
-// requested by the content, and the space between repeated tiles, return a
-// phase that is no more than one size + space in magnitude.
-PhysicalOffset ComputePhaseForBackground(
-    const BackgroundImageGeometry& geometry) {
-  const PhysicalSize step_per_tile = geometry.TileSize() + geometry.SpaceSize();
-  return {IntMod(-geometry.Phase().left, step_per_tile.width),
-          IntMod(-geometry.Phase().top, step_per_tile.height)};
-}
-
 // Compute the image subset, in intrinsic image coordinates, that gets mapped
 // onto the |subset|, when the whole image would be drawn with phase and size
 // given by |phase_and_size|. Assumes |phase_and_size| contains |subset|. The
@@ -490,8 +480,7 @@ void DrawTiledBackground(GraphicsContext& context,
                   geometry.TileSize().height / intrinsic_tile_size.Height());
   }
 
-  const PhysicalOffset dest_phase =
-      geometry.SnappedDestRect().offset + ComputePhaseForBackground(geometry);
+  const PhysicalOffset dest_phase = geometry.ComputeDestPhase();
 
   // Check and see if a single draw of the image can cover the entire area we
   // are supposed to tile. The dest_rect_for_subset must use the same
@@ -549,8 +538,8 @@ void DrawTiledBackground(GraphicsContext& context,
   // given repeat spacing. Note the phase is already scaled.
   context.DrawImageTiled(image, FloatRect(geometry.SnappedDestRect()),
                          tile_rect, scale, FloatPoint(dest_phase),
-                         FloatSize(geometry.SpaceSize()), op,
-                         respect_orientation);
+                         FloatSize(geometry.SpaceSize()), has_filter_property,
+                         op, respect_orientation);
 }
 
 // Returning false meaning that we cannot paint background color with
@@ -662,9 +651,8 @@ inline bool PaintFastBottomLayer(const Document* document,
 
       // Phase calculation uses the actual painted location, given by the
       // border-snapped destination rect.
-      image_tile = PhysicalRect(geometry.SnappedDestRect().offset +
-                                    ComputePhaseForBackground(geometry),
-                                geometry.TileSize());
+      image_tile =
+          PhysicalRect(geometry.ComputeDestPhase(), geometry.TileSize());
 
       // Use FastAndLossyFromFloatRect when converting the image border rect.
       // At this point it should have been derived from a snapped rectangle, so

@@ -171,23 +171,6 @@
       },
     },
   },
-  'angle_skia_gold_test': {
-    '$mixin_append': {
-      'args': [
-        '--git-revision=${got_angle_revision}',
-        # BREAK GLASS IN CASE OF EMERGENCY
-        # Uncommenting this argument will bypass all interactions with Skia
-        # Gold in any tests that use it. This is meant as a temporary
-        # emergency stop in case of a Gold outage that's affecting the bots.
-        # '--bypass-skia-gold-functionality',
-      ],
-      'precommit_args': [
-        '--gerrit-issue=${patch_issue}',
-        '--gerrit-patchset=${patch_set}',
-        '--buildbucket-id=${buildbucket_build_id}',
-      ],
-    }
-  },
   'arm64': {
     'swarming': {
       'dimensions': {
@@ -499,6 +482,18 @@
           {
             'name': 'runtime_ios_14_5',
             'path': 'Runtime-ios-14.5',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_15_0': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_15_0',
+            'path': 'Runtime-ios-15.0',
           },
         ],
       },
@@ -1224,6 +1219,22 @@
           },
         ],
       },
+    },
+  },
+  'xcode_13_latest_beta': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '13a5154h'
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'xcode_ios_13a5154h',
+          'path': 'Xcode.app',
+        },
+      ],
     },
   },
   'xcode_parallelization': {

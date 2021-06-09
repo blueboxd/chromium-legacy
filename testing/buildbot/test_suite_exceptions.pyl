@@ -117,13 +117,6 @@
       },
     },
   },
-  'angle_perftests': {
-    'remove_from': [
-      'Android FYI Release (Nexus 5)',  # crbug.com/915429
-      'Android FYI Release (Nexus 6)',  # anglebug.com/2433
-      'Linux FYI GPU TSAN Release',  # crbug.com/950542
-    ],
-  },
   'angle_unittests': {
     'remove_from': [
       # On Android, these are already run on the main waterfall.
@@ -3242,10 +3235,6 @@
           'shards': 2,
         },
       },
-      # TODO(crbug.com/1217434) Test failure on CQ.
-      'linux-lacros-tester-rel': {
-        'ci_only': True,
-      },
     },
   },
   'weblayer_browsertests': {
@@ -3407,6 +3396,11 @@
           # TODO(crbug.com/1189746) Enable this test once the issue is fixed.
           '--gtest_filter=-org.chromium.net.NetworkChangeNotifierTest.testNetworkChangeNotifierJavaObservers',
         ],
+      },
+      'android-pie-arm64-rel': {
+        'swarming': {
+          'shards': 9,
+        },
       },
       'android-pie-x86-rel': {
         'args': [

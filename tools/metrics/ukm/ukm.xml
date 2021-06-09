@@ -523,6 +523,49 @@ be describing additional metrics about the same event.
       was not prerendered.
     </summary>
   </metric>
+  <metric name="SubFrame.MobileFriendliness.AllowUserZoom" enum="Boolean">
+    <summary>
+      Whether the page allows the user to zoom in/out, in the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.BadTapTargetsRatio">
+    <summary>
+      Percentage of tap targets whose center position is within another tap
+      target (expanded by a margin), in the AMP subframe. The detail of the
+      algorithm is go/bad-tap-target-ukm. If evaluation time budget exceeded,
+      this will be is -2.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.SmallTextRatio">
+    <summary>
+      Percentage of small font text area in total text area, in the AMP
+      subframe.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.MobileFriendliness.TextContentOutsideViewportPercentage">
+    <summary>
+      Percentage of pixels of text and images horizontally outside the viewport,
+      relative to the frame width, in the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.ViewportDeviceWidth" enum="Boolean">
+    <summary>
+      Whether the width of the viewport is specified as device-width or not, in
+      the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.ViewportHardcodedWidth">
+    <summary>
+      Specified hardcoded viewport width in CSS pixels, in the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.ViewportInitialScaleX10">
+    <summary>
+      Specified initial viewport scaling, in the AMP subframe, multiplied by 10.
+      1 means 0.1, 100 means 10. [1-100].
+    </summary>
+  </metric>
   <metric
       name="SubFrame.PaintTiming.NavigationToExperimentalLargestContentfulPaint">
     <obsolete>
@@ -14053,14 +14096,14 @@ be describing additional metrics about the same event.
   <metric name="DayOfWeek">
     <summary>
       An enum representing the of the week that the data was logged, defined in
-      |chromeos::power::ml::ScreenBrightness::Features::ActivityData::
+      |ash::power::ml::ScreenBrightnessEvent::Features::ActivityData::
       DayOfWeek|.
     </summary>
   </metric>
   <metric name="DeviceMode">
     <summary>
       An enum representing the mode of the device, defined in
-      |chromeos::power::ml::ScreenBrightness::Feature::EnvData:DeviceMode|
+      |ash::power::ml::ScreenBrightnessEvent::Features::EnvData:DeviceMode|
     </summary>
   </metric>
   <metric name="HourOfDay">
@@ -14193,7 +14236,7 @@ be describing additional metrics about the same event.
   <metric name="Reason">
     <summary>
       The reason that the event is logged. Values are enumerated in
-      |chromeos::power::ml::ScreenBrightness::Event::Reason|.
+      |ash::power::ml::ScreenBrightnessEvent::Event::Reason|.
     </summary>
   </metric>
   <metric name="RecentTimeActiveSec">
@@ -16007,19 +16050,19 @@ be describing additional metrics about the same event.
   <metric name="DeviceManagement">
     <summary>
       An enum representing whether the device is managed, defined in
-      |chromeos::power::ml::UserActivityEvent::Features::ManagementType|.
+      |ash::power::ml::UserActivityEvent::Features::ManagementType|.
     </summary>
   </metric>
   <metric name="DeviceMode">
     <summary>
       An enum representing the mode of the device, defined in
-      |chromeos::power::ml::UserActivityEvent::Feature::DeviceMode|
+      |ash::power::ml::UserActivityEvent::Features::DeviceMode|
     </summary>
   </metric>
   <metric name="DeviceType">
     <summary>
       An enum representing the type of the device, defined in
-      |chromeos::power::ml::UserActivityEvent::Feature::DeviceType|
+      |ash::power::ml::UserActivityEvent::Features::DeviceType|
     </summary>
   </metric>
   <metric name="EventLogDuration">
@@ -16032,13 +16075,13 @@ be describing additional metrics about the same event.
   <metric name="EventReason">
     <summary>
       An enum representing the reason of the event, defined in
-      |chromeos::power::ml::UserActivityEvent::Event::Reason|.
+      |ash::power::ml::UserActivityEvent::Event::Reason|.
     </summary>
   </metric>
   <metric name="EventType">
     <summary>
       An enum representing the type of the event, defined in
-      |chromeos::power::ml::UserActivityEvent::Event::Type|.
+      |ash::power::ml::UserActivityEvent::Event::Type|.
     </summary>
   </metric>
   <metric name="KeyEventsInLastHour">
@@ -16052,7 +16095,7 @@ be describing additional metrics about the same event.
   <metric name="LastActivityDay">
     <summary>
       An enum representing the last activity day of the week, defined in
-      |chromeos::power::ml::UserActivityEvent::Feature::DayOfWeek|.
+      |ash::power::ml::UserActivityEvent::Features::DayOfWeek|.
     </summary>
   </metric>
   <metric name="LastActivityTime">

@@ -98,8 +98,7 @@ class RecentAppsView::GridDelegateImpl : public AppListItemView::GridDelegate {
   // AppListItemView::GridDelegate:
   bool IsInFolder() const override { return false; }
   void SetSelectedView(AppListItemView* view) override {}
-  void ClearSelectedView(AppListItemView* view) override {}
-  void ClearAnySelectedView() override {}
+  void ClearSelectedView() override {}
   bool IsSelectedView(const AppListItemView* view) const override {
     return false;
   }
@@ -118,11 +117,6 @@ class RecentAppsView::GridDelegateImpl : public AppListItemView::GridDelegate {
   }
   bool IsDragViewMoved(const AppListItemView& view) const override {
     return false;
-  }
-  gfx::Rect GetIdealBounds(AppListItemView* view) const override {
-    // TODO(crbug.com/1216663): Provide correct bounds, which will fix context
-    // menu locations.
-    return view->bounds();
   }
   const AppListConfig& GetAppListConfig() const override {
     // TODO(crbug.com/1211592): Eliminate this method and use the real config.

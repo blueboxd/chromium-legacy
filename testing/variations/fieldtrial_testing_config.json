@@ -1325,48 +1325,6 @@
             ]
         }
     ],
-    "BrowserVerifiedUserActivationKeyboardTrigger": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BrowserVerifiedUserActivationKeyboard"
-                    ]
-                }
-            ]
-        }
-    ],
-    "BrowserVerifiedUserActivationMouseTrigger": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BrowserVerifiedUserActivationMouse"
-                    ]
-                }
-            ]
-        }
-    ],
     "BrowsingDataLifetimeManager": [
         {
             "platforms": [
@@ -3020,21 +2978,6 @@
             ]
         }
     ],
-    "DisableCryptAuthV1DeviceSync": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DisableCryptAuthV1DeviceSync"
-                    ]
-                }
-            ]
-        }
-    ],
     "DisableGles2ForOopR": [
         {
             "platforms": [
@@ -3896,6 +3839,24 @@
                     },
                     "enable_features": [
                         "DefaultBrowserFullscreenPromoExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSDefaultBrowserFullscreenTailoredPromoExperiment": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "MadeForIOS",
+                    "params": {
+                        "variant_ios_enabled": "true"
+                    },
+                    "enable_features": [
+                        "DefaultPromoTailored"
                     ]
                 }
             ]
@@ -4860,6 +4821,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MediaSessionWebRTC"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MemoriesHistoryClusters": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MemoriesPersistContextAnnotationsInHistoryDb"
                     ]
                 }
             ]
@@ -6319,7 +6300,6 @@
                 "android",
                 "chromeos",
                 "linux",
-                "mac",
                 "windows"
             ],
             "experiments": [
@@ -6893,6 +6873,37 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingCrxAllowlistShowWarnings"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingCsdComponentVersion25": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled25_052021",
+                    "params": {
+                        "reporter_omaha_tag": "25"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionTag"
+                    ]
+                },
+                {
+                    "name": "Enabled26_052021",
+                    "params": {
+                        "reporter_omaha_tag": "26"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionTag"
                     ]
                 }
             ]

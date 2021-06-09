@@ -574,7 +574,7 @@ void PagedAppsGridView::SelectedPageChanged(int old_selected,
                               : (GetItemsNumOfPage(new_selected) - 1));
       GetViewAtIndex(new_index)->RequestFocus();
     } else {
-      ClearSelectedView(selected_view());
+      ClearSelectedView();
     }
     Layout();
   }
@@ -664,6 +664,19 @@ void PagedAppsGridView::ScrollEnded() {
   // Need to reset the mask because transition will not happen in some
   // cases. (See https://crbug.com/1049275)
   layer()->SetMaskLayer(nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::ImplicitAnimationObserver:
+
+void PagedAppsGridView::OnImplicitAnimationsCompleted() {
+  if (layer()->opacity() == 0.0f)
+    SetVisible(false);
+  if (cardified_state_) {
+    MaskContainerToBackgroundBounds();
+    return;
+  }
+  RemoveAllBackgroundCards();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

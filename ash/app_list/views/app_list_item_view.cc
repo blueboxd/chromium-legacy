@@ -565,7 +565,7 @@ void AppListItemView::OnContextMenuModelReceived(
   menu_show_initiated_from_key_ = source_type == ui::MENU_SOURCE_KEYBOARD;
 
   if (!grid_delegate_->IsSelectedView(this))
-    grid_delegate_->ClearAnySelectedView();
+    grid_delegate_->ClearSelectedView();
 
   int run_types = views::MenuRunner::HAS_MNEMONICS |
                   views::MenuRunner::USE_TOUCHABLE_LAYOUT |
@@ -575,11 +575,10 @@ void AppListItemView::OnContextMenuModelReceived(
   if (source_type == ui::MENU_SOURCE_TOUCH && touch_dragging_)
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
 
-  gfx::Rect anchor_rect =
-      parent()->GetMirroredRect(grid_delegate_->GetIdealBounds(this));
+  // Screen bounds don't need RTL flipping.
+  gfx::Rect anchor_rect = GetBoundsInScreen();
   // Anchor the menu to the same rect that is used for selection highlight.
   AdaptBoundsForSelectionHighlight(&anchor_rect);
-  views::View::ConvertRectToScreen(parent(), &anchor_rect);
 
   AppLaunchedMetricParams metric_params = {
       AppListLaunchedFrom::kLaunchedFromGrid};
@@ -756,7 +755,7 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   }
 
   if (!grid_delegate_->IsSelectedView(this))
-    grid_delegate_->ClearAnySelectedView();
+    grid_delegate_->ClearSelectedView();
 
   // Show dragging UI when it's confirmed without waiting for the timer.
   if (ui_state_ != UI_STATE_DRAGGING && grid_delegate_->IsDragging() &&
@@ -781,7 +780,8 @@ void AppListItemView::OnFocus() {
 
 void AppListItemView::OnBlur() {
   SchedulePaint();
-  grid_delegate_->ClearSelectedView(this);
+  if (grid_delegate_->IsSelectedView(this))
+    grid_delegate_->ClearSelectedView();
 }
 
 void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {

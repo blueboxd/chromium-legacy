@@ -694,7 +694,6 @@ if (is_android) {
 
     sources = [
       "../browser/android/customtabs/custom_tabs_browsertest.cc",
-      "../browser/android/tab_android_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
       "../browser/autofill/android/save_address_profile_flow_manager_browsertest.cc",
       "../browser/browsing_data/access_context_audit_browsertest.cc",
@@ -2269,6 +2268,7 @@ if (!is_android) {
 
       if (!is_official_build) {
         deps += [
+          "//ash/content/file_manager:constants",
           "//chromeos/components/demo_mode_app_ui",
           "//chromeos/components/sample_system_web_app_ui",
           "//chromeos/components/telemetry_extension_ui",
@@ -3936,7 +3936,7 @@ group("telemetry_perf_unittests_base") {
 
     # For tests in tools/perf/process_perf_results_unittest.py
     "//build/android/pylib/",
-    "//tools/swarming_client/",
+    "//third_party/logdog/logdog",
 
     # For representative perf testing run_rendering_benchmark_with_gated_performance.py
     "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
@@ -4632,6 +4632,7 @@ test("unit_tests") {
       "../browser/android/usage_stats/usage_stats_database_unittest.cc",
       "../browser/android/webapk/webapk_icon_hasher_unittest.cc",
       "../browser/android/webapk/webapk_installer_unittest.cc",
+      "../browser/commerce/merchant_viewer/merchant_viewer_data_manager_unittest.cc",
       "../browser/data_reduction_proxy/data_reduction_proxy_settings_unittest_android.cc",
       "../browser/download/android/available_offline_content_provider_unittest.cc",
       "../browser/download/android/download_manager_service_unittest.cc",
@@ -4656,7 +4657,7 @@ test("unit_tests") {
       "../browser/install_verification/win/module_list_unittest.cc",
       "../browser/install_verification/win/module_verification_test.cc",
       "../browser/install_verification/win/module_verification_test.h",
-      "../browser/media/cdm_pref_service_impl_test.cc",
+      "../browser/media/cdm_document_service_impl_test.cc",
       "../browser/metrics/antivirus_metrics_provider_win_unittest.cc",
       "../browser/performance_manager/mechanisms/working_set_trimmer_win_unittest.cc",
       "../browser/performance_monitor/metric_evaluator_helper_win_unittest.cc",

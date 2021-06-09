@@ -426,17 +426,8 @@ void AppsGridView::SetSelectedView(AppListItemView* view) {
     SetSelectedItemByIndex(index);
 }
 
-void AppsGridView::ClearSelectedView(AppListItemView* view) {
-  if (view && IsSelectedView(view)) {
-    selected_view_ = nullptr;
-  }
-}
-
-void AppsGridView::ClearAnySelectedView() {
-  if (selected_view_) {
-    selected_view_->SchedulePaint();
-    selected_view_ = nullptr;
-  }
+void AppsGridView::ClearSelectedView() {
+  selected_view_ = nullptr;
 }
 
 bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
@@ -736,12 +727,6 @@ void AppsGridView::EndDrag(bool cancel) {
 void AppsGridView::StopPageFlipTimer() {
   page_flip_timer_.Stop();
   page_flip_target_ = -1;
-}
-
-gfx::Rect AppsGridView::GetIdealBounds(AppListItemView* view) const {
-  const int index = view_model_.GetIndexOfView(view);
-  DCHECK_NE(-1, index);
-  return view_model_.ideal_bounds(index);
 }
 
 AppListItemView* AppsGridView::GetItemViewAt(int index) const {
@@ -2429,18 +2414,6 @@ void AppsGridView::SetViewHidden(AppListItemView* view,
   if (immediate)
     animator.SetTransitionDuration(base::TimeDelta::FromMilliseconds(0));
   view->layer()->SetOpacity(hide ? 0 : 1);
-}
-
-void AppsGridView::OnImplicitAnimationsCompleted() {
-  if (layer()->opacity() == 0.0f)
-    SetVisible(false);
-  // TODO(crbug.com/1211608): Refactor animation code so multiple animations
-  // don't share this method, then move code below to PagedAppsGridView.
-  if (cardified_state_) {
-    MaskContainerToBackgroundBounds();
-    return;
-  }
-  RemoveAllBackgroundCards();
 }
 
 void AppsGridView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {

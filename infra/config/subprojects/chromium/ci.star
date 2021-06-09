@@ -2015,12 +2015,24 @@ ci.cipd_builder(
             #    'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-30.yaml'
             #},
             {
+                "sdk_package_name": "system-images;android-23;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-23/google_apis/x86.yaml",
+            },
+            {
                 "sdk_package_name": "system-images;android-27;google_apis;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-27/google_apis/x86.yaml",
             },
             {
                 "sdk_package_name": "system-images;android-27;google_apis_playstore;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-27/google_apis_playstore/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-28;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-28/google_apis/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-28;google_apis_playstore;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-28/google_apis_playstore/x86.yaml",
             },
             {
                 "sdk_package_name": "system-images;android-29;google_apis;x86",
@@ -3160,6 +3172,7 @@ ci.fyi_builder(
                         "nacl_irt_x86_64.nexe",
                         "resources.pak",
                         "snapshot_blob.bin",
+                        "test_ash_chrome",
                     ],
                     "dirs": ["locales", "swiftshader"],
                     "gcs_bucket": "ash-chromium-on-linux-prebuilts",
@@ -3354,12 +3367,30 @@ ci.updater_builder(
 )
 
 ci.updater_builder(
+    name = "mac10.11-updater-tester-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "10.11",
+    ),
+    triggered_by = ["mac-updater-builder-dbg"],
+)
+
+ci.updater_builder(
     name = "mac10.11-updater-tester-rel",
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
         short_name = "10.11",
     ),
     triggered_by = ["mac-updater-builder-rel"],
+)
+
+ci.updater_builder(
+    name = "mac10.12-updater-tester-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "10.12",
+    ),
+    triggered_by = ["mac-updater-builder-dbg"],
 )
 
 ci.updater_builder(
@@ -3372,12 +3403,30 @@ ci.updater_builder(
 )
 
 ci.updater_builder(
+    name = "mac10.13-updater-tester-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "10.13",
+    ),
+    triggered_by = ["mac-updater-builder-dbg"],
+)
+
+ci.updater_builder(
     name = "mac10.13-updater-tester-rel",
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
         short_name = "10.13",
     ),
     triggered_by = ["mac-updater-builder-rel"],
+)
+
+ci.updater_builder(
+    name = "mac10.14-updater-tester-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "10.14",
+    ),
+    triggered_by = ["mac-updater-builder-dbg"],
 )
 
 ci.updater_builder(
@@ -3408,12 +3457,30 @@ ci.updater_builder(
 )
 
 ci.updater_builder(
+    name = "mac11.0-updater-tester-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "11.0",
+    ),
+    triggered_by = ["mac-updater-builder-dbg"],
+)
+
+ci.updater_builder(
     name = "mac11.0-updater-tester-rel",
     console_view_entry = consoles.console_view_entry(
         category = "release|mac",
         short_name = "11.0",
     ),
     triggered_by = ["mac-updater-builder-rel"],
+)
+
+ci.updater_builder(
+    name = "mac-arm64-updater-tester-dbg",
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|mac",
+        short_name = "11.0 arm64",
+    ),
+    triggered_by = ["mac-updater-builder-dbg"],
 )
 
 ci.updater_builder(
@@ -4125,6 +4192,8 @@ ci.fyi_ios_builder(
         short_name = "ios14",
     ),
     os = os.MAC_11,
+    schedule = "0 0,4,8,12,16,20 * * *",
+    triggered_by = [],
 )
 
 ci.fyi_ios_builder(
@@ -4134,6 +4203,8 @@ ci.fyi_ios_builder(
         short_name = "sdk14",
     ),
     os = os.MAC_11,
+    schedule = "0 2,6,10,14,18,22 * * *",
+    triggered_by = [],
     xcode = xcode.x12e262,
 )
 
@@ -4152,8 +4223,6 @@ ci.fyi_ios_builder(
         ),
     ],
     os = os.MAC_11,
-    schedule = "0 0,12 * * *",
-    triggered_by = [],
 )
 
 ci.fyi_ios_builder(
@@ -4171,6 +4240,7 @@ ci.fyi_ios_builder(
         ),
     ],
     os = os.MAC_11,
+    xcode = xcode.x13latestbeta,
 )
 
 ci.fyi_ios_builder(
@@ -4188,8 +4258,7 @@ ci.fyi_ios_builder(
         ),
     ],
     os = os.MAC_11,
-    schedule = "0 6,18 * * *",
-    triggered_by = [],
+    xcode = xcode.x13latestbeta,
 )
 
 ci.fyi_mac_builder(

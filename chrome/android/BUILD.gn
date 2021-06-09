@@ -713,6 +713,7 @@ java_group("chrome_all_java") {
     "//chrome/browser/tabmodel/internal:java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//chrome/browser/ui/android/appmenu/internal:java",
+    "//chrome/browser/ui/android/autofill/internal:java",
     "//chrome/browser/ui/android/webid/internal:java",
     "//chrome/browser/video_tutorials/internal:java",
     "//components/browser_ui/bottomsheet/android/internal:java",
@@ -955,6 +956,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/thumbnail:java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu/internal:junit",
+    "//chrome/browser/ui/android/autofill/internal:junit",
     "//chrome/browser/ui/android/default_browser_promo:java",
     "//chrome/browser/ui/android/default_browser_promo:junit",
     "//chrome/browser/ui/android/favicon:java",
@@ -3427,6 +3429,7 @@ generate_jni("chrome_jni_headers") {
   sources = [
     # Files under a feature's public/ dir are included in chrome_java's source
     # files, so include these files in chrome_jni_headers.
+    "feed/core/java/src/org/chromium/chrome/browser/feed/FeedSurfaceScopeDependencyProvider.java",
     "feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedPersistentKeyValueCache.java",
     "feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedStream.java",
     "java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",

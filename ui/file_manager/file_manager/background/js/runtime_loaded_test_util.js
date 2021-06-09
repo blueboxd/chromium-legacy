@@ -7,14 +7,6 @@
  * extension under test at runtime to populate testing functionality.
  */
 
-import {assert} from 'chrome://resources/js/assert.m.js';
-
-import {metrics} from '../../common/js/metrics.m.js';
-import {util} from '../../common/js/util.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-
-import {test} from './test_util_base.m.js';
-
 /**
  * @typedef {{
  *   attributes:Object<string>,
@@ -57,6 +49,16 @@ let KeyModifiers;
  * }}
  */
 let MetadataStatsType;
+
+if (!assert) {
+  function assert(condition, opt_message) {
+    if (!condition) {
+      const message =
+          'Assertion error' + (opt_message ? ' ' + opt_message : '');
+      throw new Error(message);
+    }
+  }
+}
 
 /**
  * Extract the information of the given element.
@@ -500,10 +502,6 @@ test.util.sync.fakeEvent =
           /** @type {!EventInit} */ (opt_additionalProperties || {}));
       if (opt_additionalProperties) {
         for (const name in opt_additionalProperties) {
-          if (name === 'bubbles') {
-            // bubbles is a read-only which, causes an error when assigning.
-            continue;
-          }
           event[name] = opt_additionalProperties[name];
         }
       }
@@ -1059,8 +1057,7 @@ test.util.async.unmount = async (volumeType, callback) => {
  * Remote call API handler. When loaded, this replaces the declaration in
  * test_util_base.js.
  * @param {*} request
- * @param {function(*): void} sendResponse
- * @return {boolean|undefined}
+ * @param {function(*):void} sendResponse
  */
 test.util.executeTestMessage = (request, sendResponse) => {
   window.IN_TEST = true;
@@ -1075,7 +1072,15 @@ test.util.executeTestMessage = (request, sendResponse) => {
 
   const args = request.args.slice();  // shallow copy
   if (request.appId) {
-    if (window.appWindows[request.appId]) {
+    if (request.contentWindow) {
+      // request.contentWindow is present if this function was called via
+      // test.swaTestMessageListener, an alternative code path used by the test
+      // harness to send messages directly to Files SWA. Test code uses
+      // request.contentWindow only, thus by setting it, we avoid having to
+      // change the test.utils functions to check for contentWindow || window,
+      // just to support SWA files app.
+      args.unshift(request.contentWindow);
+    } else if (window.appWindows[request.appId]) {
       args.unshift(window.appWindows[request.appId].contentWindow);
     } else if (window.background.dialogs[request.appId]) {
       args.unshift(window.background.dialogs[request.appId]);
@@ -1097,7 +1102,7 @@ test.util.executeTestMessage = (request, sendResponse) => {
     sendResponse(test.util.sync[request.func].apply(null, args));
     return false;
   } else {
-    console.error('Invalid function name: ' + request.func);
+    console.error('Invalid function name.');
     return false;
   }
 };
@@ -1230,8 +1235,6 @@ test.util.sync.progressCenterNeverNotifyCompleted = () => {
  * Waits for the background page to initialize.
  * @param {function()} callback Callback function called when background page
  *      has finished initializing.
- * @suppress {missingProperties}: ready() isn't available for Audio and Video
- * Player.
  */
 test.util.async.waitForBackgroundReady = callback => {
   window.background.ready(callback);

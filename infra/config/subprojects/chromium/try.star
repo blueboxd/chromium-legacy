@@ -669,6 +669,18 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_angle_builder(
+    name = "android-angle-chromium-try",
+    os = os.LINUX_BIONIC_REMOVE,
+    executable = "recipe:angle_chromium_trybot",
+)
+
+try_.chromium_angle_builder(
+    name = "android-angle-try",
+    os = os.LINUX_BIONIC_REMOVE,
+    executable = "recipe:angle_chromium_trybot",
+)
+
+try_.chromium_angle_builder(
     name = "android_angle_deqp_rel_ng",
     os = os.LINUX_BIONIC_REMOVE,
 )
@@ -1724,6 +1736,7 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios15-sdk-simulator",
+    xcode = xcode.x13latestbeta,
 )
 
 try_.chromium_updater_mac_builder(

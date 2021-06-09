@@ -67,14 +67,22 @@
         color: var(--google-red-500);
       }
 
+      #preferNetworkToggleContainer:hover {
+        background-color: var(--cr-hover-background-color);
+      }
+
+      #preferNetworkToggleContainer:active {
+        background-color: var(--cr-active-background-color);
+      }
+
       paper-spinner-lite {
         height: var(--cr-icon-size);
         width: var(--cr-icon-size);
       }
 
       .warning {
-          color: var(--cr-secondary-text-color);
-          margin-inline-start: var(--settings-controlled-by-spacing);
+        color: var(--cr-secondary-text-color);
+        margin-inline-start: var(--settings-controlled-by-spacing);
       }
 
       #mac-address-container {
@@ -209,7 +217,8 @@
         <template is="dom-if"
             if="[[showPreferNetwork_(managedProperties_, globalPolicy,
                 managedNetworkAvailable)]]">
-          <div class="settings-box"  on-click="onPreferNetworkRowClicked_"
+          <div id="preferNetworkToggleContainer" class="settings-box"
+              on-click="onPreferNetworkRowClicked_"
               actionable$="[[!isNetworkPolicyEnforced(
                   managedProperties_.priority)]]">
             <div id="preferNetworkToggleLabel" class="start settings-box-text">
@@ -378,7 +387,7 @@
             globalPolicy, managedNetworkAvailable)]]">
           <!-- Network toggle -->
           <cr-expand-button
-              id="configurableSetions"
+              id="configurableSections"
               aria-label="$i18n{networkSectionNetworkExpandA11yLabel}"
               class="settings-box"
               expanded="{{networkExpanded_}}">

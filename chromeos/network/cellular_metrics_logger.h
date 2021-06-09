@@ -240,7 +240,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
     kNotConnected = 12,
     kActivateFailed = 13,
     kEnabledOrDisabledWhenNotAvailable = 14,
-    kMaxValue = kEnabledOrDisabledWhenNotAvailable,
+    kErrorCellularDeviceBusy = 15,
+    kErrorConnectTimeout = 16,
+    kConnectableCellularTimeout = 17,
+    kMaxValue = kConnectableCellularTimeout,
   };
 
   // Result of state changes to a cellular network triggered by any connection
@@ -264,7 +267,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularMetricsLogger
     kTooManySTAs = 13,
     kBadPassphrase = 14,
     kBadWepKey = 15,
-    kMaxValue = kBadWepKey,
+    kErrorSimLocked = 16,
+    kErrorNotRegistered = 17,
+    kMaxValue = kErrorNotRegistered,
   };
 
   // Convert shill error name string to SimPinOperationResult enum.

@@ -44,7 +44,6 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_channel.mojom.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -82,12 +81,16 @@ struct GpuChannelMessage {
 
 namespace {
 
-bool TryCreateStreamTexture(base::WeakPtr<GpuChannel> channel,
-                            int32_t stream_id) {
+#if defined(OS_ANDROID)
+bool TryCreateStreamTexture(
+    base::WeakPtr<GpuChannel> channel,
+    int32_t stream_id,
+    mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver) {
   if (!channel)
     return false;
-  return channel->CreateStreamTexture(stream_id);
+  return channel->CreateStreamTexture(stream_id, std::move(receiver));
 }
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -158,8 +161,12 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
                            uint64_t decode_release_count) override;
   void FlushDeferredRequests(
       std::vector<mojom::DeferredRequestPtr> requests) override;
-  void CreateStreamTexture(int32_t stream_id,
-                           CreateStreamTextureCallback callback) override;
+#if defined(OS_ANDROID)
+  void CreateStreamTexture(
+      int32_t stream_id,
+      mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver,
+      CreateStreamTextureCallback callback) override;
+#endif  // defined(OS_ANDROID)
   void WaitForTokenInRange(int32_t routing_id,
                            int32_t start,
                            int32_t end,
@@ -487,8 +494,10 @@ void GpuChannelMessageFilter::ScheduleImageDecode(
                                                       decode_release_count);
 }
 
+#if defined(OS_ANDROID)
 void GpuChannelMessageFilter::CreateStreamTexture(
     int32_t stream_id,
+    mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver,
     CreateStreamTextureCallback callback) {
   base::AutoLock auto_lock(gpu_channel_lock_);
   if (!gpu_channel_) {
@@ -498,9 +507,10 @@ void GpuChannelMessageFilter::CreateStreamTexture(
   main_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&TryCreateStreamTexture, gpu_channel_->AsWeakPtr(),
-                     stream_id),
+                     stream_id, std::move(receiver)),
       std::move(callback));
 }
+#endif  // defined(OS_ANDROID)
 
 void GpuChannelMessageFilter::WaitForTokenInRange(
     int32_t routing_id,
@@ -968,6 +978,8 @@ void GpuChannel::CreateCommandBuffer(
         route_id);
   }
 
+  stub->BindEndpoints(std::move(receiver), std::move(client), io_task_runner_);
+
   auto stub_result =
       stub->Initialize(share_group, *init_params, std::move(shared_state_shm));
   if (stub_result != gpu::ContextResult::kSuccess) {
@@ -981,8 +993,6 @@ void GpuChannel::CreateCommandBuffer(
     LOG(ERROR) << "ContextResult::kFatalFailure: failed to add route";
     return;
   }
-
-  stub->BindEndpoints(std::move(receiver), std::move(client), io_task_runner_);
 
   responder.set_result(ContextResult::kSuccess);
   responder.set_capabilities(stub->decoder_context()->GetCapabilities());
@@ -1009,8 +1019,10 @@ void GpuChannel::DestroyCommandBuffer(int32_t route_id) {
   RemoveRoute(route_id);
 }
 
-bool GpuChannel::CreateStreamTexture(int32_t stream_id) {
 #if defined(OS_ANDROID)
+bool GpuChannel::CreateStreamTexture(
+    int32_t stream_id,
+    mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver) {
   auto found = stream_textures_.find(stream_id);
   if (found != stream_textures_.end()) {
     LOG(ERROR)
@@ -1018,16 +1030,14 @@ bool GpuChannel::CreateStreamTexture(int32_t stream_id) {
     return false;
   }
   scoped_refptr<StreamTexture> stream_texture =
-      StreamTexture::Create(this, stream_id);
+      StreamTexture::Create(this, stream_id, std::move(receiver));
   if (!stream_texture) {
     return false;
   }
   stream_textures_.emplace(stream_id, std::move(stream_texture));
   return true;
-#else
-  return false;
-#endif
 }
+#endif
 
 #if defined(OS_FUCHSIA)
 void GpuChannel::RegisterSysmemBufferCollection(

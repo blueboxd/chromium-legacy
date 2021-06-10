@@ -33,16 +33,13 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
-
-class ActiveDirectoryJoinDelegate;
-
 namespace attestation {
 class AttestationFlow;
 }
 }  // namespace chromeos
 
 namespace policy {
-
+class ActiveDirectoryJoinDelegate;
 class DeviceCloudPolicyStoreChromeOS;
 class DMTokenStorage;
 class ServerBackedStateKeysBroker;
@@ -73,7 +70,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       chromeos::attestation::AttestationFlow* attestation_flow,
       std::unique_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
+      ActiveDirectoryJoinDelegate* ad_join_delegate,
       const EnrollmentConfig& enrollment_config,
       DMAuth dm_auth,
       const std::string& client_id,
@@ -196,10 +193,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // Handles the policy validation result for the offline demo mode.
   void OnOfflinePolicyValidated(DeviceCloudPolicyValidator* validator);
 
-  // Handles the fetching auth codes for robot accounts during enrollment.
-  void OnRobotAuthCodesFetched(DeviceManagementStatus status,
-                               const std::string& auth_code);
-
   std::unique_ptr<DeviceCloudPolicyValidator> CreateValidator(
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       const std::string& domain);
@@ -219,7 +212,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   chromeos::attestation::AttestationFlow* attestation_flow_;
   std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate_ = nullptr;
+  ActiveDirectoryJoinDelegate* ad_join_delegate_ = nullptr;
   std::unique_ptr<DeviceAccountInitializer> device_account_initializer_;
   std::unique_ptr<policy::DMTokenStorage> dm_token_storage_;
 
@@ -235,9 +228,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // Whether the server signaled to skip robot auth setup.
   bool skip_robot_auth_ = false;
-
-  // The robot account refresh token.
-  std::string robot_refresh_token_;
 
   // The validated policy response info to be installed in the store.
   std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;

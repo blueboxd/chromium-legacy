@@ -1904,6 +1904,12 @@
     "expiry_milestone": 83
   },
   {
+    "name": "enable-input-event-logging",
+    "owners": [ "hcutts", "chromeos-tango@google.com" ],
+    // Used to attach input device debugging information to feedback reports.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-input-in-diagnostics-app",
     "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 98
@@ -2331,7 +2337,7 @@
   {
     "name": "enable-show-date-in-tray",
     "owners": [ "leandre" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 96
   },
   {
     "name": "enable-sign-in-profile-creation",
@@ -2815,6 +2821,11 @@
     "name": "extension-content-verification",
     "owners": [ "//extensions/OWNERS" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "extension-workflow-justification",
+    "owners": [ "igorruvinov", "zmin" ],
+    "expiry_milestone": 100
   },
   {
     "name": "extensions-on-chrome-urls",
@@ -3748,6 +3759,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "ntp-modules-drag-and-drop",
+    "owners": [ "lydialam", "mahmadi", "tiborg"],
+    "expiry_milestone": 96
+  },
+  {
     "name": "ntp-recipe-tasks-module",
     "owners": [ "mahmadi", "tiborg" ],
     "expiry_milestone": 96
@@ -4623,12 +4639,12 @@
   {
     "name": "scrollable-tabstrip",
     "owners": [ "chrome-desktop-ui-sea@google.com", "tbergquist" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 95
   },
   {
     "name": "scrollable-tabstrip-buttons",
     "owners": [ "chrome-desktop-ui-sea@google.com", "tbergquist" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 95
   },
   {
     "name": "sct-auditing",
@@ -4933,17 +4949,17 @@
   {
     "name": "tab-groups-auto-create",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "tab-groups-collapse-freezing",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "tab-groups-feedback",
     "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "tab-groups-new-badge-promo",
@@ -5079,6 +5095,11 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
+  },
+  {
+    "name": "unified-password-manager-android",
+    "owners": [ "fhorschig", "vasilii" ],
+    "expiry_milestone": 97
   },
   {
     "name": "unsafely-treat-insecure-origin-as-secure",

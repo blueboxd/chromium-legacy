@@ -985,9 +985,6 @@ extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 
-extern const char kOmniboxSearchReadyIncognitoName[];
-extern const char kOmniboxSearchReadyIncognitoDescription[];
-
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
@@ -1451,6 +1448,9 @@ extern const char kTurnOffStreamingMediaCachingOnBatteryDescription[];
 extern const char kTurnOffStreamingMediaCachingAlwaysName[];
 extern const char kTurnOffStreamingMediaCachingAlwaysDescription[];
 
+extern const char kUnifiedPasswordManagerAndroidName[];
+extern const char kUnifiedPasswordManagerAndroidDescription[];
+
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
 
@@ -1578,6 +1578,9 @@ extern const char kSanitizerApiDescription[];
 
 extern const char kUsePassthroughCommandDecoderName[];
 extern const char kUsePassthroughCommandDecoderDescription[];
+
+extern const char kExtensionWorkflowJustificationName[];
+extern const char kExtensionWorkflowJustificationDescription[];
 
 // Android --------------------------------------------------------------------
 
@@ -2031,6 +2034,9 @@ extern const char kNtpShoppingTasksModuleDescription[];
 extern const char kNtpChromeCartModuleName[];
 extern const char kNtpChromeCartModuleDescription[];
 
+extern const char kNtpModulesDragAndDropName[];
+extern const char kNtpModulesDragAndDropDescription[];
+
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 
@@ -2435,6 +2441,9 @@ extern const char kEnableGoogleAssistantAecDescription[];
 
 extern const char kEnableHeuristicStylusPalmRejectionName[];
 extern const char kEnableHeuristicStylusPalmRejectionDescription[];
+
+extern const char kEnableInputEventLoggingName[];
+extern const char kEnableInputEventLoggingDescription[];
 
 extern const char kEnableInputInDiagnosticsAppName[];
 extern const char kEnableInputInDiagnosticsAppDescription[];

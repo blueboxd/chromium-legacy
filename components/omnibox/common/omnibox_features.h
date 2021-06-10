@@ -64,7 +64,6 @@ extern const base::Feature kClipboardSuggestionContentHidden;
 extern const base::Feature kCompactSuggestions;
 extern const base::Feature kMostVisitedTiles;
 extern const base::Feature kRichAutocompletion;
-extern const base::Feature kOmniboxSearchReadyIncognito;
 extern const base::Feature kOmniboxPedalsBatch2;
 extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
 extern const base::Feature kOmniboxPedalsDefaultIconColored;
@@ -88,11 +87,6 @@ extern const base::Feature kUpdatedConnectionSecurityIndicators;
 // Navigation experiments.
 extern const base::Feature kDefaultTypedNavigationsToHttps;
 extern const char kDefaultTypedNavigationsToHttpsTimeoutParam[];
-
-// Experiment to control whether visits from CCT are hidden.
-// TODO(https://crbug.com/1141501): this is for an experiment, and will be
-// removed once data is collected from experiment.
-extern const base::Feature kHideVisitsFromCct;
 
 }  // namespace omnibox
 

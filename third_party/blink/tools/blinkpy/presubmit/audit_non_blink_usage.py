@@ -271,6 +271,7 @@ _CONFIG = [
             'cc::PaintWorkletInput',
             'cc::NodeId',
             'cc::NodeInfo',
+            'cc::UsePaintCache',
 
             # Chromium geometry types.
             'gfx::Insets',
@@ -283,6 +284,7 @@ _CONFIG = [
             'gfx::RectF',
             'gfx::RRectF',
             'gfx::ScaleToCeiledSize',
+            'gfx::ScaleToEnclosingRectSafe',
             'gfx::ScaleVector2d',
             'gfx::Size',
             'gfx::SizeF',

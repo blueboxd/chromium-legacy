@@ -183,20 +183,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
                 mIntentDataProvider.getIntent(), transition));
 
-        applyExperimentsToNewTab(tab, mIntentDataProvider);
-
         tab.loadUrl(params);
-    }
-
-    /**
-     * Configures various experiments in tab based on provider. This is intended to be called when a
-     * new tab is created.
-     */
-    public static void applyExperimentsToNewTab(
-            Tab tab, BrowserServicesIntentDataProvider provider) {
-        if (provider.shouldHideOmniboxSuggestionsForCctVisits()) {
-            tab.setAddApi2TransitionToFutureNavigations(true);
-        }
     }
 
     /**
@@ -264,12 +251,18 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         boolean willChromeHandleIntent =
                 mIntentDataProvider.isOpenedByChrome() || mIntentDataProvider.isIncognito();
 
+        // If the tab is opened by TWA or Webapp, do not reparent and finish the Custom Tab
+        // activity because we still want to keep the app alive.
+        boolean canFinishActivity = !mIntentDataProvider.isTrustedWebActivity()
+                && !mIntentDataProvider.isWebappOrWebApkActivity();
+
         willChromeHandleIntent |=
                 ExternalNavigationDelegateImpl.willChromeHandleIntent(intent, true);
 
         Bundle startActivityOptions = ActivityOptionsCompat.makeCustomAnimation(
                 mActivity, R.anim.abc_fade_in, R.anim.abc_fade_out).toBundle();
-        if (willChromeHandleIntent || forceReparenting) {
+
+        if (canFinishActivity && willChromeHandleIntent || forceReparenting) {
             // Remove observer to not trigger finishing in onAllTabsClosed() callback - we'll use
             // reparenting finish callback instead.
             mTabProvider.removeObserver(mTabObserver);

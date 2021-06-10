@@ -1323,9 +1323,8 @@ NavigationRequest::NavigationRequest(
     bool is_renderer_initiated = !browser_initiated;
     Referrer referrer(*common_params_->referrer);
     GetContentClient()->browser()->OverrideNavigationParams(
-        controller->GetWebContents(), source_site_instance_.get(),
-        &common_params_->transition, &is_renderer_initiated, &referrer,
-        &common_params_->initiator_origin);
+        source_site_instance_.get(), &common_params_->transition,
+        &is_renderer_initiated, &referrer, &common_params_->initiator_origin);
     common_params_->referrer =
         blink::mojom::Referrer::New(referrer.url, referrer.policy);
     browser_initiated = !is_renderer_initiated;
@@ -2929,7 +2928,8 @@ void NavigationRequest::OnResponseStarted(
           base::WrapRefCounted<SiteInstanceImpl>(static_cast<SiteInstanceImpl*>(
               instance->GetRelatedSiteInstance(frame_entry->url()).get()));
       nav_entry->AddOrUpdateFrameEntry(
-          frame_tree_node_, frame_entry->item_sequence_number(),
+          frame_tree_node_, NavigationEntryImpl::UpdatePolicy::kReplace,
+          frame_entry->item_sequence_number(),
           frame_entry->document_sequence_number(), new_site_instance.get(),
           frame_entry->source_site_instance(), frame_entry->url(),
           frame_entry->committed_origin(), frame_entry->referrer(),
@@ -4791,6 +4791,11 @@ void NavigationRequest::CancelDeferredNavigation(
 
 void NavigationRequest::RegisterThrottleForTesting(
     std::unique_ptr<NavigationThrottle> navigation_throttle) {
+  // Throttles will already have run the first time the page was navigated, we
+  // won't run them again on activation. See instead CommitDeferringCondition.
+  DCHECK(!IsPageActivation())
+      << "Attempted to register a NavigationThrottle for an activating "
+         "navigation which will not work.";
   throttle_runner_->AddThrottle(std::move(navigation_throttle));
 }
 bool NavigationRequest::IsDeferredForTesting() {
@@ -4868,7 +4873,11 @@ void NavigationRequest::WillStartRequest() {
     return;
   }
 
-  throttle_runner_->RegisterNavigationThrottles();
+  // Throttles will already have run the first time the page was navigated, we
+  // won't run them again on activation.
+  if (!IsPageActivation())
+    throttle_runner_->RegisterNavigationThrottles();
+
   commit_deferrer_->RegisterDeferringConditions(*this);
 
   // If the content/ embedder did not pass the NavigationUIData at the beginning

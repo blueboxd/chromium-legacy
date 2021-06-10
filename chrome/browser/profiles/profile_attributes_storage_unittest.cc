@@ -454,7 +454,6 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   VerifyAndResetCallExpectations();
 
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultAvatar);
-  TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsAuthError);
 }
 
 TEST_F(ProfileAttributesStorageTest, EntryInternalAccessors) {
@@ -874,7 +873,7 @@ TEST_F(ProfileAttributesStorageTest, ProfileForceSigninLock) {
   ASSERT_TRUE(entry->IsSigninRequired());
 
   EXPECT_CALL(observer(), OnProfileSigninRequiredChanged(path)).Times(1);
-  entry->SetIsSigninRequired(false);
+  entry->LockForceSigninProfile(false);
   VerifyAndResetCallExpectations();
   ASSERT_FALSE(entry->IsSigninRequired());
 }

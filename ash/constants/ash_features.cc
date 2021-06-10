@@ -420,6 +420,10 @@ const base::Feature kGesturePropertiesDBusService{
 const base::Feature kHandwritingGestureEditing{
     "HandwritingGestureEditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Background Page in the help app.
+const base::Feature kHelpAppBackgroundPage{"HelpAppBackgroundPage",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the Discover Tab in the help app.
 const base::Feature kHelpAppDiscoverTab{"HelpAppDiscoverTab",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -545,6 +549,10 @@ const base::Feature kOsFeedback{"OsFeedback",
 // Whether the device supports on-device speech recognition.
 const base::Feature kOnDeviceSpeechRecognition{
     "OnDeviceSpeechRecognition", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, a new App Notifications subpage will appear in CrOS Apps section.
+const base::Feature kOsSettingsAppNotificationsPage{
+    "OsSettingsAppNotificationsPage", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a unique URL for each path in CrOS settings.
 // This allows deep linking to individual settings, i.e. in settings search.
@@ -818,6 +826,10 @@ bool IsCellularActivationUiEnabled() {
 
 bool IsDemoModeSWAEnabled() {
   return base::FeatureList::IsEnabled(kDemoModeSWA);
+}
+
+bool IsAppNotificationsPageEnabled() {
+  return base::FeatureList::IsEnabled(kOsSettingsAppNotificationsPage);
 }
 
 bool IsDeepLinkingEnabled() {

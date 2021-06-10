@@ -1438,11 +1438,6 @@ const char kLiteVideoForceOverrideDecisionName[] = "Force LiteVideos decision";
 const char kLiteVideoForceOverrideDecisionDescription[] =
     "Force the LiteVideo decision to be allowed on every navigation.";
 
-const char kLoadMediaRouterComponentExtensionName[] =
-    "Load Media Router Component Extension";
-const char kLoadMediaRouterComponentExtensionDescription[] =
-    "Loads the Media Router component extension at startup.";
-
 const char kLogJsConsoleMessagesName[] =
     "Log JS console messages in system logs";
 const char kLogJsConsoleMessagesDescription[] =
@@ -1839,6 +1834,12 @@ const char kEnableDeJellyDescription[] =
     "bugs, visual artifacts, and performance cost. This implementation may be "
     "removed at any time.";
 
+const char kOsSettingsAppNotificationsPageName[] =
+    "CrOS Settings App Notifications Page";
+const char kOsSettingsAppNotificationsPageDescription[] =
+    "If enabled, a new App Notifications subpage will appear in the "
+    "CrOS Settings Apps section.";
+
 const char kOsSettingsDeepLinkingName[] = "CrOS Settings Deep Linking";
 const char kOsSettingsDeepLinkingDescription[] =
     "Enables a unique URL for each path in CrOS settings. "
@@ -2202,12 +2203,6 @@ const char kSharingSendViaSyncName[] =
 const char kSharingSendViaSyncDescription[] =
     "Enables sending Sharing message via commiting to Chrome Sync's "
     "SHARING_MESSAGE data type";
-
-const char kSharingDeviceExpirationName[] =
-    "Configures sharing device expiration";
-const char kSharingDeviceExpirationDescription[] =
-    "Configures how long after a device was last active that it is eligible "
-    "for use in sharing features.";
 
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
@@ -4495,6 +4490,12 @@ const char kFrameThrottleFps30[] = "30 fps";
 
 const char kFullRestoreName[] = "Full restore";
 const char kFullRestoreDescription[] = "Chrome OS full restore";
+
+const char kHelpAppBackgroundPageName[] = "Help App Background Page";
+const char kHelpAppBackgroundPageDescription[] =
+    "Enables the Background page in the help app. The background page is used "
+    "to initialize the Help App Launcher search index and show the Discover "
+    "tab notification.";
 
 const char kHelpAppDiscoverTabName[] = "Help App Discover Tab";
 const char kHelpAppDiscoverTabDescription[] =

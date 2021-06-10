@@ -51,11 +51,7 @@ const char kGAIAGivenNameKey[] = "gaia_given_name";
 const char kGAIANameKey[] = "gaia_name";
 const char kShortcutNameKey[] = "shortcut_name";
 const char kActiveTimeKey[] = "active_time";
-// TODO(https://crbug.com/1211292): this pref is obsolete. Remove it.
-const char kIsAuthErrorKey[] = "is_auth_error";
 const char kMetricsBucketIndex[] = "metrics_bucket_index";
-// TODO(https://crbug.com/1211292): this pref is obsolete. Remove it.
-const char kSigninRequiredKey[] = "signin_required";
 const char kForceSigninProfileLockedKey[] = "force_signin_profile_locked";
 const char kHostedDomain[] = "hosted_domain";
 
@@ -78,6 +74,10 @@ const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
 // Deprecated 3/2021.
 const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kPasswordTokenKey[] = "gaia_password_token";
+
+// Deprecated 6/2021.
+const char kSigninRequiredKey[] = "signin_required";
+const char kIsAuthErrorKey[] = "is_auth_error";
 
 constexpr int kIntegerNotSet = -1;
 
@@ -167,17 +167,6 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
     // signin policy has been disabled.
     SetBool(kForceSigninProfileLockedKey, false);
   }
-
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_WIN)
-  if (!signin_util::IsForceSigninEnabled() && IsSigninRequired()) {
-    // Profiles that require signin in the absence of an enterprise policy are
-    // left-overs from legacy supervised users. Just unlock them, so users can
-    // keep using them.
-    SetAuthInfo(std::string(), std::u16string(), false);
-    SetIsSigninRequired(false);
-  }
-#endif
 }
 
 void ProfileAttributesEntry::InitializeLastNameToDisplay() {
@@ -383,7 +372,7 @@ bool ProfileAttributesEntry::IsOmitted() const {
 }
 
 bool ProfileAttributesEntry::IsSigninRequired() const {
-  return GetBool(kSigninRequiredKey) || GetBool(kForceSigninProfileLockedKey);
+  return GetBool(kForceSigninProfileLockedKey);
 }
 
 std::string ProfileAttributesEntry::GetSupervisedUserId() const {
@@ -420,10 +409,6 @@ bool ProfileAttributesEntry::IsAuthenticated() const {
 bool ProfileAttributesEntry::IsUsingDefaultAvatar() const {
   return profile_info_cache_->ProfileIsUsingDefaultAvatarAtIndex(
       profile_index());
-}
-
-bool ProfileAttributesEntry::IsAuthError() const {
-  return GetBool(kIsAuthErrorKey);
 }
 
 bool ProfileAttributesEntry::IsSignedInWithCredentialProvider() const {
@@ -553,15 +538,6 @@ void ProfileAttributesEntry::SetIsUsingGAIAPicture(bool value) {
       profile_index(), value);
 }
 
-void ProfileAttributesEntry::SetIsSigninRequired(bool value) {
-  if (value != GetBool(kSigninRequiredKey)) {
-    SetBool(kSigninRequiredKey, value);
-    profile_info_cache_->NotifyIsSigninRequiredChanged(GetPath());
-  }
-  if (signin_util::IsForceSigninEnabled())
-    LockForceSigninProfile(value);
-}
-
 void ProfileAttributesEntry::SetSignedInWithCredentialProvider(bool value) {
   if (value != GetBool(prefs::kSignedInWithCredentialProvider)) {
     SetBool(prefs::kSignedInWithCredentialProvider, value);
@@ -602,10 +578,6 @@ void ProfileAttributesEntry::SetIsUsingDefaultName(bool value) {
 void ProfileAttributesEntry::SetIsUsingDefaultAvatar(bool value) {
   profile_info_cache_->SetProfileIsUsingDefaultAvatarAtIndex(
       profile_index(), value);
-}
-
-void ProfileAttributesEntry::SetIsAuthError(bool value) {
-  SetBool(kIsAuthErrorKey, value);
 }
 
 void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
@@ -954,6 +926,10 @@ void ProfileAttributesEntry::MigrateObsoleteProfileAttributes() {
   // Added 3/2021.
   ClearValue(kAuthCredentialsKey);
   ClearValue(kPasswordTokenKey);
+
+  // Added 6/2021.
+  ClearValue(kSigninRequiredKey);
+  ClearValue(kIsAuthErrorKey);
 }
 
 void ProfileAttributesEntry::SetIsOmittedInternal(bool is_omitted) {

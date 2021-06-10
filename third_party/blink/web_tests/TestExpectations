@@ -2481,6 +2481,26 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-timeout.https.html [ Crash ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-timeout.https.html [ Crash ]
+crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-large-blob-supported.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-extensions.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-excludecredentials.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/webauthn-testdriver-basic.https.html [ Crash ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-resident-key.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-badargs-rpid.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-badargs-userverification.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/credblob-supported.https.html [ Crash ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-large-blob-not-supported.https.html [ Crash ]
+crbug.com/626703 external/wpt/css/css-flexbox/order/order-abs-children-painting-order.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-extensions.https.html [ Crash Timeout ]
 crbug.com/626703 external/wpt/css/css-grid/alignment/grid-content-alignment-overflow-002.html [ Failure ]
 crbug.com/626703 external/wpt/webtransport/idlharness.any.worker.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/webtransport/idlharness.any.serviceworker.html [ Failure ]
@@ -5193,9 +5213,8 @@ crbug.com/1090660 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/re
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
 
 #Sherrif 2019-08-16
-#TODO(michaelludwig): Uncomment after more general suppression is rebased.
-#crbug.com/994692 [ Linux ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
-#crbug.com/994692 [ Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
+crbug.com/994692 [ Linux ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
+crbug.com/994692 [ Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 
 crbug.com/996219 [ Win ] virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 
@@ -5330,33 +5349,7 @@ crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level
 
 # TODO(michaelludwig): Rebaseline these after Skia roll lands making changes to
 # image filters. See crbug.com/1143929
-crbug.com/1143929 compositing/reflections/animation-inside-reflection.html [ Pass Failure ]
-crbug.com/1143929 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
-crbug.com/1143929 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
-crbug.com/1143929 compositing/reflections/nested-reflection-transformed.html [ Pass Failure ]
-crbug.com/1143929 compositing/reflections/nested-reflection-transformed2.html [ Pass Failure ]
-crbug.com/1143929 compositing/reflections/reflection-in-composited.html [ Pass Failure ]
-crbug.com/1143929 css3/filters/effect-combined-hw.html [ Pass Failure ]
-crbug.com/1143929 css3/filters/effect-combined.html [ Pass Failure ]
-crbug.com/1143929 css3/filters/regions-expanding.html [ Pass Failure ]
 crbug.com/1143929 external/wpt/css/css-transforms/preserve3d-and-filter-with-perspective.html [ Pass Failure ]
-crbug.com/1143929 external/wpt/html/canvas/element/manual/filters/canvas-filter-object-convolve-matrix.html [ Pass Failure ]
-crbug.com/1143929 fast/css/transformed-mask.html [ Pass Failure ]
-crbug.com/1143929 fast/reflections/opacity-reflection-transform.html [ Pass Failure ]
-crbug.com/1143929 images/color-profile-image-filter-all.html [ Pass Failure ]
-crbug.com/1143929 paint/invalidation/reflection/reflection-with-rotation.html [ Pass Failure ]
-crbug.com/1143929 svg/W3C-SVG-1.1/filters-blend-01-b.svg [ Pass Failure ]
-crbug.com/1143929 svg/W3C-SVG-1.1/filters-example-01-b.svg [ Pass Failure ]
-crbug.com/1143929 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ Pass Failure ]
-crbug.com/1143929 svg/batik/filters/feTile.svg [ Pass Failure ]
-crbug.com/1143929 svg/batik/text/smallFonts.svg [ Pass Failure ]
-crbug.com/1143929 svg/batik/text/textFeatures.svg [ Pass Failure ]
-crbug.com/1143929 svg/dynamic-updates/SVGFEBlendElement-dom-in-attr.html [ Pass Failure ]
-crbug.com/1143929 svg/dynamic-updates/SVGFEBlendElement-dom-in2-attr.html [ Pass Failure ]
-crbug.com/1143929 svg/dynamic-updates/SVGFEBlendElement-dom-mode-attr.html [ Pass Failure ]
-crbug.com/1143929 svg/dynamic-updates/SVGFEBlendElement-svgdom-in-prop.html [ Pass Failure ]
-crbug.com/1143929 svg/dynamic-updates/SVGFEBlendElement-svgdom-in2-prop.html [ Pass Failure ]
-crbug.com/1143929 svg/dynamic-updates/SVGFEBlendElement-svgdom-mode-prop.html [ Pass Failure ]
 
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
@@ -5922,7 +5915,6 @@ crbug.com/1111932 virtual/dark-color-scheme/fast/forms/color-scheme/suggestion-p
 
 # Sheriff 2020-08-11
 crbug.com/1095540 virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]
-crbug.com/1046784 http/tests/devtools/network/network-content-replacement-xhr.js [ Pass Failure ]
 
 # Sheriff 2020-08-17
 crbug.com/1069546 [ Mac ] compositing/layer-creation/overflow-scroll-overlap.html [ Pass Failure ]
@@ -6238,9 +6230,6 @@ crbug.com/1177573 http/tests/inspector-protocol/animation/animation-pause-infini
 crbug.com/1177996 [ Linux ] storage/websql/database-lock-after-reload.html [ Failure Pass ]
 crbug.com/1178018 [ Win7 ] external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Failure Pass ]
 
-# Sheriff 2021-02-16
-crbug.com/1178899 http/tests/devtools/console/console-log-syntax-error.js [ Pass Failure ]
-
 # Expected to fail - Chrome's WebXR Depth Sensing API implementation does not currently support `gpu-optimized` usage mode.
 crbug.com/1179461 external/wpt/webxr/depth-sensing/gpu/depth_sensing_gpu_dataUnavailable.https.html [ Failure ]
 crbug.com/1179461 external/wpt/webxr/depth-sensing/gpu/depth_sensing_gpu_inactiveFrame.https.html [ Failure ]
@@ -6249,8 +6238,6 @@ crbug.com/1179461 external/wpt/webxr/depth-sensing/gpu/depth_sensing_gpu_staleVi
 
 # Sheriff 2021-02-17
 crbug.com/1179117 [ Linux ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
-crbug.com/1179263 [ Linux ] http/tests/devtools/console/console-format-es6-symbols-error.js [ Pass Failure ]
-crbug.com/1179263 [ Linux ] http/tests/devtools/console/console-linkify-relative-links.js [ Pass Failure ]
 
 # Ecosystem-Infra Sheriff 2021-02-17
 crbug.com/1179219 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-currentSrc.html [ Failure ]
@@ -6259,15 +6246,6 @@ crbug.com/1179219 external/wpt/html/semantics/embedded-content/media-elements/lo
 crbug.com/1179772 [ Win7 ] http/tests/devtools/console/console-preserve-log-x-process-navigation.js [ Pass Failure ]
 crbug.com/1179857 [ Linux ] http/tests/inspector-protocol/dom/dom-getFrameOwner.js [ Pass Failure ]
 crbug.com/1179905 [ Linux ] fast/multicol/nested-very-tall-inside-short-crash.html [ Pass Failure ]
-
-# Temporarily disabled to land https://crrev.com/c/2947243
-crbug.com/1076820 http/tests/devtools/console/console-call-getter-on-proto.js [ Pass Timeout ]
-crbug.com/1076820 http/tests/devtools/console/console-dir-es6.js [ Pass Failure ]
-crbug.com/1076820 http/tests/devtools/console/console-dir.js [ Pass Failure ]
-crbug.com/1076820 http/tests/devtools/console/console-format-es6.js [ Pass Failure ]
-crbug.com/1076820 http/tests/devtools/console/console-format.js [ Pass Failure ]
-crbug.com/1076820 http/tests/devtools/console/console-functions.js [ Pass Failure ]
-crbug.com/1076820 http/tests/devtools/sources/debugger/properties-special.js [ Pass Failure ]
 
 # Sheriff 2021-02-19
 crbug.com/1180227 [ Mac ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ Pass Failure Crash ]
@@ -6284,7 +6262,6 @@ crbug.com/1180491 [ Linux ] virtual/storage-access-api/external/wpt/storage-acce
 crbug.com/1181667 [ Linux ] external/wpt/css/selectors/focus-visible-011.html [ Pass Failure ]
 crbug.com/1045052 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Failure Timeout ]
 crbug.com/1045052 [ Linux ] virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Failure Timeout ]
-crbug.com/1181740 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-time-stamp.js [ Pass Failure ]
 crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Pass Failure ]
 crbug.com/1181886 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html [ Pass Timeout ]
 
@@ -6312,9 +6289,6 @@ crbug.com/1185676 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-li
 
 crbug.com/1185051 fast/canvas/OffscreenCanvas-Bitmaprenderer-toBlob-worker.html [ Pass Failure ]
 
-# Sheriff 2021-03-11
-crbug.com/1186901 [ Linux ] http/tests/devtools/elements/styles-3/style-autocomplete.js [ Pass Failure ]
-
 # Updating virtual suite from virtual/threaded/fast/scroll-snap to
 # virtual/threaded-prefer-compositing/fast/scroll-snap exposes additional
 # tests that fail on the composited code path.
@@ -6329,20 +6303,8 @@ crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.fil
 crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.strokeStyle.colorObject.html [ Failure ]
 crbug.com/1187575 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.strokeStyle.colorObject.transparency.html [ Failure ]
 
-# Sheriff 2021-03-15
-crbug.com/1188098 [ Linux ] http/tests/devtools/sources/debugger-pause/skip-pauses-until-reload.js [ Pass Failure ]
-crbug.com/1188098 [ Linux ] http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Failure ]
-
 # Sheriff 2021-03-17
 crbug.com/1072022 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Timeout ]
-
-# Failing on WebKit Linux Leak
-crbug.com/1188098 [ Linux ] http/tests/devtools/indexeddb/database-structure.js [ Pass Failure ]
-crbug.com/1188098 [ Linux ] http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Pass Crash Timeout Failure ]
-crbug.com/1188098 [ Linux ] http/tests/devtools/network/network-worker-fetch-blocked.js [ Pass Failure ]
-crbug.com/1188098 [ Linux ] http/tests/devtools/profiler/cpu-profiler-flame-chart-overview.js [ Pass Failure ]
-crbug.com/1188098 [ Linux ] http/tests/devtools/service-workers/service-worker-pause.js [ Pass Failure ]
-crbug.com/1188098 [ Linux ] http/tests/devtools/sources/debugger-ui/script-snippet-model.js [ Pass Failure ]
 
 # Sheriff 2021-03-19
 crbug.com/1189976 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.js [ Skip ]
@@ -6447,6 +6409,8 @@ crbug.com/1060837 external/wpt/html/cross-origin-embedder-policy/reporting-to-fr
 # These timeout because COEP reporting to a worker is not implemented.
 crbug.com/1197041 external/wpt/html/cross-origin-embedder-policy/reporting-to-worker-owner.https.html [ Skip ]
 crbug.com/1197041 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/reporting-to-worker-owner.https.html [ Skip ]
+# Failure related to COEP reporting.
+crbug.com/1218372 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/reporting-navigation.tentative.https.html [ Skip ]
 
 # Sheriff 2021-04-12
 crbug.com/1198103 virtual/scroll-unification/fast/events/drag-and-drop-autoscroll.html [ Pass Timeout ]
@@ -6498,9 +6462,6 @@ crbug.com/1201123 [ Fuchsia ] tables/mozilla/bugs/bug1188.html [ Pass Failure ]
 
 # Sheriff 2021-04-26
 crbug.com/1202722 [ Linux ] virtual/scroll-unification/fast/events/mouseenter-mouseleave-on-drag.html [ Pass Timeout ]
-
-# Sheriff 2021-04-27
-crbug.com/1203309 [ Linux ] http/tests/devtools/tracing/trace-event-self-time.js [ Pass Failure ]
 
 # Sheriff 2021-04-29
 crbug.com/1203963 [ Mac10.14 ] external/wpt/css/css-paint-api/idlharness.html [ Pass Failure Timeout ]
@@ -6919,3 +6880,8 @@ crbug.com/1216139 virtual/bfcache/http/tests/devtools/bfcache/bfcache-elements-u
 
 # Sheriff 2021-06-07
 crbug.com/1217342 [ Linux ] http/tests/devtools/sources/debugger-async/async-callstack-set-interval.js [ Pass Failure ]
+
+# Sheriff 2021-06-10
+crbug.com/626703 [ Linux ] external/wpt/css/CSS2/backgrounds/background-position-201.xht [ Pass Failure ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/css/CSS2/backgrounds/background-position-201.xht [ Pass Failure ]
+crbug.com/1177996 [ Mac10.15 ] storage/websql/database-lock-after-reload.html [ Failure Pass ]

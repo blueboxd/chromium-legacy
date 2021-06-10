@@ -24823,6 +24823,7 @@ Called by update_document_policy_enum.py.-->
   <int value="862" label="DeviceScheduledReboot"/>
   <int value="863" label="ReportDeviceLoginLogout"/>
   <int value="864" label="RemoteDebuggingAllowed"/>
+  <int value="865" label="ManagedWebAppsAccessToDeviceAttributesAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -45476,6 +45477,7 @@ from previous Chrome versions.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1701123067" label="ShowManagedUi:enabled"/>
+  <int value="-1700764114" label="HelpAppBackgroundPage:enabled"/>
   <int value="-1698438797" label="TabGroupsCollapseFreezing:enabled"/>
   <int value="-1696778023"
       label="HappinessTrackingSurveysForDesktopSettings:disabled"/>
@@ -46721,6 +46723,7 @@ from previous Chrome versions.
   <int value="-694187898" label="MashOopViz:disabled"/>
   <int value="-688003116" label="FocusFollowsCursor:enabled"/>
   <int value="-687302378" label="BluetoothFixA2dpPacketSize:enabled"/>
+  <int value="-686788480" label="OsSettingsAppNotificationsPage:enabled"/>
   <int value="-686761381" label="UseHDRTransferFunction:enabled"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684503292"
@@ -47690,6 +47693,7 @@ from previous Chrome versions.
   <int value="176773784" label="EnableHardwareMirrorMode:disabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
+  <int value="179083323" label="HelpAppBackgroundPage:disabled"/>
   <int value="179687667" label="PwaUpdateDialogForNameAndIcon:enabled"/>
   <int value="179871410" label="ui-debug-tools:disabled"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
@@ -48993,6 +48997,7 @@ from previous Chrome versions.
   <int value="1294131571" label="disable-winrt-midi-api"/>
   <int value="1296878388" label="PermissionPredictions:disabled"/>
   <int value="1296958520" label="hide-active-apps-from-shelf"/>
+  <int value="1298734793" label="OsSettingsAppNotificationsPage:disabled"/>
   <int value="1298788828" label="WebID:disabled"/>
   <int value="1298927156" label="TouchpadOverscrollHistoryNavigation:enabled"/>
   <int value="1298981651" label="disable-new-task-manager"/>
@@ -77737,6 +77742,11 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Camera"/>
   <int value="2" label="Browser Settings"/>
   <int value="3" label="OS Settings"/>
+  <int value="4" label="Scanning"/>
+  <int value="5" label="Web Store"/>
+  <int value="6" label="Canvas"/>
+  <int value="7" label="Google News"/>
+  <int value="8" label="Explore"/>
 </enum>
 
 <enum name="SystemLogPIIType">

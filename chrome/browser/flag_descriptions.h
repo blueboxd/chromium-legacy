@@ -836,9 +836,6 @@ extern const char kLiteVideoDownlinkBandwidthKbpsDescription[];
 extern const char kLiteVideoForceOverrideDecisionName[];
 extern const char kLiteVideoForceOverrideDecisionDescription[];
 
-extern const char kLoadMediaRouterComponentExtensionName[];
-extern const char kLoadMediaRouterComponentExtensionDescription[];
-
 extern const char kLogJsConsoleMessagesName[];
 extern const char kLogJsConsoleMessagesDescription[];
 
@@ -1044,6 +1041,9 @@ extern const char kOopRasterizationDDLDescription[];
 
 extern const char kOptimizationGuideModelDownloadingName[];
 extern const char kOptimizationGuideModelDownloadingDescription[];
+
+extern const char kOsSettingsAppNotificationsPageName[];
+extern const char kOsSettingsAppNotificationsPageDescription[];
 
 extern const char kOsSettingsDeepLinkingName[];
 extern const char kOsSettingsDeepLinkingDescription[];
@@ -1263,9 +1263,6 @@ extern const char kSharingPreferVapidDescription[];
 
 extern const char kSharingSendViaSyncName[];
 extern const char kSharingSendViaSyncDescription[];
-
-extern const char kSharingDeviceExpirationName[];
-extern const char kSharingDeviceExpirationDescription[];
 
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
@@ -2601,6 +2598,9 @@ extern const char kFrameThrottleFps30[];
 
 extern const char kFullRestoreName[];
 extern const char kFullRestoreDescription[];
+
+extern const char kHelpAppBackgroundPageName[];
+extern const char kHelpAppBackgroundPageDescription[];
 
 extern const char kHelpAppDiscoverTabName[];
 extern const char kHelpAppDiscoverTabDescription[];

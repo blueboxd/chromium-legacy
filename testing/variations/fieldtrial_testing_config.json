@@ -3244,6 +3244,21 @@
             ]
         }
     ],
+    "EnableExtendedSyncPromosCability": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MinorModeSupport"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableManualPasswordGenerationIOS": [
         {
             "platforms": [
@@ -5088,6 +5103,27 @@
                     },
                     "enable_features": [
                         "MBIMode"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MutingCompromisedCredentials": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MutingCompromisedCredentials"
                     ]
                 }
             ]
@@ -8481,14 +8517,31 @@
     "V8WasmMemoryProtection": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "chromeos_lacros",
-                "linux"
+                "ios",
+                "linux",
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
                     "name": "EnabledPku",
                     "enable_features": [
+                        "WebAssemblyCodeProtectionPku"
+                    ]
+                },
+                {
+                    "name": "EnabledMprotect",
+                    "enable_features": [
+                        "WebAssemblyCodeProtection"
+                    ]
+                },
+                {
+                    "name": "EnabledPkuWithMprotectFallback",
+                    "enable_features": [
+                        "WebAssemblyCodeProtection",
                         "WebAssemblyCodeProtectionPku"
                     ]
                 }

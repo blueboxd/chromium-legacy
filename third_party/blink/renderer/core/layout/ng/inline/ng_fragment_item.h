@@ -369,13 +369,9 @@ class CORE_EXPORT NGFragmentItem {
   NGTextFragmentPaintInfo TextPaintInfo(const NGFragmentItems& items) const;
 
   // Compute the inline position from text offset, in logical coordinate
-  // relative to this fragment.
-  LayoutUnit InlinePositionForOffset(StringView text,
-                                     unsigned offset,
-                                     LayoutUnit (*round_function)(float),
-                                     AdjustMidCluster) const;
-
-  LayoutUnit InlinePositionForOffset(StringView text, unsigned offset) const;
+  // relative to this fragment suitable for |LocalCaretRect|.
+  LayoutUnit CaretInlinePositionForOffset(StringView text,
+                                          unsigned offset) const;
 
   // Compute line-relative coordinates for given offsets, this is not
   // flow-relative:
@@ -400,6 +396,12 @@ class CORE_EXPORT NGFragmentItem {
   // Direction of this item valid for |TextItem| and |IsAtomicInline()|.
   // Note: <span> doesn't have text direction.
   TextDirection ResolvedDirection() const;
+
+  // Returns |PhysicalRect| to intersect with hit test location for |this|
+  // text item. See |NGBoxFragmentPainter::HitTestTextItem()|.
+  PhysicalRect ComputeTextBoundsRectForHitTest(
+      const PhysicalOffset& inline_root_offset,
+      bool is_occlusion_test) const;
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree.
@@ -485,6 +487,13 @@ class CORE_EXPORT NGFragmentItem {
   // Re-compute the ink overflow for this item. |cursor| should be at |this|.
   void RecalcInkOverflow(const NGInlineCursor& cursor,
                          PhysicalRect* self_and_contents_rect_out);
+
+  // Compute the inline position from text offset, in logical coordinate
+  // relative to this fragment.
+  LayoutUnit InlinePositionForOffset(StringView text,
+                                     unsigned offset,
+                                     LayoutUnit (*round_function)(float),
+                                     AdjustMidCluster) const;
 
   AffineTransform BuildSvgTransformForTextPath(
       const AffineTransform& length_adjust) const;

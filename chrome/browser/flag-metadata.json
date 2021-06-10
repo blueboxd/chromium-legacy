@@ -1753,6 +1753,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-extended-sync-promos-capability",
+    "owners": ["fernandex", "msarda"],
+    "expiry_milestone": 100
+  },
+  {
     "name": "enable-fenced-frames",
     "owners": [ "dom", "shivanisha", "chrome-fenced-frames@google.com" ],
     "expiry_milestone": 100
@@ -2945,6 +2950,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "force-disable-extended-sync-promos",
+    "owners": ["fernandex", "msarda"],
+    "expiry_milestone": 100
+  },
+  {
     "name": "force-effective-connection-type",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // ECT is a baked-in feature of Chrome. This flag is used for frequent
@@ -3119,6 +3129,11 @@
   {
     "name": "heavy-ad-privacy-mitigations",
     "owners": [ "johnidel", "jkarlin" ],
+    "expiry_milestone": 97
+  },
+  {
+    "name": "help-app-background-page",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
     "expiry_milestone": 97
   },
   {
@@ -4074,6 +4089,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "os-settings-app-notifications-page",
+    "owners": ["hsuregan"],
+    "expiry_milestone": 99
+  },
+  {
     "name": "os-settings-deep-linking",
     "owners": [ "cros-customization@google.com", "hsuregan", "khorimoto" ],
     "expiry_milestone": 90
@@ -4487,26 +4507,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "remote-copy-image-notification",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "remote-copy-persistent-notification",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "remote-copy-progress-notification",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "remote-copy-receiver",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "report-feed-user-actions",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 90
@@ -4747,11 +4747,6 @@
     "name": "shared-highlighting-v2",
     "owners": ["kmilka"],
     "expiry_milestone": 94
-  },
-  {
-    "name": "sharing-device-expiration",
-    "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 86
   },
   {
     "name": "sharing-hub-desktop-app-menu",

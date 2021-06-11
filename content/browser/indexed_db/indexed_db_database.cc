@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "url/origin.h"
@@ -77,7 +78,8 @@ std::vector<blink::mojom::IDBReturnValuePtr> CreateMojoValues(
     mojo_values.push_back(
         IndexedDBReturnValue::ConvertReturnValue(&found_values[i]));
     dispatcher_host->CreateAllExternalObjects(
-        origin, found_values[i].external_objects,
+        // TODO(crbug.com/1210555): Propagate StorageKey up the chain.
+        blink::StorageKey(origin), found_values[i].external_objects,
         &mojo_values[i]->value->external_objects);
   }
   return mojo_values;
@@ -841,7 +843,8 @@ Status IndexedDBDatabase::GetOperation(
     blink::mojom::IDBReturnValuePtr mojo_value =
         IndexedDBReturnValue::ConvertReturnValue(&value);
     dispatcher_host->CreateAllExternalObjects(
-        origin(), value.external_objects, &mojo_value->value->external_objects);
+        storage_key(), value.external_objects,
+        &mojo_value->value->external_objects);
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
     return s;
@@ -898,7 +901,8 @@ Status IndexedDBDatabase::GetOperation(
   blink::mojom::IDBReturnValuePtr mojo_value =
       IndexedDBReturnValue::ConvertReturnValue(&value);
   dispatcher_host->CreateAllExternalObjects(
-      origin(), value.external_objects, &mojo_value->value->external_objects);
+      storage_key(), value.external_objects,
+      &mojo_value->value->external_objects);
   std::move(callback).Run(
       blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
   return s;
@@ -1057,8 +1061,10 @@ Status IndexedDBDatabase::GetAllOperation(
       }
     } else {
       if (found_values.size() >= max_values_before_sending) {
-        result_sink->ReceiveValues(
-            CreateMojoValues(found_values, dispatcher_host.get(), origin()));
+        result_sink->ReceiveValues(CreateMojoValues(
+            found_values, dispatcher_host.get(),
+            // TODO(crbug.com/1210555): Propagate StorageKey up the chain.
+            storage_key().origin()));
         found_values.clear();
       }
     }
@@ -1070,8 +1076,10 @@ Status IndexedDBDatabase::GetAllOperation(
     }
   } else {
     if (!found_values.empty()) {
-      result_sink->ReceiveValues(
-          CreateMojoValues(found_values, dispatcher_host.get(), origin()));
+      result_sink->ReceiveValues(CreateMojoValues(
+          found_values, dispatcher_host.get(),
+          // TODO(crbug.com/1210555): Propagate StorageKey up the chain.
+          storage_key().origin()));
     }
   }
   return s;
@@ -1205,7 +1213,7 @@ Status IndexedDBDatabase::PutOperation(
         .Run(blink::mojom::IDBTransactionPutResult::NewKey(*key));
   }
   factory_->NotifyIndexedDBContentChanged(
-      origin(), metadata_.name,
+      storage_key(), metadata_.name,
       metadata_.object_stores[params->object_store_id].name);
   return s;
 }
@@ -1323,7 +1331,8 @@ Status IndexedDBDatabase::PutAllOperation(
         blink::mojom::IDBTransactionPutAllResult::NewKeys(std::move(keys)));
   }
   factory_->NotifyIndexedDBContentChanged(
-      origin(), metadata_.name, metadata_.object_stores[object_store_id].name);
+      storage_key(), metadata_.name,
+      metadata_.object_stores[object_store_id].name);
   return s;
 }
 
@@ -1393,7 +1402,7 @@ Status IndexedDBDatabase::SetIndexesReadyOperation(
 
 Status IndexedDBDatabase::OpenCursorOperation(
     std::unique_ptr<OpenCursorOperationParams> params,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::OpenCursorOperation", "txn.id",
@@ -1474,14 +1483,15 @@ Status IndexedDBDatabase::OpenCursorOperation(
   }
 
   if (mojo_value) {
-    dispatcher_host->CreateAllExternalObjects(origin, external_objects,
+    dispatcher_host->CreateAllExternalObjects(storage_key, external_objects,
                                               &mojo_value->external_objects);
   }
 
   std::move(params->callback)
       .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewValue(
           blink::mojom::IDBDatabaseOpenCursorValue::New(
-              dispatcher_host->CreateCursorBinding(origin, std::move(cursor)),
+              dispatcher_host->CreateCursorBinding(storage_key,
+                                                   std::move(cursor)),
               cursor_ptr->key(), cursor_ptr->primary_key(),
               std::move(mojo_value))));
   return s;
@@ -1548,7 +1558,8 @@ Status IndexedDBDatabase::DeleteRangeOperation(
     return s;
   callbacks->OnSuccess();
   factory_->NotifyIndexedDBContentChanged(
-      origin(), metadata_.name, metadata_.object_stores[object_store_id].name);
+      storage_key(), metadata_.name,
+      metadata_.object_stores[object_store_id].name);
   return s;
 }
 
@@ -1592,7 +1603,8 @@ Status IndexedDBDatabase::ClearOperation(
   callbacks->OnSuccess();
 
   factory_->NotifyIndexedDBContentChanged(
-      origin(), metadata_.name, metadata_.object_stores[object_store_id].name);
+      storage_key(), metadata_.name,
+      metadata_.object_stores[object_store_id].name);
   return s;
 }
 

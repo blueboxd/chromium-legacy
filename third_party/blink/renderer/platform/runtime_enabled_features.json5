@@ -330,6 +330,10 @@
     },
     {
       name: "CanvasColorManagement",
+      status: "stable",
+    },
+    {
+      name: "CanvasColorManagementV2",
       status: "experimental",
     },
     {
@@ -371,6 +375,10 @@
     },
     {
       name: "ClipboardSvg",
+      status: "experimental",
+    },
+    {
+      name: "CLSScrollAnchoring",
       status: "experimental",
     },
     {
@@ -2196,6 +2204,10 @@
     {
       name:"WebAppsLockScreen",
       status:"experimental",
+    },
+    {
+      name: "WebAppTabStrip",
+      status: "experimental",
     },
     {
       // This flag enables the Manifest parser to handle URL Handlers.

@@ -478,7 +478,7 @@
   {
     "name": "calculate-native-win-occlusion",
     "owners": [ "davidbienvenu", "fdoray" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 96
   },
   {
     "name": "camera-system-web-app",
@@ -3776,6 +3776,11 @@
   {
     "name": "ntp-modules-drag-and-drop",
     "owners": [ "lydialam", "mahmadi", "tiborg"],
+    "expiry_milestone": 96
+  },
+  {
+    "name": "ntp-modules-redesigned",
+    "owners": [ "doei", "mahmadi", "tiborg" ],
     "expiry_milestone": 96
   },
   {

@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 
+#include "base/command_line.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
@@ -21,6 +22,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_tree_id.h"
 
@@ -86,6 +88,11 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
  protected:
   const std::wstring kEmbeddedCharacterAsString{
       base::as_wcstr(&ui::AXPlatformNodeBase::kEmbeddedCharacter), 1};
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableExperimentalUIAutomation);
+  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -2510,10 +2517,14 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       TextUnit_Line, "<div style='display:inline-block'>a</div>", {L"a"});
 
   // This tests a weird edge-case; TextUnit_Line breaks at the beginning of an
-  // inline-block, but not at the end.
+  // "inline-block", but not at the end. Consequently, a line break should not
+  // be added after an "inline-block", in contrast to a "block".
   AssertMoveByUnitForMarkup(TextUnit_Line,
                             "a<div style='display:inline-block'>b</div>c",
-                            {L"a", L"b\nc"});
+                            {L"a", L"bc"});
+  AssertMoveByUnitForMarkup(TextUnit_Line,
+                            "a<div style='display:block'>b</div>c",
+                            {L"a", L"b", L"c"});
 
   AssertMoveByUnitForMarkup(
       TextUnit_Line,

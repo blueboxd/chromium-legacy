@@ -2481,6 +2481,13 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/layout_ng_svg_text/external/wpt/svg/path/property/mpath.svg [ Failure ]
+crbug.com/626703 [ Mac10.15 ] virtual/layout_ng_svg_text/external/wpt/svg/path/property/mpath.svg [ Failure ]
+crbug.com/626703 [ Win10 ] virtual/layout_ng_svg_text/external/wpt/svg/path/property/mpath.svg [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-getpublickey.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/credblob-not-supported.https.html [ Crash Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-badargs-authnrselection.https.html [ Crash Timeout ]
+crbug.com/626703 external/wpt/svg/path/property/mpath.svg [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-timeout.https.html [ Crash ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-timeout.https.html [ Crash ]
 crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
@@ -6885,3 +6892,5 @@ crbug.com/1217342 [ Linux ] http/tests/devtools/sources/debugger-async/async-cal
 crbug.com/626703 [ Linux ] external/wpt/css/CSS2/backgrounds/background-position-201.xht [ Pass Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/css/CSS2/backgrounds/background-position-201.xht [ Pass Failure ]
 crbug.com/1177996 [ Mac10.15 ] storage/websql/database-lock-after-reload.html [ Failure Pass ]
+crbug.com/1218484 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/reporting-navigation.tentative.https.html [ Pass Failure ]
+crbug.com/1218484 [ Linux ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/reporting-navigation.tentative.https.html [ Pass Failure ]

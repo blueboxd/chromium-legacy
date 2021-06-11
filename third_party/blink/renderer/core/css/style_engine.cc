@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -2020,26 +2021,22 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
 
   DCHECK(container.GetLayoutObject()) << "Containers must have a LayoutObject";
   const ComputedStyle& style = container.GetLayoutObject()->StyleRef();
+  DCHECK(style.IsContainerForContainerQueries());
   WritingMode writing_mode = style.GetWritingMode();
-  PhysicalSize physical_size = ToPhysicalSize(logical_size, writing_mode);
+  PhysicalSize physical_size = AdjustForAbsoluteZoom::AdjustPhysicalSize(
+      ToPhysicalSize(logical_size, writing_mode), style);
   PhysicalAxes physical_axes = ToPhysicalAxes(contained_axes, writing_mode);
 
   StyleRecalcChange::Propagate propagate =
       StyleRecalcChange::kRecalcContainerQueryDependent;
 
-  if (auto* evaluator = container.GetContainerQueryEvaluator()) {
-    auto change = evaluator->ContainerChanged(physical_size, physical_axes);
-    if (change == ContainerQueryEvaluator::Change::kNone)
-      return;
-    if (change == ContainerQueryEvaluator::Change::kNamed)
-      propagate = StyleRecalcChange::kRecalcDescendantContainerQueryDependent;
-  } else {
-    container.SetContainerQueryEvaluator(
-        MakeGarbageCollected<ContainerQueryEvaluator>(physical_size,
-                                                      physical_axes));
-    if (!style.ContainerName().IsNull())
-      propagate = StyleRecalcChange::kRecalcDescendantContainerQueryDependent;
-  }
+  auto* evaluator = container.GetContainerQueryEvaluator();
+  DCHECK(evaluator);
+  auto change = evaluator->ContainerChanged(physical_size, physical_axes);
+  if (change == ContainerQueryEvaluator::Change::kNone)
+    return;
+  if (change == ContainerQueryEvaluator::Change::kNamed)
+    propagate = StyleRecalcChange::kRecalcDescendantContainerQueryDependent;
 
   NthIndexCache nth_index_cache(GetDocument());
   style_recalc_root_.Update(nullptr, &container);

@@ -11,10 +11,12 @@
 #include "base/json/json_writer.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/history_clusters/core/memories_features.h"
 #include "components/history_clusters/core/proto/clusters.pb.h"
+#include "net/base/net_errors.h"
 
 namespace history_clusters {
 
@@ -32,10 +34,14 @@ proto::GetClustersRequest CreateRequestProto(
 
   base::ListValue debug_visits_list;
   for (auto& visit : visits) {
+    // TODO(tommycli): Still need to set `site_engagement_score` and
+    //  `is_from_google_search`.
     proto::Visit* request_visit = request.add_visits();
     request_visit->set_visit_id(visit.visit_row.visit_id);
     request_visit->set_url(visit.url_row.url().spec());
     request_visit->set_origin(visit.url_row.url().GetOrigin().spec());
+    request_visit->set_foreground_time_secs(
+        visit.visit_row.visit_duration.InSeconds());
     request_visit->set_navigation_time_ms(
         visit.visit_row.visit_time.ToDeltaSinceWindowsEpoch().InMilliseconds());
     request_visit->set_page_end_reason(
@@ -50,6 +56,9 @@ proto::GetClustersRequest CreateRequestProto(
                                base::NumberToString(request_visit->visit_id()));
       debug_visit.SetStringKey("url", request_visit->url());
       debug_visit.SetStringKey("origin", request_visit->origin());
+      debug_visit.SetStringKey(
+          "foreground_time_secs",
+          base::NumberToString(request_visit->foreground_time_secs()));
       debug_visit.SetStringKey(
           "navigationTimeMs",
           base::NumberToString(request_visit->navigation_time_ms()));
@@ -182,6 +191,16 @@ void MemoriesRemoteModelHelper::GetMemories(
             if (!response) {
               if (debug_logger) {
                 debug_logger->Run("MemoriesRemoteModelHelper response nullptr");
+                debug_logger->Run(base::StringPrintf("Net Error Code: %d",
+                                                     url_loader->NetError()));
+                debug_logger->Run("Net Error String: " +
+                                  net::ErrorToString(url_loader->NetError()));
+                if (url_loader->ResponseInfo() &&
+                    url_loader->ResponseInfo()->headers) {
+                  debug_logger->Run(base::StringPrintf(
+                      "HTTP response code: %d",
+                      url_loader->ResponseInfo()->headers->response_code()));
+                }
               }
               return std::vector<history::Cluster>{};
             }

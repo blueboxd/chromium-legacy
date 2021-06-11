@@ -19607,6 +19607,34 @@ Called by update_debug_scenarios.py.-->
   </int>
 </enum>
 
+<enum name="DnsProxy.DnsOverHttpsMode">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Off"/>
+  <int value="2" label="Automatic"/>
+  <int value="3" label="Always on"/>
+</enum>
+
+<enum name="DnsProxy.HttpError">
+  <int value="0" label="None"/>
+  <int value="1" label="Any redirect"/>
+  <int value="2" label="Bad request"/>
+  <int value="3" label="Payload too large"/>
+  <int value="4" label="URI too long"/>
+  <int value="5" label="Unsupported media type"/>
+  <int value="6" label="Too many requests"/>
+  <int value="7" label="Other client error"/>
+  <int value="8" label="Not implemented"/>
+  <int value="9" label="Bad gateway"/>
+  <int value="10" label="Other server error"/>
+</enum>
+
+<enum name="DnsProxy.NameserverType">
+  <int value="0" label="None"/>
+  <int value="1" label="IPv4"/>
+  <int value="2" label="IPv6"/>
+  <int value="3" label="Both IPv4 and IPv6"/>
+</enum>
+
 <enum name="DnsProxy.ProcessEvent">
   <int value="0" label="Proxy subprocess launch succeeded"/>
   <int value="1" label="Proxy subprocess launch failed"/>
@@ -19629,6 +19657,32 @@ Called by update_debug_scenarios.py.-->
   <int value="18" label="Chrome Features DBus service not available"/>
   <int value="19" label="Resolver failed to listen on UDP"/>
   <int value="20" label="Resolver failed to listen on TCP"/>
+</enum>
+
+<enum name="DnsProxy.QueryError">
+  <int value="0" label="None"/>
+  <int value="1" label="Domain not found"/>
+  <int value="2" label="No data"/>
+  <int value="3" label="Bad query"/>
+  <int value="4" label="Query refused"/>
+  <int value="5" label="Query timed out"/>
+  <int value="6" label="Query canceled"/>
+  <int value="7" label="Connection refused"/>
+  <int value="8" label="Connection failed"/>
+  <int value="9" label="Unsupported protocol"/>
+  <int value="10" label="Operation not supported"/>
+  <int value="11" label="Invalid URL"/>
+  <int value="12" label="Failed to resolve host"/>
+  <int value="13" label="Too many redirects"/>
+  <int value="14" label="Send error"/>
+  <int value="15" label="Receive error"/>
+  <int value="16" label="Other client error"/>
+  <int value="17" label="Other server error"/>
+</enum>
+
+<enum name="DnsProxy.QueryResult">
+  <int value="0" label="Failure"/>
+  <int value="1" label="Success"/>
 </enum>
 
 <enum name="DockedAction">
@@ -24824,6 +24878,7 @@ Called by update_document_policy_enum.py.-->
   <int value="863" label="ReportDeviceLoginLogout"/>
   <int value="864" label="RemoteDebuggingAllowed"/>
   <int value="865" label="ManagedWebAppsAccessToDeviceAttributesAllowed"/>
+  <int value="866" label="BrowserSwitcherParsingMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -41811,6 +41866,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Most Visited Tile"/>
   <int value="6" label="Recent Tabs Entry"/>
   <int value="7" label="Shared Highlight"/>
+  <int value="8" label="Tab Grid Item"/>
 </enum>
 
 <enum name="IOSAppState">
@@ -44958,6 +45014,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:enabled"/>
   <int value="-2124685253" label="USBGuard:enabled"/>
   <int value="-2123795624" label="ArcSmartTextSelection:enabled"/>
+  <int value="-2123097607" label="NtpModulesRedesigned:disabled"/>
   <int value="-2122206114"
       label="ImprovedCookieControlsForThirdPartyCookieBlocking:disabled"/>
   <int value="-2122048316"
@@ -47434,6 +47491,7 @@ from previous Chrome versions.
   <int value="-50628385"
       label="ContentSuggestionsThumbnailDominantColor:enabled"/>
   <int value="-50021298" label="ash-adjustable-large-cursor"/>
+  <int value="-49441721" label="NtpModulesRedesigned:enabled"/>
   <int value="-48920737" label="enable-smooth-scrolling"/>
   <int value="-47034052" label="StoreHoursAndroid:enabled"/>
   <int value="-45849989" label="ModeSpecificPowerButton:disabled"/>
@@ -52965,15 +53023,26 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MessageDismissReason">
-  <int value="0" label="Unknown"/>
+  <int value="0" label="Unknown (controlled by client)"/>
   <int value="1" label="Primary action"/>
-  <int value="2" label="Secondary action"/>
+  <int value="2" label="Secondary action (controlled by client)"/>
   <int value="3" label="Timer"/>
   <int value="4" label="Gesture"/>
   <int value="5" label="Tab switched"/>
   <int value="6" label="Tab destroyed"/>
   <int value="7" label="Activity destroyed"/>
   <int value="8" label="Scope destroyed"/>
+</enum>
+
+<enum name="MessageIdentifier">
+  <int value="1" label="SavePassword"/>
+  <int value="2" label="UpdatePassword"/>
+  <int value="3" label="GeneratedPasswordSaved"/>
+  <int value="4" label="PopupBlocked"/>
+  <int value="5" label="SafetyTip"/>
+  <int value="6" label="SaveAddressProfile"/>
+  <int value="7" label="MerchantTrust"/>
+  <int value="8" label="AddToHomescreenIPH"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -76894,11 +76963,6 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SurveyDownloadResponseCodes2">
-<!-- This enum allocations are not without meaning. Thus, these allocations
-     should never be changed, and new possible return values should be appended
-     as new items with new values.
-  -->
-
   <summary>
     Results when download survey response is available. Used by
     Android.Survey.SurveyDownloadResponseCodes2.
@@ -83314,6 +83378,7 @@ others/histograms.xml -->
   <int value="3" label="Standalone"/>
   <int value="4" label="Fullscreen"/>
   <int value="5" label="WindowControlsOverlay"/>
+  <int value="6" label="Tabbed"/>
 </enum>
 
 <enum name="WebAppInstallIphResult">

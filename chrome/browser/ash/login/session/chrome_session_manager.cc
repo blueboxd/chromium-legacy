@@ -36,7 +36,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/handlers/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/policy/reporting/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
@@ -67,10 +67,15 @@ namespace ash {
 namespace {
 
 // Whether kiosk auto launch should be started.
-bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
+bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line,
+                              PrefService* local_state) {
   KioskAppManager* app_manager = KioskAppManager::Get();
   WebKioskAppManager* web_app_manager = WebKioskAppManager::Get();
   ArcKioskAppManager* arc_app_manager = ArcKioskAppManager::Get();
+
+  // We shouldn't auto launch kiosk app if powerwash screen should be shown.
+  bool prevent_autolaunch =
+      local_state->GetBoolean(prefs::kFactoryResetRequested);
   return command_line.HasSwitch(switches::kLoginManager) &&
          (app_manager->IsAutoLaunchEnabled() ||
           web_app_manager->GetAutoLaunchAccountId().is_valid() ||
@@ -79,7 +84,7 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
          // IsOobeCompleted() is needed to prevent kiosk session start in case
          // of enterprise rollback, when keeping the enrollment, policy, not
          // clearing TPM, but wiping stateful partition.
-         StartupUtils::IsOobeCompleted();
+         StartupUtils::IsOobeCompleted() && !prevent_autolaunch;
 }
 
 // Starts kiosk app auto launch and shows the splash screen.
@@ -221,7 +226,8 @@ void ChromeSessionManager::Initialize(
 
   KioskCryptohomeRemover::RemoveObsoleteCryptohomes();
 
-  if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
+  if (ShouldAutoLaunchKioskApp(parsed_command_line,
+                               g_browser_process->local_state())) {
     VLOG(1) << "Starting Chrome with kiosk auto launch.";
     StartKioskSession();
     return;

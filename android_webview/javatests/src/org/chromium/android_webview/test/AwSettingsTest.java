@@ -2954,7 +2954,6 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "https://crbug.com/1133535")
     public void testUseWideViewportWithTwoViews() throws Throwable {
         ViewPair views = createViews(true);
         runPerViewSettingsTest(
@@ -2965,7 +2964,6 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "https://crbug.com/1133535")
     public void testUseWideViewportWithTwoViewsNoQuirks() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -3302,7 +3300,6 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "https://crbug.com/1144935")
     public void testAllowMixedMode() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient() {
             @Override

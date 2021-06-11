@@ -122,6 +122,7 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -1287,6 +1288,59 @@ bool AXNodeObject::IsInputImage() const {
     return html_input_element->type() == input_type_names::kImage;
 
   return false;
+}
+
+bool AXNodeObject::IsLineBreakingObject() const {
+  // According to Blink Editing, objects without an associated DOM node such as
+  // pseudo-elements and list bullets, are never considered as paragraph
+  // boundaries.
+  if (IsDetached() || !GetNode())
+    return false;
+
+  // Presentational objects should not contribute any of their semantic meaning
+  // to the accessibility tree, including to its text representation.
+  if (IsPresentational())
+    return false;
+
+  // `IsEnclosingBlock` includes all elements with display block, inline block,
+  // table related, flex, grid, list item, flow-root, webkit-box, and display
+  // contents. This is the same function used by Blink > Editing for determining
+  // paragraph boundaries, i.e. line breaking objects.
+  if (IsEnclosingBlock(GetNode()))
+    return true;
+
+  // Not all <br> elements have an associated layout object. They might be
+  // "visibility: hidden" or within a display locked region. We need to check
+  // their DOM node first.
+  if (IsA<HTMLBRElement>(GetNode()))
+    return true;
+
+  const LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object)
+    return AXObject::IsLineBreakingObject();
+
+  if (layout_object->IsBR())
+    return true;
+
+  // LayoutText objects could include a paragraph break in their text. This can
+  // only occur if line breaks are preserved and a newline character is present
+  // in their collapsed text. Text collapsing removes all whitespace found in
+  // the HTML file, but a special style rule could be used to preserve line
+  // breaks.
+  //
+  // The best example is the <pre> element:
+  // <pre>Line 1
+  // Line 2</pre>
+  if (const LayoutText* layout_text = DynamicTo<LayoutText>(layout_object)) {
+    const ComputedStyle& style = layout_object->StyleRef();
+    if (layout_text->HasNonCollapsedText() && style.PreserveNewline() &&
+        layout_text->PlainText().find('\n') != WTF::kNotFound) {
+      return true;
+    }
+  }
+
+  // Rely on the ARIA role to figure out if this object is line breaking.
+  return AXObject::IsLineBreakingObject();
 }
 
 bool AXNodeObject::IsLoaded() const {
@@ -3920,10 +3974,15 @@ void AXNodeObject::InsertChild(AXObject* child,
     int new_index = index;
     for (wtf_size_t i = 0; i < length; ++i) {
       if (children[i]->IsDetached()) {
-        CHECK(false) << "Cannot add a detached child: "
-                     << "\n* Child: " << children[i]->ToString(true, true)
-                     << "\n* Parent: " << child->ToString(true, true)
-                     << "\n* Grandparent: " << ToString(true, true);
+        // TODO(accessibility) Restore to CHECK().
+#if defined(AX_FAIL_FAST_BUILD)
+        SANITIZER_NOTREACHED()
+            << "Cannot add a detached child: "
+            << "\n* Child: " << children[i]->ToString(true, true)
+            << "\n* Parent: " << child->ToString(true, true)
+            << "\n* Grandparent: " << ToString(true, true);
+#endif
+        continue;
       }
       // If the child was owned, it will be added elsewhere as a direct
       // child of the object owning it.

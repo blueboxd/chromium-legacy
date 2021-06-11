@@ -26,7 +26,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/core/device_local_account.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
@@ -254,18 +254,6 @@ void WallpaperControllerClientImpl::SetInitialWallpaper() {
 // static
 WallpaperControllerClientImpl* WallpaperControllerClientImpl::Get() {
   return g_wallpaper_controller_client_instance;
-}
-
-// static
-std::string WallpaperControllerClientImpl::GetBackdropWallpaperSuffix() {
-  // TODO(b/186807814) handle different display resolutions better.
-  // FIFE url is used for Backdrop wallpapers and the desired image size should
-  // be specified. Currently we are using two times the display size. This is
-  // determined by trial and error and is subject to change.
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-  return "=w" + base::NumberToString(
-                    2 * std::max(display_size.width(), display_size.height()));
 }
 
 std::string WallpaperControllerClientImpl::GetFilesId(

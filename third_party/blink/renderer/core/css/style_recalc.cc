@@ -25,6 +25,8 @@ bool StyleRecalcChange::TraverseChild(const Node& node) const {
 }
 
 bool StyleRecalcChange::ShouldRecalcStyleFor(const Node& node) const {
+  if (flags_ & kSuppressRecalc)
+    return false;
   if (RecalcChildren())
     return true;
   if (node.NeedsStyleRecalc())
@@ -56,32 +58,26 @@ bool StyleRecalcChange::ShouldUpdatePseudoElement(
          pseudo_element.ComputedStyleRef().DependsOnContainerQueries();
 }
 
-StyleRecalcChange::ContainerQueryDependentFlag
-StyleRecalcChange::ContainerQueryDependentFlagForChildren(
+StyleRecalcChange::Flags StyleRecalcChange::FlagsForChildren(
     const Element& element) const {
-  // kRecalc[Descendant]ContainerQueryDependent means we are at the container
-  // root for a container query recalc.
-  if (propagate_ == kRecalcContainerQueryDependent)
-    return kRecalcContainer;
-  if (propagate_ == kRecalcDescendantContainerQueryDependent)
-    return kRecalcDescendantContainers;
+  Flags result = flags_;
 
-  switch (container_query_dependent_flag_) {
-    case kNoContainerRecalc:
-      return kNoContainerRecalc;
-    case kRecalcContainer: {
-      // Don't traverse into children if we hit a descendant container while
-      // recalculating container queries. If the queries for this container also
-      // changes, we will enter another container query recalc for this subtree
-      // from layout.
-      const ComputedStyle* old_style = element.GetComputedStyle();
-      if (old_style && old_style->IsContainerForContainerQueries())
-        return kNoContainerRecalc;
-      return kRecalcContainer;
-    }
-    case kRecalcDescendantContainers:
-      return kRecalcDescendantContainers;
+  // Note that kSuppressRecalc is used on the root container for the
+  // interleaved style recalc.
+  if ((result & (kRecalcContainerFlags | kSuppressRecalc)) ==
+      kRecalcContainer) {
+    // Don't traverse into children if we hit a descendant container while
+    // recalculating container queries. If the queries for this container also
+    // changes, we will enter another container query recalc for this subtree
+    // from layout.
+    const ComputedStyle* old_style = element.GetComputedStyle();
+    if (old_style && old_style->IsContainerForContainerQueries())
+      result &= ~kRecalcContainer;
   }
+
+  result &= ~kSuppressRecalc;
+
+  return result;
 }
 
 StyleRecalcContext StyleRecalcContext::FromAncestors(Element& element) {

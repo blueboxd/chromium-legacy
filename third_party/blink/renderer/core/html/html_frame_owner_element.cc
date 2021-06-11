@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/lazy_load_frame_observer.h"
 #include "third_party/blink/renderer/core/html/loading_attribute.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -480,6 +481,17 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     bool replace_current_item) {
   TRACE_EVENT0("navigation", "HTMLFrameOwnerElement::LoadOrRedirectSubframe");
 
+  // TODO(crbug.com/1123606): Remove this once we move to the MPArch
+  // implementation. If this is the "top-level" internal <iframe> hosted within
+  // a <fencedframe> element using the ShadowDOM implementation, then we need to
+  // mark |frame_policy_| as `is_fenced=true`, so that the LocalFrame inside
+  // this frame can react accordingly. See
+  // https://docs.google.com/document/d/1ijTZJT3DHQ1ljp4QQe4E4XCCRaYAxmInNzN1SzeJM8s/edit.
+  if (ContainingShadowRoot() && ContainingShadowRoot()->IsUserAgent() &&
+      IsA<HTMLFencedFrameElement>(ContainingShadowRoot()->host())) {
+    frame_policy_.is_fenced = true;
+  }
+
   // Update the |should_lazy_load_children_| value according to the "loading"
   // attribute immediately, so that it still gets respected even if the "src"
   // attribute gets parsed in ParseAttribute() before the "loading" attribute
@@ -560,7 +572,11 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   CSPAttributeChanged();
 
   WebFrameLoadType child_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  if (!GetDocument().LoadEventFinished() &&
+  // If the frame URL is not about:blank, see if it should do a
+  // kReloadBypassingCache navigation, following the parent frame. If the frame
+  // URL is about:blank, it should be committed synchronously as a
+  // kReplaceCurrentItem navigation (see https://crbug.com/778318).
+  if (url != BlankURL() && !GetDocument().LoadEventFinished() &&
       GetDocument().Loader()->LoadType() ==
           WebFrameLoadType::kReloadBypassingCache) {
     child_load_type = WebFrameLoadType::kReloadBypassingCache;

@@ -2527,30 +2527,6 @@
             ]
         }
     ],
-    "DelayAsyncScriptExecution": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "delay_type": "first_paint_or_finished_parsing"
-                    },
-                    "enable_features": [
-                        "DelayAsyncScriptExecution"
-                    ]
-                }
-            ]
-        }
-    ],
     "DeleteOverwrittenDownloads": [
         {
             "platforms": [
@@ -2795,6 +2771,23 @@
                     },
                     "enable_features": [
                         "InstallIconExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DestroyProfileOnBrowserClose": [
+        {
+            "platforms": [
+                "windows",
+                "linux",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "DestroyProfileOnBrowserClose",
+                    "enable_features": [
+                        "DestroyProfileOnBrowserClose"
                     ]
                 }
             ]
@@ -4438,21 +4431,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "InvalidateBookmarkSyncMetadataIfClientTagMissing"
-                    ]
-                }
-            ]
-        }
-    ],
-    "InvalidationsSkipUnsubscription": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InvalidationsSkipUnsubscription"
                     ]
                 }
             ]

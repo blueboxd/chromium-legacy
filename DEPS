@@ -209,7 +209,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '08ac524b4331bb78097be8b4ad9257808f3f73bf',
+  'skia_revision': '5c75e8322d28f92a422fb06304fc30cce4a7161d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '31641b8e7269b5afc8cac86e2607909df61a99d7',
+  'angle_revision': '5e5d17cdbc479f2d2979bfe290a01a004f76cc11',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '46cdd9cd019f088e1134abe84dbc7d53ac60585a',
+  'devtools_frontend_revision': '1867f35860c16bbb7e62e18a4cc4740253896a03',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '74f0c02044ca5d058f582c64b00c39e0f75e24f0',
+  'dawn_revision': 'f102e1138be00f090cc0830c3ca50100c4781c8d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -372,7 +372,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    '2c53623d59004dd0482dfc20df6ef00c76341db3',
+  'libcxxabi_revision':    'e5f25a39b9decc487902de82f39ae56b4d634d7c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -395,7 +395,7 @@ vars = {
   'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:393dab000d704a4364d085fa4c01ec7af176c8fa',
+  'gn_version': 'git_revision:695504d72a30e0b58705b2a1a23964ebf7bca030',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -643,7 +643,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'EAdSnZRE-mjk6BIduyL5N3fyOjf930il9P8WUwd2Z5AC',
+          'version': 'fUHNjtOsTXQPpZZSCbVSpBzwT1UEOifKZOdnCIEcuiAC',
         },
       ],
       'dep_type': 'cipd',
@@ -654,7 +654,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'jvKg5skjjKC6AKaVysrVmTrGHoLQcvck-aSwQAfabvkC',
+          'version': '6E_C3M-uXDzoEFijqiH_UQgFu35eSqZj0nA0I8XWnKYC',
         },
       ],
       'dep_type': 'cipd',
@@ -665,7 +665,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'u3i65oRWTA_xpISdaYZiEfTCM-fuy3kqOaU_dDU5wCYC',
+          'version': 'mKdjsaIEiqF8OQx_o8e82_ujIkVb80jizxrnxLZiZuIC',
         },
       ],
       'dep_type': 'cipd',
@@ -1352,7 +1352,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8aac4c8c54b781da3af65faf854760431c57c30e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '45ffbbd381ad4ccf68c73e46e477ae5bf4074a0c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1645,7 +1645,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5dddbca75b5b96d8b39bf5ff6461850910d2c742',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d55746abd668d92e0fa06f9bf13be3472b290184',
     'condition': 'checkout_src_internal',
   },
 

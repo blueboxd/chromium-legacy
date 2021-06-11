@@ -821,7 +821,9 @@ crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failur
 # [css-counter-styles-3]
 crbug.com/1176323 external/wpt/css/css-counter-styles/counter-style-prefix-suffix-syntax.html [ Failure ]
 crbug.com/1176323 external/wpt/css/css-counter-styles/counter-style-symbols-syntax.html [ Failure ]
+crbug.com/1218280 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
 crbug.com/1168277 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/disclosure-styles.html [ Failure ]
+crbug.com/1218770 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-attr-mapping.html [ Failure ]
 crbug.com/1176315 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure ]
 
 # [css-overflow]
@@ -1318,7 +1320,6 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failur
 crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
 crbug.com/1146092 wpt_internal/css/css-contain/* [ Skip ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
-crbug.com/1045599 virtual/container-queries/wpt_internal/css/css-contain/grid-inline-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-block-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-inline-size.html [ Failure ]
 
@@ -1622,6 +1623,10 @@ crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-worker.htm
 crbug.com/802029 [ Mac10.13 Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Pass Timeout ]
 crbug.com/829740 fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
 crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
+
+# crbug.com/1218715 These fail when PartitionConnectionsByNetworkIsolationKey is enabled.
+crbug.com/1218715 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-works-on-frame-ancestors.https.sub.html [ Failure ]
+crbug.com/1218715 virtual/synchronous_html_parser/external/wpt/content-security-policy/reporting-api/reporting-api-works-on-frame-ancestors.https.sub.html [ Failure ]
 
 # Sheriff 2021-05-25
 crbug.com/1209900 fast/peerconnection/RTCPeerConnection-reload-sctptransport.html [ Pass Failure ]
@@ -2490,13 +2495,6 @@ crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-badargs-auth
 crbug.com/626703 external/wpt/svg/path/property/mpath.svg [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-timeout.https.html [ Crash ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-timeout.https.html [ Crash ]
-crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-pad.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-large-blob-supported.https.html [ Crash Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/getcredential-extensions.https.html [ Crash Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webauthn/createcredential-excludecredentials.https.html [ Crash Timeout ]
@@ -2590,7 +2588,6 @@ crbug.com/626703 external/wpt/css/css-sizing/fit-content-length-percentage-016.h
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/stream/tentative/constructor.any.sharedworker.html?wss [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/backgrounds/background-088.xht [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/iframe-popup-same-origin-to-same-origin.https.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-attr-mapping.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/backgrounds/background-280.xht [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/stream/tentative/constructor.any.worker.html?wss [ Timeout ]
 crbug.com/626703 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-009.html [ Failure ]
@@ -2668,6 +2665,7 @@ crbug.com/626703 [ Win ] external/wpt/websockets/basic-auth.any.html?wss [ Timeo
 crbug.com/626703 [ Win ] external/wpt/websockets/basic-auth.any.serviceworker.html?wss [ Timeout Failure ]
 crbug.com/626703 [ Win ] external/wpt/websockets/opening-handshake/005.html [ Timeout Failure ]
 crbug.com/626703 [ Win ] external/wpt/websockets/opening-handshake/005.html?wss [ Timeout Failure ]
+crbug.com/626703 [ Linux ] external/wpt/websockets/opening-handshake/005.html [ Pass Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCSctpTransport-maxChannels.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCSctpTransport-maxChannels.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/getstats.html [ Timeout ]
@@ -5428,9 +5426,6 @@ crbug.com/989665 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-ti
 # Sheriff 2020-01-23
 crbug.com/1044505 http/tests/devtools/tracing-session-id.js [ Pass Failure Timeout ]
 
-crbug.com/1045472 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/test_wrapKey_unwrapKey.https.html [ Pass Failure ]
-crbug.com/1045472 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.worker.html [ Pass Failure ]
-
 crbug.com/1046784 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
 crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Pass Failure Timeout ]
 
@@ -6894,3 +6889,7 @@ crbug.com/626703 [ Mac10.14 ] external/wpt/css/CSS2/backgrounds/background-posit
 crbug.com/1177996 [ Mac10.15 ] storage/websql/database-lock-after-reload.html [ Failure Pass ]
 crbug.com/1218484 [ Linux ] external/wpt/html/cross-origin-embedder-policy/credentialless/reporting-navigation.tentative.https.html [ Pass Failure ]
 crbug.com/1218484 [ Linux ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/credentialless/reporting-navigation.tentative.https.html [ Pass Failure ]
+
+# Sheriff 2021-06-11
+crbug.com/1218667 [ Win ] virtual/portals/wpt_internal/portals/portals-dangling-markup.sub.html [ Pass Timeout ]
+crbug.com/1218714 [ Win ] virtual/scroll-unification/fast/forms/select-popup/popup-menu-scrollbar-button-scrolls.html [ Pass Timeout ]

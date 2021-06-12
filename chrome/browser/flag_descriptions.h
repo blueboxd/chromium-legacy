@@ -1285,9 +1285,6 @@ extern const char kSkiaRendererDescription[];
 extern const char kHistoryManipulationIntervention[];
 extern const char kHistoryManipulationInterventionDescription[];
 
-extern const char kSilentDebuggerExtensionApiName[];
-extern const char kSilentDebuggerExtensionApiDescription[];
-
 extern const char kStorageAccessAPIName[];
 extern const char kStorageAccessAPIDescription[];
 
@@ -1385,6 +1382,9 @@ extern const char kTabHoverCardImagesDescription[];
 
 extern const char kTabOutlinesInLowContrastThemesName[];
 extern const char kTabOutlinesInLowContrastThemesDescription[];
+
+extern const char kTabRestoreSubMenusName[];
+extern const char kTabRestoreSubMenusDescription[];
 
 extern const char kTextFragmentColorChangeName[];
 extern const char kTextFragmentColorChangeDescription[];
@@ -1884,8 +1884,20 @@ extern const char kReengagementNotificationDescription[];
 extern const char kRelatedSearchesName[];
 extern const char kRelatedSearchesDescription[];
 
+extern const char kRelatedSearchesAlternateUxName[];
+extern const char kRelatedSearchesAlternateUxDescription[];
+
+extern const char kRelatedSearchesInBarName[];
+extern const char kRelatedSearchesInBarDescription[];
+
+extern const char kRelatedSearchesSimplifiedUxName[];
+extern const char kRelatedSearchesSimplifiedUxDescription[];
+
 extern const char kRelatedSearchesUiName[];
 extern const char kRelatedSearchesUiDescription[];
+
+extern const char kSingleTouchSelectName[];
+extern const char kSingleTouchSelectDescription[];
 
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];

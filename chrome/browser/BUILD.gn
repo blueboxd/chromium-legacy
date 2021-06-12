@@ -2364,6 +2364,7 @@ static_library("browser") {
       "//ash/content/scanning",
       "//ash/content/scanning/mojom",
       "//ash/content/shimless_rma",
+      "//ash/content/shortcut_customization_ui",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/ash/system_extensions",
       "//chrome/browser/nearby_sharing/common",
@@ -2687,6 +2688,8 @@ static_library("browser") {
       "android/feed/v2/background_refresh_task.h",
       "android/feed/v2/feed_image_fetch_client.cc",
       "android/feed/v2/feed_persistent_key_value_cache.cc",
+      "android/feed/v2/feed_reliability_logging_bridge.cc",
+      "android/feed/v2/feed_reliability_logging_bridge.h",
       "android/feed/v2/feed_service_bridge.cc",
       "android/feed/v2/feed_service_bridge.h",
       "android/feed/v2/feed_service_factory.cc",
@@ -4230,6 +4233,7 @@ static_library("browser") {
       "//components/accuracy_tips",
       "//components/constrained_window",
       "//components/enterprise/common/proto:device_trust_report_event_proto",
+      "//components/enterprise/common/proto:download_item_reroute_info_proto",
       "//components/feedback",
       "//components/feedback/content:factory",
       "//components/image_fetcher/core",
@@ -5436,7 +5440,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_android || is_chromeos_ash || is_win) {
+  if (is_android || is_chromeos || is_win) {
     sources += [
       "media/protected_media_identifier_permission_context.cc",
       "media/protected_media_identifier_permission_context.h",
@@ -6166,6 +6170,7 @@ static_library("browser") {
       "pdf/pdf_extension_util.h",
     ]
     deps += [
+      "//components/pdf/browser:interceptors",
       "//pdf:buildflags",
       "//pdf:features",
     ]

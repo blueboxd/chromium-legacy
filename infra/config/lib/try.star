@@ -124,7 +124,7 @@ def try_builder(
     experiments.setdefault("chromium.resultdb.result_sink.junit_tests", 100)
 
     # Migrate executable to bbagent incrementally.
-    experiments.setdefault("luci.buildbucket.use_bbagent", 10)
+    experiments.setdefault("luci.buildbucket.use_bbagent", 20)
 
     merged_resultdb_bigquery_exports = [
         resultdb.export_test_results(
@@ -340,7 +340,7 @@ def chromium_mac_ios_builder(
         name,
         executable = "recipe:chromium_trybot",
         goma_backend = builders.goma.backend.RBE_PROD,
-        os = builders.os.MAC_10_15_OR_11,
+        os = builders.os.MAC_11,
         xcode = builders.xcode.x12d4e,
         **kwargs):
     return try_builder(

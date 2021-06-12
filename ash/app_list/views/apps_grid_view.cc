@@ -227,11 +227,6 @@ class FolderDroppingAnimationObserver : public TopIconAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(FolderDroppingAnimationObserver);
 };
 
-// Returns true if the |item| is a folder item.
-bool IsFolderItem(AppListItem* item) {
-  return (item->GetItemType() == AppListFolderItem::kItemType);
-}
-
 bool IsOEMFolderItem(AppListItem* item) {
   return IsFolderItem(item) &&
          (static_cast<AppListFolderItem*>(item))->folder_type() ==
@@ -1024,9 +1019,6 @@ std::unique_ptr<AppListItemView> AppsGridView::CreateViewForItem(
     AppListItem* item) {
   std::unique_ptr<AppListItemView> view =
       std::make_unique<AppListItemView>(this, item, app_list_view_delegate_);
-  view->SetCallback(base::BindRepeating(&AppsGridView::OnAppListItemViewPressed,
-                                        base::Unretained(this),
-                                        base::Unretained(view.get())));
   return view;
 }
 
@@ -1820,6 +1812,21 @@ const AppListConfig& AppsGridView::GetAppListConfig() const {
   return contents_view_->app_list_view()->GetAppListConfig();
 }
 
+bool AppsGridView::IsAnimationRunningForTest() {
+  return bounds_animator_->IsAnimating() ||
+         bounds_animation_for_cardified_state_in_progress_ > 0;
+}
+
+void AppsGridView::CancelAnimationsForTest() {
+  bounds_animator_->Cancel();
+
+  const int total_views = view_model_.view_size();
+  for (int i = 0; i < total_views; ++i) {
+    if (view_model_.view_at(i)->layer())
+      view_model_.view_at(i)->layer()->CompleteAllAnimations();
+  }
+}
+
 bool AppsGridView::FirePageFlipTimerForTest() {
   if (!page_flip_timer_.IsRunning())
     return false;
@@ -2296,40 +2303,6 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
                                    GetAppListConfig().page_flip_zone_size();
   return point_in_parent.y() > kBottomDragBufferMin &&
          point_in_parent.y() < kBottomDragBufferMax;
-}
-
-void AppsGridView::OnAppListItemViewPressed(AppListItemView* pressed_item_view,
-                                            const ui::Event& event) {
-  // TODO(crbug.com/1211608): Refactor to support ScrollableAppsGridView. For
-  // now, just don't crash.
-  if (!contents_view_) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  if (IsDragging())
-    return;
-
-  if (contents_view_->apps_container_view()
-          ->app_list_folder_view()
-          ->IsAnimationRunning()) {
-    return;
-  }
-
-  // Always set the previous activated_folder_item_view_ to be visible. This
-  // prevents a case where the item would remain hidden due the
-  // |activated_folder_item_view_| changing during the animation. We only
-  // need to track |activated_folder_item_view_| in the root level grid view.
-  if (!folder_delegate_) {
-    if (activated_folder_item_view_)
-      activated_folder_item_view_->SetVisible(true);
-    if (IsFolderItem(pressed_item_view->item()))
-      activated_folder_item_view_ = pressed_item_view;
-    else
-      activated_folder_item_view_ = nullptr;
-  }
-  contents_view_->GetAppListMainView()->ActivateApp(pressed_item_view->item(),
-                                                    event.flags());
 }
 
 void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {

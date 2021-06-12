@@ -1650,6 +1650,14 @@ crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.h
 crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
 crbug.com/666993 [ Debug ] external/wpt/requestidlecallback/callback-idle-periods.html [ Pass Timeout ]
 
+# crbug.com/1218716: These fail when TrustTokenOriginTrial is enabled.
+crbug.com/1218716 external/wpt/trust-tokens/trust-token-parameter-validation-xhr.tentative.https.html [ Failure ]
+crbug.com/1218716 external/wpt/trust-tokens/trust-token-parameter-validation.tentative.https.html [ Failure ]
+crbug.com/1218716 webexposed/element-instance-property-listing.html [ Failure ]
+crbug.com/1218716 webexposed/feature-policy-features.html [ Failure ]
+crbug.com/1218716 webexposed/global-interface-listing-dedicated-worker.html [ Failure ]
+crbug.com/1218716 webexposed/global-interface-listing-shared-worker.html [ Failure ]
+crbug.com/1218716 webexposed/global-interface-listing.html [ Failure ]
 
 # crbug.com/1095379: These three time out 100% of the time across all platforms:
 crbug.com/919789 images/image-click-scale-restore-zoomed-image.html [ Timeout ]
@@ -1672,6 +1680,10 @@ crbug.com/909597 external/wpt/css/css-ui/text-overflow-ruby.html [ Failure ]
 
 crbug.com/1005518 external/wpt/css/css-writing-modes/direction-upright-001.html [ Failure ]
 crbug.com/1005518 external/wpt/css/css-writing-modes/direction-upright-002.html [ Failure ]
+
+# crbug.com/1218721: These tests fail when libvpx_for_vp8 is enabled.
+crbug.com/1218721 fast/borders/border-radius-mask-video-shadow.html [ Failure ]
+crbug.com/1218721 fast/borders/border-radius-mask-video.html [ Failure ]
 
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
@@ -1707,6 +1719,9 @@ crbug.com/381684 [ Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/381684 [ Win ] fonts/family-fallback-gardiner.html [ Skip ]
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
+
+# crbug.com/1218723 This test fails when SplitCacheByNetworkIsolationKey is enabled.
+crbug.com/1218723 http/tests/devtools/network/network-prefetch.js [ Failure ]
 
 # No support for WPT print-reftests:
 crbug.com/1090628 external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
@@ -1788,6 +1803,10 @@ crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-page.htm
 # logic for this test will be skipped when running Layout tests.
 crbug.com/770028 external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html [ Skip ]
 crbug.com/770028 external/wpt/pointerevents/pointerevent_predicted_events_attributes-manual.html [ Skip ]
+
+# crbug.com/1218729 These tests fail when InterestCohortAPIOriginTrial is enabled.
+crbug.com/1218729 http/tests/origin_trials/webexposed/interest-cohort-origin-trial-interfaces.html [ Failure ]
+crbug.com/1218729 virtual/stable/webexposed/feature-policy-features.html [ Failure ]
 
 # This test relies on racy should_send_resource_timing_info_to_parent() flag being sent between processes.
 crbug.com/957181 external/wpt/resource-timing/nested-context-navigations-iframe.html [ Pass Failure ]
@@ -2486,6 +2505,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/tab-size/tab-size-spacing-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/tab-size/tab-size-spacing-003.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/layout_ng_svg_text/external/wpt/svg/path/property/mpath.svg [ Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/layout_ng_svg_text/external/wpt/svg/path/property/mpath.svg [ Failure ]
 crbug.com/626703 [ Win10 ] virtual/layout_ng_svg_text/external/wpt/svg/path/property/mpath.svg [ Failure ]
@@ -6588,7 +6609,6 @@ crbug.com/1199522 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pas
 
 # Failing css-transforms-2 web platform tests.
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-002.html [ Failure ]
-crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-006.html [ Failure ]
 
 external/wpt/css/css-transforms/2d-rotate-001.html [ Failure ]
 external/wpt/css/css-transforms/css-skew-002.html [ Failure ]

@@ -286,6 +286,7 @@ crbug.com/871352 [ fuchsia ] conformance/uniforms/uniform-samplers-test.html [ S
 crbug.com/1143424 [ fuchsia ] deqp/data/gles2/shaders/conversions.html [ Skip ]
 crbug.com/478572 [ fuchsia ] deqp/data/gles2/shaders/functions.html [ Skip ]
 crbug.com/angleproject/3111 [ fuchsia ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
+crbug.com/1218708 [ fuchsia ] conformance/rendering/many-draw-calls.html [ Skip ]
 
 # Video not supported on Fuchsia qemu boards.
 [ fuchsia fuchsia-board-qemu-x64 ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
@@ -316,6 +317,7 @@ crbug.com/1136414 [ fuchsia ] conformance/ogles/GL/mat/mat_009_to_016.html [ Fai
 # Intel flaky issues
 crbug.com/929009 [ win intel ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 crbug.com/1111652 [ win intel angle-vulkan passthrough ] conformance/context/context-size-change.html [ Failure ]
+crbug.com/1219015 [ win angle-d3d11 intel ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 # Intel driver issues
 crbug.com/854100 [ win intel angle-opengl passthrough intel_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]

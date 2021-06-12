@@ -474,11 +474,6 @@ public class StartSurfaceTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testShow_SingleAsHomepage_FromResumeShowStart() throws Exception {
         // clang-format on
-        Assume.assumeFalse("https://crbug.com/1196473",
-            isInstantReturn()
-                && (Build.VERSION.SDK_INT == Build.VERSION_CODES.N
-                || Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1));
-
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
@@ -1795,6 +1790,34 @@ public class StartSurfaceTest {
         // Back gesture on the tab should take us back to the start surface homepage.
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testCleanUpMVTilesAfterHiding() {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        StartSurfaceCoordinator startSurfaceCoordinator =
+                StartSurfaceTestUtils.getStartSurfaceFromUIThread(cta);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(startSurfaceCoordinator.isMVTilesCleanedUpForTesting());
+        });
+
+        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
+        Assert.assertEquals("The launched tab should have the launch type FROM_START_SURFACE",
+                TabLaunchType.FROM_START_SURFACE,
+                cta.getActivityTabProvider().get().getLaunchType());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(startSurfaceCoordinator.isMVTilesCleanedUpForTesting());
+        });
     }
 
     private void backActionDeleteBlankTabForOmniboxFocusedOnNewTabSingleSurface(

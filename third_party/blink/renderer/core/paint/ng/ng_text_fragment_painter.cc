@@ -172,15 +172,17 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
 
   PhysicalRect box_rect = ComputeBoxRect(cursor_, paint_offset, parent_offset_);
   IntRect visual_rect;
-  const LayoutSVGInlineText* svg_inline_text = nullptr;
+  const auto* const svg_inline_text =
+      DynamicTo<LayoutSVGInlineText>(layout_object);
   float scaling_factor = 1.0f;
-  if (text_item.Type() == NGFragmentItem::kSvgText) {
-    svg_inline_text = To<LayoutSVGInlineText>(layout_object);
+  if (UNLIKELY(svg_inline_text)) {
+    DCHECK_EQ(text_item.Type(), NGFragmentItem::kSvgText);
     scaling_factor = svg_inline_text->ScalingFactor();
     DCHECK_NE(scaling_factor, 0.0f);
     visual_rect = EnclosingIntRect(
         svg_inline_text->Parent()->VisualRectInLocalSVGCoordinates());
   } else {
+    DCHECK_NE(text_item.Type(), NGFragmentItem::kSvgText);
     PhysicalRect ink_overflow = text_item.SelfInkOverflow();
     ink_overflow.Move(box_rect.offset);
     visual_rect = EnclosingIntRect(ink_overflow);
@@ -194,7 +196,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       AsDisplayItemClient(cursor_, selection.has_value());
 
   // Ensure the selection bounds are recorded on the paint chunk regardless of
-  // whether the diplay item that contains the actual selection painting is
+  // whether the display item that contains the actual selection painting is
   // reused.
   absl::optional<SelectionBoundsRecorder> selection_recorder;
   if (UNLIKELY(selection && paint_info.phase == PaintPhase::kForeground &&
@@ -213,12 +215,14 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   if (paint_info.phase != PaintPhase::kTextClip) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, display_item_client, paint_info.phase)) {
-      return;
+    if (LIKELY(!paint_info.context.InDrawingRecorder())) {
+      if (DrawingRecorder::UseCachedDrawingIfPossible(
+              paint_info.context, display_item_client, paint_info.phase)) {
+        return;
+      }
+      recorder.emplace(paint_info.context, display_item_client,
+                       paint_info.phase, visual_rect);
     }
-    recorder.emplace(paint_info.context, display_item_client, paint_info.phase,
-                     visual_rect);
   }
 
   if (UNLIKELY(text_item.IsSymbolMarker())) {

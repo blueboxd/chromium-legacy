@@ -221,7 +221,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'ebf756983dd87bb84e690aba63893a759ba3af79',
+  'angle_revision': '222a81cfaaf0be64e64fe1e8ec04753e287532fe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9245dae50bec767c776dadbbb690331975512389',
+  'devtools_frontend_revision': '32dbb6aed46d6f1c0b8ca4da8a026fc718ee4771',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '5a53eb3113f1f6e0d660f9ef9ecee8a32213da97',
+  'dawn_revision': '2ee28d304f29f2e6cc87e694dafb4fb0865bcde7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -573,7 +573,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '07075f8e7a9e8db5422cd62b37e7f93967292d8f',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '906a507ab0798635cd30b79e7fd250b218baeca9',
       'condition': 'checkout_ios',
   },
 
@@ -643,7 +643,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'fUHNjtOsTXQPpZZSCbVSpBzwT1UEOifKZOdnCIEcuiAC',
+          'version': 'HJ5WX9m9IRp-i-dwELd8m8uHBwGrJtFAaG_oW2iWudIC',
         },
       ],
       'dep_type': 'cipd',
@@ -654,7 +654,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': '6E_C3M-uXDzoEFijqiH_UQgFu35eSqZj0nA0I8XWnKYC',
+          'version': 'Z-XppDheYczWBhNLlI4aMsMmF7vV0J6jLyDFS5ZAA4YC',
         },
       ],
       'dep_type': 'cipd',
@@ -665,7 +665,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'mKdjsaIEiqF8OQx_o8e82_ujIkVb80jizxrnxLZiZuIC',
+          'version': 'Talp03PoEew7c6myLoqBPXIni-4umVZgbRxi3LxvOJ8C',
         },
       ],
       'dep_type': 'cipd',
@@ -1335,7 +1335,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '0f37d8d302ee7da5c2ed5eafb93898709b9a0d9c',
+    Var('chromium_git') + '/openscreen' + '@' + '423f5afa0824473d502cc0d66f007ea000890df8',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1441,7 +1441,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'gfelhsY7VgvfD42f6dk62r6yT6yAjzWSGKAIOUd0le4C'
+              'version': 'KF0Sz0CG_sURJodN44_YMwy0VU9tagOFFB_3EDTux1kC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1645,7 +1645,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c46c4bd28033db996721551b8820a5b0d817b77e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8c2724d5d7cf467862c4f90086723b4f7444c471',
     'condition': 'checkout_src_internal',
   },
 

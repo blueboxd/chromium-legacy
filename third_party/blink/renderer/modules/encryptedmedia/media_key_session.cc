@@ -28,6 +28,7 @@
 #include <cmath>
 #include <limits>
 
+#include "media/base/content_decryption_module.h"
 #include "media/base/eme_constants.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
@@ -105,6 +107,22 @@ static bool IsPersistentSessionType(WebEncryptedMediaSessionType session_type) {
 
   NOTREACHED();
   return false;
+}
+
+V8MediaKeySessionClosedReason::Enum ConvertSessionClosedReason(
+    media::CdmSessionClosedReason reason) {
+  switch (reason) {
+    case media::CdmSessionClosedReason::kInternalError:
+      return V8MediaKeySessionClosedReason::Enum::kInternalError;
+    case media::CdmSessionClosedReason::kClose:
+      return V8MediaKeySessionClosedReason::Enum::kClosedByApplication;
+    case media::CdmSessionClosedReason::kReleaseAcknowledged:
+      return V8MediaKeySessionClosedReason::Enum::kReleaseAcknowledged;
+    case media::CdmSessionClosedReason::kHardwareContextReset:
+      return V8MediaKeySessionClosedReason::Enum::kHardwareContextReset;
+    case media::CdmSessionClosedReason::kResourceEvicted:
+      return V8MediaKeySessionClosedReason::Enum::kResourceEvicted;
+  }
 }
 
 static ScriptPromise CreateRejectedPromiseNotCallable(
@@ -846,7 +864,7 @@ void MediaKeySession::ActionTimerFired(TimerBase*) {
 }
 
 // Queue a task to fire a simple event named keymessage at the new object.
-void MediaKeySession::OnSessionMessage(MessageType message_type,
+void MediaKeySession::OnSessionMessage(media::CdmMessageType message_type,
                                        const unsigned char* message,
                                        size_t message_length) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
@@ -864,20 +882,16 @@ void MediaKeySession::OnSessionMessage(MessageType message_type,
 
   MediaKeyMessageEventInit* init = MediaKeyMessageEventInit::Create();
   switch (message_type) {
-    case WebContentDecryptionModuleSession::Client::MessageType::
-        kLicenseRequest:
+    case media::CdmMessageType::LICENSE_REQUEST:
       init->setMessageType("license-request");
       break;
-    case WebContentDecryptionModuleSession::Client::MessageType::
-        kLicenseRenewal:
+    case media::CdmMessageType::LICENSE_RENEWAL:
       init->setMessageType("license-renewal");
       break;
-    case WebContentDecryptionModuleSession::Client::MessageType::
-        kLicenseRelease:
+    case media::CdmMessageType::LICENSE_RELEASE:
       init->setMessageType("license-release");
       break;
-    case WebContentDecryptionModuleSession::Client::MessageType::
-        kIndividualizationRequest:
+    case media::CdmMessageType::INDIVIDUALIZATION_REQUEST:
       init->setMessageType("individualization-request");
       break;
   }
@@ -890,7 +904,7 @@ void MediaKeySession::OnSessionMessage(MessageType message_type,
   async_event_queue_->EnqueueEvent(FROM_HERE, *event);
 }
 
-void MediaKeySession::OnSessionClosed() {
+void MediaKeySession::OnSessionClosed(media::CdmSessionClosedReason reason) {
   // Note that this is the event from the CDM when this session is actually
   // closed. The CDM can close a session at any time. Normally it would happen
   // as the result of a close() call, but also happens when update() has been
@@ -916,7 +930,12 @@ void MediaKeySession::OnSessionClosed() {
   OnSessionExpirationUpdate(std::numeric_limits<double>::quiet_NaN());
 
   // 7. Resolve promise.
-  closed_promise_->ResolveWithUndefined();
+  if (RuntimeEnabledFeatures::EncryptedMediaSessionClosedReasonEnabled()) {
+    closed_promise_->Resolve(
+        V8MediaKeySessionClosedReason(ConvertSessionClosedReason(reason)));
+  } else {
+    closed_promise_->ResolveWithUndefined();
+  }
 
   // Stop the CDM from firing any more events for this session.
   session_.reset();

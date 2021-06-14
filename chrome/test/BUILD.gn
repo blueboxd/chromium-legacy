@@ -1859,6 +1859,7 @@ if (!is_android) {
       "../browser/ui/views/direct_sockets_connection_bubble_dialog_browsertest.cc",
       "../browser/ui/views/eye_dropper/eye_dropper_browsertest.cc",
       "../browser/ui/views/hats/hats_browsertest.cc",
+      "../browser/ui/views/incognito_clear_browsing_data_dialog_browsertest.cc",
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/reader_mode/reader_mode_icon_view_browsertest.cc",
       "../browser/ui/views/sharing/click_to_call_browsertest.cc",
@@ -4301,7 +4302,6 @@ test("unit_tests") {
     # TODO(crbug.com/1186446): move p_s_d_impl_unittest.cc to the same directory
     # as presentation_service_delegate_impl.* files.
     "../browser/media/router/presentation/presentation_service_delegate_impl_unittest.cc",
-    "../browser/media/webrtc/camera_pan_tilt_zoom_permission_context_unittest.cc",
     "../browser/media/webrtc/media_stream_device_permission_context_unittest.cc",
     "../browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc",
     "../browser/metrics/chrome_metrics_extensions_helper_unittest.cc",
@@ -4992,6 +4992,7 @@ test("unit_tests") {
     "//components/ukm/content",
     "//components/variations:test_support",
     "//components/version_info:generate_version_info",
+    "//components/webrtc",
     "//content/app/resources",
     "//content/public/app",
     "//content/test:test_support",
@@ -5065,6 +5066,7 @@ test("unit_tests") {
       "../browser/signin/dice_web_signin_interceptor_unittest.cc",
       "../browser/signin/process_dice_header_delegate_impl_unittest.cc",
       "../browser/signin/signin_manager_unittest.cc",
+      "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
       "../browser/ui/views/profiles/dice_web_signin_interception_bubble_view_unittest.cc",
       "../browser/ui/views/profiles/profile_customization_bubble_sync_controller_unittest.cc",
       "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
@@ -5404,7 +5406,6 @@ test("unit_tests") {
       "../browser/ui/omnibox/clipboard_utils_unittest.cc",
       "../browser/ui/omnibox/omnibox_pedals_unittest.cc",
       "../browser/ui/page_info/permission_menu_model_unittest.cc",
-      "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/auto_sign_in_bubble_controller_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/generation_confirmation_bubble_controller_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/items_bubble_controller_unittest.cc",
@@ -5738,7 +5739,6 @@ test("unit_tests") {
   if (is_chromeos_ash) {
     sources -= [
       "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
-      "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
       "../browser/ui/webui/settings/settings_manage_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/profile_picker_handler_unittest.cc",
 
@@ -6551,14 +6551,6 @@ test("unit_tests") {
       ":test_proto",
       "../common/safe_browsing:mock_binary_feature_extractor",
       "//chrome/services/file_util/public/cpp:unit_tests",
-      "//components/safe_browsing/content/renderer:websocket_sb_handshake_throttle_unittest",
-      "//components/safe_browsing/content/triggers:ad_redirect_trigger",
-      "//components/safe_browsing/core:features_unittest",
-      "//components/safe_browsing/core:ping_manager_unittest",
-      "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
-      "//components/safe_browsing/core/browser/download:unittests",
-      "//components/safe_browsing/core/browser/sync:unittests",
-      "//components/safe_browsing/core/db:v4_test_util",
     ]
   } else if (safe_browsing_mode == 2 && is_android) {
     sources += [ "../browser/safe_browsing/telemetry/android/android_telemetry_service_unittest.cc" ]

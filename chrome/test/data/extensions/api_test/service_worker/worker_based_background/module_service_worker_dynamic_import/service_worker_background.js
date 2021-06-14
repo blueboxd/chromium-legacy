@@ -4,4 +4,4 @@
 
 // We expect this import to fail as dynamic import is rejected on
 // ServiceWorkerGlobalScope.
-importScript('./empty.js');
+import('./empty.js');

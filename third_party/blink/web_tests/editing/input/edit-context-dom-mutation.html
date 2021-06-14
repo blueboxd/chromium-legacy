@@ -5,6 +5,51 @@
 </head>
 <body>
 <script>
+  test(() => {
+    let div = document.createElement("div");
+    document.body.appendChild(div);
+    let divText = "Hello World";
+    div.innerText = divText;
+    div.editContext = new EditContext();
+    div.focus();
+
+    let got_delete_by_drag = false;
+    let got_insert_from_drop = false;
+    div.addEventListener('beforeinput', (event) => {
+      if (event.inputType == 'deleteByDrag') {
+        got_delete_by_drag = true;
+      } else if (event.inputType == 'insertFromDrop') {
+        got_insert_from_drop = true;
+        assert_equals(event.dataTransfer.getData('text/plain'), 'Hello');
+      }
+    });
+
+    // select 'Hello'
+    textNode = div.childNodes[0];
+    let range = document.createRange();
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, 5);
+    let selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    // drag 'hello'
+    x = div.offsetLeft + 10;
+    y = div.offsetTop + div.offsetHeight / 2;
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    // and drop it off to the right
+    eventSender.leapForward(500);
+    eventSender.mouseMoveTo(div.offsetLeft +
+    div.offsetWidth - 20, y);
+    eventSender.mouseUp();
+
+    assert_equals(div.innerText, divText, "DOM shouldn't be modified.");
+    assert_equals(got_delete_by_drag, true, "The beforeinput event, deleteByDrag, should be fired.");
+    assert_equals(got_insert_from_drop, true, "The beforeinput event, insertFromDrop, should be fired.");
+
+    document.body.removeChild(div);
+  }, "EditContext should disable DOM mutation from Drag and Drop");
+
   let onMacPlatform = navigator.userAgent.search(/\bMac OS X\b/) != -1;
   if (onMacPlatform) {
     formatCommands = [{'modifier': 'metaKey', 'key': 'b', 'command': 'formatBold'},
@@ -35,7 +80,7 @@
       });
 
       window.getSelection().selectAllChildren(div);
-      eventSender.keyDown(testcase['key'], [testcase['modifier']]);
+      eventSender.keyDown(testcase['key'], testcase['modifier']);
       assert_equals(div.childNodes[0].nodeType, Node.TEXT_NODE, "DOM shouldn't be modified, i.e. no extra <b>, <i> or <u>");
       assert_equals(got_before_input_event, true, "The beforeinput event should be fired.");
 
@@ -80,6 +125,7 @@
     formatCommands = [{'modifier': 'shiftKey', 'key': 'Insert', 'command': 'insertFromPaste'}];
   } else {
     formatCommands = [{'modifier': 'shiftKey', 'key': 'Insert', 'command': 'insertFromPaste'},
+                      {'modifier': ['shiftKey', 'ctrlKey'], 'key': 'v', 'command': 'insertFromPaste'},
                       {'modifier': 'ctrlKey', 'key': 'v', 'command': 'insertFromPaste'}];
   }
 
@@ -106,12 +152,36 @@
       eventSender.keyDown('c', ['ctrlKey']);
       window.getSelection().collapse(div);
       // paste 'abc' at the begining.
-      eventSender.keyDown(testcase['key'], [testcase['modifier']]);
+      eventSender.keyDown(testcase['key'], testcase['modifier']);
       assert_equals(div.innerText, myText, "DOM shouldn't be modified");
       assert_equals(got_before_input_event, true, "The beforeinput event should be fired.");
 
       document.body.removeChild(div);
     }, "EditContext should disable DOM mutation from " + testcase['modifier'] + " + " + testcase['key']);
   });
+
+  test(() => {
+    let editContext = new EditContext();
+    let div = document.createElement("div");
+    document.body.appendChild(div);
+    let myText = "appla";
+    div.innerHTML = myText;
+    div.editContext = editContext;
+    div.focus();
+
+    // The beforeinput event should be fired as usual.
+    div.addEventListener('beforeinput', (event) => {
+      assert_equals(event.inputType, 'insertReplacementText');
+      assert_equals(event.dataTransfer.getData('text/plain'), 'apple');
+      assert_equals(event.getTargetRanges().length, 1);
+    });
+
+    let selection = window.getSelection();
+    selection.collapse(div, 0);
+    selection.extend(div, 1);
+    internals.setMarker(document, selection.getRangeAt(0), 'Spelling');
+    internals.replaceMisspelled(document, 'apple');
+    assert_equals(div.innerText, myText, "DOM shouldn't be modified");
+  }, "EditContext should disable DOM mutation from spellcheck");
 </script>
 </body>

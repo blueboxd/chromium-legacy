@@ -59,6 +59,9 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   // Invoked by controller to notify |window| visibility is changed.
   void HandleWindowVisibilityChanged(aura::Window* window);
 
+  // Invoked by controller to notify |window| activated is changed.
+  void HandleWindowActivatedChanged(aura::Window* window);
+
   // Invoked by controller to notify |window| is destroying.
   void HandleWindowDestroying(aura::Window* window);
 
@@ -96,6 +99,8 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
 
   int active_task_id() const { return active_task_id_; }
 
+  int active_session_id() const { return active_session_id_; }
+
  private:
   using TaskIdToArcAppWindowInfo =
       std::map<int, std::unique_ptr<ArcAppWindowInfo>>;
@@ -109,9 +114,10 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
       std::map<arc::ArcAppShelfId, AppServiceAppWindowShelfItemController*>;
 
   // Checks |arc_window_candidates_| and attaches controller when they
-  // are ARC app windows and have task id.
+  // are ARC app windows and have task id or session id.
   void CheckAndAttachControllers();
   void AttachControllerToTask(int taskId);
+  void AttachControllerToSession(int session_id);
 
   // arc::ArcSessionManagerObserver:
   void OnArcOptInManagementCheckStarted() override;
@@ -157,6 +163,7 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   std::set<aura::Window*> arc_window_candidates_;
 
   int active_task_id_ = arc::kNoTaskId;
+  int active_session_id_ = arc::kNoTaskId;
 
   // The time when the ARC OptIn management check was started. This happens
   // right after user agrees the ToS or in some cases for managed user when ARC

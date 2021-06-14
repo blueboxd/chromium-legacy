@@ -376,7 +376,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '950faeeabc1ee25569e62ec4ce749f013169482d',
+  'libunwind_revision':    '7e85c7a26be09db769732d59a829cc0d310e3ef6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1645,7 +1645,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@64ecfbba1ef486d44153e64ca3fd4eb4e55e6906',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b90ef32f0fb5f8672889e883c4585cb50d8f54ce',
     'condition': 'checkout_src_internal',
   },
 
@@ -1675,7 +1675,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'xgCzgrwId_Pm-88P7Z3gUzNZBaD34KMHJ1bL3q-WdtMC',
+        'version': 'n-lStNG-D7Fpiih0AwpOYIk6nDT8zKB0l6OXwR5mCfoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

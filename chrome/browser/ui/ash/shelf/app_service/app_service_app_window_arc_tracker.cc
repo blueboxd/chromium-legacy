@@ -99,6 +99,12 @@ void AppServiceAppWindowArcTracker::HandleWindowVisibilityChanged(
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
 }
 
+void AppServiceAppWindowArcTracker::HandleWindowActivatedChanged(
+    aura::Window* window) {
+  OnTaskSetActive(active_task_id_);
+  active_session_id_ = arc::GetWindowSessionId(window).value_or(arc::kNoTaskId);
+}
+
 void AppServiceAppWindowArcTracker::HandleWindowDestroying(
     aura::Window* window) {
   app_service_controller_->UnregisterWindow(window);
@@ -111,8 +117,11 @@ void AppServiceAppWindowArcTracker::HandleWindowDestroying(
     info->set_window(nullptr);
 
   auto session_id = arc::GetWindowSessionId(window);
-  if (session_id.has_value())
+  if (session_id.has_value()) {
     session_id_to_arc_app_window_info_.erase(*session_id);
+    if (session_id == active_session_id_)
+      active_session_id_ = arc::kNoTaskId;
+  }
 }
 
 void AppServiceAppWindowArcTracker::OnAppStatesChanged(
@@ -144,6 +153,18 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
       arc::ArcAppShelfId::FromIntentAndAppId(intent, arc_app_id);
   task_id_to_arc_app_window_info_[task_id] = std::make_unique<ArcAppWindowInfo>(
       arc_app_shelf_id, intent, package_name);
+
+  // If there is a ghost window for `session_id`, reuse the ghost window info,
+  // and clear the ghost window info from `session_id_to_arc_app_window_info_`,
+  // and reset `active_session_id_`.
+  auto it = session_id_to_arc_app_window_info_.find(session_id);
+  if (it != session_id_to_arc_app_window_info_.end()) {
+    task_id_to_arc_app_window_info_[task_id]->set_window(it->second->window());
+    session_id_to_arc_app_window_info_.erase(it);
+    if (session_id == active_session_id_)
+      active_session_id_ = arc::kNoTaskId;
+  }
+
   // Hide from shelf if there already is some task representing the window.
   if (GetTaskIdSharingLogicalWindow(task_id) != arc::kNoTaskId)
     task_id_to_arc_app_window_info_[task_id]->set_hidden_from_shelf(true);
@@ -317,14 +338,11 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   if (*task_or_session_id == arc::kSystemWindowTaskId)
     return;
 
-  auto it = task_id_to_arc_app_window_info_.find(*task_or_session_id);
-  if (it == task_id_to_arc_app_window_info_.end())
+  ArcAppWindowInfo* const info = GetArcAppWindowInfo(window);
+  if (!info)
     return;
 
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
-
-  ArcAppWindowInfo* const info = it->second.get();
-  DCHECK(info);
 
   // Check if we have set the AppWindowBase for this task.
   if (app_service_controller_->GetAppWindow(window))
@@ -334,7 +352,14 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   DCHECK(widget);
   info->set_window(window);
   const ash::ShelfID shelf_id = info->shelf_id();
-  AttachControllerToTask(*task_or_session_id);
+
+  const auto task_id = arc::GetWindowTaskId(window);
+  const auto session_id = arc::GetWindowSessionId(window);
+  if (task_id.has_value())
+    AttachControllerToTask(*task_id);
+  else if (session_id.has_value())
+    AttachControllerToSession(*session_id);
+
   app_service_controller_->AddWindowToShelf(window, shelf_id);
   AppWindowBase* app_window = app_service_controller_->GetAppWindow(window);
   if (app_window)
@@ -415,6 +440,31 @@ void AppServiceAppWindowArcTracker::AttachControllerToTask(int task_id) {
                                                     ash::STATUS_RUNNING);
   }
   item_controller->AddTaskId(task_id);
+  app_shelf_group_to_controller_map_[app_shelf_id] = item_controller;
+}
+
+void AppServiceAppWindowArcTracker::AttachControllerToSession(int session_id) {
+  ArcAppWindowInfo* const app_window_info =
+      session_id_to_arc_app_window_info_[session_id].get();
+  const arc::ArcAppShelfId& app_shelf_id = app_window_info->app_shelf_id();
+  if (base::Contains(app_shelf_group_to_controller_map_, app_shelf_id))
+    return;
+
+  const ash::ShelfID shelf_id(app_shelf_id.ToString());
+  std::unique_ptr<AppServiceAppWindowShelfItemController> controller =
+      std::make_unique<AppServiceAppWindowShelfItemController>(
+          shelf_id, app_service_controller_);
+  AppServiceAppWindowShelfItemController* item_controller = controller.get();
+
+  if (!app_service_controller_->owner()->GetItem(shelf_id)) {
+    app_service_controller_->owner()->CreateAppItem(std::move(controller),
+                                                    ash::STATUS_RUNNING);
+  } else {
+    app_service_controller_->owner()->shelf_model()->SetShelfItemDelegate(
+        shelf_id, std::move(controller));
+    app_service_controller_->owner()->SetItemStatus(shelf_id,
+                                                    ash::STATUS_RUNNING);
+  }
   app_shelf_group_to_controller_map_[app_shelf_id] = item_controller;
 }
 

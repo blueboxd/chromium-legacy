@@ -77,7 +77,7 @@ luci.cq_group(
         repo = "https://chromium.googlesource.com/chromium/src",
         refs = [branches.value(
             # The chromium project's CQ covers all of the refs under refs/heads,
-            # which includes refs/heads/master
+            # which includes refs/heads/main
             for_main = "refs/heads/.+",
             # For projects running out of a branch, the CQ only runs for that
             # ref
@@ -178,7 +178,16 @@ try_.builder(
     os = os.LINUX_BIONIC_REMOVE,
     properties = {
         "branch_script": "infra/config/scripts/branch.py",
-        "branch_types": ["standard", "lts"],
+        "branch_configs": [
+            {
+                "name": "standard",
+                "branch_types": ["standard"],
+            },
+            {
+                "name": "lts",
+                "branch_types": ["lts"],
+            },
+        ],
         "verification_scripts": ["infra/config/main.star", "infra/config/dev.star"],
     },
     tryjob = try_.job(
@@ -1156,7 +1165,7 @@ try_.chromium_linux_builder(
     builderless = False,
     goma_jobs = goma.jobs.J150,
     tryjob = try_.job(
-        experiment_percentage = 10,
+        experiment_percentage = 5,
     ),
     properties = {
         "bot_update_experiments": [

@@ -203,6 +203,7 @@
 #include "chrome/browser/webapps/android/features.h"
 #include "components/browser_ui/photo_picker/android/features.h"
 #include "components/browser_ui/site_settings/android/features.h"
+#include "components/content_creation/notes/core/note_features.h"
 #include "components/external_intents/android/external_intents_features.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -636,6 +637,12 @@ const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
     {"Time & Site Engagement", kCloseTabSuggestionsTimeSiteEngagement,
      base::size(kCloseTabSuggestionsTimeSiteEngagement), nullptr},
 };
+
+const FeatureEntry::FeatureParam kWebNoteStylizeRandomizeParam[] = {
+    {"randomize_order", "true"}};
+const FeatureEntry::FeatureVariation kWebNoteStylizeVariations[] = {
+    {"With Randomized Order", kWebNoteStylizeRandomizeParam,
+     base::size(kWebNoteStylizeRandomizeParam), nullptr}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
@@ -953,6 +960,33 @@ const FeatureEntry::FeatureVariation kMemoriesVariations[] = {
         "Visit Limit 200",
         (FeatureEntry::FeatureParam[]){{"MemoriesMaxVisitsToCluster", "200"}},
         1,
+        nullptr,
+    },
+    {
+        "Visit Limit 200, Experiment A",
+        (FeatureEntry::FeatureParam[]){
+            {"MemoriesExperimentName", "A"},
+            {"MemoriesMaxVisitsToCluster", "200"},
+        },
+        2,
+        nullptr,
+    },
+    {
+        "Visit Limit 200, Experiment B",
+        (FeatureEntry::FeatureParam[]){
+            {"MemoriesExperimentName", "B"},
+            {"MemoriesMaxVisitsToCluster", "200"},
+        },
+        2,
+        nullptr,
+    },
+    {
+        "Visit Limit 200, Experiment C",
+        (FeatureEntry::FeatureParam[]){
+            {"MemoriesExperimentName", "C"},
+            {"MemoriesMaxVisitsToCluster", "200"},
+        },
+        2,
         nullptr,
     },
     {
@@ -2650,10 +2684,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionsOnChromeUrlsDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)},
 #endif  // ENABLE_EXTENSIONS
-    {"enable-history-manipulation-intervention",
-     flag_descriptions::kHistoryManipulationIntervention,
-     flag_descriptions::kHistoryManipulationInterventionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kHistoryManipulationIntervention)},
     {"colr-v1-fonts", flag_descriptions::kCOLRV1FontsName,
      flag_descriptions::kCOLRV1FontsDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCOLRV1Fonts)},
@@ -3120,6 +3150,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"username-first-flow", flag_descriptions::kUsernameFirstFlowName,
      flag_descriptions::kUsernameFirstFlowDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlow)},
+    {"username-first-flow-filling",
+     flag_descriptions::kUsernameFirstFlowFillingName,
+     flag_descriptions::kUsernameFirstFlowFillingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlowFilling)},
     {"enable-show-autofill-signatures",
      flag_descriptions::kShowAutofillSignaturesName,
      flag_descriptions::kShowAutofillSignaturesDescription, kOsAll,
@@ -3284,7 +3318,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHub)},
     {"webnotes-stylize", flag_descriptions::kWebNotesStylizeName,
      flag_descriptions::kWebNotesStylizeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kWebNotesStylize)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(content_creation::kWebNotesStylizeEnabled,
+                                    kWebNoteStylizeVariations,
+                                    "WebNotesStylize")},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
@@ -5128,6 +5164,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersTranslationCloudAPIDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTranslationCloudAPI)},
+
+    {"enable-quick-answers-v2", flag_descriptions::kEnableQuickAnswersV2Name,
+     flag_descriptions::kEnableQuickAnswersV2Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersV2)},
 
     {kAssistantBetterOnboardingInternalName,
      flag_descriptions::kEnableAssistantBetterOnboardingName,
@@ -7145,15 +7185,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-generated-webapks", flag_descriptions::kEnableGeneratedWebApksName,
      flag_descriptions::kEnableGeneratedWebApksDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kWebApkGenerator)},
-
-    {"enable-projector-feature-pod",
-     flag_descriptions::kProjectorFeaturePodName,
-     flag_descriptions::kProjectorFeaturePodDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kProjectorFeaturePod)},
-
-    {"enable-projector-feature", flag_descriptions::kProjectorName,
-     flag_descriptions::kProjectorDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kProjector)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"use-passthrough-command-decoder",
@@ -7167,6 +7198,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFocusFollowsCursorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(::features::kFocusFollowsCursor)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"clipboard-custom-formats", flag_descriptions::kClipboardCustomFormatsName,
+     flag_descriptions::kClipboardCustomFormatsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kClipboardCustomFormats)},
 
     {"privacy-review", flag_descriptions::kPrivacyReviewName,
      flag_descriptions::kPrivacyReviewDescription, kOsDesktop,
@@ -7194,6 +7229,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"tab-restore-sub-menus", flag_descriptions::kTabRestoreSubMenusName,
      flag_descriptions::kTabRestoreSubMenusDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabRestoreSubMenus)},
+
+    {"chrome-whats-new-ui", flag_descriptions::kChromeWhatsNewUIName,
+     flag_descriptions::kChromeWhatsNewUIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kChromeWhatsNewUI)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

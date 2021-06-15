@@ -1076,7 +1076,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
           transform->Translation2D();
     }
   } else if (RuntimeEnabledFeatures::TransformInteropEnabled() &&
-             !object_.IsAnonymous()) {
+             object_.IsForElement()) {
     // With kTransformInterop enabled, 3D rendering contexts follow the
     // DOM ancestor chain, so flattening should apply regardless of
     // presence of transform.
@@ -2186,7 +2186,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       // to describe the bounds of the scrollable content.
       auto* frame_view = object_.GetFrameView();
       if (frame_view->HasStickyViewportConstrainedObject()) {
-        // TODO(crbug.com/1099379): Implement better sticky overlap testing.
+        // TODO(crbug.com/1117658): Implement better sticky overlap testing.
         frame_view->SetPaintArtifactCompositorNeedsUpdate();
       } else if (frame_view->HasViewportConstrainedObjects() &&
                  !frame_view->GetLayoutView()
@@ -2803,7 +2803,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
     UpdateFilter();
     UpdateOverflowControlsClip();
   } else if (RuntimeEnabledFeatures::TransformInteropEnabled() &&
-             !object_.IsAnonymous()) {
+             object_.IsForElement()) {
     // With kTransformInterop enabled, 3D rendering contexts follow the
     // DOM ancestor chain, so flattening should apply regardless of
     // presence of transform.

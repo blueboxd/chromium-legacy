@@ -247,6 +247,9 @@ extern const char kContextMenuSearchAndShopWithGoogleLensDescription[];
 extern const char kContextMenuTranslateWithGoogleLensName[];
 extern const char kContextMenuTranslateWithGoogleLensDescription[];
 
+extern const char kClipboardCustomFormatsName[];
+extern const char kClipboardCustomFormatsDescription[];
+
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
@@ -267,6 +270,9 @@ extern const char kChromeTipsInMainMenuDescription[];
 extern const char kChromeTipsInMainMenuNewBadgeName[];
 extern const char kChromeTipsInMainMenuNewBadgeDescription[];
 #endif
+
+extern const char kChromeWhatsNewUIName[];
+extern const char kChromeWhatsNewUIDescription[];
 
 extern const char kCompositingBasedThrottling[];
 extern const char kCompositingBasedThrottlingDescription[];
@@ -893,6 +899,9 @@ extern const char kUseOfHashAffiliationFetcherDescription[];
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
 
+extern const char kUsernameFirstFlowFillingName[];
+extern const char kUsernameFirstFlowFillingDescription[];
+
 extern const char kNewCanvas2DAPIName[];
 extern const char kNewCanvas2DAPIDescription[];
 
@@ -1281,9 +1290,6 @@ extern const char kShowOverdrawFeedbackDescription[];
 
 extern const char kSkiaRendererName[];
 extern const char kSkiaRendererDescription[];
-
-extern const char kHistoryManipulationIntervention[];
-extern const char kHistoryManipulationInterventionDescription[];
 
 extern const char kStorageAccessAPIName[];
 extern const char kStorageAccessAPIDescription[];
@@ -2508,6 +2514,9 @@ extern const char kEnableQuickAnswersTranslationDescription[];
 extern const char kEnableQuickAnswersTranslationCloudAPIName[];
 extern const char kEnableQuickAnswersTranslationCloudAPIDescription[];
 
+extern const char kEnableQuickAnswersV2Name[];
+extern const char kEnableQuickAnswersV2Description[];
+
 extern const char kPluginVmFullscreenName[];
 extern const char kPluginVmFullscreenDescription[];
 
@@ -2690,12 +2699,6 @@ extern const char kLimitShelfItemsToActiveDeskDescription[];
 
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];
-
-extern const char kProjectorFeaturePodName[];
-extern const char kProjectorFeaturePodDescription[];
-
-extern const char kProjectorName[];
-extern const char kProjectorDescription[];
 
 extern const char kEnableHardwareMirrorModeName[];
 extern const char kEnableHardwareMirrorModeDescription[];

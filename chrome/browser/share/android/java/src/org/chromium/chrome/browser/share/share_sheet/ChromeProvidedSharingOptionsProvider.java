@@ -344,7 +344,7 @@ class ChromeProvidedSharingOptionsProvider {
     }
 
     private FirstPartyOption createCopyImageFirstPartyOption() {
-        return new FirstPartyOptionBuilder(ContentType.IMAGE)
+        return new FirstPartyOptionBuilder(ContentType.IMAGE, ContentType.IMAGE_AND_LINK)
                 .setIcon(R.drawable.ic_content_copy_black, R.string.sharing_copy_image)
                 .setFeatureNameForMetrics("SharingHubAndroid.CopyImageSelected")
                 .setOnClickCallback((view) -> {
@@ -438,13 +438,14 @@ class ChromeProvidedSharingOptionsProvider {
     }
 
     private FirstPartyOption createWebNotesStylizeFirstPartyOption() {
+        String title = mTabProvider.get().getTitle();
         return new FirstPartyOptionBuilder(ContentType.HIGHLIGHTED_TEXT)
                 .setIcon(R.drawable.webnote, R.string.sharing_webnotes_stylized)
                 .setFeatureNameForMetrics("SharingHubAndroid.WebnotesStylize")
                 .setOnClickCallback((view) -> {
-                    NoteCreationCoordinator coordinator =
-                            NoteCreationCoordinatorFactory.create(mActivity, mTabProvider.get(),
-                                    mUrl, mShareParams.getText(), mChromeOptionShareCallback);
+                    NoteCreationCoordinator coordinator = NoteCreationCoordinatorFactory.create(
+                            mActivity, mTabProvider.get(), mUrl, title, mShareParams.getText(),
+                            mChromeOptionShareCallback);
                     coordinator.showDialog();
                 })
                 .build();

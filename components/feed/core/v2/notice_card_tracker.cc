@@ -5,13 +5,13 @@
 #include "components/feed/core/v2/notice_card_tracker.h"
 
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/v2/ios_shared_prefs.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
-namespace {
 
-int GetNoticeCardIndex() {
+int GetNoticeCardExpectedIndex() {
   // Infer that the notice card is at the 2nd position when the feature related
   // to putting the notice card at the second position is enabled.
   if (base::FeatureList::IsEnabled(
@@ -20,50 +20,6 @@ int GetNoticeCardIndex() {
   }
   return 0;
 }
-
-}  // namespace
-
-namespace prefs {
-
-void IncrementNoticeCardViewsCount(PrefService& pref_service) {
-  int count = pref_service.GetInteger(feed::prefs::kNoticeCardViewsCount);
-  pref_service.SetInteger(feed::prefs::kNoticeCardViewsCount, count + 1);
-}
-
-int GetNoticeCardViewsCount(const PrefService& pref_service) {
-  return pref_service.GetInteger(feed::prefs::kNoticeCardViewsCount);
-}
-
-void IncrementNoticeCardClicksCount(PrefService& pref_service) {
-  int count = pref_service.GetInteger(feed::prefs::kNoticeCardClicksCount);
-  pref_service.SetInteger(feed::prefs::kNoticeCardClicksCount, count + 1);
-}
-
-int GetNoticeCardClicksCount(const PrefService& pref_service) {
-  return pref_service.GetInteger(feed::prefs::kNoticeCardClicksCount);
-}
-
-void SetLastFetchHadNoticeCard(PrefService& pref_service, bool value) {
-  pref_service.SetBoolean(feed::prefs::kLastFetchHadNoticeCard, value);
-}
-
-bool GetLastFetchHadNoticeCard(const PrefService& pref_service) {
-  return pref_service.GetBoolean(feed::prefs::kLastFetchHadNoticeCard);
-}
-
-void SetHasReachedClickAndViewActionsUploadConditions(PrefService& pref_service,
-                                                      bool value) {
-  pref_service.SetBoolean(
-      feed::prefs::kHasReachedClickAndViewActionsUploadConditions, value);
-}
-
-bool GetHasReachedClickAndViewActionsUploadConditions(
-    const PrefService& pref_service) {
-  return pref_service.GetBoolean(
-      feed::prefs::kHasReachedClickAndViewActionsUploadConditions);
-}
-
-}  // namespace prefs
 
 NoticeCardTracker::NoticeCardTracker(PrefService* profile_prefs)
     : profile_prefs_(profile_prefs) {
@@ -98,12 +54,10 @@ bool NoticeCardTracker::HasAcknowledgedNoticeCard() const {
   if (!base::FeatureList::IsEnabled(feed::kInterestFeedNoticeCardAutoDismiss))
     return false;
 
-  base::AutoLock auto_lock_views(views_count_lock_);
   if (views_count_threshold_ > 0 && views_count_ >= views_count_threshold_) {
     return true;
   }
 
-  base::AutoLock auto_lock_clicks(clicks_count_lock_);
   if (clicks_count_threshold_ > 0 && clicks_count_ >= clicks_count_threshold_) {
     return true;
   }
@@ -120,7 +74,7 @@ bool NoticeCardTracker::HasNoticeCardActionsCountPrerequisites(int index) {
     return false;
   }
 
-  if (index != GetNoticeCardIndex()) {
+  if (index != GetNoticeCardExpectedIndex()) {
     return false;
   }
   return true;
@@ -131,7 +85,6 @@ void NoticeCardTracker::MaybeUpdateNoticeCardViewsCount(int index) {
     return;
 
   prefs::IncrementNoticeCardViewsCount(*profile_prefs_);
-  base::AutoLock auto_lock(views_count_lock_);
   views_count_++;
 }
 
@@ -140,7 +93,6 @@ void NoticeCardTracker::MaybeUpdateNoticeCardClicksCount(int index) {
     return;
 
   prefs::IncrementNoticeCardClicksCount(*profile_prefs_);
-  base::AutoLock auto_lock(clicks_count_lock_);
   clicks_count_++;
 }
 

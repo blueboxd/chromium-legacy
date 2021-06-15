@@ -91,7 +91,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -260,6 +259,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -284,6 +284,8 @@ class ChromePrintContext : public PrintContext {
  public:
   ChromePrintContext(LocalFrame* frame, bool use_printing_layout)
       : PrintContext(frame, use_printing_layout), printed_page_width_(0) {}
+  ChromePrintContext(const ChromePrintContext&) = delete;
+  ChromePrintContext& operator=(const ChromePrintContext&) = delete;
 
   ~ChromePrintContext() override = default;
 
@@ -464,8 +466,6 @@ class ChromePrintContext : public PrintContext {
   // Set when printing.
   float printed_page_width_;
   float printed_page_height_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromePrintContext);
 };
 
 // Simple class to override some of PrintContext behavior. This is used when
@@ -527,7 +527,10 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 
 class PaintPreviewContext : public PrintContext {
  public:
-  PaintPreviewContext(LocalFrame* frame) : PrintContext(frame, false) {}
+  explicit PaintPreviewContext(LocalFrame* frame)
+      : PrintContext(frame, false) {}
+  PaintPreviewContext(const PaintPreviewContext&) = delete;
+  PaintPreviewContext& operator=(const PaintPreviewContext&) = delete;
   ~PaintPreviewContext() override = default;
 
   bool Capture(cc::PaintCanvas* canvas,
@@ -577,9 +580,6 @@ class PaintPreviewContext : public PrintContext {
     canvas->drawPicture(builder.EndRecording(property_tree_state.Unalias()));
     return true;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewContext);
 };
 
 static WebDocumentLoader* DocumentLoaderForDocLoader(DocumentLoader* loader) {
@@ -1900,7 +1900,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
       base::PassKey<WebLocalFrameImpl>(),
       mojom::blink::TreeScopeType::kDocument, client, interface_registry,
       frame_token);
-  Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
+  Page& page = *To<WebViewImpl>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
   frame->InitializeCoreFrame(
       page, nullptr, nullptr, nullptr, FrameInsertType::kInsertInConstructor,

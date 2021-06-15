@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -76,9 +77,7 @@ class TestConsumer : public PageTextObserver::Consumer {
 
   bool was_called() const { return was_called_; }
 
-  absl::optional<PageTextDumpResult> result() {
-    return base::OptionalFromPtr(result_.get());
-  }
+  PageTextDumpResult* result() { return result_.get(); }
 
   // PageTextObserver::Consumer:
   std::unique_ptr<PageTextObserver::ConsumerTextDumpRequest>
@@ -99,7 +98,7 @@ class TestConsumer : public PageTextObserver::Consumer {
   std::unique_ptr<PageTextObserver::ConsumerTextDumpRequest> request_;
 
   base::OnceClosure on_page_text_closure_;
-  std::unique_ptr<PageTextDumpResult> result_;
+  std::unique_ptr<PageTextDumpResult> result_ = nullptr;
 };
 
 }  // namespace
@@ -210,9 +209,7 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, SimpleCaseNoSubframes) {
       }));
 }
 
-// Flaky. See crbug/1187264.
-IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest,
-                       DISABLED_FirstLayoutAndOnLoad) {
+IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, FirstLayoutAndOnLoad) {
   PageTextObserver::CreateForWebContents(web_contents());
   ASSERT_TRUE(observer());
 
@@ -220,9 +217,6 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest,
   // caused by the renderer never finishing the page load and is thus outside
   // the control of this feature. Thorough testing shows that this flake does
   // not repeat itself, so running the test an extra time is sufficient.
-  //
-  // If this test starts timing out or failing the |EXPECT_THAT| check, then
-  // that is indicative of a real issue.
   for (size_t i = 0; i < 2; i++) {
     TestConsumer first_layout_consumer;
     TestConsumer on_load_consumer;
@@ -256,30 +250,42 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest,
     }
 
     ASSERT_TRUE(first_layout_consumer.result());
-    EXPECT_THAT(
-        first_layout_consumer.result()->frame_results(),
-        ::testing::UnorderedElementsAreArray({
-            MakeFrameDump(
-                mojom::TextDumpEvent::kFirstLayout,
-                web_contents()->GetMainFrame()->GetGlobalFrameRoutingId(),
-                /*amp_frame=*/false,
-                web_contents()
-                    ->GetController()
-                    .GetVisibleEntry()
-                    ->GetUniqueID(),
-                u"hello"),
-            MakeFrameDump(
-                mojom::TextDumpEvent::kFinishedLoad,
-                web_contents()->GetMainFrame()->GetGlobalFrameRoutingId(),
-                /*amp_frame=*/false,
-                web_contents()
-                    ->GetController()
-                    .GetVisibleEntry()
-                    ->GetUniqueID(),
-                u"hello\n\nworld"),
-        }));
 
-    EXPECT_EQ(first_layout_consumer.result(), on_load_consumer.result());
+    bool has_first_layout_event = false;
+    bool has_finished_load_event = false;
+    for (const FrameTextDumpResult& result :
+         first_layout_consumer.result()->frame_results()) {
+      SCOPED_TRACE(result);
+
+      // These fields are the same for both events.
+      EXPECT_EQ(web_contents()->GetMainFrame()->GetGlobalFrameRoutingId(),
+                result.rfh_id());
+      EXPECT_FALSE(result.amp_frame());
+      EXPECT_EQ(
+          web_contents()->GetController().GetVisibleEntry()->GetUniqueID(),
+          result.unique_navigation_id());
+
+      ASSERT_TRUE(result.contents().has_value());
+      // The text that is dumped during first layout may or may not include the
+      // text that is dynamically added by the test page's JavaScript. Checking
+      // for text equality is inherently flaky, and this determinism is not a
+      // guarantee that we make to callers.
+      if (result.event() == mojom::TextDumpEvent::kFirstLayout) {
+        EXPECT_TRUE(base::Contains(*result.contents(), u"hello"));
+        has_first_layout_event = true;
+      }
+
+      // The finished load event is deterministic in what text should be
+      // populated on the page.
+      if (result.event() == mojom::TextDumpEvent::kFinishedLoad) {
+        EXPECT_EQ(u"hello\n\nworld", *result.contents());
+        has_finished_load_event = true;
+      }
+    }
+
+    EXPECT_TRUE(has_first_layout_event);
+    EXPECT_TRUE(has_finished_load_event);
+    EXPECT_EQ(*first_layout_consumer.result(), *on_load_consumer.result());
     return;
   }
   FAIL();
@@ -324,30 +330,42 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, OOPIFAMPSubframe) {
   }
 
   ASSERT_TRUE(consumer.result());
-  EXPECT_THAT(
-      consumer.result()->frame_results(),
-      ::testing::UnorderedElementsAreArray({
-          MakeFrameDump(
-              mojom::TextDumpEvent::kFirstLayout,
-              web_contents()->GetMainFrame()->GetGlobalFrameRoutingId(),
-              /*amp_frame=*/false,
-              web_contents()->GetController().GetVisibleEntry()->GetUniqueID(),
-              u"mainframe"),
-          MakeFrameDump(
-              mojom::TextDumpEvent::kFinishedLoad, amp_frame_id,
-              /*amp_frame=*/true,
-              web_contents()->GetController().GetVisibleEntry()->GetUniqueID(),
-              u"AMP"),
-      }));
+
+  bool has_amp_result = false;
+  bool has_mainframe_result = false;
+  for (const FrameTextDumpResult& result : consumer.result()->frame_results()) {
+    if (result.amp_frame()) {
+      EXPECT_EQ(mojom::TextDumpEvent::kFinishedLoad, result.event());
+      EXPECT_EQ(amp_frame_id, result.rfh_id());
+      EXPECT_EQ(
+          web_contents()->GetController().GetVisibleEntry()->GetUniqueID(),
+          result.unique_navigation_id());
+      // Sometimes blink adds trailing whitespace since there's another element
+      // on the page. Happens non-deterministically.
+      EXPECT_EQ(u"AMP",
+                std::u16string(base::TrimWhitespace(
+                    *result.contents(), base::TrimPositions::TRIM_ALL)));
+      has_amp_result = true;
+    } else {
+      EXPECT_EQ(mojom::TextDumpEvent::kFirstLayout, result.event());
+      EXPECT_EQ(web_contents()->GetMainFrame()->GetGlobalFrameRoutingId(),
+                result.rfh_id());
+      EXPECT_EQ(
+          web_contents()->GetController().GetVisibleEntry()->GetUniqueID(),
+          result.unique_navigation_id());
+      // Sometimes blink adds trailing whitespace since there's another element
+      // on the page. Happens non-deterministically.
+      EXPECT_EQ(u"mainframe",
+                std::u16string(base::TrimWhitespace(
+                    *result.contents(), base::TrimPositions::TRIM_ALL)));
+      has_mainframe_result = true;
+    }
+  }
+  EXPECT_TRUE(has_amp_result);
+  EXPECT_TRUE(has_mainframe_result);
 }
 
-// Disable due to flaky. https://crbug.com/1206352
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_OOPIFNotAmpSubframe DISABLED_OOPIFNotAmpSubframe
-#else
-#define MAYBE_OOPIFNotAmpSubframe OOPIFNotAmpSubframe
-#endif  // defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, MAYBE_OOPIFNotAmpSubframe) {
+IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, OOPIFNotAmpSubframe) {
   PageTextObserver::CreateForWebContents(web_contents());
   ASSERT_TRUE(observer());
 
@@ -371,16 +389,18 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, MAYBE_OOPIFNotAmpSubframe) {
 
   consumer.WaitForPageText();
   ASSERT_TRUE(consumer.result());
-  EXPECT_THAT(
-      consumer.result()->frame_results(),
-      ::testing::UnorderedElementsAreArray({
-          MakeFrameDump(
-              mojom::TextDumpEvent::kFirstLayout,
-              web_contents()->GetMainFrame()->GetGlobalFrameRoutingId(),
-              /*amp_frame=*/false,
-              web_contents()->GetController().GetVisibleEntry()->GetUniqueID(),
-              u"mainframe"),
-      }));
+  ASSERT_EQ(1U, consumer.result()->frame_results().size());
+
+  const auto& result = *consumer.result()->frame_results().begin();
+
+  EXPECT_EQ(mojom::TextDumpEvent::kFirstLayout, result.event());
+  EXPECT_EQ(web_contents()->GetMainFrame()->GetGlobalFrameRoutingId(),
+            result.rfh_id());
+  EXPECT_FALSE(result.amp_frame());
+  EXPECT_EQ(web_contents()->GetController().GetVisibleEntry()->GetUniqueID(),
+            result.unique_navigation_id());
+  EXPECT_EQ(u"mainframe", base::TrimWhitespace(*result.contents(),
+                                               base::TrimPositions::TRIM_ALL));
 }
 
 class PageTextObserverSingleProcessBrowserTest

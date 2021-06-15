@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.content_creation.notes;
 
 import android.app.Dialog;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -33,6 +35,8 @@ public class NoteCreationDialog extends DialogFragment {
     private static final float NOTE_PADDING_RATIO = 0.25f;
 
     private View mContentView;
+    private String mUrlDomain;
+    private String mTitle;
     private String mSelectedText;
     private int mSelectedItemIndex;
 
@@ -41,8 +45,11 @@ public class NoteCreationDialog extends DialogFragment {
     }
     private NoteDialogObserver mNoteDialogObserver;
 
-    public void initDialog(NoteDialogObserver noteDialogObserver, String selectedText) {
+    public void initDialog(NoteDialogObserver noteDialogObserver, String urlDomain, String title,
+            String selectedText) {
         mNoteDialogObserver = noteDialogObserver;
+        mUrlDomain = urlDomain;
+        mTitle = title;
         mSelectedText = selectedText;
     }
 
@@ -117,8 +124,24 @@ public class NoteCreationDialog extends DialogFragment {
         Typeface typeface = model.get(NoteProperties.TYPEFACE);
         TextView noteText = (TextView) parent.findViewById(R.id.text);
         noteText.setTypeface(typeface);
-
         template.textStyle.apply(noteText, mSelectedText);
+
+        if (template.contentBackground != null) {
+            template.contentBackground.apply(noteText);
+        } else {
+            GradientDrawable drawable = (GradientDrawable) noteText.getBackground();
+            drawable.mutate();
+            drawable.setColor(null);
+            drawable.setColors(null);
+        }
+
+        TextView footerLink = (TextView) parent.findViewById(R.id.footer_link);
+        TextView footerTitle = (TextView) parent.findViewById(R.id.footer_title);
+        ImageView footerIcon = (ImageView) parent.findViewById(R.id.footer_icon);
+        footerLink.setText(mUrlDomain);
+        footerTitle.setText(mTitle);
+
+        template.footerStyle.apply(footerLink, footerTitle, footerIcon);
 
         setLeftPadding(model.get(NoteProperties.IS_FIRST), parent.findViewById(R.id.item));
     }

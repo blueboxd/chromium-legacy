@@ -582,6 +582,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "chrome-whats-new-ui",
+    "owners": [ "rbpotter" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "chromeos-direct-video-decoder",
     "owners": [ "chromeos-gfx-video@google.com" ],
     // TODO(b/159825227): remove when the "old" video decoder is fully launched.
@@ -610,6 +615,11 @@
       "chrome-friendly-settings@google.com"
     ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "clipboard-custom-formats",
+    "owners": ["huangdarwin", "snianu@microsoft.com"],
+    "expiry_milestone": 94
   },
   {
     "name": "collections-card-presentation-style",
@@ -1879,11 +1889,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-history-manipulation-intervention",
-    "owners": [ "shivanisha" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-hosted-app-quit-notification",
     "owners": [ "ccameron" ],
     "expiry_milestone": 77
@@ -2233,16 +2238,6 @@
     "expiry_milestone": 80
   },
   {
-    "name" : "enable-projector-feature",
-    "owners" : [ "cros-families-eng@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
-    "name" : "enable-projector-feature-pod",
-    "owners" : [ "cros-families-eng@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "enable-quic",
     "owners": [ "//net/quic/OWNERS" ],
     // This flag is used by network administrators to debug
@@ -2278,6 +2273,11 @@
     "name": "enable-quick-answers-translation-cloud-api",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "enable-quick-answers-v2",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-reader-mode",
@@ -5279,8 +5279,13 @@
   },
   {
     "name": "username-first-flow",
-    "owners": [ "jdoerrie" ],
-    "expiry_milestone": 92
+    "owners": [ "kazinova@google.com", "kolos" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "username-first-flow-filling",
+    "owners": [ "kazinova@google.com", "kolos" ],
+    "expiry_milestone": 95
   },
   {
     "name": "video-tutorials",

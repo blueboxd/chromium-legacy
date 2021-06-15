@@ -423,6 +423,11 @@ const char kContextMenuTranslateWithGoogleLensName[] =
 const char kContextMenuTranslateWithGoogleLensDescription[] =
     "Enable a chip for a Translate intent into Google Lens when supported.";
 
+const char kClipboardCustomFormatsName[] = "Clipboard Custom Formats";
+const char kClipboardCustomFormatsDescription[] =
+    "Allows read/write of custom formats with unsanitized clipboard content. "
+    "See crbug.com/106449";
+
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
@@ -454,6 +459,11 @@ const char kChromeTipsInMainMenuNewBadgeDescription[] =
     "Enables 'New' promo badge on 'Tips for Chrome' in main menu; experiment to"
     " test the value of this user education feature.";
 #endif
+
+const char kChromeWhatsNewUIName[] =
+    "Show Chrome What's New page at chrome://whats-new";
+const char kChromeWhatsNewUIDescription[] =
+    "Enables Chrome What's New page at chrome://whats-new.";
 
 const char kCompositingBasedThrottling[] = "Compositing-based Throttling";
 const char kCompositingBasedThrottlingDescription[] =
@@ -2235,12 +2245,6 @@ const char kSkiaRendererDescription[] =
     "If enabled, the display compositor will use Skia as the graphics API "
     "instead of OpenGL ES.";
 
-const char kHistoryManipulationIntervention[] =
-    "History Manipulation Intervention";
-const char kHistoryManipulationInterventionDescription[] =
-    "If a page does a client side redirect or adds to the history without a "
-    "user gesture, then skip it on back/forward UI.";
-
 const char kIsolateOriginsName[] = "Isolate additional origins";
 const char kIsolateOriginsDescription[] =
     "Requires dedicated processes for an additional set of origins, "
@@ -2550,8 +2554,14 @@ const char kUseOfHashAffiliationFetcherDescription[] =
     "All requests to the affiliation fetcher are made through the hash prefix "
     "lookup. Enables use of Hash Affiliation Service for non-synced users.";
 
-const char kUsernameFirstFlowName[] = "Username first flow";
+const char kUsernameFirstFlowName[] = "Username first flow voting";
 const char kUsernameFirstFlowDescription[] =
+    "Support of sending votes on username first flow i.e. login "
+    "flows where a user has to type username first on one page and then "
+    "password on another page";
+
+const char kUsernameFirstFlowFillingName[] = "Username first flow filling";
+const char kUsernameFirstFlowFillingDescription[] =
     "Support of username saving and filling on username first flow i.e. login "
     "flows where a user has to type username first on one page and then "
     "password on another page";
@@ -4363,6 +4373,10 @@ const char kEnableQuickAnswersTranslationCloudAPIName[] =
 const char kEnableQuickAnswersTranslationCloudAPIDescription[] =
     "Enable Quick Answers translation using the Cloud API.";
 
+const char kEnableQuickAnswersV2Name[] = "Enable Quick Answers V2 features";
+const char kEnableQuickAnswersV2Description[] =
+    "Enable Quick Answers V2 features.";
+
 const char kTrimOnFreezeName[] = "Trim Working Set on freeze";
 const char kTrimOnFreezeDescription[] = "Trim Working Set on all frames frozen";
 
@@ -4643,14 +4657,6 @@ const char kLimitShelfItemsToActiveDeskDescription[] =
 const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =
     "Enables listing all external displays' modes in the display settings.";
-
-const char kProjectorFeaturePodName[] = "Show Projector In System Tray";
-const char kProjectorFeaturePodDescription[] =
-    "Enables showing the projector feature pod in system stray";
-
-const char kProjectorName[] = "Enable the Projector feature";
-const char kProjectorDescription[] =
-    "Enables projector feature flag to be used";
 
 const char kEnableHardwareMirrorModeName[] = "Enable Hardware Mirror Mode";
 const char kEnableHardwareMirrorModeDescription[] =

@@ -62,6 +62,7 @@
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/common/input/web_touch_point.h"
+#include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "third_party/pdfium/public/fpdf_attachment.h"
@@ -728,10 +729,6 @@ bool PDFiumEngine::HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) {
   return true;
 }
 
-pp::Instance* PDFiumEngine::GetPluginInstance() {
-  return client_->GetPluginInstance();
-}
-
 std::unique_ptr<URLLoaderWrapper> PDFiumEngine::CreateURLLoader() {
   return std::make_unique<URLLoaderWrapperImpl>(client_->CreateUrlLoader());
 }
@@ -969,79 +966,48 @@ void PDFiumEngine::PrintBegin() {
   FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_WP);
 }
 
-pp::Resource PDFiumEngine::PrintPages(
-    const PP_PrintPageNumberRange_Dev* page_ranges,
-    uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  if (!page_range_count)
-    return pp::Resource();
+std::vector<uint8_t> PDFiumEngine::PrintPages(
+    const std::vector<int>& page_numbers,
+    const blink::WebPrintParams& print_params) {
+  if (page_numbers.empty())
+    return std::vector<uint8_t>();
 
-  if ((print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
-      HasPermission(PERMISSION_PRINT_HIGH_QUALITY)) {
-    return PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                           pdf_print_settings);
-  }
-  if (HasPermission(PERMISSION_PRINT_LOW_QUALITY)) {
-    return PrintPagesAsRasterPdf(page_ranges, page_range_count, print_settings,
-                                 pdf_print_settings);
-  }
-  return pp::Resource();
+  return print_params.rasterize_pdf
+             ? PrintPagesAsRasterPdf(page_numbers, print_params)
+             : PrintPagesAsPdf(page_numbers, print_params);
 }
 
-pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPdf(
-    const PP_PrintPageNumberRange_Dev* page_ranges,
-    uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  DCHECK(page_range_count);
+std::vector<uint8_t> PDFiumEngine::PrintPagesAsRasterPdf(
+    const std::vector<int>& page_numbers,
+    const blink::WebPrintParams& print_params) {
+  DCHECK(HasPermission(PERMISSION_PRINT_LOW_QUALITY));
 
   // If document is not downloaded yet, disable printing.
   if (doc() && !doc_loader_->IsDocumentComplete())
-    return pp::Buffer_Dev();
+    return std::vector<uint8_t>();
 
   KillFormFocus();
 
   SetLastInstance();
 
-  return ConvertPdfToBufferDev(
-      print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                             pdf_print_settings, /*raster=*/true));
+  return print_.PrintPagesAsPdf(page_numbers, print_params);
 }
 
-pp::Buffer_Dev PDFiumEngine::PrintPagesAsPdf(
-    const PP_PrintPageNumberRange_Dev* page_ranges,
-    uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  DCHECK(page_range_count);
+std::vector<uint8_t> PDFiumEngine::PrintPagesAsPdf(
+    const std::vector<int>& page_numbers,
+    const blink::WebPrintParams& print_params) {
+  DCHECK(HasPermission(PERMISSION_PRINT_HIGH_QUALITY));
   DCHECK(doc());
 
   KillFormFocus();
 
-  std::vector<uint32_t> page_numbers =
-      PDFiumPrint::GetPageNumbersFromPrintPageNumberRange(page_ranges,
-                                                          page_range_count);
-  for (uint32_t page_number : page_numbers) {
+  for (int page_number : page_numbers) {
     pages_[page_number]->GetPage();
     if (!IsPageVisible(page_number))
       pages_[page_number]->Unload();
   }
 
-  return ConvertPdfToBufferDev(
-      print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                             pdf_print_settings, /*raster=*/false));
-}
-
-pp::Buffer_Dev PDFiumEngine::ConvertPdfToBufferDev(
-    const std::vector<uint8_t>& pdf_data) {
-  pp::Buffer_Dev buffer;
-  if (!pdf_data.empty()) {
-    buffer = pp::Buffer_Dev(GetPluginInstance(), pdf_data.size());
-    if (!buffer.is_null())
-      memcpy(buffer.data(), pdf_data.data(), pdf_data.size());
-  }
-  return buffer;
+  return print_.PrintPagesAsPdf(page_numbers, print_params);
 }
 
 void PDFiumEngine::KillFormFocus() {

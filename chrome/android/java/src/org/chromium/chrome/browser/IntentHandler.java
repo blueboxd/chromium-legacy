@@ -58,11 +58,11 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.net.HttpUtil;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
-import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -350,10 +350,13 @@ public class IntentHandler {
         /**
          * Processes a URL VIEW Intent.
          */
-        void processUrlViewIntent(String url, String referer, String headers,
-                @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-                boolean hasUserGesture, boolean isRendererInitiated, Origin initiatorOrigin,
-                Intent intent);
+        void processUrlViewIntent(LoadUrlParams loadUrlParams, @TabOpenType int tabOpenType,
+                String externalAppId, int tabIdToBringToFront, Intent intent);
+
+        /**
+         * The time at which the Activity most recently received an Intent (eg onNewIntent).
+         */
+        long getIntentHandlingTimeMs();
 
         void processWebSearchIntent(String query);
 
@@ -495,8 +498,6 @@ public class IntentHandler {
 
         assert intentHasValidUrl(intent);
         String url = getUrlFromIntent(intent);
-        RequestMetadata metadata =
-                IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent);
         @TabOpenType
         int tabOpenType = getTabOpenType(intent);
         int tabIdToBringToFront = getBringTabToFrontId(intent);
@@ -506,33 +507,24 @@ public class IntentHandler {
                     || TranslateIntentHandler.handleTranslateTabIntent(intent, mDelegate);
         }
 
-        String referrerUrl = getReferrerUrlIncludingExtraHeaders(intent);
-        String extraHeaders = getExtraHeadersFromIntent(intent);
+        LoadUrlParams loadUrlParams = createLoadUrlParamsForIntent(url, intent);
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
-                && referrerUrl == null && extraHeaders == null) {
+                && loadUrlParams.getReferrer() == null
+                && loadUrlParams.getVerbatimHeaders() == null) {
             handleMhtmlFileOrContentIntent(url, intent);
             return true;
         }
-
-        processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
+        processUrlViewIntent(loadUrlParams, tabOpenType,
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
-                tabIdToBringToFront, metadata == null ? false : metadata.hasUserGesture(),
-                metadata == null ? false : metadata.isRendererInitiated(),
-                metadata == null ? null : metadata.getInitiatorOrigin(), intent);
+                tabIdToBringToFront, intent);
         return true;
     }
 
-    private void processUrlViewIntent(String url, String referrerUrl, String extraHeaders,
-            @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-            boolean hasUserGesture, boolean isRendererInitiated, Origin initiatorOrigin,
-            Intent intent) {
-        extraHeaders = maybeAddAdditionalExtraHeaders(intent, url, extraHeaders);
-
-        // TODO(joth): Presumably this should check the action too.
-        mDelegate.processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
-                IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
-                tabIdToBringToFront, hasUserGesture, isRendererInitiated, initiatorOrigin, intent);
+    private void processUrlViewIntent(LoadUrlParams loadUrlParams, @TabOpenType int tabOpenType,
+            String externalAppId, int tabIdToBringToFront, Intent intent) {
+        mDelegate.processUrlViewIntent(
+                loadUrlParams, tabOpenType, externalAppId, tabIdToBringToFront, intent);
         recordExternalIntentSourceUMA(intent);
         recordAppHandlersForIntent(intent);
     }
@@ -721,8 +713,10 @@ public class IntentHandler {
 
     private void handleMhtmlFileOrContentIntent(final String url, final Intent intent) {
         OfflinePageUtils.getLoadUrlParamsForOpeningMhtmlFileOrContent(url, (loadUrlParams) -> {
-            processUrlViewIntent(loadUrlParams.getUrl(), null, loadUrlParams.getVerbatimHeaders(),
-                    TabOpenType.OPEN_NEW_TAB, null, 0, false, false, null, intent);
+            loadUrlParams.setVerbatimHeaders(maybeAddAdditionalContentHeaders(
+                    intent, url, loadUrlParams.getVerbatimHeaders()));
+            processUrlViewIntent(
+                    loadUrlParams, TabOpenType.OPEN_NEW_TAB, null, Tab.INVALID_TAB_ID, intent);
         }, Profile.getLastUsedRegularProfile());
     }
 
@@ -771,13 +765,8 @@ public class IntentHandler {
         // FLAG_ACTIVITY_NEW_TASK on pre-N versions of Android.  On N+ we can get away with
         // specifying a task ID or not specifying an options bundle.
         assert (copiedIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0;
-        addTrustedIntentExtras(copiedIntent);
+        IntentUtils.addTrustedIntentExtras(copiedIntent);
         appContext.startActivity(copiedIntent);
-    }
-
-    /** @see {@link IntentUtils#addTrustedIntentExtras} */
-    public static void addTrustedIntentExtras(Intent intent) {
-        IntentUtils.addTrustedIntentExtras(intent);
     }
 
     /**
@@ -1196,7 +1185,7 @@ public class IntentHandler {
     }
 
     @VisibleForTesting
-    static String maybeAddAdditionalExtraHeaders(Intent intent, String url, String extraHeaders) {
+    static String maybeAddAdditionalContentHeaders(Intent intent, String url, String extraHeaders) {
         // For some apps, ContentResolver.getType(contentUri) returns "application/octet-stream",
         // instead of the registered MIME type when opening a document from Downloads. To work
         // around this, we pass the intent type in extra headers such that content request job can
@@ -1395,7 +1384,7 @@ public class IntentHandler {
         newIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
         newIntent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         newIntent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
-        IntentHandler.addTrustedIntentExtras(newIntent);
+        IntentUtils.addTrustedIntentExtras(newIntent);
 
         return newIntent;
     }
@@ -1416,7 +1405,7 @@ public class IntentHandler {
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         intent.putExtra(BRING_TAB_TO_FRONT_EXTRA, tabId);
         intent.putExtra(BRING_TAB_TO_FRONT_SOURCE_EXTRA, bringToFrontSource);
-        IntentHandler.addTrustedIntentExtras(intent);
+        IntentUtils.addTrustedIntentExtras(intent);
         return intent;
     }
 
@@ -1491,6 +1480,56 @@ public class IntentHandler {
 
         RecordHistogram.recordBooleanHistogram("MobileIntent.FirstPartyToInternalScheme",
                 intentHasUnsafeInternalScheme(scheme, url, intent));
+    }
+
+    /**
+     * Create a LoadUrlParams for handling a VIEW intent.
+     */
+    public LoadUrlParams createLoadUrlParamsForIntent(String url, Intent intent) {
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        RequestMetadata metadata =
+                IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent);
+
+        loadUrlParams.setIntentReceivedTimestamp(mDelegate.getIntentHandlingTimeMs());
+        loadUrlParams.setHasUserGesture(metadata == null ? false : metadata.hasUserGesture());
+        // Add FROM_API to ensure intent handling isn't used again. Without FROM_API Chrome could
+        // get stuck in a loop continually being asked to open a link, and then calling out to the
+        // system.
+        int transitionType = PageTransition.LINK | PageTransition.FROM_API;
+        loadUrlParams.setTransitionType(getTransitionTypeFromIntent(intent, transitionType));
+        String referrer = getReferrerUrlIncludingExtraHeaders(intent);
+        if (referrer != null) {
+            loadUrlParams.setReferrer(
+                    new Referrer(referrer, IntentHandler.getReferrerPolicyFromIntent(intent)));
+        }
+
+        String headers = getExtraHeadersFromIntent(intent);
+        headers = maybeAddAdditionalContentHeaders(intent, url, headers);
+
+        // Handle post data case.
+        if (IntentHandler.wasIntentSenderChrome(intent)) {
+            String postDataType =
+                    IntentUtils.safeGetStringExtra(intent, IntentHandler.EXTRA_POST_DATA_TYPE);
+            byte[] postData =
+                    IntentUtils.safeGetByteArrayExtra(intent, IntentHandler.EXTRA_POST_DATA);
+            if (!TextUtils.isEmpty(postDataType) && postData != null && postData.length != 0) {
+                StringBuilder appendToHeader = new StringBuilder();
+                appendToHeader.append("Content-Type: ");
+                appendToHeader.append(postDataType);
+                if (TextUtils.isEmpty(headers)) {
+                    headers = appendToHeader.toString();
+                } else {
+                    headers = headers + "\r\n" + appendToHeader.toString();
+                }
+
+                loadUrlParams.setPostData(ResourceRequestBody.createFromBytes(postData));
+            }
+        }
+        loadUrlParams.setVerbatimHeaders(headers);
+        loadUrlParams.setIsRendererInitiated(
+                metadata == null ? false : metadata.isRendererInitiated());
+        loadUrlParams.setInitiatorOrigin(metadata == null ? null : metadata.getInitiatorOrigin());
+        return loadUrlParams;
     }
 
     @NativeMethods

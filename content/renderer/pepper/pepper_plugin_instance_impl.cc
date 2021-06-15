@@ -28,8 +28,8 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/ppapi_gfx_conversion.h"
 #include "content/renderer/pepper/event_conversion.h"
-#include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/message_channel.h"
@@ -1866,7 +1866,8 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
     metafile_ = metafile;
   }
 
-  PP_PrintPageNumberRange_Dev page_range = {page_number, page_number};
+  PP_PrintPageNumberRange_Dev page_range = {static_cast<uint32_t>(page_number),
+                                            static_cast<uint32_t>(page_number)};
   ranges_.push_back(page_range);
 #endif
 }

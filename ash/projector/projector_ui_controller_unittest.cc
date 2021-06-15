@@ -87,8 +87,7 @@ TEST_F(ProjectorUiControllerTest, EnablingDisablingLaserPointer) {
   EXPECT_TRUE(laser_pointer_controller_->is_enabled());
 
   // Verify that toggling laser pointer disables magnifier when it was enabled.
-  auto* magnification_controller =
-      Shell::Get()->partial_magnification_controller();
+  auto* magnification_controller = Shell::Get()->partial_magnifier_controller();
   controller_->OnMagnifierButtonPressed(true);
   EXPECT_TRUE(magnification_controller->is_enabled());
   EXPECT_FALSE(laser_pointer_controller_->is_enabled());
@@ -139,8 +138,7 @@ TEST_F(ProjectorUiControllerTest, EnablingDisablingMarker) {
   EXPECT_FALSE(laser_pointer_controller_->is_enabled());
 
   // Verify that toggling marker disables magnifier when it was enabled.
-  auto* magnification_controller =
-      Shell::Get()->partial_magnification_controller();
+  auto* magnification_controller = Shell::Get()->partial_magnifier_controller();
   controller_->OnMagnifierButtonPressed(true);
   EXPECT_TRUE(magnification_controller->is_enabled());
   controller_->OnMarkerPressed();
@@ -324,7 +322,18 @@ TEST_F(ProjectorUiControllerTest, UmaMetricsTest) {
   bar_view_->OnChangeBarLocationButtonPressed();
   histogram_tester.ExpectBucketCount(
       kProjectorToolbarHistogramName,
+      /*sample=*/ProjectorToolbar::kToolbarLocationBottomLeft,
+      /*count=*/1);
+
+  bar_view_->OnChangeBarLocationButtonPressed();
+  histogram_tester.ExpectBucketCount(
+      kProjectorToolbarHistogramName,
       /*sample=*/ProjectorToolbar::kToolbarLocationTopLeft,
+      /*count=*/1);
+  bar_view_->OnChangeBarLocationButtonPressed();
+  histogram_tester.ExpectBucketCount(
+      kProjectorToolbarHistogramName,
+      /*sample=*/ProjectorToolbar::kToolbarLocationTopCenter,
       /*count=*/1);
   bar_view_->OnChangeBarLocationButtonPressed();
   histogram_tester.ExpectBucketCount(
@@ -339,7 +348,7 @@ TEST_F(ProjectorUiControllerTest, UmaMetricsTest) {
   bar_view_->OnChangeBarLocationButtonPressed();
   histogram_tester.ExpectBucketCount(
       kProjectorToolbarHistogramName,
-      /*sample=*/ProjectorToolbar::kToolbarLocationBottomLeft,
+      /*sample=*/ProjectorToolbar::kToolbarLocationBottomCenter,
       /*count=*/1);
 
   Shell::Get()->projector_controller()->SetProjectorToolsVisible(
@@ -349,7 +358,7 @@ TEST_F(ProjectorUiControllerTest, UmaMetricsTest) {
       /*sample=*/ProjectorToolbar::kToolbarClosed,
       /*count=*/1);
   histogram_tester.ExpectTotalCount(kProjectorToolbarHistogramName,
-                                    /*count=*/20);
+                                    /*count=*/22);
 }
 
 }  // namespace ash

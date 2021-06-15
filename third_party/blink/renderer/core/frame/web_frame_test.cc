@@ -36,6 +36,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -201,6 +202,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -9081,7 +9083,7 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
   MainFrame()->Swap(remote_frame);
 
-  static_cast<WebViewImpl*>(remote_frame->View())->Resize(size);
+  To<WebViewImpl>(remote_frame->View())->Resize(size);
 
   WebLocalFrame* local_frame =
       web_view_helper_.CreateProvisional(*remote_frame);
@@ -9089,10 +9091,8 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
 
   // Verify that the size that was set with a remote main frame is correct
   // after swapping to a local frame.
-  Page* page = static_cast<WebViewImpl*>(local_frame->View())
-                   ->GetPage()
-                   ->MainFrame()
-                   ->GetPage();
+  Page* page =
+      To<WebViewImpl>(local_frame->View())->GetPage()->MainFrame()->GetPage();
   EXPECT_EQ(size.width(), page->GetVisualViewport().Size().Width());
   EXPECT_EQ(size.height(), page->GetVisualViewport().Size().Height());
 }
@@ -9109,7 +9109,7 @@ TEST_F(WebFrameSwapTest,
   WebLocalFrame* local_frame =
       web_view_helper_.CreateProvisional(*remote_frame);
 
-  WebViewImpl* web_view = static_cast<WebViewImpl*>(local_frame->View());
+  WebViewImpl* web_view = To<WebViewImpl>(local_frame->View());
   EXPECT_TRUE(web_view->MainFrame() &&
               web_view->MainFrame()->IsWebRemoteFrame());
 
@@ -9123,10 +9123,8 @@ TEST_F(WebFrameSwapTest,
   // Swap the provisional frame in and verify that the browser controls size is
   // correct.
   remote_frame->Swap(local_frame);
-  Page* page = static_cast<WebViewImpl*>(local_frame->View())
-                   ->GetPage()
-                   ->MainFrame()
-                   ->GetPage();
+  Page* page =
+      To<WebViewImpl>(local_frame->View())->GetPage()->MainFrame()->GetPage();
   EXPECT_EQ(top_browser_controls_height,
             page->GetBrowserControls().TopHeight());
   EXPECT_EQ(bottom_browser_controls_height,
@@ -12999,6 +12997,9 @@ class ContextMenuWebFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
   ContextMenuWebFrameClient() = default;
+  ContextMenuWebFrameClient(const ContextMenuWebFrameClient&) = delete;
+  ContextMenuWebFrameClient& operator=(const ContextMenuWebFrameClient&) =
+      delete;
   ~ContextMenuWebFrameClient() override = default;
 
   // WebLocalFrameClient:
@@ -13012,7 +13013,6 @@ class ContextMenuWebFrameClient
 
  private:
   ContextMenuData menu_data_;
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuWebFrameClient);
 };
 
 bool TestSelectAll(const std::string& html) {

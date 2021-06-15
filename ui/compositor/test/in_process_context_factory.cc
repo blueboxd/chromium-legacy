@@ -327,7 +327,6 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   if (renderer_settings_.use_skia_renderer) {
     auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
         viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
-        viz::TestGpuServiceHolder::GetInstance()->task_executor(),
         gpu::kNullSurfaceHandle);
     display_dependency =
         std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
@@ -366,7 +365,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   }
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),
-      display_output_surface->capabilities().max_frames_pending);
+      display_output_surface->capabilities().max_frames_pending,
+      display_output_surface->capabilities().max_frames_pending_120hz);
 
   data->SetDisplay(std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, &debug_settings_,

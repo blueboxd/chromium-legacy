@@ -37,12 +37,14 @@
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/image.h"
 #include "pdf/ppapi_migration/input_event_conversions.h"
+#include "pdf/ppapi_migration/printing_conversions.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ppapi_migration/value_conversions.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/cpp/core.h"
+#include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/memory_dev.h"
 #include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
@@ -724,21 +726,8 @@ void OutOfProcessInstance::Redo() {
 int32_t OutOfProcessInstance::PdfPrintBegin(
     const PP_PrintSettings_Dev* print_settings,
     const PP_PdfPrintSettings_Dev* pdf_print_settings) {
-  // For us num_pages is always equal to the number of pages in the PDF
-  // document irrespective of the printable area.
-  int32_t ret = engine()->GetNumberOfPages();
-  if (!ret)
-    return 0;
-
-  uint32_t supported_formats = QuerySupportedPrintOutputFormats();
-  if ((print_settings->format & supported_formats) == 0)
-    return 0;
-
-  print_settings_.is_printing = true;
-  print_settings_.pepper_print_settings = *print_settings;
-  print_settings_.pdf_print_settings = *pdf_print_settings;
-  engine()->PrintBegin();
-  return ret;
+  return PdfViewPluginBase::PrintBegin(
+      WebPrintParamsFromPPPrintSettings(*print_settings, *pdf_print_settings));
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {
@@ -759,20 +748,21 @@ int32_t OutOfProcessInstance::PrintBegin(
 pp::Resource OutOfProcessInstance::PrintPages(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count) {
-  if (!print_settings_.is_printing)
-    return pp::Resource();
+  const std::vector<uint8_t> pdf_data = PdfViewPluginBase::PrintPages(
+      PageNumbersFromPPPrintPageNumberRange(page_ranges, page_range_count));
 
-  print_settings_.print_pages_called = true;
-  return engine()->PrintPages(page_ranges, page_range_count,
-                              print_settings_.pepper_print_settings,
-                              print_settings_.pdf_print_settings);
+  // Convert buffer to Pepper type.
+  pp::Buffer_Dev buffer;
+  if (!pdf_data.empty()) {
+    buffer = pp::Buffer_Dev(GetPluginInstance(), pdf_data.size());
+    if (!buffer.is_null())
+      memcpy(buffer.data(), pdf_data.data(), pdf_data.size());
+  }
+  return buffer;
 }
 
 void OutOfProcessInstance::PrintEnd() {
-  if (print_settings_.print_pages_called)
-    UserMetricsRecordAction("PDF.PrintPage");
-  print_settings_.Clear();
-  engine()->PrintEnd();
+  PdfViewPluginBase::PrintEnd();
 }
 
 bool OutOfProcessInstance::IsPrintScalingDisabled() {
@@ -1339,13 +1329,6 @@ void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
 
 void OutOfProcessInstance::OnPrint(int32_t /*unused_but_required*/) {
   pp::PDF::Print(this);
-}
-
-void OutOfProcessInstance::PrintSettings::Clear() {
-  is_printing = false;
-  print_pages_called = false;
-  memset(&pepper_print_settings, 0, sizeof(pepper_print_settings));
-  memset(&pdf_print_settings, 0, sizeof(pdf_print_settings));
 }
 
 }  // namespace chrome_pdf

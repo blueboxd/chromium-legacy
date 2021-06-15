@@ -11,7 +11,7 @@
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
-#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/magnifier/full_screen_magnifier_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/app_list/app_list_metrics.h"
@@ -56,11 +56,11 @@
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -2571,8 +2571,8 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
     return Shell::Get()->docked_magnifier_controller();
   }
 
-  MagnificationController* fullscreen_magnifier_controller() const {
-    return Shell::Get()->magnification_controller();
+  FullScreenMagnifierController* fullscreen_magnifier_controller() const {
+    return Shell::Get()->full_screen_magnifier_controller();
   }
 
   PrefService* user_pref_service() {
@@ -2608,7 +2608,7 @@ class FakeMagnificationManager {
   }
 
   void UpdateMagnifierFromPrefs() {
-    Shell::Get()->magnification_controller()->SetEnabled(
+    Shell::Get()->full_screen_magnifier_controller()->SetEnabled(
         prefs_->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled));
   }
 

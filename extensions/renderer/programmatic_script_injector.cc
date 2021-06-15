@@ -13,7 +13,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/mojom/action_type.mojom-shared.h"
 #include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -41,43 +40,42 @@ mojom::InjectionType ProgrammaticScriptInjector::script_type() const {
 }
 
 bool ProgrammaticScriptInjector::IsUserGesture() const {
-  return params_->user_gesture;
+  DCHECK(params_->injection->is_js());
+  return params_->injection->get_js()->user_gesture;
 }
 
 mojom::CSSOrigin ProgrammaticScriptInjector::GetCssOrigin() const {
-  return params_->css_origin;
+  DCHECK(params_->injection->is_css());
+  return params_->injection->get_css()->css_origin;
 }
 
-bool ProgrammaticScriptInjector::IsRemovingCSS() const {
-  return params_->action_type == mojom::ActionType::kRemoveCss;
-}
-
-bool ProgrammaticScriptInjector::IsAddingCSS() const {
-  return params_->action_type == mojom::ActionType::kAddCss;
+mojom::CSSInjection::Operation
+ProgrammaticScriptInjector::GetCSSInjectionOperation() const {
+  DCHECK(params_->injection->is_css());
+  return params_->injection->get_css()->operation;
 }
 
 const absl::optional<std::string> ProgrammaticScriptInjector::GetInjectionKey()
     const {
-  return params_->injection_key;
+  DCHECK(params_->injection->is_css());
+  return params_->injection->get_css()->key;
 }
 
 bool ProgrammaticScriptInjector::ExpectsResults() const {
-  return params_->wants_result;
+  DCHECK(params_->injection->is_js());
+  return params_->injection->get_js()->wants_result;
 }
 
 bool ProgrammaticScriptInjector::ShouldInjectJs(
     mojom::RunLocation run_location,
     const std::set<std::string>& executing_scripts) const {
-  return params_->run_at == run_location &&
-         params_->action_type == mojom::ActionType::kAddJavascript;
+  return params_->run_at == run_location && params_->injection->is_js();
 }
 
 bool ProgrammaticScriptInjector::ShouldInjectOrRemoveCss(
     mojom::RunLocation run_location,
     const std::set<std::string>& injected_stylesheets) const {
-  return params_->run_at == run_location &&
-         (params_->action_type == mojom::ActionType::kAddCss ||
-          params_->action_type == mojom::ActionType::kRemoveCss);
+  return params_->run_at == run_location && params_->injection->is_css();
 }
 
 PermissionsData::PageAccess ProgrammaticScriptInjector::CanExecuteOnFrame(
@@ -122,11 +120,12 @@ std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(
     std::set<std::string>* executing_scripts,
     size_t* num_injected_js_scripts) const {
   DCHECK_EQ(params_->run_at, run_location);
-  DCHECK_EQ(params_->action_type, mojom::ActionType::kAddJavascript);
+  DCHECK(params_->injection->is_js());
 
+  auto& js_injection = params_->injection->get_js();
   return std::vector<blink::WebScriptSource>(
-      1, blink::WebScriptSource(blink::WebString::FromUTF8(params_->code),
-                                params_->script_url));
+      1, blink::WebScriptSource(blink::WebString::FromUTF8(js_injection->code),
+                                js_injection->script_url));
 }
 
 std::vector<blink::WebString> ProgrammaticScriptInjector::GetCssSources(
@@ -134,11 +133,10 @@ std::vector<blink::WebString> ProgrammaticScriptInjector::GetCssSources(
     std::set<std::string>* injected_stylesheets,
     size_t* num_injected_stylesheets) const {
   DCHECK_EQ(params_->run_at, run_location);
-  DCHECK(params_->action_type == mojom::ActionType::kAddCss ||
-         params_->action_type == mojom::ActionType::kRemoveCss);
+  DCHECK(params_->injection->is_css());
 
   return std::vector<blink::WebString>(
-      1, blink::WebString::FromUTF8(params_->code));
+      1, blink::WebString::FromUTF8(params_->injection->get_css()->code));
 }
 
 void ProgrammaticScriptInjector::OnInjectionComplete(

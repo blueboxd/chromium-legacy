@@ -17,6 +17,7 @@
 #include "components/arc/compat_mode/arc_splash_screen_dialog_view.h"
 #include "components/arc/compat_mode/resize_toggle_menu.h"
 #include "components/arc/compat_mode/resize_util.h"
+#include "components/arc/vector_icons/vector_icons.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -132,11 +133,7 @@ void ArcResizeLockManager::EnableResizeLock(aura::Window* window) {
 }
 
 void ArcResizeLockManager::DisableResizeLock(aura::Window* window) {
-  auto* frame_view = ash::NonClientFrameViewAsh::Get(window);
-  DCHECK(frame_view);
-  frame_view->GetHeaderView()
-      ->caption_button_container()
-      ->ClearOnSizeButtonPressedCallback();
+  UpdateCompatModeButton(window);
 }
 
 void ArcResizeLockManager::UpdateCompatModeButton(aura::Window* window) {
@@ -145,15 +142,16 @@ void ArcResizeLockManager::UpdateCompatModeButton(aura::Window* window) {
   const std::string* app_id = window->GetProperty(ash::kAppIDKey);
   if (!app_id)
     return;
-  const auto resize_lock_state = pref_delegate_->GetResizeLockState(*app_id);
-  if (resize_lock_state == mojom::ArcResizeLockState::UNDEFINED ||
-      resize_lock_state == mojom::ArcResizeLockState::READY) {
-    return;
-  }
   auto* frame_view = ash::NonClientFrameViewAsh::Get(window);
   if (!frame_view)
     return;
   auto* frame_header = frame_view->GetHeaderView()->GetFrameHeader();
+  const auto resize_lock_state = pref_delegate_->GetResizeLockState(*app_id);
+  if (resize_lock_state == mojom::ArcResizeLockState::UNDEFINED ||
+      resize_lock_state == mojom::ArcResizeLockState::READY) {
+    frame_header->SetCenterButton(nullptr);
+    return;
+  }
   auto* compat_mode_button = frame_header->GetCenterButton();
   if (!compat_mode_button) {
     // The ownership is transferred implicitly with AddChildView in HeaderView,
@@ -192,7 +190,7 @@ void ArcResizeLockManager::UpdateCompatModeButton(aura::Window* window) {
     case ResizeCompatMode::kResizable:
       compat_mode_button->SetImage(views::CAPTION_BUTTON_ICON_CENTER,
                                    views::FrameCaptionButton::Animate::kNo,
-                                   ash::kSystemMenuComputerIcon);
+                                   kResizableIcon);
       compat_mode_button->SetText(l10n_util::GetStringUTF16(
           IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_RESIZABLE));
       break;
@@ -214,12 +212,9 @@ void ArcResizeLockManager::UpdateCompatModeButton(aura::Window* window) {
 }
 
 void ArcResizeLockManager::ToggleResizeToggleMenu(views::Widget* widget) {
-  if (resize_toggle_menu_) {
-    resize_toggle_menu_.reset();
-  } else {
-    resize_toggle_menu_ =
-        std::make_unique<ResizeToggleMenu>(widget, pref_delegate_);
-  }
+  resize_toggle_menu_.reset();
+  resize_toggle_menu_ =
+      std::make_unique<ResizeToggleMenu>(widget, pref_delegate_);
 }
 
 void ArcResizeLockManager::MayShowSplashScreen(aura::Window* window) {

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_heap.h"
-#include "third_party/blink/renderer/bindings/core/v8/media_list_or_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -56,12 +56,8 @@ TEST_F(CSSStyleSheetTest,
        CSSStyleSheetConstructionWithNonEmptyCSSStyleSheetInit) {
   DummyExceptionStateForTesting exception_state;
   CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
   init->setMedia(
       MakeGarbageCollected<V8UnionMediaListOrString>("screen, print"));
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-  init->setMedia(MediaListOrString::FromString("screen, print"));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
   init->setTitle("test");
   init->setAlternate(true);
   init->setDisabled(true);
@@ -73,11 +69,7 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->ownerNode(), nullptr);
   EXPECT_EQ(sheet->ownerRule(), nullptr);
   EXPECT_EQ(sheet->media()->length(), 2U);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
   EXPECT_EQ(sheet->media()->mediaText(nullptr), init->media()->GetAsString());
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-  EXPECT_EQ(sheet->media()->mediaText(nullptr), init->media().GetAsString());
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
   EXPECT_EQ(sheet->title(), init->title());
   EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());

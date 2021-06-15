@@ -24,7 +24,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_unsignedlong_unsignedlongsequence.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -103,7 +102,6 @@ void CollectHistogramMetrics(LocalDOMWindow* window) {
 }
 
 // static
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 VibrationController::VibrationPattern
 VibrationController::SanitizeVibrationPattern(
     const V8UnionUnsignedLongOrUnsignedLongSequence* input) {
@@ -122,20 +120,6 @@ VibrationController::SanitizeVibrationPattern(
   NOTREACHED();
   return {};
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-VibrationController::VibrationPattern
-VibrationController::SanitizeVibrationPattern(
-    const UnsignedLongOrUnsignedLongSequence& input) {
-  VibrationPattern pattern;
-
-  if (input.IsUnsignedLong())
-    pattern.push_back(input.GetAsUnsignedLong());
-  else if (input.IsUnsignedLongSequence())
-    pattern = input.GetAsUnsignedLongSequence();
-
-  return sanitizeVibrationPatternInternal(pattern);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 
 // static
 VibrationController& VibrationController::From(Navigator& navigator) {

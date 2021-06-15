@@ -2448,6 +2448,11 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="DIRECT"/>
 </enum>
 
+<enum name="AndroidWebViewSafeModeResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown error"/>
+</enum>
+
 <enum name="AndroidWebViewSingleOrMultiProcess">
   <int value="0" label="SINGLE_PROCESS"/>
   <int value="1" label="MULTI_PROCESS"/>
@@ -49243,6 +49248,8 @@ from previous Chrome versions.
   <int value="1427905064" label="CreditCardAutofillTouchBar:enabled"/>
   <int value="1428004502" label="PaymentRequestOptionalTotal:enabled"/>
   <int value="1428221397" label="QueryTilesInNTP:enabled"/>
+  <int value="1429031731"
+      label="CrossOriginEmbedderPolicyCredentialless:enabled"/>
   <int value="1429923065" label="enable-media-internals:enabled"/>
   <int value="1430924529" label="TranslateIntent:enabled"/>
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
@@ -49677,6 +49684,8 @@ from previous Chrome versions.
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1813370929"
       label="MigrateDefaultChromeAppToWebAppsNonGSuite:enabled"/>
+  <int value="1814039202"
+      label="CrossOriginEmbedderPolicyCredentialless:disabled"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1816174635" label="RequestUnbufferedDispatch:enabled"/>
   <int value="1816723085" label="SchemefulSameSite:enabled"/>
@@ -59660,6 +59669,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="502" label="Ambient Mode Source"/>
   <int value="503" label="Change Device Account Image"/>
   <int value="504" label="Ambient Mode Update Photos Containers (Deprecated)"/>
+  <int value="505" label="Dark Mode: On/Off"/>
   <int value="600" label="Preferred Search Engine"/>
   <int value="601" label="Assistant: On/Off"/>
   <int value="602" label="Assistant: Related Info"/>
@@ -59850,6 +59860,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="504" label="Ambient Mode Art Gallery Album"/>
   <int value="505" label="Wallpaper (Deprecated)"/>
   <int value="506" label="Wallpaper Images (Deprecated)"/>
+  <int value="507" label="Dark Mode"/>
   <int value="600" label="Assistant"/>
   <int value="601" label="Search"/>
   <int value="700" label="App Management"/>

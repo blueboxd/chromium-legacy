@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TEST_HELPERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TEST_HELPERS_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/css_numeric_value_or_string_or_css_keyword_value_or_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/animation/interpolation.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
@@ -51,11 +50,7 @@ void EnsureInterpolatedValueCached(ActiveInterpolations*, Document&, Element*);
 //   <length-percentage>.
 // - A CSSKeywordValue. if the incoming string can be parsed as 'auto'.
 // - Otherwise, the incoming string.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 V8ScrollTimelineOffset* OffsetFromString(Document&, const String&);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-ScrollTimelineOffsetValue OffsetFromString(Document&, const String&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 
 }  // namespace animation_test_helpers
 }  // namespace blink

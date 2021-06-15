@@ -24,6 +24,7 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -31,6 +32,7 @@
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
+#include "services/network/public/mojom/web_transport.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
@@ -215,9 +217,6 @@ class TestNetworkContext : public mojom::NetworkContext {
       const std::string& ocsp_result,
       const std::string& sct_list,
       VerifyCertForSignedExchangeCallback callback) override {}
-  void ParseHeaders(const GURL& base_url,
-                    const scoped_refptr<net::HttpResponseHeaders>& headers,
-                    ParseHeadersCallback callback) override {}
   void IsHSTSActiveForHost(const std::string& host,
                            IsHSTSActiveForHostCallback callback) override {}
   void SetCorsOriginAccessListsForOrigin(

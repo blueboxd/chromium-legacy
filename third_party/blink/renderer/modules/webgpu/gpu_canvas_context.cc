@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
-#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_swap_chain_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpucanvascontext_imagebitmaprenderingcontext_offscreencanvasrenderingcontext2d_webgl2renderingcontext_webglrenderingcontext.h"
@@ -77,6 +76,53 @@ cc::Layer* GPUCanvasContext::CcLayer() const {
     return swapchain_->CcLayer();
   }
   return nullptr;
+}
+
+scoped_refptr<StaticBitmapImage> GPUCanvasContext::GetImage() {
+  if (!swapchain_)
+    return nullptr;
+
+  CanvasResourceParams resource_params;
+  resource_params.SetSkColorType(viz::ResourceFormatToClosestSkColorType(
+      /*gpu_compositing=*/true, swapchain_->Format()));
+
+  auto resource_provider = CanvasResourceProvider::CreateWebGPUImageProvider(
+      IntSize(swapchain_->Size()), resource_params,
+      /*is_origin_top_left=*/true);
+  if (!resource_provider)
+    return nullptr;
+
+  if (!swapchain_->CopyToResourceProvider(resource_provider.get()))
+    return nullptr;
+
+  return resource_provider->Snapshot();
+}
+
+bool GPUCanvasContext::PaintRenderingResultsToCanvas(
+    SourceDrawingBuffer source_buffer) {
+  DCHECK_EQ(source_buffer, kBackBuffer);
+  if (!swapchain_)
+    return false;
+
+  if (Host()->ResourceProvider() &&
+      Host()->ResourceProvider()->Size() != IntSize(swapchain_->Size())) {
+    Host()->DiscardResourceProvider();
+  }
+
+  CanvasResourceProvider* resource_provider =
+      Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU);
+
+  return CopyRenderingResultsFromDrawingBuffer(resource_provider,
+                                               source_buffer);
+}
+
+bool GPUCanvasContext::CopyRenderingResultsFromDrawingBuffer(
+    CanvasResourceProvider* resource_provider,
+    SourceDrawingBuffer source_buffer) {
+  DCHECK_EQ(source_buffer, kBackBuffer);
+  if (swapchain_)
+    return swapchain_->CopyToResourceProvider(resource_provider);
+  return false;
 }
 
 void GPUCanvasContext::SetFilterQuality(SkFilterQuality filter_quality) {
@@ -198,12 +244,7 @@ void GPUCanvasContext::ConfigureInternal(
     // deprecated behavior of resizing to match the canvas size each frame.
     size = IntSize(-1, -1);
   } else if (descriptor->hasSize()) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
     WGPUExtent3D dawn_extent = AsDawnType(descriptor->size());
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-    WGPUExtent3D dawn_extent =
-        AsDawnType(&descriptor->size(), descriptor->device());
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
     size = IntSize(dawn_extent.width, dawn_extent.height);
 
     if (dawn_extent.depthOrArrayLayers != 1) {

@@ -3,8 +3,8 @@
  * found in the LICENSE file. */
 
 /* This file is generated from:
- *  colors_test_palette.json5
  *  colors_test.json5
+ *  colors_test_palette.json5
  */
 
 html:not(body) {
@@ -18,6 +18,8 @@ html:not(body) {
   --cros-toggle-color: rgba(var(--cros-toggle-color-rgb), 0.1);
 
   --cros-disabled-opacity: 0.38;
+
+  --cros-reference-opacity: var(--cros-disabled-opacity);
 }
 
 html[dark]:not(body) {
@@ -26,4 +28,6 @@ html[dark]:not(body) {
 
   --cros-toggle-color-rgb: var(--cros-text-color-primary-rgb);
   --cros-toggle-color: rgba(var(--cros-toggle-color-rgb), var(--cros-disabled-opacity));
+
+  --cros-reference-opacity: 1;
 }

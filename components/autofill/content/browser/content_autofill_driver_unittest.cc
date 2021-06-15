@@ -163,6 +163,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   }
 
   // mojom::AutofillAgent:
+  void TriggerReparse() override {}
+
   void FillForm(int32_t id, const FormData& form) override {
     fill_form_id_ = id;
     fill_form_form_ = form;
@@ -435,8 +437,7 @@ TEST_F(ContentAutofillDriverTest, SetFrameAndFormMetaDataOfForm) {
       form.host_frame,
       LocalFrameToken(web_contents()->GetMainFrame()->GetFrameToken().value()));
   EXPECT_EQ(form.url, GURL("https://hostname/path"));
-  EXPECT_EQ(form.full_url,
-            GURL("https://username:password@hostname/path?query#hash"));
+  EXPECT_EQ(form.full_url, GURL("https://hostname/path?query#hash"));
   EXPECT_EQ(form.main_frame_origin,
             web_contents()->GetMainFrame()->GetLastCommittedOrigin());
   EXPECT_EQ(form.main_frame_origin,

@@ -20,7 +20,6 @@
 
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/media_list_or_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -110,7 +109,6 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   sheet->ClearOwnerRule();
   contents->RegisterClient(sheet);
   scoped_refptr<MediaQuerySet> media_query_set;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
   switch (options->media()->GetContentType()) {
     case V8UnionMediaListOrString::ContentType::kMediaList:
       media_query_set = options->media()->GetAsMediaList()->Queries()->Copy();
@@ -120,14 +118,6 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                               document.GetExecutionContext());
       break;
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-  if (options->media().IsString()) {
-    media_query_set = MediaQuerySet::Create(options->media().GetAsString(),
-                                            document.GetExecutionContext());
-  } else {
-    media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
   auto* media_list = MakeGarbageCollected<MediaList>(
       media_query_set, const_cast<CSSStyleSheet*>(sheet));
   sheet->SetMedia(media_list);

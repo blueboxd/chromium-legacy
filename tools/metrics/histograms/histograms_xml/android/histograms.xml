@@ -752,7 +752,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.DeviceSize.LargestDisplaySize" units="dp"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>twellington@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -764,7 +764,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.DeviceSize.SmallestDisplaySize" units="dp"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>twellington@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -940,7 +940,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.DownloadManager.OpenSource.Audio"
-    enum="AndroidDownloadOpenSource" expires_after="2021-10-10">
+    enum="AndroidDownloadOpenSource" expires_after="2021-12-12">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Records how users open audio download files on Android.</summary>
@@ -1822,7 +1822,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.NTP.Impression" enum="NTPImpressionType"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>finkm@chromium.org</owner>
   <summary>
     Counts impressions of the NTP on Android. It also counts potential
@@ -2359,7 +2359,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.Rotation.BeginToRendererFrameActivation" units="ms"
-    expires_after="M95">
+    expires_after="2021-12-12">
   <owner>jonross@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <summary>
@@ -2651,7 +2651,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.ThemeColor" enum="Android.ThemeColor"
-    expires_after="M95">
+    expires_after="2021-12-12">
   <owner>sinansahin@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -2900,7 +2900,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UpdateJobDuration" units="ms"
-    expires_after="2021-10-08">
+    expires_after="2021-12-12">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3358,6 +3358,67 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records how long WebView blocks startup to load prefs from disk. This is
     recorded once per browser process startup.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SafeMode.ActionsCount"
+    units="SafeMode actions" expires_after="2022-06-08">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the number of SafeMode actions WebView received from the
+    SafeModeService. This is only recorded once during startup if SafeMode is
+    enabled (see &quot;Android.WebView.SafeMode.Enabled&quot;), otherwise this
+    is not recorded at all (because there were no SafeMode actions to execute).
+    This is recorded before executing any SafeMode actions.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SafeMode.CheckStateBlockingTime" units="ms"
+    expires_after="2022-06-08">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the time spent blocking WebView startup to check for SafeMode (see
+    &quot;Android.WebView.SafeMode.Enabled&quot;). This is recorded once during
+    WebView startup, regardless of whether SafeMode is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SafeMode.Enabled" enum="BooleanEnabled"
+    expires_after="2022-06-08">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records whether or not WebView is starting up in SafeMode. This is a mode
+    where WebView takes extra steps during startup to reduce the risk of
+    starting in a bad state. This is recorded once during WebView startup,
+    regardless of whether SafeMode is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SafeMode.ExecutionResult"
+    enum="AndroidWebViewSafeModeResult" expires_after="2022-06-08">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records whether SafeMode was able to execute all the specified SafeMode
+    actions or if it encountered an error. This is recorded once during WebView
+    startup and only if SafeMode is enabled (see
+    &quot;Android.WebView.SafeMode.Enabled&quot;).
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SafeMode.QueryAndExecuteBlockingTime"
+    units="ms" expires_after="2022-06-08">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the time spent blocking WebView startup to both retrieve the list of
+    SafeMode actions from the SafeModeService and to execute those actions. This
+    is recorded once during startup only if SafeMode is enabled (see
+    &quot;Android.WebView.SafeMode.Enabled&quot;). This can be interpreted as
+    the additional startup cost caused by enabling SafeMode.
   </summary>
 </histogram>
 

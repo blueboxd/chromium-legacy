@@ -85,6 +85,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/driver/trusted_vault_client.h"
+#include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/standalone_trusted_vault_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -113,6 +114,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
@@ -597,9 +599,9 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTestWithSyncTrustedVaultEnabled,
   // but used as test expectation later down.
   fake_gaia_keys.encryption_key.resize(16, 123);
   fake_gaia_keys.encryption_key_version = 91;
-  fake_gaia_keys.trusted_public_keys.emplace_back();
-  // Create an arbitrary public key, the precisely value is not relevant.
-  fake_gaia_keys.trusted_public_keys.back().resize(16, 124);
+  // Create a random-but-valid public key, the precisely value is not relevant.
+  fake_gaia_keys.trusted_public_keys.push_back(
+      syncer::SecureBoxKeyPair::GenerateRandom()->public_key().ExportToBytes());
   fake_gaia_.fake_gaia()->SetSyncTrustedVaultKeys(FakeGaiaMixin::kFakeUserEmail,
                                                   fake_gaia_keys);
 

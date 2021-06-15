@@ -23,6 +23,7 @@
 #include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/test_zwp_linux_buffer_params.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
+#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 
 using testing::_;
 using testing::Truly;
@@ -1716,7 +1717,8 @@ TEST_P(WaylandBufferManagerTest, RootSurfaceIsCommittedLast) {
   Sync();
 }
 
-TEST_P(WaylandBufferManagerTest, FencedRelease) {
+// TODO(crbug.com/1218233): Re-enable this when we turn on release fences.
+TEST_P(WaylandBufferManagerTest, DISABLED_FencedRelease) {
   constexpr uint32_t kBufferId1 = 1;
   constexpr uint32_t kBufferId2 = 2;
   constexpr uint32_t kBufferId3 = 3;

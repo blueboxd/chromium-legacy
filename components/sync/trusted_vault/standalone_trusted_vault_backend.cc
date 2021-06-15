@@ -62,6 +62,12 @@ absl::optional<TrustedVaultKeyAndVersion> GetLastTrustedVaultKeyAndVersion(
   return absl::nullopt;
 }
 
+void RetrieveIsRecoverabilityDegradedCompleted(
+    base::OnceCallback<void(bool)> cb,
+    TrustedVaultRecoverabilityStatus status) {
+  std::move(cb).Run(status == TrustedVaultRecoverabilityStatus::kDegraded);
+}
+
 }  // namespace
 
 StandaloneTrustedVaultBackend::PendingTrustedRecoveryMethod::
@@ -183,7 +189,8 @@ void StandaloneTrustedVaultBackend::RemoveAllStoredKeys() {
   base::DeleteFile(file_path_);
   data_.Clear();
   AbandonConnectionRequest();
-  ongoing_degraded_recoverability_request_.reset();
+  ongoing_get_recoverability_request_.reset();
+  ongoing_add_recovery_method_request_.reset();
 }
 
 void StandaloneTrustedVaultBackend::SetPrimaryAccount(
@@ -193,7 +200,8 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
   }
   primary_account_ = primary_account;
   AbandonConnectionRequest();
-  ongoing_degraded_recoverability_request_.reset();
+  ongoing_get_recoverability_request_.reset();
+  ongoing_add_recovery_method_request_.reset();
   if (!primary_account_.has_value()) {
     DCHECK(!pending_trusted_recovery_method_.has_value());
     return;
@@ -236,9 +244,13 @@ bool StandaloneTrustedVaultBackend::MarkKeysAsStale(
 void StandaloneTrustedVaultBackend::GetIsRecoverabilityDegraded(
     const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> cb) {
-  // TODO(crbug.com/1201659): Implement logic.
-  NOTIMPLEMENTED();
-  std::move(cb).Run(is_recoverability_degraded_for_testing_);
+  // TODO(crbug.com/1201659): Improve this logic properly and add test coverage,
+  // including throttling and periodic polling.
+  ongoing_get_recoverability_request_ =
+      connection_->RetrieveIsRecoverabilityDegraded(
+          account_info,
+          base::BindOnce(&RetrieveIsRecoverabilityDegradedCompleted,
+                         std::move(cb)));
 }
 
 void StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod(
@@ -268,9 +280,6 @@ void StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod(
     return;
   }
 
-  // TODO(crbug.com/1201659): Implement logic properly and add test coverage.
-  // Note for example that |public_key| gets ignored below and a random key is
-  // used instead.
   sync_pb::LocalTrustedVaultPerUser* per_user_vault = FindUserVault(gaia_id);
   if (per_user_vault == nullptr) {
     // This should ideally be a DCHECK instead, but currently it's not
@@ -283,6 +292,14 @@ void StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod(
       last_trusted_vault_key_and_version =
           GetLastTrustedVaultKeyAndVersion(*per_user_vault);
 
+  std::unique_ptr<SecureBoxPublicKey> imported_public_key =
+      SecureBoxPublicKey::CreateByImport(public_key);
+  if (!imported_public_key) {
+    // Invalid public key.
+    std::move(cb).Run();
+    return;
+  }
+
   last_added_recovery_method_public_key_for_testing_ = public_key;
 
   if (!connection_) {
@@ -292,13 +309,13 @@ void StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod(
   }
 
   // |this| outlives |connection_| and
-  // |ongoing_degraded_recoverability_request_|, so it's safe to use
+  // |ongoing_add_recovery_method_request_|, so it's safe to use
   // base::Unretained() here.
-  ongoing_degraded_recoverability_request_ =
+  ongoing_add_recovery_method_request_ =
       connection_->RegisterAuthenticationFactor(
           *primary_account_, last_trusted_vault_key_and_version,
-          SecureBoxKeyPair::GenerateRandom()->public_key(),
-          AuthenticationFactorType::kUnspecified, method_type_hint,
+          *imported_public_key, AuthenticationFactorType::kUnspecified,
+          method_type_hint,
           base::BindOnce(
               &StandaloneTrustedVaultBackend::OnTrustedRecoveryMethodAdded,
               base::Unretained(this), std::move(cb)));
@@ -317,11 +334,6 @@ StandaloneTrustedVaultBackend::GetDeviceRegistrationInfoForTesting(
     return sync_pb::LocalDeviceRegistrationInfo();
   }
   return per_user_vault->local_device_registration_info();
-}
-
-void StandaloneTrustedVaultBackend::SetRecoverabilityDegradedForTesting() {
-  is_recoverability_degraded_for_testing_ = true;
-  delegate_->NotifyRecoverabilityDegradedChanged();
 }
 
 std::vector<uint8_t>
@@ -492,9 +504,8 @@ void StandaloneTrustedVaultBackend::OnKeysDownloaded(
 void StandaloneTrustedVaultBackend::OnTrustedRecoveryMethodAdded(
     base::OnceClosure cb,
     TrustedVaultRegistrationStatus status) {
-  DCHECK(ongoing_degraded_recoverability_request_);
-  ongoing_degraded_recoverability_request_ = nullptr;
-  is_recoverability_degraded_for_testing_ = false;
+  DCHECK(ongoing_add_recovery_method_request_);
+  ongoing_add_recovery_method_request_ = nullptr;
 
   std::move(cb).Run();
   delegate_->NotifyRecoverabilityDegradedChanged();

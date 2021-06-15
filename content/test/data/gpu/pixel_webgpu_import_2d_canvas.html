@@ -20,8 +20,8 @@
       }
 
       const gpuCanvas = document.getElementById('canvas_gpu');
-      const [device, swapChain] = await webGpuUtils.init(gpuCanvas);
-      if (!device || !swapChain) {
+      const [gpuDevice, gpuContext] = await webGpuUtils.init(gpuCanvas);
+      if (!gpuDevice || !gpuContext) {
         console.error("Failed to initialize WebGPU - skipping test");
         domAutomationController.send("FAILURE");
         return;
@@ -40,7 +40,7 @@
         c2d.fillStyle = "rgb(0, 0, 255)";
         c2d.fillRect(100, 0, 100, 100);
 
-        webGpuUtils.importCanvasTest(device, swapChain, canvas2d);
+        webGpuUtils.importCanvasTest(gpuDevice, gpuContext, canvas2d);
 
         waitForFinish();
       };

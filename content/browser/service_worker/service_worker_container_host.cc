@@ -28,6 +28,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 
 namespace content {
 
@@ -602,6 +603,15 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
 
 void ServiceWorkerContainerHost::NotifyControllerLost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (IsBackForwardCacheEnabled() && IsInBackForwardCache()) {
+    // The controller was unregistered, which usually does not happen while it
+    // has controllees. Since the document is in the back/forward cache, it does
+    // not count as a controllee. However, this means if it were to be restored,
+    // the page would be in an unexpected state, so evict the bfcache entry.
+    EvictFromBackForwardCache(BackForwardCacheMetrics::NotRestoredReason::
+                                  kServiceWorkerUnregistration);
+  }
+
   SetControllerRegistration(nullptr, true /* notify_controllerchange */);
 }
 

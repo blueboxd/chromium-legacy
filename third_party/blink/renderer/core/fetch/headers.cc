@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/fetch/headers.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_bytestringbytestringrecord_bytestringsequencesequence.h"
 #include "third_party/blink/renderer/core/dom/iterator.h"
@@ -274,20 +273,6 @@ void Headers::FillWith(const V8HeadersInit* init,
 
   NOTREACHED();
 }
-
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-void Headers::FillWith(const HeadersInit& init,
-                       ExceptionState& exception_state) {
-  DCHECK_EQ(header_list_->size(), 0U);
-  if (init.IsByteStringSequenceSequence()) {
-    FillWith(init.GetAsByteStringSequenceSequence(), exception_state);
-  } else if (init.IsByteStringByteStringRecord()) {
-    FillWith(init.GetAsByteStringByteStringRecord(), exception_state);
-  } else {
-    NOTREACHED();
-  }
-}
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 
 void Headers::FillWith(const Vector<Vector<String>>& object,
                        ExceptionState& exception_state) {

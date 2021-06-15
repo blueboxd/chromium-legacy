@@ -137,14 +137,15 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   static bool NeedsShapingForTesting(const NGInlineItem& item);
 
+  // Prepare inline and text content for layout. Must be called before
+  // calling the Layout method.
+  void PrepareLayoutIfNeeded() const;
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(NGInlineNodeTest, SegmentBidiChangeSetsNeedsLayout);
 
   bool IsPrepareLayoutFinished() const;
 
-  // Prepare inline and text content for layout. Must be called before
-  // calling the Layout method.
-  void PrepareLayoutIfNeeded() const;
   void PrepareLayout(std::unique_ptr<NGInlineNodeData> previous_data) const;
 
   void CollectInlines(NGInlineNodeData*,
@@ -157,7 +158,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void SegmentBidiRuns(NGInlineNodeData*) const;
   void ShapeText(NGInlineItemsData*,
                  const String* previous_text = nullptr,
-                 const Vector<NGInlineItem>* previous_items = nullptr) const;
+                 const Vector<NGInlineItem>* previous_items = nullptr,
+                 const Font* override_font = nullptr) const;
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*) const;
   void AssociateItemsWithInlines(NGInlineNodeData*) const;
 
@@ -175,6 +177,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     return *To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& EnsureData() const;
+
+  void AdjustFontForTextCombineUprightAll() const;
 
   static void ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
                                    NGInlineNodeData* data);

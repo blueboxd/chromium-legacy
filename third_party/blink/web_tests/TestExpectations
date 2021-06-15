@@ -219,10 +219,6 @@ crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
 crbug.com/1126305 wpt_internal/prerender/* [ Skip ]
 crbug.com/1126305 virtual/prerender/wpt_internal/prerender/* [ Pass ]
 
-## prerender test: speculationrules script do not set referrers.
-crbug.com/1215932 virtual/prerender/wpt_internal/prerender/referrer-policy-origin.html [ Failure ]
-crbug.com/1215932 virtual/prerender/wpt_internal/prerender/referrer.html [ Failure ]
-
 ## prerender test: the File System Access API is not supported on Android ##
 crbug.com/1182032 [ Android ] virtual/prerender/wpt_internal/prerender/restriction-local-file-system-access.https.html [ Skip ]
 ## prerender test: Notification constructor is not supported on Android ##
@@ -1683,6 +1679,7 @@ crbug.com/1005518 external/wpt/css/css-writing-modes/direction-upright-002.html 
 # crbug.com/1218721: These tests fail when libvpx_for_vp8 is enabled.
 crbug.com/1218721 fast/borders/border-radius-mask-video-shadow.html [ Failure ]
 crbug.com/1218721 fast/borders/border-radius-mask-video.html [ Failure ]
+crbug.com/1218721 [ Mac ] http/tests/media/video-frame-size-change.html [ Failure ]
 
 crbug.com/637055 fast/css/outline-offset-large.html [ Skip ]
 
@@ -2510,6 +2507,12 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-206.xht [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11.0 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-fonts/font-size-adjust-009.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-fonts/font-size-adjust-010.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-fonts/font-size-adjust-011.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] virtual/web-bluetooth-new-permissions-backend/wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc-extensions/transfer-datachannel-service-worker.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc-extensions/transfer-datachannel.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/1-iframe/parent-no-child-yeswithparams-subdomain.sub.https.html [ Failure Timeout ]
@@ -3927,14 +3930,13 @@ crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-7.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-self-baseline-not-applied-if-sizing-cyclic-dependency-003.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-004.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-005.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
 crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
 crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-interpolation.html [ Failure ]
 crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
 crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-interpolation.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-004.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-005.html [ Failure ]
 
 ### Tests failing with LayoutNGGrid disabled:
 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/descendant-static-position-001.html [ Failure ]
@@ -3980,7 +3982,6 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repea
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-dynamic-001.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-definition/grid-auto-repeat-dynamic-003.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/aspect-ratio-004.html [ Failure ]
-virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-auto-margin-and-replaced-item-001.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-inline-contribution-002.tentative.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-items/grid-item-inline-contribution-003.tentative.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-001.html [ Failure ]
@@ -3993,10 +3994,12 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-content-d
 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-001.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-003.html [ Failure ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-018.html [ Failure ]
-virtual/layout-ng-grid/external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-019.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-025.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-026.html [ Failure ]
+virtual/layout-ng-grid/fast/css-grid-layout/grid-item-spanning-and-orthogonal-flows.html [ Failure ]
+virtual/layout-ng-grid/fast/css-grid-layout/grid-track-sizing-with-orthogonal-flows.html [ Failure ]
 virtual/layout-ng-grid/fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Failure ]
 
 # Bad stretching of svgs without aspect-ratio.
@@ -6902,6 +6905,10 @@ crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-datachannel.
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-lifetime.html [ Pass Timeout ]
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-sdes-gcm.html [ Pass Timeout ]
 crbug.com/1215584 [ Mac11.0 ] inspector-protocol/layout-fonts/lang-fallback.js [ Pass Failure ]
+
+# Fail with field trial testing config.
+crbug.com/1219767 [ Linux ] virtual/threaded-prefer-compositing/fast/scroll-snap/snap-to-target-on-layout-change.html [ Failure ]
+crbug.com/1219767 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-1.https.html [ Failure ]
 
 # Sheriff 2021-06-03
 crbug.com/1185121 fast/scroll-snap/animate-fling-to-snap-points-1.html [ Pass Failure ]

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 
 namespace blink {
@@ -38,20 +37,6 @@ DOMArrayPiece::DOMArrayPiece(
   NOTREACHED();
   InitNull();
 }
-
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-DOMArrayPiece::DOMArrayPiece(
-    const ArrayBufferOrArrayBufferView& array_buffer_or_view) {
-  if (array_buffer_or_view.IsArrayBuffer()) {
-    DOMArrayBuffer* array_buffer = array_buffer_or_view.GetAsArrayBuffer();
-    InitWithArrayBuffer(array_buffer);
-  } else if (array_buffer_or_view.IsArrayBufferView()) {
-    DOMArrayBufferView* array_buffer_view =
-        array_buffer_or_view.GetAsArrayBufferView().Get();
-    InitWithArrayBufferView(array_buffer_view);
-  }
-}
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 
 bool DOMArrayPiece::IsNull() const {
   return is_null_;

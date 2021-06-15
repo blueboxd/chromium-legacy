@@ -7,14 +7,12 @@
 #include <cstdint>
 
 #include "base/time/time.h"
-#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_type_converters.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace mojo {
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 template <>
 struct TypeConverter<Vector<Vector<uint8_t>>,
                      blink::HeapVector<blink::Member<
@@ -29,20 +27,6 @@ struct TypeConverter<Vector<Vector<uint8_t>>,
     return result;
   }
 };
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
-template <>
-struct TypeConverter<Vector<Vector<uint8_t>>,
-                     blink::HeapVector<blink::ArrayBufferOrArrayBufferView>> {
-  static Vector<Vector<uint8_t>> Convert(
-      const blink::HeapVector<blink::ArrayBufferOrArrayBufferView>& input) {
-    Vector<Vector<uint8_t>> result;
-    for (const auto& item : input) {
-      result.push_back(mojo::ConvertTo<Vector<uint8_t>>(item));
-    }
-    return result;
-  }
-};
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
 
 payments::mojom::blink::SecurePaymentConfirmationRequestPtr
 TypeConverter<payments::mojom::blink::SecurePaymentConfirmationRequestPtr,

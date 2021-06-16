@@ -129,6 +129,31 @@ PrintBackendServiceManager::GetService(const std::string& locale,
   return service;
 }
 
+void PrintBackendServiceManager::EnumeratePrinters(
+    const std::string& locale,
+    mojom::PrintBackendService::EnumeratePrintersCallback callback) {
+  // Need to be able to run the callback either after a successful return from
+  // the service or after the remote was disconnected, so save it here for
+  // either eventuality.
+  // Get a callback ID to represent this command.
+  auto saved_callback_id = base::UnguessableToken::Create();
+
+  // Note that `GetService()` will set state internally if this is sandboxed.
+  const std::string kEmptyPrinterName;
+  std::string remote_id = GetRemoteIdForPrinterName(kEmptyPrinterName);
+  auto& service = GetService(locale, kEmptyPrinterName);
+
+  SaveCallback(GetRemoteSavedEnumeratePrintersCallbacks(is_sandboxed_service_),
+               remote_id, saved_callback_id, std::move(callback));
+
+  DVLOG(1) << "Sending EnumeratePrinters on remote `" << remote_id
+           << "`, saved callback ID of " << saved_callback_id;
+  service->EnumeratePrinters(
+      base::BindOnce(&PrintBackendServiceManager::EnumeratePrintersDone,
+                     base::Unretained(this), is_sandboxed_service_, remote_id,
+                     saved_callback_id));
+}
+
 void PrintBackendServiceManager::FetchCapabilities(
     const std::string& locale,
     const std::string& printer_name,
@@ -143,8 +168,8 @@ void PrintBackendServiceManager::FetchCapabilities(
   std::string remote_id = GetRemoteIdForPrinterName(printer_name);
   auto& service = GetService(locale, printer_name);
 
-  SaveFetchCapabilitiesCallback(remote_id, saved_callback_id,
-                                std::move(callback));
+  SaveCallback(GetRemoteSavedFetchCapabilitiesCallbacks(is_sandboxed_service_),
+               remote_id, saved_callback_id, std::move(callback));
 
   DVLOG(1) << "Sending FetchCapabilities on remote `" << remote_id
            << "`, saved callback ID of " << saved_callback_id;
@@ -247,7 +272,20 @@ void PrintBackendServiceManager::OnRemoteDisconnected(
   } else {
     unsandboxed_remotes_.erase(remote_id);
   }
-  RunSavedFetchCapabilitiesCallbacks(sandboxed, remote_id);
+  RunSavedCallbacks(
+      GetRemoteSavedEnumeratePrintersCallbacks(sandboxed), remote_id,
+      mojom::PrinterListResult::NewResultCode(mojom::ResultCode::kFailed));
+  RunSavedCallbacks(GetRemoteSavedFetchCapabilitiesCallbacks(sandboxed),
+                    remote_id,
+                    mojom::PrinterCapsAndInfoResult::NewResultCode(
+                        mojom::ResultCode::kFailed));
+}
+
+PrintBackendServiceManager::RemoteSavedEnumeratePrintersCallbacks&
+PrintBackendServiceManager::GetRemoteSavedEnumeratePrintersCallbacks(
+    bool sandboxed) {
+  return sandboxed ? sandboxed_saved_enumerate_printers_callbacks_
+                   : unsandboxed_saved_enumerate_printers_callbacks_;
 }
 
 PrintBackendServiceManager::RemoteSavedFetchCapabilitiesCallbacks&
@@ -257,14 +295,46 @@ PrintBackendServiceManager::GetRemoteSavedFetchCapabilitiesCallbacks(
                    : unsandboxed_saved_fetch_capabilities_callbacks_;
 }
 
-void PrintBackendServiceManager::SaveFetchCapabilitiesCallback(
+template <class T>
+void PrintBackendServiceManager::SaveCallback(
+    RemoteSavedCallbacks<T>& saved_callbacks,
     const std::string& remote_id,
     const base::UnguessableToken& saved_callback_id,
-    mojom::PrintBackendService::FetchCapabilitiesCallback callback) {
-  RemoteSavedFetchCapabilitiesCallbacks& saved_callbacks =
-      GetRemoteSavedFetchCapabilitiesCallbacks(is_sandboxed_service_);
-
+    base::OnceCallback<void(mojo::StructPtr<T>)> callback) {
   saved_callbacks[remote_id].emplace(saved_callback_id, std::move(callback));
+}
+
+template <class T>
+void PrintBackendServiceManager::ServiceCallbackDone(
+    RemoteSavedCallbacks<T>& saved_callbacks,
+    const std::string& remote_id,
+    const base::UnguessableToken& saved_callback_id,
+    mojo::StructPtr<T> data) {
+  auto found_callback_map = saved_callbacks.find(remote_id);
+  DCHECK(found_callback_map != saved_callbacks.end());
+
+  SavedCallbacks<T>& callback_map = found_callback_map->second;
+
+  auto callback_entry = callback_map.find(saved_callback_id);
+  DCHECK(callback_entry != callback_map.end());
+  base::OnceCallback<void(mojo::StructPtr<T>)> callback =
+      std::move(callback_entry->second);
+  callback_map.erase(callback_entry);
+
+  // Done disconnect wrapper management, propagate the callback.
+  std::move(callback).Run(std::move(data));
+}
+
+void PrintBackendServiceManager::EnumeratePrintersDone(
+    bool sandboxed,
+    const std::string& remote_id,
+    const base::UnguessableToken& saved_callback_id,
+    mojom::PrinterListResultPtr printer_list) {
+  DVLOG(1) << "EnumeratePrinters completed for remote `" << remote_id
+           << "` saved callback ID " << saved_callback_id;
+
+  ServiceCallbackDone(GetRemoteSavedEnumeratePrintersCallbacks(sandboxed),
+                      remote_id, saved_callback_id, std::move(printer_list));
 }
 
 void PrintBackendServiceManager::FetchCapabilitiesDone(
@@ -275,46 +345,30 @@ void PrintBackendServiceManager::FetchCapabilitiesDone(
   DVLOG(1) << "FetchCapabilities completed for remote `" << remote_id
            << "` saved callback ID " << saved_callback_id;
 
-  RemoteSavedFetchCapabilitiesCallbacks& saved_callbacks =
-      GetRemoteSavedFetchCapabilitiesCallbacks(sandboxed);
-
-  auto found_callback_map = saved_callbacks.find(remote_id);
-  DCHECK(found_callback_map != saved_callbacks.end());
-
-  SavedFetchCapabilitiesCallbacks& callback_map = found_callback_map->second;
-
-  auto callback_entry = callback_map.find(saved_callback_id);
-  DCHECK(callback_entry != callback_map.end());
-  mojom::PrintBackendService::FetchCapabilitiesCallback callback =
-      std::move(callback_entry->second);
-  callback_map.erase(callback_entry);
-
-  // Done disconnect wrapper management, propagate the callback.
-  std::move(callback).Run(std::move(printer_caps_and_info));
+  ServiceCallbackDone(GetRemoteSavedFetchCapabilitiesCallbacks(sandboxed),
+                      remote_id, saved_callback_id,
+                      std::move(printer_caps_and_info));
 }
 
-void PrintBackendServiceManager::RunSavedFetchCapabilitiesCallbacks(
-    bool sandboxed,
-    const std::string& remote_id) {
-  RemoteSavedFetchCapabilitiesCallbacks& saved_callbacks =
-      GetRemoteSavedFetchCapabilitiesCallbacks(sandboxed);
-
+template <class T>
+void PrintBackendServiceManager::RunSavedCallbacks(
+    RemoteSavedCallbacks<T>& saved_callbacks,
+    const std::string& remote_id,
+    mojo::StructPtr<T> result_to_clone) {
   auto found_callbacks_map = saved_callbacks.find(remote_id);
   if (found_callbacks_map == saved_callbacks.end())
     return;  // No callbacks to run.
 
-  SavedFetchCapabilitiesCallbacks& callbacks_map = found_callbacks_map->second;
+  SavedCallbacks<T>& callbacks_map = found_callbacks_map->second;
   for (auto& iter : callbacks_map) {
     const base::UnguessableToken& saved_callback_id = iter.first;
-    DVLOG(1) << "Propagating a FetchCapabilities callback, saved callback ID "
+    DVLOG(1) << "Propagating print backend callback, saved callback ID "
              << saved_callback_id << " for remote `" << remote_id << "`";
 
     // Don't remove entries from the map while we are iterating through it,
     // just run the callbacks.
-    mojom::PrintBackendService::FetchCapabilitiesCallback& callback =
-        iter.second;
-    std::move(callback).Run(mojom::PrinterCapsAndInfoResult::NewResultCode(
-        mojom::ResultCode::kFailed));
+    base::OnceCallback<void(mojo::StructPtr<T>)>& callback = iter.second;
+    std::move(callback).Run(result_to_clone.Clone());
   }
 
   // Now that we're done iterating we can safely delete all of the callbacks.

@@ -10,6 +10,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.util.Base64;
+
 import androidx.test.filters.SmallTest;
 
 import com.google.protobuf.ByteString;
@@ -24,21 +26,25 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.FeatureList;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
 import org.chromium.components.optimization_guide.proto.HintsProto.KeyRepresentation;
 import org.chromium.components.optimization_guide.proto.HintsProto.OptimizationType;
 import org.chromium.components.optimization_guide.proto.PushNotificationProto.HintNotificationPayload;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -91,6 +97,8 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
         when(mOptimizationGuideBridgeJniMock.init()).thenReturn(1L);
 
         Profile.setLastUsedProfileForTesting(mProfile);
+
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
     }
 
     @After
@@ -129,6 +137,9 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
                         .getNotificationCacheForOptimizationType(OptimizationType.LITE_PAGE)
                         .length);
 
+        Assert.assertEquals(Arrays.asList(OptimizationType.PERFORMANCE_HINTS),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
+
         OptimizationGuidePushNotificationManager.clearCacheForOptimizationType(
                 OptimizationType.PERFORMANCE_HINTS);
         cached = OptimizationGuidePushNotificationManager.getNotificationCacheForOptimizationType(
@@ -152,6 +163,9 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
         Assert.assertNotNull(cached);
         Assert.assertEquals(0, cached.length);
 
+        Assert.assertEquals(new ArrayList<OptimizationType>(),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
+
         verify(mOptimizationGuideBridgeJniMock, times(1))
                 .onNewPushNotification(anyLong(), eq(NOTIFICATION_WITHOUT_PAYLOAD.toByteArray()));
     }
@@ -172,6 +186,9 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
                         OptimizationType.PERFORMANCE_HINTS);
         Assert.assertNotNull(cached);
         Assert.assertEquals(0, cached.length);
+
+        Assert.assertEquals(new ArrayList<OptimizationType>(),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
     }
 
     @Test
@@ -198,6 +215,9 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
                         .getNotificationCacheForOptimizationType(OptimizationType.LITE_VIDEO)
                         .length);
 
+        Assert.assertEquals(Arrays.asList(OptimizationType.LITE_PAGE, OptimizationType.LITE_VIDEO),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
+
         setFeatureStatusForTest(false);
         // Push another notification to trigger the clear.
         OptimizationGuidePushNotificationManager.onPushNotification(NOTIFICATION_WITH_PAYLOAD);
@@ -210,6 +230,9 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
                 OptimizationGuidePushNotificationManager
                         .getNotificationCacheForOptimizationType(OptimizationType.LITE_VIDEO)
                         .length);
+
+        Assert.assertEquals(new ArrayList<OptimizationType>(),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
     }
 
     @Test
@@ -240,12 +263,18 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
                         OptimizationType.PERFORMANCE_HINTS);
         Assert.assertNull(cached);
 
+        Assert.assertEquals(new ArrayList<OptimizationType>(),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
+
         OptimizationGuidePushNotificationManager.clearCacheForOptimizationType(
                 OptimizationType.PERFORMANCE_HINTS);
         cached = OptimizationGuidePushNotificationManager.getNotificationCacheForOptimizationType(
                 OptimizationType.PERFORMANCE_HINTS);
         Assert.assertNotNull(cached);
         Assert.assertEquals(0, cached.length);
+
+        Assert.assertEquals(new ArrayList<OptimizationType>(),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
     }
 
     @Test
@@ -268,6 +297,9 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
         Assert.assertNotNull(cached);
         Assert.assertEquals(1, cached.length);
         Assert.assertEquals(NOTIFICATION_WITHOUT_PAYLOAD, cached[0]);
+
+        Assert.assertEquals(Arrays.asList(OptimizationType.PERFORMANCE_HINTS),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
     }
 
     @Test
@@ -299,6 +331,9 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
                         OptimizationType.PERFORMANCE_HINTS);
         Assert.assertNotNull(cached);
         Assert.assertEquals(0, cached.length);
+
+        Assert.assertEquals(new ArrayList<OptimizationType>(),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
     }
 
     @Test
@@ -315,5 +350,100 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
         Assert.assertNotNull(cached);
         Assert.assertEquals(1, cached.length);
         Assert.assertEquals(NOTIFICATION_WITHOUT_PAYLOAD, cached[0]);
+
+        Assert.assertEquals(Arrays.asList(OptimizationType.PERFORMANCE_HINTS),
+                OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
+    }
+
+    @Test
+    @SmallTest
+    public void testCacheDecodingErrors_Success() {
+        OptimizationGuidePushNotificationManager.setNativeIsInitializedForTesting(false);
+        setFeatureStatusForTest(true);
+
+        int startSuccessErrorCount = RecordHistogram.getHistogramValueCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult", /*SUCCESS=*/1);
+        int startTotalCount = RecordHistogram.getHistogramTotalCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult");
+
+        OptimizationGuidePushNotificationManager.onPushNotification(NOTIFICATION_WITHOUT_PAYLOAD);
+
+        HintNotificationPayload[] cached =
+                OptimizationGuidePushNotificationManager.getNotificationCacheForOptimizationType(
+                        OptimizationType.PERFORMANCE_HINTS);
+        Assert.assertNotNull(cached);
+        Assert.assertEquals(1, cached.length);
+        Assert.assertEquals(NOTIFICATION_WITHOUT_PAYLOAD, cached[0]);
+
+        int afterSuccessErrorCount = RecordHistogram.getHistogramValueCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult", /*SUCCESS=*/1);
+        int afterTotalCount = RecordHistogram.getHistogramTotalCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult");
+
+        Assert.assertEquals(1, afterSuccessErrorCount - startSuccessErrorCount);
+        Assert.assertEquals(1, afterTotalCount - startTotalCount);
+    }
+
+    @Test
+    @SmallTest
+    public void testCacheDecodingErrors_InvalidProtobuf() {
+        OptimizationGuidePushNotificationManager.setNativeIsInitializedForTesting(false);
+        setFeatureStatusForTest(true);
+
+        int startPBErrorCount = RecordHistogram.getHistogramValueCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult", /*INVALID_PROTOBUF=*/2);
+        int startTotalCount = RecordHistogram.getHistogramTotalCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult");
+
+        SharedPreferencesManager.getInstance().writeStringSet(
+                OptimizationGuidePushNotificationManager.cacheKey(
+                        OptimizationType.PERFORMANCE_HINTS),
+                new HashSet<String>(Arrays.asList(
+                        Base64.encodeToString(new byte[] {1, 2, 3}, Base64.DEFAULT))));
+
+        HintNotificationPayload[] cached =
+                OptimizationGuidePushNotificationManager.getNotificationCacheForOptimizationType(
+                        OptimizationType.PERFORMANCE_HINTS);
+        Assert.assertNotNull(cached);
+        Assert.assertEquals(0, cached.length);
+
+        int afterPBErrorCount = RecordHistogram.getHistogramValueCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult", /*INVALID_PROTOBUF=*/2);
+        int afterTotalCount = RecordHistogram.getHistogramTotalCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult");
+
+        Assert.assertEquals(1, afterPBErrorCount - startPBErrorCount);
+        Assert.assertEquals(1, afterTotalCount - startTotalCount);
+    }
+
+    @Test
+    @SmallTest
+    public void testCacheDecodingErrors_Base64Error() {
+        OptimizationGuidePushNotificationManager.setNativeIsInitializedForTesting(false);
+        setFeatureStatusForTest(true);
+
+        int startB64ErrorCount = RecordHistogram.getHistogramValueCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult", /*BASE64_ERROR=*/3);
+        int startTotalCount = RecordHistogram.getHistogramTotalCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult");
+
+        SharedPreferencesManager.getInstance().writeStringSet(
+                OptimizationGuidePushNotificationManager.cacheKey(
+                        OptimizationType.PERFORMANCE_HINTS),
+                new HashSet<String>(Arrays.asList("=")));
+
+        HintNotificationPayload[] cached =
+                OptimizationGuidePushNotificationManager.getNotificationCacheForOptimizationType(
+                        OptimizationType.PERFORMANCE_HINTS);
+        Assert.assertNotNull(cached);
+        Assert.assertEquals(0, cached.length);
+
+        int afterB64ErrorCount = RecordHistogram.getHistogramValueCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult", /*BASE64_ERROR=*/3);
+        int afterTotalCount = RecordHistogram.getHistogramTotalCountForTesting(
+                "OptimizationGuide.PushNotifications.ReadCacheResult");
+
+        Assert.assertEquals(1, afterB64ErrorCount - startB64ErrorCount);
+        Assert.assertEquals(1, afterTotalCount - startTotalCount);
     }
 }

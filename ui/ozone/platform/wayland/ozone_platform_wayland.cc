@@ -198,8 +198,6 @@ class OzonePlatformWayland : public OzonePlatform {
 #endif
 
     menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
-
-    // TODO(crbug.com/1138740): report which Wayland compositor is used.
   }
 
   void InitializeGPU(const InitParams& args) override {
@@ -265,6 +263,16 @@ class OzonePlatformWayland : public OzonePlatform {
       initialised = true;
     }
 
+    return *properties;
+  }
+
+  const PlatformRuntimeProperties& GetPlatformRuntimeProperties() override {
+    static base::NoDestructor<OzonePlatform::PlatformRuntimeProperties>
+        properties;
+    if (connection_) {
+      properties->supports_server_side_window_decorations =
+          (connection_->xdg_decoration_manager_v1() != nullptr);
+    }
     return *properties;
   }
 

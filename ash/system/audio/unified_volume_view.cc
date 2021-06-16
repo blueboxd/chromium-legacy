@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -34,6 +33,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -91,7 +91,7 @@ class UnifiedVolumeViewButton : public T {
   void OnThemeChanged() override {
     T::OnThemeChanged();
     auto* color_provider = AshColorProvider::Get();
-    T::focus_ring()->SetColor(color_provider->GetControlsLayerColor(
+    views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
         AshColorProvider::ControlsLayerType::kFocusRingColor));
     T::background()->SetNativeControlColor(GetBackgroundColor());
   }

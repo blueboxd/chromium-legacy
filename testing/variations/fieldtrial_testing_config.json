@@ -4164,6 +4164,21 @@
             ]
         }
     ],
+    "IOSTabGridContextMenu": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabGridContextMenu"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSUMABackgroundSessions": [
         {
             "platforms": [
@@ -7327,9 +7342,13 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_preemptive",
                     "enable_features": [
+                        "CopyLinkToText",
                         "PreemptiveLinkToTextGeneration"
+                    ],
+                    "disable_features": [
+                        "SharedHighlightingV2"
                     ]
                 }
             ]
@@ -8932,6 +8951,26 @@
                     "enable_features": [
                         "SafeBrowsingkRealTimeUrlLookupEnterpriseGaEndpoint"
                     ]
+                }
+            ]
+        }
+    ],
+    "WebRTC-Aec3DelayEstimateSmoothingDelayFoundOverride": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "0.1"
+                },
+                {
+                    "name": "0.3"
+                },
+                {
+                    "name": "0.7"
                 }
             ]
         }

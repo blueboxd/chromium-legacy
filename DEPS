@@ -217,11 +217,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'af8047dbb84911362bacf0bc07fd458e313f08b4',
+  'skia_revision': 'e5894fce585de839c3abe382ad8938e52925f8a9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '571acd1056b6754ee266ff6e44a6ec2359a7e3b6',
+  'v8_revision': '8c956ecc96fd13e8f24017d41591d3f5c9a6db31',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -229,7 +229,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '3f9dcb00a4986d8b1b871e61f51fd04497ae75cc',
+  'angle_revision': 'a76f224f4a17b53c2bdd9629082bb2cfc8e1c0f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -237,7 +237,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'da9d36725ad7fc844146450aea56c9423d3956b6',
+  'pdfium_revision': 'b1678fc4929ce7b0a3db33949c939e6635c2f068',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -296,7 +296,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '050e7017b24dedaa882df5c8bd3df570d9913885',
+  'devtools_frontend_revision': '2c906fa4f47e62f4ca5d391b55d12b47be23ce6c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -336,7 +336,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7d17f0e0ffe83160286f79002081b9c15b34ce52',
+  'dawn_revision': '46ed96336a62398190830588916012566fb4388d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -384,7 +384,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '7e85c7a26be09db769732d59a829cc0d310e3ef6',
+  'libunwind_revision':    'a38ef11ab68f975bb4fe5356aff5f0e3dabe9f23',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1355,7 +1355,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8bcf60828725f8b193208770a5eb183b80bc8b04',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'bb16fa2cc0a03db867a1977c68d87efe7d7e26be',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1584,10 +1584,10 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '827cad9e402b63bbe38787456115bcb681a8a152',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'a97040b252cad9710188a83f1dd81d8dad89f437',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'bcc93e24ad10013efd748151a959323b45cb9590',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd6957c2eed0946a48142b7adb5e90fb8d3d59ff9',
+    Var('webrtc_git') + '/src.git' + '@' + 'bc03259de7e9916f7b6c3ae30aa0718ad564049d',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a0ecebaa0bb5d4a588257bcdc6b72365b3d00285',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5ea44b00385c5c242647299d55d7842c3ca1691c',
     'condition': 'checkout_src_internal',
   },
 

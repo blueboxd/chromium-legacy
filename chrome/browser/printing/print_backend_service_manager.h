@@ -32,7 +32,10 @@ class PrintBackendServiceManager {
       const std::string& locale,
       const std::string& printer_name);
 
-  // Wrapper around mojom::PrintBackendService call.
+  // Wrappers around mojom::PrintBackendService call.
+  void EnumeratePrinters(
+      const std::string& locale,
+      mojom::PrintBackendService::EnumeratePrintersCallback callback);
   void FetchCapabilities(
       const std::string& locale,
       const std::string& printer_name,
@@ -78,14 +81,20 @@ class PrintBackendServiceManager {
   // callback that can be discarded once a service call succeeds normally.
 
   // Key is a callback ID.
-  using SavedFetchCapabilitiesCallbacks =
+  template <class T>
+  using SavedCallbacks =
       base::flat_map<base::UnguessableToken,
-                     mojom::PrintBackendService::FetchCapabilitiesCallback>;
+                     base::OnceCallback<void(mojo::StructPtr<T>)>>;
 
   // Key is the remote ID that enables finding the correct remote.  Note that
   // the remote ID does not necessarily mean the printer name.
+  template <class T>
+  using RemoteSavedCallbacks = base::flat_map<std::string, SavedCallbacks<T>>;
+
+  using RemoteSavedEnumeratePrintersCallbacks =
+      RemoteSavedCallbacks<mojom::PrinterListResult>;
   using RemoteSavedFetchCapabilitiesCallbacks =
-      base::flat_map<std::string, SavedFetchCapabilitiesCallbacks>;
+      RemoteSavedCallbacks<mojom::PrinterCapsAndInfoResult>;
 
   PrintBackendServiceManager();
   ~PrintBackendServiceManager();
@@ -104,16 +113,30 @@ class PrintBackendServiceManager {
   void OnRemoteDisconnected(bool sandboxed, const std::string& remote_id);
 
   // Helper function to choose correct saved callbacks mapping.
+  RemoteSavedEnumeratePrintersCallbacks&
+  GetRemoteSavedEnumeratePrintersCallbacks(bool sandboxed);
   RemoteSavedFetchCapabilitiesCallbacks&
   GetRemoteSavedFetchCapabilitiesCallbacks(bool sandboxed);
 
   // Helper function to save outstanding callbacks.
-  void SaveFetchCapabilitiesCallback(
-      const std::string& remote_id,
-      const base::UnguessableToken& saved_callback_id,
-      mojom::PrintBackendService::FetchCapabilitiesCallback callback);
+  template <class T>
+  void SaveCallback(RemoteSavedCallbacks<T>& saved_callbacks,
+                    const std::string& remote_id,
+                    const base::UnguessableToken& saved_callback_id,
+                    base::OnceCallback<void(mojo::StructPtr<T>)> callback);
 
-  // Local callback wrapper for mojom calls.
+  // Helper function for local callback wrappers for mojom calls.
+  template <class T>
+  void ServiceCallbackDone(RemoteSavedCallbacks<T>& saved_callbacks,
+                           const std::string& remote_id,
+                           const base::UnguessableToken& saved_callback_id,
+                           mojo::StructPtr<T> data);
+
+  // Local callback wrappers for mojom calls.
+  void EnumeratePrintersDone(bool sandboxed,
+                             const std::string& remote_id,
+                             const base::UnguessableToken& saved_callback_id,
+                             mojom::PrinterListResultPtr printer_list);
   void FetchCapabilitiesDone(
       bool sandboxed,
       const std::string& remote_id,
@@ -122,8 +145,10 @@ class PrintBackendServiceManager {
 
   // Helper function to run outstanding callbacks when a remote has become
   // disconnected.
-  void RunSavedFetchCapabilitiesCallbacks(bool sandboxed,
-                                          const std::string& remote_id);
+  template <class T>
+  void RunSavedCallbacks(RemoteSavedCallbacks<T>& saved_callbacks,
+                         const std::string& remote_id,
+                         mojo::StructPtr<T> result_to_clone);
 
   using RemotesMap =
       base::flat_map<std::string,
@@ -134,6 +159,10 @@ class PrintBackendServiceManager {
   RemotesMap unsandboxed_remotes_;
 
   // Track the saved callbacks for each remote.
+  RemoteSavedEnumeratePrintersCallbacks
+      sandboxed_saved_enumerate_printers_callbacks_;
+  RemoteSavedEnumeratePrintersCallbacks
+      unsandboxed_saved_enumerate_printers_callbacks_;
   RemoteSavedFetchCapabilitiesCallbacks
       sandboxed_saved_fetch_capabilities_callbacks_;
   RemoteSavedFetchCapabilitiesCallbacks

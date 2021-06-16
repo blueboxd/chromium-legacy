@@ -208,6 +208,16 @@ const FeatureEntry::FeatureVariation
          base::size(kDefaultBrowserFullscreenPromoCTAExperimentOpenLinks),
          nullptr}};
 
+const FeatureEntry::FeatureParam
+    kDefaultBrowserFullscreenPromoExperimentRemindMeLater[] = {
+        {kDefaultBrowserFullscreenPromoExperimentRemindMeGroupParam, "true"}};
+const FeatureEntry::FeatureVariation
+    kDefaultBrowserFullscreenPromoExperimentVariations[] = {
+        {"Remind me later",
+         kDefaultBrowserFullscreenPromoExperimentRemindMeLater,
+         base::size(kDefaultBrowserFullscreenPromoExperimentRemindMeLater),
+         nullptr}};
+
 const FeatureEntry::FeatureParam kDefaultPromoTailoredIOS[] = {
     {kDefaultPromoTailoredVariantIOSParam, "true"}};
 const FeatureEntry::FeatureParam kDefaultPromoTailoredSafe[] = {
@@ -620,7 +630,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultBrowserFullscreenPromoExperimentName,
      flag_descriptions::kDefaultBrowserFullscreenPromoExperimentDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDefaultBrowserFullscreenPromoExperiment)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kDefaultBrowserFullscreenPromoExperiment,
+         kDefaultBrowserFullscreenPromoExperimentVariations,
+         "IOSDefaultBrowserFullscreenPromoExperiment")},
     {"ios-shared-highlighting-color-change",
      flag_descriptions::kIOSSharedHighlightingColorChangeName,
      flag_descriptions::kIOSSharedHighlightingColorChangeDescription,
@@ -764,6 +777,16 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadMobileConfigFileName,
      flag_descriptions::kDownloadMobileConfigFileDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadMobileConfigFile)},
+    {"sync-trusted-vault-passphrase-promo",
+     flag_descriptions::kSyncTrustedVaultPassphrasePromoName,
+     flag_descriptions::kSyncTrustedVaultPassphrasePromoDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphrasePromo)},
+    {"sync-trusted-vault-passphrase-recovery",
+     flag_descriptions::kSyncTrustedVaultPassphraseRecoveryName,
+     flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseRecovery)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -807,7 +830,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     // allowed, otherwise they will be ignored in Beta and Stable. Add them to
     // the |allowed_experimental_policies| array.
     [allowed_experimental_policies addObjectsFromArray:@[
-      base::SysUTF8ToNSString(policy::key::kNTPContentSuggestionsEnabled),
     ]];
 
     [testing_policies addEntriesFromDictionary:@{

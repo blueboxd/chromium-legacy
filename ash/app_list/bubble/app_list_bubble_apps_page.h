@@ -7,6 +7,7 @@
 
 #include "ash/app_list/bubble/scrollable_apps_grid_view.h"
 #include "ash/ash_export.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -22,10 +23,14 @@ class ScrollableAppsGridView;
 // Does not include the search box, which is owned by a parent view.
 class ASH_EXPORT AppListBubbleAppsPage : public views::View {
  public:
+  METADATA_HEADER(AppListBubbleAppsPage);
+
   explicit AppListBubbleAppsPage(AppListViewDelegate* view_delegate);
   AppListBubbleAppsPage(const AppListBubbleAppsPage&) = delete;
   AppListBubbleAppsPage& operator=(const AppListBubbleAppsPage&) = delete;
   ~AppListBubbleAppsPage() override;
+
+  views::ScrollView* scroll_view() { return scroll_view_; }
 
   RecentAppsView* recent_apps_for_test() { return recent_apps_; }
   ScrollableAppsGridView* scrollable_apps_grid_view_for_test() {
@@ -34,6 +39,7 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View {
 
  private:
   RecentAppsView* recent_apps_ = nullptr;
+  views::ScrollView* scroll_view_ = nullptr;
   ScrollableAppsGridView* scrollable_apps_grid_view_ = nullptr;
 };
 

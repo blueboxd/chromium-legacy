@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
 #include <utility>
+#include <vector>
 
 #include "apps/launcher.h"
 #include "ash/constants/ash_features.h"
@@ -14,6 +15,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -73,10 +75,10 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/was_activated_option.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -258,6 +260,12 @@ std::string GetPathAndQuery(const GURL& url) {
   return result;
 }
 
+// Remove directory components from |file_name|. E.g.,
+// StripPathComponents("../directory/file.jpg") returns "file.jpg".
+std::string StripPathComponents(const std::string& file_name) {
+  return base::FilePath(file_name).BaseName().AsUTF8Unsafe();
+}
+
 apps::mojom::IntentPtr ConvertLaunchIntent(
     const arc::mojom::LaunchIntentPtr& launch_intent) {
   apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
@@ -271,6 +279,19 @@ apps::mojom::IntentPtr ConvertLaunchIntent(
   intent->mime_type = launch_intent->type;
   intent->share_title = launch_intent->extra_subject;
   intent->share_text = launch_intent->extra_text;
+
+  if (launch_intent->files.has_value() && launch_intent->files->size() > 0) {
+    intent->files = std::vector<apps::mojom::IntentFilePtr>();
+    for (const auto& file_info : *launch_intent->files) {
+      auto file = apps::mojom::IntentFile::New();
+
+      file->url = arc::ArcUrlToExternalFileUrl(file_info->content_uri);
+      file->mime_type = file_info->type;
+      file->file_name = StripPathComponents(file_info->name);
+      file->file_size = file_info->size;
+      intent->files->push_back(std::move(file));
+    }
+  }
 
   return intent;
 }
@@ -672,7 +693,7 @@ content::WebContents* ChromeNewWindowClient::OpenUrlImpl(
                                 ui::PAGE_TRANSITION_FROM_API));
 
   if (from_user_interaction)
-    navigate_params.was_activated = content::mojom::WasActivatedOption::kYes;
+    navigate_params.was_activated = blink::mojom::WasActivatedOption::kYes;
 
   Navigate(&navigate_params);
 

@@ -6,9 +6,9 @@
 
 #include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -186,10 +186,7 @@ void StatusAreaWidget::Initialize() {
 
 StatusAreaWidget::~StatusAreaWidget() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-  // TODO(pbos): Investigate if this is necessary. This is a bit defensive but
-  // it's done to make sure that StatusAreaWidget isn't accessed by the View
-  // hierarchy during destruction.
-  status_area_widget_delegate_->RemoveAllChildViews(/*delete=*/true);
+  status_area_widget_delegate_->Shutdown();
 }
 
 // static

@@ -1543,6 +1543,11 @@ const char kMutingCompromisedCredentialsName[] =
 const char kMutingCompromisedCredentialsDescription[] =
     "When enable, insecure credential muting state is respected.";
 
+const char kCanvas2DLayersName[] =
+    "Enables canvas 2D methods BeginLayer and EndLayer";
+const char kCanvas2DLayersDescription[] =
+    "Enables the canvas 2D methods BeginLayer and EndLayer.";
+
 const char kNewCanvas2DAPIName[] = "Experimental canvas 2D API features";
 const char kNewCanvas2DAPIDescription[] =
     "Enables in-progress features for the canvas 2D API. See "
@@ -4229,6 +4234,12 @@ const char kEnhancedClipboardNudgeSessionResetName[] =
 const char kEnhancedClipboardNudgeSessionResetDescription[] =
     "When enabled, this will reset the clipboard nudge shown data on every new "
     "user session, allowing the nudge to be shown again.";
+
+const char kEnhancedClipboardScreenshotNudgeName[] =
+    "Enable clipboard history screenshot nudge";
+const char kEnhancedClipboardScreenshotNudgeDescription[] =
+    "When enabled, the keyboard shortcut for clipboard history will show in "
+    "the screenshot notification banner in clamshell mode.";
 
 const char kEnableCrOSActionRecorderName[] = "Enable CrOS action recorder";
 const char kEnableCrOSActionRecorderDescription[] =

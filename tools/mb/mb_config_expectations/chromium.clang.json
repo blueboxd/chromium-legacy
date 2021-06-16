@@ -82,6 +82,17 @@
       "target_os": "android"
     }
   },
+  "ToTAndroid x86": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_clang": true,
+      "is_component_build": true,
+      "is_debug": false,
+      "llvm_force_head_revision": true,
+      "target_cpu": "x86",
+      "target_os": "android"
+    }
+  },
   "ToTAndroid64": {
     "gn_args": {
       "is_clang": true,
@@ -202,23 +213,23 @@
       "llvm_force_head_revision": true
     }
   },
+  "ToTLinuxPGO": {
+    "gn_args": {
+      "chrome_pgo_phase": 1,
+      "is_chrome_branded": true,
+      "is_clang": true,
+      "is_official_build": true,
+      "llvm_force_head_revision": true,
+      "strip_absolute_paths_from_debug_symbols": true,
+      "symbol_level": 0
+    }
+  },
   "ToTLinuxTSan": {
     "gn_args": {
       "is_clang": true,
       "is_debug": false,
       "is_tsan": true,
       "llvm_force_head_revision": true
-    }
-  },
-  "ToTLinuxThinLTO": {
-    "gn_args": {
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "llvm_force_head_revision": true,
-      "symbol_level": 1,
-      "thin_lto_enable_optimizations": true,
-      "use_thin_lto": true
     }
   },
   "ToTLinuxUBSanVptr": {
@@ -337,6 +348,17 @@
       "llvm_force_head_revision": true
     }
   },
+  "ToTWin64PGO": {
+    "gn_args": {
+      "chrome_pgo_phase": 1,
+      "is_chrome_branded": true,
+      "is_clang": true,
+      "is_official_build": true,
+      "llvm_force_head_revision": true,
+      "strip_absolute_paths_from_debug_symbols": true,
+      "symbol_level": 0
+    }
+  },
   "ToTWinASanLibfuzzer": {
     "gn_args": {
       "enable_nacl": false,
@@ -389,11 +411,10 @@
       "llvm_force_head_revision": true,
       "symbol_level": 2,
       "target_cpu": "x86",
-      "use_thin_lto": true,
       "win_linker_timing": true
     }
   },
-  "ToTWinThinLTO64": {
+  "ToTWinOfficial64": {
     "gn_args": {
       "is_chrome_branded": true,
       "is_clang": true,
@@ -401,7 +422,6 @@
       "is_official_build": true,
       "llvm_force_head_revision": true,
       "symbol_level": 2,
-      "use_thin_lto": true,
       "win_linker_timing": true
     }
   },

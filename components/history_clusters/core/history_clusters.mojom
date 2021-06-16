@@ -1,0 +1,120 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module history_clusters.mojom;
+
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/url.mojom";
+
+// Represents a search query related to a visit to the search results page.
+struct SearchQuery {
+  // Text of the search query.
+  string query;
+  // URL of the search query page.
+  url.mojom.Url url;
+};
+
+// Available annotations for a visit.
+enum Annotation {
+  // Indicates that the visited URL was added to the bookmarks or was already
+  // bookmarked.
+  kBookmarked,
+  // Indicates that the visited URL was added to a tab group or was already in a
+  // tab group.
+  kTabGrouped,
+  // Indicates that the visited URL was the search results page of the default
+  // search provider.
+  kSearchResultsPage,
+};
+
+// Represents the most recent visit to a URL within a Cluster. Visits for which
+// there are more recent visits to the same URL within the Cluster are omitted.
+// However, the time of the least recent visit as well as the number of those
+// duplicate visits are preserved for use in the UI as well as deletion.
+struct URLVisit {
+  // Visit identifier. See //components/history/core/browser/history_types.h
+  int64 id;
+
+  // Visited URL.
+  url.mojom.Url url;
+
+  // Title of the visited webpage.
+  string page_title;
+
+  // Optional externally hosted thumbnail representing the visited webpage.
+  url.mojom.Url? thumbnail_url;
+
+  // Time of the visit.
+  mojo_base.mojom.Time time;
+
+  // Time of the least recent visit in the Cluster to the same URL. Equals
+  // `time` if there is only one visit to the URL within the Cluster.
+  mojo_base.mojom.Time first_visit_time;
+
+  // Localized string of approximate time of visit, e.g., "2 days ago".
+  string relative_date;
+
+  // Time of day of visit, e.g., "3:07 PM".
+  string time_of_day;
+
+  // Number of duplicate visits (i.e., visits to the same URL) in the Cluster.
+  int32 num_duplicate_visits;
+
+  // Annotations for this visit.
+  array<Annotation> annotations;
+
+  // Search queries related to this visit or one of its related visits, if
+  // applicable; typically the highest scoring one.
+  array<SearchQuery> related_searches;
+
+  // Related visits to this visit; starting with the highest scoring one, if
+  // applicable. Only prominently featured visits have related visits.
+  array<URLVisit> related_visits;
+
+  // Whether a related visit is initially hidden. Calculated based on `score`.
+  bool below_the_fold;
+
+  // A calculated score (i.e., calculated based on how long the tab was in
+  // foreground etc).
+  double score;
+};
+
+// Represents a cluster of visits generated from device history by the browser
+// and displayed in the chrome://memories WebUI. Contains cluster-level metadata
+// (e.g., keywords) derived from the metadata of constituent visits.
+struct Cluster {
+  // Cluster identifier. See //components/history/core/browser/history_types.h
+  int64 id;
+
+  // Prominently featured constituent visits; typically the highest scoring
+  // one(s).
+  array<URLVisit> visits;
+
+  // Time of the most recent visit in the Cluster. Used for extracting Clusters.
+  mojo_base.mojom.Time last_visit_time;
+
+  // The content "topics", or keywords, that the memory contains/is related to.
+  // These strings should never be exposed to the user directly in case they are
+  // offensively wrong, but may be queried over with search terms to find
+  // memories.
+  array<mojo_base.mojom.String16> keywords;
+};
+
+// Parameters used to query the service for Clusters in reverse chronological
+// order.
+struct QueryParams {
+  // The query string the Clusters are matched against. The default value of
+  // empty string means to return every Cluster that matches the other criteria.
+  string query;
+
+  // The optional time threshold (exclusive) for how recent the Clusters can be.
+  // If specified, Clusters before `recency_threshold` and if missing, Clusters
+  // until the present time that match the other criteria are returned.
+  mojo_base.mojom.Time? recency_threshold;
+
+  // The maximum number of Clusters to return. The default value of 0 means to
+  // return every Cluster that matches the other criteria.
+  uint32 max_count;
+};

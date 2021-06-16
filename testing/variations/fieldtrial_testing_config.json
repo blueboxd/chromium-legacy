@@ -3181,6 +3181,22 @@
             ]
         }
     ],
+    "DynamicBufferQueueAllocation": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DynamicBufferQueueAllocation"
+                    ]
+                }
+            ]
+        }
+    ],
     "DynamicTcmallocThreadCache": [
         {
             "platforms": [
@@ -3316,6 +3332,29 @@
                     },
                     "enable_features": [
                         "EnhancedProtectionPromoCard"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnterpriseRealtimeExtensionRequest": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "with_erp": "true"
+                    },
+                    "enable_features": [
+                        "EnterpriseRealtimeExtensionRequest"
                     ]
                 }
             ]
@@ -4241,7 +4280,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "EnableIncognitoBrandConsistencyForDesktop",
+                        "IncognitoBrandConsistencyForDesktop",
                         "InheritNativeThemeFromParentWidget"
                     ]
                 }
@@ -5342,6 +5381,7 @@
                     "enable_features": [
                         "OmniboxAdaptiveSuggestionsCount",
                         "OmniboxCompactSuggestions",
+                        "OmniboxDynamicMaxAutocomplete",
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",

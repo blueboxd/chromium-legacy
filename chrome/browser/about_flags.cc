@@ -213,7 +213,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -6235,6 +6234,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnhancedClipboardNudgeSessionResetDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kClipboardHistoryNudgeSessionReset)},
+    {"enhanced_clipboard_screenshot_nudge",
+     flag_descriptions::kEnhancedClipboardScreenshotNudgeName,
+     flag_descriptions::kEnhancedClipboardScreenshotNudgeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kClipboardHistoryScreenshotNudge)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
@@ -6364,6 +6367,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(kDiceWebSigninInterceptionFeature)},
 #endif  // ENABLE_DICE_SUPPORT
+    {"canvas-2d-layers", flag_descriptions::kCanvas2DLayersName,
+     flag_descriptions::kCanvas2DLayersDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableCanvas2DLayers)},
+
     {"new-canvas-2d-api", flag_descriptions::kNewCanvas2DAPIName,
      flag_descriptions::kNewCanvas2DAPIDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableNewCanvas2DAPI)},

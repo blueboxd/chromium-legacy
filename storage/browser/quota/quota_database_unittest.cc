@@ -38,7 +38,7 @@ static const blink::mojom::StorageType kTemp =
 static const blink::mojom::StorageType kPerm =
     blink::mojom::StorageType::kPersistent;
 
-const char kDefaultBucket[] = "default";
+const char kDefaultBucketName[] = "default";
 
 }  // namespace
 
@@ -204,9 +204,13 @@ TEST_P(QuotaDatabaseTest, CreateBucket) {
       StorageKey::CreateFromStringForTesting("http://google/");
   std::string bucket_name = "google_bucket";
 
-  QuotaErrorOr<BucketId> result = db.CreateBucket(storage_key, bucket_name);
+  QuotaErrorOr<BucketInfo> result = db.CreateBucket(storage_key, bucket_name);
   ASSERT_TRUE(result.ok());
-  ASSERT_FALSE(result.value().is_null());
+
+  BucketInfo bucket = result.value();
+  ASSERT_GT(bucket.id.value(), 0);
+  ASSERT_EQ(bucket.name, bucket_name);
+  ASSERT_EQ(bucket.storage_key, storage_key);
 
   // Trying to create an existing bucket should return false.
   result = db.CreateBucket(storage_key, bucket_name);
@@ -214,7 +218,7 @@ TEST_P(QuotaDatabaseTest, CreateBucket) {
   EXPECT_EQ(result.error(), QuotaError::kEntryExistsError);
 }
 
-TEST_P(QuotaDatabaseTest, GetBucketId) {
+TEST_P(QuotaDatabaseTest, GetBucket) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
   EXPECT_TRUE(LazyOpen(&db, LazyOpenMode::kCreateIfNotFound));
 
@@ -222,44 +226,48 @@ TEST_P(QuotaDatabaseTest, GetBucketId) {
   StorageKey storage_key =
       StorageKey::CreateFromStringForTesting("http://google/");
   std::string bucket_name = "google_bucket";
-  QuotaErrorOr<BucketId> result = db.CreateBucket(storage_key, bucket_name);
+  QuotaErrorOr<BucketInfo> result = db.CreateBucket(storage_key, bucket_name);
   ASSERT_TRUE(result.ok());
 
-  BucketId created_bucket_id = result.value();
-  ASSERT_FALSE(created_bucket_id.is_null());
+  BucketInfo created_bucket = result.value();
+  ASSERT_GT(created_bucket.id.value(), 0);
+  ASSERT_EQ(created_bucket.name, bucket_name);
+  ASSERT_EQ(created_bucket.storage_key, storage_key);
 
-  db.GetBucketId(storage_key, bucket_name);
+  result = db.GetBucket(storage_key, bucket_name);
   ASSERT_TRUE(result.ok());
-  EXPECT_EQ(result.value(), created_bucket_id);
+  EXPECT_EQ(result.value().id, created_bucket.id);
+  EXPECT_EQ(result.value().name, created_bucket.name);
+  EXPECT_EQ(result.value().storage_key, created_bucket.storage_key);
 
   // Can't retrieve buckets with name mismatch.
-  result = db.GetBucketId(storage_key, "does_not_exist");
-  ASSERT_TRUE(result.ok());
-  EXPECT_TRUE(result.value().is_null());
+  result = db.GetBucket(storage_key, "does_not_exist");
+  ASSERT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
 
   // Can't retrieve buckets with StorageKey mismatch.
-  result = db.GetBucketId(
+  result = db.GetBucket(
       StorageKey::CreateFromStringForTesting("http://example/"), bucket_name);
-  ASSERT_TRUE(result.ok());
-  EXPECT_TRUE(result.value().is_null());
+  ASSERT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
 }
 
-TEST_P(QuotaDatabaseTest, GetBucketIdWithNoDb) {
+TEST_P(QuotaDatabaseTest, GetBucketWithNoDb) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
   EXPECT_FALSE(LazyOpen(&db, LazyOpenMode::kFailIfNotFound));
 
   StorageKey storage_key =
       StorageKey::CreateFromStringForTesting("http://google/");
   std::string bucket_name = "google_bucket";
-  QuotaErrorOr<BucketId> result = db.GetBucketId(storage_key, bucket_name);
-  ASSERT_TRUE(result.ok());
-  EXPECT_TRUE(result.value().is_null());
+  QuotaErrorOr<BucketInfo> result = db.GetBucket(storage_key, bucket_name);
+  ASSERT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
 }
 
 // TODO(crbug.com/1216094): Update test to have its behavior on Fuchsia match
 // with other platforms, and enable test on all platforms.
 #if !defined(OS_FUCHSIA)
-TEST_F(QuotaDatabaseTest, GetBucketIdWithOpenDatabaseError) {
+TEST_F(QuotaDatabaseTest, GetBucketWithOpenDatabaseError) {
   sql::test::ScopedErrorExpecter expecter;
   expecter.ExpectError(SQLITE_CANTOPEN);
 
@@ -270,7 +278,7 @@ TEST_F(QuotaDatabaseTest, GetBucketIdWithOpenDatabaseError) {
   StorageKey storage_key =
       StorageKey::CreateFromStringForTesting("http://google/");
   std::string bucket_name = "google_bucket";
-  QuotaErrorOr<BucketId> result = db.GetBucketId(storage_key, bucket_name);
+  QuotaErrorOr<BucketInfo> result = db.GetBucket(storage_key, bucket_name);
   ASSERT_FALSE(result.ok());
   EXPECT_EQ(result.error(), QuotaError::kDatabaseError);
 
@@ -682,11 +690,11 @@ TEST_P(QuotaDatabaseTest, DumpBucketTable) {
   using Entry = QuotaDatabase::BucketTableEntry;
   Entry kTableEntries[] = {
       Entry(BucketId(1), StorageKey::CreateFromStringForTesting("http://go/"),
-            kTemp, kDefaultBucket, 2147483647, now, now),
+            kTemp, kDefaultBucketName, 2147483647, now, now),
       Entry(BucketId(2), StorageKey::CreateFromStringForTesting("http://oo/"),
-            kTemp, kDefaultBucket, 0, now, now),
+            kTemp, kDefaultBucketName, 0, now, now),
       Entry(BucketId(3), StorageKey::CreateFromStringForTesting("http://gle/"),
-            kTemp, kDefaultBucket, 1, now, now),
+            kTemp, kDefaultBucketName, 1, now, now),
   };
 
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
@@ -705,7 +713,7 @@ TEST_P(QuotaDatabaseTest, GetStorageKeyInfo) {
       StorageKey::CreateFromStringForTesting("http://go/");
   using Entry = QuotaDatabase::BucketTableEntry;
   Entry kTableEntries[] = {Entry(BucketId(1), kStorageKey, kTemp,
-                                 kDefaultBucket, 100, base::Time(),
+                                 kDefaultBucketName, 100, base::Time(),
                                  base::Time())};
 
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());

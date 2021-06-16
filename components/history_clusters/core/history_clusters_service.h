@@ -19,7 +19,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/clustering_backend.h"
-#include "components/history_clusters/core/memories.mojom.h"
+#include "components/history_clusters/core/history_clusters.mojom.h"
 #include "components/history_clusters/core/visit_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/query_parser/query_parser.h"
@@ -37,11 +37,11 @@ class HistoryClustersService : public KeyedService {
 
   struct QueryMemoriesResponse {
     QueryMemoriesResponse(mojom::QueryParamsPtr query_params,
-                          std::vector<mojom::MemoryPtr> clusters);
+                          std::vector<mojom::ClusterPtr> clusters);
     QueryMemoriesResponse(QueryMemoriesResponse&& other);
     ~QueryMemoriesResponse();
     mojom::QueryParamsPtr query_params;
-    std::vector<mojom::MemoryPtr> clusters;
+    std::vector<mojom::ClusterPtr> clusters;
   };
 
   explicit HistoryClustersService(

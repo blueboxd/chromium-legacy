@@ -1064,6 +1064,7 @@ if (!is_android) {
       "//components/optimization_guide/content/mojom:mojo_interfaces",
       "//components/optimization_guide/content/renderer",
       "//components/optimization_guide/core",
+      "//components/optimization_guide/core:bloomfilter",
       "//components/optimization_guide/core:test_support",
       "//components/optimization_guide/proto:optimization_guide_proto",
       "//components/page_load_metrics/browser",
@@ -1160,6 +1161,7 @@ if (!is_android) {
       "//components/webapps/browser",
       "//components/webrtc",
       "//components/webrtc_logging/browser",
+      "//content/public/common",
       "//content/test:browsertest_support",
       "//content/test:test_support",
       "//courgette:bsdiff",
@@ -3729,7 +3731,7 @@ if (!is_android) {
           "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
         ]
       }
-      if (!is_chromeos_ash) {
+      if (!is_chromeos) {
         sources += [
           # Not intended to run on ChromeOS.
           "../browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc",
@@ -5029,6 +5031,7 @@ test("unit_tests") {
     "//components/optimization_guide/content/browser:test_support",
     "//components/optimization_guide/content/renderer",
     "//components/optimization_guide/core",
+    "//components/optimization_guide/core:bloomfilter",
     "//components/optimization_guide/core:test_support",
     "//components/os_crypt:test_support",
     "//components/page_info",
@@ -6920,6 +6923,8 @@ test("unit_tests") {
         "../browser/ui/webui/print_preview/print_preview_utils_unittest.cc",
       ]
 
+      deps += [ "//ipc" ]
+
       if (is_win) {
         sources += [ "../browser/ui/webui/print_preview/pdf_printer_handler_win_unittest.cc" ]
       }
@@ -6928,13 +6933,12 @@ test("unit_tests") {
         sources += [ "../common/service_process_util_mac_unittest.mm" ]
       }
 
-      deps += [ "//ipc" ]
-
       if (is_chromeos) {
-        sources += [ "../browser/ui/webui/print_preview/print_preview_handler_chromeos_unittest.cc" ]
-      }
-
-      if (!is_chromeos_ash) {
+        sources += [
+          "../browser/ui/webui/print_preview/local_printer_handler_chromeos_unittest.cc",
+          "../browser/ui/webui/print_preview/print_preview_handler_chromeos_unittest.cc",
+        ]
+      } else {
         sources += [
           "../browser/printing/cloud_print/cloud_print_proxy_service_unittest.cc",
           "../browser/ui/webui/print_preview/local_printer_handler_default_unittest.cc",
@@ -6950,9 +6954,10 @@ test("unit_tests") {
           "../service/service_ipc_server_unittest.cc",
           "../service/service_process_prefs_unittest.cc",
         ]
-      } else {
+      }
+
+      if (is_chromeos_ash) {
         sources += [
-          "../browser/ui/webui/print_preview/local_printer_handler_chromeos_unittest.cc",
           "../browser/ui/webui/settings/chromeos/cups_printers_handler_unittest.cc",
           "../browser/ui/webui/settings/chromeos/server_printer_url_util_unittest.cc",
         ]
@@ -7275,7 +7280,7 @@ test("unit_tests") {
       "../browser/ui/views/window_name_prompt_unittest.cc",
     ]
     if (is_linux || is_chromeos_lacros) {
-      sources += [ "../browser/ui/views/frame/desktop_linux_browser_frame_view_layout_unittest.cc" ]
+      sources += [ "../browser/ui/views/frame/browser_frame_view_layout_linux_native_unittest.cc" ]
     }
     if (enable_plugins) {
       sources += [ "../browser/ui/views/hung_plugin_tab_helper_unittest.cc" ]

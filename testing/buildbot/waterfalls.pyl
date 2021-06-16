@@ -1636,6 +1636,11 @@
           'all',
         ],
       },
+      'ToTAndroid x86': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'ToTAndroid64': {
         'additional_compile_targets': [
           'all',
@@ -1776,19 +1781,12 @@
           'all',
         ],
       },
-      'ToTLinuxTSan': {
-        'mixins': [
-          'linux-xenial',
-        ],
+      'ToTLinuxPGO': {
         'additional_compile_targets': [
           'all',
         ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chrome_sizes',
-        },
       },
-      'ToTLinuxThinLTO': {
+      'ToTLinuxTSan': {
         'mixins': [
           'linux-xenial',
         ],
@@ -1934,6 +1932,11 @@
           'all',
         ],
       },
+      'ToTWin64PGO': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'ToTWinASanLibfuzzer': {
         'additional_compile_targets': [
           'all',
@@ -1969,7 +1972,7 @@
           'chrome_official_builder',
         ],
       },
-      'ToTWinThinLTO64': {
+      'ToTWinOfficial64': {
         'mixins': [
           'chrome-tester-service-account',
         ],
@@ -2774,7 +2777,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'web_engine_gtests',
+          'gtest_tests': 'fuchsia_gtests',
         },
         'mixins': [
           'arm64',
@@ -6251,6 +6254,22 @@
         },
       },
     },
+  },
+  {
+    'name': 'infra',
+    'mixins': ['chromium-tester-service-account'],
+    'machines': {
+      'linux-component-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
+      'linux-control-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
+    }
   },
   {
     'project': 'chrome',

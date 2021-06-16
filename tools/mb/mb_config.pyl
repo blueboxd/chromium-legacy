@@ -177,6 +177,7 @@
       'ToTAndroidOfficial': 'android_clang_tot_official_arm64',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
+      'ToTAndroid x86': 'android_clang_tot_x86',
       'ToTFuchsia x64': 'fuchsia_clang_tot_release_x64',
       'ToTFuchsiaOfficial': 'fuchsia_clang_tot_official_arm64',
       'ToTLinuxOfficial': 'clang_tot_official',
@@ -186,8 +187,8 @@
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'libfuzzer_asan_clang_tot_release',
       'ToTLinuxMSan': 'clang_tot_msan_release',
+      'ToTLinuxPGO': 'clang_tot_official_pgo',
       'ToTLinuxTSan': 'clang_tot_tsan_release',
-      'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_opt_static',
       'ToTLinuxUBSanVptr': 'clang_tot_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
       'ToTMacOfficial': 'mac_clang_tot_official',
@@ -197,15 +198,16 @@
       'ToTWin': 'clang_tot_official_minimal_symbols_static_release_x86',
       'ToTWin(dbg)': 'clang_tot_shared_debug_x86',
       'ToTWin(dll)': 'clang_tot_minimal_symbols_shared_release_x86_dcheck',
-      'ToTWinOfficial': 'clang_tot_win_official_full_symbols_thin_lto_static_x86',
+      'ToTWinOfficial': 'clang_tot_win_official_full_symbols_static_x86',
+      'ToTWinOfficial64': 'clang_tot_win_official_full_symbols_static',
       'ToTWin64': 'clang_tot_official_minimal_symbols_static_release',
       'ToTWin64(dbg)': 'clang_tot_shared_debug',
       'ToTWin64(dll)': 'clang_tot_shared_release_dcheck',
+      'ToTWin64PGO': 'clang_tot_official_pgo',
       'ToTWinASanLibfuzzer': 'libfuzzer_windows_asan_clang_tot_release_bot',
       'ToTWinCFI': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_x86',
       'ToTWinCFI64': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTWindowsCoverage': 'clang_tot_coverage_minimal_symbols_release',
-      'ToTWinThinLTO64': 'clang_tot_win_official_full_symbols_thin_lto_static',
       'ToTiOS': 'ios_clang_tot_xctest',
       'ToTiOSDevice': 'ios_clang_device_tot_xctest',
     },
@@ -704,6 +706,11 @@
       'Win x64 Builder Code Coverage': 'gpu_tests_release_bot_minimal_symbols_code_coverage',
       'Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
+    },
+
+    'infra': {
+      'linux-control-rel': 'release_bot',
+      'linux-component-rel': 'shared_release_bot',
     },
 
     'internal.chrome.fyi': {
@@ -1265,6 +1272,11 @@
 
     'android_clang_tot_x64': [
       'android_without_codecs', 'clang_tot', 'shared', 'x64', 'release',
+      'dcheck_always_on',
+    ],
+
+    'android_clang_tot_x86': [
+      'android_without_codecs', 'clang_tot', 'shared', 'x86', 'release',
       'dcheck_always_on',
     ],
 
@@ -1884,12 +1896,16 @@
       'clang_tot', 'minimal_symbols', 'shared', 'release', 'x86', 'dcheck_always_on',
     ],
 
-    'clang_tot_win_official_full_symbols_thin_lto_static_x86': [
-      'clang_tot', 'official', 'full_symbols', 'thin_lto', 'static', 'x86', 'win_linker_timing',
+    'clang_tot_win_official_full_symbols_static_x86': [
+      'clang_tot', 'official', 'full_symbols', 'static', 'x86', 'win_linker_timing',
     ],
 
-    'clang_tot_win_official_full_symbols_thin_lto_static': [
-      'clang_tot', 'official', 'full_symbols', 'thin_lto', 'static', 'win_linker_timing',
+    'clang_tot_win_official_full_symbols_static': [
+      'clang_tot', 'official', 'full_symbols', 'static', 'win_linker_timing',
+    ],
+
+    'clang_tot_official_pgo': [
+      'clang_tot', 'official', 'no_symbols', 'pgo_phase_1',
     ],
 
     'clang_tot_official_minimal_symbols_static_release': [
@@ -1898,10 +1914,6 @@
 
     'clang_tot_official_minimal_symbols_static_release_x86': [
       'clang_tot', 'official', 'minimal_symbols', 'static', 'release', 'x86',
-    ],
-
-    'clang_tot_release_minimal_symbols_thin_lto_opt_static': [
-      'clang_tot', 'release', 'minimal_symbols', 'thin_lto_opt', 'static',
     ],
 
     'clang_tot_shared_debug': [
@@ -2686,6 +2698,10 @@
     'release_bot_x86_minimal_symbols_no_clang_cxx11': [
       'release_bot', 'x86', 'minimal_symbols', 'no_clang', 'use_cxx11',
       'no_goma',
+    ],
+
+    'shared_release_bot': [
+      'shared_release_bot',
     ],
 
     'tsan_disable_nacl_debug_bot': [

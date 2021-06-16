@@ -11,7 +11,6 @@
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video/video_capture_feedback.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/webrtc/legacy_webrtc_video_frame_adapter.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/webrtc/media/base/adapted_video_track_source.h"
 #include "third_party/webrtc/rtc_base/timestamp_aligner.h"
@@ -43,6 +42,8 @@ class PLATFORM_EXPORT WebRtcVideoTrackSource
                          absl::optional<bool> needs_denoising,
                          media::VideoCaptureFeedbackCB callback,
                          media::GpuVideoAcceleratorFactories* gpu_factories);
+  WebRtcVideoTrackSource(const WebRtcVideoTrackSource&) = delete;
+  WebRtcVideoTrackSource& operator=(const WebRtcVideoTrackSource&) = delete;
   ~WebRtcVideoTrackSource() override;
 
   void SetCustomFrameAdaptationParamsForTesting(
@@ -81,8 +82,6 @@ class PLATFORM_EXPORT WebRtcVideoTrackSource
   // |thread_checker_| is bound to the libjingle worker thread.
   THREAD_CHECKER(thread_checker_);
   scoped_refptr<WebRtcVideoFrameAdapter::SharedResources> adapter_resources_;
-  scoped_refptr<LegacyWebRtcVideoFrameAdapter::SharedResources>
-      legacy_adapter_resources_;
   // State for the timestamp translation.
   rtc::TimestampAligner timestamp_aligner_;
 
@@ -100,8 +99,6 @@ class PLATFORM_EXPORT WebRtcVideoTrackSource
       custom_frame_adaptation_params_for_testing_;
 
   const media::VideoCaptureFeedbackCB callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRtcVideoTrackSource);
 };
 
 }  // namespace blink

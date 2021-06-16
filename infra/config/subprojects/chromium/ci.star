@@ -389,6 +389,10 @@ consoles.console_view(
 )
 
 consoles.console_view(
+    name = "infra",
+)
+
+consoles.console_view(
     name = "sheriff.ios",
     title = "iOS Sheriff Console",
     ordering = {
@@ -422,7 +426,7 @@ consoles.console_view(
     ("ToTWin", "ToT Windows", "rel"),
     ("ToTWin64", "ToT Windows|x64", "rel"),
     ("ToTWinOfficial", "ToT Windows", "ofi"),
-    ("ToTWinThinLTO64", "ToT Windows|x64", "lto"),
+    ("ToTWinOfficial64", "ToT Windows|x64", "ofi"),
     ("clang-tot-device", "iOS|internal", "dev"),
 )]
 
@@ -2128,6 +2132,14 @@ ci.clang_builder(
 )
 
 ci.clang_builder(
+    name = "ToTAndroid x86",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT Android",
+        short_name = "x86",
+    ),
+)
+
+ci.clang_builder(
     name = "ToTAndroid64",
     console_view_entry = consoles.console_view_entry(
         category = "ToT Android",
@@ -2232,13 +2244,13 @@ clang_tot_linux_builder(
 )
 
 clang_tot_linux_builder(
-    name = "ToTLinuxTSan",
-    short_name = "tsn",
+    name = "ToTLinuxPGO",
+    short_name = "pgo",
 )
 
 clang_tot_linux_builder(
-    name = "ToTLinuxThinLTO",
-    short_name = "lto",
+    name = "ToTLinuxTSan",
+    short_name = "tsn",
 )
 
 clang_tot_linux_builder(
@@ -2318,6 +2330,15 @@ ci.clang_builder(
         short_name = "win",
     ),
     executable = "recipe:chromium_clang_coverage_tot",
+    os = os.WINDOWS_ANY,
+)
+
+ci.clang_builder(
+    name = "ToTWin64PGO",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT Windows|x64",
+        short_name = "pgo",
+    ),
     os = os.WINDOWS_ANY,
 )
 
@@ -5508,6 +5529,28 @@ ci.linux_builder(
     service_account = "component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com",
     notifies = ["metadata-mapping"],
     tree_closing = False,
+)
+
+ci.infra_builder(
+    name = "linux-component-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "component build",
+        short_name = "comp",
+    ),
+    schedule = "triggered",
+    triggered_by = [],
+    builderless = False,
+)
+
+ci.infra_builder(
+    name = "linux-control-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "control",
+        short_name = "cntrl",
+    ),
+    schedule = "triggered",
+    triggered_by = [],
+    builderless = False,
 )
 
 ci.mac_builder(

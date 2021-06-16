@@ -44,9 +44,6 @@
 #include "media/base/key_system_names.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#if defined(OS_MAC)
-#include "sandbox/mac/seatbelt_extension.h"
-#endif  // defined(OS_MAC)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 #include "ash/constants/ash_features.h"
@@ -84,62 +81,6 @@ bool IsValidCdmDisplayName(const std::string& cdm_name) {
   constexpr size_t kMaxCdmNameSize = 256;
   return cdm_name.size() <= kMaxCdmNameSize && base::IsStringASCII(cdm_name);
 }
-
-#if defined(OS_MAC)
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-// TODO(xhwang): Move this to a common place.
-const base::FilePath::CharType kSignatureFileExtension[] =
-    FILE_PATH_LITERAL(".sig");
-
-// Returns the signature file path given the |file_path|. This function should
-// only be used when the signature file and the file are located in the same
-// directory, which is the case for the CDM and CDM adapter.
-base::FilePath GetSigFilePath(const base::FilePath& file_path) {
-  return file_path.AddExtension(kSignatureFileExtension);
-}
-#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-
-class SeatbeltExtensionTokenProviderImpl
-    : public media::mojom::SeatbeltExtensionTokenProvider {
- public:
-  explicit SeatbeltExtensionTokenProviderImpl(const base::FilePath& cdm_path)
-      : cdm_path_(cdm_path) {}
-  void GetTokens(GetTokensCallback callback) final {
-    std::vector<sandbox::SeatbeltExtensionToken> tokens;
-
-    // Allow the CDM to be loaded in the CDM service process.
-    auto cdm_token = sandbox::SeatbeltExtension::Issue(
-        sandbox::SeatbeltExtension::FILE_READ, cdm_path_.value());
-    if (cdm_token) {
-      tokens.push_back(std::move(*cdm_token));
-    } else {
-      std::move(callback).Run({});
-      return;
-    }
-
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-    // If CDM host verification is enabled, also allow to open the CDM signature
-    // file.
-    auto cdm_sig_token =
-        sandbox::SeatbeltExtension::Issue(sandbox::SeatbeltExtension::FILE_READ,
-                                          GetSigFilePath(cdm_path_).value());
-    if (cdm_sig_token) {
-      tokens.push_back(std::move(*cdm_sig_token));
-    } else {
-      std::move(callback).Run({});
-      return;
-    }
-#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-
-    std::move(callback).Run(std::move(tokens));
-  }
-
- private:
-  base::FilePath cdm_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(SeatbeltExtensionTokenProviderImpl);
-};
-#endif  // defined(OS_MAC)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kChromeOsCdmFileSystemId[] =
@@ -487,10 +428,7 @@ void MediaInterfaceProxy::ConnectToMediaFoundationService(
 
   auto& mf_service = GetMediaFoundationService(
       render_frame_host_->GetBrowserContext(),
-      render_frame_host_->GetSiteInstance()->GetSiteURL());
-
-  // Must always call Initialize() after connecting to service.
-  mf_service.Initialize(cdm_path);
+      render_frame_host_->GetSiteInstance()->GetSiteURL(), cdm_path);
 
   // Passing empty arguments to GetFrameServices() as MediaFoundation-based
   // CDMs don't use CdmStorage currently.
@@ -569,19 +507,6 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
   auto* browser_context = render_frame_host_->GetBrowserContext();
   auto& site = render_frame_host_->GetSiteInstance()->GetSiteURL();
   auto& cdm_service = GetCdmService(cdm_guid, browser_context, site, cdm_info);
-
-#if defined(OS_MAC)
-  // LoadCdm() should always be called before CreateInterfaceFactory().
-  mojo::PendingRemote<media::mojom::SeatbeltExtensionTokenProvider>
-      token_provider_remote;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<SeatbeltExtensionTokenProviderImpl>(cdm_info.path),
-      token_provider_remote.InitWithNewPipeAndPassReceiver());
-
-  cdm_service.LoadCdm(cdm_info.path, std::move(token_provider_remote));
-#else
-  cdm_service.LoadCdm(cdm_info.path);
-#endif  // defined(OS_MAC)
 
   mojo::Remote<media::mojom::CdmFactory> cdm_factory_remote;
   cdm_service.CreateCdmFactory(cdm_factory_remote.BindNewPipeAndPassReceiver(),

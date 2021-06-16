@@ -13,7 +13,7 @@ enum class QuotaError {
   kNone = 0,
   kUnknownError,
   kDatabaseError,
-  kDatabaseNotFound,
+  kNotFound,
   kEntryExistsError,
 };
 

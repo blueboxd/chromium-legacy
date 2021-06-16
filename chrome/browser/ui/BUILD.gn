@@ -2546,6 +2546,8 @@ static_library("ui") {
       "webui/settings/chromeos/app_management/app_management_page_handler_factory.h",
       "webui/settings/chromeos/apps_section.cc",
       "webui/settings/chromeos/apps_section.h",
+      "webui/settings/chromeos/bluetooth_handler.cc",
+      "webui/settings/chromeos/bluetooth_handler.h",
       "webui/settings/chromeos/bluetooth_section.cc",
       "webui/settings/chromeos/bluetooth_section.h",
       "webui/settings/chromeos/calculator/size_calculator.cc",
@@ -2816,6 +2818,7 @@ static_library("ui") {
       "//components/services/app_service/public/cpp:instance_update",
       "//components/session_manager/core",
       "//components/user_manager",
+      "//content/public/common",
       "//extensions/browser/api/messaging",
       "//extensions/browser/api/virtual_keyboard_private",
       "//extensions/browser/api/vpn_provider",
@@ -4494,12 +4497,14 @@ static_library("ui") {
     if (is_linux || is_chromeos_lacros) {
       sources += [
         "views/chrome_views_delegate_linux.cc",
-        "views/frame/desktop_linux_browser_frame_view.cc",
-        "views/frame/desktop_linux_browser_frame_view.h",
-        "views/frame/desktop_linux_browser_frame_view_layout.cc",
-        "views/frame/desktop_linux_browser_frame_view_layout.h",
-        "views/frame/opaque_browser_frame_view_linux.cc",
-        "views/frame/opaque_browser_frame_view_linux.h",
+        "views/frame/browser_frame_view_layout_linux.cc",
+        "views/frame/browser_frame_view_layout_linux.h",
+        "views/frame/browser_frame_view_layout_linux_native.cc",
+        "views/frame/browser_frame_view_layout_linux_native.h",
+        "views/frame/browser_frame_view_linux.cc",
+        "views/frame/browser_frame_view_linux.h",
+        "views/frame/browser_frame_view_linux_native.cc",
+        "views/frame/browser_frame_view_linux_native.h",
       ]
     }
 
@@ -4594,8 +4599,6 @@ static_library("ui") {
         "views/frame/opaque_browser_frame_view_layout.h",
         "views/frame/opaque_browser_frame_view_layout_delegate.cc",
         "views/frame/opaque_browser_frame_view_layout_delegate.h",
-        "views/frame/opaque_browser_frame_view_platform_specific.cc",
-        "views/frame/opaque_browser_frame_view_platform_specific.h",
         "views/outdated_upgrade_bubble_view.cc",
         "views/outdated_upgrade_bubble_view.h",
         "views/policy/enterprise_startup_dialog_view.cc",
@@ -4860,20 +4863,10 @@ static_library("ui") {
 
     if (is_chromeos) {
       sources += [
-        "webui/print_preview/print_preview_handler_chromeos.cc",
-        "webui/print_preview/print_preview_handler_chromeos.h",
-      ]
-    }
-    if (is_chromeos_lacros) {
-      sources += [
-        "webui/print_preview/local_printer_handler_lacros.cc",
-        "webui/print_preview/local_printer_handler_lacros.h",
-      ]
-    }
-    if (is_chromeos_ash) {
-      sources += [
         "webui/print_preview/local_printer_handler_chromeos.cc",
         "webui/print_preview/local_printer_handler_chromeos.h",
+        "webui/print_preview/print_preview_handler_chromeos.cc",
+        "webui/print_preview/print_preview_handler_chromeos.h",
       ]
     } else {
       sources += [

@@ -149,6 +149,7 @@ generate_grd("build_grd") {
     "images/keyboard_shortcut.svg",
     "images/switch_access_setup_guide_choose_two_switches.svg",
     "images/switch_access_setup_guide_auto_scan_enabled.svg",
+    "images/switch_access_setup_guide_closing.svg",
     "../../nearby_share/shared/nearby_share_pulse_animation.json",
   ]
   input_files_base_dir = rebase_path(".", "//")
@@ -213,6 +214,7 @@ preprocess_if_expr("preprocess_v3") {
     "chromeos/os_printing_page/cups_printer_types.js",
     "chromeos/os_printing_page/cups_printers_browser_proxy.js",
     "chromeos/os_printing_page/cups_printers_entry_manager.js",
+    "chromeos/bluetooth_page/bluetooth_page_browser_proxy.js",
     "chromeos/os_reset_page/os_reset_browser_proxy.js",
     "chromeos/os_settings.js",
     "chromeos/personalization_page/change_picture_browser_proxy.js",

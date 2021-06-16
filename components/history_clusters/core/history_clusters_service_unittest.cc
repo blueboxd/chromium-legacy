@@ -26,8 +26,8 @@
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/history_clusters/core/clustering_backend.h"
+#include "components/history_clusters/core/history_clusters.mojom.h"
 #include "components/history_clusters/core/history_clusters_service_test_api.h"
-#include "components/history_clusters/core/memories.mojom.h"
 #include "components/history_clusters/core/memories_features.h"
 #include "components/history_clusters/core/proto/clusters.pb.h"
 #include "components/history_clusters/core/visit_data.h"
@@ -314,16 +314,15 @@ TEST_F(HistoryClustersServiceTest, QueryMemoriesVariousQueries) {
 
               if (test_data[i].expect_first_cluster) {
                 const auto& cluster = response.clusters[0];
-                EXPECT_FALSE(cluster->id.is_empty());
-                ASSERT_EQ(cluster->top_visits.size(), 2u);
-                EXPECT_EQ(cluster->top_visits[0]->id, 1);
-                EXPECT_EQ(cluster->top_visits[0]->url, "https://google.com/");
-                EXPECT_EQ(cluster->top_visits[0]->time, visit_1_time_);
-                EXPECT_EQ(cluster->top_visits[0]->page_title, "Google title");
-                EXPECT_EQ(cluster->top_visits[1]->id, 2);
-                EXPECT_EQ(cluster->top_visits[1]->url, "https://github.com/");
-                EXPECT_EQ(cluster->top_visits[1]->time, visit_2_time_);
-                EXPECT_EQ(cluster->top_visits[1]->page_title, "Github title");
+                ASSERT_EQ(cluster->visits.size(), 2u);
+                EXPECT_EQ(cluster->visits[0]->id, 1);
+                EXPECT_EQ(cluster->visits[0]->url, "https://google.com/");
+                EXPECT_EQ(cluster->visits[0]->time, visit_1_time_);
+                EXPECT_EQ(cluster->visits[0]->page_title, "Google title");
+                EXPECT_EQ(cluster->visits[1]->id, 2);
+                EXPECT_EQ(cluster->visits[1]->url, "https://github.com/");
+                EXPECT_EQ(cluster->visits[1]->time, visit_2_time_);
+                EXPECT_EQ(cluster->visits[1]->page_title, "Github title");
                 ASSERT_EQ(cluster->keywords.size(), 2u);
                 EXPECT_EQ(cluster->keywords[0], u"apples");
                 EXPECT_EQ(cluster->keywords[1], u"Red Oranges");
@@ -333,12 +332,11 @@ TEST_F(HistoryClustersServiceTest, QueryMemoriesVariousQueries) {
                 const auto& cluster = test_data[i].expect_first_cluster
                                           ? response.clusters[1]
                                           : response.clusters[0];
-                EXPECT_FALSE(cluster->id.is_empty());
-                ASSERT_EQ(cluster->top_visits.size(), 1u);
-                EXPECT_EQ(cluster->top_visits[0]->id, 2);
-                EXPECT_EQ(cluster->top_visits[0]->url, "https://github.com/");
-                EXPECT_EQ(cluster->top_visits[0]->time, visit_2_time_);
-                EXPECT_EQ(cluster->top_visits[0]->page_title, "Github title");
+                ASSERT_EQ(cluster->visits.size(), 1u);
+                EXPECT_EQ(cluster->visits[0]->id, 2);
+                EXPECT_EQ(cluster->visits[0]->url, "https://github.com/");
+                EXPECT_EQ(cluster->visits[0]->time, visit_2_time_);
+                EXPECT_EQ(cluster->visits[0]->page_title, "Github title");
                 EXPECT_TRUE(cluster->keywords.empty());
               }
 
@@ -547,6 +545,8 @@ TEST_F(HistoryClustersServiceTest, CompleteVisitContextAnnotationsIfReady) {
     auto& incomplete_visit_context_annotations =
         history_clusters_service_->GetOrCreateIncompleteVisitContextAnnotations(
             0);
+    incomplete_visit_context_annotations.url_row.set_id(1);
+    incomplete_visit_context_annotations.visit_row.visit_id = 1;
     incomplete_visit_context_annotations.status = status;
     history_clusters_service_->CompleteVisitContextAnnotationsIfReady(0);
     EXPECT_NE(
@@ -600,6 +600,8 @@ TEST_F(HistoryClustersServiceTest, CompleteVisitContextAnnotationsIfReady) {
     auto& incomplete_visit_context_annotations =
         history_clusters_service_->GetOrCreateIncompleteVisitContextAnnotations(
             0);
+    incomplete_visit_context_annotations.url_row.set_id(1);
+    incomplete_visit_context_annotations.visit_row.visit_id = 1;
     incomplete_visit_context_annotations.status = status;
     EXPECT_DCHECK_DEATH(
         history_clusters_service_->CompleteVisitContextAnnotationsIfReady(0));

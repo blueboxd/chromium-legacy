@@ -2093,6 +2093,7 @@ static_library("browser") {
     "//components/open_from_clipboard",
     "//components/optimization_guide/content/browser",
     "//components/optimization_guide/core",
+    "//components/optimization_guide/core:bloomfilter",
     "//components/os_crypt",
     "//components/page_load_metrics/browser",
     "//components/page_load_metrics/browser/observers/ad_metrics",
@@ -2363,6 +2364,7 @@ static_library("browser") {
       "//ash/content/scanning",
       "//ash/content/scanning/mojom",
       "//ash/content/shimless_rma",
+      "//ash/content/shimless_rma/mojom",
       "//ash/content/shortcut_customization_ui",
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/browser/ash/system_extensions",
@@ -4303,8 +4305,6 @@ static_library("browser") {
   if (is_chromeos_ash) {
     assert(enable_system_notifications)
     sources += [
-      "apps/app_service/app_notifications.cc",
-      "apps/app_service/app_notifications.h",
       "apps/app_service/app_platform_metrics.cc",
       "apps/app_service/app_platform_metrics.h",
       "apps/app_service/app_platform_metrics_service.cc",
@@ -4793,6 +4793,8 @@ static_library("browser") {
 
   if (is_chromeos_ash || is_chromeos_lacros) {
     sources += [
+      "apps/app_service/app_notifications.cc",
+      "apps/app_service/app_notifications.h",
       "apps/app_service/app_web_contents_data.cc",
       "apps/app_service/app_web_contents_data.h",
       "apps/app_service/media_requests.cc",

@@ -491,6 +491,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "canvas-2d-layers",
+    "owners": [ "alisalin", "fserb", "juanmihd", "yiyix" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "cast-media-route-provider",
     "owners": [ "takumif", "openscreen-eng@google.com" ],
     "expiry_milestone": 93
@@ -2766,6 +2771,11 @@
     "name": "enhanced_clipboard_nudge_session_reset",
     "owners":["mmourgos@chromium.org", "newcomer@chromium.org"],
     "expiry_milestone": 90
+  },
+  {
+    "name": "enhanced_clipboard_screenshot_nudge",
+    "owners":["anasalazar@chromium.org", "gzadina@google.com"],
+    "expiry_milestone": 94
   },
   {
     "name": "enhanced_clipboard_simple_render",

@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/grit/renderer_resources.h"
-#include "chrome/renderer/extensions/accessibility_private_hooks_delegate.h"
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 #include "chrome/renderer/extensions/extension_hooks_delegate.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
@@ -48,6 +47,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/renderer/extensions/accessibility_private_hooks_delegate.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 #if defined(USE_CUPS)
@@ -209,46 +209,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("chromeWebViewInternal",
                              IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("chromeWebView", IDR_CHROME_WEB_VIEW_JS);
-
-  // Media router.
-  source_map->RegisterSource(
-      "components/media_router/common/mojom/media_controller.mojom",
-      IDR_MEDIA_CONTROLLER_MOJOM_JS);
-  source_map->RegisterSource(
-      "components/media_router/common/mojom/media_router.mojom",
-      IDR_MEDIA_ROUTER_MOJOM_JS);
-  source_map->RegisterSource(
-      "components/media_router/common/mojom/media_status.mojom",
-      IDR_MEDIA_STATUS_MOJOM_JS);
-  source_map->RegisterSource("media_router_bindings",
-                             IDR_MEDIA_ROUTER_BINDINGS_JS);
-  source_map->RegisterSource("mojo/public/mojom/base/time.mojom",
-                             IDR_MOJO_TIME_MOJOM_JS);
-  source_map->RegisterSource("mojo/public/mojom/base/unguessable_token.mojom",
-                             IDR_MOJO_UNGUESSABLE_TOKEN_MOJOM_JS);
-  source_map->RegisterSource("net/interfaces/ip_address.mojom",
-                             IDR_MOJO_IP_ADDRESS_MOJOM_JS);
-  source_map->RegisterSource("net/interfaces/ip_endpoint.mojom",
-                             IDR_MOJO_IP_ENDPOINT_MOJOM_JS);
-  source_map->RegisterSource("url/mojom/origin.mojom", IDR_ORIGIN_MOJOM_JS);
-  source_map->RegisterSource("url/mojom/url.mojom", IDR_MOJO_URL_MOJOM_JS);
-  source_map->RegisterSource("media/mojo/mojom/remoting_common.mojom",
-                             IDR_REMOTING_COMMON_JS);
-  source_map->RegisterSource(
-      "components/mirroring/mojom/mirroring_service_host.mojom",
-      IDR_MIRRORING_SERVICE_HOST_MOJOM_JS);
-  source_map->RegisterSource(
-      "components/mirroring/mojom/cast_message_channel.mojom",
-      IDR_MIRRORING_CAST_MESSAGE_CHANNEL_MOJOM_JS);
-  source_map->RegisterSource(
-      "components/mirroring/mojom/session_observer.mojom",
-      IDR_MIRRORING_SESSION_OBSERVER_MOJOM_JS);
-  source_map->RegisterSource(
-      "components/mirroring/mojom/session_parameters.mojom",
-      IDR_MIRRORING_SESSION_PARAMETERS_JS);
-  source_map->RegisterSource(
-      "third_party/blink/public/mojom/presentation/presentation.mojom",
-      IDR_PRESENTATION_JS);
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireWebViewModules(
@@ -280,9 +240,11 @@ void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
   bindings->GetHooksForAPI("tabs")->SetDelegate(
       std::make_unique<extensions::TabsHooksDelegate>(
           bindings_system->messaging_service()));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bindings->GetHooksForAPI("accessibilityPrivate")
       ->SetDelegate(
           std::make_unique<extensions::AccessibilityPrivateHooksDelegate>());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_CUPS)
   bindings->GetHooksForAPI("printing")
       ->SetDelegate(std::make_unique<extensions::PrintingHooksDelegate>());

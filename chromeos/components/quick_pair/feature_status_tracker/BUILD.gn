@@ -1,0 +1,25 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_chromeos, "Quick Pair protocols (e.g. Fast Pair) are CrOS only")
+
+static_library("feature_status_tracker") {
+  sources = [
+    "base_enabled_provider.cc",
+    "base_enabled_provider.h",
+  ]
+
+  deps = [ "//base" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "base_enabled_provider_unittest.cc" ]
+
+  deps = [
+    ":feature_status_tracker",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}

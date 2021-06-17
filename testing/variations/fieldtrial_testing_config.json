@@ -1649,13 +1649,15 @@
     "ChromeLabs": [
         {
             "platforms": [
+                "chromeos",
+                "chromeos_lacros",
                 "linux",
                 "mac",
                 "windows"
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20210128",
+                    "name": "Enabled",
                     "enable_features": [
                         "ChromeLabs"
                     ]
@@ -4129,6 +4131,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "RestoreGAIACookiesOnUserAction"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSRestoreSessionFromCache": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RestoreSessionFromCache"
                     ]
                 }
             ]
@@ -8882,21 +8899,6 @@
                         "Vulkan"
                     ],
                     "min_os_version": "10.0.0"
-                }
-            ]
-        }
-    ],
-    "WASAPIRawAudioCapture": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WASAPIRawAudioCapture"
-                    ]
                 }
             ]
         }

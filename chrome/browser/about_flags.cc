@@ -2882,6 +2882,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"screen-capture", flag_descriptions::kScreenCaptureTestName,
      flag_descriptions::kScreenCaptureTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCaptureMode)},
+    {"ash-bento-bar", flag_descriptions::kBentoBarName,
+     flag_descriptions::kBentoBarDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
     {"ash-window-follow-cursor-multi-display",
      flag_descriptions::kWindowsFollowCursorName,
      flag_descriptions::kWindowsFollowCursorDescription, kOsCrOS,
@@ -3355,21 +3358,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"pluginvm-fullscreen", flag_descriptions::kPluginVmFullscreenName,
      flag_descriptions::kPluginVmFullscreenDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPluginVmFullscreen)},
-    {"pluginvm-show-camera-permissions",
-     flag_descriptions::kPluginVmShowCameraPermissionsName,
-     flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kPluginVmShowCameraPermissions)},
-    {"pluginvm-show-microphone-permissions",
-     flag_descriptions::kPluginVmShowMicrophonePermissionsName,
-     flag_descriptions::kPluginVmShowMicrophonePermissionsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kPluginVmShowMicrophonePermissions)},
-    {"vm-camera-mic-indicators-and-notifications",
-     flag_descriptions::kVmCameraMicIndicatorsAndNotificationsName,
-     flag_descriptions::kVmCameraMicIndicatorsAndNotificationsDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kVmCameraMicIndicatorsAndNotifications)},
     {"vm-status-page", flag_descriptions::kVmStatusPageName,
      flag_descriptions::kVmStatusPageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVmStatusPage)},
@@ -4566,7 +4554,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollableTabStripButtonsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStripButtons)},
 
-    {"side-panel", flag_descriptions::kSidePanelName,
+    {flag_descriptions::kSidePanelFlagId, flag_descriptions::kSidePanelName,
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
 
@@ -7257,6 +7245,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryName,
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription, kOsAll,
      FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseRecovery)},
+
+    {"debug-history-intervention-no-user-activation",
+     flag_descriptions::kDebugHistoryInterventionNoUserActivationName,
+     flag_descriptions::kDebugHistoryInterventionNoUserActivationDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kDebugHistoryInterventionNoUserActivation)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

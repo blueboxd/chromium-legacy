@@ -46,8 +46,8 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   virtual void DetachContext() = 0;
 
-  virtual void DidDraw(const FloatRect& rect) = 0;
-  virtual void DidDraw() = 0;
+  virtual void DidDraw(const SkIRect& rect) = 0;
+  void DidDraw() { DidDraw(SkIRect::MakeWH(width(), height())); }
 
   virtual void PreFinalizeFrame() = 0;
   virtual void PostFinalizeFrame() = 0;
@@ -101,8 +101,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
       RasterModeHint hint) override;
 
-  // TODO(crbug.com/1219761): Remove Is3d() in lieu of IsWebGL() and IsWebGPU().
-  bool Is3d() const;
   bool IsWebGL() const;
   bool IsWebGPU() const;
   bool IsRenderingContext2D() const;

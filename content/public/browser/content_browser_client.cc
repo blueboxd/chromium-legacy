@@ -1139,7 +1139,7 @@ bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
 
 base::OnceClosure ContentBrowserClient::FetchRemoteSms(
     content::WebContents* web_contents,
-    const url::Origin& origin,
+    const std::vector<url::Origin>& origin_list,
     base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
                             absl::optional<std::string>,
                             absl::optional<content::SmsFetchFailureType>)>
@@ -1199,6 +1199,11 @@ bool ContentBrowserClient::ShouldInheritCrossOriginEmbedderPolicyImplicitly(
 bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     BrowserContext* browser_context,
     const url::Origin& origin) {
+  return false;
+}
+
+bool ContentBrowserClient::IsJitDisabledForSite(BrowserContext* browser_context,
+                                                const GURL& site_url) {
   return false;
 }
 

@@ -672,7 +672,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if !defined(OS_ANDROID)
   base::OnceClosure FetchRemoteSms(
       content::WebContents* web_contents,
-      const url::Origin& origin,
+      const std::vector<url::Origin>& origin_list,
       base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
                               absl::optional<std::string>,
                               absl::optional<content::SmsFetchFailureType>)>
@@ -707,6 +707,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldAllowInsecurePrivateNetworkRequests(
       content::BrowserContext* browser_context,
       const url::Origin& origin) override;
+  bool IsJitDisabledForSite(content::BrowserContext* browser_context,
+                            const GURL& site_url) override;
   ukm::UkmService* GetUkmService() override;
 
   void OnKeepaliveRequestStarted(

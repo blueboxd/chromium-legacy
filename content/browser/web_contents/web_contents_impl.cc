@@ -69,7 +69,6 @@
 #include "content/browser/download/save_package.h"
 #include "content/browser/find_request_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/media_web_contents_observer.h"
@@ -5202,14 +5201,6 @@ bool WebContentsImpl::WasEverAudible() {
   return was_ever_audible_;
 }
 
-void WebContentsImpl::GetManifest(GetManifestCallback callback) {
-  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::GetManifest");
-  // TODO(yuzus, 1061899): Move this function to RenderFrameHostImpl.
-  ManifestManagerHost* manifest_manager_host =
-      ManifestManagerHost::GetOrCreateForCurrentDocument(GetMainFrame());
-  manifest_manager_host->GetManifest(std::move(callback));
-}
-
 void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ExitFullscreen");
   // Clean up related state and initiate the fullscreen exit.
@@ -5747,7 +5738,7 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // Use the last committed entry, since the pending entry hasn't loaded yet and
   // won't be copied into the cloned tab.
   NavigationEntryImpl* last_committed_entry =
-      GetController().GetLastCommittedEntry();
+      frame->frame_tree()->controller().GetLastCommittedEntry();
   if (!last_committed_entry)
     return;
 

@@ -2919,7 +2919,7 @@
         ],
         'mixins': [
           'enable_resultdb',
-          'mac_11_x64',
+          'mac_11_arm64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_12e262',
@@ -6220,7 +6220,6 @@
           'ipc_tests',
           'jingle_unittests',
           'media_unittests',
-          'media_blink_unittests',
           'mojo_unittests',
           'nacl_loader_unittests',
           'net_unittests',
@@ -6265,6 +6264,16 @@
         ],
       },
       'linux-control-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
+      'linux-local-ssd-nvme-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
+      'linux-local-ssd-scsi-rel': {
         'additional_compile_targets': [
           'chrome',
         ],

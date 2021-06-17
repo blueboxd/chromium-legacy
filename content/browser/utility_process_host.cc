@@ -94,13 +94,6 @@ base::WeakPtr<UtilityProcessHost> UtilityProcessHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool UtilityProcessHost::Send(IPC::Message* message) {
-  if (!StartProcess())
-    return false;
-
-  return process_->Send(message);
-}
-
 void UtilityProcessHost::SetSandboxType(
     sandbox::policy::SandboxType sandbox_type) {
   sandbox_type_ = sandbox_type;
@@ -164,7 +157,6 @@ bool UtilityProcessHost::StartProcess() {
   started_ = true;
   process_->SetName(name_);
   process_->SetMetricsName(metrics_name_);
-  process_->GetHost()->CreateChannelMojo();
 
   if (RenderProcessHost::run_renderer_in_process()) {
     DCHECK(g_utility_main_thread_factory);
@@ -340,10 +332,6 @@ bool UtilityProcessHost::StartProcess() {
                                        GetV8SnapshotFilesToPreload(), true);
   }
 
-  return true;
-}
-
-bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 

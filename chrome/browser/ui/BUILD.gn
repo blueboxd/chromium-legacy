@@ -383,7 +383,7 @@ static_library("ui") {
     "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/ui/webui/download_shelf:mojo_bindings",
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
-    "//chrome/browser/ui/webui/memories:mojo_bindings",
+    "//chrome/browser/ui/webui/history_clusters:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
@@ -1393,6 +1393,10 @@ static_library("ui") {
       "webui/history/history_ui.h",
       "webui/history/navigation_handler.cc",
       "webui/history/navigation_handler.h",
+      "webui/history_clusters/history_clusters_handler.cc",
+      "webui/history_clusters/history_clusters_handler.h",
+      "webui/history_clusters/memories_ui.cc",
+      "webui/history_clusters/memories_ui.h",
       "webui/identity_internals_ui.cc",
       "webui/identity_internals_ui.h",
       "webui/inspect_ui.cc",
@@ -1412,10 +1416,6 @@ static_library("ui") {
       "webui/media_router/media_router_internals_webui_message_handler.cc",
       "webui/media_router/media_router_internals_webui_message_handler.h",
       "webui/media_router/web_contents_display_observer.h",
-      "webui/memories/memories_handler.cc",
-      "webui/memories/memories_handler.h",
-      "webui/memories/memories_ui.cc",
-      "webui/memories/memories_ui.h",
       "webui/new_tab_page/new_tab_page_handler.cc",
       "webui/new_tab_page/new_tab_page_handler.h",
       "webui/new_tab_page/new_tab_page_ui.cc",
@@ -1976,6 +1976,8 @@ static_library("ui") {
       "ash/crosapi_new_window_delegate.h",
       "ash/default_pinned_apps.cc",
       "ash/default_pinned_apps.h",
+      "ash/desks_client.cc",
+      "ash/desks_client.h",
       "ash/holding_space/holding_space_client_impl.cc",
       "ash/holding_space/holding_space_client_impl.h",
       "ash/holding_space/holding_space_downloads_delegate.cc",
@@ -2931,6 +2933,8 @@ static_library("ui") {
       "signin_view_controller.h",
       "signin_view_controller_delegate.cc",
       "signin_view_controller_delegate.h",
+      "startup/web_app_protocol_handling_startup_utils.cc",
+      "startup/web_app_protocol_handling_startup_utils.h",
       "tab_contents/chrome_web_contents_menu_helper.cc",
       "tab_contents/chrome_web_contents_menu_helper.h",
       "tab_contents/chrome_web_contents_view_handle_drop.cc",
@@ -3516,13 +3520,6 @@ static_library("ui") {
       # This is the only component that can interact with gtk.
       deps += [ "//ui/gtk" ]
     }
-  }
-
-  if (is_win || is_mac || is_linux) {
-    sources += [
-      "startup/web_app_protocol_handling_startup_utils.cc",
-      "startup/web_app_protocol_handling_startup_utils.h",
-    ]
   }
 
   if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
@@ -4413,8 +4410,12 @@ static_library("ui") {
       "views/web_apps/pwa_confirmation_bubble_view.h",
       "views/web_apps/web_app_confirmation_view.cc",
       "views/web_apps/web_app_confirmation_view.h",
+      "views/web_apps/web_app_hover_button.cc",
+      "views/web_apps/web_app_hover_button.h",
       "views/web_apps/web_app_info_image_source.cc",
       "views/web_apps/web_app_info_image_source.h",
+      "views/web_apps/web_app_protocol_handler_intent_picker_dialog_view.cc",
+      "views/web_apps/web_app_protocol_handler_intent_picker_dialog_view.h",
       "views/web_apps/web_app_uninstall_dialog_view.cc",
       "views/web_apps/web_app_uninstall_dialog_view.h",
       "views/webauthn/authenticator_bio_enrollment_sheet_view.cc",
@@ -4553,15 +4554,6 @@ static_library("ui") {
       sources += [
         "views/native_widget_factory.cc",
         "views/native_widget_factory.h",
-      ]
-    }
-
-    if (is_win || is_mac || is_linux) {
-      sources += [
-        "views/web_apps/web_app_hover_button.cc",
-        "views/web_apps/web_app_hover_button.h",
-        "views/web_apps/web_app_protocol_handler_intent_picker_dialog_view.cc",
-        "views/web_apps/web_app_protocol_handler_intent_picker_dialog_view.h",
       ]
     }
 

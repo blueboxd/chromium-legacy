@@ -438,6 +438,7 @@ consoles.console_view(
     short_name = short_name,
 ) for name, category, short_name in (
     ("fuchsia-fyi-arm64-size", "fyi", "a64-size"),
+    ("fuchsia-builder-perf-fyi", "fyi", "builder-perf"),
     ("fuchsia-perf-fyi", "fyi", "perf"),
     ("fuchsia-x64", "ci", "x64-chrome"),
 )]
@@ -4249,12 +4250,6 @@ ci.fyi_ios_builder(
             category = "iOS|iOS15",
             short_name = "ios15",
         ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.ios",
-            category = "chromium.fyi|15",
-            short_name = "ios15",
-        ),
     ],
     os = os.MAC_11,
 )
@@ -4264,12 +4259,6 @@ ci.fyi_ios_builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "iOS|iOS15",
-            short_name = "dev",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.ios",
-            category = "chromium.fyi|15",
             short_name = "dev",
         ),
     ],
@@ -4282,13 +4271,7 @@ ci.fyi_ios_builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "iOS|iOS15",
-            short_name = "sdk13",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.ios",
-            category = "chromium.fyi|15",
-            short_name = "sim",
+            short_name = "sdk15",
         ),
     ],
     os = os.MAC_11,
@@ -5534,22 +5517,32 @@ ci.linux_builder(
 ci.infra_builder(
     name = "linux-component-rel",
     console_view_entry = consoles.console_view_entry(
-        category = "component build",
         short_name = "comp",
     ),
-    schedule = "triggered",
-    triggered_by = [],
     builderless = False,
 )
 
 ci.infra_builder(
     name = "linux-control-rel",
     console_view_entry = consoles.console_view_entry(
-        category = "control",
         short_name = "cntrl",
     ),
-    schedule = "triggered",
-    triggered_by = [],
+    builderless = False,
+)
+
+ci.infra_builder(
+    name = "linux-local-ssd-nvme-rel",
+    console_view_entry = consoles.console_view_entry(
+        short_name = "nvme",
+    ),
+    builderless = False,
+)
+
+ci.infra_builder(
+    name = "linux-local-ssd-scsi-rel",
+    console_view_entry = consoles.console_view_entry(
+        short_name = "scsi",
+    ),
     builderless = False,
 )
 

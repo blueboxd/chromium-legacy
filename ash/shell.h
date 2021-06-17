@@ -115,7 +115,7 @@ class DisplayHighlightController;
 class DisplayPrefs;
 class DisplayShutdownObserver;
 class DisplaySpeakerController;
-class DockedMagnifierControllerImpl;
+class DockedMagnifierController;
 class DragDropController;
 class EventClientImpl;
 class EventRewriterControllerImpl;
@@ -123,7 +123,7 @@ class EventTransformationHandler;
 class FullRestoreController;
 class FocusCycler;
 class FrameThrottlingController;
-class FullScreenMagnifierController;
+class FullscreenMagnifierController;
 class HighContrastController;
 class HighlighterController;
 class HoldingSpaceController;
@@ -379,7 +379,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return display_highlight_controller_.get();
   }
 
-  DockedMagnifierControllerImpl* docked_magnifier_controller();
+  DockedMagnifierController* docked_magnifier_controller() {
+    return docked_magnifier_controller_.get();
+  }
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
   EventRewriterControllerImpl* event_rewriter_controller() {
     return event_rewriter_controller_.get();
@@ -391,8 +393,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   AshFocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
-  FullScreenMagnifierController* full_screen_magnifier_controller() {
-    return full_screen_magnifier_controller_.get();
+  FullscreenMagnifierController* fullscreen_magnifier_controller() {
+    return fullscreen_magnifier_controller_.get();
   }
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();
@@ -770,8 +772,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
-  std::unique_ptr<FullScreenMagnifierController>
-      full_screen_magnifier_controller_;
+  std::unique_ptr<FullscreenMagnifierController>
+      fullscreen_magnifier_controller_;
   std::unique_ptr<MarkerController> marker_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
   std::unique_ptr<::wm::FocusController> focus_controller_;
@@ -852,7 +854,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<PartialMagnifierController> partial_magnifier_controller_;
   std::unique_ptr<HighlighterController> highlighter_controller_;
 
-  std::unique_ptr<DockedMagnifierControllerImpl> docked_magnifier_controller_;
+  std::unique_ptr<DockedMagnifierController> docked_magnifier_controller_;
 
   std::unique_ptr<chromeos::SnapController> snap_controller_;
 

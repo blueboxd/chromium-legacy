@@ -5746,12 +5746,12 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
 #if !defined(OS_ANDROID)
 base::OnceClosure ChromeContentBrowserClient::FetchRemoteSms(
     content::WebContents* web_contents,
-    const url::Origin& origin,
+    const std::vector<url::Origin>& origin_list,
     base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
                             absl::optional<std::string>,
                             absl::optional<content::SmsFetchFailureType>)>
         callback) {
-  return ::FetchRemoteSms(web_contents, origin, std::move(callback));
+  return ::FetchRemoteSms(web_contents, origin_list, std::move(callback));
 }
 #endif
 
@@ -5920,6 +5920,27 @@ bool ChromeContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     const url::Origin& origin) {
   return content_settings::ShouldAllowInsecurePrivateNetworkRequests(
       HostContentSettingsMapFactory::GetForProfile(browser_context), origin);
+}
+
+bool ChromeContentBrowserClient::IsJitDisabledForSite(
+    content::BrowserContext* browser_context,
+    const GURL& site_url) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
+
+  // Special case to determine if any policy is set.
+  if (site_url.is_empty()) {
+    return map->GetDefaultContentSetting(ContentSettingsType::JAVASCRIPT_JIT,
+                                         nullptr) == CONTENT_SETTING_BLOCK;
+  }
+
+  // Only disable JIT for web schemes.
+  if (!site_url.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  return (map->GetContentSetting(site_url, site_url,
+                                 ContentSettingsType::JAVASCRIPT_JIT) ==
+          CONTENT_SETTING_BLOCK);
 }
 
 ukm::UkmService* ChromeContentBrowserClient::GetUkmService() {

@@ -96,6 +96,9 @@ extern const char kConversionMeasurementApiDescription[];
 extern const char kConversionMeasurementDebugModeName[];
 extern const char kConversionMeasurementDebugModeDescription[];
 
+extern const char kDebugHistoryInterventionNoUserActivationName[];
+extern const char kDebugHistoryInterventionNoUserActivationDescription[];
+
 extern const char kDeprecateMenagerieAPIName[];
 extern const char kDeprecateMenagerieAPIDescription[];
 
@@ -213,6 +216,9 @@ extern const char kAvatarToolbarButtonDescription[];
 
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
+
+extern const char kBentoBarName[];
+extern const char kBentoBarDescription[];
 
 extern const char kBiometricReauthForPasswordFillingName[];
 extern const char kBiometricReauthForPasswordFillingDescription[];
@@ -1252,6 +1258,7 @@ extern const char kSendTabToSelfWhenSignedInDescription[];
 extern const char kSendTabToSelfV2Name[];
 extern const char kSendTabToSelfV2Description[];
 
+extern const char kSidePanelFlagId[];
 extern const char kSidePanelName[];
 extern const char kSidePanelDescription[];
 
@@ -2535,12 +2542,6 @@ extern const char kEnableQuickAnswersV2Description[];
 extern const char kPluginVmFullscreenName[];
 extern const char kPluginVmFullscreenDescription[];
 
-extern const char kPluginVmShowCameraPermissionsName[];
-extern const char kPluginVmShowCameraPermissionsDescription[];
-
-extern const char kPluginVmShowMicrophonePermissionsName[];
-extern const char kPluginVmShowMicrophonePermissionsDescription[];
-
 extern const char kTrimOnFreezeName[];
 extern const char kTrimOnFreezeDescription[];
 
@@ -2857,9 +2858,6 @@ extern const char kVirtualKeyboardDisabledDescription[];
 
 extern const char kVirtualKeyboardMultipasteName[];
 extern const char kVirtualKeyboardMultipasteDescription[];
-
-extern const char kVmCameraMicIndicatorsAndNotificationsName[];
-extern const char kVmCameraMicIndicatorsAndNotificationsDescription[];
 
 extern const char kVmStatusPageName[];
 extern const char kVmStatusPageDescription[];

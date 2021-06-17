@@ -1924,7 +1924,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin);
 
-  // Requests an SMS from |origin| from a remote device with telephony
+  // Requests an SMS from |origin_list| from a remote device with telephony
   // capabilities, for example the user's mobile phone. Callbacks |callback|
   // with the origins and one-time-code from the SMS upon success or a failure
   // type on error. The returned callback cancels receiving of the response.
@@ -1933,7 +1933,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // is disabled.
   virtual base::OnceClosure FetchRemoteSms(
       content::WebContents* web_contents,
-      const url::Origin& origin,
+      const std::vector<url::Origin>& origin_list,
       base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
                               absl::optional<std::string>,
                               absl::optional<content::SmsFetchFailureType>)>
@@ -2021,6 +2021,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldAllowInsecurePrivateNetworkRequests(
       BrowserContext* browser_context,
       const url::Origin& origin);
+
+  // Whether the JIT should be disabled for the given |browser_context| and
+  // |site_url|. Pass an empty GURL for |site_url| to get the default JIT policy
+  // for the current |browser_context|.
+  // |site_url| should not be resolved to an effective URL before passing to
+  // this function.
+  virtual bool IsJitDisabledForSite(BrowserContext* browser_context,
+                                    const GURL& site_url);
 
   // Returns the URL-Keyed Metrics service for chrome:ukm.
   virtual ukm::UkmService* GetUkmService();

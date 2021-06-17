@@ -10,6 +10,7 @@ source_set("unit_tests") {
   deps = [
     "//base/test:test_support",
     "//chromeos/components/quick_pair/common:unit_tests",
+    "//chromeos/components/quick_pair/feature_status_tracker:unit_tests",
     "//testing/gtest",
   ]
 }

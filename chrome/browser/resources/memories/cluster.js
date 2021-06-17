@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 import './page_favicon.js';
-import './search_query.js';
 import './shared_vars.js';
 import './top_visit.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
-import {PageCallbackRouter} from '/chrome/browser/ui/webui/memories/history_clusters.mojom-webui.js';
+import {PageCallbackRouter} from '/chrome/browser/ui/webui/history_clusters/history_clusters.mojom-webui.js';
 import {Cluster, URLVisit} from '/components/history_clusters/core/history_clusters.mojom-webui.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';

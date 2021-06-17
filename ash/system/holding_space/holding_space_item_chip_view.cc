@@ -15,6 +15,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
+#include "ash/system/holding_space/holding_space_progress_ring.h"
 #include "ash/system/holding_space/holding_space_view_builder.h"
 #include "ash/system/holding_space/holding_space_view_delegate.h"
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -41,9 +43,10 @@ namespace {
 
 // Appearance.
 constexpr int kChildSpacing = 8;
+constexpr float kInProgressImageScaleFactor = 0.7f;
 constexpr int kLabelMaskGradientWidth = 16;
-constexpr gfx::Insets kLabelMargins(0, 0, 0, /*right=*/2);
-constexpr gfx::Insets kPadding(8, 8, 8, /*right=*/10);
+constexpr gfx::Insets kLabelMargins(/*top=*/4, 0, /*bottom=*/4, /*right=*/2);
+constexpr gfx::Insets kPadding(0, /*left=*/8, 0, /*right=*/10);
 constexpr int kPreferredHeight = 40;
 constexpr int kPreferredWidth = 160;
 constexpr int kSecondaryActionIconSize = 16;
@@ -57,7 +60,7 @@ class PaintCallbackLabel : public views::Label {
   PaintCallbackLabel& operator=(const PaintCallbackLabel&) = delete;
   ~PaintCallbackLabel() override = default;
 
-  using Callback = base::RepeatingCallback<void(gfx::Canvas* canvas)>;
+  using Callback = base::RepeatingCallback<void(views::Label*, gfx::Canvas*)>;
   void SetCallback(Callback callback) { callback_ = std::move(callback); }
 
  private:
@@ -65,7 +68,7 @@ class PaintCallbackLabel : public views::Label {
   void OnPaint(gfx::Canvas* canvas) override {
     views::Label::OnPaint(canvas);
     if (!callback_.is_null())
-      callback_.Run(canvas);
+      callback_.Run(this, canvas);
   }
 
   Callback callback_;
@@ -75,28 +78,66 @@ BEGIN_VIEW_BUILDER(/*no export*/, PaintCallbackLabel, views::Label)
 VIEW_BUILDER_PROPERTY(PaintCallbackLabel::Callback, Callback)
 END_VIEW_BUILDER
 
+// ProgressRingView ------------------------------------------------------------
+
+class ProgressRingView : public views::View {
+ public:
+  ProgressRingView() = default;
+  ProgressRingView(const ProgressRingView&) = delete;
+  ProgressRingView& operator=(const ProgressRingView&) = delete;
+  ~ProgressRingView() override = default;
+
+  // Sets the underlying `item` for which to indicate progress.
+  // NOTE: This method should be invoked only once.
+  void SetHoldingSpaceItem(const HoldingSpaceItem* item) {
+    DCHECK(!progress_ring_);
+    progress_ring_ = std::make_unique<HoldingSpaceProgressRing>(item);
+
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->Add(progress_ring_->layer());
+  }
+
+ private:
+  // views::View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    if (progress_ring_)
+      progress_ring_->layer()->SetBounds(GetLocalBounds());
+  }
+
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+    if (progress_ring_)
+      progress_ring_->InvalidateLayer();
+  }
+
+  std::unique_ptr<HoldingSpaceProgressRing> progress_ring_;
+};
+
+BEGIN_VIEW_BUILDER(/*no export*/, ProgressRingView, views::View)
+VIEW_BUILDER_PROPERTY(const HoldingSpaceItem*, HoldingSpaceItem)
+END_VIEW_BUILDER
+
 }  // namespace
 }  // namespace ash
 
 DEFINE_VIEW_BUILDER(/*no export*/, ash::PaintCallbackLabel)
+DEFINE_VIEW_BUILDER(/*no export*/, ash::ProgressRingView)
 
 namespace ash {
 namespace {
 
 // Helpers ---------------------------------------------------------------------
 
-// Returns a label builder with desired `style`, `text` and paint `callback`.
+// Returns a label builder with desired `style` and paint `callback`.
 std::unique_ptr<HoldingSpaceViewBuilder<views::Label>> CreateLabelBuilder(
     bubble_utils::LabelStyle style,
-    const std::u16string& text,
     PaintCallbackLabel::Callback callback) {
   auto label = views::Builder<PaintCallbackLabel>()
-                   .SetBorder(views::CreateEmptyBorder(kLabelMargins))
                    .SetCallback(std::move(callback))
                    .SetElideBehavior(gfx::ELIDE_MIDDLE)
                    .SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT)
                    .SetPaintToLayer()
-                   .SetText(text)
                    .Build();
 
   // NOTE: A11y events are handled by `HoldingSpaceItemChipView`.
@@ -160,7 +201,9 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
       .SetLayoutManager(std::move(layout_manager))
       .AddChild(
           HoldingSpaceViewBuilder<views::View>(
-              views::Builder<views::View>().SetUseDefaultFillLayout(true))
+              views::Builder<ProgressRingView>()
+                  .SetHoldingSpaceItem(item)
+                  .SetUseDefaultFillLayout(true))
               .AddChild(views::Builder<RoundedImageView>()
                             .CopyAddressTo(&image_)
                             .SetID(kHoldingSpaceItemImageId)
@@ -189,10 +232,21 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
                                views::FlexSpecification(
                                    views::MinimumFlexSizeRule::kScaleToZero,
                                    views::MaximumFlexSizeRule::kUnbounded)))
-              .AddChild(CreateLabelBuilder(bubble_utils::LabelStyle::kChip,
-                                           item->text(),
-                                           paint_label_mask_callback)
-                            ->CopyAddressTo(&label_))
+              .AddChild(
+                  HoldingSpaceViewBuilder<views::View>(
+                      views::Builder<views::BoxLayoutView>()
+                          .SetOrientation(Orientation::kVertical)
+                          .SetMainAxisAlignment(MainAxisAlignment::kCenter)
+                          .SetCrossAxisAlignment(CrossAxisAlignment::kStretch)
+                          .SetInsideBorderInsets(kLabelMargins))
+                      .AddChild(CreateLabelBuilder(
+                                    bubble_utils::LabelStyle::kChipTitle,
+                                    paint_label_mask_callback)
+                                    ->CopyAddressTo(&primary_label_))
+                      .AddChild(CreateLabelBuilder(
+                                    bubble_utils::LabelStyle::kChipBody,
+                                    paint_label_mask_callback)
+                                    ->CopyAddressTo(&secondary_label_)))
               .AddChild(
                   HoldingSpaceViewBuilder<views::BoxLayoutView>(
                       views::Builder<views::BoxLayoutView>()
@@ -208,35 +262,39 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
           &HoldingSpaceItemChipView::UpdateImage, base::Unretained(this)));
 
   UpdateImage();
+  UpdateLabels();
 }
 
 HoldingSpaceItemChipView::~HoldingSpaceItemChipView() = default;
 
 views::View* HoldingSpaceItemChipView::GetTooltipHandlerForPoint(
     const gfx::Point& point) {
-  // Tooltips for this view are handled by `label_`, which will only show
-  // tooltips if the underlying text has been elided due to insufficient space.
-  return HitTestPoint(point) ? label_ : nullptr;
+  // Tooltips for this view are handled by `primary_label_`, which will only
+  // show tooltips if the underlying text has been elided due to insufficient
+  // space.
+  return HitTestPoint(point) ? primary_label_ : nullptr;
 }
 
 void HoldingSpaceItemChipView::OnHoldingSpaceItemUpdated(
     const HoldingSpaceItem* item) {
   HoldingSpaceItemView::OnHoldingSpaceItemUpdated(item);
   if (this->item() == item) {
-    label_->SetText(item->text());
+    UpdateImage();
+    UpdateLabels();
     UpdateSecondaryAction();
   }
 }
 
 void HoldingSpaceItemChipView::OnPrimaryActionVisibilityChanged(bool visible) {
-  // The `label_` must be repainted to update its mask for
+  // Labels must be repainted to update their masks for
   // `primary_action_container()`  visibility.
-  label_->SchedulePaint();
+  primary_label_->SchedulePaint();
+  secondary_label_->SchedulePaint();
 }
 
 void HoldingSpaceItemChipView::OnSelectionUiChanged() {
   HoldingSpaceItemView::OnSelectionUiChanged();
-  UpdateLabel();
+  UpdateLabels();
   UpdateSecondaryAction();
 }
 
@@ -255,7 +313,7 @@ void HoldingSpaceItemChipView::OnMouseEvent(ui::MouseEvent* event) {
 void HoldingSpaceItemChipView::OnThemeChanged() {
   HoldingSpaceItemView::OnThemeChanged();
   UpdateImage();
-  UpdateLabel();
+  UpdateLabels();
 
   // Pause.
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
@@ -270,19 +328,20 @@ void HoldingSpaceItemChipView::OnThemeChanged() {
       gfx::CreateVectorIcon(kResumeIcon, kSecondaryActionIconSize, icon_color));
 }
 
-void HoldingSpaceItemChipView::OnPaintLabelMask(gfx::Canvas* canvas) {
+void HoldingSpaceItemChipView::OnPaintLabelMask(views::Label* label,
+                                                gfx::Canvas* canvas) {
   // If the `primary_action_container()` isn't visible, masking is unnecessary.
   if (!primary_action_container()->GetVisible())
     return;
 
-  // If the `primary_action_container()` is visible, `label_` fades out its tail
+  // If the `primary_action_container()` is visible, `label` fades out its tail
   // to avoid overlap.
   gfx::Point gradient_start, gradient_end;
   if (base::i18n::IsRTL()) {
     gradient_end.set_x(primary_action_container()->width());
     gradient_start.set_x(gradient_end.x() + kLabelMaskGradientWidth);
   } else {
-    gradient_end.set_x(label_->width() - primary_action_container()->width());
+    gradient_end.set_x(label->width() - primary_action_container()->width());
     gradient_start.set_x(gradient_end.x() - kLabelMaskGradientWidth);
   }
 
@@ -292,7 +351,7 @@ void HoldingSpaceItemChipView::OnPaintLabelMask(gfx::Canvas* canvas) {
   flags.setShader(gfx::CreateGradientShader(
       gradient_start, gradient_end, SK_ColorBLACK, SK_ColorTRANSPARENT));
 
-  canvas->DrawRect(label_->GetLocalBounds(), flags);
+  canvas->DrawRect(label->GetLocalBounds(), flags);
 }
 
 void HoldingSpaceItemChipView::OnSecondaryActionPressed() {
@@ -310,21 +369,48 @@ void HoldingSpaceItemChipView::OnSecondaryActionPressed() {
 }
 
 void HoldingSpaceItemChipView::UpdateImage() {
+  // Image.
   image_->SetImage(item()->image().GetImageSkia(
       gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize),
       /*dark_background=*/AshColorProvider::Get()->IsDarkModeEnabled()));
   SchedulePaint();
+
+  // Transform.
+  gfx::Transform transform;
+  if (item()->IsInProgress() && !image_->bounds().IsEmpty()) {
+    transform = gfx::GetScaleTransform(image_->bounds().CenterPoint(),
+                                       kInProgressImageScaleFactor);
+  }
+
+  if (!image_->layer()) {
+    image_->SetPaintToLayer();
+    image_->layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  image_->layer()->SetTransform(transform);
 }
 
-void HoldingSpaceItemChipView::UpdateLabel() {
+void HoldingSpaceItemChipView::UpdateLabels() {
   const bool multiselect = delegate()->selection_ui() ==
                            HoldingSpaceViewDelegate::SelectionUi::kMultiSelect;
 
-  label_->SetEnabledColor(
+  // Primary.
+  primary_label_->SetText(item()->GetText());
+  primary_label_->SetEnabledColor(
       selected() && multiselect
           ? GetMultiSelectTextColor()
           : AshColorProvider::Get()->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kTextColorPrimary));
+
+  // Secondary.
+  secondary_label_->SetText(
+      item()->secondary_text().value_or(base::EmptyString16()));
+  secondary_label_->SetEnabledColor(
+      selected() && multiselect
+          ? GetMultiSelectTextColor()
+          : AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextColorSecondary));
+  secondary_label_->SetVisible(!secondary_label_->GetText().empty());
 }
 
 void HoldingSpaceItemChipView::UpdateSecondaryAction() {

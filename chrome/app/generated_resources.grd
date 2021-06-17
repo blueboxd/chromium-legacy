@@ -293,8 +293,10 @@ are declared in tools/grit/grit_rule.gni.
       <part file="profiles_strings.grdp" />
 
       <!-- Web app intent picker strings -->
-      <if expr="is_win or is_macosx or is_linux">
+      <if expr="not is_android">
         <part file="protocol_handler_intent_picker_strings.grdp" />
+      </if>
+      <if expr="is_win or is_macosx or is_linux">
         <part file="url_handler_intent_picker_strings.grdp" />
       </if>
 
@@ -7087,8 +7089,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TAB_SEARCH_OPEN_TABS" desc="The label on the tab search list section corresponding to open tabs.">
         Open Tabs
       </message>
+      <message name="IDS_TAB_SEARCH_RECENTLY_CLOSED" desc="The label on the tab search list section corresponding to recently closed entries.">
+        Recently Closed
+      </message>
       <message name="IDS_TAB_SEARCH_RECENTLY_CLOSED_TABS" desc="The label on the tab search list section corresponding to recently closed tabs.">
         Recently Closed Tabs
+      </message>
+      <message name="IDS_TAB_SEARCH_ONE_TAB" desc="Singular form of a message indicating the presence of a single tab.">
+        <ph name="NUM">$1<ex>1</ex></ph> Tab
+      </message>
+      <message name="IDS_TAB_SEARCH_TAB_COUNT" desc="Plural form of a message indicating the presence of a number of tabs greater than one.">
+        <ph name="NUM">$1<ex>2</ex></ph> Tabs
       </message>
 
       <!-- Strings for Window Titles in Menus -->
@@ -9995,10 +10006,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Share an application window
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_TEXT" desc="Text for the window picker dialog shown when desktop capture is requested by an app to be used by the app itself.">
-        The extension "<ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph>" wants to share the contents of your screen.
+        <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> wants to share the contents of your screen.
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_TEXT_DELEGATED" desc="Text for the window picker dialog shown when desktop capture is requested by an app to be used by a tab.">
-        The extension "<ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph>" wants to share the contents of your screen with <ph name="TARGET_NAME">$2<ex>https://google.com</ex></ph>.
+        <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> wants to share the contents of your screen with <ph name="TARGET_NAME">$2<ex>https://google.com</ex></ph>.
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE" desc="Text for the checkbox on the window picker dialog, when checked, audio will be shared, otherwise just video sharing">
         Share audio
@@ -11238,6 +11249,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE" desc="Message shown around the custom message provided by the administrator when deep scanning returns a failure.">
       Your administrator says "<ph name="CUSTOM_MESSAGE">$1<ex>Please don't upload this type of data.</ex></ph>".
     </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_DOWNLOADS_CUSTOM_MESSAGE" desc="Message shown around the custom message provided by the administrator when deep scanning returns a failure on a downloaded file.">
+      <ph name="FILE_NAME">$1<ex>foo.txt</ex></ph> has sensitive or dangerous data. Your administrator says "<ph name="CUSTOM_MESSAGE">$2<ex>Please don't upload this type of data.</ex></ph>".
+    </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE_LEARN_MORE_LINK" desc="Text value of the link passed for the custom message set by the administrator when deep scanning returns a failure.">
       Learn more
     </message>
@@ -11425,6 +11439,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Enabled – <ph name="VARIATION_NAME">$1<ex>tabs shrink to pinned tab width</ex></ph>
     </message>
 
+    <!-- ChromeLabs Side Panel-->
+    <message name="IDS_SIDE_PANEL_EXPERIMENT_NAME" desc="Name for Side Panel experiment">
+      Side Panel
+    </message>
+    <message name="IDS_SIDE_PANEL_EXPERIMENT_DESCRIPTION" desc="Description for Side Panel experiment">
+      Enables a browser-level side panel for a useful and persistent way to access your Reading List and Bookmarks.
+    </message>
     <!-- ChromeLabs Read Later-->
     <message name="IDS_READ_LATER_EXPERIMENT_NAME" desc="Name for Read Later experiment">
       Reading List

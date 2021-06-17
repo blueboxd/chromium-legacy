@@ -242,6 +242,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "ash-bento-bar",
+    "owners": [ "minch", "janetmac" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "ash-debug-shortcuts",
     "owners": [ "//ash/OWNERS" ],
     // Used by developers for debugging and to dump extra information to logs
@@ -865,6 +870,11 @@
   {
     "name": "debug-chime-notification",
     "owners": [ "xingliu" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "debug-history-intervention-no-user-activation",
+    "owners": [ "shivanisha" ],
     "expiry_milestone": 95
   },
   {
@@ -2882,7 +2892,7 @@
   {
     "name": "file-handling-api",
     "owners": [ "huangdarwin", "mgiuca", "cmp" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 95
   },
   {
     "name": "files-app-copy-image",
@@ -4282,16 +4292,6 @@
     "expiry_milestone": 96
   },
   {
-    "name": "pluginvm-show-camera-permissions",
-    "owners": [ "danielng@google.com", "lxj@google.com" ],
-    "expiry_milestone": 93
-  },
-  {
-    "name": "pluginvm-show-microphone-permissions",
-    "owners": [ "dtor", "lxj@google.com" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "post-quantum-cecpq2",
     "owners": [ "agl" ],
     "expiry_milestone": 100
@@ -4438,7 +4438,7 @@
   {
     "name": "raw-audio-capture",
     "owners": [ "henrika@google.com", "video-cmi-mpp@google.com" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 95
   },
   {
     "name": "raw-clipboard",
@@ -5320,11 +5320,6 @@
   {
     "name": "video-tutorials-instant-fetch",
     "owners": [ "shaktisahu"],
-    "expiry_milestone": 93
-  },
-  {
-    "name": "vm-camera-mic-indicators-and-notifications",
-    "owners": [ "lxj", "joelhockey", "timloh" ],
     "expiry_milestone": 93
   },
   {

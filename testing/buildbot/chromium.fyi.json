@@ -58,6 +58,12 @@
       },
       {
         "isolate_profile_data": true,
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
+        "swarming": {}
+      },
+      {
+        "isolate_profile_data": true,
         "name": "webkit_lint",
         "script": "blink_lint_expectations.py",
         "swarming": {}
@@ -160,6 +166,11 @@
       {
         "name": "check_static_initializers",
         "script": "check_static_initializers.py",
+        "swarming": {}
+      },
+      {
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
         "swarming": {}
       },
       {
@@ -1281,17 +1292,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -1759,6 +1759,11 @@
         "swarming": {}
       },
       {
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
+        "swarming": {}
+      },
+      {
         "name": "webkit_lint",
         "script": "blink_lint_expectations.py",
         "swarming": {}
@@ -1773,6 +1778,11 @@
       {
         "name": "check_network_annotations",
         "script": "check_network_annotations.py",
+        "swarming": {}
+      },
+      {
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
         "swarming": {}
       },
       {
@@ -3939,56 +3949,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "media_blink_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "args": [
@@ -7352,56 +7312,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "media_blink_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "args": [
@@ -11067,57 +10977,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "media_blink_unittests_default"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "media_blink_unittests_default",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "args": [
@@ -15202,57 +15061,6 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "media_blink_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
             "media_unittests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -18037,26 +17845,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "args": [
-          "--ram-size-mb=16384",
-          "--code-coverage",
-          "--code-coverage-dir=${ISOLATED_OUTDIR}",
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
-        ],
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
         "test": "media_unittests",
@@ -19185,28 +18973,6 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
-      },
-      {
-        "args": [
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "args": [
@@ -20444,29 +20210,6 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
-      },
-      {
-        "args": [
-          "--device=aemu",
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-20.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "args": [
@@ -22132,28 +21875,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "args": [
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-20.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -23275,27 +22996,6 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
-      },
-      {
-        "args": [
-          "--runner-logs-dir=${ISOLATED_OUTDIR}/runner_logs"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "args": [
@@ -44218,8 +43918,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44268,8 +43968,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44318,8 +44018,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44368,8 +44068,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44418,8 +44118,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44468,8 +44168,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44518,8 +44218,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44568,8 +44268,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44618,8 +44318,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44668,8 +44368,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44718,8 +44418,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44768,8 +44468,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44818,8 +44518,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44868,8 +44568,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44918,8 +44618,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -44968,8 +44668,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45018,8 +44718,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45068,8 +44768,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45118,8 +44818,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45168,8 +44868,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45218,8 +44918,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45268,8 +44968,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45318,8 +45018,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45368,8 +45068,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45418,8 +45118,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45468,8 +45168,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45518,8 +45218,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45568,8 +45268,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45618,8 +45318,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45668,8 +45368,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45718,8 +45418,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45768,8 +45468,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45818,8 +45518,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45868,8 +45568,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45919,8 +45619,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -45970,8 +45670,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46021,8 +45721,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46072,8 +45772,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46123,8 +45823,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46174,8 +45874,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46225,8 +45925,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46277,8 +45977,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46329,8 +46029,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46381,8 +46081,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46433,8 +46133,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46485,8 +46185,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46537,8 +46237,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46589,8 +46289,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46641,8 +46341,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46693,8 +46393,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46745,8 +46445,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46797,8 +46497,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46849,8 +46549,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46900,8 +46600,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -46951,8 +46651,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47002,8 +46702,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47053,8 +46753,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47104,8 +46804,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47155,8 +46855,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47206,8 +46906,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47257,8 +46957,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47308,8 +47008,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47359,8 +47059,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47410,8 +47110,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47461,8 +47161,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47513,8 +47213,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47565,8 +47265,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47617,8 +47317,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47669,8 +47369,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47721,8 +47421,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47772,8 +47472,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47822,8 +47522,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47872,8 +47572,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47922,8 +47622,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -47972,8 +47672,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48022,8 +47722,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48072,8 +47772,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48122,8 +47822,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48173,8 +47873,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48224,8 +47924,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48275,8 +47975,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48326,8 +48026,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48377,8 +48077,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48428,8 +48128,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48478,8 +48178,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48528,8 +48228,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48578,8 +48278,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48628,8 +48328,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48678,8 +48378,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48728,8 +48428,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48779,8 +48479,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48830,8 +48530,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48881,8 +48581,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48932,8 +48632,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -48983,8 +48683,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49034,8 +48734,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49084,8 +48784,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49134,8 +48834,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49184,8 +48884,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49234,8 +48934,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49284,8 +48984,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49334,8 +49034,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49384,8 +49084,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49434,8 +49134,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49484,8 +49184,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49534,8 +49234,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49585,8 +49285,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49636,8 +49336,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49687,8 +49387,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49738,8 +49438,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49789,8 +49489,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49840,8 +49540,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49890,8 +49590,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49940,8 +49640,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -49990,8 +49690,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50040,8 +49740,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50090,8 +49790,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50140,8 +49840,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50190,8 +49890,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50240,8 +49940,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50290,8 +49990,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50340,8 +50040,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50390,8 +50090,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50440,8 +50140,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50490,8 +50190,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50540,8 +50240,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50590,8 +50290,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50640,8 +50340,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50690,8 +50390,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50740,8 +50440,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50790,8 +50490,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50840,8 +50540,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50890,8 +50590,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50940,8 +50640,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -50990,8 +50690,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51040,8 +50740,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51090,8 +50790,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51140,8 +50840,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51190,8 +50890,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51240,8 +50940,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51290,8 +50990,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51340,8 +51040,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51390,8 +51090,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51440,8 +51140,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51490,8 +51190,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51540,8 +51240,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51590,8 +51290,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51640,8 +51340,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51690,8 +51390,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51740,8 +51440,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51790,8 +51490,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51840,8 +51540,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51890,8 +51590,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51940,8 +51640,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -51990,8 +51690,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -52040,8 +51740,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -52090,8 +51790,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -52140,8 +51840,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -52190,8 +51890,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -52240,8 +51940,8 @@
           ],
           "dimension_sets": [
             {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
+              "cpu": "arm64",
+              "os": "Mac-11"
             }
           ],
           "named_caches": [
@@ -69190,29 +68890,6 @@
         "test_id_prefix": "ninja://content/test:content_browsertests/"
       },
       {
-        "args": [
-          "--enable-features=ProcessHostOnUI"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "process_host_on_ui_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
-        },
-        "test": "content_browsertests",
-        "test_id_prefix": "ninja://content/test:content_browsertests/"
-      },
-      {
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -69698,24 +69375,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -70961,23 +70620,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -71858,26 +71500,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "args": [
-          "--enable-features=BlinkHeapConcurrentMarking"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -72667,23 +72289,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -73561,23 +73166,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -74869,24 +74457,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -75674,6 +75244,11 @@
         "swarming": {}
       },
       {
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
+        "swarming": {}
+      },
+      {
         "name": "webkit_lint",
         "script": "blink_lint_expectations.py",
         "swarming": {}
@@ -76113,28 +75688,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        },
-        "test": "content_browsertests",
-        "test_id_prefix": "ninja://content/test:content_browsertests/"
-      },
-      {
-        "args": [
-          "--enable-features=ProcessHostOnUI"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "process_host_on_ui_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -76598,23 +76151,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -77454,27 +76990,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -78158,29 +77673,6 @@
         "test_id_prefix": "ninja://content/test:content_browsertests/"
       },
       {
-        "args": [
-          "--enable-features=ProcessHostOnUI"
-        ],
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "process_host_on_ui_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
-        },
-        "test": "content_browsertests",
-        "test_id_prefix": "ninja://content/test:content_browsertests/"
-      },
-      {
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -78666,24 +78158,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -79574,28 +79048,6 @@
         "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
       },
       {
-        "isolate_name": "metrics_python_tests",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
-      },
-      {
         "isolate_name": "mojo_python_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -79843,6 +79295,12 @@
         "isolate_profile_data": true,
         "name": "headless_python_unittests",
         "script": "headless_python_unittests.py",
+        "swarming": {}
+      },
+      {
+        "isolate_profile_data": true,
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
         "swarming": {}
       },
       {
@@ -80590,19 +80048,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -81959,24 +81404,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04",
-              "ssd": "0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -83662,25 +83089,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "os": "Mac-11",
-              "pool": "chromium.tests.mac-arm64"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -84452,29 +83860,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "os": "Mac-11",
-              "pool": "chromium.tests.mac-arm64"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -85530,25 +84915,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -87156,26 +86522,6 @@
           "expiration": 21600,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "gpu": "8086:0a2e",
-              "os": "Mac-11.3"
-            }
-          ],
-          "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -88007,30 +87353,6 @@
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
       },
       {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "gpu": "8086:0a2e",
-              "os": "Mac-11.3"
-            }
-          ],
-          "expiration": 21600,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
-      },
-      {
         "isolate_name": "mojo_python_unittests",
         "merge": {
           "args": [],
@@ -88768,24 +88090,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -89752,24 +89056,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -91413,24 +90699,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-18363"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "merge": {
@@ -93283,24 +92551,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-18363"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -94918,19 +94168,6 @@
         },
         "test": "liburlpattern_unittests",
         "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "isolate_profile_data": true,

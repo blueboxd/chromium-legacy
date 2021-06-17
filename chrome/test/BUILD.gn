@@ -702,6 +702,7 @@ if (is_android) {
       "../browser/metrics/ukm_browsertest.cc",
       "../browser/net/cert_verify_proc_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ad_density_intervention_android_browsertest.cc",
+      "../browser/policy/policy_prefs_browsertest.cc",
       "../browser/profiles/profile_browsertest_android.cc",
       "../browser/safe_browsing/test_safe_browsing_database_helper.cc",
       "../browser/safe_browsing/test_safe_browsing_database_helper.h",
@@ -722,6 +723,8 @@ if (is_android) {
 
     deps += [
       "//components/autofill/content/renderer:test_support",
+      "//components/enterprise:test_support",
+      "//components/policy/core/browser:test_support",
       "//components/safe_browsing/content/renderer/phishing_classifier:phishing_classifier",
       "//components/safe_browsing/core:client_model_proto",
       "//components/safe_browsing/core/fbs:client_model",
@@ -781,6 +784,7 @@ if (is_android) {
       "//components/test/data/payments/",
       "//chrome/test/data/android/customtabs/",
       "//chrome/test/data/banners/",
+      "//chrome/test/data/policy/",
       "//chrome/test/data/ssl/",
       "//content/test/data/",
     ]
@@ -1635,6 +1639,7 @@ if (!is_android) {
       "../browser/policy/test/force_google_safe_search_policy_browsertest.cc",
       "../browser/policy/test/hide_webstore_icon_policy_browsertest.cc",
       "../browser/policy/test/hsts_policy_browsertest.cc",
+      "../browser/policy/test/jit_policy_browsertest.cc",
       "../browser/policy/test/media_stream_policy_browsertest.cc",
       "../browser/policy/test/network_prediction_policy_browsertest.cc",
       "../browser/policy/test/policy_browsertest.cc",
@@ -1877,6 +1882,7 @@ if (!is_android) {
       "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_browsertest.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_minimal_ui_test.cc",
       "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
+      "../browser/ui/views/web_apps/web_app_protocol_handler_intent_picker_dialog_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_tab_strip_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
       "../browser/ui/views/webauthn/webauthn_icon_interactive_uitest.cc",
@@ -3373,6 +3379,7 @@ if (!is_android) {
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/clipboard_history_browsertest.cc",
+        "../browser/ui/ash/desks_client_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_end_to_end_browsertest.cc",
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.cc",
@@ -3791,10 +3798,6 @@ if (!is_android) {
     if (enable_spellcheck) {
       sources +=
           [ "../browser/site_isolation/spellcheck_per_process_browsertest.cc" ]
-    }
-
-    if (is_win || is_mac || is_linux) {
-      sources += [ "../browser/ui/views/web_apps/web_app_protocol_handler_intent_picker_dialog_browsertest.cc" ]
     }
 
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
@@ -5334,6 +5337,7 @@ test("unit_tests") {
       "../browser/sharing/sms/sms_fetch_request_handler_unittest.cc",
       "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
+      "../browser/ui/autofill/payments/autofill_snackbar_controller_impl_unittest.cc",
     ]
 
     deps += [
@@ -6568,7 +6572,6 @@ test("unit_tests") {
       "../common/extensions/permissions/permissions_data_unittest.cc",
       "../common/extensions/permissions/settings_override_permission_unittest.cc",
       "../common/extensions/sync_type_unittest.cc",
-      "../renderer/extensions/accessibility_private_hooks_delegate_unittest.cc",
       "../renderer/extensions/chrome_native_extension_bindings_system_unittest.cc",
       "../renderer/extensions/custom_types_unittest.cc",
       "../renderer/extensions/extension_hooks_delegate_unittest.cc",
@@ -6594,6 +6597,7 @@ test("unit_tests") {
         "../browser/extensions/external_provider_impl_chromeos_unittest.cc",
         "../browser/extensions/system_display/display_info_provider_chromeos_unittest.cc",
         "../browser/extensions/system_display/system_display_serialization_unittest.cc",
+        "../renderer/extensions/accessibility_private_hooks_delegate_unittest.cc",
       ]
     }
 

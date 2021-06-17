@@ -110,6 +110,14 @@ const char kDeprecateMenagerieAPIDescription[] =
     "If enabled, the legacy Menagerie API for profile data will be replaced by "
     "the new profile data source";
 
+const char kDebugHistoryInterventionNoUserActivationName[] =
+    "Debug flag for history intervention on no user activation";
+const char kDebugHistoryInterventionNoUserActivationDescription[] =
+    "This flag when enabled, will be used to debug an issue where a page that "
+    "did not get user activation "
+    "is able to work around the history intervention which is not the expected "
+    "behavior";
+
 const char kDetectedSourceLanguageOptionName[] =
     "Use Detected Language string on Desktop and Android";
 const char kDetectedSourceLanguageOptionDescription[] =
@@ -354,6 +362,11 @@ const char kBackForwardCacheDescription[] =
     "If enabled, caches eligible pages after cross-site navigations."
     "To enable caching pages on same-site navigations too, choose 'enabled "
     "same-site support'.";
+
+const char kBentoBarName[] = "Persistent desks bar";
+const char kBentoBarDescription[] =
+    "Showing a persistent desks bar at the top of the screen in clamshell mode "
+    "when there are more than one desk.";
 
 const char kBiometricReauthForPasswordFillingName[] =
     "Biometric reauth for password filling";
@@ -2181,8 +2194,11 @@ extern const char kSendTabToSelfV2Description[] =
     "Enables new received tab "
     "UI shown next to the profile icon instead of using system notifications.";
 
+const char kSidePanelFlagId[] = "side-panel";
 const char kSidePanelName[] = "Side panel";
-const char kSidePanelDescription[] = "Host some content in a side panel.";
+const char kSidePanelDescription[] =
+    "Enables a browser-level side panel for a useful and persistent way to "
+    "access your Reading List and Bookmarks.";
 
 const char kServiceWorkerSubresourceFilterName[] =
     "ServiceWorker subresource filter";
@@ -4870,16 +4886,6 @@ const char kPluginVmFullscreenName[] = "Plugin VM Fullscreen";
 const char kPluginVmFullscreenDescription[] =
     "Hides shelf in immersive mode and allows esc hold to exit.";
 
-const char kPluginVmShowCameraPermissionsName[] =
-    "Show Plugin VM camera permissions";
-const char kPluginVmShowCameraPermissionsDescription[] =
-    "Displays camera permissions for Plugin VM in the app settings.";
-
-const char kPluginVmShowMicrophonePermissionsName[] =
-    "Show Plugin VM microphone permissions";
-const char kPluginVmShowMicrophonePermissionsDescription[] =
-    "Displays microphone permissions for Plugin VM in the app settings.";
-
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =
     "Enables Instant Tethering. Instant Tethering allows your nearby Google "
@@ -4933,11 +4939,6 @@ const char kVirtualKeyboardDisabledDescription[] =
 const char kVirtualKeyboardMultipasteName[] = "Virtual Keyboard MultiPaste";
 const char kVirtualKeyboardMultipasteDescription[] =
     "Show virtual keyboard with multipaste UI";
-
-const char kVmCameraMicIndicatorsAndNotificationsName[] =
-    "VM camera/mic indicators/notifications";
-const char kVmCameraMicIndicatorsAndNotificationsDescription[] =
-    "Show VM camera/mic indicators/notifications";
 
 const char kVmStatusPageName[] = "VM status page";
 const char kVmStatusPageDescription[] = "Enable VM status page";

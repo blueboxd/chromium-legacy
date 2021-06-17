@@ -711,6 +711,8 @@
     'infra': {
       'linux-control-rel': 'release_bot',
       'linux-component-rel': 'shared_release_bot',
+      'linux-local-ssd-nvme-rel': 'release_bot',
+      'linux-local-ssd-scsi-rel': 'release_bot',
     },
 
     'internal.chrome.fyi': {
@@ -2188,8 +2190,10 @@
     # standard Windows trybot and the dedicated coverage trybot is no longer
     # needed.
     'gpu_tests_release_trybot_resource_allowlisting_code_coverage': [
-      'gpu_tests', 'release_trybot', 'resource_allowlisting',
+      'gpu_tests', 'release_trybot', 'no_resource_allowlisting',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
+      # TODO(svenzheng): Move this to 'release_trybot' if there are no objections.
+      'no_symbols',
     ],
 
     'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials': [

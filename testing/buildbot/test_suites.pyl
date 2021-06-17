@@ -793,7 +793,6 @@
       'latency_unittests': {},
       'libjingle_xmpp_unittests': {},
       'liburlpattern_unittests': {},
-      'media_blink_unittests': {},
       'media_unittests': {},
       'midi_unittests': {},
       'mojo_unittests': {},
@@ -897,6 +896,9 @@
       'headless_python_unittests': {
         'script': 'headless_python_unittests.py',
       },
+      'metrics_python_tests': {
+        'script': 'metrics_python_tests.py',
+      },
       'webkit_lint': {
         'script': 'blink_lint_expectations.py',
       },
@@ -905,6 +907,9 @@
     'chromium_mac_scripts': {
       'check_static_initializers': {
         'script': 'check_static_initializers.py',
+      },
+      'metrics_python_tests': {
+        'script': 'metrics_python_tests.py',
       },
       'webkit_lint': {
         'script': 'blink_lint_expectations.py',
@@ -1098,6 +1103,9 @@
       'check_network_annotations': {
         'script': 'check_network_annotations.py',
       },
+      'metrics_python_tests': {
+        'script': 'metrics_python_tests.py',
+      },
       'webkit_lint': {
         'script': 'blink_lint_expectations.py',
       },
@@ -1128,7 +1136,6 @@
       'headless_unittests': {},
       'interactive_ui_tests': {},
       'jingle_unittests': {},
-      'media_blink_unittests': {},
       'nacl_loader_unittests': {},
       'net_unittests': {},
       'pdf_unittests': {},
@@ -1299,11 +1306,6 @@
         }
       },
       'grit_python_unittests': {
-        'resultdb': {
-          'enable': True,
-        },
-      },
-      'metrics_python_tests': {
         'resultdb': {
           'enable': True,
         },
@@ -1518,9 +1520,6 @@
         'mixins': ['fuchsia_runner_logs'],
       },
       'latency_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'media_blink_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
       'media_unittests': {
@@ -4568,7 +4567,6 @@
       'latency_unittests': {},
       'libjingle_xmpp_unittests': {},
       'liburlpattern_unittests': {},
-      'media_blink_unittests': {},
       'media_unittests': {},
       'midi_unittests': {},
       'mojo_unittests': {},
@@ -4632,18 +4630,6 @@
           'chrome-gold-service-account',
           'skia_gold_test',
         ],
-      },
-    },
-
-    'process_host_on_ui_gtests': {
-      'process_host_on_ui_content_browsertests': {
-        'args': [
-          '--enable-features=ProcessHostOnUI',
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-        'test': 'content_browsertests',
       },
     },
 
@@ -5776,7 +5762,6 @@
       'linux_specific_xr_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
-      'process_host_on_ui_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
     ],
@@ -7245,6 +7230,7 @@
       'lacros_smoke_tast_tests': {
         'variants': [
           'LACROS_AMD64_GENERIC',
+          'LACROS_EVE',
         ]
       },
       'lacros_device_or_vm_gtests': {

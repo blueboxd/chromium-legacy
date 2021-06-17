@@ -1949,9 +1949,9 @@ static_library("browser") {
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings",
     "//chrome/browser/ui/webui/download_shelf:mojo_bindings",
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
+    "//chrome/browser/ui/webui/history_clusters:mojo_bindings",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
     "//chrome/browser/ui/webui/internals/web_app:mojo_bindings",
-    "//chrome/browser/ui/webui/memories:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
@@ -2948,6 +2948,8 @@ static_library("browser") {
       "chrome_browser_main_android.h",
       "commerce/merchant_viewer/web_contents_helper.cc",
       "content_creation/notes/internal/android/note_service_bridge_factory.cc",
+      "content_creation/notes/internal/note_service_factory.cc",
+      "content_creation/notes/internal/note_service_factory.h",
       "crash_upload_list/crash_upload_list_android.cc",
       "crash_upload_list/crash_upload_list_android.h",
       "data_reduction_proxy/data_reduction_promo_infobar_delegate_android.cc",
@@ -3223,7 +3225,6 @@ static_library("browser") {
       "//chrome/browser/commerce/subscriptions:commerce_subscription_db_content_proto",
       "//chrome/browser/commerce/subscriptions/android:jni_headers",
       "//chrome/browser/consent_auditor/android:jni_headers",
-      "//chrome/browser/content_creation/notes/internal",
       "//chrome/browser/content_creation/notes/internal/android:jni_headers",
       "//chrome/browser/continuous_search:jni_headers",
       "//chrome/browser/continuous_search/internal",
@@ -3279,7 +3280,10 @@ static_library("browser") {
       "//components/component_updater/android:native_background_task_update_scheduler",
       "//components/content_capture/android",
       "//components/content_creation/notes/android",
+      "//components/content_creation/notes/core",
       "//components/content_creation/notes/core:features",
+      "//components/content_creation/notes/core/server",
+      "//components/content_creation/notes/core/templates",
       "//components/content_settings/android",
       "//components/crash/android:crash_android",
       "//components/embedder_support/android:browser_context",
@@ -3483,6 +3487,8 @@ static_library("browser") {
       "cart/cart_service_factory.h",
       "cart/commerce_hint_service.cc",
       "cart/commerce_hint_service.h",
+      "cart/discount_url_loader.cc",
+      "cart/discount_url_loader.h",
       "cart/fetch_discount_worker.cc",
       "cart/fetch_discount_worker.h",
       "certificate_viewer.h",
@@ -4801,6 +4807,7 @@ static_library("browser") {
       "apps/app_service/app_web_contents_data.h",
       "apps/app_service/media_requests.cc",
       "apps/app_service/media_requests.h",
+      "apps/app_service/menu_item_constants.h",
     ]
   }
 
@@ -5751,8 +5758,6 @@ static_library("browser") {
 
   if (enable_extensions) {
     sources += [
-      "accessibility/accessibility_extension_api.cc",
-      "accessibility/accessibility_extension_api.h",
       "accessibility/animation_policy_prefs.cc",
       "accessibility/animation_policy_prefs.h",
       "autocomplete/keyword_extensions_delegate_impl.cc",
@@ -5964,6 +5969,8 @@ static_library("browser") {
     ]
     if (is_chromeos_ash) {
       sources += [
+        "accessibility/accessibility_extension_api_chromeos.cc",
+        "accessibility/accessibility_extension_api_chromeos.h",
         "speech/extension_api/tts_engine_extension_api_chromeos.cc",
         "speech/extension_api/tts_engine_extension_api_chromeos.h",
         "speech/extension_api/tts_engine_extension_observer_chromeos.cc",

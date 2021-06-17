@@ -15,7 +15,7 @@ import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 import {ProgressCenter} from '../../externs/background/progress_center.m.js';
 import {EntryLocation} from '../../externs/entry_location.m.js';
 import {VolumeManager} from '../../externs/volume_manager.m.js';
-import {FilesPasswordDialog} from '../elements/files_password_dialog.m.js';
+import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
 
 import {DirectoryModel} from './directory_model.m.js';
 import {FileTasks} from './file_tasks.m.js';
@@ -23,7 +23,7 @@ import {FileTransferController} from './file_transfer_controller.m.js';
 import {MetadataModel} from './metadata/metadata_model.m.js';
 import {NamingController} from './naming_controller.m.js';
 import {TaskHistory} from './task_history.m.js';
-import {FileManagerUI} from './ui/file_manager_ui.m.js';
+import {FileManagerUI} from './ui/file_manager_ui.js';
 
 /**
  * Utility function that appends value under a given name in the store.

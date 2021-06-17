@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {assertInstanceof, assertString} from '../../../chrome_util.js';
+import {reportError} from '../../../error.js';
 import {I18nString} from '../../../i18n_string.js';
 import {Filenamer} from '../../../models/file_namer.js';
 import * as filesystem from '../../../models/file_system.js';
@@ -11,6 +12,8 @@ import {CrosImageCapture} from '../../../mojo/image_capture.js';
 import * as state from '../../../state.js';
 import * as toast from '../../../toast.js';
 import {
+  ErrorLevel,
+  ErrorType,
   Facing,  // eslint-disable-line no-unused-vars
   PerfEvent,
   Resolution,
@@ -107,15 +110,6 @@ export class Photo extends ModeBase {
   }
 
   /**
-   * @return {boolean}
-   */
-  supportPTZ_() {
-    const {pan, tilt, zoom} =
-        this.stream_.getVideoTracks()[0].getCapabilities();
-    return pan !== undefined || tilt !== undefined || zoom !== undefined;
-  }
-
-  /**
    * @override
    */
   async start_() {
@@ -156,7 +150,7 @@ export class Photo extends ModeBase {
    * @return {!Promise<!Blob>}
    */
   async takePhoto_() {
-    if (this.supportPTZ_()) {
+    if (state.get(state.State.ENABLE_PTZ)) {
       // Workaround for b/184089334 on PTZ camera to use preview frame as
       // photo result.
       return this.handler_.getPreviewFrame();
@@ -243,8 +237,10 @@ export class Photo extends ModeBase {
     const isSuccess = await deviceOperator.removeMetadataObserver(
         deviceId, this.metadataObserverId_);
     if (!isSuccess) {
-      console.error(`Failed to remove metadata observer with id: ${
-          this.metadataObserverId_}`);
+      reportError(
+          ErrorType.REMOVE_METADATA_OBSERVER_FAILURE, ErrorLevel.ERROR,
+          new Error(`Failed to remove metadata observer with id: ${
+              this.metadataObserverId_}`));
     }
     this.metadataObserverId_ = null;
   }

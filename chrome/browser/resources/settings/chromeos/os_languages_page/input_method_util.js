@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+// #import {routes} from '../os_route.m.js';
 import {inputMethodSettings, SettingsType} from './input_method_settings.js';
+// #import {Route} from '../../router.js';
 
 /**
  * @fileoverview constants related to input method options.
@@ -344,6 +346,12 @@ cr.define('settings.input_method_util', function() {
         return 'inputMethodOptionsXkbLayout';
       case OptionType.EDIT_USER_DICT:
         return 'inputMethodOptionsEditUserDict';
+      case OptionType.ZHUYIN_KEYBOARD_LAYOUT:
+        return 'inputMethodOptionsZhuyinKeyboardLayout';
+      case OptionType.ZHUYIN_SELECT_KEYS:
+        return 'inputMethodOptionsZhuyinSelectKeys';
+      case OptionType.ZHUYIN_PAGE_SIZE:
+        return 'inputMethodOptionsZhuyinPageSize';
       default:
         assertNotReached();
     }
@@ -369,6 +377,29 @@ cr.define('settings.input_method_util', function() {
           {value: 'Dvorak', name: 'inputMethodOptionsDvorakKeyboard'},
           {value: 'Colemak', name: 'inputMethodOptionsColemakKeyboard'}
         ];
+      case OptionType.ZHUYIN_KEYBOARD_LAYOUT:
+        return [
+          {value: 'Default', name: 'inputMethodOptionsZhuyinLayoutDefault'},
+          {value: 'IBM', name: 'inputMethodOptionsZhuyinLayoutIBM'},
+          {value: 'Eten', name: 'inputMethodOptionsZhuyinLayoutEten'},
+        ];
+      case OptionType.ZHUYIN_SELECT_KEYS:
+        // Zhuyin select keys correspond to physical keys so are not
+        // translated.
+        return [
+          {value: '1234567890'},
+          {value: 'asdfghjkl;'},
+          {value: 'asdfzxcv89'},
+          {value: 'asdfjkl789'},
+          {value: '1234qweras'},
+        ];
+      case OptionType.ZHUYIN_PAGE_SIZE:
+        // Zhuyin page size is just a number, so is not translated.
+        return [
+          {value: '10'},
+          {value: '9;'},
+          {value: '8'},
+        ];
       default:
         return [];
     }
@@ -385,12 +416,12 @@ cr.define('settings.input_method_util', function() {
 
   /**
    * @param {!settings.input_method_util.OptionType} option The option type.
-   * @return {string|undefined} The url to open for |option|, returns undefined
-   *     if |option| does not have a url.
+   * @return {settings.Route|undefined} The url to open for |option|, returns
+   *     undefined if |option| does not have a url.
    */
   /* #export */ function getOptionUrl(option) {
     if (option === OptionType.EDIT_USER_DICT) {
-      return 'chrome://settings/editDictionary';
+      return settings.routes.OS_LANGUAGES_EDIT_DICTIONARY;
     }
     return undefined;
   }

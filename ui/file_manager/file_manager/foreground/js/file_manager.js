@@ -5,9 +5,9 @@
 // clang-format off
 // #import {List} from 'chrome://resources/js/cr/ui/list.m.js';
 // #import {ArrayDataModel} from 'chrome://resources/js/cr/ui/array_data_model.m.js';
-// #import {FilesMessage} from '../elements/files_message.m.js';
-// #import {FileListSelectionModel} from './ui/file_list_selection_model.m.js';
-// #import {A11yAnnounce} from './ui/a11y_announce.m.js';
+// #import {FilesMessage} from '../elements/files_message.js';
+// #import {FileListSelectionModel} from './ui/file_list_selection_model.js';
+// #import {A11yAnnounce} from './ui/a11y_announce.js';
 // #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
 // #import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.m.js';
 // #import {FileBrowserBackgroundFull} from '../../externs/background/file_browser_background_full.m.js';
@@ -42,9 +42,9 @@
 // #import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.m.js';
 // #import {DirectoryModel} from './directory_model.m.js';
 // #import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
-// #import {FileGrid} from './ui/file_grid.m.js';
-// #import {FileTable} from './ui/file_table.m.js';
-// #import {FileManagerUI} from './ui/file_manager_ui.m.js';
+// #import {FileGrid} from './ui/file_grid.js';
+// #import {FileTable} from './ui/file_table.js';
+// #import {FileManagerUI} from './ui/file_manager_ui.js';
 // #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 // #import {FileFilter} from './directory_contents.m.js';
 // #import {ProvidersModel} from './providers_model.m.js';
@@ -77,7 +77,7 @@
 // #import {VolumeManagerCommon, AllowedPaths} from '../../common/js/volume_manager_types.m.js';
 // #import {AppStateController} from './app_state_controller.m.js';
 // #import {DialogType} from './dialog_type.m.js';
-// #import {FileMetadataFormatter} from './ui/file_metadata_formatter.m.js';
+// #import {FileMetadataFormatter} from './ui/file_metadata_formatter.js';
 // #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 // #import {importer} from './import_controller.m.js';
 // #import {metrics} from '../../common/js/metrics.m.js';

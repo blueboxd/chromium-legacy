@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -81,9 +82,140 @@ float LayoutNGTextCombine::DesiredWidth() const {
   return one_em * kTextCombineMargin;
 }
 
+float LayoutNGTextCombine::ComputeInlineSpacing() const {
+  DCHECK_EQ(StyleRef().GetFont().GetFontDescription().Orientation(),
+            FontOrientation::kHorizontal);
+  DCHECK(scale_x_);
+  const LayoutUnit line_height = StyleRef().GetFontHeight().LineHeight();
+  return (line_height - DesiredWidth()) / 2;
+}
+
+PhysicalOffset LayoutNGTextCombine::ApplyScaleX(
+    const PhysicalOffset& offset) const {
+  DCHECK(scale_x_.has_value());
+  const float spacing = ComputeInlineSpacing();
+  return PhysicalOffset(LayoutUnit(offset.left * *scale_x_ + spacing),
+                        offset.top);
+}
+
+PhysicalRect LayoutNGTextCombine::ApplyScaleX(const PhysicalRect& rect) const {
+  DCHECK(scale_x_.has_value());
+  return PhysicalRect(ApplyScaleX(rect.offset), ApplyScaleX(rect.size));
+}
+
+PhysicalSize LayoutNGTextCombine::ApplyScaleX(const PhysicalSize& size) const {
+  DCHECK(scale_x_.has_value());
+  return PhysicalSize(LayoutUnit(size.width * *scale_x_), size.height);
+}
+
+PhysicalRect LayoutNGTextCombine::AdjustRectForBoundingBox(
+    const PhysicalRect& rect) const {
+  if (!scale_x_)
+    return rect;
+  // See "text-combine-upright-compression-007.html"
+  return ApplyScaleX(rect);
+}
+
 void LayoutNGTextCombine::ResetLayout() {
   compressed_font_.reset();
   scale_x_.reset();
+}
+
+LayoutUnit LayoutNGTextCombine::AdjustTextLeftForPaint(
+    LayoutUnit position) const {
+  if (!scale_x_)
+    return position;
+  const float spacing = ComputeInlineSpacing();
+  return LayoutUnit(position + spacing / *scale_x_);
+}
+
+LayoutUnit LayoutNGTextCombine::AdjustTextTopForPaint(
+    LayoutUnit text_top) const {
+  DCHECK_EQ(StyleRef().GetFont().GetFontDescription().Orientation(),
+            FontOrientation::kHorizontal);
+  const SimpleFontData& font_data = *StyleRef().GetFont().PrimaryFont();
+  const float internal_leading = font_data.InternalLeading();
+  const float half_leading = internal_leading / 2;
+  const int ascent = font_data.GetFontMetrics().Ascent();
+  return LayoutUnit(text_top + ascent - half_leading);
+}
+
+AffineTransform LayoutNGTextCombine::ComputeAffineTransformForPaint(
+    const PhysicalOffset& paint_offset) const {
+  DCHECK(NeedsAffineTransformInPaint());
+  AffineTransform matrix;
+  if (UsingSyntheticOblique()) {
+    const LayoutUnit text_left = AdjustTextLeftForPaint(paint_offset.left);
+    const LayoutUnit text_top = AdjustTextTopForPaint(paint_offset.top);
+    matrix.Translate(text_left, text_top);
+    // TODO(yosin): We should use angle specified in CSS instead of
+    // constant value -15deg. See also |DrawBlobs()| in [1] for vertical
+    // upright oblique.
+    // [1] "third_party/blink/renderer/platform/fonts/font.cc"
+    constexpr float kSlantAngle = -15.0f;
+    matrix.SkewY(kSlantAngle);
+    matrix.Translate(-text_left, -text_top);
+  }
+  if (scale_x_.has_value()) {
+    matrix.Translate(paint_offset.left, paint_offset.top);
+    matrix.Scale(*scale_x_, 1.0f);
+    matrix.Translate(-paint_offset.left, -paint_offset.top);
+  }
+  return matrix;
+}
+
+bool LayoutNGTextCombine::NeedsAffineTransformInPaint() const {
+  return scale_x_.has_value() || UsingSyntheticOblique();
+}
+
+PhysicalRect LayoutNGTextCombine::ComputeTextFrameRect(
+    const PhysicalOffset paint_offset) const {
+  const ComputedStyle& style = Parent()->StyleRef();
+  DCHECK(style.GetFont().GetFontDescription().IsVerticalBaseline());
+
+  // Because we rotate the GraphicsContext to match the logical direction,
+  // transpose the |text_frame_rect| to match to it.
+  // See also |NGTextFragmentPainter::Paint()|
+  const LayoutUnit one_em = style.ComputedFontSizeAsFixed();
+  const FontHeight text_metrics = style.GetFontHeight();
+  const LayoutUnit line_height = text_metrics.LineHeight();
+  return PhysicalRect(PhysicalOffset(LayoutUnit(paint_offset.left),
+                                     LayoutUnit(paint_offset.top)),
+                      PhysicalSize(one_em, line_height));
+}
+
+PhysicalRect LayoutNGTextCombine::RecalcContentsInkOverflow() const {
+  const ComputedStyle& style = Parent()->StyleRef();
+  DCHECK(style.GetFont().GetFontDescription().IsVerticalBaseline());
+
+  // Note: |text_rect| and |ink_overflow| are in logical direction.
+  const PhysicalRect text_rect = ComputeTextFrameRect(PhysicalOffset());
+  LayoutRect ink_overflow = text_rect.ToLayoutRect();
+
+  if (!style.AppliedTextDecorations().IsEmpty()) {
+    const LayoutRect decoration_rect =
+        NGInkOverflow::ComputeTextDecorationOverflow(style, ink_overflow);
+    ink_overflow.Unite(decoration_rect);
+  }
+
+  if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone) {
+    ink_overflow = NGInkOverflow::ComputeEmphasisMarkOverflow(
+        style, text_rect.size, ink_overflow);
+  }
+
+  PhysicalRect local_ink_overflow =
+      WritingModeConverter({style.GetWritingMode(), TextDirection::kLtr},
+                           text_rect.size)
+          .ToPhysical(LogicalRect(ink_overflow));
+  local_ink_overflow.ExpandEdgesToPixelBoundaries();
+  return local_ink_overflow;
+}
+
+IntRect LayoutNGTextCombine::VisualRectForPaint(
+    const PhysicalOffset& paint_offset) const {
+  PhysicalRect ink_overflow = CurrentFragment()->InkOverflow();
+  ink_overflow.Move(paint_offset);
+  return EnclosingIntRect(ink_overflow);
 }
 
 void LayoutNGTextCombine::SetScaleX(float new_scale_x) {
@@ -99,6 +231,14 @@ void LayoutNGTextCombine::SetCompressedFont(const Font& font) {
   DCHECK(!compressed_font_.has_value());
   DCHECK(!scale_x_.has_value());
   compressed_font_ = font;
+}
+
+bool LayoutNGTextCombine::UsingSyntheticOblique() const {
+  return Parent()
+      ->StyleRef()
+      .GetFont()
+      .GetFontDescription()
+      .IsSyntheticOblique();
 }
 
 }  // namespace blink

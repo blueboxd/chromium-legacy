@@ -916,8 +916,14 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_CLEAR_SEARCH_HISTORY_LINK" desc="Text informing the user that they can clear search history and other data using MyActivity.">
         To clear <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>search<ph name="END_LINK1">&lt;/link1&gt;</ph> or other forms of history, visit <ph name="BEGIN_LINK2">&lt;link2&gt;</ph>My Google Activity<ph name="END_LINK2">&lt;/link2&gt;</ph>
       </message>
+      <message name="IDS_CLEAR_SEARCH_HISTORY_LINK_OTHER_FORMS" desc="Text informing the user that they can clear their Google data using MyActivity when their Default Search Engine is not Google.">
+        To clear other forms of history, visit <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>My Google Activity<ph name="END_LINK1">&lt;/link1&gt;</ph>
+      </message>
       <message name="IDS_CLEAR_SEARCH_HISTORY_NON_GOOGLE_DSE" desc="Text informing the user about the way to clear their search history when their Default Search Engine is not Google.">
         Your search engine is <ph name="dse">%1$s<ex>Bing</ex></ph>. If applicable, see their instructions to delete your search history.
+      </message>
+      <message name="IDS_CLEAR_SEARCH_HISTORY_NON_GOOGLE_DSE_UNKNOWN" desc="Text informing the user about the way to clear their search history when their Default Search Engine is not Google and is also not prepopulated.">
+        See your search engine’s instructions for deleting your search history, if applicable
       </message>
       <message name="IDS_CLEAR_PASSWORDS_TITLE" desc="Title for Clear Passwords in Clear Browsing Data preference">
         Saved passwords
@@ -3557,6 +3563,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_OMNIBOX_CONFIRM_DELETE" desc="A message within a modal dialog that confirms the user wants to delete a suggestion from the list dropdown in the omnibox">
         Remove suggestion from history?
       </message>
+      <message name="IDS_OMNIBOX_CONFIRM_DELETE_FROM_CLIPBOARD" desc="A message within a modal dialog that confirms the user wants to delete a clipboard suggestion from the list dropdown in the omnibox." formatter_data="android_java">
+        Remove suggestion from clipboard?
+      </message>
       <message name="IDS_MOST_VISITED_TILES_HEADER" desc="A header above a row with most visited tiles carousel in the Omnibox suggestions dropdown">
         Frequently visited
       </message>
@@ -4767,6 +4776,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_ACCOUNT_SELECTION_SHEET_TITLE" desc="Header for Account Selection sheet where users can pick an account to select." translateable="false">
         Create a <ph name="SITE_NAME">%1$s<ex>airbnb.com</ex></ph> account…
+      </message>
+      <message name="IDS_ACCOUNT_SELECTION_CONTINUE" desc="Title of the button that continues filling with the only available set of credentials." translateable="false">
+        Sign up
       </message>
       <message name="IDS_ACCOUNT_SELECTION_CONTENT_DESCRIPTION" desc="Accessibility string read when the Account Selection bottom sheet is opened. It describes the bottom sheet where a user can pick an account." translateable="false">
         List of accounts to be selected.

@@ -2145,15 +2145,12 @@ if (!is_android) {
         "//chrome/test/data/webui/settings/chromeos:modulize_runtime_data",
         "//testing/buildbot/filters:chromeos_filters",
         "//ui/file_manager:unit_test_data",
-        "//ui/file_manager/file_manager/background/js:modulize_runtime_data",
         "//ui/file_manager/file_manager/common/js:modulize_runtime_data",
         "//ui/file_manager/file_manager/externs:modulize_runtime_data",
         "//ui/file_manager/file_manager/externs/background:modulize_runtime_data",
-        "//ui/file_manager/file_manager/foreground/elements:modulize_runtime_data",
         "//ui/file_manager/file_manager/foreground/js:modulize_runtime_data",
         "//ui/file_manager/file_manager/foreground/js/metadata:modulize_runtime_data",
         "//ui/file_manager/file_manager/foreground/js/ui:modulize_runtime_data",
-        "//ui/file_manager/file_manager/foreground/js/ui/table:modulize_runtime_data",
       ]
 
       if (use_dbus) {
@@ -4804,6 +4801,7 @@ test("unit_tests") {
       "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
       "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
       "../browser/ui/bookmarks/recently_used_folders_combo_model_unittest.cc",
+      "../browser/ui/hats/trust_safety_sentiment_service_factory_unittest.cc",
       "../browser/ui/passwords/well_known_change_password_navigation_throttle_unittest.cc",
       "../browser/ui/sync/profile_signin_confirmation_helper_unittest.cc",
       "../browser/ui/sync/sync_promo_ui_unittest.cc",

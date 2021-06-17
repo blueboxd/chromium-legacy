@@ -1,4 +1,5 @@
 DummyModelExecutionManagerTest.*
+FeatureAggregatorImplTest.*
 HistogramSignalHandlerTest.*
 MetadataUtilsTest.*
 ModelExecutionManagerFactoryTest.*
@@ -12,4 +13,5 @@ SignalDatabaseImplTest.*
 SignalFilterProcessorTest.*
 SignalKeyInternalTest.*
 SignalKeyTest.*
+SignalStorageConfigTest.*
 UserActionSignalHandlerTest.*

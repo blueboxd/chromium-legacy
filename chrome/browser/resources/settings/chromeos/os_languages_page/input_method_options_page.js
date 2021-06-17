@@ -87,7 +87,8 @@ Polymer({
   getMenuItems(name, value) {
     return settings.input_method_util.getOptionMenuItems(name).map(menuItem => {
       menuItem['selected'] = menuItem['value'] === value;
-      menuItem['label'] = this.i18n(menuItem['name']);
+      menuItem['label'] =
+          menuItem['name'] ? this.i18n(menuItem['name']) : menuItem['value'];
       return menuItem;
     });
   },
@@ -198,11 +199,11 @@ Polymer({
 
   /**
    * Opens external link in Chrome.
-   * @param {!{model: !{option: !{url: string}}}} e
+   * @param {!{model: !{option: !{url: !settings.Route}}}} e
    * @private
    */
-  onExternalLinkClick_(e) {
-    window.open(e.model.option.url);
+  navigateToOtherPageInSettings_(e) {
+    settings.Router.getInstance().navigateTo(e.model.option.url);
   },
 
   /**

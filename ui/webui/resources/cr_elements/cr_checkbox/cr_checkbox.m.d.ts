@@ -5,8 +5,8 @@
 import {LegacyElementMixin} from 'chrome://resources/polymer/v3_0/polymer/lib/legacy/legacy-element-mixin.js';
 
 interface CrCheckboxElement extends LegacyElementMixin, HTMLElement {
-  checked: boolean|null|undefined;
-  disabled: boolean|null|undefined;
+  checked: boolean;
+  disabled: boolean;
   ariaDescription: string|null|undefined;
   tabIndex: number;
   focus(): void;

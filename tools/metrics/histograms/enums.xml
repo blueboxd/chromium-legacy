@@ -32975,6 +32975,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3940" label="XRFrameFillPoses"/>
   <int value="3941" label="WindowOpenNewPopupBehaviorMismatch"/>
   <int value="3942" label="ExplicitPointerCaptureClickTargetDiff"/>
+  <int value="3943" label="ControlledNonBlobURLWorkerWillBeUncontrolled"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34823,6 +34824,9 @@ Called by update_permissions_policy_enum.py.-->
   <int value="3" label="Close sync screen with sync"/>
   <int value="4" label="Close sync screen without sync"/>
   <int value="5" label="Close sync screen on advance sync settings"/>
+  <int value="6" label="Show sign in screen"/>
+  <int value="7" label="Close sign in screen with sign in"/>
+  <int value="8" label="Close sign in screen without sign in"/>
 </enum>
 
 <enum name="FirstUserActionType">

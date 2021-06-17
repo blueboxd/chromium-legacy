@@ -55,6 +55,10 @@ const char kMetricsBucketIndex[] = "metrics_bucket_index";
 const char kForceSigninProfileLockedKey[] = "force_signin_profile_locked";
 const char kHostedDomain[] = "hosted_domain";
 
+// Avatar info.
+const char kLastDownloadedGAIAPictureUrlWithSizeKey[] =
+    "last_downloaded_gaia_picture_url_with_size";
+
 // Profile colors info.
 const char kProfileHighlightColorKey[] = "profile_highlight_color";
 const char kDefaultAvatarFillColorKey[] = "default_avatar_fill_color";
@@ -120,6 +124,8 @@ const char ProfileAttributesEntry::kIsConsentedPrimaryAccountKey[] =
 const char ProfileAttributesEntry::kNameKey[] = "name";
 const char ProfileAttributesEntry::kIsUsingDefaultNameKey[] =
     "is_using_default_name";
+const char ProfileAttributesEntry::kIsUsingDefaultAvatarKey[] =
+    "is_using_default_avatar";
 
 // static
 void ProfileAttributesEntry::RegisterLocalStatePrefs(
@@ -355,6 +361,11 @@ bool ProfileAttributesEntry::IsGAIAPictureLoaded() const {
       profile_index());
 }
 
+std::string ProfileAttributesEntry::GetLastDownloadedGAIAPictureUrlWithSize()
+    const {
+  return GetString(kLastDownloadedGAIAPictureUrlWithSizeKey);
+}
+
 bool ProfileAttributesEntry::IsSupervised() const {
   return !GetSupervisedUserId().empty();
 }
@@ -407,8 +418,7 @@ bool ProfileAttributesEntry::IsAuthenticated() const {
 }
 
 bool ProfileAttributesEntry::IsUsingDefaultAvatar() const {
-  return profile_info_cache_->ProfileIsUsingDefaultAvatarAtIndex(
-      profile_index());
+  return GetBool(kIsUsingDefaultAvatarKey);
 }
 
 bool ProfileAttributesEntry::IsSignedInWithCredentialProvider() const {
@@ -538,6 +548,11 @@ void ProfileAttributesEntry::SetIsUsingGAIAPicture(bool value) {
       profile_index(), value);
 }
 
+void ProfileAttributesEntry::SetLastDownloadedGAIAPictureUrlWithSize(
+    const std::string& image_url_with_size) {
+  SetString(kLastDownloadedGAIAPictureUrlWithSizeKey, image_url_with_size);
+}
+
 void ProfileAttributesEntry::SetSignedInWithCredentialProvider(bool value) {
   if (value != GetBool(prefs::kSignedInWithCredentialProvider)) {
     SetBool(prefs::kSignedInWithCredentialProvider, value);
@@ -576,8 +591,7 @@ void ProfileAttributesEntry::SetIsUsingDefaultName(bool value) {
 }
 
 void ProfileAttributesEntry::SetIsUsingDefaultAvatar(bool value) {
-  profile_info_cache_->SetProfileIsUsingDefaultAvatarAtIndex(
-      profile_index(), value);
+  SetBool(kIsUsingDefaultAvatarKey, value);
 }
 
 void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {

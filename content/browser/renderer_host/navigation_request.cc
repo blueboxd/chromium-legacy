@@ -1006,7 +1006,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 }
 
 // static
-std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
+std::unique_ptr<NavigationRequest>
+NavigationRequest::CreateForSynchronousRendererCommit(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostImpl* render_frame_host,
     bool is_same_document,
@@ -3465,9 +3466,7 @@ void NavigationRequest::OnServiceWorkerAccessed(
 network::mojom::WebSandboxFlags NavigationRequest::SandboxFlagsToCommit() {
   DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
   DCHECK(!IsSameDocument());
-  DCHECK(!IsServedFromBackForwardCache());
-  // TODO(https://crbug.com/1181763): Figure out what to do with SandboxFlags in
-  // the Prerender case
+  DCHECK(!IsPageActivation());
   return sandbox_flags_to_commit_.value();
 }
 

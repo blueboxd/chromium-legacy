@@ -917,6 +917,22 @@
             ]
         }
     ],
+    "AutofillAssistantInCCTTriggeringLaunch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillAssistantInCctTriggering",
+                        "AutofillAssistantUrlHeuristics"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillConcurrentExperiments": [
         {
             "platforms": [
@@ -1320,6 +1336,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "BackgroundThreadPool"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BiometricAuthPwdFillAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210616",
+                    "enable_features": [
+                        "BiometricTouchToFill"
                     ]
                 }
             ]
@@ -2287,6 +2318,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CrOSAutoSelect"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CrOSEnforceSystemAecNsAgc": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CrOSEnforceSystemAecNsAgc"
                     ]
                 }
             ]
@@ -4752,6 +4798,21 @@
                     "name": "Enabled_20190905",
                     "enable_features": [
                         "LowerJavaScriptPriorityWhenForceDeferred"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MICEWebSignIn": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MICEWebSignIn"
                     ]
                 }
             ]

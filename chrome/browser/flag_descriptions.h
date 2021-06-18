@@ -1373,9 +1373,6 @@ extern const char kTabGridLayoutAndroidDescription[];
 extern const char kCommerceMerchantViewerAndroidName[];
 extern const char kCommerceMerchantViewerAndroidDescription[];
 
-extern const char kCommercePriceTrackingAndroidName[];
-extern const char kCommercePriceTrackingAndroidDescription[];
-
 extern const char kTabGroupsAndroidName[];
 extern const char kTabGroupsAndroidDescription[];
 
@@ -2258,6 +2255,9 @@ extern const char kArcDocumentsProviderUnknownSizeDescription[];
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];
 
+extern const char kArcImageCopyPasteCompatName[];
+extern const char kArcImageCopyPasteCompatDescription[];
+
 extern const char kArcNativeBridgeToggleName[];
 extern const char kArcNativeBridgeToggleDescription[];
 
@@ -2776,6 +2776,9 @@ extern const char kArcResizeLockDescription[];
 
 extern const char kScanAppMediaLinkName[];
 extern const char kScanAppMediaLinkDescription[];
+
+extern const char kScanAppMultiPageScanName[];
+extern const char kScanAppMultiPageScanDescription[];
 
 extern const char kScanAppSearchablePdfName[];
 extern const char kScanAppSearchablePdfDescription[];

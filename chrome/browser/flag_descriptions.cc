@@ -2392,10 +2392,6 @@ const char kCommerceMerchantViewerAndroidName[] = "Merchant Viewer";
 const char kCommerceMerchantViewerAndroidDescription[] =
     "Allows users to view merchant trust signals on eligible pages.";
 
-const char kCommercePriceTrackingAndroidName[] = "Price Tracking";
-const char kCommercePriceTrackingAndroidDescription[] =
-    "Allows users to track product prices through Chrome.";
-
 const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =
     "Allows users to create groups to better organize their tabs on phones.";
@@ -3931,6 +3927,12 @@ const char kArcFilePickerExperimentName[] =
 const char kArcFilePickerExperimentDescription[] =
     "Enables using Chrome OS file picker in ARC.";
 
+const char kArcImageCopyPasteCompatName[] =
+    "Enable image copy & paste compatibility mode for ARC";
+const char kArcImageCopyPasteCompatDescription[] =
+    "Allows pasting of images to Android apps through commitContent API and "
+    "share intent.";
+
 const char kArcNativeBridgeToggleName[] =
     "Toggle between native bridge implementations for ARC";
 const char kArcNativeBridgeToggleDescription[] =
@@ -4797,6 +4799,11 @@ const char kScanAppMediaLinkName[] = "Show Media app link in Scan app";
 const char kScanAppMediaLinkDescription[] =
     "Enables showing a link in the Scan app to open scanned images in the Media"
     " app.";
+
+const char kScanAppMultiPageScanName[] =
+    "Enable multi-page scanning in Scan app";
+const char kScanAppMultiPageScanDescription[] =
+    "Enables creating a single PDF file from multiple flatbed scans";
 
 extern const char kScanAppSearchablePdfName[] =
     "Enable saving scans as a searchable PDF.";

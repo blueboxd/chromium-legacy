@@ -21,6 +21,7 @@ import './guest_os/guest_os_shared_paths.js';
 import './os_a11y_page/os_a11y_page.m.js';
 import './os_a11y_page/manage_a11y_page.m.js';
 import './os_a11y_page/switch_access_action_assignment_dialog.m.js';
+import './os_a11y_page/switch_access_action_assignment_pane.m.js';
 import './os_a11y_page/switch_access_setup_guide_dialog.m.js';
 import './os_a11y_page/switch_access_subpage.m.js';
 import './os_a11y_page/tts_subpage.m.js';
@@ -65,5 +66,5 @@ export {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteracti
 export {PrinterType} from './os_printing_page/cups_printer_types.js';
 export {CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl, PrinterSetupResult, PrintServerResult} from './os_printing_page/cups_printers_browser_proxy.js';
 export {CupsPrintersEntryManager} from './os_printing_page/cups_printers_entry_manager.js';
-export {PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
+export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';

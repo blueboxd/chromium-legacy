@@ -48913,6 +48913,7 @@ from previous Chrome versions.
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
   <int value="1118339487" label="MemoriesDebug:disabled"/>
   <int value="1120428727" label="TabGridLayoutAndroid:enabled"/>
+  <int value="1122820469" label="ArcImageCopyPasteCompat:enabled"/>
   <int value="1126061778" label="CaptureThumbnailOnLoadFinished:enabled"/>
   <int value="1126956909" label="UseXpsForPrintingFromPdf:disabled"/>
   <int value="1127085005" label="TreatUnsafeDownloadsAsActive:enabled"/>
@@ -48950,6 +48951,7 @@ from previous Chrome versions.
   <int value="1152491093" label="MediaSessionService:disabled"/>
   <int value="1153454438"
       label="AutofillCreditCardLastUsedDateDisplay:disabled"/>
+  <int value="1154790184" label="ScanAppMultiPageScan:enabled"/>
   <int value="1155905651" label="DrawVerticallyEdgeToEdge:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1158333871" label="QueryTilesEnableQueryEditing:enabled"/>
@@ -49064,6 +49066,7 @@ from previous Chrome versions.
   <int value="1249215617" label="SelectToSpeakNavigationControl:enabled"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1250776846" label="DnsProxyEnableDOH:enabled"/>
+  <int value="1251663392" label="ArcImageCopyPasteCompat:disabled"/>
   <int value="1253001092" label="FeedShare:enabled"/>
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
   <int value="1253720084" label="CrOSEnforceSystemAecAgc:disabled"/>
@@ -49071,7 +49074,6 @@ from previous Chrome versions.
   <int value="1254952449" label="ContinuousFeeds:enabled"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257533754" label="UseDownloadOfflineContentProvider:disabled"/>
-  <int value="1257663962" label="CommercePriceTracking:disabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1258043820" label="AudioFocusEnforcement:enabled"/>
   <int value="1258747457"
@@ -49528,6 +49530,7 @@ from previous Chrome versions.
   <int value="1634897915" label="password-import-export:enabled"/>
   <int value="1634980726" label="VrShellExperimentalRendering:disabled"/>
   <int value="1635695770" label="CSSContainerQueries:disabled"/>
+  <int value="1635755615" label="ScanAppMultiPageScan:disabled"/>
   <int value="1635986352" label="ContextMenuSearchWithGoogleLens:enabled"/>
   <int value="1636721063"
       label="AutofillLocalCardMigrationShowFeedback:enabled"/>
@@ -50024,7 +50027,6 @@ from previous Chrome versions.
   <int value="2041570184" label="UsePreferredIntervalForVideo:enabled"/>
   <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
-  <int value="2043794900" label="CommercePriceTracking:enabled"/>
   <int value="2047503404" label="FilesSWA:enabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>

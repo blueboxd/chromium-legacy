@@ -510,6 +510,45 @@ LayoutBlockFlow DIV id="root"
       << "No more LayoutNGTextCombine";
 }
 
+TEST_F(LayoutNGTextCombineTest, LayoutOverflow) {
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "  writing-mode: vertical-lr;"
+      "  font: 100px/150px Ahem;"
+      "}"
+      "tcy { text-combine-upright: all; }");
+  SetBodyInnerHTML(
+      "<div id=t1><tcy>abcefgh</tcy>X</div>"
+      "<div id=t2>aX</div>");
+
+  // Layout tree is
+  //    LayoutNGBlockFlow {DIV} at (0,0) size 100x200
+  //      LayoutInline {TCY} at (0,0) size 100x100
+  //        LayoutNGTextCombine (anonymous) at (0,0) size 100x100
+  //          LayoutText {#text} at (0,0) size 110x100
+  //            text run at (0,0) width 700: "abcefgh"
+  //      LayoutText {#text} at (0,100) size 100x100
+  //        text run at (0,100) width 100: "X"
+  //   LayoutNGBlockFlow {DIV} at (0,200) size 100x200
+  //     LayoutText {#text} at (0,0) size 100x200
+  //       text run at (0,0) width 200: "aX"
+
+  const auto& sample1 = *To<LayoutBlockFlow>(GetLayoutObjectByElementId("t1"));
+  const auto& sample_fragment1 = *sample1.CurrentFragment();
+  EXPECT_FALSE(sample_fragment1.HasLayoutOverflow());
+  EXPECT_EQ(PhysicalSize(150, 200), sample_fragment1.Size());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(), PhysicalSize(150, 200)),
+            sample_fragment1.LayoutOverflow());
+
+  const auto& sample2 = *To<LayoutBlockFlow>(GetLayoutObjectByElementId("t2"));
+  const auto& sample_fragment2 = *sample2.CurrentFragment();
+  EXPECT_FALSE(sample_fragment2.HasLayoutOverflow());
+  EXPECT_EQ(PhysicalSize(150, 200), sample_fragment2.Size());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(), PhysicalSize(150, 200)),
+            sample_fragment2.LayoutOverflow());
+}
+
 TEST_F(LayoutNGTextCombineTest, MultipleTextNode) {
   InsertStyleElement(
       "c { text-combine-upright: all; }"
@@ -550,6 +589,82 @@ LayoutNGBlockFlow DIV id="root"
   +--LayoutText #text "de"
 )DUMP",
             ToSimpleLayoutTree(root_layout_object));
+}
+
+TEST_F(LayoutNGTextCombineTest, Outline) {
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "  writing-mode: vertical-lr;"
+      "  text-combine-upright: all;"
+      "  font: 100px/150px Ahem;"
+      "}"
+      "tcy { text-combine-upright: all; }");
+  SetBodyInnerHTML(
+      "<div id=t1><tcy>abcefgh</tcy>X</div>"
+      "<div id=t2>aX</div>");
+
+  // Layout tree is
+  //    LayoutNGBlockFlow {DIV} at (0,0) size 100x200
+  //      LayoutInline {TCY} at (0,0) size 100x100
+  //        LayoutNGTextCombine (anonymous) at (0,0) size 100x100
+  //          LayoutText {#text} at (0,0) size 110x100
+  //            text run at (0,0) width 700: "abcefgh"
+  //      LayoutText {#text} at (0,100) size 100x100
+  //        text run at (0,100) width 100: "X"
+  //   LayoutNGBlockFlow {DIV} at (0,200) size 100x200
+  //     LayoutText {#text} at (0,0) size 100x200
+  //       text run at (0,0) width 200: "aX"
+
+  // Sample 1 with text-combine-upright:all
+  const auto& sample1 = *GetLayoutObjectByElementId("t1");
+  Vector<PhysicalRect> standard_outlines1;
+  sample1.AddOutlineRects(standard_outlines1, PhysicalOffset(),
+                          NGOutlineType::kDontIncludeBlockVisualOverflow);
+  EXPECT_THAT(
+      standard_outlines1,
+      ElementsAre(PhysicalRect(PhysicalOffset(0, 0), PhysicalSize(150, 200))));
+
+  Vector<PhysicalRect> focus_outlines1;
+  sample1.AddOutlineRects(focus_outlines1, PhysicalOffset(),
+                          NGOutlineType::kIncludeBlockVisualOverflow);
+  EXPECT_THAT(
+      focus_outlines1,
+      ElementsAre(
+          PhysicalRect(PhysicalOffset(0, 0), PhysicalSize(150, 200)),
+          // tcy
+          PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
+          PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
+          // "X"
+          PhysicalRect(PhysicalOffset(25, 100), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(25, 100), PhysicalSize(100, 100))));
+
+  // Sample 1 without text-combine-upright:all
+  const auto& sample2 = *GetLayoutObjectByElementId("t2");
+  Vector<PhysicalRect> standard_outlines2;
+  sample2.AddOutlineRects(standard_outlines2, PhysicalOffset(),
+                          NGOutlineType::kDontIncludeBlockVisualOverflow);
+  EXPECT_THAT(
+      standard_outlines2,
+      ElementsAre(PhysicalRect(PhysicalOffset(0, 0), PhysicalSize(150, 100))));
+
+  Vector<PhysicalRect> focus_outlines2;
+  sample1.AddOutlineRects(focus_outlines2, PhysicalOffset(),
+                          NGOutlineType::kIncludeBlockVisualOverflow);
+  EXPECT_THAT(
+      focus_outlines2,
+      ElementsAre(
+          PhysicalRect(PhysicalOffset(0, 0), PhysicalSize(150, 200)),
+          // "a"
+          PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
+          PhysicalRect(PhysicalOffset(25, 0), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(20, 0), PhysicalSize(110, 100)),
+          // "X"
+          PhysicalRect(PhysicalOffset(25, 100), PhysicalSize(100, 100)),
+          PhysicalRect(PhysicalOffset(25, 100), PhysicalSize(100, 100))));
 }
 
 TEST_F(LayoutNGTextCombineTest, RemoveChildCombine) {

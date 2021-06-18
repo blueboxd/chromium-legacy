@@ -1246,8 +1246,7 @@
                         "foreground_cache_size": "2",
                         "geolocation_supported": "true",
                         "max_buffered_bytes": "100000",
-                        "max_buffered_bytes_per_process": "512000",
-                        "service_worker_supported": "true"
+                        "max_buffered_bytes_per_process": "512000"
                     },
                     "enable_features": [
                         "BackForwardCache",
@@ -1278,8 +1277,7 @@
                         "foreground_cache_size": "2",
                         "geolocation_supported": "true",
                         "max_buffered_bytes": "100000",
-                        "max_buffered_bytes_per_process": "512000",
-                        "service_worker_supported": "true"
+                        "max_buffered_bytes_per_process": "512000"
                     },
                     "enable_features": [
                         "BackForwardCache",
@@ -5445,6 +5443,7 @@
                         "OmniboxBookmarkPaths",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
+                        "OmniboxKeywordSearchButton",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxOnFocusSuggestionsContextualWebOnContent",
@@ -8117,6 +8116,21 @@
                     "enable_features": [
                         "IPH_MicToolbar",
                         "ToolbarMicIphAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ToolbarUseHardwareBitmapDraw": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledDefault",
+                    "enable_features": [
+                        "ToolbarUserHardwareBitmapDraw"
                     ]
                 }
             ]

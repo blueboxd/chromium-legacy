@@ -74,21 +74,6 @@ void LogUnimplementedPropertyID(const CSSProperty& property) {
               << property.GetPropertyName() << "'.";
 }
 
-// TODO(crbug.com/1167696): We probably want to avoid doing this for
-// performance reasons.
-bool InclusiveAncestorMayDependOnContainerQueries(Node* node) {
-  if (!RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
-    return false;
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
-    const ComputedStyle* style = ancestor.GetComputedStyle();
-    // Since DependsOnContainerQueries is stored on ComputedStyle, we have to
-    // behave as if the flag is set for nullptr-styles (display:none).
-    if (!style || style->DependsOnContainerQueries())
-      return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 const Vector<const CSSProperty*>&
@@ -260,8 +245,7 @@ void CSSComputedStyleDeclaration::UpdateStyleAndLayoutTreeIfNeeded(
     bool is_for_layout_dependent_property =
         property_name && !property_name->IsCustomProperty() &&
         CSSProperty::Get(property_name->Id()).IsLayoutDependentProperty();
-    if (is_for_layout_dependent_property ||
-        document.GetStyleEngine().HasViewportDependentMediaQueries()) {
+    if (is_for_layout_dependent_property) {
       owner->GetDocument().UpdateStyleAndLayout(
           DocumentUpdateReason::kJavaScript);
       // The style recalc could have caused the styled node to be discarded or
@@ -283,8 +267,7 @@ void CSSComputedStyleDeclaration::UpdateStyleAndLayoutIfNeeded(
       property &&
       property->IsLayoutDependent(ComputeComputedStyle(), StyledLayoutObject());
 
-  if (is_for_layout_dependent_property ||
-      InclusiveAncestorMayDependOnContainerQueries(styled_node)) {
+  if (is_for_layout_dependent_property) {
     styled_node->GetDocument().UpdateStyleAndLayoutForNode(
         styled_node, DocumentUpdateReason::kJavaScript);
   }

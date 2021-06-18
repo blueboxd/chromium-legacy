@@ -203,6 +203,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "arc-image-copy-paste-compat",
+    "owners": [ "tetsui" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "arc-native-bridge-64bit-support-experiment",
     "owners": [ "jhorwich" ],
     // Used on ChromeOS to experimentally enable 64-bit ARC native-bridge
@@ -1468,12 +1473,7 @@
   {
     "name": "enable-commerce-merchant-viewer",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 97
-  },
-  {
-    "name": "enable-commerce-price-tracking",
-    "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 94
   },
   {
     "name": "enable-compositing-based-throttling",
@@ -4637,6 +4637,11 @@
     "name": "scan-app-media-link",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "scan-app-multi-page-scan",
+    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "scan-app-searchable-pdf",

@@ -4434,10 +4434,9 @@ void RenderFrameHostImpl::SetWindowRect(const gfx::Rect& bounds,
 }
 
 // TODO(crbug.com/1213863): Move this method to content::PageImpl.
-void RenderFrameHostImpl::UpdateManifestURL(
-    const absl::optional<GURL>& manifest_url) {
+void RenderFrameHostImpl::UpdateManifestURL(const GURL& manifest_url) {
   DCHECK(!GetParent());
-  GetPage().update_manifest_url(manifest_url.value_or(GURL()));
+  GetPage().update_manifest_url(manifest_url);
 }
 
 void RenderFrameHostImpl::DownloadURL(
@@ -7054,7 +7053,6 @@ void RenderFrameHostImpl::CommitNavigation(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    bool is_view_source,
     absl::optional<SubresourceLoaderParams> subresource_loader_params,
     absl::optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
@@ -7159,7 +7157,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
   // The renderer can exit view source mode when any error or cancellation
   // happen. When reusing the same renderer, overwrite to recover the mode.
-  if (is_view_source && IsActive()) {
+  if (commit_params->is_view_source && IsActive()) {
     DCHECK(!GetParent());
     GetAssociatedLocalFrame()->EnableViewSourceMode();
   }

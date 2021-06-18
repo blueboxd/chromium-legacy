@@ -460,6 +460,9 @@ extern const char kDesktopPWAsTabStripDescription[];
 extern const char kDesktopPWAsTabStripLinkCapturingName[];
 extern const char kDesktopPWAsTabStripLinkCapturingDescription[];
 
+extern const char kDesktopPWAsTabStripSettingsName[];
+extern const char kDesktopPWAsTabStripSettingsDescription[];
+
 extern const char kDesktopPWAsRunOnOsLoginName[];
 extern const char kDesktopPWAsRunOnOsLoginDescription[];
 
@@ -719,6 +722,9 @@ extern const char kEffectiveConnectionType4GDescription[];
 extern const char kFileHandlingAPIName[];
 extern const char kFileHandlingAPIDescription[];
 
+extern const char kFileHandlingIconsName[];
+extern const char kFileHandlingIconsDescription[];
+
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
 
@@ -777,9 +783,6 @@ extern const char kTabSwitcherOnReturnDescription[];
 
 extern const char kHideShelfControlsInTabletModeName[];
 extern const char kHideShelfControlsInTabletModeDescription[];
-
-extern const char kHostedAppQuitNotificationName[];
-extern const char kHostedAppQuitNotificationDescription[];
 
 extern const char kHostedAppShimCreationName[];
 extern const char kHostedAppShimCreationDescription[];
@@ -1106,11 +1109,6 @@ extern const char kPasswordChangeInSettingsDescription[];
 extern const char kPasswordChangeName[];
 extern const char kPasswordChangeDescription[];
 
-extern const char kPassiveEventListenerDefaultName[];
-extern const char kPassiveEventListenerDefaultDescription[];
-extern const char kPassiveEventListenerTrue[];
-extern const char kPassiveEventListenerForceAllTrue[];
-
 extern const char kPassiveEventListenersDueToFlingName[];
 extern const char kPassiveEventListenersDueToFlingDescription[];
 
@@ -1374,6 +1372,9 @@ extern const char kTabGridLayoutAndroidDescription[];
 
 extern const char kCommerceMerchantViewerAndroidName[];
 extern const char kCommerceMerchantViewerAndroidDescription[];
+
+extern const char kCommercePriceTrackingAndroidName[];
+extern const char kCommercePriceTrackingAndroidDescription[];
 
 extern const char kTabGroupsAndroidName[];
 extern const char kTabGroupsAndroidDescription[];

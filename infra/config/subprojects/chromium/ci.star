@@ -103,7 +103,7 @@ luci.gitiles_poller(
 
 consoles.console_view(
     name = "chromium",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     include_experimental_builds = True,
     ordering = {
         "*type*": consoles.ordering(short_names = ["dbg", "rel", "off"]),
@@ -153,7 +153,7 @@ consoles.console_view(
 
 consoles.console_view(
     name = "chromium.chromiumos",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     ordering = {
         None: ["default"],
         "default": consoles.ordering(short_names = ["ful", "rel"]),
@@ -189,7 +189,7 @@ consoles.console_view(
 
 consoles.console_view(
     name = "chromium.dawn",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     ordering = {
         None: ["ToT"],
         "*builder*": ["Builder"],
@@ -272,7 +272,7 @@ consoles.console_view(
 
 consoles.console_view(
     name = "chromium.gpu",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     ordering = {
         None: ["Windows", "Mac", "Linux"],
     },
@@ -321,7 +321,7 @@ consoles.console_view(
 
 consoles.console_view(
     name = "chromium.mac",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     ordering = {
         None: ["release"],
         "release": consoles.ordering(short_names = ["bld"]),
@@ -375,7 +375,7 @@ consoles.console_view(
 
 consoles.console_view(
     name = "chromium.win",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     ordering = {
         None: ["release", "debug"],
         "debug|builder": consoles.ordering(short_names = ["64", "32"]),
@@ -1617,7 +1617,7 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = "win-official",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_console_view = "main",
     console_view_entry = consoles.console_view_entry(
         category = "win|off",
@@ -1656,7 +1656,7 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = "win32-official",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_console_view = "main",
     console_view_entry = consoles.console_view_entry(
         category = "win|off",
@@ -1751,7 +1751,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-amd64-generic-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release|x64",
         short_name = "rel",
@@ -1772,7 +1772,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-arm-generic-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "arm",
@@ -1784,7 +1784,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-kevin-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "kvn",
@@ -1863,7 +1863,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "linux-chromeos-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "default",
         short_name = "rel",
@@ -2066,6 +2066,17 @@ ci.cipd_builder(
             {
                 "sdk_package_name": "system-images;android-30;google_apis_playstore;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-30/google_apis_playstore/x86.yaml",
+            },
+            # Preview system images for Android S.
+            # Should be updated once it is fully released.
+            # sdkmanager don't have x86 for Android S so use x86_64 for now.
+            {
+                "sdk_package_name": "system-images;android-S;google_apis;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-S/google_apis/x86_64.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-S;google_apis_playstore;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-S/google_apis_playstore/x86_64.yaml",
             },
         ],
     },
@@ -2481,7 +2492,7 @@ ci.dawn_mac_builder(
 
 ci.dawn_mac_builder(
     name = "Dawn Mac x64 DEPS Builder",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Mac|Builder",
         short_name = "x64",
@@ -2494,7 +2505,7 @@ ci.dawn_mac_builder(
 # physical Mac hardware in the Swarming pool which is why they run on linux
 ci.dawn_thin_tester(
     name = "Dawn Mac x64 DEPS Release (AMD)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Mac|AMD",
         short_name = "x64",
@@ -2506,7 +2517,7 @@ ci.dawn_thin_tester(
 
 ci.dawn_thin_tester(
     name = "Dawn Mac x64 DEPS Release (Intel)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Mac|Intel",
         short_name = "x64",
@@ -2552,7 +2563,7 @@ ci.dawn_windows_builder(
 
 ci.dawn_windows_builder(
     name = "Dawn Win10 x64 DEPS Builder",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Windows|Builder",
         short_name = "x64",
@@ -2565,7 +2576,7 @@ ci.dawn_windows_builder(
 # physical Win hardware in the Swarming pool, which is why they run on linux
 ci.dawn_thin_tester(
     name = "Dawn Win10 x64 DEPS Release (Intel HD 630)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Windows|Intel",
         short_name = "x64",
@@ -2577,7 +2588,7 @@ ci.dawn_thin_tester(
 
 ci.dawn_thin_tester(
     name = "Dawn Win10 x64 DEPS Release (NVIDIA)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Windows|Nvidia",
         short_name = "x64",
@@ -2615,7 +2626,7 @@ ci.dawn_windows_builder(
 
 ci.dawn_windows_builder(
     name = "Dawn Win10 x86 DEPS Builder",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Windows|Builder",
         short_name = "x86",
@@ -2628,7 +2639,7 @@ ci.dawn_windows_builder(
 # physical Win hardware in the Swarming pool, which is why they run on linux
 ci.dawn_thin_tester(
     name = "Dawn Win10 x86 DEPS Release (Intel HD 630)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Windows|Intel",
         short_name = "x86",
@@ -2640,7 +2651,7 @@ ci.dawn_thin_tester(
 
 ci.dawn_thin_tester(
     name = "Dawn Win10 x86 DEPS Release (NVIDIA)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "DEPS|Windows|Nvidia",
         short_name = "x86",
@@ -4238,6 +4249,7 @@ ci.fyi_ios_builder(
         short_name = "sdk14",
     ),
     os = os.MAC_11,
+    cpu = cpu.ARM64,
     schedule = "0 2,6,10,14,18,22 * * *",
     triggered_by = [],
     xcode = xcode.x12e262,
@@ -4379,7 +4391,7 @@ ci.gpu_linux_builder(
 
 ci.gpu_mac_builder(
     name = "GPU Mac Builder",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "Mac",
     ),
@@ -4397,7 +4409,7 @@ ci.gpu_mac_builder(
 
 ci.gpu_windows_builder(
     name = "GPU Win x64 Builder",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "Windows",
     ),
@@ -4444,7 +4456,7 @@ ci.gpu_thin_tester(
 
 ci.gpu_thin_tester(
     name = "Mac Release (Intel)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "Mac",
     ),
@@ -4464,7 +4476,7 @@ ci.gpu_thin_tester(
 
 ci.gpu_thin_tester(
     name = "Mac Retina Release (AMD)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "Mac",
     ),
@@ -4484,7 +4496,7 @@ ci.gpu_thin_tester(
 
 ci.gpu_thin_tester(
     name = "Win10 x64 Release (NVIDIA)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "Windows",
     ),
@@ -5548,7 +5560,7 @@ ci.infra_builder(
 
 ci.mac_builder(
     name = "Mac Builder",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "bld",
@@ -5560,7 +5572,7 @@ ci.mac_builder(
 
 ci.mac_builder(
     name = "Mac Builder (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "debug",
         short_name = "bld",
@@ -5572,7 +5584,7 @@ ci.mac_builder(
 
 ci.mac_builder(
     name = "mac-arm64-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "release|arm64",
         short_name = "bld",
@@ -5583,7 +5595,7 @@ ci.mac_builder(
 )
 
 # TODO(estaab) When promoting out of FYI, make tree_closing True and make
-# branch_selector branches.STANDARD_RELEASES, then remove the entry for this
+# branch_selector branches.DESKTOP_EXTENDED_STABLE_RELEASES, then remove the entry for this
 # builder from //generators/scheduler-noop-jobs.star
 ci.thin_tester(
     name = "mac-arm64-rel-tests",
@@ -5598,7 +5610,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac10.11 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -5611,7 +5623,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac10.12 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -5624,7 +5636,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac10.13 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -5637,7 +5649,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac10.14 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -5650,7 +5662,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac10.15 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
@@ -5665,7 +5677,7 @@ ci.thin_tester(
     name = "Mac11 Tests",
     # TODO(crbug.com/1206401): Reenable on the branches when we have
     # sufficient capacity.
-    # branch_selector = branches.STANDARD_MILESTONE,
+    # branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
@@ -5677,7 +5689,7 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac10.15 Tests (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "debug",
@@ -6220,7 +6232,7 @@ ci.win_builder(
 ci.win_builder(
     name = "Win7 Tests (dbg)(1)",
     builderless = True,
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "debug|tester",
         short_name = "7",
@@ -6234,7 +6246,7 @@ ci.win_builder(
 ci.win_builder(
     name = "Win 7 Tests x64 (1)",
     builderless = True,
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
         short_name = "64",
@@ -6247,7 +6259,7 @@ ci.win_builder(
 
 ci.win_builder(
     name = "Win Builder (dbg)",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "debug|builder",
         short_name = "32",
@@ -6260,7 +6272,7 @@ ci.win_builder(
 
 ci.win_builder(
     name = "Win x64 Builder",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "release|builder",
         short_name = "64",
@@ -6277,7 +6289,7 @@ ci.win_builder(
 
 ci.win_builder(
     name = "Win10 Tests x64",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "release|tester",
         short_name = "w10",

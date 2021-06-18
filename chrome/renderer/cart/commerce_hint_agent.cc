@@ -517,7 +517,7 @@ bool CommerceHintAgent::ShouldSkip(base::StringPiece product_name) {
   return PartialMatch(product_name.substr(0, kLengthLimit), GetSkipPattern());
 }
 
-std::string CommerceHintAgent::ExtractButtonText(
+const std::vector<std::string> CommerceHintAgent::ExtractButtonTexts(
     const blink::WebFormElement& form) {
   static base::NoDestructor<WebString> kButton("button");
 
@@ -532,7 +532,7 @@ std::string CommerceHintAgent::ExtractButtonText(
                              base::TrimPositions::TRIM_ALL),
         true)));
   }
-  return base::JoinString(button_texts, " ");
+  return button_texts;
 }
 
 void CommerceHintAgent::ExtractProducts() {
@@ -651,7 +651,7 @@ void CommerceHintAgent::DidCommitProvisionalLoad(
     RecordCommerceEvent(CommerceEvent::kAddToCartByURL);
     OnAddToCart(render_frame());
   }
-  if (IsVisitCheckout(starting_url_)) {
+  if (!IsVisitCart(starting_url_) && IsVisitCheckout(starting_url_)) {
     RecordCommerceEvent(CommerceEvent::kVisitCheckout);
     OnVisitCheckout(render_frame());
   }
@@ -672,10 +672,16 @@ void CommerceHintAgent::DidFinishLoad() {
   if (!url.SchemeIs(url::kHttpsScheme))
     return;
 
+  // Some URLs might satisfy the patterns for both cart and checkout (e.g.
+  // https://www.foo.com/cart/checkout). In those cases, cart has higher
+  // priority.
   if (IsVisitCart(url)) {
     RecordCommerceEvent(CommerceEvent::kVisitCart);
     OnVisitCart(render_frame());
     ExtractProducts();
+  } else if (IsVisitCheckout(url)) {
+    RecordCommerceEvent(CommerceEvent::kVisitCheckout);
+    OnVisitCheckout(render_frame());
   }
 }
 
@@ -685,15 +691,17 @@ void CommerceHintAgent::WillSubmitForm(const blink::WebFormElement& form) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  if (IsPurchase(ExtractButtonText(form))) {
-    RecordCommerceEvent(CommerceEvent::kPurchaseByForm);
-    OnPurchase(render_frame());
+  for (const std::string& button_text : ExtractButtonTexts(form)) {
+    if (IsPurchase(button_text)) {
+      RecordCommerceEvent(CommerceEvent::kPurchaseByForm);
+      OnPurchase(render_frame());
+      return;
+    }
   }
 }
 
 // TODO(crbug/1164236): use MutationObserver on cart instead.
-void CommerceHintAgent::DidObserveLayoutShift(double score,
-                                              bool after_input_or_scroll) {
+void CommerceHintAgent::ExtractCartFromCurrentFrame() {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // Don't do anything for subframes.
   if (frame->Parent())
@@ -703,9 +711,18 @@ void CommerceHintAgent::DidObserveLayoutShift(double score,
     return;
 
   if (IsVisitCart(url)) {
-    DVLOG(1) << "In-cart layout shift: " << url;
     ExtractProducts();
   }
+}
+
+void CommerceHintAgent::DidObserveLayoutShift(double score,
+                                              bool after_input_or_scroll) {
+  ExtractCartFromCurrentFrame();
+}
+
+void CommerceHintAgent::OnMainFrameIntersectionChanged(
+    const gfx::Rect& intersect_rect) {
+  ExtractCartFromCurrentFrame();
 }
 
 bool CommerceHintAgent::ShouldSkipAddToCartRequest(const GURL& navigation_url,

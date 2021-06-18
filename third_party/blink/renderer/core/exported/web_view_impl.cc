@@ -347,18 +347,6 @@ void ApplyCommandLineToSettings(WebSettings* settings) {
     selection_strategy = WebSettings::SelectionStrategyType::kCharacter;
   settings->SetSelectionStrategy(selection_strategy);
 
-  WebString passive_listeners_default = WebString::FromUTF8(
-      command_line.GetSwitchValueASCII(switches::kPassiveListenersDefault));
-  if (!passive_listeners_default.IsEmpty()) {
-    WebSettings::PassiveEventListenerDefault passive_default =
-        WebSettings::PassiveEventListenerDefault::kFalse;
-    if (passive_listeners_default == "true")
-      passive_default = WebSettings::PassiveEventListenerDefault::kTrue;
-    else if (passive_listeners_default == "forcealltrue")
-      passive_default = WebSettings::PassiveEventListenerDefault::kForceAllTrue;
-    settings->SetPassiveEventListenerDefault(passive_default);
-  }
-
   WebString network_quiet_timeout = WebString::FromUTF8(
       command_line.GetSwitchValueASCII(switches::kNetworkQuietTimeout));
   if (!network_quiet_timeout.IsEmpty()) {
@@ -1325,7 +1313,7 @@ void WebViewImpl::Resize(const gfx::Size& new_size) {
 }
 
 void WebViewImpl::SetScreenOrientationOverrideForTesting(
-    absl::optional<blink::mojom::ScreenOrientation> orientation) {
+    absl::optional<display::mojom::blink::ScreenOrientation> orientation) {
   screen_orientation_override_ = orientation;
 
   // Since we updated the override value, notify all widgets.
@@ -1348,7 +1336,7 @@ void WebViewImpl::SetWindowRectSynchronouslyForTesting(
   web_widget_->SetWindowRectSynchronouslyForTesting(new_window_rect);
 }
 
-absl::optional<mojom::blink::ScreenOrientation>
+absl::optional<display::mojom::blink::ScreenOrientation>
 WebViewImpl::ScreenOrientationOverride() {
   return screen_orientation_override_;
 }

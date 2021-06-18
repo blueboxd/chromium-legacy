@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Process;
+import android.os.UserManager;
 import android.provider.Settings;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -58,8 +59,8 @@ public class LocationUtils {
     /**
      * Returns true if Chromium has permission to access location.
      *
-     * Check both hasAndroidLocationPermission() and isSystemLocationSettingEnabled() to determine
-     * if Chromium's location requests will return results.
+     * Callers should check both hasAndroidLocationPermission() and isSystemLocationSettingEnabled()
+     * to determine if Chromium's location requests will return results.
      */
     public boolean hasAndroidLocationPermission() {
         return hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -73,6 +74,12 @@ public class LocationUtils {
     @SuppressWarnings("deprecation")
     public boolean isSystemLocationSettingEnabled() {
         Context context = ContextUtils.getApplicationContext();
+
+        UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+        if (userManager.hasUserRestriction(UserManager.DISALLOW_SHARE_LOCATION)) {
+            return false;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             LocationManager locationManager =
                     (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);

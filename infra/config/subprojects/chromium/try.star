@@ -6,7 +6,7 @@ load("//lib/branches.star", "branches")
 load("//lib/builders.star", "cpu", "goma", "os", "xcode")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
-load("//project.star", "settings")
+load("//project.star", "branch_type", "settings")
 
 try_.defaults.set(
     bucket = "try",
@@ -125,7 +125,7 @@ consoles.list_view(
 
 consoles.list_view(
     name = "tryserver.chromium",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 consoles.list_view(
@@ -139,22 +139,22 @@ consoles.list_view(
 
 consoles.list_view(
     name = "tryserver.chromium.chromiumos",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.dawn",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.linux",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
 )
 
 consoles.list_view(
     name = "tryserver.chromium.mac",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 consoles.list_view(
@@ -171,7 +171,7 @@ consoles.list_view(
 
 consoles.list_view(
     name = "tryserver.chromium.win",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 # Builders are sorted first lexicographically by the function used to define
@@ -252,14 +252,14 @@ try_.chromium_builder(
 
 try_.chromium_builder(
     name = "mac-official",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     cores = None,
     os = os.MAC_ANY,
 )
 
 try_.chromium_builder(
     name = "win-official",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     os = os.WINDOWS_DEFAULT,
     cores = 32,
     execution_timeout = 6 * time.hour,
@@ -267,7 +267,7 @@ try_.chromium_builder(
 
 try_.chromium_builder(
     name = "win32-official",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     os = os.WINDOWS_DEFAULT,
     cores = 32,
     execution_timeout = 6 * time.hour,
@@ -765,7 +765,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "chromeos-amd64-generic-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     os = os.LINUX_BIONIC_REMOVE,
@@ -782,7 +782,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "chromeos-arm-generic-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     os = os.LINUX_BIONIC_REMOVE,
@@ -822,7 +822,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "chromeos-kevin-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -839,7 +839,7 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = "linux-chromeos-rel",
-    branch_selector = branches.LTS_MILESTONE,
+    branch_selector = branches.CROS_LTS_MILESTONE,
     builderless = not settings.is_main,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
@@ -905,7 +905,7 @@ try_.chromium_dawn_builder(
 
 try_.chromium_dawn_builder(
     name = "dawn-mac-x64-deps-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.MAC_ANY,
     tryjob = try_.job(
@@ -926,7 +926,7 @@ try_.chromium_dawn_builder(
 
 try_.chromium_dawn_builder(
     name = "dawn-win10-x64-deps-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.WINDOWS_ANY,
     tryjob = try_.job(
@@ -947,7 +947,7 @@ try_.chromium_dawn_builder(
 
 try_.chromium_dawn_builder(
     name = "dawn-win10-x86-deps-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.WINDOWS_ANY,
     tryjob = try_.job(
@@ -1249,9 +1249,7 @@ try_.chromium_linux_builder(
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(
-        enable_for_quick_run = True,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_linux_builder(
@@ -1536,20 +1534,18 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_builder(
     name = "mac-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builderless = not settings.is_main,
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
-    tryjob = try_.job(
-        enable_for_quick_run = True,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_mac_builder(
     name = "mac-arm64-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     goma_jobs = goma.jobs.J150,
     os = os.MAC_10_15,
 )
@@ -1593,7 +1589,7 @@ try_.chromium_mac_builder(
 
 try_.chromium_mac_builder(
     name = "mac_chromium_compile_dbg_ng",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     goma_jobs = goma.jobs.J150,
     os = os.MAC_DEFAULT,
     main_list_view = "try",
@@ -1687,6 +1683,7 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios14-sdk-simulator",
+    cpu = cpu.ARM64,
     os = os.MAC_11,
     xcode = xcode.x12e262,
 )
@@ -1762,7 +1759,7 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win-libfuzzer-asan-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builderless = False,
     executable = "recipe:chromium_libfuzzer_trybot",
     main_list_view = "try",
@@ -1776,7 +1773,7 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win_chromium_compile_dbg_ng",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -1830,7 +1827,7 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win10_chromium_x64_rel_ng",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     goma_jobs = goma.jobs.J300,
     os = os.WINDOWS_10,
     cores = 16,
@@ -1838,9 +1835,7 @@ try_.chromium_win_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
-    tryjob = try_.job(
-        enable_for_quick_run = True,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_win_builder(
@@ -1851,7 +1846,7 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = "win7-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     cores = 16,
     execution_timeout = 4 * time.hour + 30 * time.minute,
     goma_jobs = goma.jobs.J300,
@@ -1958,7 +1953,7 @@ try_.gpu_chromium_linux_builder(
 
 try_.gpu_chromium_mac_builder(
     name = "mac_optional_gpu_tests_rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -1989,7 +1984,7 @@ try_.gpu_chromium_mac_builder(
 
 try_.gpu_chromium_win_builder(
     name = "win_optional_gpu_tests_rel",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builderless = True,
     main_list_view = "try",
     os = os.WINDOWS_DEFAULT,
@@ -2108,12 +2103,20 @@ try_.presubmit_builder(
         "branch_script": "infra/config/scripts/branch.py",
         "branch_configs": [
             {
-                "name": "standard",
-                "branch_types": ["standard"],
+                "name": branch_type.STANDARD,
+                "branch_types": [branch_type.STANDARD],
             },
             {
-                "name": "lts",
-                "branch_types": ["lts"],
+                "name": branch_type.DESKTOP_EXTENDED_STABLE,
+                "branch_types": [branch_type.DESKTOP_EXTENDED_STABLE],
+            },
+            {
+                "name": branch_type.CROS_LTS,
+                "branch_types": [branch_type.CROS_LTS],
+            },
+            {
+                "name": "{} + {}".format(branch_type.DESKTOP_EXTENDED_STABLE, branch_type.CROS_LTS),
+                "branch_types": [branch_type.DESKTOP_EXTENDED_STABLE, branch_type.CROS_LTS],
             },
         ],
         "verification_scripts": ["infra/config/main.star", "infra/config/dev.star"],
@@ -2211,30 +2214,30 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "mac-chrome",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 chrome_internal_verifier(
     builder = "mac-chrome-stable",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 chrome_internal_verifier(
     builder = "win-chrome",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 chrome_internal_verifier(
     builder = "win-chrome-stable",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 chrome_internal_verifier(
     builder = "win64-chrome",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )
 
 chrome_internal_verifier(
     builder = "win64-chrome-stable",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
 )

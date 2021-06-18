@@ -17,6 +17,8 @@ import org.chromium.chrome.browser.browserservices.verification.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.verification.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.content_public.browser.GlobalFrameRoutingId;
+import org.chromium.content_public.browser.LifecycleState;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.MessagePort.MessageCallback;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -73,7 +75,7 @@ public class PostMessageHandler implements OriginVerificationListener {
 
             @Override
             public void didFinishNavigation(NavigationHandle navigation) {
-                if (mNavigatedOnce && navigation.hasCommitted() && navigation.isInMainFrame()
+                if (mNavigatedOnce && navigation.hasCommitted() && navigation.isInPrimaryMainFrame()
                         && !navigation.isSameDocument() && mChannel != null) {
                     webContents.removeObserver(this);
                     disconnectChannel();
@@ -88,8 +90,12 @@ public class PostMessageHandler implements OriginVerificationListener {
             }
 
             @Override
-            public void documentLoadedInFrame(long frameId, boolean isMainFrame) {
-                if (!isMainFrame || mChannel != null) return;
+            public void documentLoadedInFrame(GlobalFrameRoutingId rfhId, boolean isMainFrame,
+                    @LifecycleState int rfhLifecycleState) {
+                if (!isMainFrame || rfhLifecycleState != LifecycleState.ACTIVE
+                        || mChannel != null) {
+                    return;
+                }
                 initializeWithWebContents(webContents);
             }
         };

@@ -7521,6 +7521,22 @@
             ]
         }
     ],
+    "SiteIsolationForCOOPAndOAuth": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SiteIsolationForCrossOriginOpenerPolicy",
+                        "SiteIsolationForOAuthSites"
+                    ]
+                }
+            ]
+        }
+    ],
     "SmartDimAutoMLModel": [
         {
             "platforms": [
@@ -7633,6 +7649,25 @@
                     ],
                     "disable_features": [
                         "StorageServiceSandbox"
+                    ]
+                }
+            ]
+        }
+    ],
+    "StrictExtensionIsolation": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "StrictExtensionIsolation"
                     ]
                 }
             ]

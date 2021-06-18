@@ -18231,6 +18231,7 @@ Called by update_debug_scenarios.py.-->
   <int value="0" label="Button pressed"/>
   <int value="1" label="Keyboard shortcut"/>
   <int value="2" label="Desks restore on first signin"/>
+  <int value="3" label="Template Launched"/>
 </enum>
 
 <enum name="DesksMoveWindowFromActiveDeskSource">
@@ -18249,6 +18250,7 @@ Called by update_debug_scenarios.py.-->
   <int value="5" label="Desk-switch 4-finger touchpad swipe"/>
   <int value="6" label="User switch in a multi-profile session"/>
   <int value="7" label="User switch through the persistent desks bar"/>
+  <int value="8" label="User switch by launching a template"/>
 </enum>
 
 <enum name="DesktopCaptureCounters">
@@ -45030,6 +45032,7 @@ from previous Chrome versions.
   <int value="-2142665444" label="ScrollableTabStrip:disabled"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
   <int value="-2141602766" label="NtpWebUI:enabled"/>
+  <int value="-2141575276" label="FileHandlingIcons:enabled"/>
   <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
   <int value="-2140007754" label="HomepageSettingsUIConversion:disabled"/>
   <int value="-2139379065" label="StoragePressureUI:enabled"/>
@@ -46001,6 +46004,7 @@ from previous Chrome versions.
   <int value="-1371984027" label="CrostiniWebUIUpgrader:disabled"/>
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
+  <int value="-1369613781" label="FileHandlingIcons:disabled"/>
   <int value="-1368913664" label="TabSearch:disabled"/>
   <int value="-1368734981" label="IPH_DesktopSnoozeFeature:enabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
@@ -47115,6 +47119,7 @@ from previous Chrome versions.
   <int value="-430369215" label="AssistPersonalInfo:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
+  <int value="-428556995" label="DesktopPWAsTabStripSettings:enabled"/>
   <int value="-428082036" label="AnimatedImageResume:disabled"/>
   <int value="-427163069" label="isolation-by-default"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
@@ -47571,6 +47576,7 @@ from previous Chrome versions.
   <int value="-29847483" label="MemoryAblation:enabled"/>
   <int value="-29507521" label="ContextualNudges:disabled"/>
   <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
+  <int value="-27287076" label="DesktopPWAsTabStripSettings:disabled"/>
   <int value="-27213807" label="GlobalMediaControls:enabled"/>
   <int value="-24570936" label="DestroyProfileOnBrowserClose:disabled"/>
   <int value="-24217468" label="QuickAnswersTextAnnotator:enabled"/>
@@ -49065,6 +49071,7 @@ from previous Chrome versions.
   <int value="1254952449" label="ContinuousFeeds:enabled"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257533754" label="UseDownloadOfflineContentProvider:disabled"/>
+  <int value="1257663962" label="CommercePriceTracking:disabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1258043820" label="AudioFocusEnforcement:enabled"/>
   <int value="1258747457"
@@ -50017,6 +50024,7 @@ from previous Chrome versions.
   <int value="2041570184" label="UsePreferredIntervalForVideo:enabled"/>
   <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
+  <int value="2043794900" label="CommercePriceTracking:enabled"/>
   <int value="2047503404" label="FilesSWA:enabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
@@ -59916,7 +59924,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="702" label="Google Play Store"/>
   <int value="703" label="Plugin Vm Shared Paths"/>
   <int value="704" label="Plugin Vm USB Preferences"/>
-  <int value="705" label="On Startup"/>
+  <int value="705" label="On Startup (Deprecated)"/>
   <int value="706" label="App Notifications"/>
   <int value="800" label="Crostini Details"/>
   <int value="801" label="Crostini Manage Shared Folders"/>

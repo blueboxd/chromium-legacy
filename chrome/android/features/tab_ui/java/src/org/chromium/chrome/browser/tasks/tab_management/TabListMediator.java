@@ -439,7 +439,9 @@ class TabListMediator {
         @Override
         public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
             if (UrlUtilities.isNTPUrl(tab.getUrl())) return;
-            if (navigationHandle.isSameDocument() || !navigationHandle.isInMainFrame()) return;
+            if (navigationHandle.isSameDocument() || !navigationHandle.isInPrimaryMainFrame()) {
+                return;
+            }
             if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
             mModel.get(mModel.indexFromId(tab.getId()))
                     .model.set(TabProperties.FAVICON,
@@ -717,7 +719,7 @@ class TabListMediator {
         // Right now we need to update layout only if there is a price welcome message card in tab
         // switcher.
         if (mMode == TabListMode.GRID && mUiType != UiType.SELECTABLE
-                && TabUiFeatureUtilities.isPriceTrackingEnabled()) {
+                && PriceTrackingUtilities.isPriceTrackingEnabled()) {
             mListObserver = new ListObserver<Void>() {
                 @Override
                 public void onItemRangeInserted(ListObservable source, int index, int count) {

@@ -763,6 +763,11 @@ const char kDesktopPWAsTabStripLinkCapturingDescription[] =
     "navigations within the app scope and bring them into the app's tabbed "
     "window.";
 
+const char kDesktopPWAsTabStripSettingsName[] =
+    "Desktop PWA tab strips settings";
+const char kDesktopPWAsTabStripSettingsDescription[] =
+    "Experimental UI for selecting whether a PWA should open in tabbed mode.";
+
 const char kDesktopPWAsRunOnOsLoginName[] = "Desktop PWAs run on OS login";
 const char kDesktopPWAsRunOnOsLoginDescription[] =
     "Enable installed PWAs to be configured to automatically start when the OS "
@@ -1241,6 +1246,12 @@ const char kFileHandlingAPIDescription[] =
     "Enables the file handling API, allowing websites to register as file "
     "handlers.";
 
+const char kFileHandlingIconsName[] = "File Handling Icons";
+const char kFileHandlingIconsDescription[] =
+    "Allows websites using the file handling API to also register file type "
+    "icons. See https://github.com/WICG/file-handling/blob/main/explainer.md "
+    "for more information.";
+
 const char kFillingAcrossAffiliatedWebsitesName[] =
     "Fill passwords across affiliated websites.";
 const char kFillingAcrossAffiliatedWebsitesDescription[] =
@@ -1342,12 +1353,6 @@ const char kHideShelfControlsInTabletModeDescription[] =
 const char kTabSwitcherOnReturnName[] = "Tab switcher on return";
 const char kTabSwitcherOnReturnDescription[] =
     "Enable tab switcher on return after specified time has elapsed";
-
-const char kHostedAppQuitNotificationName[] =
-    "Quit notification for hosted apps";
-const char kHostedAppQuitNotificationDescription[] =
-    "Display a notification when quitting Chrome if hosted apps are currently "
-    "running.";
 
 const char kHostedAppShimCreationName[] =
     "Creation of app shims for hosted apps on Mac";
@@ -1922,16 +1927,6 @@ const char kParallelDownloadingName[] = "Parallel downloading";
 const char kParallelDownloadingDescription[] =
     "Enable parallel downloading to accelerate download speed.";
 
-const char kPassiveEventListenerDefaultName[] =
-    "Passive Event Listener Override";
-const char kPassiveEventListenerDefaultDescription[] =
-    "Forces touchstart, touchmove, mousewheel and wheel event listeners (which "
-    "haven't requested otherwise) to be treated as passive. This will break "
-    "touch/wheel behavior on some websites but is useful for demonstrating the "
-    "potential performance benefits of adopting passive event listeners.";
-const char kPassiveEventListenerTrue[] = "True (when unspecified)";
-const char kPassiveEventListenerForceAllTrue[] = "Force All True";
-
 const char kPassiveEventListenersDueToFlingName[] =
     "Touch Event Listeners Passive Default During Fling";
 const char kPassiveEventListenersDueToFlingDescription[] =
@@ -2396,6 +2391,10 @@ const char kTabGridLayoutAndroidDescription[] =
 const char kCommerceMerchantViewerAndroidName[] = "Merchant Viewer";
 const char kCommerceMerchantViewerAndroidDescription[] =
     "Allows users to view merchant trust signals on eligible pages.";
+
+const char kCommercePriceTrackingAndroidName[] = "Price Tracking";
+const char kCommercePriceTrackingAndroidDescription[] =
+    "Allows users to track product prices through Chrome.";
 
 const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =

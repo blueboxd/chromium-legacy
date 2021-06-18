@@ -571,7 +571,8 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
 
   blink::VisualProperties MakeVisualPropertiesWithDeviceScaleFactor(float dsf) {
     blink::VisualProperties visual_properties;
-    visual_properties.screen_infos = blink::ScreenInfos(blink::ScreenInfo());
+    visual_properties.screen_infos =
+        display::ScreenInfos(display::ScreenInfo());
     visual_properties.screen_infos.mutable_current().device_scale_factor = dsf;
     visual_properties.new_size = gfx::Size(100, 100);
     visual_properties.compositor_viewport_pixel_rect = gfx::Rect(200, 200);
@@ -2497,7 +2498,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   common_params->url = GURL("data:text/html,world");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
-  common_params->navigation_start = base::TimeTicks::FromInternalValue(1);
+  common_params->navigation_start = base::TimeTicks::Now();
   auto commit_params = DummyCommitNavigationParams();
   commit_params->current_history_list_length = 1;
   commit_params->current_history_list_offset = 0;

@@ -18,7 +18,7 @@ import java.util.Map;
  * Java accessor for base/feature_list.h state.
  *
  * This class provides methods to access values of feature flags registered in
- * |kFeaturesExposedToJava| in chrome/browser/android/flags/chrome_feature_list.cc and as a constant
+ * |kFeaturesExposedToJava| in chrome/browser/flags/android/chrome_feature_list.cc and as a constant
  * in this class.
  *
  * This class also provides methods to access values of field trial parameters associated to those
@@ -277,6 +277,7 @@ public abstract class ChromeFeatureList {
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
     public static final String COMMERCE_MERCHANT_VIEWER = "CommerceMerchantViewer";
+    public static final String COMMERCE_PRICE_TRACKING = "CommercePriceTracking";
     public static final String CONDITIONAL_TAB_STRIP_ANDROID = "ConditionalTabStripAndroid";
     public static final String CONTACTS_PICKER_SELECT_ALL = "ContactsPickerSelectAll";
     public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =
@@ -462,6 +463,8 @@ public abstract class ChromeFeatureList {
     public static final String STORE_HOURS = "StoreHoursAndroid";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";
+    public static final String SYNC_TRUSTED_VAULT_PASSPHRASE_RECOVERY =
+            "SyncTrustedVaultPassphraseRecovery";
     public static final String SYNC_USE_SESSIONS_UNREGISTER_DELAY =
             "SyncUseSessionsUnregisterDelay";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";

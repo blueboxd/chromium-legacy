@@ -65,7 +65,6 @@ ChildThreadImpl::Options GetOptions(
   ChildThreadImpl::Options::Builder builder;
   builder.ConnectToBrowser(true);
   builder.ExposesInterfacesToBrowser();
-  builder.WithLegacyIPCChannel(false);
   if (in_process_params)
     builder.InBrowserProcess(*in_process_params);
   return builder.Build();

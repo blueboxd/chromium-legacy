@@ -36,6 +36,7 @@ class AssociatedInterfaceProvider;
 class InterfaceRegistry;
 class LocalFrame;
 class MessageEvent;
+class RemoteFrameClient;
 struct FrameLoadRequest;
 class ChildFrameCompositingHelper;
 class WebFrameWidget;
@@ -51,7 +52,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // For a description of |inheriting_agent_factory| go see the comment on the
   // Frame constructor.
-  RemoteFrame(FrameClient*,
+  RemoteFrame(RemoteFrameClient*,
               Page&,
               FrameOwner*,
               Frame* parent,
@@ -104,6 +105,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   RemoteFrameView* View() const override;
 
+  RemoteFrameClient* Client() const;
+
   bool IsIgnoredForHitTest() const;
 
   void DidChangeVisibleToHitTesting() override;
@@ -124,7 +127,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetViewportIntersection(const mojom::blink::ViewportIntersectionState&);
 
   // Called when the local root's screen info changes.
-  void DidChangeScreenInfo(const ScreenInfo& screen_info);
+  void DidChangeScreenInfo(const display::ScreenInfo& screen_info);
   // Called when the main frame's zoom level is changed and should be propagated
   // to the remote's associated view.
   void ZoomLevelChanged(double zoom_level);

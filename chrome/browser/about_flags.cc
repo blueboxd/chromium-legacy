@@ -32,6 +32,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
@@ -318,14 +319,6 @@ const FeatureEntry::Choice kTraceUploadURL[] = {
      "https://performance-insights.appspot.com/upload?tags=flags,QA"},
     {flag_descriptions::kTraceUploadUrlChoiceTesting, switches::kTraceUploadURL,
      "https://performance-insights.appspot.com/upload?tags=flags,TestingTeam"}};
-
-const FeatureEntry::Choice kPassiveListenersChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kPassiveEventListenerTrue,
-     blink::switches::kPassiveListenersDefault, "true"},
-    {flag_descriptions::kPassiveEventListenerForceAllTrue,
-     blink::switches::kPassiveListenersDefault, "forcealltrue"},
-};
 
 const FeatureEntry::Choice kLiteVideoDefaultDownlinkBandwidthKbps[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1774,19 +1767,19 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
 
-const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceAlerts[] = {
+const FeatureEntry::FeatureParam kCommercePriceTracking_PriceAlerts[] = {
     {"enable_price_tracking", "true"},
     {"price_tracking_with_optimization_guide", "false"}};
 
 const FeatureEntry::FeatureParam
-    kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide[] = {
+    kCommercePriceTracking_PriceAlerts_WithOptimizationGuide[] = {
         {"enable_price_tracking", "true"},
         {"price_tracking_with_optimization_guide", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
 
-const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceNotifications[] = {
+const FeatureEntry::FeatureParam kCommercePriceTracking_PriceNotifications[] = {
     {"enable_price_notification", "true"}};
 
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
@@ -1798,16 +1791,20 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_TallNTV), nullptr},
     {"Search term chip", kTabGridLayoutAndroid_SearchChip,
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
-    {"Price alerts", kTabGridLayoutAndroid_PriceAlerts,
-     base::size(kTabGridLayoutAndroid_PriceAlerts), nullptr},
-    {"Price alerts with OptimizationGuide",
-     kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide,
-     base::size(kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide),
-     nullptr},
     {"Without auto group", kTabGridLayoutAndroid_TabGroupAutoCreation,
      base::size(kTabGridLayoutAndroid_TabGroupAutoCreation), nullptr},
-    {"Price notifications", kTabGridLayoutAndroid_PriceNotifications,
-     base::size(kTabGridLayoutAndroid_PriceNotifications), nullptr},
+};
+
+const FeatureEntry::FeatureVariation kCommercePriceTrackingAndroidVariations[] =
+    {
+        {"Price alerts", kCommercePriceTracking_PriceAlerts,
+         base::size(kCommercePriceTracking_PriceAlerts), nullptr},
+        {"Price alerts with OptimizationGuide",
+         kCommercePriceTracking_PriceAlerts_WithOptimizationGuide,
+         base::size(kCommercePriceTracking_PriceAlerts_WithOptimizationGuide),
+         nullptr},
+        {"Price notifications", kCommercePriceTracking_PriceNotifications,
+         base::size(kCommercePriceTracking_PriceNotifications), nullptr},
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
@@ -3229,10 +3226,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHostedAppShimCreationName,
      flag_descriptions::kHostedAppShimCreationDescription, kOsMac,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableHostedAppShimCreation)},
-    {"enable-hosted-app-quit-notification",
-     flag_descriptions::kHostedAppQuitNotificationName,
-     flag_descriptions::kHostedAppQuitNotificationDescription, kOsMac,
-     SINGLE_VALUE_TYPE(switches::kHostedAppQuitNotification)},
 #endif  // OS_MAC
 #if defined(OS_ANDROID)
     {"translate-force-trigger-on-english",
@@ -3514,6 +3507,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsTabStripLinkCapturingDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStripLinkCapturing)},
+    {"enable-desktop-pwas-tab-strip-settings",
+     flag_descriptions::kDesktopPWAsTabStripSettingsName,
+     flag_descriptions::kDesktopPWAsTabStripSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStripSettings)},
     {"enable-desktop-pwas-link-capturing",
      flag_descriptions::kDesktopPWAsLinkCapturingName,
      flag_descriptions::kDesktopPWAsLinkCapturingDescription, kOsDesktop,
@@ -3983,10 +3980,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImmersiveFullscreenDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kImmersiveFullscreen)},
 #endif  // OS_MAC
-    {"passive-listener-default",
-     flag_descriptions::kPassiveEventListenerDefaultName,
-     flag_descriptions::kPassiveEventListenerDefaultDescription, kOsAll,
-     MULTI_VALUE_TYPE(kPassiveListenersChoices)},
     {"enable-web-payments-experimental-features",
      flag_descriptions::kWebPaymentsExperimentalFeaturesName,
      flag_descriptions::kWebPaymentsExperimentalFeaturesDescription, kOsAll,
@@ -4815,7 +4808,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-commerce-merchant-viewer",
      flag_descriptions::kCommerceMerchantViewerAndroidName,
      flag_descriptions::kCommerceMerchantViewerAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCommerceMerchantViewer)},
+     FEATURE_VALUE_TYPE(commerce::kCommerceMerchantViewer)},
+
+    {"enable-commerce-price-tracking",
+     flag_descriptions::kCommercePriceTrackingAndroidName,
+     flag_descriptions::kCommercePriceTrackingAndroidDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kCommercePriceTracking,
+                                    kCommercePriceTrackingAndroidVariations,
+                                    "CommercePriceTrackingAndroid")},
 
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
@@ -5334,6 +5334,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"file-handling-api", flag_descriptions::kFileHandlingAPIName,
      flag_descriptions::kFileHandlingAPIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kFileHandlingAPI)},
+
+    {"file-handling-icons", flag_descriptions::kFileHandlingIconsName,
+     flag_descriptions::kFileHandlingIconsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(blink::features::kFileHandlingIcons)},
 
 #if defined(TOOLKIT_VIEWS)
     {"installable-ink-drop", flag_descriptions::kInstallableInkDropName,

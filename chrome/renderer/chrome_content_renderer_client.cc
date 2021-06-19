@@ -207,7 +207,13 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PDF_UNSEASONED)
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "pdf/mojom/pdf.mojom.h"  // nogncheck
 #include "pdf/pdf_view_web_plugin.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF_UNSEASONED) && BUILDFLAG(ENABLE_PRINTING)
+#include "chrome/renderer/chrome_pdf_view_web_plugin_print_client.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1031,7 +1037,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           // Create unseasoned PDF plugin directly, for development purposes.
           // TODO(crbug.com/1123621): Implement a more permanent solution once
           // the new PDF viewer process model is approved and in place.
-          return new chrome_pdf::PdfViewWebPlugin(params);
+          mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote;
+          render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+              pdf_service_remote.BindNewEndpointAndPassReceiver());
+          std::unique_ptr<ChromePdfViewWebPluginPrintClient> print_client;
+#if BUILDFLAG(ENABLE_PRINTING)
+          print_client =
+              std::make_unique<ChromePdfViewWebPluginPrintClient>(render_frame);
+#endif
+          return new chrome_pdf::PdfViewWebPlugin(
+              std::move(pdf_service_remote), std::move(print_client), params);
         }
 #endif  // BUILDFLAG(ENABLE_PDF_UNSEASONED)
 

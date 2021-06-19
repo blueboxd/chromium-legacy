@@ -291,6 +291,10 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickAnswersTranslationCloudAPI;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kQuickAnswersV2;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kQuickAnswersOnEditableText;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kQuickAnswersStandaloneSettings;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickUnlockPinAutosubmit;
 // TODO(crbug.com/1104164) - Remove this once most users have their preferences
 // backfilled.
@@ -318,6 +322,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSeparateNetworkIcons;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSessionManagerLongKillTimeout;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kSettingsAppNotificationSettings;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShimlessRMAFlow;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShowBluetoothDebugLogToggle;
@@ -326,6 +332,8 @@ extern const base::Feature kShowDateInTrayButton;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShowPlayInDemoMode;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSmartDimExperimentalComponent;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kSmartLockUIRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kSplitSettingsSync;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kStylusBatteryStatus;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -458,6 +466,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsSamlReauthenticationOnLockscreenEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsScalableStatusAreaEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSeparateNetworkIconsEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsSettingsAppNotificationSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShowDateInTrayButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSplitSettingsSyncEnabled();

@@ -5,6 +5,7 @@
 #include "pdf/pdf_view_web_plugin.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <memory>
 #include <string>
@@ -26,7 +27,6 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
-#include "content/public/renderer/render_frame.h"
 #include "net/cookies/site_for_cookies.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/mojom/pdf.mojom.h"
@@ -142,6 +142,19 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
     GetFrame()->SetReferrerForRequest(request, referrer_url);
   }
 
+  void Alert(const blink::WebString& message) override {
+    GetFrame()->Alert(message);
+  }
+
+  bool Confirm(const blink::WebString& message) override {
+    return GetFrame()->Confirm(message);
+  }
+
+  blink::WebString Prompt(const blink::WebString& message,
+                          const blink::WebString& default_value) override {
+    return GetFrame()->Prompt(message, default_value);
+  }
+
   void TextSelectionChanged(const blink::WebString& selection_text,
                             uint32_t offset,
                             const gfx::Range& range) override {
@@ -169,8 +182,13 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
 
 }  // namespace
 
-PdfViewWebPlugin::PdfViewWebPlugin(const blink::WebPluginParams& params)
-    : initial_params_(params) {}
+PdfViewWebPlugin::PdfViewWebPlugin(
+    mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote,
+    std::unique_ptr<PrintClient> print_client,
+    const blink::WebPluginParams& params)
+    : pdf_service_remote_(std::move(pdf_service_remote)),
+      print_client_(std::move(print_client)),
+      initial_params_(params) {}
 
 PdfViewWebPlugin::~PdfViewWebPlugin() = default;
 
@@ -445,18 +463,21 @@ void PdfViewWebPlugin::NotifyNumberOfFindResultsChanged(int total,
 void PdfViewWebPlugin::NotifySelectedFindResultChanged(int current_find_index) {
 }
 
-void PdfViewWebPlugin::Alert(const std::string& message) {}
+void PdfViewWebPlugin::Alert(const std::string& message) {
+  container_wrapper_->Alert(blink::WebString::FromUTF8(message));
+}
 
 bool PdfViewWebPlugin::Confirm(const std::string& message) {
-  return false;
+  return container_wrapper_->Confirm(blink::WebString::FromUTF8(message));
 }
 
 std::string PdfViewWebPlugin::Prompt(const std::string& question,
                                      const std::string& default_answer) {
-  return "";
+  return container_wrapper_
+      ->Prompt(blink::WebString::FromUTF8(question),
+               blink::WebString::FromUTF8(default_answer))
+      .Utf8();
 }
-
-void PdfViewWebPlugin::Print() {}
 
 void PdfViewWebPlugin::SubmitForm(const std::string& url,
                                   const void* data,
@@ -483,9 +504,6 @@ pp::Instance* PdfViewWebPlugin::GetPluginInstance() {
 bool PdfViewWebPlugin::IsPrintPreview() {
   return false;
 }
-
-void PdfViewWebPlugin::SelectionChanged(const gfx::Rect& left,
-                                        const gfx::Rect& right) {}
 
 void PdfViewWebPlugin::SetSelectedText(const std::string& selected_text) {
   selected_text_ = blink::WebString::FromUTF8(selected_text);
@@ -597,8 +615,12 @@ void PdfViewWebPlugin::SendMessage(base::Value message) {
 }
 
 void PdfViewWebPlugin::SaveAs() {
-  GetPdfService()->SaveUrlAs(GURL(GetURL().c_str()),
-                             network::mojom::ReferrerPolicy::kDefault);
+  auto* service = GetPdfService();
+  if (!service)
+    return;
+
+  service->SaveUrlAs(GURL(GetURL().c_str()),
+                     network::mojom::ReferrerPolicy::kDefault);
 }
 
 void PdfViewWebPlugin::InitImageData(const gfx::Size& size) {
@@ -636,11 +658,19 @@ void PdfViewWebPlugin::SetAccessibilityViewportInfo(
 }
 
 void PdfViewWebPlugin::SetContentRestrictions(int content_restrictions) {
-  GetPdfService()->UpdateContentRestrictions(content_restrictions);
+  auto* service = GetPdfService();
+  if (!service)
+    return;
+
+  service->UpdateContentRestrictions(content_restrictions);
 }
 
 void PdfViewWebPlugin::SetPluginCanSave(bool can_save) {
-  GetPdfService()->SetPluginCanSave(can_save);
+  auto* service = GetPdfService();
+  if (!service)
+    return;
+
+  service->SetPluginCanSave(can_save);
 }
 
 void PdfViewWebPlugin::DidStartLoading() {
@@ -653,6 +683,25 @@ void PdfViewWebPlugin::DidStopLoading() {
 
 void PdfViewWebPlugin::OnPrintPreviewLoaded() {
   NOTIMPLEMENTED();
+}
+
+void PdfViewWebPlugin::InvokePrintDialog() {
+  ScheduleTaskOnMainThread(
+      FROM_HERE,
+      base::BindOnce(&PdfViewWebPlugin::OnInvokePrintDialog,
+                     weak_factory_.GetWeakPtr()),
+      /*result=*/0, base::TimeDelta());
+}
+
+void PdfViewWebPlugin::NotifySelectionChanged(const gfx::PointF& left,
+                                              int left_height,
+                                              const gfx::PointF& right,
+                                              int right_height) {
+  auto* service = GetPdfService();
+  if (!service)
+    return;
+
+  service->SelectionChanged(left, left_height, right, right_height);
 }
 
 void PdfViewWebPlugin::NotifyUnsupportedFeature() {
@@ -716,15 +765,15 @@ bool PdfViewWebPlugin::Redo() {
   return true;
 }
 
+void PdfViewWebPlugin::OnInvokePrintDialog(int32_t /*result*/) {
+  if (!print_client_)
+    return;
+
+  print_client_->Print(Container()->GetElement());
+}
+
 pdf::mojom::PdfService* PdfViewWebPlugin::GetPdfService() {
-  if (!pdf_service_remote_) {
-    DCHECK(IsValid());
-    content::RenderFrame* render_frame =
-        content::RenderFrame::FromWebFrame(container_wrapper_->GetFrame());
-    render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-        pdf_service_remote_.BindNewEndpointAndPassReceiver());
-  }
-  return pdf_service_remote_.get();
+  return pdf_service_remote_.is_bound() ? pdf_service_remote_.get() : nullptr;
 }
 
 }  // namespace chrome_pdf

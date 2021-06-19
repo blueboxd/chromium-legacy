@@ -99,6 +99,15 @@ class FakeContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
               (blink::WebURLRequest&, const blink::WebURL&),
               (override));
 
+  MOCK_METHOD(void, Alert, (const blink::WebString&), (override));
+
+  MOCK_METHOD(bool, Confirm, (const blink::WebString&), (override));
+
+  MOCK_METHOD(blink::WebString,
+              Prompt,
+              (const blink::WebString&, const blink::WebString&),
+              (override));
+
   MOCK_METHOD(void,
               TextSelectionChanged,
               (const blink::WebString&, uint32_t, const gfx::Range&),
@@ -157,8 +166,10 @@ class PdfViewWebPluginTest : public testing::Test {
     params.attribute_names.push_back(blink::WebString("src"));
     params.attribute_values.push_back(blink::WebString("dummy.pdf"));
 
-    plugin_ = std::unique_ptr<PdfViewWebPlugin, PluginDeleter>(
-        new PdfViewWebPlugin(params));
+    mojo::AssociatedRemote<pdf::mojom::PdfService> unbound_remote;
+    plugin_ =
+        std::unique_ptr<PdfViewWebPlugin, PluginDeleter>(new PdfViewWebPlugin(
+            std::move(unbound_remote), /*print_client=*/nullptr, params));
 
     auto wrapper = std::make_unique<FakeContainerWrapper>(plugin_.get());
     wrapper_ptr_ = wrapper.get();

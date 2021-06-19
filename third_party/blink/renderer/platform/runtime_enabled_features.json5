@@ -867,10 +867,6 @@
       status: "stable",
     },
     {
-      name: "ExceptionMetaDataForDevTools",
-      status: "test",
-    },
-    {
       name: "ExecCommandInJavaScript",
       status: "test",
     },
@@ -1305,6 +1301,11 @@
     {
       name: "MediaLatencyHint",
       status: "test",
+    },
+    {
+      // https://github.com/whatwg/html/pull/6569
+      name: "MediaMetaThemeColor",
+      status: "experimental",
     },
     {
       name: "MediaPreservesPitch",

@@ -22,6 +22,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
+#include "content/public/test/test_utils.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/base/test/fit_adapter.h"
@@ -71,6 +73,7 @@ const char kDynamicTitlePath[] = "/dynamic_title.html";
 const char kPopupParentPath[] = "/popup_parent.html";
 const char kPopupRedirectPath[] = "/popup_child.html";
 const char kPopupMultiplePath[] = "/popup_multiple.html";
+const char kSetHeaderRequestPath[] = "/set_header_request.html";
 const char kVisibilityPath[] = "/visibility.html";
 const char kWaitSizePath[] = "/wait-size.html";
 const char kPage1Title[] = "title 1";
@@ -692,6 +695,66 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, GetVisibleEntry) {
     EXPECT_EQ(result->title(), kPage1Title);
     ASSERT_TRUE(result->has_page_type());
     EXPECT_EQ(result->page_type(), fuchsia::web::PageType::NORMAL);
+  }
+}
+
+// Verifies that NavigationState correctly reports when the Renderer terminates
+// or crashes. Also verifies that GetVisibleEntry() reports the same state.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationState_RendererGone) {
+  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
+
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
+  GURL url(embedded_test_server()->GetURL(kPage1Path));
+
+  // Navigate to a page.
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
+      url.spec()));
+  frame.navigation_listener().RunUntilUrlAndTitleEquals(url, kPage1Title);
+
+  // Kill the renderer for the tab.
+  auto* frame_impl = context_impl()->GetFrameImplForTest(&frame.ptr());
+  auto* web_contents = frame_impl->web_contents_for_test();
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
+    content::RenderFrameDeletedObserver crash_observer(
+        web_contents->GetMainFrame());
+    web_contents->GetMainFrame()->GetProcess()->Shutdown(1);
+    crash_observer.WaitUntilDeleted();
+  }
+
+  // Wait for the NavigationListener to also observe the transition.
+  fuchsia::web::NavigationState error_state;
+  error_state.set_page_type(fuchsia::web::PageType::ERROR);
+  frame.navigation_listener().RunUntilNavigationStateMatches(error_state);
+
+  const fuchsia::web::NavigationState* current_state =
+      frame.navigation_listener().current_state();
+  ASSERT_TRUE(current_state->has_url());
+  EXPECT_EQ(current_state->url(), url.spec());
+  ASSERT_TRUE(current_state->has_title());
+  EXPECT_EQ(current_state->title(), kPage1Title);
+  ASSERT_TRUE(current_state->has_page_type());
+  EXPECT_EQ(current_state->page_type(), fuchsia::web::PageType::ERROR);
+
+  // Verify that GetVisibleEntry() also reflects the expected error state.
+  {
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> result(
+        run_loop.QuitClosure());
+    auto controller = frame.GetNavigationController();
+    controller->GetVisibleEntry(
+        cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
+    run_loop.Run();
+    ASSERT_TRUE(result->has_url());
+    EXPECT_EQ(result->url(), url.spec());
+    ASSERT_TRUE(result->has_title());
+    EXPECT_EQ(result->title(), kPage1Title);
+    ASSERT_TRUE(result->has_page_type());
+    EXPECT_EQ(result->page_type(), fuchsia::web::PageType::ERROR);
   }
 }
 
@@ -2035,6 +2098,43 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
     const auto iter = accumulated_requests_.find(img_url);
     ASSERT_NE(iter, accumulated_requests_.end());
     EXPECT_THAT(iter->second.headers, Contains(Key("Test")));
+  }
+}
+
+// Tests the URLRequestRewrite API properly adds headers on every requests.
+IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
+                       UrlRequestRewriteAddExistingHeader) {
+  auto frame = cr_fuchsia::FrameForTest::Create(context(), {});
+
+  std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
+  rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
+  fuchsia::web::UrlRequestRewriteRule rule;
+  rule.set_rewrites(std::move(rewrites));
+  std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
+  rules.push_back(std::move(rule));
+  frame->SetUrlRequestRewriteRules(std::move(rules), []() {});
+
+  // Navigate. The first page request should have the "Test" header set to
+  // "Value". The second one should have the "Test" header set to "SetByJS" via
+  // JavaScript and not be overridden by the rewrite rule.
+  const GURL page_url(embedded_test_server()->GetURL(kSetHeaderRequestPath));
+  const GURL img_url(embedded_test_server()->GetURL(kPage4Path));
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
+      page_url.spec()));
+  frame.navigation_listener().RunUntilTitleEquals("loaded");
+
+  {
+    const auto iter = accumulated_requests_.find(page_url);
+    ASSERT_NE(iter, accumulated_requests_.end());
+    ASSERT_THAT(iter->second.headers, Contains(Key("Test")));
+    EXPECT_EQ(iter->second.headers["Test"], "Value");
+  }
+  {
+    const auto iter = accumulated_requests_.find(img_url);
+    ASSERT_NE(iter, accumulated_requests_.end());
+    ASSERT_THAT(iter->second.headers, Contains(Key("Test")));
+    EXPECT_EQ(iter->second.headers["Test"], "SetByJS");
   }
 }
 

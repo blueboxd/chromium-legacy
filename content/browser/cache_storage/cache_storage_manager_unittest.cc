@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -168,13 +167,6 @@ class MockCacheStorageQuotaManagerProxy
       storage::QuotaClientType client_type,
       const std::vector<blink::mojom::StorageType>& storage_types) override {
     registered_clients_.emplace_back(std::move(client));
-  }
-
-  void RegisterLegacyClient(
-      scoped_refptr<storage::QuotaClient> client,
-      storage::QuotaClientType client_type,
-      const std::vector<blink::mojom::StorageType>& storage_types) override {
-    NOTREACHED();
   }
 
  private:
@@ -354,10 +346,10 @@ class CacheStorageManagerTest : public testing::Test {
     mock_quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         MemoryOnly(), temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
-    mock_quota_manager_->SetQuota(storage_key1_.origin(),
-                                  StorageType::kTemporary, 1024 * 1024 * 100);
-    mock_quota_manager_->SetQuota(storage_key2_.origin(),
-                                  StorageType::kTemporary, 1024 * 1024 * 100);
+    mock_quota_manager_->SetQuota(storage_key1_, StorageType::kTemporary,
+                                  1024 * 1024 * 100);
+    mock_quota_manager_->SetQuota(storage_key2_, StorageType::kTemporary,
+                                  1024 * 1024 * 100);
 
     quota_manager_proxy_ =
         base::MakeRefCounted<MockCacheStorageQuotaManagerProxy>(

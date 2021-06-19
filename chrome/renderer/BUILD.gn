@@ -276,7 +276,10 @@ static_library("renderer") {
   }
 
   if (enable_pdf) {
-    deps += [ "//components/pdf/renderer" ]
+    deps += [
+      "//components/pdf/renderer",
+      "//pdf/mojom",
+    ]
   }
 
   if (is_chromeos_ash) {
@@ -354,6 +357,12 @@ static_library("renderer") {
       sources += [
         "pepper/chrome_pdf_print_client.cc",
         "pepper/chrome_pdf_print_client.h",
+      ]
+    }
+    if (enable_pdf) {
+      sources += [
+        "chrome_pdf_view_web_plugin_print_client.cc",
+        "chrome_pdf_view_web_plugin_print_client.h",
       ]
     }
   }

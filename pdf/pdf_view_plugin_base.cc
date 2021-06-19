@@ -251,6 +251,19 @@ void PdfViewPluginBase::Email(const std::string& to,
   SendMessage(std::move(message));
 }
 
+void PdfViewPluginBase::Print() {
+  if (!engine_)
+    return;
+
+  const bool can_print =
+      engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) ||
+      engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY);
+  if (!can_print)
+    return;
+
+  InvokePrintDialog();
+}
+
 std::unique_ptr<UrlLoader> PdfViewPluginBase::CreateUrlLoader() {
   if (full_frame_) {
     DidStartLoading();
@@ -377,6 +390,27 @@ void PdfViewPluginBase::SetIsSelecting(bool is_selecting) {
   SendMessage(std::move(message));
 }
 
+void PdfViewPluginBase::SelectionChanged(const gfx::Rect& left,
+                                         const gfx::Rect& right) {
+  const gfx::Rect left_with_offset = left + plugin_rect_.OffsetFromOrigin();
+  const gfx::Rect right_with_offset = right + plugin_rect_.OffsetFromOrigin();
+
+  gfx::PointF left_point(left_with_offset.x() + available_area_.x(),
+                         left_with_offset.y());
+  gfx::PointF right_point(right_with_offset.x() + available_area_.x(),
+                          right_with_offset.y());
+
+  const float inverse_scale = 1.0f / device_scale_;
+  left_point.Scale(inverse_scale);
+  right_point.Scale(inverse_scale);
+
+  NotifySelectionChanged(left_point, left_with_offset.height(), right_point,
+                         right_with_offset.height());
+
+  if (accessibility_state_ == AccessibilityState::kLoaded)
+    PrepareAndSetAccessibilityViewportInfo();
+}
+
 void PdfViewPluginBase::EnteredEditMode() {
   edit_mode_ = true;
   SetPluginCanSave(true);
@@ -435,6 +469,7 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
            &PdfViewPluginBase::HandleGetPasswordCompleteMessage},
           {"getSelectedText", &PdfViewPluginBase::HandleGetSelectedTextMessage},
           {"getThumbnail", &PdfViewPluginBase::HandleGetThumbnailMessage},
+          {"print", &PdfViewPluginBase::HandlePrintMessage},
           {"rotateClockwise", &PdfViewPluginBase::HandleRotateClockwiseMessage},
           {"rotateCounterclockwise",
            &PdfViewPluginBase::HandleRotateCounterclockwiseMessage},
@@ -861,6 +896,10 @@ void PdfViewPluginBase::HandleGetThumbnailMessage(const base::Value& message) {
   engine()->RequestThumbnail(page_index, device_scale_,
                              base::BindOnce(&PdfViewPluginBase::SendThumbnail,
                                             GetWeakPtr(), std::move(reply)));
+}
+
+void PdfViewPluginBase::HandlePrintMessage(const base::Value& /*message*/) {
+  Print();
 }
 
 void PdfViewPluginBase::HandleRotateClockwiseMessage(

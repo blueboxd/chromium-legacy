@@ -4049,6 +4049,7 @@ ci.fyi_windows_builder(
     goma_backend = None,
     reclient_instance = "rbe-chromium-trusted",
     reclient_profiler_service = "reclient-win",
+    reclient_publish_trace = True,
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.WINDOWS_DEFAULT,
@@ -4339,6 +4340,17 @@ ci.fyi_windows_builder(
     ),
     os = os.WINDOWS_10,
     notifies = ["Win 10 Fast Ring"],
+)
+
+ci.fyi_windows_builder(
+    name = "Win10 Tests x64 20h2",
+    console_view_entry = consoles.console_view_entry(
+        category = "win10|20h2",
+    ),
+    goma_backend = None,
+    main_console_view = None,
+    os = os.WINDOWS_10,
+    triggered_by = ["ci/Win x64 Builder"],
 )
 
 ci.fyi_windows_builder(

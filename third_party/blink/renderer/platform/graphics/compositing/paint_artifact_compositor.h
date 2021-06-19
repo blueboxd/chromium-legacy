@@ -274,7 +274,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
     PendingLayer(const PaintChunkSubset&,
                  const PaintChunkIterator&,
-                 CompositingType compositng_type = kOther);
+                 CompositingType compositng_type = kOther,
+                 bool is_effectively_invisible = false);
     explicit PendingLayer(const PreCompositedLayerInfo&);
 
     // Merges |guest| into |this| if it can, by appending chunks of |guest|
@@ -326,6 +327,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     FloatRect bounds;
     FloatRect rect_known_to_be_opaque;
     bool text_known_to_be_on_opaque_background;
+    bool effectively_invisible;
     PaintChunkSubset chunks;
     PropertyTreeState property_tree_state;
     FloatPoint offset_of_decomposited_transforms;
@@ -337,8 +339,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   static void UpdateLayerProperties(cc::Layer&,
                                     const PendingLayer&,
-                                    cc::LayerSelection& layer_selection,
-                                    PropertyTreeManager* = nullptr);
+                                    cc::LayerSelection& layer_selection);
 
   // Updates the cc::Layer associated with a |pending_layer| following a paint.
   // This includes both raster invalidation and updating the cc::Layer
@@ -371,7 +372,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // can be satisfied (and the effect node has no direct reason).
   void LayerizeGroup(const PaintChunkSubset&,
                      const EffectPaintPropertyNode&,
-                     PaintChunkIterator& chunk_cursor);
+                     PaintChunkIterator& chunk_cursor,
+                     bool effectively_invisible);
   static bool MightOverlap(const PendingLayer&, const PendingLayer&);
   bool DecompositeEffect(const EffectPaintPropertyNode& parent_effect,
                          wtf_size_t first_layer_in_parent_group_index,

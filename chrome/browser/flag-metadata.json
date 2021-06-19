@@ -597,9 +597,14 @@
     "expiry_milestone": 95
   },
   {
+    "name": "chrome-whats-new-in-main-menu-new-badge",
+    "owners": [ "rbpotter" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "chrome-whats-new-ui",
     "owners": [ "rbpotter" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 97
   },
   {
     "name": "chromeos-direct-video-decoder",
@@ -1473,7 +1478,12 @@
   {
     "name": "enable-commerce-merchant-viewer",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 97
+  },
+  {
+    "name": "enable-commerce-price-tracking",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "enable-compositing-based-throttling",
@@ -1848,6 +1858,11 @@
     // This flag enables the rolling set of upcoming V8 features, for early
     // testing by JavaScript developers.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-gamepad-button-axis-events",
+    "owners": [ "//device/gamepad/OWNERS", "jameshollyer@chromium.org" ],
+    "expiry_milestone": 98
   },
   {
     "name": "enable-generated-webapks",
@@ -3820,7 +3835,7 @@
   },
   {
     "name": "ntp-modules-drag-and-drop",
-    "owners": [ "lydialam", "mahmadi", "tiborg"],
+    "owners": [ "lydialam", "mahmadi", "tiborg" ],
     "expiry_milestone": 96
   },
   {
@@ -4769,6 +4784,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "settings-app-notification-settings",
+    "owners": [ "yulunwu" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "settings-landing-page-redesign",
     "owners": [ "dpapad@chromium.org", "johntlee@chromium.org" ],
     "expiry_milestone": 95
@@ -4905,6 +4925,11 @@
     "name": "site-isolation-trial-opt-out",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "smart-lock-ui-revamp",
+    "owners": [ "cclem", "better-together-dev@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "smart-suggestion-for-large-downloads",
@@ -5106,6 +5131,11 @@
     "name": "trace-upload-url",
     "owners": [ "oysteine" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "translate-assist-content",
+    "owners": [ "jds", "basiaz", "chrome-language@google.com" ],
+    "expiry_milestone": 94
   },
   {
     "name": "translate-force-trigger-on-english",

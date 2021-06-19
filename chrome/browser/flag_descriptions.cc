@@ -478,6 +478,14 @@ const char kChromeWhatsNewUIName[] =
 const char kChromeWhatsNewUIDescription[] =
     "Enables Chrome What's New page at chrome://whats-new.";
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kChromeWhatsNewInMainMenuNewBadgeName[] =
+    "Show 'New' badge on 'What's New' menu item.";
+const char kChromeWhatsNewInMainMenuNewBadgeDescription[] =
+    "Enables 'New' promo badge on 'What's New' in the Help portion of the main "
+    "menu.";
+#endif
+
 const char kCompositingBasedThrottling[] = "Compositing-based Throttling";
 const char kCompositingBasedThrottlingDescription[] =
     "Enables compositing-based throttling to throttle appropriate frame sinks "
@@ -864,6 +872,12 @@ const char kEnableFencedFramesDescription[] =
     "Fenced frames are an experimental web platform feature that allows "
     "embedding an isolated top-level page. See "
     "https://github.com/shivanigithub/fenced-frame";
+
+const char kEnableGamepadButtonAxisEventsName[] =
+    "Gamepad Button and Axis Events";
+const char kEnableGamepadButtonAxisEventsDescription[] =
+    "Enables the ability to subscribe to changes in buttons and/or axes "
+    "on the gamepad object.";
 
 const char kEnableGenericSensorExtraClassesName[] =
     "Generic Sensor Extra Classes";
@@ -2081,6 +2095,14 @@ const char kQuietNotificationPromptsDescription[] =
     "When a site wishes to show notifications, the usual modal dialog is "
     "replaced with a quieter version.";
 
+const char kSettingsAppNotificationSettingsName[] =
+    "Split notification permission settings";
+const char kSettingsAppNotificationSettingsDescription[] =
+    "Remove per-app notification permissions settings from the quick settings "
+    "menu. Notification permission settings will be split between the "
+    "lacros-chrome browser's notification permission page "
+    "and the ChromeOS settings app.";
+
 const char kAbusiveNotificationPermissionRevocationName[] =
     "Abusive notification permission revocation";
 const char kAbusiveNotificationPermissionRevocationDescription[] =
@@ -2392,6 +2414,10 @@ const char kCommerceMerchantViewerAndroidName[] = "Merchant Viewer";
 const char kCommerceMerchantViewerAndroidDescription[] =
     "Allows users to view merchant trust signals on eligible pages.";
 
+const char kCommercePriceTrackingAndroidName[] = "Price Tracking";
+const char kCommercePriceTrackingAndroidDescription[] =
+    "Allows users to track product prices through Chrome.";
+
 const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =
     "Allows users to create groups to better organize their tabs on phones.";
@@ -2503,6 +2529,11 @@ const char kTraceUploadUrlChoiceOther[] = "Other";
 const char kTraceUploadUrlChoiceEmloading[] = "emloading";
 const char kTraceUploadUrlChoiceQa[] = "QA";
 const char kTraceUploadUrlChoiceTesting[] = "Testing";
+
+const char kTranslateAssistContentName[] = "Translate AssistContent";
+const char kTranslateAssistContentDescription[] =
+    "Enables populating translate details for the current page in "
+    "AssistContent.";
 
 const char kTranslateBubbleUIName[] =
     "Select which UI to use for translate bubble";
@@ -4869,6 +4900,11 @@ const char kShowTouchHudDescription[] =
     "Shows a trail of colored dots for the last few touch points. Pressing "
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
+
+const char kSmartLockUIRevampName[] = "Enable Smart Lock UI Revamp";
+const char kSmartLockUIRevampDescription[] =
+    "Replaces the existing Smart Lock UI on the lock screen with a new design "
+    "and adds Smart Lock to the 'Lock screen and sign-in' section of settings.";
 
 const char kSpectreVariant2MitigationName[] = "Spectre variant 2 mitigation";
 const char kSpectreVariant2MitigationDescription[] =

@@ -30,6 +30,12 @@ const base::Feature kChromeTipsInMainMenuNewBadge{
 const base::Feature kChromeWhatsNewUI{"ChromeWhatsNewUI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Enables "new" badge for "Chrome What's New" in Main Chrome Menu | Help.
+const base::Feature kChromeWhatsNewInMainMenuNewBadge{
+    "ChromeWhatsNewInMainMenuNewBadge", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables showing the EV certificate details in the Page Info bubble.
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -41,6 +47,12 @@ const base::Feature kExtensionsSidePanel{"ExtensionsSidePanel",
 
 const base::FeatureParam<std::string> kExtensionsSidePanelId{
     &kExtensionsSidePanel, "ExtensionsSidePanelId", ""};
+
+// When enabled, the browser uses a bespoke permissions UI for PWA File
+// Handlers. This will mean ContentSettingType::FILE_HANDLING is not handled by
+// PermissionManager. See crbug.com/1203480
+const base::Feature kFileHandlingPermissionUiV2{
+    "FileHandlingPermissionUiV2", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the reauth flow for authenticated profiles with invalid credentials
 // when the force sign-in policy is enabled.
@@ -156,8 +168,14 @@ const base::FeatureParam<int> kTabSearchSearchDistance{
 const base::FeatureParam<double> kTabSearchSearchThreshold{
     &kTabSearchFuzzySearch, "TabSearchSearchThreshold", 0.0};
 
-const base::FeatureParam<double> kTabSearchTitleToHostnameWeightRatio{
-    &kTabSearchFuzzySearch, "TabSearchTitleToHostnameWeightRatio", 2.0};
+const base::FeatureParam<double> kTabSearchTitleWeight{
+    &kTabSearchFuzzySearch, "TabSearchTitleWeight", 2.0};
+
+const base::FeatureParam<double> kTabSearchHostnameWeight{
+    &kTabSearchFuzzySearch, "TabSearchHostnameWeight", 1.0};
+
+const base::FeatureParam<double> kTabSearchGroupTitleWeight{
+    &kTabSearchFuzzySearch, "TabSearchGroupTitleWeight", 1.5};
 
 const base::FeatureParam<bool> kTabSearchMoveActiveTabToBottom{
     &kTabSearchFuzzySearch, "TabSearchMoveActiveTabToBottom", true};

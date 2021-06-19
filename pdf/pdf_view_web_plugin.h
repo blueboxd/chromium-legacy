@@ -5,6 +5,8 @@
 #ifndef PDF_PDF_VIEW_WEB_PLUGIN_H_
 #define PDF_PDF_VIEW_WEB_PLUGIN_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -25,6 +27,7 @@
 
 namespace blink {
 class WebAssociatedURLLoader;
+class WebElement;
 class WebLocalFrame;
 class WebPluginContainer;
 class WebURL;
@@ -64,6 +67,16 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     virtual void SetReferrerForRequest(blink::WebURLRequest& request,
                                        const blink::WebURL& referrer_url) = 0;
 
+    // Calls underlying WebLocalFrame::Alert().
+    virtual void Alert(const blink::WebString& message) = 0;
+
+    // Calls underlying WebLocalFrame::Confirm().
+    virtual bool Confirm(const blink::WebString& message) = 0;
+
+    // Calls underlying WebLocalFrame::Prompt().
+    virtual blink::WebString Prompt(const blink::WebString& message,
+                                    const blink::WebString& default_value) = 0;
+
     // Calls underlying WebLocalFrame::TextSelectionChanged().
     virtual void TextSelectionChanged(const blink::WebString& selection_text,
                                       uint32_t offset,
@@ -85,7 +98,17 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     virtual blink::WebPluginContainer* Container() = 0;
   };
 
-  explicit PdfViewWebPlugin(const blink::WebPluginParams& params);
+  class PrintClient {
+   public:
+    virtual ~PrintClient() = default;
+
+    virtual void Print(const blink::WebElement& element) = 0;
+  };
+
+  PdfViewWebPlugin(
+      mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote,
+      std::unique_ptr<PrintClient> print_client,
+      const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
   PdfViewWebPlugin& operator=(const PdfViewWebPlugin& other) = delete;
 
@@ -140,7 +163,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
@@ -149,7 +171,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                                bool case_sensitive) override;
   pp::Instance* GetPluginInstance() override;
   bool IsPrintPreview() override;
-  void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
@@ -204,6 +225,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void DidStartLoading() override;
   void DidStopLoading() override;
   void OnPrintPreviewLoaded() override;
+  void InvokePrintDialog() override;
+  void NotifySelectionChanged(const gfx::PointF& left,
+                              int left_height,
+                              const gfx::PointF& right,
+                              int right_height) override;
   void NotifyUnsupportedFeature() override;
   void UserMetricsRecordAction(const std::string& action) override;
 
@@ -226,10 +252,14 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Undo();
   bool Redo();
 
-  // Gets the receiver associated with the plugin's render frame if the receiver
-  // is bound to `pdf_service_remote_`. If such receiver is not available, binds
-  // `pdf_service_remote_` with a new receiver and returns the handle of that
-  // receiver.
+  // Callback to print without re-entrancy issues. The callback prevents the
+  // invocation of printing in the middle of an event handler, which is risky;
+  // see crbug.com/66334.
+  // TODO(crbug.com/1217012): Re-evaluate the need for a callback when parts of
+  // the plugin are moved off the main thread.
+  void OnInvokePrintDialog(int32_t /*result*/);
+
+  // May be null in unit tests.
   pdf::mojom::PdfService* GetPdfService();
 
   blink::WebString selected_text_;
@@ -237,7 +267,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   blink::WebTextInputType text_input_type_ =
       blink::WebTextInputType::kWebTextInputTypeNone;
 
-  mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote_;
+  // May be unbound in unit tests.
+  mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_remote_;
+
+  // May be null in unit tests, or if there is no printing support.
+  std::unique_ptr<PrintClient> const print_client_;
 
   blink::WebPluginParams initial_params_;
 

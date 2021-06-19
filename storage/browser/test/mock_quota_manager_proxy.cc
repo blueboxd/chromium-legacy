@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace storage {
 
@@ -30,25 +31,14 @@ void MockQuotaManagerProxy::RegisterClient(
   registered_client_.Bind(std::move(client));
 }
 
-void MockQuotaManagerProxy::RegisterLegacyClient(
-    scoped_refptr<QuotaClient> client,
-    QuotaClientType client_type,
-    const std::vector<blink::mojom::StorageType>& storage_types) {
-  DCHECK(!registered_client_);
-  registered_legacy_client_ = std::move(client);
-}
-
-void MockQuotaManagerProxy::ResetRegisteredLegacyClient() {
-  registered_legacy_client_ = nullptr;
-}
-
 void MockQuotaManagerProxy::GetUsageAndQuota(
     const url::Origin& origin,
     blink::mojom::StorageType type,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     QuotaManager::UsageAndQuotaCallback callback) {
   if (mock_quota_manager_) {
-    mock_quota_manager_->GetUsageAndQuota(origin, type, std::move(callback));
+    mock_quota_manager_->GetUsageAndQuota(blink::StorageKey(origin), type,
+                                          std::move(callback));
   }
 }
 
@@ -74,7 +64,7 @@ void MockQuotaManagerProxy::NotifyStorageModified(
   last_notified_type_ = type;
   last_notified_delta_ = delta;
   if (mock_quota_manager_) {
-    mock_quota_manager_->UpdateUsage(origin, type, delta);
+    mock_quota_manager_->UpdateUsage(blink::StorageKey(origin), type, delta);
   }
   if (callback)
     callback_task_runner->PostTask(FROM_HERE, std::move(callback));

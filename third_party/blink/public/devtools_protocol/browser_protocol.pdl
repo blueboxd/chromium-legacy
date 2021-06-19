@@ -6546,6 +6546,7 @@ domain Page
       ch-rtt
       ch-ua
       ch-ua-arch
+      ch-ua-bitness
       ch-ua-platform
       ch-ua-model
       ch-ua-mobile
@@ -6971,6 +6972,7 @@ domain Page
       optional enum format
         jpeg
         png
+        webp
       # Compression quality from range [0..100] (jpeg only).
       optional integer quality
       # Capture the screenshot of a given region only.

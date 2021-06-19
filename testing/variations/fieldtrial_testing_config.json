@@ -1678,15 +1678,29 @@
     "ChromeLabs": [
         {
             "platforms": [
-                "chromeos",
-                "chromeos_lacros",
                 "linux",
                 "mac",
                 "windows"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20210128",
+                    "enable_features": [
+                        "ChromeLabs"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ChromeLabsChromeOS": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210617",
                     "enable_features": [
                         "ChromeLabs"
                     ]
@@ -7520,14 +7534,14 @@
             ]
         }
     ],
-    "SiteIsolationForCOOPAndOAuth": [
+    "SiteIsolation": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "COOPOAuth_20210617",
                     "enable_features": [
                         "SiteIsolationForCrossOriginOpenerPolicy",
                         "SiteIsolationForOAuthSites"

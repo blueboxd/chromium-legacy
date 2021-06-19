@@ -386,9 +386,9 @@ bool g_allow_injecting_javascript = false;
 
 const char kDotGoogleDotCom[] = ".google.com";
 
-typedef std::unordered_map<GlobalFrameRoutingId,
+typedef std::unordered_map<GlobalRenderFrameHostId,
                            RenderFrameHostImpl*,
-                           GlobalFrameRoutingIdHasher>
+                           GlobalRenderFrameHostIdHasher>
     RoutingIDFrameMap;
 base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -1241,7 +1241,7 @@ PendingNavigation::PendingNavigation(
       navigation_client(std::move(navigation_client)) {}
 
 // static
-RenderFrameHost* RenderFrameHost::FromID(const GlobalFrameRoutingId& id) {
+RenderFrameHost* RenderFrameHost::FromID(const GlobalRenderFrameHostId& id) {
   return RenderFrameHostImpl::FromID(id);
 }
 
@@ -1249,7 +1249,7 @@ RenderFrameHost* RenderFrameHost::FromID(const GlobalFrameRoutingId& id) {
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
   return RenderFrameHostImpl::FromID(
-      GlobalFrameRoutingId(render_process_id, render_frame_id));
+      GlobalRenderFrameHostId(render_process_id, render_frame_id));
 }
 
 // static
@@ -1265,7 +1265,7 @@ void RenderFrameHost::AllowInjectingJavaScript() {
 }
 
 // static
-RenderFrameHostImpl* RenderFrameHostImpl::FromID(GlobalFrameRoutingId id) {
+RenderFrameHostImpl* RenderFrameHostImpl::FromID(GlobalRenderFrameHostId id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
   auto it = frames->find(id);
@@ -1276,7 +1276,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(GlobalFrameRoutingId id) {
 RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
                                                  int render_frame_id) {
   return RenderFrameHostImpl::FromID(
-      GlobalFrameRoutingId(render_process_id, render_frame_id));
+      GlobalRenderFrameHostId(render_process_id, render_frame_id));
 }
 
 // static
@@ -1374,7 +1374,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   GetAgentSchedulingGroup().AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
-      GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_), this);
+      GlobalRenderFrameHostId(GetProcess()->GetID(), routing_id_), this);
   g_token_frame_map.Get().insert(std::make_pair(frame_token_, this));
   site_instance_->AddObserver(this);
   GetProcess()->AddObserver(this);
@@ -1484,7 +1484,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // calling any delegates/observers, so that any calls to |FromID| no longer
   // return |this|.
   g_routing_id_frame_map.Get().erase(
-      GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
+      GlobalRenderFrameHostId(GetProcess()->GetID(), routing_id_));
 
   // When a RenderFrameHostImpl is deleted, it may still contain children. This
   // can happen with the unload timer. It causes a RenderFrameHost to delete
@@ -3586,13 +3586,67 @@ void RenderFrameHostImpl::RemoveChild(FrameTreeNode* child) {
       // observers are notified of its deletion.
       std::unique_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
       children_.erase(iter);
+      // TODO(dcheng): Removing a subtree is still very piecemeal and somewhat
+      // buggy. The entire subtree should be removed as a group, but it can
+      // actually happen incrementally. For example, given the frame tree:
+      //
+      //   A1(A2(B3(A4(B5))))
+      //
+      //
+      // Suppose A1 executes:
+      //
+      //   window.frames[0].frameElement.remove();
+      //
+      // What ends up happening is this:
+      //
+      // 1. Renderer A detaches the subtree beginning at A2.
+      // 2. Renderer A starts detaching A2.
+      // 3. Renderer A starts detaching B3.
+      // 4. Renderer A starts detaching A4.
+      // 5. Renderer A starts detaching B5
+      // 6. Renderer A reports B5 is complete detaching with the Mojo IPC
+      //    `RenderFrameProxyHost::Detach()`, which calls
+      //    `RenderFrameHostImpl::DetachFromProxy()`. `DetachFromProxy()`
+      //    deletes RenderFrame B5 in renderer B, which means that the unload
+      //    handler for B5 runs immediately--before the unload handler for B3.
+      //    However, per the spec, the right order to run unload handlers is
+      //    top-down (e.g. B3's unload handler should run before B5's in this
+      //    scenario).
       node_to_delete->current_frame_host()->DeleteRenderFrame(
           mojom::FrameDeleteIntention::kNotMainFrame);
-      // Speculative RenderFrameHosts are deleted by the FrameTreeNode's
-      // RenderFrameHostManager's destructor. RenderFrameProxyHosts disconnect
-      // the mojo channel automatically in the destructor.
-      // TODO(dcheng): This is horribly confusing. Refactor this logic so it's
-      // more understandable.
+      RenderFrameHostImpl* speculative_frame_host =
+          node_to_delete->render_manager()->speculative_frame_host();
+      if (speculative_frame_host) {
+        if (speculative_frame_host->lifecycle_state() ==
+            LifecycleStateImpl::kPendingCommit) {
+          // A speculative RenderFrameHost that has reached `kPendingCommit` has
+          // already sent a `CommitNavigation()` to the renderer. Any subsequent
+          // IPCs will only be processed after the renderer has already swapped
+          // in the provisional RenderFrame and swapped out the provisional
+          // frame's reference frame (which is either a RenderFrame or a
+          // RenderFrameProxy).
+          //
+          // Since the swapped out RenderFrame/RenderFrameProxy is already gone,
+          // a `DeleteRenderFrame()` (routed to the RenderFrame) or a
+          // `DetachAndDispose()` (routed to the RenderFrameProxy) won't do
+          // anything. The browser must also instruct the already-committed but
+          // not-yet-acknowledged speculative RFH to detach itself as well.
+          speculative_frame_host->DeleteRenderFrame(
+              mojom::FrameDeleteIntention::kNotMainFrame);
+        } else {
+          // Otherwise, the provisional RenderFrame has not yet been instructed
+          // to swap in but is already associated with the RenderFrame or
+          // RenderFrameProxy it is expected to replace. The associated
+          // RenderFrame/RenderFrameProxy (which is still in the frame tree)
+          // will be responsible for tearing down any associated provisional
+          // RenderFrame, so the browser does not need to take any explicit
+          // cleanup actions.
+        }
+      }
+      // No explicit cleanup is needed here for `RenderFrameProxyHost`s.
+      // Destroying `FrameTreeNode` destroys the map of `RenderFrameProxyHost`s,
+      // and `~RenderFrameProxyHost()` sends a Mojo `DetachAndDispose()` IPC for
+      // child frame proxies.
       node_to_delete.reset();
       PendingDeletionCheckCompleted();
       return;
@@ -3873,8 +3927,8 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
   return GetRenderWidgetHost()->GetView();
 }
 
-GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
-  return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
+GlobalRenderFrameHostId RenderFrameHostImpl::GetGlobalId() {
+  return GlobalRenderFrameHostId(GetProcess()->GetID(), GetRoutingID());
 }
 
 bool RenderFrameHostImpl::HasPendingCommitNavigation() const {
@@ -3972,6 +4026,30 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   // dead branches now. This is a performance optimization.
   PendingDeletionCheckCompletedOnSubtree();
   // |this| is potentially deleted. Do not add code after this.
+}
+
+void RenderFrameHostImpl::UndoCommitNavigation(RenderFrameProxyHost& proxy,
+                                               bool is_loading) {
+  TRACE_EVENT("navigation", "RenderFrameHostImpl::UndoCommitNavigation",
+              "render_frame_host", this);
+
+  DCHECK_EQ(lifecycle_state_, LifecycleStateImpl::kPendingCommit);
+
+  if (IsRenderFrameLive()) {
+    // By definition, the browser process has not received the
+    // `DidCommitNavgation()`, so the RenderFrameProxyHost endpoints are still
+    // bound. Resetting now means any queued IPCs that are still in-flight will
+    // be dropped. This is a bit problematic, but it is still less problematic
+    // than just crashing the renderer for being in an inconsistent state.
+    proxy.InvalidateMojoConnection();
+
+    GetMojomFrameInRenderer()->UndoCommitNavigation(
+        proxy.GetRoutingID(), is_loading,
+        proxy.frame_tree_node()->current_replication_state().Clone(),
+        proxy.GetFrameToken(), proxy.CreateAndBindRemoteMainFrameInterfaces());
+  }
+
+  SetLifecycleStateToReadyToBeDeleted();
 }
 
 void RenderFrameHostImpl::SwapOuterDelegateFrame(RenderFrameProxyHost* proxy) {
@@ -6109,13 +6187,13 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   DCHECK(IsRenderFrameLive());
 
-  // The non-owning pointer |new_window| is valid in this stack frame since
+  // The non-owning pointer |new_frame_tree| is valid in this stack frame since
   // nothing can delete it until this thread is freed up again.
-  RenderFrameHostDelegate* new_window =
+  FrameTree* new_frame_tree =
       delegate_->CreateNewWindow(this, *params, is_new_browsing_instance,
                                  was_consumed, cloned_namespace.get());
 
-  if (is_new_browsing_instance || !new_window) {
+  if (is_new_browsing_instance || !new_frame_tree) {
     // Opener suppressed, Javascript access disabled, or delegate did not
     // provide a handle to any windows it created. In these cases, never tell
     // the renderer about the new window.
@@ -6123,7 +6201,8 @@ void RenderFrameHostImpl::CreateNewWindow(
     return;
   }
 
-  RenderFrameHostImpl* main_frame = new_window->GetMainFrame();
+  RenderFrameHostImpl* new_main_rfh =
+      new_frame_tree->root()->current_frame_host();
 
   // When the popup is created, it hasn't committed any navigation yet - its
   // initial empty document should inherit the origin of its opener (the origin
@@ -6133,31 +6212,31 @@ void RenderFrameHostImpl::CreateNewWindow(
   // Checking sandbox flags of the new frame should be safe at this point,
   // because the flags should be already inherited by the CreateNewWindow call
   // above.
-  main_frame->SetOriginDependentStateOfNewFrame(GetLastCommittedOrigin());
-  main_frame->cross_origin_embedder_policy_ = popup_coep;
+  new_main_rfh->SetOriginDependentStateOfNewFrame(GetLastCommittedOrigin());
+  new_main_rfh->cross_origin_embedder_policy_ = popup_coep;
 
-  main_frame->virtual_browsing_context_group_ =
+  new_main_rfh->virtual_browsing_context_group_ =
       popup_virtual_browsing_context_group;
 
   // If inheriting coop (checking this via |opener_suppressed|) and the original
   // coop page has a reporter we make sure the the newly created popup also has
   // a reporter.
   if (!params->opener_suppressed && GetMainFrame()->coop_reporter()) {
-    main_frame->set_coop_reporter(
+    new_main_rfh->set_coop_reporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
-            params->referrer->url, main_frame->cross_origin_opener_policy(),
+            params->referrer->url, new_main_rfh->cross_origin_opener_policy(),
             frame_token_.value(), isolation_info_.network_isolation_key()));
   }
 
   mojo::PendingAssociatedRemote<mojom::Frame> pending_frame_remote;
   mojo::PendingAssociatedReceiver<mojom::Frame> pending_frame_receiver =
       pending_frame_remote.InitWithNewEndpointAndPassReceiver();
-  main_frame->SetMojomFrameRemote(std::move(pending_frame_remote));
+  new_main_rfh->SetMojomFrameRemote(std::move(pending_frame_remote));
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
-  main_frame->BindBrowserInterfaceBrokerReceiver(
+  new_main_rfh->BindBrowserInterfaceBrokerReceiver(
       browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
   // With this path, RenderViewHostImpl::CreateRenderView is never called
@@ -6169,36 +6248,37 @@ void RenderFrameHostImpl::CreateNewWindow(
           page_broadcast.InitWithNewEndpointAndPassReceiver();
 
   auto widget_params =
-      main_frame->GetLocalRenderWidgetHost()
+      new_main_rfh->GetLocalRenderWidgetHost()
           ->BindAndGenerateCreateFrameWidgetParamsForNewWindow();
 
-  main_frame->render_view_host()->BindPageBroadcast(std::move(page_broadcast));
+  new_main_rfh->render_view_host()->BindPageBroadcast(
+      std::move(page_broadcast));
 
   bool wait_for_debugger =
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
-      main_frame->GetRenderViewHost()->GetRoutingID(),
-      main_frame->GetFrameToken(), main_frame->GetRoutingID(),
+      new_main_rfh->GetRenderViewHost()->GetRoutingID(),
+      new_main_rfh->GetFrameToken(), new_main_rfh->GetRoutingID(),
       std::move(pending_frame_receiver), std::move(widget_params),
       std::move(page_broadcast_receiver), std::move(browser_interface_broker),
-      cloned_namespace->id(), main_frame->GetDevToolsFrameToken(),
+      cloned_namespace->id(), new_main_rfh->GetDevToolsFrameToken(),
       wait_for_debugger,
-      main_frame->policy_container_host()->CreatePolicyContainerForBlink());
+      new_main_rfh->policy_container_host()->CreatePolicyContainerForBlink());
 
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
 
   // When `waiting_for_init_` is true, the browser waits for the renderer to
   // request to show the window (which becomes a call to Init() on the new
-  // window's `main_frame`) before servicing subresource requests. We ensure
+  // window's `new_main_rfh`) before servicing subresource requests. We ensure
   // this is the first message received by the remote frame (instead of plumbing
   // it with the CreateNewWindow IPC).
-  if (main_frame->waiting_for_init_)
-    main_frame->GetMojomFrameInRenderer()->BlockRequests();
+  if (new_main_rfh->waiting_for_init_)
+    new_main_rfh->GetMojomFrameInRenderer()->BlockRequests();
 
   // The mojom reply callback with kSuccess causes the renderer to create the
   // renderer-side objects.
-  main_frame->render_view_host()->RenderViewCreated(main_frame);
+  new_main_rfh->render_view_host()->RenderViewCreated(new_main_rfh);
 }
 
 void RenderFrameHostImpl::CreatePortal(
@@ -8530,7 +8610,7 @@ void RenderFrameHostImpl::GetFeatureObserver(
     if (!client)
       return;
     feature_observer_ = std::make_unique<FeatureObserver>(
-        client, GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
+        client, GlobalRenderFrameHostId(GetProcess()->GetID(), routing_id_));
   }
   feature_observer_->GetFeatureObserver(std::move(receiver));
 }
@@ -8718,9 +8798,9 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<DedicatedWorkerHostFactoryImpl>(
           worker_process_id,
-          /*creator_render_frame_host_id=*/GetGlobalFrameRoutingId(),
+          /*creator_render_frame_host_id=*/GetGlobalId(),
           /*creator_worker_token=*/absl::nullopt,
-          /*ancestor_render_frame_host_id=*/GetGlobalFrameRoutingId(),
+          /*ancestor_render_frame_host_id=*/GetGlobalId(),
           last_committed_origin_, isolation_info_,
           cross_origin_embedder_policy_,
           /*creator_coep_reporter=*/coep_reporter,
@@ -8963,7 +9043,7 @@ void RenderFrameHostImpl::GetFontAccessManager(
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetFontAccessManager()
       ->BindReceiver(FontAccessManagerImpl::BindingContext(
-                         GetLastCommittedOrigin(), GetGlobalFrameRoutingId()),
+                         GetLastCommittedOrigin(), GetGlobalId()),
                      std::move(receiver));
 }
 
@@ -8971,7 +9051,7 @@ void RenderFrameHostImpl::BindComputePressureHost(
     mojo::PendingReceiver<blink::mojom::ComputePressureHost> receiver) {
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetComputePressureManager()
-      ->BindReceiver(GetLastCommittedOrigin(), GetGlobalFrameRoutingId(),
+      ->BindReceiver(GetLastCommittedOrigin(), GetGlobalId(),
                      std::move(receiver));
 }
 
@@ -8981,10 +9061,10 @@ void RenderFrameHostImpl::GetFileSystemAccessManager(
   auto* storage_partition =
       static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
   auto* manager = storage_partition->GetFileSystemAccessManager();
-  manager->BindReceiver(FileSystemAccessManagerImpl::BindingContext(
-                            GetLastCommittedOrigin(), GetLastCommittedURL(),
-                            GetGlobalFrameRoutingId()),
-                        std::move(receiver));
+  manager->BindReceiver(
+      FileSystemAccessManagerImpl::BindingContext(
+          GetLastCommittedOrigin(), GetLastCommittedURL(), GetGlobalId()),
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateLockManager(
@@ -11295,6 +11375,10 @@ void RenderFrameHostImpl::SetLifecycleStateToPendingCommit() {
   // not considered speculative anymore.
   DCHECK(children_.empty());
   SetLifecycleState(LifecycleStateImpl::kPendingCommit);
+}
+
+void RenderFrameHostImpl::SetLifecycleStateToReadyToBeDeleted() {
+  SetLifecycleState(LifecycleStateImpl::kReadyToBeDeleted);
 }
 
 void RenderFrameHostImpl::SetLifecycleStateToActive() {

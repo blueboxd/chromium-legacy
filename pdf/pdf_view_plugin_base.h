@@ -90,6 +90,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
              const std::string& bcc,
              const std::string& subject,
              const std::string& body) override;
+  void Print() override;
   std::unique_ptr<UrlLoader> CreateUrlLoader() override;
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
@@ -98,6 +99,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void FormTextFieldFocusChange(bool in_focus) override;
   SkColor GetBackgroundColor() override;
   void SetIsSelecting(bool is_selecting) override;
+  void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void EnteredEditMode() override;
   void DocumentFocusChanged(bool document_has_focus) override;
 
@@ -301,8 +303,19 @@ class PdfViewPluginBase : public PDFEngine::Client,
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
 
+  // Requests the plugin's render frame to set up a print dialog for the
+  // document.
+  virtual void InvokePrintDialog() = 0;
+
   // Performs tasks necessary when the document is loaded in print preview mode.
   virtual void OnPrintPreviewLoaded() = 0;
+
+  // Notifies the embedder of the top-left and bottom-right coordinates of the
+  // current selection.
+  virtual void NotifySelectionChanged(const gfx::PointF& left,
+                                      int left_height,
+                                      const gfx::PointF& right,
+                                      int right_height) = 0;
 
   // Notifies the user about unsupported feature if the PDF Viewer occupies the
   // full frame.
@@ -365,6 +378,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void HandleGetPasswordCompleteMessage(const base::Value& message);
   void HandleGetSelectedTextMessage(const base::Value& message);
   void HandleGetThumbnailMessage(const base::Value& message);
+  void HandlePrintMessage(const base::Value& /*message*/);
   void HandleRotateClockwiseMessage(const base::Value& /*message*/);
   void HandleRotateCounterclockwiseMessage(const base::Value& /*message*/);
   void HandleSaveMessage(const base::Value& message);

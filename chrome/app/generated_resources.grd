@@ -1347,6 +1347,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_CHROME_TIPS" desc="The text label of the Help menu item which takes the user to the Chrome Tips page.">
         Tips for Chrome
       </message>
+      <message name="IDS_CHROME_WHATS_NEW" desc="The text label of the Help menu item which takes the user to the Chrome What's New page.">
+        What's New
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In sentence case: The app menu label to import bookmarks and settings.">
           Import bookmarks and settings...
@@ -1975,6 +1978,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_SCAN_DOWNLOAD"
                desc="Text shown to upload a file for deep scanning.">
         Send
+      </message>
+      <message name="IDS_REVIEW_DOWNLOAD" desc="Text shown when a download has triggered an enterprise warning or block, on the button to open the dialog containing the enterprise administrator's message explaining the violation.">
+        Review
       </message>
 
       <!-- Download Tab Items -->
@@ -7594,6 +7600,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Send Link to <ph name="DEVICE_NAME">$1<ex>Ted's Pixel2</ex></ph>
         </message>
       </if>
+      <if expr="is_android">
+      <message name="IDS_SEND_TAB_TO_SELF_MESSAGE" desc="Text for a message indicating that the tab was shared from a syncing device.">
+        Page shared from <ph name="device_name">$1<ex>Tanya's Pixel 2</ex></ph>
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_MESSAGE_OPEN" desc="Label for the button to open a tab received from another device.">
+        Open
+      </message>
+      </if>
 
       <!-- Share via QR code strings -->
       <if expr="not use_titlecase">
@@ -7661,6 +7675,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SHARING_HUB_MEDIA_ROUTER_LABEL" desc="The text label for the media router button in the Sharing Hub dialog and app menu.">
         Cast...
+      </message>
+      <message name="IDS_SHARING_HUB_SHARE_LABEL" desc="The Label for the Third Party Targets in the Sharing Hub dialog.">
+        Share link to
       </message>
 
       <!-- Clipboard History Menu feature. -->

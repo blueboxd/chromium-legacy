@@ -102,7 +102,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
@@ -111,7 +110,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
                                                bool case_sensitive) override;
   pp::Instance* GetPluginInstance() override;
   bool IsPrintPreview() override;
-  void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
@@ -153,7 +151,12 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void SetPluginCanSave(bool can_save) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
+  void InvokePrintDialog() override;
   void OnPrintPreviewLoaded() override;
+  void NotifySelectionChanged(const gfx::PointF& left,
+                              int left_height,
+                              const gfx::PointF& right,
+                              int right_height) override;
   void NotifyUnsupportedFeature() override;
   void UserMetricsRecordAction(const std::string& action) override;
 
@@ -184,9 +187,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
 
   // Called after a preview page has loaded or failed to load.
   void LoadNextPreviewPage();
-
-  // Callback to print without re-entrancy issues.
-  void OnPrint(int32_t /*unused_but_required*/);
 
   // The Pepper image data that is in sync with mutable_image_data().
   pp::ImageData pepper_image_data_;

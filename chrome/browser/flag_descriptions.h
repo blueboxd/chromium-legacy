@@ -280,6 +280,11 @@ extern const char kChromeTipsInMainMenuNewBadgeDescription[];
 extern const char kChromeWhatsNewUIName[];
 extern const char kChromeWhatsNewUIDescription[];
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+extern const char kChromeWhatsNewInMainMenuNewBadgeName[];
+extern const char kChromeWhatsNewInMainMenuNewBadgeDescription[];
+#endif
+
 extern const char kCompositingBasedThrottling[];
 extern const char kCompositingBasedThrottlingDescription[];
 
@@ -598,6 +603,9 @@ extern const char kDownloadLaterDebugOnWifiNameDescription[];
 
 extern const char kEnableFencedFramesName[];
 extern const char kEnableFencedFramesDescription[];
+
+extern const char kEnableGamepadButtonAxisEventsName[];
+extern const char kEnableGamepadButtonAxisEventsDescription[];
 
 extern const char kEnableLoginDetectionName[];
 extern const char kEnableLoginDetectionDescription[];
@@ -1194,6 +1202,9 @@ extern const char kQuickActionSearchWidgetAndroidDescription[];
 extern const char kQuietNotificationPromptsName[];
 extern const char kQuietNotificationPromptsDescription[];
 
+extern const char kSettingsAppNotificationSettingsName[];
+extern const char kSettingsAppNotificationSettingsDescription[];
+
 extern const char kAbusiveNotificationPermissionRevocationName[];
 extern const char kAbusiveNotificationPermissionRevocationDescription[];
 
@@ -1373,6 +1384,9 @@ extern const char kTabGridLayoutAndroidDescription[];
 extern const char kCommerceMerchantViewerAndroidName[];
 extern const char kCommerceMerchantViewerAndroidDescription[];
 
+extern const char kCommercePriceTrackingAndroidName[];
+extern const char kCommercePriceTrackingAndroidDescription[];
+
 extern const char kTabGroupsAndroidName[];
 extern const char kTabGroupsAndroidDescription[];
 
@@ -1443,6 +1457,9 @@ extern const char kTraceUploadUrlChoiceOther[];
 extern const char kTraceUploadUrlChoiceEmloading[];
 extern const char kTraceUploadUrlChoiceQa[];
 extern const char kTraceUploadUrlChoiceTesting[];
+
+extern const char kTranslateAssistContentName[];
+extern const char kTranslateAssistContentDescription[];
 
 extern const char kTranslateBubbleUIName[];
 extern const char kTranslateBubbleUIDescription[];
@@ -2820,6 +2837,9 @@ extern const char kShowTapsDescription[];
 
 extern const char kShowTouchHudName[];
 extern const char kShowTouchHudDescription[];
+
+extern const char kSmartLockUIRevampName[];
+extern const char kSmartLockUIRevampDescription[];
 
 extern const char kSpectreVariant2MitigationName[];
 extern const char kSpectreVariant2MitigationDescription[];

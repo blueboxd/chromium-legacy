@@ -32,6 +32,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
@@ -1766,19 +1767,19 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
 
-const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceAlerts[] = {
+const FeatureEntry::FeatureParam kCommercePriceTracking_PriceAlerts[] = {
     {"enable_price_tracking", "true"},
     {"price_tracking_with_optimization_guide", "false"}};
 
 const FeatureEntry::FeatureParam
-    kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide[] = {
+    kCommercePriceTracking_PriceAlerts_WithOptimizationGuide[] = {
         {"enable_price_tracking", "true"},
         {"price_tracking_with_optimization_guide", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
 
-const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceNotifications[] = {
+const FeatureEntry::FeatureParam kCommercePriceTracking_PriceNotifications[] = {
     {"enable_price_notification", "true"}};
 
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
@@ -1790,16 +1791,20 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_TallNTV), nullptr},
     {"Search term chip", kTabGridLayoutAndroid_SearchChip,
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
-    {"Price alerts", kTabGridLayoutAndroid_PriceAlerts,
-     base::size(kTabGridLayoutAndroid_PriceAlerts), nullptr},
-    {"Price alerts with OptimizationGuide",
-     kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide,
-     base::size(kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide),
-     nullptr},
     {"Without auto group", kTabGridLayoutAndroid_TabGroupAutoCreation,
      base::size(kTabGridLayoutAndroid_TabGroupAutoCreation), nullptr},
-    {"Price notifications", kTabGridLayoutAndroid_PriceNotifications,
-     base::size(kTabGridLayoutAndroid_PriceNotifications), nullptr},
+};
+
+const FeatureEntry::FeatureVariation kCommercePriceTrackingAndroidVariations[] =
+    {
+        {"Price alerts", kCommercePriceTracking_PriceAlerts,
+         base::size(kCommercePriceTracking_PriceAlerts), nullptr},
+        {"Price alerts with OptimizationGuide",
+         kCommercePriceTracking_PriceAlerts_WithOptimizationGuide,
+         base::size(kCommercePriceTracking_PriceAlerts_WithOptimizationGuide),
+         nullptr},
+        {"Price notifications", kCommercePriceTracking_PriceNotifications,
+         base::size(kCommercePriceTracking_PriceNotifications), nullptr},
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
@@ -3229,6 +3234,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(language::kOverrideTranslateTriggerInIndia,
                                     kTranslateForceTriggerOnEnglishVariations,
                                     "OverrideTranslateTriggerInIndia")},
+    {"translate-assist-content", flag_descriptions::kTranslateAssistContentName,
+     flag_descriptions::kTranslateAssistContentDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(language::kTranslateAssistContent)},
     {"translate-intent", flag_descriptions::kTranslateIntentName,
      flag_descriptions::kTranslateIntentDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(language::kTranslateIntent)},
@@ -4807,7 +4815,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-commerce-merchant-viewer",
      flag_descriptions::kCommerceMerchantViewerAndroidName,
      flag_descriptions::kCommerceMerchantViewerAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCommerceMerchantViewer)},
+     FEATURE_VALUE_TYPE(commerce::kCommerceMerchantViewer)},
+
+    {"enable-commerce-price-tracking",
+     flag_descriptions::kCommercePriceTrackingAndroidName,
+     flag_descriptions::kCommercePriceTrackingAndroidDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kCommercePriceTracking,
+                                    kCommercePriceTrackingAndroidVariations,
+                                    "CommercePriceTrackingAndroid")},
 
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
@@ -5167,6 +5182,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewWindowAppMenuDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNewWindowAppMenu)},
 #endif  // defined(OS_ANDROID)
+
+    {"enable-gamepad-button-axis-events",
+     flag_descriptions::kEnableGamepadButtonAxisEventsName,
+     flag_descriptions::kEnableGamepadButtonAxisEventsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableGamepadButtonAxisEvents)},
 
     {"restrict-gamepad-access", flag_descriptions::kRestrictGamepadAccessName,
      flag_descriptions::kRestrictGamepadAccessDescription, kOsAll,
@@ -5773,6 +5793,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"contextual-nudges", flag_descriptions::kContextualNudgesName,
      flag_descriptions::kContextualNudgesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kContextualNudges)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"settings-app-notification-settings",
+     flag_descriptions::kSettingsAppNotificationSettingsName,
+     flag_descriptions::kSettingsAppNotificationSettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSettingsAppNotificationSettings)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"decode-jpeg-images-to-yuv",
@@ -7235,6 +7262,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeWhatsNewUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeWhatsNewUI)},
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    {"chrome-whats-new-in-main-menu-new-badge",
+     flag_descriptions::kChromeWhatsNewInMainMenuNewBadgeName,
+     flag_descriptions::kChromeWhatsNewInMainMenuNewBadgeDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kChromeWhatsNewInMainMenuNewBadge)},
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
     {"sync-trusted-vault-passphrase-promo",
      flag_descriptions::kSyncTrustedVaultPassphrasePromoName,
      flag_descriptions::kSyncTrustedVaultPassphrasePromoDescription, kOsAll,
@@ -7250,6 +7285,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDebugHistoryInterventionNoUserActivationDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(features::kDebugHistoryInterventionNoUserActivation)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"smart-lock-ui-revamp", flag_descriptions::kSmartLockUIRevampName,
+     flag_descriptions::kSmartLockUIRevampDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSmartLockUIRevamp)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

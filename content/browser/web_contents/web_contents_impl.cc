@@ -1142,7 +1142,7 @@ WebContentsImpl* WebContentsImpl::FromFrameTreeNode(
 
 // static
 WebContents* WebContentsImpl::FromRenderFrameHostID(
-    GlobalFrameRoutingId render_frame_host_id) {
+    GlobalRenderFrameHostId render_frame_host_id) {
   OPTIONAL_TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("content.verbose"),
                         "WebContentsImpl::FromRenderFrameHostID", "process_id",
                         render_frame_host_id.child_id, "frame_id",
@@ -1161,7 +1161,7 @@ WebContents* WebContentsImpl::FromRenderFrameHostID(
 WebContents* WebContentsImpl::FromRenderFrameHostID(int render_process_host_id,
                                                     int render_frame_host_id) {
   return FromRenderFrameHostID(
-      GlobalFrameRoutingId(render_process_host_id, render_frame_host_id));
+      GlobalRenderFrameHostId(render_process_host_id, render_frame_host_id));
 }
 
 // static
@@ -3694,7 +3694,7 @@ void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(
   }
 }
 
-RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
+FrameTree* WebContentsImpl::CreateNewWindow(
     RenderFrameHostImpl* opener,
     const mojom::CreateNewWindowParams& params,
     bool is_new_browsing_instance,
@@ -3728,10 +3728,14 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
                        source_site_instance, params.window_container_type,
                        opener->GetLastCommittedURL(), params.frame_name,
                        params.target_url)) {
-    return static_cast<WebContentsImpl*>(delegate_->CreateCustomWebContents(
-        opener, source_site_instance, is_new_browsing_instance,
-        opener->GetLastCommittedURL(), params.frame_name, params.target_url,
-        partition_id, session_storage_namespace));
+    auto* web_contents_impl =
+        static_cast<WebContentsImpl*>(delegate_->CreateCustomWebContents(
+            opener, source_site_instance, is_new_browsing_instance,
+            opener->GetLastCommittedURL(), params.frame_name, params.target_url,
+            partition_id, session_storage_namespace));
+    if (!web_contents_impl)
+      return nullptr;
+    return web_contents_impl->GetFrameTree();
   }
 
   bool renderer_started_hidden =
@@ -3882,7 +3886,7 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
       }
     }
   }
-  return new_contents_impl;
+  return new_contents_impl->GetFrameTree();
 }
 
 RenderWidgetHostImpl* WebContentsImpl::CreateNewPopupWidget(
@@ -4090,8 +4094,8 @@ RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int process_id,
 void WebContentsImpl::CreateMediaPlayerHostForRenderFrameHost(
     RenderFrameHostImpl* frame_host,
     mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost> receiver) {
-  media_web_contents_observer()->BindMediaPlayerHost(
-      frame_host->GetGlobalFrameRoutingId(), std::move(receiver));
+  media_web_contents_observer()->BindMediaPlayerHost(frame_host->GetGlobalId(),
+                                                     std::move(receiver));
 }
 
 void WebContentsImpl::RequestMediaAccessPermission(
@@ -5134,13 +5138,13 @@ int WebContentsImpl::DownloadImage(
     WebContents::ImageDownloadCallback callback) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::DownloadImage", "url",
                         url);
-  return DownloadImageInFrame(GlobalFrameRoutingId(), url, is_favicon,
+  return DownloadImageInFrame(GlobalRenderFrameHostId(), url, is_favicon,
                               preferred_size, max_bitmap_size, bypass_cache,
                               std::move(callback));
 }
 
 int WebContentsImpl::DownloadImageInFrame(
-    const GlobalFrameRoutingId& initiator_frame_routing_id,
+    const GlobalRenderFrameHostId& initiator_frame_routing_id,
     const GURL& url,
     bool is_favicon,
     uint32_t preferred_size,
@@ -5509,8 +5513,7 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     // ReadyToCommitNavigation instead?
     // TODO(https://crbug.com/1194880): Maybe sync RendererPreferences as well?
     if (value_changed_due_to_override ||
-        navigation_handle->IsServedFromBackForwardCache() ||
-        navigation_handle->IsPrerenderedPageActivation()) {
+        NavigationRequest::From(navigation_handle)->IsPageActivation()) {
       SetWebPreferences(*web_preferences_.get());
     }
   }

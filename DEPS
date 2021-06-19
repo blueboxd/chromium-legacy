@@ -237,7 +237,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'd23a900fb4827b795adb71dfcf7b32fd809bc323',
+  'pdfium_revision': '9f82f03604b86d6b0590274643a5977a91fe60d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -403,7 +403,7 @@ vars = {
   'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:7d803996740ccd587c54062750cbe04dfbc3c423',
+  'gn_version': 'git_revision:170c2dba1e0c0299fe8c6a441caf2f2352a42ae0',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@94df7b618821b597364fa1e1e51ac81f27f886ec',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@04633a44b583a75886400c1fe26984dec046f21a',
     'condition': 'checkout_src_internal',
   },
 

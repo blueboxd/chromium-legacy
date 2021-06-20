@@ -113,6 +113,7 @@ using ExpectedUkmMetrics = std::vector<ExpectedUkmMetricsRecord>;
 using AddressImportRequirements =
     AutofillMetrics::AddressProfileImportRequirementMetric;
 
+const int kDefaultPageID = 137;
 const char* kTestGuid = "00000000-0000-0000-0000-000000000001";
 
 FormSignature Collapse(FormSignature sig) {
@@ -348,10 +349,12 @@ class AutofillMetricsTest : public testing::Test {
   void RecreateProfile(bool is_server);
 
   // Removes all existing credit cards and creates a local, masked server,
-  // and/or full server credit card, according to the parameters.
+  // full server, and/or virtual credit card, according to the parameters.
+  // TODO(crbug/1216615): Migrate this to a params builder pattern or something.
   void RecreateCreditCards(bool include_local_credit_card,
                            bool include_masked_server_credit_card,
-                           bool include_full_server_credit_card);
+                           bool include_full_server_credit_card,
+                           bool masked_card_is_enrolled_for_virtual_card);
 
   void AddMaskedServerCreditCardWithOffer(std::string guid,
                                           std::string offer_reward_amount,
@@ -533,7 +536,8 @@ void AutofillMetricsTest::OnDidGetRealPan(
 void AutofillMetricsTest::RecreateCreditCards(
     bool include_local_credit_card,
     bool include_masked_server_credit_card,
-    bool include_full_server_credit_card) {
+    bool include_full_server_credit_card,
+    bool masked_card_is_enrolled_for_virtual_card) {
   personal_data_->ClearCreditCards();
   if (include_local_credit_card) {
     CreditCard local_credit_card;
@@ -549,6 +553,10 @@ void AutofillMetricsTest::RecreateCreditCards(
     masked_server_credit_card.set_instrument_id(1);
     masked_server_credit_card.SetNetworkForMaskedCard(kDiscoverCard);
     masked_server_credit_card.SetNumber(u"9424");
+    if (masked_card_is_enrolled_for_virtual_card) {
+      masked_server_credit_card.set_virtual_card_enrollment_state(
+          CreditCard::ENROLLED);
+    }
     personal_data_->AddServerCreditCard(masked_server_credit_card);
   }
   if (include_full_server_credit_card) {
@@ -4115,7 +4123,8 @@ TEST_F(AutofillMetricsTest, CompanyNameSuggestions) {
 TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -4481,7 +4490,8 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
 TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up the form data.
   FormData form;
@@ -4543,7 +4553,8 @@ TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
 TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up the form data.
   FormData form;
@@ -4915,12 +4926,191 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardShownFormEvents) {
   }
 }
 
+// Test that we log specific suggestion shown form events for virtual credit
+// cards.
+TEST_P(AutofillMetricsIFrameTest, VirtualCreditCardShownFormEvents) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableMerchantBoundVirtualCards);
+
+  // Set up our form data.  https:// is required.
+  FormData form;
+  form.name = u"TestForm";
+  form.url = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Year", "card_year", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  test::CreateTestFormField("CVC", "cvc", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_VERIFICATION_CODE);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+
+  // Creating cards, including a virtual card.
+  RecreateCreditCards(false /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */,
+                      true /* include_virtual_credit_card */);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |browser_autofill_manager_|.
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulate new popup being shown.
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                                  field);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 1);
+  }
+
+  // Reset the autofill manager state.
+  browser_autofill_manager_->Reset();
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating two popups in the same page load.
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                                  field);
+    browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                                  field);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 2);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 1);
+  }
+
+  // Reset the autofill manager state.
+  browser_autofill_manager_->Reset();
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating same popup being refreshed.
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    browser_autofill_manager_->DidShowSuggestions(false /* is_new_popup */,
+                                                  form, field);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 0);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 0);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 0);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 0);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 0);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 0);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 0);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 0);
+  }
+
+  // Recreate cards, this time *without* a virtual card.
+  RecreateCreditCards(false /* include_local_credit_card */,
+                      true /* include_masked_server_credit_card */,
+                      false /* include_full_server_credit_card */,
+                      false /* include_virtual_credit_card */);
+
+  // Reset the autofill manager state.
+  browser_autofill_manager_->Reset();
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating two popups in the same page load. Suggestions shown should be
+    // logged, but suggestions shown with virtual card should not.
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                                  field);
+    browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                                  field);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount("Autofill.FormEvents.CreditCard",
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(credit_card_form_events_frame_histogram_,
+                                       FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 0);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, 0);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 0);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, 0);
+  }
+}
+
 // Test that we log selected form event for credit cards.
 TEST_P(AutofillMetricsIFrameTest, CreditCardSelectedFormEvents) {
   // Creating all kinds of cards.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      true /* masked_card_is_enrolled_for_virtual_card */);
   // Set up our form data.
   FormData form;
   form.host_frame = test::GetLocalFrameToken();
@@ -4947,7 +5137,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSelectedFormEvents) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
-    // Simulating selecting a masked card server suggestion.
+    // Simulating selecting a masked server card suggestion.
     base::HistogramTester histogram_tester;
     std::string guid(
         "10000000-0000-0000-0000-000000000002");  // masked server card
@@ -4973,7 +5163,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSelectedFormEvents) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
-    // Simulating selecting multiple times a masked card server.
+    // Simulating selecting a masked server card multiple times.
     base::HistogramTester histogram_tester;
     std::string guid(
         "10000000-0000-0000-0000-000000000002");  // masked server card
@@ -4996,6 +5186,60 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSelectedFormEvents) {
         credit_card_form_events_frame_histogram_,
         FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE, 1);
   }
+
+  // Reset the autofill manager state.
+  browser_autofill_manager_->Reset();
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating selecting a virtual server suggestion by selecting the
+    // option based on the enrolled masked card.
+    base::HistogramTester histogram_tester;
+    std::string guid("10000000-0000-0000-0000-000000000002");  // masked card
+    browser_autofill_manager_->FillVirtualCardInformation(guid, kDefaultPageID,
+                                                          form, form.fields[2]);
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED_ONCE, 1);
+  }
+
+  // Reset the autofill manager state.
+  browser_autofill_manager_->Reset();
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating selecting a virtual card multiple times.
+    base::HistogramTester histogram_tester;
+    std::string guid("10000000-0000-0000-0000-000000000002");  // masked card
+    browser_autofill_manager_->FillVirtualCardInformation(guid, kDefaultPageID,
+                                                          form, form.fields[2]);
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
+    browser_autofill_manager_->FillVirtualCardInformation(guid, kDefaultPageID,
+                                                          form, form.fields[2]);
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED, 2);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED_ONCE, 1);
+  }
 }
 
 // Test that we log filled form events for credit cards.
@@ -5003,7 +5247,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
   // Creating all kinds of cards.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      true /* masked_card_is_enrolled_for_virtual_card */);
   // Set up our form data.
   FormData form;
   form.host_frame = test::GetLocalFrameToken();
@@ -5053,6 +5298,32 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
+    // Simulating filling a virtual card suggestion by selecting the option
+    // based on the enrolled masked card.
+    base::HistogramTester histogram_tester;
+    std::string guid("10000000-0000-0000-0000-000000000002");  // masked card
+    browser_autofill_manager_->FillVirtualCardInformation(
+        guid, kDefaultPageID, form, form.fields.front());
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_FILLED, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_FILLED, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_FILLED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_FILLED_ONCE, 1);
+  }
+
+  // Reset the autofill manager state.
+  browser_autofill_manager_->Reset();
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
     // Simulating filling a masked card server suggestion.
     base::HistogramTester histogram_tester;
     std::string guid(
@@ -5081,7 +5352,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
   // card to a full card.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      true /* masked_card_is_enrolled_for_virtual_card */);
 
   // Reset the autofill manager state.
   browser_autofill_manager_->Reset();
@@ -5160,7 +5432,8 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     base::HistogramTester histogram_tester;
     RecreateCreditCards(true /* include_local_credit_card */,
                         false /* include_masked_server_credit_card */,
-                        false /* include_full_server_credit_card */);
+                        false /* include_full_server_credit_card */,
+                        false /* masked_card_is_enrolled_for_virtual_card */);
     SetFidoEligibility(true);
     browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
                                                   form.fields[0]);
@@ -5175,7 +5448,8 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     base::HistogramTester histogram_tester;
     RecreateCreditCards(false /* include_local_credit_card */,
                         true /* include_masked_server_credit_card */,
-                        false /* include_full_server_credit_card */);
+                        false /* include_full_server_credit_card */,
+                        false /* masked_card_is_enrolled_for_virtual_card */);
     SetFidoEligibility(false);
     browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
                                                   form.fields[0]);
@@ -5190,7 +5464,8 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     base::HistogramTester histogram_tester;
     RecreateCreditCards(false /* include_local_credit_card */,
                         false /* include_masked_server_credit_card */,
-                        true /* include_full_server_credit_card */);
+                        true /* include_full_server_credit_card */,
+                        false /* masked_card_is_enrolled_for_virtual_card */);
     SetFidoEligibility(false);
     browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
                                                   form.fields[0]);
@@ -5205,7 +5480,8 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     base::HistogramTester histogram_tester;
     RecreateCreditCards(false /* include_local_credit_card */,
                         true /* include_masked_server_credit_card */,
-                        false /* include_full_server_credit_card */);
+                        false /* include_full_server_credit_card */,
+                        false /* masked_card_is_enrolled_for_virtual_card */);
     SetFidoEligibility(true);
     browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
                                                   form.fields[0]);
@@ -5231,7 +5507,8 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     base::HistogramTester histogram_tester;
     RecreateCreditCards(true /* include_local_credit_card */,
                         true /* include_masked_server_credit_card */,
-                        true /* include_full_server_credit_card */);
+                        true /* include_full_server_credit_card */,
+                        false /* masked_card_is_enrolled_for_virtual_card */);
     SetFidoEligibility(true);
     browser_autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
                                                   form.fields[0]);
@@ -5257,7 +5534,8 @@ TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration_ServerCard) {
   // Creating masked card
   RecreateCreditCards(false /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
   // Set up our form data.
   FormData form;
   form.host_frame = test::GetLocalFrameToken();
@@ -5304,7 +5582,8 @@ TEST_F(AutofillMetricsTest, CreditCardGetRealPanDuration_ServerCard) {
   // Creating masked card
   RecreateCreditCards(false /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   {
     // Simulating filling a masked card server suggestion.
@@ -5408,7 +5687,8 @@ TEST_F(AutofillMetricsTest,
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -5453,7 +5733,8 @@ TEST_P(AutofillMetricsIFrameTest,
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -5500,7 +5781,8 @@ TEST_P(AutofillMetricsIFrameTest,
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -5548,7 +5830,8 @@ TEST_P(AutofillMetricsIFrameTest,
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -5597,7 +5880,8 @@ TEST_P(AutofillMetricsIFrameTest,
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -5646,7 +5930,8 @@ TEST_P(AutofillMetricsIFrameTest,
   // Create a local card for testing, card number is 4111111111111111.
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -5753,7 +6038,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
   // Creating all kinds of cards.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      true /* masked_card_is_enrolled_for_virtual_card */);
   // Set up our form data.
   FormData form;
   form.host_frame = test::GetLocalFrameToken();
@@ -5953,6 +6239,53 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
+    // Simulating submission with filled virtual card data by selecting the
+    // option based on the enrolled masked card.
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    std::string guid("10000000-0000-0000-0000-000000000002");  // masked card
+    browser_autofill_manager_->FillVirtualCardInformation(
+        guid, kDefaultPageID, form, form.fields.front());
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
+    browser_autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_WILL_SUBMIT_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_WILL_SUBMIT_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SUBMITTED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SUBMITTED_ONCE, 1);
+
+    VerifyUkm(
+        test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+        {{{UkmSuggestionFilledType::kRecordTypeName, CreditCard::VIRTUAL_CARD},
+          {UkmSuggestionFilledType::kIsForCreditCardName, true},
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmSuggestionFilledType::kFieldSignatureName,
+           Collapse(CalculateFieldSignatureForField(form.fields.front()))
+               .value()},
+          {UkmSuggestionFilledType::kFormSignatureName,
+           Collapse(CalculateFormSignature(form)).value()}}});
+    VerifySubmitFormUkm(test_ukm_recorder_, form,
+                        AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
+                        /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
+                        {FormType::kCreditCardForm});
+  }
+
+  // Reset the autofill manager state and purge UKM logs.
+  PurgeUKM();
+
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
     // Simulating submission with filled server data.
     base::HistogramTester histogram_tester;
     browser_autofill_manager_->OnQueryFormFieldAutofill(
@@ -6047,7 +6380,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
   // card to a full card.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      true /* masked_card_is_enrolled_for_virtual_card */);
 
   // Reset the autofill manager state.
   browser_autofill_manager_->Reset();
@@ -6252,7 +6586,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
   // Creating all kinds of cards.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      true /* masked_card_is_enrolled_for_virtual_card */);
   // Set up our form data.
   FormData form;
   form.host_frame = test::GetLocalFrameToken();
@@ -6360,6 +6695,36 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
 
   {
+    // Simulating submission with filled virtual card data by selecting the
+    // option based on the enrolled masked card.
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+    std::string guid("10000000-0000-0000-0000-000000000002");  // masked card
+    browser_autofill_manager_->FillVirtualCardInformation(
+        guid, kDefaultPageID, form, form.fields.front());
+    OnDidGetRealPan(AutofillClient::SUCCESS, "6011000990139424");
+    browser_autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_WILL_SUBMIT_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_WILL_SUBMIT_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SUBMITTED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SUBMITTED_ONCE, 1);
+  }
+
+  // Reset the autofill manager state.
+  browser_autofill_manager_->Reset();
+  browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
     // Simulating submission with filled server data.
     base::HistogramTester histogram_tester;
     browser_autofill_manager_->OnQueryFormFieldAutofill(
@@ -6416,7 +6781,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
   // card to a full card.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      true /* masked_card_is_enrolled_for_virtual_card */);
 
   // Reset the autofill manager state.
   browser_autofill_manager_->Reset();
@@ -6595,7 +6961,8 @@ TEST_F(AutofillMetricsTest, LogServerOfferFormEvents) {
   // Creating all kinds of cards. None of them have offers.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Simulate having seen this form on page load.
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
@@ -6759,7 +7126,8 @@ TEST_F(AutofillMetricsTest, LogServerOfferFormEvents) {
   // Recreate cards and add card that is linked to an expired offer.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
   guid = "12340000-0000-0000-0000-000000000002";
   AddMaskedServerCreditCardWithOffer(guid, "$4", autofill_client_.form_origin(),
                                      /*id=*/0x3fff, /*expired=*/true);
@@ -6828,7 +7196,8 @@ TEST_F(AutofillMetricsTest, LogServerOfferFormEvents) {
   // Recreate cards and add card that is linked to an offer.
   RecreateCreditCards(true /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
   guid = "12340000-0000-0000-0000-000000000003";
   AddMaskedServerCreditCardWithOffer(guid, "$5", autofill_client_.form_origin(),
                                      /*id=*/0x5fff);
@@ -7982,7 +8351,8 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
   RecreateCreditCards(false /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -8000,7 +8370,8 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -8018,7 +8389,8 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
   RecreateCreditCards(false /* include_local_credit_card */,
                       true /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -8036,7 +8408,8 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
   RecreateCreditCards(false /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -8054,7 +8427,8 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   browser_autofill_manager_->AddSeenForm(form, field_types, field_types);
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      true /* include_full_server_credit_card */);
+                      true /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   {
     // Simulate activating the autofill popup for the credit card field.
@@ -8698,7 +9072,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_EmptyForm) {
 TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Load a fillable form.
   FormData form;
@@ -9838,7 +10213,8 @@ TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
 TEST_F(AutofillMetricsTest, NonsecureCreditCardForm) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -9898,7 +10274,8 @@ TEST_F(AutofillMetricsTest,
        NonsecureCreditCardFormMetricsNotRecordedOnSecurePage) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
 
   // Set up our form data.
   FormData form;
@@ -10028,7 +10405,8 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
 TEST_F(AutofillMetricsTest, DISABLED_AutofillSuggestionShownTest) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
-                      false /* include_full_server_credit_card */);
+                      false /* include_full_server_credit_card */,
+                      false /* masked_card_is_enrolled_for_virtual_card */);
   FormData form;
   form.host_frame = test::GetLocalFrameToken();
   form.unique_renderer_id = test::MakeFormRendererId();

@@ -217,7 +217,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3f0e25ca47ffc79986082ffaea5ab40404fe5dae',
+  'skia_revision': 'efe9df37e08d3a4f89c9c4f84ef5a95f952442b0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@04633a44b583a75886400c1fe26984dec046f21a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@69cd4aa9a5d7de2d48cbf887e2a6cf5b1d5ee287',
     'condition': 'checkout_src_internal',
   },
 
@@ -1667,7 +1667,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'vuFITB0d_YRML57BGn2NtH1mgUJITyDXAVBaxoBhEMsC',
+        'version': '-NRQeEtXUzFd7FLdB__vYTjc5W59oSysJXlXf1vIJLYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1678,7 +1678,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'nAW0Zo5023ebmh_Ubo49aAoBSWp5wesruzV-J8QvhSAC',
+        'version': 'ztvUD6umBk8gRHekzAmg7aM1vFffhMyJB0IC61HzRccC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -3815,7 +3815,7 @@ hooks = [
     # download it there. Should run after the clang hook.
     'name': 'lld/mac',
     'pattern': '.',
-    'condition': 'host_os == "mac" and (checkout_win or checkout_fuchsia)',
+    'condition': 'host_os == "mac"',
     'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=lld_mac'],
   },

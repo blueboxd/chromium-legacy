@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/validation.h"
@@ -41,6 +42,20 @@ void CreditCardFormEventLogger::set_suggestions(
   }
 }
 
+void CreditCardFormEventLogger::OnDidShowSuggestions(
+    const FormStructure& form,
+    const AutofillField& field,
+    const base::TimeTicks& form_parsed_timestamp,
+    AutofillSyncSigninState sync_state,
+    bool off_the_record) {
+  if (DoSuggestionsIncludeVirtualCard())
+    Log(FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD, form);
+
+  // Also perform the logging actions from the base class:
+  FormEventLoggerBase::OnDidShowSuggestions(form, field, form_parsed_timestamp,
+                                            sync_state, off_the_record);
+}
+
 void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
     const CreditCard& credit_card,
     const FormStructure& form,
@@ -54,15 +69,26 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
                               card_selected_has_offer_);
   }
 
-  // No need to log selections for local/full-server cards -- a selection is
-  // always followed by a form fill, which is logged separately.
-  if (credit_card.record_type() != CreditCard::MASKED_SERVER_CARD)
-    return;
-
-  Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED, form);
-  if (!has_logged_masked_server_card_suggestion_selected_) {
-    has_logged_masked_server_card_suggestion_selected_ = true;
-    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE, form);
+  switch (credit_card.record_type()) {
+    case CreditCard::LOCAL_CARD:
+    case CreditCard::FULL_SERVER_CARD:
+      // No need to log selections for local/full-server cards -- a selection is
+      // always followed by a form fill, which is logged separately.
+      break;
+    case CreditCard::MASKED_SERVER_CARD:
+      Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED, form);
+      if (!has_logged_masked_server_card_suggestion_selected_) {
+        has_logged_masked_server_card_suggestion_selected_ = true;
+        Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE, form);
+      }
+      break;
+    case CreditCard::VIRTUAL_CARD:
+      Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED, form);
+      if (!has_logged_virtual_card_suggestion_selected_) {
+        has_logged_virtual_card_suggestion_selected_ = true;
+        Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED_ONCE, form);
+      }
+      break;
   }
 }
 
@@ -78,26 +104,44 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
       record_type,
       /*is_for_credit_card=*/true, form, field);
 
-  if (record_type == CreditCard::MASKED_SERVER_CARD)
-    Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED, form);
-  else if (record_type == CreditCard::FULL_SERVER_CARD)
-    Log(FORM_EVENT_SERVER_SUGGESTION_FILLED, form);
-  else
-    Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED, form);
+  switch (record_type) {
+    case CreditCard::LOCAL_CARD:
+      Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED, form);
+      break;
+    case CreditCard::MASKED_SERVER_CARD:
+      Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED, form);
+      break;
+    case CreditCard::FULL_SERVER_CARD:
+      Log(FORM_EVENT_SERVER_SUGGESTION_FILLED, form);
+      break;
+    case CreditCard::VIRTUAL_CARD:
+      Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_FILLED, form);
+      break;
+  }
 
   if (!has_logged_suggestion_filled_) {
     has_logged_suggestion_filled_ = true;
     logged_suggestion_filled_was_server_data_ =
         record_type == CreditCard::MASKED_SERVER_CARD ||
-        record_type == CreditCard::FULL_SERVER_CARD;
+        record_type == CreditCard::FULL_SERVER_CARD ||
+        record_type == CreditCard::VIRTUAL_CARD;
     logged_suggestion_filled_was_masked_server_card_ =
         record_type == CreditCard::MASKED_SERVER_CARD;
-    if (record_type == CreditCard::MASKED_SERVER_CARD) {
-      Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE, form);
-    } else if (record_type == CreditCard::FULL_SERVER_CARD) {
-      Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, form);
-    } else {
-      Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, form);
+    logged_suggestion_filled_was_virtual_card_ =
+        record_type == CreditCard::VIRTUAL_CARD;
+    switch (record_type) {
+      case CreditCard::LOCAL_CARD:
+        Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, form);
+        break;
+      case CreditCard::MASKED_SERVER_CARD:
+        Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE, form);
+        break;
+      case CreditCard::FULL_SERVER_CARD:
+        Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, form);
+        break;
+      case CreditCard::VIRTUAL_CARD:
+        Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_FILLED_ONCE, form);
+        break;
     }
   }
 
@@ -138,6 +182,8 @@ void CreditCardFormEventLogger::LogWillSubmitForm(const FormStructure& form) {
     Log(FORM_EVENT_NO_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
     Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE, form);
+  } else if (logged_suggestion_filled_was_virtual_card_) {
+    Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else if (logged_suggestion_filled_was_server_data_) {
     Log(FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE, form);
   } else {
@@ -154,6 +200,14 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
     // Log BetterAuth.FlowEvents.
     RecordCardUnmaskFlowEvent(current_authentication_flow_,
                               UnmaskAuthFlowEvent::kFormSubmitted);
+  } else if (logged_suggestion_filled_was_virtual_card_) {
+    Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SUBMITTED_ONCE, form);
+
+    // TODO(crbug/1196021): Log BetterAuth.FlowEvents here as well. Virtual
+    //     cards are still unmasked similarly to masked cards, they just return
+    //     a different result. However, until virtual cards are wired up to be
+    //     unmasked properly, certain flow variables will be missing and tests
+    //     will be unhappy.
   } else if (logged_suggestion_filled_was_server_data_) {
     Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, form);
   } else {
@@ -173,7 +227,11 @@ void CreditCardFormEventLogger::LogUkmInteractedWithForm(
       server_record_type_count_, form_signature);
 }
 
-void CreditCardFormEventLogger::OnSuggestionsShownOnce() {
+void CreditCardFormEventLogger::OnSuggestionsShownOnce(
+    const FormStructure& form) {
+  if (DoSuggestionsIncludeVirtualCard())
+    Log(FORM_EVENT_SUGGESTIONS_SHOWN_WITH_VIRTUAL_CARD_ONCE, form);
+
   base::UmaHistogramBoolean("Autofill.Offer.SuggestedCardsHaveOffer",
                             has_eligible_offer_);
 }
@@ -260,6 +318,13 @@ bool CreditCardFormEventLogger::DoesCardHaveOffer(
       return !suggestion.offer_label.empty();
   }
   return false;
+}
+
+bool CreditCardFormEventLogger::DoSuggestionsIncludeVirtualCard() {
+  auto is_virtual_card = [](const Suggestion& suggestion) {
+    return suggestion.frontend_id == POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY;
+  };
+  return base::ranges::any_of(suggestions_, is_virtual_card);
 }
 
 }  // namespace autofill

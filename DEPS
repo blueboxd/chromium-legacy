@@ -217,7 +217,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9a4824b47c03a9b25ffa17b76144a3dd1f736dbf',
+  'skia_revision': 'd1877165e5afc72f054a35e6e2b4c2eab1ae60d5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -237,7 +237,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '9f82f03604b86d6b0590274643a5977a91fe60d6',
+  'pdfium_revision': 'cb20bfc81c5723cbbdda7af70d9b98895d77db9a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -268,7 +268,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '61bac759634be975362d310b9ac4609ed13fdd21',
+  'freetype_revision': 'bcd73f7dbcf0d2570c3d9c504ca19bfd6a8f1197',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -296,7 +296,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '6ba35561aa8bfcacf75ed50e0ea59d1e2fc0f34d',
+  'devtools_frontend_revision': '10dcd44ac4a9c20f42456f97e16ca9e99631de3a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1355,7 +1355,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '98002fbe931c7339c8f5917a71c64dfe389bf4ce',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a9b6777579101d8c2dcf9852c55e94b186cacfa1',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8e7aa7f9984fd8c96407817ef5b0854c641e699a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6339ce8b12213b442d7aeb5b1527de64ebcb79e5',
     'condition': 'checkout_src_internal',
   },
 
@@ -3815,7 +3815,7 @@ hooks = [
     # download it there. Should run after the clang hook.
     'name': 'lld/mac',
     'pattern': '.',
-    'condition': 'host_os == "mac"',
+    'condition': 'host_os == "mac" and (checkout_win or checkout_fuchsia)',
     'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=lld_mac'],
   },

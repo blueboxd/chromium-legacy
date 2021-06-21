@@ -1244,7 +1244,6 @@
                         "enable_same_site": "true",
                         "file_system_api_supported": "true",
                         "foreground_cache_size": "2",
-                        "geolocation_supported": "true",
                         "max_buffered_bytes": "100000",
                         "max_buffered_bytes_per_process": "512000"
                     },
@@ -1275,7 +1274,6 @@
                         "enable_same_site": "false",
                         "file_system_api_supported": "true",
                         "foreground_cache_size": "2",
-                        "geolocation_supported": "true",
                         "max_buffered_bytes": "100000",
                         "max_buffered_bytes_per_process": "512000"
                     },
@@ -5284,21 +5282,6 @@
             ]
         }
     ],
-    "NotificationsViaHelperApp": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NotificationsViaHelperApp"
-                    ]
-                }
-            ]
-        }
-    ],
     "NtpWebUIDesktop": [
         {
             "platforms": [
@@ -8364,6 +8347,27 @@
                     "name": "PreseedDisabled",
                     "disable_features": [
                         "PreloadMediaEngagementData"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UpdateHistoryEntryPointsInIncognito": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UpdateHistoryEntryPointsInIncognito"
                     ]
                 }
             ]

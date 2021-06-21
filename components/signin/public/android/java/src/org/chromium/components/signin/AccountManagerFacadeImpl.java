@@ -9,7 +9,6 @@ import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.SystemClock;
 import android.text.TextUtils;
 
 import androidx.annotation.MainThread;
@@ -27,6 +26,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.components.signin.AccountManagerDelegate.CapabilityResponse;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -69,7 +68,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     private final AtomicReference<List<PatternMatcher>> mAccountRestrictionPatterns =
             new AtomicReference<>();
     private final AtomicReference<List<Account>> mFilteredAccounts = new AtomicReference<>();
-    private final CountDownLatch mPopulateAccountCacheLatch = new CountDownLatch(1);
 
     private int mUpdateTasksCounter;
     private final Queue<Callback<List<Account>>> mCallbacksWaitingForAccountsFetch =
@@ -125,29 +123,8 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         return mAccountsPromise;
     }
 
-    @Override
-    public List<Account> tryGetGoogleAccounts() {
-        List<Account> maybeAccounts = mFilteredAccounts.get();
-        if (maybeAccounts == null) {
-            try {
-                // First call to update hasn't finished executing yet, should wait for it
-                long now = SystemClock.elapsedRealtime();
-                mPopulateAccountCacheLatch.await();
-                maybeAccounts = mFilteredAccounts.get();
-                if (ThreadUtils.runningOnUiThread()) {
-                    RecordHistogram.recordTimesHistogram(
-                            "Signin.AndroidPopulateAccountCacheWaitingTime",
-                            SystemClock.elapsedRealtime() - now);
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Interrupted waiting for accounts", e);
-            }
-        }
-        return maybeAccounts;
-    }
-
     /**
-     * Asynchronous version of {@link #tryGetGoogleAccounts()}.
+     * This method is deprecated, use {@link #getAccounts()} instead.
      */
     @Override
     public void tryGetGoogleAccounts(Callback<List<Account>> callback) {
@@ -274,12 +251,13 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
 
     private void updateCanOfferExtendedSyncPromos(List<Account> accounts) {
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
-            final Map<String, Boolean> subjectToMinorModeRestrictions = new HashMap<>();
+            final Map<String, Boolean> canOfferExtendedSyncPromos = new HashMap<>();
             for (Account account : accounts) {
-                subjectToMinorModeRestrictions.put(AccountUtils.canonicalizeName(account.name),
-                        mDelegate.hasCapability(account, CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS));
+                canOfferExtendedSyncPromos.put(AccountUtils.canonicalizeName(account.name),
+                        mDelegate.hasCapability(account, CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS)
+                                != CapabilityResponse.NO);
             }
-            mCanOfferExtendedSyncPromos.set(subjectToMinorModeRestrictions);
+            mCanOfferExtendedSyncPromos.set(canOfferExtendedSyncPromos);
         });
     }
 
@@ -364,9 +342,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
                     mAccountRestrictionPatternReceiver.getRestrictionPatterns());
             mAllAccounts.set(getAllAccounts());
             mFilteredAccounts.set(getFilteredAccounts());
-            // It's important that countDown() is called on background thread and not in
-            // onPostExecute, as UI thread may be blocked in getGoogleAccounts waiting on the latch.
-            mPopulateAccountCacheLatch.countDown();
             return null;
         }
 

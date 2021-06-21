@@ -415,10 +415,6 @@
       status: "stable"
     },
     {
-      name: "CompositeSVG",
-      status: "stable"
-    },
-    {
       name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
@@ -1206,6 +1202,7 @@
     {
       name: "LayoutNGTextCombine",
       depends_on: ["LayoutNG"],
+      status: "stable"
     },
     {
       name: "LayoutNGTextControl",

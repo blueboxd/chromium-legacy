@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '893c99ae7113258b38743f1b7dbb3f01069df13e',
+  'catapult_revision': 'cb6392253359e28368d5389a251a5c9a06a58aa0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1444,7 +1444,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'h_kO6UaQmxXGNfG0ofG4wgKw_URVHcderPkx6AlamR0C'
+              'version': 'PN9-ZWJ3VamzkSeIVWLhS3mXDEVLPX86Ht5EEDH1O-EC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e64cf7cc6e201e07bc8d7d0a4559f706c04aa8df',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8e7aa7f9984fd8c96407817ef5b0854c641e699a',
     'condition': 'checkout_src_internal',
   },
 
@@ -1678,7 +1678,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'ztvUD6umBk8gRHekzAmg7aM1vFffhMyJB0IC61HzRccC',
+        'version': '8fRRUl4HOx6wZpFxmMhoNy2o81bGeCW9S9CEhft665AC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

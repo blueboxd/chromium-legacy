@@ -217,7 +217,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '0ba3bbf77893eacd1caa3f7bc471ee7ef68b83af',
+  'skia_revision': '5946589e581eaab90fc837d51d9fea5b43e6eba1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -296,7 +296,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '27021f3bf13dadfac34c270da3f825d3cd80240a',
+  'devtools_frontend_revision': '4b99b80a8012cad735c0cebaabd34af255f4a48f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -733,7 +733,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'i46IrOomnNRaz8FolQdCdE2x-dNjm9ee3wrj1Sid6rQC',
+          'version': 'skALJWNWSXutIYzX201AvuW38FtqD9ELAlDu8kJPyp8C',
       },
     ],
     'condition': 'checkout_android',
@@ -949,7 +949,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd6991c58d5622709945ac3ec02019d4b8f9843e6',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd07b854a60b0ad1f6a67fe8f61f3e319e4534b90',
       'condition': 'checkout_chromeos',
   },
 
@@ -1009,7 +1009,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
 
   'src/third_party/flatbuffers/src':
-    Var('chromium_git') + '/external/github.com/google/flatbuffers.git' + '@' + '6df40a2471737b27271bdd9b900ab5f3aec746c7',
+    Var('chromium_git') + '/external/github.com/google/flatbuffers.git' + '@' + 'acce4ac3f058e6e03997b53d743e966e53a8efee',
 
   # Used for embedded builds. CrOS & Linux use the system version.
   'src/third_party/fontconfig/src': {

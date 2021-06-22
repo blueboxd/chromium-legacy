@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {EntryLocation} from '../../externs/entry_location.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
+// #import {EntryLocation} from '../../externs/entry_location.js';
+// #import {VolumeInfo} from '../../externs/volume_info.js';
 // #import {List} from 'chrome://resources/js/cr/ui/list.m.js';
-// #import {FilesAppDirEntry, FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
+// #import {FilesAppDirEntry, FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 // #import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.js';
 // #import {DirectoryModel} from './directory_model.m.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
-// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
+// #import {MetadataModel} from './metadata/metadata_model.js';
+// #import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.js';
 // #import {ListContainer} from './ui/list_container.js';
 // #import {DropEffectAndLabel, DropEffectType} from './drop_effect_and_label.m.js';
 // #import {FileSelectionHandler} from './file_selection.m.js';
@@ -22,7 +22,7 @@
 // #import {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
 // #import {TreeItem} from 'chrome://resources/js/cr/ui/tree.js';
 // #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
-// #import {FileType} from '../../common/js/file_type.m.js';
+// #import {FileType} from '../../common/js/file_type.js';
 // #import {util, strf} from '../../common/js/util.m.js';
 // #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 // clang-format on

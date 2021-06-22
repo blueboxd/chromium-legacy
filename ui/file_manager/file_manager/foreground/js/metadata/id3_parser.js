@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MetadataParserLogger} from '../../../externs/metadata_worker_window.m.js';
+import {MetadataParserLogger} from '../../../externs/metadata_worker_window.js';
 
-import {ByteReader} from './byte_reader.m.js';
+import {ByteReader} from './byte_reader.js';
 import {FunctionParallel} from './function_parallel.js';
 import {FunctionSequence} from './function_sequence.js';
-import {MetadataParser} from './metadata_parser.m.js';
+import {MetadataParser} from './metadata_parser.js';
 
 
 /**

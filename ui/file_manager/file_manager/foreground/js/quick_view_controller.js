@@ -4,23 +4,23 @@
 
 // clang-format off
 // #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {MetadataItem} from './metadata/metadata_item.m.js';
+// #import {MetadataItem} from './metadata/metadata_item.js';
 // #import {FileTasks} from './file_tasks.m.js';
 // #import {FilesQuickView} from '../elements/files_quick_view.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.js';
 // #import {MetadataBoxController} from './metadata_box_controller.m.js';
 // #import {FileListSelectionModel} from './ui/file_list_selection_model.js';
 // #import {TaskController} from './task_controller.m.js';
 // #import {QuickViewModel} from './quick_view_model.m.js';
 // #import {MultiMenuButton} from './ui/multi_menu_button.js';
 // #import {ListContainer} from './ui/list_container.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.m.js';
+// #import {MetadataModel} from './metadata/metadata_model.js';
+// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 // #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
 // #import {ThumbnailLoader} from './thumbnail_loader.m.js';
 // #import {ImageLoaderClient} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/image_loader_client.js';
 // #import {LoadImageResponseStatus, LoadImageRequest} from 'chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/load_image_request.js';
-// #import {FileType} from '../../common/js/file_type.m.js';
+// #import {FileType} from '../../common/js/file_type.js';
 // #import {CommandHandler} from './file_manager_commands.m.js';
 // #import {FilesConfirmDialog} from './ui/files_confirm_dialog.js';
 // #import {constants} from './constants.m.js';

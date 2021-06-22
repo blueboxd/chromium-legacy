@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ExifEntry} from '../../../externs/exif_entry.m.js';
-import {MetadataParserLogger} from '../../../externs/metadata_worker_window.m.js';
+import {ExifEntry} from '../../../externs/exif_entry.js';
+import {MetadataParserLogger} from '../../../externs/metadata_worker_window.js';
 
-import {ByteReader} from './byte_reader.m.js';
+import {ByteReader} from './byte_reader.js';
 import {Exif} from './exif_constants.js';
-import {ImageParser} from './metadata_parser.m.js';
+import {ImageParser} from './metadata_parser.js';
 
 
 /** @final */

@@ -4,8 +4,8 @@
 
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 
-import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.m.js';
-import {DriveDialogControllerInterface} from '../../externs/drive_dialog_controller.m.js';
+import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.js';
+import {DriveDialogControllerInterface} from '../../externs/drive_dialog_controller.js';
 
 
 /**

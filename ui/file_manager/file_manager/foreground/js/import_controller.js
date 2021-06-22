@@ -8,13 +8,13 @@
  */
 
 // clang-format off
-// #import {importer} from '../../common/js/importer_common.m.js';
-// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {mediaImportInterfaces} from '../../externs/background/media_import_handler.m.js';
-// #import {mediaScannerInterfaces} from '../../externs/background/media_scanner.m.js';
+// #import {importer} from '../../common/js/importer_common.js';
+// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
+// #import {VolumeInfo} from '../../externs/volume_info.js';
+// #import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+// #import {VolumeManager} from '../../externs/volume_manager.js';
+// #import {mediaImportInterfaces} from '../../externs/background/media_import_handler.js';
+// #import {mediaScannerInterfaces} from '../../externs/background/media_scanner.js';
 // #import {FileSelectionHandler} from './file_selection.m.js';
 // #import {util, strf, str} from '../../common/js/util.m.js';
 // #import {queryRequiredElement, getRequiredElement} from 'chrome://resources/js/util.m.js';

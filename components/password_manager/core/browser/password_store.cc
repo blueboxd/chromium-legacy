@@ -247,16 +247,20 @@ void PasswordStore::GetLogins(const PasswordFormDigest& form,
       new GetLoginsWithAffiliationsRequestHandler(consumer->GetWeakPtr(), this);
 
   if (affiliated_match_helper_) {
+    // The backend *is* the password_store and can therefore be passed with
+    // base::Unretained.
     affiliated_match_helper_->GetAffiliatedAndroidAndWebRealms(
         form,
         base::BindOnce(ConvertToForms)
-            .Then(base::BindOnce(&PasswordStore::FillMatchingLoginsAsync, this,
+            .Then(base::BindOnce(&PasswordStoreBackend::FillMatchingLoginsAsync,
+                                 base::Unretained(backend_),
                                  request_handler->AffiliatedLoginsClosure())));
   } else {
     request_handler->AffiliatedLoginsClosure().Run({});
   }
 
-  FillMatchingLoginsAsync(request_handler->LoginsForFormClosure(), {form});
+  backend_->FillMatchingLoginsAsync(request_handler->LoginsForFormClosure(),
+                                    {form});
 }
 
 void PasswordStore::GetLoginsByPassword(
@@ -697,7 +701,7 @@ void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   if (!changes.empty()) {
-    observers_->Notify(FROM_HERE, &Observer::OnLoginsChangedIn,
+    observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged,
                        base::RetainedRef(this), changes);
     if (sync_bridge_)
       sync_bridge_->ActOnPasswordStoreChanges(changes);

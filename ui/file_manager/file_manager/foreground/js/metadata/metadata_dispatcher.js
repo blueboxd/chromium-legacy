@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MetadataParserLogger} from '../../../externs/metadata_worker_window.m.js';
+import {MetadataParserLogger} from '../../../externs/metadata_worker_window.js';
 
 import {ExifParser} from './exif_parser.js';
 import {Id3Parser} from './id3_parser.js';
 import {BmpParser, GifParser, IcoParser, PngParser, WebpParser} from './image_parsers.js';
-import {MetadataParser} from './metadata_parser.m.js';
-import {MpegParser} from './mpeg_parser.m.js';
+import {MetadataParser} from './metadata_parser.js';
+import {MpegParser} from './mpeg_parser.js';
 
 // All of these scripts could be imported with a single call to importScripts,
 // but then load and compile time errors would all be reported from the same

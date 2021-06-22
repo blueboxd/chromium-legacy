@@ -46,7 +46,7 @@ import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChildAccountStatus;
-import org.chromium.components.signin.identitymanager.AccountInfoServiceImpl;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -68,15 +68,16 @@ import java.util.List;
  */
 public abstract class SyncConsentFragmentBase
         extends Fragment implements AccountPickerCoordinator.Listener, AccountsChangeObserver {
-    private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
+    private static final String ARGUMENT_ACCESS_POINT = "SyncConsentFragmentBase.AccessPoint";
 
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
-    private static final String ARGUMENT_ACCOUNT_NAME = "SigninFragmentBase.AccountName";
+    private static final String ARGUMENT_ACCOUNT_NAME = "SyncConsentFragmentBase.AccountName";
     private static final String ARGUMENT_CHILD_ACCOUNT_STATUS =
-            "SigninFragmentBase.ChildAccountStatus";
-    private static final String ARGUMENT_SIGNIN_FLOW_TYPE = "SigninFragmentBase.SigninFlowType";
+            "SyncConsentFragmentBase.ChildAccountStatus";
+    private static final String ARGUMENT_SIGNIN_FLOW_TYPE =
+            "SyncConsentFragmentBase.SigninFlowType";
 
     private static final int ADD_ACCOUNT_REQUEST_CODE = 1;
 
@@ -415,7 +416,7 @@ public abstract class SyncConsentFragmentBase
     }
 
     private void seedAccountsAndSignin(boolean settingsClicked, View confirmationView) {
-        AccountInfoServiceImpl.get()
+        AccountInfoServiceProvider.get()
                 .getAccountInfoByEmail(mSelectedAccountName)
                 .then(accountInfo -> {
                     assert accountInfo != null : "The seeded CoreAccountInfo shouldn't be null";

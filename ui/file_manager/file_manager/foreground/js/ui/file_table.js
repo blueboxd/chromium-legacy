@@ -8,17 +8,17 @@ import {List} from 'chrome://resources/js/cr/ui/list.m.js';
 import {ListItem} from 'chrome://resources/js/cr/ui/list_item.m.js';
 import {ListSelectionModel} from 'chrome://resources/js/cr/ui/list_selection_model.m.js';
 
-import {AsyncUtil} from '../../../common/js/async_util.m.js';
-import {FileType} from '../../../common/js/file_type.m.js';
-import {importer} from '../../../common/js/importer_common.m.js';
+import {AsyncUtil} from '../../../common/js/async_util.js';
+import {FileType} from '../../../common/js/file_type.js';
+import {importer} from '../../../common/js/importer_common.js';
 import {str, strf, util} from '../../../common/js/util.m.js';
-import {importerHistoryInterfaces} from '../../../externs/background/import_history.m.js';
-import {EntryLocation} from '../../../externs/entry_location.m.js';
-import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.m.js';
-import {VolumeManager} from '../../../externs/volume_manager.m.js';
+import {importerHistoryInterfaces} from '../../../externs/background/import_history.js';
+import {EntryLocation} from '../../../externs/entry_location.js';
+import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
+import {VolumeManager} from '../../../externs/volume_manager.js';
 import {FileListModel} from '../file_list_model.m.js';
 import {ListThumbnailLoader} from '../list_thumbnail_loader.m.js';
-import {MetadataModel} from '../metadata/metadata_model.m.js';
+import {MetadataModel} from '../metadata/metadata_model.js';
 
 import {A11yAnnounce} from './a11y_announce.js';
 import {DragSelector} from './drag_selector.js';

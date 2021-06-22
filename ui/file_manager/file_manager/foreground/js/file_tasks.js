@@ -5,15 +5,15 @@
 // clang-format off
 // #import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
 // #import {MultiMenuButton} from './ui/multi_menu_button.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-// #import {Crostini} from '../../externs/background/crostini.m.js';
+// #import {VolumeInfo} from '../../externs/volume_info.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.js';
+// #import {Crostini} from '../../externs/background/crostini.js';
 // #import {NamingController} from './naming_controller.m.js';
 // #import {TaskHistory} from './task_history.m.js';
 // #import {FileManagerUI} from './ui/file_manager_ui.js';
 // #import {DirectoryModel} from './directory_model.m.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
+// #import {MetadataModel} from './metadata/metadata_model.js';
+// #import {VolumeManager} from '../../externs/volume_manager.js';
 // #import {FilesMenuItem} from './ui/files_menu.js';
 // #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
 // #import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
@@ -21,10 +21,10 @@
 // #import {FileTransferController} from './file_transfer_controller.m.js';
 // #import {FilesConfirmDialog} from './ui/files_confirm_dialog.js';
 // #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-// #import {FileType} from '../../common/js/file_type.m.js';
+// #import {FileType} from '../../common/js/file_type.js';
 // #import {constants} from './constants.m.js';
 // #import {util, strf, str} from '../../common/js/util.m.js';
-// #import {AsyncUtil} from '../../common/js/async_util.m.js'
+// #import {AsyncUtil} from '../../common/js/async_util.js'
 // #import {metrics} from '../../common/js/metrics.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';

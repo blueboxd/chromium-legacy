@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
+// #import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {util} from '../../common/js/util.m.js';
-// #import {AsyncUtil} from '../../common/js/async_util.m.js';
+// #import {AsyncUtil} from '../../common/js/async_util.js';
 // #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 // clang-format on
 

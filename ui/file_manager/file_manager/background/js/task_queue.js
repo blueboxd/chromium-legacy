@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {importer} from '../../common/js/importer_common.m.js';
-import {taskQueueInterfaces} from '../../externs/background/task_queue.m.js';
+import {importer} from '../../common/js/importer_common.js';
+import {taskQueueInterfaces} from '../../externs/background/task_queue.js';
 
 // Namespace
 const taskQueue = {};

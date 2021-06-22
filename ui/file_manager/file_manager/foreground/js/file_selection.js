@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
+// #import {MetadataModel} from './metadata/metadata_model.js';
 // #import {ListContainer} from './ui/list_container.js';
-// #import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
+// #import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 // #import {DirectoryModel} from './directory_model.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.js';
 // #import {AllowedPaths} from '../../common/js/volume_manager_types.m.js';
 // #import {util} from '../../common/js/util.m.js';
 // #import {constants} from './constants.m.js';
-// #import {FileType} from '../../common/js/file_type.m.js';
+// #import {FileType} from '../../common/js/file_type.js';
 // #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 // #import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';

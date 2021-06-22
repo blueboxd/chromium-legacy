@@ -51,6 +51,37 @@ constexpr int kPreferredHeight = 40;
 constexpr int kPreferredWidth = 160;
 constexpr int kSecondaryActionIconSize = 16;
 
+// ObservableRoundedImageView --------------------------------------------------
+
+class ObservableRoundedImageView : public RoundedImageView {
+ public:
+  ObservableRoundedImageView() = default;
+  ObservableRoundedImageView(const ObservableRoundedImageView&) = delete;
+  ObservableRoundedImageView& operator=(const ObservableRoundedImageView&) =
+      delete;
+  ~ObservableRoundedImageView() override = default;
+
+  using BoundsChangedCallback = base::RepeatingCallback<void()>;
+  void SetBoundsChangedCallback(BoundsChangedCallback bounds_changed_callback) {
+    bounds_changed_callback_ = std::move(bounds_changed_callback);
+  }
+
+ private:
+  // RoundedImageView:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    RoundedImageView::OnBoundsChanged(previous_bounds);
+    if (!bounds_changed_callback_.is_null())
+      bounds_changed_callback_.Run();
+  }
+
+  BoundsChangedCallback bounds_changed_callback_;
+};
+
+BEGIN_VIEW_BUILDER(/*no export*/, ObservableRoundedImageView, RoundedImageView)
+VIEW_BUILDER_PROPERTY(ObservableRoundedImageView::BoundsChangedCallback,
+                      BoundsChangedCallback)
+END_VIEW_BUILDER
+
 // PaintCallbackLabel ----------------------------------------------------------
 
 class PaintCallbackLabel : public views::Label {
@@ -91,7 +122,8 @@ class ProgressRingView : public views::View {
   // NOTE: This method should be invoked only once.
   void SetHoldingSpaceItem(const HoldingSpaceItem* item) {
     DCHECK(!progress_ring_);
-    progress_ring_ = std::make_unique<HoldingSpaceProgressRing>(item);
+    progress_ring_ = std::make_unique<HoldingSpaceProgressRing>(
+        item, /*use_light_mode_as_default=*/false);
 
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -121,6 +153,7 @@ END_VIEW_BUILDER
 }  // namespace
 }  // namespace ash
 
+DEFINE_VIEW_BUILDER(/*no export*/, ash::ObservableRoundedImageView)
 DEFINE_VIEW_BUILDER(/*no export*/, ash::PaintCallbackLabel)
 DEFINE_VIEW_BUILDER(/*no export*/, ash::ProgressRingView)
 
@@ -205,10 +238,15 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
               views::Builder<ProgressRingView>()
                   .SetHoldingSpaceItem(item)
                   .SetUseDefaultFillLayout(true))
-              .AddChild(views::Builder<RoundedImageView>()
-                            .CopyAddressTo(&image_)
-                            .SetID(kHoldingSpaceItemImageId)
-                            .SetCornerRadius(kHoldingSpaceChipIconSize / 2))
+              .AddChild(
+                  HoldingSpaceViewBuilder<RoundedImageView>(
+                      views::Builder<ObservableRoundedImageView>()
+                          .SetCornerRadius(kHoldingSpaceChipIconSize / 2)
+                          .SetBoundsChangedCallback(base::BindRepeating(
+                              &HoldingSpaceItemChipView::UpdateImageTransform,
+                              base::Unretained(this))))
+                      .CopyAddressTo(&image_)
+                      .SetID(kHoldingSpaceItemImageId))
               .AddChild(CreateCheckmark())
               .AddChild(
                   HoldingSpaceViewBuilder<views::View>(
@@ -381,6 +419,10 @@ void HoldingSpaceItemChipView::UpdateImage() {
   SchedulePaint();
 
   // Transform.
+  UpdateImageTransform();
+}
+
+void HoldingSpaceItemChipView::UpdateImageTransform() {
   gfx::Transform transform;
   if (item()->IsInProgress() && !image_->bounds().IsEmpty()) {
     transform = gfx::GetScaleTransform(image_->bounds().CenterPoint(),

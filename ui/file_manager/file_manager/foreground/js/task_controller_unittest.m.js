@@ -14,14 +14,14 @@ import {MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.m.js';
 import {reportPromise} from '../../common/js/test_error_reporting.m.js';
 import {util} from '../../common/js/util.m.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-import {VolumeManager} from '../../externs/volume_manager.m.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {DialogType} from './dialog_type.m.js';
 import {DirectoryModel} from './directory_model.m.js';
 import {FakeFileSelectionHandler} from './fake_file_selection_handler.m.js';
 import {FileSelectionHandler} from './file_selection.m.js';
-import {MockMetadataModel} from './metadata/mock_metadata.m.js';
+import {MockMetadataModel} from './metadata/mock_metadata.js';
 import {MetadataUpdateController} from './metadata_update_controller.m.js';
 import {NamingController} from './naming_controller.m.js';
 import {TaskController} from './task_controller.m.js';

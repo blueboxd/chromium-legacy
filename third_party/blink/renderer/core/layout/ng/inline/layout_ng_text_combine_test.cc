@@ -1004,6 +1004,56 @@ LayoutNGBlockFlow DIV id="root" style="writing-mode: vertical-rl"
             ToSimpleLayoutTree(root_layout_object));
 }
 
+// http://crbug.com/1222121
+TEST_F(LayoutNGTextCombineTest, VerticalWritingModeByBR) {
+  InsertStyleElement(
+      "#sample {  text-combine-upright: all; writing-mode: vertical-rl; }");
+  SetBodyInnerHTML("<br id=sample>");
+  const auto& root_layout_object =
+      *To<LayoutNGBlockFlow>(GetDocument().body()->GetLayoutObject());
+
+  EXPECT_EQ(R"DUMP(
+LayoutNGBlockFlow BODY
+  +--LayoutBR BR id="sample"
+)DUMP",
+            ToSimpleLayoutTree(root_layout_object));
+}
+
+// http://crbug.com/1222121
+TEST_F(LayoutNGTextCombineTest, VerticalWritingModeByWBR) {
+  InsertStyleElement(
+      "#sample {  text-combine-upright: all; writing-mode: vertical-rl; }");
+  SetBodyInnerHTML("<wbr id=sample>");
+  const auto& root_layout_object =
+      *To<LayoutNGBlockFlow>(GetDocument().body()->GetLayoutObject());
+
+  EXPECT_EQ(R"DUMP(
+LayoutNGBlockFlow BODY
+  +--LayoutWordBreak WBR id="sample"
+)DUMP",
+            ToSimpleLayoutTree(root_layout_object));
+}
+
+// http://crbug.com/1222069
+TEST_F(LayoutNGTextCombineTest, WithBidiControl) {
+  InsertStyleElement(
+      "c { text-combine-upright: all; -webkit-rtl-ordering: visual; }"
+      "div { writing-mode: vertical-rl; }");
+  SetBodyInnerHTML("<div id=root>ab<c id=combine>XY</c>de</div>");
+  const auto& root_layout_object =
+      *To<LayoutNGBlockFlow>(GetElementById("root")->GetLayoutObject());
+
+  EXPECT_EQ(R"DUMP(
+LayoutNGBlockFlow DIV id="root"
+  +--LayoutText #text "ab"
+  +--LayoutInline C id="combine"
+  |  +--LayoutNGTextCombine (anonymous)
+  |  |  +--LayoutText #text "XY"
+  +--LayoutText #text "de"
+)DUMP",
+            ToSimpleLayoutTree(root_layout_object));
+}
+
 TEST_F(LayoutNGTextCombineTest, WithBR) {
   InsertStyleElement(
       "c { text-combine-upright: all; }"

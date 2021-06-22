@@ -9,13 +9,13 @@ import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.j
 import {MockDirectoryEntry, MockEntry, MockFileSystem} from '../../common/js/mock_entry.m.js';
 import {reportPromise, waitUntil} from '../../common/js/test_error_reporting.m.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {VolumeManager} from '../../externs/volume_manager.m.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {DirectoryModel} from './directory_model.m.js';
 import {FileListModel} from './file_list_model.m.js';
 import {ListThumbnailLoader} from './list_thumbnail_loader.m.js';
-import {MetadataModel} from './metadata/metadata_model.m.js';
-import {ThumbnailModel} from './metadata/thumbnail_model.m.js';
+import {MetadataModel} from './metadata/metadata_model.js';
+import {ThumbnailModel} from './metadata/thumbnail_model.js';
 import {MockThumbnailLoader} from './mock_thumbnail_loader.m.js';
 
 /** @type {string} */

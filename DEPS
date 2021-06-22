@@ -217,11 +217,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6b95a366f5ce2fc4461ff0e0ed31ce15a2e73bea',
+  'skia_revision': '0ba3bbf77893eacd1caa3f7bc471ee7ef68b83af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'df86229dfa7af9f7bb9187de8351aa71c8d80d6f',
+  'v8_revision': 'eedca1ee97318e00a293a94d2717cba5f7490d48',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -229,7 +229,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f89f244d52599a6e1deaf986fda73f2174707bcf',
+  'angle_revision': '24155b13671f09fe66ab8ebc5944b1c19a34549c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -252,7 +252,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': '7153098229e88295f9655ff1d3b0e2fa9eada5f8',
+  'googletest_revision': '355d57d90d9744c41ac7c99f1e960778f1c63040',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -288,7 +288,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '2ba6b1f79b19bd36622ee12b93a142d2d59f74ba',
+  'catapult_revision': 'ada99637c0f077259a054cb85f558f6cc001f59b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -296,7 +296,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'db358a8586566cb651b5a27b416b53bc67331c5e',
+  'devtools_frontend_revision': '27021f3bf13dadfac34c270da3f825d3cd80240a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -400,7 +400,7 @@ vars = {
 
   # If you change this, also update the libc++ revision in
   # //buildtools/deps_revisions.gni.
-  'libcxx_revision':       '79a2e924d96e2fc1e4b937c42efd08898fa472d7',
+  'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
 
   # GN CIPD package version.
   'gn_version': 'git_revision:e9b8433248ae2c117644b4e40b33203e7d3da192',
@@ -646,7 +646,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': '-n2D54pE8W8AghyiPaUCUYzCm4MKVQq8w_BjaZjG0wQC',
+          'version': 'K0eYZEjn03NtddMM3Zj2YkEighAC64eeVY7GOcPkcLAC',
         },
       ],
       'dep_type': 'cipd',
@@ -657,7 +657,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'a-t68RRUgXC0Erd4qoMxr_HF5ArRaw3gBGbXW7T87vMC',
+          'version': 'F2mczBjtqH2z6unnmpvadDZqfZcJGAFaNzzKL4jVuV4C',
         },
       ],
       'dep_type': 'cipd',
@@ -668,7 +668,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'XvL0HkzpBl6A6hhNd_2z94t6Uw4HtHuCC1w-i3Cu_wkC',
+          'version': 'ceoqTuWOs56A5YR9W9X5adGuer7DZGh_Jz5oyGHawDgC',
         },
       ],
       'dep_type': 'cipd',
@@ -733,7 +733,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'FnDKadgYp638UGePj002LirtUtqpH-RbM9ssQl3tm7QC',
+          'version': 'i46IrOomnNRaz8FolQdCdE2x-dNjm9ee3wrj1Sid6rQC',
       },
     ],
     'condition': 'checkout_android',
@@ -1355,7 +1355,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a9b6777579101d8c2dcf9852c55e94b186cacfa1',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '008f520b2e34c801ccbf91986161d6b9eb0f49fa',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1444,7 +1444,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'KN9a-2MYhLQ9kDLdCOca4xZcBjrhMIzoD4ReyO0u95IC'
+              'version': '-uoXWz8JtiKm7na7iGoe663PodN-2p_WwnMdVnP7k4UC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1648,7 +1648,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@418e8cd782e79ff48bb5e36efd7956f5bf869a25',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@273d3255aa2f554b88dcd070dcac21e3c439eb57',
     'condition': 'checkout_src_internal',
   },
 
@@ -3808,16 +3808,6 @@ hooks = [
     'condition': 'checkout_clang_tidy',
     'action': ['python3', 'src/tools/clang/scripts/update.py',
                '--package=clang-tidy'],
-  },
-  {
-    # Mac doesn't use lld so it's not included in the default clang bundle
-    # there.  lld is however needed in win and Fuchsia cross builds, so
-    # download it there. Should run after the clang hook.
-    'name': 'lld/mac',
-    'pattern': '.',
-    'condition': 'host_os == "mac" and (checkout_win or checkout_fuchsia)',
-    'action': ['python3', 'src/tools/clang/scripts/update.py',
-               '--package=lld_mac'],
   },
   {
     # Should run after the clang hook.

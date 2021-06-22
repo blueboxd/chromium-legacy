@@ -292,7 +292,10 @@ group("gn_all") {
   }
 
   if (enable_pdf) {
-    deps += [ "//third_party/pdfium/samples:pdfium_test" ]
+    deps += [
+      "//pdf/pdfium/fuzzers",
+      "//third_party/pdfium/samples:pdfium_test",
+    ]
   }
 
   if (enable_remoting) {
@@ -1208,6 +1211,7 @@ if (!is_ios) {
   _common_web_test_args += [
     "--seed",
     "4",
+    "--debug-rwt-logging",
     "--no-show-results",
     "--zero-tests-executed-ok",
     "--clobber-old-results",

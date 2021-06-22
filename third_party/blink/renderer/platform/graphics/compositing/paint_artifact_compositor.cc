@@ -481,40 +481,6 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
   DCHECK(!graphics_layer->ShouldCreateLayersAfterPaint());
 }
 
-FloatRect PaintArtifactCompositor::PendingLayer::UniteRectsKnownToBeOpaque(
-    const FloatRect& a,
-    const FloatRect& b) {
-  // Check a or b by itself.
-  FloatRect maximum(a);
-  float maximum_area = a.Size().Area();
-  if (b.Size().Area() > maximum_area) {
-    maximum = b;
-    maximum_area = b.Size().Area();
-  }
-  // Check the regions that include the intersection of a and b. This can be
-  // done by taking the intersection and expanding it vertically and
-  // horizontally. These expanded intersections will both still be fully opaque.
-  FloatRect intersection = a;
-  intersection.InclusiveIntersect(b);
-  if (!intersection.IsZero()) {
-    FloatRect vert_expanded_intersection(intersection);
-    vert_expanded_intersection.ShiftYEdgeTo(std::min(a.Y(), b.Y()));
-    vert_expanded_intersection.ShiftMaxYEdgeTo(std::max(a.MaxY(), b.MaxY()));
-    if (vert_expanded_intersection.Size().Area() > maximum_area) {
-      maximum = vert_expanded_intersection;
-      maximum_area = vert_expanded_intersection.Size().Area();
-    }
-    FloatRect horiz_expanded_intersection(intersection);
-    horiz_expanded_intersection.ShiftXEdgeTo(std::min(a.X(), b.X()));
-    horiz_expanded_intersection.ShiftMaxXEdgeTo(std::max(a.MaxX(), b.MaxX()));
-    if (horiz_expanded_intersection.Size().Area() > maximum_area) {
-      maximum = horiz_expanded_intersection;
-      maximum_area = horiz_expanded_intersection.Size().Area();
-    }
-  }
-  return maximum;
-}
-
 FloatRect PaintArtifactCompositor::PendingLayer::MapRectKnownToBeOpaque(
     const PropertyTreeState& new_state) const {
   if (rect_known_to_be_opaque.IsEmpty())
@@ -568,8 +534,8 @@ bool PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
 
   chunks.Merge(guest.chunks);
   rect_known_to_be_opaque =
-      UniteRectsKnownToBeOpaque(MapRectKnownToBeOpaque(new_state),
-                                guest.MapRectKnownToBeOpaque(new_state));
+      MaximumCoveredRect(MapRectKnownToBeOpaque(new_state),
+                         guest.MapRectKnownToBeOpaque(new_state));
   text_known_to_be_on_opaque_background &=
       (guest.text_known_to_be_on_opaque_background ||
        rect_known_to_be_opaque.Contains(guest_bounds));
@@ -717,10 +683,17 @@ bool PaintArtifactCompositor::PendingLayer::CanMerge(
 
   FloatRect merged_bounds =
       UnionRect(new_home_bounds.Rect(), new_guest_bounds.Rect());
-  float sum_area = new_home_bounds.Rect().Size().Area() +
-                   new_guest_bounds.Rect().Size().Area();
-  if (merged_bounds.Size().Area() > kMergeSparsityTolerance * sum_area)
-    return false;
+  // Don't check for sparcity if we may further decomposite the effect, so that
+  // the merged layer may be merged to other layers with the decomposited
+  // effect, which is often better than not merging even if the merged layer is
+  // sparse because we may create less composited effects and render surfaces.
+  if (guest_state.Effect().IsRoot() ||
+      guest_state.Effect().HasDirectCompositingReasons()) {
+    float sum_area = new_home_bounds.Rect().Size().Area() +
+                     new_guest_bounds.Rect().Size().Area();
+    if (merged_bounds.Size().Area() > kMergeSparsityTolerance * sum_area)
+      return false;
+  }
 
   if (out_merged_state)
     *out_merged_state = *merged_state;

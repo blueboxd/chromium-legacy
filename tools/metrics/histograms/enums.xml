@@ -33146,6 +33146,8 @@ Called by update_permissions_policy_enum.py.-->
   <int value="14" label="Tab Search"/>
   <int value="15" label="Camera App"/>
   <int value="16" label="Capture Mode"/>
+  <int value="17" label="Chrome Labs"/>
+  <int value="18" label="Bento Bar"/>
 </enum>
 
 <enum name="FeedControlsActions">
@@ -39083,6 +39085,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.NotCellular"/>
   <int value="-1952208361"
       label="Autofill.FieldPredictionQuality.ByFieldType.Overall"/>
+  <int value="-1910305783"
+      label="Navigation.StartToCommit.SameProcess.NewNavigation"/>
   <int value="-1777783591"
       label="Autofill.FieldPredictionQuality.ByFieldType.Server.NoSubmission"/>
   <int value="-1724216561"
@@ -39096,6 +39100,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1561887015" label="MediaRouter.Cast.Channel.Error"/>
   <int value="-1459119846"
       label="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
+  <int value="-1433928548" label="WebCore.FindInPage.TaskDuration"/>
   <int value="-1390672863"
       label="DataUse.MessageSize.AllServices.Upstream.Background.NotCellular"/>
   <int value="-1345388508" label="Renderer4.IdealContentsScale"/>
@@ -39103,27 +39108,38 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="DataUse.BackgroundToDataRecievedPerByte.User"/>
   <int value="-1286300074"
       label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
+  <int value="-1277093818"
+      label="Net.URLLoaderThrottleExecutionTime.WillStartRequest"/>
   <int value="-1189959109" label="RendererScheduler.TaskCountPerQueueType"/>
   <int value="-983723378" label="RendererScheduler.TaskDurationPerThreadType"/>
   <int value="-970685679"
       label="Bluetooth.MacOS.Errors.DidDiscoverDescriptors"/>
   <int value="-968816650"
       label="PasswordManager.Android.PasswordExceptionEntry.Website"/>
+  <int value="-919977005" label="DevTools.DeveloperResourceLoaded"/>
+  <int value="-855312845"
+      label="Net.URLLoaderThrottleExecutionTime.WillProcessResponse"/>
   <int value="-847447887"
       label="DataUse.MessageSize.AllServices.Upstream.Foreground.NotCellular"/>
+  <int value="-763978419"
+      label="DocumentEventTiming.BeforeUnloadDialogDuration.ByNavigation"/>
   <int value="-742109866" label="Stability.BrowserExitCodes"/>
   <int value="-657514887" label="DataUse.MessageSize.AllServices"/>
   <int value="-535820174"
       label="DataUse.MessageSize.AllServices.Downstream.Background.NotCellular"/>
   <int value="-453454441" label="Bluetooth.MacOS.Errors.DidWriteValue"/>
+  <int value="-436781330"
+      label="Net.URLLoaderThrottleExecutionTime.BeforeWillProcessResponse"/>
   <int value="-412157817"
       label="Autofill.FieldPredictionQuality.ByFieldType.Server"/>
   <int value="-404962476" label="Blink.ForcedStyleAndLayout.UpdateTime"/>
   <int value="-355731177" label="UMA.SamplingRatePerMille"/>
+  <int value="-343220158" label="Compositing.Renderer.LayersUpdateTime"/>
   <int value="-141990989" label="DataUse.AllServices.Background"/>
   <int value="-132932440" label="DataUse.ContentType.Services"/>
   <int value="-48200749" label="DiskCache.0.TotalIOTime"/>
   <int value="0" label="Missing hash value"/>
+  <int value="19727358" label="DataUse.BytesReceived2.Delegate"/>
   <int value="37726187" label="BlinkGC.CommittedSize"/>
   <int value="61486329" label="RendererScheduler.TaskCountPerFrameType"/>
   <int value="76333534" label="WorkerThread.Task.Time"/>
@@ -39148,15 +39164,22 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="PasswordManager.Android.PasswordCredentialEntry.Website"/>
   <int value="757405826"
       label="DataUse.MessageSize.AllServices.Upstream.Foreground.Cellular"/>
+  <int value="759446272"
+      label="RendererScheduler.QueueingDurationPerQueueType.Input"/>
   <int value="761823979" label="Crashpad.HandlerLifetimeMilestone"/>
   <int value="873338882"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic"/>
+  <int value="1096524200" label="DevTools.IssueCreated"/>
   <int value="1126499749"
       label="Autofill.FieldPredictionQuality.ByFieldType.Overall.NoSubmission"/>
+  <int value="1193017729" label="Compositing.ResourcePoolMemoryUsage.Renderer"/>
   <int value="1225311979" label="Blink.UseCounter.Extensions.Features"/>
   <int value="1264664660" label="DataUse.PageTransition.UserTraffic"/>
+  <int value="1295093746" label="Net.SSL_Connection_Latency_TLS13Experiment"/>
   <int value="1370064090"
       label="DataUse.MessageSize.AllServices.Upstream.Background.Cellular"/>
+  <int value="1386149670" label="Navigation.StartToCommit.NewNavigation"/>
+  <int value="1488162221" label="Blink.UseCounter.File.Features"/>
   <int value="1507345292"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic.BasedOnAutocomplete"/>
   <int value="1514844119" label="DataUse.Sync.Upload.Bytes"/>
@@ -39164,6 +39187,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="PasswordManager.Android.PasswordCredentialEntry.Username"/>
   <int value="1632894016"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic.NoSubmission"/>
+  <int value="1721222685" label="Blink.UseCounter.MainFrame.Features"/>
   <int value="1753226325"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
   <int value="1857977303"
@@ -43705,9 +43729,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="10" label="Change Target Language"/>
   <int value="11" label="Remove language from 'Never Translate' list"/>
   <int value="12" label="Add language to 'Never Translate' list"/>
-  <int value="13" label="Remove language from 'Translate' list"/>
+  <int value="13" label="Remove language from 'Always Translate' list"/>
   <int value="14" label="Add language to 'Always Translate' list"/>
   <int value="15" label="Remove site from 'Never translate sites' list"/>
+</enum>
+
+<enum name="LanguageSettingsAppLanguagePromptAction">
+  <int value="0" label="Dismissed via cancel button"/>
+  <int value="1" label="Dismissed via system back"/>
+  <int value="2" label="Ok button changed language"/>
+  <int value="3" label="Ok button same language"/>
+  <int value="4" label="Other"/>
 </enum>
 
 <enum name="LanguageSettingsPageType">
@@ -46103,6 +46135,7 @@ from previous Chrome versions.
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
   <int value="-1304401930" label="CSSContainerQueries:enabled"/>
+  <int value="-1303417000" label="UseStorkSmdsServerAddress:enabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1301804101"
@@ -46148,6 +46181,7 @@ from previous Chrome versions.
   <int value="-1269084216" label="ash-md"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
+  <int value="-1265627803" label="WebAppEnableManifestId:enabled"/>
   <int value="-1262730949" label="EnableDspHotword:enabled"/>
   <int value="-1262303946" label="SubresourceRedirectPreviews:disabled"/>
   <int value="-1262152606" label="disable-lock-screen-apps"/>
@@ -46972,6 +47006,7 @@ from previous Chrome versions.
       label="OmniboxClobberIsZeroSuggestEntrypoint:enabled"/>
   <int value="-582870536" label="BluetoothNextHandsfreeProfile:enabled"/>
   <int value="-581236612" label="ConnectivityDiagnosticsWebUi:disabled"/>
+  <int value="-580897686" label="SharedHighlightingAmp:enabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
@@ -47028,6 +47063,7 @@ from previous Chrome versions.
   <int value="-528149352" label="WebRtcUseEchoCanceller3:enabled"/>
   <int value="-527990339" label="ForceEnableFaceAe:enabled"/>
   <int value="-526236814" label="WebAssemblyTiering:enabled"/>
+  <int value="-523155003" label="PhoneHubCameraRoll:disabled"/>
   <int value="-523030434" label="EnableBackgroundBlur:enabled"/>
   <int value="-522075903"
       label="OmniboxOnFocusSuggestionsContextualWeb:enabled"/>
@@ -47811,6 +47847,7 @@ from previous Chrome versions.
   <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
   <int value="157318016" label="AutomaticTabDiscarding:enabled"/>
+  <int value="158490417" label="PhoneHubCameraRoll:enabled"/>
   <int value="160506687" label="ArcRtVcpuDualCore:disabled"/>
   <int value="160524775" label="PDFTwoUpView:disabled"/>
   <int value="160838658" label="SmartDimModelV3:enabled"/>
@@ -47990,6 +48027,7 @@ from previous Chrome versions.
       label="enable-experimental-accessibility-language-detection"/>
   <int value="324522065" label="app-menu-icon"/>
   <int value="324631366" label="enable-drive-search-in-app-launcher"/>
+  <int value="325489620" label="WebAppEnableManifestId:disabled"/>
   <int value="325907076" label="SanitizerAPI:enabled"/>
   <int value="327045548" label="SafeSearchUrlReporting:enabled"/>
   <int value="328722396" label="NTPCondensedLayout:disabled"/>
@@ -48218,6 +48256,7 @@ from previous Chrome versions.
   <int value="504994663" label="GenericSensor:disabled"/>
   <int value="505561325" label="OpenXR:disabled"/>
   <int value="506680761" label="WebNFC:disabled"/>
+  <int value="508272289" label="SharedHighlightingAmp:disabled"/>
   <int value="510066229"
       label="AutofillEnforceMinRequiredFieldsForQuery:enabled"/>
   <int value="510814146" label="OfflineBookmarks:enabled"/>
@@ -50107,6 +50146,7 @@ from previous Chrome versions.
   <int value="2091002949" label="RemoveNavigationHistory:disabled"/>
   <int value="2091943748"
       label="MigrateDefaultChromeAppToWebAppsGSuite:disabled"/>
+  <int value="2092538671" label="UseStorkSmdsServerAddress:disabled"/>
   <int value="2092605092" label="ChromeHomeShowGoogleGWhenUrlCleared:disabled"/>
   <int value="2092968851" label="SharingSendViaSync:enabled"/>
   <int value="2093235103" label="default-tile-width"/>
@@ -77489,6 +77529,7 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Unrecoverable error"/>
   <int value="5" label="Sync settings not confirmed"/>
   <int value="6" label="Sync needs trusted vault key"/>
+  <int value="7" label="Sync trusted vault recoverability degraded"/>
 </enum>
 
 <!-- This must be kept current with

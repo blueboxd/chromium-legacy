@@ -843,6 +843,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'android_build_junit_tests',
         },
         'os_type': 'android',
       },
@@ -1667,6 +1668,11 @@
           ],
         },
         'os_type': 'android',
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'ToTAndroidCoverage x86': {
         'additional_compile_targets': [
           'all',
         ],

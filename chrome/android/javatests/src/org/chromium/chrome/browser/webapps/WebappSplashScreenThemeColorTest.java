@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.ThemeTestUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.ExecutionException;
@@ -72,5 +73,13 @@ public class WebappSplashScreenThemeColorTest {
 
         ThemeTestUtils.waitForThemeColor(mActivityTestRule.getActivity(), pageThemeColor);
         ThemeTestUtils.assertStatusBarColor(mActivityTestRule.getActivity(), pageThemeColor);
+
+        // Setting page theme color to white is forbidden.
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                "document.querySelector('meta').setAttribute('content', 'white');");
+
+        ThemeTestUtils.waitForThemeColor(mActivityTestRule.getActivity(), intentThemeColor);
+        ThemeTestUtils.assertStatusBarColor(mActivityTestRule.getActivity(), intentThemeColor);
     }
 }

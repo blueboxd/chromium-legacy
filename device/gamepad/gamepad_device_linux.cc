@@ -27,7 +27,7 @@
 #include "device/udev_linux/udev.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/dbus/permission_broker/permission_broker_client.h"  // nogncheck
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace device {
@@ -394,7 +394,7 @@ bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
   ssize_t bytes_read;
   while ((bytes_read = HANDLE_EINTR(
               read(evdev_fd_.get(), &ev, sizeof(input_event)))) > 0) {
-    if (size_t{bytes_read} < sizeof(input_event))
+    if (static_cast<size_t>(bytes_read) < sizeof(input_event))
       break;
     if (ev.type != EV_KEY)
       continue;

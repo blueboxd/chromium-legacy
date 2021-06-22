@@ -623,11 +623,6 @@
     "expiry_milestone": 94
   },
   {
-    "name": "clear-old-browsing-data",
-    "owners": [ "dullweber" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "client-storage-access-context-auditing",
     "owners": [
       "sauski",
@@ -1676,6 +1671,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "enable-desktop-pwas-manifest-id",
+    "owners": [ "phillis@chromium.org", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 98
+  },
+  {
     "name": "enable-desktop-pwas-notification-icon-and-title",
     "owners": [ "loyso@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 98
@@ -1729,6 +1729,11 @@
     "name": "enable-desktop-pwas-window-controls-overlay",
     "owners": [ "ambake@microsoft.com", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "enable-discover-feed-preview",
+    "owners": [ "tinazwang", "sczs" ],
+    "expiry_milestone": 99
   },
   {
     "name": "enable-dns-proxy",
@@ -2221,6 +2226,11 @@
     "name": "enable-penetrating-image-selection",
     "owners": [ "benwgold", "flackr" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "enable-phone-hub-camera-roll",
+    "owners": [ "mattwalliser", "jasonsun", "cros-cameraroll@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "enable-pixel-canvas-recording",
@@ -2742,11 +2752,6 @@
     "expiry_milestone": 84
   },
   {
-    "name": "enable-webrtc-stun-origin",
-    "owners": [ "qingsi", "jeroendb" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-webrtc-use-min-max-vea-dimensions",
     "owners": [ "mcasas", "chromeos-gfx-video@google.com" ],
     "expiry_milestone": 88
@@ -2893,6 +2898,11 @@
     // This enables the use of extensions on chrome:// URLs. This is useful for
     // a11y extensions as well as for debugging.
     "expiry_milestone": -1
+  },
+  {
+    "name": "feed-interactive-refresh",
+    "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
+    "expiry_milestone": 99
   },
   {
     "name": "feed-share",
@@ -4814,6 +4824,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "shared-highlighting-amp",
+    "owners": ["cheickcisse@google.com"],
+    "expiry_milestone": 95
+  },
+  {
     "name": "shared-highlighting-ios",
     "owners": ["tmartino"],
     "expiry_milestone": 94
@@ -5313,6 +5328,13 @@
     "name": "use-search-click-for-right-click",
     "owners": [ "zentaro", "cros-peripherals@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "use-stork-smds-server-address",
+    "owners": [ "cros-connectivity@google.com", "hsuregan"],
+    // This flag is required for dev testing via Stork profiles which can be quickly
+    // created at go/stork-profile and managed at go/stork-batch.
+    "expiry_milestone": -1
   },
   {
     "name": "use-sync-sandbox",

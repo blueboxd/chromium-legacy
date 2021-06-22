@@ -19,23 +19,13 @@ class ListValue;
 namespace safe_browsing {
 // Features list, in alphabetical order.
 
-// Controls whether we send RIND reports when a popup originating from a Google
-// Ad is blocked.
-extern const base::Feature kAdPopupTriggerFeature;
-
-// Controls whether we send RIND reports when a redirect caused by a Google Ad
-// is blocked.
-extern const base::Feature kAdRedirectTriggerFeature;
-
+// Controls various parameters related to occasionally collecting ad samples,
+// for example to control how often collection should occur.
 extern const base::Feature kAdSamplerTriggerFeature;
 
 // Enables including some information in protection requests sent to Safe
 // Browsing.
 extern const base::Feature kBetterTelemetryAcrossReports;
-
-// Controls whether we sample inline JavaScript for ads in RIND
-// reports.
-extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
 
 // Enables client side detection on Android.
 extern const base::Feature kClientSideDetectionForAndroid;
@@ -66,14 +56,6 @@ extern const base::Feature kClientSideDetectionReferrerChain;
 // Enables GAIA-keying of client side detection requests for Enhanced Safe
 // Browsing users.
 extern const base::Feature kClientSideDetectionWithToken;
-
-// Enable the addition of access tokens to download pings for enhanced
-// protection users.
-extern const base::Feature kDownloadRequestWithToken;
-
-// Controls whether the limited list size experiment is enabled. This experiment
-// limits the number of entries stored in each Safe Browsing list.
-extern const base::Feature kLimitedListSizeForIOS;
 
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
@@ -108,12 +90,6 @@ extern const base::Feature kSafeBrowsingRemoveCookies;
 
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
-
-// Controls whether the real time URL lookup is enabled.
-extern const base::Feature kRealTimeUrlLookupEnabled;
-
-// Controls whether the GAIA-keyed real time URL lookup is enabled.
-extern const base::Feature kRealTimeUrlLookupEnabledWithToken;
 
 // Controls whether the referrer chain is attached to real time requests.
 extern const base::Feature kRealTimeUrlLookupReferrerChain;

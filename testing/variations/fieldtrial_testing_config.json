@@ -7261,28 +7261,6 @@
             ]
         }
     ],
-    "SafeBrowsingVisualCsdModelVariation9": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "ModelNum": "9"
-                    },
-                    "enable_features": [
-                        "ClientSideDetectionModel"
-                    ]
-                }
-            ]
-        }
-    ],
     "ScrollResamplingRollout": [
         {
             "platforms": [
@@ -7618,7 +7596,6 @@
                 {
                     "name": "ShrinkLogo",
                     "params": {
-                        "ReturnToStartSurfaceInactiveDurationInSeconds": "0",
                         "shrink_logo": "true"
                     },
                     "enable_features": [

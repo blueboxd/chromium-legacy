@@ -1464,8 +1464,11 @@ void DevToolsWindow::SetIsDocked(bool dock_requested) {
     // okay to just null the raw pointer here.
     browser_ = nullptr;
 
+    // TODO(crbug.com/1221967): WebContents should be removed with a reason
+    // other than kInsertedIntoOtherTabStrip, it's not getting reinserted into
+    // another tab strip.
     owned_main_web_contents_ = std::make_unique<OwnedMainWebContents>(
-        tab_strip_model->DetachWebContentsAt(
+        tab_strip_model->DetachWebContentsAtForInsertion(
             tab_strip_model->GetIndexOfWebContents(main_web_contents_)));
   } else if (!dock_requested && was_docked) {
     UpdateBrowserWindow();

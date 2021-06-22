@@ -6,6 +6,8 @@
 #define CHROMEOS_SERVICES_IME_MOCK_INPUT_CHANNEL_H_
 
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method_host.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,31 +32,6 @@ class MockInputChannel : public mojom::InputChannel {
                       ProcessMessageCallback callback) override {
     std::move(callback).Run({});
   }
-  MOCK_METHOD(void,
-              OnInputMethodChanged,
-              (const std::string& engine_id),
-              (override));
-  MOCK_METHOD(void,
-              OnFocus,
-              (mojom::InputFieldInfoPtr input_field_info),
-              (override));
-  MOCK_METHOD(void, OnBlur, (), (override));
-  MOCK_METHOD(void,
-              ProcessKeypressForRulebased,
-              (const mojom::PhysicalKeyEventPtr event,
-               ProcessKeypressForRulebasedCallback),
-              (override));
-  MOCK_METHOD(void,
-              OnKeyEvent,
-              (const mojom::PhysicalKeyEventPtr event, OnKeyEventCallback),
-              (override));
-  MOCK_METHOD(void,
-              OnSurroundingTextChanged,
-              (const std::string& text,
-               uint32_t offset,
-               mojom::SelectionRangePtr selection_range),
-              (override));
-  MOCK_METHOD(void, OnCompositionCanceledBySystem, (), (override));
   MOCK_METHOD(void,
               CommitText,
               (const std::string& text,

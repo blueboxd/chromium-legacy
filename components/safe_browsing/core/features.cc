@@ -21,23 +21,13 @@ namespace safe_browsing {
 // Please define any new SafeBrowsing related features in this file, and add
 // them to the ExperimentalFeaturesList below to start displaying their status
 // on the chrome://safe-browsing page.
-const base::Feature kAdPopupTriggerFeature{"SafeBrowsingAdPopupTrigger",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAdRedirectTriggerFeature{
-    "SafeBrowsingAdRedirectTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls various parameters related to occasionally collecting ad samples,
-// for example to control how often collection should occur.
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kBetterTelemetryAcrossReports{
     "SafeBrowsingBetterTelemetryAcrossReports",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCaptureInlineJavascriptForGoogleAds{
-    "CaptureInlineJavascriptForGoogleAds", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionForAndroid{
     "ClientSideDetectionModelOnAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -73,12 +63,6 @@ const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
 const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDownloadRequestWithToken{
-    "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kLimitedListSizeForIOS{"SafeBrowsingLimitedListSizeForIOS",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kPasswordProtectionForSignedInUsers {
   "SafeBrowsingPasswordProtectionForSignedInUsers",
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -104,13 +88,6 @@ const base::Feature kSafeBrowsingEnterpriseCsd{
 const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise{
     "SafeBrowsingDisableConsumerCsdForEnterprise",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kRealTimeUrlLookupEnabled{
-    "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kRealTimeUrlLookupEnabledWithToken{
-    "SafeBrowsingRealTimeUrlLookupEnabledWithToken",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupReferrerChain{
     "SafeBrowsingRealTimeUrlLookupReferrerChain",
@@ -160,29 +137,25 @@ const base::Feature kFileAnalysisMimeTypeSniff{
     "FileAnalysisMimeTypeSniff", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
-// List of Safe Browsing features. Boolean value for each list member should be
-// set to true if the experiment state should be listed on
+// List of Safe Browsing features. Boolean value for each list member should
+// be set to true if the experiment state should be listed on
 // chrome://safe-browsing. Features should be listed in alphabetical order.
 constexpr struct {
   const base::Feature* feature;
   // True if the feature's state should be listed on chrome://safe-browsing.
   bool show_state;
 } kExperimentalFeatures[]{
-    {&kAdPopupTriggerFeature, true},
-    {&kAdRedirectTriggerFeature, true},
     {&kAdSamplerTriggerFeature, false},
     {&kBetterTelemetryAcrossReports, true},
-    {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kClientSideDetectionForAndroid, true},
+    {&kClientSideDetectionModelIsFlatBuffer, true},
+    {&kClientSideDetectionModelVersion, true},
+    {&kClientSideDetectionReferrerChain, true},
     {&kClientSideDetectionWithToken, true},
     {&kDelayedWarnings, true},
-    {&kDownloadRequestWithToken, true},
-    {&kLimitedListSizeForIOS, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kPasswordProtectionWithToken, true},
     {&kPromptEsbForDeepScanning, true},
-    {&kRealTimeUrlLookupEnabled, true},
-    {&kRealTimeUrlLookupEnabledWithToken, true},
     {&kRealTimeUrlLookupReferrerChain, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},

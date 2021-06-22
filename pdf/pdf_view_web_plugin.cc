@@ -58,6 +58,7 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
@@ -167,11 +168,18 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
   }
 
   void UpdateTextInputState() override {
-    return GetFrame()->FrameWidget()->UpdateTextInputState();
+    // `widget` is null in Print Preview.
+    auto* widget = GetFrame()->FrameWidget();
+    if (widget)
+      widget->UpdateTextInputState();
   }
 
   blink::WebLocalFrame* GetFrame() override {
     return container_->GetDocument().GetFrame();
+  }
+
+  blink::WebLocalFrameClient* GetWebLocalFrameClient() override {
+    return GetFrame()->Client();
   }
 
   blink::WebPluginContainer* Container() override { return container_; }
@@ -207,6 +215,22 @@ bool PdfViewWebPlugin::InitializeCommon(
     std::unique_ptr<ContainerWrapper> container_wrapper) {
   container_wrapper_ = std::move(container_wrapper);
 
+  // Check if the PDF is being loaded in the PDF chrome extension. We only allow
+  // the plugin to be loaded in the extension and print preview to avoid
+  // exposing sensitive APIs directly to external websites.
+  std::string document_url;
+  auto* container = Container();
+  if (container) {
+    GURL maybe_url(container->GetDocument().Url());
+    if (maybe_url.is_valid())
+      document_url = maybe_url.possibly_invalid_spec();
+  }
+
+  base::StringPiece document_url_piece(document_url);
+  set_is_print_preview(IsPrintPreviewUrl(document_url_piece));
+  // TODO(crbug.com/1123621): Consider calling ValidateDocumentUrl() or
+  // something like it once the process model has been finalized.
+
   absl::optional<ParsedParams> params = ParseWebPluginParams(initial_params_);
 
   // The contents of `initial_params_` are no longer needed.
@@ -232,6 +256,7 @@ void PdfViewWebPlugin::Destroy() {
   if (container_wrapper_) {
     // Explicitly destroy the PDFEngine during destruction as it may call back
     // into this object.
+    DestroyPreviewEngine();
     DestroyEngine();
     PerProcessInitializer::GetInstance().Release();
     container_wrapper_.reset();
@@ -501,10 +526,6 @@ pp::Instance* PdfViewWebPlugin::GetPluginInstance() {
   return nullptr;
 }
 
-bool PdfViewWebPlugin::IsPrintPreview() {
-  return false;
-}
-
 void PdfViewWebPlugin::SetSelectedText(const std::string& selected_text) {
   selected_text_ = blink::WebString::FromUTF8(selected_text);
   container_wrapper_->TextSelectionChanged(
@@ -605,11 +626,6 @@ void PdfViewWebPlugin::DidOpen(std::unique_ptr<UrlLoader> loader,
   }
 }
 
-void PdfViewWebPlugin::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
-                                      int32_t result) {
-  NOTIMPLEMENTED();
-}
-
 void PdfViewWebPlugin::SendMessage(base::Value message) {
   post_message_sender_.Post(std::move(message));
 }
@@ -673,16 +689,20 @@ void PdfViewWebPlugin::SetPluginCanSave(bool can_save) {
   service->SetPluginCanSave(can_save);
 }
 
-void PdfViewWebPlugin::DidStartLoading() {
-  NOTIMPLEMENTED();
+void PdfViewWebPlugin::PluginDidStartLoading() {
+  auto* client = container_wrapper_->GetWebLocalFrameClient();
+  if (!client)
+    return;
+
+  client->DidStartLoading();
 }
 
-void PdfViewWebPlugin::DidStopLoading() {
-  NOTIMPLEMENTED();
-}
+void PdfViewWebPlugin::PluginDidStopLoading() {
+  auto* client = container_wrapper_->GetWebLocalFrameClient();
+  if (!client)
+    return;
 
-void PdfViewWebPlugin::OnPrintPreviewLoaded() {
-  NOTIMPLEMENTED();
+  client->DidStopLoading();
 }
 
 void PdfViewWebPlugin::InvokePrintDialog() {

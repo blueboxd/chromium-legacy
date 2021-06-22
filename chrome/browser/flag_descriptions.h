@@ -133,6 +133,9 @@ extern const char kUpdatedCellularActivationUiDescription[];
 extern const char kUseLookalikesForNavigationSuggestionsName[];
 extern const char kUseLookalikesForNavigationSuggestionsDescription[];
 
+extern const char kUseStorkSmdsServerAddressName[];
+extern const char kUseStorkSmdsServerAddressDescription[];
+
 extern const char kUseWallpaperStagingUrlName[];
 extern const char kUseWallpaperStagingUrlDescription[];
 
@@ -461,6 +464,9 @@ extern const char kDesktopPWAsNotificationIconAndTitleDescription[];
 
 extern const char kDesktopPWAsLinkCapturingName[];
 extern const char kDesktopPWAsLinkCapturingDescription[];
+
+extern const char kDesktopPWAsManifestIdName[];
+extern const char kDesktopPWAsManifestIdDescription[];
 
 extern const char kDesktopPWAsTabStripName[];
 extern const char kDesktopPWAsTabStripDescription[];
@@ -1569,9 +1575,6 @@ extern const char kWebRtcRemoteEventLogDescription[];
 extern const char kWebrtcSrtpAesGcmName[];
 extern const char kWebrtcSrtpAesGcmDescription[];
 
-extern const char kWebrtcStunOriginName[];
-extern const char kWebrtcStunOriginDescription[];
-
 extern const char kWebrtcUseMinMaxVEADimensionsName[];
 extern const char kWebrtcUseMinMaxVEADimensionsDescription[];
 
@@ -1601,6 +1604,9 @@ extern const char kSharedHighlightingUseBlocklistDescription[];
 
 extern const char kSharedHighlightingV2Name[];
 extern const char kSharedHighlightingV2Description[];
+
+extern const char kSharedHighlightingAmpName[];
+extern const char kSharedHighlightingAmpDescription[];
 
 extern const char kPreemptiveLinkToTextGenerationName[];
 extern const char kPreemptiveLinkToTextGenerationDescription[];
@@ -1710,9 +1716,6 @@ extern const char kChromeSharingHubDescription[];
 extern const char kClipboardSuggestionContentHiddenName[];
 extern const char kClipboardSuggestionContentHiddenDescription[];
 
-extern const char kClearOldBrowsingDataName[];
-extern const char kClearOldBrowsingDataDescription[];
-
 extern const char kCloseTabSuggestionsName[];
 extern const char kCloseTabSuggestionsDescription[];
 
@@ -1774,6 +1777,9 @@ extern const char kEnableUseAaudioDriverDescription[];
 
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
+
+extern const char kFeedInteractiveRefreshName[];
+extern const char kFeedInteractiveRefreshDescription[];
 
 extern const char kFillingPasswordsFromAnyOriginName[];
 extern const char kFillingPasswordsFromAnyOriginDescription[];
@@ -2778,6 +2784,9 @@ extern const char kNearbySharingDeviceContactsDescription[];
 
 extern const char kNearbySharingWebRtcName[];
 extern const char kNearbySharingWebRtcDescription[];
+
+extern const char kPhoneHubCameraRollName[];
+extern const char kPhoneHubCameraRollDescription[];
 
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];

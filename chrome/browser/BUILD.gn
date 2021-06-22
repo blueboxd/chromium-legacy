@@ -398,6 +398,8 @@ static_library("browser") {
     "dom_distiller/tab_utils.h",
     "domain_reliability/service_factory.cc",
     "domain_reliability/service_factory.h",
+    "download/background_download_service_factory.cc",
+    "download/background_download_service_factory.h",
     "download/chrome_download_manager_delegate.cc",
     "download/chrome_download_manager_delegate.h",
     "download/deferred_client_wrapper.cc",
@@ -434,8 +436,6 @@ static_library("browser") {
     "download/download_query.h",
     "download/download_request_limiter.cc",
     "download/download_request_limiter.h",
-    "download/download_service_factory.cc",
-    "download/download_service_factory.h",
     "download/download_started_animation.h",
     "download/download_stats.cc",
     "download/download_stats.h",
@@ -3220,6 +3220,7 @@ static_library("browser") {
       ":usage_stats_proto",
       "//chrome/android:jni_headers",
       "//chrome/android/modules/extra_icu/provider:native",
+      "//chrome/browser/android/metrics:jni_headers",
       "//chrome/browser/banners/android:jni_headers",
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db",
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db_content_proto",
@@ -3589,16 +3590,10 @@ static_library("browser") {
       "enterprise/connectors/connectors_prefs.h",
       "enterprise/connectors/connectors_service.cc",
       "enterprise/connectors/connectors_service.h",
-      "enterprise/connectors/device_trust/attestation_service.cc",
-      "enterprise/connectors/device_trust/attestation_service.h",
-      "enterprise/connectors/device_trust/crypto_utility.cc",
-      "enterprise/connectors/device_trust/crypto_utility.h",
       "enterprise/connectors/device_trust/device_trust_factory.cc",
       "enterprise/connectors/device_trust/device_trust_factory.h",
       "enterprise/connectors/device_trust/device_trust_service.cc",
       "enterprise/connectors/device_trust/device_trust_service.h",
-      "enterprise/connectors/device_trust/google_keys.cc",
-      "enterprise/connectors/device_trust/google_keys.h",
       "enterprise/connectors/device_trust/signal_reporter.cc",
       "enterprise/connectors/device_trust/signal_reporter.h",
       "enterprise/connectors/enterprise_connectors_policy_handler.cc",
@@ -4225,10 +4220,6 @@ static_library("browser") {
       "//chrome/app/theme:chrome_unscaled_resources_grit",
       "//chrome/app/vector_icons",
       "//chrome/browser/cart:mojo_bindings",
-      "//chrome/browser/enterprise/connectors/device_trust:attestation_ca_proto",
-      "//chrome/browser/enterprise/connectors/device_trust:google_key_proto",
-      "//chrome/browser/enterprise/connectors/device_trust:interface_proto",
-      "//chrome/browser/enterprise/connectors/device_trust:keystore_proto",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
@@ -4278,6 +4269,12 @@ static_library("browser") {
       "//chrome/common:buildflags",
       "//extensions/buildflags",
     ]
+
+    if (is_win || is_mac || is_linux) {
+      sources += []
+
+      deps += []
+    }
 
     if (!is_chromeos_ash) {
       sources += [
@@ -5231,10 +5228,22 @@ static_library("browser") {
 
   if (is_linux || is_win || is_mac) {
     sources += [
+      "enterprise/connectors/device_trust/attestation_service.cc",
+      "enterprise/connectors/device_trust/attestation_service.h",
+      "enterprise/connectors/device_trust/crypto_utility.cc",
+      "enterprise/connectors/device_trust/crypto_utility.h",
       "enterprise/connectors/device_trust/device_trust_key_pair.cc",
       "enterprise/connectors/device_trust/device_trust_key_pair.h",
+      "enterprise/connectors/device_trust/google_keys.cc",
+      "enterprise/connectors/device_trust/google_keys.h",
       "enterprise/connectors/device_trust/navigation_throttle.cc",
       "enterprise/connectors/device_trust/navigation_throttle.h",
+    ]
+    deps += [
+      "//chrome/browser/enterprise/connectors/device_trust:attestation_ca_proto",
+      "//chrome/browser/enterprise/connectors/device_trust:google_key_proto",
+      "//chrome/browser/enterprise/connectors/device_trust:interface_proto",
+      "//chrome/browser/enterprise/connectors/device_trust:keystore_proto",
     ]
   }
 
@@ -5268,14 +5277,11 @@ static_library("browser") {
   }
 
   if (is_linux || is_chromeos_lacros) {
-    # Desktop linux, doesn't count ChromeOS.
     sources += [
       "download/download_status_updater_linux.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
       "icon_loader_auralinux.cc",
-      "shell_integration_linux.cc",
-      "shell_integration_linux.h",
       "themes/theme_service_aura_linux.cc",
       "themes/theme_service_aura_linux.h",
       "upgrade_detector/directory_monitor.cc",
@@ -5288,8 +5294,14 @@ static_library("browser") {
       deps += [ "//components/dbus/thread_linux" ]
     }
 
-    if (!is_chromeos_lacros) {
-      sources += [ "platform_util_linux.cc" ]
+    if (is_chromeos_lacros) {
+      sources += [ "shell_integration_chromeos.cc" ]
+    } else {
+      sources += [
+        "platform_util_linux.cc",
+        "shell_integration_linux.cc",
+        "shell_integration_linux.h",
+      ]
 
       if (enable_system_notifications) {
         sources += [
@@ -7020,6 +7032,8 @@ static_library("test_support") {
       "ash/app_mode/fake_cws.h",
       "ash/arc/extensions/fake_arc_support.cc",
       "ash/arc/extensions/fake_arc_support.h",
+      "ash/file_manager/fake_disk_mount_manager.cc",
+      "ash/file_manager/fake_disk_mount_manager.h",
       "ash/login/screens/mock_device_disabled_screen_view.cc",
       "ash/login/screens/mock_device_disabled_screen_view.h",
       "ash/login/session/user_session_manager_test_api.cc",
@@ -7040,8 +7054,6 @@ static_library("test_support") {
       "ash/login/users/fake_supervised_user_manager.h",
       "ash/login/users/mock_user_manager.cc",
       "ash/login/users/mock_user_manager.h",
-      "chromeos/file_manager/fake_disk_mount_manager.cc",
-      "chromeos/file_manager/fake_disk_mount_manager.h",
       "chromeos/input_method/mock_candidate_window_controller.cc",
       "chromeos/input_method/mock_candidate_window_controller.h",
       "chromeos/input_method/mock_input_method_engine.cc",

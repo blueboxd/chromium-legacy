@@ -29,6 +29,7 @@ namespace blink {
 class WebAssociatedURLLoader;
 class WebElement;
 class WebLocalFrame;
+class WebLocalFrameClient;
 class WebPluginContainer;
 class WebURL;
 class WebURLRequest;
@@ -92,6 +93,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
     // Returns the local frame to which the web plugin container belongs.
     virtual blink::WebLocalFrame* GetFrame() = 0;
+
+    // Returns the local frame's client (render frame). May be null in unit
+    // tests.
+    virtual blink::WebLocalFrameClient* GetWebLocalFrameClient() = 0;
 
     // Returns the blink web plugin container pointer that's wrapped inside this
     // object. Returns nullptr if this object is for test only.
@@ -170,7 +175,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                                const char16_t* term,
                                                bool case_sensitive) override;
   pp::Instance* GetPluginInstance() override;
-  bool IsPrintPreview() override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
@@ -207,8 +211,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
   std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() override;
   void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) override;
-  void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
-                      int32_t result) override;
   void SendMessage(base::Value message) override;
   void SaveAs() override;
   void InitImageData(const gfx::Size& size) override;
@@ -222,9 +224,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
       const AccessibilityViewportInfo& viewport_info) override;
   void SetContentRestrictions(int content_restrictions) override;
   void SetPluginCanSave(bool can_save) override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
-  void OnPrintPreviewLoaded() override;
+  void PluginDidStartLoading() override;
+  void PluginDidStopLoading() override;
   void InvokePrintDialog() override;
   void NotifySelectionChanged(const gfx::PointF& left,
                               int left_height,

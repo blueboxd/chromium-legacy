@@ -423,6 +423,8 @@ static_library("test_support") {
       "../browser/ash/accessibility/speech_monitor.h",
       "../browser/ash/arc/tracing/arc_app_performance_tracing_test_helper.cc",
       "../browser/ash/arc/tracing/arc_app_performance_tracing_test_helper.h",
+      "../browser/ash/file_manager/file_manager_test_util.cc",
+      "../browser/ash/file_manager/file_manager_test_util.h",
       "../browser/ash/login/users/fake_chrome_user_manager.cc",
       "../browser/ash/login/users/fake_chrome_user_manager.h",
       "../browser/ash/ownership/fake_owner_settings_service.cc",
@@ -431,8 +433,6 @@ static_library("test_support") {
       "../browser/ash/settings/device_settings_test_helper.h",
       "../browser/ash/settings/scoped_cros_settings_test_helper.cc",
       "../browser/ash/settings/scoped_cros_settings_test_helper.h",
-      "../browser/chromeos/file_manager/file_manager_test_util.cc",
-      "../browser/chromeos/file_manager/file_manager_test_util.h",
       "../browser/component_updater/fake_cros_component_manager.cc",
       "../browser/component_updater/fake_cros_component_manager.h",
       "../browser/extensions/policy_test_utils.cc",
@@ -1110,7 +1110,6 @@ if (!is_android) {
       "//components/safe_browsing/content/renderer",
       "//components/safe_browsing/content/renderer/phishing_classifier",
       "//components/safe_browsing/content/renderer/phishing_classifier:unit_tests_support",
-      "//components/safe_browsing/content/triggers:ad_redirect_trigger",
       "//components/safe_browsing/content/web_ui",
       "//components/safe_browsing/core:client_model_proto",
       "//components/safe_browsing/core:features",
@@ -1544,6 +1543,7 @@ if (!is_android) {
       "../browser/net/ftp_browsertest.cc",
       "../browser/net/load_timing_browsertest.cc",
       "../browser/net/log_net_log_browsertest.cc",
+      "../browser/net/net_error_tab_helper_browsertest.cc",
       "../browser/net/netinfo_network_quality_estimator_holdback_browsertest.cc",
       "../browser/net/network_connection_tracker_browsertest.cc",
       "../browser/net/network_context_configuration_browsertest.cc",
@@ -3053,6 +3053,13 @@ if (!is_android) {
         "../browser/ash/display/display_prefs_browsertest.cc",
         "../browser/ash/display/quirks_browsertest.cc",
         "../browser/ash/drive/drive_integration_service_browsertest.cc",
+        "../browser/ash/file_manager/file_manager_browsertest.cc",
+        "../browser/ash/file_manager/file_manager_browsertest_base.cc",
+        "../browser/ash/file_manager/file_manager_browsertest_base.h",
+        "../browser/ash/file_manager/file_manager_jstest.cc",
+        "../browser/ash/file_manager/file_manager_jstest_base.cc",
+        "../browser/ash/file_manager/file_manager_jstest_base.h",
+        "../browser/ash/file_manager/file_tasks_browsertest.cc",
         "../browser/ash/kerberos/kerberos_credentials_manager_factory_browsertest.cc",
         "../browser/ash/lock_screen_apps/note_taking_browsertest.cc",
         "../browser/ash/login/accessibility_browsertest.cc",
@@ -3254,13 +3261,6 @@ if (!is_android) {
         "../browser/chromeos/extensions/wallpaper_private_apitest.cc",
         "../browser/chromeos/file_manager/audio_player_browsertest.cc",
         "../browser/chromeos/file_manager/external_filesystem_apitest.cc",
-        "../browser/chromeos/file_manager/file_manager_browsertest.cc",
-        "../browser/chromeos/file_manager/file_manager_browsertest_base.cc",
-        "../browser/chromeos/file_manager/file_manager_browsertest_base.h",
-        "../browser/chromeos/file_manager/file_manager_jstest.cc",
-        "../browser/chromeos/file_manager/file_manager_jstest_base.cc",
-        "../browser/chromeos/file_manager/file_manager_jstest_base.h",
-        "../browser/chromeos/file_manager/file_tasks_browsertest.cc",
         "../browser/chromeos/file_manager/image_loader_jstest.cc",
         "../browser/chromeos/file_manager/video_player_jstest.cc",
         "../browser/chromeos/first_run/drive_first_run_browsertest.cc",
@@ -3535,7 +3535,6 @@ if (!is_android) {
     }
     if (safe_browsing_mode == 1) {
       sources += [
-        "../browser/safe_browsing/ad_redirect_trigger_browsertest.cc",
         "../browser/safe_browsing/certificate_reporting_service_browsertest.cc",
         "../browser/safe_browsing/chrome_password_protection_service_browsertest.cc",
         "../browser/safe_browsing/chrome_password_protection_service_sync_browsertest.cc",
@@ -6688,11 +6687,13 @@ test("unit_tests") {
   }
   if (is_linux || is_chromeos_lacros) {
     sources += [
-      "../browser/shell_integration_linux_unittest.cc",
       "../browser/ui/global_media_controls/media_notification_device_monitor_unittest.cc",
       "../browser/upgrade_detector/directory_monitor_unittest.cc",
       "../browser/upgrade_detector/get_installed_version_linux_unittest.cc",
     ]
+    if (is_linux) {
+      sources += [ "../browser/shell_integration_linux_unittest.cc" ]
+    }
   }
 
   if (is_android || is_chromeos_ash || is_win) {

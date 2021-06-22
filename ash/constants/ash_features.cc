@@ -723,6 +723,11 @@ const base::Feature kPerDeskShelf{"PerDeskShelf",
 // and perform phone-side actions within Chrome OS.
 const base::Feature kPhoneHub{"PhoneHub", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the Camera Roll feature in Phone Hub, which allows users to access
+// recent photos and videos taken on a connected Android device
+const base::Feature kPhoneHubCameraRoll{"PhoneHubCameraRoll",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPinSetupForManagedUsers{"PinSetupForManagedUsers",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -936,6 +941,10 @@ const base::Feature kUseMessagesStagingUrl{"UseMessagesStagingUrl",
 // Chrome OS.
 const base::Feature kUseSearchClickForRightClick{
     "UseSearchClickForRightClick", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use the Stork Production SM-DS address to fetch pending ESim profiles
+const base::Feature kUseStorkSmdsServerAddress{
+    "UseStorkSmdsServerAddress", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use the staging server as part of the Wallpaper App to verify
 // additions/removals of wallpapers.
@@ -1268,6 +1277,10 @@ bool IsPerDeskShelfEnabled() {
   return base::FeatureList::IsEnabled(kPerDeskShelf);
 }
 
+bool isPhoneHubCameraRollEnabled() {
+  return base::FeatureList::IsEnabled(kPhoneHubCameraRoll);
+}
+
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
 }
@@ -1376,6 +1389,10 @@ bool IsTrilinearFilteringEnabled() {
   static bool use_trilinear_filtering =
       base::FeatureList::IsEnabled(kTrilinearFiltering);
   return use_trilinear_filtering;
+}
+
+bool IsUseStorkSmdsServerAddressEnabled() {
+  return base::FeatureList::IsEnabled(kUseStorkSmdsServerAddress);
 }
 
 bool IsVerticalSplitScreenEnabled() {

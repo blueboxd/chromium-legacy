@@ -51,7 +51,7 @@
 #include "third_party/blink/public/mojom/web_launch/file_handling_expiry.mojom-test-utils.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
+#include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #endif
 
 namespace web_app {
@@ -521,6 +521,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
                                    ContentSettingsType::FILE_HANDLING));
 }
 
+// TODO(crbug/1221772): This test suite is disabled due to flake.
 class WebAppFileHandlingPermissionDialogTest
     : public WebAppFileHandlingBrowserTest {
  public:
@@ -551,7 +552,8 @@ class WebAppFileHandlingPermissionDialogTest
   base::FilePath test_file_path_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, AllowAlways) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
+                       DISABLED_AllowAlways) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/true,
                                                       /*accept=*/true);
   VerifyPwaDidReceiveFileLaunchParams(true, test_file_path_);
@@ -559,14 +561,16 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, AllowAlways) {
             GetFileHandlingPermission(GetSecureAppURL()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, AllowOnce) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
+                       DISABLED_AllowOnce) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/false,
                                                       /*accept=*/true);
   VerifyPwaDidReceiveFileLaunchParams(true, test_file_path_);
   EXPECT_EQ(CONTENT_SETTING_ASK, GetFileHandlingPermission(GetSecureAppURL()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, BlockAlways) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
+                       DISABLED_BlockAlways) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/true,
                                                       /*accept=*/false);
   VerifyPwaDidReceiveFileLaunchParams(false);
@@ -574,7 +578,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, BlockAlways) {
             GetFileHandlingPermission(GetSecureAppURL()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, BlockOnce) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
+                       DISABLED_BlockOnce) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/false,
                                                       /*accept=*/false);
   VerifyPwaDidReceiveFileLaunchParams(false);

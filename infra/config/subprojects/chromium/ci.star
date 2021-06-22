@@ -2152,6 +2152,14 @@ ci.clang_builder(
 )
 
 ci.clang_builder(
+    name = "ToTAndroidCoverage x86",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT Code Coverage",
+        short_name = "and",
+    ),
+)
+
+ci.clang_builder(
     name = "ToTAndroid64",
     console_view_entry = consoles.console_view_entry(
         category = "ToT Android",
@@ -4262,7 +4270,6 @@ ci.fyi_ios_builder(
         short_name = "sdk14",
     ),
     os = os.MAC_11,
-    cpu = cpu.ARM64,
     schedule = "0 2,6,10,14,18,22 * * *",
     triggered_by = [],
     xcode = xcode.x12e262,

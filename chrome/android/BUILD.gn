@@ -870,6 +870,7 @@ junit_binary("chrome_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//base/test:test_support_java",
     "//build/config/android/test/classpath_order:junit_tests",
     "//cc:cc_java",
     "//chrome/android:update_proto_java",
@@ -1456,8 +1457,10 @@ android_library("chrome_test_java") {
     "//ui/base/mojom:mojom_java",
     "//url:gurl_java",
     "//url:gurl_javatests",
+    "//url:gurl_junit_test_support",
     "//url:origin_java",
     "//url/mojom:url_mojom_gurl_java",
+    "//url/mojom:url_mojom_origin_java",
   ]
 
   deps += feed_test_deps

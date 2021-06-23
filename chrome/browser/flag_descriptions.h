@@ -1248,6 +1248,9 @@ extern const char kIntensiveWakeUpThrottlingDescription[];
 extern const char kSafetyTipName[];
 extern const char kSafetyTipDescription[];
 
+extern const char kSamePartyCookiesConsideredFirstPartyName[];
+extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
+
 extern const char kSchemefulSameSiteName[];
 extern const char kSchemefulSameSiteDescription[];
 
@@ -2210,12 +2213,6 @@ extern const char kUseXpsForPrintingFromPdfName[];
 extern const char kUseXpsForPrintingFromPdfDescription[];
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-extern const char kWinUseBrowserSpellCheckerName[];
-extern const char kWinUseBrowserSpellCheckerDescription[];
-
-#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-
 #endif  // defined(OS_WIN)
 
 // Mac ------------------------------------------------------------------------
@@ -2323,6 +2320,9 @@ extern const char kBluetoothFixA2dpPacketSizeDescription[];
 extern const char kBluetoothWbsDogfoodName[];
 extern const char kBluetoothWbsDogfoodDescription[];
 
+extern const char kButtonARCNetworkDiagnosticsName[];
+extern const char kButtonARCNetworkDiagnosticsDescription[];
+
 extern const char kPreferConstantFrameRateName[];
 extern const char kPreferConstantFrameRateDescription[];
 
@@ -2334,6 +2334,9 @@ extern const char kCategoricalSearchDescription[];
 
 extern const char kCdmFactoryDaemonName[];
 extern const char kCdmFactoryDaemonDescription[];
+
+extern const char kCellularAllowPerNetworkRoamingName[];
+extern const char kCellularAllowPerNetworkRoamingDescription[];
 
 extern const char kCellularForbidAttachApnName[];
 extern const char kCellularForbidAttachApnDescription[];

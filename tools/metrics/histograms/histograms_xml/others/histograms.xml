@@ -1696,8 +1696,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Bookmarks.BottomSheet.DestinationFolder" enum="BookmarkType"
-    expires_after="M91">
-  <owner>shaktisahu@chromium.org</owner>
+    expires_after="2022-06-01">
+  <owner>wylieb@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>
@@ -4409,6 +4409,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>catan-team@chromium.org</owner>
   <summary>
     The memory pressure level when the High-PMF policy decides to discard a tab.
+    Windows and Mac only.
   </summary>
 </histogram>
 
@@ -18877,6 +18878,27 @@ regressions. -->
   <summary>
     Identical to Webapp.Update.ManifestUpdateResult but restricted to just
     default installed web apps.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.UrlHandling.GetValidProfilesAtStartUp"
+    units="microseconds" expires_after="2022-06-20">
+  <owner>mek@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Measure the time it takes to collect (loading as needed) the set of profiles
+    eligible to handle a URL by a PWA at startup for URL Handling. Emitted for
+    users with high resolution clocks only.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.UrlHandling.LoadWebAppRegistrarsAtStartUp"
+    units="microseconds" expires_after="2022-06-20">
+  <owner>mek@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Measure the time it takes to load all the web app registrars for URL
+    Handling at startup. Emitted for users with high resolution clocks only.
   </summary>
 </histogram>
 

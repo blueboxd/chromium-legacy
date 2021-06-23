@@ -5616,6 +5616,12 @@ others/histograms.xml -->
   <int value="1857" label="ADDRESS_HOME_FLOOR: accepted"/>
 </enum>
 
+<enum name="AutofillErrorDialogType">
+  <int value="0" label="VIRTUAL_CARD_TEMPORARY_ERROR"/>
+  <int value="1" label="VIRTUAL_CARD_PERMANENT_ERROR"/>
+  <int value="2" label="VIRTUAL_CARD_NOT_ELIGIBLE_ERROR"/>
+</enum>
+
 <enum name="AutofillExperimentId">
   <int value="0" label="No Experiment"/>
   <int value="1" label="Unknown"/>
@@ -6568,6 +6574,13 @@ others/histograms.xml -->
   <int value="0" label="No pattern found"/>
   <int value="1" label="UPI VPA"/>
   <int value="2" label="IBAN"/>
+</enum>
+
+<enum name="AutofillVirtualCardManualFallbackBubbleResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="User closed bubble via corner X"/>
+  <int value="2" label="User did not interact with the bubble"/>
+  <int value="3" label="Bubble lost focus and was deactivated"/>
 </enum>
 
 <enum name="AutofillWalletAddressConversionType">
@@ -45587,6 +45600,7 @@ from previous Chrome versions.
   <int value="-1763899404" label="LayoutNGTable:enabled"/>
   <int value="-1760624380"
       label="ImprovedCookieControlsForThirdPartyCookieBlocking:enabled"/>
+  <int value="-1760146324" label="CellularAllowPerNetworkRoaming:disabled"/>
   <int value="-1758468685" label="DownloadHomeV2:disabled"/>
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
   <int value="-1754262889" label="RemoteCopyPersistentNotification:enabled"/>
@@ -47396,6 +47410,7 @@ from previous Chrome versions.
   <int value="-256940675" label="HelpAppSearchServiceIntegration:disabled"/>
   <int value="-256923848" label="ProfilesUIRevamp:disabled"/>
   <int value="-255264176" label="OmniboxSearchEngineLogo:disabled"/>
+  <int value="-255157394" label="ButtonARCNetworkDiagnostics:enabled"/>
   <int value="-254887599" label="google-profile-info"/>
   <int value="-254158542" label="SubresourceRedirectPreviews:enabled"/>
   <int value="-252258023" label="ShimlessRMAFlow:enabled"/>
@@ -47714,6 +47729,7 @@ from previous Chrome versions.
   <int value="21055794" label="OpenXR:enabled"/>
   <int value="23121136" label="MobileIdentityConsistencyVar:enabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
+  <int value="24332306" label="ButtonARCNetworkDiagnostics:disabled"/>
   <int value="26875005" label="disable-explicit-dma-fences"/>
   <int value="26945819" label="EnhancedDeskAnimations:disabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
@@ -48116,6 +48132,7 @@ from previous Chrome versions.
   <int value="373275338" label="AndroidPartnerCustomizationPhenotype:disabled"/>
   <int value="373531060" label="MacCoreLocationBackend:enabled"/>
   <int value="373578344" label="SafeBrowsingSecuritySectionUIAndroid:enabled"/>
+  <int value="375032683" label="CellularAllowPerNetworkRoaming:enabled"/>
   <int value="375485858" label="EnableZeroStateMixedTypesRanker:disabled"/>
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="375934458" label="PortalsCrossOrigin:enabled"/>
@@ -48409,6 +48426,7 @@ from previous Chrome versions.
   <int value="623796513" label="AndroidLayoutChangeTabReparenting:disabled"/>
   <int value="624317932" label="print-pdf-as-image"/>
   <int value="624368375" label="OmniboxEntitySuggestions:enabled"/>
+  <int value="624783596" label="SamePartyCookiesConsideredFirstParty:enabled"/>
   <int value="625273056" label="disable-boot-animation"/>
   <int value="625725485" label="FilesTrash:enabled"/>
   <int value="626605468" label="FilesZipUnpack:enabled"/>
@@ -49261,6 +49279,8 @@ from previous Chrome versions.
   <int value="1330264457" label="OmniboxUIExperimentVerticalLayout:disabled"/>
   <int value="1331098784" label="ReducedReferrerGranularity:enabled"/>
   <int value="1332120969" label="ChromeDuet:disabled"/>
+  <int value="1332891404"
+      label="SamePartyCookiesConsideredFirstParty:disabled"/>
   <int value="1333847867" label="NoScriptPreviews:enabled"/>
   <int value="1338356182" label="AutofillAssistantChromeEntry:disabled"/>
   <int value="1338510325" label="lacros-selection"/>

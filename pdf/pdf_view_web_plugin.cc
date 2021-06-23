@@ -37,8 +37,8 @@
 #include "pdf/post_message_receiver.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/graphics.h"
+#include "pdf/ppapi_migration/result_codes.h"
 #include "pdf/ppapi_migration/url_loader.h"
-#include "ppapi/c/pp_errors.h"
 #include "printing/metafile_skia.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -69,6 +69,7 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/skia_util.h"
 #include "url/gurl.h"
@@ -528,10 +529,6 @@ PdfViewWebPlugin::SearchString(const char16_t* string,
   return results;
 }
 
-pp::Instance* PdfViewWebPlugin::GetPluginInstance() {
-  return nullptr;
-}
-
 void PdfViewWebPlugin::SetSelectedText(const std::string& selected_text) {
   selected_text_ = blink::WebString::FromUTF8(selected_text);
   container_wrapper_->TextSelectionChanged(
@@ -619,7 +616,7 @@ std::unique_ptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoaderInternal() {
 // Modeled on `OutOfProcessInstance::DidOpen()`.
 void PdfViewWebPlugin::DidOpen(std::unique_ptr<UrlLoader> loader,
                                int32_t result) {
-  if (result == PP_OK) {
+  if (result == Result::kSuccess) {
     if (!engine()->HandleDocumentLoad(std::move(loader)))
       DocumentLoadFailed();
   } else {
@@ -738,8 +735,17 @@ void PdfViewWebPlugin::OnViewportChanged(const gfx::Rect& view_rect,
                                          float new_device_scale) {
   UpdateGeometryOnViewChanged(view_rect, new_device_scale);
 
-  // TODO(http://crbug.com/1099020): Update scroll position for painting the
-  // print preview plugin.
+  if (IsPrintPreview() && !stop_scrolling()) {
+    DCHECK_EQ(new_device_scale, device_scale());
+    gfx::ScrollOffset scroll_offset =
+        container_wrapper_->GetFrame()->GetScrollOffset();
+    scroll_offset.Scale(device_scale());
+    set_scroll_position(gfx::Point(scroll_offset.x(), scroll_offset.y()));
+    UpdateScroll();
+  }
+
+  // Scrolling in the main PDF Viewer UI is already handled by
+  // `HandleUpdateScrollMessage()`.
 }
 
 void PdfViewWebPlugin::InvalidatePluginContainer() {

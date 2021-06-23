@@ -700,6 +700,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Autofill.ErrorDialogShown" enum="AutofillErrorDialogType"
+    expires_after="2022-02-01">
+  <owner>siashah@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <summary>
+    Log when an autofill error dialog is shown to the user along with its type.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.ExpirationDateFixFlowPrompt.Events"
     enum="AutofillExpirationDateFixFlowPromptEvent" expires_after="2021-10-04">
   <owner>siashah@google.com</owner>
@@ -1210,7 +1219,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.LocalCardMigrationBubbleResult"
-    enum="AutofillLocalCardMigrationBubbleResult" expires_after="2021-11-07">
+    enum="AutofillLocalCardMigrationBubbleResult" expires_after="2022-03-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>
@@ -1221,7 +1230,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Autofill.LocalCardMigrationBubbleUserInteraction"
     enum="AutofillLocalCardMigrationBubbleUserInteraction"
-    expires_after="2021-07-04">
+    expires_after="2022-03-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>Record how bubble is closed by different user interactions.</summary>
@@ -2374,6 +2383,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The number of times that virtual card metadata is propagated via Chrome
     Sync. It is logged based on whether the metadata is for an existing card or
     a new card.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.VirtualCardManualFallbackBubble.Result.{ShowType}"
+    enum="AutofillVirtualCardManualFallbackBubbleResult"
+    expires_after="2022-05-31">
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records the reason for closing the virtual card manual fallback bubble.
+    Recorded when the bubble is closed.
+  </summary>
+  <token key="ShowType" variants="Autofill.PaymentBubble.Show"/>
+</histogram>
+
+<histogram name="Autofill.VirtualCardManualFallbackBubble.Shown"
+    enum="BooleanPreviouslyShown" expires_after="2022-05-31">
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    This metric is recorded whenever the virtual card manual fallback bubble is
+    shown, after the user has just unmasked and autofilled a virtual card. It
+    records whether the bubble has just appeared for the first time (false) or
+    if it is being reshown due to user actions (true).
   </summary>
 </histogram>
 

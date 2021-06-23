@@ -185,6 +185,11 @@ const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
 const base::Feature kBluetoothWbsDogfood{"BluetoothWbsDogfood",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable display of button on Arc provisioning failure dialog for network
+// tests.
+const base::Feature kButtonARCNetworkDiagnostics{
+    "ButtonARCNetworkDiagnostics", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
 const base::Feature kCameraPrivacySwitchNotifications{
@@ -199,6 +204,11 @@ const base::Feature kCaptureMode{"CaptureMode",
 // CDM using the library CDM interface.
 const base::Feature kCdmFactoryDaemon{"CdmFactoryDaemon",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, allow per-network roaming configuration when cellular roaming is
+// not disabled for the device through enterprise policy.
+const base::Feature kCellularAllowPerNetworkRoaming{
+    "CellularAllowPerNetworkRoaming", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the value of |kCellularUseAttachApn| should have no effect and
 // and the LTE attach APN configuration will not be sent to the modem. This

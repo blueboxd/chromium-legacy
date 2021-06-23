@@ -3282,6 +3282,7 @@ static_library("browser") {
       "//components/content_creation/notes/android",
       "//components/content_creation/notes/core",
       "//components/content_creation/notes/core:features",
+      "//components/content_creation/notes/core:prefs",
       "//components/content_creation/notes/core/server",
       "//components/content_creation/notes/core/templates",
       "//components/content_settings/android",
@@ -6196,6 +6197,8 @@ static_library("browser") {
 
   if (enable_pdf) {
     sources += [
+      "pdf/chrome_pdf_stream_delegate.cc",
+      "pdf/chrome_pdf_stream_delegate.h",
       "pdf/pdf_extension_util.cc",
       "pdf/pdf_extension_util.h",
     ]

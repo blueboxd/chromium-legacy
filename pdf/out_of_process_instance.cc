@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/escape.h"
 #include "pdf/accessibility.h"
@@ -71,21 +72,13 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "pdf/ppapi_migration/pdfium_font_linux.h"
+#endif
+
 namespace chrome_pdf {
 
 namespace {
-
-// Constants used in handling postMessage() messages.
-constexpr char kType[] = "type";
-// Name of identifier field passed from JS to the plugin and back, to associate
-// Page->Plugin messages to Plugin->Page responses.
-constexpr char kJSMessageId[] = "messageId";
-// Save attachment (Page -> Plugin)
-constexpr char kJSSaveAttachmentType[] = "saveAttachment";
-constexpr char kJSAttachmentIndex[] = "attachmentIndex";
-// Save attachment data (Plugin -> Page)
-constexpr char kJSSaveAttachmentDataType[] = "saveAttachmentData";
-constexpr char kJSAttachmentDataToSave[] = "dataToSave";
 
 constexpr base::TimeDelta kFindResultCooldown =
     base::TimeDelta::FromMilliseconds(100);
@@ -525,24 +518,12 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   DCHECK(!edit_mode());
 #endif  // !BUILDFLAG(ENABLE_INK)
 
-  pp::PDF::SetCrashData(GetPluginInstance(), original_url, top_level_url);
+  pp::PDF::SetCrashData(this, original_url, top_level_url);
   return engine()->New(original_url, headers);
 }
 
 void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
-  pp::VarDictionary dict(message);
-  if (!dict.Get(kType).is_string()) {
-    NOTREACHED();
-    return;
-  }
-
-  std::string type = dict.Get(kType).AsString();
-
-  if (type == kJSSaveAttachmentType) {
-    HandleSaveAttachmentMessage(dict);
-  } else {
-    PdfViewPluginBase::HandleMessage(ValueFromVar(message));
-  }
+  PdfViewPluginBase::HandleMessage(ValueFromVar(message));
 }
 
 bool OutOfProcessInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -675,7 +656,7 @@ pp::Resource OutOfProcessInstance::PrintPages(
   // Convert buffer to Pepper type.
   pp::Buffer_Dev buffer;
   if (!pdf_data.empty()) {
-    buffer = pp::Buffer_Dev(GetPluginInstance(), pdf_data.size());
+    buffer = pp::Buffer_Dev(this, pdf_data.size());
     if (!buffer.is_null())
       memcpy(buffer.data(), pdf_data.data(), pdf_data.size());
   }
@@ -865,46 +846,10 @@ void OutOfProcessInstance::RotateCounterclockwise() {
   engine()->RotateCounterclockwise();
 }
 
-void OutOfProcessInstance::HandleSaveAttachmentMessage(
-    const pp::VarDictionary& dict) {
-  if (!dict.Get(pp::Var(kJSMessageId)).is_string() ||
-      !dict.Get(pp::Var(kJSAttachmentIndex)).is_int() ||
-      dict.Get(pp::Var(kJSAttachmentIndex)).AsInt() < 0) {
-    NOTREACHED();
-    return;
-  }
-
-  int index = dict.Get(pp::Var(kJSAttachmentIndex)).AsInt();
-  const std::vector<DocumentAttachmentInfo>& list =
-      engine()->GetDocumentAttachmentInfoList();
-  if (static_cast<size_t>(index) >= list.size() || !list[index].is_readable ||
-      !IsSaveDataSizeValid(list[index].size_bytes)) {
-    NOTREACHED();
-    return;
-  }
-
-  pp::VarDictionary message;
-  message.Set(kType, kJSSaveAttachmentDataType);
-  message.Set(kJSMessageId, dict.Get(pp::Var(kJSMessageId)));
-  // This will be overwritten if the save is successful.
-  message.Set(kJSAttachmentDataToSave, pp::Var(pp::Var::Null()));
-
-  std::vector<uint8_t> data = engine()->GetAttachmentData(index);
-  if (data.size() != list[index].size_bytes) {
-    NOTREACHED();
-    return;
-  }
-
-  if (IsSaveDataSizeValid(data.size())) {
-    pp::VarArrayBuffer buffer(data.size());
-    std::copy(data.begin(), data.end(), reinterpret_cast<char*>(buffer.Map()));
-    message.Set(kJSAttachmentDataToSave, buffer);
-  }
-  PostMessage(message);
-}
-
-pp::Instance* OutOfProcessInstance::GetPluginInstance() {
-  return this;
+void OutOfProcessInstance::SetLastPluginInstance() {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  SetLastPepperInstance(this);
+#endif
 }
 
 void OutOfProcessInstance::ResetRecentlySentFindUpdate(int32_t /* unused */) {
@@ -920,7 +865,7 @@ void OutOfProcessInstance::SetAccessibilityDocInfo(
   PP_PrivateAccessibilityDocInfo pp_doc_info = {
       doc_info.page_count, PP_FromBool(doc_info.text_accessible),
       PP_FromBool(doc_info.text_copyable)};
-  pp::PDF::SetAccessibilityDocInfo(GetPluginInstance(), &pp_doc_info);
+  pp::PDF::SetAccessibilityDocInfo(this, &pp_doc_info);
 }
 
 void OutOfProcessInstance::SetAccessibilityPageInfo(
@@ -936,8 +881,8 @@ void OutOfProcessInstance::SetAccessibilityPageInfo(
       ToPrivateAccessibilityCharInfo(text_runs);
   pp::PDF::PrivateAccessibilityPageObjects pp_page_objects =
       ToPrivateAccessibilityPageObjects(page_objects);
-  pp::PDF::SetAccessibilityPageInfo(GetPluginInstance(), &pp_page_info,
-                                    pp_text_runs, pp_chars, pp_page_objects);
+  pp::PDF::SetAccessibilityPageInfo(this, &pp_page_info, pp_text_runs, pp_chars,
+                                    pp_page_objects);
 }
 
 void OutOfProcessInstance::SetAccessibilityViewportInfo(
@@ -955,7 +900,7 @@ void OutOfProcessInstance::SetAccessibilityViewportInfo(
            viewport_info.focus_info.focused_object_type),
        viewport_info.focus_info.focused_object_page_index,
        viewport_info.focus_info.focused_annotation_index_in_page}};
-  pp::PDF::SetAccessibilityViewportInfo(GetPluginInstance(), &pp_viewport_info);
+  pp::PDF::SetAccessibilityViewportInfo(this, &pp_viewport_info);
 }
 
 void OutOfProcessInstance::SetPluginCanSave(bool can_save) {
@@ -1027,9 +972,8 @@ void OutOfProcessInstance::NotifySelectionChanged(const gfx::PointF& left,
                                                   int left_height,
                                                   const gfx::PointF& right,
                                                   int right_height) {
-  pp::PDF::SelectionChanged(GetPluginInstance(), PPFloatPointFromPointF(left),
-                            left_height, PPFloatPointFromPointF(right),
-                            right_height);
+  pp::PDF::SelectionChanged(this, PPFloatPointFromPointF(left), left_height,
+                            PPFloatPointFromPointF(right), right_height);
 }
 
 void OutOfProcessInstance::NotifyUnsupportedFeature() {

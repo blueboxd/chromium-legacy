@@ -2907,6 +2907,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"bluetooth-wbs-dogfood", flag_descriptions::kBluetoothWbsDogfoodName,
      flag_descriptions::kBluetoothWbsDogfoodDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kBluetoothWbsDogfood)},
+    {"button-arc-network-diagnostics",
+     flag_descriptions::kButtonARCNetworkDiagnosticsName,
+     flag_descriptions::kButtonARCNetworkDiagnosticsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kButtonARCNetworkDiagnostics)},
+    {"cellular-allow-per-network-roaming",
+     flag_descriptions::kCellularAllowPerNetworkRoamingName,
+     flag_descriptions::kCellularAllowPerNetworkRoamingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCellularAllowPerNetworkRoaming)},
     {"cellular-forbid-attach-apn",
      flag_descriptions::kCellularForbidAttachApnName,
      flag_descriptions::kCellularForbidAttachApnDescription, kOsCrOS,
@@ -5720,13 +5728,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
-    {"win-use-native-spellchecker",
-     flag_descriptions::kWinUseBrowserSpellCheckerName,
-     flag_descriptions::kWinUseBrowserSpellCheckerDescription, kOsWin,
-     FEATURE_VALUE_TYPE(spellcheck::kWinUseBrowserSpellChecker)},
-#endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
-
     {"safety-tips", flag_descriptions::kSafetyTipName,
      flag_descriptions::kSafetyTipDescription, kOsAll,
      FEATURE_VALUE_TYPE(security_state::features::kSafetyTipUI)},
@@ -7307,6 +7308,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPhoneHubCameraRollDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPhoneHubCameraRoll)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"sameparty-cookies-considered-first-party",
+     flag_descriptions::kSamePartyCookiesConsideredFirstPartyName,
+     flag_descriptions::kSamePartyCookiesConsideredFirstPartyDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kSamePartyCookiesConsideredFirstParty)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

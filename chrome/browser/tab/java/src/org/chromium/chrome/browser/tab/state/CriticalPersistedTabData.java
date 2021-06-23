@@ -215,9 +215,11 @@ public class CriticalPersistedTabData extends PersistedTabData {
             mParentId = criticalPersistedTabDataProto.getParentId();
             mRootId = criticalPersistedTabDataProto.getRootId();
             mTimestampMillis = criticalPersistedTabDataProto.getTimestampMillis();
-            mWebContentsState =
-                    new WebContentsState(criticalPersistedTabDataProto.getWebContentsStateBytes()
-                                                 .asReadOnlyByteBuffer());
+            ByteString webContentsStateByteString =
+                    criticalPersistedTabDataProto.getWebContentsStateBytes();
+            mWebContentsState = new WebContentsState(
+                    ByteBuffer.allocateDirect(webContentsStateByteString.size()));
+            webContentsStateByteString.copyTo(mWebContentsState.buffer());
             mWebContentsState.setVersion(WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
             mUrl = mWebContentsState.getVirtualUrlFromState() == null
                     ? GURL.emptyGURL()
@@ -367,7 +369,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
     // TODO(crbug.com/1220678) Change PersistedTabData saves to use ByteBuffer instead of byte[]
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     @Override
-    public Supplier<byte[]> getSerializeSupplier() {
+    public Supplier<ByteBuffer> getSerializeSupplier() {
         CriticalPersistedTabDataProto.Builder builder;
         final WebContentsState webContentsState;
         final ByteBuffer byteBuffer;
@@ -394,7 +396,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
                                         ? ByteString.EMPTY
                                         : ByteString.copyFrom(getContentStateByteArray(byteBuffer)))
                         .build()
-                        .toByteArray();
+                        .toByteString()
+                        .asReadOnlyByteBuffer();
             }
         };
     }

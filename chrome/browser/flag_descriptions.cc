@@ -2181,6 +2181,12 @@ const char kSafetyTipDescription[] =
     "If enabled, a Safety Tip UI may be displayed when visiting or interacting "
     "with a site Chrome believes may be suspicious.";
 
+const char kSamePartyCookiesConsideredFirstPartyName[] =
+    "Consider SameParty cookies to be first-party.";
+const char kSamePartyCookiesConsideredFirstPartyDescription[] =
+    "If enabled, SameParty cookies will not be blocked even if third-party "
+    "cookies are blocked.";
+
 const char kSchemefulSameSiteName[] = "Schemeful Same-Site";
 const char kSchemefulSameSiteDescription[] =
     "Modify the same-site computation such that origins with the same "
@@ -3865,16 +3871,6 @@ const char kUseXpsForPrintingFromPdfDescription[] =
     "printing PDF documents.";
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-const char kWinUseBrowserSpellCheckerName[] =
-    "Use the Windows OS spell checker";
-const char kWinUseBrowserSpellCheckerDescription[] =
-    "For supported languages, use the Windows OS spell checker to find "
-    "spelling mistakes and provide spelling suggestions. Additional languages "
-    "can be installed in the Windows OS settings to improve Windows spell "
-    "check support.";
-#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-
 #endif  // defined(OS_WIN)
 
 // Mac -------------------------------------------------------------------------
@@ -4059,6 +4055,11 @@ const char kBluetoothWbsDogfoodDescription[] =
     "or fully launched. Only on the few models that Bluetooth WBS is "
     "still stablizing this flag will take effect.";
 
+const char kButtonARCNetworkDiagnosticsName[] = "ARC Network Tests Button";
+const char kButtonARCNetworkDiagnosticsDescription[] =
+    "Enables the display of a button on the ARC Provisioning failure dialog "
+    "that opens the connectivity section of the diagnostics app.";
+
 const char kPreferConstantFrameRateName[] = "Prefer Constant Frame Rate";
 const char kPreferConstantFrameRateDescription[] =
     "Enables this flag to prefer using constant frame rate for camera when "
@@ -4075,6 +4076,12 @@ const char kCategoricalSearchDescription[] =
 const char kCdmFactoryDaemonName[] = "CDM Factory Daemon";
 const char kCdmFactoryDaemonDescription[] =
     "Use the CDM daemon instead of the library CDM";
+
+const char kCellularAllowPerNetworkRoamingName[] =
+    "Allow per-networking roaming";
+const char kCellularAllowPerNetworkRoamingDescription[] =
+    "Allows per-network cellular roaming configuration when cellular roaming "
+    "is not disabled for the device through enterprise policy.";
 
 const char kCellularForbidAttachApnName[] = "Forbid Use Attach APN";
 const char kCellularForbidAttachApnDescription[] =

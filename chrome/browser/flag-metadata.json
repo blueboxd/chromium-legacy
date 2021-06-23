@@ -486,6 +486,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "button-arc-network-diagnostics",
+    "owners": [ "arc-core@google.com"],
+    "expiry_milestone": 98
+  },
+  {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dmurph" ],
     "expiry_milestone": 95
@@ -529,6 +534,11 @@
     "name": "cdm-factory-daemon",
     "owners": [ "jkardatzke", "xhwang", "chromeos-gfx-video@google.com" ],
     "expiry_milestone": 91
+  },
+  {
+    "name": "cellular-allow-per-network-roaming",
+    "owners": [ "chadduffin", "khorimoto", "cros-connectivity@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "cellular-forbid-attach-apn",
@@ -2434,11 +2444,6 @@
     "name": "enable-skia-renderer",
     "owners": [ "backer", "kylechar", "penghuang" ],
     "expiry_milestone": 93
-  },
-  {
-    "name": "enable-speculative-service-worker-start-on-query-input",
-    "owners": [ "jdonnelly" ],
-    "expiry_milestone": 78
   },
   {
     "name": "enable-start-surface",
@@ -4657,6 +4662,11 @@
     "name": "safety-tips",
     "owners": [ "jdeblasio", "estark", "meacer" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "sameparty-cookies-considered-first-party",
+    "owners": ["cfredric", "chrome-first-party-sets@chromium.org"],
+    "expiry_milestone": 98
   },
   {
     "name": "sanitizer-api",

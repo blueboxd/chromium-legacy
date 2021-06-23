@@ -30,7 +30,6 @@ class Size;
 namespace pp {
 class Size;
 class TextInput_Dev;
-class VarDictionary;
 }  // namespace pp
 
 namespace chrome_pdf {
@@ -103,7 +102,7 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
                                                bool case_sensitive) override;
-  pp::Instance* GetPluginInstance() override;
+  void SetLastPluginInstance() override;
   void SetSelectedText(const std::string& selected_text) override;
   bool IsValidLink(const std::string& url) override;
   std::unique_ptr<Graphics> CreatePaintGraphics(const gfx::Size& size) override;
@@ -148,9 +147,6 @@ class OutOfProcessInstance : public PdfViewPluginBase,
   void UserMetricsRecordAction(const std::string& action) override;
 
  private:
-  // Message handlers.
-  void HandleSaveAttachmentMessage(const pp::VarDictionary& dict);
-
   void ResetRecentlySentFindUpdate(int32_t);
 
   bool CanSaveEdits() const;

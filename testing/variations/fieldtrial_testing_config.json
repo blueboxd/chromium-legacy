@@ -3066,8 +3066,9 @@
             ],
             "experiments": [
                 {
-                    "name": "SchedulePeriodicPurge_V2",
+                    "name": "Enabled_V4",
                     "enable_features": [
+                        "ReleaseDiscardableFreeListPages",
                         "SchedulePeriodicPurge"
                     ]
                 }
@@ -3121,6 +3122,26 @@
                     "enable_features": [
                         "DnsOverHttps",
                         "DnsOverHttpsUpgrade"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DownloadBufferSize": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "AllowFileBufferSizeControl",
+                    "params": {
+                        "download_file_buffer_size": "1048576"
+                    },
+                    "enable_features": [
+                        "AllowFileBufferSizeControl"
                     ]
                 }
             ]
@@ -8102,7 +8123,7 @@
                 {
                     "name": "EnabledDefault",
                     "enable_features": [
-                        "ToolbarUserHardwareBitmapDraw"
+                        "ToolbarUseHardwareBitmapDraw"
                     ]
                 }
             ]

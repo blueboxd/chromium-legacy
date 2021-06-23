@@ -97,6 +97,11 @@ vars = {
   # be overridden by gclient variables.
   'checkout_google_benchmark': False,
 
+  # By default, do not checkout JavaScript coverage node modules. These packages
+  # are used to post-process raw v8 coverage reports into IstanbulJS compliant
+  # output.
+  'checkout_js_coverage_modules': False,
+
   # Check out and download nacl by default, unless on an arm mac.
   # This can be disabled e.g. with custom_vars.
   'checkout_nacl': 'not (host_os == "mac" and host_cpu == "arm64")',
@@ -217,11 +222,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '80c83a1225d90e9aa7381caa6b21bc7bedc69105',
+  'skia_revision': 'f87f5b02ecaa0d520f5ff2d669f86965d59c6080',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4123728f9f0c79a3c7453389a425195da7b5cca6',
+  'v8_revision': '9da945e5b8473ca0453d430f33699d02617a8cc3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -264,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '55ac452daa1381ba4b78630f18a9b866eee5c30e',
+  'nacl_revision': 'e7a4322ff001c20ddd1e107380961153b9c1763b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -403,7 +408,7 @@ vars = {
   'libcxx_revision':       '8fa87946779682841e21e2da977eccfb6cb3bded',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:e9b8433248ae2c117644b4e40b33203e7d3da192',
+  'gn_version': 'git_revision:d924640c25f9d90386716116a53957f24d709042',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -646,7 +651,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'K0eYZEjn03NtddMM3Zj2YkEighAC64eeVY7GOcPkcLAC',
+          'version': 'NwI023DUkIAFgh_dT_YfyEA4gau3AmaD6ojMh5nLSt4C',
         },
       ],
       'dep_type': 'cipd',
@@ -657,7 +662,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'F2mczBjtqH2z6unnmpvadDZqfZcJGAFaNzzKL4jVuV4C',
+          'version': 'BhLnEBjQvjRArb01nwt3IRZorGhoS6Su84BOzp7v-w8C',
         },
       ],
       'dep_type': 'cipd',
@@ -668,7 +673,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'ceoqTuWOs56A5YR9W9X5adGuer7DZGh_Jz5oyGHawDgC',
+          'version': '9L5Y4rDP7q64fPuOz_lMUEM7dzC3EAjSQ2DNFgucVHwC',
         },
       ],
       'dep_type': 'cipd',
@@ -969,7 +974,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '09f358bae36c316e3c4c39cd344de964bd0fed7c',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '3745d59ea424beecd12bea0ccfe8635f3f27cf61',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1355,7 +1360,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '905b6e3887d3eea5da33389aaa79e15eb45dd40e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f67ef956e963987d738cd97bc5b029d58b2dcf65',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1444,7 +1449,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'LieFB6bFq-7RUGMVRhbOR3IXo6WdPE7fCzCMv4PnaScC'
+              'version': 'Xg_fxY4Un9oKu5vNb2SJl3FYCPoopjpB4KbNM6R9vacC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1548,14 +1553,14 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '22ba62ffe79c3881581ab430368bf3764d9533eb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@c3e7a778ddf65b2373275d6f5441655914cd475a',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@5fbfa253f282089317281dd63d93f12758cb7237',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
 
   # Display server protocol for Linux.
   'src/third_party/wayland/src': {
-      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + 'eb1339edd398b9f5328816931e585db4229aa132',
+      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + 'e558eb5a986c75e664330895b9c6e02acf1741ed',
       'condition': 'checkout_linux',
   },
 
@@ -1587,7 +1592,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '396a02ab134c801271921a78a5c9fb9c0c476449',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '2e3edc1da90a6c050af0bd29ef631073b128da07',
+    Var('webrtc_git') + '/src.git' + '@' + '28e582d55af51a230f90eabeb49ab9fde2123c46',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1648,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2a5ada661cd98b4b76542e268ed7b0b737696b75',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@18241276c6eeb356a6c3dff75d47f16ea641ee82',
     'condition': 'checkout_src_internal',
   },
 
@@ -4073,6 +4078,21 @@ hooks = [
                 '--no_auth',
                 '--bucket', 'chromium-nodejs',
                 '-s', 'src/third_party/node/node_modules.tar.gz.sha1',
+    ],
+  },
+
+  # NPM dependencies for JavaScript code coverage.
+  {
+    'name': 'js_coverage_node_modules',
+    'condition': 'checkout_js_coverage_modules',
+    'pattern': '.',
+    'action': [ 'python3',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/js_code_coverage',
+                '-s', 'src/third_party/js_code_coverage/node_modules.tar.gz.sha1',
     ],
   },
 

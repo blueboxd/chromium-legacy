@@ -20,6 +20,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_desktop.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -332,11 +334,10 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, MediaRequest) {
   const int render_frame_id = render_frame_host->GetRoutingID();
 
   MockAppPublisher mock_app_publisher;
-  WebAppsPublisherHost web_apps_publisher_host(profile());
+  WebAppsPublisherHost& web_apps_publisher_host =
+      *apps::AppServiceProxyFactory::GetForProfile(profile())
+           ->WebAppsPublisherHostForTesting();
   web_apps_publisher_host.SetPublisherForTesting(&mock_app_publisher);
-  web_apps_publisher_host.Init();
-  mock_app_publisher.Wait();
-  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 1U);
 
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindLambdaForTesting([render_process_id, render_frame_id,
@@ -510,6 +511,91 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, Notification) {
   EXPECT_EQ(mock_app_publisher.get_deltas().size(), 2U);
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->has_badge,
             apps::mojom::OptionalBool::kTrue);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, DisabledState) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppSyncBridge& web_app_sync_bridge =
+      *provider().registry_controller().AsWebAppSyncBridge();
+  const AppId app_id = InstallWebAppFromManifest(
+      browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
+
+  AppId app2_id;
+  {
+    const std::u16string description = u"Uninstalled Web App";
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->start_url =
+        embedded_test_server()->GetURL("app.site.com", "/simple.html");
+    web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
+    web_app_info->title = description;
+    web_app_info->description = description;
+    app2_id = InstallWebApp(std::move(web_app_info));
+    web_app_sync_bridge.SetAppIsLocallyInstalled(
+        app2_id,
+        /*is_locally_installed=*/false);
+  }
+
+  MockAppPublisher mock_app_publisher;
+  WebAppsPublisherHost web_apps_publisher_host(profile());
+  web_apps_publisher_host.SetPublisherForTesting(&mock_app_publisher);
+  web_apps_publisher_host.Init();
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 2U);
+  if (mock_app_publisher.get_deltas()[0]->app_id == app_id) {
+    EXPECT_EQ(mock_app_publisher.get_deltas()[0]->icon_key->icon_effects,
+              IconEffects::kRoundCorners | IconEffects::kCrOsStandardIcon);
+    EXPECT_EQ(mock_app_publisher.get_deltas()[1]->app_id, app2_id);
+    EXPECT_EQ(mock_app_publisher.get_deltas()[1]->icon_key->icon_effects,
+              IconEffects::kRoundCorners | IconEffects::kCrOsStandardMask |
+                  IconEffects::kBlocked);
+  } else {
+    EXPECT_EQ(mock_app_publisher.get_deltas()[0]->app_id, app2_id);
+    EXPECT_EQ(mock_app_publisher.get_deltas()[0]->icon_key->icon_effects,
+              IconEffects::kRoundCorners | IconEffects::kCrOsStandardMask |
+                  IconEffects::kBlocked);
+    EXPECT_EQ(mock_app_publisher.get_deltas()[1]->app_id, app_id);
+    EXPECT_EQ(mock_app_publisher.get_deltas()[1]->icon_key->icon_effects,
+              IconEffects::kRoundCorners | IconEffects::kCrOsStandardIcon);
+  }
+
+  web_app_sync_bridge.SetAppIsDisabled(app_id, true);
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 3U);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app_id);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->icon_key->icon_effects,
+            IconEffects::kRoundCorners | IconEffects::kCrOsStandardIcon |
+                IconEffects::kBlocked);
+
+  web_app_sync_bridge.SetAppIsDisabled(app2_id, true);
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 4U);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app2_id);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->icon_key->icon_effects,
+            IconEffects::kRoundCorners | IconEffects::kCrOsStandardMask |
+                IconEffects::kBlocked);
+
+  web_app_sync_bridge.SetAppIsDisabled(app_id, false);
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 5U);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app_id);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->icon_key->icon_effects,
+            IconEffects::kRoundCorners | IconEffects::kCrOsStandardIcon);
+
+  web_app_sync_bridge.SetAppIsDisabled(app2_id, false);
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 6U);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app2_id);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->icon_key->icon_effects,
+            IconEffects::kRoundCorners | IconEffects::kCrOsStandardMask |
+                IconEffects::kBlocked);
+
+  provider().registrar().NotifyWebAppManifestUpdated(app_id,
+                                                     base::StringPiece());
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 7U);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app_id);
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->icon_key->icon_effects,
+            IconEffects::kRoundCorners | IconEffects::kCrOsStandardIcon);
 }
 
 }  // namespace web_app

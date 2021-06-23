@@ -284,6 +284,7 @@
 #include "components/site_isolation/preloaded_isolated_origins.h"
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_redirect/common/subresource_redirect_features.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/url_fixer.h"
@@ -416,9 +417,9 @@
 #include "sandbox/policy/mac/sandbox_mac.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
-#include "ash/content/scanning/url_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/webui/scanning/url_constants.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -3536,6 +3537,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->text_track_window_color = style->window_color;
     web_prefs->text_track_window_padding = style->window_padding;
     web_prefs->text_track_window_radius = style->window_radius;
+  }
+
+  if (subresource_redirect::ShouldEnablePublicImageHintsBasedCompression() ||
+      subresource_redirect::ShouldEnableLoginRobotsCheckedImageCompression()) {
+    web_prefs->litepage_subresource_redirect_origin =
+        subresource_redirect::GetSubresourceRedirectOrigin();
   }
 
 #if defined(OS_ANDROID)

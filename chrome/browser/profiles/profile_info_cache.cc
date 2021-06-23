@@ -177,41 +177,6 @@ void ProfileInfoCache::DisableProfileMetricsForTesting() {
 #endif
 }
 
-void ProfileInfoCache::NotifyIfProfileNamesHaveChanged() {
-  std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
-  for (ProfileAttributesEntry* entry : entries) {
-    std::u16string old_display_name = entry->GetLastNameToDisplay();
-    if (entry->HasProfileNameChanged()) {
-      for (auto& observer : observer_list_)
-        observer.OnProfileNameChanged(entry->GetPath(), old_display_name);
-    }
-  }
-}
-
-void ProfileInfoCache::NotifyProfileSupervisedUserIdChanged(
-    const base::FilePath& profile_path) {
-  for (auto& observer : observer_list_)
-    observer.OnProfileSupervisedUserIdChanged(profile_path);
-}
-
-void ProfileInfoCache::NotifyProfileIsOmittedChanged(
-    const base::FilePath& profile_path) {
-  for (auto& observer : observer_list_)
-    observer.OnProfileIsOmittedChanged(profile_path);
-}
-
-void ProfileInfoCache::NotifyProfileThemeColorsChanged(
-    const base::FilePath& profile_path) {
-  for (auto& observer : observer_list_)
-    observer.OnProfileThemeColorsChanged(profile_path);
-}
-
-void ProfileInfoCache::NotifyProfileHostedDomainChanged(
-    const base::FilePath& profile_path) {
-  for (auto& observer : observer_list_)
-    observer.OnProfileHostedDomainChanged(profile_path);
-}
-
 void ProfileInfoCache::DeleteProfileFromCache(
     const base::FilePath& profile_path) {
   ProfileAttributesEntry* entry = GetProfileAttributesWithPath(profile_path);
@@ -252,32 +217,8 @@ size_t ProfileInfoCache::GetNumberOfProfiles(bool include_guest_profile) const {
       });
 }
 
-size_t ProfileInfoCache::GetIndexOfProfileWithPath(
-    const base::FilePath& profile_path) const {
-  if (profile_path.DirName() != user_data_dir_)
-    return std::string::npos;
-  std::string search_key = CacheKeyFromProfilePath(profile_path);
-  for (size_t i = 0; i < keys_.size(); ++i) {
-    if (keys_[i] == search_key)
-      return i;
-  }
-  return std::string::npos;
-}
-
 base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(keys_[index]);
-}
-
-void ProfileInfoCache::NotifyProfileAuthInfoChanged(
-    const base::FilePath& profile_path) {
-  for (auto& observer : observer_list_)
-    observer.OnProfileAuthInfoChanged(profile_path);
-}
-
-void ProfileInfoCache::NotifyIsSigninRequiredChanged(
-    const base::FilePath& profile_path) {
-  for (auto& observer : observer_list_)
-    observer.OnProfileSigninRequiredChanged(profile_path);
 }
 
 const base::FilePath& ProfileInfoCache::GetUserDataDir() const {
@@ -301,14 +242,6 @@ const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
   const base::DictionaryValue* info = nullptr;
   cache->GetDictionaryWithoutPathExpansion(keys_[index], &info);
   return info;
-}
-
-void ProfileInfoCache::SetInfoForProfileAtIndex(
-    size_t index,
-    std::unique_ptr<base::DictionaryValue> info) {
-  DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
-  base::DictionaryValue* cache = update.Get();
-  cache->SetKey(keys_[index], base::Value::FromUniquePtrValue(std::move(info)));
 }
 
 std::string ProfileInfoCache::CacheKeyFromProfilePath(

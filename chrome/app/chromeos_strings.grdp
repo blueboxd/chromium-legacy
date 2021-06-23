@@ -3742,6 +3742,14 @@
     OK
   </message>
 
+  <!-- Lacros data migration screen. -->
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_TITLE" desc="Title of the data migration screen.">
+    Updating Chrome browser
+  </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_SUBTITLE" desc="Subtitle of the data migration screen.">
+    You will be able to use your Chromebook shortly.
+  </message>
+
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">
     Print
@@ -5427,7 +5435,7 @@ You can manage this account’s settings by installing the Family Link app on yo
     Autocorrect undo dialog is shown for <ph name="TYPED_WORD">$1<ex>hllo</ex></ph> corrected to <ph name="CORRECTED_WORD">$2<ex>hello</ex></ph>.  Press up arrow to access, escape to ignore.
   </message>
   <message name="IDS_SUGGESTION_TAB_KEY" desc="This string is the tab key annotation, which is used to educate users how to accept a predictive writing suggestion">
-    Tab
+    tab
   </message>
 
   <!-- Strings for emoji picker-->

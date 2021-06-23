@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.widget.DateDividedAdapter.TimedItem;
+import org.chromium.components.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.url.GURL;
 
 import java.util.Arrays;
@@ -95,24 +96,31 @@ public class HistoryItem extends TimedItem {
         mManager = manager;
     }
 
-    /**
-     * Navigates a tab to this item's URL.
-     */
-    public void open() {
+    /** Notifies when a history item was clicked. */
+    public void onItemClicked() {
         if (mManager != null) {
-            mManager.recordUserActionWithOptionalSearch("OpenItem");
-            mManager.recordOpenedItemMetrics(this);
-            mManager.openUrl(mUrl, null, false);
+            mManager.onItemClicked(this);
         }
     }
 
     /**
      * Removes this item.
      */
-    public void remove() {
+    public void onItemRemoved() {
         if (mManager != null) {
-            mManager.recordUserActionWithOptionalSearch("RemoveItem");
-            mManager.removeItem(this);
+            mManager.onItemRemoved(this);
         }
+    }
+
+    /**
+     * Given a URL, returns a large icon for that URL if one is available.
+     * @param desiredSizePx The desired size of the icon in pixels.
+     * @param callback The method to call asynchronously when the result is available. This callback
+     *                 will not be called if this method returns false.
+     */
+    void getLargeIconForUrl(int desiredSizePx, final LargeIconCallback callback) {
+        if (mManager == null || mManager.getLargeIconBridge() == null) return;
+
+        mManager.getLargeIconBridge().getLargeIconForUrl(getUrl(), desiredSizePx, callback);
     }
 }

@@ -2167,7 +2167,6 @@ static_library("ui") {
       "browser_commands_chromeos.h",
       "extensions/extension_installed_notification.cc",
       "extensions/extension_installed_notification.h",
-      "platform_keys_certificate_selector_chromeos.h",
       "settings_window_manager_chromeos.cc",
       "settings_window_manager_chromeos.h",
       "settings_window_manager_observer_chromeos.h",
@@ -2213,8 +2212,6 @@ static_library("ui") {
       "views/frame/immersive_mode_controller_chromeos.cc",
       "views/frame/immersive_mode_controller_chromeos.h",
       "views/frame/native_browser_frame_factory_chromeos.cc",
-      "views/platform_keys_certificate_selector_chromeos.cc",
-      "views/platform_keys_certificate_selector_chromeos.h",
       "views/plugin_vm/plugin_vm_installer_view.cc",
       "views/plugin_vm/plugin_vm_installer_view.h",
       "views/profiles/profile_indicator_icon.cc",
@@ -2414,6 +2411,8 @@ static_library("ui") {
       "webui/chromeos/login/kiosk_enable_screen_handler.h",
       "webui/chromeos/login/l10n_util.cc",
       "webui/chromeos/login/l10n_util.h",
+      "webui/chromeos/login/lacros_data_migration_screen_handler.cc",
+      "webui/chromeos/login/lacros_data_migration_screen_handler.h",
       "webui/chromeos/login/locale_switch_screen_handler.cc",
       "webui/chromeos/login/locale_switch_screen_handler.h",
       "webui/chromeos/login/management_transition_screen_handler.cc",
@@ -2709,16 +2708,16 @@ static_library("ui") {
       "//ash/components/audio",
       "//ash/components/pcie_peripheral",
       "//ash/constants",
-      "//ash/content/os_feedback_ui",
-      "//ash/content/scanning",
-      "//ash/content/shimless_rma",
-      "//ash/content/shortcut_customization_ui",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
       "//ash/public/cpp/app_list/vector_icons",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/services/recording/public/mojom",
       "//ash/shortcut_viewer",
+      "//ash/webui/os_feedback_ui",
+      "//ash/webui/scanning",
+      "//ash/webui/shimless_rma",
+      "//ash/webui/shortcut_customization_ui",
       "//build:chromeos_buildflags",
       "//chrome/app:generated_resources",
       "//chrome/browser/ash/crosapi",
@@ -2884,7 +2883,7 @@ static_library("ui") {
         ]
       }
       deps += [
-        "//ash/content/file_manager:file_manager_ui",
+        "//ash/webui/file_manager:file_manager_ui",
         "//chromeos/components/demo_mode_app_ui",
         "//chromeos/components/sample_system_web_app_ui",
         "//chromeos/components/telemetry_extension_ui",
@@ -2898,6 +2897,7 @@ static_library("ui") {
 
   if (is_chromeos_ash || is_chromeos_lacros) {
     sources += [
+      "platform_keys_certificate_selector_chromeos.h",
       "views/frame/browser_frame_header_chromeos.cc",
       "views/frame/browser_frame_header_chromeos.h",
       "views/frame/browser_non_client_frame_view_chromeos.cc",
@@ -2905,6 +2905,8 @@ static_library("ui") {
       "views/frame/browser_non_client_frame_view_factory_chromeos.cc",
       "views/frame/top_controls_slide_controller_chromeos.cc",
       "views/frame/top_controls_slide_controller_chromeos.h",
+      "views/platform_keys_certificate_selector_chromeos.cc",
+      "views/platform_keys_certificate_selector_chromeos.h",
     ]
     deps += [
       "//chromeos/strings",

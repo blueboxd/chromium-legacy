@@ -4770,13 +4770,6 @@ crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-enviro
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 
-# DevTools underscore migration
-crbug.com/1207342 http/tests/devtools/tracing/frame-model-instrumentation.js [ Pass Failure ]
-crbug.com/1207342 http/tests/devtools/tracing/frame-model.js [ Pass Failure ]
-crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot.js [ Pass Failure ]
-crbug.com/1207342 http/tests/inspector-protocol/cpu-profiler/record-cpu-profile-with-cpu-throttling.js [ Pass Failure ]
-crbug.com/1207342 http/tests/inspector-protocol/page/frameScheduledNavigation.js [ Pass Failure ]
-
 # Sheriff 2018-04-13
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
@@ -6889,7 +6882,7 @@ crbug.com/1219767 [ Linux ] virtual/threaded/external/wpt/animation-worklet/work
 
 # Sheriff 2021-06-03
 crbug.com/1185121 fast/scroll-snap/animate-fling-to-snap-points-1.html [ Pass Failure ]
-crbug.com/1176162 [ Linux ] http/tests/devtools/screen-orientation-override.js [ Pass Failure ]
+crbug.com/1176162 http/tests/devtools/screen-orientation-override.js [ Pass Failure ]
 crbug.com/1215949 external/wpt/pointerevents/pointerevent_iframe-touch-action-none_touch.html [ Pass Timeout ]
 crbug.com/1216139 virtual/bfcache/http/tests/devtools/bfcache/bfcache-elements-update.js [ Pass Failure ]
 
@@ -6939,43 +6932,6 @@ crbug.com/1219499 [ Win ] external/wpt/websockets/Create-blocked-port.any.html?w
 crbug.com/1220317 [ Linux ] external/wpt/media-capabilities/decodingInfoEncryptedMedia.https.html [ Pass Failure Crash ]
 crbug.com/1220317 [ Linux ] external/wpt/media-capabilities/decodingInfo.any.html [ Pass Failure Crash ]
 crbug.com/1220007 [ Linux ] fullscreen/full-screen-iframe-allowed-video.html [ Pass Failure Timeout ]
-
-# Temporarily disabled to land https://crrev.com/c/2959898
-crbug.com/1208389 http/tests/devtools/console/console-call-getter-on-proto.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/command-line-api.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-api-on-call-frame.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-bind-fake.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-copy-treeoutline.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-edit-property-value.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-eval-fake.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-eval-global.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-eval-object-literal.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-eval-scoped.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-filter-level-test.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-format-array-prototype.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-format-classes.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-format-collections.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-format-es6.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-format-table.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-format.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-group-similar.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-log-linkify-links.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-log-side-effects.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-message-format.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-pins.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-save-to-temp-var.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-table.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-tainted-globals.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-timestamp.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-top-level-await.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/console-truncate-long-messages.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/console/shadow-element.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/sources/debugger-ui/debugger-save-to-temp-var.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/sources/debugger/debugger-scope-minified-variables.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/sources/snippet-module.js [ Pass Failure ]
-crbug.com/1208389 http/tests/devtools/portals/portals-console.js [ Pass Failure ]
-crbug.com/1208389 virtual/portals/http/tests/devtools/portals/portals-console.js [ Pass Failure ]
 
 # Some flaky gpu canvas compositing
 crbug.com/1221326 virtual/gpu/fast/canvas/canvas-composite-image.html [ Pass Failure ]
@@ -7090,6 +7046,7 @@ crbug.com/1106746 http/tests/devtools/security/interstitial-sidebar.js [ Skip ]
 crbug.com/1106746 http/tests/devtools/security/mixed-content-sidebar.js [ Skip ]
 
 crbug.com/1222097 svg/css/alignment-baseline.html [ Pass Failure ]
+crbug.com/1222531 http/tests/inspector-protocol/css/constructed-stylesheet-source-url.js [ Pass Failure ]
 crbug.com/1222097 virtual/synchronous_html_parser/http/tests/inspector-protocol/css/constructed-stylesheet-source-url.js [ Pass Failure ]
 crbug.com/1222097 virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Pass Failure ]
 

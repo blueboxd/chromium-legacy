@@ -222,6 +222,7 @@ class ProfileAttributesEntry {
   static const char kUseGAIAPictureKey[];
 
  private:
+  friend class ProfileAttributesStorage;
   friend class ProfileInfoCache;
   friend class ProfileThemeUpdateServiceBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
@@ -323,14 +324,6 @@ class ProfileAttributesEntry {
   // Internal version of `SetIsOmitted()` that doesn't trigger any
   // notifications.
   void SetIsOmittedInternal(bool is_omitted);
-
-  // These members are an implementation detail meant to smooth the migration
-  // of the ProfileInfoCache to the ProfileAttributesStorage interface. They can
-  // be safely removed once the ProfileInfoCache stops using indices
-  // internally.
-  // TODO(anthonyvd): Remove ProfileInfoCache related implementation details
-  // when this class holds the members required to fulfill its own contract.
-  size_t profile_index() const;
 
   ProfileInfoCache* profile_info_cache_ = nullptr;
   PrefService* prefs_ = nullptr;

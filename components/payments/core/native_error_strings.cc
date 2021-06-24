@@ -227,5 +227,23 @@ const char kTimeoutTooLong[] =
     "The \"secure-payment-confirmation\" method requires at most 1 hour "
     "\"timeout\" field.";
 
+const char kChallengeRequired[] =
+    "The \"secure-payment-confirmation\" method requires a non-empty "
+    "\"challenge\" field.";
+
+const char kInstrumentRequired[] =
+    "The \"secure-payment-confirmation\" method requires a "
+    "\"instrument\" field.";
+
+const char kInstrumentDisplayNameRequired[] =
+    "The \"secure-payment-confirmation\" method requires a non-empty "
+    "\"instrument.displayName\" field.";
+
+const char kValidInstrumentIconRequired[] =
+    "The \"secure-payment-confirmation\" method requires a valid URL in the "
+    "\"instrument.icon\" field.";
+
+const char kInvalidIcon[] = "The icon is not valid.";
+
 }  // namespace errors
 }  // namespace payments

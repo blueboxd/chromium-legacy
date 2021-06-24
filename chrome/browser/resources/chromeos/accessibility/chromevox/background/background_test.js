@@ -3338,7 +3338,7 @@ TEST_F('ChromeVoxBackgroundTest', 'Separator', function() {
   const site = `
     <p>Start</p>
     <p><span>Hello</span></p>
-    <p><span role="separator">Separator content should not be read</span></p>
+    <p><span role="separator">Separator content should be read</span></p>
     <p><span>World</span></p>
   `;
   this.runWithLoadedTree(site, function(rootNode) {
@@ -3346,9 +3346,8 @@ TEST_F('ChromeVoxBackgroundTest', 'Separator', function() {
         .call(doCmd('nextObject'))
         .expectSpeech('Hello')
         .call(doCmd('nextObject'))
-        .expectNextSpeechUtteranceIsNot('Separator content should not be read')
-        .expectSpeech('Separator')
-        .expectBraille('seprtr')
+        .expectSpeech('Separator content should be read')
+        .expectBraille('Separator content should be read')
         .call(doCmd('nextObject'))
         .expectSpeech('World')
         .replay();
@@ -3553,4 +3552,16 @@ SYNC_TEST_F('ChromeVoxBackgroundTest', 'PageLoadEarcons', async function() {
   handler.onCurrentRangeChanged({start: {node: fakeNode}});
   assertEqualStringArrays(
       [Earcon.PAGE_START_LOADING, Earcon.PAGE_FINISH_LOADING], sawEarcons);
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'NewTabRead', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `<p>start</p><p>end</p>`;
+  this.runWithLoadedTree(site, function(root) {
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeech('end')
+        .call(press(KeyCode.T, {ctrl: true}))
+        .expectSpeech(/New Tab/)
+        .replay();
+  });
 });

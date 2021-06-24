@@ -579,8 +579,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
   {
     // Create a SharedImageRepresentationDawn.
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
@@ -696,8 +696,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_Dawn_Skia_UnclearTexture) {
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
@@ -780,8 +780,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, UnclearDawn_SkiaFails) {
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
@@ -977,8 +977,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
   // Create the first Dawn texture then clear it to green.
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
@@ -1013,8 +1013,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
   // Create another Dawn texture then clear it with another color.
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     // Check again that the texture is still green
@@ -1094,7 +1094,6 @@ SharedImageBackingFactoryD3DTest::CreateVideoImages(const gfx::Size& size,
   HRESULT hr = d3d11_device->CreateTexture2D(&desc, &data, &d3d11_texture);
   if (FAILED(hr))
     return {};
-  EXPECT_TRUE(SUCCEEDED(hr));
 
   uint32_t usage =
       gpu::SHARED_IMAGE_USAGE_VIDEO_DECODE | gpu::SHARED_IMAGE_USAGE_GLES2 |
@@ -1105,16 +1104,17 @@ SharedImageBackingFactoryD3DTest::CreateVideoImages(const gfx::Size& size,
   if (use_shared_handle) {
     Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
     hr = d3d11_texture.As(&dxgi_resource);
-    EXPECT_TRUE(SUCCEEDED(hr));
+    DCHECK_EQ(hr, S_OK);
 
     HANDLE handle;
     hr = dxgi_resource->CreateSharedHandle(
         nullptr, DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE,
         nullptr, &handle);
-    EXPECT_TRUE(SUCCEEDED(hr));
+    if (FAILED(hr))
+      return {};
 
     shared_handle.Set(handle);
-    EXPECT_TRUE(shared_handle.IsValid());
+    DCHECK(shared_handle.IsValid());
 
     usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU;
   }
@@ -1372,7 +1372,7 @@ void SharedImageBackingFactoryD3DTest::RunOverlayTest(bool use_shared_handle,
   Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture;
   HRESULT hr =
       d3d11_device->CreateTexture2D(&staging_desc, nullptr, &staging_texture);
-  ASSERT_TRUE(SUCCEEDED(hr));
+  ASSERT_EQ(hr, S_OK);
 
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context;
   d3d11_device->GetImmediateContext(&device_context);
@@ -1382,7 +1382,7 @@ void SharedImageBackingFactoryD3DTest::RunOverlayTest(bool use_shared_handle,
   D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
   hr = device_context->Map(staging_texture.Get(), 0, D3D11_MAP_READ, 0,
                            &mapped_resource);
-  ASSERT_TRUE(SUCCEEDED(hr));
+  ASSERT_EQ(hr, S_OK);
 
   const unsigned char* pixels =
       static_cast<const unsigned char*>(mapped_resource.pData);

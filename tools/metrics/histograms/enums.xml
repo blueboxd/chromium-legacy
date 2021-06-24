@@ -10786,6 +10786,7 @@ histogram as enum -->
   <int value="1" label="User selected the Read Later lab"/>
   <int value="2" label="User selected the Tab Search lab"/>
   <int value="3" label="User selected the Tab Scrolling lab"/>
+  <int value="4" label="User selected the Side Panel lab"/>
 </enum>
 
 <enum name="ChromeMLServiceDecisionTreePredictionResult">
@@ -27819,6 +27820,7 @@ Called by update_extension_histograms.py.-->
   <int value="1555" label="FILEMANAGERPRIVATEINTERNAL_CANCELZIP"/>
   <int value="1556"
       label="ACCESSIBILITY_PRIVATE_GETLOCALIZEDDOMKEYSTRINGFORKEYCODE"/>
+  <int value="1557" label="SCRIPTING_REGISTERCONTENTSCRIPTS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -46389,6 +46391,7 @@ from previous Chrome versions.
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1144754105" label="ScalableStatusArea:enabled"/>
   <int value="-1144501989" label="UserActivityPredictionMlService:disabled"/>
+  <int value="-1144170722" label="DisableProcessReuse:enabled"/>
   <int value="-1144128534" label="GoogleLensSdkIntent:enabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
@@ -49514,6 +49517,7 @@ from previous Chrome versions.
   <int value="1515334367" label="ToolbarMicIphAndroid:disabled"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
   <int value="1518833340" label="MediaAppDisplayExif:enabled"/>
+  <int value="1518946321" label="DisableProcessReuse:disabled"/>
   <int value="1519067750" label="ActionableContentSettings:disabled"/>
   <int value="1520181151" label="PrintServerScaling:disabled"/>
   <int value="1524178643" label="AppServiceExternalProtocol:enabled"/>
@@ -51087,6 +51091,13 @@ from previous Chrome versions.
   <int value="11" label="Invalid version"/>
   <int value="12" label="Bad Update specification"/>
   <int value="13" label="Bad App Status"/>
+</enum>
+
+<enum name="ManifestParseIdResultType">
+  <int value="0" label="Success"/>
+  <int value="1" label="Not specified, used default value"/>
+  <int value="2" label="Invalid start_url"/>
+  <int value="3" label="Feature is disabled"/>
 </enum>
 
 <enum name="MappedAndResidentPagesDumpState">
@@ -71884,6 +71895,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
 </enum>
 
+<enum name="SendTabToSelfNotificationStatus">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Opened"/>
+  <int value="3" label="TimedOut"/>
+  <int value="4" label="Sent"/>
+</enum>
+
 <enum name="SendTabToSelfNotifyLocalDevice">
   <obsolete>
     Removed 05/2020.
@@ -80738,6 +80757,7 @@ Full version information for the fingerprint enum values:
   <int value="62" label="kErrorCodePackageExcludedFromUpdate"/>
   <int value="63" label="kErrorCodeDownloadCancelledPerPolicy"/>
   <int value="64" label="kErrorCodeRepeatedFpFromOmahaError"/>
+  <int value="65" label="kErrorCodeInvalidateLastUpdate"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">
@@ -81745,6 +81765,14 @@ Full version information for the fingerprint enum values:
   <int value="0" label="All variations are applied"/>
   <int value="1" label="Only critical variations applied"/>
   <int value="2" label="All variations are restricted"/>
+</enum>
+
+<enum name="VariationsSafeModeCachedFlagsBehavior">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Not engaged - below threshold"/>
+  <int value="2" label="Engaged - using safe values"/>
+  <int value="3" label="Engaged - ignoring outdated safe values"/>
+  <int value="4" label="Engaged - without safe values"/>
 </enum>
 
 <enum name="VariationsSeedDateChange">
@@ -83506,6 +83534,33 @@ others/histograms.xml -->
   </obsolete>
   <int value="0" label="WebApk infobar shown from the app banner"/>
   <int value="1" label="WebApk infobar shown from the add to homescreen menu"/>
+</enum>
+
+<enum name="WebAPKInstallResultChromeOS">
+  <int value="0" label="Success">Installed successfully.</int>
+  <int value="1" label="App invalid">
+    Installation failed because the app was in an invalid state (e.g., it had no
+    suitable icon).
+  </int>
+  <int value="2" label="ARC unavailable">
+    Installation failed because the ARC system was not available.
+  </int>
+  <int value="3" label="Update cancelled">
+    Update was cancelled because the existing WebAPK was found to be up-to-date.
+  </int>
+  <int value="4" label="Update failed during GetWebApkInfo">
+    Updating failed because there was an error while fetching information about
+    the existing WebAPK from ARC.
+  </int>
+  <int value="5" label="Network error">
+    The network request to the WebAPK server failed with an error.
+  </int>
+  <int value="6" label="Network timeout">
+    The network request to the WebAPK server timed out.
+  </int>
+  <int value="7" label="Google Play error">
+    Installing the WebAPK through Google Play failed with an error.
+  </int>
 </enum>
 
 <enum name="WebApkInstallSource">

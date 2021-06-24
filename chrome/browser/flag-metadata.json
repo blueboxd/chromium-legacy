@@ -1101,6 +1101,12 @@
     "expiry_milestone": 95
   },
   {
+    "name": "disable-process-reuse",
+    "owners": [
+      "yangsharon@google.com", "alexmos@google.com", "creis@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "disable-threaded-scrolling",
     "owners": [ "bokan", "input-dev" ],
     // This flag is a useful debugging control when investigating scrolling
@@ -2935,11 +2941,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "files-app-copy-image",
-    "owners": ["nohe", "lucmult", "weifangsun"],
-    "expiry_milestone": 95
-  },
-  {
     "name": "files-filters-in-recents",
     "owners": [ "simmonsjosh@google.com", "benhartney@google.com" ],
     "expiry_milestone": 98
@@ -4021,7 +4022,7 @@
   {
     "name": "omnibox-max-url-matches",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-max-zero-suggest-matches",

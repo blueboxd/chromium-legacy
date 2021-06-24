@@ -9,14 +9,18 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
+#include "components/feed/core/v2/launch_reliability_logger.h"
 #include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/scheduling.h"
+#include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
 #include "components/feed/core/v2/tasks/upload_actions_task.h"
+#include "components/feed/core/v2/types.h"
 #include "components/offline_pages/task/task.h"
 #include "components/version_info/channel.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -79,6 +83,9 @@ class LoadStreamTask : public offline_pages::Task {
 
     // Experiments information from the server.
     Experiments experiments;
+
+    // Reliability logging feed launch result: nullopt if loading is successful.
+    absl::optional<feedwire::DiscoverLaunchResult> launch_result;
   };
 
   LoadStreamTask(const Options& options,
@@ -101,7 +108,7 @@ class LoadStreamTask : public offline_pages::Task {
   void QueryRequestComplete(FeedNetwork::QueryRequestResult result);
   void ProcessNetworkResponse(std::unique_ptr<feedwire::Response> response,
                               NetworkResponseInfo response_info);
-  void Done(LoadStreamStatus status);
+  void Done(LaunchResult result);
 
   Options options_;
   FeedStream& stream_;  // Unowned.
@@ -125,6 +132,7 @@ class LoadStreamTask : public offline_pages::Task {
   std::unique_ptr<UploadActionsTask> upload_actions_task_;
   std::unique_ptr<UploadActionsTask::Result> upload_actions_result_;
   absl::optional<bool> fetched_content_has_notice_card_;
+  LaunchReliabilityLogger& launch_reliability_logger_;
   base::WeakPtrFactory<LoadStreamTask> weak_ptr_factory_{this};
 };
 

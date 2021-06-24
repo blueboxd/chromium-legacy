@@ -200,12 +200,12 @@ attestation::AttestationKeyType GetVaKeyType(CertScope scope) {
   }
 }
 
-platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope) {
+chromeos::platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope) {
   switch (scope) {
     case CertScope::kUser:
-      return platform_keys::TokenId::kUser;
+      return chromeos::platform_keys::TokenId::kUser;
     case CertScope::kDevice:
-      return platform_keys::TokenId::kSystem;
+      return chromeos::platform_keys::TokenId::kSystem;
   }
 }
 
@@ -232,7 +232,8 @@ scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(
     size_t length) {
   net::CertificateList cert_list =
       net::X509Certificate::CreateCertificateListFromBytes(
-          data, length, net::X509Certificate::FORMAT_AUTO);
+          base::as_bytes(base::make_span(data, length)),
+          net::X509Certificate::FORMAT_AUTO);
 
   if (cert_list.size() != 1) {
     return {};

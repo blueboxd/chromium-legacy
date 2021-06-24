@@ -490,11 +490,6 @@ editing.EditableLine = class {
     return this.startContainerValue_;
   }
 
-  /** @return {!cursors.Cursor} */
-  get startCursor() {
-    return this.start_;
-  }
-
   /** @return {boolean} */
   hasCollapsedSelection() {
     return this.start_.equals(this.end_);
@@ -654,6 +649,38 @@ editing.EditableLine = class {
       prev = cur;
       queueMode = QueueMode.QUEUE;
     }
+  }
+
+  /**
+   * Creates a range around the character to the right of the line's starting
+   * position.
+   * @return {!Range}
+   */
+  createCharRange() {
+    const start = this.start_;
+    let end = start.move(Unit.CHARACTER, Movement.DIRECTIONAL, Dir.FORWARD);
+    if (start.node !== end.node) {
+      end = new cursors.Cursor(start.node, start.index + 1);
+    }
+    return new Range(start, end);
+  }
+
+  /**
+   * @param {boolean} shouldMoveToPreviousWord
+   * @return {!Range}
+   */
+  createWordRange(shouldMoveToPreviousWord) {
+    const pos = this.start_;
+    // When movement goes to the end of a word, we actually want to
+    // describe the word itself; this is considered the previous word so
+    // impacts the movement type below. We can give further context e.g.
+    // by saying "end of word", if we chose to be more verbose.
+    const start = pos.move(
+        Unit.WORD,
+        shouldMoveToPreviousWord ? Movement.DIRECTIONAL : Movement.BOUND,
+        Dir.BACKWARD);
+    const end = pos.move(Unit.WORD, Movement.BOUND, Dir.FORWARD);
+    return new Range(start, end);
   }
 };
 });  // goog.scope

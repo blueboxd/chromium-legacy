@@ -70,6 +70,9 @@ std::vector<uint8_t> GetSecurePaymentConfirmationChallenge(
     const url::Origin& merchant_origin,
     const mojom::PaymentCurrencyAmountPtr& amount,
     std::string* challenge) {
+  DCHECK(
+      !base::FeatureList::IsEnabled(features::kSecurePaymentConfirmationAPIV2));
+
   base::Value total(base::Value::Type::DICTIONARY);
   total.SetKey("currency", base::Value(amount->currency));
   total.SetKey("value", base::Value(amount->value));
@@ -81,17 +84,9 @@ std::vector<uint8_t> GetSecurePaymentConfirmationChallenge(
 
   base::Value transaction_data(base::Value::Type::DICTIONARY);
 
-  // `challenge` is a renaming of `networkData` used if the
-  // SecurePaymentConfirmationAPIV2 flag is enabled.
-  if (base::FeatureList::IsEnabled(features::kSecurePaymentConfirmationAPIV2)) {
-    transaction_data.SetKey(
-        "challenge",
-        base::Value(EncodeSecurePaymentConfirmationString(network_data)));
-  } else {
-    transaction_data.SetKey(
-        "networkData",
-        base::Value(EncodeSecurePaymentConfirmationString(network_data)));
-  }
+  transaction_data.SetKey(
+      "networkData",
+      base::Value(EncodeSecurePaymentConfirmationString(network_data)));
   transaction_data.SetKey("merchantData", std::move(merchant_data));
 
   bool success = base::JSONWriter::Write(transaction_data, challenge);
@@ -176,10 +171,17 @@ void SecurePaymentConfirmationApp::InvokePaymentApp(
 
   options->allow_credentials = std::move(credentials);
 
-  // Create a new challenge that is a hash of the transaction data.
-  options->challenge = GetSecurePaymentConfirmationChallenge(
-      request_->challenge, merchant_origin_,
-      spec_->GetTotal(/*selected_app=*/this)->amount, &challenge_);
+  if (base::FeatureList::IsEnabled(features::kSecurePaymentConfirmationAPIV2)) {
+    options->challenge = request_->challenge;
+    options->payment = blink::mojom::PaymentOptions::New(
+        spec_->GetTotal(/*selected_app=*/this)->amount.Clone(),
+        request_->instrument.Clone());
+  } else {
+    // Create a new challenge that is a hash of the transaction data.
+    options->challenge = GetSecurePaymentConfirmationChallenge(
+        request_->challenge, merchant_origin_,
+        spec_->GetTotal(/*selected_app=*/this)->amount, &challenge_);
+  }
 
   // We are nullifying the security check by design, and the origin that created
   // the credential isn't saved anywhere.
@@ -289,6 +291,18 @@ void SecurePaymentConfirmationApp::AbortPaymentApp(
   std::move(abort_callback).Run(/*abort_success=*/false);
 }
 
+mojom::PaymentResponsePtr
+SecurePaymentConfirmationApp::SetAppSpecificResponseFields(
+    mojom::PaymentResponsePtr response) const {
+  if (base::FeatureList::IsEnabled(features::kSecurePaymentConfirmationAPIV2)) {
+    response->secure_payment_confirmation =
+        mojom::SecurePaymentConfirmationResponse::New(response_->info.Clone(),
+                                                      response_->signature,
+                                                      response_->user_handle);
+  }
+  return response;
+}
+
 void SecurePaymentConfirmationApp::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   if (content::RenderFrameHost::FromID(authenticator_frame_routing_id_) ==
@@ -318,46 +332,53 @@ void SecurePaymentConfirmationApp::OnGetAssertion(
   RecordSystemPromptResult(
       SecurePaymentConfirmationSystemPromptResult::kAccepted);
 
-  // Serialize response into a JSON string. Browser will pass this string over
-  // Mojo IPC into Blink, which will parse it into a JavaScript object for the
-  // merchant.
-  base::DictionaryValue info_json;
-  if (response->info) {
-    info_json.SetString("id", response->info->id);
-    info_json.SetString("client_data_json",
-                        EncodeSecurePaymentConfirmationString(
-                            response->info->client_data_json));
-    info_json.SetString("authenticator_data",
-                        EncodeSecurePaymentConfirmationString(
-                            response->info->authenticator_data));
-  }
-
-  base::DictionaryValue prf_results_json;
-  if (response->prf_results) {
-    DCHECK(!response->prf_results->id.has_value());
-    prf_results_json.SetString("first", EncodeSecurePaymentConfirmationString(
-                                            response->prf_results->first));
-    if (response->prf_results->second) {
-      prf_results_json.SetString("second",
-                                 EncodeSecurePaymentConfirmationString(
-                                     *response->prf_results->second));
-    }
-  }
-
   base::DictionaryValue json;
-  json.SetKey("info", std::move(info_json));
-  json.SetString("challenge", challenge_);
-  json.SetString("signature",
-                 EncodeSecurePaymentConfirmationString(response->signature));
-  if (response->user_handle.has_value()) {
-    json.SetString("user_handle", EncodeSecurePaymentConfirmationString(
-                                      response->user_handle.value()));
+  if (base::FeatureList::IsEnabled(features::kSecurePaymentConfirmationAPIV2)) {
+    response_ = std::move(response);
+  } else {
+    // Serialize response into a JSON string. Browser will pass this string over
+    // Mojo IPC into Blink, which will parse it into a JavaScript object for the
+    // merchant.
+    base::DictionaryValue info_json;
+    if (response->info) {
+      info_json.SetString("id", response->info->id);
+      info_json.SetString("client_data_json",
+                          EncodeSecurePaymentConfirmationString(
+                              response->info->client_data_json));
+      info_json.SetString("authenticator_data",
+                          EncodeSecurePaymentConfirmationString(
+                              response->info->authenticator_data));
+    }
+
+    base::DictionaryValue prf_results_json;
+    if (response->prf_results) {
+      DCHECK(!response->prf_results->id.has_value());
+      prf_results_json.SetString("first", EncodeSecurePaymentConfirmationString(
+                                              response->prf_results->first));
+      if (response->prf_results->second) {
+        prf_results_json.SetString("second",
+                                   EncodeSecurePaymentConfirmationString(
+                                       *response->prf_results->second));
+      }
+    }
+
+    json.SetKey("info", std::move(info_json));
+    if (!base::FeatureList::IsEnabled(
+            features::kSecurePaymentConfirmationAPIV2)) {
+      json.SetString("challenge", challenge_);
+    }
+    json.SetString("signature",
+                   EncodeSecurePaymentConfirmationString(response->signature));
+    if (response->user_handle.has_value()) {
+      json.SetString("user_handle", EncodeSecurePaymentConfirmationString(
+                                        response->user_handle.value()));
+    }
+    json.SetBoolean("echo_appid_extension", response->echo_appid_extension);
+    json.SetBoolean("appid_extension", response->appid_extension);
+    json.SetBoolean("echo_prf", response->echo_prf);
+    json.SetKey("prf_results", std::move(prf_results_json));
+    json.SetBoolean("prf_not_evaluated", response->echo_prf);
   }
-  json.SetBoolean("echo_appid_extension", response->echo_appid_extension);
-  json.SetBoolean("appid_extension", response->appid_extension);
-  json.SetBoolean("echo_prf", response->echo_prf);
-  json.SetKey("prf_results", std::move(prf_results_json));
-  json.SetBoolean("prf_not_evaluated", response->echo_prf);
 
   std::string json_serialized_response;
   base::JSONWriter::Write(json, &json_serialized_response);

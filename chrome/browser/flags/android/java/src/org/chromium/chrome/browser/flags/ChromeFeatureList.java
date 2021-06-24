@@ -341,6 +341,8 @@ public abstract class ChromeFeatureList {
     public static final String FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS =
             "FocusOmniboxInIncognitoTabIntents";
     public static final String FORCE_APP_LANGUAGE_PROMPT = "ForceAppLanguagePrompt";
+    public static final String FORCE_DISABLE_EXTENDED_SYNC_PROMOS =
+            "ForceDisableExtendedSyncPromos";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
     public static final String CHROME_SURVEY_NEXT_ANDROID = "ChromeSurveyNextAndroid";
@@ -512,6 +514,7 @@ public abstract class ChromeFeatureList {
     public static final String WEBNOTES_STYLIZE = "WebNotesStylize";
     public static final String WIPE_DATA_ON_CHILD_ACCOUNT_SIGNIN = "WipeDataOnChildAccountSignin";
     public static final String XSURFACE_METRICS_REPORTING = "XsurfaceMetricsReporting";
+    public static final String WEB_OTP_CROSS_DEVICE_SIMPLE_STRING = "WebOtpCrossDeviceSimpleString";
 
     @NativeMethods
     interface Natives {

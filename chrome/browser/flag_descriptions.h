@@ -306,6 +306,9 @@ extern const char kDecodeLossyWebPImagesToYUVDescription[];
 extern const char kDetectTargetEmbeddingLookalikesName[];
 extern const char kDetectTargetEmbeddingLookalikesDescription[];
 
+extern const char kDisableProcessReuse[];
+extern const char kDisableProcessReuseDescription[];
+
 extern const char kDoubleBufferCompositingName[];
 extern const char kDoubleBufferCompositingDescription[];
 
@@ -2628,9 +2631,6 @@ extern const char kMagnifierPanningImprovementsDescription[];
 
 extern const char kMagnifierContinuousMouseFollowingModeSettingName[];
 extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
-
-extern const char kFilesAppCopyImageName[];
-extern const char kFilesAppCopyImageDescription[];
 
 extern const char kFilesSinglePartitionFormatName[];
 extern const char kFilesSinglePartitionFormatDescription[];

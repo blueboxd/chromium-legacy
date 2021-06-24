@@ -241,6 +241,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/loader/inter_process_time_ticks_converter.h"
+#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
@@ -854,19 +855,6 @@ void VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
   }
 #endif
 
-  // TODO(https://crbug.com/888079): Remove the DwoC below once we are sure that
-  // the `browser_side_origin` is always the same as the `renderer_side_origin`.
-  if (browser_side_origin != renderer_side_origin) {
-    NavigationRequest::ScopedCrashKeys navigation_request_crash_keys(
-        *navigation_request);
-    SCOPED_CRASH_KEY_STRING256("", "browser_side_origin",
-                               browser_side_origin.GetDebugString());
-    SCOPED_CRASH_KEY_STRING256("", "renderer_side_origin",
-                               renderer_side_origin.GetDebugString());
-    CaptureTraceForNavigationDebugScenario(
-        DebugScenario::kDebugBrowserVsRendererOriginToCommit);
-    base::debug::DumpWithoutCrashing();
-  }
   DCHECK_EQ(browser_side_origin, renderer_side_origin)
       << "; navigation_request->GetURL() = " << navigation_request->GetURL();
 }
@@ -1381,6 +1369,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   GetSiteInstance()->IncrementActiveFrameCount();
 
   if (parent_) {
+    // All frames in a frame tree should use the same storage partition.
+    CHECK_EQ(parent_->GetStoragePartition(), GetStoragePartition());
+
     cross_origin_embedder_policy_ = parent_->cross_origin_embedder_policy();
 
     // New child frames should inherit the nav_entry_id of their parent.
@@ -9587,6 +9578,36 @@ void RenderFrameHostImpl::UpdateSiteURL(const GURL& url, bool is_error_page) {
   }
 }
 
+// Simulates the calculation for DidCommitProvisionalLoadParams' `referrer`.
+// This is written to preserve the behavior of the calculations that happened in
+// the renderer before being moved to the browser. In the future, we might want
+// to remove this function in favor of using NavigationRequest::GetReferrer()
+// or CommonNavigationParam's `referrer` directly.
+blink::mojom::ReferrerPtr GetReferrerForDidCommitParams(
+    NavigationRequest* request) {
+  if (request->DidEncounterError()) {
+    // Error pages always use the referrer from CommonNavigationParams, since
+    // it won't go through its server redirects in the renderer, and won't be
+    // marked as a client redirect.
+    // TODO(https://crbug.com/1218786): Maybe make this case just return the
+    // sanitized referrer below once the client redirect bug is fixed. This
+    // means GetReferrerForDidCommitParams(), NavigationRequest::GetReferrer()
+    // (`sanitized_referrer_`), and CommonNavigationParams's `referrer` will all
+    // return the same value, and GetReferrerForDidCommitParams() and
+    // `sanitized_referrer_` can be removed, leaving only
+    // CommonNavigationParams's `referrer`.
+    return request->common_params().referrer.Clone();
+  }
+
+  // Otherwise, return the sanitized referrer saved in the NavigationRequest.
+  // - For client redirects, this will be the the URL that initiated the
+  // navigation. (Note: this will only be sanitized at the start, and not after
+  // any redirects, including cross-origin ones. See https://crbug.com/1218786)
+  // - For other navigations, this will be the referrer used after the final
+  // redirect.
+  return request->GetReferrer().Clone();
+}
+
 bool RenderFrameHostImpl::DidCommitNavigationInternal(
     std::unique_ptr<NavigationRequest> navigation_request,
     mojom::DidCommitProvisionalLoadParamsPtr params,
@@ -9665,6 +9686,16 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   if (navigation_request)
     was_discarded_ = navigation_request->commit_params().was_discarded;
+
+  if (navigation_request) {
+    // If the navigation went through the browser before committing, it's
+    // possible to calculate the referrer only using information known by the
+    // browser.
+    // TODO(https://crbug.com/1131832): Calculate the referrer for same-document
+    // navigations and the synchronous about:blank commit in the browser too,
+    // and remove `referrer` from DidCommitProvisionalLoadParams.
+    params->referrer = GetReferrerForDidCommitParams(navigation_request.get());
+  }
 
   if (!navigation_request) {
     // If there is no valid NavigationRequest corresponding to this commit,

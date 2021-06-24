@@ -3552,6 +3552,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Conversions.RegisterConversionAllowed" enum="BooleanAllowed"
+    expires_after="M95">
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures how often conversions are dropped by the Attribution Reporting API
+    being disabled. Recorded when a conversion is processed by the browser
+    process. Records not allowed if within an OTR profile, or if the privacy
+    sandbox is not allowed for the conversion and reporting origin.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.RegisteredConversionsPerPage" units="conversions"
     expires_after="2021-11-07">
   <owner>johnidel@chromium.org</owner>
@@ -3574,6 +3587,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Records the number of impressions attempted on a given top level page load.
     Recorded when the page navigates away or is otherwise closed. Only recorded
     for non-off-the-record profiles (OTR profiles have the feature disabled).
+  </summary>
+</histogram>
+
+<histogram name="Conversions.RegisterImpressionAllowed" enum="BooleanAllowed"
+    expires_after="M95">
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures how often impressions are dropped by the Attribution Reporting API
+    being disabled. Recorded when an impression is processed by the browser
+    process. Records not allowed if within an OTR profile, or if the privacy
+    sandbox is not allowed for the impression and reporting origin.
   </summary>
 </histogram>
 
@@ -8483,6 +8509,35 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="LanguageSettings.AppLanguagePrompt.IsTopLanguageSelected"
+    enum="BooleanYesNo" expires_after="2021-12-01">
+  <owner>perrier@chromium.org</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Whether or not the language selected for the app language prompt is one of
+    the top suggested languages or not.
+
+    Reported after the OK button is selected on the prompt. Only reported if the
+    language is changed. Not recorded if the current app language is selected.
+    Not reported if the Cancel button is pressed.
+  </summary>
+</histogram>
+
+<histogram name="LanguageSettings.AppLanguagePrompt.Language"
+    enum="CLD3LanguageCode" expires_after="2021-12-01">
+  <owner>perrier@chromium.org</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    The ISO-639 language code for the selected language from the app language
+    prompt shown at second run. The default system language is recorded as the
+    &quot;empty string&quot;.
+
+    Reported after the OK button is selected on the prompt. Reported even if the
+    OK button is pressed but there is no language change. Not reported if the
+    Cancel button is pressed.
+  </summary>
+</histogram>
+
 <histogram name="LanguageSettings.PageImpression"
     enum="LanguageSettingsPageType" expires_after="2021-12-01">
   <owner>googleo@chromium.org</owner>
@@ -9704,6 +9759,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     histograms will only be used if the Manifest was correctly fetched and
     parsed and the parsed manifest is not empty.
   </summary>
+</histogram>
+
+<histogram name="Manifest.ParseIdResult" enum="ManifestParseIdResultType"
+    expires_after="M99">
+  <owner>phillis@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <summary>Tracks the result of parsing id field in the Manifest.</summary>
 </histogram>
 
 <histogram name="Manifest.ParseSuccess" enum="Boolean"

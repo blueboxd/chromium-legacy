@@ -602,6 +602,12 @@ const char kDeviceDiscoveryNotificationsName[] =
 const char kDeviceDiscoveryNotificationsDescription[] =
     "Device discovery notifications on local network.";
 
+const char kDisableProcessReuse[] = "Disable subframe process reuse";
+const char kDisableProcessReuseDescription[] =
+    "Prevents out-of-process iframes from reusing compatible processes from "
+    "unrelated tabs. This is an experimental mode that will result in more "
+    "processes being created.";
+
 const char kDisallowDocWrittenScriptsUiName[] =
     "Block scripts loaded via document.write";
 const char kDisallowDocWrittenScriptsUiDescription[] =
@@ -4580,10 +4586,6 @@ const char kMagnifierContinuousMouseFollowingModeSettingName[] =
 const char kMagnifierContinuousMouseFollowingModeSettingDescription[] =
     "Enable feature which adds ability to choose new continuous mouse "
     "following mode in Magnifier settings.";
-
-const char kFilesAppCopyImageName[] = "Enable Copy Images from Files App";
-const char kFilesAppCopyImageDescription[] =
-    "Enables the Files App to copy images selected to the system clipboard";
 
 const char kFilesSinglePartitionFormatName[] =
     "Enable Partitioning of Removable Disks.";

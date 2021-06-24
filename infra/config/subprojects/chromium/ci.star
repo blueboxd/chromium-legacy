@@ -423,8 +423,6 @@ consoles.console_view(
 ) for name, category, short_name in (
     ("ToTLinuxOfficial", "ToT Linux", "ofi"),
     ("ToTMacOfficial", "ToT Mac", "ofi"),
-    ("ToTWin", "ToT Windows", "rel"),
-    ("ToTWin64", "ToT Windows|x64", "rel"),
     ("ToTWinOfficial", "ToT Windows", "ofi"),
     ("ToTWinOfficial64", "ToT Windows|x64", "ofi"),
     ("clang-tot-device", "iOS|internal", "dev"),
@@ -1966,9 +1964,11 @@ ci.cipd_builder(
             "tools/android/avd/proto/creation/generic_android28.textpb",
             "tools/android/avd/proto/creation/generic_android29.textpb",
             "tools/android/avd/proto/creation/generic_android30.textpb",
+            "tools/android/avd/proto/creation/generic_androidS.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android30.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_androidS.textpb",
         ],
     },
 )
@@ -2279,6 +2279,15 @@ clang_tot_linux_builder(
 )
 
 ci.clang_builder(
+    name = "ToTWin",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT Windows",
+        short_name = "rel",
+    ),
+    os = os.WINDOWS_ANY,
+)
+
+ci.clang_builder(
     name = "ToTWin(dbg)",
     builderless = False,
     console_view_entry = consoles.console_view_entry(
@@ -2293,6 +2302,15 @@ ci.clang_builder(
     console_view_entry = consoles.console_view_entry(
         category = "ToT Windows",
         short_name = "dll",
+    ),
+    os = os.WINDOWS_ANY,
+)
+
+ci.clang_builder(
+    name = "ToTWin64",
+    console_view_entry = consoles.console_view_entry(
+        category = "ToT Windows|x64",
+        short_name = "rel",
     ),
     os = os.WINDOWS_ANY,
 )

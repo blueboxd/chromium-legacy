@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
+import org.chromium.components.permissions.DeviceItemAdapter;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.bluetooth_scanning.Event;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -77,6 +78,7 @@ public class BluetoothScanningPermissionDialogTest {
             mWindowAndroid = sActivityTestRule.getActivity().getWindowAndroid();
             BluetoothScanningPermissionDialog dialog = new BluetoothScanningPermissionDialog(
                     mWindowAndroid, "https://origin.example.com/", ConnectionSecurityLevel.SECURE,
+                    new ChromeBluetoothScanningPromptAndroidDelegate(),
                     /*nativeBluetoothScanningPermissionDialogPtr=*/42);
             return dialog;
         });

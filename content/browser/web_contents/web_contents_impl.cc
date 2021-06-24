@@ -83,6 +83,7 @@
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
+#include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1708,15 +1709,16 @@ std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
   return all_contents;
 }
 
-void WebContentsImpl::NotifyManifestUrlChanged(RenderFrameHost* rfh) {
-  absl::optional<GURL> manifest_url = rfh->GetPage().GetManifestURL();
+void WebContentsImpl::OnManifestUrlChanged(const PageImpl& page) {
+  absl::optional<GURL> manifest_url = page.GetManifestUrl();
   if (!manifest_url.has_value())
     return;
 
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::NotifyManifestUrlChanged",
-                        "render_frame_host", rfh, "manifest_url", manifest_url);
-  observers_.NotifyObservers(&WebContentsObserver::DidUpdateWebManifestURL, rfh,
-                             *manifest_url);
+                        "render_frame_host", page.main_document(),
+                        "manifest_url", manifest_url);
+  observers_.NotifyObservers(&WebContentsObserver::DidUpdateWebManifestURL,
+                             page.main_document(), *manifest_url);
 }
 
 WebUI* WebContentsImpl::GetWebUI() {
@@ -2141,12 +2143,6 @@ void WebContentsImpl::NotifyNavigationStateChanged(
 
   if (GetOuterWebContents())
     GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
-}
-
-RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {
-  FrameTreeNode* focused_node =
-      GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
-  return focused_node ? focused_node->current_frame_host() : nullptr;
 }
 
 void WebContentsImpl::OnVerticalScrollDirectionChanged(
@@ -3078,16 +3074,6 @@ void WebContentsImpl::Activate() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::Activate");
   if (delegate_)
     delegate_->ActivateContents(this);
-}
-
-void WebContentsImpl::LostCapture(RenderWidgetHostImpl* render_widget_host) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::LostCapture",
-                        "render_widget_host", render_widget_host);
-  if (!RenderViewHostImpl::From(render_widget_host))
-    return;
-
-  if (delegate_)
-    delegate_->LostCapture();
 }
 
 ukm::SourceId
@@ -5540,7 +5526,7 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
         navigation_handle->GetRenderFrameHost());
     if (!rfhi->GetParent()) {
       UpdateFaviconURL(rfhi, rfhi->FaviconURLs());
-      NotifyManifestUrlChanged(rfhi);
+      OnManifestUrlChanged(rfhi->GetPage());
     }
   }
 }
@@ -5560,12 +5546,16 @@ void WebContentsImpl::NotifyChangedNavigationState(
   NotifyNavigationStateChanged(changed_flags);
 }
 
-bool WebContentsImpl::ShouldTransferNavigation(bool is_main_frame_navigation) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::ShouldTransferNavigation",
-                        "is_main_frame_navigation", is_main_frame_navigation);
+bool WebContentsImpl::ShouldAllowRendererInitiatedCrossProcessNavigation(
+    bool is_main_frame_navigation) {
+  OPTIONAL_TRACE_EVENT1(
+      "content",
+      "WebContentsImpl::ShouldAllowRendererInitiatedCrossProcessNavigation",
+      "is_main_frame_navigation", is_main_frame_navigation);
   if (!delegate_)
     return true;
-  return delegate_->ShouldTransferNavigation(is_main_frame_navigation);
+  return delegate_->ShouldAllowRendererInitiatedCrossProcessNavigation(
+      is_main_frame_navigation);
 }
 
 bool WebContentsImpl::ShouldPreserveAbortedURLs() {

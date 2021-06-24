@@ -9,6 +9,8 @@
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {SettingsPrefsElement} from 'chrome://settings/settings.js';
+
 import {FakeChromeEvent} from '../fake_chrome_event.m.js';
 import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
@@ -23,7 +25,7 @@ export class FakeLanguageSettingsPrivate extends TestBrowserProxy {
       'getSpellcheckWords',
     ]);
 
-    // /** @type {!SettingsPrefsElement} */
+    /** @type {?SettingsPrefsElement} */
     this.settingsPrefs_ = null;
 
     /**

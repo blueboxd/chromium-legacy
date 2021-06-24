@@ -8,12 +8,12 @@ import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
 import {assertEquals, assertNotReached} from 'chrome://test/chai_assert.js';
 
 import {createCrostiniForTest} from '../../background/js/mock_crostini.js';
-import {metrics} from '../../common/js/metrics.m.js';
-import {installMockChrome} from '../../common/js/mock_chrome.m.js';
-import {MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {reportPromise} from '../../common/js/test_error_reporting.m.js';
-import {util} from '../../common/js/util.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
+import {metrics} from '../../common/js/metrics.js';
+import {installMockChrome} from '../../common/js/mock_chrome.js';
+import {MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
+import {reportPromise} from '../../common/js/test_error_reporting.js';
+import {util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
@@ -22,7 +22,7 @@ import {DirectoryModel} from './directory_model.m.js';
 import {FakeFileSelectionHandler} from './fake_file_selection_handler.m.js';
 import {FileSelectionHandler} from './file_selection.m.js';
 import {MockMetadataModel} from './metadata/mock_metadata.js';
-import {MetadataUpdateController} from './metadata_update_controller.m.js';
+import {MetadataUpdateController} from './metadata_update_controller.js';
 import {NamingController} from './naming_controller.m.js';
 import {TaskController} from './task_controller.m.js';
 import {FileManagerUI} from './ui/file_manager_ui.js';

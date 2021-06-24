@@ -39,7 +39,6 @@ namespace content {
 
 class BrowserAccessibilityManager;
 class FrameTree;
-class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class RenderViewHostDelegateView;
@@ -216,9 +215,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // outermost main frame's widget. Other widgets always returns an empty rect.
   virtual gfx::Rect GetWindowsControlsOverlayRect() const;
 
-  // Notification that the widget has lost capture.
-  virtual void LostCapture(RenderWidgetHostImpl* render_widget_host) {}
-
   // Notification that the widget has lost the mouse lock.
   virtual void LostMouseLock(RenderWidgetHostImpl* render_widget_host) {}
 
@@ -290,9 +286,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Returns true if there is context menu shown on page.
   virtual bool IsShowingContextMenuOnPage() const;
-
-  // Returns the focused frame across all delegates, or nullptr if none.
-  virtual RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate();
 
   // Invoked when the vertical scroll direction of the root layer changes. Note
   // that if a scroll in a given direction occurs, the scroll is completed, and

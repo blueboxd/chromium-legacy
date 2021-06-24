@@ -18,6 +18,9 @@ class Browser;
 namespace syncer {
 enum class KeyRetrievalTriggerForUMA;
 }  // namespace syncer
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 // Main class for sign-in coordinator. This class should not be instantiated
 // directly, this should be done using the class methods.
@@ -31,6 +34,9 @@ enum class KeyRetrievalTriggerForUMA;
 // Google services settings.
 @property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
     BOOL settingsViewPresented;
+
+// Registers preferences related to sign-in coordinator.
++ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
 // Returns a coordinator for user sign-in workflow.
 // |viewController| presents the sign-in.
@@ -104,7 +110,7 @@ enum class KeyRetrievalTriggerForUMA;
 // |retrievalTrigger| UI elements where the trusted vault reauth has been
 // triggered.
 + (instancetype)
-    trustedVaultReAuthenticationCoordiantorWithBaseViewController:
+    trustedVaultReAuthenticationCoordinatorWithBaseViewController:
         (UIViewController*)viewController
                                                           browser:
                                                               (Browser*)browser

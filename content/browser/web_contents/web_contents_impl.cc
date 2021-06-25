@@ -1715,10 +1715,10 @@ void WebContentsImpl::OnManifestUrlChanged(const PageImpl& page) {
     return;
 
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::NotifyManifestUrlChanged",
-                        "render_frame_host", page.main_document(),
+                        "render_frame_host", &page.GetMainDocument(),
                         "manifest_url", manifest_url);
   observers_.NotifyObservers(&WebContentsObserver::DidUpdateWebManifestURL,
-                             page.main_document(), *manifest_url);
+                             &page.GetMainDocument(), *manifest_url);
 }
 
 WebUI* WebContentsImpl::GetWebUI() {
@@ -3074,12 +3074,6 @@ void WebContentsImpl::Activate() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::Activate");
   if (delegate_)
     delegate_->ActivateContents(this);
-}
-
-ukm::SourceId
-WebContentsImpl::GetUkmSourceIdForLastCommittedSourceIncludingSameDocument()
-    const {
-  return last_committed_source_id_including_same_document_;
 }
 
 void WebContentsImpl::SetTopControlsShownRatio(
@@ -5455,14 +5449,9 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
       }
     }
 
-    if (navigation_handle->IsInMainFrame()) {
-      last_committed_source_id_including_same_document_ =
-          ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
-                                 ukm::SourceIdType::NAVIGATION_ID);
-
-      if (!navigation_handle->IsSameDocument()) {
-        was_ever_audible_ = false;
-      }
+    if (navigation_handle->IsInMainFrame() &&
+        !navigation_handle->IsSameDocument()) {
+      was_ever_audible_ = false;
     }
 
     if (!navigation_handle->IsSameDocument())
@@ -8918,6 +8907,12 @@ WebContentsImpl::GetRenderViewHostsIncludingBackForwardCached() {
   }
 
   return render_view_hosts;
+}
+
+void WebContentsImpl::NotifyPageChanged() {
+  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::PrimaryPageChanged");
+
+  observers_.NotifyObservers(&WebContentsObserver::PrimaryPageChanged);
 }
 
 void WebContentsImpl::RenderFrameHostStateChanged(

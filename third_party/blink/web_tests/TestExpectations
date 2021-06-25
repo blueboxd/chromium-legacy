@@ -949,6 +949,7 @@ crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled
 
 # CSS Text failures
 crbug.com/316409 external/wpt/css/css-text/text-justify/text-justify-and-trailing-spaces-003.html [ Failure ]
+crbug.com/750990 external/wpt/css/css-text/text-transform/text-transform-upperlower-105.html [ Failure ]
 
 # LayoutNG ref-tests that need to be updated (cannot be rebaselined).
 crbug.com/591099 [ Linux ] fast/multicol/newmulticol/hide-box-vertical-lr.html [ Failure ]
@@ -1798,6 +1799,9 @@ crbug.com/381684 [ Win ] fonts/family-fallback-gardiner.html [ Skip ]
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
+crbug.com/1204498 external/wpt/service-workers/service-worker/client-navigate.https.html [ Pass Failure ]
+crbug.com/1223681 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/client-navigate.https.html [ Pass Failure Timeout ]
+
 # crbug.com/1218723 This test fails when SplitCacheByNetworkIsolationKey is enabled.
 crbug.com/1218723 http/tests/devtools/network/network-prefetch.js [ Failure ]
 
@@ -2631,7 +2635,6 @@ crbug.com/626703 [ Win ] external/wpt/density-size-correction/image-set-003.html
 crbug.com/626703 external/wpt/infrastructure/assumptions/non-local-ports.sub.window.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-audio.https.html [ Crash ]
-crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/client-navigate.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-size-adjust-009.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
@@ -2847,8 +2850,6 @@ crbug.com/626703 [ Mac10.14 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/gets
 crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/getstats.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCDataChannel-send.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCDataChannel-send.html [ Timeout ]
-crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/simulcast/getStats.https.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/simulcast/getStats.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCDataChannel-iceRestart.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCDataChannel-iceRestart.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Timeout ]
@@ -5778,9 +5779,6 @@ crbug.com/1007228 [ Mac ] external/wpt/fullscreen/api/element-request-fullscreen
 # Disabled for landing DevTools change
 crbug.com/1011811 http/tests/devtools/persistence/automapping-sourcemap.js [ Pass Failure ]
 
-# Disabled for landing a DevTools cleanup
-crbug.com/1222043 http/tests/devtools/sources/debugger-breakpoints/breakpoint-manager-listeners-count.js [ Pass Failure ]
-
 # Sheriff 2020-06-05
 crbug.com/1091829 [ Mac ] fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
 crbug.com/1091829 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
@@ -5812,7 +5810,6 @@ crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-stroke-box
 
 # Temporarily disable test to allow devtools-frontend changes
 crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Skip ]
-crbug.com/1144127 http/tests/devtools/console/console-xpath.js [ Pass Failure ]
 
 # Sheriff 2020-06-17
 crbug.com/1095969 [ Mac ] fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
@@ -7074,5 +7071,6 @@ crbug.com/1222097 virtual/gpu-rasterization/images/color-profile-background-imag
 
 # Sheriff 2021-06-25
 # Flaky on Webkit Linux Leak
-crbug.com/1223601 [ Linux ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/autoscroll-latch-clicked-node-if-parent-unscrollable.html [ Skip ]
-crbug.com/1223601 [ Linux ] fast/scrolling/reset-scroll-in-onscroll.html [ Skip ]
+crbug.com/1223601 [ Linux ] fast/scrolling/autoscroll-latch-clicked-node-if-parent-unscrollable.html [ Pass Failure ]
+crbug.com/1223601 [ Linux ] fast/scrolling/reset-scroll-in-onscroll.html [ Pass Failure ]
+crbug.com/1223773 external/wpt/webrtc/simulcast/getStats.https.html [ Pass Failure ]

@@ -16,8 +16,8 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/page_info/page_info.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/password_protection/metrics_util.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
@@ -331,10 +331,11 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewDialogBrowserTest,
   ShowAndVerifyUi();
 }
 
+// Disabled because of flakiness: crbug.com/1208502.
 // Shows the Page Info bubble for an admin-provided cert when the page is
 // secure, but has a form that submits to an insecure url.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewDialogBrowserTest,
-                       InvokeUi_MixedContentForm) {
+                       DISABLED_InvokeUi_MixedContentForm) {
   ShowAndVerifyUi();
 }
 

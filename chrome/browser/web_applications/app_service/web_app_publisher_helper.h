@@ -106,8 +106,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       std::vector<apps::mojom::PermissionPtr>* target);
 
   // Creates an |apps::mojom::App| describing |web_app|.
-  apps::mojom::AppPtr ConvertWebApp(const WebApp* web_app,
-                                    apps::mojom::Readiness readiness);
+  apps::mojom::AppPtr ConvertWebApp(const WebApp* web_app);
 
   // Constructs an App with only the information required to identify an
   // uninstallation.
@@ -127,11 +126,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
                        bool clear_site_data,
                        bool report_abuse);
 
-  // If |is_disabled| is |absl::nullopt|, |web_app->chromos_data().is_disabled|
-  // is consulted instead.
-  apps::mojom::IconKeyPtr MakeIconKey(
-      const WebApp* web_app,
-      absl::optional<bool> is_disabled = absl::nullopt);
+  apps::mojom::IconKeyPtr MakeIconKey(const WebApp* web_app);
 
   void SetIconEffect(const std::string& app_id);
 
@@ -185,13 +180,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   void PublishWindowModeUpdate(const std::string& app_id,
                                blink::mojom::DisplayMode display_mode,
                                bool in_experimental_tabbed_window);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(crbug.com/1194709): Make this method private, move
-  // WebAppsChromeOs::OnWebAppInstalled() logic into this class.
-  // Checks whether the |app_id| is in the disabled list.
-  bool IsWebAppInDisabledList(const std::string& app_id) const;
-#endif
 
   Profile* profile() { return profile_; }
 
@@ -262,8 +250,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   void Init(bool observe_media_requests);
 
-  apps::IconEffects GetIconEffects(const WebApp* web_app,
-                                   absl::optional<bool> is_disabled_opt);
+  apps::IconEffects GetIconEffects(const WebApp* web_app);
 
   const WebApp* GetWebApp(const AppId& app_id) const;
 

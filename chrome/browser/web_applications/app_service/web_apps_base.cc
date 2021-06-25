@@ -142,7 +142,7 @@ void WebAppsBase::Launch(const std::string& app_id,
                          int32_t event_flags,
                          apps::mojom::LaunchSource launch_source,
                          apps::mojom::WindowInfoPtr window_info) {
-  publisher_helper().Launch(app_id, event_flags, std::move(launch_source),
+  publisher_helper().Launch(app_id, event_flags, launch_source,
                             std::move(window_info));
 }
 
@@ -151,9 +151,8 @@ void WebAppsBase::LaunchAppWithFiles(const std::string& app_id,
                                      int32_t event_flags,
                                      apps::mojom::LaunchSource launch_source,
                                      apps::mojom::FilePathsPtr file_paths) {
-  publisher_helper().LaunchAppWithFiles(app_id, std::move(container),
-                                        event_flags, std::move(launch_source),
-                                        std::move(file_paths));
+  publisher_helper().LaunchAppWithFiles(app_id, container, event_flags,
+                                        launch_source, std::move(file_paths));
 }
 
 void WebAppsBase::LaunchAppWithIntent(const std::string& app_id,
@@ -162,8 +161,7 @@ void WebAppsBase::LaunchAppWithIntent(const std::string& app_id,
                                       apps::mojom::LaunchSource launch_source,
                                       apps::mojom::WindowInfoPtr window_info) {
   publisher_helper().LaunchAppWithIntent(app_id, event_flags, std::move(intent),
-                                         std::move(launch_source),
-                                         std::move(window_info));
+                                         launch_source, std::move(window_info));
 }
 
 void WebAppsBase::SetPermission(const std::string& app_id,
@@ -203,8 +201,7 @@ void WebAppsBase::ModifyWebAppCapabilityAccess(
                          std::move(accessing_microphone));
 }
 
-void WebAppsBase::ConvertWebApps(apps::mojom::Readiness readiness,
-                                 std::vector<apps::mojom::AppPtr>* apps_out) {
+void WebAppsBase::ConvertWebApps(std::vector<apps::mojom::AppPtr>* apps_out) {
   const WebAppRegistrar* registrar = GetRegistrar();
   // Can be nullptr in tests.
   if (!registrar)
@@ -212,8 +209,7 @@ void WebAppsBase::ConvertWebApps(apps::mojom::Readiness readiness,
 
   for (const WebApp& web_app : registrar->GetApps()) {
     if (Accepts(web_app.app_id())) {
-      apps_out->push_back(
-          publisher_helper().ConvertWebApp(&web_app, readiness));
+      apps_out->push_back(publisher_helper().ConvertWebApp(&web_app));
     }
   }
 }
@@ -221,7 +217,7 @@ void WebAppsBase::ConvertWebApps(apps::mojom::Readiness readiness,
 void WebAppsBase::StartPublishingWebApps(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote) {
   std::vector<apps::mojom::AppPtr> apps;
-  ConvertWebApps(apps::mojom::Readiness::kReady, &apps);
+  ConvertWebApps(&apps);
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));

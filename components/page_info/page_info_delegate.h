@@ -13,7 +13,7 @@
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/security_state/core/security_state.h"
 
 namespace permissions {
@@ -67,6 +67,8 @@ class PageInfoDelegate {
   virtual void OpenCertificateDialog(net::X509Certificate* certificate) = 0;
   virtual void OpenConnectionHelpCenterPage(const ui::Event& event) = 0;
   virtual void OpenSafetyTipHelpCenterPage() = 0;
+  virtual void OpenContentSettingsExceptions(
+      ContentSettingsType content_settings_type) = 0;
 #endif
   virtual permissions::PermissionDecisionAutoBlocker*
   GetPermissionDecisionAutoblocker() = 0;

@@ -13153,6 +13153,12 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="GPU compositor"/>
 </enum>
 
+<enum name="CompressedRecordThresholdMetricEvent">
+  <summary>Whether a reporting pipeline record is compressed or not.</summary>
+  <int value="0" label="Record not compressed"/>
+  <int value="1" label="Record is compressed"/>
+</enum>
+
 <enum name="CompressibleStringCountType">
   <obsolete>
     Dprecated as of Aug 2016. CompressibleString has been reverted once at
@@ -23622,6 +23628,16 @@ Called by update_document_policy_enum.py.-->
   <int value="1" label="Managed EDU (Deprecated)"/>
   <int value="2" label="Managed"/>
   <int value="3" label="Error"/>
+</enum>
+
+<enum name="EnterpriseAccountStatus">
+  <summary>Account status fetched before enrollment process starts.</summary>
+  <int value="0" label="Unknown account"/>
+  <int value="1" label="Consumer account with consumer domain"/>
+  <int value="2" label="Consumer account with business domain"/>
+  <int value="3" label="Organisational account, domain is not verified"/>
+  <int value="4" label="Organisational account, domain is verified"/>
+  <int value="5" label="Dasher account"/>
 </enum>
 
 <enum name="EnterpriseAttributesTPMConsistencyType">
@@ -46105,6 +46121,7 @@ from previous Chrome versions.
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
   <int value="-1367447724"
       label="IncognitoClearBrowsingDataDialogForDesktop:disabled"/>
+  <int value="-1366114365" label="BluetoothAdvertisementMonitoring:disabled"/>
   <int value="-1365795470"
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
   <int value="-1365503870" label="enable-simplified-fullscreen-ui"/>
@@ -47204,6 +47221,7 @@ from previous Chrome versions.
   <int value="-454362199" label="HelpAppV2:disabled"/>
   <int value="-450976085"
       label="AutofillSaveCreditCardUsesImprovedMessaging:disabled"/>
+  <int value="-450100254" label="OverviewButton:enabled"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
   <int value="-447148659" label="ContextMenuTranslateWithGoogleLens:enabled"/>
   <int value="-446879089" label="BluetoothSessionizedMetrics:enabled"/>
@@ -47728,6 +47746,7 @@ from previous Chrome versions.
   <int value="4588113" label="CacheOneGoogleBar:disabled"/>
   <int value="5654819" label="CrostiniGpuSupport:disabled"/>
   <int value="6041813" label="PermissionChipGestureSensitive:disabled"/>
+  <int value="6523501" label="lacros-availability-ignore"/>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="8891567" label="CaptionSettings:enabled"/>
@@ -47971,6 +47990,7 @@ from previous Chrome versions.
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
   <int value="224019823" label="CompositeAfterPaint:enabled"/>
   <int value="225610933" label="SystemLatinPhysicalTyping:enabled"/>
+  <int value="226590039" label="OverviewButton:disabled"/>
   <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
   <int value="229877058" label="ShelfScrollable:disabled"/>
   <int value="233721248" label="DownloadRename:disabled"/>
@@ -48275,6 +48295,7 @@ from previous Chrome versions.
   <int value="477796416" label="ReleaseNotes:enabled"/>
   <int value="477967119" label="enable-unified-media-pipeline"/>
   <int value="479906041" label="RunAllFlashInAllowMode:disabled"/>
+  <int value="480386627" label="OmniboxPedalsBatch3:enabled"/>
   <int value="480544447" label="NonValidatingReloadOnRefreshContentV2:enabled"/>
   <int value="480677983" label="WebXRARDOMOverlay:disabled"/>
   <int value="481506759" label="ServiceWorkerScriptStreaming:enabled"/>
@@ -48938,6 +48959,7 @@ from previous Chrome versions.
   <int value="1053743655" label="NewOverviewAnimations:enabled"/>
   <int value="1054910800" label="enable-timezone-tracking-option"/>
   <int value="1057014709" label="EnforceTLS13Downgrade:enabled"/>
+  <int value="1057709415" label="DeprecateAltBasedSixPack:disabled"/>
   <int value="1057741107"
       label="OmniboxTrendingZeroPrefixSuggestionsOnNTP:disabled"/>
   <int value="1057887829" label="AutofillScanThemeDialog:disabled"/>
@@ -48980,6 +49002,7 @@ from previous Chrome versions.
   <int value="1089913432" label="VirtualDesksGestures:disabled"/>
   <int value="1090377940" label="enable-quic-https"/>
   <int value="1090442943" label="SemanticColorDebugOverride:enabled"/>
+  <int value="1091624595" label="BluetoothAdvertisementMonitoring:enabled"/>
   <int value="1091631619" label="disable-accelerated-video-encode"/>
   <int value="1092896354" label="EnableFullscreenAppList:disabled"/>
   <int value="1093859961" label="RelatedSearchesSimplifiedUx:disabled"/>
@@ -50093,6 +50116,7 @@ from previous Chrome versions.
   <int value="1995322219" label="EmojiHandwritingVoiceInput:enabled"/>
   <int value="1995377612"
       label="HappinessTrackingSurveysForDesktopPrivacySandbox:disabled"/>
+  <int value="1996051411" label="DeprecateAltBasedSixPack:enabled"/>
   <int value="1996125159" label="AutoplayMutedVideos:enabled"/>
   <int value="1997047666" label="NTPSnippetsIncreasedVisibility:disabled"/>
   <int value="1997931863" label="OmniboxContextMenuShowFullUrls:enabled"/>
@@ -50209,6 +50233,7 @@ from previous Chrome versions.
   <int value="2093235103" label="default-tile-width"/>
   <int value="2093949489" label="ArrayPrototypeValues:enabled"/>
   <int value="2094335682" label="StreamlinedUsbPrinterSetup:enabled"/>
+  <int value="2095740699" label="OmniboxPedalsBatch3:disabled"/>
   <int value="2096736155" label="BrowsingDataLifetimeManager:enabled"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2098059607" label="WifiSyncAllowDeletes:disabled"/>

@@ -245,6 +245,15 @@ Polymer({
     },
 
     /**
+     * Determines the arrow icon direction.
+     * @private {string}
+     */
+    arrowIconDirection_: {
+      type: String,
+      computed: 'computeArrowIconDirection_(opened_)',
+    },
+
+    /**
      * Used to track the number of times a user changes scan settings before
      * initiating a scan. This gets reset to 1 when the user selects a different
      * scanner (selecting a different scanner is treated as a setting change).
@@ -318,7 +327,10 @@ Polymer({
     },
 
     /** {boolean} */
-    multiPageScanChecked: Boolean,
+    multiPageScanChecked: {
+      type: Boolean,
+      observer: 'onMultiPageScanCheckedChange_',
+    },
 
     /** @private {boolean} */
     showMultiPageCheckbox_: {
@@ -327,6 +339,9 @@ Polymer({
           'selectedFileType, scanAppMultiPageScanEnabled_)',
       reflectToAttribute: true,
     },
+
+    /** @private {string} */
+    scanButtonText_: String,
   },
 
   observers:
@@ -597,10 +612,10 @@ Polymer({
   },
 
   /**
-   * @return {string} Icon name.
+   * @return {string}
    * @private
    */
-  getArrowIcon_() {
+  computeArrowIconDirection_() {
     return this.opened_ ? 'cr:expand-less' : 'cr:expand-more';
   },
 
@@ -1013,6 +1028,16 @@ Polymer({
   isFlatbedSelected_() {
     return this.sourceTypeMap_.get(this.selectedSource) ===
         ash.scanning.mojom.SourceType.kFlatbed;
+  },
+
+  /** @private */
+  onMultiPageScanCheckedChange_() {
+    const nextPageNum = this.multiPageScanChecked ? 1 : 0;
+    this.browserProxy_.getPluralString('scanButtonText', nextPageNum)
+        .then(
+            /* @type {string} */ (pluralString) => {
+              this.scanButtonText_ = pluralString;
+            });
   },
 
   /**

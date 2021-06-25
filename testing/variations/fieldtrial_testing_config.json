@@ -2084,6 +2084,25 @@
             ]
         }
     ],
+    "CloudPolicyUniqueOwnerName": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InvalidatorUniqueOwnerName"
+                    ]
+                }
+            ]
+        }
+    ],
     "CnameAliasDetectionInSubresourceFilter": [
         {
             "platforms": [
@@ -5371,6 +5390,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OfflineIndicatorV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OfflinePageServiceTurndown": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "OfflinePagesPrefetching"
                     ]
                 }
             ]
@@ -9093,6 +9127,22 @@
         }
     ],
     "WebRTC-Aec3TransparentModeHmm": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-Aec3UseUnboundedEchoSpectrum": [
         {
             "platforms": [
                 "windows",

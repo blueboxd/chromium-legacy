@@ -1791,6 +1791,9 @@
         'additional_compile_targets': [
           'all',
         ],
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+        },
       },
       'ToTLinuxTSan': {
         'mixins': [
@@ -1942,6 +1945,9 @@
         'additional_compile_targets': [
           'all',
         ],
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+        },
       },
       'ToTWinASanLibfuzzer': {
         'additional_compile_targets': [
@@ -4356,7 +4362,7 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'mac_arm64_apple_dtk_gpu_experimental',
+          'mac_arm64_apple_m1_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -6389,6 +6395,22 @@
         'test_suites': {
           'gtest_tests': 'lacros_fyi_tast_tests_eve',
           'skylab_tests': 'lacros_skylab_x86_64',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chrome.tests',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
+      'lacros-arm-generic-chrome-fyi': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'test_suites': {
+          'skylab_tests': 'lacros_skylab_arm',
         },
         'swarming': {
           'dimension_sets': [

@@ -21,6 +21,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<histogram name="Enterprise.AccountStatusCheckResult"
+    enum="EnterpriseAccountStatus" expires_after="M99">
+  <owner>raleksandrov@google.com</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Recorded when user enters their account on license packged device during
+    enrollment process.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.ActiveDirectoryJoin"
     enum="ActiveDirectoryDomainJoinType" expires_after="M97">
   <owner>fsandrade@chromium.org</owner>
@@ -738,6 +748,43 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     request. It's recorded after the request has been completed, either
     successfully after 0 or more retries, with a failure (too many retries or
     non-retriable error) or with a server error.
+  </summary>
+</histogram>
+
+<histogram
+    name="Enterprise.EncryptedRealtimeReportingCompressionThresholdCount"
+    enum="CompressedRecordThresholdMetricEvent" expires_after="2022-02-01">
+  <owner>gbj@google.com</owner>
+  <owner>src/components/enterprise/OWNERS</owner>
+  <summary>
+    Enumeration that is recorded when compression is enabled and when the report
+    enters the report queue and before the record is encrypted. The enumeration
+    keeps track of how many records are under the compression threshold and are
+    not compressed.
+  </summary>
+</histogram>
+
+<histogram
+    name="Enterprise.EncryptedRealtimeReportingSnappyCompressedRecordSize"
+    units="KB" expires_after="2022-02-01">
+  <owner>gbj@google.com</owner>
+  <owner>src/components/enterprise/OWNERS</owner>
+  <summary>
+    The size of a WrappedRecord after it is compressed with snappy. This metric
+    is recorded when the report enters the report queue and before the record is
+    encrypted.
+  </summary>
+</histogram>
+
+<histogram
+    name="Enterprise.EncryptedRealtimeReportingSnappyUncompressedRecordSize"
+    units="KB" expires_after="2022-02-01">
+  <owner>gbj@google.com</owner>
+  <owner>src/components/enterprise/OWNERS</owner>
+  <summary>
+    The size of a WrappedRecord before it is compressed with snappy. This metric
+    is recorded when the report enters the report queue and before the record is
+    encrypted.
   </summary>
 </histogram>
 

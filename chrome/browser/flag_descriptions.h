@@ -570,6 +570,9 @@ extern const char kCrossOriginEmbedderPolicyCredentiallessDescription[];
 extern const char kDeprecateAltClickName[];
 extern const char kDeprecateAltClickDescription[];
 
+extern const char kDeprecateAltBasedSixPackName[];
+extern const char kDeprecateAltBasedSixPackDescription[];
+
 extern const char kDiagnosticsAppName[];
 extern const char kDiagnosticsAppDescription[];
 
@@ -1091,6 +1094,9 @@ extern const char kOsSettingsAppNotificationsPageDescription[];
 
 extern const char kOsSettingsDeepLinkingName[];
 extern const char kOsSettingsDeepLinkingDescription[];
+
+extern const char kOverviewButtonName[];
+extern const char kOverviewButtonDescription[];
 
 extern const char kEnableDeJellyName[];
 extern const char kEnableDeJellyDescription[];
@@ -1843,29 +1849,8 @@ extern const char kMessagesForAndroidUpdatePasswordDescription[];
 extern const char kNewWindowAppMenuName[];
 extern const char kNewWindowAppMenuDescription[];
 
-extern const char kOfflineIndicatorChoiceName[];
-extern const char kOfflineIndicatorChoiceDescription[];
-
 extern const char kOfflineIndicatorV2Name[];
 extern const char kOfflineIndicatorV2Description[];
-
-extern const char kOfflinePagesCtName[];
-extern const char kOfflinePagesCtDescription[];
-
-extern const char kOfflinePagesCtV2Name[];
-extern const char kOfflinePagesCtV2Description[];
-
-extern const char kOfflinePagesDescriptiveFailStatusName[];
-extern const char kOfflinePagesDescriptiveFailStatusDescription[];
-
-extern const char kOfflinePagesDescriptivePendingStatusName[];
-extern const char kOfflinePagesDescriptivePendingStatusDescription[];
-
-extern const char kOfflinePagesInDownloadHomeOpenInCctName[];
-extern const char kOfflinePagesInDownloadHomeOpenInCctDescription[];
-
-extern const char kOfflinePagesPrefetchingName[];
-extern const char kOfflinePagesPrefetchingDescription[];
 
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
@@ -2139,6 +2124,9 @@ extern const char kOmniboxPedalsBatch2Description[];
 extern const char kOmniboxPedalsBatch2NonEnglishName[];
 extern const char kOmniboxPedalsBatch2NonEnglishDescription[];
 
+extern const char kOmniboxPedalsBatch3Name[];
+extern const char kOmniboxPedalsBatch3Description[];
+
 extern const char kOmniboxPedalsDefaultIconColoredName[];
 extern const char kOmniboxPedalsDefaultIconColoredDescription[];
 
@@ -2313,6 +2301,9 @@ extern const char kAshEnableUnifiedDesktopDescription[];
 
 extern const char kAshSwipingFromLeftEdgeToGoBackName[];
 extern const char kAshSwipingFromLeftEdgeToGoBackDescription[];
+
+extern const char kBluetoothAdvertisementMonitoringName[];
+extern const char kBluetoothAdvertisementMonitoringDescription[];
 
 extern const char kBluetoothAggressiveAppearanceFilterName[];
 extern const char kBluetoothAggressiveAppearanceFilterDescription[];
@@ -2716,6 +2707,9 @@ extern const char kIntentPickerPWAPersistenceDescription[];
 
 extern const char kKeyboardBasedDisplayArrangementInSettingsName[];
 extern const char kKeyboardBasedDisplayArrangementInSettingsDescription[];
+
+extern const char kLacrosAvailabilityIgnoreName[];
+extern const char kLacrosAvailabilityIgnoreDescription[];
 
 extern const char kLacrosPrimaryName[];
 extern const char kLacrosPrimaryDescription[];

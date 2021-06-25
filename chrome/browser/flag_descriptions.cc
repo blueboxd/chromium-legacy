@@ -1032,6 +1032,12 @@ const char kDeprecateAltClickDescription[] =
     "Start providing notifications about Alt+Click deprecation and enable "
     "Search+Click as an alternative.";
 
+const char kDeprecateAltBasedSixPackName[] =
+    "Deprecate Alt based six-pack (PgUp, PgDn, Home, End, Delete, Insert)";
+const char kDeprecateAltBasedSixPackDescription[] =
+    "Show deprecation notifications and disable functionality for Alt based "
+    "six pack deprecations. The Search based versions continue to work.";
+
 const char kDiagnosticsAppName[] = "Diagnostics app";
 const char kDiagnosticsAppDescription[] =
     "Enables the Diagnostics app that allows Chrome OS users to be able to "
@@ -1959,6 +1965,10 @@ const char kOverrideSitePrefsForHrefTranslateDescription[] =
 const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
     "History navigation in response to horizontal overscroll.";
+
+const char kOverviewButtonName[] = "Overview button at the status area";
+const char kOverviewButtonDescription[] =
+    "If enabled, always show the overview button at the status area.";
 
 const char kPageInfoV2DesktopName[] = "Page info version two desktop";
 const char kPageInfoV2DesktopDescription[] =
@@ -3207,45 +3217,9 @@ const char kNewWindowAppMenuDescription[] =
     "Show a new menu item 'New Window' on tablet-sized screen when Chrome "
     "can open a new window and create a new instance in it.";
 
-const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
-const char kOfflineIndicatorChoiceDescription[] =
-    "Show an offline indicator while offline.";
-
 const char kOfflineIndicatorV2Name[] = "Offline indicator V2";
 const char kOfflineIndicatorV2Description[] =
     "Show a persistent offline indicator when offline.";
-
-const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
-const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
-
-const char kOfflinePagesCtV2Name[] = "Enable Offline Pages CT V2 features.";
-const char kOfflinePagesCtV2Description[] =
-    "V2 features include attributing pages to the app that initiated the "
-    "custom tabs, and being able to query for pages by page attribution.";
-
-const char kOfflinePagesDescriptiveFailStatusName[] =
-    "Enables descriptive failed download status text.";
-const char kOfflinePagesDescriptiveFailStatusDescription[] =
-    "Enables failed download status text in notifications and Downloads Home "
-    "to state the reason the request failed if the failure is actionable.";
-
-const char kOfflinePagesDescriptivePendingStatusName[] =
-    "Enables descriptive pending download status text.";
-const char kOfflinePagesDescriptivePendingStatusDescription[] =
-    "Enables pending download status text in notifications and Downloads Home "
-    "to state the reason the request is pending.";
-
-const char kOfflinePagesInDownloadHomeOpenInCctName[] =
-    "Enables offline pages in the downloads home to be opened in CCT.";
-const char kOfflinePagesInDownloadHomeOpenInCctDescription[] =
-    "When enabled offline pages launched from the Downloads Home will be "
-    "opened in Chrome Custom Tabs (CCT) instead of regular tabs.";
-
-const char kOfflinePagesPrefetchingName[] =
-    "Enables suggested offline pages to be prefetched.";
-const char kOfflinePagesPrefetchingDescription[] =
-    "Enables suggested offline pages to be prefetched, so useful content is "
-    "available while offline.";
 
 const char kOfflinePagesLivePageSharingName[] =
     "Enables live page sharing of offline pages";
@@ -3738,6 +3712,10 @@ const char kOmniboxPedalsBatch2NonEnglishDescription[] =
     "locales other than 'en' and 'en-GB'. This flag has no effect unless "
     "\"Omnibox Pedals batch 2\" is also enabled.";
 
+const char kOmniboxPedalsBatch3Name[] = "Omnibox Pedals batch 3";
+const char kOmniboxPedalsBatch3Description[] =
+    "Enable the third batch of Omnibox Pedals.";
+
 const char kOmniboxPedalsDefaultIconColoredName[] =
     "Omnibox Pedals Default Icon Colored";
 const char kOmniboxPedalsDefaultIconColoredDescription[] =
@@ -4041,6 +4019,13 @@ const char kAshSwipingFromLeftEdgeToGoBackDescription[] =
     "Swiping from the restricted left area of the display with enough drag "
     "distance or fling velocity could go back to the previous page while in "
     "tablet mode.";
+
+const char kBluetoothAdvertisementMonitoringName[] =
+    "Bluetooth Advertisement Monitoring";
+const char kBluetoothAdvertisementMonitoringDescription[] =
+    "Advertisement monitoring allows applications to register low energy "
+    "scanners that filter low energy advertisements in a power-efficient "
+    "manner.";
 
 const char kBluetoothAggressiveAppearanceFilterName[] =
     "Aggressive Bluetooth device filtering";
@@ -4719,6 +4704,12 @@ const char kKeyboardBasedDisplayArrangementInSettingsName[] =
 const char kKeyboardBasedDisplayArrangementInSettingsDescription[] =
     "Enables using arrow keys to rearrange displays on Settings > Device > "
     "Displays page.";
+
+const char kLacrosAvailabilityIgnoreName[] =
+    "Ignore lacros-availability policy";
+const char kLacrosAvailabilityIgnoreDescription[] =
+    "Makes the lacros-availability policy have no effect. Instead Lacros "
+    "availability will be controlled by experiment and/or user flags.";
 
 const char kLacrosPrimaryName[] = "Lacros as the primary browser";
 const char kLacrosPrimaryDescription[] =

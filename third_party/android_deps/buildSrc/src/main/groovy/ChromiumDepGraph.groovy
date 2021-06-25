@@ -456,7 +456,7 @@ class ChromiumDepGraph {
             }
         }
 
-        if (dependency.moduleArtifacts.empty() ||
+        if (dependency.moduleArtifacts.empty ||
             !areAllModuleArtifactsSameFile(dependency.moduleArtifacts)) {
             throw new IllegalStateException("The dependency ${id} does not have exactly one " +
                                             "artifact: ${dependency.moduleArtifacts}")
@@ -499,7 +499,7 @@ class ChromiumDepGraph {
     private boolean areAllModuleArtifactsSameFile(Set<ResolvedArtifact> artifacts) {
         String expectedPath
         for (ResolvedArtifact artifact : artifacts) {
-            String path = artifact.file().absolutePath()
+            String path = artifact.file.absolutePath
             if (expectedPath == null) {
                 expectedPath = path
                 continue

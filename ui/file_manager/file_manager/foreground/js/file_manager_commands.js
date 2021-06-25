@@ -21,7 +21,7 @@
 // #import {constants} from './constants.m.js';
 // #import {ProgressCenterItem, ProgressItemState} from '../../common/js/progress_center_common.js';
 // #import {ActionsModel} from './actions_model.js';
-// #import {PathComponent} from './path_component.m.js';
+// #import {PathComponent} from './path_component.js';
 // #import {HoldingSpaceUtil} from './holding_space_util.js';
 // #import {DirectoryTree, DirectoryItem} from './ui/directory_tree.js';
 // #import {EntryList} from '../../common/js/files_app_entry_types.js';
@@ -2173,11 +2173,12 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
           .then(tasks => {
             if (fileManager.directoryModel.isOnDrive() ||
                 fileManager.directoryModel.isOnMTP()) {
-              tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ (
-                  {taskId: FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID}));
+              tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ ({
+                descriptor: FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_DESCRIPTOR
+              }));
             } else {
               tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ (
-                  {taskId: FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID}));
+                  {descriptor: FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR}));
             }
           })
           .catch(error => {

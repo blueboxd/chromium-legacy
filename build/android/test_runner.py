@@ -44,7 +44,6 @@ from pylib.base import base_test_result
 from pylib.base import environment_factory
 from pylib.base import output_manager
 from pylib.base import output_manager_factory
-from pylib.base import result_sink
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
 from pylib.results import json_results
@@ -56,6 +55,8 @@ from pylib.utils import logging_utils
 from pylib.utils import test_filter
 
 from py_utils import contextlib_ext
+
+from lib.results import result_sink  # pylint: disable=import-error
 
 _DEVIL_STATIC_CONFIG_FILE = os.path.abspath(os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
@@ -556,6 +557,13 @@ def AddInstrumentationTestOptions(parser):
   parser.add_argument(
       '--test-jar',
       help='Path of jar containing test java files.')
+  parser.add_argument(
+      '--test-launcher-batch-limit',
+      dest='test_launcher_batch_limit',
+      type=int,
+      help=('Not actually used for instrumentation tests, but can be used as '
+            'a proxy for determining if the current run is a retry without '
+            'patch.'))
   parser.add_argument(
       '--timeout-scale',
       type=float,

@@ -166,6 +166,12 @@ extern const base::Feature kAvatarToolbarButton{
 // when there are more than one desk.
 const base::Feature kBentoBar{"BentoBar", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the ability to use advertisement monitoring.
+// Advertisement monitoring allows applications to register low energy scanners
+// that filter low energy advertisements in a power-efficient manner.
+const base::Feature kBluetoothAdvertisementMonitoring{
+    "BluetoothAdvertisementMonitoring", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables more aggressive filtering out of Bluetooth devices with
 // "appearances" that are less likely to be pairable or useful.
 const base::Feature kBluetoothAggressiveAppearanceFilter{
@@ -653,6 +659,12 @@ const base::Feature kMicMuteNotifications{"MicMuteNotifications",
 const base::Feature kMinimumChromeVersion{"MinimumChromeVersion",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables support for AADC regulation requirement and avoid nudging users in
+// minor mode(e.g. under the age of 18) to provide unnecessary consents to share
+// personal data.
+const base::Feature kMinorModeRestriction{"MinorModeRestriction",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
 // must use PowerManagerMojoClient::Get().
@@ -718,6 +730,9 @@ const base::Feature kOsSettingsAppNotificationsPage{
 // This allows deep linking to individual settings, i.e. in settings search.
 const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kOverviewButton{"OverviewButton",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Limits the items on the shelf to the ones associated with windows the
 // currently active desk.
@@ -1101,6 +1116,10 @@ bool IsBentoBarEnabled() {
   return base::FeatureList::IsEnabled(kBentoBar);
 }
 
+bool IsBluetoothAdvertisementMonitoringEnabled() {
+  return base::FeatureList::IsEnabled(kBluetoothAdvertisementMonitoring);
+}
+
 bool IsCaptureModeEnabled() {
   return base::FeatureList::IsEnabled(kCaptureMode);
 }
@@ -1167,6 +1186,10 @@ bool IsEcheSWAResizingEnabled() {
 
 bool IsFamilyLinkOnSchoolDeviceEnabled() {
   return base::FeatureList::IsEnabled(kFamilyLinkOnSchoolDevice);
+}
+
+bool IsFileManagerSwaEnabled() {
+  return base::FeatureList::IsEnabled(kFilesSWA);
 }
 
 bool IsFullscreenAlertBubbleEnabled() {
@@ -1243,6 +1266,10 @@ bool IsMicMuteNotificationsEnabled() {
 
 bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
+}
+
+bool IsMinorModeRestrictionEnabled() {
+  return base::FeatureList::IsEnabled(kMinorModeRestriction);
 }
 
 bool IsNetworkingInDiagnosticsAppEnabled() {

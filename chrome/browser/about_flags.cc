@@ -206,6 +206,7 @@
 #include "components/browser_ui/site_settings/android/features.h"
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/external_intents/android/external_intents_features.h"
+#include "components/power_scheduler/power_scheduler_features.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
@@ -678,6 +679,8 @@ const FeatureEntry::Choice kTopChromeTouchUiChoices[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kArcUseHighMemoryDalvikProfileInternalName[] =
     "arc-use-high-memory-dalvik-profile";
+const char kLacrosAvailabilityIgnoreInternalName[] =
+    "lacros-availability-ignore";
 const char kLacrosPrimaryInternalName[] = "lacros-primary";
 const char kLacrosSupportInternalName[] = "lacros-support";
 const char kLacrosStabilityInternalName[] = "lacros-stability";
@@ -1720,15 +1723,6 @@ const FeatureEntry::FeatureVariation kFilteringPredictionFeatureVariations[] = {
      base::size(kFilteringPredictionOneEuroFilterEnabled), nullptr}};
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
-    {"bottom_offline_indicator", "true"}};
-
-const FeatureEntry::FeatureVariation kOfflineIndicatorFeatureVariations[] = {
-    {"(bottom)", kBottomOfflineIndicatorEnabled,
-     base::size(kBottomOfflineIndicatorEnabled), nullptr}};
-#endif  // OS_ANDROID
-
-#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kTabSwitcherOnReturn_Immediate[] = {
     {"tab_switcher_on_return_time_ms", "0"}};
 const FeatureEntry::FeatureParam kTabSwitcherOnReturn_1Minute[] = {
@@ -1818,6 +1812,16 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"hide_switch_when_no_incognito_tabs", "true"},
     {"enable_tab_groups_continuation", "true"}};
 
+const FeatureEntry::FeatureParam
+    kStartSurfaceAndroid_SingleSurfaceFinale_NTPTilesOnOmnibox[] = {
+        {"start_surface_variation", "single"},
+        {"omnibox_focused_on_new_tab", "true"},
+        {"show_ntp_tiles_on_omnibox", "true"},
+        {"home_button_on_grid_tab_switcher", "true"},
+        {"new_home_surface_from_home_button", "hide_mv_tiles_and_tab_switcher"},
+        {"hide_switch_when_no_incognito_tabs", "true"},
+        {"enable_tab_groups_continuation", "true"}};
+
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
     {"show_last_active_tab_only", "true"},
@@ -1832,6 +1836,16 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2Finale[] =
      {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
      {"enable_tab_groups_continuation", "true"}};
 
+const FeatureEntry::FeatureParam
+    kStartSurfaceAndroid_SingleSurface_V2Finale_NTPTilesOnOmnibox[] = {
+        {"start_surface_variation", "single"},
+        {"show_last_active_tab_only", "true"},
+        {"omnibox_focused_on_new_tab", "true"},
+        {"show_ntp_tiles_on_omnibox", "true"},
+        {"home_button_on_grid_tab_switcher", "true"},
+        {"new_home_surface_from_home_button", "hide_mv_tiles_and_tab_switcher"},
+        {"enable_tab_groups_continuation", "true"}};
+
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceSingleTab[] =
     {{"start_surface_variation", "single"},
      {"show_last_active_tab_only", "true"},
@@ -1842,10 +1856,18 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
     {"Single Surface Finale", kStartSurfaceAndroid_SingleSurfaceFinale,
      base::size(kStartSurfaceAndroid_SingleSurfaceFinale), nullptr},
+    {"Single Surface Finale + NTP tiles on Omnibox",
+     kStartSurfaceAndroid_SingleSurfaceFinale_NTPTilesOnOmnibox,
+     base::size(kStartSurfaceAndroid_SingleSurfaceFinale_NTPTilesOnOmnibox),
+     nullptr},
     {"Single Surface V2", kStartSurfaceAndroid_SingleSurface_V2,
      base::size(kStartSurfaceAndroid_SingleSurface_V2), nullptr},
     {"Single Surface V2 Finale", kStartSurfaceAndroid_SingleSurface_V2Finale,
      base::size(kStartSurfaceAndroid_SingleSurface_V2Finale), nullptr},
+    {"Single Surface V2 Finale + NTP tiles on Omnibox",
+     kStartSurfaceAndroid_SingleSurface_V2Finale_NTPTilesOnOmnibox,
+     base::size(kStartSurfaceAndroid_SingleSurface_V2Finale_NTPTilesOnOmnibox),
+     nullptr},
     {"Single Surface + Single Tab", kStartSurfaceAndroid_SingleSurfaceSingleTab,
      base::size(kStartSurfaceAndroid_SingleSurfaceSingleTab), nullptr},
 };
@@ -2874,6 +2896,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
+    {"ash-overview-button", flag_descriptions::kOverviewButtonName,
+     flag_descriptions::kOverviewButtonDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOverviewButton)},
     {"ash-window-follow-cursor-multi-display",
      flag_descriptions::kWindowsFollowCursorName,
      flag_descriptions::kWindowsFollowCursorDescription, kOsCrOS,
@@ -2998,6 +3023,10 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosPrimaryInternalName, flag_descriptions::kLacrosPrimaryName,
      flag_descriptions::kLacrosPrimaryDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLacrosPrimary)},
+    {kLacrosAvailabilityIgnoreInternalName,
+     flag_descriptions::kLacrosAvailabilityIgnoreName,
+     flag_descriptions::kLacrosAvailabilityIgnoreDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kLacrosAvailabilityIgnore)},
     {"list-all-display-modes", flag_descriptions::kListAllDisplayModesName,
      flag_descriptions::kListAllDisplayModesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kListAllDisplayModes)},
@@ -3028,6 +3057,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"deprecate-alt-click", flag_descriptions::kDeprecateAltClickName,
      flag_descriptions::kDeprecateAltClickDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kDeprecateAltClick)},
+    {"deprecate-alt-based-six-pack",
+     flag_descriptions::kDeprecateAltBasedSixPackName,
+     flag_descriptions::kDeprecateAltBasedSixPackDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kDeprecateAltBasedSixPack)},
     {"shelf-hide-buttons-in-tablet",
      flag_descriptions::kHideShelfControlsInTabletModeName,
      flag_descriptions::kHideShelfControlsInTabletModeDescription, kOsCrOS,
@@ -3629,33 +3662,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflinePagesLivePageSharingName,
      flag_descriptions::kOfflinePagesLivePageSharingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesLivePageSharingFeature)},
-    {"offline-pages-prefetching",
-     flag_descriptions::kOfflinePagesPrefetchingName,
-     flag_descriptions::kOfflinePagesPrefetchingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kPrefetchingOfflinePagesFeature)},
-    {"offline-pages-failed-download",
-     flag_descriptions::kOfflinePagesDescriptiveFailStatusName,
-     flag_descriptions::kOfflinePagesDescriptiveFailStatusDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflinePagesDescriptiveFailStatusFeature)},
-    {"offline-pages-pending-download",
-     flag_descriptions::kOfflinePagesDescriptivePendingStatusName,
-     flag_descriptions::kOfflinePagesDescriptivePendingStatusDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflinePagesDescriptivePendingStatusFeature)},
-    {"offline-pages-in-downloads-home-open-in-cct",
-     flag_descriptions::kOfflinePagesInDownloadHomeOpenInCctName,
-     flag_descriptions::kOfflinePagesInDownloadHomeOpenInCctDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflinePagesInDownloadHomeOpenInCctFeature)},
-    {"offline-indicator-choice", flag_descriptions::kOfflineIndicatorChoiceName,
-     flag_descriptions::kOfflineIndicatorChoiceDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(offline_pages::kOfflineIndicatorFeature,
-                                    kOfflineIndicatorFeatureVariations,
-                                    "OfflineIndicator")},
     {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
      flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},
@@ -3828,12 +3834,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInterestFeedNoticeCardAutoDismissName,
      flag_descriptions::kInterestFeedNoticeCardAutoDismissDescription,
      kOsAndroid, FEATURE_VALUE_TYPE(feed::kInterestFeedNoticeCardAutoDismiss)},
-    {"offline-pages-ct", flag_descriptions::kOfflinePagesCtName,
-     flag_descriptions::kOfflinePagesCtDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTFeature)},
-    {"offline-pages-ct-v2", flag_descriptions::kOfflinePagesCtV2Name,
-     flag_descriptions::kOfflinePagesCtV2Description, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesCTV2Feature)},
 #endif  // OS_ANDROID
     {"PasswordImport", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
@@ -4256,6 +4256,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPedalsBatch2NonEnglishName,
      flag_descriptions::kOmniboxPedalsBatch2NonEnglishDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch2NonEnglish)},
+    {"omnibox-pedals-batch3", flag_descriptions::kOmniboxPedalsBatch3Name,
+     flag_descriptions::kOmniboxPedalsBatch3Description, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch3)},
     {"omnibox-pedals-default-icon-colored",
      flag_descriptions::kOmniboxPedalsDefaultIconColoredName,
      flag_descriptions::kOmniboxPedalsDefaultIconColoredDescription, kOsDesktop,
@@ -5407,6 +5410,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-scroll-settings", flag_descriptions::kAllowScrollSettingsName,
      flag_descriptions::kAllowScrollSettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAllowScrollSettings)},
+
+    {"bluetooth-advertisement-monitoring",
+     flag_descriptions::kBluetoothAdvertisementMonitoringName,
+     flag_descriptions::kBluetoothAdvertisementMonitoringDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kBluetoothAdvertisementMonitoring)},
 
     {"enable-neural-stylus-palm-rejection",
      flag_descriptions::kEnableNeuralStylusPalmRejectionName,
@@ -6580,7 +6588,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCpuAffinityRestrictToLittleCoresName,
      flag_descriptions::kCpuAffinityRestrictToLittleCoresDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kCpuAffinityRestrictToLittleCores)},
+     FEATURE_VALUE_TYPE(
+         power_scheduler::features::kCpuAffinityRestrictToLittleCores)},
 
     {"enable-surface-control", flag_descriptions::kAndroidSurfaceControlName,
      flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,

@@ -11,6 +11,8 @@
 #include "ash/app_list/bubble/app_list_bubble_apps_page.h"
 #include "ash/app_list/bubble/app_list_bubble_search_page.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/test_app_list_client.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
@@ -20,6 +22,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -86,6 +89,15 @@ class AppListBubbleViewTest : public AshTestBase {
   }
   ~AppListBubbleViewTest() override = default;
 
+  // Shows the app list on the primary display.
+  void ShowAppList() { GetBubblePresenter()->Show(GetPrimaryDisplay().id()); }
+
+  // Simulates typing a key.
+  void PressAndReleaseKey(ui::KeyboardCode key) {
+    GetEventGenerator()->PressKey(key, ui::EF_NONE);
+    GetEventGenerator()->ReleaseKey(key, ui::EF_NONE);
+  }
+
   base::test::ScopedFeatureList scoped_features_;
 };
 
@@ -135,25 +147,43 @@ TEST_F(AppListBubbleViewTest, BubbleOpensInBottomRightForBottomShelfRTL) {
 }
 
 TEST_F(AppListBubbleViewTest, OpeningBubbleFocusesSearchBox) {
-  AppListBubblePresenter* presenter = GetBubblePresenter();
-  presenter->Show(GetPrimaryDisplay().id());
+  ShowAppList();
 
   SearchBoxView* search_box_view = GetSearchBoxView();
   EXPECT_TRUE(search_box_view->search_box()->HasFocus());
   EXPECT_TRUE(search_box_view->is_search_box_active());
 }
 
+TEST_F(AppListBubbleViewTest, SearchBoxShowsAssistantButton) {
+  // Simulate assistant being enabled.
+  Shell::Get()
+      ->app_list_controller()
+      ->GetSearchModel()
+      ->search_box()
+      ->SetShowAssistantButton(true);
+
+  ShowAppList();
+
+  // By default the assistant button is visible.
+  SearchBoxView* view = GetSearchBoxView();
+  EXPECT_TRUE(view->assistant_button()->GetVisible());
+  EXPECT_FALSE(view->close_button()->GetVisible());
+
+  // Typing text shows the close button instead.
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_FALSE(view->assistant_button()->GetVisible());
+  EXPECT_TRUE(view->close_button()->GetVisible());
+}
+
 TEST_F(AppListBubbleViewTest, AppsPageShownByDefault) {
-  AppListBubblePresenter* presenter = GetBubblePresenter();
-  presenter->Show(GetPrimaryDisplay().id());
+  ShowAppList();
 
   EXPECT_TRUE(GetAppsPage()->GetVisible());
   EXPECT_FALSE(GetSearchPage()->GetVisible());
 }
 
 TEST_F(AppListBubbleViewTest, TypingTextShowsSearchPage) {
-  AppListBubblePresenter* presenter = GetBubblePresenter();
-  presenter->Show(GetPrimaryDisplay().id());
+  ShowAppList();
 
   AppListBubbleAppsPage* apps_page = GetAppsPage();
   AppListBubbleSearchPage* search_page = GetSearchPage();
@@ -174,6 +204,18 @@ TEST_F(AppListBubbleViewTest, TypingTextShowsSearchPage) {
   // Apps page is shown.
   EXPECT_TRUE(apps_page->GetVisible());
   EXPECT_FALSE(search_page->GetVisible());
+}
+
+TEST_F(AppListBubbleViewTest, TypingTextStartsSearch) {
+  TestAppListClient* client = GetAppListTestHelper()->app_list_client();
+
+  ShowAppList();
+
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_EQ(client->last_search_query(), u"a");
+
+  PressAndReleaseKey(ui::VKEY_B);
+  EXPECT_EQ(client->last_search_query(), u"ab");
 }
 
 TEST_F(AppListBubbleViewTest, BubbleSizedForDisplay) {

@@ -148,6 +148,10 @@ int SearchResultListView::DoUpdate() {
 }
 
 void SearchResultListView::LogImpressions() {
+  // TODO(crbug.com/1216097): Handle impressions for bubble launcher.
+  if (!main_view_)
+    return;
+
   // Since no items is actually clicked, send the position index of clicked item
   // as -1.
   if (main_view_->search_box_view()->is_search_box_active()) {
@@ -207,11 +211,6 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
       main_view_->search_box_view()->UpdateQuery(view->result()->title());
     }
   }
-}
-
-void SearchResultListView::OnSearchResultInstalled(SearchResultView* view) {
-  if (main_view_ && view->result())
-    main_view_->OnResultInstalled(view->result());
 }
 
 void SearchResultListView::VisibilityChanged(View* starting_from,

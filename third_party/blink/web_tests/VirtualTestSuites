@@ -1075,9 +1075,7 @@
               "external/wpt/accessibility/crashtests/included-descendant-dom-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-layout-removal.html",
               "external/wpt/accessibility/crashtests/slot-assignment-lockup.html",
-              "external/wpt/accessibility/crashtests/validation-message.html",
-              "editing/text-iterator/auto-expand-details.html",
-              "editing/text-iterator/auto-expand-details-shadowdom.html"],
+              "external/wpt/accessibility/crashtests/validation-message.html"],
     "args": ["--force-renderer-accessibility"]
   },
   {
@@ -1123,5 +1121,10 @@
     "prefix": "early-hints",
     "bases": ["wpt_internal/resource-timing"],
     "args": ["--enable-features=EarlyHintsPreloadForNavigation"]
+  },
+  {
+    "prefix": "disable-ua-ch-platform-feature",
+    "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
+    "args": ["--disable-features=UACHPlatformEnabledByDefault"]
   }
 ]

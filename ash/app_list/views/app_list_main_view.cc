@@ -88,6 +88,8 @@ void AppListMainView::AddContentsViews() {
   contents_view_ = AddChildView(std::move(contents_view));
 
   search_box_view_->set_contents_view(contents_view_);
+  search_box_view_->SetResultSelectionController(
+      contents_view_->search_result_page_view()->result_selection_controller());
 }
 
 void AppListMainView::ShowAppListWhenReady() {
@@ -168,12 +170,6 @@ void AppListMainView::CancelDragInActiveFolder() {
       ->app_list_folder_view()
       ->items_grid_view()
       ->EndDrag(true);
-}
-
-void AppListMainView::OnResultInstalled(SearchResult* result) {
-  // Clears the search to show the apps grid. The last installed app
-  // should be highlighted and made visible already.
-  search_box_view_->ClearSearch();
 }
 
 // AppListModelObserver overrides:

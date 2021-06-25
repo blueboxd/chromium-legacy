@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
 #include "content/public/test/browser_test.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/views/test/widget_test.h"
 
@@ -58,11 +60,15 @@ class VirtualCardManualFallbackBubbleViewsInteractiveUiTest
 
   void ShowBubble() {
     CreditCard card = test::GetFullServerCard();
+    ShowBubble(&card, /*virtual_card_cvc=*/u"123");
+  }
+
+  void ShowBubble(const CreditCard* virtual_card,
+                  const std::u16string& virtual_card_cvc) {
     ResetEventWaiterForSequence({BubbleEvent::BUBBLE_SHOWN});
     // Passing in empty image will fall back to use card network icon.
-    GetController()->ShowBubble(&card,
-                                /*virtual_card_cvc=*/u"123",
-                                /*card_image=*/gfx::Image());
+    GetController()->ShowBubble(virtual_card, virtual_card_cvc,
+                                /*virtual_card_image=*/gfx::Image());
     event_waiter_->Wait();
   }
 
@@ -95,6 +101,14 @@ class VirtualCardManualFallbackBubbleViewsInteractiveUiTest
   }
 
   bool IsIconVisible() { return GetIconView() && GetIconView()->GetVisible(); }
+
+  std::u16string GetValueForField(VirtualCardManualFallbackBubbleField field) {
+    return GetController()->GetValueForField(field);
+  }
+
+  void ClickOnField(VirtualCardManualFallbackBubbleField field) {
+    GetController()->OnFieldClicked(field);
+  }
 
   VirtualCardManualFallbackBubbleControllerImpl* GetController() {
     if (!browser() || !browser()->tab_strip_model() ||
@@ -158,9 +172,44 @@ IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
   EXPECT_FALSE(GetIconView()->GetVisible());
 }
 
-// Disabled due to flakiness: crbug.com/1223042
 IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
-                       DISABLED_Metrics_BubbleShownAndClosedByUser) {
+                       CopyFieldValue) {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  std::u16string clipboard_text;
+
+  // Explicitly override the card number for testing.
+  CreditCard card = test::GetFullServerCard();
+  card.SetNumber(u"5454545454545454");
+  ShowBubble(&card, u"345");
+  // Verify the displayed text. We change the format of card number in the ui.
+  EXPECT_EQ(GetValueForField(VirtualCardManualFallbackBubbleField::kCvc),
+            u"345");
+  EXPECT_EQ(GetValueForField(VirtualCardManualFallbackBubbleField::kCardNumber),
+            u"5454 5454 5454 5454");
+
+  // Simulate clicking on the cvc field. Copy cvc value to the clipboard.
+  ClickOnField(VirtualCardManualFallbackBubbleField::kCvc);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &clipboard_text);
+  EXPECT_EQ(clipboard_text, u"345");
+  // Simluate clicking on the card number field, ensure that the copied card
+  // number doesn't contain spaces.
+  ClickOnField(VirtualCardManualFallbackBubbleField::kCardNumber);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &clipboard_text);
+  EXPECT_EQ(clipboard_text, u"5454545454545454");
+}
+
+// Disabled on Mac due to flakiness: crbug.com/1223042
+#if defined(OS_MAC)
+#define MAYBE_Metrics_BubbleShownAndClosedByUser \
+  DISABLED_Metrics_BubbleShownAndClosedByUser
+#else
+#define MAYBE_Metrics_BubbleShownAndClosedByUser \
+  Metrics_BubbleShownAndClosedByUser
+#endif
+IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
+                       MAYBE_Metrics_BubbleShownAndClosedByUser) {
   base::HistogramTester histogram_tester;
 
   ShowBubble();

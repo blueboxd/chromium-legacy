@@ -860,7 +860,7 @@ void CheckJSONIsSubsetOfJSON(base::StringPiece subset_str,
   ASSERT_TRUE(test);
   ASSERT_TRUE(test->is_dict());
 
-  for (const auto& item : subset->DictItems()) {
+  for (auto item : subset->DictItems()) {
     base::Value* test_value = test->FindKey(item.first);
     if (test_value == nullptr) {
       ADD_FAILURE() << item.first << " does not exist in the test dictionary";
@@ -3175,7 +3175,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
           [&usb_device_lost_done]() { usb_device_lost_done.Quit(); }));
 
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
-  fake_hid_discovery->WaitForCallToStart();
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
   fake_hid_discovery->AddDevice(std::move(mock_usb_device));
   usb_device_found_done.Run();
 

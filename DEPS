@@ -190,7 +190,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:2adc53281f4a72ecb71e84a8af5acc0fced04cc9',
+  'luci_go': 'git_revision:8ed83b4afa51020c8900d121bb57624b35882dec',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -222,11 +222,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2bf88911b9301db2ced3fb39066a84ef91f26b60',
+  'skia_revision': '9c81a4b7047dac3933b04fcbb09ae4d7eb2c4673',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8c7e0105e902e80484b561b713fdcf8566dbffdb',
+  'v8_revision': '81d1ee01e0dd1b6f7ee1be41e626341f70efcdec',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e5276ca37ccb036363b1c02ac8b76a49c6cb2b1f',
+  'angle_revision': 'c24494415a1af65660de4c2bf8de7774b60b060f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': '995574c22569576f024ce730fecec9678dfc63ed',
+  'boringssl_revision': 'a10017c548b0805eb98e7847c37370dbd37cd8d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -293,7 +293,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a2a4ced865fa56087bf3416d61b5247c60d180ac',
+  'catapult_revision': '11a2ddfb3eec783642856c3e1a8aec88993ac9ad',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9518059da6dfffac4f9f9267cdc6a91f4555e8fb',
+  'devtools_frontend_revision': '0147f111528b0ec752abe299c8524aae46da619e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -341,7 +341,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'b911a96fcd1df43e7efd32a5c55d0c5e0a4c64d0',
+  'dawn_revision': 'a9faf7f74aefaa44d50c6740fba8e01c10c46a58',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -738,7 +738,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'JKuxPm56aOJs35WBs2htoWmLijmtfDDG3noa1Ek9yKMC',
+          'version': 'wFub0BlWgzChZx1WvB8wIcUYRsA6gnDZV4jRDYjvCggC',
       },
     ],
     'condition': 'checkout_android',
@@ -954,7 +954,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'aacc43410d3a3578922e9783c20c01b29818e827',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1a8c70b08ea43313e78f927d7eaf273ff5da4c69',
       'condition': 'checkout_chromeos',
   },
 
@@ -974,7 +974,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'cf60c0af45049576cf1ebcf22c6acd377bbb364b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6f0df68e8bbef78afc3f79ade9bb1c04a7eb9de6',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1188,7 +1188,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '3b8ee157a8f3536bbf5ad2448e9e3370463c1e40',
 
   'src/third_party/libaom/source/libaom':
-    Var('aomedia_git') + '/aom.git' + '@' +  '12287adee94fc3b1f5349d3f4bd85cea4e57f62b',
+    Var('aomedia_git') + '/aom.git' + '@' +  'aba245dde334bd51a20940eb009fa46b6ffd4511',
 
   'src/third_party/libavif/src':
     Var('chromium_git') + '/external/github.com/AOMediaCodec/libavif.git' + '@' + Var('libavif_revision'),
@@ -1343,7 +1343,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '1fcefe1f610c87c8a8a5b86838590574ab4514ee',
+    Var('chromium_git') + '/openscreen' + '@' + '5df61d7305d4122d4724cab3edd03946c12326d7',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '97cfe495bb7a3853266b646d1c79e169387f9c7a',
@@ -1360,7 +1360,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '2fa44973df8288d84033e7fbfc2e9d1836be29c1',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9f6c98ec61a7bd4ea1ea3389105f7d9b357516a9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1449,7 +1449,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'BkJ_fkJi-GBBw9xrzn9w0tyWxtjtqLMf-7pkcOr3PgEC'
+              'version': 'uwQfb8B3WB49oO5CnbcXIpZyHVZY18mVSa6aTSt8VXUC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1553,7 +1553,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '22ba62ffe79c3881581ab430368bf3764d9533eb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@e0136f0880da2698cacb70c25e23ff37da77c1af',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@ca162df8431b870f1259dc12a4c025669aeb844b',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
@@ -1592,7 +1592,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '396a02ab134c801271921a78a5c9fb9c0c476449',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '28e582d55af51a230f90eabeb49ab9fde2123c46',
+    Var('webrtc_git') + '/src.git' + '@' + '4e513346ec56c829b3a6010664998469fc237b35',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1619,7 +1619,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'SB2wGV5iqWiiLLc3ZLU2sn1CcUnFefPLkUKPCgQ9swkC',
+          'version': 'UdQNElAXaCXfe2mgtDvG-3qVDSF8BDcA3wN2gDEFUjgC',
         },
       ],
       'dep_type': 'cipd',
@@ -1629,7 +1629,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'C5XvIOVnzzsQevJZRD08B1C_6mhdpxvY9vPiHf4iZJ0C',
+          'version': 'lgJKP9M_eCaX9oj-mmbEPdV27wkXYV_GtjD9My6G5TkC',
         },
       ],
       'dep_type': 'cipd',
@@ -1639,7 +1639,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': '3aDI3FukPbExUrKO2_xiMcP1_2EEcWDoL1X9tb3N1ucC',
+          'version': 'dukW3C-pL5BBIPLAczaYnnXruUL-y4BAWG28KyiLl-0C',
         },
       ],
       'dep_type': 'cipd',
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8d312b03fdc2789817e43cd469efcfc80f9af30d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9a3ae4a334ea9643c6d11f3b694cad7c47777fe1',
     'condition': 'checkout_src_internal',
   },
 
@@ -1672,7 +1672,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'jaB6ZkeDwyKxWtjCrLrJu4CosmvlwUTs_CuoP3sTv_wC',
+        'version': 'RaCTyqUqIdmP8-YDZCBrutXPNno4vKBcoO3Y_hg_VDIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1683,7 +1683,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'AAmBkal1RCyHQqwQGYf410cwXOWmx7bSkf5o2G8lA8wC',
+        'version': 'E0JryQXtLOcKnVAAvgGY7Zoq6S5nBZQHkhUcxmaiEDoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -3623,10 +3623,36 @@ skip_child_includes = [
 
 
 hooks = [
+  # Download and initialize "vpython" VirtualEnv environment packages for
+  # Python2. We do this before running any other hooks so that any other
+  # hooks that might use vpython don't trip over unexpected issues and
+  # don't run slower than they might otherwise need to.
   {
-    # This clobbers when necessary (based on get_landmines.py). It must be the
-    # first hook so that other things that get/generate into the output
-    # directory will not subsequently be clobbered.
+    'name': 'vpython_common',
+    'pattern': '.',
+    # TODO(https://crbug.com/1205263): Run this on mac/arm too once it works.
+    'condition': 'not (host_os == "mac" and host_cpu == "arm64")',
+    'action': [ 'vpython',
+                '-vpython-spec', 'src/.vpython',
+                '-vpython-tool', 'install',
+    ],
+  },
+  # Download and initialize "vpython" VirtualEnv environment packages for
+  # Python3. We do this before running any other hooks so that any other
+  # hooks that might use vpython don't trip over unexpected issues and
+  # don't run slower than they might otherwise need to.
+  {
+    'name': 'vpython3_common',
+    'pattern': '.',
+    'action': [ 'vpython3',
+                '-vpython-spec', 'src/.vpython3',
+                '-vpython-tool', 'install',
+    ],
+  },
+  {
+    # This clobbers when necessary (based on get_landmines.py). This should
+    # run as early as possible so that other things that get/generate into the
+    # output directory will not subsequently be clobbered.
     'name': 'landmines',
     'pattern': '.',
     'action': [
@@ -3635,10 +3661,11 @@ hooks = [
     ],
   },
   {
-    # This clobbers when necessary (based on get_landmines.py). It must be the
-    # first hook so that other things that get/generate into the output
-    # directory will not subsequently be clobbered. This script is only run
-    # for iOS build with src_internal.
+    # This clobbers when necessary (based on the internal ios version of
+    # get_landmines.py). This should run as early as possible so that
+    # other things that get/generate into the output directory will not
+    # subsequently be clobbered. This script is only run# for iOS build
+    # with src_internal.
     'name': 'landmines_ios_internal',
     'pattern': '.',
     'condition': 'checkout_ios and checkout_src_internal',
@@ -4112,8 +4139,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_linux and not checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
-    # TODO(1208648): Flip to vpython3 when that is working.
-    'action': [ 'vpython',
+    'action': [ 'vpython3',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4148,8 +4174,7 @@ hooks = [
     'name': 'checkout_telemetry_benchmark_deps',
     'condition': 'checkout_telemetry_dependencies and checkout_android and not skip_wpr_archives_download',
     'pattern': '.',
-    # TODO(1208648): Flip to vpython3 when that is working.
-    'action': [ 'vpython',
+    'action': [ 'vpython3',
                 'src/tools/perf/fetch_benchmark_deps.py',
                 '-f',
                 '-p',
@@ -4509,18 +4534,6 @@ hooks = [
       'src/testing/location_tags.json',
     ],
     'condition': 'generate_location_tags',
-  },
-
-  # Download and initialize "vpython" VirtualEnv environment packages.
-  {
-    'name': 'vpython_common',
-    'pattern': '.',
-    # TODO(https://crbug.com/1205263): Run this on mac/arm too once it works.
-    'condition': 'not (host_os == "mac" and host_cpu == "arm64")',
-    'action': [ 'vpython',
-                '-vpython-spec', 'src/.vpython',
-                '-vpython-tool', 'install',
-    ],
   },
 ]
 

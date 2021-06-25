@@ -8,17 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <atomic>
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
-#include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -27,14 +23,11 @@
 #include "gpu/ipc/client/image_decode_accelerator_proxy.h"
 #include "gpu/ipc/client/shared_image_interface_proxy.h"
 #include "gpu/ipc/common/gpu_channel.mojom.h"
-#include "ipc/ipc_channel_handle.h"
-#include "ipc/message_filter.h"
-#include "ipc/message_router.h"
+#include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/shared_associated_remote.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace IPC {
-struct PendingSyncMsg;
 class ChannelMojo;
 }
 
@@ -61,8 +54,7 @@ class GPU_EXPORT GpuChannelEstablishFactory {
 // Every method can be called on any thread with a message loop, except for the
 // IO thread.
 class GPU_EXPORT GpuChannelHost
-    : public IPC::Sender,
-      public base::RefCountedThreadSafe<GpuChannelHost> {
+    : public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
   GpuChannelHost(
       int channel_id,
@@ -70,11 +62,10 @@ class GPU_EXPORT GpuChannelHost
       const gpu::GpuFeatureInfo& gpu_feature_info,
       mojo::ScopedMessagePipeHandle handle,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
+  GpuChannelHost(const GpuChannelHost&) = delete;
+  GpuChannelHost& operator=(const GpuChannelHost&) = delete;
 
-  bool IsLost() const {
-    DCHECK(listener_.get());
-    return listener_->IsLost();
-  }
+  bool IsLost() const { return !connection_tracker_->is_connected(); }
 
   int channel_id() const { return channel_id_; }
 
@@ -90,9 +81,6 @@ class GPU_EXPORT GpuChannelHost
   const gpu::GpuFeatureInfo& gpu_feature_info() const {
     return gpu_feature_info_;
   }
-
-  // IPC::Sender implementation:
-  bool Send(IPC::Message* msg) override;
 
   // Enqueue a deferred message for the ordering barrier and return an
   // identifier that can be used to ensure or verify the deferred message later.
@@ -122,18 +110,6 @@ class GPU_EXPORT GpuChannelHost
   // destruction.
   void DestroyChannel();
 
-  // Add a message route for the current message loop.
-  void AddRoute(int route_id, base::WeakPtr<IPC::Listener> listener);
-
-  // Add a message route to be handled on the provided |task_runner|.
-  void AddRouteWithTaskRunner(
-      int route_id,
-      base::WeakPtr<IPC::Listener> listener,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-  // Remove the message route associated with |route_id|.
-  void RemoveRoute(int route_id);
-
   // Reserve one unused image ID.
   int32_t ReserveImageId();
 
@@ -146,7 +122,7 @@ class GPU_EXPORT GpuChannelHost
   // otherwise ignored.
   void CrashGpuProcessForTesting();
 
-  // Termintes the GPU process with an exit code of 0. This only works when
+  // Terminates the GPU process with an exit code of 0. This only works when
   // running tests and is otherwise ignored.
   void TerminateGpuProcessForTesting();
 
@@ -159,9 +135,28 @@ class GPU_EXPORT GpuChannelHost
 
  protected:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
-  ~GpuChannelHost() override;
+  virtual ~GpuChannelHost();
 
  private:
+  // Tracks whether we still have a working connection to the GPU process. This
+  // is updated eaglerly from the IO thread if the connection is broken, but it
+  // may be queried from any thread via GpuChannel::IsLost(). This is why it's a
+  // RefCountedThreadSafe object.
+  struct ConnectionTracker
+      : public base::RefCountedThreadSafe<ConnectionTracker> {
+    ConnectionTracker();
+
+    bool is_connected() const { return is_connected_.load(); }
+
+    void OnDisconnectedFromGpuProcess();
+
+   private:
+    friend class base::RefCountedThreadSafe<ConnectionTracker>;
+    ~ConnectionTracker();
+
+    std::atomic_bool is_connected_{true};
+  };
+
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between
   // all the contexts.
@@ -178,50 +173,14 @@ class GPU_EXPORT GpuChannelHost
     // Called on the IO thread.
     void Close();
 
-    // Called on the IO thread.
-    void AddRoute(int32_t route_id,
-                  base::WeakPtr<IPC::Listener> listener,
-                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-    // Called on the IO thread.
-    void RemoveRoute(int32_t route_id);
-
     // IPC::Listener implementation
     // (called on the IO thread):
     bool OnMessageReceived(const IPC::Message& msg) override;
     void OnChannelError() override;
 
-    void SendMessage(std::unique_ptr<IPC::Message> msg,
-                     IPC::PendingSyncMsg* pending_sync);
-
-    // The following methods can be called on any thread.
-
-    // Whether the channel is lost.
-    bool IsLost() const;
-
    private:
-    struct RouteInfo {
-      RouteInfo();
-      RouteInfo(const RouteInfo& other);
-      RouteInfo(RouteInfo&& other);
-      ~RouteInfo();
-      RouteInfo& operator=(const RouteInfo& other);
-      RouteInfo& operator=(RouteInfo&& other);
-
-      base::WeakPtr<IPC::Listener> listener;
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-    };
-
-    // Threading notes: most fields are only accessed on the IO thread, except
-    // for lost_ which is protected by |lock_|.
-    std::unordered_map<int32_t, RouteInfo> routes_;
-    std::unique_ptr<IPC::ChannelMojo> channel_;
-    base::flat_map<int, IPC::PendingSyncMsg*> pending_syncs_;
-
-    // Protects all fields below this one.
     mutable base::Lock lock_;
-
-    // Whether the channel has been lost.
-    bool lost_ = false;
+    std::unique_ptr<IPC::ChannelMojo> channel_ GUARDED_BY(lock_);
   };
 
   struct OrderingBarrierInfo {
@@ -261,6 +220,11 @@ class GPU_EXPORT GpuChannelHost
   // with base::Unretained(listener_).
   std::unique_ptr<Listener, base::OnTaskRunnerDeleter> listener_;
 
+  // Atomically tracks whether the GPU connection has been lost. This can be
+  // queried from any thread by IsLost() but is always set on the IO thread as
+  // soon as disconnection is detected.
+  const scoped_refptr<ConnectionTracker> connection_tracker_;
+
   mojo::SharedAssociatedRemote<mojom::GpuChannel> gpu_channel_;
   SharedImageInterfaceProxy shared_image_interface_;
 
@@ -276,17 +240,17 @@ class GPU_EXPORT GpuChannelHost
   // Protects |deferred_messages_|, |pending_ordering_barrier_| and
   // |*_deferred_message_id_|.
   mutable base::Lock context_lock_;
-  std::vector<mojom::DeferredRequestPtr> deferred_messages_;
-  absl::optional<OrderingBarrierInfo> pending_ordering_barrier_;
-  uint32_t next_deferred_message_id_ = 1;
+  std::vector<mojom::DeferredRequestPtr> deferred_messages_
+      GUARDED_BY(context_lock_);
+  absl::optional<OrderingBarrierInfo> pending_ordering_barrier_
+      GUARDED_BY(context_lock_);
+  uint32_t next_deferred_message_id_ GUARDED_BY(context_lock_) = 1;
   // Highest deferred message id in |deferred_messages_|.
-  uint32_t enqueued_deferred_message_id_ = 0;
+  uint32_t enqueued_deferred_message_id_ GUARDED_BY(context_lock_) = 0;
   // Highest deferred message id sent to the channel.
-  uint32_t flushed_deferred_message_id_ = 0;
+  uint32_t flushed_deferred_message_id_ GUARDED_BY(context_lock_) = 0;
   // Highest deferred message id known to have been received by the service.
-  uint32_t verified_deferred_message_id_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
+  uint32_t verified_deferred_message_id_ GUARDED_BY(context_lock_) = 0;
 };
 
 }  // namespace gpu

@@ -935,8 +935,6 @@ static_library("browser") {
     "optimization_guide/optimization_guide_keyed_service_factory.h",
     "optimization_guide/optimization_guide_tab_url_provider.cc",
     "optimization_guide/optimization_guide_tab_url_provider.h",
-    "optimization_guide/optimization_guide_top_host_provider.cc",
-    "optimization_guide/optimization_guide_top_host_provider.h",
     "optimization_guide/optimization_guide_web_contents_observer.cc",
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "optimization_guide/page_content_annotations_service_factory.cc",
@@ -2143,7 +2141,7 @@ static_library("browser") {
     "//components/safe_browsing/content/browser:client_side_detection",
     "//components/safe_browsing/content/browser:safe_browsing_service",
     "//components/safe_browsing/content/browser/password_protection",
-    "//components/safe_browsing/content/web_ui",
+    "//components/safe_browsing/content/browser/web_ui",
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/browser/sync",
@@ -2358,6 +2356,8 @@ static_library("browser") {
     deps += [
       "//ash/components/audio",
       "//ash/constants",
+      "//ash/webui/file_manager:file_manager_ui",
+      "//ash/webui/file_manager/mojom",
       "//ash/webui/scanning",
       "//ash/webui/scanning/mojom",
       "//ash/webui/shimless_rma",
@@ -2417,8 +2417,6 @@ static_library("browser") {
     ]
     if (!is_official_build) {
       deps += [
-        "//ash/webui/file_manager:file_manager_ui",
-        "//ash/webui/file_manager/mojom",
         "//chromeos/components/demo_mode_app_ui",
         "//chromeos/components/telemetry_extension_ui",
         "//chromeos/components/telemetry_extension_ui/mojom",

@@ -81,7 +81,8 @@ BubbleBorder::Arrow GetArrowCorner(ShelfAlignment shelf_alignment) {
 
 AppListBubbleView::AppListBubbleView(AppListViewDelegate* view_delegate,
                                      aura::Window* root_window,
-                                     ShelfAlignment shelf_alignment) {
+                                     ShelfAlignment shelf_alignment)
+    : view_delegate_(view_delegate) {
   DCHECK(view_delegate);
   DCHECK(root_window);
   // The bubble is anchored to a screen corner point, but the API takes a rect.
@@ -108,12 +109,15 @@ AppListBubbleView::AppListBubbleView(AppListViewDelegate* view_delegate,
 
   search_box_view_ = AddChildView(std::make_unique<SearchBoxView>(
       /*delegate=*/this, view_delegate, /*app_list_view=*/nullptr));
-  search_box_view_->Init(/*is_tablet_mode=*/false);
+  // Show the assistant button until the user types text.
+  search_box_view_->set_show_close_button_when_active(false);
+  search_box_view_->Init();
 
   apps_page_ =
       AddChildView(std::make_unique<AppListBubbleAppsPage>(view_delegate));
 
-  search_page_ = AddChildView(std::make_unique<AppListBubbleSearchPage>());
+  search_page_ = AddChildView(std::make_unique<AppListBubbleSearchPage>(
+      view_delegate, search_box_view_));
   search_page_->SetVisible(false);
 
   assistant_page_ =
@@ -165,6 +169,10 @@ void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
   const bool has_search = search_box_view_->HasSearch();
   apps_page_->SetVisible(!has_search);
   search_page_->SetVisible(has_search);
+
+  // Ask the controller to start the search.
+  std::u16string query = view_delegate_->GetSearchModel()->search_box()->text();
+  view_delegate_->StartSearch(query);
 }
 
 }  // namespace ash

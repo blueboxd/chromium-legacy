@@ -281,6 +281,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "ash-overview-button",
+    "owners": [ "minch", "janetmac" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "ash-window-follow-cursor-multi-display",
     "owners": [ "shidi", "tclaiborne" ],
     "expiry_milestone": 96
@@ -459,6 +464,11 @@
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "bluetooth-advertisement-monitoring",
+    "owners": [ "cvandermerwe@google.com", "hansenmichael@google.com", "cros-system-services@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "bluetooth-aggressive-appearance-filter",
@@ -936,6 +946,12 @@
     "name": "default-browser-setting",
     "owners": [ "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "deprecate-alt-based-six-pack",
+    "owners": [ "zentaro@google.com", "jimmyxgong@google.com",
+                "cros-peripherals@google.com"],
+    "expiry_milestone": 100
   },
   {
     "name": "deprecate-alt-click",
@@ -3425,6 +3441,14 @@
     "expiry_milestone": 94
   },
   {
+    "name": "lacros-availability-ignore",
+    "owners": [ "hidehiko", "erikchen", "lacros-team@google.com" ],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
     "name": "lacros-primary",
     "owners": [ "hidehiko", "erikchen", "lacros-team@google.com" ],
     // Once Lacros is launched, this flag can be removed. Until then, this
@@ -3880,54 +3904,14 @@
     "expiry_milestone": 96
   },
   {
-    "name": "offline-indicator-choice",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "offline-indicator-v2",
     "owners": [ "sinansahin@google.com", "twellington", "offline-dev" ],
     "expiry_milestone": 90
   },
   {
-    "name": "offline-pages-alternate-dino-page",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "offline-pages-ct",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "offline-pages-ct-v2",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "offline-pages-failed-download",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "offline-pages-in-downloads-home-open-in-cct",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "offline-pages-live-page-sharing",
     "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 86
-  },
-  {
-    "name": "offline-pages-pending-download",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "offline-pages-prefetching",
-    "owners": [ "sclittle", "srsudar", "offline-dev" ],
-    "expiry_milestone": 76
   },
   {
     "name": "omnibox-active-search-engines",
@@ -4068,6 +4052,11 @@
     "name": "omnibox-pedals-batch2-nonenglish",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 97
+  },
+  {
+    "name": "omnibox-pedals-batch3",
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "omnibox-pedals-default-icon-colored",

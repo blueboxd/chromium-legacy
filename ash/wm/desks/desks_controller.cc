@@ -50,6 +50,7 @@
 #include "components/full_restore/full_restore_utils.h"
 #include "components/full_restore/restore_data.h"
 #include "components/full_restore/window_info.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -178,6 +179,40 @@ bool IsApplistActiveInTabletMode(const aura::Window* active_window) {
   auto* app_list_controller = shell->app_list_controller();
   return active_window == app_list_controller->GetWindow();
 }
+
+// Observer to observe the desk switch animation and destroy itself when the
+// animation is finished.
+class DeskSwitchAnimationObserver : public DesksController::Observer {
+ public:
+  explicit DeskSwitchAnimationObserver(
+      base::OnceCallback<void(bool)> complete_callback)
+      : complete_callback_(std::move(complete_callback)) {
+    DesksController::Get()->AddObserver(this);
+  }
+  DeskSwitchAnimationObserver(const DeskSwitchAnimationObserver& other) =
+      delete;
+  DeskSwitchAnimationObserver& operator=(
+      const DeskSwitchAnimationObserver& rhs) = delete;
+
+  ~DeskSwitchAnimationObserver() override {
+    DesksController::Get()->RemoveObserver(this);
+  }
+
+  // DesksController::Observer:
+  void OnDeskAdded(const Desk* desk) override {}
+  void OnDeskRemoved(const Desk* desk) override {}
+  void OnDeskReordered(int old_index, int new_index) override {}
+  void OnDeskActivationChanged(const Desk* activated,
+                               const Desk* deactivated) override {}
+  void OnDeskSwitchAnimationLaunching() override {}
+  void OnDeskSwitchAnimationFinished() override {
+    std::move(complete_callback_).Run(/*success=*/true);
+    delete this;
+  }
+
+ private:
+  base::OnceCallback<void(bool)> complete_callback_;
+};
 
 }  // namespace
 
@@ -828,6 +863,17 @@ void DesksController::SendToDeskAtIndex(aura::Window* window, int desk_index) {
 
 std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
     const {
+  DCHECK(current_account_id_.is_valid());
+  const user_manager::User* current_user =
+      user_manager::UserManager::Get()->FindUser(current_account_id_);
+  // Only regular user or child user has gaia account and can be supported here.
+  // For other types of users (e.g., guest user, public user, etc), we don't
+  // support desk templates feature for them.
+  if (!current_user ||
+      !user_manager::User::TypeHasGaiaAccount(current_user->GetType())) {
+    return nullptr;
+  }
+
   std::unique_ptr<DeskTemplate> desk_template =
       std::make_unique<DeskTemplate>();
   desk_template->set_template_name(active_desk_->name());
@@ -855,6 +901,10 @@ std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
     // Clear WindowInfo's |desk_id| as a window in template will always launch
     // to a newly created desk.
     window_info->desk_id.reset();
+    // Clear WindowInfo's `visible_on_all_workspaces` as according to the PRD
+    // we don't want the window that is created from desk template is visible
+    // on other desks.
+    window_info->visible_on_all_workspaces.reset();
     restore_data->ModifyWindowInfo(app_id, window_id, *window_info);
   }
   desk_template->set_desk_restore_data(std::move(restore_data));
@@ -870,12 +920,17 @@ void DesksController::CreateAndActivateNewDeskForTemplate(
     return;
   }
 
-  // TODO: Run the callback after the desk animation is complete.
+  // If there is an ongoing animation, we should stop it before creating and
+  // activating the new desk, which triggers its own animation.
+  if (animation_)
+    animation_.reset();
+
   NewDesk(DesksCreationRemovalSource::kLaunchTemplate);
   Desk* desk = desks().back().get();
   desk->SetName(desk_name, /*set_by_user=*/true);
+  new DeskSwitchAnimationObserver(std::move(callback));
   ActivateDesk(desk, DesksSwitchSource::kLaunchTemplate);
-  std::move(callback).Run(/*success=*/true);
+  DCHECK(animation_);
 }
 
 void DesksController::UpdateDesksDefaultNames() {

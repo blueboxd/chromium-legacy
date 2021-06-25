@@ -14,6 +14,88 @@
 #endif
 
 namespace ios {
+namespace {
+
+// Helper base class for functors.
+template <typename T>
+struct Functor {
+  Functor() = default;
+
+  Functor(const Functor&) = delete;
+  Functor& operator=(const Functor&) = delete;
+
+  ios::ChromeIdentityService::IdentityIteratorCallback Callback() {
+    // The callback is invoked synchronously and does not escape the scope
+    // in which the Functor is defined. Thus it is safe to use Unretained
+    // here.
+    return base::BindRepeating(&Functor::Run, base::Unretained(this));
+  }
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    // Filtering of the ChromeIdentity can be done here before calling
+    // the sub-class `Run()` method. This will ensure that all functor
+    // perform the same filtering (and thus consider exactly the same
+    // identities).
+    return static_cast<T*>(this)->Run(identity);
+  }
+};
+
+// Helper class used to implement HasIdentities().
+struct FunctorHasIdentities : Functor<FunctorHasIdentities> {
+  bool has_identities = false;
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    has_identities = true;
+    return ios::kIdentityIteratorInterruptIteration;
+  }
+};
+
+// Helper class used to implement GetIdentityWithGaiaID().
+struct FunctorLookupIdentityByGaiaID : Functor<FunctorLookupIdentityByGaiaID> {
+  NSString* lookup_gaia_id;
+  ChromeIdentity* identity;
+
+  FunctorLookupIdentityByGaiaID(NSString* gaia_id)
+      : lookup_gaia_id(gaia_id), identity(nil) {}
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    if ([lookup_gaia_id isEqualToString:identity.gaiaID]) {
+      this->identity = identity;
+      return ios::kIdentityIteratorInterruptIteration;
+    }
+    return ios::kIdentityIteratorContinueIteration;
+  }
+};
+
+// Helper class used to implement GetAllIdentities().
+struct FunctorCollectIdentities : Functor<FunctorCollectIdentities> {
+  NSMutableArray<ChromeIdentity*>* identities;
+
+  FunctorCollectIdentities() : identities([NSMutableArray array]) {}
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    [identities addObject:identity];
+    return ios::kIdentityIteratorContinueIteration;
+  }
+};
+
+}  // anonymous namespace
+
+namespace {
+// Supported capabilities.
+NSString* kCanOfferExtendedChromeSyncPromos =
+    @"CanOfferExtendedChromeSyncPromos";
+
+ChromeIdentityCapabilityResult CapabilityResultFromNSNumber(NSNumber* result) {
+  int resultInt = [result intValue];
+  DCHECK_GE(resultInt,
+            static_cast<int>(ChromeIdentityCapabilityResult::kFalse));
+  DCHECK_LE(resultInt,
+            static_cast<int>(ChromeIdentityCapabilityResult::kUnknown));
+  return static_cast<ChromeIdentityCapabilityResult>(resultInt);
+}
+
+}  // namespace
 
 ChromeIdentityService::ChromeIdentityService() {}
 
@@ -63,20 +145,30 @@ ChromeIdentityService::CreateChromeIdentityInteractionManager(
 void ChromeIdentityService::IterateOverIdentities(IdentityIteratorCallback) {}
 
 bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) {
-  return false;
+  return GetIdentityWithGaiaID(base::SysNSStringToUTF8(identity.gaiaID)) != nil;
 }
 
 ChromeIdentity* ChromeIdentityService::GetIdentityWithGaiaID(
     const std::string& gaia_id) {
-  return nil;
+  // Do not iterate if the gaia ID is invalid.
+  if (gaia_id.empty())
+    return nil;
+
+  FunctorLookupIdentityByGaiaID helper(base::SysUTF8ToNSString(gaia_id));
+  IterateOverIdentities(helper.Callback());
+  return helper.identity;
 }
 
 bool ChromeIdentityService::HasIdentities() {
-  return false;
+  FunctorHasIdentities helper;
+  IterateOverIdentities(helper.Callback());
+  return helper.has_identities;
 }
 
 NSArray* ChromeIdentityService::GetAllIdentities(PrefService* pref_service) {
-  return nil;
+  FunctorCollectIdentities helper;
+  IterateOverIdentities(helper.Callback());
+  return [helper.identities copy];
 }
 
 void ChromeIdentityService::ForgetIdentity(ChromeIdentity* identity,
@@ -117,9 +209,18 @@ NSString* ChromeIdentityService::GetCachedHostedDomainForIdentity(
   return nil;
 }
 
-bool ChromeIdentityService::CanOfferExtendedSyncPromos(
-    ChromeIdentity* identity) {
-  return false;
+void ChromeIdentityService::CanOfferExtendedSyncPromos(
+    ChromeIdentity* identity,
+    CapabilitiesCallback completion) {
+  FetchCapabilities(
+      @[ kCanOfferExtendedChromeSyncPromos ], identity,
+      ^(NSDictionary<NSString*, NSNumber*>* capabilities, NSError* error) {
+        if (!completion) {
+          return;
+        }
+        completion(CapabilityResultFromNSNumber(
+            [capabilities objectForKey:kCanOfferExtendedChromeSyncPromos]));
+      });
 }
 
 MDMDeviceStatus ChromeIdentityService::GetMDMDeviceStatus(
@@ -148,6 +249,13 @@ void ChromeIdentityService::RemoveObserver(Observer* observer) {
 
 bool ChromeIdentityService::IsInvalidGrantError(NSDictionary* user_info) {
   return false;
+}
+
+void ChromeIdentityService::FetchCapabilities(
+    NSArray* capabilities,
+    ChromeIdentity* identity,
+    ChromeIdentityCapabilitiesFetchCompletionBlock completion) {
+  // Implementation provided by subclass.
 }
 
 void ChromeIdentityService::FireIdentityListChanged(bool keychainReload) {

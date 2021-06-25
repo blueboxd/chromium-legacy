@@ -41,8 +41,6 @@
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_message_macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -357,7 +355,8 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     const GrBackendTexture plane_backend_texture(
         plane_size.width(), plane_size.height(), GrMipMapped::kNo,
         GrGLTextureInfo{GL_TEXTURE_EXTERNAL_OES, resource->texture,
-                        is_nv12_chroma_plane ? GL_RG8_EXT : GL_R8_EXT});
+                        static_cast<GrGLenum>(
+                            is_nv12_chroma_plane ? GL_RG8_EXT : GL_R8_EXT)});
     plane_sk_images[plane] = SkImage::MakeFromTexture(
         shared_context_state->gr_context(), plane_backend_texture,
         kTopLeft_GrSurfaceOrigin,

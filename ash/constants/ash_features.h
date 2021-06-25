@@ -78,6 +78,8 @@ extern const base::Feature kAutoScreenBrightness;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAvatarToolbarButton;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBentoBar;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kBluetoothAdvertisementMonitoring;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBluetoothAggressiveAppearanceFilter;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBluetoothFixA2dpPacketSize;
@@ -253,6 +255,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMultilingualTyping;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNewOobeLayout;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNightLight;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kMinorModeRestriction;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kNoteTakingForEnabledWebApps;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kNotificationExpansionAnimation;
@@ -273,6 +277,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOsSettingsAppNotificationsPage;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOsSettingsDeepLinking;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kOverviewButton;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPerDeskShelf;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHub;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHubCameraRoll;
@@ -403,6 +408,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAssistiveMultiWordEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAutoNightLightEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBackgroundBlurEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBentoBarEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsBluetoothAdvertisementMonitoringEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptureModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCellularActivationUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -422,6 +429,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDragUnpinnedAppToPinEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAResizingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFamilyLinkOnSchoolDeviceEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFileManagerSwaEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFullscreenAlertBubbleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGaiaCloseViewMessageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGaiaReauthEndpointEnabled();
@@ -444,6 +452,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLockScreenNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsManagedDeviceUIRedesignEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMicMuteNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinimumChromeVersionEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinorModeRestrictionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNetworkingInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNewOobeLayoutEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNotificationExpansionAnimationEnabled();

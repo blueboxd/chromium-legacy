@@ -195,8 +195,9 @@ enum Containment {
   kContainsBlockSize = 0x8,
   kContainsInlineSize = 0x10,
   kContainsSize = kContainsBlockSize | kContainsInlineSize,
-  kContainsStrict = kContainsLayout | kContainsPaint | kContainsSize,
-  kContainsContent = kContainsLayout | kContainsPaint,
+  kContainsStrict =
+      kContainsStyle | kContainsLayout | kContainsPaint | kContainsSize,
+  kContainsContent = kContainsStyle | kContainsLayout | kContainsPaint,
 };
 inline Containment operator|(Containment a, Containment b) {
   return Containment(int(a) | int(b));
@@ -302,13 +303,11 @@ enum class LineLogicalSide {
   kUnder,
 };
 
-constexpr size_t kScrollbarGutterBits = 4;
+constexpr size_t kScrollbarGutterBits = 2;
 enum ScrollbarGutter {
   kScrollbarGutterAuto = 0x0,
   kScrollbarGutterStable = 0x1,
-  kScrollbarGutterAlways = 0x2,
-  kScrollbarGutterBoth = 0x4,
-  kScrollbarGutterForce = 0x8
+  kScrollbarGutterMirror = 0x2,
 };
 inline ScrollbarGutter operator|(ScrollbarGutter a, ScrollbarGutter b) {
   return ScrollbarGutter(int(a) | int(b));

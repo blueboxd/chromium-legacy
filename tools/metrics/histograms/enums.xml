@@ -42002,6 +42002,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Recent Tabs Entry"/>
   <int value="7" label="Shared Highlight"/>
   <int value="8" label="Tab Grid Item"/>
+  <int value="9" label="Tab Grid Selection Mode"/>
 </enum>
 
 <enum name="IOSAppState">
@@ -46943,6 +46944,7 @@ from previous Chrome versions.
   <int value="-697751423" label="disable-quickoffice-component-app"/>
   <int value="-696693295" label="Canvas2DImageChromium:disabled"/>
   <int value="-696225611" label="UseSerialBusEnumerator:disabled"/>
+  <int value="-695764575" label="NearbySharingBackgroundScanning:enabled"/>
   <int value="-695687521" label="double-buffer-compositing"/>
   <int value="-694622753" label="VizHitTest:disabled"/>
   <int value="-694187898" label="MashOopViz:disabled"/>
@@ -48876,6 +48878,7 @@ from previous Chrome versions.
   <int value="983084316" label="SyncUSSNigori:disabled"/>
   <int value="983311394" label="tab-management-experiment-type"/>
   <int value="986796748" label="AccountConsistency:enabled"/>
+  <int value="987690332" label="NearbySharingBackgroundScanning:disabled"/>
   <int value="987843084" label="TerminalSystemApp:enabled"/>
   <int value="988781221" label="SyncSetupFriendlySettings:disabled"/>
   <int value="988981463" label="ImageCaptureAPI:enabled"/>
@@ -49903,6 +49906,7 @@ from previous Chrome versions.
   <int value="1831103529" label="MediaNotificationsCounter:disabled"/>
   <int value="1831545645" label="query-tiles-single-tier"/>
   <int value="1831593339" label="stop-in-background:disabled"/>
+  <int value="1831777433" label="query-tiles-rank-tiles"/>
   <int value="1831835753" label="MaterialDesignIncognitoNTP:enabled"/>
   <int value="1832552562" label="EnableVirtualKeyboardUkm:enabled"/>
   <int value="1833340282" label="SmartSuggestionForLargeDownloads:enabled"/>
@@ -74456,6 +74460,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="History push state or replace state"/>
   <int value="1" label="Same document backward or forward"/>
   <int value="2" label="Other fragment navigation"/>
+  <int value="3" label="AppHistory navigate event respondWith"/>
 </enum>
 
 <enum name="SiteEngagementLevel">
@@ -83491,6 +83496,23 @@ others/histograms.xml -->
   <int value="3" label="kOtherFailure"/>
 </enum>
 
+<enum name="WebApkArcInstallResultChromeOS">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown error"/>
+  <int value="2" label="Service communication error"/>
+  <int value="3" label="Service communication timeout"/>
+  <int value="4" label="Caller verification failed"/>
+  <int value="5" label="Install policy violation"/>
+  <int value="6" label="Install API disabled"/>
+  <int value="7" label="Unknown account"/>
+  <int value="8" label="Network error while resolving WebAPK"/>
+  <int value="9" label="Error while resolving WebAPK"/>
+  <int value="10" label="WebAPK is not Google signed"/>
+  <int value="11" label="Download cancelled"/>
+  <int value="12" label="Download error"/>
+  <int value="13" label="Install error"/>
+</enum>
+
 <enum name="WebApkDistributor">
   <int value="0" label="Browser"/>
   <int value="1" label="Device Policy"/>
@@ -83568,7 +83590,7 @@ others/histograms.xml -->
   <int value="1" label="WebApk infobar shown from the add to homescreen menu"/>
 </enum>
 
-<enum name="WebAPKInstallResultChromeOS">
+<enum name="WebApkInstallResultChromeOS">
   <int value="0" label="Success">Installed successfully.</int>
   <int value="1" label="App invalid">
     Installation failed because the app was in an invalid state (e.g., it had no

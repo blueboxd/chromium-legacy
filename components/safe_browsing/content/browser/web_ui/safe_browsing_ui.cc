@@ -45,7 +45,7 @@
 #include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
-#include "components/safe_browsing/core/db/v4_local_database_manager.h"
+#include "components/safe_browsing/core/browser/db/v4_local_database_manager.h"
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -761,6 +761,11 @@ base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
     referrer_dict.SetKey(
         "is_subframe_referrer_url_removed",
         base::Value(referrer.is_subframe_referrer_url_removed()));
+  }
+
+  if (referrer.has_is_url_removed_by_policy()) {
+    referrer_dict.SetKey("is_url_removed_by_policy",
+                         base::Value(referrer.is_url_removed_by_policy()));
   }
 
   return std::move(referrer_dict);

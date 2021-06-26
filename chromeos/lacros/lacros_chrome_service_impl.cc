@@ -27,6 +27,7 @@
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
@@ -240,6 +241,9 @@ LacrosChromeServiceImpl::LacrosChromeServiceImpl(
   ConstructRemote<crosapi::mojom::IdleService,
                   &crosapi::mojom::Crosapi::BindIdleService,
                   Crosapi::MethodMinVersions::kBindIdleServiceMinVersion>();
+  ConstructRemote<crosapi::mojom::ImageWriter,
+                  &crosapi::mojom::Crosapi::BindImageWriter,
+                  Crosapi::MethodMinVersions::kBindImageWriterMinVersion>();
   ConstructRemote<crosapi::mojom::KeystoreService,
                   &crosapi::mojom::Crosapi::BindKeystoreService,
                   Crosapi::MethodMinVersions::kBindKeystoreServiceMinVersion>();
@@ -301,7 +305,7 @@ LacrosChromeServiceImpl::~LacrosChromeServiceImpl() {
   g_instance = nullptr;
 }
 
-void LacrosChromeServiceImpl::BindReceiver() {
+void LacrosChromeServiceImpl::BindReceiver(const std::string& browser_version) {
   // Accept Crosapi invitation here. Mojo IPC support should be initialized
   // at this stage.
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -337,7 +341,7 @@ void LacrosChromeServiceImpl::BindReceiver() {
         FROM_HERE,
         base::BindOnce(
             &LacrosChromeServiceImplNeverBlockingState::OnBrowserStartup,
-            weak_sequenced_state_, ToMojo(delegate_->GetChromeVersion())));
+            weak_sequenced_state_, ToMojo(browser_version)));
   }
 }
 

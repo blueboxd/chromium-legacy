@@ -261,9 +261,16 @@ OpenXrApiWrapper::PickEnvironmentBlendModeForSession(
         blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
       break;
     case device::mojom::XRSessionMode::kImmersiveAr:
+      // Prefer Alpha Blend when both Alpha Blend and Additive modes are
+      // supported. This only concerns video see through devices with an
+      // Additive compatibility mode
       if (base::Contains(supported_blend_modes,
-                         XR_ENVIRONMENT_BLEND_MODE_ADDITIVE))
+                         XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND)) {
+        blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND;
+      } else if (base::Contains(supported_blend_modes,
+                                XR_ENVIRONMENT_BLEND_MODE_ADDITIVE)) {
         blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_ADDITIVE;
+      }
       break;
     case device::mojom::XRSessionMode::kInline:
       NOTREACHED();
@@ -291,6 +298,17 @@ bool OpenXrApiWrapper::UpdateAndGetSessionEnded() {
   // session has ended. Once uninitialized, this object is never re-initialized.
   // If a new session is requested by WebXR, a new object is created.
   return !IsInitialized();
+}
+
+OpenXRSceneUnderstandingManager*
+OpenXrApiWrapper::GetOrCreateSceneUnderstandingManager(
+    const OpenXrExtensionHelper& extension_helper) {
+  if (session_ && !scene_understanding_manager_) {
+    scene_understanding_manager_ =
+        std::make_unique<OpenXRSceneUnderstandingManager>(
+            extension_helper, session_, local_space_);
+  }
+  return scene_understanding_manager_.get();
 }
 
 // Callers of this function must check the XrResult return value and destroy
@@ -636,6 +654,11 @@ XrResult OpenXrApiWrapper::EndFrame() {
 
   XrFrameEndInfo end_frame_info = {XR_TYPE_FRAME_END_INFO};
   end_frame_info.environmentBlendMode = blend_mode_;
+  if (blend_mode_ == XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND) {
+    multi_projection_layer.layerFlags |=
+        XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
+  }
+
   end_frame_info.layerCount = 1;
   end_frame_info.layers =
       reinterpret_cast<const XrCompositionLayerBaseHeader* const*>(
@@ -716,6 +739,7 @@ XrResult OpenXrApiWrapper::LocateViews(XrReferenceSpaceType type,
       break;
     case XR_REFERENCE_SPACE_TYPE_STAGE:
     case XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT:
+    case XR_REFERENCE_SPACE_TYPE_COMBINED_EYE_VARJO:
     case XR_REFERENCE_SPACE_TYPE_MAX_ENUM:
       NOTREACHED();
   }
@@ -1001,10 +1025,7 @@ bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
   if (XR_FAILED(xrLocateSpace(stage_space_, local_space_,
                               frame_state_.predictedDisplayTime,
                               &local_from_stage_location)) ||
-      !(local_from_stage_location.locationFlags &
-        XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) ||
-      !(local_from_stage_location.locationFlags &
-        XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
+      !IsPoseValid(local_from_stage_location.locationFlags)) {
     return false;
   }
 

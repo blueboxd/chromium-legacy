@@ -47,109 +47,7 @@ std::string StringFromVector(const std::vector<uint8_t>& v) {
 
 }  // namespace
 
-EnterprisePlatformKeysInternalGenerateKeyFunction::
-    ~EnterprisePlatformKeysInternalGenerateKeyFunction() = default;
-
-ExtensionFunction::ResponseAction
-EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
-  std::unique_ptr<api_epki::GenerateKey::Params> params(
-      api_epki::GenerateKey::Params::Create(*args_));
-
-  EXTENSION_FUNCTION_VALIDATE(params);
-  absl::optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
-      platform_keys::ApiIdToPlatformKeysTokenId(params->token_id);
-  if (!platform_keys_token_id)
-    return RespondNow(Error(platform_keys::kErrorInvalidToken));
-
-  chromeos::ExtensionPlatformKeysService* service =
-      chromeos::ExtensionPlatformKeysServiceFactory::GetForBrowserContext(
-          browser_context());
-  DCHECK(service);
-
-  if (params->algorithm.name == "RSASSA-PKCS1-v1_5") {
-    // TODO(pneubeck): Add support for unsigned integers to IDL.
-    EXTENSION_FUNCTION_VALIDATE(params->algorithm.modulus_length &&
-                                *(params->algorithm.modulus_length) >= 0);
-    service->GenerateRSAKey(
-        platform_keys_token_id.value(), *(params->algorithm.modulus_length),
-        extension_id(),
-        base::BindOnce(
-            &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey,
-            this));
-  } else if (params->algorithm.name == "ECDSA") {
-    EXTENSION_FUNCTION_VALIDATE(params->algorithm.named_curve);
-    service->GenerateECKey(
-        platform_keys_token_id.value(), *(params->algorithm.named_curve),
-        extension_id(),
-        base::BindOnce(
-            &EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey,
-            this));
-  } else {
-    NOTREACHED();
-    EXTENSION_FUNCTION_VALIDATE(false);
-  }
-  return RespondLater();
-}
-
-void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
-    const std::string& public_key_der,
-    absl::optional<crosapi::mojom::KeystoreError> error) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!error) {
-    Respond(ArgumentList(api_epki::GenerateKey::Results::Create(
-        std::vector<uint8_t>(public_key_der.begin(), public_key_der.end()))));
-  } else {
-    Respond(
-        Error(chromeos::platform_keys::KeystoreErrorToString(error.value())));
-  }
-}
-
-EnterprisePlatformKeysGetCertificatesFunction::
-    ~EnterprisePlatformKeysGetCertificatesFunction() {}
-
-ExtensionFunction::ResponseAction
-EnterprisePlatformKeysGetCertificatesFunction::Run() {
-  std::unique_ptr<api_epk::GetCertificates::Params> params(
-      api_epk::GetCertificates::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  absl::optional<chromeos::platform_keys::TokenId> platform_keys_token_id =
-      platform_keys::ApiIdToPlatformKeysTokenId(params->token_id);
-  if (!platform_keys_token_id)
-    return RespondNow(Error(platform_keys::kErrorInvalidToken));
-
-  chromeos::platform_keys::PlatformKeysService* platform_keys_service =
-      chromeos::platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
-          browser_context());
-  platform_keys_service->GetCertificates(
-      platform_keys_token_id.value(),
-      base::BindOnce(
-          &EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates,
-          this));
-  return RespondLater();
-}
-
-void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
-    std::unique_ptr<net::CertificateList> certs,
-    chromeos::platform_keys::Status status) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (status != chromeos::platform_keys::Status::kSuccess) {
-    Respond(Error(chromeos::platform_keys::StatusToString(status)));
-    return;
-  }
-
-  std::unique_ptr<base::ListValue> client_certs(new base::ListValue());
-  for (net::CertificateList::const_iterator it = certs->begin();
-       it != certs->end(); ++it) {
-    base::StringPiece cert_der =
-        net::x509_util::CryptoBufferAsStringPiece((*it)->cert_buffer());
-    client_certs->Append(std::make_unique<base::Value>(
-        base::Value::BlobStorage(cert_der.begin(), cert_der.end())));
-  }
-
-  std::unique_ptr<base::ListValue> results(new base::ListValue());
-  results->Append(std::move(client_certs));
-  Respond(ArgumentList(std::move(results)));
-}
+//------------------------------------------------------------------------------
 
 EnterprisePlatformKeysImportCertificateFunction::
     ~EnterprisePlatformKeysImportCertificateFunction() {}
@@ -196,6 +94,8 @@ void EnterprisePlatformKeysImportCertificateFunction::OnImportedCertificate(
     Respond(Error(chromeos::platform_keys::StatusToString(status)));
 }
 
+//------------------------------------------------------------------------------
+
 EnterprisePlatformKeysRemoveCertificateFunction::
     ~EnterprisePlatformKeysRemoveCertificateFunction() {}
 
@@ -241,6 +141,8 @@ void EnterprisePlatformKeysRemoveCertificateFunction::OnRemovedCertificate(
     Respond(Error(chromeos::platform_keys::StatusToString(status)));
 }
 
+//------------------------------------------------------------------------------
+
 EnterprisePlatformKeysInternalGetTokensFunction::
     ~EnterprisePlatformKeysInternalGetTokensFunction() {}
 
@@ -282,6 +184,8 @@ void EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens(
   Respond(ArgumentList(api_epki::GetTokens::Results::Create(token_ids)));
 }
 
+//------------------------------------------------------------------------------
+
 EnterprisePlatformKeysChallengeMachineKeyFunction::
     EnterprisePlatformKeysChallengeMachineKeyFunction() = default;
 
@@ -316,6 +220,8 @@ void EnterprisePlatformKeysChallengeMachineKeyFunction::OnChallengedKey(
     Respond(Error(result.GetErrorMessage()));
   }
 }
+
+//------------------------------------------------------------------------------
 
 EnterprisePlatformKeysChallengeUserKeyFunction::
     EnterprisePlatformKeysChallengeUserKeyFunction() = default;

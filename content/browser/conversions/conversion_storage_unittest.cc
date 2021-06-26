@@ -1148,4 +1148,61 @@ TEST_F(ConversionStorageTest,
   EXPECT_EQ(5u, actual_reports[0].impression.impression_data());
 }
 
+TEST_F(ConversionStorageTest, MultipleImpressions_CorrectDeactivation) {
+  storage()->StoreImpression(
+      ImpressionBuilder(clock()->Now()).SetData(3).SetPriority(0).Build());
+  storage()->StoreImpression(
+      ImpressionBuilder(clock()->Now()).SetData(5).SetPriority(1).Build());
+  EXPECT_EQ(2u, storage()->GetActiveImpressions().size());
+
+  EXPECT_TRUE(
+      storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
+
+  // Because the impression with data 5 has the highest priority, it is selected
+  // for attribution. The unselected impression with data 3 should be
+  // deactivated, but the one with data 5 should remain active.
+  std::vector<StorableImpression> active_impressions =
+      storage()->GetActiveImpressions();
+  EXPECT_EQ(1u, active_impressions.size());
+  EXPECT_EQ(5u, active_impressions[0].impression_data());
+}
+
+TEST_F(ConversionStorageTest, FalselyAttributeImpression_ReportStored) {
+  delegate()->set_attribution_logic(
+      StorableImpression::AttributionLogic::kFalsely);
+  delegate()->set_fake_event_source_trigger_data(7);
+  delegate()->set_max_conversions_per_impression(1);
+
+  const auto impression =
+      ImpressionBuilder(clock()->Now())
+          .SetData(4)
+          .SetSourceType(StorableImpression::SourceType::kEvent)
+          .SetPriority(100)
+          .Build();
+  storage()->StoreImpression(impression);
+
+  const ConversionReport expected_report(
+      impression, /*conversion_data=*/7,
+      /*conversion_time=*/clock()->Now(),
+      /*report_time=*/clock()->Now() +
+          base::TimeDelta::FromMilliseconds(kReportTime),
+      /*conversion_id=*/absl::nullopt);
+
+  clock()->Advance(base::TimeDelta::FromMilliseconds(kReportTime));
+
+  std::vector<ConversionReport> actual_reports =
+      storage()->GetConversionsToReport(clock()->Now());
+  EXPECT_TRUE(ReportsEqual({expected_report}, actual_reports));
+
+  EXPECT_TRUE(storage()->GetActiveImpressions().empty());
+
+  // The falsely attributed impression should not be eligible for further
+  // attribution.
+  EXPECT_FALSE(
+      storage()->MaybeCreateAndStoreConversionReport(DefaultConversion()));
+
+  actual_reports = storage()->GetConversionsToReport(clock()->Now());
+  EXPECT_TRUE(ReportsEqual({expected_report}, actual_reports));
+}
+
 }  // namespace content

@@ -32,6 +32,7 @@
 #include <ostream>
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "skia/ext/skia_matrix_44.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
@@ -57,6 +58,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_map_element.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
@@ -71,6 +73,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -95,7 +98,6 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -209,8 +211,14 @@ Node* GetParentNodeForComputeParent(Node* node) {
   if (!map_element)
     return parent;
 
-  // Special case, for a <map>, return the <img> associated with it.
-  return map_element->ImageElement();
+  // For a <map>, return the <img> associated with it. This is necessary because
+  // the AX tree is flat, adding image map children as children of the <img>,
+  // whereas in the DOM they are actually children of the <map>.
+  // Therefore, if a node is a DOM child of a map, its AX parent is the image.
+  // This code double checks that the image actually uses the map.
+  HTMLImageElement* image_element = map_element->ImageElement();
+  return AXObject::GetMapForImage(image_element) == map_element ? image_element
+                                                                : nullptr;
 }
 
 #if DCHECK_IS_ON()
@@ -759,6 +767,29 @@ AXObject* AXObject::ComputeAccessibleNodeParent(
   }
 
   return nullptr;
+}
+
+// static
+HTMLMapElement* AXObject::GetMapForImage(Node* image) {
+  if (!IsA<HTMLImageElement>(image))
+    return nullptr;
+
+  LayoutImage* layout_image = DynamicTo<LayoutImage>(image->GetLayoutObject());
+  if (!layout_image)
+    return nullptr;
+
+  HTMLMapElement* map_element = layout_image->ImageMap();
+  if (!map_element)
+    return nullptr;
+
+  // Don't allow images that are actually children of a map, as this could lead
+  // to an infinite loop, where the descendant image points to the ancestor map,
+  // yet the descendant image is being returned here as an ancestor.
+  if (Traversal<HTMLMapElement>::FirstAncestor(*image))
+    return nullptr;
+
+  // The image has an associated <map> and does not have a <map> ancestor.
+  return map_element;
 }
 
 // static
@@ -1965,6 +1996,10 @@ AccessibilitySelectedState AXObject::IsSelected() const {
   return kSelectedStateUndefined;
 }
 
+bool AXObject::IsSelectedFromFocusSupported() const {
+  return false;
+}
+
 bool AXObject::IsSelectedFromFocus() const {
   return false;
 }
@@ -2436,6 +2471,10 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     // <span>s are ignored because they are considered uninteresting. Do not add
     // them back inside labels.
     if (IsA<HTMLLabelElement>(parent_node) && !IsA<HTMLSpanElement>(node))
+      return true;
+    // Simplify AXNodeObject::AddImageMapChildren() -- it will only need to deal
+    // with included children.
+    if (IsA<HTMLMapElement>(parent_node))
       return true;
   }
 
@@ -4301,12 +4340,8 @@ void AXObject::ClearChildren() const {
   if (slot && slot->SupportsAssignment())
     return;
 
-  if (auto* image = DynamicTo<HTMLImageElement>(node)) {
-    node = GetDocument()->GetImageMap(
-        image->FastGetAttribute(html_names::kUsemapAttr));
-    if (!node)
-      return;
-  }
+  if (Node* map = GetMapForImage(node))
+    node = map;
 
   // Detach children that were not cleared from first loop.
   // These must have been an unincluded node who's parent is this,
@@ -4687,7 +4722,7 @@ int AXObject::GetDOMNodeId() const {
 
 void AXObject::GetRelativeBounds(AXObject** out_container,
                                  FloatRect& out_bounds_in_container,
-                                 SkMatrix44& out_container_transform,
+                                 skia::Matrix44& out_container_transform,
                                  bool* clips_children) const {
   *out_container = nullptr;
   out_bounds_in_container = FloatRect();
@@ -4826,7 +4861,7 @@ FloatRect AXObject::LocalBoundingBoxRectForAccessibility() {
 LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
   AXObject* container = nullptr;
   FloatRect bounds;
-  SkMatrix44 transform;
+  skia::Matrix44 transform;
   GetRelativeBounds(&container, bounds, transform);
   FloatRect computed_bounds(0, 0, bounds.Width(), bounds.Height());
   while (container && container != this) {

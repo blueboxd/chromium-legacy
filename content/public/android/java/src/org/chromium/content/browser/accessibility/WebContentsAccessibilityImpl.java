@@ -518,7 +518,20 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
             if (WebContentsAccessibilityImplJni.get().updateCachedAccessibilityNodeInfo(
                         mNativeObj, WebContentsAccessibilityImpl.this, cachedNode, virtualViewId)) {
-                // After successfully re-populating this cached node, return result.
+                // After successfully re-populating this cached node, update the accessibility
+                // focus since this would not be included in the update call, and set the
+                // available actions accordingly, then return result.
+                cachedNode.setAccessibilityFocused(mAccessibilityFocusId == virtualViewId);
+
+                if (mAccessibilityFocusId == virtualViewId) {
+                    addAction(cachedNode, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+                    removeAction(cachedNode, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+                } else {
+                    removeAction(
+                            cachedNode, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+                    addAction(cachedNode, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+                }
+
                 return cachedNode;
             } else {
                 // If the node is no longer valid, wipe it from the cache and return null
@@ -1430,6 +1443,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
+    protected void handleDialogModalOpened(int virtualViewId) {
+        // Requires P or higher.
+    }
+
+    @CalledByNative
     private void announceLiveRegionText(String text) {
         if (isAccessibilityEnabled()) {
             AccessibilityEvent event =
@@ -1504,23 +1522,28 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD
                 | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE);
 
-        if (mAccessibilityFocusId == virtualViewId) {
-            node.setAccessibilityFocused(true);
-        } else {
-            node.setAccessibilityFocused(false);
-        }
+        node.setAccessibilityFocused(mAccessibilityFocusId == virtualViewId);
     }
 
+    // The Android SDK requires us to call AccessibilityNodeInfo.addAction and
+    // AccessibilityNodeInfo.removeAction with an AccessibilityAction argument, but to simplify
+    // things, we just cache a set of AccessibilityActions mapped by their ID.
     protected void addAction(AccessibilityNodeInfo node, int actionId) {
-        // The Android SDK requires us to call AccessibilityNodeInfo.addAction with an
-        // AccessibilityAction argument, but to simplify things, we just cache a set of
-        // AccessibilityActions mapped by their ID.
         AccessibilityAction action = sAccessibilityActionMap.get(actionId);
         if (action == null) {
             action = new AccessibilityAction(actionId, null);
             sAccessibilityActionMap.put(actionId, action);
         }
         node.addAction(action);
+    }
+
+    protected void removeAction(AccessibilityNodeInfo node, int actionId) {
+        AccessibilityAction action = sAccessibilityActionMap.get(actionId);
+        if (action == null) {
+            action = new AccessibilityAction(actionId, null);
+            sAccessibilityActionMap.put(actionId, action);
+        }
+        node.removeAction(action);
     }
 
     @CalledByNative
@@ -1773,7 +1796,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         if (rect.bottom > viewportRectBottom) rect.bottom = viewportRectBottom;
     }
 
-    private void requestSendAccessibilityEvent(AccessibilityEvent event) {
+    protected void requestSendAccessibilityEvent(AccessibilityEvent event) {
         // If there is no parent, then the event can be ignored. In general the parent is only
         // transiently null (such as during teardown, switching tabs...). Also ensure that
         // accessibility is still enabled, throttling may result in events sent late.

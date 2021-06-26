@@ -1913,7 +1913,9 @@ bool WebContentsImpl::IsLoadingToDifferentDocument() {
 }
 
 bool WebContentsImpl::IsDocumentOnLoadCompletedInMainFrame() {
-  return GetRenderViewHost()->IsDocumentOnLoadCompletedInMainFrame();
+  // TODO(mparch): This should be moved to Page, and callers should use it
+  // directly.
+  return GetPrimaryPage().is_on_load_completed_in_main_document();
 }
 
 bool WebContentsImpl::IsWaitingForResponse() {
@@ -5315,7 +5317,7 @@ void WebContentsImpl::DidStartNavigation(NavigationHandle* navigation_handle) {
     observers_.NotifyObservers(&WebContentsObserver::DidStartNavigation,
                                navigation_handle);
   }
-  if (navigation_handle->IsInMainFrame()) {
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     // When the browser is started with about:blank as the startup URL, focus
     // the location bar (which will also select its contents) so people can
     // simply begin typing to navigate elsewhere.
@@ -5449,7 +5451,8 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
       }
     }
 
-    if (navigation_handle->IsInMainFrame() &&
+    // TODO(crbug.com/1223113) : Move this tracking to PageImpl.
+    if (navigation_handle->IsInPrimaryMainFrame() &&
         !navigation_handle->IsSameDocument()) {
       was_ever_audible_ = false;
     }
@@ -7355,8 +7358,6 @@ void WebContentsImpl::DocumentOnLoadCompleted(
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::DocumentOnLoadCompleted",
                         "render_frame_host", render_frame_host);
   ShowInsecureLocalhostWarningIfNeeded();
-
-  GetRenderViewHost()->DocumentOnLoadCompletedInMainFrame();
 
   observers_.NotifyObservers(
       &WebContentsObserver::DocumentOnLoadCompletedInMainFrame,

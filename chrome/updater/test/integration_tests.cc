@@ -66,8 +66,7 @@ class IntegrationTest : public ::testing::Test {
 
   void TearDown() override {
     ExpectClean();
-    if (::testing::Test::HasFailure())
-      PrintLog();
+    PrintLog();
     // TODO(crbug.com/1159189): Use a specific test output directory
     // because Uninstall() deletes the files under GetDataDirPath().
     CopyLog();
@@ -83,8 +82,7 @@ class IntegrationTest : public ::testing::Test {
   void ExpectInstalled() { test_commands_->ExpectInstalled(); }
 
   void Uninstall() {
-    if (::testing::Test::HasFailure())
-      PrintLog();
+    PrintLog();
     CopyLog();
     test_commands_->Uninstall();
   }
@@ -335,12 +333,14 @@ TEST_F(IntegrationTest, UnregisterUninstalledApp) {
   RegisterApp("test1");
   RegisterApp("test2");
 
+  WaitForServerExit();
+
   SetExistenceCheckerPath(kTestAppId,
                           base::FilePath(FILE_PATH_LITERAL("NONE")));
 
   RunWake(0);
 
-  SleepFor(13);
+  WaitForServerExit();
   ExpectInstalled();
 
   ExpectAppUnregisteredExistenceCheckerPath(kTestAppId);
@@ -350,27 +350,30 @@ TEST_F(IntegrationTest, UnregisterUninstalledApp) {
 
 TEST_F(IntegrationTest, UninstallIfMaxServerWakesBeforeRegistrationExceeded) {
   Install();
-  SleepFor(2);
+  WaitForServerExit();
   ExpectInstalled();
   SetServerStarts(24);
   RunWake(0);
-  SleepFor(13);
+  WaitForServerExit();
+  SleepFor(2);
   ExpectClean();
 }
 
 TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   RegisterTestApp();
-  SleepFor(2);
+  WaitForServerExit();
   ExpectInstalled();
   SetServerStarts(24);
   RunWake(0);
+  WaitForServerExit();
   ExpectInstalled();
   ExpectVersionActive(kUpdaterVersion);
   ExpectActiveUpdater();
   SetExistenceCheckerPath(kTestAppId,
                           base::FilePath(FILE_PATH_LITERAL("NONE")));
   RunWake(0);
-  SleepFor(13);
+  WaitForServerExit();
+  SleepFor(2);
   ExpectClean();
 }
 

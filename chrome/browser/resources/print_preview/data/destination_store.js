@@ -398,15 +398,25 @@ export class DestinationStore extends EventTarget {
       return;
     }
 
-    // Load all possible printers.
-    for (const printerType of this.typesToSearch_) {
-      if (printerType === PrinterType.CLOUD_PRINTER) {
+    // Check for Cloud Print printers and remove them if the interface is not
+    // present. This indicates that Cloud Print is unavailable for this user.
+    if (this.typesToSearch_.has(PrinterType.CLOUD_PRINTER)) {
+      if (this.cloudPrintInterface_ === null) {
+        this.typesToSearch_.delete(PrinterType.CLOUD_PRINTER);
+      } else {
         // Accounts are not known on startup. Send an initial search query to
         // get tokens and user accounts.
         this.cloudPrintInterface_.search();
-      } else if (
-          printerType !== PrinterType.PRIVET_PRINTER ||
-          loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
+      }
+    }
+
+    // Load all possible printers except for Cloud Print printers since they're
+    // fetched by Javascript instead of through the native layer (which
+    // startLoadDestinations_ invokes).
+    for (const printerType of this.typesToSearch_) {
+      if (printerType !== PrinterType.CLOUD_PRINTER &&
+          (printerType !== PrinterType.PRIVET_PRINTER ||
+           loadTimeData.getBoolean('forceEnablePrivetPrinting'))) {
         this.startLoadDestinations_(printerType);
       }
     }
@@ -606,7 +616,11 @@ export class DestinationStore extends EventTarget {
     const origins = [];
     if (isLocal) {
       origins.push(DestinationOrigin.LOCAL);
-      origins.push(DestinationOrigin.PRIVET);
+      // TODO (rbpotter): Remove the code below once this flag and policy are no
+      // longer supported. Remove the privet flag in M90.
+      if (loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
+        origins.push(DestinationOrigin.PRIVET);
+      }
       origins.push(DestinationOrigin.EXTENSION);
       origins.push(DestinationOrigin.CROS);
     }
@@ -849,8 +863,8 @@ export class DestinationStore extends EventTarget {
       PrinterType.LOCAL_PRINTER,
     ];
 
-    // TODO (rbpotter): Remove the code below once this flag and policy are no
-    // longer supported. Remove the privet flag in M90.
+    // TODO (https://crbug.com/1223593): Remove the code below once this policy
+    // is no longer supported.
     if (loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
       types.push(PrinterType.PRIVET_PRINTER);
     }

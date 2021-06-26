@@ -10,13 +10,21 @@
 
 namespace blink {
 
-bool PendingLayer::PropertyTreeStateChanged() const {
-  auto change = PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
-  if (change_of_decomposited_transforms_ >= change)
-    return true;
+namespace {
 
-  return property_tree_state_.ChangedToRoot(change);
+const ClipPaintPropertyNode* HighestOutputClipBetween(
+    const EffectPaintPropertyNode& ancestor,
+    const EffectPaintPropertyNode& descendant) {
+  const ClipPaintPropertyNode* result = nullptr;
+  for (const auto* effect = &descendant; effect != &ancestor;
+       effect = effect->UnaliasedParent()) {
+    if (const auto* output_clip = effect->OutputClip())
+      result = &output_clip->Unalias();
+  }
+  return result;
 }
+
+}  // anonymous namespace
 
 PendingLayer::PendingLayer(const PaintChunkSubset& chunks,
                            const PaintChunkIterator& first_chunk,
@@ -151,17 +159,10 @@ bool PendingLayer::MergeInternal(const PendingLayer& guest,
 
   FloatRect merged_bounds =
       UnionRect(new_home_bounds.Rect(), new_guest_bounds.Rect());
-  // Don't check for sparcity if we may further decomposite the effect, so that
-  // the merged layer may be merged to other layers with the decomposited
-  // effect, which is often better than not merging even if the merged layer is
-  // sparse because we may create less composited effects and render surfaces.
-  if (guest_state.Effect().IsRoot() ||
-      guest_state.Effect().HasDirectCompositingReasons()) {
-    float sum_area = new_home_bounds.Rect().Size().Area() +
-                     new_guest_bounds.Rect().Size().Area();
-    if (merged_bounds.Size().Area() > kMergeSparsityTolerance * sum_area)
-      return false;
-  }
+  float sum_area = new_home_bounds.Rect().Size().Area() +
+                   new_guest_bounds.Rect().Size().Area();
+  if (merged_bounds.Size().Area() > kMergeSparsityTolerance * sum_area)
+    return false;
 
   if (!dry_run) {
     chunks_.Merge(guest.Chunks());
@@ -195,6 +196,42 @@ PendingLayer::ScrollTranslationForScrollHitTestLayer() const {
   if (!paint_chunk.hit_test_data)
     return nullptr;
   return paint_chunk.hit_test_data->scroll_translation;
+}
+
+bool PendingLayer::PropertyTreeStateChanged() const {
+  auto change = PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
+  if (change_of_decomposited_transforms_ >= change)
+    return true;
+
+  return property_tree_state_.ChangedToRoot(change);
+}
+
+bool PendingLayer::MightOverlap(const PendingLayer& other) const {
+  PropertyTreeState common_ancestor_state(
+      property_tree_state_.Transform()
+          .LowestCommonAncestor(other.property_tree_state_.Transform())
+          .Unalias(),
+      property_tree_state_.Clip()
+          .LowestCommonAncestor(other.property_tree_state_.Clip())
+          .Unalias(),
+      property_tree_state_.Effect()
+          .LowestCommonAncestor(other.property_tree_state_.Effect())
+          .Unalias());
+  // Move the common clip up if some effect nodes have OutputClip escaping the
+  // common clip.
+  if (const auto* clip_a = HighestOutputClipBetween(
+          common_ancestor_state.Effect(), property_tree_state_.Effect())) {
+    common_ancestor_state.SetClip(
+        clip_a->LowestCommonAncestor(common_ancestor_state.Clip()).Unalias());
+  }
+  if (const auto* clip_b =
+          HighestOutputClipBetween(common_ancestor_state.Effect(),
+                                   other.property_tree_state_.Effect())) {
+    common_ancestor_state.SetClip(
+        clip_b->LowestCommonAncestor(common_ancestor_state.Clip()).Unalias());
+  }
+  return VisualRectForOverlapTesting(common_ancestor_state)
+      .Intersects(other.VisualRectForOverlapTesting(common_ancestor_state));
 }
 
 // Walk the pending layer list and build up a table of transform nodes that

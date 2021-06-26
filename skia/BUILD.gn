@@ -39,7 +39,10 @@ buildflag_header("buildflags") {
 
 # External-facing config for dependent code.
 config("skia_config") {
-  defines = [ "SK_UNTIL_CRBUG_1187654_IS_FIXED" ]
+  defines = [
+    "SK_UNTIL_CRBUG_1187654_IS_FIXED",
+    "SK_AFTER_FT_TRANSFORM_RENAME",
+  ]
   include_dirs = [ "//third_party/skia" ]
 
   if (!is_ios) {
@@ -262,6 +265,8 @@ component("skia") {
     "ext/rgba_to_yuva.h",
     "ext/skia_histogram.cc",
     "ext/skia_histogram.h",
+    "ext/skia_matrix_44.cc",
+    "ext/skia_matrix_44.h",
     "ext/skia_memory_dump_provider.cc",
     "ext/skia_memory_dump_provider.h",
     "ext/skia_trace_memory_dump_impl.cc",

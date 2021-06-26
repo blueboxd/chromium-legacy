@@ -3316,6 +3316,9 @@ const char kQueryTilesMoreTrendingName[] =
     "Query Tiles - more trending queries";
 const char kQueryTilesMoreTrendingDescription[] =
     "Request more trending queries from the server";
+const char kQueryTilesRankTilesName[] = "Query Tiles - rank tiles on server";
+const char kQueryTilesRankTilesDescription[] =
+    "Rank tiles on server based on client context";
 const char kQueryTilesSwapTrendingName[] =
     "Query Tiles - Swap trending queries";
 const char kQueryTilesSwapTrendingDescription[] =
@@ -4811,6 +4814,13 @@ const char kMultilingualTypingDescription[] =
 const char kNearbySharingName[] = "Nearby Sharing";
 const char kNearbySharingDescription[] =
     "Enables Nearby Sharing for sharing content between devices.";
+
+const char kNearbySharingBackgroundScanningName[] =
+    "Nearby Sharing Background Scanning";
+const char kNearbySharingBackgroundScanningDescription[] =
+    "Enables background scanning for Nearby Share, allowing devices to "
+    "persistently scan and present a notification when a nearby device is "
+    "attempting to share.";
 
 const char kNearbySharingDeviceContactsName[] =
     "Nearby Sharing Device Contacts";

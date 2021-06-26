@@ -56,7 +56,9 @@
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_mode.h"
 
-class SkMatrix44;
+namespace skia {
+class Matrix44;
+}
 
 namespace ui {
 struct AXActionData;
@@ -522,6 +524,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool IsOffScreen() const;
   virtual bool IsRequired() const;
   virtual AccessibilitySelectedState IsSelected() const;
+  virtual bool IsSelectedFromFocusSupported() const;
   // Is the object selected because selection is following focus?
   virtual bool IsSelectedFromFocus() const;
   virtual bool IsSelectedOptionActive() const;
@@ -908,7 +911,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // set |clips_children| to true.
   virtual void GetRelativeBounds(AXObject** out_container,
                                  FloatRect& out_bounds_in_container,
-                                 SkMatrix44& out_container_transform,
+                                 skia::Matrix44& out_container_transform,
                                  bool* clips_children = nullptr) const;
 
   FloatRect LocalBoundingBoxRectForAccessibility();
@@ -1137,6 +1140,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // such as an <optgroup> or <div> in the shadow DOM, because an AXMenuList, if
   // used, only allows <option>/AXMenuListOption children.
   static bool CanComputeAsNaturalParent(Node*);
+
+  // For a given image, return a <map> that's actually used for it.
+  static HTMLMapElement* GetMapForImage(Node* image);
 
   // Compute the AXObject parent for the given node or layout_object.
   // The layout object is only necessary if the node is null, which is the case

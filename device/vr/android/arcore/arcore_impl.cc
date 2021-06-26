@@ -19,11 +19,11 @@
 #include "device/vr/android/arcore/type_converters.h"
 #include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "skia/ext/skia_matrix_44.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/display/display.h"
@@ -308,31 +308,6 @@ constexpr float kDefaultFloorHeightEstimation = 1.2;
 }  // namespace
 
 namespace device {
-
-HitTestSubscriptionData::HitTestSubscriptionData(
-    mojom::XRNativeOriginInformationPtr native_origin_information,
-    const std::vector<mojom::EntityTypeForHitTest>& entity_types,
-    mojom::XRRayPtr ray)
-    : native_origin_information(std::move(native_origin_information)),
-      entity_types(entity_types),
-      ray(std::move(ray)) {}
-
-HitTestSubscriptionData::HitTestSubscriptionData(
-    HitTestSubscriptionData&& other) = default;
-HitTestSubscriptionData::~HitTestSubscriptionData() = default;
-
-TransientInputHitTestSubscriptionData::TransientInputHitTestSubscriptionData(
-    const std::string& profile_name,
-    const std::vector<mojom::EntityTypeForHitTest>& entity_types,
-    mojom::XRRayPtr ray)
-    : profile_name(profile_name),
-      entity_types(entity_types),
-      ray(std::move(ray)) {}
-
-TransientInputHitTestSubscriptionData::TransientInputHitTestSubscriptionData(
-    TransientInputHitTestSubscriptionData&& other) = default;
-TransientInputHitTestSubscriptionData::
-    ~TransientInputHitTestSubscriptionData() = default;
 
 ArCoreImpl::ArCoreImpl()
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}

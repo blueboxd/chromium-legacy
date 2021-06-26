@@ -125,7 +125,11 @@ void DevToolsFrontEndObserver::WebContentsDestroyed() {
 
 void DevToolsFrontEndObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted())
     return;
 
   if (url_ != navigation_handle->GetURL()) {
@@ -374,9 +378,9 @@ void InspectMessageHandler::HandleTCPDiscoveryConfigCommand(
   if (!profile)
     return;
 
-  const base::ListValue* list_src;
-  if (args->GetSize() == 1 && args->GetList(0, &list_src))
-    profile->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig, *list_src);
+  base::Value::ConstListView args_list = args->GetList();
+  if (args_list.size() == 1u && args_list[0].is_list())
+    profile->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig, args_list[0]);
 }
 
 void InspectMessageHandler::HandleOpenNodeFrontendCommand(

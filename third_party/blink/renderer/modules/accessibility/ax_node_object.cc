@@ -93,7 +93,6 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
-#include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
@@ -170,15 +169,6 @@ bool IsPotentialInPageLinkTarget(blink::Node& node) {
   }
 
   return false;
-}
-
-blink::HTMLMapElement* GetMapForImage(blink::LayoutObject* layout_object) {
-  blink::LayoutImage* layout_image =
-      blink::DynamicTo<blink::LayoutImage>(layout_object);
-  if (!layout_image)
-    return nullptr;
-
-  return layout_image->ImageMap();
 }
 
 bool IsNeutralWithinTable(blink::AXObject* obj) {
@@ -1471,7 +1461,7 @@ AccessibilitySelectedState AXNodeObject::IsSelected() const {
   // is marked as required or implied for this element in the ARIA specs.
   // If this object can't follow the focus, then we can't say that it's selected
   // nor that it's not.
-  if (!SelectionShouldFollowFocus())
+  if (!ui::IsSelectRequiredOrImplicit(RoleValue()))
     return kSelectedStateUndefined;
 
   // Selection follows focus, but ONLY in single selection containers, and only
@@ -1479,21 +1469,43 @@ AccessibilitySelectedState AXNodeObject::IsSelected() const {
   return IsSelectedFromFocus() ? kSelectedStateTrue : kSelectedStateFalse;
 }
 
+bool AXNodeObject::IsSelectedFromFocusSupported() const {
+  // The selection should only follow the focus when the aria-selected attribute
+  // is marked as required or implied for this element in the ARIA specs.
+  // If this object can't follow the focus, then we can't say that it's selected
+  // nor that it's not.
+  // TODO(crbug.com/1143483): Consider allowing more roles.
+  if (!ui::IsSelectRequiredOrImplicit(RoleValue()))
+    return false;
+
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+  // Any explicit assignment of aria-selected takes precedence over the implicit
+  // selection based on focus.
+  bool is_selected;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected, is_selected))
+    return false;
+
+  // Selection follows focus only when in a single selection container.
+  const AXObject* container = ContainerWidget();
+  if (!container || container->IsMultiSelectable())
+    return false;
+
+  // TODO(crbug.com/1143451): https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+  // If any DOM element in the widget is explicitly marked as selected, the user
+  // agent MUST NOT convey implicit selection for the widget.
+  return true;
+}
+
 // In single selection containers, selection follows focus unless aria_selected
 // is set to false. This is only valid for a subset of elements.
 bool AXNodeObject::IsSelectedFromFocus() const {
-  if (!SelectionShouldFollowFocus())
+  if (!IsSelectedFromFocusSupported())
     return false;
 
   // A tab item can also be selected if it is associated to a focused tabpanel
   // via the aria-labelledby attribute.
   if (IsTabItem() && IsTabItemSelected())
-    return kSelectedStateTrue;
-
-  // If not a single selection container, selection does not follow focus.
-  AXObject* container = ContainerWidget();
-  if (!container || container->IsMultiSelectable())
-    return false;
+    return true;
 
   // If this object is not accessibility focused, then it is not selected from
   // focus.
@@ -1502,25 +1514,7 @@ bool AXNodeObject::IsSelectedFromFocus() const {
       (!focused_object || focused_object->ActiveDescendant() != this))
     return false;
 
-  // In single selection container and accessibility focused => true if
-  // aria-selected wasn't used as an override.
-  bool is_selected;
-  return !HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected,
-                                        is_selected);
-}
-
-// Returns true if the node's aria-selected attribute should be set to true
-// when the node is focused. This is true for only a subset of roles.
-bool AXNodeObject::SelectionShouldFollowFocus() const {
-  switch (RoleValue()) {
-    case ax::mojom::blink::Role::kListBoxOption:
-    case ax::mojom::blink::Role::kMenuListOption:
-    case ax::mojom::blink::Role::kTab:
-      return true;
-    default:
-      break;
-  }
-  return false;
+  return true;
 }
 
 bool AXNodeObject::IsTabItemSelected() const {
@@ -3270,7 +3264,7 @@ bool AXNodeObject::IsRedundantLabel(HTMLLabelElement* label) {
 
 void AXNodeObject::GetRelativeBounds(AXObject** out_container,
                                      FloatRect& out_bounds_in_container,
-                                     SkMatrix44& out_container_transform,
+                                     skia::Matrix44& out_container_transform,
                                      bool* clips_children) const {
   if (GetLayoutObject()) {
     AXObject::GetRelativeBounds(out_container, out_bounds_in_container,
@@ -3568,7 +3562,7 @@ void AXNodeObject::AddValidationMessageChild() {
 }
 
 void AXNodeObject::AddImageMapChildren() {
-  HTMLMapElement* map = GetMapForImage(GetLayoutObject());
+  HTMLMapElement* map = GetMapForImage(GetNode());
   if (!map)
     return;
 

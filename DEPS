@@ -226,7 +226,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f11ba264d85561368c45be914912e4155439e0b8',
+  'v8_revision': 'd73cdad2fdd541beae0acf59d73577161719589f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'dc8a5e19ad9dbb82ab933252a4f5c459d3c67139',
+  'devtools_frontend_revision': '2c466f3376df74ba5b786c62e7aa92e5cb6ded92',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -341,7 +341,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '134d85e58423f273e662a25f7fb00ccb42dfafe3',
+  'dawn_revision': '3d5402c0a4a06f82493ff66752d81af075510fc6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1589,7 +1589,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '827cad9e402b63bbe38787456115bcb681a8a152',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'a5fd9c38eab38aaa5be9fee96e484316c6d89fee',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'a4ddd0f6ef9e29e14364533d67cfb599132e4a96',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '482b7c05c89bb229c2abb5dded10533a8d3b4840',
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0e9074fecb6a056853002eb772263e9e1a0b487d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@74877dfc4e25cb142ea45f1ebf15b4175c68d7b8',
     'condition': 'checkout_src_internal',
   },
 

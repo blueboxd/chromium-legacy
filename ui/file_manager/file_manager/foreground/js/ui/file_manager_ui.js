@@ -17,9 +17,9 @@ import {VolumeManager} from '../../../externs/volume_manager.js';
 import {FilesPasswordDialog} from '../../elements/files_password_dialog.js';
 import {FilesToast} from '../../elements/files_toast.js';
 import {FilesTooltip} from '../../elements/files_tooltip.js';
-import {DialogType} from '../dialog_type.m.js';
+import {DialogType} from '../dialog_type.js';
 import {LaunchParam} from '../launch_param.js';
-import {ProvidersModel} from '../providers_model.m.js';
+import {ProvidersModel} from '../providers_model.js';
 
 import {A11yAnnounce} from './a11y_announce.js';
 import {ActionModelUI} from './action_model_ui.js';

@@ -21411,6 +21411,14 @@ Called by update_document_policy_enum.py.-->
   </int>
 </enum>
 
+<enum name="DownloadMobileConfigFileUI">
+  <int value="0" label="Warning alert is presented"/>
+  <int value="1"
+      label="Warning alert is dismissed without presenting a SFSafariView"/>
+  <int value="2"
+      label="Warning alert is dismissed with presenting a SFSafariView"/>
+</enum>
+
 <enum name="DownloadNotificationForegroundLifecycle">
   <int value="0" label="START"/>
   <int value="1" label="UPDATE"/>
@@ -46038,6 +46046,7 @@ from previous Chrome versions.
   <int value="-1433452630" label="AllowRemoteContextForNotifications:enabled"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1432246303" label="FilesZipPack:enabled"/>
+  <int value="-1431851314" label="BorealisDiskManagement:disabled"/>
   <int value="-1431722713" label="TabFreeze:disabled"/>
   <int value="-1431563697" label="WebPaymentsMethodSectionOrderV2:enabled"/>
   <int value="-1430090822" label="EnableSharedImageForWebview:disabled"/>
@@ -46281,6 +46290,7 @@ from previous Chrome versions.
   <int value="-1244772303" label="NtpRealboxMatchOmniboxTheme:enabled"/>
   <int value="-1243694853" label="DeferAllScript:disabled"/>
   <int value="-1243206311" label="OmniboxPedalsDefaultIconColored:disabled"/>
+  <int value="-1242867644" label="BorealisDiskManagement:enabled"/>
   <int value="-1241868814" label="WebAuthenticationPhoneSupport:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1241002324" label="FocusMode:enabled"/>
@@ -78077,6 +78087,18 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Chrome sync settings"/>
   <int value="4" label="Android Chrome sync setting"/>
   <int value="5" label="Android master sync setting"/>
+</enum>
+
+<enum name="SyncTypedUrlDatabaseError">
+  <int value="0" label="Error in MergeSyncData(): reading"/>
+  <int value="1" label="Error in MergeSyncData(): writing data"/>
+  <int value="2" label="Error in MergeSyncData(): writing metadata"/>
+  <int value="3" label="Error in ApplySyncChanges(): writing data"/>
+  <int value="4" label="Error in ApplySyncChanges(): writing metadata"/>
+  <int value="5" label="Error in OnURLsDeleted(): reading metadata"/>
+  <int value="6" label="OnDatabaseError() called"/>
+  <int value="7" label="Error in LoadMetadata(): opening DB"/>
+  <int value="8" label="Error in LoadMetadata(): reading"/>
 </enum>
 
 <enum name="SyncUnrecoverableErrorReason">

@@ -170,6 +170,8 @@ source_set("web_view_sources") {
     "internal/passwords/web_view_password_manager_log_router_factory.mm",
     "internal/passwords/web_view_password_requirements_service_factory.h",
     "internal/passwords/web_view_password_requirements_service_factory.mm",
+    "internal/passwords/web_view_password_reuse_manager_factory.h",
+    "internal/passwords/web_view_password_reuse_manager_factory.mm",
     "internal/passwords/web_view_password_store_factory.h",
     "internal/passwords/web_view_password_store_factory.mm",
     "internal/signin/cwv_identity.mm",
@@ -543,7 +545,7 @@ group("web_view_resources") {
   ]
 }
 
-if (additional_toolchains == [] || current_toolchain == default_toolchain) {
+if (!is_fat_secondary_toolchain) {
   _package_dir = "$root_out_dir/ios_web_view"
 
   action("ios_web_view_generate_license") {

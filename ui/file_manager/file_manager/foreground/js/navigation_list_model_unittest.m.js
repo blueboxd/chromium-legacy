@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import {assertEquals, assertTrue} from 'chrome://test/chai_assert.js';
 
 import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
@@ -15,13 +14,12 @@ import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 
-import {AndroidAppListModel} from './android_app_list_model.m.js';
-import {DirectoryModel} from './directory_model.m.js';
-import {createFakeAndroidAppListModel} from './fake_android_app_list_model.m.js';
-import {createFakeDirectoryModel} from './mock_directory_model.m.js';
-import {MockFolderShortcutDataModel} from './mock_folder_shortcut_data_model.m.js';
-import { NavigationListModel, NavigationModelAndroidAppItem,NavigationModelFakeItem, NavigationModelItemType, NavigationModelShortcutItem, NavigationModelVolumeItem, NavigationSection} from './navigation_list_model.m.js';
-// clang-format on
+import {AndroidAppListModel} from './android_app_list_model.js';
+import {DirectoryModel} from './directory_model.js';
+import {createFakeAndroidAppListModel} from './fake_android_app_list_model.js';
+import {createFakeDirectoryModel} from './mock_directory_model.js';
+import {MockFolderShortcutDataModel} from './mock_folder_shortcut_data_model.js';
+import { NavigationListModel, NavigationModelAndroidAppItem,NavigationModelFakeItem, NavigationModelItemType, NavigationModelShortcutItem, NavigationModelVolumeItem, NavigationSection} from './navigation_list_model.js';
 
 /**
  * Mock Recent fake entry.

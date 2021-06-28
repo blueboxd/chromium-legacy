@@ -35,19 +35,9 @@ std::string StringFromVector(const std::vector<uint8_t>& v) {
   return std::string(v.begin(), v.end());
 }
 
-absl::optional<crosapi::mojom::KeystoreType> KeystoreTypeFromString(
-    const std::string& input) {
-  if (input == "user")
-    return crosapi::mojom::KeystoreType::kUser;
-  if (input == "system")
-    return crosapi::mojom::KeystoreType::kDevice;
-  return absl::nullopt;
-}
-
 const char kLacrosNotImplementedError[] = "Not implemented.";
 const char kUnsupportedByAsh[] = "Not implemented.";
 const char kUnsupportedProfile[] = "Not available.";
-const char kInvalidKeystoreType[] = "Invalid keystore type.";
 const char kExtensionDoesNotHavePermission[] =
     "The extension does not have permission to call this function.";
 
@@ -72,147 +62,12 @@ std::string ValidateCrosapi(int min_version, content::BrowserContext* context) {
   return "";
 }
 
-// Validates that |token_id| is well-formed. Converts |token_id| into the output
-// parameter |keystore|. Only populated on success. Returns an empty string on
-// success and an error message on error. A validation error should result in
-// extension termination.
-std::string ValidateInput(const std::string& token_id,
-                          crosapi::mojom::KeystoreType* keystore) {
-  absl::optional<crosapi::mojom::KeystoreType> keystore_type =
-      KeystoreTypeFromString(token_id);
-  if (!keystore_type)
-    return kInvalidKeystoreType;
-  *keystore = keystore_type.value();
-
-  return "";
-}
-
 }  // namespace
 
 //------------------------------------------------------------------------------
 
 ExtensionFunction::ResponseAction LacrosNotImplementedExtensionFunction::Run() {
   return RespondNow(Error(kLacrosNotImplementedError));
-}
-
-//------------------------------------------------------------------------------
-
-ExtensionFunction::ResponseAction
-EnterprisePlatformKeysImportCertificateFunction::Run() {
-  std::unique_ptr<api_epk::ImportCertificate::Params> params(
-      api_epk::ImportCertificate::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  std::string error = ValidateCrosapi(
-      KeystoreService::kAddCertificateMinVersion, browser_context());
-  if (!error.empty()) {
-    return RespondNow(Error(error));
-  }
-
-  crosapi::mojom::KeystoreType keystore;
-  error = ValidateInput(params->token_id, &keystore);
-  EXTENSION_FUNCTION_VALIDATE(error.empty());
-
-  auto c = base::BindOnce(
-      &EnterprisePlatformKeysImportCertificateFunction::OnAddCertificate, this);
-  chromeos::LacrosService::Get()
-      ->GetRemote<crosapi::mojom::KeystoreService>()
-      ->AddCertificate(keystore, params->certificate, std::move(c));
-  return RespondLater();
-}
-
-void EnterprisePlatformKeysImportCertificateFunction::OnAddCertificate(
-    const std::string& error) {
-  if (error.empty()) {
-    Respond(NoArguments());
-  } else {
-    Respond(Error(error));
-  }
-}
-
-//------------------------------------------------------------------------------
-
-ExtensionFunction::ResponseAction
-EnterprisePlatformKeysRemoveCertificateFunction::Run() {
-  std::unique_ptr<api_epk::RemoveCertificate::Params> params(
-      api_epk::RemoveCertificate::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  std::string error = ValidateCrosapi(
-      KeystoreService::kRemoveCertificateMinVersion, browser_context());
-  if (!error.empty()) {
-    return RespondNow(Error(error));
-  }
-
-  crosapi::mojom::KeystoreType keystore;
-  error = ValidateInput(params->token_id, &keystore);
-  EXTENSION_FUNCTION_VALIDATE(error.empty());
-
-  auto c = base::BindOnce(
-      &EnterprisePlatformKeysRemoveCertificateFunction::OnRemoveCertificate,
-      this);
-  chromeos::LacrosService::Get()
-      ->GetRemote<crosapi::mojom::KeystoreService>()
-      ->RemoveCertificate(keystore, params->certificate, std::move(c));
-  return RespondLater();
-}
-
-void EnterprisePlatformKeysRemoveCertificateFunction::OnRemoveCertificate(
-    const std::string& error) {
-  if (error.empty()) {
-    Respond(NoArguments());
-  } else {
-    Respond(Error(error));
-  }
-}
-
-//------------------------------------------------------------------------------
-
-ExtensionFunction::ResponseAction
-EnterprisePlatformKeysInternalGetTokensFunction::Run() {
-  EXTENSION_FUNCTION_VALIDATE(args_->empty());
-
-  std::string error = ValidateCrosapi(KeystoreService::kGetKeyStoresMinVersion,
-                                      browser_context());
-  if (!error.empty()) {
-    return RespondNow(Error(error));
-  }
-
-  auto c = base::BindOnce(
-      &EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores, this);
-  chromeos::LacrosService::Get()
-      ->GetRemote<crosapi::mojom::KeystoreService>()
-      ->GetKeyStores(std::move(c));
-  return RespondLater();
-}
-
-void EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores(
-    ResultPtr result) {
-  using Result = crosapi::mojom::GetKeyStoresResult;
-  switch (result->which()) {
-    case Result::Tag::ERROR_MESSAGE:
-      Respond(Error(result->get_error_message()));
-      return;
-    case Result::Tag::KEY_STORES:
-      std::vector<std::string> key_stores;
-      using KeystoreType = crosapi::mojom::KeystoreType;
-      for (KeystoreType keystore_type : result->get_key_stores()) {
-        if (!crosapi::mojom::IsKnownEnumValue(keystore_type)) {
-          continue;
-        }
-
-        switch (keystore_type) {
-          case KeystoreType::kUser:
-            key_stores.push_back("user");
-            break;
-          case KeystoreType::kDevice:
-            key_stores.push_back("system");
-            break;
-        }
-      }
-      Respond(ArgumentList(api_epki::GetTokens::Results::Create(key_stores)));
-      return;
-  }
 }
 
 //------------------------------------------------------------------------------

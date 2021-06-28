@@ -1029,6 +1029,8 @@ static_library("browser") {
     "password_manager/credentials_cleaner_runner_factory.h",
     "password_manager/field_info_manager_factory.cc",
     "password_manager/field_info_manager_factory.h",
+    "password_manager/password_reuse_manager_factory.cc",
+    "password_manager/password_reuse_manager_factory.h",
     "password_manager/password_store_factory.cc",
     "password_manager/password_store_factory.h",
     "password_manager/password_store_utils.cc",
@@ -2908,8 +2910,6 @@ static_library("browser") {
       "autofill/address_accessory_controller.h",
       "autofill/address_accessory_controller_impl.cc",
       "autofill/address_accessory_controller_impl.h",
-      "autofill/android/internal_authenticator_android.cc",
-      "autofill/android/internal_authenticator_android.h",
       "autofill/android/personal_data_manager_android.cc",
       "autofill/android/personal_data_manager_android.h",
       "autofill/android/phone_number_util_android.cc",
@@ -5524,7 +5524,6 @@ static_library("browser") {
     ]
     deps += [
       "//chrome/browser/ui/webui/discards:mojo_bindings",
-      "//components/autofill/content/browser/webauthn",
       "//components/media_router/browser",
       "//components/mirroring/browser",
       "//components/mirroring/mojom:host",
@@ -5532,6 +5531,7 @@ static_library("browser") {
       "//components/mirroring/service:mirroring_service",
       "//components/payments/content",
       "//components/payments/content:utils",
+      "//components/webauthn/content/browser",
       "//media/cast:net",
     ]
   }
@@ -6632,9 +6632,9 @@ static_library("browser") {
 
   if (safe_browsing_mode != 0) {
     deps += [
-      "//components/safe_browsing/core:download_file_types_proto",
       "//components/safe_browsing/core:file_type_policies",
       "//components/safe_browsing/core/browser/download:download_stats",
+      "//components/safe_browsing/core/proto:download_file_types_proto",
     ]
   }
 }
@@ -6979,7 +6979,7 @@ static_library("test_support") {
     "//components/reporting/util:task_runner_context",
     "//components/reputation/core",
     "//components/reputation/core:proto",
-    "//components/safe_browsing/core:csd_proto",
+    "//components/safe_browsing/core/proto:csd_proto",
     "//components/search_engines:test_support",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/services/unzip/content",

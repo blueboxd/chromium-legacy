@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {assertArrayEquals,assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
@@ -15,16 +14,15 @@ import {reportPromise, waitUntil} from '../../../common/js/test_error_reporting.
 import {str} from '../../../common/js/util.js';
 import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../../externs/background/file_operation_manager.js';
-import {DirectoryModel} from '../directory_model.m.js';
-import {createFakeAndroidAppListModel} from '../fake_android_app_list_model.m.js';
+import {DirectoryModel} from '../directory_model.js';
+import {createFakeAndroidAppListModel} from '../fake_android_app_list_model.js';
 import {MetadataModel} from '../metadata/metadata_model.js';
-import {createFakeDirectoryModel} from '../mock_directory_model.m.js';
-import {MockFolderShortcutDataModel} from '../mock_folder_shortcut_data_model.m.js';
-import {MockNavigationListModel} from '../mock_navigation_list_model.m.js';
-import {NavigationListModel, NavigationModelFakeItem, NavigationModelItemType, NavigationSection} from '../navigation_list_model.m.js';
+import {createFakeDirectoryModel} from '../mock_directory_model.js';
+import {MockFolderShortcutDataModel} from '../mock_folder_shortcut_data_model.js';
+import {MockNavigationListModel} from '../mock_navigation_list_model.js';
+import {NavigationListModel, NavigationModelFakeItem, NavigationModelItemType, NavigationSection} from '../navigation_list_model.js';
 
 import {DirectoryTree, EntryListItem} from './directory_tree.js';
-// clang-format on
 
 /** @type {!MockVolumeManager} */
 let volumeManager;

@@ -17,7 +17,7 @@ import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
-import {FileSelectionHandler} from './file_selection.m.js';
+import {FileSelectionHandler} from './file_selection.js';
 
 /** @private @enum {string} */
 importer.ActivityState = {
@@ -145,7 +145,7 @@ importer.ImportController = class {
     if (this.activeImport_) {
       this.activeImport_.task.requestCancel();
       this.finalizeActiveImport_();
-      metrics.recordBoolean('ImportController.DeviceYanked');
+      metrics.recordBoolean('ImportController.DeviceYanked', true);
     }
     this.scanManager_.reset();
     this.checkState_();
@@ -309,7 +309,7 @@ importer.ImportController = class {
     if (this.activeImport_) {
       this.activeImport_.task.requestCancel();
       this.finalizeActiveImport_();
-      metrics.recordBoolean('ImportController.ImportCancelled');
+      metrics.recordBoolean('ImportController.ImportCancelled', true);
     }
 
     this.scanManager_.reset();

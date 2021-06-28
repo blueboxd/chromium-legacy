@@ -22,48 +22,6 @@ using CertificateList = std::vector<scoped_refptr<X509Certificate>>;
 
 namespace extensions {
 
-class EnterprisePlatformKeysImportCertificateFunction
-    : public ExtensionFunction {
- private:
-  ~EnterprisePlatformKeysImportCertificateFunction() override;
-  ResponseAction Run() override;
-
-  // Called when the certificate was imported.
-  void OnImportedCertificate(chromeos::platform_keys::Status status);
-
-  DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.importCertificate",
-                             ENTERPRISE_PLATFORMKEYS_IMPORTCERTIFICATE)
-};
-
-class EnterprisePlatformKeysRemoveCertificateFunction
-    : public ExtensionFunction {
- private:
-  ~EnterprisePlatformKeysRemoveCertificateFunction() override;
-  ResponseAction Run() override;
-
-  // Called when the certificate was removed.
-  void OnRemovedCertificate(chromeos::platform_keys::Status status);
-
-  DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.removeCertificate",
-                             ENTERPRISE_PLATFORMKEYS_REMOVECERTIFICATE)
-};
-
-class EnterprisePlatformKeysInternalGetTokensFunction
-    : public ExtensionFunction {
- private:
-  ~EnterprisePlatformKeysInternalGetTokensFunction() override;
-  ResponseAction Run() override;
-
-  // Called when the list of tokens was determined. If an error occurred,
-  // |token_ids| will be nullptr.
-  void OnGotTokens(
-      std::unique_ptr<std::vector<chromeos::platform_keys::TokenId>> token_ids,
-      chromeos::platform_keys::Status status);
-
-  DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.getTokens",
-                             ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS)
-};
-
 class EnterprisePlatformKeysChallengeMachineKeyFunction
     : public ExtensionFunction {
  public:

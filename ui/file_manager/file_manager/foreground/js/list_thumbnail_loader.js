@@ -9,10 +9,10 @@ import {LRUCache} from '../../common/js/lru_cache.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
-import {DirectoryModel} from './directory_model.m.js';
-import {FileListModel} from './file_list_model.m.js';
+import {DirectoryModel} from './directory_model.js';
+import {FileListModel} from './file_list_model.js';
 import {ThumbnailModel} from './metadata/thumbnail_model.js';
-import {ThumbnailLoader} from './thumbnail_loader.m.js';
+import {ThumbnailLoader} from './thumbnail_loader.js';
 
 /**
  * A thumbnail loader for list style UI.

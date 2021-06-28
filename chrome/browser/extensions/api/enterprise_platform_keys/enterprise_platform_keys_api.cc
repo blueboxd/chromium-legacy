@@ -239,4 +239,117 @@ void EnterprisePlatformKeysGetCertificatesFunction::OnGetCertificates(
   Respond(ArgumentList(std::move(results)));
 }
 
+//------------------------------------------------------------------------------
+
+ExtensionFunction::ResponseAction
+EnterprisePlatformKeysImportCertificateFunction::Run() {
+  std::unique_ptr<api_epk::ImportCertificate::Params> params(
+      api_epk::ImportCertificate::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::string error = ValidateCrosapi(
+      KeystoreService::kAddCertificateMinVersion, browser_context());
+  if (!error.empty()) {
+    return RespondNow(Error(error));
+  }
+
+  crosapi::mojom::KeystoreType keystore;
+  error = ValidateInput(params->token_id, &keystore);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
+  auto c = base::BindOnce(
+      &EnterprisePlatformKeysImportCertificateFunction::OnAddCertificate, this);
+  GetKeystoreService(browser_context())
+      ->AddCertificate(keystore, params->certificate, std::move(c));
+  return RespondLater();
+}
+
+void EnterprisePlatformKeysImportCertificateFunction::OnAddCertificate(
+    const std::string& error) {
+  if (error.empty()) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error(error));
+  }
+}
+
+//------------------------------------------------------------------------------
+
+ExtensionFunction::ResponseAction
+EnterprisePlatformKeysRemoveCertificateFunction::Run() {
+  std::unique_ptr<api_epk::RemoveCertificate::Params> params(
+      api_epk::RemoveCertificate::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::string error = ValidateCrosapi(
+      KeystoreService::kRemoveCertificateMinVersion, browser_context());
+  if (!error.empty()) {
+    return RespondNow(Error(error));
+  }
+
+  crosapi::mojom::KeystoreType keystore;
+  error = ValidateInput(params->token_id, &keystore);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
+  auto c = base::BindOnce(
+      &EnterprisePlatformKeysRemoveCertificateFunction::OnRemoveCertificate,
+      this);
+  GetKeystoreService(browser_context())
+      ->RemoveCertificate(keystore, params->certificate, std::move(c));
+  return RespondLater();
+}
+
+void EnterprisePlatformKeysRemoveCertificateFunction::OnRemoveCertificate(
+    const std::string& error) {
+  if (error.empty()) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error(error));
+  }
+}
+//------------------------------------------------------------------------------
+
+ExtensionFunction::ResponseAction
+EnterprisePlatformKeysInternalGetTokensFunction::Run() {
+  EXTENSION_FUNCTION_VALIDATE(args_->empty());
+
+  std::string error = ValidateCrosapi(KeystoreService::kGetKeyStoresMinVersion,
+                                      browser_context());
+  if (!error.empty()) {
+    return RespondNow(Error(error));
+  }
+
+  auto c = base::BindOnce(
+      &EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores, this);
+  GetKeystoreService(browser_context())->GetKeyStores(std::move(c));
+  return RespondLater();
+}
+
+void EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores(
+    crosapi::mojom::GetKeyStoresResultPtr result) {
+  if (result->is_error_message()) {
+    Respond(Error(result->get_error_message()));
+    return;
+  }
+  DCHECK(result->is_key_stores());
+
+  std::vector<std::string> key_stores;
+  using KeystoreType = crosapi::mojom::KeystoreType;
+  for (KeystoreType keystore_type : result->get_key_stores()) {
+    if (!crosapi::mojom::IsKnownEnumValue(keystore_type)) {
+      continue;
+    }
+
+    switch (keystore_type) {
+      case KeystoreType::kUser:
+        key_stores.push_back("user");
+        break;
+      case KeystoreType::kDevice:
+        key_stores.push_back("system");
+        break;
+    }
+  }
+  Respond(ArgumentList(api_epki::GetTokens::Results::Create(key_stores)));
+}
+
 }  // namespace extensions

@@ -21,63 +21,12 @@ typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
 namespace extensions {
 namespace platform_keys {
 
-extern const char kErrorInvalidX509Cert[];
-
 // Converts a token id from ::chromeos::platform_keys to the platformKeys API
 // token id.
 std::string PlatformKeysTokenIdToApiId(
     chromeos::platform_keys::TokenId platform_keys_token_id);
 
 }  // namespace platform_keys
-
-class PlatformKeysInternalSelectClientCertificatesFunction
-    : public ExtensionFunction {
- private:
-  ~PlatformKeysInternalSelectClientCertificatesFunction() override;
-  ResponseAction Run() override;
-
-  // Called when the certificates were selected. If an error occurred, |certs|
-  // will be null.
-  void OnSelectedCertificates(
-      std::unique_ptr<net::CertificateList> matches,
-      absl::optional<crosapi::mojom::KeystoreError> error);
-
-  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.selectClientCertificates",
-                             PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES)
-};
-
-class PlatformKeysInternalGetPublicKeyFunction : public ExtensionFunction {
- private:
-  ~PlatformKeysInternalGetPublicKeyFunction() override;
-  ResponseAction Run() override;
-
-  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.getPublicKey",
-                             PLATFORMKEYSINTERNAL_GETPUBLICKEY)
-};
-
-class PlatformKeysInternalGetPublicKeyBySpkiFunction
-    : public ExtensionFunction {
- private:
-  ~PlatformKeysInternalGetPublicKeyBySpkiFunction() override;
-  ResponseAction Run() override;
-
-  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.getPublicKeyBySpki",
-                             PLATFORMKEYSINTERNAL_GETPUBLICKEYBYSPKI)
-};
-
-class PlatformKeysInternalSignFunction : public ExtensionFunction {
- private:
-  ~PlatformKeysInternalSignFunction() override;
-  ResponseAction Run() override;
-
-  // Called when the signature was generated. If an error occurred,
-  // |signature| will be empty.
-  void OnSigned(const std::string& signature,
-                absl::optional<crosapi::mojom::KeystoreError> error);
-
-  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.sign",
-                             PLATFORMKEYSINTERNAL_SIGN)
-};
 
 class PlatformKeysVerifyTLSServerCertificateFunction
     : public ExtensionFunction {

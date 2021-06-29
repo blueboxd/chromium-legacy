@@ -13,6 +13,9 @@
 
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
+#include "chromeos/crosapi/mojom/keystore_service.mojom.h"
+#include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_function_histogram_value.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -25,6 +28,7 @@ namespace extensions {
 namespace platform_keys {
 
 extern const char kErrorInvalidToken[];
+extern const char kErrorInvalidX509Cert[];
 
 // Returns a known token if |token_id| is valid and returns nullopt for both
 // empty or unknown |token_id|.
@@ -32,6 +36,58 @@ absl::optional<chromeos::platform_keys::TokenId> ApiIdToPlatformKeysTokenId(
     const std::string& token_id);
 
 }  // namespace platform_keys
+
+class PlatformKeysInternalSelectClientCertificatesFunction
+    : public ExtensionFunction {
+ private:
+  ~PlatformKeysInternalSelectClientCertificatesFunction() override;
+  ResponseAction Run() override;
+
+  // Called when the certificates were selected. If an error occurred, |certs|
+  // will be null.
+  void OnSelectedCertificates(
+      std::unique_ptr<net::CertificateList> matches,
+      absl::optional<crosapi::mojom::KeystoreError> error);
+
+  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.selectClientCertificates",
+                             PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES)
+};
+
+class PlatformKeysInternalGetPublicKeyFunction : public ExtensionFunction {
+ private:
+  ~PlatformKeysInternalGetPublicKeyFunction() override;
+  ResponseAction Run() override;
+
+  void OnGetPublicKey(crosapi::mojom::GetPublicKeyResultPtr result_ptr);
+
+  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.getPublicKey",
+                             PLATFORMKEYSINTERNAL_GETPUBLICKEY)
+};
+
+class PlatformKeysInternalGetPublicKeyBySpkiFunction
+    : public ExtensionFunction {
+ private:
+  ~PlatformKeysInternalGetPublicKeyBySpkiFunction() override;
+  ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.getPublicKeyBySpki",
+                             PLATFORMKEYSINTERNAL_GETPUBLICKEYBYSPKI)
+};
+
+class PlatformKeysInternalSignFunction : public ExtensionFunction {
+ private:
+  ~PlatformKeysInternalSignFunction() override;
+  ResponseAction Run() override;
+
+  // Called when the signature was generated. If an error occurred,
+  // |signature| will be empty.
+  void OnSigned(const std::string& signature,
+                absl::optional<crosapi::mojom::KeystoreError> error);
+
+  DECLARE_EXTENSION_FUNCTION("platformKeysInternal.sign",
+                             PLATFORMKEYSINTERNAL_SIGN)
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PLATFORM_KEYS_PLATFORM_KEYS_API_H_

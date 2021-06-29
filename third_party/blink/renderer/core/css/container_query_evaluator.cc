@@ -4,10 +4,37 @@
 
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/container_query.h"
+#include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 
 namespace blink {
+
+// static
+Element* ContainerQueryEvaluator::FindContainer(
+    const StyleRecalcContext& context,
+    const AtomicString& container_name) {
+  Element* container = context.container;
+  if (!container)
+    return nullptr;
+
+  if (container_name == g_null_atom)
+    return container;
+
+  // TODO(crbug.com/1213888): Cache results.
+  for (Element* element = container; element;
+       element = LayoutTreeBuilderTraversal::ParentElement(*element)) {
+    if (const ComputedStyle* style = element->GetComputedStyle()) {
+      if (style->IsContainerForContainerQueries() &&
+          style->ContainerName() == container_name)
+        return element;
+    }
+  }
+
+  return nullptr;
+}
 
 namespace {
 
@@ -17,6 +44,14 @@ bool IsSufficientlyContained(PhysicalAxes contained_axes,
 }
 
 }  // namespace
+
+double ContainerQueryEvaluator::Width() const {
+  return size_.width.ToDouble();
+}
+
+double ContainerQueryEvaluator::Height() const {
+  return size_.height.ToDouble();
+}
 
 bool ContainerQueryEvaluator::Eval(
     const ContainerQuery& container_query) const {
@@ -47,7 +82,7 @@ ContainerQueryEvaluator::Change ContainerQueryEvaluator::ContainerChanged(
   // something other than kNone from this function, so the results will always
   // be repopulated.
   if (change != Change::kNone)
-    results_.clear();
+    ClearResults();
 
   return change;
 }
@@ -68,14 +103,22 @@ void ContainerQueryEvaluator::SetData(PhysicalSize size,
       MakeGarbageCollected<MediaQueryEvaluator>(*cached_values);
 }
 
+void ContainerQueryEvaluator::ClearResults() {
+  results_.clear();
+  referenced_by_unit_ = false;
+}
+
 ContainerQueryEvaluator::Change ContainerQueryEvaluator::ComputeChange() const {
   Change change = Change::kNone;
 
+  if (referenced_by_unit_)
+    return Change::kDescendantContainers;
+
   for (const auto& result : results_) {
     if (Eval(*result.key) != result.value) {
-      change =
-          std::max(change, result.key->Name() == g_null_atom ? Change::kUnnamed
-                                                             : Change::kNamed);
+      change = std::max(change, result.key->Name() == g_null_atom
+                                    ? Change::kNearestContainer
+                                    : Change::kDescendantContainers);
     }
   }
 

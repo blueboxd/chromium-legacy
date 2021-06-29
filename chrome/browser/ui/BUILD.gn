@@ -506,7 +506,7 @@ static_library("ui") {
     "//components/safe_browsing/core/browser/password_protection:password_protection_metrics_util",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
-    "//components/safe_browsing/core/proto:csd_proto",
+    "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/schema_org/common:improved_mojom",
     "//components/search",
     "//components/search_engines",
@@ -866,6 +866,8 @@ static_library("ui") {
       "bluetooth/bluetooth_scanning_prompt_controller.h",
       "bluetooth/bluetooth_scanning_prompt_desktop.cc",
       "bluetooth/bluetooth_scanning_prompt_desktop.h",
+      "bluetooth/chrome_bluetooth_chooser_controller.cc",
+      "bluetooth/chrome_bluetooth_chooser_controller.h",
       "bluetooth/chrome_extension_bluetooth_chooser.cc",
       "bluetooth/chrome_extension_bluetooth_chooser.h",
       "bookmarks/bookmark_bar.h",
@@ -4939,7 +4941,7 @@ static_library("ui") {
       "//chrome/browser/ui/webui/reset_password:mojo_bindings",
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing/core/browser/password_protection:password_protection_metrics_util",
-      "//components/safe_browsing/core/proto:csd_proto",
+      "//components/safe_browsing/core/common/proto:csd_proto",
     ]
   }
 
@@ -5102,6 +5104,8 @@ static_library("test_support") {
       "global_media_controls/test_helper.h",
       "hats/mock_hats_service.cc",
       "hats/mock_hats_service.h",
+      "hats/mock_trust_safety_sentiment_service.cc",
+      "hats/mock_trust_safety_sentiment_service.h",
       "passwords/credential_manager_dialog_controller_mock.cc",
       "passwords/credential_manager_dialog_controller_mock.h",
       "passwords/manage_passwords_ui_controller_mock.cc",

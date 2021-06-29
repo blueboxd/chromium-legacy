@@ -50,7 +50,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BackForwardCache.AllSites.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2021-10-25">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2021-12-26">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -1228,7 +1228,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Navigation.VerifyDidCommitParams"
-    enum="VerifyDidCommitParamsDifference" expires_after="2021-10-25">
+    enum="VerifyDidCommitParamsDifference" expires_after="2021-12-26">
   <owner>rakina@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -1403,6 +1403,59 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     lookalike2.com recorded two events. This updated histogram only records an
     entry for the first or last URL in the redirect if any of those is a
     lookalike.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.Experimental.PrerenderCancelledInterface"
+    enum="PrerenderCancelledInterface" expires_after="2022-01-27">
+  <owner>falken@chromium.org</owner>
+  <owner>nhiroki@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>lingqi@chromium.org</owner>
+  <summary>
+    Mojo interfaces that cause the cancellation of prerendering. Recorded by
+    MojoBinderPolicyApplier in the browser process once it receives the binding
+    request of a kCancel Mojo interface.
+  </summary>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.PrerenderHostCancelReasonBeforeActivation"
+    enum="PrerenderHostFinalStatus" expires_after="2022-01-27">
+  <owner>falken@chromium.org</owner>
+  <owner>nhiroki@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>lingqi@chromium.org</owner>
+  <summary>
+    Reason of cancelling a prerendering attempt requested before activation
+    starts. Recorded by PrerenderHostRegistry in the browser process when the
+    cancellation is requested.
+  </summary>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.PrerenderHostCancelReasonDuringActivation"
+    enum="PrerenderHostFinalStatus" expires_after="2022-01-27">
+  <owner>falken@chromium.org</owner>
+  <owner>nhiroki@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>lingqi@chromium.org</owner>
+  <summary>
+    Reason of cancelling a prerendering attempt requested during activation.
+    Recorded by PrerenderHostRegistry in the browser process when the
+    cancellation is requested.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.Experimental.PrerenderHostFinalStatus"
+    enum="PrerenderHostFinalStatus" expires_after="2022-01-27">
+  <owner>falken@chromium.org</owner>
+  <owner>nhiroki@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>lingqi@chromium.org</owner>
+  <summary>
+    Final status for a prerendering attempt. Recorded by PrerenderHost or
+    PrerenderHostRegistry in the browser process when the attempt finishes.
   </summary>
 </histogram>
 

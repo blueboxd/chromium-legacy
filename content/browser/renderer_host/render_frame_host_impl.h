@@ -30,6 +30,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
+#include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
@@ -90,6 +91,7 @@
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
 #include "third_party/blink/public/mojom/compute_pressure/compute_pressure.mojom-forward.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom-forward.h"
@@ -208,6 +210,7 @@ class Portal;
 class PrefetchedSignedExchangeCache;
 class PresentationServiceImpl;
 class PushMessagingManager;
+class RenderAccessibilityHost;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderFrameHostOrProxy;
@@ -241,7 +244,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public base::SupportsUserData,
       public mojom::FrameHost,
-      public mojom::RenderAccessibilityHost,
       public mojom::DomAutomationControllerHost,
       public BrowserAccessibilityDelegate,
       public RenderProcessHostObserver,
@@ -589,6 +591,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the caller wants to know the current state of the URL in the renderer (e.g.
   // when predicting whether a navigation will do a replacement or not).
   const GURL& last_url_in_renderer() const { return last_url_in_renderer_; }
+
+  // Returns the storage key for the last committed document in this
+  // RenderFrameHostImpl. It is used for partitioning storage by the various
+  // storage APIs.
+  const blink::StorageKey& storage_key() const { return storage_key_; }
 
   // Returns the http method of the last committed navigation.
   const std::string& last_http_method() { return last_http_method_; }
@@ -1617,6 +1624,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindScreenEnumerationReceiver(
       mojo::PendingReceiver<blink::mojom::ScreenEnumeration> receiver);
 
+  void BindRenderAccessibilityHost(
+      mojo::PendingReceiver<mojom::RenderAccessibilityHost> receiver);
+
   // Prerender2:
   // Tells PrerenderHostRegistry to cancel the prerendering of the page this
   // frame is in, which destroys this frame.
@@ -2396,12 +2406,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateUserGestureCarryoverInfo() override;
 #endif
 
-  // mojom::RenderAccessibilityHost:
-  void HandleAXEvents(mojom::AXUpdatesAndEventsPtr updates_and_events,
-                      int32_t reset_token,
-                      HandleAXEventsCallback callback) override;
-  void HandleAXLocationChanges(
-      std::vector<mojom::LocationChangesPtr> changes) override;
+  friend class RenderAccessibilityHost;
+  void HandleAXEvents(const ui::AXTreeID& tree_id,
+                      mojom::AXUpdatesAndEventsPtr updates_and_events,
+                      int32_t reset_token);
+  void HandleAXLocationChanges(const ui::AXTreeID& tree_id,
+                               std::vector<mojom::LocationChangesPtr> changes);
 
   // mojom::DomAutomationControllerHost:
   void DomOperationResponse(const std::string& json_string) override;
@@ -2950,6 +2960,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Increases by one `commit_navigation_sent_counter_`.
   void IncreaseCommitNavigationCounter();
 
+  // Sets the storage key for the last committed document in this
+  // RenderFrameHostImpl.
+  void SetStorageKey(const blink::StorageKey& storage_key);
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
@@ -3015,6 +3029,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // TODO(https://crbug.com/888079): Remove the above.
   url::Origin last_committed_origin_;
+
+  // The storage key for the last committed document in this
+  // RenderFrameHostImpl.
+  blink::StorageKey storage_key_;
 
   // The base URL of the last committed navigation.
   GURL last_base_url_;
@@ -3424,8 +3442,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // is an accessibility mode that includes |kWebContents|.
   mojo::AssociatedRemote<mojom::RenderAccessibility> render_accessibility_;
 
-  mojo::AssociatedReceiver<mojom::RenderAccessibilityHost>
-      render_accessibility_host_receiver_{this};
+  base::SequenceBound<RenderAccessibilityHost> render_accessibility_host_;
 
   mojo::AssociatedReceiver<mojom::DomAutomationControllerHost>
       dom_automation_controller_receiver_{this};

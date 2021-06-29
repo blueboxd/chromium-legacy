@@ -249,6 +249,7 @@ crbug.com/784956 fast/history/frameset-repeated-name.html [ Failure Pass ]
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Failure Pass ]
 crbug.com/757605 virtual/gpu-rasterization/images/jpeg-yuv-progressive-image.html [ Failure Pass ]
+crbug.com/1223284 [ Win7 ] virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Failure Pass ]
 
 ########## Bugs to fix ##########
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
@@ -3028,7 +3029,6 @@ crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/basic-auth.any.sharedworker
 crbug.com/626703 [ Mac11.0 ] external/wpt/webvtt/api/VTTCue/constructor.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/synchronous_html_parser/external/wpt/dom/xslt/transformToFragment.tentative.window.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/stream/tentative/backpressure-send.any.worker.html?wpt_flags=h2 [ Crash Failure ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/stream/tentative/backpressure-send.any.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/websockets/stream/tentative/backpressure-receive.any.html?wpt_flags=h2 [ Failure Pass ]
 crbug.com/626703 [ Mac ] external/wpt/websockets/bufferedAmount-unchanged-by-sync-xhr.any.worker.html?wpt_flags=h2 [ Failure Pass ]
@@ -3072,10 +3072,7 @@ crbug.com/1167095 [ Mac ] external/wpt/html/semantics/forms/form-submission-0/mu
 # Conflict with looser exception for crbug.com/v8/11365
 # crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-encoded-transform/sframe-transform-buffer-source.html [ Failure Crash Timeout ]
 crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.worker.html?wpt_flags=h2 [ Failure Timeout ]
-crbug.com/626703 [ Mac ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Crash Failure ]
-crbug.com/626703 [ Win ] virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Crash Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure Timeout ]
-crbug.com/626703 [ Win10 ] external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure Pass ]
 crbug.com/626703 [ Mac10.15 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/http-response-code.any.html [ Crash Failure ]
 crbug.com/626703 [ Win10 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/http-response-code.any.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/text-plain.window.html [ Crash Failure ]
@@ -3465,7 +3462,6 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-color/color-function-parsing.htm
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/animations/font-stretch-interpolation.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/text-justify/distribute-alias.tentative.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/custom-elements/form-associated/ElementInternals-setFormValue.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure ]
 crbug.com/1167095 [ Linux ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/forms/form-submission-0/text-plain.window.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
@@ -3482,8 +3478,6 @@ crbug.com/626703 [ Linux ] virtual/system-color-compute/external/wpt/css/css-col
 crbug.com/626703 [ Mac ] external/wpt/css/css-color/color-function-parsing.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/websockets/Create-blocked-port.any.worker.html?wpt_flags=h2 [ Failure ]
-crbug.com/626703 [ Mac ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure Pass ]
-crbug.com/626703 [ Win ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure Pass ]
 crbug.com/1167095 [ Win ] external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/websockets/Create-url-with-space.any.html [ Failure ]
@@ -7067,10 +7061,12 @@ crbug.com/1222097 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sec
 crbug.com/1222097 virtual/shared_array_buffer_on_desktop/http/tests/devtools/security/mixed-content-sidebar.js [ Skip ]
 crbug.com/1222097 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
 crbug.com/1222097 external/wpt/uievents/order-of-events/mouse-events/mouseover-out.html [ Skip ]
-crbug.com/1222097 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Skip ]
 
 # Sheriff 2021-06-25
 # Flaky on Webkit Linux Leak
 crbug.com/1223601 [ Linux ] fast/scrolling/autoscroll-latch-clicked-node-if-parent-unscrollable.html [ Failure Pass ]
 crbug.com/1223601 [ Linux ] fast/scrolling/reset-scroll-in-onscroll.html [ Failure Pass ]
 crbug.com/1223773 external/wpt/webrtc/simulcast/getStats.https.html [ Pass Failure ]
+
+# DevTools roll
+crbug.com/1187573 http/tests/devtools/throttling/mobile-throttling.js [ Skip ]

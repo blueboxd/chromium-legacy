@@ -3021,7 +3021,6 @@ if (!is_android) {
         "../browser/ash/arc/intent_helper/custom_tab_session_impl_browsertest.cc",
         "../browser/ash/arc/session/arc_session_manager_browsertest.cc",
         "../browser/ash/arc/user_session/arc_user_session_service_browsertest.cc",
-        "../browser/ash/attestation/attestation_policy_browsertest.cc",
         "../browser/ash/base/locale_util_browsertest.cc",
         "../browser/ash/child_accounts/family_user_device_metrics_browsertest.cc",
         "../browser/ash/child_accounts/parent_access_code/parent_access_service_browsertest.cc",
@@ -4454,6 +4453,7 @@ test("unit_tests") {
     "../browser/resource_coordinator/tab_load_tracker_unittest.cc",
     "../browser/resources_util_unittest.cc",
     "../browser/security_events/security_event_recorder_impl_unittest.cc",
+    "../browser/segmentation_platform/segmentation_platform_profile_observer_unittest.cc",
     "../browser/signin/e2e_tests/test_accounts_util_unittest.cc",
     "../browser/subresource_redirect/https_image_compression_infobar_decider_unittest.cc",
     "../browser/subresource_redirect/litepages_service_bypass_decider_unittest.cc",
@@ -4714,6 +4714,7 @@ test("unit_tests") {
 
   if (is_chromeos_ash) {
     sources += [
+      "../browser/ash/attestation/attestation_policy_unittest.cc",
       "../browser/notifications/notification_platform_bridge_chromeos_unittest.cc",
       "../browser/performance_manager/mechanisms/working_set_trimmer_chromeos_unittest.cc",
       "../browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos_unittest.cc",
@@ -4812,6 +4813,10 @@ test("unit_tests") {
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
       "../renderer/cart/commerce_hint_agent_unittest.cc",
     ]
+  }
+
+  if (is_chromeos) {
+    sources += [ "../browser/media/platform_verification_chromeos_unittest.cc" ]
   }
 
   if (is_chromeos_ash) {
@@ -5091,6 +5096,7 @@ test("unit_tests") {
     "//components/security_interstitials/content:proto",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core:unsafe_resource",
+    "//components/segmentation_platform/public",
     "//components/send_tab_to_self",
     "//components/services/app_service/public/cpp:intents",
     "//components/services/app_service/public/cpp:protocol_handling",

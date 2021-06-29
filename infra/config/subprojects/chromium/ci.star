@@ -5591,6 +5591,27 @@ ci.infra_builder(
 )
 
 ci.infra_builder(
+    name = "linux-bootstrap",
+    bootstrap = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "bootstrap",
+        short_name = "bld",
+    ),
+    triggered_by = [],
+    schedule = "triggered",
+)
+
+ci.infra_builder(
+    name = "linux-bootstrap-tests",
+    bootstrap = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "bootstrap",
+        short_name = "tst",
+    ),
+    triggered_by = ["linux-bootstrap"],
+)
+
+ci.infra_builder(
     name = "linux-local-ssd-nvme-rel",
     console_view_entry = consoles.console_view_entry(
         category = "local|ssd",
@@ -5653,17 +5674,16 @@ ci.mac_builder(
     os = os.MAC_ANY,
 )
 
-# TODO(estaab) When promoting out of FYI, make tree_closing True and make
-# branch_selector branches.DESKTOP_EXTENDED_STABLE_RELEASES, then remove the entry for this
-# builder from //generators/scheduler-noop-jobs.star
 ci.thin_tester(
     name = "mac-arm64-rel-tests",
-    builder_group = "chromium.fyi",
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
-        category = "mac",
-        short_name = "a64",
+        category = "release|arm64",
+        short_name = "tst",
     ),
     tree_closing = False,
+    main_console_view = "main",
     triggered_by = ["ci/mac-arm64-rel"],
 )
 

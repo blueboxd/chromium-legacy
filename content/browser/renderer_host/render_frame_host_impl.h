@@ -191,7 +191,6 @@ namespace content {
 class ServiceWorkerContainerHost;
 class AgentSchedulingGroupHost;
 class AppCacheNavigationHandle;
-class CodeCacheHostImpl;
 class CrossOriginEmbedderPolicyReporter;
 class FeatureObserver;
 class FrameTree;
@@ -288,21 +287,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Clears the all prefetched cached signed exchanges.
   static void ClearAllPrefetchedSignedExchangeCache();
-
-  // TODO(crbug.com/1213818): Get/SetCodeCacheHostReceiverHandler are used only
-  // for a test in content/browser/service_worker/service_worker_browsertest
-  // that tests a bad message is returned on an incorrect origin. Try to find a
-  // way to test this without adding these additional methods.
-  // Allows external code to supply a callback that is invoked immediately
-  // after the CodeCacheHostImpl is created and bound.  Used for swapping
-  // the binding for a test version of the service.
-  using CodeCacheHostReceiverHandler = base::RepeatingCallback<void(
-      RenderFrameHost*,
-      CodeCacheHostImpl*,
-      mojo::ReceiverId,
-      mojo::UniqueReceiverSet<blink::mojom::CodeCacheHost>&)>;
-  static void SetCodeCacheHostReceiverHandlerForTesting(
-      CodeCacheHostReceiverHandler handler);
 
   ~RenderFrameHostImpl() override;
 
@@ -2792,6 +2776,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Properties of the factories (e.g. their client security state) are either
   // based on the |navigation_request|, or (if |navigation_request| is null) on
   // the last committed navigation.
+  //
+  // TODO(https://crbug.com/1098410): Remove the method below once Chrome
+  // Platform Apps are gone.
   blink::PendingURLLoaderFactoryBundle::OriginMap
   CreateURLLoaderFactoriesForIsolatedWorlds(
       const SubresourceLoaderFactoriesConfig& config,
@@ -3472,6 +3459,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Set of isolated world origins that require a separate URLLoaderFactory
   // (e.g. for handling requests initiated by extension content scripts that
   // require relaxed CORS/CORB rules).
+  //
+  // TODO(https://crbug.com/1098410): Remove the field below once Chrome
+  // Platform Apps are gone.
   base::flat_set<url::Origin>
       isolated_worlds_requiring_separate_url_loader_factory_;
 

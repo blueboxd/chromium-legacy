@@ -19,7 +19,7 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.DownloadController;
+import org.chromium.chrome.browser.download.FileAccessPermissionHelper;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.share.BitmapDownloadRequest;
 import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
@@ -100,8 +100,8 @@ class QrCodeShareMediator {
     protected void downloadQrCode(View view) {
         logDownload();
         Bitmap qrcodeBitmap = mPropertyModel.get(QrCodeShareViewProperties.QRCODE_BITMAP);
-        if (qrcodeBitmap != null && !mIsDownloadInProgress) {
-            DownloadController.requestFileAccessPermission(
+        if (qrcodeBitmap != null && !mIsDownloadInProgress && mPermissionDelegate != null) {
+            FileAccessPermissionHelper.requestFileAccessPermission(
                     mPermissionDelegate, this::finishDownloadWithPermission);
             return;
         }
@@ -128,6 +128,7 @@ class QrCodeShareMediator {
 
     /** Returns whether the user can be prompted for storage permissions. */
     private Boolean canPromptForPermission() {
+        if (mPermissionDelegate == null) return false;
         return mPermissionDelegate.canRequestPermission(permission.WRITE_EXTERNAL_STORAGE);
     }
 

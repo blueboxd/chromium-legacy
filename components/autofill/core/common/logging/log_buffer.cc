@@ -87,6 +87,7 @@ LogBuffer::LogBuffer() {
 }
 
 LogBuffer::LogBuffer(LogBuffer&& other) noexcept = default;
+LogBuffer& LogBuffer::operator=(LogBuffer&& other) = default;
 LogBuffer::~LogBuffer() = default;
 
 base::Value LogBuffer::RetrieveResult() {
@@ -104,7 +105,7 @@ base::Value LogBuffer::RetrieveResult() {
   // If the fragment has a single child, remove it from |children| and return
   // that directly.
   if (children->GetList().size() == 1) {
-    return std::move(children->TakeList().back());
+    return std::move(std::move(*children).TakeList().back());
   }
 
   return std::exchange(buffer_.back(), CreateEmptyFragment());

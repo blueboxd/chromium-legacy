@@ -142,6 +142,26 @@ ime::mojom::PhysicalKeyEventPtr CreatePhysicalKeyEventFromKeyEvent(
       ModifierStateFromEvent(event));
 }
 
+ui::ImeTextSpan::Thickness GetCompositionSpanThickness(
+    const ime::mojom::CompositionSpanStyle& style) {
+  switch (style) {
+    case ime::mojom::CompositionSpanStyle::kNone:
+      return ui::ImeTextSpan::Thickness::kNone;
+    case ime::mojom::CompositionSpanStyle::kDefault:
+      return ui::ImeTextSpan::Thickness::kThin;
+  }
+}
+
+// Not using a StructTraits here because the mapping is not 1:1.
+ui::ImeTextSpan CompositionSpanToImeTextSpan(
+    const ime::mojom::CompositionSpan& span) {
+  return ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, span.start,
+                         span.end, GetCompositionSpanThickness(span.style),
+                         span.style == ime::mojom::CompositionSpanStyle::kNone
+                             ? ui::ImeTextSpan::UnderlineStyle::kNone
+                             : ui::ImeTextSpan::UnderlineStyle::kSolid);
+}
+
 void OnConnected(bool bound) {
   LogEvent(bound ? ImeServiceEvent::kActivateImeSuccess
                  : ImeServiceEvent::kActivateImeFailed);
@@ -377,13 +397,8 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
     return;
   }
 
-  if (ShouldRouteToRuleBasedEngine(engine_id) && input_method_.is_bound()) {
-    input_method_->ProcessKeypressForRulebased(
-        CreatePhysicalKeyEventFromKeyEvent(event),
-        base::BindOnce(&ImeObserver::OnRuleBasedKeyEventResponse,
-                       base::Unretained(this), base::Time::Now(),
-                       std::move(callback)));
-  } else if (ShouldRouteToFstMojoEngine(engine_id)) {
+  if (ShouldRouteToRuleBasedEngine(engine_id) ||
+      ShouldRouteToFstMojoEngine(engine_id)) {
     if (input_method_.is_bound()) {
       // CharacterComposer only takes KEY_PRESSED events.
       const bool filtered = event.type() == ui::ET_KEY_PRESSED &&
@@ -404,7 +419,16 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
             base::UTF16ToUTF8(character_composer_.composed_character());
       }
 
-      input_method_->OnKeyEvent(std::move(key_event), std::move(callback));
+      input_method_->ProcessKeyEvent(
+          std::move(key_event),
+          base::BindOnce(
+              [](ui::IMEEngineHandlerInterface::KeyEventDoneCallback
+                     original_callback,
+                 ime::mojom::KeyEventResult result) {
+                std::move(original_callback)
+                    .Run(result == ime::mojom::KeyEventResult::kConsumedByIme);
+              },
+              std::move(callback)));
     } else {
       std::move(callback).Run(false);
     }
@@ -569,14 +593,16 @@ void NativeInputMethodEngine::ImeObserver::CommitText(
 }
 
 void NativeInputMethodEngine::ImeObserver::SetComposition(
-    const std::u16string& text) {
+    const std::u16string& text,
+    std::vector<ime::mojom::CompositionSpanPtr> spans) {
   ui::CompositionText composition;
   composition.text = text;
-  // TODO(b/151884011): Turn on underlining for composition-based languages.
-  composition.ime_text_spans = {ui::ImeTextSpan(
-      ui::ImeTextSpan::Type::kComposition, 0, composition.text.length(),
-      ui::ImeTextSpan::Thickness::kNone,
-      ui::ImeTextSpan::UnderlineStyle::kNone)};
+
+  composition.ime_text_spans.reserve(spans.size());
+  for (const auto& span : spans) {
+    composition.ime_text_spans.push_back(CompositionSpanToImeTextSpan(*span));
+  }
+
   GetInputContext()->UpdateCompositionText(
       std::move(composition), /*cursor_pos=*/composition.text.length(),
       /*visible=*/true);
@@ -647,28 +673,6 @@ void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
     host_receiver_.FlushForTesting();
   if (input_method_.is_bound())
     input_method_.FlushForTesting();
-}
-
-void NativeInputMethodEngine::ImeObserver::OnRuleBasedKeyEventResponse(
-    base::Time start,
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback,
-    ime::mojom::KeypressResponseForRulebasedPtr response) {
-  for (const auto& op : response->operations) {
-    switch (op->method) {
-      case ime::mojom::OperationMethodForRulebased::COMMIT_TEXT:
-        GetInputContext()->CommitText(
-            op->arguments, ui::TextInputClient::InsertTextCursorBehavior::
-                               kMoveCursorAfterText);
-        break;
-      case ime::mojom::OperationMethodForRulebased::SET_COMPOSITION:
-        ui::CompositionText composition;
-        composition.text = op->arguments;
-        GetInputContext()->UpdateCompositionText(
-            composition, composition.text.length(), /*visible=*/true);
-        break;
-    }
-  }
-  std::move(callback).Run(response->result);
 }
 
 void NativeInputMethodEngine::ImeObserver::OnProfileWillBeDestroyed() {

@@ -133,7 +133,9 @@ class NativeInputMethodEngine
     void CommitText(
         const std::u16string& text,
         ime::mojom::CommitTextCursorBehavior cursor_behavior) override;
-    void SetComposition(const std::u16string& text) override;
+    void SetComposition(
+        const std::u16string& text,
+        std::vector<ime::mojom::CompositionSpanPtr> spans) override;
     void SetCompositionRange(uint32_t start_index, uint32_t end_index) override;
     void FinishComposition() override;
     void DeleteSurroundingText(uint32_t num_before_cursor,
@@ -160,12 +162,6 @@ class NativeInputMethodEngine
     void OnProfileWillBeDestroyed();
 
    private:
-    // Called when a rule-based key press is processed by Mojo.
-    void OnRuleBasedKeyEventResponse(
-        base::Time start,
-        ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback,
-        ime::mojom::KeypressResponseForRulebasedPtr response);
-
     PrefService* prefs_ = nullptr;
 
     std::unique_ptr<InputMethodEngineBase::Observer> ime_base_observer_;

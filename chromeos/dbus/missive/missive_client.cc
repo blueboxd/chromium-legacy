@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "chromeos/dbus/missive/fake_missive_client.h"
 #include "components/reporting/proto/interface.pb.h"
 #include "components/reporting/proto/record.pb.h"
@@ -46,10 +45,10 @@ const int kTimeoutMs = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
 class MissiveClientImpl : public MissiveClient {
  public:
   MissiveClientImpl() = default;
-  ~MissiveClientImpl() override = default;
-
   MissiveClientImpl(const MissiveClientImpl& other) = delete;
   MissiveClientImpl& operator=(const MissiveClientImpl& other) = delete;
+  ~MissiveClientImpl() override = default;
+
   void Init(dbus::Bus* const bus) {
     origin_task_runner_ = bus->GetOriginTaskRunner();
 
@@ -82,10 +81,18 @@ class MissiveClientImpl : public MissiveClient {
   }
 
  private:
-  void EnqueueRecord(const reporting::Priority priority,
-                     reporting::Record record,
-                     base::OnceCallback<void(reporting::Status)>
-                         completion_callback) override {
+  static void EnqueueRecord(
+      base::WeakPtr<MissiveClientImpl> client,
+      const reporting::Priority priority,
+      reporting::Record record,
+      base::OnceCallback<void(reporting::Status)> completion_callback) {
+    if (!client) {
+      std::move(completion_callback)
+          .Run(Status(reporting::error::UNAVAILABLE,
+                      "Missive client shut down"));
+      return;
+    }
+
     reporting::EnqueueRecordRequest request;
     *request.mutable_record() = std::move(record);
     request.set_priority(priority);
@@ -95,16 +102,23 @@ class MissiveClientImpl : public MissiveClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    missive_service_proxy_->CallMethod(
+    client->missive_service_proxy_->CallMethod(
         &method_call, kTimeoutMs,
-        base::BindOnce(&MissiveClientImpl::HandleEnqueueRecordResponse,
-                       weak_ptr_factory_.GetWeakPtr(),
+        base::BindOnce(&MissiveClientImpl::HandleEnqueueRecordResponse, client,
                        std::move(completion_callback)));
   }
 
-  void HandleEnqueueRecordResponse(
+  static void HandleEnqueueRecordResponse(
+      base::WeakPtr<MissiveClientImpl> client,
       base::OnceCallback<void(reporting::Status)> completion_callback,
       dbus::Response* response) {
+    if (!client) {
+      std::move(completion_callback)
+          .Run(Status(reporting::error::UNAVAILABLE,
+                      "Missive client shut down"));
+      return;
+    }
+
     if (!response) {
       std::move(completion_callback)
           .Run(Status(reporting::error::UNAVAILABLE,
@@ -120,9 +134,17 @@ class MissiveClientImpl : public MissiveClient {
     std::move(completion_callback).Run(status);
   }
 
-  void Flush(const reporting::Priority priority,
-             base::OnceCallback<void(reporting::Status)> completion_callback)
-      override {
+  static void Flush(
+      base::WeakPtr<MissiveClientImpl> client,
+      const reporting::Priority priority,
+      base::OnceCallback<void(reporting::Status)> completion_callback) {
+    if (!client) {
+      std::move(completion_callback)
+          .Run(Status(reporting::error::UNAVAILABLE,
+                      "Missive client shut down"));
+      return;
+    }
+
     reporting::FlushPriorityRequest request;
     request.set_priority(priority);
     dbus::MethodCall method_call(missive::kMissiveServiceInterface,
@@ -130,16 +152,23 @@ class MissiveClientImpl : public MissiveClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    missive_service_proxy_->CallMethod(
+    client->missive_service_proxy_->CallMethod(
         &method_call, kTimeoutMs,
-        base::BindOnce(&MissiveClientImpl::HandleFlushResponse,
-                       weak_ptr_factory_.GetWeakPtr(),
+        base::BindOnce(&MissiveClientImpl::HandleFlushResponse, client,
                        std::move(completion_callback)));
   }
 
-  void HandleFlushResponse(
+  static void HandleFlushResponse(
+      base::WeakPtr<MissiveClientImpl> client,
       base::OnceCallback<void(reporting::Status)> completion_callback,
       dbus::Response* response) {
+    if (!client) {
+      std::move(completion_callback)
+          .Run(Status(reporting::error::UNAVAILABLE,
+                      "Missive client shut down"));
+      return;
+    }
+
     if (!response) {
       std::move(completion_callback)
           .Run(Status(reporting::error::UNAVAILABLE,
@@ -157,7 +186,7 @@ class MissiveClientImpl : public MissiveClient {
 
   void ReportSuccess(
       const reporting::SequencingInformation& sequencing_information,
-      bool force_confirm) override {
+      bool force_confirm) {
     reporting::ConfirmRecordUploadRequest request;
     *request.mutable_sequencing_information() =
         std::move(sequencing_information);
@@ -172,7 +201,7 @@ class MissiveClientImpl : public MissiveClient {
   }
 
   void UpdateEncryptionKey(
-      const reporting::SignedEncryptionInfo& encryption_info) override {
+      const reporting::SignedEncryptionInfo& encryption_info) {
     reporting::UpdateEncryptionKeyRequest request;
     *request.mutable_signed_encryption_info() = std::move(encryption_info);
     dbus::MethodCall method_call(missive::kMissiveServiceInterface,
@@ -208,14 +237,12 @@ MissiveClient::~MissiveClient() {
 // static
 void MissiveClient::Initialize(dbus::Bus* bus) {
   DCHECK(bus);
-  static base::NoDestructor<MissiveClientImpl> missive_client;
-  missive_client->Init(bus);
+  (new MissiveClientImpl())->Init(bus);
 }
 
 // static
 void MissiveClient::InitializeFake() {
-  static base::NoDestructor<FakeMissiveClient> missive_client;
-  missive_client->Init();
+  (new FakeMissiveClient())->Init();
 }
 
 // static

@@ -103,7 +103,6 @@
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
-#include "chrome/browser/chromeos/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/user_manager.h"
@@ -1336,6 +1335,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM},
       {"advancedProtectionProgramDesc",
        IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM_DESC},
+      {"httpsOnlyModeTitle", IDS_SETTINGS_HTTPS_ONLY_MODE},
+      {"httpsOnlyModeDescription", IDS_SETTINGS_HTTPS_ONLY_MODE_DESCRIPTION},
       {"manageCertificates", IDS_SETTINGS_MANAGE_CERTIFICATES},
       {"manageCertificatesDescription",
        IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION},
@@ -1448,6 +1449,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
   html_source->AddBoolean("showSecureDnsSetting", IsSecureDnsAvailable());
+
+  html_source->AddBoolean(
+      "showHttpsOnlyModeSetting",
+      base::FeatureList::IsEnabled(features::kHttpsOnlyMode));
 
   // The link to the Advanced Protection Program landing page, with a referrer
   // from Chrome settings.
@@ -2162,6 +2167,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS},
     {"siteSettingsCustomizedBehaviorsDescription",
      IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION},
+    {"siteSettingsCustomizedBehaviorsDescriptionShort",
+     IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION_SHORT},
     {"siteSettingsAdsDescription", IDS_SETTINGS_SITE_SETTINGS_ADS_DESCRIPTION},
     {"siteSettingsAdsAllowed", IDS_SETTINGS_SITE_SETTINGS_ADS_ALLOWED},
     {"siteSettingsAdsBlocked", IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCKED},

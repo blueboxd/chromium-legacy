@@ -33,7 +33,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
-#include "chrome/browser/chromeos/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -106,7 +105,9 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/oobe_resources.h"
+#include "chrome/grit/oobe_modulized_resources_map.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
@@ -125,6 +126,7 @@
 #include "ui/display/display.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/resources/grit/webui_generated_resources.h"
 
 namespace chromeos {
 

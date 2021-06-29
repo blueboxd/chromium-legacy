@@ -3235,15 +3235,6 @@
           'isolated_scripts': 'wpt_web_tests_input',
         },
       },
-      'mac-arm64-rel-tests': {
-        'mixins': [
-            'mac_arm64_apple_dtk_experimental',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests_no_nacl_no_nocompile',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-        },
-      },
       'mac-code-coverage': {
         'mixins': [
           'isolate_profile_data',
@@ -3380,11 +3371,11 @@
       },
       'win-backuprefptr-x86-fyi-rel': {
         'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
+          'gtest_tests': 'win7_32_bit_gtests',
         },
         'mixins': [
-          'win10',
-          'x86-64',
+          'win7',
+          'x86-32',
         ],
       },
       'win-pixel-tester-rel': {
@@ -3419,6 +3410,17 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+        },
+      },
+      'win10.20h2-blink-rel-dummy': {
+        'mixins': [
+            'win10-20h2',
+        ],
+        'swarming': {
+          'hard_timeout': 900,
+        },
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'win7-blink-rel-dummy': {
@@ -5082,6 +5084,15 @@
           'all',
         ],
       },
+      'mac-arm64-rel-tests': {
+        'mixins': [
+            'mac_11_arm64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests_no_nacl_no_nocompile',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+        },
+      },
     },
   },
   {
@@ -6296,6 +6307,12 @@
     'name': 'infra',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'linux-bootstrap-tests': {
+        'mixins': ['linux-bionic'],
+        'test_suites': {
+          'gtest_tests': 'bootstrap_tests',
+        }
+      },
       'linux-component-rel': {
         'additional_compile_targets': [
           'all',

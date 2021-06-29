@@ -150,8 +150,8 @@ void SystemEngine::OnBlur() {
   ProcessMessage(WrapAndSerializeMessage(OnBlurToProto(seq_id)));
 }
 
-void SystemEngine::OnKeyEvent(mojom::PhysicalKeyEventPtr event,
-                              OnKeyEventCallback callback) {
+void SystemEngine::ProcessKeyEvent(mojom::PhysicalKeyEventPtr event,
+                                   ProcessKeyEventCallback callback) {
   const uint64_t seq_id = current_seq_id_;
   ++current_seq_id_;
 
@@ -216,13 +216,20 @@ void SystemEngine::OnReply(const std::vector<uint8_t>& message,
       const auto it = pending_key_event_callbacks_.find(reply.seq_id());
       CHECK(it != pending_key_event_callbacks_.end());
       auto callback = std::move(it->second);
-      std::move(callback).Run(reply.on_key_event_reply().consumed());
+      std::move(callback).Run(
+          reply.on_key_event_reply().consumed()
+              ? mojom::KeyEventResult::kConsumedByIme
+              : mojom::KeyEventResult::kNeedsHandlingBySystem);
       pending_key_event_callbacks_.erase(it);
       break;
     }
     case ime::PublicMessage::kSetComposition: {
-      host->SetComposition(
-          ConvertToUtf16AndNormalize(reply.set_composition().text()));
+      std::u16string text =
+          ConvertToUtf16AndNormalize(reply.set_composition().text());
+      std::vector<ime::mojom::CompositionSpanPtr> spans;
+      spans.push_back(ime::mojom::CompositionSpan::New(
+          0, text.length(), ime::mojom::CompositionSpanStyle::kNone));
+      host->SetComposition(std::move(text), std::move(spans));
       break;
     }
     case ime::PublicMessage::kSetCompositionRange: {

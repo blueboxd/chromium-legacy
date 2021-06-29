@@ -615,9 +615,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_2021-06-21",
                     "params": {
-                        "autodismiss_duration_ms": "20000"
+                        "autodismiss_duration_ms": "10000"
                     },
                     "enable_features": [
                         "MessagesForAndroidInfrastructure",
@@ -2427,7 +2427,7 @@
                 {
                     "name": "CrosMemoryAblationStudy",
                     "params": {
-                        "ablation-size-mb": "14"
+                        "ablation-size-mb": "10"
                     },
                     "enable_features": [
                         "CrosMemoryAblationStudy"

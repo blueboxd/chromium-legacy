@@ -622,12 +622,6 @@ const char kDocumentTransitionName[] = "documentTransition API";
 const char kDocumentTransitionDescription[] =
     "Controls the availability of the documentTransition JavaScript API.";
 
-const char kEnableAccessibilityObjectModelName[] =
-    "Accessibility Object Model v0 (deprecated)";
-const char kEnableAccessibilityObjectModelDescription[] =
-    "Enables experimental support for an earlier version of Accessibility"
-    "Object Model APIs that are now deprecated.";
-
 const char kEnableAudioFocusEnforcementName[] = "Audio Focus Enforcement";
 const char kEnableAudioFocusEnforcementDescription[] =
     "Enables enforcement of a single media session having audio focus at "
@@ -2982,11 +2976,6 @@ const char kChimeAndroidSdkDescription[] =
     "Enable Chime SDK to receive push notification.";
 const char kChimeAndroidSdkName[] = "Use Chime SDK";
 
-const char kContinuousFeedsName[] = "Continuous Feeds Navigation";
-const char kContinuousFeedsDescription[] =
-    "Enables caching Discover article metadata to enable more seamless "
-    "navigation between articles.";
-
 const char kContinuousSearchName[] = "Continuous Search Navigation";
 const char kContinuousSearchDescription[] =
     "Enables caching of search results to permit a more seamless search "
@@ -3106,6 +3095,11 @@ const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
 
+const char kDynamicColorAndroidName[] = "Dynamic colors on Android";
+const char kDynamicColorAndroidDescription[] =
+    "Enabled dynamic colors on supported devices, such as Pixel devices "
+    "running Android 12.";
+
 const char kAutofillManualFallbackAndroidName[] =
     "Enable Autofill manual fallback for Addresses and Payments (Android)";
 const char kAutofillManualFallbackAndroidDescription[] =
@@ -3149,6 +3143,11 @@ const char kHomepagePromoCardName[] =
 const char kHomepagePromoCardDescription[] =
     "Enable homepage promo card that will be shown to users with partner "
     "configured homepage.";
+
+const char kInstanceSwitcherName[] = "Enable instance switcher";
+const char kInstanceSwitcherDescription[] =
+    "Enable instance switcher dialog UI that helps users manage multiple "
+    "instances of Chrome.";
 
 const char kInstantStartName[] = "Instant start";
 const char kInstantStartDescription[] =
@@ -3866,6 +3865,12 @@ const char kUseXpsForPrintingFromPdfDescription[] =
     "When enabled, use XPS printing API instead of the GDI print API when "
     "printing PDF documents.";
 #endif  // BUILDFLAG(ENABLE_PRINTING)
+
+const char kWin10TabSearchCaptionButtonName[] =
+    "Windows 10 Tab Search Caption Button";
+const char kWin10TabSearchCaptionButtonDescription[] =
+    "Move the Tab Search entrypoint besides the window caption buttons on "
+    "Windows 10 platforms.";
 
 #endif  // defined(OS_WIN)
 

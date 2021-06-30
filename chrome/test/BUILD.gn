@@ -212,6 +212,18 @@ static_library("test_support") {
     ]
   }
 
+  if (is_chrome_branded &&
+      (is_mac || is_win || (is_posix && !is_android && !is_chromeos_ash))) {
+    sources += [ "base/scoped_channel_override.h" ]
+    if (is_mac) {
+      sources += [ "base/scoped_channel_override_mac.cc" ]
+    } else if (is_win) {
+      sources += [ "base/scoped_channel_override_win.cc" ]
+    } else if (is_posix && !is_android && !is_chromeos_ash) {
+      sources += [ "base/scoped_channel_override_posix.cc" ]
+    }
+  }
+
   configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
@@ -1609,7 +1621,6 @@ if (!is_android) {
       "../browser/permissions/permission_request_manager_browsertest.cc",
       "../browser/permissions/permissions_browsertest.cc",
       "../browser/permissions/permissions_browsertest.h",
-      "../browser/permissions/permissions_security_model_browsertest.cc",
       "../browser/picture_in_picture/picture_in_picture_window_controller_browsertest.cc",
       "../browser/plugins/pdf_iframe_navigation_throttle_browsertest.cc",
       "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
@@ -3265,7 +3276,7 @@ if (!is_android) {
         "../browser/chromeos/file_manager/image_loader_jstest.cc",
         "../browser/chromeos/file_manager/video_player_jstest.cc",
         "../browser/chromeos/first_run/drive_first_run_browsertest.cc",
-        "../browser/chromeos/full_restore/app_launch_handler_browsertest.cc",
+        "../browser/chromeos/full_restore/full_restore_app_launch_handler_browsertest.cc",
         "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
         "../browser/chromeos/input_method/native_input_method_engine_browsertest.cc",
         "../browser/chromeos/input_method/textinput_browsertest.cc",
@@ -5420,6 +5431,7 @@ test("unit_tests") {
 
       # Device API isn't supported on Android.
       "../browser/device_api/device_service_unittest.cc",
+      "../browser/device_api/managed_configuration_service_unittest.cc",
 
       # Bookmark export/import are handled via the BookmarkColumns
       # ContentProvider.
@@ -5936,7 +5948,6 @@ test("unit_tests") {
       "../browser/ui/autofill/payments/offer_notification_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/save_update_address_profile_bubble_controller_impl_unittest.cc",
-      "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_scanning_prompt_controller_unittest.cc",
       "../browser/ui/media_router/cast_modes_with_media_sources_unittest.cc",
       "../browser/ui/media_router/media_cast_mode_unittest.cc",
@@ -7146,6 +7157,7 @@ test("unit_tests") {
       "../browser/ui/webui/signin/signin_error_handler_unittest.cc",
       "../browser/upgrade_detector/installed_version_poller_unittest.cc",
       "../browser/upgrade_detector/upgrade_detector_impl_unittest.cc",
+      "../common/channel_info_unittest.cc",
     ]
 
     deps += [ "//components/enterprise:test_support" ]
@@ -9120,6 +9132,21 @@ proto_library("profile_proto_db_test_proto") {
 if (is_chromeos_ash) {
   assert(use_aura)
 
+  # crbug.com/1223310 There is an issue that for the second toolchain the built
+  # nacl_irt_x86_64.nexe is not in subfolder ash_clang_x64.
+  # This action will copy the related files to the correct folder.
+  if (enable_nacl && current_cpu == "x64" && also_build_ash_chrome) {
+    copy("copy_files_to_ash_clang_x64") {
+      sources = [
+        "${root_build_dir}/nacl_irt_x86_64.nexe",
+        "${root_build_dir}/nacl_irt_x86_64.nexe.debug",
+      ]
+
+      outputs = [ "${root_build_dir}/ash_clang_x64/{{source_file_part}}" ]
+      deps = [ "//ppapi/native_client:irt" ]
+    }
+  }
+
   _target_name = "test_ash_chrome"
   executable(_target_name) {
     output_name = _target_name
@@ -9156,5 +9183,8 @@ if (is_chromeos_ash) {
       # The step's output are needed at runtime, so we also need a data_dep.
       "//chrome:packed_resources",
     ]
+    if (enable_nacl && current_cpu == "x64" && also_build_ash_chrome) {
+      deps += [ ":copy_files_to_ash_clang_x64" ]
+    }
   }
 }

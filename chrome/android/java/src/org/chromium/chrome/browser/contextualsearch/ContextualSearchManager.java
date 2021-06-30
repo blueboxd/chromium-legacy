@@ -83,6 +83,8 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.touch_selection.SelectionEventType;
 import org.chromium.url.GURL;
 
+import java.util.List;
+
 /**
  * Manages the Contextual Search feature. This class keeps track of the status of Contextual
  * Search and coordinates the control with the layout.
@@ -216,6 +218,11 @@ public class ContextualSearchManager
 
     /** Whether any current Search shown in the SERP is from Related Searches. */
     private boolean mIsRelatedSearchesSerp;
+
+    /**
+     * For Related Searches we need to remember the ResolvedSearchTerm so we can switch back to it.
+     */
+    private ResolvedSearchTerm mResolvedSearchTerm;
 
     /** Whether the Accessibility Mode is enabled. */
     private boolean mIsAccessibilityModeEnabled;
@@ -510,6 +517,17 @@ public class ContextualSearchManager
         notifyHideContextualSearch();
     }
 
+    @Override
+    public void onPanelCollapsed() {
+        if (mIsRelatedSearchesSerp && mResolvedSearchTerm != null) {
+            // For now a literal search is not possible when we have Related Searches showing, but
+            // may be a possibility once https://crbug.com/1223171 is done.
+            final boolean isLiteralSearchPossible = false;
+            displayResolvedSearchTerm(mResolvedSearchTerm, mResolvedSearchTerm.displayText(),
+                    isLiteralSearchPossible);
+        }
+    }
+
     /**
      * Shows the Contextual Search UX.
      * @param stateChangeReason The reason explaining the change of state.
@@ -777,15 +795,49 @@ public class ContextualSearchManager
             doLiteralSearch = true;
         }
 
+        mRelatedSearches = new RelatedSearchesList(resolvedSearchTerm.relatedSearchesJson());
+        mResolvedSearchTerm = resolvedSearchTerm;
+        displayResolvedSearchTerm(resolvedSearchTerm, message, doLiteralSearch);
+
+        // Adjust the selection unless the user changed it since we initiated the search.
+        int selectionStartAdjust = resolvedSearchTerm.selectionStartAdjust();
+        int selectionEndAdjust = resolvedSearchTerm.selectionEndAdjust();
+        if ((selectionStartAdjust != 0 || selectionEndAdjust != 0)
+                && (mSelectionController.getSelectionType() == SelectionType.TAP
+                        || mSelectionController.getSelectionType()
+                                == SelectionType.RESOLVING_LONG_PRESS)) {
+            String originalSelection = mContext == null ? null : mContext.getInitialSelectedWord();
+            String currentSelection = mSelectionController.getSelectedText();
+            if (currentSelection != null) currentSelection = currentSelection.trim();
+            if (originalSelection != null && originalSelection.trim().equals(currentSelection)) {
+                mSelectionController.adjustSelection(selectionStartAdjust, selectionEndAdjust);
+                mContext.onSelectionAdjusted(selectionStartAdjust, selectionEndAdjust);
+            }
+        }
+
+        // Tell the Interaction Recorder about the current Event ID for persisted interaction.
+        mInteractionRecorder.persistInteraction(resolvedSearchTerm.loggedEventId());
+
+        mInternalStateController.notifyFinishedWorkOn(InternalState.RESOLVING);
+    }
+
+    void displayResolvedSearchTerm(
+            ResolvedSearchTerm resolvedSearchTerm, String message, boolean doLiteralSearch) {
         boolean receivedCaptionOrThumbnail = !TextUtils.isEmpty(resolvedSearchTerm.caption())
                 || !TextUtils.isEmpty(resolvedSearchTerm.thumbnailUrl());
 
-        mRelatedSearches = new RelatedSearchesList(resolvedSearchTerm.relatedSearchesJson());
         assert mSearchPanel != null;
+        List<String> inBarRelatedSearches =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES_IN_BAR)
+                ? mRelatedSearches.getQueries(true)
+                : null;
+        List<String> inPanelRelatedSearches =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES_ALTERNATE_UX)
+                ? mRelatedSearches.getQueries(false)
+                : null;
         mSearchPanel.onSearchTermResolved(message, resolvedSearchTerm.thumbnailUrl(),
                 resolvedSearchTerm.quickActionUri(), resolvedSearchTerm.quickActionCategory(),
-                resolvedSearchTerm.cardTagEnum(), mRelatedSearches.getQueries(true),
-                mRelatedSearches.getQueries(false));
+                resolvedSearchTerm.cardTagEnum(), inBarRelatedSearches, inPanelRelatedSearches);
         if (!TextUtils.isEmpty(resolvedSearchTerm.caption())) {
             // Call #onSetCaption() to set the caption. For entities, the caption should not be
             // regarded as an answer. In the future, when quick actions are added, doesAnswer will
@@ -841,27 +893,6 @@ public class ContextualSearchManager
             }
             mPolicy.logSearchTermResolutionDetails(searchTerm);
         }
-
-        // Adjust the selection unless the user changed it since we initiated the search.
-        int selectionStartAdjust = resolvedSearchTerm.selectionStartAdjust();
-        int selectionEndAdjust = resolvedSearchTerm.selectionEndAdjust();
-        if ((selectionStartAdjust != 0 || selectionEndAdjust != 0)
-                && (mSelectionController.getSelectionType() == SelectionType.TAP
-                        || mSelectionController.getSelectionType()
-                                == SelectionType.RESOLVING_LONG_PRESS)) {
-            String originalSelection = mContext == null ? null : mContext.getInitialSelectedWord();
-            String currentSelection = mSelectionController.getSelectedText();
-            if (currentSelection != null) currentSelection = currentSelection.trim();
-            if (originalSelection != null && originalSelection.trim().equals(currentSelection)) {
-                mSelectionController.adjustSelection(selectionStartAdjust, selectionEndAdjust);
-                mContext.onSelectionAdjusted(selectionStartAdjust, selectionEndAdjust);
-            }
-        }
-
-        // Tell the Interaction Recorder about the current Event ID for persisted interaction.
-        mInteractionRecorder.persistInteraction(resolvedSearchTerm.loggedEventId());
-
-        mInternalStateController.notifyFinishedWorkOn(InternalState.RESOLVING);
     }
 
     /**

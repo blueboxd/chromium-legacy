@@ -22,7 +22,7 @@ class Notification;
 namespace chromeos {
 namespace full_restore {
 
-class AppLaunchHandler;
+class FullRestoreAppLaunchHandler;
 class FullRestoreDataHandler;
 class NewUserRestorePrefHandler;
 
@@ -78,7 +78,7 @@ class FullRestoreService : public KeyedService,
   void Shutdown() override;
 
   // Show the restore notification on startup.
-  void ShowRestoreNotification(const std::string& id);
+  void MaybeShowRestoreNotification(const std::string& id);
 
   // Implement the restoration.
   void Restore();
@@ -88,6 +88,10 @@ class FullRestoreService : public KeyedService,
 
   // Callback used when the pref |kRestoreAppsAndPagesPrefName| changes.
   void OnPreferenceChanged(const std::string& pref_name);
+
+  // Returns true if there are some restore data and this is not the first time
+  // Chrome is run. Otherwise, returns false.
+  bool ShouldShowNotification();
 
   Profile* profile_ = nullptr;
   PrefChangeRegistrar pref_change_registrar_;
@@ -103,7 +107,7 @@ class FullRestoreService : public KeyedService,
 
   // |app_launch_handler_| is responsible for launching apps based on the
   // restore data.
-  std::unique_ptr<AppLaunchHandler> app_launch_handler_;
+  std::unique_ptr<FullRestoreAppLaunchHandler> app_launch_handler_;
 
   std::unique_ptr<FullRestoreDataHandler> restore_data_handler_;
 

@@ -1954,6 +1954,7 @@ static_library("browser") {
     "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/read_later:mojo_bindings",
+    "//chrome/browser/ui/webui/read_later/side_panel:mojo_bindings",
     "//chrome/browser/ui/webui/realbox:mojo_bindings",
     "//chrome/browser/ui/webui/reset_password:mojo_bindings",
     "//chrome/browser/ui/webui/tab_search:mojo_bindings",
@@ -2380,6 +2381,7 @@ static_library("browser") {
       "//chrome/browser/ui/webui/chromeos/launcher_internals:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
+      "//chrome/browser/ui/webui/settings/chromeos/os_apps_page/mojom",
       "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings",
       "//chromeos/components/camera_app_ui",
       "//chromeos/components/camera_app_ui:mojo_bindings",
@@ -7022,8 +7024,13 @@ static_library("test_support") {
       "autofill/mock_password_accessory_controller.h",
       "download/android/mock_download_controller.cc",
       "download/android/mock_download_controller.h",
+      "share/fake_share_history.cc",
+      "share/fake_share_history.h",
     ]
-    deps += [ "//chrome/android:test_support_jni_headers" ]
+    deps += [
+      "//chrome/android:test_support_jni_headers",
+      "//chrome/browser/share:share",
+    ]
   } else {
     sources += [
       "download/test_download_shelf.cc",

@@ -332,7 +332,6 @@ android_library("chrome_java") {
     "//chrome/browser/commerce/merchant_viewer/android:java",
     "//chrome/browser/consent_auditor/android:java",
     "//chrome/browser/contextmenu:java",
-    "//chrome/browser/continuous_search:data_structures_java",
     "//chrome/browser/continuous_search:java",
     "//chrome/browser/device:java",
     "//chrome/browser/download/android:factory_java",
@@ -395,6 +394,7 @@ android_library("chrome_java") {
     "//chrome/browser/ui/android/native_page:java",
     "//chrome/browser/ui/android/night_mode:java",
     "//chrome/browser/ui/android/omnibox:java",
+    "//chrome/browser/ui/android/quickactionsearchwidget:java",
     "//chrome/browser/ui/android/theme:java",
     "//chrome/browser/ui/android/toolbar:java",
     "//chrome/browser/ui/messages/android:java",
@@ -975,6 +975,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/ui/android/night_mode:java",
     "//chrome/browser/ui/android/omnibox:java",
     "//chrome/browser/ui/android/omnibox:junit",
+    "//chrome/browser/ui/android/quickactionsearchwidget:java",
     "//chrome/browser/ui/android/theme:java",
     "//chrome/browser/ui/android/toolbar:java",
     "//chrome/browser/ui/android/toolbar:junit",
@@ -1213,7 +1214,6 @@ android_library("chrome_test_java") {
     "//chrome/browser/content_creation/notes/internal/android:java",
     "//chrome/browser/content_creation/notes/internal/android:javatests",
     "//chrome/browser/contextmenu:java",
-    "//chrome/browser/continuous_search:data_structures_java",
     "//chrome/browser/continuous_search:javatests",
     "//chrome/browser/device:java",
     "//chrome/browser/download/android:file_provider_java",
@@ -1289,6 +1289,8 @@ android_library("chrome_test_java") {
     "//chrome/browser/ui/android/night_mode:javatests",
     "//chrome/browser/ui/android/night_mode:night_mode_java_test_support",
     "//chrome/browser/ui/android/omnibox:java",
+    "//chrome/browser/ui/android/quickactionsearchwidget:java",
+    "//chrome/browser/ui/android/quickactionsearchwidget:javatests",
     "//chrome/browser/ui/android/theme:java",
     "//chrome/browser/ui/android/toolbar:java",
     "//chrome/browser/ui/android/toolbar:javatests",
@@ -2908,6 +2910,7 @@ if (enable_arcore) {
     deps += [
       "//components/webxr/android:ar_java",
       "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
+      "//third_party/arcore-android-sdk-client:com_google_ar_core_java__ignored_manifest",
     ]
 
     _libarcore_dir = get_label_info(

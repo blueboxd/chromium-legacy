@@ -215,6 +215,10 @@ public class ContextualSearchManagerTest {
             ImmutableMap.of(ChromeFeatureList.RELATED_SEARCHES, true,
                     ChromeFeatureList.RELATED_SEARCHES_UI, true,
                     ChromeFeatureList.RELATED_SEARCHES_IN_BAR, true);
+    private static final ImmutableMap<String, Boolean> ENABLE_RELATED_SEARCHES_IN_PANEL =
+            ImmutableMap.of(ChromeFeatureList.RELATED_SEARCHES, true,
+                    ChromeFeatureList.RELATED_SEARCHES_UI, true,
+                    ChromeFeatureList.RELATED_SEARCHES_ALTERNATE_UX, true);
     private static final ImmutableMap<String, Boolean> DISABLE_FORCE_CAPTION =
             ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_FORCE_CAPTION, false);
     private static final ImmutableMap<String, Boolean> ENABLE_FORCE_CAPTION =
@@ -1313,6 +1317,15 @@ public class ContextualSearchManagerTest {
     private void maximizePanel() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> { mPanel.maximizePanel(StateChangeReason.UNKNOWN); });
+    }
+
+    /**
+     * Force the Panel to peek.
+     */
+    private void peekPanel() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> { mPanel.peekPanel(StateChangeReason.UNKNOWN); });
+        waitForPanelToPeek();
     }
 
     /**
@@ -3892,7 +3905,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testRelatedSearchesItemNotSelected() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_UI);
+        FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_PANEL);
         mPolicy.overrideAllowSendingPageUrlForTesting(true);
         FakeResolveSearch fakeSearch = simulateResolveSearch("intelligence");
         Assert.assertFalse("Related Searches should have been requested but were not!",
@@ -3913,7 +3926,7 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1182040")
     public void testRelatedSearchesItemSelected() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_UI);
+        FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_PANEL);
         mFakeServer.reset();
         FakeResolveSearch fakeSearch = simulateResolveSearch("intelligence");
         ResolvedSearchTerm resolvedSearchTerm = fakeSearch.getResolvedSearchTerm();
@@ -3927,6 +3940,14 @@ public class ContextualSearchManagerTest {
         final int chipToSelect = 2;
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> relatedSearchesControl.selectChipForTest(chipToSelect));
+        Assert.assertEquals("The Related Searches query was not shown in the Bar!",
+                "Related Search 3", mPanel.getSearchBarControl().getSearchTerm());
+
+        // Collapse the panel back to the peeking state
+        peekPanel();
+        Assert.assertEquals(
+                "The default query was not shown in the Bar after returning to peeking state!",
+                "Intelligence", mPanel.getSearchBarControl().getSearchTerm());
 
         // Close the panel
         closePanel();

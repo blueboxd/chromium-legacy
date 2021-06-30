@@ -98,7 +98,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &download::features::kSmartSuggestionForLargeDownloads,
     &download::features::kUseDownloadOfflineContentProvider,
     &embedder_support::kShowTrustedPublisherURL,
-    &features::kContinuousFeeds,
     &features::kContinuousSearch,
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
@@ -108,6 +107,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
     &shared_highlighting::kSharedHighlightingV2,
+    &shared_highlighting::kSharedHighlightingAmp,
     &features::kPrivacySandboxSettings,
     &features::kPrivacySandboxSettings2,
     &features::kPrioritizeBootstrapTasks,
@@ -195,6 +195,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDownloadProgressInfoBar,
     &kDownloadRename,
     &kDuetTabStripIntegrationAndroid,
+    &kDynamicColorAndroid,
     &kEnhancedProtectionPromoCard,
     &kExperimentsForAgsa,
     &kExploreSites,
@@ -205,6 +206,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kImmersiveUiMode,
     &kIncognitoScreenshot,
     &kInlineUpdateFlow,
+    &kInstanceSwitcher,
     &kInstantStart,
     &kKitKatSupported,
     &kLensCameraAssistedSearch,
@@ -541,6 +543,9 @@ const base::Feature kDownloadRename{"DownloadRename",
 const base::Feature kDuetTabStripIntegrationAndroid{
     "DuetTabStripIntegrationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDynamicColorAndroid{"DynamicColorAndroid",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnhancedProtectionPromoCard{
     "EnhancedProtectionPromoCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -579,6 +584,9 @@ const base::Feature kSearchEnginePromoNewDevice{
 
 const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kInstanceSwitcher{"InstanceSwitcher",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(knollr): This is a temporary kill switch, it can be removed once we feel
 // okay about leaving it on.

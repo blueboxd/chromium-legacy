@@ -23,6 +23,7 @@
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/policy/scheduled_task_handler/os_and_policies_update_checker.h"
+#include "chrome/browser/chromeos/policy/scheduled_task_handler/scheduled_task_executor.h"
 #include "chrome/browser/chromeos/policy/scheduled_task_handler/scoped_wake_lock.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -143,21 +144,21 @@ base::TimeDelta CalculateTimerExpirationDelayInDailyPolicyForTimeZone(
     const icu::TimeZone& new_tz) {
   DCHECK(!delay.is_zero());
 
-  auto cur_time_utc_cal = update_checker_internal::ConvertUtcToTzIcuTime(
+  auto cur_time_utc_cal = scheduled_task_internal::ConvertUtcToTzIcuTime(
       cur_time, *icu::TimeZone::getGMT());
 
   auto old_tz_timer_expiration_cal =
-      update_checker_internal::ConvertUtcToTzIcuTime(cur_time + delay, old_tz);
+      scheduled_task_internal::ConvertUtcToTzIcuTime(cur_time + delay, old_tz);
 
   auto new_tz_timer_expiration_cal =
-      update_checker_internal::ConvertUtcToTzIcuTime(cur_time, new_tz);
+      scheduled_task_internal::ConvertUtcToTzIcuTime(cur_time, new_tz);
   SetTimeOfDay(*old_tz_timer_expiration_cal, new_tz_timer_expiration_cal.get());
 
-  base::TimeDelta result = update_checker_internal::GetDiff(
+  base::TimeDelta result = scheduled_task_internal::GetDiff(
       *new_tz_timer_expiration_cal, *cur_time_utc_cal);
   // If the update check time in the new time zone has already passed then it
   // will happen on the next day.
-  if (result <= update_checker_internal::kInvalidDelay)
+  if (result <= scheduled_task_internal::kInvalidDelay)
     result += base::TimeDelta::FromDays(1);
   return result;
 }
@@ -260,7 +261,7 @@ class DeviceScheduledUpdateCheckerForTest
   base::TimeDelta CalculateNextUpdateCheckTimerDelay(
       base::Time cur_time) override {
     if (simulate_calculate_next_update_check_failure_)
-      return update_checker_internal::kInvalidDelay;
+      return scheduled_task_internal::kInvalidDelay;
     return DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
         cur_time);
   }
@@ -400,8 +401,8 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     // Calculate time from one hour from now and set the update check policy to
     // happen daily at that time.
     base::TimeDelta delay_from_now = base::TimeDelta::FromHours(hours_fom_now);
-    auto policy_and_next_update_check_time = CreatePolicy(
-        delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+    auto policy_and_next_update_check_time =
+        CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
 
     // Set a new scheduled update setting, fast forward to right before the
     // expected update and then check if an update check is not scheduled.
@@ -459,12 +460,12 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
   // update check time.
   std::pair<base::Value, std::unique_ptr<icu::Calendar>> CreatePolicy(
       base::TimeDelta delay,
-      DeviceScheduledUpdateChecker::Frequency frequency) {
+      ScheduledTaskExecutor::Frequency frequency) {
     // Calculate time from one hour from now and set the update check policy to
     // happen daily at that time.
     base::Time update_check_time =
         device_scheduled_update_checker_->GetCurrentTime() + delay;
-    auto update_check_icu_time = update_checker_internal::ConvertUtcToTzIcuTime(
+    auto update_check_icu_time = scheduled_task_internal::ConvertUtcToTzIcuTime(
         update_check_time, device_scheduled_update_checker_->GetTimeZone());
 
     // Extracting fields from valid ICU time should always succeed.
@@ -481,14 +482,14 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
 
     base::Value scheduled_update_check_value;
     switch (frequency) {
-      case DeviceScheduledUpdateChecker::Frequency::kDaily: {
+      case ScheduledTaskExecutor::Frequency::kDaily: {
         DecodeJsonStringAndNormalize(
             CreateDailyScheduledUpdateCheckPolicyJson(hour, minute),
             &scheduled_update_check_value);
         break;
       }
 
-      case DeviceScheduledUpdateChecker::Frequency::kWeekly: {
+      case ScheduledTaskExecutor::Frequency::kWeekly: {
         DecodeJsonStringAndNormalize(
             CreateWeeklyScheduledUpdateCheckPolicyJson(
                 hour, minute,
@@ -498,7 +499,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
         break;
       }
 
-      case DeviceScheduledUpdateChecker::Frequency::kMonthly: {
+      case ScheduledTaskExecutor::Frequency::kMonthly: {
         DecodeJsonStringAndNormalize(
             CreateMonthlyScheduledUpdateCheckPolicyJson(hour, minute,
                                                         day_of_month),
@@ -533,14 +534,14 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
         CalculateTimerExpirationDelayInDailyPolicyForTimeZone(
             cur_time, delay_from_now, cur_tz, *new_tz);
     EXPECT_GT(new_tz_timer_expiration_delay,
-              update_checker_internal::kInvalidDelay);
+              scheduled_task_internal::kInvalidDelay);
 
     // Set daily policy to start update check one hour from now.
     int expected_update_checks = 0;
     int expected_update_check_requests = 0;
     int expected_update_check_completions = 0;
-    auto policy_and_next_update_check_time = CreatePolicy(
-        delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+    auto policy_and_next_update_check_time =
+        CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
     cros_settings_.device_settings()->Set(
         chromeos::kDeviceScheduledUpdateCheck,
         std::move(policy_and_next_update_check_time.first));
@@ -610,8 +611,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfWeeklyUpdateCheckIsScheduled) {
   // Set the first update check to happen 49 hours from now (i.e. 1 hour from 2
   // days from now) and then weekly after.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(49);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kWeekly);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kWeekly);
 
   // Set a new scheduled update setting, fast forward to right before the
   // expected update and then check if an update check is not scheduled.
@@ -652,8 +653,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
   // Set the first update check to happen 49 hours from now (i.e. 1 hour from 2
   // days from now) and then monthly after.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kMonthly);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kMonthly);
   auto scheduled_update_check_data =
       update_checker_internal::ParseScheduledUpdate(
           policy_and_next_update_check_time.first);
@@ -698,7 +699,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
   base::TimeDelta second_update_check_delay =
       second_update_check_time -
       device_scheduled_update_checker_->GetCurrentTime();
-  EXPECT_GT(second_update_check_delay, update_checker_internal::kInvalidDelay);
+  EXPECT_GT(second_update_check_delay, scheduled_task_internal::kInvalidDelay);
   task_environment_.FastForwardBy(second_update_check_delay);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(update_engine::Operation::UPDATED_NEED_REBOOT);
@@ -715,8 +716,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
   // Set the first update check time to be at 31st January, 1970, 20:00:00.000
   // America/New_York.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kMonthly);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kMonthly);
   auto scheduled_update_check_data =
       update_checker_internal::ParseScheduledUpdate(
           policy_and_next_update_check_time.first);
@@ -751,7 +752,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
         device_scheduled_update_checker_->GetCurrentTime();
     // This should be always set in a virtual time environment.
     EXPECT_GT(expected_next_update_check_delay,
-              update_checker_internal::kInvalidDelay);
+              scheduled_task_internal::kInvalidDelay);
     const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
     task_environment_.FastForwardBy(expected_next_update_check_delay -
                                     small_delay);
@@ -782,8 +783,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicEventualSuccess) {
   // Calculate time from one hour from now and set the update check policy to
   // happen daily at that time.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
 
   // Fast forward time by less than (max retries * retry period) and check that
   // no update has occurred due to failure being simulated.
@@ -893,8 +894,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
   // Set the first update check to happen 49 hours from now (i.e. 1 hour from 2
   // days from now) and then weekly after.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kWeekly);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kWeekly);
 
   // Set a new scheduled update setting, fast forward to expected update check
   // time and check if it happpens. Update check completion shouldn't happen as
@@ -953,8 +954,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
   // Set the first update check to happen 49 hours from now (i.e. 1 hour from 2
   // days from now) and then weekly after.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(49);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kWeekly);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kWeekly);
 
   // Set a new scheduled update setting, fast forward to expected update check
   // time and check if it happpens. Update check completion shouldn't happen as
@@ -1004,8 +1005,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNewPolicyWithPendingUpdateCheck) {
   // Calculate time from one hour from now and set the update check policy to
   // happen daily at that time.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
 
   // Set a new scheduled update setting, fast forward to the expected time and
   // and then check if an update check is scheduled.
@@ -1023,8 +1024,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNewPolicyWithPendingUpdateCheck) {
   // but will wait for the existing update check to complete and start the timer
   // based on the new policy.
   delay_from_now = base::TimeDelta::FromMinutes(30);
-  policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
   cros_settings_.device_settings()->Set(
       chromeos::kDeviceScheduledUpdateCheck,
       std::move(policy_and_next_update_check_time.first));
@@ -1069,8 +1070,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkTimeoutScenario) {
 
   // Create and set daily policy starting from one hour from now.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
   cros_settings_.device_settings()->Set(
       chromeos::kDeviceScheduledUpdateCheck,
       std::move(policy_and_next_update_check_time.first));
@@ -1116,8 +1117,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkDelayScenario) {
 
   // Create and set daily policy starting from one hour from now.
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
   cros_settings_.device_settings()->Set(
       chromeos::kDeviceScheduledUpdateCheck,
       std::move(policy_and_next_update_check_time.first));
@@ -1156,8 +1157,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkDelayScenario) {
 // and released when an update check and policy refresh is completed.
 TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
 
   // Fast forward to update check timer expiration. This should result in a wake
   // lock being acquired.
@@ -1194,8 +1195,8 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
 // Checks if an update check is aborted after the stipulated hard timeout.
 TEST_F(DeviceScheduledUpdateCheckerTest, CheckUpdateCheckHardTimeout) {
   base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
-  auto policy_and_next_update_check_time = CreatePolicy(
-      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  auto policy_and_next_update_check_time =
+      CreatePolicy(delay_from_now, ScheduledTaskExecutor::Frequency::kDaily);
 
   cros_settings_.device_settings()->Set(
       chromeos::kDeviceScheduledUpdateCheck,

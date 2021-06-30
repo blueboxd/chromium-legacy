@@ -56,7 +56,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -94,7 +94,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
         "databases() promise could be resolved"));
   }
 
-  void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+  void SetState(base::WeakPtr<WebIDBCursor> cursor,
                 int64_t transaction_id) override {}
 
   void Error(mojom::blink::IDBException code, const String& message) override {
@@ -346,7 +346,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 
   auto& factory = GetFactory(ExecutionContext::From(script_state));
 
-  auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
+  auto transaction_backend = std::make_unique<WebIDBTransaction>(
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);

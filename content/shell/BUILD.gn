@@ -239,7 +239,6 @@ static_library("content_shell_lib") {
     "//components/metrics:net",
     "//components/network_session_configurator/common",
     "//components/performance_manager",
-    "//components/permissions",
     "//components/prefs",
     "//components/services/storage/test_api",
     "//components/url_formatter",
@@ -824,12 +823,13 @@ group("content_shell_crash_test") {
   testonly = true
   data_deps = [
     ":content_shell",
-    "//testing:test_scripts_shared",
     "//third_party/mesa_headers",
   ]
   data = [
     "//content/shell/tools/breakpad_integration_test.py",
+    "//testing/scripts/common.py",
     "//testing/scripts/content_shell_crash_test.py",
+    "//testing/xvfb.py",
   ]
   if (is_mac && !use_system_xcode) {
     data += [

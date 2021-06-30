@@ -16,7 +16,9 @@
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/feedstore_util.h"
+#include "components/feed/core/v2/launch_reliability_logger.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/request_throttler.h"
 
 namespace feed {
@@ -73,7 +75,7 @@ class UploadActionsTask::Batch {
           break;
         *feed_action_request_->add_feed_actions() = action.action();
         action.set_upload_attempt_count(action.upload_attempt_count() + 1);
-        uploaded_ids_.push_back(LocalActionId(action.id()));
+        uploaded_ids_.emplace_back(action.id());
         to_update->push_back(std::move(action));
 
         upload_size += message_size;
@@ -124,10 +126,12 @@ UploadActionsTask::UploadActionsTask(
 UploadActionsTask::UploadActionsTask(
     std::vector<feedstore::StoredAction> pending_actions,
     FeedStream* stream,
+    LaunchReliabilityLogger* launch_reliability_logger,
     base::OnceCallback<void(UploadActionsTask::Result)> callback)
     : stream_(*stream),
       pending_actions_(std::move(pending_actions)),
-      callback_(std::move(callback)) {
+      callback_(std::move(callback)),
+      launch_reliability_logger_(launch_reliability_logger) {
   gaia_ = stream_.GetSyncSignedInGaia();
 }
 
@@ -270,7 +274,12 @@ void UploadActionsTask::OnUpdateActionsFinished(
 
   std::unique_ptr<feedwire::UploadActionsRequest> request =
       batch->disown_feed_action_request();
-  request->mutable_consistency_token()->set_token(consistency_token_);
+  SetConsistencyToken(*request, consistency_token_);
+
+  if (launch_reliability_logger_) {
+    last_network_request_id_ =
+        launch_reliability_logger_->LogActionsUploadRequestStart();
+  }
 
   stream_.GetNetwork().SendApiRequest<UploadActionsDiscoverApi>(
       *request, gaia_,
@@ -282,6 +291,22 @@ void UploadActionsTask::OnUploadFinished(
     std::unique_ptr<UploadActionsTask::Batch> batch,
     FeedNetwork::ApiResult<feedwire::UploadActionsResponse> result) {
   last_network_response_info_ = result.response_info;
+
+  if (launch_reliability_logger_) {
+    launch_reliability_logger_->LogRequestSent(
+        last_network_request_id_, result.response_info.loader_start_time_ticks);
+
+    if (result.response_info.status_code > 0) {
+      launch_reliability_logger_->LogResponseReceived(
+          last_network_request_id_, /*server_receive_timestamp_ns=*/0l,
+          /*server_send_timestamp_ns=*/0l,
+          result.response_info.fetch_time_ticks);
+    }
+
+    launch_reliability_logger_->LogRequestFinished(
+        last_network_request_id_, result.response_info.status_code);
+  }
+
   if (!result.response_body)
     return BatchComplete(UploadActionsBatchStatus::kFailedToUpload);
 

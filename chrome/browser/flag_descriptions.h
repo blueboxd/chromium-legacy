@@ -379,9 +379,6 @@ extern const char kDisallowDocWrittenScriptsUiDescription[];
 extern const char kDocumentTransitionName[];
 extern const char kDocumentTransitionDescription[];
 
-extern const char kEnableAccessibilityObjectModelName[];
-extern const char kEnableAccessibilityObjectModelDescription[];
-
 extern const char kEnableAudioFocusEnforcementName[];
 extern const char kEnableAudioFocusEnforcementDescription[];
 
@@ -1713,9 +1710,6 @@ extern const char kChimeAlwaysShowNotificationName[];
 extern const char kChimeAndroidSdkDescription[];
 extern const char kChimeAndroidSdkName[];
 
-extern const char kContinuousFeedsName[];
-extern const char kContinuousFeedsDescription[];
-
 extern const char kContinuousSearchName[];
 extern const char kContinuousSearchDescription[];
 
@@ -1779,6 +1773,9 @@ extern const char kDecoupleSyncFromAndroidAutoSyncDescription[];
 extern const char kDirectActionsName[];
 extern const char kDirectActionsDescription[];
 
+extern const char kDynamicColorAndroidName[];
+extern const char kDynamicColorAndroidDescription[];
+
 extern const char kAutofillManualFallbackAndroidName[];
 extern const char kAutofillManualFallbackAndroidDescription[];
 
@@ -1804,6 +1801,9 @@ extern const char kFillingPasswordsFromAnyOriginDescription[];
 
 extern const char kHomepagePromoCardName[];
 extern const char kHomepagePromoCardDescription[];
+
+extern const char kInstanceSwitcherName[];
+extern const char kInstanceSwitcherDescription[];
 
 extern const char kInstantStartName[];
 extern const char kInstantStartDescription[];
@@ -2211,6 +2211,9 @@ extern const char kUseXpsForPrintingDescription[];
 extern const char kUseXpsForPrintingFromPdfName[];
 extern const char kUseXpsForPrintingFromPdfDescription[];
 #endif  // BUILDFLAG(ENABLE_PRINTING)
+
+extern const char kWin10TabSearchCaptionButtonName[];
+extern const char kWin10TabSearchCaptionButtonDescription[];
 
 #endif  // defined(OS_WIN)
 

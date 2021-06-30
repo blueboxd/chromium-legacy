@@ -18,12 +18,6 @@
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/extensions/api/platform_keys/platform_keys_api_lacros.h"
-#else
-#include "chrome/browser/extensions/api/platform_keys/platform_keys_api_ash.h"
-#endif
-
 namespace extensions {
 namespace platform_keys {
 
@@ -86,6 +80,20 @@ class PlatformKeysInternalSignFunction : public ExtensionFunction {
 
   DECLARE_EXTENSION_FUNCTION("platformKeysInternal.sign",
                              PLATFORMKEYSINTERNAL_SIGN)
+};
+
+class PlatformKeysVerifyTLSServerCertificateFunction
+    : public ExtensionFunction {
+ private:
+  ~PlatformKeysVerifyTLSServerCertificateFunction() override;
+  ResponseAction Run() override;
+
+  void FinishedVerification(const std::string& error,
+                            int verify_result,
+                            int cert_status);
+
+  DECLARE_EXTENSION_FUNCTION("platformKeys.verifyTLSServerCertificate",
+                             PLATFORMKEYS_VERIFYTLSSERVERCERTIFICATE)
 };
 
 }  // namespace extensions

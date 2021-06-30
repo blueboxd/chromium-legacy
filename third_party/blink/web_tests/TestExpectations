@@ -4139,7 +4139,7 @@ crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-viewbox
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/transform-text-element.html [ Failure Pass ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/tspan-dynamic-positioning.svg [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/use-detach.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/animations/animate-text-nested-transforms.html [ Timeout ]
+crbug.com/1179585 virtual/layout_ng_svg_text/svg/animations/animate-text-nested-transforms.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/smallFonts.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration2.svg [ Failure ]
@@ -4176,8 +4176,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/filters/feDisplacementMap.svg [
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/filters/filter-on-filter-for-text.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/filters/filter-on-tspan.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/hittest/rotated-text.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/hittest/singular-transform-3.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/hittest/svg-pointer-events-bbox.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/hittest/text-fill-none-with-nested-tspan.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/hittest/text-multiple-dx-values.svg [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/hittest/text-small-font-size.html [ Failure ]
@@ -4199,7 +4197,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-2.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-3.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-styles.xhtml [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-svg-text-with-collapsed-whitespace.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-squeeze-1.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-squeeze-2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-squeeze-3.svg [ Failure ]
@@ -5492,7 +5489,7 @@ crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transf
 crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transforms/perspective-children-only-fixpos.html [ Pass ]
 crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transforms/perspective-children-only-inline.html [ Pass ]
 
-crbug.com/1219750 wpt_internal/app-history/navigate/goTo-detach-in-onnavigate.html [ Timeout ]
+crbug.com/1219750 external/wpt/app-history/navigate/goTo-detach-in-onnavigate.html [ Timeout ]
 
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]
@@ -7067,6 +7064,16 @@ crbug.com/1222097 external/wpt/uievents/order-of-events/mouse-events/mouseover-o
 crbug.com/1223601 [ Linux ] fast/scrolling/autoscroll-latch-clicked-node-if-parent-unscrollable.html [ Failure Pass ]
 crbug.com/1223601 [ Linux ] fast/scrolling/reset-scroll-in-onscroll.html [ Failure Pass ]
 crbug.com/1223773 external/wpt/webrtc/simulcast/getStats.https.html [ Pass Failure ]
+
+# Sheriff 2021-06-29
+# Flaky on Mac11 Tests
+crbug.com/1197464 [ Mac ] virtual/scroll-unification/plugins/refcount-leaks.html [ Pass Failure ]
+
+# File System Access API tests that depend on mojo interfaces that are only exposed behind a flag.
+crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.window.html [ Skip ]
+crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.window.html [ Pass ]
+crbug.com/1218431 external/wpt/file-system-access/local_FileSystemFileHandle-create-sync-access-handle-dedicated-worker-manual.https.html [ Skip ]
+crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/local_FileSystemFileHandle-create-sync-access-handle-dedicated-worker-manual.https.html [ Pass ]
 
 # DevTools roll
 crbug.com/1187573 http/tests/devtools/throttling/mobile-throttling.js [ Skip ]

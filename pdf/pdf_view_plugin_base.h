@@ -16,6 +16,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "pdf/accessibility_structs.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
@@ -129,6 +130,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // Handle invoked accessibility actions.
   void HandleAccessibilityAction(const AccessibilityActionData& action_data);
+
+  // Gets the content restrictions based on the permissions which `engine_` has.
+  int GetContentRestrictions() const;
+
+  // Gets the accessibility doc info based on the information from `engine_`.
+  AccessibilityDocInfo GetAccessibilityDocInfo() const;
 
   bool GetDidCallStartLoadingForTesting() const {
     return did_call_start_loading_;

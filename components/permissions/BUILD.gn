@@ -111,7 +111,6 @@ source_set("permissions") {
     "//device/bluetooth",
     "//device/bluetooth/public/cpp",
     "//services/device/public/cpp/geolocation",
-    "//services/device/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//sql",
     "//third_party/blink/public/common",
@@ -158,7 +157,11 @@ source_set("permissions") {
       "//ui/android",
     ]
   } else {
-    sources += [ "permission_prompt_impl.cc" ]
+    sources += [
+      "bluetooth_chooser_controller.cc",
+      "bluetooth_chooser_controller.h",
+      "permission_prompt_impl.cc",
+    ]
   }
   public_deps = [ ":permissions_common" ]
 }
@@ -228,6 +231,9 @@ source_set("unit_tests") {
     "permission_request_manager_unittest.cc",
     "permission_uma_util_unittest.cc",
   ]
+  if (!is_android) {
+    sources += [ "bluetooth_chooser_controller_unittest.cc" ]
+  }
   deps = [
     ":permissions",
     ":test_support",

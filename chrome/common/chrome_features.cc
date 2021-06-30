@@ -113,9 +113,6 @@ const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
-const base::Feature kContinuousFeeds{"ContinuousFeeds",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContinuousSearch{"ContinuousSearch",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -946,7 +943,7 @@ const base::Feature kTreatUnsafeDownloadsAsActive{
 #if !defined(OS_ANDROID)
 // Enables surveying of users of Trust & Safety features with HaTS.
 const base::Feature kTrustSafetySentimentSurvey{
-    "TrustSafetySentimentSurvey", base::FEATURE_ENABLED_BY_DEFAULT};
+    "TrustSafetySentimentSurvey", base::FEATURE_DISABLED_BY_DEFAULT};
 // The minimum and maximum time after a user has interacted with a Trust and
 // Safety they are eligible to be surveyed.
 const base::FeatureParam<base::TimeDelta>

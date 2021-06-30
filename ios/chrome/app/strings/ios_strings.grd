@@ -1742,9 +1742,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_READING_LIST_JUST_NOW" desc="String indicating that an event (adding item, distillation) happened less than one minute ago. [Length: 25em]">
         Just now
       </message>
-      <message name="IDS_IOS_READING_LIST_MINUTES_SUFFIX" desc="Trailing label to number describing the time to read the reading list entry in minutes. [Length: 20em]">
-          <ph name="TIME">$1</ph> min
-      </message>
       <message name="IDS_IOS_READING_LIST_MARK_ALL_BUTTON" desc="Label of the button to suggest options to mark all reading list entries read or unread [Length: 25em]" meaning="Display options letting the user mark all the entries as read or as unread. [Length: 25em]">
         Mark All…
       </message>
@@ -2965,6 +2962,9 @@ New Search
         {count, plural,
           =1 {Now showing 1 Chrome window}
           other {Now showing {count} Chrome windows}}
+      </message>
+      <message name="IDS_IOS_CARD_WILL_BE_SAVED_TO_ACCOUNT" desc="A message to inform the user that a credit card will be saved to their Google Account.">
+        Cards are saved to your Google Account.
       </message>
     </messages>
   </release>

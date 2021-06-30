@@ -211,6 +211,20 @@ Polymer({
         this.ticksWithLabelsInSec_(AUTO_SCAN_SPEED_RANGE_MS);
   },
 
+  /** @override */
+  attached() {
+    SwitchAccessSubpageBrowserProxyImpl.getInstance()
+        .notifySwitchAccessSetupGuideAttached();
+  },
+
+  /** @override */
+  ready() {
+    // Reset all switch assignments.
+    for (const pref of Object.values(actionToPref)) {
+      chrome.settingsPrivate.setPref(pref, {});
+    }
+  },
+
   /**
    * @param {SASetupPageId} id
    * @private
@@ -263,6 +277,8 @@ Polymer({
   initializeAssignmentPane_(action) {
     this.removeAssignmentPaneIfPresent_();
 
+    this.assignmentIllustrationElement.classList.add(action);
+
     const assignmentPane =
         document.createElement('settings-switch-access-action-assignment-pane');
     assignmentPane.action = action;
@@ -276,6 +292,7 @@ Polymer({
       this.assignmentContentsElement.removeChild(
           this.assignmentContentsElement.firstChild);
     }
+    this.assignmentIllustrationElement.classList = 'illustration';
   },
 
   /**
@@ -489,4 +506,9 @@ Polymer({
         '.sa-setup-contents');
   },
 
+  /** @private */
+  get assignmentIllustrationElement() {
+    return this['$'][SASetupElement.ASSIGN_SWITCH_CONTENT].querySelector(
+        '.illustration');
+  },
 });

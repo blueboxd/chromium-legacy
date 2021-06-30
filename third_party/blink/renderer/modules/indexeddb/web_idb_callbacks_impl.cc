@@ -43,9 +43,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -83,7 +81,7 @@ void WebIDBCallbacksImpl::DetachRequestFromCallback() {
   request_.Clear();
 }
 
-void WebIDBCallbacksImpl::SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+void WebIDBCallbacksImpl::SetState(base::WeakPtr<WebIDBCursor> cursor,
                                    int64_t transaction_id) {
   cursor_ = cursor;
   transaction_id_ = transaction_id;
@@ -125,7 +123,7 @@ void WebIDBCallbacksImpl::SuccessCursor(
   if (!request_)
     return;
 
-  std::unique_ptr<WebIDBCursorImpl> cursor = std::make_unique<WebIDBCursorImpl>(
+  std::unique_ptr<WebIDBCursor> cursor = std::make_unique<WebIDBCursor>(
       std::move(cursor_info), transaction_id_, task_runner_);
   std::unique_ptr<IDBValue> value;
   if (optional_value.has_value()) {
@@ -162,8 +160,8 @@ void WebIDBCallbacksImpl::SuccessDatabase(
     const IDBDatabaseMetadata& metadata) {
   std::unique_ptr<WebIDBDatabase> db;
   if (pending_database.is_valid()) {
-    db = std::make_unique<WebIDBDatabaseImpl>(std::move(pending_database),
-                                              task_runner_);
+    db = std::make_unique<WebIDBDatabase>(std::move(pending_database),
+                                          task_runner_);
   }
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(),
@@ -306,8 +304,8 @@ void WebIDBCallbacksImpl::UpgradeNeeded(
     const IDBDatabaseMetadata& metadata) {
   std::unique_ptr<WebIDBDatabase> db;
   if (pending_database.is_valid()) {
-    db = std::make_unique<WebIDBDatabaseImpl>(std::move(pending_database),
-                                              task_runner_);
+    db = std::make_unique<WebIDBDatabase>(std::move(pending_database),
+                                          task_runner_);
   }
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(),

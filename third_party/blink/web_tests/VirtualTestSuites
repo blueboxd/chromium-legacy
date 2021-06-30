@@ -647,6 +647,11 @@
     "args": ["--enable-features=FreezeUserAgent"]
   },
   {
+    "prefix": "file-system-access-access-handle",
+    "bases": ["external/wpt/file-system-access"],
+    "args": ["--enable-features=FileSystemAccessAccessHandle"]
+  },
+  {
     "prefix": "file-handling",
     "bases": [],
     "args": ["--enable-features=NativeFileSystemAPI,FileHandlingAPI"]
@@ -1072,9 +1077,11 @@
               "accessibility/virtual-node-removed-from-document.html",
               "accessibility/virtual-node-repair-document.html",
               "external/wpt/accessibility/crashtests/aria-hidden-with-select.html",
+              "external/wpt/accessibility/crashtests/aria-owns-destroyed-by-content-replacement.html",
               "external/wpt/accessibility/crashtests/content-visibility-generated-content-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-dom-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-layout-removal.html",
+              "external/wpt/accessibility/crashtests/input-time-datalist.html",
               "external/wpt/accessibility/crashtests/map-inside-map.html",
               "external/wpt/accessibility/crashtests/map-inside-map-2.html",
               "external/wpt/accessibility/crashtests/slot-assignment-lockup.html",

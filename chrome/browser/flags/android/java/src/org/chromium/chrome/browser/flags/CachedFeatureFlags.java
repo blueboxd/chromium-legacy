@@ -70,6 +70,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW, false);
             put(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, false);
             put(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA, false);
+            put(ChromeFeatureList.DYNAMIC_COLOR_ANDROID, false);
             put(ChromeFeatureList.INSTANT_START, false);
             put(ChromeFeatureList.TAB_TO_GTS_ANIMATION, true);
             put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false);
@@ -89,6 +90,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.APP_TO_WEB_ATTRIBUTION, false);
             put(ChromeFeatureList.NEW_WINDOW_APP_MENU, true);
             put(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES, false);
+            put(ChromeFeatureList.INSTANCE_SWITCHER, false);
         }
     };
 

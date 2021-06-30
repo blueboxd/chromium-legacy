@@ -15,8 +15,6 @@
 #elif defined(OS_WIN)
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_win.h"
 #include "base/win/windows_version.h"
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "base/util/memory_pressure/system_memory_pressure_evaluator_linux.h"
 #endif
 
 namespace util {
@@ -46,11 +44,10 @@ SystemMemoryPressureEvaluator::CreateDefaultSystemEvaluator(
     evaluator->CreateOSSignalPressureEvaluator(monitor->CreateVoter());
   }
   return evaluator;
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  return std::make_unique<util::os_linux::SystemMemoryPressureEvaluator>(
-      monitor->CreateVoter());
-#endif
+#else
+  // Chrome OS and Chromecast evaluators are created in separate components.
   return nullptr;
+#endif
 }
 
 SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(

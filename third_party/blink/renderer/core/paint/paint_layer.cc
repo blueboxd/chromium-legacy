@@ -48,6 +48,7 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/containers/adapters.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -1973,6 +1974,16 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
                                      recursion_data.location.TransformedRect(),
                                      FloatQuad(FloatRect(recursion_data.rect)));
 
+  if (container_transform_state &&
+      RuntimeEnabledFeatures::TransformInteropEnabled() &&
+      &container_layer->GetLayoutObject() !=
+          GetLayoutObject().NearestAncestorForElement()) {
+    // Our parent *layer* is preserve-3d, but that preserve-3d doesn't
+    // apply to this layer because our element is not a child of our
+    // parent layer's element.
+    transform_state.Flatten();
+  }
+
   PhysicalOffset offset;
   if (container_transform_state)
     ConvertToLayerCoords(container_layer, offset);
@@ -3154,6 +3165,7 @@ bool PaintLayer::CompositesWithTransform() const {
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect,
     bool should_check_children) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   // We can't use hasVisibleContent(), because that will be true if our
   // layoutObject is hidden, but some child is visible and that child doesn't
   // cover the entire rect.
@@ -3198,6 +3210,7 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
 
 bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   PaintLayerPaintOrderReverseIterator reverse_iterator(*this, kAllChildren);
   while (PaintLayer* child_layer = reverse_iterator.Next()) {
     // Stop at composited paint boundaries and non-self-painting layers.

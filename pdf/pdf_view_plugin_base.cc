@@ -336,17 +336,7 @@ void PdfViewPluginBase::DocumentLoadComplete() {
     return;
 
   DidStopLoading();
-
-  int content_restrictions = kContentRestrictionCut | kContentRestrictionPaste;
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_COPY))
-    content_restrictions |= kContentRestrictionCopy;
-
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-      !engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
-    content_restrictions |= kContentRestrictionPrint;
-  }
-
-  SetContentRestrictions(content_restrictions);
+  SetContentRestrictions(GetContentRestrictions());
 }
 
 void PdfViewPluginBase::DocumentLoadFailed() {
@@ -644,6 +634,28 @@ void PdfViewPluginBase::EnableAccessibility() {
 void PdfViewPluginBase::HandleAccessibilityAction(
     const AccessibilityActionData& action_data) {
   engine_->HandleAccessibilityAction(action_data);
+}
+
+int PdfViewPluginBase::GetContentRestrictions() const {
+  int content_restrictions = kContentRestrictionCut | kContentRestrictionPaste;
+  if (!engine()->HasPermission(PDFEngine::PERMISSION_COPY))
+    content_restrictions |= kContentRestrictionCopy;
+
+  if (!engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
+      !engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
+    content_restrictions |= kContentRestrictionPrint;
+  }
+
+  return content_restrictions;
+}
+
+AccessibilityDocInfo PdfViewPluginBase::GetAccessibilityDocInfo() const {
+  AccessibilityDocInfo doc_info;
+  doc_info.page_count = engine()->GetNumberOfPages();
+  doc_info.text_accessible =
+      engine()->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
+  doc_info.text_copyable = engine()->HasPermission(PDFEngine::PERMISSION_COPY);
+  return doc_info;
 }
 
 bool PdfViewPluginBase::UnsupportedFeatureIsReportedForTesting(
@@ -1465,17 +1477,12 @@ void PdfViewPluginBase::SendThumbnail(base::Value reply, Thumbnail thumbnail) {
 
 void PdfViewPluginBase::LoadAccessibility() {
   accessibility_state_ = AccessibilityState::kLoaded;
-  AccessibilityDocInfo doc_info;
-  doc_info.page_count = engine_->GetNumberOfPages();
-  doc_info.text_accessible =
-      engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
-  doc_info.text_copyable = engine_->HasPermission(PDFEngine::PERMISSION_COPY);
 
   // A new document layout will trigger the creation of a new accessibility
   // tree, so `next_accessibility_page_index_` should be reset to ignore
   // outdated asynchronous calls of PrepareAndSetAccessibilityPageInfo().
   next_accessibility_page_index_ = 0;
-  SetAccessibilityDocInfo(doc_info);
+  SetAccessibilityDocInfo(GetAccessibilityDocInfo());
 
   // If the document contents isn't accessible, don't send anything more.
   if (!(engine_->HasPermission(PDFEngine::PERMISSION_COPY) ||

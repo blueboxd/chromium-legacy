@@ -377,6 +377,18 @@ const FeatureEntry::Choice kWebXrForceRuntimeChoices[] = {
 #endif  // ENABLE_VR
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kElasticOverscrollFilterType[] = {
+    {features::kElasticOverscrollType, features::kElasticOverscrollTypeFilter}};
+const FeatureEntry::FeatureParam kElasticOverscrollTransformType[] = {
+    {features::kElasticOverscrollType,
+     features::kElasticOverscrollTypeTransform}};
+
+const FeatureEntry::FeatureVariation kElasticOverscrollVariations[] = {
+    {"Pixel shader stretch", kElasticOverscrollFilterType,
+     base::size(kElasticOverscrollFilterType), nullptr},
+    {"Transform stretch", kElasticOverscrollTransformType,
+     base::size(kElasticOverscrollTransformType), nullptr}};
+
 const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kReaderModeHeuristicsMarkup,
@@ -4962,11 +4974,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, FEATURE_VALUE_TYPE(media::kUseSodaForLiveCaption)},
 #endif  // !defined(OS_ANDROID)
 
-    {"enable-accessibility-object-model",
-     flag_descriptions::kEnableAccessibilityObjectModelName,
-     flag_descriptions::kEnableAccessibilityObjectModelDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableAccessibilityObjectModel)},
-
 #if defined(OS_ANDROID)
     {"cct-incognito", flag_descriptions::kCCTIncognitoName,
      flag_descriptions::kCCTIncognitoDescription, kOsAndroid,
@@ -5204,6 +5211,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"new-window-app-menu", flag_descriptions::kNewWindowAppMenuName,
      flag_descriptions::kNewWindowAppMenuDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNewWindowAppMenu)},
+
+    {"instance-switcher", flag_descriptions::kInstanceSwitcherName,
+     flag_descriptions::kInstanceSwitcherDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kInstanceSwitcher)},
 #endif  // defined(OS_ANDROID)
 
     {"enable-gamepad-button-axis-events",
@@ -5972,10 +5983,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollUnificationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollUnification)},
 
-#if defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_WIN)
     {"elastic-overscroll", flag_descriptions::kElasticOverscrollName,
      flag_descriptions::kElasticOverscrollDescription, kOsWin | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kElasticOverscroll)},
+#elif defined(OS_ANDROID)
+    {"elastic-overscroll", flag_descriptions::kElasticOverscrollName,
+     flag_descriptions::kElasticOverscrollDescription, kOsWin | kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kElasticOverscroll,
+                                    kElasticOverscrollVariations,
+                                    "ElasticOverscroll")},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6899,10 +6916,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-    {"continuous-feeds", flag_descriptions::kContinuousFeedsName,
-     flag_descriptions::kContinuousFeedsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kContinuousFeeds)},
-
     {"continuous-search", flag_descriptions::kContinuousSearchName,
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kContinuousSearch)},
@@ -7351,6 +7364,19 @@ const FeatureEntry kFeatureEntries[] = {
     {"https-only-mode-setting", flag_descriptions::kHttpsOnlyModeName,
      flag_descriptions::kHttpsOnlyModeDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kHttpsOnlyMode)},
+
+#if defined(OS_ANDROID)
+    {"dynamic-color-android", flag_descriptions::kDynamicColorAndroidName,
+     flag_descriptions::kDynamicColorAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDynamicColorAndroid)},
+#endif  //   defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+    {"win-10-tab-search-caption-button",
+     flag_descriptions::kWin10TabSearchCaptionButtonName,
+     flag_descriptions::kWin10TabSearchCaptionButtonDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kWin10TabSearchCaptionButton)},
+#endif  // defined(OS_WIN)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

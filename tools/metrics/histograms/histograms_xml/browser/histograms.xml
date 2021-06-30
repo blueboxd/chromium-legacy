@@ -22,7 +22,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <variants name="ContinuousSearchExperiment">
-  <variant name=".Discover"/>
+  <variant name=".Discover">
+    <obsolete>
+      Deprecated as of 2021-06.
+    </obsolete>
+  </variant>
   <variant name=".News"/>
   <variant name=".Organic"/>
 </variants>
@@ -195,7 +199,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.UncompressedOnDiskSize"
-    units="KB" expires_after="2021-06-27">
+    units="KB" expires_after="2021-10-31">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -561,18 +565,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     incognito window is created. Please note that this metric double counts the
     lower numbers, meaning that if user opens three windows (without closing any
     in between), then buckets 1, 2, and 3 will all be incremented in turn.
-  </summary>
-</histogram>
-
-<histogram name="BrowserDialogs.ExternalProtocol.HandleState"
-    enum="HandleStateType" expires_after="2021-08-09">
-  <owner>dominickn@chromium.org</owner>
-  <owner>meacer@chromium.org</owner>
-  <summary>
-    Whether or not the user checked the option in the external protocol dialog
-    to remember their choice of opening or not opening the specified app.
-    Recorded each time the user interacts with the External Protocol Dialog,
-    when making a decision.
   </summary>
 </histogram>
 

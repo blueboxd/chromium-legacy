@@ -9,11 +9,12 @@
 #include "base/strings/string_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/full_restore/app_launch_handler.h"
+#include "chrome/browser/chromeos/full_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_data_handler.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_service_factory.h"
 #include "chrome/browser/chromeos/full_restore/new_user_restore_pref_handler.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -55,9 +56,9 @@ FullRestoreService* FullRestoreService::GetForProfile(Profile* profile) {
 
 FullRestoreService::FullRestoreService(Profile* profile)
     : profile_(profile),
-      app_launch_handler_(
-          std::make_unique<AppLaunchHandler>(profile_,
-                                             /*should_init_service=*/true)),
+      app_launch_handler_(std::make_unique<FullRestoreAppLaunchHandler>(
+          profile_,
+          /*should_init_service=*/true)),
       restore_data_handler_(
           std::make_unique<FullRestoreDataHandler>(profile_)) {}
 
@@ -85,8 +86,7 @@ void FullRestoreService::Init() {
     if (!HasRestorePref(prefs))
       SetDefaultRestorePrefIfNecessary(prefs);
 
-    if (app_launch_handler_->HasRestoreData())
-      ShowRestoreNotification(kRestoreForCrashNotificationId);
+    MaybeShowRestoreNotification(kRestoreForCrashNotificationId);
     return;
   }
 
@@ -114,8 +114,7 @@ void FullRestoreService::Init() {
       Restore();
       break;
     case RestoreOption::kAskEveryTime:
-      if (app_launch_handler_->HasRestoreData())
-        ShowRestoreNotification(kRestoreNotificationId);
+      MaybeShowRestoreNotification(kRestoreNotificationId);
       break;
     case RestoreOption::kDoNotRestore:
       return;
@@ -182,7 +181,7 @@ void FullRestoreService::Click(const absl::optional<int>& button_index,
       SetRestoreSelectedCountPref(profile_->GetPrefs(), ++count);
 
     if (count >= kMaxConsecutiveRestoreSelectionCount)
-      ShowRestoreNotification(kSetRestorePrefNotificationId);
+      MaybeShowRestoreNotification(kSetRestorePrefNotificationId);
   }
 
   Restore();
@@ -192,7 +191,10 @@ void FullRestoreService::Shutdown() {
   is_shut_down_ = true;
 }
 
-void FullRestoreService::ShowRestoreNotification(const std::string& id) {
+void FullRestoreService::MaybeShowRestoreNotification(const std::string& id) {
+  if (!ShouldShowNotification())
+    return;
+
   message_center::RichNotificationData notification_data;
 
   message_center::ButtonInfo restore_button(l10n_util::GetStringUTF16(
@@ -261,8 +263,6 @@ void FullRestoreService::RecordRestoreAction(const std::string& notification_id,
 
 void FullRestoreService::OnPreferenceChanged(const std::string& pref_name) {
   DCHECK_EQ(pref_name, kRestoreAppsAndPagesPrefName);
-  //  if (pref_name != kRestoreAppsAndPagesPrefName)
-  //    return;
 
   RestoreOption restore_option = static_cast<RestoreOption>(
       profile_->GetPrefs()->GetInteger(kRestoreAppsAndPagesPrefName));
@@ -274,6 +274,11 @@ void FullRestoreService::OnPreferenceChanged(const std::string& pref_name) {
     ::full_restore::FullRestoreInfo::GetInstance()->SetRestorePref(
         user->GetAccountId(), CanPerformRestore(profile_->GetPrefs()));
   }
+}
+
+bool FullRestoreService::ShouldShowNotification() {
+  return app_launch_handler_->HasRestoreData() &&
+         !::first_run::IsChromeFirstRun();
 }
 
 ScopedRestoreForTesting::ScopedRestoreForTesting() {

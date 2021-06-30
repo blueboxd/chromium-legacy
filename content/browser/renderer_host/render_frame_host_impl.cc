@@ -83,7 +83,6 @@
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/log_console_message.h"
 #include "content/browser/manifest/manifest_manager_host.h"
-#include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/net/cross_origin_embedder_policy_reporter.h"
@@ -1727,6 +1726,11 @@ void RenderFrameHostImpl::DisableBackForwardCache(
     BackForwardCache::DisabledReason reason) {
   back_forward_cache_disabled_reasons_.insert(reason);
   MaybeEvictFromBackForwardCache();
+}
+
+void RenderFrameHostImpl::ClearDisableBackForwardCache(
+    BackForwardCache::DisabledReason reason) {
+  back_forward_cache_disabled_reasons_.erase(reason);
 }
 
 void RenderFrameHostImpl::DisableProactiveBrowsingInstanceSwapForTesting() {
@@ -8701,10 +8705,8 @@ void RenderFrameHostImpl::ActivateForPrerendering() {
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(
     mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
-  if (!media_interface_proxy_) {
-    media_interface_proxy_ = std::make_unique<MediaInterfaceProxy>(this);
-  }
-  media_interface_proxy_->Bind(std::move(receiver));
+  MediaInterfaceProxy::GetOrCreateForCurrentDocument(this)->Bind(
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindMediaMetricsProviderReceiver(
@@ -10794,10 +10796,11 @@ bool CalculateShouldReplaceCurrentEntry(
   // -- Now we have all the information we need to determine the final value of
   // should_replace_current_entry.
   if (same_document_params) {
-    // If this is a history API navigation (pushState, replaceState), the
-    // NavigationRequest will be constructed at commit time, so the value from
-    // CommonNavigationParams must be correct.
-    if (same_document_params->is_history_api_navigation) {
+    // If this is a synchronous renderer commit (a same-document navigation
+    // initiated by a same-process frame), the NavigationRequest will be
+    // constructed at commit time, so the value from  CommonNavigationParams
+    // must be correct.
+    if (request->is_synchronous_renderer_commit()) {
       return result;
     }
     // DocumentLoader::UpdateForSameDocumentNavigation() sets the "replace" bit
@@ -10807,9 +10810,13 @@ bool CalculateShouldReplaceCurrentEntry(
     // - We know if it's classified as kBackForward through
     // |will_be_classified_as_back_forward_navigation|
     // - Same-URL navigations will be converted into kReplaceCurrentItem in
-    // DocumentLoader::CommitSameDocumentNavigationInternal().
+    // DocumentLoader::CommitSameDocumentNavigation() if renderer-initiated and
+    // not triggered by a cross-origin window.
+    bool is_same_origin_request =
+        request->GetInitiatorOrigin() &&
+        request->GetInitiatorOrigin()->IsSameOriginWith(node->current_origin());
     result |= (will_be_classified_as_back_forward_navigation ||
-               previous_url == original_url);
+               (previous_url == original_url && is_same_origin_request));
   } else {
     if (is_error_page) {
       // For error page commits: reloads, history, and same-url navigations will

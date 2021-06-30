@@ -8318,6 +8318,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="IPH_TabGroupsYourTabsTogether"
       label="In product help for tab switcher cards with multiple tab
              thumbnails."/>
+  <suffix name="IPH_TabSearch"
+      label="In product help for tab search discovery."/>
   <suffix name="IPH_TabSwitcherButton"
       label="In product help for tab swticher button."/>
   <suffix name="IPH_TranslateMenuButton"
@@ -11736,6 +11738,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="NewTab" label="NTP loaded on a new tab."/>
   <suffix name="Startup" label="NTP loaded during browser startup."/>
   <suffix name="Web" label="Loaded server-side NTP."/>
+  <suffix name="WebUI3PNTP" label="Loaded 3P WebUI NTP."/>
   <suffix name="WebUINTP" label="Loaded WebUI NTP."/>
   <affected-histogram name="NewTabPage.LoadTime"/>
   <affected-histogram name="NewTabPage.TilesReceivedTime">

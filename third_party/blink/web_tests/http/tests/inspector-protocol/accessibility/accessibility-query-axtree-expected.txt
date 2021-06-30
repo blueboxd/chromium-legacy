@@ -176,6 +176,8 @@ node32
 node33
 node34
 find all ignored nodes with role "presentation"
+find all nodes with role "banner" (expected: 1 node)
+header
 
 Running test: testGetNodesForSubtreeByAccessibleNameAndRole
 find all elements with accessible name "foo" and role "button"
@@ -193,4 +195,8 @@ find all elements with accessible name "Accessible Name" and role "textbox"
 node23
 find all elements with accessible name "Accessible Name" and role "button"
 node21
+
+Running test: testGetNodesForShadowRoot
+find all elements with accessible name "Shadow input" (expected: 1 node)
+shadow-input
 

@@ -1,0 +1,167 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/lacros/browser_service_lacros.h"
+
+#include "base/check.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/logging.h"
+#include "base/metrics/statistics_recorder.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "chrome/browser/feedback/feedback_dialog_utils.h"
+#include "chrome/browser/lacros/feedback_util.h"
+#include "chrome/browser/lacros/system_logs/lacros_system_log_fetcher.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/channel_info.h"
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "components/feedback/feedback_report.h"
+#include "components/feedback/feedback_util.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
+#include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+
+namespace {
+
+constexpr char kHistogramsFilename[] = "lacros_histograms.txt";
+
+std::string GetCompressedHistograms() {
+  std::string histograms =
+      base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL);
+  std::string compressed_histograms;
+  if (feedback_util::ZipString(base::FilePath(kHistogramsFilename),
+                               std::move(histograms), &compressed_histograms)) {
+    return compressed_histograms;
+  } else {
+    LOG(ERROR) << "Failed to compress lacros histograms.";
+    return std::string();
+  }
+}
+
+}  // namespace
+
+BrowserServiceLacros::BrowserServiceLacros() = default;
+
+BrowserServiceLacros::~BrowserServiceLacros() = default;
+
+void BrowserServiceLacros::REMOVED_0(REMOVED_0Callback callback) {
+  NOTIMPLEMENTED();
+}
+
+void BrowserServiceLacros::REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) {
+  NOTIMPLEMENTED();
+}
+
+void BrowserServiceLacros::NewWindow(bool incognito,
+                                     NewWindowCallback callback) {
+  // TODO(crbug.com/1102815): Find what profile should be used.
+  Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  DCHECK(profile) << "No last used profile is found.";
+  chrome::NewEmptyWindow(
+      incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+                : profile);
+  std::move(callback).Run();
+}
+
+void BrowserServiceLacros::NewTab(NewTabCallback callback) {
+  // TODO(crbug.com/1102815): Find what profile should be used.
+  Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  DCHECK(profile) << "No last used profile is found.";
+  Browser* browser = chrome::FindBrowserWithProfile(profile);
+  DCHECK(browser) << "No browser is found.";
+  chrome::NewTab(browser);
+  std::move(callback).Run();
+}
+
+void BrowserServiceLacros::RestoreTab(RestoreTabCallback callback) {
+  // TODO(crbug.com/1102815): Find what profile should be used.
+  Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  DCHECK(profile) << "No last used profile is found.";
+  Browser* browser = chrome::FindBrowserWithProfile(profile);
+  DCHECK(browser) << "No browser is found.";
+  chrome::RestoreTab(browser);
+  std::move(callback).Run();
+}
+
+void BrowserServiceLacros::GetFeedbackData(GetFeedbackDataCallback callback) {
+  DCHECK(!callback.is_null());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Self-deleting object.
+  system_logs::SystemLogsFetcher* fetcher =
+      system_logs::BuildLacrosSystemLogsFetcher(/*scrub_data=*/true);
+  fetcher->Fetch(base::BindOnce(&BrowserServiceLacros::OnSystemInformationReady,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::move(callback)));
+}
+
+void BrowserServiceLacros::GetHistograms(GetHistogramsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // GetCompressedHistograms calls functions marking as blocking, so it
+  // can not be running on UI thread.
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(GetCompressedHistograms),
+      base::BindOnce(&BrowserServiceLacros::OnGetCompressedHistograms,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void BrowserServiceLacros::GetActiveTabUrl(GetActiveTabUrlCallback callback) {
+  Browser* browser = chrome::FindBrowserWithActiveWindow();
+  GURL page_url;
+  if (browser) {
+    page_url = chrome::GetTargetTabUrl(
+        browser->session_id(), browser->tab_strip_model()->active_index());
+  }
+  std::move(callback).Run(page_url);
+}
+
+void BrowserServiceLacros::UpdateDeviceAccountPolicy(
+    const std::vector<uint8_t>& policy) {
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void BrowserServiceLacros::OnSystemInformationReady(
+    GetFeedbackDataCallback callback,
+    std::unique_ptr<system_logs::SystemLogsResponse> sys_info) {
+  base::Value system_log_entries(base::Value::Type::DICTIONARY);
+  if (sys_info) {
+    std::string user_email = feedback_util::GetSignedInUserEmail();
+    const bool google_email = gaia::IsGoogleInternalAccountEmail(user_email);
+
+    for (auto& it : *sys_info) {
+      // TODO(crbug.com/1138703): This code is duplicated with the logic in
+      // feedback_private_api.cc, refactor to remove the duplicated code.
+      // We only send the list of all the crash report IDs if the user has a
+      // @google.com email. We strip this here so that the system information
+      // view properly reflects what we will be uploading to the server. It is
+      // also stripped later on in the feedback processing for other code paths
+      // that don't go through this.
+      if (it.first == feedback::FeedbackReport::kAllCrashReportIdsKey &&
+          !google_email) {
+        continue;
+      }
+
+      system_log_entries.SetStringKey(std::move(it.first),
+                                      std::move(it.second));
+    }
+  }
+
+  DCHECK(!callback.is_null());
+  std::move(callback).Run(std::move(system_log_entries));
+}
+
+void BrowserServiceLacros::OnGetCompressedHistograms(
+    GetHistogramsCallback callback,
+    const std::string& compressed_histograms) {
+  DCHECK(!callback.is_null());
+  std::move(callback).Run(compressed_histograms);
+}

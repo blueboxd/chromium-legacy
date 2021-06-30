@@ -116,7 +116,7 @@
 #include "components/policy/core/common/features.h"
 #include "components/query_tiles/switches.h"
 #include "components/reading_list/features/reading_list_switches.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/search/ntp_features.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/features.h"
@@ -7008,12 +7008,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          features::kClearCrossSiteCrossBrowsingContextGroupWindowName)},
-
-    {"sync-compromised-credentials",
-     flag_descriptions::kSyncingCompromisedCredentialsName,
-     flag_descriptions::kSyncingCompromisedCredentialsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kSyncingCompromisedCredentials)},
 
     {"autofill-enable-offer-notification",
      flag_descriptions::kAutofillEnableOfferNotificationName,

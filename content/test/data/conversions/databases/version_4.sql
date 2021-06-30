@@ -31,9 +31,9 @@ CREATE INDEX rate_limit_conversion_time_idx ON rate_limits(conversion_time);
 CREATE INDEX rate_limit_impression_id_idx ON rate_limits(impression_id);
 
 -- Add some conversions to test 0-credit deletion in version 5.
-INSERT INTO conversions (conversion_data, conversion_time, report_time, attribution_credit) VALUES
-  ("a", 2, 3, 5),
-  ("b", 7, 11, 0),
-  ("c", 13, 17, 19);
+INSERT INTO conversions (conversion_id, conversion_data, conversion_time, report_time, attribution_credit) VALUES
+  (1, "a", 2, 3, 5),
+  (2, "b", 7, 11, 0),
+  (3, "c", 13, 17, 19);
 
 COMMIT;

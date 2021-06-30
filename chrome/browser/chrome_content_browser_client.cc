@@ -271,8 +271,8 @@
 #include "components/safe_browsing/core/browser/realtime/policy_engine.h"
 #include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/insecure_form_navigation_throttle.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
@@ -621,6 +621,7 @@
 #if BUILDFLAG(ENABLE_PDF)
 #include "chrome/browser/pdf/chrome_pdf_stream_delegate.h"
 #include "components/pdf/browser/pdf_navigation_throttle.h"
+#include "components/pdf/common/internal_plugin_helpers.h"
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -5648,6 +5649,10 @@ ChromeContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
   auto map = PluginUtils::GetMimeTypeToExtensionIdMap(browser_context);
   for (const auto& pair : map)
     mime_types.insert(pair.first);
+#endif
+#if BUILDFLAG(ENABLE_PDF)
+  if (pdf::IsInternalPluginExternallyHandled())
+    mime_types.insert(pdf::kInternalPluginMimeType);
 #endif
   return mime_types;
 }

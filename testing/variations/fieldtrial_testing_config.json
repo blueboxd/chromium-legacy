@@ -2191,25 +2191,6 @@
             ]
         }
     ],
-    "ContentSettingsRedesign": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ContentSettingsRedesign"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextMenuGoogleLensChip": [
         {
             "platforms": [
@@ -3658,25 +3639,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FixUmaCellularMetricsRecording"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ForceAccountIdMigration": [
-        {
-            "platforms": [
-                "android",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ForceAccountIdMigration"
                     ]
                 }
             ]

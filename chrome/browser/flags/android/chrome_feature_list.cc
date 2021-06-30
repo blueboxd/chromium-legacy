@@ -44,7 +44,7 @@
 #include "components/permissions/features.h"
 #include "components/query_tiles/switches.h"
 #include "components/reading_list/features/reading_list_switches.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
@@ -81,6 +81,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableGoogleIssuedCard,
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
+    &autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
+    &autofill::features::kAutofillEnableSupportForMoreStructureInNames,
     &autofill_assistant::features::kAutofillAssistant,
     &autofill_assistant::features::kAutofillAssistantChromeEntry,
     &autofill_assistant::features::kAutofillAssistantDirectActions,

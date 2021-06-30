@@ -1384,7 +1384,6 @@ static_library("browser") {
     "profiles/profile_info_cache.cc",
     "profiles/profile_info_cache.h",
     "profiles/profile_info_cache_observer.h",
-    "profiles/profile_info_interface.h",
     "profiles/profile_io_data.cc",
     "profiles/profile_io_data.h",
     "profiles/profile_keep_alive_types.cc",
@@ -2146,7 +2145,6 @@ static_library("browser") {
     "//components/safe_browsing/content/browser:safe_browsing_service",
     "//components/safe_browsing/content/browser/password_protection",
     "//components/safe_browsing/content/browser/web_ui",
-    "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/browser/db:database_manager",
     "//components/safe_browsing/core/browser/realtime:policy_engine",
@@ -4747,6 +4745,8 @@ static_library("browser") {
       "lacros/account_manager_util.h",
       "lacros/automation_manager_lacros.cc",
       "lacros/automation_manager_lacros.h",
+      "lacros/browser_service_lacros.cc",
+      "lacros/browser_service_lacros.h",
       "lacros/cert_db_initializer.h",
       "lacros/cert_db_initializer_factory.cc",
       "lacros/cert_db_initializer_factory.h",
@@ -4764,8 +4764,6 @@ static_library("browser") {
       "lacros/feedback_util.h",
       "lacros/immersive_context_lacros.cc",
       "lacros/immersive_context_lacros.h",
-      "lacros/lacros_chrome_service_delegate_impl.cc",
-      "lacros/lacros_chrome_service_delegate_impl.h",
       "lacros/lacros_memory_pressure_evaluator.cc",
       "lacros/lacros_memory_pressure_evaluator.h",
       "lacros/lacros_prefs.cc",
@@ -6231,6 +6229,7 @@ static_library("browser") {
     ]
     deps += [
       "//components/pdf/browser:interceptors",
+      "//components/pdf/common",
       "//pdf:buildflags",
       "//pdf:features",
     ]

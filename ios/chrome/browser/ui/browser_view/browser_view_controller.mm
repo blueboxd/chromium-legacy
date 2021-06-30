@@ -5233,11 +5233,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.dispatcher showAccountsSettingsFromViewController:self];
 }
 
-- (void)onShowConsistencyPromo:(const GURL&)url {
+- (void)onShowConsistencyPromo:(const GURL&)url
+                      webState:(web::WebState*)webState {
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       ios::AccountReconcilorFactory::GetForBrowserState(self.browserState)
           ->GetState());
-  [self.dispatcher showConsistencyPromoFromViewController:self URL:url];
+  if (self.currentWebState == webState)
+    [self.dispatcher showConsistencyPromoFromViewController:self URL:url];
 }
 
 - (void)onAddAccount {
@@ -5300,11 +5302,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.dispatcher showAccountsSettingsFromViewController:self];
 }
 
-- (void)showTrustedVaultReauthenticationWithRetrievalTrigger:
-    (syncer::KeyRetrievalTriggerForUMA)retrievalTrigger {
+- (void)showTrustedVaultReauthForFetchKeysWithTrigger:
+    (syncer::KeyRetrievalTriggerForUMA)trigger {
   [self.dispatcher
-      showTrustedVaultReauthenticationFromViewController:self
-                                        retrievalTrigger:retrievalTrigger];
+      showTrustedVaultReauthForFetchKeysFromViewController:self
+                                                   trigger:trigger];
+}
+
+- (void)showTrustedVaultReauthForDegradedRecoverabilityWithTrigger:
+    (syncer::KeyRetrievalTriggerForUMA)trigger {
+  [self.dispatcher
+      showTrustedVaultReauthForDegradedRecoverabilityFromViewController:self
+                                                                trigger:
+                                                                    trigger];
 }
 
 #pragma mark - NewTabPageTabHelperDelegate

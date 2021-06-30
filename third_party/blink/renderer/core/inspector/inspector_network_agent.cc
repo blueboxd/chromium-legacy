@@ -1132,6 +1132,11 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   Maybe<String> maybe_frame_id;
   if (!frame_id.IsEmpty())
     maybe_frame_id = frame_id;
+  if (loader && loader->GetFrame() && loader->GetFrame()->GetDocument()) {
+    request_info->setIsSameSite(
+        loader->GetFrame()->GetDocument()->SiteForCookies().IsFirstParty(
+            request.Url()));
+  }
   GetFrontend()->requestWillBeSent(
       request_id, loader_id, documentURL, std::move(request_info),
       timestamp.since_origin().InSecondsF(), base::Time::Now().ToDoubleT(),
@@ -1615,11 +1620,13 @@ InspectorNetworkAgent::BuildInitiatorObject(
       .build();
 }
 
-void InspectorNetworkAgent::DidCreateWebSocket(
+void InspectorNetworkAgent::WillCreateWebSocket(
     ExecutionContext* execution_context,
     uint64_t identifier,
     const KURL& request_url,
-    const String&) {
+    const String&,
+    absl::optional<base::UnguessableToken>* devtools_token) {
+  *devtools_token = devtools_token_;
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
           SourceLocation::Capture(execution_context)->BuildInspectorObject();

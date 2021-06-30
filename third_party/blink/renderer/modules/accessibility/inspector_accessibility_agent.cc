@@ -957,6 +957,15 @@ Response InspectorAccessibilityAgent::queryAXTree(
                                              object_id, root_dom_node);
   if (!response.IsSuccess())
     return response;
+
+  // Shadow roots are missing from a11y tree.
+  // We start searching the host element instead as a11y tree does not
+  // care about shadow roots.
+  if (root_dom_node->IsShadowRoot()) {
+    root_dom_node = root_dom_node->OwnerShadowHost();
+  }
+  if (!root_dom_node)
+    return Response::InvalidParams("Root DOM node could not be found");
   Document& document = root_dom_node->GetDocument();
 
   document.UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
@@ -968,13 +977,11 @@ Response InspectorAccessibilityAgent::queryAXTree(
   auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
   AXObject* root_ax_node = cache.GetOrCreate(root_dom_node);
 
-  auto sought_role = ax::mojom::blink::Role::kUnknown;
-  if (role.isJust())
-    sought_role = AXObject::AriaRoleStringToRoleEnum(role.fromJust());
   const String sought_name = accessible_name.fromMaybe("");
 
   HeapVector<Member<AXObject>> reachable;
-  reachable.push_back(root_ax_node);
+  if (root_ax_node)
+    reachable.push_back(root_ax_node);
 
   while (!reachable.IsEmpty()) {
     AXObject* ax_object = reachable.back();
@@ -986,11 +993,14 @@ Response InspectorAccessibilityAgent::queryAXTree(
     // if querying by name: skip if name of current object does not match.
     if (accessible_name.isJust() && sought_name != ax_object->ComputedName())
       continue;
-    // if querying by role: skip if role of current object does not match.
-    if (role.isJust() && sought_role != ax_object->RoleValue())
-      continue;
-    // both name and role are OK, so we can add current object to the result.
 
+    // if querying by role: skip if role of current object does not match.
+    if (role.isJust() &&
+        role.fromJust() != AXObject::RoleName(ax_object->RoleValue())) {
+      continue;
+    }
+
+    // both name and role are OK, so we can add current object to the result.
     if (ax_object->AccessibilityIsIgnored()) {
       Node* dom_node = ax_object->GetNode();
       std::unique_ptr<AXNode> protocol_node =

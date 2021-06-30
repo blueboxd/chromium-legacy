@@ -6836,7 +6836,6 @@ others/histograms.xml -->
   <int value="196619" label="kEmbedder-kModalDialog"/>
   <int value="196620" label="kEmbedder-kExtensions"/>
   <int value="196621" label="kEmbedder-kExtensionMessaging"/>
-  <int value="196622" label="kEmbedder-kExtensionMessagingForOpenPort"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReasonShort">
@@ -64227,6 +64226,11 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="PowerMLSmartDimWebPageInfoSource">
+  <int value="0" label="Ash">Web page info comes from ash chrome.</int>
+  <int value="1" label="Lacros">Web page info comes from lacros chrome.</int>
+</enum>
+
 <enum name="PowerMode">
   <int value="0" label="kIdle"/>
   <int value="1" label="kAudible"/>
@@ -71259,6 +71263,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="22" label="Billing"/>
   <int value="23" label="Apk download"/>
   <int value="24" label="High confidence allowlist"/>
+  <int value="25" label="Accuracy Tips"/>
 </enum>
 
 <enum name="ScanAppEntryPoint">

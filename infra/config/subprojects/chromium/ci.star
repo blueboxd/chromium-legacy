@@ -2157,6 +2157,7 @@ ci.clang_builder(
         category = "ToT Code Coverage",
         short_name = "and",
     ),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.clang_builder(
@@ -4345,7 +4346,6 @@ ci.fyi_mac_builder(
 
 ci.fyi_mac_builder(
     name = "mac-arm64-on-arm64-rel",
-    builderless = True,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "a64",
@@ -5572,6 +5572,7 @@ ci.linux_builder(
 ci.infra_builder(
     name = "linux-component-rel",
     console_view_entry = consoles.console_view_entry(
+        category = "link experiments",
         short_name = "comp",
     ),
     builderless = False,
@@ -5580,6 +5581,7 @@ ci.infra_builder(
 ci.infra_builder(
     name = "linux-control-rel",
     console_view_entry = consoles.console_view_entry(
+        category = "link experiments",
         short_name = "cntrl",
     ),
     builderless = False,
@@ -5603,13 +5605,13 @@ ci.infra_builder(
         category = "bootstrap",
         short_name = "tst",
     ),
-    triggered_by = ["linux-bootstrap"],
+    triggered_by = ["ci/linux-bootstrap"],
 )
 
 ci.infra_builder(
     name = "linux-local-ssd-nvme-rel",
     console_view_entry = consoles.console_view_entry(
-        category = "local|ssd",
+        category = "link experiments|disk|ssd|local",
         short_name = "nvme",
     ),
     builderless = False,
@@ -5618,7 +5620,7 @@ ci.infra_builder(
 ci.infra_builder(
     name = "linux-local-ssd-scsi-rel",
     console_view_entry = consoles.console_view_entry(
-        category = "local|ssd",
+        category = "link experiments|disk|ssd|local",
         short_name = "scsi",
     ),
     builderless = False,
@@ -5627,7 +5629,7 @@ ci.infra_builder(
 ci.infra_builder(
     name = "linux-pd-ssd-rel",
     console_view_entry = consoles.console_view_entry(
-        category = "persistent|ssd",
+        category = "link experiments|disk|ssd",
         short_name = "pd",
     ),
     builderless = False,

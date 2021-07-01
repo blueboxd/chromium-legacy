@@ -11,6 +11,7 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
@@ -425,7 +426,7 @@ void HoldingSpaceItemChipView::UpdateImage() {
 
 void HoldingSpaceItemChipView::UpdateImageTransform() {
   gfx::Transform transform;
-  if (item()->IsInProgress() && !image_->bounds().IsEmpty()) {
+  if (!item()->progress().IsComplete() && !image_->bounds().IsEmpty()) {
     transform = gfx::GetScaleTransform(image_->bounds().CenterPoint(),
                                        kInProgressImageScaleFactor);
   }
@@ -439,8 +440,9 @@ void HoldingSpaceItemChipView::UpdateImageTransform() {
 }
 
 void HoldingSpaceItemChipView::UpdateLabels() {
-  const bool multiselect = delegate()->selection_ui() ==
-                           HoldingSpaceViewDelegate::SelectionUi::kMultiSelect;
+  const bool multiselect =
+      delegate() && delegate()->selection_ui() ==
+                        HoldingSpaceViewDelegate::SelectionUi::kMultiSelect;
 
   // Primary.
   primary_label_->SetText(item()->GetText());
@@ -462,8 +464,9 @@ void HoldingSpaceItemChipView::UpdateLabels() {
 }
 
 void HoldingSpaceItemChipView::UpdateSecondaryAction() {
-  const bool has_secondary_action =
-      !checkmark()->GetVisible() && item()->IsInProgress() && IsMouseHovered();
+  const bool has_secondary_action = !checkmark()->GetVisible() &&
+                                    !item()->progress().IsComplete() &&
+                                    IsMouseHovered();
 
   if (!has_secondary_action) {
     image_->SetVisible(!checkmark()->GetVisible());

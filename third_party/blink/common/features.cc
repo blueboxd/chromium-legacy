@@ -953,9 +953,6 @@ const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList{
         &kBackgroundTracingPerformanceMark, "allow_list", ""};
 
-const base::Feature kCLSM90Improvements{"CLSM90Improvements",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // New compositing algorithm. See renderer/core/paint/README.md.
 const base::Feature kCompositeAfterPaint{"CompositeAfterPaint",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1025,5 +1022,11 @@ const base::Feature kUsePageViewportInLCP{"UsePageViewportInLCP",
 // default
 const base::Feature kUACHPlatformEnabledByDefault{
     "UACHPlatformEnabledByDefault", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, allow dropping alpha on media streams for rendering sinks if
+// other sinks connected do not use alpha.
+const base::Feature kAllowDropAlphaForMediaStream{
+    "AllowDropAlphaForMediaStream", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

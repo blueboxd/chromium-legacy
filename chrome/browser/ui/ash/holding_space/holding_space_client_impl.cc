@@ -9,6 +9,7 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
+#include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/notreached.h"
@@ -170,7 +171,18 @@ void HoldingSpaceClientImpl::OpenItems(
                                                        item->file_path());
       *complete_success_ptr = false;
       barrier_closure.Run();
-      return;
+      continue;
+    }
+    if (!item->progress().IsComplete()) {
+      const bool success =
+          GetHoldingSpaceKeyedService(profile_)->OpenItemWhenComplete(item);
+      if (!success) {
+        holding_space_metrics::RecordItemFailureToLaunch(item->type(),
+                                                         item->file_path());
+      }
+      *complete_success_ptr &= success;
+      barrier_closure.Run();
+      continue;
     }
     GetFileInfo(
         profile_, item->file_path(),
@@ -259,7 +271,7 @@ void HoldingSpaceClientImpl::PinItems(
   // NOTE: In-progress holding space items are neither pin- nor unpin-able.
   HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const HoldingSpaceItem* item : items) {
-    if (item->IsInProgress())
+    if (!item->progress().IsComplete())
       continue;
     const storage::FileSystemURL& file_system_url =
         file_manager::util::GetFileManagerFileSystemContext(profile_)->CrackURL(
@@ -307,7 +319,7 @@ void HoldingSpaceClientImpl::UnpinItems(
   // NOTE: In-progress holding space items are neither pin- nor unpin-able.
   HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const HoldingSpaceItem* item : items) {
-    if (item->IsInProgress())
+    if (!item->progress().IsComplete())
       continue;
     const storage::FileSystemURL& file_system_url =
         file_manager::util::GetFileManagerFileSystemContext(profile_)->CrackURL(

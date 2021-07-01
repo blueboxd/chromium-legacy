@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/containers/cxx20_erase.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -76,26 +78,39 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload
   // invoked in direct response to an explicit user action.
   void Resume() { download_item_->Resume(/*from_user=*/true); }
 
+  // Marks the underlying `download_item_` to be opened when complete.
+  void OpenWhenComplete() { download_item_->SetOpenWhenComplete(true); }
+
+  // Returns the number of bytes received for the underlying `download_item_`.
+  int64_t GetReceivedBytes() const {
+    return download_item_->GetReceivedBytes();
+  }
+
   // Returns the file path associated with the underlying `download_item_`.
   // NOTE: The file path may be empty before a target file path has been picked.
   const base::FilePath& GetFilePath() const {
     return download_item_->GetFullPath();
   }
 
-  // Returns the current progress of the underlying `download_item_`.
-  // NOTE: If present, the progress is >= `0.f` and <= `1.f`. If absent, the
-  // progress is indeterminate.
-  absl::optional<float> GetProgress() const {
-    if (IsComplete(download_item_))
-      return 1.f;
+  // Returns the target file path associated with the underlying
+  // `download_item_`. NOTE: The target file path may be empty before a target
+  // file path has been picked.
+  const base::FilePath& GetTargetFilePath() const {
+    return download_item_->GetTargetFilePath();
+  }
 
-    absl::optional<float> progress;
-    if (download_item_->PercentComplete() >= 0) {
-      DCHECK_GE(download_item_->PercentComplete(), 0);
-      DCHECK_LE(download_item_->PercentComplete(), 100);
-      progress = download_item_->PercentComplete() / 100.f;
-    }
-    return progress;
+  // Returns the current progress of the underlying `download_item_`.
+  HoldingSpaceProgress GetProgress() const {
+    if (IsComplete(download_item_))
+      return HoldingSpaceProgress();
+    return HoldingSpaceProgress(GetReceivedBytes(), GetTotalBytes());
+  }
+
+  // Returns the number of total bytes for the underlying `download_item`.
+  // NOTE: The total number of bytes will be absent if unknown.
+  absl::optional<int64_t> GetTotalBytes() const {
+    const int64_t total_bytes = download_item_->GetTotalBytes();
+    return total_bytes >= 0 ? absl::make_optional(total_bytes) : absl::nullopt;
   }
 
   // Returns whether the underlying `download_item_` is paused.
@@ -115,6 +130,26 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload
     return holding_space_item_;
   }
 
+  // Returns a placeholder resolver which creates a placeholder corresponding
+  // to the file type of the associated *target* file path, rather than the
+  // *backing* file path, when a thumbnail cannot be generated.
+  HoldingSpaceImage::PlaceholderImageSkiaResolver
+  GetPlaceholderImageSkiaResolver() const {
+    return base::BindRepeating(
+        [](const base::WeakPtr<InProgressDownload>& in_progress_download,
+           const base::FilePath& file_path, const gfx::Size& size,
+           const absl::optional<bool>& dark_background,
+           const absl::optional<bool>& is_folder) {
+          return HoldingSpaceImage::CreateDefaultPlaceholderImageSkiaResolver()
+              .Run(in_progress_download &&
+                           IsInProgress(in_progress_download->download_item_)
+                       ? in_progress_download->GetTargetFilePath()
+                       : file_path,
+                   size, dark_background, is_folder);
+        },
+        weak_factory_.GetWeakPtr());
+  }
+
   // Returns the text to display for the underlying `download_item`.
   absl::optional<std::u16string> GetText() const {
     // Only in-progress download items override primary text. In other cases,
@@ -131,19 +166,27 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload
     if (!IsInProgress(download_item_))
       return absl::nullopt;
 
-    const int64_t received_bytes = download_item_->GetReceivedBytes();
-    const int64_t total_bytes = download_item_->GetTotalBytes();
+    // In-progress download items which are marked to be opened when complete
+    // have a special secondary text treatment.
+    if (download_item_->GetOpenWhenComplete()) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_OPEN_WHEN_COMPLETE);
+    }
+
+    const int64_t received_bytes = GetReceivedBytes();
+    const absl::optional<int64_t> total_bytes = GetTotalBytes();
 
     std::u16string secondary_text;
-    if (total_bytes != -1) {
+    if (total_bytes.has_value()) {
       // If `total_bytes` is known, `secondary_text` will be something of the
       // form "10/100 MB", where the first number is the number of received
       // bytes and the second number is the total number of bytes expected.
-      const ui::DataUnits units = ui::GetByteDisplayUnits(total_bytes);
+      const ui::DataUnits units = ui::GetByteDisplayUnits(total_bytes.value());
       secondary_text = l10n_util::GetStringFUTF16(
           IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_SIZE_INFO,
           ui::FormatBytesWithUnits(received_bytes, units, /*show_units=*/false),
-          ui::FormatBytesWithUnits(total_bytes, units, /*show_units=*/true));
+          ui::FormatBytesWithUnits(total_bytes.value(), units,
+                                   /*show_units=*/true));
     } else {
       // If `total_bytes` is not known, `secondary_text` will be something of
       // the form "10 MB", indicating only the number of received bytes.
@@ -201,6 +244,8 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload
   base::ScopedObservation<download::DownloadItem,
                           download::DownloadItem::Observer>
       download_item_observation_{this};
+
+  base::WeakPtrFactory<InProgressDownload> weak_factory_{this};
 };
 
 // HoldingSpaceDownloadsDelegate -----------------------------------------------
@@ -257,6 +302,19 @@ void HoldingSpaceDownloadsDelegate::Resume(const HoldingSpaceItem* item) {
       return;
     }
   }
+}
+
+// TODO(crbug.com/1184438): Handle Lacros downloads.
+bool HoldingSpaceDownloadsDelegate::OpenWhenComplete(
+    const HoldingSpaceItem* item) {
+  DCHECK(HoldingSpaceItem::IsDownload(item->type()));
+  for (const auto& in_progress_download : in_progress_downloads_) {
+    if (in_progress_download->GetHoldingSpaceItem() == item) {
+      in_progress_download->OpenWhenComplete();
+      return true;
+    }
+  }
+  return false;
 }
 
 void HoldingSpaceDownloadsDelegate::Init() {
@@ -423,9 +481,10 @@ void HoldingSpaceDownloadsDelegate::CreateOrUpdateHoldingSpaceItem(
 
   // Create.
   if (!item) {
-    service()->AddDownload(HoldingSpaceItem::Type::kDownload,
-                           in_progress_download->GetFilePath(),
-                           in_progress_download->GetProgress());
+    service()->AddDownload(
+        HoldingSpaceItem::Type::kDownload, in_progress_download->GetFilePath(),
+        in_progress_download->GetProgress(),
+        in_progress_download->GetPlaceholderImageSkiaResolver());
     in_progress_download->SetHoldingSpaceItem(
         item = model()->GetItem(HoldingSpaceItem::Type::kDownload,
                                 in_progress_download->GetFilePath()));

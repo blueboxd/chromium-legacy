@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 
 #include "base/callback_helpers.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -621,8 +622,15 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MediaDialogViewBrowserTest);
 };
 
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222873
+#define MAYBE_ShowsMetadataAndControlsMedia \
+  DISABLED_ShowsMetadataAndControlsMedia
+#else
+#define MAYBE_ShowsMetadataAndControlsMedia ShowsMetadataAndControlsMedia
+#endif
 IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
-                       ShowsMetadataAndControlsMedia) {
+                       MAYBE_ShowsMetadataAndControlsMedia) {
   // The toolbar icon should not start visible.
   EXPECT_FALSE(IsToolbarIconVisible());
 
@@ -670,8 +678,16 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   EXPECT_FALSE(IsDialogVisible());
 }
 
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222873
+#define MAYBE_ShowsMetadataAndControlsMediaInRTL \
+  DISABLED_ShowsMetadataAndControlsMediaInRTL
+#else
+#define MAYBE_ShowsMetadataAndControlsMediaInRTL \
+  ShowsMetadataAndControlsMediaInRTL
+#endif
 IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
-                       ShowsMetadataAndControlsMediaInRTL) {
+                       MAYBE_ShowsMetadataAndControlsMediaInRTL) {
   base::i18n::SetICUDefaultLocale("ar");
   ASSERT_TRUE(base::i18n::IsRTL());
 

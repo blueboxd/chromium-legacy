@@ -7,11 +7,11 @@
 #include <set>
 
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
-#include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "base/callback_helpers.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
@@ -236,9 +236,11 @@ void HoldingSpaceKeyedService::AddDiagnosticsLog(
 void HoldingSpaceKeyedService::AddDownload(
     HoldingSpaceItem::Type type,
     const base::FilePath& download_file,
-    const absl::optional<float>& progress) {
+    const HoldingSpaceProgress& progress,
+    HoldingSpaceImage::PlaceholderImageSkiaResolver
+        placeholder_image_skia_resolver) {
   DCHECK(HoldingSpaceItem::IsDownload(type));
-  AddItemOfType(type, download_file, progress);
+  AddItemOfType(type, download_file, progress, placeholder_image_skia_resolver);
 }
 
 void HoldingSpaceKeyedService::AddNearbyShare(
@@ -289,7 +291,9 @@ void HoldingSpaceKeyedService::AddItems(
 void HoldingSpaceKeyedService::AddItemOfType(
     HoldingSpaceItem::Type type,
     const base::FilePath& file_path,
-    const absl::optional<float>& progress) {
+    const HoldingSpaceProgress& progress,
+    HoldingSpaceImage::PlaceholderImageSkiaResolver
+        placeholder_image_skia_resolver) {
   const GURL file_system_url =
       holding_space_util::ResolveFileSystemUrl(profile_, file_path);
   if (file_system_url.is_empty())
@@ -297,7 +301,9 @@ void HoldingSpaceKeyedService::AddItemOfType(
 
   AddItem(HoldingSpaceItem::CreateFileBackedItem(
       type, file_path, file_system_url, progress,
-      base::BindOnce(&holding_space_util::ResolveImage, &thumbnail_loader_)));
+      base::BindOnce(
+          &holding_space_util::ResolveImageWithPlaceholderImageSkiaResolver,
+          &thumbnail_loader_, placeholder_image_skia_resolver)));
 }
 
 void HoldingSpaceKeyedService::CancelItem(const HoldingSpaceItem* item) {
@@ -316,6 +322,14 @@ void HoldingSpaceKeyedService::ResumeItem(const HoldingSpaceItem* item) {
   // Currently it is only possible to resume download type items.
   if (HoldingSpaceItem::IsDownload(item->type()) && downloads_delegate_)
     downloads_delegate_->Resume(item);
+}
+
+bool HoldingSpaceKeyedService::OpenItemWhenComplete(
+    const HoldingSpaceItem* item) {
+  // Currently it is only possible to open download type items when complete.
+  if (HoldingSpaceItem::IsDownload(item->type()) && downloads_delegate_)
+    return downloads_delegate_->OpenWhenComplete(item);
+  return false;
 }
 
 void HoldingSpaceKeyedService::Shutdown() {

@@ -360,10 +360,13 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
 class DriveFsEventRouterImpl : public DriveFsEventRouter {
  public:
   DriveFsEventRouterImpl(
+      SystemNotificationManager* notification_manager,
       Profile* profile,
       const std::map<base::FilePath, std::unique_ptr<FileWatcher>>*
           file_watchers)
-      : profile_(profile), file_watchers_(file_watchers) {}
+      : DriveFsEventRouter(notification_manager),
+        profile_(profile),
+        file_watchers_(file_watchers) {}
 
  private:
   std::set<GURL> GetEventListenerURLs(const std::string& event_name) override {
@@ -416,17 +419,22 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
       std::vector<base::Value> event_args) override {
+    std::unique_ptr<extensions::Event> event =
+        std::make_unique<extensions::Event>(histogram_value, event_name,
+                                            std::move(event_args));
+    system_notification_manager()->HandleEvent(*event.get());
     extensions::EventRouter::Get(profile_)->DispatchEventToExtension(
-        extension_id, std::make_unique<extensions::Event>(
-                          histogram_value, event_name, std::move(event_args)));
+        extension_id, std::move(event));
   }
 
   void BroadcastEvent(extensions::events::HistogramValue histogram_value,
                       const std::string& event_name,
                       std::vector<base::Value> event_args) override {
-    extensions::EventRouter::Get(profile_)->BroadcastEvent(
+    std::unique_ptr<extensions::Event> event =
         std::make_unique<extensions::Event>(histogram_value, event_name,
-                                            std::move(event_args)));
+                                            std::move(event_args));
+    system_notification_manager()->HandleEvent(*event.get());
+    extensions::EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
   }
 
   Profile* const profile_;
@@ -447,7 +455,9 @@ EventRouter::EventRouter(Profile* profile)
           std::make_unique<DeviceEventRouterImpl>(notification_manager_.get(),
                                                   profile)),
       drivefs_event_router_(
-          std::make_unique<DriveFsEventRouterImpl>(profile, &file_watchers_)),
+          std::make_unique<DriveFsEventRouterImpl>(notification_manager_.get(),
+                                                   profile,
+                                                   &file_watchers_)),
       dispatch_directory_change_event_impl_(
           base::BindRepeating(&EventRouter::DispatchDirectoryChangeEventImpl,
                               base::Unretained(this))) {
@@ -658,6 +668,7 @@ void EventRouter::OnCopyCompleted(int copy_id,
     status.error = std::make_unique<std::string>(FileErrorToErrorName(error));
   }
 
+  notification_manager_->HandleCopyEvent(copy_id, status);
   BroadcastEvent(profile_,
                  extensions::events::FILE_MANAGER_PRIVATE_ON_COPY_PROGRESS,
                  file_manager_private::OnCopyProgress::kEventName,
@@ -705,6 +716,7 @@ void EventRouter::OnCopyProgress(
   if (!ShouldSendProgressEvent(always, &last_copy_progress_event_))
     return;
 
+  notification_manager_->HandleCopyEvent(copy_id, status);
   BroadcastEvent(profile_,
                  extensions::events::FILE_MANAGER_PRIVATE_ON_COPY_PROGRESS,
                  file_manager_private::OnCopyProgress::kEventName,

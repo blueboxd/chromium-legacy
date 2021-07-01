@@ -8,7 +8,9 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
+#include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
@@ -90,10 +92,12 @@ class HoldingSpaceKeyedService : public crosapi::mojom::HoldingSpaceService,
   // Adds a download item of the specified `type` backed by the provided
   // absolute file path.
   // NOTE: `type` must refer to a download type.
-  // NOTE: If present, `progress` must be >= `0.f` and <= `1.f`.
-  void AddDownload(HoldingSpaceItem::Type type,
-                   const base::FilePath& download_path,
-                   const absl::optional<float>& progress = 1.f);
+  void AddDownload(
+      HoldingSpaceItem::Type type,
+      const base::FilePath& download_path,
+      const HoldingSpaceProgress& progress = HoldingSpaceProgress(),
+      HoldingSpaceImage::PlaceholderImageSkiaResolver
+          placeholder_image_skia_resolver = base::NullCallback());
 
   // Adds a nearby share item backed by the provided absolute file path.
   void AddNearbyShare(const base::FilePath& nearby_share_path);
@@ -115,15 +119,21 @@ class HoldingSpaceKeyedService : public crosapi::mojom::HoldingSpaceService,
 
   // Adds an item of the specified `type` backed by the provided absolute
   // `file_path` to the holding space model.
-  // NOTE: If present, `progress` must be >= `0.f` and <= `1.f`.
-  void AddItemOfType(HoldingSpaceItem::Type type,
-                     const base::FilePath& file_path,
-                     const absl::optional<float>& progress = 1.f);
+  void AddItemOfType(
+      HoldingSpaceItem::Type type,
+      const base::FilePath& file_path,
+      const HoldingSpaceProgress& progress = HoldingSpaceProgress(),
+      HoldingSpaceImage::PlaceholderImageSkiaResolver
+          placeholder_image_skia_resolver = base::NullCallback());
 
   // Attempts to cancel/pause/resume the specified holding space `item`.
   void CancelItem(const HoldingSpaceItem* item);
   void PauseItem(const HoldingSpaceItem* item);
   void ResumeItem(const HoldingSpaceItem* item);
+
+  // Attempts to mark the specified holding space `item` to be opened when
+  // complete, returning whether or not the attempt was successful.
+  bool OpenItemWhenComplete(const HoldingSpaceItem* item);
 
   // Returns the `profile_` associated with this service.
   Profile* profile() { return profile_; }

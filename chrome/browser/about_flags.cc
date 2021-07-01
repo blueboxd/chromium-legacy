@@ -964,42 +964,48 @@ const FeatureEntry::Choice kMemlogSamplingRateChoices[] = {
 
 const FeatureEntry::FeatureVariation kMemoriesVariations[] = {
     {
-        "Visit Limit 200",
-        (FeatureEntry::FeatureParam[]){{"MemoriesMaxVisitsToCluster", "200"}},
+        "Limit 1000, On-Device",
+        (FeatureEntry::FeatureParam[]){{"MemoriesMaxVisitsToCluster", "1000"}},
         1,
         nullptr,
     },
     {
-        "Visit Limit 200, Experiment A",
+        "Limit 200, Remote Exp. A",
         (FeatureEntry::FeatureParam[]){
             {"MemoriesExperimentName", "A"},
             {"MemoriesMaxVisitsToCluster", "200"},
+            {"MemoriesOnDeviceClusteringBackend", "false"},
         },
-        2,
+        3,
         nullptr,
     },
     {
-        "Visit Limit 200, Experiment B",
+        "Limit 200, Remote Exp. B",
         (FeatureEntry::FeatureParam[]){
             {"MemoriesExperimentName", "B"},
             {"MemoriesMaxVisitsToCluster", "200"},
+            {"MemoriesOnDeviceClusteringBackend", "false"},
         },
-        2,
+        3,
         nullptr,
     },
     {
-        "Visit Limit 200, Experiment C",
+        "Limit 200, Remote Exp. C",
         (FeatureEntry::FeatureParam[]){
             {"MemoriesExperimentName", "C"},
             {"MemoriesMaxVisitsToCluster", "200"},
+            {"MemoriesOnDeviceClusteringBackend", "false"},
         },
-        2,
+        3,
         nullptr,
     },
     {
-        "Visit Limit 10k",
-        (FeatureEntry::FeatureParam[]){{"MemoriesMaxVisitsToCluster", "10000"}},
-        1,
+        "Limit 10k, Remote",
+        (FeatureEntry::FeatureParam[]){
+            {"MemoriesMaxVisitsToCluster", "10000"},
+            {"MemoriesOnDeviceClusteringBackend", "false"},
+        },
+        2,
         nullptr,
     },
 };
@@ -1882,6 +1888,18 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      nullptr},
     {"Single Surface + Single Tab", kStartSurfaceAndroid_SingleSurfaceSingleTab,
      base::size(kStartSurfaceAndroid_SingleSurfaceSingleTab), nullptr},
+};
+
+const FeatureEntry::FeatureParam kWebFeed_accelerator[] = {
+    {"recommendation_style", "accelerator"}};
+
+const FeatureEntry::FeatureParam kWebFeed_IPH[] = {
+    {"recommendation_style", "IPH"}};
+
+const FeatureEntry::FeatureVariation kWebFeedVariations[] = {
+    {"accelerator recommendations", kWebFeed_accelerator,
+     base::size(kWebFeed_accelerator), nullptr},
+    {"IPH recommendations", kWebFeed_IPH, base::size(kWebFeed_IPH), nullptr},
 };
 
 const FeatureEntry::FeatureParam kConditionalTabStripAndroid_Immediate[] = {
@@ -3833,7 +3851,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2Autoplay)},
     {"web-feed", flag_descriptions::kWebFeedName,
      flag_descriptions::kWebFeedDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(feed::kWebFeed)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kWebFeed,
+                                    kWebFeedVariations,
+                                    "WebFeed")},
     {"xsurface-metrics-reporting",
      flag_descriptions::kXsurfaceMetricsReportingName,
      flag_descriptions::kXsurfaceMetricsReportingDescription, kOsAndroid,
@@ -6492,6 +6512,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"cdm-factory-daemon", flag_descriptions::kCdmFactoryDaemonName,
      flag_descriptions::kCdmFactoryDaemonDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCdmFactoryDaemon)},
+    {"shelf-drag-to-pin", flag_descriptions::kShelfDragToPinName,
+     flag_descriptions::kShelfDragToPinDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDragUnpinnedAppToPin)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

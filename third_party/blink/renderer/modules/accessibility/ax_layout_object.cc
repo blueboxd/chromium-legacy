@@ -450,6 +450,26 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (semantic_inclusion == kIgnoreObject)
     return true;
 
+  // Inner editor element of editable area with empty text provides bounds
+  // used to compute the character extent for index 0. This is the same as
+  // what the caret's bounds would be if the editable area is focused.
+  if (node) {
+    const TextControlElement* text_control = EnclosingTextControl(node);
+    if (text_control) {
+      // Keep only the inner editor element and it's children.
+      // If inline textboxes are being loaded, then the inline textbox for the
+      // text wil be included by AXNodeObject::AddInlineTextboxChildren().
+      // By only keeping the inner editor and its text, it makes finding the
+      // inner editor simpler on the browser side.
+      // See BrowserAccessibility::GetTextFieldInnerEditorElement().
+      // TODO(accessibility) In the future, we may want to keep all descendants
+      // of the inner text element -- right now we only include one internally
+      // used container, it's text, and possibly the text's inlinext text box.
+      return text_control->InnerEditorElement() != node &&
+             text_control->InnerEditorElement() != NodeTraversal::Parent(*node);
+    }
+  }
+
   // A LayoutEmbeddedContent is an iframe element or embedded object element or
   // something like that. We don't want to ignore those.
   if (layout_object_->IsLayoutEmbeddedContent())
@@ -466,15 +486,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // Make sure renderers with layers stay in the tree.
   if (GetLayoutObject() && GetLayoutObject()->HasLayer() && node &&
       node->hasChildren()) {
-    if (IsPlaceholder()) {
-      // Placeholder is already exposed via AX attributes, do not expose as
-      // child of text input. Therefore, if there is a child of a text input,
-      // it will contain the value.
-      if (ignored_reasons)
-        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
-      return true;
-    }
-
     return false;
   }
 
@@ -549,15 +560,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     if (IsScrollableContainer())
       return false;
     if (layout_object_->IsPositioned())
-      return false;
-  }
-
-  // Inner editor element of editable area with empty text provides bounds
-  // used to compute the character extent for index 0. This is the same as
-  // what the caret's bounds would be if the editable area is focused.
-  if (node) {
-    const TextControlElement* text_control = EnclosingTextControl(node);
-    if (text_control && text_control->InnerEditorElement() == node)
       return false;
   }
 
@@ -735,6 +737,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
     cursor.MoveToNextInlineLeafOnLine();
     if (cursor) {
       LayoutObject* runner_layout_object = cursor.CurrentMutableLayoutObject();
+      DCHECK(runner_layout_object);
       AXObject* result =
           ax_object.AXObjectCache().GetOrCreate(runner_layout_object);
       result = GetDeepestAXChildInLayoutTree(result, true);
@@ -759,16 +762,15 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   if (!ax_result)
     return nullptr;
 
-#if DCHECK_IS_ON()
-  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object)) {
-    DCHECK_NE(ax_result->ParentObject(), &ax_object)
-        << "NextOnLine() must not point to a child of the current object. "
-           "Because inline objects without try to return a result from their "
-           "parents, using a descendant can cause a previous position to be "
-           "reused, which appears as a loop in the nextOnLine data, and "
-           "can cause an infinite loop in consumers of the nextOnLine data";
+  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object) &&
+      ax_result->ParentObject() == &ax_object) {
+    // NextOnLine() must not point to a child of the current object.
+    // Because inline objects try to return a result from their
+    // parents, using a descendant can cause a previous position to be
+    // reused, which appears as a loop in the nextOnLine data, and
+    // can cause an infinite loop in consumers of the nextOnLine data.
+    return nullptr;
   }
-#endif
 
   return ax_result;
 }
@@ -782,6 +784,8 @@ AXObject* AXLayoutObject::NextOnLine() const {
     NOTREACHED();
     return nullptr;
   }
+
+  DCHECK(GetLayoutObject());
 
   if (GetLayoutObject()->IsBoxListMarkerIncludingNG()) {
     // A list marker should be followed by a list item on the same line.
@@ -884,6 +888,7 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
     cursor.MoveToPreviousInlineLeafOnLine();
     if (cursor) {
       LayoutObject* runner_layout_object = cursor.CurrentMutableLayoutObject();
+      DCHECK(runner_layout_object);
       AXObject* result =
           ax_object.AXObjectCache().GetOrCreate(runner_layout_object);
       result = GetDeepestAXChildInLayoutTree(result, false);
@@ -909,16 +914,15 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   if (!ax_result)
     return nullptr;
 
-#if DCHECK_IS_ON()
-  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object)) {
-    DCHECK_NE(ax_result->ParentObject(), &ax_object)
-        << "PreviousOnLine() must not point to a child of the current object. "
-           "Because inline objects without try to return a result from their "
-           "parents, using a descendant can cause a previous position to be "
-           "reused, which appears as a loop in the previousOnLine data, and "
-           "can cause an infinite loop in consumers of the previousOnLine data";
+  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object) &&
+      ax_result->ParentObject() == &ax_object) {
+    // PreviousOnLine() must not point to a child of the current object.
+    // Because inline objects without try to return a result from their
+    // parents, using a descendant can cause a previous position to be
+    // reused, which appears as a loop in the previousOnLine data, and
+    // can cause an infinite loop in consumers of the previousOnLine data.
+    return nullptr;
   }
-#endif
 
   return ax_result;
 }
@@ -932,6 +936,8 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
     NOTREACHED();
     return nullptr;
   }
+
+  DCHECK(GetLayoutObject());
 
   AXObject* previous_sibling = AccessibilityIsIncludedInTree()
                                    ? PreviousSiblingIncludingIgnored()

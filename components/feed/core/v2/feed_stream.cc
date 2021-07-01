@@ -10,10 +10,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
@@ -237,9 +237,11 @@ void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
     auto model = std::make_unique<StreamModel>();
     model->Update(std::move(result.update_request));
 
-    if (!model->HasVisibleContent()) {
-      stream.surface_updater->launch_reliability_logger().LogLaunchFinished(
-          feedwire::DiscoverLaunchResult::NO_CARDS_RESPONSE_ERROR_ZERO_CARDS);
+    if (!model->HasVisibleContent() &&
+        result.launch_result ==
+            feedwire::DiscoverLaunchResult::CARDS_UNSPECIFIED) {
+      result.launch_result =
+          feedwire::DiscoverLaunchResult::NO_CARDS_RESPONSE_ERROR_ZERO_CARDS;
     }
 
     LoadModel(result.stream_type, std::move(model));

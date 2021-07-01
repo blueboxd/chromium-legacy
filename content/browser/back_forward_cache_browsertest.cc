@@ -55,6 +55,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1275,7 +1276,7 @@ class BackgroundForegroundProcessLimitBackForwardCacheBrowserTest
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 
-  void ExpectCached(const RenderFrameHostImplHolder& rfh,
+  void ExpectCached(const RenderFrameHostImplWrapper& rfh,
                     bool cached,
                     bool backgrounded) {
     EXPECT_FALSE(rfh.IsDestroyed());
@@ -1294,7 +1295,7 @@ IN_PROC_BROWSER_TEST_F(
     CacheEvictionSameSite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::vector<RenderFrameHostImplHolder> rfhs;
+  std::vector<RenderFrameHostImplWrapper> rfhs;
 
   for (size_t i = 0; i <= kBackForwardCacheSize * 2; ++i) {
     SCOPED_TRACE(i);
@@ -1344,7 +1345,7 @@ IN_PROC_BROWSER_TEST_F(
     DISABLED_CacheEvictionCrossSite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::vector<RenderFrameHostImplHolder> rfhs;
+  std::vector<RenderFrameHostImplWrapper> rfhs;
 
   for (size_t i = 0; i <= kBackForwardCacheSize * 2; ++i) {
     SCOPED_TRACE(i);
@@ -1405,7 +1406,7 @@ IN_PROC_BROWSER_TEST_F(
     ChangeToForeground) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::vector<RenderFrameHostImplHolder> rfhs;
+  std::vector<RenderFrameHostImplWrapper> rfhs;
 
   // Navigate through a[0-3].com.
   for (size_t i = 0; i < kBackForwardCacheSize; ++i) {
@@ -5493,7 +5494,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   const std::string script_to_store =
       "executeCommandOnServiceWorker('StoreClients')";
   EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker, script_to_store));
-  RenderFrameHostImplHolder rfh(
+  RenderFrameHostImplWrapper rfh(
       tab_to_be_bfcached->web_contents()->GetMainFrame());
 
   // 4) Navigate away to B in |tab_to_be_bfcached|.
@@ -11904,5 +11905,53 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(SubframeType::SameSite, SubframeType::CrossSite),
     &BackForwardCacheEvictionDueToSubframeNavigationBrowserTest::
         DescribeParams);
+
+// Tests that a back navigation from a crashed page has the process state
+// tracked correctly by WebContentsImpl.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       BackNavigationFromCrashedPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_FALSE(web_contents()->IsCrashed());
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kHidden);
+  EXPECT_EQ(origin_a, rfh_a->GetLastCommittedOrigin());
+  EXPECT_EQ(origin_b, rfh_b->GetLastCommittedOrigin());
+  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
+  EXPECT_EQ(rfh_b->GetVisibilityState(), PageVisibilityState::kVisible);
+  EXPECT_FALSE(web_contents()->IsCrashed());
+
+  // 3) Crash B.
+  CrashTab(web_contents());
+  EXPECT_TRUE(web_contents()->IsCrashed());
+  EXPECT_TRUE(delete_observer_rfh_b.deleted());
+
+  // 4) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(origin_a, rfh_a->GetLastCommittedOrigin());
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kVisible);
+  EXPECT_FALSE(web_contents()->IsCrashed());
+
+  ExpectRestored(FROM_HERE);
+}
 
 }  // namespace content

@@ -140,7 +140,7 @@
           'chrome-swarming-pool',
         ],
         'test_suites': {
-          'gtest_tests': 'lacros_smoke_tast_tests_eve',
+          'gtest_tests': 'lacros_all_tast_tests_eve',
           'isolated_scripts': 'chrome_sizes',
         },
         'os_type': 'chromeos',
@@ -6067,6 +6067,7 @@
           'components/mirroring:mirroring_tests',
           'components/mirroring:mirroring_unittests',
           'components/openscreen_platform',
+          'third_party/openscreen/src/cast/cast_core/api',
         ],
       },
       'chromium_mac_debug': {

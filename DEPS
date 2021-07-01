@@ -222,11 +222,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '76e45134b8a797c0da4b4f998442e3ce3c29cf44',
+  'skia_revision': '9e583bfa3f4573dd1894c04d5720d5165496b37e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '9117b13ab099c26a8cd041a7a821dd2f0adb9adf',
+  'v8_revision': '49a432187c8e5393824dda086f270acb170fed3e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -257,7 +257,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': '355d57d90d9744c41ac7c99f1e960778f1c63040',
+  'googletest_revision': '255323cf092e46b2a9f0ded173bb4b91dd52486e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -273,7 +273,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '7be47010e9b1298c5f59c2501cab3d156ab3256f',
+  'freetype_revision': 'f27b4834b7dcf9d667fd5173106be0cddb0ec1c2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -293,7 +293,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '2bc697bc6493861561954a0ac4c4725a2b9f9fd5',
+  'catapult_revision': '949bca87e0115972190f91dfb947137620c64b26',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -341,7 +341,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '0ecfece609ec769acd3da4f4fde55ab1f0a12769',
+  'dawn_revision': '211b4aae7efe11e8e75deb3dc68799890fa04900',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -738,7 +738,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'dtfyPV4tOjhVFrZr8pKio2O2hf9OFOgegMyeX-PCfuMC',
+          'version': 'AlTbbwQ2U9bjcopxvW9Irf4uWn5RNcCLQi1zN7Hc5oAC',
       },
     ],
     'condition': 'checkout_android',
@@ -954,7 +954,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '4a31dcd877cca9ccda0605e8f362e3d4daa380a0',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7fd52b673157edc4b173f8974924284c1af778e7',
       'condition': 'checkout_chromeos',
   },
 
@@ -1343,7 +1343,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '082e0e3df7fcaeed60e49ac212e180b4dac6a39d',
+    Var('chromium_git') + '/openscreen' + '@' + '29efcb654d85ac926666aabdc489f8084fd3b172',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + 'bf21ccb1007bb531b45d9978919a56ea5059c245',
@@ -1589,7 +1589,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '827cad9e402b63bbe38787456115bcb681a8a152',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '91c93fc84869bc5c2fda0f35600de61dc52ab3f6',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '25731d21f45dcac622baff416f1423f5c18afa49',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + 'fbdd778891198ca1768d25abd14821203e6d0782',
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9322072ce30b1d283db2d09dc8bea08f2f9f4f6b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f04c0b4185896886fb965aa3c5a82102f00ce98c',
     'condition': 'checkout_src_internal',
   },
 
@@ -1672,7 +1672,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'Z7hWm7TA04dRywJLmmldHQclBiwVdjKyUYXv45fBb3sC',
+        'version': 'RNBWnNHLFhQ6Q7EBKGIaOT_zkBS7lp6jf1JciSIZYxUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1683,7 +1683,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'yJPwvojcycj0Aw6vVh9gnDjqmqMKmFlFbAvzqBbLzXkC',
+        'version': 'hUugr3xaZS2wT9xO--8mH4KilkGjiKGmpDHjs1ndickC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -2497,6 +2497,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_material_material',
               'version': 'version:2@1.4.0-rc01.cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_android_play_core': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_play_core',
+              'version': 'version:2@1.10.0.cr0',
           },
       ],
       'condition': 'checkout_android',

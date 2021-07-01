@@ -6,7 +6,6 @@
 
 namespace segmentation_platform {
 
-const char kAdaptiveToolbarSegmentationKey[] = "adaptive_toolbar";
 const char kSegmentationResultPref[] =
     "segmentation_platform.segmentation_result";
 

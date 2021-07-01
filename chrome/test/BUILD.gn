@@ -329,6 +329,14 @@ static_library("test_support") {
     "//ui/gl",
   ]
 
+  data_deps = []
+
+  if (is_chromeos_lacros && also_build_ash_chrome) {
+    data_deps += [
+      "//chrome/test:test_ash_chrome(//build/toolchain/linux:ash_clang_x64)",
+    ]
+  }
+
   if (is_android) {
     public_deps += [
       ":test_support_ui_android",
@@ -1616,6 +1624,7 @@ if (!is_android) {
       "../browser/performance_manager/frame_node_impl_browsertest.cc",
       "../browser/performance_manager/mechanisms/page_discarder_browsertest.cc",
       "../browser/performance_manager/page_load_tracker_decorator_browsertest.cc",
+      "../browser/performance_manager/policies/bfcache_policy_browsertest.cc",
       "../browser/performance_manager/tab_properties_decorator_browsertest.cc",
       "../browser/permissions/permission_delegation_browsertest.cc",
       "../browser/permissions/permission_manager_browsertest.cc",
@@ -9149,7 +9158,7 @@ if (is_chromeos_ash) {
   _target_name = "test_ash_chrome"
   executable(_target_name) {
     output_name = _target_name
-
+    testonly = true
     sources = [
       "//chrome/app/chrome_exe_main_aura.cc",
       "//chrome/app/chrome_main_delegate.cc",

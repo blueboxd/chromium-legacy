@@ -490,7 +490,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FileBrowser.PhotoEditor.LoadTime" units="ms"
-    expires_after="2021-08-09">
+    expires_after="M98">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Chrome OS Photo Editor: time to load an image from a file.</summary>
@@ -700,6 +700,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Chrome OS File Browser: time to load the suggest apps dialog. Measured
     between the moment window appears and the moment all the contents in the
     dialog including the Chrome Webstore widget are ready.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.SWA.Create" enum="FileDialogType"
+    expires_after="M99">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: When running as SWA, the mode in which the SWA was
+    opened. For the non-SWA, see `FileBrowser.Create`.
   </summary>
 </histogram>
 

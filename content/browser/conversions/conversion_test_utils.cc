@@ -295,9 +295,15 @@ ConversionBuilder& ConversionBuilder::SetReportingOrigin(
   return *this;
 }
 
+ConversionBuilder& ConversionBuilder::SetPriority(int64_t priority) {
+  priority_ = priority;
+  return *this;
+}
+
 StorableConversion ConversionBuilder::Build() const {
   return StorableConversion(conversion_data_, conversion_destination_,
-                            reporting_origin_, event_source_trigger_data_);
+                            reporting_origin_, event_source_trigger_data_,
+                            priority_);
 }
 
 // Custom comparator for StorableImpressions that does not take impression IDs
@@ -319,7 +325,8 @@ bool operator==(const StorableImpression& a, const StorableImpression& b) {
 bool operator==(const ConversionReport& a, const ConversionReport& b) {
   const auto tie = [](const ConversionReport& conversion) {
     return std::make_tuple(conversion.impression, conversion.conversion_data,
-                           conversion.report_time, conversion.extra_delay);
+                           conversion.conversion_time, conversion.report_time,
+                           conversion.extra_delay);
   };
   return tie(a) == tie(b);
 }

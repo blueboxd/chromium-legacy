@@ -5221,7 +5221,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DriveCommon.Lifecycle.FirstLaunchTime" units="ms"
-    expires_after="2021-08-09">
+    expires_after="M102">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -5237,7 +5237,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="DriveCommon.Lifecycle.MountTime" units="ms"
-    expires_after="2021-10-25">
+    expires_after="M102">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>How long did it take to mount Google Drive.</summary>
@@ -5794,7 +5794,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FamilyUser.ManagedSiteList" enum="FamilyLinkManagedSiteList"
-    expires_after="2021-08-12">
+    expires_after="2022-06-28">
   <owner>agawronska@chromium.org</owner>
   <owner>tobyhuang@chromium.org</owner>
   <owner>xiqiruan@chromium.org</owner>
@@ -5836,7 +5836,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FamilyUser.SessionEngagement.Duration" units="ms"
-    expires_after="2021-07-14">
+    expires_after="2022-06-28">
   <owner>agawronska@chromium.org</owner>
   <owner>tobyhuang@chromium.org</owner>
   <owner>xiqiruan@chromium.org</owner>
@@ -5849,7 +5849,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FamilyUser.SessionEngagement.Total" units="Hour of day"
-    expires_after="2021-07-14">
+    expires_after="2022-06-28">
   <owner>agawronska@chromium.org</owner>
   <owner>tobyhuang@chromium.org</owner>
   <owner>xiqiruan@chromium.org</owner>
@@ -5947,7 +5947,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="FamilyUser.WebFilterType" enum="FamilyLinkWebFilterType"
-    expires_after="2021-08-12">
+    expires_after="2022-06-28">
   <owner>agawronska@chromium.org</owner>
   <owner>tobyhuang@chromium.org</owner>
   <owner>xiqiruan@chromium.org</owner>

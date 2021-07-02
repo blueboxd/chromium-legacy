@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_utils.h"
@@ -31,6 +30,7 @@
 #include "net/url_request/redirect_info.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 
 namespace content {
@@ -1212,8 +1212,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           initiator_frame_host_
               ? absl::make_optional(initiator_frame_host_->GetFrameToken())
               : absl::nullopt,
-          headers_, load_flags_, skip_service_worker_,
-          blink::mojom::RequestContextType::HYPERLINK,
+          headers_, load_flags_, skip_service_worker_, request_context_type_,
           network::mojom::RequestDestination::kDocument,
           mixed_content_context_type_, is_form_submission_,
           false /* was_initiated_by_link_click */, searchable_form_url_,
@@ -1223,7 +1222,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           base::TimeTicks() /* renderer_before_unload_start */,
           base::TimeTicks() /* renderer_before_unload_end */,
           absl::nullopt /* web_bundle_token */);
-  auto common_params = CreateCommonNavigationParams();
+  auto common_params = blink::CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->url = navigation_url_;
   common_params->initiator_origin = initiator_origin_.value();
@@ -1435,8 +1434,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     if (same_document) {
       params->origin = current_rfh->GetLastCommittedOrigin();
     } else {
-      params->origin =
-          origin_.value_or(request_->GetOriginForURLLoaderFactory());
+      params->origin = origin_.value_or(request_->GetOriginToCommit());
     }
   }
 

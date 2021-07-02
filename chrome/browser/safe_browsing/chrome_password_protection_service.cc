@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
+#include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
@@ -57,12 +58,12 @@
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/sync/safe_browsing_primary_account_token_fetcher.h"
+#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -251,13 +252,13 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       cache_manager_(VerdictCacheManagerFactory::GetForProfile(profile)) {
   pref_change_registrar_->Init(profile_->GetPrefs());
 
-  scoped_refptr<password_manager::PasswordStore> password_store =
-      GetProfilePasswordStore();
-  // Password store can be null in tests.
-  if (password_store) {
+  password_manager::PasswordReuseManager* reuse_manager =
+      PasswordReuseManagerFactory::GetForProfile(profile_);
+  // Reuse manager can be null in tests.
+  if (reuse_manager) {
     // Subscribe to gaia hash password changes change notifications.
     hash_password_manager_subscription_ =
-        password_store->RegisterStateCallbackOnHashPasswordManager(
+        reuse_manager->RegisterStateCallbackOnHashPasswordManager(
             base::BindRepeating(&ChromePasswordProtectionService::
                                     CheckGaiaPasswordChangeForAllSignedInUsers,
                                 base::Unretained(this)));
@@ -1290,15 +1291,15 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
   }
 
   // Clears captured enterprise password hashes or GSuite sync password hashes.
-  scoped_refptr<password_manager::PasswordStore> password_store =
-      GetProfilePasswordStore();
+  password_manager::PasswordReuseManager* reuse_manager =
+      GetPasswordReuseManager();
 
-  password_store->ClearAllNonGmailPasswordHash();
-  password_store->ClearAllEnterprisePasswordHash();
+  reuse_manager->ClearAllNonGmailPasswordHash();
+  reuse_manager->ClearAllEnterprisePasswordHash();
 }
 
 void ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged() {
-  GetProfilePasswordStore()->ScheduleEnterprisePasswordURLUpdate();
+  GetPasswordReuseManager()->ScheduleEnterprisePasswordURLUpdate();
 }
 
 bool ChromePasswordProtectionService::CanShowInterstitial(
@@ -1765,6 +1766,11 @@ ChromePasswordProtectionService::GetReferringAppInfo(
   return safe_browsing::GetReferringAppInfo(web_contents);
 }
 #endif
+
+password_manager::PasswordReuseManager*
+ChromePasswordProtectionService::GetPasswordReuseManager() const {
+  return PasswordReuseManagerFactory::GetForProfile(profile_);
+}
 
 password_manager::PasswordStore*
 ChromePasswordProtectionService::GetProfilePasswordStore() const {

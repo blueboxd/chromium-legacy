@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
-#include "ash/components/account_manager/account_manager.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/account_manager_core/account.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
@@ -28,16 +28,16 @@ namespace signin {
 // TODO(https://crbug.com/1188696): Remove this.
 class ProfileOAuth2TokenServiceDelegateChromeOSLegacy
     : public ProfileOAuth2TokenServiceDelegate,
-      public ash::AccountManager::Observer,
+      public account_manager::AccountManager::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Accepts non-owning pointers to |AccountTrackerService|,
-  // |NetworkConnectorTracker|, and |ash::AccountManager|. These objects
-  // must all outlive |this| delegate.
+  // |NetworkConnectorTracker|, and |account_manager::AccountManager|. These
+  // objects must all outlive |this| delegate.
   ProfileOAuth2TokenServiceDelegateChromeOSLegacy(
       AccountTrackerService* account_tracker_service,
       network::NetworkConnectionTracker* network_connection_tracker,
-      ash::AccountManager* account_manager,
+      account_manager::AccountManager* account_manager,
       bool is_regular_profile);
   ~ProfileOAuth2TokenServiceDelegateChromeOSLegacy() override;
 
@@ -64,7 +64,7 @@ class ProfileOAuth2TokenServiceDelegateChromeOSLegacy
   void RevokeAllCredentials() override;
   const net::BackoffEntry* BackoffEntry() const override;
 
-  // |ash::AccountManager::Observer| overrides.
+  // |account_manager::AccountManager::Observer| overrides.
   void OnTokenUpserted(const account_manager::Account& account) override;
   void OnAccountRemoved(const account_manager::Account& account) override;
 
@@ -83,17 +83,17 @@ class ProfileOAuth2TokenServiceDelegateChromeOSLegacy
     GoogleServiceAuthError last_auth_error;
   };
 
-  // Callback handler for |ash::AccountManager::GetAccounts|.
+  // Callback handler for |account_manager::AccountManager::GetAccounts|.
   void OnGetAccounts(const std::vector<account_manager::Account>& accounts);
 
-  // Callback handler for |ash::AccountManager::HasDummyGaiaToken|.
+  // Callback handler for |account_manager::AccountManager::HasDummyGaiaToken|.
   void ContinueTokenUpsertProcessing(const CoreAccountId& account_id,
                                      bool has_dummy_token);
 
   // Non-owning pointers.
   AccountTrackerService* const account_tracker_service_;
   network::NetworkConnectionTracker* const network_connection_tracker_;
-  ash::AccountManager* const account_manager_;
+  account_manager::AccountManager* const account_manager_;
 
   // A cache of AccountKeys.
   std::set<account_manager::AccountKey> account_keys_;

@@ -464,19 +464,21 @@ MinMaxSizesResult NGGridLayoutAlgorithm::ComputeMinMaxSizes(
 
 NGGridLayoutAlgorithm::AutoPlacementType
 NGGridLayoutAlgorithm::GridItemData::AutoPlacement(
-    GridTrackSizingDirection flow_direction) const {
-  bool is_major_indefinite = Span(flow_direction).IsIndefinite();
-  bool is_minor_indefinite =
-      Span((flow_direction == kForColumns) ? kForRows : kForColumns)
-          .IsIndefinite();
+    const GridTrackSizingDirection major_direction) const {
+  const GridTrackSizingDirection minor_direction =
+      (major_direction == kForColumns) ? kForRows : kForColumns;
+  DCHECK(!Span(major_direction).IsUntranslatedDefinite() &&
+         !Span(minor_direction).IsUntranslatedDefinite());
+
+  const bool is_major_indefinite = Span(major_direction).IsIndefinite();
+  const bool is_minor_indefinite = Span(minor_direction).IsIndefinite();
 
   if (is_minor_indefinite && is_major_indefinite)
     return AutoPlacementType::kBoth;
-  else if (is_minor_indefinite)
+  if (is_minor_indefinite)
     return AutoPlacementType::kMinor;
-  else if (is_major_indefinite)
+  if (is_major_indefinite)
     return AutoPlacementType::kMajor;
-
   return AutoPlacementType::kNotNeeded;
 }
 
@@ -1106,9 +1108,8 @@ LayoutUnit NGGridLayoutAlgorithm::ContributionSizeForGridItem(
     return fragment.BlockSize() + baseline_shim;
   };
 
-  const LayoutUnit clamped_margin_sum =
-      (is_for_columns ? margins.InlineSum() : margins.BlockSum())
-          .ClampNegativeToZero();
+  const LayoutUnit margin_sum =
+      is_for_columns ? margins.InlineSum() : margins.BlockSum();
 
   LayoutUnit contribution;
   switch (contribution_type) {
@@ -1214,8 +1215,8 @@ LayoutUnit NGGridLayoutAlgorithm::ContributionSizeForGridItem(
             // computed margins, border, and padding in the given dimension,
             // flooring at zero so that the inner size is not negative.
             spanned_tracks_definite_max_size =
-                (spanned_tracks_definite_max_size - baseline_shim -
-                 clamped_margin_sum - border_padding_sum)
+                (spanned_tracks_definite_max_size - baseline_shim - margin_sum -
+                 border_padding_sum)
                     .ClampNegativeToZero();
 
             // Add the baseline shim, border, and padding (margins will be added
@@ -1267,8 +1268,7 @@ LayoutUnit NGGridLayoutAlgorithm::ContributionSizeForGridItem(
       break;
   }
 
-  DCHECK_GE(contribution, 0);
-  return contribution + clamped_margin_sum;
+  return (contribution + margin_sum).ClampNegativeToZero();
 }
 
 void NGGridLayoutAlgorithm::ConstructAndAppendGridItems(

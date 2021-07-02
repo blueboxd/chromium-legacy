@@ -25,7 +25,6 @@
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_reuse_manager.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
@@ -50,10 +49,7 @@ using metrics_util::GaiaPasswordHashChange;
 class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
 class InsecureCredentialsConsumer;
-class PasswordReuseDetectorConsumer;
-class PasswordReuseManager;
 class PasswordStoreConsumer;
-class PasswordStoreSigninNotifier;
 class PasswordSyncBridge;
 struct FieldInfo;
 
@@ -237,90 +233,6 @@ class PasswordStore : protected PasswordStoreSync,
 
   void SetSyncTaskTimeoutForTest(base::TimeDelta timeout);
 
-  // Immediately called after |Init()| to retrieve password hash data for
-  // reuse detection.
-  void PreparePasswordHashData(const std::string& sync_username,
-                               bool is_signed_in);
-
-  // Checks that some suffix of |input| equals to a password saved on another
-  // registry controlled domain than |domain|.
-  // If such suffix is found, |consumer|->OnReuseFound() is called on the same
-  // sequence on which this method is called.
-  // |consumer| must not be null.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void CheckReuse(const std::u16string& input,
-                          const std::string& domain,
-                          PasswordReuseDetectorConsumer* consumer);
-
-  // Saves |username| and a hash of |password| for GAIA password reuse checking.
-  // |event| is used for metric logging and for distinguishing sync password
-  // hash change event and other non-sync GAIA password change event.
-  // |is_primary_account| is whether account belong to the password is a
-  // primary account.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void SaveGaiaPasswordHash(const std::string& username,
-                                    const std::u16string& password,
-                                    bool is_primary_account,
-                                    GaiaPasswordHashChange event);
-
-  // Saves |username| and a hash of |password| for enterprise password reuse
-  // checking.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void SaveEnterprisePasswordHash(const std::string& username,
-                                          const std::u16string& password);
-
-  // Saves |sync_password_data| for sync password reuse checking.
-  // |event| is used for metric logging.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void SaveSyncPasswordHash(const PasswordHashData& sync_password_data,
-                                    GaiaPasswordHashChange event);
-
-  // Clears the saved GAIA password hash for |username|.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void ClearGaiaPasswordHash(const std::string& username);
-
-  // Clears all the GAIA password hash.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void ClearAllGaiaPasswordHash();
-
-  // Clears all (non-GAIA) enterprise password hash.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void ClearAllEnterprisePasswordHash();
-
-  // Clear all GAIA password hash that is not associated with a Gmail account.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual void ClearAllNonGmailPasswordHash();
-
-  // Adds a listener on |hash_password_manager_| for when |kHashPasswordData|
-  // list might have changed. Should only be called on the UI thread.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  virtual base::CallbackListSubscription
-  RegisterStateCallbackOnHashPasswordManager(
-      const base::RepeatingCallback<void(const std::string& username)>&
-          callback);
-
-  // Shouldn't be called more than once, |notifier| must be not nullptr.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  void SetPasswordStoreSigninNotifier(
-      std::unique_ptr<PasswordStoreSigninNotifier> notifier);
-
-  // Schedules the update of password hashes used by reuse detector.
-  // |does_primary_account_exists| and |is_signed_in| fields are only used if
-  // |should_log_metrics| is true.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  void SchedulePasswordHashUpdate(bool should_log_metrics,
-                                  bool does_primary_account_exists,
-                                  bool is_signed_in);
-
-  // Schedules the update of enterprise login and change password URLs.
-  // These URLs are used in enterprise password reuse detection.
-  // TODO(crbug.bom/715987): Remove this from the PasswordStore.
-  void ScheduleEnterprisePasswordURLUpdate();
-
-  PasswordReuseManager* GetPasswordReuseManager() {
-    return reuse_manager_.get();
-  }
-
  protected:
   using LoginsTask = base::OnceCallback<LoginsResult()>;
   using LoginsResultProcessor =
@@ -406,16 +318,6 @@ class PasswordStore : protected PasswordStoreSync,
   // |plain_text_password| stored in the credential database.
   virtual std::vector<std::unique_ptr<PasswordForm>>
   FillMatchingLoginsByPassword(const std::u16string& plain_text_password) = 0;
-
-  // Overwrites |forms| with all stored non-blocklisted credentials. Returns
-  // true on success.
-  virtual bool FillAutofillableLogins(
-      std::vector<std::unique_ptr<PasswordForm>>* forms) WARN_UNUSED_RESULT = 0;
-
-  // Overwrites |forms| with all stored blocklisted credentials. Returns true on
-  // success.
-  virtual bool FillBlocklistLogins(
-      std::vector<std::unique_ptr<PasswordForm>>* forms) WARN_UNUSED_RESULT = 0;
 
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
@@ -592,15 +494,6 @@ class PasswordStore : protected PasswordStoreSync,
   std::vector<std::unique_ptr<PasswordForm>> GetLoginsByPasswordImpl(
       const std::u16string& plain_text_password);
 
-  // Finds all non-blocklist PasswordForms and returns the result.
-  std::vector<std::unique_ptr<PasswordForm>> GetAutofillableLoginsImpl();
-
-  // Finds all blocklist PasswordForms and returns the result.
-  std::vector<std::unique_ptr<PasswordForm>> GetBlocklistLoginsImpl();
-
-  // Finds all PasswordForms and returns the result.
-  std::vector<std::unique_ptr<PasswordForm>> GetAllLoginsImpl();
-
   // Extended version of GetMatchingInsecureCredentialsImpl that also returns
   // credentials stored for the specified affiliated Android applications or Web
   // realms.
@@ -662,16 +555,6 @@ class PasswordStore : protected PasswordStoreSync,
   // WARNING: this method can be skipped on shutdown.
   void DestroyOnBackgroundSequence();
 
-  // Deletes all stored www.google.com passwords created before before 2012.
-  // TODO(crbug.com/450621): Remove this when enough number of clients switch
-  // to the new version of Chrome.
-  bool RemoveOldGoogleLogins();
-
-  // Changes pref value on successful removal of old www.google.com passwords.
-  // TODO(crbug.com/450621): Remove this when enough number of clients switch
-  // to the new version of Chrome.
-  void MarkOldGoogleLoginsRemoved(bool success);
-
   // TaskRunner for tasks that run on the main sequence (usually the UI thread).
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
@@ -692,11 +575,6 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 
   PrefService* prefs_ = nullptr;
-
-  // Object responsible for detection of password reuse, i.e. that the
-  // user input on some site contains the password saved on another site.
-  // TODO(crbug.com/715987): Decouple PasswordReuseDetector from PasswordStore.
-  std::unique_ptr<PasswordReuseManager> reuse_manager_;
 
   std::unique_ptr<UnsyncedCredentialsDeletionNotifier> deletion_notifier_;
 

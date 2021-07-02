@@ -53,10 +53,6 @@ namespace password_manager {
 
 namespace {
 
-bool IsPasswordReuseDetectionEnabled() {
-  return base::FeatureList::IsEnabled(features::kPasswordReuseDetectionEnabled);
-}
-
 void CloseTraceAndCallBack(
     const char* trace_name,
     PasswordStoreConsumer* consumer,
@@ -94,10 +90,6 @@ bool PasswordStore::Init(PrefService* prefs,
   DCHECK(background_task_runner_);
   sync_enabled_or_disabled_cb_ = std::move(sync_enabled_or_disabled_cb);
   prefs_ = prefs;
-
-  if (IsPasswordReuseDetectionEnabled()) {
-    reuse_manager_ = std::make_unique<PasswordReuseManagerImpl>();
-  }
 
   if (background_task_runner_) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
@@ -215,29 +207,33 @@ void PasswordStore::GetLoginsByPassword(
 
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  PostLoginsTaskAndReplyToConsumerWithResult(
-      consumer,
-      base::BindOnce(&PasswordStore::GetAutofillableLoginsImpl, this));
+
+  backend_->GetAutofillableLoginsAsync(
+      base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
+                     consumer->GetWeakPtr(), base::RetainedRef(this)));
 }
 
 void PasswordStore::GetAllLogins(PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  PostLoginsTaskAndReplyToConsumerWithResult(
-      consumer, base::BindOnce(&PasswordStore::GetAllLoginsImpl, this));
+
+  backend_->GetAllLoginsAsync(
+      base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
+                     consumer->GetWeakPtr(), base::RetainedRef(this)));
 }
 
 void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
     PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-      "passwords",
-      "PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation",
-      consumer);
-  PostLoginsTaskAndReplyToConsumerWithProcessedResult(
-      "PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation",
-      consumer, base::BindOnce(&PasswordStore::GetAllLoginsImpl, this),
+
+  auto consumer_reply =
+      base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
+                     consumer->GetWeakPtr(), base::RetainedRef(this));
+
+  auto affiliation_injection =
       base::BindOnce(&PasswordStore::InjectAffiliationAndBrandingInformation,
-                     this));
+                     this, std::move(consumer_reply));
+
+  backend_->GetAllLoginsAsync(std::move(affiliation_injection));
 }
 
 SmartBubbleStatsStore* PasswordStore::GetSmartBubbleStatsStore() {
@@ -402,10 +398,6 @@ void PasswordStore::ShutdownOnUIThread() {
       base::BindOnce(&PasswordStore::DestroyOnBackgroundSequence, this));
   // The AffiliationService must be destroyed from the main sequence.
   affiliated_match_helper_.reset();
-  if (reuse_manager_) {
-    reuse_manager_->Shutdown();
-  }
-  reuse_manager_.reset();
   shutdown_called_ = true;
 }
 
@@ -433,90 +425,6 @@ void PasswordStore::SetUnsyncedCredentialsDeletionNotifier(
 
 void PasswordStore::SetSyncTaskTimeoutForTest(base::TimeDelta timeout) {
   sync_task_timeout_ = timeout;
-}
-
-void PasswordStore::CheckReuse(const std::u16string& input,
-                               const std::string& domain,
-                               PasswordReuseDetectorConsumer* consumer) {
-  if (reuse_manager_)
-    reuse_manager_->CheckReuse(input, domain, consumer);
-}
-
-void PasswordStore::PreparePasswordHashData(const std::string& sync_username,
-                                            const bool is_signed_in) {
-  if (reuse_manager_)
-    reuse_manager_->PreparePasswordHashData(sync_username, is_signed_in);
-}
-
-void PasswordStore::SaveGaiaPasswordHash(const std::string& username,
-                                         const std::u16string& password,
-                                         bool is_primary_account,
-                                         GaiaPasswordHashChange event) {
-  if (reuse_manager_)
-    reuse_manager_->SaveGaiaPasswordHash(username, password, is_primary_account,
-                                         event);
-}
-
-void PasswordStore::SaveEnterprisePasswordHash(const std::string& username,
-                                               const std::u16string& password) {
-  if (reuse_manager_)
-    reuse_manager_->SaveEnterprisePasswordHash(username, password);
-}
-
-void PasswordStore::SaveSyncPasswordHash(
-    const PasswordHashData& sync_password_data,
-    GaiaPasswordHashChange event) {
-  if (reuse_manager_)
-    reuse_manager_->SaveSyncPasswordHash(sync_password_data, event);
-}
-
-void PasswordStore::ClearGaiaPasswordHash(const std::string& username) {
-  if (reuse_manager_)
-    reuse_manager_->ClearGaiaPasswordHash(username);
-}
-
-void PasswordStore::ClearAllGaiaPasswordHash() {
-  if (reuse_manager_)
-    reuse_manager_->ClearAllGaiaPasswordHash();
-}
-
-void PasswordStore::ClearAllEnterprisePasswordHash() {
-  if (reuse_manager_)
-    reuse_manager_->ClearAllEnterprisePasswordHash();
-}
-
-void PasswordStore::ClearAllNonGmailPasswordHash() {
-  if (reuse_manager_)
-    reuse_manager_->ClearAllNonGmailPasswordHash();
-}
-
-base::CallbackListSubscription
-PasswordStore::RegisterStateCallbackOnHashPasswordManager(
-    const base::RepeatingCallback<void(const std::string& username)>&
-        callback) {
-  DCHECK(reuse_manager_);
-  return reuse_manager_->RegisterStateCallbackOnHashPasswordManager(
-      std::move(callback));
-}
-
-void PasswordStore::SetPasswordStoreSigninNotifier(
-    std::unique_ptr<PasswordStoreSigninNotifier> notifier) {
-  if (reuse_manager_)
-    reuse_manager_->SetPasswordStoreSigninNotifier(std::move(notifier));
-}
-
-void PasswordStore::SchedulePasswordHashUpdate(bool should_log_metrics,
-                                               bool does_primary_account_exists,
-                                               bool is_signed_in) {
-  if (reuse_manager_) {
-    reuse_manager_->SchedulePasswordHashUpdate(
-        should_log_metrics, does_primary_account_exists, is_signed_in);
-  }
-}
-
-void PasswordStore::ScheduleEnterprisePasswordURLUpdate() {
-  if (reuse_manager_)
-    reuse_manager_->ScheduleEnterprisePasswordURLUpdate();
 }
 
 PasswordStore::~PasswordStore() {
@@ -663,16 +571,6 @@ void PasswordStore::OnInitCompleted(bool success) {
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordStoreInitResult", success);
   TRACE_EVENT_NESTABLE_ASYNC_END0(
       "passwords", "PasswordStore::InitOnBackgroundSequence", this);
-
-  // TODO(crbug.com/450621): Remove this when enough number of clients switch
-  // to the new version of Chrome.
-  if (!success || shutdown_called_)
-    return;
-  if (prefs_ && !prefs_->GetBoolean(prefs::kWereOldGoogleLoginsRemoved)) {
-    background_task_runner_->PostTaskAndReplyWithResult(
-        FROM_HERE, base::BindOnce(&PasswordStore::RemoveOldGoogleLogins, this),
-        base::BindOnce(&PasswordStore::MarkOldGoogleLoginsRemoved, this));
-  }
 }
 
 void PasswordStore::PostLoginsTaskAndReplyToConsumerWithResult(
@@ -904,33 +802,6 @@ PasswordStore::GetLoginsByPasswordImpl(
   return FillMatchingLoginsByPassword(plain_text_password);
 }
 
-std::vector<std::unique_ptr<PasswordForm>>
-PasswordStore::GetAutofillableLoginsImpl() {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("passwords", "PasswordStore::GetAutofillableLoginsImpl");
-  std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
-  if (!FillAutofillableLogins(&obtained_forms))
-    obtained_forms.clear();
-  return obtained_forms;
-}
-
-std::vector<std::unique_ptr<PasswordForm>> PasswordStore::GetAllLoginsImpl() {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("passwords", "PasswordStore::GetAllLoginsImpl");
-  std::vector<std::unique_ptr<PasswordForm>> results;
-  for (auto fill_logins : {&PasswordStore::FillAutofillableLogins,
-                           &PasswordStore::FillBlocklistLogins}) {
-    std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
-    if ((this->*fill_logins)(&obtained_forms)) {
-      results.insert(results.end(),
-                     std::make_move_iterator(obtained_forms.begin()),
-                     std::make_move_iterator(obtained_forms.end()));
-    }
-  }
-
-  return results;
-}
-
 std::vector<InsecureCredential>
 PasswordStore::GetInsecureCredentialsWithAffiliationsImpl(
     const std::string& signon_realm,
@@ -1109,44 +980,6 @@ PasswordStore::GetSyncControllerDelegateOnBackgroundSequence() {
 void PasswordStore::DestroyOnBackgroundSequence() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   sync_bridge_.reset();
-}
-
-bool PasswordStore::RemoveOldGoogleLogins() {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-
-  std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
-  if (FillAutofillableLogins(&obtained_forms)) {
-    base::Time cutoff;  // the null time
-    static const base::Time::Exploded exploded_cutoff = {
-        2012, 1, 0, 1, 0, 0, 0, 0};  // 00:00 Jan 1 2012
-    bool conversion_success =
-        base::Time::FromUTCExploded(exploded_cutoff, &cutoff);
-    DCHECK(conversion_success);
-
-    auto IsOldGoogleForm =
-        [&cutoff](const std::unique_ptr<PasswordForm>& form) {
-          return (form->scheme == PasswordForm::Scheme::kHtml &&
-                  (form->signon_realm == "http://www.google.com" ||
-                   form->signon_realm == "http://www.google.com/" ||
-                   form->signon_realm == "https://www.google.com" ||
-                   form->signon_realm == "https://www.google.com/")) &&
-                 form->date_created < cutoff;
-        };
-
-    for (const auto& form : obtained_forms) {
-      if (IsOldGoogleForm(form)) {
-        RemoveLoginInternal(*form);
-      }
-    }
-    return true;
-  }
-  return false;
-}
-
-void PasswordStore::MarkOldGoogleLoginsRemoved(bool success) {
-  if (success && prefs_ && !shutdown_called_) {
-    prefs_->SetBoolean(prefs::kWereOldGoogleLoginsRemoved, true);
-  }
 }
 
 }  // namespace password_manager

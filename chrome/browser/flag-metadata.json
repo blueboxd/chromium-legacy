@@ -1016,12 +1016,12 @@
   },
   {
     "name": "diagnostics-app",
-    "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
+    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 92
   },
   {
     "name": "diagnostics-app-navigation",
-    "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
+    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 99
   },
   {
@@ -2013,7 +2013,7 @@
   },
   {
     "name": "enable-input-in-diagnostics-app",
-    "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
+    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 98
   },
   {
@@ -2170,7 +2170,7 @@
   },
   {
     "name": "enable-networking-in-diagnostics-app",
-    "owners": [ "//chromeos/components/diagnostics_ui/OWNERS" ],
+    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 98
   },
   {
@@ -3195,6 +3195,11 @@
     "name": "google-lens-sdk-intent",
     "owners": [ "juanmojica@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "google-mobile-services-passwords",
+    "owners": [ "fhorschig", "vasilii" ],
+    "expiry_milestone": 99
   },
   {
     "name": "handwriting-gesture-editing",
@@ -5260,12 +5265,7 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
-  },
-  {
-    "name": "unified-password-manager-android",
-    "owners": [ "fhorschig", "vasilii" ],
-    "expiry_milestone": 97
-  },
+  }, 
   {
     "name": "unsafely-treat-insecure-origin-as-secure",
     "owners": [ "security-dev" ],

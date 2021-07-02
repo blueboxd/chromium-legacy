@@ -248,23 +248,23 @@ bool WaylandToplevelWindow::ShouldUpdateWindowShape() const {
 bool WaylandToplevelWindow::CanSetDecorationInsets() const {
   // TODO(https://crbug.com/811515): Return true if
   // xdg_surface::set_window_geometry is available.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void WaylandToplevelWindow::SetDecorationInsets(gfx::Insets insets_px) {
   // TODO(https://crbug.com/811515): Use xdg_surface::set_window_geometry.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WaylandToplevelWindow::SetOpaqueRegion(std::vector<gfx::Rect> region_px) {
   // TODO(https://crbug.com/811515): Use wl_surface::set_opaque_region.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WaylandToplevelWindow::SetInputRegion(gfx::Rect region_px) {
   // TODO(https://crbug.com/811515): Use wl_surface::set_input_region.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WaylandToplevelWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
@@ -359,9 +359,18 @@ void WaylandToplevelWindow::HandleToplevelConfigure(int32_t width,
 }
 
 void WaylandToplevelWindow::HandleSurfaceConfigure(uint32_t serial) {
-  if (pending_bounds_dip_ ==
-          gfx::ScaleToRoundedRect(GetBounds(), 1.f / window_scale()) &&
+  if (pending_bounds_dip_.IsEmpty() &&
+      state_ == PlatformWindowState::kMinimized &&
       pending_configures_.empty()) {
+    // In exo, widget creation is deferred until the surface has contents and
+    // |initial_show_state_| for a widget is ignored. Exo sends a configure
+    // callback with empty bounds expecting client to suggest a size.
+    shell_toplevel()->SetWindowGeometry(gfx::Rect(0, 0, 1, 1));
+    shell_toplevel()->AckConfigure(serial);
+    root_surface()->Commit();
+  } else if (pending_bounds_dip_ ==
+                 gfx::ScaleToRoundedRect(GetBounds(), 1.f / window_scale()) &&
+             pending_configures_.empty()) {
     // If |pending_bounds_dip_| matches GetBounds(), and |pending_configures_|
     // is empty, implying that the window is already rendering at
     // |pending_bounds_dip_|, then a frame matching |pending_bounds_dip_| may

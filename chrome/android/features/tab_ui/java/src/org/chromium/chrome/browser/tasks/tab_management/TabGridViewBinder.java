@@ -41,6 +41,7 @@ import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
  */
 class TabGridViewBinder {
     private static TabListMediator.ThumbnailFetcher sThumbnailFetcherForTesting;
+    private static final String SHOPPING_METRICS_IDENTIFIER = "EnterTabSwitcher";
     /**
      * Bind a closable tab to a view.
      * @param model The model to bind.
@@ -143,11 +144,7 @@ class TabGridViewBinder {
             int padding = favicon == null
                     ? 0
                     : (int) view.getResources().getDimension(R.dimen.tab_list_card_padding);
-            Drawable bg = favicon == null
-                    ? null
-                    : view.getResources().getDrawable(R.drawable.tab_grid_card_favicon_background);
             faviconView.setPadding(padding, padding, padding, padding);
-            faviconView.setBackground(bg);
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
             updateThumbnail(view, model);
         } else if (TabProperties.CONTENT_DESCRIPTION_STRING == propertyKey) {
@@ -235,6 +232,10 @@ class TabGridViewBinder {
                                         shoppingPersistedTabData.getPriceDrop().price,
                                         shoppingPersistedTabData.getPriceDrop().previousPrice);
                                 priceCardView.setVisibility(View.VISIBLE);
+                            }
+                            if (shoppingPersistedTabData != null) {
+                                shoppingPersistedTabData.logPriceDropMetrics(
+                                        SHOPPING_METRICS_IDENTIFIER);
                             }
                         });
             } else {

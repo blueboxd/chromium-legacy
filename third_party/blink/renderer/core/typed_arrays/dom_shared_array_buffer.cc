@@ -8,6 +8,35 @@
 
 namespace blink {
 
+// Construction of WrapperTypeInfo may require non-trivial initialization due
+// to cross-component address resolution in order to load the pointer to the
+// parent interface's WrapperTypeInfo.  We ignore this issue because the issue
+// happens only on component builds and the official release builds
+// (statically-linked builds) are never affected by this issue.
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
+
+const WrapperTypeInfo DOMSharedArrayBuffer::wrapper_type_info_body_{
+    gin::kEmbedderBlink,
+    nullptr,
+    nullptr,
+    "SharedArrayBuffer",
+    nullptr,
+    WrapperTypeInfo::kWrapperTypeObjectPrototype,
+    WrapperTypeInfo::kObjectClassId,
+    WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
+    WrapperTypeInfo::kIdlBufferSourceType,
+};
+
+const WrapperTypeInfo& DOMSharedArrayBuffer::wrapper_type_info_ =
+    DOMSharedArrayBuffer::wrapper_type_info_body_;
+
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
 v8::MaybeLocal<v8::Value> DOMSharedArrayBuffer::Wrap(
     ScriptState* script_state) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, script_state->GetIsolate()));

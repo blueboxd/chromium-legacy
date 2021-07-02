@@ -74,7 +74,6 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/debug_utils.h"
-#include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/common/state_transitions.h"
 #include "content/public/browser/browser_context.h"
@@ -112,6 +111,7 @@
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -126,7 +126,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
-#include "third_party/blink/public/common/net/ip_address_space_util.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
@@ -765,7 +764,7 @@ network::mojom::IPAddressSpace CalculateIPAddressSpace(
   // Determine the IPAddressSpace, based on the IP address and the response
   // headers received.
   network::mojom::IPAddressSpace computed_ip_address_space =
-      blink::CalculateClientAddressSpace(url, response_head);
+      network::CalculateClientAddressSpace(url, response_head);
   if (computed_ip_address_space != network::mojom::IPAddressSpace::kUnknown) {
     return computed_ip_address_space;
   }
@@ -3878,7 +3877,7 @@ void NavigationRequest::CommitNavigation() {
   url::Origin origin = (common_params_->url.SchemeIs(url::kUrnScheme) &&
                         GetWebBundleURL().is_valid())
                            ? url::Origin::Create(GetWebBundleURL())
-                           : GetOriginForURLLoaderFactory();
+                           : GetOriginToCommit();
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   isolation_info_for_subresources_ =
@@ -5231,7 +5230,7 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
   BrowserContext* context =
       frame_tree_node_->navigator().controller().GetBrowserContext();
 
-  url::Origin origin = GetOriginForURLLoaderFactory();
+  url::Origin origin = GetOriginToCommit();
   if (client->ShouldAllowInsecurePrivateNetworkRequests(context, origin)) {
     // The content browser client decided to make an exception for this URL.
     private_network_request_policy_ =
@@ -5340,7 +5339,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   // TODO(https://crbug.com/888079) Take sandbox into account.
   same_origin_ = (previous_render_frame_host->GetLastCommittedOrigin() ==
-                  GetOriginForURLLoaderFactory());
+                  GetOriginToCommit());
 
   SetExpectedProcess(render_frame_host_->GetProcess());
 
@@ -5411,13 +5410,12 @@ bool NavigationRequest::
           !data_url_as_string.value().empty());
 }
 
-url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
-  // The origin to commit is not known until we get the final network response.
-  DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
+url::Origin NavigationRequest::GetOriginToCommit() {
+  return GetOriginForURLLoaderFactoryWithFinalFrameHost();
+}
 
-  if (IsSameDocument() || IsPageActivation())
-    return GetRenderFrameHost()->GetLastCommittedOrigin();
-
+url::Origin
+NavigationRequest::GetOriginForURLLoaderFactoryWithoutFinalFrameHost() {
   // Calculate an approximation of the origin. The sandbox/csp are ignored.
   url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
 
@@ -5445,6 +5443,19 @@ url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
   // MHTML documents should commit as an opaque origin. They should not be able
   // to make network request on behalf of the real origin.
   DCHECK(!IsMhtmlOrSubframe() || origin.opaque());
+
+  return origin;
+}
+
+url::Origin
+NavigationRequest::GetOriginForURLLoaderFactoryWithFinalFrameHost() {
+  // The origin to commit is not known until we get the final network response.
+  DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
+
+  if (IsSameDocument() || IsPageActivation())
+    return GetRenderFrameHost()->GetLastCommittedOrigin();
+
+  url::Origin origin = GetOriginForURLLoaderFactoryWithoutFinalFrameHost();
 
   // https://crbug.com/1041376) of the origin that will be committed because of
   // |this| NavigationRequest.
@@ -6283,7 +6294,7 @@ void NavigationRequest::RecordAddressSpaceFeature() {
   }
 
   // We intentionally do *not* use `CalculateIPAddressSpace()` here, as it
-  // depends on `blink::CalculateClientAddressSpace()` and takes into account
+  // depends on `network::CalculateClientAddressSpace()` and takes into account
   // the CSP `treat-as-public-address` directive. If a `public` document
   // initiates a navigation request to a `local` resource, we should block that
   // request before any bytes are sent over the network as that request
@@ -6294,8 +6305,8 @@ void NavigationRequest::RecordAddressSpaceFeature() {
   // wish to mirror the calculation performed by the network process when
   // applying Private Network Access checks.
   network::mojom::IPAddressSpace response_address_space =
-      blink::CalculateResourceAddressSpace(common_params_->url,
-                                           response_head_->remote_endpoint);
+      network::CalculateResourceAddressSpace(common_params_->url,
+                                             response_head_->remote_endpoint);
 
   absl::optional<blink::mojom::WebFeature> optional_feature =
       blink::AddressSpaceFeature(

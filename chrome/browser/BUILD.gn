@@ -2374,6 +2374,8 @@ static_library("browser") {
     deps += [
       "//ash/components/audio",
       "//ash/constants",
+      "//ash/webui/diagnostics_ui",
+      "//ash/webui/diagnostics_ui/mojom",
       "//ash/webui/file_manager:file_manager_ui",
       "//ash/webui/file_manager/mojom",
       "//ash/webui/scanning",
@@ -2397,8 +2399,6 @@ static_library("browser") {
       "//chromeos/components/camera_app_ui:mojo_bindings",
       "//chromeos/components/chromebox_for_meetings/buildflags",
       "//chromeos/components/connectivity_diagnostics",
-      "//chromeos/components/diagnostics_ui",
-      "//chromeos/components/diagnostics_ui/mojom",
       "//chromeos/components/eche_app_ui",
       "//chromeos/components/eche_app_ui/mojom",
       "//chromeos/components/help_app_ui",
@@ -2437,6 +2437,7 @@ static_library("browser") {
     if (!is_official_build) {
       deps += [
         "//chromeos/components/demo_mode_app_ui",
+        "//chromeos/components/demo_mode_app_ui/mojom",
         "//chromeos/components/telemetry_extension_ui",
         "//chromeos/components/telemetry_extension_ui/mojom",
       ]
@@ -4688,6 +4689,7 @@ static_library("browser") {
       "//chromeos/strings",
       "//chromeos/ui/base",
       "//chromeos/ui/vector_icons",
+      "//components/account_manager_core",
       "//components/arc",
       "//components/arc:arc_base",
       "//components/arc:arc_base_utils",
@@ -4812,7 +4814,6 @@ static_library("browser") {
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/ui/frame",
-      "//components/account_manager_core",
       "//ui/platform_window",
     ]
   }

@@ -24,6 +24,7 @@
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
@@ -195,10 +196,10 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   // TODO(zetamoo): Use NavigationSimulator instead of creating
   // NavigationRequest and NavigationHandleImpl.
   void CreateNavigationHandle() {
-    auto common_params = CreateCommonNavigationParams();
+    auto common_params = blink::CreateCommonNavigationParams();
     common_params->initiator_origin =
         url::Origin::Create(GURL("https://initiator.example.com"));
-    auto commit_params = CreateCommitNavigationParams();
+    auto commit_params = blink::CreateCommitNavigationParams();
     commit_params->frame_policy =
         main_test_rfh()->frame_tree_node()->pending_frame_policy();
     auto request = NavigationRequest::CreateBrowserInitiated(
@@ -242,7 +243,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl1, main_rfh());
   navigation->Start();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
@@ -251,7 +252,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   navigation->set_http_connection_info(
       net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1);
   navigation->Redirect(kUrl2);
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
@@ -260,7 +261,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   navigation->set_http_connection_info(
       net::HttpResponseInfo::CONNECTION_INFO_QUIC_35);
   navigation->ReadyToCommit();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35,
@@ -287,14 +288,14 @@ TEST_F(NavigationRequestTest, SimpleDataChecksFailure) {
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());
   navigation->Start();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
             navigation->GetNavigationHandle()->GetConnectionInfo());
 
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::ERR_CERT_DATE_INVALID,

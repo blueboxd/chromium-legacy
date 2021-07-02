@@ -20,6 +20,8 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
+import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toClientId;
+import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toCssSelector;
 
 import android.support.test.InstrumentationRegistry;
 
@@ -100,13 +102,13 @@ public class AutofillAssistantNavigationIntegrationTest {
     @MediumTest
     public void navigatingWithLocationBarShowsError() {
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath(TEST_PAGE_A)
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Done")))
@@ -130,12 +132,8 @@ public class AutofillAssistantNavigationIntegrationTest {
     @Test
     @MediumTest
     public void clickingLinkDoesNotCauseError() {
-        SelectorProto linkElement =
-                SelectorProto.newBuilder()
-                        .addFilters(SelectorProto.Filter.newBuilder().setCssSelector(
-                                "#form_target_website_link"))
-                        .build();
-        ClientIdProto clientId = ClientIdProto.newBuilder().setIdentifier("e").build();
+        SelectorProto linkElement = toCssSelector("#form_target_website_link");
+        ClientIdProto clientId = toClientId("e");
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(ActionProto.newBuilder()
@@ -176,12 +174,8 @@ public class AutofillAssistantNavigationIntegrationTest {
     @Test
     @MediumTest
     public void javaScriptNavigationDoesNotCauseError() {
-        SelectorProto navigationActionElement =
-                SelectorProto.newBuilder()
-                        .addFilters(SelectorProto.Filter.newBuilder().setCssSelector(
-                                "#form_target_navigation_action"))
-                        .build();
-        ClientIdProto clientId = ClientIdProto.newBuilder().setIdentifier("e").build();
+        SelectorProto navigationActionElement = toCssSelector("#form_target_navigation_action");
+        ClientIdProto clientId = toClientId("e");
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(ActionProto.newBuilder()
@@ -227,46 +221,46 @@ public class AutofillAssistantNavigationIntegrationTest {
                 mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Page B").addChoices(
                                  Choice.newBuilder().setChip(
                                          ChipProto.newBuilder().setText("Navigate"))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setNavigate(NavigateProto.newBuilder().setUrl(getURL(TEST_PAGE_A)))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setWaitForNavigation(WaitForNavigationProto.newBuilder())
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Page A").addChoices(
                                  Choice.newBuilder().setChip(
                                          ChipProto.newBuilder().setText("Go back"))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setNavigate(NavigateProto.newBuilder().setGoBackward(true))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setWaitForNavigation(WaitForNavigationProto.newBuilder())
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Page B").addChoices(
                                  Choice.newBuilder().setChip(
                                          ChipProto.newBuilder().setText("Go forward"))))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setNavigate(NavigateProto.newBuilder().setGoForward(true))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setWaitForNavigation(WaitForNavigationProto.newBuilder())
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Page A").addChoices(
                                  PromptProto.Choice.newBuilder()))
                          .build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath(TEST_PAGE_B)
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Done")))
@@ -306,13 +300,13 @@ public class AutofillAssistantNavigationIntegrationTest {
     @MediumTest
     public void navigatingInStoppedAutofillAssistantStateRemovesUI() {
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
+        list.add(ActionProto.newBuilder()
                          .setTell(TellProto.newBuilder().setMessage("Shutdown"))
                          .build());
-        list.add((ActionProto) ActionProto.newBuilder().setStop(StopProto.newBuilder()).build());
+        list.add(ActionProto.newBuilder().setStop(StopProto.newBuilder()).build());
 
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                SupportedScriptProto.newBuilder()
                         .setPath(TEST_PAGE_A)
                         .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
                                 ChipProto.newBuilder().setText("Done")))

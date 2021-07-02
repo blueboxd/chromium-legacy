@@ -166,12 +166,13 @@ ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
 
 void ServiceWorkerRegistry::CreateNewRegistration(
     blink::mojom::ServiceWorkerRegistrationOptions options,
+    const blink::StorageKey& key,
     NewRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::GetNewRegistrationId,
       base::BindOnce(&ServiceWorkerRegistry::DidGetNewRegistrationId,
-                     weak_factory_.GetWeakPtr(), std::move(options),
+                     weak_factory_.GetWeakPtr(), std::move(options), key,
                      std::move(callback)));
 }
 
@@ -338,6 +339,7 @@ void ServiceWorkerRegistry::StoreRegistration(
   auto data = storage::mojom::ServiceWorkerRegistrationData::New();
   data->registration_id = registration->id();
   data->scope = registration->scope();
+  data->key = registration->key();
   data->script = version->script_url();
   data->script_type = version->script_type();
   data->update_via_cache = registration->update_via_cache();
@@ -818,7 +820,7 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
   blink::mojom::ServiceWorkerRegistrationOptions options(
       data.scope, data.script_type, data.update_via_cache);
   registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-      options, data.registration_id, context_->AsWeakPtr());
+      options, data.key, data.registration_id, context_->AsWeakPtr());
   registration->SetStored();
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
@@ -1109,6 +1111,7 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
 
     ServiceWorkerRegistrationInfo info;
     info.scope = registration_data->scope;
+    info.key = registration_data->key;
     info.update_via_cache = registration_data->update_via_cache;
     info.registration_id = registration_data->registration_id;
     info.stored_version_size_bytes =
@@ -1367,6 +1370,7 @@ void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
 
 void ServiceWorkerRegistry::DidGetNewRegistrationId(
     blink::mojom::ServiceWorkerRegistrationOptions options,
+    const blink::StorageKey& key,
     NewRegistrationCallback callback,
     int64_t registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1375,7 +1379,7 @@ void ServiceWorkerRegistry::DidGetNewRegistrationId(
     return;
   }
   std::move(callback).Run(base::MakeRefCounted<ServiceWorkerRegistration>(
-      std::move(options), registration_id, context_->AsWeakPtr()));
+      std::move(options), key, registration_id, context_->AsWeakPtr()));
 }
 
 void ServiceWorkerRegistry::DidGetNewVersionId(

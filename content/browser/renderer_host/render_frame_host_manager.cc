@@ -970,7 +970,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         render_frame_host_->CreateWebUI(request->common_params().url,
                                         request->bindings());
         if (render_frame_host_->IsRenderFrameLive()) {
-          render_frame_host_->web_ui()->RenderFrameCreated(
+          render_frame_host_->web_ui()->WebUIRenderFrameCreated(
               render_frame_host_.get());
         }
       }
@@ -1090,9 +1090,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   // If a WebUI was created in a speculative RenderFrameHost or a new
   // RenderFrame was created then the WebUI never interacted with the
-  // RenderFrame. Notify using RenderFrameCreated.
+  // RenderFrame. Notify using WebUIRenderFrameCreated.
   if (notify_webui_of_rf_creation && navigation_rfh->web_ui()) {
-    navigation_rfh->web_ui()->RenderFrameCreated(navigation_rfh);
+    navigation_rfh->web_ui()->WebUIRenderFrameCreated(navigation_rfh);
   }
 
   // If this function picked an incompatible process for the URL, capture a
@@ -2975,7 +2975,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->GetUrlInfo(), web_exposed_isolation_info,
       request->GetSourceSiteInstance(), request->dest_site_instance(),
-      candidate_site_instance, request->common_params().transition,
+      candidate_site_instance,
+      ui::PageTransitionFromInt(request->common_params().transition),
       request->state() >= NavigationRequest::CANCELING, is_reload,
       request->IsSameDocument(),
       request->GetRestoreType() == RestoreType::kRestored,

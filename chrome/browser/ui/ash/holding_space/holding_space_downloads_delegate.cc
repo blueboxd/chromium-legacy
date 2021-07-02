@@ -83,7 +83,22 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload
 
   // Returns the number of bytes received for the underlying `download_item_`.
   int64_t GetReceivedBytes() const {
-    return download_item_->GetReceivedBytes();
+    int64_t received_bytes = download_item_->GetReceivedBytes();
+
+    if (IsInProgress(download_item_)) {
+      // If the underlying `download_item_` is still in-progress, ensure that
+      // `received_bytes` < `total_bytes`. This may not actually be the case if,
+      // for example, all bytes have been received but the `download_item_` is
+      // still in the process of completing. Failure to account for this
+      // scenario would cause the associated `holding_space_item_` to be marked
+      // complete prematurely and potentially be removed from the model due to
+      // failed backing file validity checks.
+      const absl::optional<int64_t> total_bytes = GetTotalBytes();
+      if (total_bytes.has_value())
+        received_bytes = std::min(received_bytes, total_bytes.value() - 1);
+    }
+
+    return received_bytes;
   }
 
   // Returns the file path associated with the underlying `download_item_`.
@@ -465,6 +480,16 @@ void HoldingSpaceDownloadsDelegate::OnDownloadCompleted(
 
 void HoldingSpaceDownloadsDelegate::OnDownloadFailed(
     const InProgressDownload* in_progress_download) {
+  // If the `in_progress_download` resulted in the creation of a holding space
+  // `item`, that `item` should be removed when the underlying download fails.
+  const HoldingSpaceItem* item = in_progress_download->GetHoldingSpaceItem();
+  if (item) {
+    // NOTE: Removing `item` from the `model()` will result in the
+    // `in_progress_download` being erased.
+    model()->RemoveItem(item->id());
+    DCHECK(!base::Contains(in_progress_downloads_, in_progress_download));
+    return;
+  }
   EraseDownload(in_progress_download);
 }
 

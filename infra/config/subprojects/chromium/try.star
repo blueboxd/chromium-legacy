@@ -813,7 +813,7 @@ try_.chromium_chromiumos_builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 10,
+        experiment_percentage = 20,
     ),
     os = os.LINUX_BIONIC_REMOVE,
 )
@@ -1825,6 +1825,8 @@ try_.chromium_win_builder(
 try_.chromium_win_builder(
     name = "win10_chromium_x64_20h2_fyi_rel_ng",
     builderless = False,
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     os = os.WINDOWS_10_20h2,
 )
 

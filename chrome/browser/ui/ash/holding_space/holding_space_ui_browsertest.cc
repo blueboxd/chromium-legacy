@@ -1366,6 +1366,13 @@ class HoldingSpaceUiInProgressDownloadsBrowserTest
                 base::ScopedAllowBlockingForTesting allow_blocking;
                 ASSERT_TRUE(base::DeleteFile(file_path));
               }
+              // Any subsequent calls to `download::DownloadItem::GetState()`
+              // should indicate that the `mock_download_item` is cancelled.
+              ON_CALL(*mock_download_item, GetState)
+                  .WillByDefault(
+                      testing::Return(download::DownloadItem::CANCELLED));
+              // Calling `download::DownloadItem::Cancel()` results in updates.
+              mock_download_item->NotifyObserversDownloadUpdated();
             }));
 
     // Mock `download::DownloadItem::GetFullPath()`.
@@ -1432,15 +1439,14 @@ class HoldingSpaceUiInProgressDownloadsBrowserTest
         .WillByDefault(
             [callback = base::BindRepeating(
                  [](download::MockDownloadItem* mock_download_item,
-                    std::unique_ptr<bool> open_when_complete,
-                    bool new_open_when_complete) {
+                    bool* open_when_complete, bool new_open_when_complete) {
                    if (*open_when_complete != new_open_when_complete) {
                      *open_when_complete = new_open_when_complete;
                      mock_download_item->NotifyObserversDownloadUpdated();
                    }
                  },
                  base::Unretained(mock_download_item.get()),
-                 base::Passed(std::move(open_when_complete)))](
+                 base::Owned(std::move(open_when_complete)))](
                 bool new_open_when_complete) {
               callback.Run(new_open_when_complete);
             });
@@ -1562,6 +1568,22 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceUiInProgressDownloadsBrowserTest,
   EXPECT_EQ(primary_label->GetText(), target_file_name);
   EXPECT_TRUE(secondary_label->GetVisible());
   EXPECT_EQ(secondary_label->GetText(), u"Paused, 1.0/2.0 MB");
+
+  // Mock `download::DownloadItem::GetReceivedBytes()` to indicate that all
+  // bytes have been received.
+  ON_CALL(*in_progress_download, GetReceivedBytes)
+      .WillByDefault(testing::Return(in_progress_download->GetTotalBytes()));
+  in_progress_download->NotifyObserversDownloadUpdated();
+
+  // Because the download has not yet been marked complete, the number of bytes
+  // received will not equal the total number of expected bytes but in most
+  // cases that will be imperceivable to the user due to rounding. This is to
+  // prevent giving the impression of completion before download progress is
+  // truly complete (which does not occur until after renaming, etc).
+  EXPECT_TRUE(primary_label->GetVisible());
+  EXPECT_EQ(primary_label->GetText(), target_file_name);
+  EXPECT_TRUE(secondary_label->GetVisible());
+  EXPECT_EQ(secondary_label->GetText(), u"Paused, 2.0/2.0 MB");
 
   // Complete the download.
   ON_CALL(*in_progress_download, GetState())

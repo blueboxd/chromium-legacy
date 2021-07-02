@@ -126,7 +126,6 @@ CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kNotificationTriggers;
 CONTENT_EXPORT extern const base::Feature kOriginIsolationHeader;
 CONTENT_EXPORT extern const base::Feature kOriginPolicy;
-CONTENT_EXPORT extern const base::Feature kOpenXrExtendedFeatureSupport;
 CONTENT_EXPORT extern const base::Feature kOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyHeader;
@@ -184,6 +183,7 @@ CONTENT_EXPORT extern const base::Feature kWebOTP;
 CONTENT_EXPORT extern const base::Feature kWebOTPAssertionFeaturePolicy;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerSubresourceFilter;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
+CONTENT_EXPORT extern const base::Feature kStopVideoCaptureOnScreenLock;
 CONTENT_EXPORT extern const base::Feature kStorageServiceOutOfProcess;
 CONTENT_EXPORT extern const base::Feature kStrictOriginIsolation;
 CONTENT_EXPORT extern const base::Feature kSubframeShutdownDelay;
@@ -250,9 +250,6 @@ CONTENT_EXPORT extern const base::Feature kWebUIReportOnlyTrustedTypes;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrArModule;
-CONTENT_EXPORT extern const base::Feature kWebXrHandInput;
-CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
-CONTENT_EXPORT extern const base::Feature kWebXrIncubations;
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature

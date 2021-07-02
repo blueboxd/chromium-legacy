@@ -45,6 +45,10 @@ class FeedStream : public ::feed::FeedStreamSurface {
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jobject>& callback_obj);
 
+  void Refresh(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               const base::android::JavaParamRef<jobject>& callback_obj);
+
   void ProcessThereAndBackAgain(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -106,6 +110,8 @@ class FeedStream : public ::feed::FeedStreamSurface {
   void ReportOtherUserAction(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              int action_type);
+  int GetSurfaceId(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

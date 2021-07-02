@@ -797,6 +797,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="feedv2" label="Feed V2 Module"/>
   <suffix name="image_editor" label="Image Editor Module"/>
   <suffix name="stack_unwinder" label="Stack Unwinder Module"/>
+  <suffix name="survey" label="Survey Module"/>
   <suffix name="tab_ui" label="Tab Management Module"/>
   <suffix name="test_dummy" label="Test Dummy Module"/>
   <suffix name="vr" label="Virtual Reality Module"/>
@@ -1094,6 +1095,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Arc.Auth.AccountCheck.TimeDelta"/>
   <affected-histogram name="Arc.Auth.Checkin.Attempts"/>
   <affected-histogram name="Arc.Auth.Checkin.TimeDelta"/>
+  <affected-histogram name="Arc.Auth.CodeFetcher.ProxyBypass"/>
   <affected-histogram name="Arc.Auth.MainAccountResolution.Status"/>
   <affected-histogram name="Arc.Auth.NetworkWait.TimeDelta"/>
   <affected-histogram name="Arc.Auth.SignIn.TimeDelta"/>
@@ -18923,6 +18925,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="ClientOutOfDate" label="Client out of date."/>
   <suffix name="PassphraseRequired" label="Passphrase required."/>
   <suffix name="SyncSetupIncomplete" label="Sync setup incomplete."/>
+  <suffix name="TrustedVaultKeyRequiredForEverything"
+      label="Trusted vault keys required for everything."/>
+  <suffix name="TrustedVaultKeyRequiredForPasswords"
+      label="Trusted vault keys required for passwords."/>
+  <suffix name="TrustedVaultRecoverabilityDegradedForEverything"
+      label="Trusted vault recoverability degraded for everything."/>
+  <suffix name="TrustedVaultRecoverabilityDegradedForPasswords"
+      label="Trusted vault recoverability degraded for passwords."/>
   <affected-histogram name="Signin.SyncErrorInfoBar"/>
 </histogram_suffixes>
 

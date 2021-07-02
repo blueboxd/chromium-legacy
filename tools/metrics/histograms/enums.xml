@@ -987,6 +987,15 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Edited"/>
 </enum>
 
+<enum name="AccountCapabilitiesFetchResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed to get an access token"/>
+  <int value="2" label="Failed to parse the response"/>
+  <int value="3" label="OAuth error"/>
+  <int value="4" label="Network error"/>
+  <int value="5" label="Request was cancelled"/>
+</enum>
+
 <enum name="AccountChooserDismissalReason">
   <int value="0" label="Canceled"/>
   <int value="1" label="Credential chosen"/>
@@ -3769,6 +3778,9 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="Failed due unknown HTTP error"/>
   <int value="7" label="Cannot parse HTTP response"/>
   <int value="8" label="No Auth code in response"/>
+  <int value="9"
+      label="The network was configured with a mandatory PAC script that
+             could not be fetched, parsed or executed."/>
 </enum>
 
 <enum name="ArcPlayAutoInstallRequestState">
@@ -25693,6 +25705,7 @@ Called by update_document_policy_enum.py.-->
   <int value="868" label="JavaScriptJitAllowedForSites"/>
   <int value="869" label="JavaScriptJitBlockedForSites"/>
   <int value="870" label="AllowHttpsOnlyMode"/>
+  <int value="871" label="DesktopSharingHubEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -42937,6 +42950,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Image-Link on a Web page"/>
   <int value="9" label="Link on a Web page"/>
   <int value="10" label="Tab Grid Entry"/>
+  <int value="11" label="Tab Grid Add To"/>
 </enum>
 
 <enum name="IOSMultiWindowConfiguration">
@@ -47283,6 +47297,7 @@ from previous Chrome versions.
   <int value="-1046627610" label="password-import:enabled"/>
   <int value="-1045900007" label="NoCreditCardAbort:disabled"/>
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
+  <int value="-1044956739" label="OptimizationGuidePushNotifications:enabled"/>
   <int value="-1043883835" label="Sharesheet:enabled"/>
   <int value="-1042723808"
       label="HappinessTrackingSurveysForDesktopSettingsPrivacy:enabled"/>
@@ -48518,6 +48533,7 @@ from previous Chrome versions.
   <int value="19629326" label="OmniboxExperimentalKeywordMode:enabled"/>
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
   <int value="21055794" label="OpenXR:enabled"/>
+  <int value="22142588" label="OptimizationGuidePushNotifications:disabled"/>
   <int value="23121136" label="MobileIdentityConsistencyVar:enabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="24332306" label="ButtonARCNetworkDiagnostics:disabled"/>
@@ -49512,6 +49528,7 @@ from previous Chrome versions.
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857391671" label="BluetoothNextHandsfreeProfile:disabled"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
+  <int value="857716462" label="FeedInteractiveRefresh:enabled"/>
   <int value="859449217" label="MagnifierPanningImprovements:enabled"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
@@ -50031,6 +50048,7 @@ from previous Chrome versions.
   <int value="1292091029" label="OmniboxOneClickUnelide:disabled"/>
   <int value="1292763218" label="SystemTrayUnified:disabled"/>
   <int value="1294131571" label="disable-winrt-midi-api"/>
+  <int value="1294306055" label="FeedInteractiveRefresh:disabled"/>
   <int value="1296878388" label="PermissionPredictions:disabled"/>
   <int value="1296958520" label="hide-active-apps-from-shelf"/>
   <int value="1298734793" label="OsSettingsAppNotificationsPage:disabled"/>
@@ -62112,6 +62130,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="kExplicitlyTriggeredInSettings">
     The user explicitly asked to move a password listed in Settings.
   </int>
+  <int value="2" label="kExplicitlyTriggeredForMultiplePasswordsInSettings">
+    The user explicitly asked to move multiple passwords at once in Settings.
+  </int>
 </enum>
 
 <enum name="PasswordManager.ReauthResult">
@@ -72572,7 +72593,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="SecurityAnomaly">
   <int value="0"
-      label="Writable+executable mount found in the init mount namespace."/>
+      label="Writable+executable mount found in the init mount namespace
+             (deprecated)"/>
+  <int value="1"
+      label="Writable+executable mount found in the init mount namespace, on
+             or under /usr/local (this suggests a dev image)"/>
+  <int value="2"
+      label="Writable+executable mount found in the init mount namespace, not
+             on, nor under, /usr/local"/>
 </enum>
 
 <enum name="SecurityFilteredTouchResult">
@@ -75620,6 +75648,16 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="unknown"/>
   <int value="1" label="ws"/>
   <int value="2" label="wss"/>
+</enum>
+
+<enum name="SodaLanguageCode">
+  <int value="0" label="None"/>
+  <int value="1" label="en-US"/>
+  <int value="2" label="ja-JP"/>
+  <int value="3" label="de-DE"/>
+  <int value="4" label="es-ES"/>
+  <int value="5" label="fr-FR"/>
+  <int value="6" label="it-IT"/>
 </enum>
 
 <enum name="SoftwareImageDecodeState">
@@ -83029,6 +83067,43 @@ Full version information for the fingerprint enum values:
   <int value="24" label="AV1 Profile Main"/>
   <int value="25" label="AV1 Profile High"/>
   <int value="26" label="AV1 Profile Pro"/>
+</enum>
+
+<enum name="VideoColorSpace.PrimaryID">
+  <int value="0" label="INVALID"/>
+  <int value="1" label="BT709"/>
+  <int value="2" label="UNSPECIFIED"/>
+  <int value="4" label="BT470M"/>
+  <int value="5" label="BT470BG"/>
+  <int value="6" label="SMPTE170M"/>
+  <int value="7" label="SMPTE240M"/>
+  <int value="8" label="FILM"/>
+  <int value="9" label="BT2020"/>
+  <int value="10" label="SMPTEST428_1"/>
+  <int value="11" label="SMPTEST431_2"/>
+  <int value="12" label="SMPTEST432_1"/>
+  <int value="22" label="EBU_3213_E"/>
+</enum>
+
+<enum name="VideoColorSpace.TransferID">
+  <int value="0" label="INVALID"/>
+  <int value="1" label="BT709"/>
+  <int value="2" label="UNSPECIFIED"/>
+  <int value="4" label="GAMMA22"/>
+  <int value="5" label="GAMMA28"/>
+  <int value="6" label="SMPTE170M"/>
+  <int value="7" label="SMPTE240M"/>
+  <int value="8" label="LINEAR"/>
+  <int value="9" label="LOG"/>
+  <int value="10" label="LOG_SQRT"/>
+  <int value="11" label="IEC61966_2_4"/>
+  <int value="12" label="BT1361_ECG"/>
+  <int value="13" label="IEC61966_2_1"/>
+  <int value="14" label="BT2020_10"/>
+  <int value="15" label="BT2020_12"/>
+  <int value="16" label="SMPTEST2084"/>
+  <int value="17" label="SMPTEST428_1"/>
+  <int value="18" label="ARIB_STD_B67"/>
 </enum>
 
 <enum name="VideoDecodeAcceleratorError">

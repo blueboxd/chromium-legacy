@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
+import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.StreamType;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
@@ -498,6 +499,9 @@ public class FeedStream implements Stream {
     public void bind(RecyclerView rootView, NtpListContentManager manager,
             FeedSurfaceMediator.ScrollState savedInstanceState, SurfaceScope surfaceScope,
             HybridListRenderer renderer, FeedLaunchReliabilityLogger launchReliabilityLogger) {
+        launchReliabilityLogger.sendPendingEvents(
+                mIsInterestFeed ? StreamType.FOR_YOU : StreamType.WEB_FEED,
+                FeedStreamJni.get().getSurfaceId(mNativeFeedStream, FeedStream.this));
         launchReliabilityLogger.logFeedReloading(System.nanoTime());
         mReliabilityLoggingBridge.setLogger(launchReliabilityLogger);
 
@@ -616,7 +620,10 @@ public class FeedStream implements Stream {
     }
 
     @Override
-    public void triggerRefresh() {}
+    public void triggerRefresh(Callback<Boolean> callback) {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                () -> FeedStreamJni.get().refresh(mNativeFeedStream, FeedStream.this, callback));
+    }
 
     @Override
     public boolean isPlaceholderShown() {
@@ -1028,11 +1035,13 @@ public class FeedStream implements Stream {
         void reportStreamScrolled(long nativeFeedStream, FeedStream caller, int distanceDp);
         void reportStreamScrollStart(long nativeFeedStream, FeedStream caller);
         void loadMore(long nativeFeedStream, FeedStream caller, Callback<Boolean> callback);
+        void refresh(long nativeFeedStream, FeedStream caller, Callback<Boolean> callback);
         void processThereAndBackAgain(long nativeFeedStream, FeedStream caller, byte[] data);
         int executeEphemeralChange(long nativeFeedStream, FeedStream caller, byte[] data);
         void commitEphemeralChange(long nativeFeedStream, FeedStream caller, int changeId);
         void discardEphemeralChange(long nativeFeedStream, FeedStream caller, int changeId);
         void surfaceOpened(long nativeFeedStream, FeedStream caller);
         void surfaceClosed(long nativeFeedStream, FeedStream caller);
+        int getSurfaceId(long nativeFeedStream, FeedStream caller);
     }
 }

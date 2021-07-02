@@ -2315,6 +2315,11 @@
            'gtest_tests': 'chromium_swarm_linux_gtests',
         },
       },
+      'linux-ssd-rel-swarming': {
+        'mixins': [
+          'linux-bionic',
+        ],
+      },
       'mac-rel-swarming': {
         'mixins': [
           'mac_x64',
@@ -3578,6 +3583,22 @@
         'test_suites': {
           'gtest_tests': 'goma_mac_gtests',
         },
+      },
+      'Mac M1 Builder (dbg) Goma RBE Canary (clobber)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
+        },
+	'swarming': {
+          'dimension_sets': [
+            {
+              'cpu': 'arm-64',
+              'os': 'Mac-11',
+            }
+          ]
+	},
       },
       'android-archive-dbg-goma-rbe-ats-canary': {
         'additional_compile_targets': [
@@ -6407,7 +6428,6 @@
           'chrome',
         ],
         'test_suites': {
-          'gtest_tests': 'lacros_fyi_tast_tests_eve',
           'skylab_tests': 'lacros_skylab_x86_64',
         },
         'swarming': {

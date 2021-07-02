@@ -4038,8 +4038,8 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
     // If PWA is already loaded, call callback immediately.
     Installable installable =
         app_banner_manager_->GetInstallableWebAppCheckResultForTesting();
-    if (installable == Installable::kYes_Promotable ||
-        installable == Installable::kYes_ByUserRequest) {
+    if (installable == Installable::kPromotable ||
+        installable == Installable::kByUserRequest) {
       observation_.Reset();
       std::move(callback_).Run();
     }
@@ -4052,16 +4052,16 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
     switch (installable) {
       case Installable::kNo:
         FALLTHROUGH;
-      case Installable::kNo_AlreadyInstalled:
+      case Installable::kNoAlreadyInstalled:
         FALLTHROUGH;
       case Installable::kUnknown:
         DCHECK(false) << "Unexpected AppBannerManager::Installable value (kNo "
                          "or kNoAlreadyInstalled or kUnknown)";
         break;
 
-      case Installable::kYes_Promotable:
+      case Installable::kPromotable:
         FALLTHROUGH;
-      case Installable::kYes_ByUserRequest:
+      case Installable::kByUserRequest:
         observation_.Reset();
         std::move(callback_).Run();
         break;
@@ -4758,6 +4758,8 @@ AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
     scrollable_shelf_ui_info.right_arrow_bounds =
         ToBoundsDictionary(fetched_info.right_arrow_bounds);
     scrollable_shelf_ui_info.is_animating = fetched_info.is_animating;
+    scrollable_shelf_ui_info.icons_under_animation =
+        fetched_info.icons_under_animation;
     scrollable_shelf_ui_info.is_overflow = fetched_info.is_overflow;
     scrollable_shelf_ui_info.icons_bounds_in_screen =
         ToBoundsDictionaryList(fetched_info.icons_bounds_in_screen);

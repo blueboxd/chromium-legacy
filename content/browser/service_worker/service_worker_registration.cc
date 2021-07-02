@@ -45,14 +45,11 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     const blink::mojom::ServiceWorkerRegistrationOptions& options,
+    const blink::StorageKey& key,
     int64_t registration_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : scope_(options.scope),
-      // Safe to convert GURL to Origin because service workers are restricted
-      // to secure contexts.
-      // TODO(crbug.com/1199077): Update this when
-      // ServiceWorkerRegistrationOptions implements StorageKey.
-      key_(blink::StorageKey(url::Origin::Create(options.scope))),
+      key_(key),
       update_via_cache_(options.update_via_cache),
       registration_id_(registration_id),
       status_(Status::kIntact),
@@ -158,7 +155,7 @@ void ServiceWorkerRegistration::NotifyVersionAttributesChanged(
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   return ServiceWorkerRegistrationInfo(
-      scope(), update_via_cache(), registration_id_,
+      scope(), key(), update_via_cache(), registration_id_,
       is_deleted() ? ServiceWorkerRegistrationInfo::IS_DELETED
                    : ServiceWorkerRegistrationInfo::IS_NOT_DELETED,
       GetVersionInfo(active_version_.get()),

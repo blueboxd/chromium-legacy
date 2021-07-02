@@ -1145,7 +1145,6 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pas
 crbug.com/1146973 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-009.html [ Failure ]
 crbug.com/1206618 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Failure ]
 crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
-crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
 crbug.com/1206618 virtual/layout_ng_block_frag/fast/multicol/dynamic/static-becomes-relpos-has-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary-fixed-multicol-height.html [ Failure ]
@@ -1160,11 +1159,9 @@ crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/mixed-opacity-test.
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-balanced-inner-column-count-1-with-forced-break.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-short-first-row-extra-tall-line.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-very-tall-inside-short-crash.html [ Skip ]
-crbug.com/1131125 virtual/layout_ng_block_frag/fast/multicol/nested-with-forced-breaks-in-eariler-rows.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-forced-breaks-in-eariler-rows.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/nested-with-padding.html [ Failure ]
-crbug.com/1131125 virtual/layout_ng_block_frag/fast/multicol/newmulticol/breaks-3-columns-3.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/static-child-becomes-fixedpos.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/tall-line-in-short-block.html [ Failure ]
 crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/transform-with-fixedpos.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
@@ -2598,6 +2595,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc/simulcast/basic.https.html [ Timeout ]
+crbug.com/626703 external/wpt/density-size-correction/density-corrected-image-svg-aspect-ratio-cross-origin.sub.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
@@ -3007,8 +3006,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/focus/focus-already-focused-iframe-sa
 crbug.com/626703 [ Mac10.15 ] external/wpt/focus/focus-already-focused-iframe-same-site.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/focus/focus-already-focused-iframe-same-site.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/focus/focus-already-focused-iframe-same-site.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] virtual/transform-interop/external/wpt/css/css-transforms/parsing/rotate-parsing-valid.html [ Crash Failure ]
-crbug.com/626703 [ Mac11.0 ] virtual/transform-interop/external/wpt/css/css-transforms/parsing/rotate-parsing-valid.html [ Crash Failure ]
 crbug.com/626703 external/wpt/focus/focus-already-focused-iframe-deep-different-site.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/content-security-policy/securitypolicyviolation/source-file-data-scheme.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any.html?wss [ Failure Timeout ]
@@ -4765,7 +4762,7 @@ crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-enviro
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 
 # DevTools underscore migration
-crbug.com/1207342 http/tests/devtools/components/split-widget.js [ Pass Failure ]
+crbug.com/1207342 http/tests/devtools/components/split-widget.js [ Failure Pass ]
 
 # Sheriff 2018-04-13
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
@@ -5437,26 +5434,23 @@ crbug.com/995663 [ Linux ] http/tests/media/autoplay/document-user-activation-cr
 crbug.com/1047208 http/tests/serviceworker/update-served-from-cache.html [ Failure Pass ]
 crbug.com/1047293 [ Mac ] editing/pasteboard/pasteboard_with_unfocused_selection.html [ Failure Pass ]
 
-crbug.com/1008483 external/wpt/css/css-transforms/3d-rendering-context-behavior.html [ Failure ]
 crbug.com/1008483 external/wpt/css/css-transforms/backface-visibility-hidden-004.tentative.html [ Failure ]
 crbug.com/1008483 external/wpt/css/css-transforms/backface-visibility-hidden-005.tentative.html [ Failure ]
 crbug.com/1008483 external/wpt/css/css-transforms/backface-visibility-hidden-animated-002.html [ Failure ]
-crbug.com/1008483 external/wpt/css/css-transforms/preserve-3d-flat-grouping-properties-containing-block.html [ Failure ]
-crbug.com/1008483 external/wpt/css/css-transforms/3d-rendering-context-and-abspos.html [ Failure ]
-crbug.com/1008483 external/wpt/css/css-transforms/3d-rendering-context-and-fixpos.html [ Failure ]
-crbug.com/1008483 external/wpt/css/css-transforms/3d-rendering-context-and-inline.html [ Failure ]
-crbug.com/1008483 external/wpt/css/css-transforms/transform3d-sorting-004.html [ Failure ]
 
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/3d-rendering-context-behavior.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/preserve-3d-flat-grouping-properties-containing-block.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/3d-rendering-context-and-abspos.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/3d-rendering-context-and-fixpos.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/3d-rendering-context-and-inline.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/transform3d-sorting-004.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop/transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-behavior.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/preserve-3d-flat-grouping-properties-containing-block.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-abspos.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-fixpos.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/3d-rendering-context-and-inline.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform3d-sorting-004.html [ Failure ]
 
-crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/3d-rendering-context-behavior.html [ Pass ]
+# 3d-point-mapping-2 tests incorrect (pre-TransformInterop) behavior,
+# but we should keep testing that until TransformInterop is shipped.
+# 3d-point-mapping-2-transforminterop tests the new behavior.
+crbug.com/1008483 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/transforms/3d/point-mapping/3d-point-mapping-2.html [ Pass ]
+
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-004.tentative.html [ Pass ]
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-005.tentative.html [ Pass ]
 crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-animated-002.html [ Pass ]
@@ -5468,26 +5462,12 @@ crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-trans
 crbug.com/1008483 virtual/backface-visibility-interop/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
 crbug.com/1008483 virtual/backface-visibility-interop/paint/invalidation/stacking-context-lost.html [ Failure ]
 crbug.com/1008483 virtual/backface-visibility-interop/paint/invalidation/multicol/multicol-as-paint-container.html [ Failure ]
-crbug.com/1008483 virtual/backface-visibility-interop/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
-crbug.com/1008483 virtual/backface-visibility-interop/transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
 
-crbug.com/943503 external/wpt/css/css-transforms/transform3d-perspective-003.html [ Failure ]
-crbug.com/943503 external/wpt/css/css-transforms/transform3d-perspective-004.html [ Failure ]
-crbug.com/943503 external/wpt/css/css-transforms/perspective-children-only-abspos.html [ Failure ]
-crbug.com/943503 external/wpt/css/css-transforms/perspective-children-only-fixpos.html [ Failure ]
-crbug.com/943503 external/wpt/css/css-transforms/perspective-children-only-inline.html [ Failure ]
-
-crbug.com/943503 virtual/transform-interop/external/wpt/css/css-transforms/transform3d-perspective-003.html [ Pass ]
-crbug.com/943503 virtual/transform-interop/external/wpt/css/css-transforms/transform3d-perspective-004.html [ Pass ]
-crbug.com/943503 virtual/transform-interop/external/wpt/css/css-transforms/perspective-children-only-abspos.html [ Pass ]
-crbug.com/943503 virtual/transform-interop/external/wpt/css/css-transforms/perspective-children-only-fixpos.html [ Pass ]
-crbug.com/943503 virtual/transform-interop/external/wpt/css/css-transforms/perspective-children-only-inline.html [ Pass ]
-
-crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform3d-perspective-003.html [ Pass ]
-crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform3d-perspective-004.html [ Pass ]
-crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transforms/perspective-children-only-abspos.html [ Pass ]
-crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transforms/perspective-children-only-fixpos.html [ Pass ]
-crbug.com/943503 virtual/backface-visibility-interop/external/wpt/css/css-transforms/perspective-children-only-inline.html [ Pass ]
+crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform3d-perspective-003.html [ Failure ]
+crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform3d-perspective-004.html [ Failure ]
+crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-abspos.html [ Failure ]
+crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-fixpos.html [ Failure ]
+crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-inline.html [ Failure ]
 
 crbug.com/1219750 external/wpt/app-history/navigate/goTo-detach-in-onnavigate.html [ Timeout ]
 
@@ -6725,12 +6705,8 @@ external/wpt/css/css-transforms/transform-rotate-007.html [ Failure ]
 external/wpt/css/css-transforms/transform-scale-001.html [ Failure ]
 external/wpt/css/css-transforms/transform-scale-002.html [ Failure ]
 external/wpt/css/css-transforms/transform-scaley-001.html [ Failure ]
-crbug.com/1008483 external/wpt/css/css-transforms/transform-table-006.html [ Failure ]
-crbug.com/1008483 external/wpt/css/css-transforms/transform-table-007.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/transform-table-006.html [ Pass ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/transform-table-007.html [ Pass ]
-crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-table-006.html [ Pass ]
-crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-table-007.html [ Pass ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-006.html [ Failure ]
+crbug.com/1008483 virtual/transform-interop-disabled/external/wpt/css/css-transforms/transform-table-007.html [ Failure ]
 external/wpt/css/css-transforms/transform-table-008.html [ Failure ]
 external/wpt/css/css-transforms/transform-translatex-006.html [ Failure ]
 external/wpt/css/css-transforms/transforms-rotate-degree-45.html [ Failure ]
@@ -7041,7 +7017,6 @@ crbug.com/1222097 external/wpt/html/semantics/embedded-content/media-elements/tr
 crbug.com/1222097 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Failure Pass ]
 
 crbug.com/1222097 svg/css/alignment-baseline.html [ Failure Pass ]
-crbug.com/1222097 virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Pass ]
 
 # Sheriff
 crbug.com/1223276 external/wpt/layout-instability/input-timestamp.html [ Skip ]
@@ -7063,11 +7038,10 @@ crbug.com/1222097 external/wpt/uievents/order-of-events/mouse-events/mouseover-o
 # Flaky on Webkit Linux Leak
 crbug.com/1223601 [ Linux ] fast/scrolling/autoscroll-latch-clicked-node-if-parent-unscrollable.html [ Failure Pass ]
 crbug.com/1223601 [ Linux ] fast/scrolling/reset-scroll-in-onscroll.html [ Failure Pass ]
-crbug.com/1223773 external/wpt/webrtc/simulcast/getStats.https.html [ Pass Failure ]
 
 # Sheriff 2021-06-29
 # Flaky on Mac11 Tests
-crbug.com/1197464 [ Mac ] virtual/scroll-unification/plugins/refcount-leaks.html [ Pass Failure ]
+crbug.com/1197464 [ Mac ] virtual/scroll-unification/plugins/refcount-leaks.html [ Failure Pass ]
 
 # File System Access API tests that depend on mojo interfaces that are only exposed behind a flag.
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.window.html [ Skip ]
@@ -7080,3 +7054,8 @@ crbug.com/1187573 http/tests/devtools/throttling/mobile-throttling.js [ Skip ]
 
 # Sheriff 2021-06-30
 crbug.com/1216587 [ Win7 ] accessibility/scroll-window-sends-notification.html [ Failure Pass ]
+
+# Sheriff 2021-07-01
+# Now also flakily timing-out.
+crbug.com/1223773 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Timeout ]
+crbug.com/1193920 virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Pass Timeout ]

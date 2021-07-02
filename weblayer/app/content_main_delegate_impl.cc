@@ -25,6 +25,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "device/base/features.h"
 #include "media/base/media_switches.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -177,7 +178,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     // TODO(crbug.com/1177948): enable WebAR.
     ::features::kWebXr,
     ::features::kWebXrArModule,
-    ::features::kWebXrHitTest,
+    device::features::kWebXrHitTest,
     // TODO(crbug.com/1091212): make Notification triggers work with
     // WebLayer.
     ::features::kNotificationTriggers,
@@ -396,7 +397,7 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
         .LoadSecondaryLocaleDataWithPakFileRegion(base::File(pak_fd),
                                                   pak_region);
 
-    std::vector<std::pair<int, ui::ScaleFactor>> extra_paks = {
+    std::vector<std::pair<int, ui::ResourceScaleFactor>> extra_paks = {
         {kWebLayerMainPakDescriptor, ui::SCALE_FACTOR_NONE},
         {kWebLayer100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
 

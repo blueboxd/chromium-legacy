@@ -22,9 +22,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="V8.ArrayBufferLargeAllocations" units="MB"
-    expires_after="2021-06-07">
+    expires_after="2022-06-30">
   <owner>gdeepti@chromium.org</owner>
   <owner>ecmziegler@chromium.org</owner>
+  <owner>clemensb@chromium.org</owner>
   <summary>
     Number of bytes requested in array buffer allocations greater than one
     megabyte.
@@ -32,9 +33,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="V8.ArrayBufferNewSizeFailures" units="MB"
-    expires_after="2021-06-07">
+    expires_after="2022-06-30">
   <owner>gdeepti@chromium.org</owner>
   <owner>ecmziegler@chromium.org</owner>
+  <owner>clemensb@chromium.org</owner>
   <summary>Array buffer sizes for which V8 failed to allocate memory.</summary>
 </histogram>
 
@@ -1378,6 +1380,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="V8.WasmDeserializationTimeMilliSeconds" units="ms"
+    expires_after="2022-06-30">
+  <owner>ahaas@chromium.org</owner>
+  <owner>clemensb@chromium.org</owner>
+  <owner>ecmziegler@chromium.org</owner>
+  <summary>
+    Time to deserialize a WebAssembly module when the WebAssembly module is
+    loaded from the cache. Recorded whenever a WebAssembly module gets
+    deserialized during streaming compilation.
+  </summary>
+</histogram>
+
 <histogram name="V8.WasmFinishModuleStreamingMicroSeconds" units="microseconds"
     expires_after="2021-12-05">
   <owner>bbudge@chromium.org</owner>
@@ -1429,6 +1443,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     will cause this metric to have an abnormal distribution. When considering
     revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
     solution.
+  </summary>
+</histogram>
+
+<histogram name="V8.WasmLazyCompileTimeMicroSeconds" units="microseconds"
+    expires_after="2022-06-30">
+  <owner>clemensb@chromium.org</owner>
+  <owner>ecmziegler@chromium.org</owner>
+  <summary>
+    Time spend for lazily compiling WebAssembly functions. Recorded on each lazy
+    compilation event (which typically compiles one function).
+
+    This histogram only records metrics on machines with high-resolution clocks.
   </summary>
 </histogram>
 

@@ -35,11 +35,11 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/file_type_policies.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
@@ -293,26 +293,18 @@ bool CheckClientDownloadRequest::IsUnderAdvancedProtection(
 }
 
 bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(
-    DownloadCheckResultReason reason,
     bool server_requests_prompt) const {
-  if (reason != REASON_DOWNLOAD_UNCOMMON)
+  if (!server_requests_prompt)
     return false;
 
   Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-  if (base::FeatureList::IsEnabled(safe_browsing::kPromptEsbForDeepScanning)) {
-    if (server_requests_prompt) {
-      return IsUnderAdvancedProtection(profile) ||
-             (profile && IsEnhancedProtectionEnabled(*profile->GetPrefs()));
-    }
+  if (profile && IsEnhancedProtectionEnabled(*profile->GetPrefs()))
+    return true;
 
-    return false;
-  }
+  if (IsUnderAdvancedProtection(profile))
+    return true;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
-#else
-  return IsUnderAdvancedProtection(profile);
-#endif
 }
 
 bool CheckClientDownloadRequest::IsAllowlistedByPolicy() const {

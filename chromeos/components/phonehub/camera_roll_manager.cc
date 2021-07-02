@@ -7,18 +7,72 @@
 #include "base/observer_list.h"
 #include "chromeos/components/phonehub/camera_roll_item.h"
 #include "chromeos/components/phonehub/message_receiver.h"
+#include "chromeos/components/phonehub/message_sender.h"
 #include "chromeos/components/phonehub/proto/phonehub_api.pb.h"
 
 namespace chromeos {
 namespace phonehub {
+namespace {
 
-CameraRollManager::CameraRollManager(MessageReceiver* message_receiver)
-    : message_receiver_(message_receiver) {
+bool IsCameraRollSupportedOnAndroidDevice(
+    const proto::CameraRollAccessState& access_state) {
+  return access_state.feature_enabled() &&
+         access_state.storage_permission_granted();
+}
+
+}  // namespace
+
+CameraRollManager::CameraRollManager(MessageReceiver* message_receiver,
+                                     MessageSender* message_sender)
+    : message_receiver_(message_receiver), message_sender_(message_sender) {
   message_receiver->AddObserver(this);
 }
 
 CameraRollManager::~CameraRollManager() {
   message_receiver_->RemoveObserver(this);
+}
+
+void CameraRollManager::OnPhoneStatusSnapshotReceived(
+    proto::PhoneStatusSnapshot phone_status_snapshot) {
+  if (!IsCameraRollSupportedOnAndroidDevice(
+          phone_status_snapshot.properties().camera_roll_access_state())) {
+    ClearCurrentItems();
+    return;
+  }
+
+  SendFetchCameraRollItemsRequest();
+}
+
+void CameraRollManager::OnPhoneStatusUpdateReceived(
+    proto::PhoneStatusUpdate phone_status_update) {
+  if (!IsCameraRollSupportedOnAndroidDevice(
+          phone_status_update.properties().camera_roll_access_state())) {
+    ClearCurrentItems();
+    return;
+  }
+
+  if (phone_status_update.has_camera_roll_updates()) {
+    SendFetchCameraRollItemsRequest();
+  }
+}
+
+void CameraRollManager::SendFetchCameraRollItemsRequest() {
+  proto::FetchCameraRollItemsRequest request;
+  for (const std::unique_ptr<CameraRollItem>& current_item : current_items_) {
+    *request.add_current_item_metadata() = current_item->metadata();
+  }
+  message_sender_->SendFetchCameraRollItemsRequest(request);
+}
+
+void CameraRollManager::ClearCurrentItems() {
+  if (current_items_.empty()) {
+    return;
+  }
+
+  current_items_.clear();
+  for (auto& observer : observer_list_) {
+    observer.OnCameraRollItemsChanged();
+  }
 }
 
 void CameraRollManager::OnFetchCameraRollItemsResponseReceived(
@@ -33,6 +87,8 @@ void CameraRollManager::OnFetchCameraRollItemsResponseReceived(
         std::make_unique<CameraRollItem>(item_proto.metadata()));
   }
 
+  // The phone only sends FetchCameraRollItemsResponse when the set of items has
+  // changed. Always alert the observers in this case.
   for (auto& observer : observer_list_) {
     observer.OnCameraRollItemsChanged();
   }

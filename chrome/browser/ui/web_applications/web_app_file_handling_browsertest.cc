@@ -39,6 +39,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/embedder_support/switches.h"
+#include "components/permissions/test/permission_request_observer.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -169,10 +170,10 @@ class WebAppFileHandlingTestBase : public WebAppControllerBrowserTest {
         WebAppControllerBrowserTest::InstallWebApp(std::move(web_app_info));
   }
 
-  void InstallAnotherFileHandlingPwa(const GURL& url) {
+  void InstallAnotherFileHandlingPwa(const GURL& start_url) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->start_url = url;
-    web_app_info->scope = url.GetWithoutFilename();
+    web_app_info->start_url = start_url;
+    web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"A second app";
 
     // This one handles jpegs.
@@ -375,6 +376,74 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
   VerifyPwaDidReceiveFileLaunchParams(false);
 }
 
+// Regression test for crbug.com/1126091
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
+                       LaunchQueueSetOnRedirect) {
+  SetFileHandlingPermission(CONTENT_SETTING_ALLOW);
+  // Install an app where the file handling action page redirects.
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->start_url =
+      https_server()->GetURL("app.com", "/web_app_file_handling/index.html");
+  web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
+  web_app_info->title = u"An app that redirects";
+
+  blink::Manifest::FileHandler entry;
+  entry.action = https_server()->GetURL(
+      "app.com", "/web_app_file_handling/handle_files_with_redirect.html");
+  entry.name = u"text";
+  entry.accept[u"text/*"].push_back(u".txt");
+  web_app_info->file_handlers.push_back(std::move(entry));
+
+  AppId app_id =
+      WebAppControllerBrowserTest::InstallWebApp(std::move(web_app_info));
+
+  // The redirect points to handle_files.html, so wait till that navigation is
+  // finished.
+  base::FilePath file = NewTestFilePath("txt");
+  LaunchWithFiles(app_id,
+                  https_server()->GetURL(
+                      "app.com", "/web_app_file_handling/handle_files.html"),
+                  {file});
+
+  // The redirected-to page should get the launch queue.
+  VerifyPwaDidReceiveFileLaunchParams(true, file);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
+                       LaunchQueueNotSetOnCrossOriginRedirect) {
+  SetFileHandlingPermission(CONTENT_SETTING_ALLOW);
+  // Install an app where the file handling action page redirects to a page on a
+  // different origin.
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->start_url =
+      https_server()->GetURL("app.com", "/web_app_file_handling/index.html");
+  web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
+  web_app_info->title = u"An app that redirects to a different origin";
+
+  blink::Manifest::FileHandler entry;
+  entry.action = https_server()->GetURL(
+      "app.com",
+      "/web_app_file_handling/handle_files_with_redirect_to_other_origin.html");
+  entry.name = u"text";
+  entry.accept[u"text/*"].push_back(u".txt");
+  web_app_info->file_handlers.push_back(std::move(entry));
+
+  AppId app_id =
+      WebAppControllerBrowserTest::InstallWebApp(std::move(web_app_info));
+
+  // The redirect points to handle_files.html with a different origin, so wait
+  // till that navigation is finished.
+  base::FilePath file = NewTestFilePath("txt");
+  LaunchWithFiles(
+      app_id,
+      https_server()->GetURL("example.com",
+                             "/web_app_file_handling/handle_files.html"),
+      {file});
+
+  // The redirected-to page should NOT get the launch queue.
+  VerifyPwaDidReceiveFileLaunchParams(false);
+}
+
 // Disabled due to flakiness on Linux bots. http://crbug.com/1207370
 #if defined(OS_LINUX)
 #define MAYBE_UnlimitedFileHandlersForChrome \
@@ -525,7 +594,6 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
                                    ContentSettingsType::FILE_HANDLING));
 }
 
-// TODO(crbug/1221772): This test suite is disabled due to flake.
 class WebAppFileHandlingPermissionDialogTest
     : public WebAppFileHandlingBrowserTest {
  public:
@@ -544,6 +612,11 @@ class WebAppFileHandlingPermissionDialogTest
     test_file_path_ = NewTestFilePath("txt");
     LaunchWithFiles(app_id(), GetTextFileHandlerActionURL(), {test_file_path_});
 
+    // The permission request is dequeued asynchronously. It may or may not be
+    // showing by now.
+    if (!FileHandlingPermissionRequestDialogTestApi::IsShowing())
+      permissions::PermissionRequestObserver(web_contents_).Wait();
+
     // A dialog is showing now.
     ASSERT_TRUE(FileHandlingPermissionRequestDialogTestApi::IsShowing());
 
@@ -556,8 +629,7 @@ class WebAppFileHandlingPermissionDialogTest
   base::FilePath test_file_path_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
-                       DISABLED_AllowAlways) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, AllowAlways) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/true,
                                                       /*accept=*/true);
   VerifyPwaDidReceiveFileLaunchParams(true, test_file_path_);
@@ -565,16 +637,14 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
             GetFileHandlingPermission(GetSecureAppURL()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
-                       DISABLED_AllowOnce) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, AllowOnce) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/false,
                                                       /*accept=*/true);
   VerifyPwaDidReceiveFileLaunchParams(true, test_file_path_);
   EXPECT_EQ(CONTENT_SETTING_ASK, GetFileHandlingPermission(GetSecureAppURL()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
-                       DISABLED_BlockAlways) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, BlockAlways) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/true,
                                                       /*accept=*/false);
   VerifyPwaDidReceiveFileLaunchParams(false);
@@ -582,8 +652,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
             GetFileHandlingPermission(GetSecureAppURL()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest,
-                       DISABLED_BlockOnce) {
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingPermissionDialogTest, BlockOnce) {
   FileHandlingPermissionRequestDialogTestApi::Resolve(/*checked=*/false,
                                                       /*accept=*/false);
   VerifyPwaDidReceiveFileLaunchParams(false);

@@ -3673,7 +3673,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_VR)
     {"webxr-incubations", flag_descriptions::kWebXrIncubationsName,
      flag_descriptions::kWebXrIncubationsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebXrIncubations)},
+     FEATURE_VALUE_TYPE(device::features::kWebXrIncubations)},
     {"webxr-runtime", flag_descriptions::kWebXrForceRuntimeName,
      flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
@@ -3842,7 +3842,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2)},
     {"feed-interactive-refresh", flag_descriptions::kFeedInteractiveRefreshName,
      flag_descriptions::kFeedInteractiveRefreshDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(feed::kInterestFeedV2Hearts)},
+     FEATURE_VALUE_TYPE(feed::kFeedInteractiveRefresh)},
     {"feed-v2-hearts", flag_descriptions::kInterestFeedV2HeartsName,
      flag_descriptions::kInterestFeedV2HeartsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2Hearts)},
@@ -6767,18 +6767,6 @@ const FeatureEntry kFeatureEntries[] = {
          "OmniboxRichEntitiesInLauncher")},
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_MAC)
-    {"enable-ephemeral-guest-profiles-on-desktop",
-     flag_descriptions::kEnableEphemeralGuestProfilesOnDesktopName,
-     flag_descriptions::kEnableEphemeralGuestProfilesOnDesktopDescription,
-     kOsWin | kOsLinux | kOsMac,
-     FEATURE_VALUE_TYPE(features::kEnableEphemeralGuestProfilesOnDesktop)},
-#endif  // defined(OS_WIN) || (defined(OS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_MAC)
-
 #if defined(OS_ANDROID)
     {"decouple-sync-from-android-auto-sync",
      flag_descriptions::kDecoupleSyncFromAndroidAutoSyncName,
@@ -7113,6 +7101,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOptimizationGuideModelDownloadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          optimization_guide::features::kOptimizationGuideModelDownloading)},
+
+#if defined(OS_ANDROID)
+    {"optimization-guide-push-notifications",
+     flag_descriptions::kOptimizationGuideModelPushNotificationName,
+     flag_descriptions::kOptimizationGuideModelPushNotificationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(optimization_guide::features::kPushNotifications)},
+#endif
 
     {"media-session-webrtc", flag_descriptions::kMediaSessionWebRTCName,
      flag_descriptions::kMediaSessionWebRTCDescription, kOsAll,

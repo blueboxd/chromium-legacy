@@ -17,6 +17,7 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
@@ -26,6 +27,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -65,6 +67,7 @@ import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -143,6 +146,8 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final FeedLaunchReliabilityLoggingState mLaunchReliabilityLoggingState;
     private FeedLaunchReliabilityLogger mLaunchReliabilityLogger;
     private final PrivacyPreferencesManagerImpl mPrivacyPreferencesManager;
+
+    private FeedSwipeRefreshLayout mSwipeRefreshLayout;
 
     @IntDef({StreamTabId.FOR_YOU, StreamTabId.FOLLOWING})
     public @interface StreamTabId {
@@ -521,7 +526,14 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mFeedSurfaceLifecycleManager = mDelegate.createStreamLifecycleManager(mActivity, this);
         mRecyclerView.setBackgroundResource(R.color.default_bg_color);
 
-        mRootView.addView(mRecyclerView);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_INTERACTIVE_REFRESH)) {
+            mSwipeRefreshLayout = createSwipeRefreshLayout();
+            mRootView.addView(mSwipeRefreshLayout);
+            mSwipeRefreshLayout.addView(mRecyclerView);
+        } else {
+            mRootView.addView(mRecyclerView);
+        }
+
         mStreamViewResizer = FeedStreamViewResizer.createAndAttach(
                 mActivity, mRecyclerView, mUiConfig, mDefaultMarginPixels, mWideMarginPixels);
 
@@ -551,6 +563,32 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         // Explicitly request focus on the scroll container to avoid UrlBar being focused after
         // the scroll container for policy is removed.
         mRecyclerView.requestFocus();
+    }
+
+    /**
+     * Create a {@link SwipeRefreshLayout} to do pull-to-refresh.
+     */
+    FeedSwipeRefreshLayout createSwipeRefreshLayout() {
+        FeedSwipeRefreshLayout swipeRefreshLayout = new FeedSwipeRefreshLayout(mActivity);
+        swipeRefreshLayout.setLayoutParams(
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        swipeRefreshLayout.setProgressBackgroundColorSchemeResource(
+                org.chromium.ui.R.color.default_bg_color_elev_2);
+        swipeRefreshLayout.setColorSchemeResources(
+                org.chromium.ui.R.color.default_control_color_active);
+        swipeRefreshLayout.setEnabled(true);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                String accessibilityRefreshString =
+                        mActivity.getResources().getString(R.string.accessibility_swipe_refresh);
+                swipeRefreshLayout.announceForAccessibility(accessibilityRefreshString);
+                mStream.triggerRefresh(
+                        (Boolean success) -> { swipeRefreshLayout.setRefreshing(false); });
+                RecordUserAction.record("MobilePullGestureReloadNTP");
+            }
+        });
+        return swipeRefreshLayout;
     }
 
     /**

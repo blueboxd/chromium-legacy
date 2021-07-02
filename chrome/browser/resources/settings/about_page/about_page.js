@@ -374,7 +374,7 @@ export class SettingsAboutPageElement extends SettingsAboutPageElementBase {
 /** @private */
   onProjectTap_() {
     window.open('https://github.com/blueboxd/chromium-legacy/','_blank');
-  },
+  }
 
   // <if expr="chromeos">
   /**

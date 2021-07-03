@@ -46350,6 +46350,7 @@ from previous Chrome versions.
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
   <int value="-1823193038" label="QuietNotificationPrompts:disabled"/>
+  <int value="-1823073826" label="TabGroupsSave:disabled"/>
   <int value="-1822825246" label="DragFromShelfToHomeOrOverview:enabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1818947212" label="OutOfBlinkCors:disabled"/>
@@ -46394,6 +46395,7 @@ from previous Chrome versions.
   <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
   <int value="-1778202807" label="DelayAsyncScriptExecution:enabled"/>
   <int value="-1776351704" label="DesktopPWAsOmniboxInstall:disabled"/>
+  <int value="-1775842908" label="EnableOAuthIpp:disabled"/>
   <int value="-1774818943" label="VrWebInputEditing:enabled"/>
   <int value="-1772942854" label="LongPressBackForHistory:enabled"/>
   <int value="-1772905637"
@@ -46972,6 +46974,7 @@ from previous Chrome versions.
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
   <int value="-1316769004" label="CrossOriginOpenerPolicyReporting:disabled"/>
+  <int value="-1314757884" label="TabGroupsSave:enabled"/>
   <int value="-1314603238" label="ChromeHomePullToRefreshIphAtTop:enabled"/>
   <int value="-1313810940" label="StrictOriginIsolation:disabled"/>
   <int value="-1311575452"
@@ -47219,6 +47222,7 @@ from previous Chrome versions.
   <int value="-1134412904" label="PrivacySandboxSettings:disabled"/>
   <int value="-1134307340" label="stop-loading-in-background:enabled"/>
   <int value="-1132704128" label="AndroidPaymentAppsFilter:disabled"/>
+  <int value="-1128981647" label="EnableOAuthIpp:enabled"/>
   <int value="-1128912963" label="MediaControlsExpandGesture:disabled"/>
   <int value="-1128221789"
       label="AutofillEnableSurfacingServerCardNickname:enabled"/>
@@ -48938,6 +48942,8 @@ from previous Chrome versions.
   <int value="359896413" label="SplitPartiallyOccludedQuads:disabled"/>
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
   <int value="360599302" label="enable-gpu-rasterization"/>
+  <int value="362623880"
+      label="HoldingSpaceInProgressDownloadsIntegration:disabled"/>
   <int value="362644448" label="memlog-in-process"/>
   <int value="362853088" label="AmbientColor:disabled"/>
   <int value="363997248" label="UseXpsForPrinting:enabled"/>
@@ -49150,6 +49156,8 @@ from previous Chrome versions.
   <int value="529235584" label="PhoneHub:enabled"/>
   <int value="530828403" label="AllowStartingServiceManagerOnly:disabled"/>
   <int value="533064367" label="WebRtcHideLocalIpsWithMdns:disabled"/>
+  <int value="533115840"
+      label="HoldingSpaceInProgressDownloadsIntegration:enabled"/>
   <int value="535131384" label="OmniboxTailSuggestions:enabled"/>
   <int value="535194142" label="TemporaryHoldingSpacePreviews:enabled"/>
   <int value="535976218" label="enable-plugin-power-saver"/>
@@ -61348,6 +61356,44 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="SwipeToCloseSuccessfulTabletTouch"/>
   <int value="16" label="SwipeToCloseCanceledTabletTouch"/>
   <int value="17" label="FlingToCloseTabletTouch"/>
+</enum>
+
+<enum name="OverviewEndAction">
+  <int value="0"
+      label="SplitView related, e.g, both snapped, window activation"/>
+  <int value="1" label="Dragging window from shelf in tablet mode"/>
+  <int value="2" label="Exiting overview to home launcher"/>
+  <int value="3" label="Click or tap outside of the windows in overview"/>
+  <int value="4" label="Window activated in overview"/>
+  <int value="5" label="Last window in overview being removed"/>
+  <int value="6" label="Display added while in overivew"/>
+  <int value="7" label="Pressing shortcut F5"/>
+  <int value="8" label="Pressing key Escape or Back"/>
+  <int value="9" label="Desk activation"/>
+  <int value="10" label="Pressing overview button"/>
+  <int value="11" label="Long pressing overview button in split view mode"/>
+  <int value="12" label="Three fingers swiping down on the trackpad"/>
+  <int value="13" label="Enabled Docked Magnifier"/>
+  <int value="14" label="Switching user happens with multi users login"/>
+  <int value="15" label="Started window cycle"/>
+  <int value="16" label="Opened app list while in clamshell mode"/>
+  <int value="17" label="Shelf alignment changed"/>
+  <int value="18" label="Shutting down"/>
+  <int value="19" label="Exiting overview through dev tools"/>
+  <int value="20" label="Exiting overview in tests"/>
+</enum>
+
+<enum name="OverviewStartAction">
+  <int value="0" label="SplitView related, e.g, one window snapped"/>
+  <int value="1" label="Pressing shortcut F5"/>
+  <int value="2" label="Dragging window from shelf in tablet mode"/>
+  <int value="3" label="Going from home launcher to overview"/>
+  <int value="4" label="Pressing overview button"/>
+  <int value="5" label="Long pressing overview button in split view mode"/>
+  <int value="6" label="Going from Bento bar to overview"/>
+  <int value="7" label="Three fingers swiping up on the trackpad"/>
+  <int value="8" label="Entering overview through dev tools"/>
+  <int value="9" label="Entering overview in tests"/>
 </enum>
 
 <enum name="P2PLookupResult">
@@ -86438,6 +86484,7 @@ Called by update_scheduler_enums.py.-->
   <int value="2" label="Failed (no versions)"/>
   <int value="3" label="Failed (no file descriptors)"/>
   <int value="4" label="Failed (error opening file descriptors)"/>
+  <int value="5" label="Failed (Component Updater SafeMode enabled)"/>
 </enum>
 
 <enum name="WebViewDrawAndSubmissionType">

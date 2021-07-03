@@ -4589,6 +4589,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsNewBadgePromoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroupsNewBadgePromo)},
 
+    {"tab-groups-save", flag_descriptions::kTabGroupsSaveName,
+     flag_descriptions::kTabGroupsSaveDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabGroupsSave)},
+
     {"new-tabstrip-animation", flag_descriptions::kNewTabstripAnimationName,
      flag_descriptions::kNewTabstripAnimationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewTabstripAnimation)},
@@ -5549,6 +5553,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkingInDiagnosticsAppName,
      flag_descriptions::kEnableNetworkingInDiagnosticsAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableNetworkingInDiagnosticsApp)},
+
+    {"enable-oauth-ipp", flag_descriptions::kEnableOAuthIppName,
+     flag_descriptions::kEnableOAuthIppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnableOAuthIpp)},
 
     {"enable-shortcut-customization-app",
      flag_descriptions::kEnableShortcutCustomizationAppName,
@@ -7390,6 +7398,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWin10TabSearchCaptionButtonDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kWin10TabSearchCaptionButton)},
 #endif  // defined(OS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-holding-space-in-progress-downloads-integration",
+     flag_descriptions::kHoldingSpaceInProgressDownloadsIntegrationName,
+     flag_descriptions::kHoldingSpaceInProgressDownloadsIntegrationDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         ash::features::kHoldingSpaceInProgressDownloadsIntegration)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

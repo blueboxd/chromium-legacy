@@ -1976,6 +1976,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-holding-space-in-progress-downloads-integration",
+    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "enable-hostname-setting",
     "owners": [ "jhawkins" ],
     "expiry_milestone": 92
@@ -2202,9 +2207,14 @@
     "expiry_milestone": 91
   },
   {
-  "name": "enable-ntp-memory-enhancement",
-  "owners": [ "adamta", "sczs" ],
-  "expiry_milestone": 96
+    "name": "enable-ntp-memory-enhancement",
+    "owners": [ "adamta", "sczs" ],
+    "expiry_milestone": 96
+  },
+  {
+    "name": "enable-oauth-ipp",
+    "owners": [ "batrapranav", "pawliczek" ],
+    "expiry_milestone": 99
   },
   {
     "name": "enable-offline-previews",
@@ -5125,6 +5135,11 @@
     "name": "tab-groups-new-badge-promo",
     "owners": [ "chrome-desktop-ui-sea@google.com", "dfried" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "tab-groups-save",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
+    "expiry_milestone": 95
   },
   {
     "name": "tab-hover-card-images",

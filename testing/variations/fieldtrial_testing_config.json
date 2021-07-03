@@ -1936,6 +1936,21 @@
             ]
         }
     ],
+    "ClankDetailedLanguageSettings": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DetailedLanguageSettings"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClickAsPointerEvent": [
         {
             "platforms": [
@@ -2104,6 +2119,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ColorProviderRedirection"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CompositeAfterPaint": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CompositeAfterPaint"
                     ]
                 }
             ]
@@ -2817,21 +2854,6 @@
                     "name": "Enabled",
                     "disable_features": [
                         "SynchronizedScrolling"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DetailedLanguageSettings": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DetailedLanguageSettings"
                     ]
                 }
             ]
@@ -5392,12 +5414,12 @@
                     },
                     "enable_features": [
                         "OmniboxBookmarkPaths",
+                        "OmniboxClobberTriggersContextualWebZeroSuggest",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
                         "OmniboxKeywordSearchButton",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
-                        "OmniboxOnFocusSuggestionsContextualWebOnContent",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
                         "OmniboxShortBookmarkSuggestionsByTotalInputLength",

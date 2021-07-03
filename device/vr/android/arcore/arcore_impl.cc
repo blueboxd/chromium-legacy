@@ -875,6 +875,8 @@ gfx::Size ArCoreImpl::GetUncroppedCameraImageSize() const {
 }
 
 mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
+  DVLOG(3) << __func__;
+
   TRACE_EVENT0("gpu", "ArCoreImpl Update");
 
   DCHECK(IsOnGlThread());
@@ -882,10 +884,9 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   DCHECK(arcore_frame_.is_valid());
   DCHECK(camera_updated);
 
-  ArStatus status;
-
   TRACE_EVENT_BEGIN0("gpu", "ArCore Update");
-  status = ArSession_update(arcore_session_.get(), arcore_frame_.get());
+  ArStatus status =
+      ArSession_update(arcore_session_.get(), arcore_frame_.get());
   TRACE_EVENT_END0("gpu", "ArCore Update");
 
   if (status != AR_SUCCESS) {
@@ -894,8 +895,15 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
     return nullptr;
   }
 
-  // TODO(https://crbug.com/1192844): If the call was successful, we should
-  // Update() the ArCore entity managers.
+  if (plane_manager_) {
+    TRACE_EVENT0("gpu", "ArCorePlaneManager Update");
+    plane_manager_->Update(arcore_frame_.get());
+  }
+
+  if (anchor_manager_) {
+    TRACE_EVENT0("gpu", "ArCoreAnchorManager Update");
+    anchor_manager_->Update(arcore_frame_.get());
+  }
 
   // If we get here, assume we have a valid camera image, but we don't know yet
   // if tracking is working.
@@ -953,16 +961,6 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
 
   auto mojo_from_viewer =
       GetMojomVRPoseFromArPose(arcore_session_.get(), arcore_pose.get());
-
-  if (plane_manager_) {
-    TRACE_EVENT0("gpu", "ArCorePlaneManager Update");
-    plane_manager_->Update(arcore_frame_.get());
-  }
-
-  if (anchor_manager_) {
-    TRACE_EVENT0("gpu", "ArCoreAnchorManager Update");
-    anchor_manager_->Update(arcore_frame_.get());
-  }
 
   return mojo_from_viewer;
 }
@@ -1187,6 +1185,10 @@ absl::optional<uint64_t> ArCoreImpl::SubscribeToHitTest(
       break;
     case mojom::XRNativeOriginInformation::Tag::HAND_JOINT_SPACE_INFO:
       // Unsupported by ARCore:
+      return absl::nullopt;
+    case mojom::XRNativeOriginInformation::Tag::IMAGE_INDEX:
+      // TODO(https://crbug.com/1143575): Add hit test support for tracked
+      // images.
       return absl::nullopt;
     case mojom::XRNativeOriginInformation::Tag::ANCHOR_ID:
       // Validate that we know which anchor's space the hit test is interested
@@ -1427,6 +1429,10 @@ bool ArCoreImpl::NativeOriginExists(
                              : false;
     case mojom::XRNativeOriginInformation::Tag::HAND_JOINT_SPACE_INFO:
       return false;
+    case mojom::XRNativeOriginInformation::Tag::IMAGE_INDEX:
+      // TODO(https://crbug.com/1143575): Needed for anchor creation relaitve to
+      // tracked images.
+      return false;
   }
 }
 
@@ -1471,6 +1477,11 @@ absl::optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
                                    native_origin_information.get_anchor_id()))
                              : absl::nullopt;
     case mojom::XRNativeOriginInformation::Tag::HAND_JOINT_SPACE_INFO:
+      return absl::nullopt;
+
+    case mojom::XRNativeOriginInformation::Tag::IMAGE_INDEX:
+      // TODO(https://crbug.com/1143575): Needed for hit test and anchors
+      // support for tracked images.
       return absl::nullopt;
   }
 }

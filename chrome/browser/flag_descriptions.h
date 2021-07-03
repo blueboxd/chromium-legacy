@@ -1444,6 +1444,9 @@ extern const char kTabGroupsFeedbackDescription[];
 extern const char kTabGroupsNewBadgePromoName[];
 extern const char kTabGroupsNewBadgePromoDescription[];
 
+extern const char kTabGroupsSaveName[];
+extern const char kTabGroupsSaveDescription[];
+
 extern const char kTabHoverCardImagesName[];
 extern const char kTabHoverCardImagesDescription[];
 
@@ -2598,6 +2601,9 @@ extern const char kEcheSWAResizingDescription[];
 extern const char kEnableNetworkingInDiagnosticsAppName[];
 extern const char kEnableNetworkingInDiagnosticsAppDescription[];
 
+extern const char kEnableOAuthIppName[];
+extern const char kEnableOAuthIppDescription[];
+
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];
 
@@ -2691,6 +2697,9 @@ extern const char kHelpAppSearchServiceIntegrationDescription[];
 
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];
+
+extern const char kHoldingSpaceInProgressDownloadsIntegrationName[];
+extern const char kHoldingSpaceInProgressDownloadsIntegrationDescription[];
 
 extern const char kImeAssistAutocorrectName[];
 extern const char kImeAssistAutocorrectDescription[];

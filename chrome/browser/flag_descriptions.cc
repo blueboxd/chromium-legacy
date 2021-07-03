@@ -2515,6 +2515,10 @@ const char kTabGroupsNewBadgePromoDescription[] =
     "Causes a 'New' badge to appear on the entry point for creating a tab "
     "group in the tab context menu.";
 
+const char kTabGroupsSaveName[] = "Tab Groups Save";
+const char kTabGroupsSaveDescription[] =
+    "Enables users to explicitly save and recall tab groups.";
+
 const char kTabHoverCardImagesName[] = "Tab Hover Card Images";
 const char kTabHoverCardImagesDescription[] =
     "Shows a preview image in tab hover cards, if tab hover cards are enabled.";
@@ -4522,6 +4526,11 @@ const char kEnableNetworkingInDiagnosticsAppName[] =
 const char kEnableNetworkingInDiagnosticsAppDescription[] =
     "Enable networking cards in the Diagnostics App";
 
+const char kEnableOAuthIppName[] =
+    "Enable OAuth when printing via the IPP protocol";
+const char kEnableOAuthIppDescription[] =
+    "Enable OAuth when printing via the IPP protocol";
+
 const char kEnableSuggestedFilesName[] = "Enable Suggested Files";
 const char kEnableSuggestedFilesDescription[] =
     "Enable Suggested Files feature in Launcher, which will show file "
@@ -4681,6 +4690,12 @@ const char kHideArcMediaNotificationsName[] = "Hide ARC media notifications";
 const char kHideArcMediaNotificationsDescription[] =
     "Hides media notifications for ARC apps. Requires "
     "#enable-media-session-notifications to be enabled.";
+
+const char kHoldingSpaceInProgressDownloadsIntegrationName[] =
+    "Enable showing in-progress downloads in Tote.";
+const char kHoldingSpaceInProgressDownloadsIntegrationDescription[] =
+    "Show in-progress download functionality in Tote to increase productivity "
+    "by giving users one place to go to monitor and access their downloads.";
 
 const char kImeAssistAutocorrectName[] = "Enable assistive autocorrect";
 const char kImeAssistAutocorrectDescription[] =

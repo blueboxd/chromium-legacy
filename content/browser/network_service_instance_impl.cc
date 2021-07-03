@@ -79,10 +79,10 @@ bool g_network_service_is_responding = false;
 base::Time g_last_network_service_crash;
 
 std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
-  static base::NoDestructor<
-      base::SequenceLocalStorageSlot<std::unique_ptr<network::NetworkService>>>
+  static base::SequenceLocalStorageSlot<
+      std::unique_ptr<network::NetworkService>>
       service;
-  return service->GetOrCreateValue();
+  return service.GetOrCreateValue();
 }
 
 // If this feature is enabled, the Network Service will run on its own thread
@@ -135,7 +135,7 @@ void CreateInProcessNetworkService(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
     base::Thread::Options options(base::MessagePumpType::IO, 0);
-    GetNetworkServiceDedicatedThread().StartWithOptions(options);
+    GetNetworkServiceDedicatedThread().StartWithOptions(std::move(options));
     task_runner = GetNetworkServiceDedicatedThread().task_runner();
   } else {
     task_runner = GetIOThreadTaskRunner({});
@@ -575,10 +575,10 @@ void RunInProcessCertVerifierServiceFactory(
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
 #endif
-  static base::NoDestructor<base::SequenceLocalStorageSlot<
-      std::unique_ptr<cert_verifier::CertVerifierServiceFactoryImpl>>>
+  static base::SequenceLocalStorageSlot<
+      std::unique_ptr<cert_verifier::CertVerifierServiceFactoryImpl>>
       service_factory_slot;
-  service_factory_slot->GetOrCreateValue() =
+  service_factory_slot.GetOrCreateValue() =
       std::make_unique<cert_verifier::CertVerifierServiceFactoryImpl>(
           std::move(receiver));
 }
@@ -587,10 +587,10 @@ void RunInProcessCertVerifierServiceFactory(
 // Lives on the UI thread.
 mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>&
 GetCertVerifierServiceFactoryRemoteStorage() {
-  static base::NoDestructor<base::SequenceLocalStorageSlot<
-      mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>>>
+  static base::SequenceLocalStorageSlot<
+      mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>>
       cert_verifier_service_factory_remote;
-  return cert_verifier_service_factory_remote->GetOrCreateValue();
+  return cert_verifier_service_factory_remote.GetOrCreateValue();
 }
 
 // Returns a pointer to a CertVerifierServiceFactory usable on the UI thread.

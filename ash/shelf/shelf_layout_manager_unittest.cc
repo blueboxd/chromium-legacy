@@ -154,10 +154,8 @@ int GetWidgetOffsetFromBottom(const views::Widget* widget) {
 
 class TestDisplayObserver : public display::DisplayObserver {
  public:
-  TestDisplayObserver() { display::Screen::GetScreen()->AddObserver(this); }
-  ~TestDisplayObserver() override {
-    display::Screen::GetScreen()->RemoveObserver(this);
-  }
+  TestDisplayObserver() = default;
+  ~TestDisplayObserver() override = default;
 
   int metrics_change_count() const { return metrics_change_count_; }
 
@@ -168,6 +166,7 @@ class TestDisplayObserver : public display::DisplayObserver {
     metrics_change_count_++;
   }
 
+  display::ScopedDisplayObserver display_observer_{this};
   int metrics_change_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
@@ -627,9 +626,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
                 ShelfConfig::Get()->hidden_shelf_in_screen_portion(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Tests that the shelf is visible when in overview mode.
-  overview_controller->StartOverview();
+  EnterOverview();
   ShellTestApi().WaitForOverviewAnimationState(
       OverviewAnimationState::kEnterAnimationComplete);
 
@@ -639,7 +637,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
             GetShelfWidget()->GetBackgroundType());
 
   // Test that on exiting overview mode, the shelf returns to auto hide state.
-  overview_controller->EndOverview();
+  ExitOverview();
   ShellTestApi().WaitForOverviewAnimationState(
       OverviewAnimationState::kExitAnimationComplete);
 
@@ -3071,8 +3069,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   wm::ActivateWindow(window1.get());
 
   // Starts the drag from the center of the shelf's bottom.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   gfx::Point start = shelf_widget_bounds.bottom_center();
   StartScroll(start);
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
@@ -3085,9 +3082,9 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
-  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   StartScroll(shelf_widget_bounds.bottom_right());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_FALSE(IsWindowDragInProgress());
@@ -3108,8 +3105,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, SwipeToExitOverview) {
   window1->Hide();
   EXPECT_EQ(HotseatState::kShownHomeLauncher, GetHotseatWidget()->state());
 
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   GetHotseatWidget()->SetState(HotseatState::kShownHomeLauncher);
   const gfx::Rect hotseat_bounds = GetHotseatWidget()->GetTargetBounds();
 
@@ -3123,7 +3119,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, SwipeToExitOverview) {
       -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
 
   // We should exit overview mode after completing the fling gesture.
-  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 }
 
 // Test that upward fling in overview transitions from overview to home.
@@ -3137,8 +3133,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingInOverview) {
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window1.get());
 
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
 
   base::HistogramTester histogram_tester;
   HotseatStateWatcher watcher(GetShelfLayoutManager());
@@ -3150,7 +3145,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingInOverview) {
       true /* is_fling */,
       -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
 
-  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 
   watcher.WaitUntilStateChanged();
   watcher.CheckEqual({HotseatState::kShownHomeLauncher});
@@ -3176,7 +3171,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingInOverviewHomeShelf) {
   WindowState::Get(window1.get())->Minimize();
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   base::HistogramTester histogram_tester;
 
@@ -3216,7 +3211,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 
@@ -3278,7 +3273,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingHomeInSplitModeWithOverview) {
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 
@@ -3820,13 +3815,12 @@ TEST_F(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
                           ui::SHOW_STATE_FULLSCREEN);
   wm::ActivateWindow(fullscreen.get());
 
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
   TestDisplayObserver observer;
-  overview_controller->StartOverview();
+  EnterOverview();
   WaitForOverviewAnimation(/*enter=*/true);
   ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
   EXPECT_EQ(0, observer.metrics_change_count());
-  overview_controller->EndOverview();
+  ExitOverview();
   WaitForOverviewAnimation(/*enter=*/false);
   ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
   EXPECT_EQ(0, observer.metrics_change_count());
@@ -3851,8 +3845,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
                 display_bounds.height());
 
   // Change alignment during overview enter animation.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   // When setting the shelf alignment, bounds aren't expected to animate.
   shelf->SetAlignment(ShelfAlignment::kLeft);
   // Setting alignment exits overview which we should wait for.
@@ -3860,9 +3853,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   EXPECT_EQ(left_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 
   // Change alignment during overview exit animation.
-  overview_controller->StartOverview();
+  EnterOverview();
   WaitForOverviewAnimation(/*enter=*/true);
-  overview_controller->EndOverview();
+  ExitOverview();
   // When setting the shelf alignment, bounds aren't expected to animate.
   shelf->SetAlignment(ShelfAlignment::kBottom);
   WaitForOverviewAnimation(/*enter=*/false);

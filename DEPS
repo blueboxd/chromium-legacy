@@ -222,7 +222,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1c467774e56e591519bfd112e517705dec1e88dc',
+  'skia_revision': '04d79fc594883cd5e4b090244c3e5930db0306af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -238,7 +238,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a3726e06b4f12ce30e754656c6214847f4da3864',
+  'swiftshader_revision': '69deca60e70d2992ee3f49c1a981b8432864abc0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -293,7 +293,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'e9a8ef0dd32c2ff6c14dff50f20848bfc0b2341f',
+  'catapult_revision': 'de5768d3116cc7792bf7c0b679912a6ca82db758',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -581,7 +581,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '1d7b5f2e794c97d6a979961dca88b6c2a6a40c69',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'be99633db632f35459756a4ee33356e1d18d7aed',
       'condition': 'checkout_ios',
   },
 
@@ -1343,7 +1343,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '2e2730fe0190f72dadd631176d2f380b4a6186a8',
+    Var('chromium_git') + '/openscreen' + '@' + '223797e8b6f8e52f3b84c6e4240e2d941b46c6cb',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + 'bf21ccb1007bb531b45d9978919a56ea5059c245',
@@ -1360,7 +1360,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'e76740cd193079be74b60bbf22890e041cd360dd',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f4ffdc1c0d10c444b6ca626319d6cdb20f8edae4',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1589,7 +1589,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '827cad9e402b63bbe38787456115bcb681a8a152',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '25731d21f45dcac622baff416f1423f5c18afa49',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '782277b9c5d41ecbdcba2941887cbcb9c365da10',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + 'd45f9300b7bf2718a03ba092789f9a30fc935a77',
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cf94984a3675b4f4ba8b1704caf84ddc9a64a833',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1e4e6269e94b15d1aa0d48c1c5676060148dfc0f',
     'condition': 'checkout_src_internal',
   },
 
@@ -1683,7 +1683,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '5AGO5EZqpK0ZND-uQWyf96pSLYa3XMbKq1kjkswnThcC',
+        'version': 'd_dtMSh01ZuOaZzP6xcjbXtXOzuNoI8_MzWVrH4BQNoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

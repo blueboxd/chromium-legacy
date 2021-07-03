@@ -531,6 +531,16 @@ public class PaymentRequestService
                     PaymentErrorReason.INVALID_DATA_FROM_RENDERER);
             return false;
         }
+        if (PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                    PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION)
+                && methodData.containsKey(MethodStrings.SECURE_PAYMENT_CONFIRMATION)
+                && (methodData.size() > 1 || options.requestPayerEmail || options.requestPayerPhone
+                        || options.requestShipping || options.requestPayerName)) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA,
+                    PaymentErrorReason.INVALID_DATA_FROM_RENDERER);
+            return false;
+        }
         mBrowserPaymentRequest.modifyMethodDataIfNeeded(methodData);
         methodData = Collections.unmodifiableMap(methodData);
 
@@ -888,7 +898,9 @@ public class PaymentRequestService
         PaymentApp selectedApp = mBrowserPaymentRequest.getSelectedPaymentApp();
         // TODO(crbug.com/1211947): Deduplicate this part with
         // SecurePaymentConfirmationController::SetupModelAndShowDialogIfApplicable().
-        return selectedApp != null && selectedApp.getPaymentAppType() == PaymentAppType.INTERNAL
+        return PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                       PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION)
+                && selectedApp != null && selectedApp.getPaymentAppType() == PaymentAppType.INTERNAL
                 && selectedApp.getInstrumentMethodNames().size() == 1
                 && selectedApp.getInstrumentMethodNames().contains(
                         MethodStrings.SECURE_PAYMENT_CONFIRMATION)

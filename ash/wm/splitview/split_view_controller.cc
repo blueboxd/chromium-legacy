@@ -483,7 +483,8 @@ class SplitViewController::AutoSnapController
     // just end overview mode which will then end splitview mode.
     // TODO(xdai): Handle this logic in OverivewSession::OnWindowActivating().
     if (split_view_controller_->InClamshellSplitViewMode()) {
-      Shell::Get()->overview_controller()->EndOverview();
+      Shell::Get()->overview_controller()->EndOverview(
+          OverviewEndAction::kSplitView);
       return;
     }
 
@@ -704,7 +705,6 @@ SplitViewController::SplitViewController(aura::Window* root_window)
       split_view_metrics_controller_(
           std::make_unique<SplitViewMetricsController>(this)) {
   Shell::Get()->accessibility_controller()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   split_view_type_ = Shell::Get()->tablet_mode_controller()->InTabletMode()
                          ? SplitViewType::kTabletType
@@ -714,7 +714,6 @@ SplitViewController::SplitViewController(aura::Window* root_window)
 SplitViewController::~SplitViewController() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
   if (Shell::Get()->accessibility_controller())
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   EndSplitView();
@@ -1263,7 +1262,8 @@ void SplitViewController::OnOverviewButtonTrayLongPressed(
     DCHECK(IsWindowInSplitView(target_window));
     DCHECK(target_window);
     EndSplitView();
-    overview_controller->EndOverview();
+    overview_controller->EndOverview(
+        OverviewEndAction::kOverviewButtonLongPress);
     MaximizeIfSnapped(target_window);
     wm::ActivateWindow(target_window);
     base::RecordAction(
@@ -1278,7 +1278,9 @@ void SplitViewController::OnOverviewButtonTrayLongPressed(
   }
 
   // Start overview mode if we aren't already in it.
-  overview_controller->StartOverview(OverviewEnterExitType::kImmediateEnter);
+  overview_controller->StartOverview(
+      OverviewStartAction::kOverviewButtonLongPress,
+      OverviewEnterExitType::kImmediateEnter);
 
   SnapWindow(target_window, SplitViewController::LEFT,
              /*activate_window=*/true);
@@ -1343,7 +1345,8 @@ void SplitViewController::OnWindowPropertyChanged(aura::Window* window,
     return;
 
   EndSplitView();
-  Shell::Get()->overview_controller()->EndOverview();
+  Shell::Get()->overview_controller()->EndOverview(
+      OverviewEndAction::kSplitView);
   ShowAppCannotSnapToast();
 }
 
@@ -1364,7 +1367,8 @@ void SplitViewController::OnWindowBoundsChanged(
     if (window_state->drag_details()->bounds_change ==
         WindowResizer::kBoundsChange_Repositions) {
       // Ending overview will also end clamshell split view.
-      Shell::Get()->overview_controller()->EndOverview();
+      Shell::Get()->overview_controller()->EndOverview(
+          OverviewEndAction::kSplitView);
       return;
     }
     DCHECK(window_state->drag_details()->bounds_change &
@@ -1405,7 +1409,8 @@ void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
   if (WindowState::Get(window)->drag_details()->window_component !=
       GetWindowComponentForResize(window)) {
     // Ending overview will also end clamshell split view.
-    Shell::Get()->overview_controller()->EndOverview();
+    Shell::Get()->overview_controller()->EndOverview(
+        OverviewEndAction::kSplitView);
     return;
   }
 
@@ -1435,7 +1440,8 @@ void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
   if (divider_position_ < GetDividerEndPosition() * kOneThirdPositionRatio ||
       divider_position_ > GetDividerEndPosition() * kTwoThirdPositionRatio) {
     // Ending overview will also end clamshell split view.
-    Shell::Get()->overview_controller()->EndOverview();
+    Shell::Get()->overview_controller()->EndOverview(
+        OverviewEndAction::kSplitView);
     WindowState::Get(window)->Maximize();
   }
 }
@@ -1477,7 +1483,8 @@ void SplitViewController::OnPostWindowStateTypeChange(
     // 3. A (clamshell or tablet) split view window gets maximized.
     // 4. A (clamshell or tablet) split view window becomes full screen.
     EndSplitView();
-    Shell::Get()->overview_controller()->EndOverview();
+    Shell::Get()->overview_controller()->EndOverview(
+        OverviewEndAction::kSplitView);
   } else if (window_state->IsMinimized()) {
     OnSnappedWindowDetached(window_state->window(),
                             WindowDetachedReason::kWindowMinimized);
@@ -1488,10 +1495,12 @@ void SplitViewController::OnPostWindowStateTypeChange(
       // the window is not supposed to be minmized in tablet mode. And in
       // clamshell splitview mode, we respect the minimization of the window
       // and end overview instead.
-      if (split_view_type_ == SplitViewType::kTabletType)
+      if (split_view_type_ == SplitViewType::kTabletType) {
         InsertWindowToOverview(window_state->window());
-      else
-        Shell::Get()->overview_controller()->EndOverview();
+      } else {
+        Shell::Get()->overview_controller()->EndOverview(
+            OverviewEndAction::kSplitView);
+      }
     }
   }
 }
@@ -1581,6 +1590,7 @@ void SplitViewController::OnDisplayRemoved(
   // are in overview (see https://crbug.com/1027179).
   if (state_ == State::kLeftSnapped || state_ == State::kRightSnapped) {
     Shell::Get()->overview_controller()->StartOverview(
+        OverviewStartAction::kSplitView,
         OverviewEnterExitType::kImmediateEnter);
   }
 }
@@ -1948,7 +1958,8 @@ void SplitViewController::EndTabletSplitViewAfterResizingIfAppropriate() {
     insert_overview_window = GetDefaultSnappedWindow();
   EndSplitView();
   if (active_window) {
-    Shell::Get()->overview_controller()->EndOverview();
+    Shell::Get()->overview_controller()->EndOverview(
+        OverviewEndAction::kSplitView);
     wm::ActivateWindow(active_window);
   } else if (insert_overview_window) {
     InsertWindowToOverview(insert_overview_window, /*animate=*/false);
@@ -1992,7 +2003,8 @@ void SplitViewController::OnWindowSnapped(aura::Window* window) {
   if (!overview_controller->InOverviewSession() &&
       split_view_type_ == SplitViewType::kTabletType &&
       (state_ == State::kLeftSnapped || state_ == State::kRightSnapped)) {
-    overview_controller->StartOverview(OverviewEnterExitType::kNormal);
+    overview_controller->StartOverview(OverviewStartAction::kSplitView,
+                                       OverviewEnterExitType::kNormal);
   }
 }
 
@@ -2035,6 +2047,7 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
     default_snap_position_ = left_window_ ? LEFT : RIGHT;
     UpdateStateAndNotifyObservers();
     Shell::Get()->overview_controller()->StartOverview(
+        OverviewStartAction::kSplitView,
         reason == WindowDetachedReason::kWindowDragged
             ? OverviewEnterExitType::kImmediateEnter
             : OverviewEnterExitType::kNormal);
@@ -2302,7 +2315,8 @@ void SplitViewController::EndWindowDragImpl(
       // Activate the dragged window and end the overview. The dragged window
       // will be restored back to its previous state before dragging.
       wm::ActivateWindow(window);
-      Shell::Get()->overview_controller()->EndOverview();
+      Shell::Get()->overview_controller()->EndOverview(
+          OverviewEndAction::kSplitView);
 
       // Update the dragged window's bounds. It's possible that the dragged
       // window's bounds was changed during dragging. Update its bounds after

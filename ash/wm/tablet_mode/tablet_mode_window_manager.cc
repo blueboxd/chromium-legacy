@@ -161,7 +161,7 @@ void TabletModeWindowManager::Init() {
     ArrangeWindowsForTabletMode();
   }
   AddWindowCreationObservers();
-  display::Screen::GetScreen()->AddObserver(this);
+  display_observer_.emplace(this);
   SplitViewController::Get(Shell::GetPrimaryRootWindow())->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
@@ -207,7 +207,7 @@ void TabletModeWindowManager::Shutdown() {
         overview_controller->overview_session()->IsEmpty()) {
       split_view_controller->EndSplitView(
           SplitViewController::EndReason::kExitTabletMode);
-      overview_controller->EndOverview();
+      overview_controller->EndOverview(OverviewEndAction::kSplitView);
     }
   }
 
@@ -217,7 +217,7 @@ void TabletModeWindowManager::Shutdown() {
   split_view_controller->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->overview_controller()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
+  display_observer_.reset();
   RemoveWindowCreationObservers();
 
   ScopedObserveWindowAnimation scoped_observe(window_util::GetTopWindow(), this,

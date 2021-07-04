@@ -222,11 +222,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '04d79fc594883cd5e4b090244c3e5930db0306af',
+  'skia_revision': 'e5d312975fea0d9d0ba08ac82ca9d22f5a844f9c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e9c289d99cc160dea8ce9ae57a7ddde8162a1673',
+  'v8_revision': '70f20a327d637fd542cecccf8b13d9be592bd11f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '50aada3bf2867c64200aa2977563f550644f54c0',
+  'devtools_frontend_revision': 'c386274d793d635c2ee004d2119e6128f7a73e12',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -341,7 +341,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '49a4c68a80d19fa77643185d39a4d1e7ab9247a5',
+  'dawn_revision': 'fc37b32c5505df1d1c5efa7b1ea6c98ddadac3b3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1468,7 +1468,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '36f09a94e3bb4cd1c57cc3b4cc5ded6a00d0352c',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'd541d5abdb9dd8a8922228935f3000c265535518',
 
   'src/third_party/r8': {
       'packages': [
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7020066d2014937139d139c46a6ccbf383f34566',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7f1813025474e608c3df1b5419ecf05e07096d37',
     'condition': 'checkout_src_internal',
   },
 
@@ -1672,7 +1672,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '42WcgC5zX3G9NYY71sUfeH0HRhZEJuDBYUc_2xlO2UIC',
+        'version': '9ocgJIVdoeA6pLWO6kTZTESIeYPRkEwNF5MosNwGx5YC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

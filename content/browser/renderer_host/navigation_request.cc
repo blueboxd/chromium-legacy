@@ -34,6 +34,7 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/network_service_devtools_observer.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/loader/cached_navigation_url_loader.h"
 #include "content/browser/loader/navigation_early_hints_manager.h"
@@ -1517,14 +1518,10 @@ void NavigationRequest::BeginNavigation() {
 
   // if this is a fenced frame with a urn:uuid then convert it to a url before
   // starting the request.
-  if (blink::features::IsFencedFramesEnabled() &&
-      frame_tree_node_->frame_tree()->IsFencedFrameTree() &&
-      common_params_->url.is_valid() &&
+  if (frame_tree_node_->IsFencedFrame() && common_params_->url.is_valid() &&
       common_params_->url.scheme() == url::kUrnScheme) {
-    // TODO(crbug.com/1123606): Add CHECK for this being the root of the fenced
-    // frame tree once fenced frames are integrated with MPArch. Also make sure
-    // that the mapping is retrieved from the primary root instead of this
-    // tree's root.
+    // TODO(crbug.com/1123606): With MPArch, make sure that the mapping is
+    // retrieved from the primary root instead of this tree's root.
     absl::optional<GURL> mapped_url =
         frame_tree_node_->current_frame_host()
             ->GetPage()
@@ -6483,9 +6480,16 @@ bool NavigationRequest::ShouldRenderFallbackContentForResponse(
 
 // https://html.spec.whatwg.org/multipage/browsing-the-web.html#navigating-across-documents:hh-replace
 bool NavigationRequest::ShouldReplaceCurrentEntryForSameUrlNavigation() const {
-  // Not a same-url navigation.
+  // Not a same-url navigation. Note that this is comparing against the last
+  // history URL since this is what was used in the renderer check that was
+  // moved here. This means for error pages we will compare against the URL
+  // that failed to load, and for documents loaded with loadDataWithBaseURL,
+  // we'll compare against the history URL.
+  // TODO(https://crbug.com/1223398): Once we confirm we don't need history URLs
+  // for other uses anymore, use document URL (for non-error pages) &
+  // committed URL (for error pages) instead.
   if (common_params_->url !=
-      frame_tree_node_->current_frame_host()->last_url_in_renderer()) {
+      frame_tree_node_->current_frame_host()->last_history_url_in_renderer()) {
     return false;
   }
   // Never replace if there is no NavigationEntry to replace.

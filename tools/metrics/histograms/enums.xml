@@ -17904,6 +17904,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="10" label="11.1"/>
   <int value="11" label="12.0"/>
   <int value="12" label="12.1"/>
+  <int value="13" label="12.2"/>
 </enum>
 
 <enum name="D3D11InitializeResult">
@@ -85156,6 +85157,27 @@ others/histograms.xml -->
   <int value="1" label="Prerendered WebContents"/>
   <int value="2" label="Spare WebContents"/>
   <int value="3" label="Transferred WebContents"/>
+</enum>
+
+<enum name="WebFeedRefreshStatus">
+  <int value="0" label="Unknown status"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failed due to a network error"/>
+  <int value="3" label="Failed because the request was throttled client-side"/>
+  <int value="4" label="Failed because there is a pending ClearAll operation"/>
+</enum>
+
+<enum name="WebFeedSubscriptionRequestStatus">
+  <int value="0" label="Unknown status"/>
+  <int value="1"
+      label="Success. The follow/unfollow succeeded. Also reported when
+             following an already-followed web feed, or unfollowing a web
+             feed which is not followed."/>
+  <int value="2" label="Failed because the device is offline"/>
+  <int value="3"
+      label="Failed because the user has reached the subscription limit"/>
+  <int value="4" label="Failed for an unknown reason"/>
+  <int value="5" label="Failed due to pending ClearAll action"/>
 </enum>
 
 <enum name="WebFontCacheHit">

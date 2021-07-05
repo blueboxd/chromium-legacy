@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_impl.h"
+#include "content/browser/permissions/permission_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -45,7 +46,8 @@ class PermissionServiceContext::PermissionSubscription {
   }
 
   void OnPermissionStatusChanged(blink::mojom::PermissionStatus status) {
-    observer_->OnPermissionStatusChange(status);
+    if (observer_.is_connected())
+      observer_->OnPermissionStatusChange(status);
   }
 
   void set_id(PermissionController::SubscriptionId id) { id_ = id; }
@@ -135,8 +137,9 @@ GURL PermissionServiceContext::GetEmbeddingOrigin() const {
   // non primary FrameTree.
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host_);
-  return web_contents ? web_contents->GetLastCommittedURL().GetOrigin()
-                      : GURL();
+  return web_contents
+             ? PermissionUtil::GetLastCommittedOriginAsURL(web_contents)
+             : GURL();
 }
 
 }  // namespace content

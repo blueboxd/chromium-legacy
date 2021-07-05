@@ -1524,9 +1524,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Scheduler-relevant features this frame is using, for use in metrics.
   // See comments at |scheduler_tracked_features_|.
-  uint64_t scheduler_tracked_features() const {
-    return renderer_reported_scheduler_tracked_features_ |
-           browser_reported_scheduler_tracked_features_;
+  blink::scheduler::WebSchedulerTrackedFeatures scheduler_tracked_features()
+      const {
+    return Union(renderer_reported_scheduler_tracked_features_,
+                 browser_reported_scheduler_tracked_features_);
   }
 
   // Returns a PrefetchedSignedExchangeCache which is attached to |this| iff
@@ -2369,12 +2370,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(
       RenderFrameHostManagerUnloadBrowserTest,
       PendingDeleteRFHProcessShutdownDoesNotRemoveSubframes);
-  FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
-                           AttemptDuplicateRenderViewHost);
-  FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
-                           AttemptDuplicateRenderWidgetHost);
-  FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
-                           BindToWebUIFromWebViaMojo);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            RenderViewHostIsNotReusedAfterDelayedUnloadACK);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
@@ -2391,6 +2386,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            RenderFrameProxyNotRecreatedDuringProcessShutdown);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            UnloadACKArrivesPriorToProcessShutdownRequest);
+  FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
+                           AttemptDuplicateRenderViewHost);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            FullscreenAfterFrameUnload);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, UnloadHandlerSubframes);
@@ -2417,6 +2414,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest, ExpectedMainWorldOrigin);
+  FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
+                           AttemptDuplicateRenderWidgetHost);
   FRIEND_TEST_ALL_PREFIXES(RenderDocumentHostUserDataTest,
                            CheckInPendingDeletionState);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC);
@@ -3664,8 +3663,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // some in the browser process, depending on the design of each individual
   // feature. They are tracked separately, because when the renderer updates the
   // set of features, the browser ones should persist.
-  uint64_t renderer_reported_scheduler_tracked_features_ = 0;
-  uint64_t browser_reported_scheduler_tracked_features_ = 0;
+  blink::scheduler::WebSchedulerTrackedFeatures
+      renderer_reported_scheduler_tracked_features_;
+  blink::scheduler::WebSchedulerTrackedFeatures
+      browser_reported_scheduler_tracked_features_;
 
   // Holds prefetched signed exchanges for SignedExchangeSubresourcePrefetch.
   // They will be passed to the next navigation.

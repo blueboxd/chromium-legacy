@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_ASH_BOREALIS_BOREALIS_DISK_MANAGER_H_
 
 #include "base/callback.h"
+#include "chrome/browser/ash/borealis/infra/described.h"
 #include "chrome/browser/ash/borealis/infra/expected.h"
 
 namespace borealis {
 
 class BorealisContext;
+enum class BorealisGetDiskInfoResult;
+enum class BorealisResizeDiskResult;
 
 // Service responsible for managing borealis' disk space.
 class BorealisDiskManager {
@@ -31,20 +34,25 @@ class BorealisDiskManager {
   // Gets information about the borealis disk and the host device, returns
   // information about how the disk could be resized or an error.
   virtual void GetDiskInfo(
-      base::OnceCallback<void(Expected<GetDiskInfoResponse, std::string>)>
+      base::OnceCallback<void(
+          Expected<GetDiskInfoResponse, Described<BorealisGetDiskInfoResult>>)>
           callback) = 0;
 
   // Attempt to expand the VM disk by the number of bytes specified. Returns the
   // actual size increase in bytes, or an error.
   virtual void RequestSpace(
       uint64_t bytes_requested,
-      base::OnceCallback<void(Expected<uint64_t, std::string>)> callback) = 0;
+      base::OnceCallback<
+          void(Expected<uint64_t, Described<BorealisResizeDiskResult>>)>
+          callback) = 0;
 
   // Attempt to shrink the VM disk by the number of bytes specified. Returns the
   // actual size decrease in bytes, or an error.
   virtual void ReleaseSpace(
       uint64_t bytes_to_release,
-      base::OnceCallback<void(Expected<uint64_t, std::string>)> callback) = 0;
+      base::OnceCallback<
+          void(Expected<uint64_t, Described<BorealisResizeDiskResult>>)>
+          callback) = 0;
 
   // Assesses the disk and resizes it so that it fits within the desired
   // constraints. Returns an empty string on success or an error.

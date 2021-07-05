@@ -286,9 +286,6 @@ bool CanOpenProfileOnStartup(Profile* profile) {
 
   // Guest or system profiles are not available unless a separate process
   // already has a window open for the profile.
-  if (profile->IsEphemeralGuestProfile())
-    return chrome::GetBrowserCount(profile->GetOriginalProfile()) > 0;
-
   return (!profile->IsGuestSession() && !profile->IsSystemProfile()) ||
          (chrome::GetBrowserCount(
               profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)) > 0);
@@ -543,8 +540,7 @@ Profile* StartupBrowserCreator::GetPrivateProfileIfRequested(
                                      /* show_warning= */ true)) {
     profile = g_browser_process->profile_manager()->GetProfile(
         ProfileManager::GetGuestProfilePath());
-    if (!profile->IsEphemeralGuestProfile())
-      profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+    profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
     return profile;
   }
 
@@ -634,14 +630,11 @@ bool StartupBrowserCreator::LaunchBrowserForLastProfiles(
   // decision to show the picker should instead be on the previous call to
   // ShouldShowProfilePickerAtProcessLaunch() issued from
   // GetStartupProfilePath().
-  // Ephemeral guest is added here just for symmetry, once we use other ways to
-  // indicate that picker should get opened, we can remove both IsGuestSession()
-  // and IsEphemeralGuestProfile().
+  // Once we use other ways to indicate that picker should get opened, we can
+  // remove IsGuestSession().
   if (ShouldShowProfilePickerAtProcessLaunch(
           g_browser_process->profile_manager(), command_line) &&
-      last_used_profile &&
-      (last_used_profile->IsGuestSession() ||
-       last_used_profile->IsEphemeralGuestProfile())) {
+      last_used_profile && last_used_profile->IsGuestSession()) {
     // The guest session is used to indicate the the profile picker should be
     // displayed on start-up. See GetStartupProfilePath().
     ShowProfilePicker(/*is_process_startup=*/process_startup);
@@ -763,11 +756,8 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
     pref.type = SessionStartupPref::LAST;
   }
 
-  bool is_guest =
-      profile->IsGuestSession() || profile->IsEphemeralGuestProfile();
-
   // A browser starting for a profile being unlocked should always restore.
-  if (!is_guest) {
+  if (!profile->IsGuestSession()) {
     ProfileAttributesEntry* entry =
         g_browser_process->profile_manager()
             ->GetProfileAttributesStorage()
@@ -778,7 +768,7 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   }
 
   if (pref.type == SessionStartupPref::LAST &&
-      (is_guest || profile->IsOffTheRecord())) {
+      (profile->IsGuestSession() || profile->IsOffTheRecord())) {
     // We don't store session information when incognito. If the user has
     // chosen to restore last session and launched incognito, fallback to
     // default launch behavior.
@@ -1173,7 +1163,7 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
 
   // Launch the profiles in the order they became active.
   for (Profile* profile : last_opened_profiles) {
-    DCHECK(!profile->IsGuestSession() && !profile->IsEphemeralGuestProfile());
+    DCHECK(!profile->IsGuestSession());
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     // Skip any locked profile.
@@ -1185,10 +1175,8 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
     // when Chrome was closed. In this case, pick a different open profile
     // to be the active one, since the Guest profile is never added to the
     // list of open profiles.
-    if (last_used_profile->IsGuestSession() ||
-        last_used_profile->IsEphemeralGuestProfile()) {
+    if (last_used_profile->IsGuestSession())
       last_used_profile = profile;
-    }
 #endif
 
     // Don't launch additional profiles which would only open a new tab
@@ -1410,9 +1398,10 @@ bool HasPendingUncleanExit(Profile* profile) {
              switches::kHideCrashRestoreBubble);
 }
 
-base::FilePath GetStartupProfilePath(const base::FilePath& cur_dir,
-                                     const base::CommandLine& command_line,
-                                     bool ignore_profile_picker) {
+StartupProfilePathInfo GetStartupProfilePath(
+    const base::FilePath& cur_dir,
+    const base::CommandLine& command_line,
+    bool ignore_profile_picker) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   const base::FilePath& user_data_dir = profile_manager->user_data_dir();
 // If the browser is launched due to activation on Windows native notification,
@@ -1422,7 +1411,8 @@ base::FilePath GetStartupProfilePath(const base::FilePath& cur_dir,
   std::string profile_id =
       NotificationLaunchId::GetNotificationLaunchProfileId(command_line);
   if (!profile_id.empty()) {
-    return user_data_dir.Append(base::FilePath(base::UTF8ToWide(profile_id)));
+    return {user_data_dir.Append(base::FilePath(base::UTF8ToWide(profile_id))),
+            StartupProfileMode::kBrowserWindow};
   }
 #endif  // defined(OS_WIN)
 
@@ -1431,12 +1421,15 @@ base::FilePath GetStartupProfilePath(const base::FilePath& cur_dir,
   if (profiles::IsGuestModeRequested(command_line,
                                      g_browser_process->local_state(),
                                      /* show_warning= */ false)) {
-    return profiles::GetDefaultProfileDir(user_data_dir);
+    // TODO(crbug.com/1150326): return a guest profile instead.
+    return {profiles::GetDefaultProfileDir(user_data_dir),
+            StartupProfileMode::kBrowserWindow};
   }
 
   if (command_line.HasSwitch(switches::kProfileDirectory)) {
-    return user_data_dir.Append(
-        command_line.GetSwitchValuePath(switches::kProfileDirectory));
+    return {user_data_dir.Append(
+                command_line.GetSwitchValuePath(switches::kProfileDirectory)),
+            StartupProfileMode::kBrowserWindow};
   }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1456,48 +1449,75 @@ base::FilePath GetStartupProfilePath(const base::FilePath& cur_dir,
       // To indicate that we want to show the profile picker, return the guest
       // profile. However, we can only do this if the system profile (where the
       // profile picker lives) also exists (or is creatable).
-      // TODO(crbug.com/1150326): Refactor this to indicate more directly that
-      // profile picker should be shown (returning an enum, or so).
-      return ProfileManager::GetGuestProfilePath();
+      // TODO(https://crbug.com/1150326): Return an empty path instead of a
+      // guest profile path.
+      return {ProfileManager::GetGuestProfilePath(),
+              StartupProfileMode::kProfilePicker};
     }
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-  return profile_manager->GetLastUsedProfileDir();
+  return {profile_manager->GetLastUsedProfileDir(),
+          StartupProfileMode::kBrowserWindow};
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
-Profile* GetStartupProfile(const base::FilePath& cur_dir,
-                           const base::CommandLine& command_line) {
+StartupProfileInfo GetStartupProfile(const base::FilePath& cur_dir,
+                                     const base::CommandLine& command_line) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath profile_path = GetStartupProfilePath(
+  StartupProfilePathInfo path_info = GetStartupProfilePath(
       cur_dir, command_line, /*ignore_profile_picker=*/false);
-  Profile* profile = profile_manager->GetProfile(profile_path);
 
-  // If there is no entry in profile attributes storage, the profile is deleted,
-  // and we should show the user manager. Also, when using
-  // --new-profile-management, if the profile is locked we should show the user
-  // manager as well. When neither of these is true, we can safely start up with
-  // |profile|.
-  auto* storage = &profile_manager->GetProfileAttributesStorage();
-  ProfileAttributesEntry* entry =
-      storage->GetProfileAttributesWithPath(profile_path);
-  if (entry && (!entry->IsSigninRequired() || !profile)) {
-    return profile;
+  switch (path_info.mode) {
+    case StartupProfileMode::kProfilePicker: {
+      // TODO(https://crbug.com/1150326): Return nullptr instead of a guest
+      // profile.
+      Profile* guest_profile =
+          profile_manager->GetProfile(ProfileManager::GetGuestProfilePath());
+      if (guest_profile)
+        return {guest_profile, StartupProfileMode::kProfilePicker};
+      else
+        return {nullptr, StartupProfileMode::kError};
+    }
+    case StartupProfileMode::kError:
+      // No more info to add.
+      return {nullptr, StartupProfileMode::kError};
+    case StartupProfileMode::kBrowserWindow:
+      // Try to acquire a profile below.
+      break;
   }
 
-  // We want to show the user manager. To indicate this, return the guest
-  // profile. However, we can only do this if the system profile (where the user
-  // manager lives) also exists (or is creatable).
-  // TODO(crbug.com/1150326): Refactor this to indicate more directly that
-  // profile picker should be shown (returning an enum, or so).
-  return profile_manager->GetProfile(ProfileManager::GetSystemProfilePath())
-             ? profile_manager->GetProfile(
-                   ProfileManager::GetGuestProfilePath())
-             : nullptr;
+  // NOTE: GetProfile() does synchronous file I/O on the main thread.
+  Profile* profile = profile_manager->GetProfile(path_info.path);
+
+  // There are several cases where we should show the profile picker:
+  // - if there is no entry in profile attributes storage, which means that the
+  //   profile is deleted,
+  // - if the profile is locked,
+  // - if the profile has failed to load
+  // When neither of these is true, we can safely start up with `profile`.
+  auto* storage = &profile_manager->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry =
+      storage->GetProfileAttributesWithPath(path_info.path);
+  if (entry && !entry->IsSigninRequired() && profile) {
+    return {profile, StartupProfileMode::kBrowserWindow};
+  }
+
+  // We want to show the profile picker. To indicate this, return the guest
+  // profile. However, we can only do this if the system profile (where the
+  // profile picker lives) also exists (or is creatable).
+  // TODO(https://crbug.com/1150326): Return nullptr instead of a guest profile.
+  Profile* guest_profile =
+      profile_manager->GetProfile(ProfileManager::GetGuestProfilePath());
+  if (profile_manager->GetProfile(ProfileManager::GetSystemProfilePath()) &&
+      guest_profile) {
+    return {guest_profile, StartupProfileMode::kProfilePicker};
+  }
+
+  return {nullptr, StartupProfileMode::kError};
 }
 
-Profile* GetFallbackStartupProfile() {
+StartupProfileInfo GetFallbackStartupProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // The only known reason for profiles to fail initialization is being unable
   // to create the profile directory, and this has already happened in
@@ -1513,28 +1533,29 @@ Profile* GetFallbackStartupProfile() {
     ProfileAttributesEntry* entry =
         storage->GetProfileAttributesWithPath(profile->GetPath());
     if (!entry || !entry->IsSigninRequired())
-      return profile;
+      return {profile, StartupProfileMode::kBrowserWindow};
   }
 
-  // Couldn't initialize any last opened profiles. Try to show the user manager,
-  // which requires successful initialization of the guest and system profiles.
+  // Couldn't initialize any last opened profiles. Try to show the profile
+  // picker, which requires successful initialization of the guest and system
+  // profiles.
   Profile* guest_profile =
       profile_manager->GetProfile(ProfileManager::GetGuestProfilePath());
   Profile* system_profile =
       profile_manager->GetProfile(ProfileManager::GetSystemProfilePath());
   if (guest_profile && system_profile)
-    return guest_profile;
+    return {guest_profile, StartupProfileMode::kProfilePicker};
 
-  // Couldn't show the user manager either. Try to open any profile that is not
-  // locked.
+  // Couldn't show the profile picker either. Try to open any profile that is
+  // not locked.
   for (ProfileAttributesEntry* entry : storage->GetAllProfilesAttributes()) {
     if (!entry->IsSigninRequired()) {
       Profile* profile = profile_manager->GetProfile(entry->GetPath());
       if (profile)
-        return profile;
+        return {profile, StartupProfileMode::kBrowserWindow};
     }
   }
 
-  return nullptr;
+  return {nullptr, StartupProfileMode::kError};
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)

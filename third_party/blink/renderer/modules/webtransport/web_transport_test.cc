@@ -17,15 +17,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/webtransport/web_transport_connector.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_bidirectional_stream.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_receive_stream.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_dtls_fingerprint.h"
@@ -754,8 +753,9 @@ Vector<uint8_t> GetValueAsVector(ScriptState* script_state,
   }
 
   EXPECT_FALSE(done);
-  auto* array =
-      V8Uint8Array::ToImplWithTypeCheck(script_state->GetIsolate(), value);
+  DummyExceptionStateForTesting exception_state;
+  auto array = NativeValueTraits<NotShared<DOMUint8Array>>::NativeValue(
+      script_state->GetIsolate(), value, exception_state);
   if (!array) {
     ADD_FAILURE() << "value was not a Uint8Array";
     return {};
@@ -764,6 +764,19 @@ Vector<uint8_t> GetValueAsVector(ScriptState* script_state,
   Vector<uint8_t> result;
   result.Append(array->Data(), array->length());
   return result;
+}
+
+bool IsDone(ScriptState* script_state, ScriptValue iterator_result) {
+  bool done = false;
+  v8::Local<v8::Value> value;
+  if (!V8UnpackIteratorResult(script_state,
+                              iterator_result.V8Value().As<v8::Object>(), &done)
+           .ToLocal(&value)) {
+    ADD_FAILURE() << "unable to unpack iterator_result";
+    return false;
+  }
+
+  return done;
 }
 
 TEST_F(WebTransportTest, ReceiveDatagramBeforeRead) {
@@ -808,18 +821,121 @@ TEST_F(WebTransportTest, ReceiveDatagramDuringRead) {
   EXPECT_THAT(GetValueAsVector(script_state, tester.Value()), ElementsAre('A'));
 }
 
-// This test documents the current behaviour. If you improve the behaviour,
-// change the test!
+TEST_F(WebTransportTest, CancelDatagramReadableWorks) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+  auto* readable = web_transport->datagrams()->readable();
+
+  // This datagram should be discarded.
+  const std::array<uint8_t, 1> chunk1 = {'A'};
+  client_remote_->OnDatagramReceived(chunk1);
+
+  test::RunPendingTasks();
+
+  readable->cancel(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+
+  // This datagram should also be discarded.
+  const std::array<uint8_t, 1> chunk2 = {'B'};
+  client_remote_->OnDatagramReceived(chunk2);
+
+  test::RunPendingTasks();
+}
+
+TEST_F(WebTransportTest, DatagramsStillReadableAfterClose) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  const std::array<uint8_t, 1> chunk1 = {'A'};
+  client_remote_->OnDatagramReceived(chunk1);
+
+  test::RunPendingTasks();
+
+  web_transport->close(nullptr);
+
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result1 = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester1(script_state, result1);
+  tester1.WaitUntilSettled();
+  EXPECT_TRUE(tester1.IsFulfilled());
+  EXPECT_THAT(GetValueAsVector(script_state, tester1.Value()),
+              ElementsAre('A'));
+
+  ScriptPromise result2 = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester2(script_state, result2);
+  tester2.WaitUntilSettled();
+  EXPECT_TRUE(tester2.IsFulfilled());
+  EXPECT_TRUE(IsDone(script_state, tester2.Value()));
+}
+
+TEST_F(WebTransportTest, ResettingIncomingHighWaterMarkWorksAfterClose) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  const std::array<uint8_t, 1> chunk1 = {'A'};
+  client_remote_->OnDatagramReceived(chunk1);
+
+  test::RunPendingTasks();
+
+  web_transport->close(nullptr);
+
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+
+  web_transport->datagrams()->setIncomingHighWaterMark(0);
+  ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+  EXPECT_TRUE(IsDone(script_state, tester.Value()));
+}
+
+TEST_F(WebTransportTest, TransportErrorErrorsReadableStream) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  // This datagram should be discarded.
+  const std::array<uint8_t, 1> chunk1 = {'A'};
+  client_remote_->OnDatagramReceived(chunk1);
+
+  test::RunPendingTasks();
+
+  // Cause a transport error.
+  client_remote_.reset();
+
+  test::RunPendingTasks();
+
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+
+  EXPECT_TRUE(tester.IsRejected());
+}
+
 TEST_F(WebTransportTest, DatagramsAreDropped) {
   V8TestingScope scope;
   auto* web_transport =
       CreateAndConnectSuccessfully(scope, "https://example.com");
 
-  // Chunk 'A' gets placed in the readable queue.
+  // Chunk 'A' gets placed in the source queue.
   const std::array<uint8_t, 1> chunk1 = {'A'};
   client_remote_->OnDatagramReceived(chunk1);
 
-  // Chunk 'B' gets dropped, because there is no space in the readable queue.
+  // Chunk 'B' replaces chunk 'A'.
   const std::array<uint8_t, 1> chunk2 = {'B'};
   client_remote_->OnDatagramReceived(chunk2);
 
@@ -840,7 +956,7 @@ TEST_F(WebTransportTest, DatagramsAreDropped) {
   EXPECT_FALSE(tester2.IsFulfilled());
 
   EXPECT_THAT(GetValueAsVector(script_state, tester1.Value()),
-              ElementsAre('A'));
+              ElementsAre('B'));
 
   // Chunk 'C' fulfills the pending read.
   const std::array<uint8_t, 1> chunk3 = {'C'};
@@ -851,6 +967,136 @@ TEST_F(WebTransportTest, DatagramsAreDropped) {
 
   EXPECT_THAT(GetValueAsVector(script_state, tester2.Value()),
               ElementsAre('C'));
+}
+
+TEST_F(WebTransportTest, IncomingHighWaterMarkIsObeyed) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  constexpr int32_t kHighWaterMark = 5;
+  web_transport->datagrams()->setIncomingHighWaterMark(kHighWaterMark);
+
+  for (int i = 0; i < kHighWaterMark + 1; ++i) {
+    const std::array<uint8_t, 1> chunk = {static_cast<uint8_t>('0' + i)};
+    client_remote_->OnDatagramReceived(chunk);
+  }
+
+  // Make sure that the calls have run.
+  test::RunPendingTasks();
+
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+
+  for (int i = 0; i < kHighWaterMark; ++i) {
+    ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+    ScriptPromiseTester tester(script_state, result);
+    tester.WaitUntilSettled();
+
+    EXPECT_TRUE(tester.IsFulfilled());
+    EXPECT_THAT(GetValueAsVector(script_state, tester.Value()),
+                ElementsAre('0' + i + 1));
+  }
+}
+
+TEST_F(WebTransportTest, ResettingHighWaterMarkClearsQueue) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  constexpr int32_t kHighWaterMark = 5;
+  web_transport->datagrams()->setIncomingHighWaterMark(kHighWaterMark);
+
+  for (int i = 0; i < kHighWaterMark; ++i) {
+    const std::array<uint8_t, 1> chunk = {'A'};
+    client_remote_->OnDatagramReceived(chunk);
+  }
+
+  // Make sure that the calls have run.
+  test::RunPendingTasks();
+
+  web_transport->datagrams()->setIncomingHighWaterMark(0);
+
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+
+  ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  ScriptPromiseTester tester(script_state, result);
+
+  // Give the promise an opportunity to settle.
+  test::RunPendingTasks();
+
+  // The queue should be empty, so read() should not have completed.
+  EXPECT_FALSE(tester.IsFulfilled());
+  EXPECT_FALSE(tester.IsRejected());
+}
+
+TEST_F(WebTransportTest, ReadIncomingDatagramWorksWithHighWaterMarkZero) {
+  V8TestingScope scope;
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+  web_transport->datagrams()->setIncomingHighWaterMark(0);
+
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  const std::array<uint8_t, 1> chunk = {'A'};
+  client_remote_->OnDatagramReceived(chunk);
+
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+
+  EXPECT_THAT(GetValueAsVector(script_state, tester.Value()), ElementsAre('A'));
+}
+
+// We only do an extremely basic test for incomingMaxAge as overriding
+// base::TimeTicks::Now() doesn't work well in Blink and passing in a mock clock
+// would add a lot of complexity for little benefit.
+TEST_F(WebTransportTest, IncomingMaxAgeIsObeyed) {
+  V8TestingScope scope;
+
+  auto* web_transport =
+      CreateAndConnectSuccessfully(scope, "https://example.com");
+
+  web_transport->datagrams()->setIncomingHighWaterMark(2);
+
+  const std::array<uint8_t, 1> chunk1 = {'A'};
+  client_remote_->OnDatagramReceived(chunk1);
+
+  const std::array<uint8_t, 1> chunk2 = {'B'};
+  client_remote_->OnDatagramReceived(chunk2);
+
+  test::RunPendingTasks();
+
+  constexpr base::TimeDelta kMaxAge = base::TimeDelta::FromMicroseconds(1);
+  web_transport->datagrams()->setIncomingMaxAge(kMaxAge.InMillisecondsF());
+
+  test::RunDelayedTasks(kMaxAge);
+
+  auto* readable = web_transport->datagrams()->readable();
+  auto* script_state = scope.GetScriptState();
+  auto* reader =
+      readable->GetDefaultReaderForTesting(script_state, ASSERT_NO_EXCEPTION);
+
+  // The queue should be empty so the read should not complete.
+  ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  ScriptPromiseTester tester(script_state, result);
+
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(tester.IsFulfilled());
+  EXPECT_FALSE(tester.IsRejected());
 }
 
 bool ValidProducerHandle(const mojo::ScopedDataPipeProducerHandle& handle) {
@@ -1228,8 +1474,9 @@ TEST_F(WebTransportTest, CreateReceiveStream) {
   ASSERT_TRUE(
       V8UnpackIteratorResult(script_state, read_result.As<v8::Object>(), &done)
           .ToLocal(&value));
-  DOMUint8Array* u8array =
-      V8Uint8Array::ToImplWithTypeCheck(scope.GetIsolate(), value);
+  NotShared<DOMUint8Array> u8array =
+      NativeValueTraits<NotShared<DOMUint8Array>>::NativeValue(
+          scope.GetIsolate(), value, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(u8array);
   EXPECT_THAT(base::make_span(static_cast<uint8_t*>(u8array->Data()),
                               u8array->byteLength()),

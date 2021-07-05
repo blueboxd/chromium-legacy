@@ -7,10 +7,12 @@
 #include "base/check.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_test_base.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_source.h"
@@ -19,6 +21,7 @@
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
@@ -54,8 +57,17 @@ class WidgetBoundsChangeWaiter : public views::WidgetObserver {
 
 class ProfilePickerInteractiveUiTest : public ProfilePickerTestBase {
  public:
-  ProfilePickerInteractiveUiTest() = default;
+  ProfilePickerInteractiveUiTest()
+      : feature_list_(features::kSignInProfileCreation) {}
+
   ~ProfilePickerInteractiveUiTest() override = default;
+
+  void ShowAndFocusPicker(ProfilePicker::EntryPoint entry_point) {
+    ProfilePicker::Show(entry_point);
+    WaitForLayoutWithoutToolbar();
+    EXPECT_TRUE(
+        ui_test_utils::ShowAndFocusNativeWindow(widget()->GetNativeWindow()));
+  }
 
   void SendCloseWindowKeyboardCommand() {
     // Close window using keyboard.
@@ -64,21 +76,13 @@ class ProfilePickerInteractiveUiTest : public ProfilePickerTestBase {
     bool control = false;
     bool shift = false;
     bool command = true;
-    // Mac needs the widget to get focused (once again) for
-    // SendKeyPressToWindowSync to work. A test-only particularity, pressing the
-    // keybinding manually right in the run of the test actually replaces the
-    // need of this call.
-    ASSERT_TRUE(
-        ui_test_utils::ShowAndFocusNativeWindow(widget()->GetNativeWindow()));
 #else
     // Use Ctrl-Shift-W on other platforms.
     bool control = true;
     bool shift = true;
     bool command = false;
 #endif
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        widget()->GetNativeWindow(), ui::VKEY_W, control, shift, /*alt=*/false,
-        command));
+    SendKeyPress(ui::VKEY_W, control, shift, /*alt=*/false, command);
   }
 
   void SendBackKeyboardCommand() {
@@ -88,29 +92,39 @@ class ProfilePickerInteractiveUiTest : public ProfilePickerTestBase {
     bool alt = false;
     bool command = true;
     ui::KeyboardCode key = ui::VKEY_OEM_4;
-    // Mac needs the widget to get focused (once again) for
-    // SendKeyPressToWindowSync to work. A test-only particularity, pressing the
-    // keybinding manually right in the run of the test actually replaces the
-    // need of this call.
-    ASSERT_TRUE(
-        ui_test_utils::ShowAndFocusNativeWindow(widget()->GetNativeWindow()));
 #else
     // Use Ctrl-left on other platforms.
     bool alt = true;
     bool command = false;
     ui::KeyboardCode key = ui::VKEY_LEFT;
 #endif
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        widget()->GetNativeWindow(), key, /*control=*/false,
-        /*shift=*/false, alt, command));
+    SendKeyPress(key, /*control=*/false, /*shift=*/false, alt, command);
   }
+
+  void SendKeyPress(ui::KeyboardCode key,
+                    bool control,
+                    bool shift,
+                    bool alt,
+                    bool command) {
+#if defined(OS_MAC)
+    // Mac needs the widget to get focused (once again) for
+    // SendKeyPressToWindowSync to work. A test-only particularity, pressing the
+    // keybinding manually right in the run of the test actually replaces the
+    // need of this call.
+    ASSERT_TRUE(
+        ui_test_utils::ShowAndFocusNativeWindow(widget()->GetNativeWindow()));
+#endif
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        widget()->GetNativeWindow(), key, control, shift, alt, command));
+  }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Checks that the main picker view can be closed with keyboard shortcut.
 IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest, CloseWithKeyboard) {
   // Open a new picker.
-  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
-  WaitForLayoutWithoutToolbar();
+  ShowAndFocusPicker(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
   WaitForLoadStop(web_contents(), GURL("chrome://profile-picker"));
   EXPECT_TRUE(ProfilePicker::IsOpen());
   SendCloseWindowKeyboardCommand();
@@ -124,8 +138,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest, CloseWithKeyboard) {
 // keyboard shortcut to exit Chrome.
 IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest, ExitWithKeyboard) {
   // Open a new picker.
-  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
-  WaitForLayoutWithoutToolbar();
+  ShowAndFocusPicker(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
   WaitForLoadStop(web_contents(), GURL("chrome://profile-picker"));
   EXPECT_TRUE(ProfilePicker::IsOpen());
 
@@ -133,9 +146,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest, ExitWithKeyboard) {
       chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
   // Send Cmd-Q.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      widget()->GetNativeWindow(), ui::VKEY_Q, /*control=*/false,
-      /*shift=*/false, /*alt=*/false, /*command=*/true));
+  SendKeyPress(ui::VKEY_Q, /*control=*/false, /*shift=*/false, /*alt=*/false,
+               /*command=*/true);
   // Check that Chrome is quitting.
   terminate_observer.Wait();
   WaitForPickerClosed();
@@ -143,21 +155,12 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest, ExitWithKeyboard) {
 }
 #endif
 
-// Flaky on Mac, see https://crbug.com/1216134
-#if defined(OS_MAC)
-#define MAYBE_FullscreenWithKeyboard DISABLED_FullscreenWithKeyboard
-#else
-#define MAYBE_FullscreenWithKeyboard FullscreenWithKeyboard
-#endif
 // Checks that the main picker view can switch to full screen.
-IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
-                       MAYBE_FullscreenWithKeyboard) {
+IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest, FullscreenWithKeyboard) {
   // Open a new picker.
-  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
-  WaitForLayoutWithoutToolbar();
+  ShowAndFocusPicker(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
   WaitForLoadStop(web_contents(), GURL("chrome://profile-picker"));
   EXPECT_TRUE(ProfilePicker::IsOpen());
-
   EXPECT_FALSE(widget()->IsFullscreen());
   WidgetBoundsChangeWaiter bounds_waiter(widget());
 
@@ -173,9 +176,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
   bool command = false;
   ui::KeyboardCode key_code = ui::VKEY_F11;
 #endif
-  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      widget()->GetNativeWindow(), key_code, control, /*shift=*/false,
-      /*alt=*/false, command));
+  SendKeyPress(key_code, control, /*shift=*/false, /*alt=*/false, command);
   // Fullscreen causes the bounds of the widget to change.
   bounds_waiter.Wait();
   EXPECT_TRUE(widget()->IsFullscreen());
@@ -184,8 +185,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 // Checks that the signin web view is able to process keyboard events.
 IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
                        CloseSigninWithKeyboard) {
-  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuAddNewProfile);
-  WaitForLayoutWithoutToolbar();
+  ShowAndFocusPicker(ProfilePicker::EntryPoint::kProfileMenuAddNewProfile);
 
   // Simulate a click on the signin button.
   base::MockCallback<base::OnceCallback<void(bool)>> switch_finished_callback;
@@ -205,13 +205,17 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
 // Checks that both the signin web view and the main picker view are able to
 // process a back keyboard event.
-// Flaky on all platforms. http://crbug.com/1173544
 IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
-                       DISABLED_NavigateBackWithKeyboard) {
+                       NavigateBackWithKeyboard) {
+#if defined(USE_OZONE)
+  // Fails with ozone (https://crbug.com/1173544).
+  if (features::IsUsingOzonePlatform())
+    GTEST_SKIP();
+#endif
+
   // Simulate walking through the flow starting at the picker so that navigating
   // back to the picker makes sense.
-  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
-  WaitForLayoutWithoutToolbar();
+  ShowAndFocusPicker(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
   WaitForLoadStop(web_contents(), GURL("chrome://profile-picker"));
   web_contents()->GetController().LoadURL(
       GURL("chrome://profile-picker/new-profile"), content::Referrer(),
@@ -230,7 +234,6 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerInteractiveUiTest,
 
   // Navigate back with the keyboard.
   SendBackKeyboardCommand();
-
   WaitForLayoutWithoutToolbar();
   WaitForLoadStop(web_contents(), GURL("chrome://profile-picker/new-profile"));
 

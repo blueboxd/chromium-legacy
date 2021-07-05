@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/ash/borealis/borealis_disk_manager_dispatcher.h"
+#include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/vm_disk_management/disk_management.pb.h"
@@ -77,12 +78,12 @@ void VmDiskManagementServiceProvider::GetDiskInfo(
   if (request.origin().vm_name().empty() ||
       request.origin().container_name().empty() ||
       request.origin().owner_id().empty()) {
-    std::string error =
-        "GetDiskInfoRequest failed: request has missing or incomplete origin";
-    OnGetDiskInfo(
-        std::move(response), std::move(response_sender),
-        borealis::Expected<borealis::BorealisDiskManager::GetDiskInfoResponse,
-                           std::string>::Unexpected(std::move(error)));
+    OnGetDiskInfo(std::move(response), std::move(response_sender),
+                  ExpectedGetDiskInfoResponse::Unexpected(
+                      borealis::Described<borealis::BorealisGetDiskInfoResult>(
+                          borealis::BorealisGetDiskInfoResult::kInvalidRequest,
+                          "GetDiskInfoRequest failed: request has missing or "
+                          "incomplete origin")));
     return;
   }
 
@@ -118,11 +119,13 @@ void VmDiskManagementServiceProvider::RequestSpace(
   if (request.origin().vm_name().empty() ||
       request.origin().container_name().empty() ||
       request.origin().owner_id().empty()) {
-    std::string error =
-        "RequestSpaceRequest failed: request has missing or incomplete origin";
-    OnRequestSpace(std::move(response), std::move(response_sender),
-                   borealis::Expected<uint64_t, std::string>::Unexpected(
-                       std::move(error)));
+    OnRequestSpace(
+        std::move(response), std::move(response_sender),
+        ExpectedRequestDeltaResponse::Unexpected(
+            borealis::Described<borealis::BorealisResizeDiskResult>(
+                borealis::BorealisResizeDiskResult::kInvalidRequest,
+                "RequestSpaceRequest failed: request has missing or incomplete "
+                "origin")));
     return;
   }
 
@@ -159,11 +162,13 @@ void VmDiskManagementServiceProvider::ReleaseSpace(
   if (request.origin().vm_name().empty() ||
       request.origin().container_name().empty() ||
       request.origin().owner_id().empty()) {
-    std::string error =
-        "ReleaseSpaceRequest failed: request has missing or incomplete origin";
-    OnReleaseSpace(std::move(response), std::move(response_sender),
-                   borealis::Expected<uint64_t, std::string>::Unexpected(
-                       std::move(error)));
+    OnReleaseSpace(
+        std::move(response), std::move(response_sender),
+        ExpectedRequestDeltaResponse::Unexpected(
+            borealis::Described<borealis::BorealisResizeDiskResult>(
+                borealis::BorealisResizeDiskResult::kInvalidRequest,
+                "ReleaseSpaceRequest failed: request has missing or incomplete "
+                "origin")));
     return;
   }
 
@@ -181,12 +186,12 @@ void VmDiskManagementServiceProvider::ReleaseSpace(
 void VmDiskManagementServiceProvider::OnGetDiskInfo(
     std::unique_ptr<dbus::Response> response,
     dbus::ExportedObject::ResponseSender response_sender,
-    borealis::Expected<borealis::BorealisDiskManager::GetDiskInfoResponse,
-                       std::string> response_or_error) {
+    ExpectedGetDiskInfoResponse response_or_error) {
   vm_tools::disk_management::GetDiskInfoResponse payload;
   if (!response_or_error) {
-    LOG(ERROR) << "GetDiskInfoRequest failed: " << response_or_error.Error();
-    payload.set_error(1);
+    LOG(ERROR) << "GetDiskInfoRequest failed: "
+               << response_or_error.Error().description();
+    payload.set_error(int(response_or_error.Error().error()));
   } else {
     payload.set_available_space(response_or_error.Value().available_bytes);
     payload.set_expandable_space(response_or_error.Value().expandable_bytes);
@@ -200,11 +205,12 @@ void VmDiskManagementServiceProvider::OnGetDiskInfo(
 void VmDiskManagementServiceProvider::OnRequestSpace(
     std::unique_ptr<dbus::Response> response,
     dbus::ExportedObject::ResponseSender response_sender,
-    borealis::Expected<uint64_t, std::string> response_or_error) {
+    ExpectedRequestDeltaResponse response_or_error) {
   vm_tools::disk_management::RequestSpaceResponse payload;
   if (!response_or_error) {
-    LOG(ERROR) << "RequestSpaceRequest failed: " << response_or_error.Error();
-    payload.set_error(1);
+    LOG(ERROR) << "RequestSpaceRequest failed: "
+               << response_or_error.Error().description();
+    payload.set_error(int(response_or_error.Error().error()));
   } else {
     payload.set_space_granted(response_or_error.Value());
   }
@@ -217,11 +223,12 @@ void VmDiskManagementServiceProvider::OnRequestSpace(
 void VmDiskManagementServiceProvider::OnReleaseSpace(
     std::unique_ptr<dbus::Response> response,
     dbus::ExportedObject::ResponseSender response_sender,
-    borealis::Expected<uint64_t, std::string> response_or_error) {
+    ExpectedRequestDeltaResponse response_or_error) {
   vm_tools::disk_management::ReleaseSpaceResponse payload;
   if (!response_or_error) {
-    LOG(ERROR) << "ReleaseSpaceRequest failed: " << response_or_error.Error();
-    payload.set_error(1);
+    LOG(ERROR) << "ReleaseSpaceRequest failed: "
+               << response_or_error.Error().description();
+    payload.set_error(int(response_or_error.Error().error()));
   } else {
     payload.set_space_released(response_or_error.Value());
   }

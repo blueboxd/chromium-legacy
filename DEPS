@@ -341,7 +341,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'fc37b32c5505df1d1c5efa7b1ea6c98ddadac3b3',
+  'dawn_revision': 'aeff235dc3737ef40b8aaced3f67f8df3996e494',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -389,7 +389,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    'ed4a85ec990bddc49cddc433efdc7cbf31246033',
+  'libunwind_revision':    '5f424e3f1a1717c6f4800953a46c9050cf34feb6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1683,7 +1683,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'sE1KC8jVGPXbLODBKUrgZhGU5T983TjgEy0D7t0YuawC',
+        'version': '9qYtGtXiVi1ncokVz_H2NTzAvR4wO2U8NEy0dWekd3YC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

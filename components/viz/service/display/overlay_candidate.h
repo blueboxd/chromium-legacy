@@ -30,6 +30,7 @@ class Rect;
 
 namespace viz {
 class DisplayResourceProvider;
+class SolidColorDrawQuad;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 class VideoHoleDrawQuad;
@@ -45,7 +46,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
                            const DrawQuad* quad,
                            const gfx::RectF& primary_rect,
                            OverlayCandidate* candidate,
-                           bool allow_delegated_quads = false);
+                           bool is_delegated_context = false);
   // Returns true if |quad| will not block quads underneath from becoming
   // an overlay.
   static bool IsInvisibleQuad(const DrawQuad* quad);
@@ -115,6 +116,12 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // marked as being backed by a SurfaceTexture or not.  If so, it's not really
   // promotable to an overlay.
   bool is_backed_by_surface_texture = false;
+  // Crop within the buffer to be placed inside |display_rect| before
+  // |clip_rect| was applied. Valid only for surface control.
+  gfx::RectF unclipped_uv_rect = gfx::RectF(0.f, 0.f, 1.f, 1.f);
+  // |display_rect| before |clip_rect| was applied. Valid only for surface
+  // control.
+  gfx::RectF unclipped_display_rect = gfx::RectF(0.f, 0.f, 1.f, 1.f);
 #endif
 
   // Stacking order of the overlay plane relative to the main surface,
@@ -143,6 +150,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // if a protected surface can still be displayed. Non-zero when valid.
   uint32_t hw_protected_validation_id = 0;
 
+  // for solid color quads only
+  absl::optional<SkColor> solid_color;
+
  private:
   static bool FromDrawQuadResource(
       DisplayResourceProvider* resource_provider,
@@ -162,6 +172,13 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
                            const TileDrawQuad* quad,
                            const gfx::RectF& primary_rect,
                            OverlayCandidate* candidate);
+  static bool FromSolidColorQuad(
+      DisplayResourceProvider* resource_provider,
+      SurfaceDamageRectList* surface_damage_rect_list,
+      const SolidColorDrawQuad* quad,
+      const gfx::RectF& primary_rect,
+      OverlayCandidate* candidate);
+
   static bool FromStreamVideoQuad(
       DisplayResourceProvider* resource_provider,
       SurfaceDamageRectList* surface_damage_rect_list,

@@ -73,6 +73,10 @@ public class DisclosureNotification
         NotificationWrapper notification =
                 createNotification(firstTime, mCurrentScope, packageName);
         mNotificationManager.notify(notification);
+        NotificationUmaTracker.getInstance().onNotificationShown(firstTime
+                        ? NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_INITIAL
+                        : NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT,
+                notification.getNotification());
 
         mModel.get(DISCLOSURE_EVENTS_CALLBACK).onDisclosureShown();
     }
@@ -92,12 +96,12 @@ public class DisclosureNotification
         if (firstTime) {
             umaType = NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_INITIAL;
             preOPriority = NotificationCompat.PRIORITY_MAX;
-            channelId = ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_INITIAL;
+            channelId = ChromeChannelDefinitions.ChannelId.WEBAPPS;
             notificationId = NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL;
         } else {
             umaType = NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT;
             preOPriority = NotificationCompat.PRIORITY_MIN;
-            channelId = ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_SUBSEQUENT;
+            channelId = ChromeChannelDefinitions.ChannelId.WEBAPPS_QUIET;
             notificationId = NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT;
         }
 

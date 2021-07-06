@@ -1138,7 +1138,7 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="AccuracyTipStatus">
   <int value="0" label="kNone"/>
-  <int value="1" label="kMisinformation"/>
+  <int value="1" label="kShowAccuracyTip"/>
 </enum>
 
 <enum name="ActionAfterDoubleTap">
@@ -18873,6 +18873,7 @@ Called by update_debug_scenarios.py.-->
   <int value="43" label="PrintManagementApp"/>
   <int value="45" label="ShimlessRMAApp"/>
   <int value="46" label="OSFeedbackApp"/>
+  <int value="47" label="A4"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
@@ -52701,6 +52702,7 @@ Called by update_use_counter_css.py.-->
   <int value="696" label="size-adjust"/>
   <int value="697" label="container-name"/>
   <int value="698" label="container-type"/>
+  <int value="699" label="container"/>
 </enum>
 
 <enum name="MappedEditingCommands">

@@ -1255,11 +1255,7 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   CSSAnimations::CalculateCompositorAnimationUpdate(
       state.AnimationUpdate(), *animating_element, element, *state.Style(),
       state.ParentStyle(), WasViewportResized());
-  CSSAnimations::CalculateTransitionUpdate(
-      state.AnimationUpdate(), CSSAnimations::PropertyPass::kStandard,
-      *animating_element, *state.Style());
   CSSAnimations::CalculateTransitionUpdate(state.AnimationUpdate(),
-                                           CSSAnimations::PropertyPass::kCustom,
                                            *animating_element, *state.Style());
 
   CSSAnimations::SnapshotCompositorKeyframes(
@@ -1271,19 +1267,13 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   if (!has_update)
     return false;
 
-  const ActiveInterpolationsMap& standard_animations =
-      state.AnimationUpdate().ActiveInterpolationsForStandardAnimations();
-  const ActiveInterpolationsMap& standard_transitions =
-      state.AnimationUpdate().ActiveInterpolationsForStandardTransitions();
-  const ActiveInterpolationsMap& custom_animations =
-      state.AnimationUpdate().ActiveInterpolationsForCustomAnimations();
-  const ActiveInterpolationsMap& custom_transitions =
-      state.AnimationUpdate().ActiveInterpolationsForCustomTransitions();
+  const ActiveInterpolationsMap& animations =
+      state.AnimationUpdate().ActiveInterpolationsForAnimations();
+  const ActiveInterpolationsMap& transitions =
+      state.AnimationUpdate().ActiveInterpolationsForTransitions();
 
-  cascade.AddInterpolations(&standard_animations, CascadeOrigin::kAnimation);
-  cascade.AddInterpolations(&standard_transitions, CascadeOrigin::kTransition);
-  cascade.AddInterpolations(&custom_animations, CascadeOrigin::kAnimation);
-  cascade.AddInterpolations(&custom_transitions, CascadeOrigin::kTransition);
+  cascade.AddInterpolations(&animations, CascadeOrigin::kAnimation);
+  cascade.AddInterpolations(&transitions, CascadeOrigin::kTransition);
 
   CascadeFilter filter;
   if (state.Style()->StyleType() == kPseudoIdMarker)

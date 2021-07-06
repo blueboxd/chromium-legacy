@@ -211,43 +211,22 @@ class CORE_EXPORT CSSAnimationUpdate final {
     return finished_transitions_;
   }
 
-  void AdoptActiveInterpolationsForCustomAnimations(
+  void AdoptActiveInterpolationsForAnimations(
       ActiveInterpolationsMap& new_map) {
-    new_map.swap(active_interpolations_for_custom_animations_);
+    new_map.swap(active_interpolations_for_animations_);
   }
-  void AdoptActiveInterpolationsForStandardAnimations(
+  void AdoptActiveInterpolationsForTransitions(
       ActiveInterpolationsMap& new_map) {
-    new_map.swap(active_interpolations_for_standard_animations_);
+    new_map.swap(active_interpolations_for_transitions_);
   }
-  void AdoptActiveInterpolationsForCustomTransitions(
-      ActiveInterpolationsMap& new_map) {
-    new_map.swap(active_interpolations_for_custom_transitions_);
+  const ActiveInterpolationsMap& ActiveInterpolationsForAnimations() const {
+    return active_interpolations_for_animations_;
   }
-  void AdoptActiveInterpolationsForStandardTransitions(
-      ActiveInterpolationsMap& new_map) {
-    new_map.swap(active_interpolations_for_standard_transitions_);
+  ActiveInterpolationsMap& ActiveInterpolationsForAnimations() {
+    return active_interpolations_for_animations_;
   }
-  const ActiveInterpolationsMap& ActiveInterpolationsForCustomAnimations()
-      const {
-    return active_interpolations_for_custom_animations_;
-  }
-  ActiveInterpolationsMap& ActiveInterpolationsForCustomAnimations() {
-    return active_interpolations_for_custom_animations_;
-  }
-  const ActiveInterpolationsMap& ActiveInterpolationsForStandardAnimations()
-      const {
-    return active_interpolations_for_standard_animations_;
-  }
-  ActiveInterpolationsMap& ActiveInterpolationsForStandardAnimations() {
-    return active_interpolations_for_standard_animations_;
-  }
-  const ActiveInterpolationsMap& ActiveInterpolationsForCustomTransitions()
-      const {
-    return active_interpolations_for_custom_transitions_;
-  }
-  const ActiveInterpolationsMap& ActiveInterpolationsForStandardTransitions()
-      const {
-    return active_interpolations_for_standard_transitions_;
+  const ActiveInterpolationsMap& ActiveInterpolationsForTransitions() const {
+    return active_interpolations_for_transitions_;
   }
 
   bool IsEmpty() const {
@@ -258,10 +237,8 @@ class CORE_EXPORT CSSAnimationUpdate final {
            animations_with_updates_.IsEmpty() && new_transitions_.IsEmpty() &&
            cancelled_transitions_.IsEmpty() &&
            finished_transitions_.IsEmpty() &&
-           active_interpolations_for_custom_animations_.IsEmpty() &&
-           active_interpolations_for_standard_animations_.IsEmpty() &&
-           active_interpolations_for_custom_transitions_.IsEmpty() &&
-           active_interpolations_for_standard_transitions_.IsEmpty() &&
+           active_interpolations_for_animations_.IsEmpty() &&
+           active_interpolations_for_transitions_.IsEmpty() &&
            updated_compositor_keyframes_.IsEmpty();
   }
 
@@ -271,10 +248,8 @@ class CORE_EXPORT CSSAnimationUpdate final {
     visitor->Trace(suppressed_animations_);
     visitor->Trace(animations_with_updates_);
     visitor->Trace(updated_compositor_keyframes_);
-    visitor->Trace(active_interpolations_for_custom_animations_);
-    visitor->Trace(active_interpolations_for_standard_animations_);
-    visitor->Trace(active_interpolations_for_custom_transitions_);
-    visitor->Trace(active_interpolations_for_standard_transitions_);
+    visitor->Trace(active_interpolations_for_animations_);
+    visitor->Trace(active_interpolations_for_transitions_);
   }
 
  private:
@@ -293,10 +268,8 @@ class CORE_EXPORT CSSAnimationUpdate final {
   HashSet<PropertyHandle> cancelled_transitions_;
   HashSet<PropertyHandle> finished_transitions_;
 
-  ActiveInterpolationsMap active_interpolations_for_custom_animations_;
-  ActiveInterpolationsMap active_interpolations_for_standard_animations_;
-  ActiveInterpolationsMap active_interpolations_for_custom_transitions_;
-  ActiveInterpolationsMap active_interpolations_for_standard_transitions_;
+  ActiveInterpolationsMap active_interpolations_for_animations_;
+  ActiveInterpolationsMap active_interpolations_for_transitions_;
 
   friend class PendingAnimationUpdate;
 };

@@ -175,19 +175,10 @@ class TestCascade {
     if (update.IsEmpty())
       return;
 
-    cascade_.AddInterpolations(
-        &update.ActiveInterpolationsForCustomAnimations(),
-        CascadeOrigin::kAnimation);
-    cascade_.AddInterpolations(
-        &update.ActiveInterpolationsForStandardAnimations(),
-        CascadeOrigin::kAnimation);
-
-    cascade_.AddInterpolations(
-        &update.ActiveInterpolationsForCustomTransitions(),
-        CascadeOrigin::kTransition);
-    cascade_.AddInterpolations(
-        &update.ActiveInterpolationsForStandardTransitions(),
-        CascadeOrigin::kTransition);
+    cascade_.AddInterpolations(&update.ActiveInterpolationsForAnimations(),
+                               CascadeOrigin::kAnimation);
+    cascade_.AddInterpolations(&update.ActiveInterpolationsForTransitions(),
+                               CascadeOrigin::kTransition);
   }
 
   void Reset() {
@@ -254,11 +245,7 @@ class TestCascade {
 
   void CalculateInterpolationUpdate() {
     CSSAnimations::CalculateTransitionUpdate(
-        state_.AnimationUpdate(), CSSAnimations::PropertyPass::kCustom,
-        state_.GetElement(), *state_.Style());
-    CSSAnimations::CalculateTransitionUpdate(
-        state_.AnimationUpdate(), CSSAnimations::PropertyPass::kStandard,
-        state_.GetElement(), *state_.Style());
+        state_.AnimationUpdate(), state_.GetElement(), *state_.Style());
     CSSAnimations::CalculateAnimationUpdate(
         state_.AnimationUpdate(), state_.GetElement(), state_.GetElement(),
         *state_.Style(), state_.ParentStyle(),

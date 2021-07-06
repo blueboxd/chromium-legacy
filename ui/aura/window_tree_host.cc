@@ -81,7 +81,6 @@ class ScopedLocalSurfaceIdValidator {
 
 WindowTreeHost::~WindowTreeHost() {
   if (display::Screen::GetScreen())
-    display::Screen::GetScreen()->RemoveObserver(this);
   DCHECK(!compositor_) << "compositor must be destroyed before root window";
   if (owned_input_method_) {
     delete input_method_;
@@ -344,6 +343,10 @@ WindowTreeHost::RequestUnadjustedMovement() {
   return nullptr;
 }
 
+bool WindowTreeHost::SupportsMouseLock() {
+  return false;
+}
+
 void WindowTreeHost::LockMouse(Window* window) {
   Window* root_window = window->GetRootWindow();
   DCHECK(root_window);
@@ -380,7 +383,6 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
       owned_input_method_(false) {
   if (!window_)
     window_ = new Window(nullptr);
-  display::Screen::GetScreen()->AddObserver(this);
   auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   device_scale_factor_ = display.device_scale_factor();
 #if defined(OS_WIN)

@@ -604,9 +604,29 @@ bool PaintBGColorWithPaintWorklet(const Document* document,
   return true;
 }
 
+void DidDrawImage(
+    Node* node,
+    const Image& image,
+    const StyleImage& style_image,
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties,
+    const FloatRect& image_rect) {
+  if (!node || !style_image.IsImageResource())
+    return;
+  const IntRect enclosing_rect = EnclosingIntRect(image_rect);
+  PaintTimingDetector::NotifyBackgroundImagePaint(
+      *node, image, To<StyleFetchedImage>(style_image),
+      current_paint_chunk_properties, enclosing_rect);
+
+  LocalDOMWindow* window = node->GetDocument().domWindow();
+  DCHECK(window);
+  ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
+      *node, To<StyleFetchedImage>(style_image), current_paint_chunk_properties,
+      enclosing_rect);
+}
+
 inline bool PaintFastBottomLayer(const Document* document,
                                  Node* node,
-                                 const PaintInfo& paint_info,
+                                 GraphicsContext& context,
                                  const BoxPainterBase::FillLayerInfo& info,
                                  const PhysicalRect& rect,
                                  const FloatRoundedRect& border_rect,
@@ -626,7 +646,6 @@ inline bool PaintFastBottomLayer(const Document* document,
 
   // Compute the destination rect for painting the color here because we may
   // need it for computing the image painting rect for optimization.
-  GraphicsContext& context = paint_info.context;
   FloatRoundedRect color_border =
       info.is_rounded_fill ? border_rect
                            : FloatRoundedRect(PixelSnappedIntRect(rect));
@@ -708,19 +727,9 @@ inline bool PaintFastBottomLayer(const Document* document,
                          node && node->ComputedStyleRef().DisableForceDark(),
                          composite_op, info.respect_image_orientation);
 
-  if (node && info.image && info.image->IsImageResource()) {
-    PaintTimingDetector::NotifyBackgroundImagePaint(
-        *node, *image, To<StyleFetchedImage>(*info.image),
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties(),
-        RoundedIntRect(image_border.Rect()));
-
-    LocalDOMWindow* window = node->GetDocument().domWindow();
-    DCHECK(window);
-    ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-        *node, To<StyleFetchedImage>(*info.image),
-        context.GetPaintController().CurrentPaintChunkProperties(),
-        RoundedIntRect(image_border.Rect()));
-  }
+  DidDrawImage(node, *image, *info.image,
+               context.GetPaintController().CurrentPaintChunkProperties(),
+               image_border.Rect());
   return true;
 }
 
@@ -844,19 +853,9 @@ void PaintFillLayerBackground(const Document* document,
     DrawTiledBackground(context, image, geometry, composite_op,
                         node && node->ComputedStyleRef().DisableForceDark(),
                         info.respect_image_orientation);
-    if (node && info.image && info.image->IsImageResource()) {
-      PaintTimingDetector::NotifyBackgroundImagePaint(
-          *node, *image, To<StyleFetchedImage>(*info.image),
-          context.GetPaintController().CurrentPaintChunkProperties(),
-          EnclosingIntRect(geometry.SnappedDestRect()));
-
-      LocalDOMWindow* window = node->GetDocument().domWindow();
-      DCHECK(window);
-      ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-          *node, To<StyleFetchedImage>(*info.image),
-          context.GetPaintController().CurrentPaintChunkProperties(),
-          EnclosingIntRect(geometry.SnappedDestRect()));
-    }
+    DidDrawImage(node, *image, *info.image,
+                 context.GetPaintController().CurrentPaintChunkProperties(),
+                 FloatRect(geometry.SnappedDestRect()));
   }
 }
 
@@ -896,7 +895,6 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                                     BackgroundImageGeometry& geometry,
                                     bool object_has_multiple_boxes,
                                     const PhysicalSize& flow_box_size) {
-  GraphicsContext& context = paint_info.context;
   if (rect.IsEmpty())
     return;
 
@@ -907,6 +905,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   if (!info.should_paint_image && !info.should_paint_color)
     return;
 
+  GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver clip_with_scrolling_state_saver(
       context, info.is_clipped_with_local_scrolling);
   auto scrolled_paint_rect =
@@ -949,8 +948,8 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
       (bleed_avoidance == kBackgroundBleedShrinkBackground ||
        did_adjust_paint_rect);
   if (!disable_fast_path &&
-      PaintFastBottomLayer(document_, node_, paint_info, info, rect,
-                           border_rect, geometry, image.get(), composite_op)) {
+      PaintFastBottomLayer(document_, node_, context, info, rect, border_rect,
+                           geometry, image.get(), composite_op)) {
     return;
   }
 

@@ -254,6 +254,22 @@
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
+    "prefix": "coep-credentialless-origin-trial",
+    "bases": ["wpt_internal/origin_trials/coep_credentialless"],
+    "args": [
+      "--enable-features=CrossOriginEmbedderPolicyCredentiallessOriginTrial",
+      "--disable-features=CrossOriginEmbedderPolicyCredentialless,PlzDedicatedWorker,PlzServiceWorker,COEPForSharedWorker"
+    ]
+  },
+  {
+    "prefix": "coep-credentialless-origin-trial-with-worker",
+    "bases": ["wpt_internal/origin_trials/coep_credentialless"],
+    "args": [
+      "--enable-features=CrossOriginEmbedderPolicyCredentiallessOriginTrial,PlzDedicatedWorker,PlzServiceWorker,COEPForSharedWorker",
+      "--disable-features=CrossOriginEmbedderPolicyCredentialless"
+    ]
+  },
+  {
     "prefix": "fractional-scroll-offsets",
     "bases": ["external/wpt/css/css-position/sticky/"],
     "args": ["--enable-blink-features=FractionalScrollOffsets"]
@@ -1105,6 +1121,12 @@
     "args": ["--enable-blink-features=DocumentTransition",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]
+  },
+  {
+    "prefix": "anonymous-iframe",
+    "bases": ["webexposed/element-instance-property-listing.html",
+              "webexposed/global-interface-listing.html"],
+    "args": ["--enable-blink-features=AnonymousIframe"]
   },
   {
     "prefix": "popup-disabled",

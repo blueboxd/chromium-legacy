@@ -63,6 +63,10 @@ class WindowActivationObserver : public wm::ActivationChangeObserver,
 
   static void RunOnActivated(aura::Window* window,
                              base::OnceClosure on_activated) {
+    // ash::Shell can be null in unittests.
+    if (!ash::Shell::HasInstance())
+      return;
+
     if (ash::Shell::Get()->activation_client()->GetActiveWindow() == window) {
       std::move(on_activated).Run();
       return;
@@ -188,10 +192,11 @@ void ArcResizeLockManager::EnableResizeLock(aura::Window* window) {
   bool is_first_launch = false;
 
   const std::string* app_id = window->GetProperty(ash::kAppIDKey);
+  DCHECK(app_id);
   // The state is |ArcResizeLockState::READY| only when we enable the resize
   // lock for an app for the first time.
-  if (app_id && pref_delegate_->GetResizeLockState(*app_id) ==
-                    mojom::ArcResizeLockState::READY) {
+  if (pref_delegate_->GetResizeLockState(*app_id) ==
+      mojom::ArcResizeLockState::READY) {
     pref_delegate_->SetResizeLockState(*app_id, mojom::ArcResizeLockState::ON);
     is_first_launch = true;
   }
@@ -262,6 +267,8 @@ void ArcResizeLockManager::UpdateCompatModeButton(aura::Window* window) {
                                    ash::kSystemMenuPhoneIcon);
       compat_mode_button->SetText(l10n_util::GetStringUTF16(
           IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_PHONE));
+      compat_mode_button->SetAccessibleName(l10n_util::GetStringUTF16(
+          IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_PHONE));
       if (resize_lock_type == ash::ArcResizeLockType::FULLY_LOCKED) {
         compat_mode_button->SetTooltipText(l10n_util::GetStringUTF16(
             IDS_ASH_ARC_APP_COMPAT_DISABLED_COMPAT_MODE_BUTTON_TOOLTIP_PHONE));
@@ -273,12 +280,16 @@ void ArcResizeLockManager::UpdateCompatModeButton(aura::Window* window) {
                                    ash::kSystemMenuTabletIcon);
       compat_mode_button->SetText(l10n_util::GetStringUTF16(
           IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_TABLET));
+      compat_mode_button->SetAccessibleName(l10n_util::GetStringUTF16(
+          IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_TABLET));
       break;
     case ResizeCompatMode::kResizable:
       compat_mode_button->SetImage(views::CAPTION_BUTTON_ICON_CENTER,
                                    views::FrameCaptionButton::Animate::kNo,
                                    kResizableIcon);
       compat_mode_button->SetText(l10n_util::GetStringUTF16(
+          IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_RESIZABLE));
+      compat_mode_button->SetAccessibleName(l10n_util::GetStringUTF16(
           IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_RESIZABLE));
       break;
   }

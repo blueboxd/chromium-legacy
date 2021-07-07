@@ -572,6 +572,8 @@ ci.android_builder(
     experiments = {
         # TODO(crbug.com/1143122): remove this.
         "chromium.chromium_tests.use_rbe_cas": 50,
+        # TODO(crbug.com/1225524): remove this.
+        "chromium.isolate.use_new_lib": 100,
     },
 )
 
@@ -4065,6 +4067,15 @@ ci.fyi_windows_builder(
 )
 
 ci.fyi_builder(
+    name = "chromeos-amd64-generic-rel (goma cache silo)",
+    console_view_entry = consoles.console_view_entry(
+        category = "cros x64",
+        short_name = "cgc",
+    ),
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+ci.fyi_builder(
     name = "chromeos-amd64-generic-rel (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "cros x64",
@@ -5279,6 +5290,8 @@ ci.linux_builder(
     experiments = {
         # TODO(crbug.com/1143122): remove this.
         "chromium.chromium_tests.use_rbe_cas": 20,
+        # TODO(crbug.com/1225524): remove this.
+        "chromium.isolate.use_new_lib": 100,
     },
 )
 

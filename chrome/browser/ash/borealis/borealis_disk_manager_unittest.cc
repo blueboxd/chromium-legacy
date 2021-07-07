@@ -7,6 +7,7 @@
 #include <memory>
 #include <queue>
 
+#include "ash/constants/ash_features.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/test/bind.h"
@@ -49,7 +50,9 @@ using DiskInfoCallbackFactory = StrictCallbackFactory<void(
 using RequestDeltaCallbackFactory = StrictCallbackFactory<void(
     Expected<uint64_t, Described<BorealisResizeDiskResult>>)>;
 
-using SyncDiskCallbackFactory = NiceCallbackFactory<void(std::string)>;
+using SyncDiskCallbackFactory =
+    NiceCallbackFactory<void(Expected<BorealisSyncDiskSizeResult,
+                                      Described<BorealisSyncDiskSizeResult>>)>;
 
 class BorealisDiskDispatcherMock : public BorealisDiskManagerDispatcher {
  public:
@@ -111,6 +114,7 @@ class BorealisDiskManagerTest : public testing::Test,
 
     context_ = BorealisContext::CreateBorealisContextForTesting(profile_.get());
     context_->set_vm_name("vm_name1");
+    features_.InitAndEnableFeature(chromeos::features::kBorealisDiskManagement);
     disk_manager_ = std::make_unique<BorealisDiskManagerImpl>(context_.get());
     auto free_space_provider = std::make_unique<FreeSpaceProviderMock>();
     free_space_provider_ = free_space_provider.get();
@@ -159,6 +163,7 @@ class BorealisDiskManagerTest : public testing::Test,
       mock_dispatcher_;
   std::unique_ptr<BorealisFeatures> borealis_features_;
   std::unique_ptr<BorealisWindowManager> borealis_window_manager_;
+  base::test::ScopedFeatureList features_;
   std::unique_ptr<base::RunLoop> run_loop_;
   content::BrowserTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
@@ -291,6 +296,35 @@ TEST_F(BorealisDiskManagerTest, GetDiskInfoSucceedsAndReturnsResponse) {
   histogram_tester_.ExpectUniqueSample(
       kBorealisDiskClientGetDiskInfoResultHistogram,
       BorealisGetDiskInfoResult::kSuccess, 1);
+}
+
+TEST_F(BorealisDiskManagerTest,
+       GetDiskInfoReturns0AvailableSpaceForSparseDisks) {
+  EXPECT_CALL(*free_space_provider_, Get(_))
+      .WillOnce(
+          testing::Invoke([this](base::OnceCallback<void(int64_t)> callback) {
+            auto response = BuildValidListVmDisksResponse(
+                /*min_size=*/6 * kGiB, /*size=*/20 * kGiB,
+                /*available_space=*/3 * kGiB);
+            response.mutable_images()->at(0).set_user_chosen_size(false);
+            FakeConciergeClient()->set_list_vm_disks_response(response);
+            std::move(callback).Run(2 * kGiB);
+          }));
+
+  DiskInfoCallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisDiskManagerImpl::GetDiskInfoResponse,
+                      Described<BorealisGetDiskInfoResult>> response_or_error) {
+            EXPECT_TRUE(response_or_error);
+            // 0GB of disk space, we always return 0 for sparse disks.
+            EXPECT_EQ(response_or_error.Value().available_bytes, 0 * kGiB);
+            // 2GB of expandable space less 1GB of headroom is 1GB of expandable
+            // space.
+            EXPECT_EQ(response_or_error.Value().expandable_bytes, 1 * kGiB);
+          }));
+  disk_manager_->GetDiskInfo(callback_factory.BindOnce());
+  run_loop()->RunUntilIdle();
 }
 
 TEST_F(BorealisDiskManagerTest, GetDiskInfoFailsOnConcurrentAttempt) {
@@ -1121,9 +1155,19 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeFailsIfGetDiskInfoFails) {
           }));
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(Not("")));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_FALSE(result);
+            EXPECT_EQ(result.Error().error(),
+                      BorealisSyncDiskSizeResult::kFailedToGetDiskInfo);
+          }));
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kFailedToGetDiskInfo, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizeSucceedsIfDiskNotFixedSize) {
@@ -1139,9 +1183,19 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeSucceedsIfDiskNotFixedSize) {
           }));
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(""));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+            EXPECT_EQ(result.Value(),
+                      BorealisSyncDiskSizeResult::kDiskNotFixed);
+          }));
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kDiskNotFixed, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizeSucceedsIfDiskCantExpand) {
@@ -1156,9 +1210,25 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeSucceedsIfDiskCantExpand) {
           }));
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(""));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+            EXPECT_EQ(result.Value(),
+                      BorealisSyncDiskSizeResult::kNotEnoughSpaceToExpand);
+          }));
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kNotEnoughSpaceToExpand, 1);
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupAvailableSpaceHistogram, 1 * kGiB / (1024 * 1024), 1);
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupExpandableSpaceHistogram, 0, 1);
+  histogram_tester_.ExpectUniqueSample(kBorealisDiskStartupTotalSpaceHistogram,
+                                       20 * kGiB / (1024 * 1024), 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizeSucceedsIfDiskDoesntNeedToExpand) {
@@ -1173,9 +1243,19 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeSucceedsIfDiskDoesntNeedToExpand) {
           }));
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(""));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+            EXPECT_EQ(result.Value(),
+                      BorealisSyncDiskSizeResult::kNoActionNeeded);
+          }));
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kNoActionNeeded, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizeFailsIfResizeAttemptFails) {
@@ -1195,9 +1275,19 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeFailsIfResizeAttemptFails) {
           }));
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(Not("")));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_FALSE(result);
+            EXPECT_EQ(result.Error().error(),
+                      BorealisSyncDiskSizeResult::kResizeFailed);
+          }));
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kResizeFailed, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizePartialResizeSucceeds) {
@@ -1236,9 +1326,19 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizePartialResizeSucceeds) {
           }));
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(""));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+            EXPECT_EQ(result.Value(),
+                      BorealisSyncDiskSizeResult::kResizedPartially);
+          }));
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kResizedPartially, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizeCompleteResizeSucceeds) {
@@ -1275,9 +1375,19 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeCompleteResizeSucceeds) {
           }));
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(""));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+            EXPECT_EQ(result.Value(),
+                      BorealisSyncDiskSizeResult::kResizedSuccessfully);
+          }));
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kResizedSuccessfully, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizeConcurrentAttemptFails) {
@@ -1313,14 +1423,29 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeConcurrentAttemptFails) {
   FakeConciergeClient()->set_resize_disk_image_response(disk_response);
 
   SyncDiskCallbackFactory callback_factory;
-  EXPECT_CALL(callback_factory, Call(""));
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+          }));
 
   SyncDiskCallbackFactory second_callback_factory;
-  EXPECT_CALL(second_callback_factory, Call(Not("")));
+  EXPECT_CALL(second_callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_FALSE(result);
+            EXPECT_EQ(result.Error().error(),
+                      BorealisSyncDiskSizeResult::kAlreadyInProgress);
+          }));
 
   disk_manager_->SyncDiskSize(callback_factory.BindOnce());
   disk_manager_->SyncDiskSize(second_callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kAlreadyInProgress, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, RequestsRecordedOnDestruction) {
@@ -1337,6 +1462,87 @@ TEST_F(BorealisDiskManagerTest, RequestsRecordedOnDestruction) {
   disk_manager_.reset();
   histogram_tester_.ExpectUniqueSample(
       kBorealisDiskClientNumRequestsPerSessionHistogram, 1, 1);
+}
+
+TEST_F(BorealisDiskManagerTest,
+       GetDiskInfoReturns0ExpandableSpaceWhenFeatureDisabled) {
+  features_.Reset();
+  features_.InitAndDisableFeature(chromeos::features::kBorealisDiskManagement);
+  EXPECT_CALL(*free_space_provider_, Get(_))
+      .WillOnce(
+          testing::Invoke([this](base::OnceCallback<void(int64_t)> callback) {
+            auto response = BuildValidListVmDisksResponse(
+                /*min_size=*/6 * kGiB, /*size=*/20 * kGiB,
+                /*available_space=*/3 * kGiB);
+            FakeConciergeClient()->set_list_vm_disks_response(response);
+            std::move(callback).Run(3 * kGiB);
+          }));
+
+  DiskInfoCallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisDiskManagerImpl::GetDiskInfoResponse,
+                      Described<BorealisGetDiskInfoResult>> response_or_error) {
+            EXPECT_TRUE(response_or_error);
+            // 3GB of disk space, doesn't enforce buffer when feature is
+            // disabled.
+            EXPECT_EQ(response_or_error.Value().available_bytes, 3 * kGiB);
+            // 0GB of expandable space when the feature is disabled.
+            EXPECT_EQ(response_or_error.Value().expandable_bytes, 0 * kGiB);
+          }));
+  disk_manager_->GetDiskInfo(callback_factory.BindOnce());
+  run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskClientGetDiskInfoResultHistogram,
+      BorealisGetDiskInfoResult::kSuccess, 1);
+}
+
+TEST_F(BorealisDiskManagerTest, RequestSpaceFailsWhenFeatureDisabled) {
+  features_.Reset();
+  features_.InitAndDisableFeature(chromeos::features::kBorealisDiskManagement);
+  RequestDeltaCallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<uint64_t, Described<BorealisResizeDiskResult>>
+                 response_or_error) {
+            EXPECT_FALSE(response_or_error);
+            EXPECT_EQ(response_or_error.Error().error(),
+                      BorealisResizeDiskResult::kInvalidRequest);
+          }));
+  disk_manager_->RequestSpace(1 * kGiB, callback_factory.BindOnce());
+  run_loop()->RunUntilIdle();
+}
+
+TEST_F(BorealisDiskManagerTest, ReleaseSpaceFailsWhenFeatureDisabled) {
+  features_.Reset();
+  features_.InitAndDisableFeature(chromeos::features::kBorealisDiskManagement);
+  RequestDeltaCallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<uint64_t, Described<BorealisResizeDiskResult>>
+                 response_or_error) {
+            EXPECT_FALSE(response_or_error);
+            EXPECT_EQ(response_or_error.Error().error(),
+                      BorealisResizeDiskResult::kInvalidRequest);
+          }));
+  disk_manager_->ReleaseSpace(1 * kGiB, callback_factory.BindOnce());
+  run_loop()->RunUntilIdle();
+}
+
+TEST_F(BorealisDiskManagerTest, SyncDiskSizeSucceedsWhenFeatureDisabled) {
+  features_.Reset();
+  features_.InitAndDisableFeature(chromeos::features::kBorealisDiskManagement);
+  SyncDiskCallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+            EXPECT_EQ(result.Value(),
+                      BorealisSyncDiskSizeResult::kNoActionNeeded);
+          }));
+  disk_manager_->SyncDiskSize(callback_factory.BindOnce());
+  run_loop()->RunUntilIdle();
 }
 
 }  // namespace

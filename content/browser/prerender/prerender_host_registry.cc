@@ -74,6 +74,16 @@ int PrerenderHostRegistry::CreateAndStartHost(
       return iter.first;
   }
 
+  // TODO(crbug.com/1197133): Cancel the started prerender and start a new
+  // one if the score of the new candidate is higher than the started one's.
+  if (prerender_host_by_frame_tree_node_id_.size() ==
+      kMaxNumOfRunningPrerenders) {
+    base::UmaHistogramEnumeration(
+        "Prerender.Experimental.PrerenderHostFinalStatus",
+        PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded);
+    return RenderFrameHost::kNoFrameTreeNodeId;
+  }
+
   auto prerender_host = std::make_unique<PrerenderHost>(
       std::move(attributes), initiator_render_frame_host);
   const int frame_tree_node_id = prerender_host->frame_tree_node_id();
@@ -153,16 +163,16 @@ int PrerenderHostRegistry::ReserveHostToActivate(
                "navigation_url", navigation_request.GetURL().spec(),
                "render_frame_host", render_frame_host);
 
-  // Disallow activation when the navigation is for prerendering.
-  if (navigation_request.frame_tree_node()->frame_tree()->is_prerendering())
+  // Disallow activation when the navigation is for a nested browsing context
+  // (e.g., iframes). This is because nested browsing contexts are supposed to
+  // be created in the parent's browsing context group and can script with the
+  // parent, but prerendered pages are created in new browsing context groups.
+  if (!navigation_request.IsInMainFrame())
     return RenderFrameHost::kNoFrameTreeNodeId;
 
-  // Disallow activation when the render frame host is for a nested browsing
-  // context (e.g., iframes). This is because nested browsing contexts are
-  // supposed to be created in the parent's browsing context group and can
-  // script with the parent, but prerendered pages are created in new browsing
-  // context groups.
-  if (render_frame_host->GetParent())
+  // Disallow activation when the navigation happens in the prerendering frame
+  // tree.
+  if (navigation_request.IsInPrerenderedMainFrame())
     return RenderFrameHost::kNoFrameTreeNodeId;
 
   // Disallow activation when other auxiliary browsing contexts (e.g., pop-up

@@ -104,10 +104,6 @@ const base::Feature kArcAdbSideloadingFeature{
 const base::Feature kArcManagedAdbSideloadingSupport{
     "ArcManagedAdbSideloadingSupport", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable support for View.onKeyPreIme() of ARC apps.
-const base::Feature kArcPreImeKeyEventSupport{"ArcPreImeKeyEventSupport",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables resize lock for ARC++ and puts restrictions on window resizing.
 // TODO(takise): Remove this after the feature is fully launched.
 const base::Feature kArcResizeLock{"ArcResizeLock",
@@ -200,8 +196,9 @@ const base::Feature kBorealisDiskManagement{"BorealisDiskManagement",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable TermsOfServiceURL policy for managed users.
+// https://crbug.com/1221342
 const base::Feature kManagedTermsOfService{"ManagedTermsOfService",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable display of button on Arc provisioning failure dialog for network
 // tests.

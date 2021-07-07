@@ -861,15 +861,15 @@ Status ExecuteSwitchToFrame(Session* session,
         "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
         "}";
     std::string xpath = "(/html/body//iframe|/html/frameset//frame)";
-    std::string id_string;
-    int id_int;
-    if (id->GetAsString(&id_string)) {
+    if (id->is_string()) {
+      std::string id_string = id->GetString();
       if (session->w3c_compliant)
         return Status(kInvalidArgument, "'id' can not be string");
       else
         xpath += base::StringPrintf(
           "[@name=\"%s\" or @id=\"%s\"]", id_string.c_str(), id_string.c_str());
-    } else if (id->GetAsInteger(&id_int)) {
+    } else if (id->is_int()) {
+      int id_int = id->GetInt();
       const int max_range = 65535; // 2^16 - 1
       if (id_int < 0 || id_int > max_range)
         return Status(kInvalidArgument, "'id' out of range");
@@ -2603,30 +2603,37 @@ Status ExecuteSetWindowRect(Session* session,
 
   bool has_x = params.Get("x", &temp) && !temp->is_none();
   if (has_x) {
-    if (!temp->GetAsDouble(&x))
+    if (!temp->is_double() && !temp->is_int())
       return Status(kInvalidArgument, "'x' must be a number");
+    x = temp->GetDouble();
     if (x > max_range || x < min_range)
       return Status(kInvalidArgument, "'x' out of range");
   }
+
   bool has_y = params.Get("y", &temp) && !temp->is_none();
   if (has_y) {
-    if (!temp->GetAsDouble(&y))
+    if (!temp->is_double() && !temp->is_int())
       return Status(kInvalidArgument, "'y' must be a number");
-    if (y > max_range || y < min_range )
+    y = temp->GetDouble();
+    if (y > max_range || y < min_range)
       return Status(kInvalidArgument, "'y' out of range");
   }
+
   bool has_width = params.Get("width", &temp) && !temp->is_none();
   if (has_width) {
-    if (!temp->GetAsDouble(&width))
+    if (!temp->is_double() && !temp->is_int())
       return Status(kInvalidArgument, "'width' must be a number");
-    if (width > max_range || width < 0 )
+    width = temp->GetDouble();
+    if (width > max_range || width < 0)
       return Status(kInvalidArgument, "'width' out of range");
   }
+
   bool has_height = params.Get("height", &temp) && !temp->is_none();
   if (has_height) {
-    if (!temp->GetAsDouble(&height))
+    if (!temp->is_double() && !temp->is_int())
       return Status(kInvalidArgument, "'height' must be a number");
-    if (height > max_range || height < 0 )
+    height = temp->GetDouble();
+    if (height > max_range || height < 0)
       return Status(kInvalidArgument, "'height' out of range");
   }
 

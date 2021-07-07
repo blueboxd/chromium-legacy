@@ -222,11 +222,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a8ac441411b456e704ce98ca1fdc51af91c23eff',
+  'skia_revision': '3cc03c59bf1bffc0469e82bfcf6ebd801280fb08',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '554cbd32985edcc76cf27e71d7ab9ff267427661',
+  'v8_revision': '1faad41e9dcd644aa5be7a60ceb0616d339adb08',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -234,11 +234,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '7455507ebcdac1dcb189c6040b555d00fee1cc05',
+  'angle_revision': '51937ab386224053531b478e73ddf97a46d9fa8e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '6f1260556b102395e25e9991ee377701b66abfb4',
+  'swiftshader_revision': '3c89f07b349bf0d226d380c4b519b1a9d8f13759',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c12d1d244d1a65dfa12dfe9a495a74107929d044',
+  'devtools_frontend_revision': '91f33e8d9e09770233154533a3c8223b8ff1055b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -341,7 +341,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2828f35a71358117b5848cc48e9387380a5a2aa1',
+  'dawn_revision': '4a811043ccd2b57b9bacd2cb79f30802c18f6301',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -738,7 +738,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'wMIw6roM8hHfyEUomhOAP62HfeLYGIvT9ilTNbW68rkC',
+          'version': 'PTOkBlPq_HcuCNU_wN2ZymkGWNszZRV4RCn5jnaVp7YC',
       },
     ],
     'condition': 'checkout_android',
@@ -1553,7 +1553,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '965b19a8636bbcd9617c1658cfe874a10cedb15d',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@ca162df8431b870f1259dc12a4c025669aeb844b',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@6dda7d6b86d6a43338b38fbf6b994b1010e011b1',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d54372f96c0e73b1850ce723b4493d924af483b2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@428e128baad1160d2a83f282953a8b3a961a02ac',
     'condition': 'checkout_src_internal',
   },
 
@@ -1683,7 +1683,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'RNatxCAGpJjbVaT700xpyTmbzsU5P6EPAZ_BBs-QHD8C',
+        'version': 'X7PZLg5jqz2jSiDx2RPl7e8sq36zOuArYmN6mKgK2BgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

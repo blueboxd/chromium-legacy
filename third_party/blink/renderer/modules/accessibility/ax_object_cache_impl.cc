@@ -2106,6 +2106,14 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
     return;
   }
 
+  if (!IsDirty())
+    return;
+
+  DCHECK(GetDocument().IsAccessibilityEnabled())
+      << "ProcessDeferredAccessibilityEvents should not perform work when "
+         "accessibility is not enabled."
+      << "\n* IsPopup? " << IsPopup(document);
+
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Accessibility.Performance.ProcessDeferredAccessibilityEvents");
 
@@ -2154,7 +2162,8 @@ bool AXObjectCacheImpl::IsDirty() const {
          !tree_update_callback_queue_popup_.IsEmpty() ||
          !notifications_to_post_main_.IsEmpty() ||
          !notifications_to_post_popup_.IsEmpty() ||
-         !invalidated_ids_main_.IsEmpty() || !invalidated_ids_popup_.IsEmpty();
+         !invalidated_ids_main_.IsEmpty() ||
+         !invalidated_ids_popup_.IsEmpty() || relation_cache_->IsDirty();
 }
 
 void AXObjectCacheImpl::EmbeddingTokenChanged(HTMLFrameOwnerElement* element) {
@@ -3278,12 +3287,16 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
     Element* new_focused_element) {
   TRACE_EVENT0("accessibility",
                "AXObjectCacheImpl::HandleFocusedUIElementChanged");
-#if DCHECK_IS_ON()
-  // The focus can be in a different document when a popup is open.
   Document& focused_doc =
       new_focused_element ? new_focused_element->GetDocument() : *document_;
+
+#if DCHECK_IS_ON()
+  // The focus can be in a different document when a popup is open.
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(focused_doc);
 #endif  // DCHECK_IS_ON()
+
+  if (focused_doc.GetPage() && focused_doc.GetPage()->InsidePortal())
+    return;  // Elements inside a portal are not considered focusable.
 
   if (validation_message_axid_) {
     DeferTreeUpdate(

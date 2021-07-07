@@ -229,11 +229,6 @@ const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 using LifecycleState = RenderFrameHost::LifecycleState;
 using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
 
-// TODO(crbug.com/1059903): Clean up after the initial investigation.
-constexpr base::Feature kCheckWebContentsAccessFromNonCurrentFrame{
-    "CheckWebContentsAccessFromNonCurrentFrame",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 base::LazyInstance<std::vector<
     WebContentsImpl::FriendWrapper::CreatedCallback>>::DestructorAtExit
     g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
@@ -625,11 +620,6 @@ WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
                         rfh);
   if (!rfh)
     return nullptr;
-  if (!rfh->IsActive() && base::FeatureList::IsEnabled(
-                              kCheckWebContentsAccessFromNonCurrentFrame)) {
-    // TODO(crbug.com/1059903): return nullptr here eventually.
-    base::debug::DumpWithoutCrashing();
-  }
   return static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
 }
 
@@ -880,6 +870,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       created_with_opener_(false),
       node_(this),
       frame_tree_(browser_context,
+                  this,
                   this,
                   this,
                   this,
@@ -1506,11 +1497,11 @@ void WebContentsImpl::OnScreenOrientationChange() {
 }
 
 absl::optional<SkColor> WebContentsImpl::GetThemeColor() {
-  return GetRenderViewHost()->theme_color();
+  return GetPrimaryPage().theme_color();
 }
 
 absl::optional<SkColor> WebContentsImpl::GetBackgroundColor() {
-  return GetRenderViewHost()->background_color();
+  return GetPrimaryPage().background_color();
 }
 
 void WebContentsImpl::SetPageBaseBackgroundColor(
@@ -4790,6 +4781,7 @@ void WebContentsImpl::SaveFrameWithHeaders(
     const std::u16string& suggested_filename,
     RenderFrameHost* rfh) {
   DCHECK(rfh);
+  auto& rfhi = *static_cast<RenderFrameHostImpl*>(rfh);
 
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SaveFrameWithHeaders",
                         "url", url, "headers", headers);
@@ -4813,16 +4805,10 @@ void WebContentsImpl::SaveFrameWithHeaders(
   if (delegate_ && delegate_->SaveFrame(url, referrer, rfh))
     return;
 
-  // TODO(nasko): This check for main frame is incorrect and should be fixed
-  // by explicitly passing in which frame this method should target. This would
-  // indicate whether it's the main frame, and also tell us the frame pointer
-  // to use for routing.
-  bool is_main_frame = (url == GetLastCommittedURL());
-  RenderFrameHost* frame_host = GetMainFrame();
-
   int64_t post_id = -1;
-  if (is_main_frame) {
-    NavigationEntry* entry = GetController().GetLastCommittedEntry();
+  if (rfhi.is_main_frame()) {
+    NavigationEntry* entry =
+        rfhi.frame_tree()->controller().GetLastCommittedEntry();
     if (entry)
       post_id = entry->GetPostID();
   }
@@ -4847,8 +4833,7 @@ void WebContentsImpl::SaveFrameWithHeaders(
           policy_exception_justification: "Not implemented."
         })");
   auto params = std::make_unique<download::DownloadUrlParameters>(
-      url, frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
-      traffic_annotation);
+      url, rfh->GetProcess()->GetID(), rfh->GetRoutingID(), traffic_annotation);
   params->set_referrer(referrer.url);
   params->set_referrer_policy(
       Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
@@ -4867,9 +4852,7 @@ void WebContentsImpl::SaveFrameWithHeaders(
   }
   params->set_suggested_name(suggested_filename);
   params->set_download_source(download::DownloadSource::WEB_CONTENTS_API);
-  params->set_isolation_info(
-      static_cast<RenderFrameHostImpl*>(rfh)->ComputeIsolationInfoForNavigation(
-          url));
+  params->set_isolation_info(rfhi.ComputeIsolationInfoForNavigation(url));
 
   GetBrowserContext()->GetDownloadManager()->DownloadUrl(std::move(params));
 }
@@ -4907,7 +4890,7 @@ void WebContentsImpl::GenerateWebBundle(
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() {
-  return GetRenderViewHost()->contents_mime_type();
+  return GetPrimaryPage().contents_mime_type();
 }
 
 blink::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
@@ -5613,19 +5596,17 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
   if (delegate_)
     delegate_->DidNavigateMainFramePostCommit(this);
 
-  RenderViewHostImpl* rvh =
-      render_frame_host->GetMainFrame()->render_view_host();
-
-  // The following events will not fire again if the page is restored from the
-  // BackForwardCache. So fire them ourselves if needed.
-  if (details.is_navigation_to_different_page() &&
-      rvh->did_first_visually_non_empty_paint()) {
-    DidFirstVisuallyNonEmptyPaint(rvh);
+  PageImpl& page = render_frame_host->GetPage();
+  if (page.IsPrimary()) {
+    // The following events will not fire again if the this is a back-forward
+    // cache restore or prerendering activation. Fire them ourselves if needed.
+    if (details.is_navigation_to_different_page() &&
+        page.did_first_visually_non_empty_paint()) {
+      OnFirstVisuallyNonEmptyPaint(page);
+    }
+    OnThemeColorChanged(page);
+    OnBackgroundColorChanged(page);
   }
-  if (rvh->theme_color() != last_sent_theme_color_)
-    OnThemeColorChanged(rvh);
-  if (rvh->background_color() != last_sent_background_color_)
-    OnBackgroundColorChanged(rvh);
 }
 
 void WebContentsImpl::DidNavigateAnyFramePostCommit(
@@ -5655,28 +5636,34 @@ bool WebContentsImpl::CanOverscrollContent() const {
   return delegate_ && delegate_->CanOverscrollContent();
 }
 
-void WebContentsImpl::OnThemeColorChanged(RenderViewHostImpl* source) {
+void WebContentsImpl::OnThemeColorChanged(PageImpl& page) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnThemeColorChanged",
-                        "render_view_host", source);
-  if (source->did_first_visually_non_empty_paint() &&
-      last_sent_theme_color_ != source->theme_color()) {
+                        "page", page);
+  if (!page.IsPrimary())
+    return;
+
+  if (page.did_first_visually_non_empty_paint() &&
+      last_sent_theme_color_ != page.theme_color()) {
     observers_.NotifyObservers(&WebContentsObserver::DidChangeThemeColor);
-    last_sent_theme_color_ = source->theme_color();
+    last_sent_theme_color_ = page.theme_color();
   }
 }
 
-void WebContentsImpl::OnBackgroundColorChanged(RenderViewHostImpl* source) {
-  if (source->did_first_visually_non_empty_paint() &&
-      last_sent_background_color_ != source->background_color()) {
+void WebContentsImpl::OnBackgroundColorChanged(PageImpl& page) {
+  if (!page.IsPrimary())
+    return;
+
+  if (page.did_first_visually_non_empty_paint() &&
+      last_sent_background_color_ != page.background_color()) {
     observers_.NotifyObservers(&WebContentsObserver::OnBackgroundColorChanged);
-    last_sent_background_color_ = source->background_color();
+    last_sent_background_color_ = page.background_color();
     return;
   }
 
-  if (source->background_color().has_value()) {
+  if (page.background_color().has_value()) {
     if (auto* view = GetRenderWidgetHostView()) {
       static_cast<RenderWidgetHostViewBase*>(view)->SetContentBackgroundColor(
-          source->background_color().value());
+          page.background_color().value());
     }
   }
 }
@@ -6266,29 +6253,28 @@ void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
   is_overlay_content_ = is_overlay_content;
 }
 
-void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
-    RenderViewHostImpl* source) {
-  OPTIONAL_TRACE_EVENT1("content",
-                        "WebContentsImpl::DidFirstVisuallyNonEmptyPaint",
-                        "render_view_host", source);
-  // TODO(nick): When this is ported to FrameHostMsg_, we should only listen if
-  // |source| is the main frame.
+void WebContentsImpl::OnFirstVisuallyNonEmptyPaint(PageImpl& page) {
+  OPTIONAL_TRACE_EVENT1(
+      "content", "WebContentsImpl::OnFirstVisuallyNonEmptyPaint", "page", page);
+  if (!page.IsPrimary())
+    return;
+
   {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "WebContentsObserver.DidFirstVisuallyNonEmptyPaint");
     observers_.NotifyObservers(
         &WebContentsObserver::DidFirstVisuallyNonEmptyPaint);
   }
-  if (source->theme_color() != last_sent_theme_color_) {
+  if (page.theme_color() != last_sent_theme_color_) {
     // Theme color should have updated by now if there was one.
     observers_.NotifyObservers(&WebContentsObserver::DidChangeThemeColor);
-    last_sent_theme_color_ = source->theme_color();
+    last_sent_theme_color_ = GetPrimaryPage().theme_color();
   }
 
-  if (source->background_color() != last_sent_background_color_) {
+  if (page.background_color() != last_sent_background_color_) {
     // Background color should have updated by now if there was one.
     observers_.NotifyObservers(&WebContentsObserver::OnBackgroundColorChanged);
-    last_sent_background_color_ = source->background_color();
+    last_sent_background_color_ = page.background_color();
   }
 }
 
@@ -7939,7 +7925,7 @@ service_manager::InterfaceProvider* WebContentsImpl::GetJavaInterfaces() {
 #endif
 
 bool WebContentsImpl::CompletedFirstVisuallyNonEmptyPaint() {
-  return GetRenderViewHost()->did_first_visually_non_empty_paint();
+  return GetPrimaryPage().did_first_visually_non_empty_paint();
 }
 
 void WebContentsImpl::OnDidDownloadImage(

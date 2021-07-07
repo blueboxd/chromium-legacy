@@ -27,10 +27,7 @@ class AverageLagTrackerTest : public testing::Test {
   const base::HistogramTester& histogram_tester() { return *histogram_tester_; }
 
   void SetUp() override {
-    average_lag_tracker_gpu_swap_ = std::make_unique<AverageLagTracker>(
-        AverageLagTracker::FinishTimeType::GpuSwapBegin);
-    average_lag_tracker_presentation_ = std::make_unique<AverageLagTracker>(
-        AverageLagTracker::FinishTimeType::PresentationFeedback);
+    average_lag_tracker_ = std::make_unique<AverageLagTracker>();
   }
 
   void SyntheticTouchScrollBegin(base::TimeTicks event_time,
@@ -41,11 +38,7 @@ class AverageLagTrackerTest : public testing::Test {
         0, delta, predicted_delta != 0 ? predicted_delta : delta, event_time,
         AverageLagTracker::EventType::ScrollBegin);
     event_info.finish_timestamp = frame_time;
-
-    // Always add the events to both and test if they have the same behavior
-    // regardless of the metrics names.
-    average_lag_tracker_gpu_swap_->AddScrollEventInFrame(event_info);
-    average_lag_tracker_presentation_->AddScrollEventInFrame(event_info);
+    average_lag_tracker_->AddScrollEventInFrame(event_info);
   }
 
   void SyntheticTouchScrollUpdate(base::TimeTicks event_time,
@@ -56,48 +49,46 @@ class AverageLagTrackerTest : public testing::Test {
         0, delta, predicted_delta != 0 ? predicted_delta : delta, event_time,
         AverageLagTracker::EventType::ScrollUpdate);
     event_info.finish_timestamp = frame_time;
-
-    average_lag_tracker_gpu_swap_->AddScrollEventInFrame(event_info);
-    average_lag_tracker_presentation_->AddScrollEventInFrame(event_info);
+    average_lag_tracker_->AddScrollEventInFrame(event_info);
   }
 
   void CheckScrollBeginHistograms(int bucket_value, int count) {
     EXPECT_THAT(histogram_tester().GetAllSamples(
-                    "Event.Latency.ScrollBegin.Touch.AverageLag"),
-                ElementsAre(Bucket(bucket_value, count)));
-    EXPECT_THAT(histogram_tester().GetAllSamples(
                     "Event.Latency.ScrollBegin.Touch.AverageLagPresentation"),
                 ElementsAre(Bucket(bucket_value, count)));
+
+    EXPECT_THAT(
+        histogram_tester().GetAllSamples("Event.Latency.ScrollBegin.Touch."
+                                         "AverageLagPresentation.NoPrediction"),
+        ElementsAre(Bucket(bucket_value, count)));
   }
 
   void CheckScrollUpdateHistograms(int bucket_value, int count) {
     EXPECT_THAT(histogram_tester().GetAllSamples(
-                    "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-                ElementsAre(Bucket(bucket_value, count)));
-
-    EXPECT_THAT(histogram_tester().GetAllSamples(
                     "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation"),
                 ElementsAre(Bucket(bucket_value, count)));
+
+    EXPECT_THAT(
+        histogram_tester().GetAllSamples("Event.Latency.ScrollUpdate.Touch."
+                                         "AverageLagPresentation.NoPrediction"),
+        ElementsAre(Bucket(bucket_value, count)));
   }
 
   void CheckPredictionPositiveHistograms(int bucket_value, int count) {
-    EXPECT_THAT(
-        histogram_tester().GetAllSamples(
-            "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"),
-        ElementsAre(Bucket(bucket_value, count)));
-
     EXPECT_THAT(histogram_tester().GetAllSamples(
                     "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
                     "PredictionPositive"),
                 ElementsAre(Bucket(bucket_value, count)));
   }
 
-  void CheckPredictionNegativeHistograms(int bucket_value, int count) {
-    EXPECT_THAT(
-        histogram_tester().GetAllSamples(
-            "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative"),
-        ElementsAre(Bucket(bucket_value, count)));
+  void CheckRemainingLagPercentageHistograms(int bucket_value, int count) {
+    EXPECT_THAT(histogram_tester().GetAllSamples(
+                    "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
+                    "RemainingLagPercentage"),
+                ElementsAre(Bucket(bucket_value, count)));
+  }
 
+  void CheckPredictionNegativeHistograms(int bucket_value, int count) {
     EXPECT_THAT(histogram_tester().GetAllSamples(
                     "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
                     "PredictionNegative"),
@@ -106,15 +97,13 @@ class AverageLagTrackerTest : public testing::Test {
 
   void CheckScrollUpdateHistogramsTotalCount(int count) {
     histogram_tester().ExpectTotalCount(
-        "Event.Latency.ScrollUpdate.Touch.AverageLag", count);
-    histogram_tester().ExpectTotalCount(
         "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation", count);
+    histogram_tester().ExpectTotalCount(
+        "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.NoPrediction",
+        count);
   }
 
   void CheckPredictionPositiveHistogramsTotalCount(int count) {
-    histogram_tester().ExpectTotalCount(
-        "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive",
-        count);
     histogram_tester().ExpectTotalCount(
         "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
         "PredictionPositive",
@@ -123,17 +112,13 @@ class AverageLagTrackerTest : public testing::Test {
 
   void CheckPredictionNegativeHistogramsTotalCount(int count) {
     histogram_tester().ExpectTotalCount(
-        "Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative",
-        count);
-    histogram_tester().ExpectTotalCount(
         "Event.Latency.ScrollUpdate.Touch.AverageLagPresentation."
         "PredictionNegative",
         count);
   }
 
  protected:
-  std::unique_ptr<AverageLagTracker> average_lag_tracker_gpu_swap_;
-  std::unique_ptr<AverageLagTracker> average_lag_tracker_presentation_;
+  std::unique_ptr<AverageLagTracker> average_lag_tracker_;
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
@@ -190,6 +175,7 @@ TEST_F(AverageLagTrackerTest, OneSecondInterval) {
   CheckScrollUpdateHistograms(9, 1);
   CheckPredictionPositiveHistograms(0, 1);
   CheckPredictionNegativeHistogramsTotalCount(0);
+  CheckRemainingLagPercentageHistograms(100 - 0, 1);
 
   ResetHistograms();
 
@@ -202,6 +188,7 @@ TEST_F(AverageLagTrackerTest, OneSecondInterval) {
   CheckScrollUpdateHistograms(8, 1);
   CheckPredictionPositiveHistograms(0, 1);
   CheckPredictionNegativeHistogramsTotalCount(0);
+  CheckRemainingLagPercentageHistograms(100 - 0, 1);
 }
 
 // Test the case that event's frame swap time is later than next event's
@@ -376,6 +363,7 @@ TEST_F(AverageLagTrackerTest, ScrollPrediction) {
   CheckScrollUpdateHistograms(4, 1);
   CheckPredictionPositiveHistograms(5, 1);
   CheckPredictionNegativeHistogramsTotalCount(0);
+  CheckRemainingLagPercentageHistograms(100 * 4.375 / 9.375, 1);
 }
 
 // Test AverageLag with imperfect scroll prediction.
@@ -416,6 +404,7 @@ TEST_F(AverageLagTrackerTest, ImperfectScrollPrediction) {
   // Positive effect of prediction = 4.3px
   CheckPredictionPositiveHistograms(4, 1);
   CheckPredictionNegativeHistogramsTotalCount(0);
+  CheckRemainingLagPercentageHistograms(100 * 5.075 / 9.375, 1);
 }
 
 TEST_F(AverageLagTrackerTest, NegativePredictionEffect) {
@@ -455,6 +444,9 @@ TEST_F(AverageLagTrackerTest, NegativePredictionEffect) {
   // Negative effect of prediction = 11.25
   CheckPredictionPositiveHistogramsTotalCount(0);
   CheckPredictionNegativeHistograms(11, 1);
+
+  // 100 * 20.625 / 9.375 = 220 is logged into bucket 219.
+  CheckRemainingLagPercentageHistograms(219, 1);
 }
 
 TEST_F(AverageLagTrackerTest, NoPredictionEffect) {

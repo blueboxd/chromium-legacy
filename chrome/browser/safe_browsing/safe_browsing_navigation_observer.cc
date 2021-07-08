@@ -88,7 +88,9 @@ void SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
     return;
 
   if (safe_browsing::SafeBrowsingNavigationObserverManager::IsEnabledAndReady(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->GetPrefs(),
+          g_browser_process->safe_browsing_service())) {
     web_contents->SetUserData(
         kWebContentsUserDataKey,
         std::make_unique<SafeBrowsingNavigationObserver>(web_contents));

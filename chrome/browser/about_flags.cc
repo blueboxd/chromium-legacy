@@ -2574,17 +2574,6 @@ constexpr FeatureEntry::FeatureVariation
          kPlatformProvidedTrustTokenIssuance,
          base::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
 
-const FeatureEntry::FeatureParam kPasswordsAccountStorage_ProfileStore[] = {
-    {password_manager::features::kSaveToProfileStoreByDefault, "true"},
-    {password_manager::features::kSaveToAccountStoreOnOptIn, "true"},
-};
-
-const FeatureEntry::FeatureVariation kPasswordsAccountStorageVariations[] = {
-    {"(save to profile store by default)",
-     kPasswordsAccountStorage_ProfileStore,
-     base::size(kPasswordsAccountStorage_ProfileStore), nullptr},
-};
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kWallpaperWebUIInternalName[] = "wallpaper-webui";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5967,26 +5956,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedFiles)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"passwords-account-storage",
-     flag_descriptions::kEnablePasswordsAccountStorageName,
-     flag_descriptions::kEnablePasswordsAccountStorageDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         password_manager::features::kEnablePasswordsAccountStorage,
-         kPasswordsAccountStorageVariations,
-         "ButterForPasswords")},
-
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-    {"passwords-account-storage-iph",
-     flag_descriptions::kEnablePasswordsAccountStorageIPHName,
-     flag_descriptions::kEnablePasswordsAccountStorageIPHDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_VALUE_TYPE(
-         feature_engagement::kIPHPasswordsAccountStorageFeature)},
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
-
     {"autofill-always-return-cloud-tokenized-card",
      flag_descriptions::kAutofillAlwaysReturnCloudTokenizedCardName,
      flag_descriptions::kAutofillAlwaysReturnCloudTokenizedCardDescription,
@@ -6051,6 +6020,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMacCoreLocationImplementationDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMacCoreLocationImplementation)},
 #endif
+
+#if !defined(OS_ANDROID)
+    {"mute-notification-snooze-action",
+     flag_descriptions::kMuteNotificationSnoozeActionName,
+     flag_descriptions::kMuteNotificationSnoozeActionDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMuteNotificationSnoozeAction)},
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MAC)
     {"enable-new-mac-notification-api",
@@ -6914,12 +6890,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSwipeToMoveCursorDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kSwipeToMoveCursor)},
 #endif  // defined(OS_ANDROID)
-
-    {"change-password-affiliation",
-     flag_descriptions::kChangePasswordAffiliationInfoName,
-     flag_descriptions::kChangePasswordAffiliationInfoDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kChangePasswordAffiliationInfo)},
 
     {"use-of-hash-affiliation-fetcher",
      flag_descriptions::kUseOfHashAffiliationFetcherName,

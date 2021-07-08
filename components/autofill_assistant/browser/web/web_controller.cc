@@ -42,15 +42,6 @@ using autofill::ContentAutofillDriver;
 
 namespace {
 
-// Get the visual viewport as a list of values to fill into RectF, that is:
-// left, top, right, bottom.
-const char* const kGetVisualViewport =
-    R"({ const v = window.visualViewport;
-         [v.pageLeft,
-          v.pageTop,
-          v.pageLeft + v.width,
-          v.pageTop + v.height] })";
-
 // Scrolls to the specified node with top padding. The top padding can
 // be specified through pixels or ratio. Pixels take precedence.
 const char* const kScrollIntoViewWithPaddingScript =
@@ -96,6 +87,38 @@ const char* const kScrollIntoViewScript =
 const char* const kScrollIntoViewIfNeededScript =
     R"(function(center) {
       this.scrollIntoViewIfNeeded(center);
+    })";
+
+// Scroll the current window by a given amount of |pixels|. If |pixels| is 0,
+// take a ratio of the window's height instead.
+const char* const kScrollWindowScript =
+    R"(function(pixels, windowRatio, animation) {
+      let scrollDistance = pixels;
+      if (scrollDistance === 0) {
+        scrollDistance = window.innerHeight * windowRatio;
+      }
+      const options = {};
+      options.top = scrollDistance;
+      if (animation !== '') {
+        options.behavior = animation;
+      }
+      window.scrollBy(options);
+    })";
+
+// Scroll the container by a given amount of |pixels|. If |pixels| is 0,
+// take a ratio of the window's height instead.
+const char* const kScrollContainerScript =
+    R"(function(pixels, windowRatio, animation) {
+      let scrollDistance = pixels;
+      if (scrollDistance === 0) {
+        scrollDistance = window.innerHeight * windowRatio;
+      }
+      const options = {};
+      options.top = scrollDistance;
+      if (animation !== '') {
+        options.behavior = animation;
+      }
+      this.scrollBy(options);
     })";
 
 // Javascript to select a value from a select box. Also fires a "change" event
@@ -511,6 +534,62 @@ void WebController::ScrollIntoViewIfNeeded(
               &DecorateWebControllerStatus,
               WebControllerErrorInfoProto::SCROLL_INTO_VIEW_IF_NEEDED,
               std::move(callback))));
+}
+
+void WebController::ScrollWindow(
+    const ScrollDistance& scroll_distance,
+    const std::string& animation,
+    const ElementFinder::Result& optional_frame,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  std::string scroll_script = base::StrCat(
+      {"(", kScrollWindowScript, ")",
+       base::StringPrintf("(%d, %f, %s)", scroll_distance.pixels(),
+                          scroll_distance.window_ratio(), animation.c_str())});
+  // Note: An optional frame element will have an empty node_frame_id which
+  // will be considered as operating in the main frame.
+  devtools_client_->GetRuntime()->Evaluate(
+      runtime::EvaluateParams::Builder()
+          .SetExpression(scroll_script)
+          .SetReturnByValue(true)
+          .Build(),
+      optional_frame.node_frame_id(),
+      base::BindOnce(&WebController::OnScrollWindow,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::BindOnce(&DecorateWebControllerStatus,
+                                    WebControllerErrorInfoProto::SCROLL_WINDOW,
+                                    std::move(callback))));
+}
+
+void WebController::OnScrollWindow(
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
+    std::unique_ptr<runtime::EvaluateResult> result) {
+  std::move(callback).Run(
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__));
+}
+
+void WebController::ScrollContainer(
+    const ScrollDistance& scroll_distance,
+    const std::string& animation,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  AddRuntimeCallArgument(scroll_distance.pixels(), &arguments);
+  AddRuntimeCallArgument(scroll_distance.window_ratio(), &arguments);
+  AddRuntimeCallArgument(animation, &arguments);
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(element.object_id())
+          .SetArguments(std::move(arguments))
+          .SetFunctionDeclaration(std::string(kScrollContainerScript))
+          .SetReturnByValue(true)
+          .Build(),
+      element.node_frame_id(),
+      base::BindOnce(
+          &WebController::OnJavaScriptResult, weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&DecorateWebControllerStatus,
+                         WebControllerErrorInfoProto::SCROLL_CONTAINER,
+                         std::move(callback))));
 }
 
 void WebController::CheckOnTop(
@@ -1339,51 +1418,6 @@ void WebController::FocusField(
                                     std::move(wrapped_callback))));
 }
 
-void WebController::GetVisualViewport(
-    base::OnceCallback<void(const ClientStatus&, const RectF&)> callback) {
-  devtools_client_->GetRuntime()->Evaluate(
-      runtime::EvaluateParams::Builder()
-          .SetExpression(std::string(kGetVisualViewport))
-          .SetReturnByValue(true)
-          .Build(),
-      /* node_frame_id= */ std::string(),
-      base::BindOnce(&WebController::OnGetVisualViewport,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void WebController::OnGetVisualViewport(
-    base::OnceCallback<void(const ClientStatus&, const RectF&)> callback,
-    const DevtoolsClient::ReplyStatus& reply_status,
-    std::unique_ptr<runtime::EvaluateResult> result) {
-  ClientStatus status =
-      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
-  if (!status.ok() || !result->GetResult()->HasValue() ||
-      !result->GetResult()->GetValue()->is_list() ||
-      result->GetResult()->GetValue()->GetList().size() != 4u) {
-    VLOG(1) << __func__ << " Failed to get visual viewport: " << status;
-    std::move(callback).Run(
-        JavaScriptErrorStatus(reply_status, __FILE__, __LINE__, nullptr),
-        RectF());
-    return;
-  }
-  const auto& list = result->GetResult()->GetValue()->GetList();
-  // Value::GetDouble() is safe to call without checking the value type; it'll
-  // return 0.0 if the value has the wrong type.
-
-  float left = static_cast<float>(list[0].GetDouble());
-  float top = static_cast<float>(list[1].GetDouble());
-  float width = static_cast<float>(list[2].GetDouble());
-  float height = static_cast<float>(list[3].GetDouble());
-
-  RectF rect;
-  rect.left = left;
-  rect.top = top;
-  rect.right = left + width;
-  rect.bottom = top + height;
-
-  std::move(callback).Run(OkClientStatus(), rect);
-}
-
 void WebController::GetElementRect(
     const ElementFinder::Result& element,
     ElementRectGetter::ElementRectCallback callback) {
@@ -1485,7 +1519,7 @@ void WebController::SendChangeEvent(
 }
 
 void WebController::DispatchJsEvent(
-    base::OnceCallback<void(const ClientStatus&)> callback) const {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   devtools_client_->GetRuntime()->Evaluate(
       runtime::EvaluateParams::Builder()
           .SetExpression(kDispatchEventToDocumentScript)

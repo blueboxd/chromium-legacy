@@ -527,8 +527,13 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 #pragma mark - Private
 
-// Returns the first ChromeIdentity object.
+// Returns the identity for the sync promo. This should be the signed in promo,
+// if the user is signed in. If not signed in, the default identity from
+// AccountManagerService.
 - (ChromeIdentity*)defaultIdentity {
+  if (self.authService->IsAuthenticated()) {
+    return self.authService->GetAuthenticatedIdentity();
+  }
   DCHECK(self.accountManagerService);
   return self.accountManagerService->GetDefaultIdentity();
 }
@@ -541,7 +546,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
   } else {
     __weak SigninPromoViewMediator* weakSelf = self;
     ios::GetChromeBrowserProvider()
-        ->GetChromeIdentityService()
+        .GetChromeIdentityService()
         ->GetAvatarForIdentity(identity, ^(UIImage* identityAvatar) {
           if (weakSelf.identity != identity) {
             return;

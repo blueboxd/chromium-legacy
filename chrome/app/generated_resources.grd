@@ -9038,6 +9038,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
             =1 {Show}
             other {Show all}}
         </message>
+        <message name="IDS_NOTIFICATION_MUTED_ACTION_SNOOZE" desc="Action button text to snooze future notifications during the current screen capture session." translateable="false">
+          Snooze
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_NOTIFICATION_MUTED_TITLE" desc="In Title Case: Title of a notification showing how many new notifications are currently hidden. The number is always greater than zero.">
@@ -9049,6 +9052,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           {MUTED_NOTIFICATIONS_COUNT, plural,
             =1 {Show}
             other {Show All}}
+        </message>
+        <message name="IDS_NOTIFICATION_MUTED_ACTION_SNOOZE" desc="In Title Case: Action button text to snooze future notifications during the current screen capture session." translateable="false">
+          Snooze
         </message>
       </if>
       <if expr="is_android">
@@ -10134,29 +10140,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_GET_CURRENT_BROWSING_CONTEXT_MEDIA_DIALOG_SHARE_BUTTON" desc="Used for Share on buttons">
         Share
       </message>
-
-      <!-- Local Device Discovery display strings -->
-      <if expr="enable_service_discovery">
-        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATION_TITLE_PRINTER" desc="Title of notification for one or more new printer showing up on your network. [ICU Syntax]">
-        {NUM_PRINTER, plural,
-         =1 {New printer on your network}
-         other {New printers on your network}}
-        </message>
-        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATION_CONTENTS_PRINTER" desc="Contents of notification for one or more new printers showing up on your network. [ICU Syntax]">
-        {NUM_PRINTER, plural,
-          =1 {Add the printer to Google Cloud Print so you can print from anywhere.}
-          other {Add # printers to Google Cloud Print so you can print from anywhere.}}
-        </message>
-        <message name="IDS_LOCAL_DISCOVERY_SERVICE_NAME_PRINTER" desc="Display name for notification for a new printer showing up on your network">
-          Google Cloud Print
-        </message>
-        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATION_BUTTON_PRINTER" desc="Message on registration button for printer">
-          Add to Cloud Print
-        </message>
-        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL" desc="Label for button disabling local device notifications">
-          Don't show this again
-        </message>
-      </if>
 
       <!--Printer registration message for local discovery and Print Preview-->
       <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION" desc="Information about registering printers with Google Cloud Print shown to the user before they confirm registration.">

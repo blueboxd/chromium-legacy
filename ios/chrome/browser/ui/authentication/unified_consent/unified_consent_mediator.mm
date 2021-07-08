@@ -71,7 +71,10 @@
 - (void)start {
   DCHECK(self.accountManagerService);
 
-  self.selectedIdentity = [self findDefaultSelectedIdentity];
+  if (!self.selectedIdentity) {
+    // Select an identity if not selected yet.
+    self.selectedIdentity = [self findDefaultSelectedIdentity];
+  }
 
   // Make sure the view is loaded so the mediator can set it up.
   [self.unifiedConsentViewController loadViewIfNeeded];
@@ -122,7 +125,7 @@
     ChromeIdentity* selectedIdentity = self.selectedIdentity;
     __weak UnifiedConsentMediator* weakSelf = self;
     ios::GetChromeBrowserProvider()
-        ->GetChromeIdentityService()
+        .GetChromeIdentityService()
         ->GetAvatarForIdentity(selectedIdentity, ^(UIImage* identityAvatar) {
           if (weakSelf.selectedIdentity != selectedIdentity)
             return;

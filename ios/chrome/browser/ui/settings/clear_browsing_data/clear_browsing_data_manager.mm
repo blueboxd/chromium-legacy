@@ -502,23 +502,23 @@ static NSDictionary* _imageNamesByItemTypes = @{
           l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_GOOGLE_DSE);
       footerItem.urls = std::vector<GURL>{
           google_util::AppendGoogleLocaleParam(
-              GURL(kClearBrowsingDataSearchMyActivityUrlInFooterURL),
+              GURL(kClearBrowsingDataDSESearchUrlInFooterURL),
               GetApplicationContext()->GetApplicationLocale()),
           google_util::AppendGoogleLocaleParam(
-              GURL(kClearBrowsingDataMyActivityUrlInFooterURL),
+              GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
               GetApplicationContext()->GetApplicationLocale())};
     } else if (defaultSearchEngine->prepopulate_id() > 0) {
       footerItem.text = l10n_util::GetNSStringF(
           IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_KNOWN_DSE_SIGNED_IN,
           defaultSearchEngine->short_name());
       footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-          GURL(kClearBrowsingDataMyActivityUrlInFooterURL),
+          GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
           GetApplicationContext()->GetApplicationLocale())};
     } else {
       footerItem.text = l10n_util::GetNSString(
           IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_UNKOWN_DSE_SIGNED_IN);
       footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-          GURL(kClearBrowsingDataMyActivityUrlInFooterURL),
+          GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
           GetApplicationContext()->GetApplicationLocale())};
     }
   } else {
@@ -547,7 +547,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 - (TableViewLinkHeaderFooterItem*)footerGoogleAccountAndMyActivityItem {
   UIImage* image = ios::GetChromeBrowserProvider()
-                       ->GetBrandedImageProvider()
+                       .GetBrandedImageProvider()
                        ->GetClearBrowsingDataAccountActivityImage();
   return [self
       footerItemWithType:ItemTypeFooterGoogleAccountAndMyActivity
@@ -558,7 +558,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 - (TableViewLinkHeaderFooterItem*)footerSavedSiteDataItem {
   UIImage* image = ios::GetChromeBrowserProvider()
-                       ->GetBrandedImageProvider()
+                       .GetBrandedImageProvider()
                        ->GetClearBrowsingDataSiteDataImage();
   return [self
       footerItemWithType:ItemTypeFooterSavedSiteData

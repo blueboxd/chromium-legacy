@@ -93,6 +93,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void VerifyOwnerForKiosk(base::OnceClosure) override;
   void ShowPasswordChangedDialog(const AccountId& account_id,
                                  bool show_password_error) override;
+  void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
 
@@ -279,5 +280,11 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source code migration is finished.
+namespace ash {
+using ::chromeos::LoginDisplayHostWebUI;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_HOST_WEBUI_H_

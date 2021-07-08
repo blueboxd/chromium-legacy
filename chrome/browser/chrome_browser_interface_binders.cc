@@ -190,7 +190,6 @@
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/vm/vm.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/vm/vm_ui.h"
-#include "chrome/browser/ui/webui/internals/web_app/web_app_internals.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"  // nogncheck crbug.com/1125897
@@ -715,9 +714,6 @@ void PopulateChromeWebUIFrameBinders(
                                          TabSearchUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      ::mojom::web_app_internals::WebAppInternalsPageHandler, InternalsUI>(map);
-
-  RegisterWebUIControllerInterfaceBinder<
       download_shelf::mojom::PageHandlerFactory, DownloadShelfUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
@@ -821,22 +817,22 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::NetworkUI, chromeos::ConnectivityDiagnosticsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::diagnostics::mojom::InputDataProvider,
-      chromeos::DiagnosticsDialogUI>(map);
+      ash::diagnostics::mojom::InputDataProvider, ash::DiagnosticsDialogUI>(
+      map);
 
   if (chromeos::features::IsNetworkingInDiagnosticsAppEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
-        chromeos::diagnostics::mojom::NetworkHealthProvider,
-        chromeos::DiagnosticsDialogUI>(map);
+        ash::diagnostics::mojom::NetworkHealthProvider,
+        ash::DiagnosticsDialogUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::diagnostics::mojom::SystemDataProvider,
-      chromeos::DiagnosticsDialogUI>(map);
+      ash::diagnostics::mojom::SystemDataProvider, ash::DiagnosticsDialogUI>(
+      map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::diagnostics::mojom::SystemRoutineController,
-      chromeos::DiagnosticsDialogUI>(map);
+      ash::diagnostics::mojom::SystemRoutineController,
+      ash::DiagnosticsDialogUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::vm::mojom::VmDiagnosticsProvider, chromeos::VmUI>(map);

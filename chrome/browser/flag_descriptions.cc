@@ -2186,7 +2186,7 @@ const char kReadLaterNewBadgePromoDescription[] =
 const char kRecordWebAppDebugInfoName[] = "Record web app debug info";
 const char kRecordWebAppDebugInfoDescription[] =
     "Enables recording additional web app related debugging data to be "
-    "displayed in: chrome://internals/web-app";
+    "displayed in: chrome://web-app-internals";
 
 const char kReduceUserAgentName[] = "Reduce User-Agent request header";
 const char kReduceUserAgentDescription[] =
@@ -3656,6 +3656,11 @@ const char kGlobalMediaControlsCastStartStopName[] =
 const char kGlobalMediaControlsCastStartStopDescription[] =
     "Allows global media controls to control when a Cast session is started "
     "or stopped instead of relying on the Cast dialog.";
+
+const char kMuteNotificationSnoozeActionName[] =
+    "Snooze action for mute notifications";
+const char kMuteNotificationSnoozeActionDescription[] =
+    "Adds a Snooze action to mute notifications shown while sharing a screen.";
 
 const char kNtpCacheOneGoogleBarName[] = "Cache OneGoogleBar";
 const char kNtpCacheOneGoogleBarDescription[] =

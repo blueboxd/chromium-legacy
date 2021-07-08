@@ -111,6 +111,24 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
+  // Scroll the window by |scroll_distance|. |animation| defines the transition
+  // animation. Specify |optional_frame| if an iFrame instead of the main
+  // window should be scrolled.
+  virtual void ScrollWindow(
+      const ScrollDistance& scroll_distance,
+      const std::string& animation,
+      const ElementFinder::Result& optional_frame,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Scroll the |element| by |scroll_distance|. |animation| defines the
+  // transition animation. Specify |optional_frame| if an iFrame instead of the
+  // main window should be scrolled.
+  virtual void ScrollContainer(
+      const ScrollDistance& scroll_distance,
+      const std::string& animation,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
   // Send a JS click to the |element|.
   virtual void JsClickElement(
       const ElementFinder::Result& element,
@@ -286,12 +304,6 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
 
-  // Gets the visual viewport coordinates and size.
-  //
-  // The rectangle is expressed in absolute CSS coordinates.
-  virtual void GetVisualViewport(
-      base::OnceCallback<void(const ClientStatus&, const RectF&)> callback);
-
   // Gets the position of the |element|.
   //
   // If unsuccessful, the callback gets the failure status with an empty rect.
@@ -327,9 +339,9 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Dispatch a custom JS event 'duplexweb' with an optional payload.
+  // Dispatch a custom JS event 'duplexweb'.
   virtual void DispatchJsEvent(
-      base::OnceCallback<void(const ClientStatus&)> callback) const;
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
@@ -379,6 +391,9 @@ class WebController {
                               const std::vector<std::string>&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnScrollWindow(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
+                      std::unique_ptr<runtime::EvaluateResult> result);
   void OnCheckOnTop(CheckOnTopWorker* worker,
                     base::OnceCallback<void(const ClientStatus&)> callback,
                     const ClientStatus& status);
@@ -483,21 +498,14 @@ class WebController {
       ProcessedActionStatusProto status_if_zero,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-
   void OnSendKeyboardInputDone(
       SendKeyboardInputWorker* worker_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status);
-
   void OnGetElementRect(ElementRectGetter* getter_to_release,
                         ElementRectGetter::ElementRectCallback callback,
                         const ClientStatus& rect_status,
                         const RectF& element_rect);
-  void OnGetVisualViewport(
-      base::OnceCallback<void(const ClientStatus&, const RectF&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<runtime::EvaluateResult> result);
-
   void OnWaitForDocumentReadyState(
       base::OnceCallback<void(const ClientStatus&,
                               DocumentReadyState,
@@ -505,7 +513,6 @@ class WebController {
       base::TimeTicks wait_start_time,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
-
   void OnDispatchJsEvent(base::OnceCallback<void(const ClientStatus&)> callback,
                          const DevtoolsClient::ReplyStatus& reply_status,
                          std::unique_ptr<runtime::EvaluateResult> result) const;

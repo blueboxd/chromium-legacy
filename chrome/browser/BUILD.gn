@@ -1379,8 +1379,6 @@ static_library("browser") {
     "profiles/profile_downloader_delegate.h",
     "profiles/profile_impl.cc",
     "profiles/profile_impl.h",
-    "profiles/profile_info_cache.cc",
-    "profiles/profile_info_cache.h",
     "profiles/profile_info_cache_observer.h",
     "profiles/profile_io_data.cc",
     "profiles/profile_io_data.h",
@@ -1954,7 +1952,6 @@ static_library("browser") {
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/history_clusters:mojo_bindings",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
-    "//chrome/browser/ui/webui/internals/web_app:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
@@ -6356,10 +6353,6 @@ static_library("browser") {
       "printing/cloud_print/privet_http_impl.h",
       "printing/cloud_print/privet_local_printer_lister.cc",
       "printing/cloud_print/privet_local_printer_lister.h",
-      "printing/cloud_print/privet_notifications.cc",
-      "printing/cloud_print/privet_notifications.h",
-      "printing/cloud_print/privet_notifications_factory.cc",
-      "printing/cloud_print/privet_notifications_factory.h",
       "printing/cloud_print/privet_url_loader.cc",
       "printing/cloud_print/privet_url_loader.h",
     ]
@@ -6852,9 +6845,7 @@ grit("dev_ui_browser_resources") {
     "//chrome/browser/media:mojo_bindings_js",
     "//chrome/browser/resources/internals/user_education:components",
     "//chrome/browser/resources/local_state:build",
-    "//chrome/browser/resources/web_app_internals:components",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings_js",
-    "//chrome/browser/ui/webui/internals/web_app:mojo_bindings_js",
     "//components/site_engagement/core/mojom:mojo_bindings_webui_js",
   ]
   if (is_android) {

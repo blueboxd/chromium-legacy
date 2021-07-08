@@ -17,7 +17,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
-struct RectF;
 
 class MockWebController : public WebController {
  public:
@@ -126,9 +125,6 @@ class MockWebController : public WebController {
                     const std::string&,
                     const ElementFinder::Result&,
                     base::OnceCallback<void(const ClientStatus&)>));
-  MOCK_METHOD1(GetVisualViewport,
-               void(base::OnceCallback<void(const ClientStatus&, const RectF&)>
-                        callback));
   MOCK_METHOD2(GetElementRect,
                void(const ElementFinder::Result& element,
                     ElementRectGetter::ElementRectCallback callback));
@@ -138,6 +134,8 @@ class MockWebController : public WebController {
                     base::OnceCallback<void(const ClientStatus&,
                                             DocumentReadyState,
                                             base::TimeDelta)> callback));
+  MOCK_METHOD1(DispatchJsEvent,
+               void(base::OnceCallback<void(const ClientStatus&)> callback));
 
   base::WeakPtr<WebController> GetWeakPtr() const override {
     return weak_ptr_factory_.GetWeakPtr();

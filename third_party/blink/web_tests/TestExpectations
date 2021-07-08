@@ -2634,10 +2634,11 @@ crbug.com/626703 external/wpt/css/css-content/content-none-select-1.html [ Failu
 crbug.com/626703 external/wpt/css/css-content/content-none-table.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/content-none-select-2.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/content-none-span.html [ Failure ]
-crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-onsignalingstatechanged.https.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/candidate-exchange.https.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/handover-datachannel.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-send.html [ Timeout ]
+# See also crbug.com/v8/11365 for the failure in addition to timeout
+crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-onsignalingstatechanged.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/candidate-exchange.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/handover-datachannel.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-send.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-lists/counter-reset-reversed-list-item.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-align/self-alignment/self-align-safe-unsafe-flex-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-align/self-alignment/self-align-safe-unsafe-flex-001.html [ Failure ]
@@ -4169,14 +4170,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-2.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-3.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-styles.xhtml [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-squeeze-1.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-squeeze-2.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-squeeze-3.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-squeeze-4.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-stretch-1.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-stretch-2.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-stretch-3.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-stretch-4.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/surrogate-pair-attribute-positions.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-outline-2.html [ Failure ]
@@ -6896,6 +6889,7 @@ crbug.com/v8/11365 external/wpt/html/browsers/offline/introduction-4/event_progr
 crbug.com/v8/11365 external/wpt/html/dom/usvstring-reflection.https.html [ Failure Pass ]
 crbug.com/v8/11365 external/wpt/html/semantics/rellist-feature-detection.html [ Failure Pass ]
 crbug.com/v8/11365 external/wpt/html/semantics/embedded-content/the-object-element/usemap-casing.html [ Failure Pass ]
+crbug.com/v8/11365 [ Mac ] external/wpt/html/semantics/forms/input-change-event-properties.html [ Failure Pass ]
 crbug.com/v8/11365 external/wpt/html/webappapis/dynamic-markup-insertion/document-write/contentType.window.html [ Failure Pass ]
 crbug.com/v8/11365 external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/navigator-window-controls-overlay.html [ Failure Pass ]
 crbug.com/v8/11365 external/wpt/input-events/input-events-exec-command.html [ Failure Pass ]
@@ -7042,6 +7036,11 @@ crbug.com/1226112 http/tests/text-autosizing/narrow-iframe.html [ Failure Pass ]
 
 # Sheriff 2021-07-05
 crbug.com/1226445 [ Mac ] virtual/storage-access-api/external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Failure Pass ]
+
+# DevTools roll
+crbug.com/1223391 http/tests/devtools/security/interstitial-sidebar.js [ Skip ]
+crbug.com/1223391 http/tests/devtools/security/mixed-content-sidebar.js [ Skip ]
+crbug.com/1223391 http/tests/devtools/security/origin-view-then-interstitial.js [ Skip ]
 
 # Sheriff 2021-07-07
 crbug.com/1227092 [ Win ] virtual/scroll-unification/fast/events/selection-autoscroll-borderbelt.html [ Failure Pass ]

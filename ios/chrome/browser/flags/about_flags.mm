@@ -16,8 +16,8 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -650,12 +650,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPersistCrashRestoreName,
      flag_descriptions::kIOSPersistCrashRestoreDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSPersistCrashRestore)},
-    {"change-password-affiliation",
-     flag_descriptions::kChangePasswordAffiliationInfoName,
-     flag_descriptions::kChangePasswordAffiliationInfoDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kChangePasswordAffiliationInfo)},
     {"use-of-hash-affiliation-fetcher",
      flag_descriptions::kUseOfHashAffiliationFetcherName,
      flag_descriptions::kUseOfHashAffiliationFetcherDescription,
@@ -985,7 +979,7 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableThirdPartyKeyboardWorkaround);
   }
 
-  ios::GetChromeBrowserProvider()->AppendSwitchesFromExperimentalSettings(
+  ios::GetChromeBrowserProvider().AppendSwitchesFromExperimentalSettings(
       defaults, command_line);
 }
 

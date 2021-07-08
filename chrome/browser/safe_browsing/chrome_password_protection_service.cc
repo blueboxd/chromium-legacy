@@ -29,7 +29,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/safe_browsing/safe_browsing_metrics_collector.h"
 #include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
@@ -54,6 +53,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_request_content.h"
+#include "components/safe_browsing/content/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/content/browser/triggers/trigger_throttler.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
@@ -1422,7 +1422,8 @@ void ChromePasswordProtectionService::FillReferrerChain(
   // Determines how many recent navigation events to append to referrer chain.
   size_t recent_navigations_to_collect =
       profile_ ? SafeBrowsingNavigationObserverManager::
-                     CountOfRecentNavigationsToAppend(*profile_, result)
+                     CountOfRecentNavigationsToAppend(
+                         profile_, profile_->GetPrefs(), result)
                : 0u;
   navigation_observer_manager->AppendRecentNavigations(
       recent_navigations_to_collect, frame->mutable_referrer_chain());

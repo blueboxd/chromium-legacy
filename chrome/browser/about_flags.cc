@@ -4073,6 +4073,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcImageCopyPasteCompatName,
      flag_descriptions::kArcImageCopyPasteCompatDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kImageCopyPasteCompatFeature)},
+    {"arc-keyboard-shortcut-helper-integration",
+     flag_descriptions::kArcKeyboardShortcutHelperIntegrationName,
+     flag_descriptions::kArcKeyboardShortcutHelperIntegrationDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kKeyboardShortcutHelperIntegrationFeature)},
     {"arc-native-bridge-toggle", flag_descriptions::kArcNativeBridgeToggleName,
      flag_descriptions::kArcNativeBridgeToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridgeToggleFeature)},
@@ -6451,6 +6456,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          permissions::features::kPermissionChipRequestTypeSensitive)},
+    {"permission-quiet-chip", flag_descriptions::kPermissionQuietChipName,
+     flag_descriptions::kPermissionQuietChipDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(permissions::features::kPermissionQuietChip)},
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"dice-web-signin-interception",

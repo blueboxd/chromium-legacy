@@ -332,7 +332,10 @@ absl::optional<SuperPageSnapshot> SuperPageSnapshot::Create(
       super_page, nonempty_slot_spans, [&snapshot](SlotSpan* slot_span) {
         auto* payload_begin =
             static_cast<uintptr_t*>(SlotSpan::ToSlotSpanStartPtr(slot_span));
-        const size_t provisioned_size = slot_span->GetProvisionedSize();
+        // For single-slot slot-spans, scan only utilized slot part.
+        const size_t provisioned_size = UNLIKELY(slot_span->CanStoreRawSize())
+                                            ? slot_span->GetRawSize()
+                                            : slot_span->GetProvisionedSize();
         // Free & decommitted slot spans are skipped.
         PA_DCHECK(provisioned_size > 0);
         auto* payload_end =
@@ -750,17 +753,17 @@ void PCScanTask::ScanLargeArea(PCScanInternal& pcscan,
   auto* bitmap =
       QuarantineBitmapFromPointer(QuarantineBitmapType::kScanner, pcscan_epoch_,
                                   reinterpret_cast<char*>(begin));
+  const size_t slot_size_in_words = slot_size / sizeof(uintptr_t);
   for (uintptr_t* current_slot = begin; current_slot < end;
-       current_slot += (slot_size / sizeof(uintptr_t))) {
+       current_slot += slot_size_in_words) {
     // It is okay to skip objects as their payload has been zapped at this
     // point which means that the pointers no longer retain other objects.
     if (bitmap->CheckBit(reinterpret_cast<uintptr_t>(current_slot))) {
       continue;
     }
-    uintptr_t* current_slot_end =
-        current_slot + (slot_size / sizeof(uintptr_t));
-    PA_DCHECK(current_slot_end <= end);
-    scan_loop.Run(current_slot, current_slot_end);
+    uintptr_t* current_slot_end = current_slot + slot_size_in_words;
+    // |slot_size| may be larger than |raw_size| for single-slot slot spans.
+    scan_loop.Run(current_slot, std::min(current_slot_end, end));
   }
 }
 
@@ -1028,6 +1031,8 @@ void PCScanInternal::Initialize(PCScan::WantedWriteProtectionMode wpmode) {
   write_protector_ = std::make_unique<NoWriteProtector>();
 #endif  // defined(PA_STARSCAN_UFFD_WRITE_PROTECTOR_SUPPORTED)
   PCScan::SetClearType(write_protector_->SupportedClearType());
+  scannable_roots_ = RootsMap();
+  nonscannable_roots_ = RootsMap();
   is_initialized_ = true;
 }
 
@@ -1291,8 +1296,12 @@ void PCScanInternal::ClearRootsForTesting() {
     Root* root = pair.first;
     root->quarantine_mode = Root::QuarantineMode::kDisabledByDefault;
   }
-  scannable_roots_.clear();     // IN-TEST
-  nonscannable_roots_.clear();  // IN-TEST
+  // Make sure to destroy maps so that on the following ReinitForTesting() call
+  // the maps don't attempt to destroy the backing.
+  scannable_roots_.clear();
+  scannable_roots_.~RootsMap();
+  nonscannable_roots_.clear();
+  nonscannable_roots_.~RootsMap();
   // Destroy write protector object, so that there is no double free on the next
   // call to ReinitForTesting();
   write_protector_.reset();
@@ -1300,7 +1309,8 @@ void PCScanInternal::ClearRootsForTesting() {
 
 void PCScanInternal::ReinitForTesting(PCScan::WantedWriteProtectionMode mode) {
   is_initialized_ = false;
-  Initialize(mode);
+  auto* new_this = new (this) PCScanInternal;
+  new_this->Initialize(mode);
 }
 
 void PCScanInternal::FinishScanForTesting() {

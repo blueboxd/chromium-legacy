@@ -276,6 +276,7 @@ TEST_F(
  ['AppManagementAppDetailView', 'app_detail_view_test.m.js'],
  ['AppManagementAppItem', 'app_item_test.m.js'],
  ['AppManagementArcDetailView', 'arc_detail_view_test.m.js'],
+ ['AppManagementBorealisDetailView', 'borealis_detail_view_test.m.js'],
  ['AppManagementChromeAppDetailView', 'chrome_app_detail_view_test.m.js'],
  ['AppManagementDomSwitch', 'dom_switch_test.m.js'],
  ['AppManagementMainView', 'main_view_test.m.js'],
@@ -321,7 +322,8 @@ TEST_F(
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.m.js'],
  ['LocalizedLink', 'localized_link_test.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
- ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
+ // TODO(crbug.com/1227116): Re-enable once flakiness is fixed.
+ //  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
  ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
  [
    'MultideviceNotificationAccessSetupDialog',

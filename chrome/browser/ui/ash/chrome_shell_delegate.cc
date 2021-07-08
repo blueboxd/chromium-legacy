@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
@@ -193,6 +194,11 @@ bool ChromeShellDelegate::IsTabDrag(const ui::OSExchangeData& drop_data) {
   return tab_strip_ui::IsDraggedTab(drop_data);
 }
 
+int ChromeShellDelegate::GetBrowserWebUITabStripHeight() {
+  DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
+  return TabStripUILayout::GetContainerHeight();
+}
+
 aura::Window* ChromeShellDelegate::CreateBrowserForTabDrop(
     aura::Window* source_window,
     const ui::OSExchangeData& drop_data) {
@@ -219,8 +225,19 @@ aura::Window* ChromeShellDelegate::CreateBrowserForTabDrop(
   // failures can happen in valid states, and if so whether we need to
   // reflect failure in UX.
 
+  // TODO(crbug.com/1225667): Loosen restriction for SplitViewController to be
+  // able to snap a window without calling Show(). It will simplify the logic
+  // without having to set and clear ash::kIsDraggingTabsKey by calling Show()
+  // after snapping the window to the right place.
+
+  // We need to mark the newly created window with |ash::kIsDraggingTabsKey|
+  // and clear it afterwards in order to prevent
+  // SplitViewController::AutoSnapController from snapping it on Show().
+  aura::Window* window = browser->window()->GetNativeWindow();
+  window->SetProperty(ash::kIsDraggingTabsKey, true);
   browser->window()->Show();
-  return browser->window()->GetNativeWindow();
+  window->ClearProperty(ash::kIsDraggingTabsKey);
+  return window;
 }
 
 void ChromeShellDelegate::BindBluetoothSystemFactory(

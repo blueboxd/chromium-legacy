@@ -1183,6 +1183,9 @@ extern const char kPermissionChipRequestTypeSensitiveDescription[];
 extern const char kPermissionPredictionsName[];
 extern const char kPermissionPredictionsDescription[];
 
+extern const char kPermissionQuietChipName[];
+extern const char kPermissionQuietChipDescription[];
+
 extern const char kPlaybackSpeedButtonName[];
 extern const char kPlaybackSpeedButtonDescription[];
 
@@ -2294,6 +2297,9 @@ extern const char kArcFilePickerExperimentDescription[];
 
 extern const char kArcImageCopyPasteCompatName[];
 extern const char kArcImageCopyPasteCompatDescription[];
+
+extern const char kArcKeyboardShortcutHelperIntegrationName[];
+extern const char kArcKeyboardShortcutHelperIntegrationDescription[];
 
 extern const char kArcNativeBridgeToggleName[];
 extern const char kArcNativeBridgeToggleDescription[];

@@ -3383,6 +3383,7 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="App Management main view (Plugin VM)"/>
   <int value="11" label="DBus Service (Plugin VM)"/>
   <int value="12" label="Notification (Plugin VM)"/>
+  <int value="13" label="App Management main view (Borealis)"/>
 </enum>
 
 <enum name="AppManagementUserAction">
@@ -48274,6 +48275,7 @@ from previous Chrome versions.
   <int value="-304777110" label="PreconnectToSearch:disabled"/>
   <int value="-303992327" label="SwipeToMoveCursor:disabled"/>
   <int value="-302407285" label="WipeDataOnChildAccountSignin:disabled"/>
+  <int value="-301689561" label="PermissionQuietChip:disabled"/>
   <int value="-301228557" label="PageInfoDiscoverability:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
@@ -48347,6 +48349,7 @@ from previous Chrome versions.
   <int value="-239616243" label="HighDynamicRange:enabled"/>
   <int value="-239176328" label="BluetoothAggressiveAppearanceFilter:enabled"/>
   <int value="-237367320" label="AssistantAudioEraser:disabled"/>
+  <int value="-236433493" label="ArcKeyboardShortcutHelperIntegration:enabled"/>
   <int value="-234966279" label="PointerEvent:disabled"/>
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
@@ -48412,6 +48415,7 @@ from previous Chrome versions.
       label="VmCameraMicIndicatorsAndNotifications:disabled"/>
   <int value="-175696105" label="MessagesForAndroidUpdatePassword:enabled"/>
   <int value="-175666252" label="Portals:disabled"/>
+  <int value="-175574799" label="finch-seed-no-charging-requirement"/>
   <int value="-174829803" label="TabOutlinesInLowContrastThemes:enabled"/>
   <int value="-174706795"
       label="WebPaymentsPerMethodCanMakePaymentQuota:enabled"/>
@@ -49591,6 +49595,7 @@ from previous Chrome versions.
   <int value="802463708" label="WebViewSurfaceControl:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
   <int value="803982925" label="CellularForbidAttachApn:disabled"/>
+  <int value="804551127" label="ArcKeyboardShortcutHelperIntegration:disabled"/>
   <int value="804958673" label="LensCameraAssistedSearch:enabled"/>
   <int value="805882800" label="SafetyCheckChromeCleanerChild:disabled"/>
   <int value="806035639" label="EnableNeuralPalmDetectionFilter:disabled"/>
@@ -50593,6 +50598,7 @@ from previous Chrome versions.
   <int value="1639728471" label="ThemeRefactorAndroid:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
   <int value="1643626730" label="PrinterStatus:disabled"/>
+  <int value="1643700095" label="PermissionQuietChip:enabled"/>
   <int value="1643712769" label="PrintWithReducedRasterization:enabled"/>
   <int value="1645447927" label="MixedContentSiteSetting:disabled"/>
   <int value="1645479440" label="HistoryManipulationIntervention:disabled"/>
@@ -58369,6 +58375,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Main resource, no-store"/>
   <int value="6" label="Main resource redirect, cacheable"/>
   <int value="7" label="Main resource redirect, no-store"/>
+</enum>
+
+<enum name="NoteCreationFunnel">
+  <int value="0" label="Create Card Button Clicked"/>
+  <int value="1" label="Template Selected"/>
+  <int value="2" label="NoteShared"/>
 </enum>
 
 <enum name="NoteTakingAppLaunchResult">

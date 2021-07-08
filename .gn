@@ -64,15 +64,13 @@ default_args = {
 # "gn check" or "gn gen --check".
 no_check_targets = [
   "//extensions/browser:*",  # 20 errors
-  "//extensions:*",  # 75 errors
+  "//extensions:*",  # 28 errors
   "//headless:*",  # 167 errors
-  "//ppapi/native_client/src/untrusted/pnacl_irt_shim:*",  # 197 errors
   "//ppapi/proxy:ipc_sources",  # 13 errors
   "//ppapi/proxy:proxy",  # 5 errors
   "//ppapi/thunk:*",  # 1071 errors
   "//remoting/host/security_key:*",  # 10 errors
   "//remoting/host/win:*",  # 43 errors
-  "//remoting/ios/app/settings:*",  # 6 errors
   "//remoting/protocol:*",  # 3 errors
   "//sandbox/win:*",  # 7 errors
 

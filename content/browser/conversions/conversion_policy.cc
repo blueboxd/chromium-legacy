@@ -4,8 +4,8 @@
 
 #include "content/browser/conversions/conversion_policy.h"
 
-#include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 
@@ -109,15 +109,23 @@ uint64_t ConversionPolicy::GetSanitizedImpressionData(
 
 base::Time ConversionPolicy::GetExpiryTimeForImpression(
     const absl::optional<base::TimeDelta>& declared_expiry,
-    base::Time impression_time) const {
-  static constexpr base::TimeDelta kDefaultImpressionExpiry =
+    base::Time impression_time,
+    StorableImpression::SourceType source_type) const {
+  constexpr base::TimeDelta kMinImpressionExpiry = base::TimeDelta::FromDays(1);
+  constexpr base::TimeDelta kDefaultImpressionExpiry =
       base::TimeDelta::FromDays(30);
 
   // Default to the maximum expiry time.
   base::TimeDelta expiry = declared_expiry.value_or(kDefaultImpressionExpiry);
 
-  // If the impression specified its own expiry, clamp it to the maximum.
-  return impression_time + std::min(expiry, kDefaultImpressionExpiry);
+  // Expiry time for event sources must be a whole number of days.
+  if (source_type == StorableImpression::SourceType::kEvent)
+    expiry = expiry.RoundToMultiple(base::TimeDelta::FromDays(1));
+
+  // If the impression specified its own expiry, clamp it to the minimum and
+  // maximum.
+  return impression_time + base::ClampToRange(expiry, kMinImpressionExpiry,
+                                              kDefaultImpressionExpiry);
 }
 
 base::Time ConversionPolicy::GetReportTimeForExpiredReportAtStartup(

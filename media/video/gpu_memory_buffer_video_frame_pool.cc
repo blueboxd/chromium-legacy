@@ -50,8 +50,8 @@ namespace media {
 
 namespace {
 
-bool MultiPlaneSharedImagesEnabled() {
-  return base::FeatureList::IsEnabled(kMultiPlaneSharedImageVideo);
+bool MultiPlaneVideoSharedImagesEnabled() {
+  return base::FeatureList::IsEnabled(kMultiPlaneVideoSharedImages);
 }
 
 }  // namespace
@@ -366,7 +366,7 @@ size_t NumGpuMemoryBuffers(GpuVideoAcceleratorFactories::OutputFormat format) {
 // The number of shared images for a given format. Note that a single
 // GpuMemoryBuffer can be mapped to several SharedImages (one for each plane).
 size_t NumSharedImages(GpuVideoAcceleratorFactories::OutputFormat format) {
-  if (MultiPlaneSharedImagesEnabled()) {
+  if (MultiPlaneVideoSharedImagesEnabled()) {
     if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
       return 2;
     }
@@ -380,7 +380,7 @@ size_t NumSharedImages(GpuVideoAcceleratorFactories::OutputFormat format) {
 size_t GpuMemoryBufferPlaneResourceIndexForPlane(
     GpuVideoAcceleratorFactories::OutputFormat format,
     size_t plane) {
-  if (MultiPlaneSharedImagesEnabled()) {
+  if (MultiPlaneVideoSharedImagesEnabled()) {
     if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
       return 0;
     }
@@ -393,7 +393,7 @@ size_t GpuMemoryBufferPlaneResourceIndexForPlane(
 gfx::BufferPlane GetSharedImageBufferPlane(
     GpuVideoAcceleratorFactories::OutputFormat format,
     size_t plane) {
-  if (MultiPlaneSharedImagesEnabled()) {
+  if (MultiPlaneVideoSharedImagesEnabled()) {
     if (format == GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB) {
       switch (plane) {
         case 0:
@@ -1048,11 +1048,15 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDoneOnMediaThread(
     FrameResources* frame_resources) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (copy_failed) {
-    // Drop the resources if there was an error with them.
-    auto it = std::find(resources_pool_.begin(), resources_pool_.end(),
-                        frame_resources);
-    DCHECK(it != resources_pool_.end());
-    resources_pool_.erase(it);
+    // Drop the resources if there was an error with them. If we're not in
+    // shutdown we also need to remove the pool entry for them.
+    if (!in_shutdown_) {
+      auto it = std::find(resources_pool_.begin(), resources_pool_.end(),
+                          frame_resources);
+      DCHECK(it != resources_pool_.end());
+      resources_pool_.erase(it);
+    }
+
     DeleteFrameResources(gpu_factories_, frame_resources);
     delete frame_resources;
 

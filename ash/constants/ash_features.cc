@@ -409,7 +409,7 @@ const base::Feature kEnableInputInDiagnosticsApp{
 
 // Enables or disables noise cancellation UI toggle.
 const base::Feature kEnableInputNoiseCancellationUi{
-    "EnableInputNoiseCancellationUi", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnableInputNoiseCancellationUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables LocalSearchService to be initialized.
 const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
@@ -461,6 +461,9 @@ const base::Feature kExoPointerLock{"ExoPointerLock",
 // owned devices.
 const base::Feature kFamilyLinkOnSchoolDevice{"FamilyLinkOnSchoolDevice",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the Fast Pair feature.
+const base::Feature kFastPair{"FastPair", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the System Web App (SWA) version of file manager.
 const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -886,6 +889,14 @@ const base::Feature kSeparateNetworkIcons{"SeparateNetworkIcons",
 const base::Feature kSessionManagerLongKillTimeout{
     "SessionManagerLongKillTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the session manager daemon will abort the browser if its
+// liveness checker detects a hang, i.e. the browser fails to acknowledge and
+// respond sufficiently to periodic pings.  IMPORTANT NOTE: the feature name
+// here must match exactly the name of the feature in the open-source ChromeOS
+// file session_manager_service.cc.
+const base::Feature kSessionManagerLivenessCheck{
+    "SessionManagerLivenessCheck", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Removes notifier settings from quick settings view.
 const base::Feature kSettingsAppNotificationSettings{
     "SettingsAppNotificationSettings", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1203,6 +1214,10 @@ bool IsEcheSWAResizingEnabled() {
 
 bool IsFamilyLinkOnSchoolDeviceEnabled() {
   return base::FeatureList::IsEnabled(kFamilyLinkOnSchoolDevice);
+}
+
+bool IsFastPairEnabled() {
+  return base::FeatureList::IsEnabled(kFastPair);
 }
 
 bool IsFileManagerSwaEnabled() {

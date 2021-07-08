@@ -13,17 +13,23 @@ component("ui") {
   defines = [ "IS_QUICK_PAIR_UI_IMPL" ]
 
   sources = [
+    "fast_pair/fast_pair_image_decoder.cc",
+    "fast_pair/fast_pair_image_decoder.h",
     "fast_pair/fast_pair_notification_controller.cc",
     "fast_pair/fast_pair_notification_controller.h",
   ]
 
   deps = [
     "//ash/public/cpp:cpp",
+    "//ash/quick_pair/common",
     "//ash/resources/vector_icons",
     "//ash/strings",
     "//base",
+    "//components/image_fetcher/core",
+    "//services/data_decoder/public/cpp",
     "//ui/base",
     "//ui/gfx",
     "//ui/message_center",
+    "//url",
   ]
 }

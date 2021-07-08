@@ -24,6 +24,7 @@ extern const base::Feature kEnableUsap;
 extern const base::Feature kEnableWebAppShareFeature;
 extern const base::Feature kFilePickerExperimentFeature;
 extern const base::Feature kImageCopyPasteCompatFeature;
+extern const base::Feature kKeyboardShortcutHelperIntegrationFeature;
 extern const base::Feature kNativeBridge64BitSupportExperimentFeature;
 extern const base::Feature kNativeBridgeToggleFeature;
 extern const base::Feature kPictureInPictureFeature;
@@ -33,6 +34,9 @@ extern const base::Feature kSaveRawFilesOnTracing;
 extern const base::Feature kUseHighMemoryDalvikProfile;
 extern const base::Feature kUsbStorageUIFeature;
 extern const base::Feature kVideoDecoder;
+extern const base::Feature kVmMemorySize;
+extern const base::FeatureParam<int> kVmMemorySizeShiftMiB;
+extern const base::FeatureParam<int> kVmMemorySizeMaxMiB;
 
 }  // namespace arc
 

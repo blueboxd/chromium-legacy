@@ -1685,6 +1685,7 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
+// Regression test for https://crbug.com/639916.
 TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
   // Set up session to migrate.
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
@@ -1708,6 +1709,7 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
   session->CloseSessionOnError(0u, quic::QUIC_NO_ERROR,
                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   client_maker_.Reset();
   // Set up server IP, socket, proof, and config for new session.
@@ -1743,7 +1745,11 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
 
   EXPECT_TRUE(socket_data1.AllReadDataConsumed());
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
-  // EXPECT_EQ(GetActiveSession(host_port_pair_), GetActiveSession(server2));
+
+  EXPECT_TRUE(HasActiveSession(server2));
+
+  // No zombie entry in session map.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 }
 
 TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
@@ -2511,7 +2517,7 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   stream = CreateStream(&request2);
 
-  // Check a new active session exisits for the destination and the old session
+  // Check a new active session exists for the destination and the old session
   // is no longer live.
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);
@@ -2620,7 +2626,7 @@ TEST_P(QuicStreamFactoryTest, GoAwaySessionsOnIPAddressChanged) {
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
-  // Check an active session exisits for the destination.
+  // Check an active session exists for the destination.
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   QuicChromiumClientSession* session2 = GetActiveSession(host_port_pair_);

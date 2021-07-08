@@ -4120,7 +4120,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-viewbox
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/transform-text-element.html [ Failure Pass ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/tspan-dynamic-positioning.svg [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/use-detach.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/animations/animate-text-nested-transforms.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/smallFonts.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration2.svg [ Failure ]
@@ -4141,7 +4140,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/focus-ring-text.svg [ Fa
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Pass Skip ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/mouse-move-on-svg-container.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/mouse-move-on-svg-container-standalone.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/path-textPath-simulation.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/svg-root-with-opacity.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-match-highlight.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/transformed-outlines.svg [ Failure ]
@@ -4179,8 +4177,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingA
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-stretch-2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-stretch-3.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacingAndGlyphs-stretch-4.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacing-squeeze-2.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/select-textLength-spacing-squeeze-3.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/surrogate-pair-attribute-positions.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-outline-2.html [ Failure ]
@@ -7046,3 +7042,6 @@ crbug.com/1226112 http/tests/text-autosizing/narrow-iframe.html [ Failure Pass ]
 
 # Sheriff 2021-07-05
 crbug.com/1226445 [ Mac ] virtual/storage-access-api/external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Failure Pass ]
+
+# Sheriff 2021-07-07
+crbug.com/1227092 [ Win ] virtual/scroll-unification/fast/events/selection-autoscroll-borderbelt.html [ Failure Pass ]

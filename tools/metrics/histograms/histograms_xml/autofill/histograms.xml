@@ -1522,6 +1522,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Autofill.PerfectFilling.{FormType}" enum="Boolean"
+    expires_after="M96">
+  <owner>koerber@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    For a form of type {FormType}, log at submission time if the filling
+    experience was perfect. In a perfect filling experience, all non-empty
+    fields have been autofilled without subsequent corrections. Note that the
+    {FormType} is not mutually exclusive. If a single form contains both address
+    and credit card information, the metric is recorded for each {FormType}. In
+    such a combined form, both the address and the credit card information needs
+    to be filled perfectly, in order to record perfect filling.
+  </summary>
+  <token key="FormType">
+    <variant name="Addresses" summary="Form contains address information."/>
+    <variant name="CreditCards"
+        summary="Forms contains credit card information."/>
+  </token>
+</histogram>
+
 <histogram name="Autofill.ProfileActionOnFormSubmitted"
     enum="AutofillProfileAction" expires_after="M95">
   <owner>battre@chromium.org</owner>
@@ -2432,6 +2452,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Tracks how the different wallet addresses are converted to local autofill
     profiles.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.WebOTP.OneTimeCode.FillDuration.FromInteraction"
+    units="ms" expires_after="2021-11-07">
+  <owner>yigu@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
+  <owner>web-identity@google.com</owner>
+  <summary>
+    Time elapsed between the user's first interaction with a form and the form's
+    submission, for form with autocomplete=&quot;one-time-code&quot;. An
+    interaction requires changing a form control's value manually or via
+    autofill. The interaction can happen on a different form than the one which
+    is submitted. This is recorded once per form submission.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.WebOTP.OneTimeCode.FillDuration.FromLoad" units="ms"
+    expires_after="2021-11-07">
+  <owner>yigu@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
+  <owner>web-identity@google.com</owner>
+  <summary>
+    Time elapsed between form load and form submission, for forms with
+    autocomplete=&quot;one-time-code&quot;. This is recorded once per form
+    submission.
   </summary>
 </histogram>
 

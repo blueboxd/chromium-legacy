@@ -15,6 +15,13 @@
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 
+namespace blink {
+namespace scheduler {
+class UkmTaskSampler;
+class MainThreadMetricsHelper;
+}
+}  // namespace blink
+
 namespace base {
 
 // Returns a random number in range [0, UINT64_MAX]. Thread-safe.
@@ -139,11 +146,14 @@ class BASE_EXPORT InsecureRandomGenerator {
   // need a secure PRNG, as it's used for ASLR and zeroing some allocations at
   // free() time.
   friend class partition_alloc::RandomGenerator;
-  // The random number generator is used to sub-sample metrics at each task
-  // execution. Task execution overhead is <1us, and is already showing as a
-  // non-trivial amount of total CPU time in sampling profiling from the wild,
-  // on Desktop and Android.
+
+  // Friend classes below are using the generator to sub-sample metrics after
+  // task execution. Task execution overhead is ~1us on a Linux desktop, and yet
+  // accounts for multiple percentage points of total CPU usage. Keeping it low
+  // is thus important.
   friend class sequence_manager::internal::SequenceManagerImpl;
+  friend class blink::scheduler::UkmTaskSampler;
+  friend class blink::scheduler::MainThreadMetricsHelper;
 
   FRIEND_TEST_ALL_PREFIXES(RandUtilTest,
                            InsecureRandomGeneratorProducesBothValuesOfAllBits);

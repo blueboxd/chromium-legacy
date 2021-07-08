@@ -16,6 +16,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;
 import org.chromium.chrome.browser.page_annotations.BuyableProductPageAnnotation;
@@ -33,6 +34,7 @@ import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.HintsProto;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
@@ -230,8 +232,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                                         PriceTrackingData.parseFrom(metadata.getValue());
                                 parsePriceTrackingDataProto(tab, priceTrackingDataProto, null);
                                 setLastUpdatedMs(System.currentTimeMillis());
-                                mPriceDropMetricsLogger =
-                                        new PriceDropMetricsLogger(priceTrackingDataProto);
+                                mPriceDropMetricsLogger = new PriceDropMetricsLogger(this);
                                 mPriceDropMetricsLogger.logPriceDropMetrics(
                                         METRICS_IDENTIFIER_PREFIX);
                             } catch (InvalidProtocolBufferException e) {
@@ -259,6 +260,11 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         if (mPriceDropMetricsLogger != null) {
             mPriceDropMetricsLogger.logPriceDropMetrics(locationIdentifier);
         }
+    }
+
+    @VisibleForTesting
+    protected PriceDropMetricsLogger getPriceDropMetricsLoggerForTesting() {
+        return mPriceDropMetricsLogger;
     }
 
     @VisibleForTesting
@@ -307,9 +313,21 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     /**
      * Acquire {@link ShoppingPersistedTabData} for a {@link Tab}
      * @param tab {@link Tab} ShoppingPersistedTabData is acquired for
-     * @param callback {@link Callback} {@link ShoppingPersistedTabData is passed back in}
+     * @param callback {@link Callback} receiving the Tab's {@link ShoppingPersistedTabData}
+     * The result in the callback wil be null for a:
+     * - Custom Tab
+     * - Incognito Tab
+     * - Tab greater than 90 days old
+     * - Tab with a non-shopping related page currently navigated to
+     * - Tab with a shopping related page for which no shopping related data was found
      */
     public static void from(Tab tab, Callback<ShoppingPersistedTabData> callback) {
+        // Shopping related data is not available for incognito or Custom Tabs. For example,
+        // for incognito Tabs it is not possible to call a backend service with the user's URL.
+        if (tab.isIncognito() || tab.isCustomTab()) {
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { callback.onResult(null); });
+            return;
+        }
         PersistedTabData.from(tab,
                 (data, storage, id)
                         -> { return new ShoppingPersistedTabData(tab, data, storage, id); },
@@ -387,6 +405,19 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                     USER_DATA_KEY, new ShoppingPersistedTabData(tab));
         }
         return shoppingPersistedTabData;
+    }
+
+    /**
+     * @param tab {@link Tab} of interest.
+     * @return true if the {@link Tab} has a price drop associated with it.
+     */
+    public static boolean hasPriceDrop(Tab tab) {
+        ShoppingPersistedTabData shoppingPersistedTabData =
+                PersistedTabData.from(tab, USER_DATA_KEY);
+        if (shoppingPersistedTabData == null) {
+            return false;
+        }
+        return shoppingPersistedTabData.getPriceDrop() != null;
     }
 
     /**
@@ -591,9 +622,23 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         return mPriceDropData.priceMicros;
     }
 
+    /**
+     * @return true if there is a price
+     */
+    protected boolean hasPriceMicros() {
+        return mPriceDropData.priceMicros != NO_PRICE_KNOWN;
+    }
+
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public long getPreviousPriceMicros() {
         return mPriceDropData.previousPriceMicros;
+    }
+
+    /**
+     * @return true if there is a previous price
+     */
+    protected boolean hasPreviousPriceMicros() {
+        return mPriceDropData.previousPriceMicros != NO_PRICE_KNOWN;
     }
 
     @VisibleForTesting
@@ -741,6 +786,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
             setLastUpdatedMs(shoppingPersistedTabDataProto.getLastUpdatedMs());
             mLastPriceChangeTimeMs = shoppingPersistedTabDataProto.getLastPriceChangeTimeMs();
             mPriceDropData.offerId = shoppingPersistedTabDataProto.getMainOfferId();
+            mPriceDropMetricsLogger = new PriceDropMetricsLogger(this);
             return true;
         } catch (InvalidProtocolBufferException e) {
             Log.e(TAG,

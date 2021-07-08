@@ -55,6 +55,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "crypto/random.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_low_energy_scan_filter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -348,6 +349,10 @@ void NearbySharingServiceImpl::Shutdown() {
   observers_.Clear();
 
   StopAdvertising();
+  if (base::FeatureList::IsEnabled(
+          features::kNearbySharingBackgroundScanning)) {
+    StopBackgroundScanning();
+  }
   StopFastInitiationAdvertising();
   StopScanning();
   nearby_connections_manager_->Shutdown();
@@ -1272,6 +1277,46 @@ void NearbySharingServiceImpl::SuspendDone() {
   InvalidateSurfaceState();
 }
 
+void NearbySharingServiceImpl::OnSessionStarted(
+    device::BluetoothLowEnergyScanSession* scan_session,
+    absl::optional<device::BluetoothLowEnergyScanSession::ErrorCode>
+        error_code) {
+  if (error_code) {
+    NS_LOG(WARNING) << __func__ << ": Error";
+    StopBackgroundScanning();
+    return;
+  }
+
+  NS_LOG(VERBOSE) << __func__ << ": Success";
+}
+
+void NearbySharingServiceImpl::OnDeviceFound(
+    device::BluetoothLowEnergyScanSession* scan_session,
+    device::BluetoothDevice* device) {
+  NS_LOG(VERBOSE) << __func__;
+
+  // This shows a notification indicating that a device nearby is attempting to
+  // share. When the notification is clicked it will take the user through the
+  // onboarding flow if needed and then enable high visibility mode.
+  nearby_notification_manager_->ShowOnboarding();
+}
+
+void NearbySharingServiceImpl::OnDeviceLost(
+    device::BluetoothLowEnergyScanSession* scan_session,
+    device::BluetoothDevice* device) {
+  NS_LOG(VERBOSE) << __func__;
+
+  // This will just dismiss the "onboarding" notification, it does not have any
+  // effect on the actual onboarding or high visibility UI.
+  nearby_notification_manager_->CloseOnboarding();
+}
+
+void NearbySharingServiceImpl::OnSessionInvalidated(
+    device::BluetoothLowEnergyScanSession* scan_session) {
+  NS_LOG(INFO) << __func__;
+  StopBackgroundScanning();
+}
+
 base::ObserverList<TransferUpdateCallback>&
 NearbySharingServiceImpl::GetReceiveCallbacksFromState(
     ReceiveSurfaceState state) {
@@ -2053,11 +2098,6 @@ void NearbySharingServiceImpl::StopAdvertisingAndInvalidateSurfaceState() {
 }
 
 void NearbySharingServiceImpl::InvalidateBackgroundScanning() {
-  // TODO(hansenmichael): This method is in a prototype state and essentially
-  // duplicates the checks from InvalidateAdvertisingState(). This should be
-  // vetted further and updated specifically for background scanning. This is
-  // not invoked unless the background scanning feature flag is enabled.
-
   // Nothing to do if we're shutting down the profile.
   if (!profile_)
     return;
@@ -2087,8 +2127,9 @@ void NearbySharingServiceImpl::InvalidateBackgroundScanning() {
     return;
   }
 
-  // Nearby Sharing is disabled. Don't scan.
-  if (!settings_.GetEnabled()) {
+  // User has explicitly disabled Nearby Sharing after onboarding. Don't
+  // background scan.
+  if (settings_.IsOnboardingComplete() && !settings_.GetEnabled()) {
     NS_LOG(VERBOSE)
         << __func__
         << ": Stopping background scanning because Nearby Sharing is disabled.";
@@ -2114,28 +2155,17 @@ void NearbySharingServiceImpl::InvalidateBackgroundScanning() {
     return;
   }
 
-  if (foreground_receive_callbacks_.empty() &&
-      background_receive_callbacks_.empty()) {
+  if (advertising_power_level_ == PowerLevel::kHighPower) {
     NS_LOG(VERBOSE) << __func__
-                    << ": Stopping background scanning because no receive "
-                       "surface is registered.";
-    StopBackgroundScanning();
-    return;
-  }
-
-  if (!IsVisibleInBackground(settings_.GetVisibility()) &&
-      foreground_receive_callbacks_.empty()) {
-    NS_LOG(VERBOSE) << __func__
-                    << ": Stopping background scanning because no high power "
-                       "receive surface "
-                       "is registered and device is visible to NO_ONE.";
+                    << ": Stopping background scanning because we're already "
+                       "in high visibility mode.";
     StopBackgroundScanning();
     return;
   }
 
   process_shutdown_pending_timer_.Stop();
 
-  if (is_background_scanning_) {
+  if (background_scan_session_) {
     NS_LOG(VERBOSE) << __func__ << ": Ignoring, already background scanning.";
     return;
   }
@@ -2144,17 +2174,27 @@ void NearbySharingServiceImpl::InvalidateBackgroundScanning() {
 }
 
 void NearbySharingServiceImpl::StartBackgroundScanning() {
-  // TODO(hansenmichael): This method is in a prototype state and unimplemented.
-  // This is not invoked unless the background scanning feature flag is enabled.
-  NS_LOG(INFO) << __func__ << ": Starting background scanning.";
-  is_background_scanning_ = true;
+  DCHECK(!background_scan_session_);
+  NS_LOG(VERBOSE) << __func__ << ": Starting background scanning.";
+  auto filter = std::make_unique<device::BluetoothLowEnergyScanFilter>(
+      /*device_found_threshold=*/-80, /*device_found_timeout=*/1,
+      /*device_lost_threshold=*/-100, /*device_lost_timeout=*/5);
+  filter->AddPattern(
+      /*start_position=*/0,
+      device::BluetoothLowEnergyScanFilter::AdvertisementDataType::kServiceData,
+      /*value=*/std::vector<uint8_t>{0x2c, 0xfe, 0xfc, 0x12, 0x8e});
+  background_scan_session_ = bluetooth_adapter_->StartLowEnergyScanSession(
+      std::move(filter), /*delegate=*/weak_ptr_factory_.GetWeakPtr());
 }
 
 void NearbySharingServiceImpl::StopBackgroundScanning() {
-  // TODO(hansenmichael): This method is in a prototype state and unimplemented.
-  // This is not invoked unless the background scanning feature flag is enabled.
-  NS_LOG(INFO) << __func__ << ": Stopping background scanning.";
-  is_background_scanning_ = false;
+  if (!background_scan_session_) {
+    NS_LOG(VERBOSE) << __func__ << ": Ignoring, not background scanning.";
+    return;
+  }
+
+  background_scan_session_.reset();
+  NS_LOG(VERBOSE) << __func__ << ": Stopped background scanning.";
 }
 
 void NearbySharingServiceImpl::ScheduleRotateBackgroundAdvertisementTimer() {

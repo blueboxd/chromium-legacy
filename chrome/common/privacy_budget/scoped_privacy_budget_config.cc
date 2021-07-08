@@ -4,8 +4,12 @@
 
 #include "chrome/common/privacy_budget/scoped_privacy_budget_config.h"
 
+#include "base/check.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/common/privacy_budget/field_trial_param_conversions.h"
 #include "chrome/common/privacy_budget/privacy_budget_features.h"
+#include "chrome/common/privacy_budget/types.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
@@ -16,7 +20,11 @@ ScopedPrivacyBudgetConfig::Parameters::Parameters(const Parameters&) = default;
 ScopedPrivacyBudgetConfig::Parameters::Parameters(Parameters&&) = default;
 ScopedPrivacyBudgetConfig::Parameters::~Parameters() = default;
 
-ScopedPrivacyBudgetConfig::~ScopedPrivacyBudgetConfig() = default;
+ScopedPrivacyBudgetConfig::~ScopedPrivacyBudgetConfig() {
+  DCHECK(applied_) << "ScopedPrivacyBudgetConfig instance created but not "
+                      "applied. Did you forget to call Apply()?";
+}
+
 ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig() = default;
 
 ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig(
@@ -41,6 +49,8 @@ ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig(Presets presets) {
 
 void ScopedPrivacyBudgetConfig::Apply(const Parameters& parameters) {
   blink::IdentifiabilityStudySettings::ResetStateForTesting();
+  DCHECK(!applied_);
+  applied_ = true;
 
   if (!parameters.enabled) {
     scoped_feature_list_.InitAndDisableFeature(features::kIdentifiabilityStudy);
@@ -81,6 +91,11 @@ void ScopedPrivacyBudgetConfig::Apply(const Parameters& parameters) {
     ftp.insert({features::kIdentifiabilityStudyPerTypeSettings.name,
                 EncodeIdentifiabilityFieldTrialParam(
                     parameters.per_type_sampling_rate)});
+  }
+  if (!parameters.equivalence_classes.empty()) {
+    ftp.insert(
+        {features::kIdentifiabilityStudySurfaceEquivalenceClasses.name,
+         EncodeIdentifiabilityFieldTrialParam(parameters.equivalence_classes)});
   }
 
   scoped_feature_list_.InitAndEnableFeatureWithParameters(

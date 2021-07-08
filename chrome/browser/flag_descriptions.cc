@@ -2070,6 +2070,13 @@ const char kPermissionPredictionsDescription[] =
     "chrome://flags/#quiet-notification-prompts and `Safe Browsing Enhanced "
     "Protection` to be enabled.";
 
+const char kPermissionQuietChipName[] = "Quiet Permission Chip Experiment";
+const char kPermissionQuietChipDescription[] =
+    "Enables an experimental permission prompt that uses the quiet chip "
+    "instead of the right-hand side address bar icon for quiet permission "
+    "prompts. Requires chrome://flags/#quiet-notification-prompts to be "
+    "enabled.";
+
 const char kPlaybackSpeedButtonName[] = "Playback Speed Button";
 const char kPlaybackSpeedButtonDescription[] =
     "Enable the playback speed button on the media controls.";
@@ -4000,6 +4007,11 @@ const char kArcImageCopyPasteCompatName[] =
 const char kArcImageCopyPasteCompatDescription[] =
     "Allows pasting of images to Android apps through commitContent API and "
     "share intent.";
+
+const char kArcKeyboardShortcutHelperIntegrationName[] =
+    "Enable keyboard shortcut helper integration for ARC";
+const char kArcKeyboardShortcutHelperIntegrationDescription[] =
+    "Shows keyboard shortcuts from Android apps in Chrome OS Shortcut Viewer";
 
 const char kArcNativeBridgeToggleName[] =
     "Toggle between native bridge implementations for ARC";

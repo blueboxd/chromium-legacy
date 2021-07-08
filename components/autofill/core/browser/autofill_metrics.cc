@@ -1849,6 +1849,13 @@ void AutofillMetrics::LogFormFillDurationFromLoadWithoutAutofill(
 }
 
 // static
+void AutofillMetrics::LogFormFillDurationFromLoadForOneTimeCode(
+    const base::TimeDelta& duration) {
+  LogFormFillDuration("Autofill.WebOTP.OneTimeCode.FillDuration.FromLoad",
+                      duration);
+}
+
+// static
 void AutofillMetrics::LogFormFillDurationFromInteraction(
     const DenseSet<FormType>& form_types,
     bool used_autofill,
@@ -1872,6 +1879,13 @@ void AutofillMetrics::LogFormFillDurationFromInteraction(
   if (base::Contains(form_types, FormType::kUnknownFormType)) {
     LogFormFillDuration(parent_metric + ".Unknown", duration);
   }
+}
+
+// static
+void AutofillMetrics::LogFormFillDurationFromInteractionForOneTimeCode(
+    const base::TimeDelta& duration) {
+  LogFormFillDuration(
+      "Autofill.WebOTP.OneTimeCode.FillDuration.FromInteraction", duration);
 }
 
 // static
@@ -2238,6 +2252,17 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
   form_interactions_ukm_logger->LogFormSubmitted(
       is_for_credit_card, has_upi_vpa_field, form_types, state,
       form_parsed_timestamp, form_signature);
+}
+
+// static
+void AutofillMetrics::LogAutofillPerfectFilling(bool is_address,
+                                                bool perfect_filling) {
+  if (is_address) {
+    UMA_HISTOGRAM_BOOLEAN("Autofill.PerfectFilling.Addresses", perfect_filling);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("Autofill.PerfectFilling.CreditCards",
+                          perfect_filling);
+  }
 }
 
 // static

@@ -78,9 +78,9 @@ if (is_win) {
       "dwmapi.lib",
       "imm32.lib",  # chrome_elf_init.cc
       "netapi32.lib",
-      "ndfapi.lib",  # For browser / net / net_error_diagnostics_dialog_win.h
-      "pdh.lib",  # For browser / private_working_set_snapshot.h
-      "wbemuuid.lib",  # For browser / metrics /
+      "ndfapi.lib",  # For browser/net/net_error_diagnostics_dialog_win.h
+      "pdh.lib",  # For browser/private_working_set_snapshot.h
+      "wbemuuid.lib",  # For browser/metrics /
                        # antivirus_metrics_provider_win.cc
     ]
     ldflags = [
@@ -1866,6 +1866,7 @@ static_library("browser") {
     "//chrome/services/file_util/public/mojom",
     "//components/account_id",
     "//components/autofill/core/browser",
+    "//components/enterprise/common/proto:download_item_reroute_info_proto",
     "//components/nacl/common:buildflags",
     "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/page_info",
@@ -1885,6 +1886,7 @@ static_library("browser") {
   deps = [
     ":active_use_util",
     ":availability_protos",
+    ":browser_process",
     ":buildflags",
     ":dev_ui_browser_resources_grit",
     ":expired_flags_list",
@@ -1907,7 +1909,6 @@ static_library("browser") {
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
     "//chrome/app/vector_icons",
-    "//chrome/browser:browser_process",
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/devtools",
     "//chrome/browser/image_decoder",
@@ -3331,8 +3332,7 @@ static_library("browser") {
       "//components/safe_browsing/core/browser/password_protection:password_protection_metrics_util",
       "//components/security_state/content/android",
       "//components/send_tab_to_self",
-      "//components/signin/internal/identity_manager",  # cf android / signin /
-                                                        # DEPS
+      "//components/signin/internal/identity_manager",  # cf android/signin/DEPS
       "//components/signin/public/android:jni_headers",
       "//components/subresource_filter/android",
       "//components/thin_webview/internal",
@@ -4244,7 +4244,6 @@ static_library("browser") {
       "//components/accuracy_tips",
       "//components/constrained_window",
       "//components/enterprise/common/proto:device_trust_report_event_proto",
-      "//components/enterprise/common/proto:download_item_reroute_info_proto",
       "//components/feedback",
       "//components/feedback/content:factory",
       "//components/image_fetcher/core",
@@ -4274,12 +4273,6 @@ static_library("browser") {
       "//chrome/common:buildflags",
       "//extensions/buildflags",
     ]
-
-    if (is_win || is_mac || is_linux) {
-      sources += []
-
-      deps += []
-    }
 
     if (!is_chromeos_ash) {
       sources += [
@@ -5354,7 +5347,10 @@ static_library("browser") {
   }
 
   if (is_posix || is_fuchsia) {
-    deps += [ "//chrome/app:shutdown_signal_handlers" ]
+    sources += [
+      "shutdown_signal_handlers_posix.cc",
+      "shutdown_signal_handlers_posix.h",
+    ]
   }
 
   if (is_win || is_mac) {
@@ -5385,6 +5381,8 @@ static_library("browser") {
 
   if (is_win || is_chromeos_ash || is_mac) {
     sources += [
+      "webshare/safe_browsing_request.cc",
+      "webshare/safe_browsing_request.h",
       "webshare/share_service_impl.cc",
       "webshare/share_service_impl.h",
     ]
@@ -5504,7 +5502,7 @@ static_library("browser") {
   }
 
   if (is_posix && !is_mac) {
-    # TODO(crbug.com / 753619): Enable crash reporting on Fuchsia.
+    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     sources += [
       "//chrome/app/chrome_crash_reporter_client.cc",
       "//chrome/app/chrome_crash_reporter_client.h",
@@ -5555,8 +5553,8 @@ static_library("browser") {
       "media_galleries/fileapi/mtp_file_stream_reader.h",
     ]
     if (is_chromeos_ash && use_dbus) {
-      # TODO(donna.wu@intel.com): push this into chrome / browser / chromeos
-      # and chrome / browser / media_galleries / chromeos
+      # TODO(donna.wu@intel.com): push this into chrome/browser/chromeos
+      # and chrome/browser/media_galleries/chromeos
       deps += [ "//services/device/public/mojom" ]
     }
   }
@@ -6959,9 +6957,9 @@ static_library("test_support") {
     "//chrome/browser/ui:test_support",
   ]
   deps = [
+    ":browser_process",
     "//build:chromeos_buildflags",
     "//chrome/app/theme:theme_resources",
-    "//chrome/browser:browser_process",
     "//chrome/common",
     "//chrome/common/safe_browsing:proto",
     "//components/consent_auditor:test_support",
@@ -7264,8 +7262,8 @@ if (!is_android) {
 
     deps = [
       ":browser",
+      ":browser_process",
       "//chrome:browser_tests_pak",
-      "//chrome/browser:browser_process",
       "//chrome/browser/profiles:profile",
       "//chrome/common:mojo_bindings",
       "//chrome/test/data:web_ui_test_bindings",

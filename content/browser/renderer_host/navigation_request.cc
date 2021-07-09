@@ -3485,6 +3485,7 @@ void NavigationRequest::OnStartChecksComplete(
               frame_tree_node_->frame_tree_node_id()),
       NetworkServiceDevToolsObserver::MakeSelfOwned(frame_tree_node_),
       std::move(cached_response_head), std::move(interceptor));
+  loader_->Start();
 
   DCHECK(!render_frame_host_);
 }
@@ -5247,6 +5248,9 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
 
   if (base::FeatureList::IsEnabled(
           features::kBlockInsecurePrivateNetworkRequestsDeprecationTrial) &&
+      // If there is no response or no headers in the response, there are
+      // definitely no trial token headers.
+      response_head_ && response_head_->headers &&
       blink::TrialTokenValidator().RequestEnablesFeature(
           common_params_->url, response_head_->headers.get(),
           "PrivateNetworkAccessNonSecureContextsAllowed", base::Time::Now())) {
@@ -5438,10 +5442,6 @@ NavigationRequest::GetOriginForURLLoaderFactoryWithoutFinalFrameHost() {
   if (use_opaque_origin)
     origin = origin.DeriveNewOpaqueOrigin();
 
-  // MHTML documents should commit as an opaque origin. They should not be able
-  // to make network request on behalf of the real origin.
-  DCHECK(!IsMhtmlOrSubframe() || origin.opaque());
-
   return origin;
 }
 
@@ -5454,6 +5454,10 @@ NavigationRequest::GetOriginForURLLoaderFactoryWithFinalFrameHost() {
     return GetRenderFrameHost()->GetLastCommittedOrigin();
 
   url::Origin origin = GetOriginForURLLoaderFactoryWithoutFinalFrameHost();
+
+  // MHTML documents should commit as an opaque origin. They should not be able
+  // to make network request on behalf of the real origin.
+  DCHECK(!IsMhtmlOrSubframe() || origin.opaque());
 
   // https://crbug.com/1041376) of the origin that will be committed because of
   // |this| NavigationRequest.

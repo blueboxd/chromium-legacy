@@ -93,6 +93,8 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
      */
     @Override
     public void dismiss() {
+        NoteCreationMetrics.recordNoteCreationStatus(/*created=*/false);
+        NoteCreationMetrics.recordNbTemplateChanges(mDialog.getNbTemplateSwitches());
         mDialog.dismiss();
     }
 
@@ -110,8 +112,13 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
     @Override
     public void executeAction() {
         NoteCreationMetrics.recordNoteTemplateSelected();
+        NoteCreationMetrics.recordNoteCreationStatus(/*created=*/true);
+        NoteCreationMetrics.recordNbTemplateChanges(mDialog.getNbTemplateSwitches());
 
-        View noteView = mDialog.getNoteViewAt(mDialog.getSelectedItemIndex());
+        int selectedNoteIndex = mDialog.getSelectedItemIndex();
+        NoteCreationMetrics.recordSelectedTemplateId(
+                mListModel.get(selectedNoteIndex).model.get(NoteProperties.TEMPLATE).id);
+        View noteView = mDialog.getNoteViewAt(selectedNoteIndex);
 
         assert noteView != null;
 
@@ -135,7 +142,9 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
                                         }
 
                                         @Override
-                                        public void onCancel() {}
+                                        public void onCancel() {
+                                            NoteCreationMetrics.recordNoteNotShared();
+                                        }
                                     })
                                     .build();
 

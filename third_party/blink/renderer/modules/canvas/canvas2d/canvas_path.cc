@@ -36,8 +36,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_dompoint_unrestricteddouble.h"
-#include "third_party/blink/renderer/core/geometry/dom_point.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_point_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
@@ -453,14 +452,13 @@ void CanvasPath::roundRect(
     double double_y,
     double double_width,
     double double_height,
-    const HeapVector<Member<V8UnionDOMPointOrUnrestrictedDouble>>& radii,
+    const HeapVector<Member<V8UnionDOMPointInitOrUnrestrictedDouble>>& radii,
     ExceptionState& exception_state) {
   const int num_radii = radii.size();
   if (num_radii < 1 || num_radii > 4) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kIndexSizeError,
+    exception_state.ThrowRangeError(
         String::Number(num_radii) +
-            " radii provided. Between one and four radii are necessary.");
+        " radii provided. Between one and four radii are necessary.");
   }
 
   float x = base::saturated_cast<float>(double_x);
@@ -477,36 +475,34 @@ void CanvasPath::roundRect(
   FloatSize r[num_radii];
   for (int i = 0; i < num_radii; ++i) {
     switch (radii[i]->GetContentType()) {
-      case V8UnionDOMPointOrUnrestrictedDouble::ContentType::kDOMPoint: {
-        DOMPoint* p = radii[i]->GetAsDOMPoint();
+      case V8UnionDOMPointInitOrUnrestrictedDouble::ContentType::
+          kDOMPointInit: {
+        DOMPointInit* p = radii[i]->GetAsDOMPointInit();
         float r_x = base::saturated_cast<float>(p->x());
         float r_y = base::saturated_cast<float>(p->y());
         if (UNLIKELY(!std::isfinite(r_x)) || UNLIKELY(!std::isfinite(r_y)))
           return;
         if (UNLIKELY(r_x < 0.0f)) {
-          exception_state.ThrowDOMException(
-              DOMExceptionCode::kIndexSizeError,
+          exception_state.ThrowRangeError(
               "X-radius value " + String::Number(r_x) + " is negative.");
         }
         if (UNLIKELY(r_y < 0.0f)) {
-          exception_state.ThrowDOMException(
-              DOMExceptionCode::kIndexSizeError,
+          exception_state.ThrowRangeError(
               "Y-radius value " + String::Number(r_y) + " is negative.");
         }
         r[i] = FloatSize(base::saturated_cast<float>(p->x()),
                          base::saturated_cast<float>(p->y()));
         break;
       }
-      case V8UnionDOMPointOrUnrestrictedDouble::ContentType::
+      case V8UnionDOMPointInitOrUnrestrictedDouble::ContentType::
           kUnrestrictedDouble: {
         float a =
             base::saturated_cast<float>(radii[i]->GetAsUnrestrictedDouble());
         if (UNLIKELY(!std::isfinite(a)))
           return;
         if (UNLIKELY(a < 0.0f)) {
-          exception_state.ThrowDOMException(
-              DOMExceptionCode::kIndexSizeError,
-              "Radius value " + String::Number(a) + " is negative.");
+          exception_state.ThrowRangeError("Radius value " + String::Number(a) +
+                                          " is negative.");
         }
         r[i] = FloatSize(a, a);
         break;

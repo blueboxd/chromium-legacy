@@ -1641,6 +1641,30 @@ const FeatureEntry::FeatureVariation
          kOverridePrefsForHrefTranslateForceAuto,
          base::size(kOverridePrefsForHrefTranslateForceAuto), nullptr}};
 
+const FeatureEntry::FeatureParam
+    kOverrideUnsupportedPageLanguageForHrefTranslateForceAuto[] = {
+        {"force-auto-translate-for-unsupported-page-language", "true"}};
+
+const FeatureEntry::FeatureVariation
+    kOverrideUnsupportedPageLanguageForHrefTranslateVariations[] = {
+        {"(Force automatic translation of pages with unknown language for "
+         "hrefTranslate)",
+         kOverrideUnsupportedPageLanguageForHrefTranslateForceAuto,
+         base::size(kOverrideUnsupportedPageLanguageForHrefTranslateForceAuto),
+         nullptr}};
+
+const FeatureEntry::FeatureParam
+    kOverrideSimilarLanguagesForHrefTranslateForceAuto[] = {
+        {"force-auto-translate-for-similar-languages", "true"}};
+
+const FeatureEntry::FeatureVariation
+    kOverrideSimilarLanguagesForHrefTranslateVariations[] = {
+        {"(Force automatic translation of pages with the same language as the "
+         "target language for hrefTranslate)",
+         kOverrideSimilarLanguagesForHrefTranslateForceAuto,
+         base::size(kOverrideSimilarLanguagesForHrefTranslateForceAuto),
+         nullptr}};
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
@@ -1679,6 +1703,28 @@ const FeatureEntry::FeatureParam kRelatedSearchesUiExtreme = {"verbosity", "x"};
 const FeatureEntry::FeatureVariation kRelatedSearchesUiVariations[] = {
     {"verbose", &kRelatedSearchesUiVerbose, 1, nullptr},
     {"extreme", &kRelatedSearchesUiExtreme, 1, nullptr},
+};
+
+const FeatureEntry::FeatureParam kRelatedSearchesInBarNoShowDefaultChip = {
+    "default_query_chip", "false"};
+const FeatureEntry::FeatureParam kRelatedSearchesInBarShowDefaultChip = {
+    "default_query_chip", "true"};
+const FeatureEntry::FeatureVariation kRelatedSearchesInBarVariations[] = {
+    {"without default query chip", &kRelatedSearchesInBarNoShowDefaultChip, 1,
+     nullptr},
+    {"with default query chip", &kRelatedSearchesInBarShowDefaultChip, 1,
+     nullptr},
+};
+
+const FeatureEntry::FeatureParam kRelatedSearchesAlternateUxNoShowDefaultChip =
+    {"default_query_chip", "false"};
+const FeatureEntry::FeatureParam kRelatedSearchesAlternateUxShowDefaultChip = {
+    "default_query_chip", "true"};
+const FeatureEntry::FeatureVariation kRelatedSearchesAlternateUxVariations[] = {
+    {"without default query chip",
+     &kRelatedSearchesAlternateUxNoShowDefaultChip, 1, nullptr},
+    {"with default query chip", &kRelatedSearchesAlternateUxShowDefaultChip, 1,
+     nullptr},
 };
 
 #endif  // defined(OS_ANDROID)
@@ -2785,11 +2831,16 @@ const FeatureEntry kFeatureEntries[] = {
                                     "RelatedSearchesUi")},
     {"related-searches-in-bar", flag_descriptions::kRelatedSearchesInBarName,
      flag_descriptions::kRelatedSearchesInBarDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kRelatedSearchesInBar)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kRelatedSearchesInBar,
+                                    kRelatedSearchesInBarVariations,
+                                    "RelatedSearchesInBar")},
     {"related-searches-alternate-ux",
      flag_descriptions::kRelatedSearchesAlternateUxName,
      flag_descriptions::kRelatedSearchesAlternateUxDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kRelatedSearchesAlternateUx)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kRelatedSearchesAlternateUx,
+         kRelatedSearchesAlternateUxVariations,
+         "RelatedSearchesAlternateUx")},
     {"related-searches-simplified-ux",
      flag_descriptions::kRelatedSearchesSimplifiedUxName,
      flag_descriptions::kRelatedSearchesSimplifiedUxDescription, kOsAndroid,
@@ -3314,6 +3365,23 @@ const FeatureEntry kFeatureEntries[] = {
          translate::kOverrideSitePrefsForHrefTranslate,
          kOverrideSitePrefsForHrefTranslateVariations,
          "OverrideSitePrefsForHrefTranslate")},
+    {"override-unsupported-page-language-for-href-translate",
+     flag_descriptions::kOverrideUnsupportedPageLanguageForHrefTranslateName,
+     flag_descriptions::
+         kOverrideUnsupportedPageLanguageForHrefTranslateDescription,
+     kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         translate::kOverrideUnsupportedPageLanguageForHrefTranslate,
+         kOverrideUnsupportedPageLanguageForHrefTranslateVariations,
+         "OverrideUnsupportedPageLanguageForHrefTranslate")},
+    {"override-similar-languages-for-href-translate",
+     flag_descriptions::kOverrideSimilarLanguagesForHrefTranslateName,
+     flag_descriptions::kOverrideSimilarLanguagesForHrefTranslateDescription,
+     kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         translate::kOverrideSimilarLanguagesForHrefTranslate,
+         kOverrideSimilarLanguagesForHrefTranslateVariations,
+         "OverrideSimilarLanguagesForHrefTranslate")},
 
 #if BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS) && !BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-system-notifications",
@@ -3603,6 +3671,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsWindowControlsOverlayDescription,
      kOsWin | kOsLinux | kOsMac,
      FEATURE_VALUE_TYPE(features::kWebAppWindowControlsOverlay)},
+    {"enable-desktop-pwas-web-bundles",
+     flag_descriptions::kDesktopPWAsWebBundlesName,
+     flag_descriptions::kDesktopPWAsWebBundlesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsWebBundles)},
     {"record-web-app-debug-info", flag_descriptions::kRecordWebAppDebugInfoName,
      flag_descriptions::kRecordWebAppDebugInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRecordWebAppDebugInfo)},
@@ -3859,10 +3931,6 @@ const FeatureEntry kFeatureEntries[] = {
          kInterestFeedV2ClickAndViewActionsConditionalUploadDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2ClicksAndViewsConditionalUpload)},
-    {"interest-feed-notice-card-auto-dismiss",
-     flag_descriptions::kInterestFeedNoticeCardAutoDismissName,
-     flag_descriptions::kInterestFeedNoticeCardAutoDismissDescription,
-     kOsAndroid, FEATURE_VALUE_TYPE(feed::kInterestFeedNoticeCardAutoDismiss)},
 #endif  // OS_ANDROID
     {"PasswordImport", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
@@ -6683,6 +6751,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidPopupBlockedName,
      flag_descriptions::kMessagesForAndroidPopupBlockedDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPopupBlocked)},
+    {"messages-for-android-reader-mode",
+     flag_descriptions::kMessagesForAndroidReaderModeName,
+     flag_descriptions::kMessagesForAndroidReaderModeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidReaderMode)},
     {"messages-for-android-safety-tip",
      flag_descriptions::kMessagesForAndroidSafetyTipName,
      flag_descriptions::kMessagesForAndroidSafetyTipDescription, kOsAndroid,

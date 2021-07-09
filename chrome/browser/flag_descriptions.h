@@ -495,6 +495,9 @@ extern const char kDesktopPWAsProtocolHandlingDescription[];
 extern const char kDesktopPWAsUrlHandlingName[];
 extern const char kDesktopPWAsUrlHandlingDescription[];
 
+extern const char kDesktopPWAsWebBundlesName[];
+extern const char kDesktopPWAsWebBundlesDescription[];
+
 extern const char kDesktopPWAsWindowControlsOverlayName[];
 extern const char kDesktopPWAsWindowControlsOverlayDescription[];
 
@@ -1125,6 +1128,10 @@ extern const char kOverrideLanguagePrefsForHrefTranslateName[];
 extern const char kOverrideLanguagePrefsForHrefTranslateDescription[];
 extern const char kOverrideSitePrefsForHrefTranslateName[];
 extern const char kOverrideSitePrefsForHrefTranslateDescription[];
+extern const char kOverrideUnsupportedPageLanguageForHrefTranslateName[];
+extern const char kOverrideUnsupportedPageLanguageForHrefTranslateDescription[];
+extern const char kOverrideSimilarLanguagesForHrefTranslateName[];
+extern const char kOverrideSimilarLanguagesForHrefTranslateDescription[];
 
 extern const char kUpdateHoverAtBeginFrameName[];
 extern const char kUpdateHoverAtBeginFrameDescription[];
@@ -1829,9 +1836,6 @@ extern const char kIntentBlockExternalFormRedirectsNoGestureDescription[];
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 
-extern const char kInterestFeedNoticeCardAutoDismissName[];
-extern const char kInterestFeedNoticeCardAutoDismissDescription[];
-
 extern const char kInterestFeedV2Name[];
 extern const char kInterestFeedV2Description[];
 
@@ -1857,6 +1861,9 @@ extern const char kMessagesForAndroidPasswordsDescription[];
 
 extern const char kMessagesForAndroidPopupBlockedName[];
 extern const char kMessagesForAndroidPopupBlockedDescription[];
+
+extern const char kMessagesForAndroidReaderModeName[];
+extern const char kMessagesForAndroidReaderModeDescription[];
 
 extern const char kMessagesForAndroidSafetyTipName[];
 extern const char kMessagesForAndroidSafetyTipDescription[];

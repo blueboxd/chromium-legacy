@@ -124,7 +124,7 @@ const base::Feature kBlockInsecurePrivateNetworkRequests{
 // make use of the trial must additionally serve a valid origin trial token.
 const base::Feature kBlockInsecurePrivateNetworkRequestsDeprecationTrial{
     "BlockInsecurePrivateNetworkRequestsDeprecationTrial",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When both kBlockInsecurePrivateNetworkRequestsForNavigations and
 // kBlockInsecurePrivateNetworkRequests are enabled, navigations initiated
@@ -1000,6 +1000,14 @@ const base::Feature kWebXrArModule{"WebXRARModule",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
+// Allows the use of page zoom in place of accessibility text autosizing, and
+// updated UI to replace existing Chrome Accessibility Settings.
+const base::Feature kAccessibilityPageZoom{"AccessibilityPageZoom",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAccessibilityPageZoomUpdatedUI{
+    "AccessibilityPageZoomUpdatedUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Sets moderate binding to background renderers playing media, when enabled.
 // Else the renderer will have strong binding.
 const base::Feature kBackgroundMediaRendererHasModerateBinding{

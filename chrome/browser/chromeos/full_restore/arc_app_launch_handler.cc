@@ -17,12 +17,14 @@
 #include "chrome/browser/chromeos/full_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "components/full_restore/app_launch_info.h"
 #include "components/full_restore/full_restore_read_handler.h"
 #include "components/full_restore/restore_data.h"
 #include "components/services/app_service/public/cpp/types_util.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace chromeos {
 namespace full_restore {
@@ -176,6 +178,8 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
     window_info->window_id = arc_session_id;
     ::full_restore::FullRestoreReadHandler::GetInstance()
         ->SetArcSessionIdForWindowId(arc_session_id, data_it.first);
+    window_id_to_session_id_[data_it.first] = arc_session_id;
+    session_id_to_window_id_[arc_session_id] = data_it.first;
 
     bool launch_ghost_window = false;
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
@@ -223,6 +227,69 @@ bool ArcAppLaunchHandler::CanLaunchApp() {
     case chromeos::ResourcedClient::PressureLevel::MODERATE:
     case chromeos::ResourcedClient::PressureLevel::CRITICAL:
       return false;
+  }
+}
+
+bool ArcAppLaunchHandler::IsAppReady(const std::string& app_id) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(handler_->profile_);
+  if (!prefs)
+    return false;
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  if (!app_info || app_info->suspended || !app_info->ready)
+    return false;
+
+  return true;
+}
+
+void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
+                                    int32_t window_id) {
+  DCHECK(handler_);
+  const auto it = handler_->restore_data_->app_id_to_launch_list().find(app_id);
+  if (it == handler_->restore_data_->app_id_to_launch_list().end())
+    return;
+
+  if (it->second.empty()) {
+    handler_->restore_data_->RemoveApp(app_id);
+    return;
+  }
+
+  const auto data_it = it->second.find(window_id);
+  if (data_it == it->second.end())
+    return;
+
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(handler_->profile_);
+  DCHECK(proxy);
+
+  DCHECK(data_it->second->event_flag.has_value());
+
+  apps::mojom::WindowInfoPtr window_info =
+      HandleArcWindowInfo(data_it->second->GetAppWindowInfo());
+  const auto window_it = window_id_to_session_id_.find(window_id);
+  if (window_it != window_id_to_session_id_.end()) {
+    window_info->window_id = window_it->second;
+    window_id_to_session_id_.erase(window_it);
+  } else {
+    // Set an ARC session id to find the restore window id based on the new
+    // created ARC task id in FullRestoreReadHandler.
+    int32_t arc_session_id =
+        ::full_restore::FullRestoreReadHandler::GetInstance()
+            ->GetArcSessionId();
+    window_info->window_id = arc_session_id;
+    ::full_restore::FullRestoreReadHandler::GetInstance()
+        ->SetArcSessionIdForWindowId(arc_session_id, window_id);
+    window_id_to_session_id_[window_id] = arc_session_id;
+  }
+
+  if (data_it->second->intent.has_value()) {
+    proxy->LaunchAppWithIntent(app_id, data_it->second->event_flag.value(),
+                               std::move(data_it->second->intent.value()),
+                               apps::mojom::LaunchSource::kFromFullRestore,
+                               std::move(window_info));
+  } else {
+    proxy->Launch(app_id, data_it->second->event_flag.value(),
+                  apps::mojom::LaunchSource::kFromFullRestore,
+                  std::move(window_info));
   }
 }
 

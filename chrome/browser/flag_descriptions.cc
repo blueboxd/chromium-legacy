@@ -835,6 +835,11 @@ const char kDesktopPWAsWindowControlsOverlayDescription[] =
     "override. Prototype implementation of: "
     "https://github.com/WICG/window-controls-overlay/blob/main/explainer.md";
 
+const char kDesktopPWAsWebBundlesName[] = "Desktop PWAs Web Bundles";
+const char kDesktopPWAsWebBundlesDescription[] =
+    "Adds support for web bundles, making web apps able to be launched "
+    "offline.";
+
 const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteName[] =
     "Migrate default G Suite Chrome apps to web apps";
 const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteDescription[] =
@@ -1974,6 +1979,16 @@ const char kOverrideSitePrefsForHrefTranslateName[] =
 const char kOverrideSitePrefsForHrefTranslateDescription[] =
     "When using hrefTranslate, ignore the user's blocklist of websites that "
     "shouldn't be translated.";
+const char kOverrideUnsupportedPageLanguageForHrefTranslateName[] =
+    "Force translation on pages with unsupported languages for hrefTranslate";
+const char kOverrideUnsupportedPageLanguageForHrefTranslateDescription[] =
+    "When using hrefTranslate, force translation on pages where the page's "
+    "language cannot be determined or is unsupported.";
+const char kOverrideSimilarLanguagesForHrefTranslateName[] =
+    "Force translation on pages with a similar page language for hrefTranslate";
+const char kOverrideSimilarLanguagesForHrefTranslateDescription[] =
+    "When using hrefTranslate, force translation on pages where the page's "
+    "language is similar to the target language specified via hrefTranslate.";
 
 const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
@@ -3194,12 +3209,6 @@ const char kInterestFeedContentSuggestionsDescription[] =
 const char kInterestFeedContentSuggestionsName[] =
     "Interest Feed Content Suggestions";
 
-const char kInterestFeedNoticeCardAutoDismissName[] =
-    "Interest Feed notice card auto-dismiss";
-const char kInterestFeedNoticeCardAutoDismissDescription[] =
-    "Auto-dismiss the notice card when there are enough clicks or views on the "
-    "notice card.";
-
 const char kInterestFeedV2Name[] = "Interest Feed v2";
 const char kInterestFeedV2Description[] =
     "Show content suggestions on the New Tab Page and Start Surface using the "
@@ -3234,6 +3243,10 @@ const char kMessagesForAndroidPasswordsDescription[] =
 const char kMessagesForAndroidPopupBlockedName[] = "Popup Blocked Messages UI";
 const char kMessagesForAndroidPopupBlockedDescription[] =
     "When enabled, popup blocked prompt will use the new Messages UI.";
+
+const char kMessagesForAndroidReaderModeName[] = "Reader Mode Messages UI";
+const char kMessagesForAndroidReaderModeDescription[] =
+    "When enabled, reader mode prompt will use the new Messages UI.";
 
 const char kMessagesForAndroidSafetyTipName[] = "Safety Tip Messages UI";
 const char kMessagesForAndroidSafetyTipDescription[] =

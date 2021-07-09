@@ -1949,6 +1949,9 @@ crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
+# Temporarily disabled until document marker serialization is enabled for AXInlineTextBox
+crbug.com/1227485 accessibility/spelling-markers.html [ Failure ]
+
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] virtual/text-antialias/international/arabic-justify.html [ Failure ]
@@ -6436,8 +6439,7 @@ crbug.com/1205184 [ Mac11.0 ] external/wpt/IndexedDB/interleaved-cursors-large.h
 # Sheriff 2021-05-03
 crbug.com/1205133 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-color.html [ Pass Timeout ]
 crbug.com/1205133 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-color.html [ Pass Timeout ]
-crbug.com/1205020 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-blend-image.html [ Failure Pass ]
-crbug.com/1205020 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-blend-image.html [ Failure Pass ]
+crbug.com/1205020 virtual/oopr-canvas2d/fast/canvas/canvas-blend-image.html [ Failure Pass Timeout ]
 crbug.com/1205012 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/reporting-observer.html [ Pass Timeout ]
 crbug.com/1197465 [ Linux ] virtual/scroll-unification/fast/events/mouse-cursor-no-mousemove.html [ Failure Pass ]
 crbug.com/1093041 fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Failure Pass ]

@@ -111,6 +111,7 @@
       'Android arm64 Builder (dbg) (reclient)': 'android_webview_google_debug_static_bot_arm64_reclient',
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-11-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
+      'android-12-x64-fyi-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_google',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-web-platform-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
       'android-weblayer-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
@@ -262,6 +263,10 @@
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
       'ASAN Debug (reclient)': 'asan_lsan_debug_bot_reclient',
+      'Comparison Linux': {
+        'goma': 'gpu_tests_release_bot',
+        'reclient': 'gpu_tests_release_bot_reclient',
+      },
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
       'Libfuzzer Upload Linux ASan (reclient)': 'libfuzzer_asan_release_bot_reclient',
@@ -731,7 +736,7 @@
       'chromeos-betty-pi-arc-chrome-dchecks': 'chromeos_betty-pi-arc_dchecks',
       'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
       'lacros-amd64-generic-chrome-fyi': 'chromeos_amd64-generic_lacros_official_skylab',
-      'lacros-arm-generic-chrome-fyi': 'chromeos_arm-generic_lacros_official',
+      'lacros-arm-generic-chrome-fyi': 'chromeos_arm-generic_lacros_official_skylab',
     },
 
     # Manually triggered internal builders running on LUCI.
@@ -812,6 +817,7 @@
       'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
       'android-10-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_google',
       'android-11-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google',
+      'android-12-x64-fyi-rel': 'android_release_trybot_x64_fastbuild_webview_google',
       'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-nougat-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-oreo-arm64-dbg': 'android_release_trybot_arm64_webview_google',
@@ -1435,6 +1441,11 @@
       'webview_google',
     ],
 
+    'android_release_bot_minimal_symbols_x64_fastbuild_webview_google': [
+      'android', 'release_bot', 'minimal_symbols', 'x64',
+      'strip_debug_info', 'android_fastbuild', 'webview_google',
+    ],
+
     'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google': [
       'android', 'release_bot', 'minimal_symbols',
       'android_fastbuild', 'x86', 'resource_allowlisting', 'disable_proguard',
@@ -1515,6 +1526,11 @@
       'android', 'release_trybot', 'minimal_symbols',
       'android_fastbuild', 'x86', 'resource_allowlisting', 'disable_proguard',
       'chrome_google'
+    ],
+
+    'android_release_trybot_x64_fastbuild_webview_google': [
+      'android', 'release_trybot', 'strip_debug_info', 'x64',
+      'android_fastbuild', 'webview_google',
     ],
 
     'android_release_trybot_x86_fastbuild_resource_allowlisting_webview_google': [
@@ -1775,6 +1791,10 @@
 
     'chromeos_arm-generic_lacros_official': [
       'chromeos_arm-generic', 'arm-lacros', 'official', 'minimal_symbols', 'cfi', 'thin_lto',
+    ],
+
+    'chromeos_arm-generic_lacros_official_skylab': [
+      'chromeos_arm-generic', 'arm-lacros', 'official', 'minimal_symbols', 'cfi', 'thin_lto', 'is_skylab',
     ],
 
     'chromeos_arm-generic_lacros_rel': [
@@ -2442,7 +2462,7 @@
     ],
 
     'official_goma_android_arm32_pgo': [
-      'official', 'goma', 'android_official', 'arm', 'pgo_phase_1',
+      'official', 'goma', 'android', 'arm', 'minimal_symbols', 'no_default_afdo', 'pgo_phase_1',
     ],
 
     'official_goma_mac': [
@@ -2853,15 +2873,6 @@
       'gn_args': 'is_java_debug=true',
     },
 
-    'android_official': {
-      'mixins': ['android', 'android_official_webview_target', 'android_without_codecs', 'clank_custom_args', 'enable_remoting', 'enable_webview_bundles', 'ffmpeg_branding_chrome', 'official'],
-      'gn_args': 'use_signing_keys=true'
-    },
-
-    'android_official_webview_target': {
-      'gn_args': 'system_webview_apk_target="//clank/android_webview:system_webview_google_apk"',
-    },
-
     'android_without_codecs': {
       'gn_args': 'target_os="android"',
     },
@@ -3012,10 +3023,6 @@
       'gn_args': 'is_clang=true',
     },
 
-    'clank_custom_args': {
-      'args_file': '//clank/build/custom_args.gn',
-    },
-
     # Settings used by the codesearch builders to generate cross-references.
     'codesearch': {
       'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
@@ -3136,10 +3143,6 @@
       'gn_args': 'skip_archive_compression=false',
     },
 
-    'enable_remoting': {
-      'gn_args': 'enable_remoting=true',
-    },
-
     'enable_v8_oilpan': {
       'gn_args': 'enable_blink_heap_use_v8_oilpan=true',
     },
@@ -3154,10 +3157,6 @@
 
     'enable_vulkan': {
       'gn_args': 'enable_vulkan=true',
-    },
-
-    'enable_webview_bundles': {
-      'gn_args': 'enable_webview_bundles = true'
     },
 
     'eve': {

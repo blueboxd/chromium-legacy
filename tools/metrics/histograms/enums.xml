@@ -7737,6 +7737,12 @@ Called by update_bad_message_reasons.py.-->
   <int value="2" label="BLOCK_STATUS_ALL_DOMAINS_BLOCKED"/>
 </enum>
 
+<enum name="BlockZeroSerialNumberType">
+  <int value="0" label="Normal serial number"/>
+  <int value="1" label="Repeating pattern in serial number"/>
+  <int value="2" label="Missing serial number"/>
+</enum>
+
 <enum name="BluetoothAdapterConnectToServiceInsecurelyResult">
   <int value="0" label="Success"/>
   <int value="1" label="Error: Invalid arguments"/>
@@ -9545,6 +9551,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanSet">
   <int value="0" label="Not set"/>
   <int value="1" label="Set"/>
+</enum>
+
+<enum name="BooleanShared">
+  <int value="0" label="Not shared"/>
+  <int value="1" label="Shared"/>
 </enum>
 
 <enum name="BooleanShareGroup">
@@ -46038,6 +46049,7 @@ from previous Chrome versions.
   <int value="-2132161378" label="SendTabToSelfHistory:disabled"/>
   <int value="-2131746498"
       label="AutofillUseImprovedLabelDisambiguation:enabled"/>
+  <int value="-2130982324" label="DesktopPWAsWebBundles:disabled"/>
   <int value="-2129940395" label="WebAssemblySimd:disabled"/>
   <int value="-2129013032" label="DocumentTransition:enabled"/>
   <int value="-2128705444" label="AssistantAppSupport:enabled"/>
@@ -47720,6 +47732,8 @@ from previous Chrome versions.
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
   <int value="-791778534" label="LauncherQueryHighlighting:enabled"/>
   <int value="-790900615" label="NtpShoppingTasksModule:disabled"/>
+  <int value="-790544721"
+      label="OverrideUnsupportedPageLanguageForHrefTranslate:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
   <int value="-787969387" label="HTTPSServerPreviewsUsingURLLoader:enabled"/>
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
@@ -48525,6 +48539,8 @@ from previous Chrome versions.
   <int value="-85706353" label="VirtualDesksGestures:enabled"/>
   <int value="-82530769" label="WebXRPlaneDetection:enabled"/>
   <int value="-82266557" label="SafeBrowsingSecuritySectionUIAndroid:disabled"/>
+  <int value="-81940476"
+      label="OverrideSimilarLanguagesForHrefTranslate:disabled"/>
   <int value="-80501013" label="AutofillOffNoServerData:enabled"/>
   <int value="-80353187" label="disable-display-color-calibration"/>
   <int value="-79327236" label="ModeSpecificPowerButton:enabled"/>
@@ -50095,6 +50111,8 @@ from previous Chrome versions.
   <int value="1226624874" label="Mus:disabled"/>
   <int value="1226676061" label="PageInfoV2Desktop:enabled"/>
   <int value="1227633129" label="NtpChromeCartModule:disabled"/>
+  <int value="1228054141"
+      label="OverrideUnsupportedPageLanguageForHrefTranslate:enabled"/>
   <int value="1228115769" label="SiteCharacteristicsDatabase:disabled"/>
   <int value="1229299518" label="SingleTabMode:disabled"/>
   <int value="1229388323" label="AutofillEnableGoogleIssuedCard:disabled"/>
@@ -50358,6 +50376,7 @@ from previous Chrome versions.
   <int value="1435251818" label="AutofillNoLocalSaveOnUploadSuccess:enabled"/>
   <int value="1436454450" label="InterestFeedV2:disabled"/>
   <int value="1437413720" label="CooperativeScheduling:disabled"/>
+  <int value="1438417722" label="MessagesForAndroidReaderMode:enabled"/>
   <int value="1440618113" label="EnableNetworkingInDiagnosticsApp:disabled"/>
   <int value="1440881073" label="DesktopPWAsAppIconShortcutsMenuUI:enabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
@@ -50729,6 +50748,8 @@ from previous Chrome versions.
   <int value="1758262950"
       label="OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly:disabled"/>
   <int value="1760946944" label="MacViewsAutofillPopup:disabled"/>
+  <int value="1761920078"
+      label="OverrideSimilarLanguagesForHrefTranslate:enabled"/>
   <int value="1762320532" label="AutofillKeyboardAccessory:enabled"/>
   <int value="1764618580" label="MojoLinuxChannelSharedMem:disabled"/>
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
@@ -50740,6 +50761,7 @@ from previous Chrome versions.
   <int value="1775475563" label="malware-interstitial-v3"/>
   <int value="1775652804" label="OmniboxBookmarkPaths:disabled"/>
   <int value="1775730290" label="OmniboxKeywordSearchButton:enabled"/>
+  <int value="1776163541" label="DesktopPWAsWebBundles:enabled"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
   <int value="1777059507" label="trust-autofill-server-name-types"/>
   <int value="1777241671" label="EnableAriaElementReflection:disabled"/>
@@ -51172,6 +51194,7 @@ from previous Chrome versions.
   <int value="2114894984" label="DelayCompetingLowPriorityRequests:enabled"/>
   <int value="2115848376" label="LacrosSupport:disabled"/>
   <int value="2118287149" label="HelpAppSearchServiceIntegration:enabled"/>
+  <int value="2118374092" label="MessagesForAndroidReaderMode:disabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2120659210" label="BackForwardCache:enabled"/>
   <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>
@@ -54211,6 +54234,7 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="MerchantTrust"/>
   <int value="8" label="AddToHomescreenIPH"/>
   <int value="9" label="SendTabToSelf"/>
+  <int value="10" label="ReaderMode"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -61983,6 +62007,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Too short EDID data: chromaticity coordinates"/>
   <int value="7" label="Invalid EDID: human unreadable char in name"/>
   <int value="8" label="Too short EDID data: extensions"/>
+  <int value="9" label="Too short EDID data: block zero serial number"/>
+  <int value="10" label="Too short EDID data: week of manufacture"/>
+  <int value="11" label="Too short EDID data: physical display size"/>
+</enum>
+
+<enum name="ParseEdidOptionals">
+  <int value="0" label="All optional fields are available"/>
+  <int value="1" label="Missing: block zero serial number"/>
+  <int value="2" label="Missing: descriptor block serial number"/>
+  <int value="3" label="Missing: week of manufacture"/>
+  <int value="4" label="Missing: physical display size"/>
 </enum>
 
 <enum name="PartnerBookmark.FaviconFetchResult">

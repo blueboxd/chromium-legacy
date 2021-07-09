@@ -405,9 +405,9 @@ AnimationTimeDelta StartTimeFromDelay(AnimationTimeDelta start_delay) {
 // Timing functions for computing elapsed time of an event.
 
 AnimationTimeDelta IntervalStart(const AnimationEffect& effect) {
-  AnimationTimeDelta start_delay = effect.SpecifiedTiming().start_delay;
+  AnimationTimeDelta start_delay = effect.NormalizedTiming().start_delay;
   const AnimationTimeDelta active_duration =
-      effect.SpecifiedTiming().ActiveDuration();
+      effect.NormalizedTiming().active_duration;
   // This fixes a problem where start_delay could be -0
   if (!start_delay.is_zero()) {
     start_delay = -start_delay;
@@ -416,10 +416,10 @@ AnimationTimeDelta IntervalStart(const AnimationEffect& effect) {
 }
 
 AnimationTimeDelta IntervalEnd(const AnimationEffect& effect) {
-  const AnimationTimeDelta start_delay = effect.SpecifiedTiming().start_delay;
-  const AnimationTimeDelta end_delay = effect.SpecifiedTiming().end_delay;
+  const AnimationTimeDelta start_delay = effect.NormalizedTiming().start_delay;
+  const AnimationTimeDelta end_delay = effect.NormalizedTiming().end_delay;
   const AnimationTimeDelta active_duration =
-      effect.SpecifiedTiming().ActiveDuration();
+      effect.NormalizedTiming().active_duration;
   const AnimationTimeDelta target_effect_end =
       std::max(start_delay + active_duration + end_delay, AnimationTimeDelta());
   return std::max(std::min(target_effect_end - start_delay, active_duration),
@@ -434,7 +434,7 @@ AnimationTimeDelta IterationElapsedTime(const AnimationEffect& effect,
                                         : current_iteration;
   const double iteration_start = effect.SpecifiedTiming().iteration_start;
   const AnimationTimeDelta iteration_duration =
-      effect.SpecifiedTiming().IterationDuration();
+      effect.NormalizedTiming().iteration_duration;
   return iteration_duration * (iteration_boundary - iteration_start);
 }
 
@@ -832,6 +832,14 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   previous_active_interpolations_for_animations_.swap(
       pending_update_.ActiveInterpolationsForAnimations());
 
+  if (!pending_update_.HasUpdates()) {
+    ClearPendingUpdate();
+    return;
+  }
+
+  if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled())
+    element->SetNeedsAnimationStyleRecalc();
+
   for (wtf_size_t paused_index :
        pending_update_.AnimationIndicesWithPauseToggled()) {
     CSSAnimation* animation = DynamicTo<CSSAnimation>(
@@ -864,6 +872,14 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     }
 
     running_animations_[entry.index]->Update(entry);
+
+    if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled()) {
+      // If the timing was updated, we need to update the animation to get the
+      // correct result the next time we resolve style. This is not needed
+      // if CSSIsolatedAnimationUpdates is disabled, since we're "faking" an
+      // updated animation with InertEffect.
+      entry.animation->Update(kTimingUpdateOnDemand);
+    }
   }
 
   const Vector<wtf_size_t>& cancelled_indices =
@@ -937,14 +953,37 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     }
   }
 
+  HashSet<PropertyHandle> suppressed_transitions;
+
   if (!pending_update_.NewTransitions().IsEmpty()) {
     element->GetDocument()
         .GetDocumentAnimations()
         .IncrementTrasitionGeneration();
+
+    if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled()) {
+      // We generally do not start transitions if there's an animation
+      // running for the same property. This is mainly handled by
+      // CanCalculateTransitionUpdateForProperty. However, that function
+      // will not take into account newly started or newly updated animations,
+      // hence we need to check against an updated set of affected properties
+      // from the EffectStack whenever an animation is created/updated.
+      if (auto* element_animations = element->GetElementAnimations()) {
+        if (!pending_update_.NewAnimations().IsEmpty() ||
+            !pending_update_.AnimationsWithUpdates().IsEmpty()) {
+          suppressed_transitions =
+              element_animations->GetEffectStack().AffectedProperties(
+                  KeyframeEffect::kDefaultPriority);
+        }
+      }
+    }
   }
 
   for (const auto& entry : pending_update_.NewTransitions()) {
     const CSSAnimationUpdate::NewTransition* new_transition = entry.value;
+    const PropertyHandle& property = new_transition->property;
+
+    if (suppressed_transitions.Contains(property))
+      continue;
 
     RunningTransition* running_transition =
         MakeGarbageCollected<RunningTransition>();
@@ -955,7 +994,6 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     running_transition->reversing_shortening_factor =
         new_transition->reversing_shortening_factor;
 
-    const PropertyHandle& property = new_transition->property;
     const InertEffect* inert_animation = new_transition->effect.Get();
     TransitionEventDelegate* event_delegate =
         MakeGarbageCollected<TransitionEventDelegate>(element, property);
@@ -985,23 +1023,30 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   ClearPendingUpdate();
 }
 
-void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
+bool CSSAnimations::CanCalculateTransitionUpdateForProperty(
     TransitionUpdateState& state,
-    const PropertyHandle& property,
-    size_t transition_index) {
-  state.listed_properties.insert(property);
-
-  // FIXME: We should transition if an !important property changes even when an
-  // animation is running, but this is a bit hard to do with the current
-  // applyMatchedProperties system.
+    const PropertyHandle& property) {
+  // TODO(crbug.com/1226772): We should transition if an !important property
+  // changes even when an animation is running.
   if (state.update.ActiveInterpolationsForAnimations().Contains(property) ||
       (state.animating_element.GetElementAnimations() &&
        state.animating_element.GetElementAnimations()
            ->CssAnimations()
            .previous_active_interpolations_for_animations_.Contains(
                property))) {
-    return;
+    return false;
   }
+  return true;
+}
+
+void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
+    TransitionUpdateState& state,
+    const PropertyHandle& property,
+    size_t transition_index) {
+  state.listed_properties.insert(property);
+
+  if (!CanCalculateTransitionUpdateForProperty(state, property))
+    return;
 
   const RunningTransition* interrupted_transition = nullptr;
   if (state.active_transitions) {
@@ -1424,6 +1469,15 @@ void AdoptActiveAnimationInterpolations(
     CSSAnimationUpdate& update,
     const HeapVector<Member<const InertEffect>>* new_animations,
     const HeapHashSet<Member<const Animation>>* suppressed_animations) {
+  if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled()) {
+    // The new/suppressed animations options are not used by
+    // CSSIsolatedAnimationUpdates. Eventually we want to avoid setting
+    // that up in the first place, but while this is behind a flag, the least
+    // intrusive approach is to just nullify here.
+    new_animations = nullptr;
+    suppressed_animations = nullptr;
+  }
+
   ActiveInterpolationsMap interpolations(EffectStack::ActiveInterpolations(
       effect_stack, new_animations, suppressed_animations,
       KeyframeEffect::kDefaultPriority, IsCSSPropertyHandle));
@@ -1487,6 +1541,13 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
         cancelled_animations.insert(
             transition_map.at(property)->animation.Get());
       }
+    }
+
+    if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled()) {
+      // Eventually we should avoid building these in the first place,
+      // but for now it's less intrusive to clear them after-the-fact.
+      new_transitions.clear();
+      cancelled_animations.clear();
     }
 
     active_interpolations_for_transitions = EffectStack::ActiveInterpolations(
@@ -1622,7 +1683,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     if (previous_phase_ == Timing::kPhaseNone) {
       EnqueueEvent(
           event_type_names::kTransitionrun,
-          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+          StartTimeFromDelay(animation_node.NormalizedTiming().start_delay));
     }
   }
 
@@ -1633,14 +1694,14 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
          previous_phase_ == Timing::kPhaseBefore)) {
       EnqueueEvent(
           event_type_names::kTransitionstart,
-          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+          StartTimeFromDelay(animation_node.NormalizedTiming().start_delay));
     } else if ((current_phase == Timing::kPhaseActive ||
                 current_phase == Timing::kPhaseBefore) &&
                previous_phase_ == Timing::kPhaseAfter) {
       // If the transition is progressing backwards it is considered to have
       // started at the end position.
       EnqueueEvent(event_type_names::kTransitionstart,
-                   animation_node.SpecifiedTiming().IterationDuration());
+                   animation_node.NormalizedTiming().iteration_duration);
     }
   }
 
@@ -1650,7 +1711,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
          previous_phase_ == Timing::kPhaseBefore ||
          previous_phase_ == Timing::kPhaseNone)) {
       EnqueueEvent(event_type_names::kTransitionend,
-                   animation_node.SpecifiedTiming().IterationDuration());
+                   animation_node.NormalizedTiming().iteration_duration);
     } else if (current_phase == Timing::kPhaseBefore &&
                (previous_phase_ == Timing::kPhaseActive ||
                 previous_phase_ == Timing::kPhaseAfter)) {
@@ -1658,7 +1719,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       // ended at the start position.
       EnqueueEvent(
           event_type_names::kTransitionend,
-          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+          StartTimeFromDelay(animation_node.NormalizedTiming().start_delay));
     }
   }
 
@@ -1669,10 +1730,9 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".
       absl::optional<AnimationTimeDelta> cancel_active_time =
-          CalculateActiveTime(animation_node.SpecifiedTiming().ActiveDuration(),
+          CalculateActiveTime(animation_node.NormalizedTiming(),
                               Timing::FillMode::BOTH,
-                              animation_node.LocalTime(), previous_phase_,
-                              animation_node.SpecifiedTiming());
+                              animation_node.LocalTime(), previous_phase_);
       // Being the FillMode::BOTH the only possibility to get a null
       // cancel_active_time is that previous_phase_ is kPhaseNone. This cannot
       // happen because we know that current_phase == kPhaseNone and

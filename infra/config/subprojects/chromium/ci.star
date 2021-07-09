@@ -1150,6 +1150,15 @@ ci.android_fyi_builder(
     os = os.LINUX_BIONIC_REMOVE,
 )
 
+ci.android_fyi_builder(
+    name = "android-12-x64-fyi-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "emulator|12|x64",
+        short_name = "rel",
+    ),
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
 ci.angle_linux_builder(
     name = "android-angle-arm64-builder",
     console_view_entry = consoles.console_view_entry(
@@ -3750,6 +3759,21 @@ ci.fyi_builder(
     os = os.WINDOWS_DEFAULT,
     schedule = "with 3h interval",
     triggered_by = [],
+)
+
+ci.fyi_builder(
+    name = "Comparison Linux",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "cmp",
+    ),
+    executable = "recipe:reclient_goma_comparison",
+    execution_timeout = 6 * time.hour,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = 500,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(

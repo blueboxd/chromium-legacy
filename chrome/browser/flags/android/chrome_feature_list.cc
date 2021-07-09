@@ -125,7 +125,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feature_engagement::kIPHTabSwitcherButtonFeature,
     &feed::kFeedInteractiveRefresh,
     &feed::kInterestFeedContentSuggestions,
-    &feed::kInterestFeedNoticeCardAutoDismiss,
     &feed::kInterestFeedSpinnerAlwaysAnimate,
     &feed::kInterestFeedV1ClicksAndViewsConditionalUpload,
     &feed::kInterestFeedV2,
@@ -281,6 +280,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &language::kTranslateAssistContent,
     &language::kTranslateIntent,
     &messages::kMessagesForAndroidInfrastructure,
+    &messages::kMessagesForAndroidReaderMode,
     &offline_pages::kOfflineIndicatorFeature,
     &offline_pages::kOfflinePagesCTFeature,    // See crbug.com/620421.
     &offline_pages::kOfflinePagesCTV2Feature,  // See crbug.com/734753.

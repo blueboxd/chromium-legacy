@@ -4683,14 +4683,35 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Display.BlockZeroSerialNumberType"
+    enum="BlockZeroSerialNumberType" expires_after="2022-07-01">
+  <owner>gildekel@chromium.org</owner>
+  <owner>chromeos-gfx@google.com</owner>
+  <summary>
+    The type of serial number retrived from block zero of a display's EDID
+    during EDID parsing.
+  </summary>
+</histogram>
+
 <histogram name="Display.ParseEdidFailure" enum="ParseEdidFailure"
     expires_after="2021-11-14">
   <owner>sashamcintosh@chromium.org</owner>
+  <owner>gildekel@chromium.org</owner>
   <owner>chromeos-gfx@google.com</owner>
   <summary>
     Type of failure that occurs during EDID parsing. Typically the failure is
     caused by a mismatch between the EDID size and the expected offset of the
     data component.
+  </summary>
+</histogram>
+
+<histogram name="Display.ParseEdidOptionals" enum="ParseEdidOptionals"
+    expires_after="2022-07-01">
+  <owner>gildekel@chromium.org</owner>
+  <owner>chromeos-gfx@google.com</owner>
+  <summary>
+    The availability (or lack thereof) of tracked optional fields during EDID
+    parsing of external.
   </summary>
 </histogram>
 
@@ -10583,6 +10604,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NoteCreation.CreationStatus" enum="BooleanCreated"
+    expires_after="2021-12-01">
+  <owner>sebsg@chromium.org</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records whether user created a note when they were in the creation flow of
+    the feature.
+  </summary>
+</histogram>
+
 <histogram name="NoteCreation.Funnel" enum="NoteCreationFunnel"
     expires_after="2021-12-01">
   <owner>sebsg@chromium.org</owner>
@@ -10590,6 +10621,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records the different states of the funnel that a user goes through in the
     note creation feature.
+  </summary>
+</histogram>
+
+<histogram name="NoteCreation.NoteShared" enum="BooleanShared"
+    expires_after="2021-12-01">
+  <owner>sebsg@chromium.org</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>Records whether the created note was shared or not.</summary>
+</histogram>
+
+<histogram name="NoteCreation.NumberOfTemplateChanges"
+    units="Number of changes" expires_after="2021-12-01">
+  <owner>sebsg@chromium.org</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records the number of times the user changed templates when creating a note.
   </summary>
 </histogram>
 

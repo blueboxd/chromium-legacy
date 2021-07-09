@@ -764,6 +764,8 @@ message ActionProto {
     ScrollWindowProto scroll_window = 80;
     ScrollContainerProto scroll_container = 81;
     SetTouchableAreaProto set_touchable_area = 82;
+    DeleteSelectedPasswordProto delete_password = 83;
+    EditSelectedPasswordProto edit_password = 84;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -2541,6 +2543,19 @@ message PresaveGeneratedPasswordProto {
 // submission.
 message SaveGeneratedPasswordProto {
   // The client memory key of stored password.
+  optional string memory_key = 1;
+}
+
+// Deletes password for |UserData::selected_login_| from Chrome Password
+// Manager. For flows, other than password change, |CollectUserData| must be
+// called before |DeleteSelectedPasswowrd|.
+message DeleteSelectedPasswordProto {}
+
+// Edits password for |UserData::selected_login_| in Chrome Password Manager.
+// For flows, other than password change, |CollectUserData| must be
+// called before |DeleteSelectedPasswowrd|.
+message EditSelectedPasswordProto {
+  // The client memory key where the new password is stored.
   optional string memory_key = 1;
 }
 

@@ -1213,52 +1213,40 @@ crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.htm
 
 # ====== MathMLCore-only tests from here ======
 
-crbug.com/626703 external/wpt/mathml/presentation-markup/fractions/frac-invalid-2.html [ Failure ]
-crbug.com/626703 external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-006.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-009.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-002.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-003.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-004.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-005.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-006.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/inferred-mrow-stretchy.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-operator-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/embellished-operator-002.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-axis-height-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/cramped-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-002.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/spaces/space-like-004.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-002.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/tables/table-axis-height.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-fraktur.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-italic.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-sans-serif.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-script.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-case-sensitivity.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-double-struck.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-fraktur.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-initial.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-italic.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-looped.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-monospace.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif-bold-italic.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif-italic.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-script.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-stretched.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-tailed.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/width-height-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-2.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-3.html [ Failure ]
+
+# These tests fail because we don't support MathML ink metrics.
+crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-001.html [ Failure ]
+crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-002.html [ Failure ]
+crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-003.html [ Failure ]
+crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-004.html [ Failure ]
+crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-005.html [ Failure ]
+crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-006.html [ Failure ]
+
+# These tests fail because we don't support embellished operators.
+crbug.com/1124298 external/wpt/mathml/presentation-markup/operators/embellished-operator-001.html [ Failure ]
+crbug.com/1124298 external/wpt/mathml/presentation-markup/operators/embellished-operator-002.html [ Failure ]
+crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-001.html [ Failure ]
+crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-002.html [ Failure ]
+crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-004.html [ Failure ]
+
+# These tests fail because we don't support MathML tables.
+crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-001.html [ Failure ]
+crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-002.html [ Failure ]
+crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-axis-height.html [ Failure ]
+
+# These tests fail because some CSS properties affect MathML layout.
+crbug.com/1227601 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
+crbug.com/1227598 external/wpt/mathml/relations/css-styling/width-height-001.html [ Failure ]
+
+# This test has flaky timeout.
+crbug.com/1093840 external/wpt/mathml/relations/html5-tree/math-global-event-handlers.tentative.html [ Pass Timeout ]
 
 # These tests fail because we don't parse math display values according to the spec.
 crbug.com/1127222 external/wpt/css/css-display/display-math-on-pseudo-elements-001.html [ Failure ]
@@ -1271,24 +1259,51 @@ crbug.com/6606 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-1.
 # This test fails on macOS.
 crbug.com/6606 [ Mac ] external/wpt/mathml/relations/text-and-math/use-typo-metrics-1.html [ Failure ]
 
-# Tentative tests for new CSS proposals
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-looped-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-double-struck-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-initial-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-italic-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-italic-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-script-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-tailed-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-italic-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-sans-serif-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-monospace-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-fraktur-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-script-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
+# These tests fail because we don't support the MathML href attribute, which is
+# not part of MathML Core Level 1.
+crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-1.html [ Failure ]
+crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-2.html [ Failure ]
+crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-3.html [ Failure ]
+
+# These tests fail because they require full support for new text-transform
+# values and mathvariant attribute. Currently, we only support the new
+# text-transform: auto, use the UA rule for the <mi> element and map
+# mathvariant="normal" to "text-transform: none".
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-fraktur-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-italic-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-sans-serif-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-script-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-double-struck-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-initial-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-italic-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-looped-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-monospace-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-italic-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-script-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/css/css-text/text-transform/math/text-transform-math-tailed-001.tentative.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-bold-fraktur.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-bold-italic.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-bold-sans-serif.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-bold-script.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-bold.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-case-sensitivity.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-double-struck.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-fraktur.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-initial.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-italic.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-looped.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-monospace.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif-bold-italic.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif-italic.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-sans-serif.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-script.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-stretched.html [ Failure ]
+crbug.com/1076420 external/wpt/mathml/relations/css-styling/mathvariant-tailed.html [ Failure ]
 
 # ====== Style team owned tests from here ======
 
@@ -6319,7 +6334,6 @@ crbug.com/476553 virtual/scroll-unification-unified-autoplay/external/wpt/featur
 
 # Sheriff 2021-04-05
 crbug.com/921151 http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
-crbug.com/1093840 external/wpt/mathml/relations/html5-tree/math-global-event-handlers.tentative.html [ Pass Timeout ]
 
 # Sheriff 2021-04-06
 crbug.com/1032451 [ Linux ] virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Failure Pass Timeout ]
@@ -6991,6 +7005,14 @@ crbug.com/1222097 virtual/synchronous_html_parser/external/wpt/html/semantics/em
 
 crbug.com/1222097 svg/css/alignment-baseline.html [ Failure Pass ]
 
+# Temporarily disable to unblock a WebRTC roll
+crbug.com/webrtc/8199 [ Win ] external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+crbug.com/webrtc/8199 [ Linux ] external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+crbug.com/webrtc/8199 [ Mac10.15 ] external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+crbug.com/webrtc/8199 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+crbug.com/webrtc/8199 [ Mac10.13 ] external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+crbug.com/webrtc/8199 [ Mac10.12 ] external/wpt/webrtc-stats/supported-stats.html [ Pass Failure ]
+
 # Sheriff
 crbug.com/1223276 external/wpt/layout-instability/input-timestamp.html [ Skip ]
 crbug.com/1223327 wpt_internal/prerender/unload.html [ Pass Timeout ]
@@ -7043,6 +7065,7 @@ crbug.com/1226445 [ Mac ] virtual/storage-access-api/external/wpt/storage-access
 crbug.com/1223391 http/tests/devtools/security/interstitial-sidebar.js [ Skip ]
 crbug.com/1223391 http/tests/devtools/security/mixed-content-sidebar.js [ Skip ]
 crbug.com/1223391 http/tests/devtools/security/origin-view-then-interstitial.js [ Skip ]
+crbug.com/1215068 http/tests/devtools/tracing/tracing-timeline-load.js [ Skip ]
 
 # Sheriff 2021-07-07
 crbug.com/1227092 [ Win ] virtual/scroll-unification/fast/events/selection-autoscroll-borderbelt.html [ Failure Pass ]

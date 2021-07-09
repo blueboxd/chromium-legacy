@@ -3503,7 +3503,7 @@ are declared in tools/grit/grit_rule.gni.
        Stop
       </message>
       <message name="IDS_TAB_SHARING_INFOBAR_SWITCH_TO_BUTTON" desc="Text displayed on an infobar button offering to change focus to another tab.">
-       Switch to tab <ph name="TAB_ORIGIN">$1<ex>meet.google.com</ex></ph>
+       Switch to tab (<ph name="TAB_ORIGIN">$1<ex>meet.google.com</ex></ph>)
       </message>
       <message name="IDS_TAB_SHARING_INFOBAR_SWITCH_TO_CAPTURER_BUTTON" desc="Text displayed on an infobar button offering to change focus to the capturer if its hostname cannot be determined. (Otherwise, IDS_TAB_SHARING_INFOBAR_SWITCH_TO_BUTTON will be used.)">
        Switch to capturing tab
@@ -5091,9 +5091,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
         Password saved
-      </message>
-      <message name="IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE" desc="The title text used in the sync promo bubble when the user has saved a password.">
-        Password saved on this device
       </message>
       <message name="IDS_PASSWORD_GENERATION_SUGGESTION" desc="Text shown next to a generated password describing it as a suggestion.">
         Use suggested password
@@ -10142,20 +10139,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Other Tab
         </message>
       </if>
-
-      <!-- Confirmation dialog for getCurrentBrowsingContextMedia API -->
-      <message name="IDS_GET_CURRENT_BROWSING_CONTEXT_MEDIA_DIALOG_TITLE" desc="Title for the confirmation dialog shown when getCurrentBrowsingContextMedia is requested by an app.">
-        Share this tab
-      </message>
-      <message name="IDS_GET_CURRENT_BROWSING_CONTEXT_MEDIA_DIALOG_TEXT_REQUESTED_BY_APP" desc="Text for the confirmation dialog shown when getCurrentBrowsingContextMedia is requested by an app.">
-        <ph name="TARGET_NAME">$1<ex>https://google.com</ex></ph> is asking for permission to capture the contents of this tab.
-      </message>
-      <message name="IDS_GET_CURRENT_BROWSING_CONTEXT_MEDIA_DIALOG_AUDIO_SHARE" desc="Text for the checkbox on the confirmation dialog for getCurrentBrowsingContextMedia API, when checked, audio will be shared, otherwise just video sharing">
-        Share audio
-      </message>
-      <message name="IDS_GET_CURRENT_BROWSING_CONTEXT_MEDIA_DIALOG_SHARE_BUTTON" desc="Used for Share on buttons">
-        Share
-      </message>
 
       <!--Printer registration message for local discovery and Print Preview-->
       <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION" desc="Information about registering printers with Google Cloud Print shown to the user before they confirm registration.">

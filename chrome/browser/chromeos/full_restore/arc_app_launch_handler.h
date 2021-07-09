@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/resourced/resourced_client.h"
@@ -16,6 +17,11 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace apps {
 class AppUpdate;
@@ -27,6 +33,7 @@ namespace full_restore {
 class ArcAppLaunchHandlerArcAppBrowserTest;
 class ArcWindowHandler;
 class FullRestoreAppLaunchHandler;
+class FullRestoreAppLaunchHandlerArcAppBrowserTest;
 
 struct CpuTick {
   uint64_t idle_time = 0;
@@ -36,6 +43,12 @@ struct CpuTick {
   }
 };
 
+// The restoration process might be blocked by some issues, e.g. the memory
+// pressure, CPU rate, etc. However we don't want to have the restoration
+// process taking too long to interact the normal usage. So if the restoration
+// has finished in `kAppLaunchDelay` timeframe, we stop the restoration process.
+constexpr base::TimeDelta kStopRestoreDelay = base::TimeDelta::FromMinutes(1);
+
 // The ArcAppLaunchHandler class restores ARC apps during the system startup
 // phase.
 //
@@ -44,7 +57,10 @@ struct CpuTick {
 // 2. Add app launch policy.
 // 3. Check whether the ARC app is ready before launch the ARC apps.
 class ArcAppLaunchHandler : public apps::AppRegistryCache::Observer,
-                            public chromeos::ResourcedClient::Observer {
+                            public chromeos::ResourcedClient::Observer,
+                            public wm::ActivationChangeObserver,
+                            public aura::EnvObserver,
+                            public aura::WindowObserver {
  public:
   struct WindowInfo {
     std::string app_id;
@@ -69,8 +85,21 @@ class ArcAppLaunchHandler : public apps::AppRegistryCache::Observer,
 
   void LaunchApp(const std::string& app_id);
 
+  // wm::ActivationChangeObserver:
+  void OnWindowActivated(
+      ::wm::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* new_active,
+      aura::Window* old_active) override;
+
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override;
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+
  private:
   friend ArcAppLaunchHandlerArcAppBrowserTest;
+  friend FullRestoreAppLaunchHandlerArcAppBrowserTest;
 
   // Reads the restore data, and add the ARC app windows to `windows_`,
   // `no_stack_windows_` and `app_ids_`.
@@ -94,10 +123,23 @@ class ArcAppLaunchHandler : public apps::AppRegistryCache::Observer,
   // Returns true if the app is ready to be launched. Otherwise, returns false.
   bool IsAppReady(const std::string& app_id);
 
+  // Checks the app launching condition. If we can launch an app, launch the app
+  // following the window stack priority.
+  void MaybeLaunchApp();
+
   void LaunchApp(const std::string& app_id, int32_t window_id);
 
-  // Removes windows related with `app_id`.
+  // Removes all windows records related with `app_id` from `windows_`,
+  // `no_stack_windows_`, and `pending_windows_`.
   void RemoveWindowsForApp(const std::string& app_id);
+
+  // Removes the window record related with `app_id` and `window_id` from
+  // `windows_`, `no_stack_windows_`, or `pending_windows_`.
+  void RemoveWindow(const std::string& app_id, int32_t window_id);
+
+  void MaybeReStartTimer(const base::TimeDelta& delay);
+
+  void StopRestore();
 
   // Returns [0, 100] as percentage of device CPU usage rate.
   int GetCpuUsageRate();
@@ -124,10 +166,33 @@ class ArcAppLaunchHandler : public apps::AppRegistryCache::Observer,
   // the windows to be restored.
   std::list<WindowInfo> no_stack_windows_;
 
+  // If the app launching condition doesn't match, e.g. the app is not ready,
+  // and after checking `kMaxCheckingNum` times, there is no improvement, the
+  // window is moved to `pending_windows_` to be launched later.
+  std::list<WindowInfo> pending_windows_;
+
   std::map<int32_t, int32_t> window_id_to_session_id_;
   std::map<int32_t, int32_t> session_id_to_window_id_;
 
   ArcWindowHandler* window_handler_ = nullptr;
+
+  // The number to record how many times the current top window has been
+  // launched.
+  int launch_count_ = 0;
+
+  // A repeating timer to check whether we can restore the ARC apps.
+  std::unique_ptr<base::RepeatingTimer> app_launch_timer_;
+
+  // A one shot timer to stop the restoration process.
+  std::unique_ptr<base::OneShotTimer> stop_restore_timer_;
+
+  // The timer delay.
+  base::TimeDelta current_delay_;
+
+  base::ScopedObservation<aura::Env, aura::EnvObserver> env_observer_{this};
+
+  base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
+      observed_windows_{this};
 
   chromeos::ResourcedClient::PressureLevel pressure_level_ =
       chromeos::ResourcedClient::PressureLevel::MODERATE;

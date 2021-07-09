@@ -314,10 +314,6 @@ size_t VP9VaapiVideoEncoderDelegate::GetMaxNumOfRefFrames() const {
 
 bool VP9VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob* encode_job) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!ApplyPendingUpdateRates())
-    return false;
-
   if (svc_layers_) {
     if (svc_layers_->UpdateEncodeJob(encode_job->IsKeyframeRequested(),
                                      current_params_.kf_period_frames)) {
@@ -398,9 +394,18 @@ bool VP9VaapiVideoEncoderDelegate::ApplyPendingUpdateRates() {
 
   // Update active layer status in |svc_layers_|, and key frame is produced when
   // active layer changed.
-  if (svc_layers_ &&
-      !svc_layers_->MaybeUpdateActiveLayer(&current_params_.bitrate_allocation))
-    return false;
+  if (svc_layers_) {
+    if (!svc_layers_->MaybeUpdateActiveLayer(
+            &current_params_.bitrate_allocation)) {
+      return false;
+    }
+  } else {
+    // Simple stream encoding.
+    if (current_params_.bitrate_allocation.GetSumBps() !=
+        current_params_.bitrate_allocation.GetBitrateBps(0, 0)) {
+      return false;
+    }
+  }
 
   CHECK(rate_ctrl_);
 

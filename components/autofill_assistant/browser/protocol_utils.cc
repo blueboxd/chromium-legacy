@@ -16,7 +16,9 @@
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
 #include "components/autofill_assistant/browser/actions/configure_ui_state_action.h"
+#include "components/autofill_assistant/browser/actions/delete_password_action.h"
 #include "components/autofill_assistant/browser/actions/dispatch_js_event_action.h"
+#include "components/autofill_assistant/browser/actions/edit_password_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/generate_password_for_form_field_action.h"
 #include "components/autofill_assistant/browser/actions/get_element_status_action.h"
@@ -233,9 +235,14 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<PresaveGeneratedPasswordAction>(delegate, action);
     case ActionProto::ActionInfoCase::kGetElementStatus:
       return std::make_unique<GetElementStatusAction>(delegate, action);
-    case ActionProto::ActionInfoCase::kScrollIntoView:
-      return PerformOnSingleElementAction::WithClientId(
-          delegate, action, action.scroll_into_view().client_id(),
+    case ActionProto::ActionInfoCase::kScrollIntoView: {
+      auto actions =
+          std::make_unique<element_action_util::ElementActionVector>();
+      action_delegate_util::AddStepWithoutCallback(
+          base::BindOnce(&ActionDelegate::StoreScrolledToElement,
+                         delegate->GetWeakPtr()),
+          actions.get());
+      actions->emplace_back(
           base::BindOnce(&WebController::ScrollIntoView,
                          delegate->GetWebController()->GetWeakPtr(),
                          action.scroll_into_view().animation(),
@@ -245,6 +252,10 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
                          action.scroll_into_view().has_horizontal_alignment()
                              ? action.scroll_into_view().horizontal_alignment()
                              : "center"));
+      return PerformOnSingleElementAction::WithClientId(
+          delegate, action, action.scroll_into_view().client_id(),
+          base::BindOnce(&element_action_util::PerformAll, std::move(actions)));
+    }
     case ActionProto::ActionInfoCase::kWaitForDocumentToBecomeInteractive:
       return PerformOnSingleElementAction::WithOptionalClientIdTimed(
           delegate, action,
@@ -386,6 +397,10 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
                          action.scroll_container().animation()));
     case ActionProto::ActionInfoCase::kSetTouchableArea:
       return std::make_unique<SetTouchableAreaAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kDeletePassword:
+      return std::make_unique<DeletePasswordAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kEditPassword:
+      return std::make_unique<EditPasswordAction>(delegate, action);
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);

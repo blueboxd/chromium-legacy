@@ -7,29 +7,48 @@
 #include <utility>
 #include <vector>
 
+#include "ash/shell.h"
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "chrome/browser/apps/app_service/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/full_restore/arc_window_handler.h"
 #include "chrome/browser/chromeos/full_restore/arc_window_utils.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/ash/shelf/arc_shelf_spinner_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/full_restore/app_launch_info.h"
 #include "components/full_restore/full_restore_read_handler.h"
+#include "components/full_restore/full_restore_utils.h"
 #include "components/full_restore/restore_data.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
-
-namespace chromeos {
-namespace full_restore {
+#include "ui/wm/public/activation_client.h"
 
 namespace {
+
+// If the app launching condition doesn't match, e.g. the app is not ready,
+// and after checking `kMaxCheckingNum` times, there is no improvement, move to
+// the next window to launch.
+constexpr int kMaxCheckingNum = 3;
+
+// Time interval between each checking for the app launching condition, e.g. the
+// memory pressure level, or whether the app is ready.
+constexpr base::TimeDelta kAppLaunchCheckingDelay =
+    base::TimeDelta::FromSeconds(1);
+
+// Delay between each app launching.
+constexpr base::TimeDelta kAppLaunchDelay = base::TimeDelta::FromSeconds(3);
 
 constexpr int kCpuUsageRefreshIntervalInSeconds = 1;
 constexpr int kCpuUsageCountWindowLength =
@@ -37,8 +56,29 @@ constexpr int kCpuUsageCountWindowLength =
 
 }  // namespace
 
-ArcAppLaunchHandler::ArcAppLaunchHandler() = default;
-ArcAppLaunchHandler::~ArcAppLaunchHandler() = default;
+namespace chromeos {
+namespace full_restore {
+
+ArcAppLaunchHandler::ArcAppLaunchHandler() {
+  if (aura::Env::HasInstance())
+    env_observer_.Observe(aura::Env::GetInstance());
+
+  if (ash::Shell::HasInstance() && ash::Shell::Get()->GetPrimaryRootWindow()) {
+    auto* activation_client =
+        wm::GetActivationClient(ash::Shell::Get()->GetPrimaryRootWindow());
+    if (activation_client)
+      activation_client->AddObserver(this);
+  }
+}
+
+ArcAppLaunchHandler::~ArcAppLaunchHandler() {
+  if (ash::Shell::HasInstance() && ash::Shell::Get()->GetPrimaryRootWindow()) {
+    auto* activation_client =
+        wm::GetActivationClient(ash::Shell::Get()->GetPrimaryRootWindow());
+    if (activation_client)
+      activation_client->RemoveObserver(this);
+  }
+}
 
 void ArcAppLaunchHandler::RestoreArcApps(
     FullRestoreAppLaunchHandler* app_launch_handler) {
@@ -120,6 +160,18 @@ void ArcAppLaunchHandler::OnAppConnectionReady() {
   }
 
   StartCpuUsageCount();
+
+  if (!app_launch_timer_) {
+    app_launch_timer_ = std::make_unique<base::RepeatingTimer>();
+    MaybeReStartTimer(kAppLaunchCheckingDelay);
+  }
+
+  if (!stop_restore_timer_) {
+    stop_restore_timer_ = std::make_unique<base::OneShotTimer>();
+    stop_restore_timer_->Start(FROM_HERE, kStopRestoreDelay,
+                               base::BindOnce(&ArcAppLaunchHandler::StopRestore,
+                                              weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void ArcAppLaunchHandler::LaunchApp(const std::string& app_id) {
@@ -140,6 +192,54 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id) {
     LaunchApp(app_id, data_it.first);
 
   RemoveWindowsForApp(app_id);
+}
+
+void ArcAppLaunchHandler::OnWindowActivated(
+    ::wm::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* new_active,
+    aura::Window* old_active) {
+  const auto session_id = arc::GetWindowSessionId(new_active);
+  if (!session_id.has_value())
+    return;
+
+  const std::string* arc_app_id =
+      new_active->GetProperty(::full_restore::kAppIdKey);
+  if (!arc_app_id || arc_app_id->empty() || !IsAppReady(*arc_app_id))
+    return;
+
+  auto it = session_id_to_window_id_.find(session_id.value());
+  if (it == session_id_to_window_id_.end())
+    return;
+
+  RemoveWindow(*arc_app_id, it->second);
+  LaunchApp(*arc_app_id, it->second);
+}
+
+void ArcAppLaunchHandler::OnWindowInitialized(aura::Window* window) {
+  // An app window has type WINDOW_TYPE_NORMAL, a WindowDelegate and
+  // is a top level views widget. Tooltips, menus, and other kinds of transient
+  // windows that can't activate are filtered out.
+  if (window->GetType() != aura::client::WINDOW_TYPE_NORMAL ||
+      !window->delegate())
+    return;
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (!widget || !widget->is_top_level() ||
+      !arc::GetWindowSessionId(window).has_value()) {
+    return;
+  }
+
+  observed_windows_.AddObservation(window);
+}
+
+void ArcAppLaunchHandler::OnWindowDestroying(aura::Window* window) {
+  DCHECK(observed_windows_.IsObservingSource(window));
+  observed_windows_.RemoveObservation(window);
+
+  const auto session_id = arc::GetWindowSessionId(window);
+  if (!session_id.has_value())
+    return;
+
+  session_id_to_window_id_.erase(session_id.value());
 }
 
 void ArcAppLaunchHandler::LoadRestoreData() {
@@ -177,8 +277,6 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
     return;
   }
 
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(handler_->profile_);
-  DCHECK(proxy);
   auto* arc_handler =
       FullRestoreArcTaskHandler::GetForProfile(handler_->profile_);
 
@@ -187,15 +285,11 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
 
     DCHECK(data_it.second->event_flag.has_value());
 
-    apps::mojom::WindowInfoPtr window_info =
-        HandleArcWindowInfo(data_it.second->GetAppWindowInfo());
-
     // Set an ARC session id to find the restore window id based on the new
     // created ARC task id in FullRestoreReadHandler.
     int32_t arc_session_id =
         ::full_restore::FullRestoreReadHandler::GetInstance()
             ->GetArcSessionId();
-    window_info->window_id = arc_session_id;
     ::full_restore::FullRestoreReadHandler::GetInstance()
         ->SetArcSessionIdForWindowId(arc_session_id, data_it.first);
     window_id_to_session_id_[data_it.first] = arc_session_id;
@@ -203,8 +297,8 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
 
     bool launch_ghost_window = false;
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
-    if (!window_info->bounds.is_null() && arc_handler &&
-        arc_handler->window_handler()) {
+    if (window_handler_ && (data_it.second->bounds_in_root.has_value() ||
+                            data_it.second->current_bounds.has_value())) {
       handler_->RecordArcGhostWindowLaunch(/*is_arc_ghost_window=*/true);
       arc_handler->window_handler()->LaunchArcGhostWindow(
           app_id, arc_session_id, data_it.second.get());
@@ -217,15 +311,17 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
     if (launch_ghost_window)
       continue;
 
-    if (data_it.second->intent.has_value()) {
-      proxy->LaunchAppWithIntent(app_id, data_it.second->event_flag.value(),
-                                 std::move(data_it.second->intent.value()),
-                                 apps::mojom::LaunchSource::kFromFullRestore,
-                                 std::move(window_info));
-    } else {
-      proxy->Launch(app_id, data_it.second->event_flag.value(),
-                    apps::mojom::LaunchSource::kFromFullRestore,
-                    std::move(window_info));
+    ChromeShelfController* chrome_controller =
+        ChromeShelfController::instance();
+    // chrome_controller may be null in tests.
+    if (chrome_controller) {
+      apps::mojom::WindowInfoPtr window_info = apps::mojom::WindowInfo::New();
+      window_info->window_id = arc_session_id;
+      chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
+          app_id, std::make_unique<ArcShelfSpinnerItemController>(
+                      app_id, data_it.second->event_flag.value(),
+                      arc::UserInteractionType::APP_STARTED_FROM_FULL_RESTORE,
+                      apps::MakeArcWindowInfo(std::move(window_info))));
     }
   }
 }
@@ -237,7 +333,8 @@ void ArcAppLaunchHandler::OnMemoryPressure(
 }
 
 bool ArcAppLaunchHandler::HasRestoreData() {
-  return !(windows_.empty() && no_stack_windows_.empty());
+  return !(windows_.empty() && no_stack_windows_.empty() &&
+           pending_windows_.empty());
 }
 
 bool ArcAppLaunchHandler::CanLaunchApp() {
@@ -260,6 +357,50 @@ bool ArcAppLaunchHandler::IsAppReady(const std::string& app_id) {
     return false;
 
   return true;
+}
+
+void ArcAppLaunchHandler::MaybeLaunchApp() {
+  if (!CanLaunchApp())
+    return;
+
+  for (auto it = pending_windows_.begin(); it != pending_windows_.end(); ++it) {
+    if (IsAppReady(it->app_id)) {
+      LaunchApp(it->app_id, it->window_id);
+      pending_windows_.erase(it);
+      MaybeReStartTimer(kAppLaunchDelay);
+      return;
+    }
+  }
+
+  if (!windows_.empty()) {
+    auto it = windows_.begin();
+    if (IsAppReady(it->second.app_id)) {
+      launch_count_ = 0;
+      LaunchApp(it->second.app_id, it->second.window_id);
+      windows_.erase(it);
+      MaybeReStartTimer(kAppLaunchDelay);
+    } else {
+      ++launch_count_;
+      if (launch_count_ >= kMaxCheckingNum) {
+        pending_windows_.push_back({it->second.app_id, it->second.window_id});
+        windows_.erase(it);
+        launch_count_ = 0;
+      } else if (launch_count_ == 1) {
+        MaybeReStartTimer(kAppLaunchCheckingDelay);
+      }
+    }
+    return;
+  }
+
+  for (auto it = no_stack_windows_.begin(); it != no_stack_windows_.end();
+       ++it) {
+    if (IsAppReady(it->app_id)) {
+      LaunchApp(it->app_id, it->window_id);
+      no_stack_windows_.erase(it);
+      MaybeReStartTimer(kAppLaunchDelay);
+      return;
+    }
+  }
 }
 
 void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
@@ -311,6 +452,9 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
                   apps::mojom::LaunchSource::kFromFullRestore,
                   std::move(window_info));
   }
+
+  if (!HasRestoreData())
+    StopRestore();
 }
 
 void ArcAppLaunchHandler::RemoveWindowsForApp(const std::string& app_id) {
@@ -333,6 +477,73 @@ void ArcAppLaunchHandler::RemoveWindowsForApp(const std::string& app_id) {
 
   for (auto it : windows)
     no_stack_windows_.erase(it);
+  windows.clear();
+
+  for (auto it = pending_windows_.begin(); it != pending_windows_.end(); ++it) {
+    if (it->app_id == app_id)
+      windows.push_back(it);
+  }
+
+  for (auto it : windows)
+    pending_windows_.erase(it);
+}
+
+void ArcAppLaunchHandler::RemoveWindow(const std::string& app_id,
+                                       int32_t window_id) {
+  for (auto& it : windows_) {
+    if (it.second.app_id == app_id && it.second.window_id == window_id) {
+      windows_.erase(it.first);
+      return;
+    }
+  }
+
+  for (auto it = no_stack_windows_.begin(); it != no_stack_windows_.end();
+       ++it) {
+    if (it->app_id == app_id && it->window_id == window_id) {
+      no_stack_windows_.erase(it);
+      return;
+    }
+  }
+
+  for (auto it = pending_windows_.begin(); it != pending_windows_.end(); ++it) {
+    if (it->app_id == app_id && it->window_id == window_id) {
+      pending_windows_.erase(it);
+      return;
+    }
+  }
+}
+
+void ArcAppLaunchHandler::MaybeReStartTimer(const base::TimeDelta& delay) {
+  DCHECK(app_launch_timer_);
+
+  // If there is no window to be launched, stop the timer.
+  if (!HasRestoreData()) {
+    StopRestore();
+    return;
+  }
+
+  if (current_delay_ == delay)
+    return;
+
+  // If the delay is changed, restart the timer.
+  if (app_launch_timer_->IsRunning())
+    app_launch_timer_->Stop();
+
+  current_delay_ = delay;
+  app_launch_timer_->Start(
+      FROM_HERE, current_delay_,
+      base::BindRepeating(&ArcAppLaunchHandler::MaybeLaunchApp,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcAppLaunchHandler::StopRestore() {
+  if (app_launch_timer_ && app_launch_timer_->IsRunning())
+    app_launch_timer_->Stop();
+  app_launch_timer_.reset();
+
+  if (stop_restore_timer_ && stop_restore_timer_->IsRunning())
+    stop_restore_timer_->Stop();
+  stop_restore_timer_.reset();
 }
 
 int ArcAppLaunchHandler::GetCpuUsageRate() {

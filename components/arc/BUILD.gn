@@ -22,6 +22,8 @@ static_library("arc") {
     "compat_mode/arc_resize_lock_pref_delegate.h",
     "compat_mode/arc_splash_screen_dialog_view.cc",
     "compat_mode/arc_splash_screen_dialog_view.h",
+    "compat_mode/arc_window_property_util.cc",
+    "compat_mode/arc_window_property_util.h",
     "compat_mode/overlay_dialog.cc",
     "compat_mode/overlay_dialog.h",
     "compat_mode/resize_confirmation_dialog_view.cc",
@@ -201,10 +203,10 @@ static_library("arc_base_enums") {
   sources = [
     "session/arc_instance_mode.cc",
     "session/arc_instance_mode.h",
+    "session/arc_management_transition.cc",
+    "session/arc_management_transition.h",
     "session/arc_stop_reason.cc",
     "session/arc_stop_reason.h",
-    "session/arc_supervision_transition.cc",
-    "session/arc_supervision_transition.h",
   ]
 
   deps = [ "//base" ]
@@ -539,6 +541,7 @@ source_set("unit_tests") {
     "//ui/base:test_support",
     "//ui/base/clipboard",
     "//ui/base/ime",
+    "//ui/display:test_support",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events:test_support",

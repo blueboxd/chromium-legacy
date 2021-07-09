@@ -8,15 +8,20 @@
 
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/toast_manager.h"
-#include "ash/public/cpp/window_properties.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "components/arc/compat_mode/arc_resize_lock_pref_delegate.h"
+#include "components/arc/compat_mode/arc_window_property_util.h"
 #include "components/arc/compat_mode/resize_confirmation_dialog_view.h"
+#include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/views/widget/widget.h"
 
 namespace arc {
@@ -25,24 +30,49 @@ namespace {
 
 constexpr gfx::Size kPortraitPhoneDp(412, 732);
 constexpr gfx::Size kLandscapeTabletDp(1064, 600);
+constexpr int kDisplayEdgeOffsetDp = 32;
 
 using ResizeCallback = base::OnceCallback<void(views::Widget*)>;
+
+gfx::Size GetPossibleSizeInWorkArea(views::Widget* widget,
+                                    const gfx::Size& preferred_size) {
+  auto size = gfx::SizeF(preferred_size);
+  const float preferred_aspect_ratio = size.width() / size.height();
+
+  auto workarea = widget->GetWorkAreaBoundsInScreen();
+
+  // Shrink workarea with the edge offset.
+  workarea.Inset(gfx::Insets(kDisplayEdgeOffsetDp));
+
+  // Limit |size| to |workarea| but keep the aspect ratio.
+  if (size.width() > workarea.width()) {
+    size.set_width(workarea.width());
+    size.set_height(workarea.width() / preferred_aspect_ratio);
+  }
+  if (size.height() > workarea.height()) {
+    size.set_width(workarea.height() * preferred_aspect_ratio);
+    size.set_height(workarea.height());
+  }
+
+  const auto* shell_surface_base =
+      exo::GetShellSurfaceBaseForWindow(widget->GetNativeWindow());
+  // |shell_surface_base| can be null in unittests.
+  if (shell_surface_base)
+    size.SetToMax(gfx::SizeF(shell_surface_base->GetMinimumSize()));
+
+  return gfx::ToFlooredSize(size);
+}
 
 void ResizeToPhone(views::Widget* widget) {
   if (widget->IsMaximized())
     widget->Restore();
-  widget->CenterWindow(kPortraitPhoneDp);
+  widget->CenterWindow(GetPossibleSizeInWorkArea(widget, kPortraitPhoneDp));
 }
 
 void ResizeToTablet(views::Widget* widget) {
   if (widget->IsMaximized())
     widget->Restore();
-  widget->CenterWindow(kLandscapeTabletDp);
-}
-
-absl::optional<std::string> GetAppId(views::Widget* widget) {
-  const auto* app_id = widget->GetNativeWindow()->GetProperty(ash::kAppIDKey);
-  return base::OptionalFromPtr(app_id);
+  widget->CenterWindow(GetPossibleSizeInWorkArea(widget, kLandscapeTabletDp));
 }
 
 void TurnOnResizeLock(views::Widget* widget,

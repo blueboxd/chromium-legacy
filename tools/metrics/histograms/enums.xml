@@ -33899,6 +33899,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3948" label="RTCPeerConnectionWithBlockingCsp"/>
   <int value="3949" label="SanitizerAPISanitizeFor"/>
   <int value="3950" label="SanitizerAPIElementSetSanitized"/>
+  <int value="3951" label="TextShadowInHighlightPseudo"/>
+  <int value="3952" label="TextShadowNotNoneInHighlightPseudo"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -49024,6 +49026,7 @@ from previous Chrome versions.
   <int value="330439654" label="SyncPseudoUSSExtensions:enabled"/>
   <int value="330653520" label="ChromeShareHighlightsAndroid:enabled"/>
   <int value="331770879" label="CrostiniAppSearch:disabled"/>
+  <int value="331845034" label="enable-webgl-developer-extensions"/>
   <int value="332391072" label="cs-contextual-cards-bar-integration"/>
   <int value="332960119" label="PdfXfaSupport:disabled"/>
   <int value="333019109" label="PrivacyReview:enabled"/>
@@ -56579,6 +56582,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetReportingReportOutcome">
+  <obsolete>
+    Removed from code, July 2021.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Discarded: no URLRequestContext"/>
   <int value="2" label="Discarded: no ReportingService"/>
@@ -85417,6 +85423,16 @@ others/histograms.xml -->
   <int value="3" label="API not available"/>
 </enum>
 
+<enum name="WebOTPCrossDeviceFailure">
+  <int value="0" label="No failure"/>
+  <int value="1" label="Feature disabled"/>
+  <int value="2" label="No remote device"/>
+  <int value="3" label="No sharing service"/>
+  <int value="4" label="Sharing message failure"/>
+  <int value="5" label="API failure on Android"/>
+  <int value="6" label="Android to Android not supported"/>
+</enum>
+
 <enum name="WebOTPServiceDestroyedReason">
   <int value="0" label="Navigated to new page"/>
   <int value="1" label="Navigated to existing page"/>
@@ -85437,6 +85453,7 @@ others/histograms.xml -->
   <int value="5" label="Timeout"/>
   <int value="6" label="UserCancelled"/>
   <int value="7" label="BackendNotAvailable"/>
+  <int value="8" label="Cross device failure"/>
 </enum>
 
 <enum name="WebpDecodedFormat">

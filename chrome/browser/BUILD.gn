@@ -1368,6 +1368,7 @@ static_library("browser") {
     "profiles/profile_attributes_init_params.h",
     "profiles/profile_attributes_storage.cc",
     "profiles/profile_attributes_storage.h",
+    "profiles/profile_attributes_storage_observer.h",
     "profiles/profile_avatar_downloader.cc",
     "profiles/profile_avatar_downloader.h",
     "profiles/profile_avatar_icon_util.cc",
@@ -1379,7 +1380,6 @@ static_library("browser") {
     "profiles/profile_downloader_delegate.h",
     "profiles/profile_impl.cc",
     "profiles/profile_impl.h",
-    "profiles/profile_info_cache_observer.h",
     "profiles/profile_io_data.cc",
     "profiles/profile_io_data.h",
     "profiles/profile_keep_alive_types.cc",
@@ -1573,6 +1573,8 @@ static_library("browser") {
     "sharing/sms/sms_flags.h",
     "sharing/sms/sms_remote_fetcher.cc",
     "sharing/sms/sms_remote_fetcher.h",
+    "sharing/sms/sms_remote_fetcher_metrics.cc",
+    "sharing/sms/sms_remote_fetcher_metrics.h",
     "sharing/vapid_key_manager.cc",
     "sharing/vapid_key_manager.h",
     "sharing/web_push/json_web_token_util.cc",
@@ -5675,7 +5677,10 @@ static_library("browser") {
         "printing/print_backend_service_manager.cc",
         "printing/print_backend_service_manager.h",
       ]
-      deps += [ "//chrome/services/printing/public/mojom" ]
+      deps += [
+        "//chrome/services/printing/public/mojom",
+        "//components/crash/core/common",
+      ]
     }
     if (is_win || enable_print_preview) {
       deps += [ "//chrome/services/printing/public/mojom" ]

@@ -296,9 +296,12 @@ bool DictionaryValueUpdate::Remove(base::StringPiece path) {
 bool DictionaryValueUpdate::RemoveWithoutPathExpansion(
     base::StringPiece key,
     std::unique_ptr<base::Value>* out_value) {
-  if (!value_->RemoveWithoutPathExpansion(key, out_value))
+  absl::optional<base::Value> value = value_->ExtractKey(key);
+  if (!value)
     return false;
 
+  if (out_value)
+    *out_value = base::Value::ToUniquePtrValue(std::move(*value));
   RecordKey(key);
   return true;
 }
@@ -306,9 +309,12 @@ bool DictionaryValueUpdate::RemoveWithoutPathExpansion(
 bool DictionaryValueUpdate::RemovePath(
     base::StringPiece path,
     std::unique_ptr<base::Value>* out_value) {
-  if (!value_->RemovePath(path, out_value))
+  absl::optional<base::Value> value = value_->ExtractPath(path);
+  if (!value)
     return false;
 
+  if (out_value)
+    *out_value = base::Value::ToUniquePtrValue(std::move(*value));
   std::vector<base::StringPiece> split_path = SplitPath(path);
   base::DictionaryValue* dict = value_;
   for (size_t i = 0; i < split_path.size() - 1; ++i) {

@@ -17,8 +17,6 @@
         <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\ntp4\incognito_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_INCOGNITO_TAB_THEME_CSS" file="resources\ntp4\incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_GUEST_TAB_HTML" file="resources\ntp4\guest_tab.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_EPHEMERAL_GUEST_TAB_HTML" file="resources\ntp4\ephemeral_guest_tab.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_EPHEMERAL_GUEST_TAB_CSS" file="resources\ntp4\ephemeral_guest_tab.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
 
       </if>
@@ -53,7 +51,7 @@
       <if expr="not is_android">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys\about_sys.html" type="BINDATA" />
         <include name="IDR_ABOUT_SYS_CSS" file="resources\about_sys\about_sys.css" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_ABOUT_SYS_JS" file="resources\about_sys\about_sys.js" type="BINDATA" />
+        <include name="IDR_ABOUT_SYS_JS" file="resources\about_sys\about_sys.js" preprocess="true" type="BINDATA" />
       </if>
       <include name="IDR_AD_NETWORK_HASHES" file="resources\ad_networks.dat" type="BINDATA" />
       <if expr="is_posix and not is_macosx">

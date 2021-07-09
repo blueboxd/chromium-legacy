@@ -105,7 +105,7 @@ void SandboxMac::Warmup(SandboxType sandbox_type) {
 
     {  // CGImageSourceGetStatus() - 10.6
        // Create a png with just enough data to get everything warmed up...
-      char png_header[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+      unsigned char png_header[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
       NSData* data = [NSData dataWithBytes:png_header
                                     length:base::size(png_header)];
       base::ScopedCFTypeRef<CGImageSourceRef> img(

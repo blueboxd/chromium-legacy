@@ -700,6 +700,11 @@ const base::Feature kMojoDBusRelay{"MojoDBusRelay",
 const base::Feature kMultilingualTyping{"MultilingualTyping",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Nearby Connections to specificy KeepAlive interval and timeout while
+// also making the Nearby Connections WebRTC defaults longer.
+const base::Feature kNearbyKeepAliveFix{"NearbyKeepAliveFix",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether new OOBE layout is shown or not.
 const base::Feature kNewOobeLayout{"NewOobeLayout",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
@@ -961,6 +966,10 @@ const base::Feature kSystemLatinPhysicalTyping{
 // authenticated to a remote HTTP web proxy via system-proxy.
 const base::Feature kSystemProxyForSystemServices{
     "SystemProxyForSystemServices", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the UI to show tab cluster info.
+const base::Feature kTabClusterUI{"TabClusterUI",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Chrome OS Telemetry Extension.
 const base::Feature kTelemetryExtension{"TelemetryExtension",
@@ -1313,6 +1322,10 @@ bool IsMinorModeRestrictionEnabled() {
   return base::FeatureList::IsEnabled(kMinorModeRestriction);
 }
 
+bool IsNearbyKeepAliveFixEnabled() {
+  return base::FeatureList::IsEnabled(kNearbyKeepAliveFix);
+}
+
 bool IsNetworkingInDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kEnableNetworkingInDiagnosticsApp) &&
          base::FeatureList::IsEnabled(kDiagnosticsAppNavigation);
@@ -1464,6 +1477,10 @@ bool IsStylusBatteryStatusEnabled() {
 bool IsSystemLatinPhysicalTypingEnabled() {
   return base::FeatureList::IsEnabled(kImeMojoDecoder) &&
          base::FeatureList::IsEnabled(kSystemLatinPhysicalTyping);
+}
+
+bool IsTabClusterUIEnabled() {
+  return base::FeatureList::IsEnabled(kTabClusterUI);
 }
 
 bool IsTrilinearFilteringEnabled() {

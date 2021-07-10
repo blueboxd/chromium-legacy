@@ -14,47 +14,21 @@ import androidx.annotation.IntDef;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.browserservices.intents.WebappIntentUtils;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.webapps.WebApkUkmRecorder;
-import org.chromium.chrome.browser.webapps.WebappDataStorage;
-import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.util.ConversionUtils;
-import org.chromium.components.webapps.WebApkDistributor;
 
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Centralizes UMA data collection for WebAPKs. NOTE: Histogram names and values are defined in
  * tools/metrics/histograms/histograms.xml. Please update that file if any change is made.
+ * TODO(crbug.com/1219648): Temporarily keep this around to avoid breaking down stream. This
+ * class should be removed once down stream is updated.
  */
 public class WebApkUma {
-    // This enum is used to back UMA histograms, and should therefore be treated as append-only.
-    @IntDef({UpdateRequestSent.WHILE_WEBAPK_CLOSED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface UpdateRequestSent {
-        // Deprecated: FIRST_TRY = 0;
-        // Deprecated: ONSTOP = 1;
-        // Deprecated: WHILE_WEBAPK_IN_FOREGROUND = 2;
-        int WHILE_WEBAPK_CLOSED = 3;
-        int NUM_ENTRIES = 4;
-    }
-
-    // This enum is used to back UMA histograms, and should therefore be treated as append-only.
-    // The queued request times shouldn't exceed three.
-    @IntDef({UpdateRequestQueued.ONCE, UpdateRequestQueued.TWICE, UpdateRequestQueued.THREE_TIMES})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface UpdateRequestQueued {
-        int ONCE = 0;
-        int TWICE = 1;
-        int THREE_TIMES = 2;
-        int NUM_ENTRIES = 3;
-    }
+    private static final long WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES =
+            100 * (long) ConversionUtils.BYTES_PER_MEGABYTE; // 100 MB
 
     // This enum is used to back UMA histograms, and should therefore be treated as append-only.
     @IntDef({GooglePlayInstallResult.SUCCESS, GooglePlayInstallResult.FAILED_NO_DELEGATE,
@@ -95,122 +69,6 @@ public class WebApkUma {
         int NUM_ENTRIES = 16;
     }
 
-    public static final String HISTOGRAM_UPDATE_REQUEST_SENT = "WebApk.Update.RequestSent";
-
-    public static final String HISTOGRAM_UPDATE_REQUEST_QUEUED = "WebApk.Update.RequestQueued";
-
-    private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE =
-            "WebApk.Startup.Cold.ShellLaunchToSplashscreenVisible";
-    private static final String HISTOGRAM_NEW_STYLE_LAUNCH_TO_SPLASHSCREEN_VISIBLE =
-            "WebApk.Startup.Cold.NewStyle.ShellLaunchToSplashscreenVisible";
-    private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN =
-            "WebApk.Startup.Cold.ShellLaunchToSplashscreenHidden";
-
-    private static final int WEBAPK_OPEN_MAX = 3;
-    public static final int WEBAPK_OPEN_LAUNCH_SUCCESS = 0;
-    // Obsolete: WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
-    public static final int WEBAPK_OPEN_ACTIVITY_NOT_FOUND = 2;
-
-    private static final long WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES =
-            100 * (long) ConversionUtils.BYTES_PER_MEGABYTE; // 100 MB
-
-    /** Makes recordings that were deferred in order to not load native. */
-    public static void recordDeferredUma() {
-        SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
-        Set<String> uninstalledPackages =
-                preferencesManager.readStringSet(ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES);
-        if (uninstalledPackages.isEmpty()) return;
-
-        long fallbackUninstallTimestamp = System.currentTimeMillis();
-        WebappRegistry.warmUpSharedPrefs();
-        for (String uninstalledPackage : uninstalledPackages) {
-            RecordHistogram.recordBooleanHistogram("WebApk.Uninstall.Browser", true);
-
-            String webApkId = WebappIntentUtils.getIdForWebApkPackage(uninstalledPackage);
-            WebappDataStorage webappDataStorage =
-                    WebappRegistry.getInstance().getWebappDataStorage(webApkId);
-            if (webappDataStorage != null) {
-                long uninstallTimestamp = webappDataStorage.getWebApkUninstallTimestamp();
-                if (uninstallTimestamp == 0) {
-                    uninstallTimestamp = fallbackUninstallTimestamp;
-                }
-                WebApkUkmRecorder.recordWebApkUninstall(webappDataStorage.getWebApkManifestUrl(),
-                        WebApkDistributor.BROWSER, webappDataStorage.getWebApkVersionCode(),
-                        webappDataStorage.getLaunchCount(),
-                        uninstallTimestamp - webappDataStorage.getWebApkInstallTimestamp());
-            }
-        }
-        preferencesManager.writeStringSet(
-                ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES, new HashSet<String>());
-
-        // TODO(http://crbug.com/1000312): Clear WebappDataStorage for uninstalled WebAPK.
-    }
-
-    /** Sets WebAPK uninstall to be recorded next time that native is loaded. */
-    public static void deferRecordWebApkUninstalled(String packageName) {
-        SharedPreferencesManager.getInstance().addToStringSet(
-                ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES, packageName);
-        String webApkId = WebappIntentUtils.getIdForWebApkPackage(packageName);
-        WebappRegistry.warmUpSharedPrefsForId(webApkId);
-        WebappDataStorage webappDataStorage =
-                WebappRegistry.getInstance().getWebappDataStorage(webApkId);
-        if (webappDataStorage != null) {
-            webappDataStorage.setWebApkUninstallTimestamp();
-        }
-    }
-
-    /**
-     * Records the time point when a request to update a WebAPK is sent to the WebAPK Server.
-     * @param type representing when the update request is sent to the WebAPK server.
-     */
-    public static void recordUpdateRequestSent(@UpdateRequestSent int type) {
-        RecordHistogram.recordEnumeratedHistogram(
-                HISTOGRAM_UPDATE_REQUEST_SENT, type, UpdateRequestSent.NUM_ENTRIES);
-    }
-
-    /**
-     * Records the times that an update request has been queued once, twice and three times before
-     * sending to WebAPK server.
-     * @param times representing the times that an update has been queued.
-     */
-    public static void recordUpdateRequestQueued(@UpdateRequestQueued int times) {
-        RecordHistogram.recordEnumeratedHistogram(
-                HISTOGRAM_UPDATE_REQUEST_QUEUED, times, UpdateRequestQueued.NUM_ENTRIES);
-    }
-
-    /**
-     * Records duration between starting the WebAPK shell until the splashscreen is shown.
-     * @param durationMs duration in milliseconds
-     */
-    public static void recordShellApkLaunchToSplashVisible(long durationMs) {
-        RecordHistogram.recordMediumTimesHistogram(
-                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE, durationMs);
-    }
-
-    /**
-     * Records duration between starting the WebAPK shell until the shell displays the
-     * splashscreen for new-style WebAPKs.
-     */
-    public static void recordNewStyleShellApkLaunchToSplashVisible(long durationMs) {
-        RecordHistogram.recordMediumTimesHistogram(
-                HISTOGRAM_NEW_STYLE_LAUNCH_TO_SPLASHSCREEN_VISIBLE, durationMs);
-    }
-
-    /**
-     * Records duration between starting of the WebAPK shell until the splashscreen is hidden.
-     * @param durationMs duration in milliseconds
-     */
-    public static void recordShellApkLaunchToSplashHidden(long durationMs) {
-        RecordHistogram.recordMediumTimesHistogram(
-                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN, durationMs);
-    }
-
-    /** Records whether a WebAPK has permission to display notifications. */
-    public static void recordNotificationPermissionStatus(boolean permissionEnabled) {
-        RecordHistogram.recordBooleanHistogram(
-                "WebApk.Notification.Permission.Status", permissionEnabled);
-    }
-
     /**
      * Records whether installing a WebAPK from Google Play succeeded. If not, records the reason
      * that the install failed.
@@ -235,62 +93,6 @@ public class WebApkUma {
     public static void recordGooglePlayUpdateResult(@GooglePlayInstallResult int result) {
         RecordHistogram.recordEnumeratedHistogram("WebApk.Update.GooglePlayUpdateResult", result,
                 GooglePlayInstallResult.NUM_ENTRIES);
-    }
-
-    /** Records the duration of a WebAPK session (from launch/foreground to background). */
-    public static void recordWebApkSessionDuration(
-            @WebApkDistributor int distributor, long duration) {
-        RecordHistogram.recordLongTimesHistogram(
-                "WebApk.Session.TotalDuration2." + getWebApkDistributorUmaSuffix(distributor),
-                duration);
-    }
-
-    /** Records the current Shell APK version. */
-    public static void recordShellApkVersion(
-            int shellApkVersion, @WebApkDistributor int distributor) {
-        RecordHistogram.recordSparseHistogram(
-                "WebApk.ShellApkVersion2." + getWebApkDistributorUmaSuffix(distributor),
-                shellApkVersion);
-    }
-
-    private static String getWebApkDistributorUmaSuffix(@WebApkDistributor int distributor) {
-        switch (distributor) {
-            case WebApkDistributor.BROWSER:
-                return "Browser";
-            case WebApkDistributor.DEVICE_POLICY:
-                return "DevicePolicy";
-            default:
-                return "Other";
-        }
-    }
-
-    /** Records to UMA the count of old "WebAPK update request" files. */
-    public static void recordNumberOfStaleWebApkUpdateRequestFiles(int count) {
-        RecordHistogram.recordCountHistogram("WebApk.Update.NumStaleUpdateRequestFiles", count);
-    }
-
-    /** Records whether Chrome could bind to the WebAPK service. */
-    public static void recordBindToWebApkServiceSucceeded(boolean bindSucceeded) {
-        RecordHistogram.recordBooleanHistogram("WebApk.WebApkService.BindSuccess", bindSucceeded);
-    }
-
-    /** Records the network error code caught when a WebAPK is launched. */
-    public static void recordNetworkErrorWhenLaunch(int errorCode) {
-        RecordHistogram.recordSparseHistogram("WebApk.Launch.NetworkError", -errorCode);
-    }
-
-    /**
-     * Records whether a WebAPK navigation is within the WebAPK's scope.
-     * @param isChildTab Whether {@link Tab#getParentId()} is non-empty.
-     * @param isNavigationInScope
-     */
-    public static void recordNavigation(boolean isNavigationInScope) {
-        RecordHistogram.recordBooleanHistogram("WebApk.Navigation.InScope", isNavigationInScope);
-    }
-
-    /** Records number of unique origins for WebAPKs in WebappRegistry */
-    public static void recordWebApksCount(int count) {
-        RecordHistogram.recordCount100Histogram("WebApk.WebappRegistry.NumberOfOrigins", count);
     }
 
     /**

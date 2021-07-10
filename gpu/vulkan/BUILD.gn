@@ -105,7 +105,6 @@ if (enable_vulkan) {
     deps = [
       ":buildflags",
       "//base",
-      "//base/util/type_safety",
       "//build:chromeos_buildflags",
       "//components/crash/core/common:crash_key",
       "//gpu/ipc/common:vulkan_ycbcr_info",
@@ -144,7 +143,7 @@ if (enable_vulkan) {
 
       public_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
 
-      data_deps += [ "//third_party/fuchsia-sdk:vulkan_base" ]
+      data_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/vulkan" ]
 
       # VulkanInstance enables validation layer in Debug builds and when DCHECKs
       # are enabled in Release builds. In these cases the validation layer

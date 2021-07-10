@@ -239,11 +239,11 @@
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/metrics/tab_stats/tab_stats_tracker.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
-#include "chrome/browser/search/drive/drive_service.h"
+#include "chrome/browser/new_tab_page/modules/drive/drive_service.h"
+#include "chrome/browser/new_tab_page/modules/task_module/task_module_service.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
-#include "chrome/browser/search/task_module/task_module_service.h"
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -1461,8 +1461,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kDataReductionProxyLastConfigRetrievalTime);
   profile_prefs->ClearPref(kDataReductionProxyConfig);
 
-  // Added 02/2021
 #if defined(OS_ANDROID)
+  // Added 02/2021
   feed::MigrateObsoleteProfilePrefsFeb_2021(profile_prefs);
 #endif  // defined(OS_ANDROID)
   syncer::ClearObsoletePassphrasePromptPrefs(profile_prefs);
@@ -1552,6 +1552,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kHintsFetcherTopHostBlocklistState);
   profile_prefs->ClearPref(kHintsFetcherTopHostBlocklistMinimumEngagementScore);
   profile_prefs->ClearPref(kTimeHintsFetcherTopHostBlocklistLastInitialized);
+
+#if defined(OS_ANDROID)
+  // Added 06/2021
+  feed::MigrateObsoleteProfilePrefsJune_2021(profile_prefs);
+#endif  // defined(OS_ANDROID)
 
   // Added 07/2021
 #if defined(OS_MAC)

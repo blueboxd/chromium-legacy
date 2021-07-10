@@ -31,6 +31,8 @@
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
+#include "chrome/browser/ui/webui/federated_learning/floc_internals.mojom.h"
+#include "chrome/browser/ui/webui/federated_learning/floc_internals_ui.h"
 #include "chrome/browser/ui/webui/internals/internals_ui.h"
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
 #include "chrome/browser/ui/webui/media/media_history_ui.h"
@@ -106,10 +108,10 @@
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/cart/chrome_cart.mojom.h"
 #include "chrome/browser/cart/commerce_hint_service.h"
+#include "chrome/browser/new_tab_page/modules/drive/drive.mojom.h"
+#include "chrome/browser/new_tab_page/modules/task_module/task_module.mojom.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/promo_browser_command/promo_browser_command.mojom.h"
-#include "chrome/browser/search/drive/drive.mojom.h"
-#include "chrome/browser/search/task_module/task_module.mojom.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface_factory.h"
 #include "chrome/browser/speech/speech_recognition_service.h"
@@ -642,6 +644,9 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<::mojom::UsbInternalsPageHandler,
                                          UsbInternalsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<federated_learning::mojom::PageHandler,
+                                         FlocInternalsUI>(map);
 
 #if defined(OS_ANDROID)
   RegisterWebUIControllerInterfaceBinder<

@@ -1371,6 +1371,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Sync.TrustedVaultDeviceRegistrationState"
+    enum="TrustedVaultDeviceRegistrationState" expires_after="2021-11-01">
+  <owner>mmoskvitin@google.com</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records whether the local device is registered on the server upon startup
+    (if signed in) or upon first signin, and if not registered, provides
+    insights into why.
+  </summary>
+</histogram>
+
 <histogram name="Sync.TrustedVaultErrorShownOnStartup" enum="Boolean"
     expires_after="2021-11-01">
   <owner>mmoskvitin@google.com</owner>
@@ -1409,6 +1421,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Recorded when user clicks/taps on trusted vault error button. Buckets
     represents the UI elements which contain trusted vault error button.
+  </summary>
+</histogram>
+
+<histogram name="Sync.TrustedVaultRecoverabilityDegradedOnStartup"
+    enum="Boolean" expires_after="2021-11-01">
+  <owner>mmoskvitin@google.com</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records whether user action was required to improve the recoverability of
+    trusted vault keys. Recorded only if trusted vault passphrase type is used,
+    when keys are locally available and at most once per browser/profile
+    lifetime.
   </summary>
 </histogram>
 

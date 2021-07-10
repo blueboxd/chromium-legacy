@@ -116,6 +116,12 @@ public final class ProductionSupportedFlagList {
                             + "CPU cores on big.LITTLE architectures when the power mode is idle. "
                             + "WebViewCpuAffinityRestrictToLittleCores, if set, takes precedence "
                             + "over this flag."),
+            Flag.baseFeature(PowerSchedulerFeatures.POWER_SCHEDULER,
+                    "Enables the Power Scheduler. Defaults to throttling when idle or in no-op "
+                            + "animations, if at least 250ms of CPU time were spent "
+                            + "in the first 500ms after entering idle/no-op animation mode. "
+                            + "Can be further configured via field trial parameters, "
+                            + "see power_scheduler.h/cc for details."),
             Flag.baseFeature(BlinkFeatures.WEBVIEW_ACCELERATE_SMALL_CANVASES,
                     "Accelerate all canvases in webview."),
             Flag.baseFeature(AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES,
@@ -132,5 +138,9 @@ public final class ProductionSupportedFlagList {
                     BlinkFeatures.LAYOUT_NG_TABLE, "Enables Blink's next generation table layout."),
             Flag.baseFeature(
                     NetworkServiceFeatures.TRUST_TOKENS, "Enables the prototype Trust Tokens API."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_APPS_PACKAGE_NAMES_ALLOWLIST,
+                    "Enables using a server-defined allowlist of apps whose name can be recorded "
+                            + "in UMA logs. The allowlist is downloaded and fetched via component "
+                            + "updater services in WebView."),
     };
 }

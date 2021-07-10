@@ -2041,6 +2041,9 @@ const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
 
+const char kPdfUnseasonedName[] = "Pepper-free PDF viewer";
+const char kPdfUnseasonedDescription[] = "Enables the Pepper-free PDF viewer.";
+
 const char kPdfXfaFormsName[] = "PDF XFA support";
 const char kPdfXfaFormsDescription[] =
     "Enables support for XFA forms in PDFs. "
@@ -4894,6 +4897,12 @@ const char kMicrophoneMuteSwitchDeviceDescription[] =
 const char kMultilingualTypingName[] = "Multilingual typing on CrOS";
 const char kMultilingualTypingDescription[] =
     "Enables support for multilingual assistive typing on Chrome OS.";
+
+const char kNearbyKeepAliveFixName[] = "Nearby Keep Alive Fix";
+const char kNearbyKeepAliveFixDescription[] =
+    "Enables custom KeepAlive interval and timeout for Nearby Connections and "
+    "makes Nearby Connections WebRTC KeepAlive less chatty to help with "
+    "battery life.";
 
 const char kNearbySharingName[] = "Nearby Sharing";
 const char kNearbySharingDescription[] =

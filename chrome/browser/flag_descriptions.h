@@ -1166,6 +1166,9 @@ extern const char kPasswordImportDescription[];
 extern const char kPasswordScriptsFetchingName[];
 extern const char kPasswordScriptsFetchingDescription[];
 
+extern const char kPdfUnseasonedName[];
+extern const char kPdfUnseasonedDescription[];
+
 extern const char kPdfXfaFormsName[];
 extern const char kPdfXfaFormsDescription[];
 
@@ -2823,6 +2826,9 @@ extern const char kMicrophoneMuteSwitchDeviceDescription[];
 
 extern const char kMultilingualTypingName[];
 extern const char kMultilingualTypingDescription[];
+
+extern const char kNearbyKeepAliveFixName[];
+extern const char kNearbyKeepAliveFixDescription[];
 
 extern const char kNearbySharingName[];
 extern const char kNearbySharingDescription[];

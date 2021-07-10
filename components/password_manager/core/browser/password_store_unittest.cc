@@ -114,11 +114,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreConsumer);
 };
 
-struct MockDatabaseInsecureCredentialsObserver
-    : PasswordStore::DatabaseInsecureCredentialsObserver {
-  MOCK_METHOD0(OnInsecureCredentialsChanged, void());
-};
-
 class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
  public:
   MOCK_METHOD(void,
@@ -461,8 +456,6 @@ TEST_F(PasswordStoreTest, InsecureCredentialsObserverOnLoginAdded) {
 }
 
 TEST_F(PasswordStoreTest, InsecurePasswordObserverOnInsecureCredentialAdded) {
-  MockDatabaseInsecureCredentialsObserver observer;
-
   constexpr PasswordFormData kTestCredentials = {PasswordForm::Scheme::kHtml,
                                                  kTestWebRealm1,
                                                  kTestWebRealm1,
@@ -481,15 +474,18 @@ TEST_F(PasswordStoreTest, InsecurePasswordObserverOnInsecureCredentialAdded) {
   scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
   store->Init(nullptr);
   store->AddLogin(*FillPasswordFormWithData(kTestCredentials));
-  store->AddDatabaseInsecureCredentialsObserver(&observer);
+  WaitForPasswordStore();
+
+  MockPasswordStoreObserver mock_observer;
+  store->AddObserver(&mock_observer);
 
   // Expect a notification after adding a credential.
-  EXPECT_CALL(observer, OnInsecureCredentialsChanged);
+  EXPECT_CALL(mock_observer, OnLoginsChanged);
   store->AddInsecureCredential(insecure_credential);
   WaitForPasswordStore();
 
   // Adding the same credential should not result in another notification.
-  EXPECT_CALL(observer, OnInsecureCredentialsChanged).Times(0);
+  EXPECT_CALL(mock_observer, OnLoginsChanged).Times(0);
   store->AddInsecureCredential(insecure_credential);
   WaitForPasswordStore();
 
@@ -497,8 +493,6 @@ TEST_F(PasswordStoreTest, InsecurePasswordObserverOnInsecureCredentialAdded) {
 }
 
 TEST_F(PasswordStoreTest, InsecurePasswordObserverOnInsecureCredentialRemoved) {
-  MockDatabaseInsecureCredentialsObserver observer;
-
   constexpr PasswordFormData kTestCredentials = {PasswordForm::Scheme::kHtml,
                                                  kTestWebRealm1,
                                                  kTestWebRealm1,
@@ -521,17 +515,18 @@ TEST_F(PasswordStoreTest, InsecurePasswordObserverOnInsecureCredentialRemoved) {
   store->AddInsecureCredential(insecure_credential);
   WaitForPasswordStore();
 
-  store->AddDatabaseInsecureCredentialsObserver(&observer);
+  MockPasswordStoreObserver mock_observer;
+  store->AddObserver(&mock_observer);
 
   // Expect a notification after removing a credential.
-  EXPECT_CALL(observer, OnInsecureCredentialsChanged);
+  EXPECT_CALL(mock_observer, OnLoginsChanged);
   store->RemoveInsecureCredentials(insecure_credential.signon_realm,
                                    insecure_credential.username,
                                    RemoveInsecureCredentialsReason::kRemove);
   WaitForPasswordStore();
 
   // Removing the same credential should not result in another notification.
-  EXPECT_CALL(observer, OnInsecureCredentialsChanged).Times(0);
+  EXPECT_CALL(mock_observer, OnLoginsChanged).Times(0);
   store->RemoveInsecureCredentials(insecure_credential.signon_realm,
                                    insecure_credential.username,
                                    RemoveInsecureCredentialsReason::kRemove);
@@ -725,7 +720,9 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
 // When the password stored for an Android application is updated, credentials
 // with the same username stored for affiliated web sites should also be updated
 // automatically.
-TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
+// TODO(crbug.bom/1226042): Remove this test since we no longer update passwords
+// for affiliated websites through sync.
+TEST_F(PasswordStoreTest, DISABLED_UpdatePasswordsStoredForAffiliatedWebsites) {
   const char16_t kTestUsername[] = u"username_value_1";
   const char16_t kTestOtherUsername[] = u"username_value_2";
   const char16_t kTestOldPassword[] = u"old_password_value";
@@ -887,14 +884,14 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
                     _, testing::SizeIs(kExpectedNumberOfPropagatedUpdates)));
     if (test_remove_and_add_login) {
       store->ScheduleTask(
-          base::BindOnce(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
-                         *all_credentials[0]));
+          base::BindOnce(IgnoreResult(&PasswordStoreImpl::RemoveLoginSync),
+                         store, *all_credentials[0]));
       store->ScheduleTask(base::BindOnce(
-          IgnoreResult(&PasswordStore::AddLoginSync), store,
+          IgnoreResult(&PasswordStoreImpl::AddLoginSync), store,
           *expected_credentials_after_update[0], /*error=*/nullptr));
     } else {
       store->ScheduleTask(base::BindOnce(
-          IgnoreResult(&PasswordStore::UpdateLoginSync), store,
+          IgnoreResult(&PasswordStoreImpl::UpdateLoginSync), store,
           *expected_credentials_after_update[0], /*error=*/nullptr));
     }
     WaitForPasswordStore();
@@ -1428,11 +1425,12 @@ TEST_F(PasswordStoreTest, AddInsecureCredentialsSync) {
                          base::Time(), InsecureType::kReused, IsMuted(false))};
 
   AddLoginError add_login_error = AddLoginError::kDbError;
-  store->ScheduleTask(base::BindOnce(IgnoreResult(&PasswordStore::AddLoginSync),
-                                     store, *test_form, &add_login_error));
   store->ScheduleTask(
-      base::BindOnce(IgnoreResult(&PasswordStore::AddInsecureCredentialsSync),
-                     store, credentials));
+      base::BindOnce(IgnoreResult(&PasswordStoreImpl::AddLoginSync), store,
+                     *test_form, &add_login_error));
+  store->ScheduleTask(base::BindOnce(
+      IgnoreResult(&PasswordStoreImpl::AddInsecureCredentialsSync), store,
+      credentials));
 
   WaitForPasswordStore();
   EXPECT_EQ(add_login_error, AddLoginError::kNone);
@@ -1487,7 +1485,7 @@ TEST_F(PasswordStoreTest, UpdateInsecureCredentialsSync) {
 
   // Update the password store with the new insecure credentials.
   store->ScheduleTask(base::BindOnce(
-      IgnoreResult(&PasswordStore::UpdateInsecureCredentialsSync), store,
+      IgnoreResult(&PasswordStoreImpl::UpdateInsecureCredentialsSync), store,
       *test_form, new_credentials));
   WaitForPasswordStore();
 
@@ -1496,57 +1494,6 @@ TEST_F(PasswordStoreTest, UpdateInsecureCredentialsSync) {
   EXPECT_CALL(consumer, OnGetInsecureCredentials(UnorderedElementsAre(
                             new_credentials[0], new_credentials[1])));
   store->GetAllInsecureCredentials(&consumer);
-  WaitForPasswordStore();
-
-  store->ShutdownOnUIThread();
-}
-
-// Verify that when a password is updated that the corresponding row is also
-// removed from the insecure credentials table and consumer is notified.
-TEST_F(PasswordStoreTest, InsecureCredentialsObserverOnPasswordUpdate) {
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
-  store->Init(nullptr);
-
-  MockDatabaseInsecureCredentialsObserver observer;
-  store->AddDatabaseInsecureCredentialsObserver(&observer);
-
-  /* clang-format off */
-  static const PasswordFormData kTestCredential =
-      {PasswordForm::Scheme::kHtml,
-       kTestWebRealm1,
-       kTestWebOrigin1,
-       "", u"", u"username_element_1",  u"password_element_1",
-       u"username_value_1",
-       u"", kTestLastUsageTime, 1};
-  /* clang-format on */
-
-  std::unique_ptr<PasswordForm> test_form(
-      FillPasswordFormWithData(kTestCredential));
-
-  store->AddLogin(*test_form);
-  WaitForPasswordStore();
-
-  // If there are no insecure credentials, we should not notify insecure
-  // credentials observer.
-  EXPECT_CALL(observer, OnInsecureCredentialsChanged).Times(0);
-
-  test_form->password_value = u"new_password";
-  store->UpdateLogin(*test_form);
-  WaitForPasswordStore();
-  testing::Mock::VerifyAndClear(&observer);
-
-  // Add insecure credential.
-  InsecureCredential insecure_credential(kTestWebRealm1, u"username_value_1",
-                                         base::Time::FromTimeT(1),
-                                         InsecureType::kLeaked, IsMuted(false));
-  store->AddInsecureCredential(insecure_credential);
-  WaitForPasswordStore();
-
-  // Expect a notification after updating a password.
-  EXPECT_CALL(observer, OnInsecureCredentialsChanged).Times(1);
-
-  test_form->password_value = u"new_password_2";
-  store->UpdateLogin(*test_form);
   WaitForPasswordStore();
 
   store->ShutdownOnUIThread();

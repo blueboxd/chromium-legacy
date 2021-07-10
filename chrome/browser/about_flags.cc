@@ -6449,6 +6449,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"shimless-rma-flow", flag_descriptions::kShimlessRMAFlowName,
      flag_descriptions::kShimlessRMAFlowDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMAFlow)},
+    {"nearby-keep-alive-fix", flag_descriptions::kNearbyKeepAliveFixName,
+     flag_descriptions::kNearbyKeepAliveFixDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kNearbyKeepAliveFix)},
     {"nearby-sharing", flag_descriptions::kNearbySharingName,
      flag_descriptions::kNearbySharingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharing)},
@@ -6806,12 +6809,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(language::kDesktopDetailedLanguageSettings)},
 #endif
 
-#if defined(OS_ANDROID)
     {"pwa-update-dialog-for-name-and-icon",
      flag_descriptions::kPwaUpdateDialogForNameAndIconName,
-     flag_descriptions::kPwaUpdateDialogForNameAndIconDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kPwaUpdateDialogForNameAndIcon)},
-#endif
+     flag_descriptions::kPwaUpdateDialogForNameAndIconDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPwaUpdateDialogForNameAndIcon)},
 
     {"sync-autofill-wallet-offer-data",
      flag_descriptions::kSyncAutofillWalletOfferDataName,
@@ -7026,6 +7027,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
+    {"pdf-unseasoned", flag_descriptions::kPdfUnseasonedName,
+     flag_descriptions::kPdfUnseasonedDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfUnseasoned)},
     {"pdf-xfa-forms", flag_descriptions::kPdfXfaFormsName,
      flag_descriptions::kPdfXfaFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfXfaSupport)},

@@ -259,6 +259,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kMinimumChromeVersion;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMojoDBusRelay;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMultilingualTyping;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNearbyKeepAliveFix;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNewOobeLayout;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNightLight;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -361,6 +362,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSystemLatinPhysicalTyping;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSystemProxyForSystemServices;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTabClusterUI;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTelemetryExtension;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTrilinearFiltering;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -464,6 +466,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsManagedTermsOfServiceEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMicMuteNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinimumChromeVersionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinorModeRestrictionEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNearbyKeepAliveFixEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNetworkingInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNewOobeLayoutEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNotificationExpansionAnimationEnabled();
@@ -505,6 +508,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShowDateInTrayButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSplitSettingsSyncEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemLatinPhysicalTypingEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabClusterUIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTrilinearFilteringEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUseStorkSmdsServerAddressEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsVerticalSplitScreenEnabled();

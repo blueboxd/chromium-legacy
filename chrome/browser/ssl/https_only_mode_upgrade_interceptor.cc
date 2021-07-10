@@ -5,10 +5,12 @@
 #include "chrome/browser/ssl/https_only_mode_upgrade_interceptor.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/https_only_mode_tab_storage.h"
+#include "chrome/browser/ssl/https_only_mode_tab_helper.h"
 #include "chrome/browser/ssl/https_only_mode_upgrade_url_loader.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
@@ -24,18 +26,19 @@ int g_https_port_for_testing = 0;
 int g_http_port_for_testing = 0;
 
 // Only serve upgrade redirects for main frame, GET requests to HTTP URLs.
+// The loader also handles redirecting fallback navigations back to HTTP after
+// proceeding through the interstitial.
 // TODO(crbug.com/1218526): Consider excluding IP addresses and non-unique
 // hostnames (as these are likely intranet or unable to have publicly trusted
 // certificates).
-bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
-  if (resource_request.resource_type !=
-          static_cast<int>(blink::mojom::ResourceType::kMainFrame) ||
-      !resource_request.url.SchemeIs(url::kHttpScheme) ||
-      resource_request.method != "GET" || !resource_request.is_main_frame) {
-    return false;
+bool ShouldCreateLoader(const network::ResourceRequest& resource_request,
+                        HttpsOnlyModeTabHelper* tab_helper) {
+  if (resource_request.is_main_frame && resource_request.method == "GET" &&
+      (resource_request.url.SchemeIs(url::kHttpScheme) ||
+       tab_helper->is_navigation_fallback())) {
+    return true;
   }
-
-  return true;
+  return false;
 }
 
 }  // namespace
@@ -46,7 +49,6 @@ HttpsOnlyModeUpgradeInterceptor::HttpsOnlyModeUpgradeInterceptor(
 
 HttpsOnlyModeUpgradeInterceptor::~HttpsOnlyModeUpgradeInterceptor() = default;
 
-// content::URLLoaderRequestInterceptor:
 void HttpsOnlyModeUpgradeInterceptor::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context,
@@ -66,22 +68,40 @@ void HttpsOnlyModeUpgradeInterceptor::MaybeCreateLoader(
     return;
   }
 
-  // Do not upgrade if the hostname is allowlisted.
-  auto* tab_storage = HttpsOnlyModeTabStorage::GetOrCreate(
-      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_));
-  if (tab_storage->IsHostAllowlisted(tentative_resource_request.url.host())) {
-    std::move(callback).Run({});
-    return;
-  }
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  if (ShouldCreateLoader(tentative_resource_request)) {
-    // Mark the navigation as upgraded.
-    auto* web_contents =
-        content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
-    auto* tab_storage = HttpsOnlyModeTabStorage::GetOrCreate(web_contents);
-    tab_storage->set_is_navigation_upgraded(true);
+  auto* tab_helper = HttpsOnlyModeTabHelper::FromWebContents(web_contents);
+  if (ShouldCreateLoader(tentative_resource_request, tab_helper)) {
+    // If the navigation is a fallback, redirect to the original URL.
+    if (tab_helper->is_navigation_fallback()) {
+      tab_helper->set_is_navigation_fallback(false);
+      CreateHttpsRedirectLoader(tentative_resource_request,
+                                std::move(callback));
+      redirect_url_loader_->StartRedirectToOriginalURL(
+          tab_helper->fallback_url());
+      return;
+    }
 
+    // Don't upgrade navigation if it is allowlisted.
+    StatefulSSLHostStateDelegate* state =
+        static_cast<StatefulSSLHostStateDelegate*>(
+            profile->GetSSLHostStateDelegate());
+    // StatefulSSLHostStateDelegate can be null during tests.
+    if (state &&
+        state->IsHttpAllowedForHost(tentative_resource_request.url.host())) {
+      std::move(callback).Run({});
+      return;
+    }
+
+    // Mark navigation as upgraded.
+    tab_helper->set_is_navigation_upgraded(true);
+    tab_helper->set_fallback_url(tentative_resource_request.url);
     CreateHttpsRedirectLoader(tentative_resource_request, std::move(callback));
+    // `redirect_url_loader_` can be null after this call.
+    redirect_url_loader_->StartRedirectToHttps(frame_tree_node_id_);
     return;
   }
 
@@ -120,9 +140,6 @@ void HttpsOnlyModeUpgradeInterceptor::CreateHttpsRedirectLoader(
       tentative_resource_request,
       base::BindOnce(&HttpsOnlyModeUpgradeInterceptor::HandleRedirectLoader,
                      base::Unretained(this), std::move(callback)));
-
-  // `redirect_url_loader_` can be null after this call.
-  redirect_url_loader_->StartRedirectToHttps(frame_tree_node_id_);
 }
 
 // Runs `callback` with `handler`.

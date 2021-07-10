@@ -3767,10 +3767,11 @@ ci.fyi_builder(
         category = "linux",
         short_name = "cmp",
     ),
+    goma_jobs = 250,
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = 500,
+    reclient_jobs = 250,
     configure_kitchen = True,
     kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
@@ -4210,8 +4211,6 @@ ci.fyi_coverage_builder(
     ),
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
-    # last commit of 2020
-    coverage_reference_commit = "c942891373445199f69afd905965ad1e89cdee09",
     triggered_by = [],
 )
 
@@ -5885,6 +5884,7 @@ ci.mac_ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     main_console_view = "main",
+    xcode = xcode.x13latestbeta,
 )
 
 ci.memory_builder(

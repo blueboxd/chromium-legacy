@@ -1692,6 +1692,7 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-noncq",
+    xcode = xcode.x13latestbeta,
 )
 
 try_.chromium_mac_ios_builder(
@@ -1881,6 +1882,8 @@ try_.chromium_win_builder(
     ssd = True,
     goma_jobs = goma.jobs.J300,
     executable = "recipe:chromium/compilator",
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     properties = {
         "orchestrator": {
             "builder_name": "win10-rel-orchestrator",

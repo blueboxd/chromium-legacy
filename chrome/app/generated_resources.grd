@@ -2498,6 +2498,29 @@ are declared in tools/grit/grit_rule.gni.
         Open as tabbed window
       </message>
 
+      <!-- WebApp name/icon update dialog -->
+      <message name="IDS_WEBAPP_UPDATE_DIALOG_TITLE_NAME" desc="The title at the top of the dialog when only the name changed.">
+        Review name updates
+      </message>
+      <message name="IDS_WEBAPP_UPDATE_DIALOG_TITLE_ICON" desc="The title at the top of the dialog when only the icon changed.">
+        Review icon updates
+      </message>
+      <message name="IDS_WEBAPP_UPDATE_DIALOG_TITLE_NAME_AND_ICON" desc="The title at the top of the dialog when the name and icon changed.">
+        Review name &amp; icon updates
+      </message>
+      <message name="IDS_WEBAPP_UPDATE_EXPLANATION" desc="The text at the top of the dialog, explaining what to do when an app changes its identity.">
+        If this web app is trying to trick you into thinking it is a different app, uninstall it.
+      </message>
+      <message name="IDS_WEBAPP_UPDATE_NEGATIVE_BUTTON" desc="The text for the negative button (aka. cancel button), allowing the user to uninstall the app and report it to the abuse team.">
+        Uninstall app
+      </message>
+      <message name="IDS_UPDATE_WEBAPP_CURRENT_ICON" desc="The accessibility string explaining which icon is the current icon.">
+        Current icon
+      </message>
+      <message name="IDS_UPDATE_WEBAPP_UPDATED_ICON" desc="The accessibility string explaining which icon is the new icon.">
+        New icon
+      </message>
+
       <!-- Finish policy app installation dialog -->
       <message name="IDS_FINISH_POLICY_WEB_APP_INSTALLATION" desc="Main text for the Finish Policy Web App Installation dialog. This is a dialog message that appears on the first launch of an app after it was remotely installed by an enterprise administrator. The app has some cosmetic factors (like the app icon) that can only be fixed if the user launches and then restarts the app. After the initial launch, this dialog encourages users to restart the app to complete the installation.">
           This app was added by your organization. Restart the app to finish installing it.
@@ -4994,10 +5017,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Customize and control <ph name="APP_NAME">$1<ex>GMail</ex></ph>
       </message>
       <message name="IDS_WEB_APP_ENABLE_WINDOW_CONTROLS_OVERLAY_TOOLTIP">
-        Enable window controls overlay
+        Hide title bar
       </message>
       <message name="IDS_WEB_APP_DISABLE_WINDOW_CONTROLS_OVERLAY_TOOLTIP">
-        Disable window controls overlay
+        Show title bar
       </message>
 
       <!-- Components -->
@@ -7736,6 +7759,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SHARING_HUB_TOOLTIP" desc="Tooltip for the Sharing Hub feature omnibox icon.">
         Share this page
+      </message>
+      <message name="IDS_SHARING_HUB_SCREENSHOT_LABEL" desc="The text label for the screenshot button in the Sharing Hub dialog and app menu.">
+        Screenshot
       </message>
       <message name="IDS_SHARING_HUB_COPY_LINK_LABEL" desc="The text label for the copy link button in the Sharing Hub dialog and app menu.">
         Copy link
@@ -11362,6 +11388,25 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_FILE_SYSTEM_CONNECTOR_GOOGLE_DRIVE" desc="Display name for Google Drive.">
       Google Drive
+    </message>
+
+    <!-- Enterprise file system connector sign in on first download confirmation dialog -->
+    <message name="IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_REQUIRED_TITLE" desc="Title shown in modal shown upon first eligible download to be uploaded, before sign in dia;pg">
+      Sign into <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph> to complete download
+    </message>
+    <message name="IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_REQUIRED_MESSAGE" desc="Meesage shown in above-mentioned modal">
+      Your organization requires eligible downloads to be saved to <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph>. Upon signing in, an unique authentication token will be stored and used for all future eligible downloads.
+    </message>
+    <message name="IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_REQUIRED_CANCEL_BUTTON" desc="Text displayed for cancel button in above-mentioned modal">
+      Cancel download
+    </message>
+    <message name="IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_REQUIRED_ACCEPT_BUTTON" desc="Text displayed for accept button in above-mentioned modal">
+      Sign in
+    </message>
+
+    <!-- Enterprise file system connector sign in dialog -->
+    <message name="IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_DIALOG_TITLE" desc="Title shown in dialog when prompting user to sign in to link a web drive account.">
+      Link <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph> account for Downloads
     </message>
 
     <!-- App uninstall prompt title -->

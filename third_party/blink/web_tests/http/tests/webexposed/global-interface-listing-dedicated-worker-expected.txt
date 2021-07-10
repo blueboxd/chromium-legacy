@@ -1055,6 +1055,7 @@ Starting worker: resources/global-interface-listing-worker.js.php
 [Worker]     getter textWordSpacing
 [Worker]     method arc
 [Worker]     method arcTo
+[Worker]     method beginLayer
 [Worker]     method beginPath
 [Worker]     method bezierCurveTo
 [Worker]     method clearRect
@@ -1069,6 +1070,7 @@ Starting worker: resources/global-interface-listing-worker.js.php
 [Worker]     method createRadialGradient
 [Worker]     method drawImage
 [Worker]     method ellipse
+[Worker]     method endLayer
 [Worker]     method fill
 [Worker]     method fillRect
 [Worker]     method fillText
@@ -1793,6 +1795,14 @@ Starting worker: resources/global-interface-listing-worker.js.php
 [Worker]     getter hasBeenActive
 [Worker]     getter isActive
 [Worker]     method constructor
+[Worker] interface VideoColorSpace
+[Worker]     attribute @@toStringTag
+[Worker]     getter fullRange
+[Worker]     getter matrix
+[Worker]     getter primaries
+[Worker]     getter transfer
+[Worker]     method constructor
+[Worker]     method toJSON
 [Worker] interface VideoDecoder
 [Worker]     static method isConfigSupported
 [Worker]     attribute @@toStringTag

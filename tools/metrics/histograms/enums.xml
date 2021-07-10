@@ -7506,6 +7506,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="15" label="EMF_INVALID_EXTENSION_ID_FOR_EXTENSION_SOURCE"/>
   <int value="16" label="EMF_INVALID_EXTENSION_ID_FOR_CONTENT_SCRIPT"/>
   <int value="17" label="EMF_INVALID_EXTENSION_ID_FOR_WORKER_CONTEXT"/>
+  <int value="18" label="EMF_INVALID_PORT_CONTEXT"/>
 </enum>
 
 <enum name="BadMessageReasonGuestView">
@@ -18083,6 +18084,18 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="5" label="D3D_FEATURE_LEVEL_11_1"/>
 </enum>
 
+<enum name="D3DShaderModel">
+  <int value="0" label="UNKNOWN_OR_NO_SUPPORTED_DEVICES"/>
+  <int value="1" label="D3D_SHADER_MODEL_5_1"/>
+  <int value="2" label="D3D_SHADER_MODEL_6_0"/>
+  <int value="3" label="D3D_SHADER_MODEL_6_1"/>
+  <int value="4" label="D3D_SHADER_MODEL_6_2"/>
+  <int value="5" label="D3D_SHADER_MODEL_6_3"/>
+  <int value="6" label="D3D_SHADER_MODEL_6_4"/>
+  <int value="7" label="D3D_SHADER_MODEL_6_5"/>
+  <int value="8" label="D3D_SHADER_MODEL_6_6"/>
+</enum>
+
 <enum name="DailyEventIntervalType">
   <int value="0" label="First Run"/>
   <int value="1" label="Day Elapsed"/>
@@ -18130,12 +18143,37 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="2" label="Dark theme"/>
 </enum>
 
+<enum name="DataChannelAggregateType">
+  <int value="0" label="Unreliable Unordered."/>
+  <int value="1" label="Unreliable Ordered"/>
+  <int value="2" label="Reliable Unordered."/>
+  <int value="3" label="Reliable Ordered"/>
+</enum>
+
 <enum name="DataChannelCounters">
   <int value="0" label="Channel created."/>
   <int value="1" label="Channel reached Open state."/>
   <int value="2" label="Channel is reliable."/>
   <int value="3" label="Channel is ordered."/>
   <int value="4" label="Channel is negotiated."/>
+</enum>
+
+<enum name="DataChannelSctpErrorCode">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="InvalidStreamIdentifier"/>
+  <int value="2" label="MissingMandatoryParameter"/>
+  <int value="3" label="StaleCookieError"/>
+  <int value="4" label="OutOfResource"/>
+  <int value="5" label="UnresolvableAddress"/>
+  <int value="6" label="UnspkUnrecognizedChunkTypeecified"/>
+  <int value="7" label="InvalidMandatoryParameter"/>
+  <int value="8" label="UnrecognizedParameters"/>
+  <int value="9" label="NoUserData"/>
+  <int value="10" label="CookieReceivedWhileShuttingDown"/>
+  <int value="11" label="RestartWithNewAddresses"/>
+  <int value="12" label="UserInitiatedAbort"/>
+  <int value="13" label="ProtocolViolation"/>
+  <int value="14" label="Other"/>
 </enum>
 
 <enum name="DataPackLoadErrors">
@@ -20018,6 +20056,7 @@ Called by update_debug_scenarios.py.-->
   <int value="108" label="Extension install friction"/>
   <int value="109" label="File handling permission request"/>
   <int value="110" label="Enterprise confirmation"/>
+  <int value="111" label="App Identity Update Confirmation"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -33901,6 +33940,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3950" label="SanitizerAPIElementSetSanitized"/>
   <int value="3951" label="TextShadowInHighlightPseudo"/>
   <int value="3952" label="TextShadowNotNoneInHighlightPseudo"/>
+  <int value="3953" label="SameSiteNoneRequired"/>
+  <int value="3954" label="SameSiteNoneIncludedBySamePartyTopResource"/>
+  <int value="3955" label="SameSiteNoneIncludedBySamePartyAncestors"/>
+  <int value="3956" label="SameSiteNoneIncludedBySameSiteLax"/>
+  <int value="3957" label="SameSiteNoneIncludedBySameSiteStrict"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46057,6 +46101,7 @@ from previous Chrome versions.
   <int value="-2128705444" label="AssistantAppSupport:enabled"/>
   <int value="-2127319228" label="enable-media-internals:disabled"/>
   <int value="-2126697213" label="EnablePalmSuppression:disabled"/>
+  <int value="-2126275491" label="WebViewAppsPackageNamesAllowlist:disabled"/>
   <int value="-2124839789"
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:enabled"/>
   <int value="-2124685253" label="USBGuard:enabled"/>
@@ -47178,6 +47223,8 @@ from previous Chrome versions.
   <int value="-1251359563" label="SharingRenameDevices:disabled"/>
   <int value="-1250965985" label="MediaFeeds:enabled"/>
   <int value="-1250611337" label="ChromeVoxArcSupport:disabled"/>
+  <int value="-1250326683"
+      label="MagnifierCaretFollowingFromJavascript:enabled"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1245617305" label="NewProfilePicker:enabled"/>
@@ -47632,6 +47679,7 @@ from previous Chrome versions.
   <int value="-880087793" label="OmniboxPedalsBatch2:enabled"/>
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
+  <int value="-879024703" label="pwa-update-dialog-for-name-and-icon:enabled"/>
   <int value="-876773120" label="TabbedAppOverflowMenuActionBar:enabled"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
   <int value="-875217114"
@@ -48595,6 +48643,7 @@ from previous Chrome versions.
   <int value="-45487487" label="NewTabPageCustomLinks:disabled"/>
   <int value="-45074716" label="SystemDownloadManager:disabled"/>
   <int value="-45067971" label="NewPrintPreview:disabled"/>
+  <int value="-44325492" label="PdfUnseasoned:enabled"/>
   <int value="-43980455" label="MobileIdentityConsistencyFRE:enabled"/>
   <int value="-43650386" label="WindowsFollowCursor:enabled"/>
   <int value="-43428597" label="ClickToCallDetectionV2:enabled"/>
@@ -48841,6 +48890,7 @@ from previous Chrome versions.
   <int value="160506687" label="ArcRtVcpuDualCore:disabled"/>
   <int value="160524775" label="PDFTwoUpView:disabled"/>
   <int value="160838658" label="SmartDimModelV3:enabled"/>
+  <int value="161008398" label="NearbyKeepAliveFix:disabled"/>
   <int value="161409456" label="AutofillUseMobileLabelDisambiguation:disabled"/>
   <int value="161694478" label="OmniboxNewAnswerLayout:enabled"/>
   <int value="168025622" label="EnableInputEventLogging:enabled"/>
@@ -49010,6 +49060,7 @@ from previous Chrome versions.
   <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>
   <int value="317432596" label="DisplayLocking:disabled"/>
   <int value="317889969" label="AutofillAddressProfileSavePrompt:disabled"/>
+  <int value="318277328" label="WebViewAppsPackageNamesAllowlist:enabled"/>
   <int value="319683583" label="ContentSuggestionsDebugLog:enabled"/>
   <int value="320121752" label="DelegateOverscrollSwipes:disabled"/>
   <int value="321366101" label="WebXRARDOMOverlay:enabled"/>
@@ -49158,6 +49209,7 @@ from previous Chrome versions.
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
   <int value="426199960" label="Commander:enabled"/>
+  <int value="426540253" label="PowerScheduler:disabled"/>
   <int value="427184788" label="WebFeed:enabled"/>
   <int value="427945554" label="StrictExtensionIsolation:enabled"/>
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
@@ -49277,6 +49329,8 @@ from previous Chrome versions.
   <int value="519140642" label="SendWebUIJavaScriptErrorReports:enabled"/>
   <int value="520738365" label="OmniboxPedalsBatch2NonEnglish:enabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
+  <int value="523885852"
+      label="MagnifierCaretFollowingFromJavascript:disabled"/>
   <int value="529235584" label="PhoneHub:enabled"/>
   <int value="530828403" label="AllowStartingServiceManagerOnly:disabled"/>
   <int value="533064367" label="WebRtcHideLocalIpsWithMdns:disabled"/>
@@ -49472,6 +49526,7 @@ from previous Chrome versions.
   <int value="680300401" label="DisplayAlignAssist:disabled"/>
   <int value="681622885" label="FullscreenExitUI:enabled"/>
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
+  <int value="682916740" label="PdfUnseasoned:disabled"/>
   <int value="683013217" label="AllowPopupsDuringPageUnload:disabled"/>
   <int value="683433500" label="CommerceMerchantViewer:disabled"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
@@ -50531,6 +50586,7 @@ from previous Chrome versions.
   <int value="1569982806" label="BentoBar:enabled"/>
   <int value="1570178909" label="NewOverviewLayout:enabled"/>
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>
+  <int value="1572464760" label="pwa-update-dialog-for-name-and-icon:disabled"/>
   <int value="1573860827" label="EnableImeSandbox:enabled"/>
   <int value="1575978252" label="PasswordLeakDetection:enabled"/>
   <int value="1577205328"
@@ -50844,6 +50900,7 @@ from previous Chrome versions.
   <int value="1829259057" label="MediaAppHandlesPdf:enabled"/>
   <int value="1830460973" label="disable-network-settings-config"/>
   <int value="1831103529" label="MediaNotificationsCounter:disabled"/>
+  <int value="1831156636" label="NearbyKeepAliveFix:enabled"/>
   <int value="1831545645" label="query-tiles-single-tier"/>
   <int value="1831593339" label="stop-in-background:disabled"/>
   <int value="1831777433" label="query-tiles-rank-tiles"/>
@@ -50882,6 +50939,7 @@ from previous Chrome versions.
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>
   <int value="1858919054" label="SplitSettingsSync:disabled"/>
   <int value="1860597983" label="AndroidSpellChecker:disabled"/>
+  <int value="1860955818" label="PowerScheduler:enabled"/>
   <int value="1861251313"
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>
   <int value="1861521561" label="OmniboxLocalEntitySuggestions:enabled"/>
@@ -60586,9 +60644,11 @@ Called by update_net_trust_anchors.py.-->
     The download was a valid CRX file but came from a publisher that is
     untrusted.
   </int>
-  <int value="11" label="Model directory does not exist">
-    The directory used to store models does not exist so the model could not be
-    stored for use.
+  <int value="11" label="OptGuide parent directory does not exist">
+    The parent directory used to store models does not exist.
+  </int>
+  <int value="12" label="Model directory could not be created">
+    The directory needed to store this model version could not be created.
   </int>
 </enum>
 
@@ -71259,6 +71319,20 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="Lax to Cross context with Lax cookie; secure origin."/>
 </enum>
 
+<enum name="SameSiteNonePartyContextType">
+  <summary>
+    Indicates the strictest cookie semantics that could have included the given
+    SameSite=None cookie on this access.
+  </summary>
+  <int value="0" label="Requires SameSite=None"/>
+  <int value="1"
+      label="Included under SameParty if using top frame and resource URL
+             only"/>
+  <int value="2" label="Included under SameParty if using all ancestor frames"/>
+  <int value="3" label="Included under SameSite=Lax"/>
+  <int value="4" label="Included under SameSite=Strict"/>
+</enum>
+
 <enum name="SamlChallengeKeyHandlerResult">
   <summary>
     Tracks results of calculating response for a challenge from Verified Access
@@ -81269,6 +81343,14 @@ Full version information for the fingerprint enum values:
   <int value="80" label="TRIM_MEMORY_COMPLETE"/>
 </enum>
 
+<enum name="TrustedVaultDeviceRegistrationState">
+  <int value="0" label="Already registered"/>
+  <int value="1" label="Local keys are stale"/>
+  <int value="2" label="Throttled client side"/>
+  <int value="3" label="Attempting registration with newly generated keys"/>
+  <int value="4" label="Attempting registration with preexisting keys"/>
+</enum>
+
 <enum name="TrustedVaultFetchKeysAttempt">
   <int value="0" label="First attempt"/>
   <int value="1" label="Second attempt"/>
@@ -82229,6 +82311,15 @@ Full version information for the fingerprint enum values:
   <int value="11" label="kChrome"/>
   <int value="12" label="kContent"/>
   <int value="13" label="kContentId"/>
+</enum>
+
+<enum name="URLValueForLoadDataWithBaseURL">
+  <int value="0" label="Different from baseUrl and commit/data: URL"/>
+  <int value="1" label="Empty"/>
+  <int value="2" label="Invalid"/>
+  <int value="3" label="Same as base URL"/>
+  <int value="4" label="Same as commit / data: URL"/>
+  <int value="5" label="about:blank"/>
 </enum>
 
 <enum name="UsageStatsEvents">
@@ -85957,6 +86048,8 @@ Called by update_scheduler_enums.py.-->
   <int value="17" label="Forget site dialog opened"/>
   <int value="18" label="Forget site data cleared"/>
   <int value="19" label="History page opened"/>
+  <int value="20" label="History page individual entry removed"/>
+  <int value="21" label="History page individual entry clicked"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">

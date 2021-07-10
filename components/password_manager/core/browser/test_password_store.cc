@@ -341,9 +341,14 @@ PasswordStoreChangeList TestPasswordStore::AddInsecureCredentialImpl(
     return {};
 
   PasswordStoreChangeList changes;
-  for (const auto& form : stored_passwords_[insecure_credential.signon_realm]) {
-    if (form.username_value == insecure_credential.username)
+  for (auto& form : stored_passwords_[insecure_credential.signon_realm]) {
+    if (form.username_value == insecure_credential.username) {
+      form.password_issues->insert(
+          {insecure_credential.insecure_type,
+           InsecurityMetadata(insecure_credential.create_time,
+                              insecure_credential.is_muted)});
       changes.emplace_back(PasswordStoreChange::UPDATE, form);
+    }
   }
   return changes;
 }
@@ -362,9 +367,11 @@ PasswordStoreChangeList TestPasswordStore::RemoveInsecureCredentialsImpl(
     return {};
 
   PasswordStoreChangeList changes;
-  for (const auto& form : stored_passwords_[signon_realm]) {
-    if (form.username_value == username)
+  for (auto& form : stored_passwords_[signon_realm]) {
+    if (form.username_value == username) {
+      form.password_issues->clear();
       changes.emplace_back(PasswordStoreChange::UPDATE, form);
+    }
   }
   return changes;
 }
@@ -398,6 +405,39 @@ std::vector<FieldInfo> TestPasswordStore::GetAllFieldInfoImpl() {
 void TestPasswordStore::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
                                                   base::Time remove_end) {
   NOTIMPLEMENTED();
+}
+
+PasswordStoreChangeList TestPasswordStore::AddLoginSync(
+    const PasswordForm& form,
+    AddLoginError* error) {
+  NOTIMPLEMENTED();
+  return {};
+}
+
+bool TestPasswordStore::AddInsecureCredentialsSync(
+    base::span<const InsecureCredential> credentials) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+PasswordStoreChangeList TestPasswordStore::UpdateLoginSync(
+    const PasswordForm& form,
+    UpdateLoginError* error) {
+  NOTIMPLEMENTED();
+  return {};
+}
+
+bool TestPasswordStore::UpdateInsecureCredentialsSync(
+    const PasswordForm& form,
+    base::span<const InsecureCredential> credentials) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+PasswordStoreChangeList TestPasswordStore::RemoveLoginSync(
+    const PasswordForm& form) {
+  NOTIMPLEMENTED();
+  return {};
 }
 
 bool TestPasswordStore::BeginTransaction() {

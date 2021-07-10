@@ -75,6 +75,13 @@ AX_BASE_EXPORT extern const base::Feature kIChromeAccessible;
 // Returns true if the IChromeAccessible COM API is enabled.
 AX_BASE_EXPORT bool IsIChromeAccessibleEnabled();
 
+AX_BASE_EXPORT extern const base::Feature kSelectiveUIAEnablement;
+
+// Returns true if accessibility will be selectively enabled depending on the
+// UIA APIs that are called, allowing non-screenreader usage to enable less of
+// the accessibility system.
+AX_BASE_EXPORT bool IsSelectiveUIAEnablementEnabled();
+
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -93,6 +100,14 @@ AX_BASE_EXPORT extern const base::Feature
 // Returns true if the feature to allow choosing the new continuous mouse
 // following mode in Magnifier settings is enabled.
 AX_BASE_EXPORT bool IsMagnifierContinuousMouseFollowingModeSettingEnabled();
+
+// Enables new caret following behavior from Javascript.
+AX_BASE_EXPORT extern const base::Feature
+    kMagnifierCaretFollowingFromJavascript;
+
+// Returns true if the feature to allow new caret following from Javascript is
+// enabled.
+AX_BASE_EXPORT bool IsMagnifierCaretFollowingFromJavascriptEnabled();
 
 // Enables ability to choose point scanning mode in switch access.
 AX_BASE_EXPORT extern const base::Feature kEnableSwitchAccessPointScanning;

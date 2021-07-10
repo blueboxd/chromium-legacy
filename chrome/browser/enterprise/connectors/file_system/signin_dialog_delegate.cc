@@ -9,23 +9,25 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_endpoints.h"
+#include "chrome/browser/enterprise/connectors/file_system/signin_experience.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/fill_layout.h"
 #include "url/gurl.h"
+
+// TODO(https://crbug.com/1227477): move this class to chrome/browser/ui/views.
 
 namespace {
 
@@ -60,7 +62,8 @@ FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
       web_view_(std::make_unique<views::WebView>(browser_context)),
       callback_(std::move(callback)) {
   SetHasWindowSizeControls(true);
-  SetTitle(IDS_PROFILES_GAIA_SIGNIN_TITLE);
+  SetTitle(l10n_util::GetStringFUTF16(
+      IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_DIALOG_TITLE, GetProviderName()));
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
 
@@ -95,24 +98,6 @@ FileSystemSigninDialogDelegate::~FileSystemSigninDialogDelegate() {
   if (callback_) {
     OnCancellation();
   }
-}
-
-// static
-void FileSystemSigninDialogDelegate::ShowDialog(
-    content::WebContents* web_contents,
-    const FileSystemSettings& settings,
-    AuthorizationCompletedCallback callback) {
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  gfx::NativeView parent = web_contents->GetNativeView();
-
-  FileSystemSigninDialogDelegate* delegate = new FileSystemSigninDialogDelegate(
-      browser_context, settings, std::move(callback));
-  // Object will be deleted internally by widget via DeleteDelegate().
-  // TODO(https://crbug.com/1160012): use std::unique_ptr instead?
-
-  views::DialogDelegate::CreateDialogWidget(delegate, nullptr, parent);
-  delegate->GetWidget()->Show();
-  // This only returns when the dialog is closed.
 }
 
 web_modal::WebContentsModalDialogHost*
@@ -156,9 +141,7 @@ views::View* FileSystemSigninDialogDelegate::GetInitiallyFocusedView() {
 }
 
 void FileSystemSigninDialogDelegate::OnCancellation() {
-  std::move(callback_).Run(
-      GoogleServiceAuthError{GoogleServiceAuthError::State::REQUEST_CANCELED},
-      std::string(), std::string());
+  ReturnCancellation(std::move(callback_));
 }
 
 void FileSystemSigninDialogDelegate::DidFinishNavigation(
@@ -218,6 +201,11 @@ std::string FileSystemSigninDialogDelegate::GetProviderSpecificUrlParameters() {
   }
 
   return std::string();
+}
+
+std::u16string FileSystemSigninDialogDelegate::GetProviderName() const {
+  DCHECK_EQ(settings_.service_provider, kBoxProviderName);
+  return l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX);
 }
 
 BEGIN_METADATA(FileSystemSigninDialogDelegate, views::DialogDelegateView)

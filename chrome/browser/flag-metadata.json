@@ -3862,6 +3862,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "nearby-keep-alive-fix",
+    "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
+    "expiry_milestone": 98
+  },
+  {
     "name": "nearby-sharing",
     "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
     "expiry_milestone": 95
@@ -4358,6 +4363,11 @@
     "name": "passwords-account-storage-iph",
     "owners": [ "mamir", "treib" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "pdf-unseasoned",
+    "owners": [ "dhoss", "kmoon", "nigi", "thestig"],
+    "expiry_milestone": 97
   },
   {
     "name": "pdf-xfa-forms",

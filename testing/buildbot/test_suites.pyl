@@ -5554,6 +5554,20 @@
       'webview_ui_instrumentation_tests',
     ],
 
+    'android_12_emulator_gtests': [
+      'android_monochrome_smoke_tests',
+      'android_smoke_tests',
+      'android_specific_chromium_gtests',  # Already includes gl_gtests.
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'linux_flavor_specific_chromium_gtests',
+      'system_webview_shell_instrumentation_tests', # Not an experimental test
+      'weblayer_android_gtests',
+      'weblayer_gtests',
+      'webview_cts_tests_gtest',
+      'webview_ui_instrumentation_tests',
+    ],
+
     # This is the same as 'android_lollipop_marshmallow_gtests'
     # with the addition of 'webview_cts_tests_gtest' and
     # 'webview_ui_instrumentation_tests'
@@ -7140,29 +7154,25 @@
       }
     },
 
-    # This test suite takes the standard ios test suites,
-    # and removes failing ones from ios14-sdk-simulator.
-    # The result is test suites with certain tests removed,
-    # identified by *_noncq.
     'ios_simulator_noncq_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_6S_15_0',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_6S_15_0',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_PLUS_13_6',
-          'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_SE_1ST_GEN_13_6',
-          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_6S_PLUS_15_0',
+          'SIM_IPHONE_6S_15_0',
+          'SIM_IPHONE_SE_1ST_GEN_15_0',
+          'SIM_IPAD_AIR_2_15_0',
         ]
       },
     },
@@ -7172,16 +7182,22 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_14_4',
+          'SIM_IPHONE_6S_13_6',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_6S_14_4',
+          'SIM_IPHONE_6S_13_6',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
+          'SIM_IPHONE_6S_PLUS_13_6',
+          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_SE_1ST_GEN_13_6',
+          'SIM_IPAD_AIR_2_13_6',
           'SIM_IPHONE_6S_PLUS_14_4',
           'SIM_IPHONE_6S_14_4',
           'SIM_IPHONE_SE_1ST_GEN_14_4',

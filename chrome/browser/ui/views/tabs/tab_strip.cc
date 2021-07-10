@@ -89,6 +89,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/masked_targeter_delegate.h"
@@ -1118,8 +1119,8 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
   // TODO(pbos): This is probably incorrect, the background of individual tabs
   // depend on their selected state. This should probably be pushed down into
   // tabs.
-  views::FocusRing::SetBackgroundColorIdForSubtree(
-      this, ThemeProperties::COLOR_TOOLBAR);
+  views::SetCascadingThemeProviderColor(this, views::kCascadingBackgroundColor,
+                                        ThemeProperties::COLOR_TOOLBAR);
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
@@ -3582,7 +3583,9 @@ int TabStrip::CalculateAvailableWidthForTabs() const {
 }
 
 int TabStrip::GetAvailableWidthForTabStrip() const {
-  return available_width_callback_ ? available_width_callback_.Run() : width();
+  return available_width_callback_
+             ? available_width_callback_.Run()
+             : parent()->GetAvailableSize(this).width().value();
 }
 
 void TabStrip::StartResizeLayoutAnimation() {

@@ -73,11 +73,6 @@ std::vector<PasswordFormDigest> ConvertToForms(
 
 }  // namespace
 
-void PasswordStore::DatabaseInsecureCredentialsObserver::
-    OnInsecureCredentialsChangedIn(PasswordStore* store) {
-  OnInsecureCredentialsChanged();
-}
-
 PasswordStore::PasswordStore()
     : observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
@@ -372,16 +367,6 @@ void PasswordStore::RemoveObserver(Observer* observer) {
   observers_->RemoveObserver(observer);
 }
 
-void PasswordStore::AddDatabaseInsecureCredentialsObserver(
-    DatabaseInsecureCredentialsObserver* observer) {
-  insecure_credentials_observers_->AddObserver(observer);
-}
-
-void PasswordStore::RemoveDatabaseInsecureCredentialsObserver(
-    DatabaseInsecureCredentialsObserver* observer) {
-  insecure_credentials_observers_->RemoveObserver(observer);
-}
-
 bool PasswordStore::ScheduleTask(base::OnceClosure task) {
   return background_task_runner_ &&
          background_task_runner_->PostTask(FROM_HERE, std::move(task));
@@ -447,54 +432,6 @@ bool PasswordStore::InitOnBackgroundSequence() {
   return true;
 }
 
-PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form,
-                                                    AddLoginError* error) {
-  // There is no good way to check if the password is actually up to date, or
-  // at least to check if it was actually changed. Assume it is.
-  if (AffiliatedMatchHelper::IsValidAndroidCredential(PasswordFormDigest(form)))
-    ScheduleFindAndUpdateAffiliatedWebLogins(form);
-  return AddLoginImpl(form, error);
-}
-
-bool PasswordStore::AddInsecureCredentialsSync(
-    base::span<const InsecureCredential> credentials) {
-  return base::ranges::all_of(credentials, [this](const auto& cred) {
-    return !AddInsecureCredentialImpl(cred).empty();
-  });
-}
-
-PasswordStoreChangeList PasswordStore::UpdateLoginSync(
-    const PasswordForm& form,
-    UpdateLoginError* error) {
-  if (AffiliatedMatchHelper::IsValidAndroidCredential(
-          PasswordFormDigest(form))) {
-    // Ideally, a |form| would not be updated in any way unless it was ensured
-    // that it, as a whole, can be used for a successful login. This, sadly, can
-    // not be guaranteed. It might be that |form| just contains updates to some
-    // meta-attribute, while it still has an out-of-date password. If such a
-    // password were to be propagated to affiliated credentials in that case, it
-    // may very well overwrite the actual, up-to-date password. Try to mitigate
-    // this risk by ignoring updates unless they actually update the password.
-    std::unique_ptr<PasswordForm> old_form(GetLoginImpl(form));
-    if (old_form && form.password_value != old_form->password_value)
-      ScheduleFindAndUpdateAffiliatedWebLogins(form);
-  }
-  return UpdateLoginImpl(form, error);
-}
-
-bool PasswordStore::UpdateInsecureCredentialsSync(
-    const PasswordForm& form,
-    base::span<const InsecureCredential> credentials) {
-  RemoveInsecureCredentialsImpl(form.signon_realm, form.username_value,
-                                RemoveInsecureCredentialsReason::kSyncUpdate);
-  return AddInsecureCredentialsSync(credentials);
-}
-
-PasswordStoreChangeList PasswordStore::RemoveLoginSync(
-    const PasswordForm& form) {
-  return RemoveLoginImpl(form);
-}
-
 void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
@@ -504,19 +441,6 @@ void PasswordStore::NotifyLoginsChanged(
     if (sync_bridge_)
       sync_bridge_->ActOnPasswordStoreChanges(changes);
   }
-
-  if (base::ranges::any_of(changes, [](const auto& change) {
-        return change.insecure_credentials_changed();
-      })) {
-    NotifyInsecureCredentialsChanged();
-  }
-}
-
-void PasswordStore::NotifyInsecureCredentialsChanged() {
-  insecure_credentials_observers_->Notify(
-      FROM_HERE,
-      &DatabaseInsecureCredentialsObserver::OnInsecureCredentialsChangedIn,
-      base::RetainedRef(this));
 }
 
 void PasswordStore::NotifyDeletionsHaveSynced(bool success) {
@@ -541,12 +465,7 @@ void PasswordStore::NotifyDeletionsHaveSynced(bool success) {
 void PasswordStore::InvokeAndNotifyAboutInsecureCredentialsChange(
     base::OnceCallback<PasswordStoreChangeList()> callback) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  PasswordStoreChangeList changes = std::move(callback).Run();
-  if (!changes.empty()) {
-    NotifyInsecureCredentialsChanged();
-    if (sync_bridge_)
-      sync_bridge_->ActOnPasswordStoreChanges(changes);
-  }
+  NotifyLoginsChanged(std::move(callback).Run());
 }
 
 void PasswordStore::NotifyUnsyncedCredentialsWillBeDeleted(

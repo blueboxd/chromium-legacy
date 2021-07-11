@@ -222,11 +222,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6fd6c47ab013e002fcf8eb5e3142511def6bf535',
+  'skia_revision': 'c1478d6d32d841dac75f99baf6fb79f76ce65728',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '5639f55f8a6afdaf10a5db816daa4156d07a56ad',
+  'v8_revision': 'aeb6c869fb5f6717192f021238c1cd2277f056d5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c6784c9ccdd3b02e6540e2cd2e2828964371f789',
+  'angle_revision': '04cb5e1d7d8917fb2bcd6d806afd6263f8c1e573',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e99a167826a4e90dd511bec43ca12d99c6217c98',
+  'devtools_frontend_revision': '32fc9653cb6345bf98d0ec94cfaa72c08c3032ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1218,7 +1218,7 @@ deps = {
   },
 
   'src/third_party/libjpeg_turbo':
-    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'b7bef8c05b7cdb1a038ae271a2c2b6647af4c879',
+    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'e9e400e0af31baf72d235655850bc00e55b6c145',
 
   'src/third_party/liblouis/src': {
       'url': Var('chromium_git') + '/external/liblouis-github.git' + '@' + '03d7d72d983d47c17f7de95bbeae89fe33e41943',
@@ -1592,7 +1592,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'e2aeec9de7a742ae131b2f56fc22de6b17b8d0e1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '5e726da14bb3ee76d68309dec9bc933ee40d407d',
+    Var('webrtc_git') + '/src.git' + '@' + '813a087e84e42f2d0e23d502ac7c98a4d65fb253',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8591877166a29bc2929d683f75ece0b5b182edd0',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@146562014e1cec446b4ed3c71ea627f40d5eade7',
     'condition': 'checkout_src_internal',
   },
 

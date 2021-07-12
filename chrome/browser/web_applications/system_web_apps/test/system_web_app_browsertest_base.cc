@@ -80,8 +80,7 @@ content::WebContents* SystemWebAppBrowserTestBase::LaunchApp(
 
   if (wait_for_load) {
     navigation_observer.Wait();
-    // TODO(https://crbug.com/1218703): We should check the navigation succeeds
-    // (i.e. doesn't end up in an error page).
+    DCHECK(navigation_observer.last_navigation_succeeded());
   }
 
   if (out_browser)
@@ -121,6 +120,10 @@ GURL SystemWebAppBrowserTestBase::GetStartUrl(
              : WebAppProvider::GetForSystemWebApps(browser()->profile())
                    ->registrar()
                    .GetAppStartUrl(params.app_id);
+}
+
+GURL SystemWebAppBrowserTestBase::GetStartUrl(SystemAppType type) {
+  return GetStartUrl(LaunchParamsForApp(type));
 }
 
 GURL SystemWebAppBrowserTestBase::GetStartUrl() {

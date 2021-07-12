@@ -98,12 +98,12 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void DestroyTask();
   void FlushTask(FlushCallback flush_callback);
 
-  // Blits input surface to dest size surface and return processed surface, if
-  // |vpp_vaapi_wrapper| is empty, this will create it and corresponding
-  // surfaces.
+  // Blits |input_surface| to an internally-allocated |input_visible_rect|
+  // surface, returning it. If |vpp_vaapi_wrapper_| is empty, this will create
+  // it and corresponding surfaces. Returns nullptr on failure.
   scoped_refptr<VASurface> BlitSurfaceWithCreateVppIfNeeded(
-      const scoped_refptr<VideoFrame>& frame,
-      const scoped_refptr<VASurface>& input_surface,
+      const VASurface& input_surface,
+      const gfx::Rect& input_visible_rect,
       const gfx::Size& encode_size,
       size_t num_va_surfaces);
 
@@ -128,13 +128,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void ExecuteEncode(VASurfaceID va_surface_id);
 
   // Callback that returns a no longer used VASurfaceID to
-  // |available_va_surface_ids_| for reuse.
-  void RecycleVASurfaceID(VASurfaceID va_surface_id);
-
-  // Callback that returns a no longer used VASurfaceID to
-  // |available_vpp_va_surface_ids_| for reuse.
-  void RecycleVPPVASurfaceID(std::vector<VASurfaceID>* va_surfaces,
-                             VASurfaceID va_surface_id);
+  // |va_surfaces| for reuse and kicks EncodePendingInputs() again.
+  void RecycleVASurfaceID(std::vector<VASurfaceID>* va_surfaces,
+                          VASurfaceID va_surface_id);
 
   // Returns a bitstream buffer to the client if both a previously executed job
   // awaits to be completed and we have bitstream buffers available to download

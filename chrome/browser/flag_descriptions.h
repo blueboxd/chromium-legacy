@@ -2413,6 +2413,9 @@ extern const char kCrostiniUseBusterImageDescription[];
 extern const char kCrostiniGpuSupportName[];
 extern const char kCrostiniGpuSupportDescription[];
 
+extern const char kCrostiniUseDlcName[];
+extern const char kCrostiniUseDlcDescription[];
+
 extern const char kCrostiniResetLxdDbName[];
 extern const char kCrostiniResetLxdDbDescription[];
 
@@ -3087,11 +3090,6 @@ extern const char kDcheckIsFatalDescription[];
 extern const char kEnableJXLName[];
 extern const char kEnableJXLDescription[];
 #endif  // BUILDFLAG(ENABLE_JXL_DECODER)
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-extern const char kDiceWebSigninInterceptionName[];
-extern const char kDiceWebSigninInterceptionDescription[];
-#endif  // ENABLE_DICE_SUPPORT
 
 #if BUILDFLAG(ENABLE_NACL)
 extern const char kNaclName[];

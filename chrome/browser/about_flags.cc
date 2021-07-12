@@ -3480,6 +3480,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kLockScreenNotifications)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"crostini-use-dlc", flag_descriptions::kCrostiniUseDlcName,
+     flag_descriptions::kCrostiniUseDlcDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseDlc)},
     {"pluginvm-fullscreen", flag_descriptions::kPluginVmFullscreenName,
      flag_descriptions::kPluginVmFullscreenDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPluginVmFullscreen)},
@@ -6518,13 +6521,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPermissionQuietChipDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(permissions::features::kPermissionQuietChip)},
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    {"dice-web-signin-interception",
-     flag_descriptions::kDiceWebSigninInterceptionName,
-     flag_descriptions::kDiceWebSigninInterceptionDescription,
-     kOsMac | kOsWin | kOsLinux,
-     FEATURE_VALUE_TYPE(kDiceWebSigninInterceptionFeature)},
-#endif  // ENABLE_DICE_SUPPORT
     {"canvas-2d-layers", flag_descriptions::kCanvas2DLayersName,
      flag_descriptions::kCanvas2DLayersDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableCanvas2DLayers)},

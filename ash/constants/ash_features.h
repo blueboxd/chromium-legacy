@@ -114,6 +114,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCompositingBasedThrottling;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kContextualNudges;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCroshSWA;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniUseDlc;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kDiagnosticsApp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrostiniDiskResizing;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniGpuSupport;
@@ -507,6 +510,8 @@ bool IsSettingsAppNotificationSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShowDateInTrayButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSplitSettingsSyncEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncSettingsCategorizationEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncConsentOptionalEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemLatinPhysicalTypingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabClusterUIEnabled();

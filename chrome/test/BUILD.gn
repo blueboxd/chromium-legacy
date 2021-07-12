@@ -209,6 +209,8 @@ static_library("test_support") {
     sources += [
       "../browser/banners/test_app_banner_manager_desktop.cc",
       "../browser/banners/test_app_banner_manager_desktop.h",
+      "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
+      "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
       "../browser/themes/test/theme_service_changed_waiter.cc",
       "../browser/themes/test/theme_service_changed_waiter.h",
     ]
@@ -230,6 +232,7 @@ static_library("test_support") {
 
   deps = [
     "//build:chromeos_buildflags",
+    "//chrome/app:command_ids",
     "//chrome/common/search:mojo_bindings",
     "//components/safe_browsing/content/renderer/phishing_classifier:unit_tests_support",
     "//components/security_interstitials/content:security_interstitial_page",
@@ -1723,8 +1726,6 @@ if (!is_android) {
       "../browser/renderer_context_menu/render_view_context_menu_browsertest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.h",
-      "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
-      "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
       "../browser/renderer_context_menu/spelling_bubble_model_browsertest.cc",
       "../browser/renderer_context_menu/spelling_menu_observer_browsertest.cc",
       "../browser/renderer_host/render_process_host_chrome_browsertest.cc",
@@ -2746,10 +2747,6 @@ if (!is_android) {
         "../browser/ui/web_applications/test/web_app_navigation_browsertest.h",
       ]
 
-      if (enable_autofill_assistant_api) {
-        sources += [ "../browser/extensions/api/autofill_assistant_private/autofill_assistant_private_apitest.cc" ]
-      }
-
       if (enable_background_mode) {
         sources += [ "../browser/extensions/background_app_browsertest.cc" ]
       }
@@ -2819,12 +2816,6 @@ if (!is_android) {
         "//extensions/common:mojom",
         "//extensions/common/api",
       ]
-
-      if (enable_autofill_assistant_api) {
-        deps += [
-          "//components/autofill_assistant/browser:extensions_test_support",
-        ]
-      }
 
       data += [
         "//chrome/test/data/extensions/",
@@ -3443,6 +3434,7 @@ if (!is_android) {
         "../browser/ui/views/crostini/crostini_package_install_failure_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_recovery_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_uninstaller_view_browsertest.cc",
+        "../browser/ui/views/crostini/crostini_update_component_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_update_filesystem_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_dialog_bounds_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
@@ -5656,7 +5648,6 @@ test("unit_tests") {
       "../browser/ui/passwords/bubble_controllers/post_save_compromised_bubble_controller_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/save_unsynced_credentials_locally_bubble_controller_unittest.cc",
       "../browser/ui/passwords/bubble_controllers/save_update_with_account_store_bubble_controller_unittest.cc",
-      "../browser/ui/passwords/bubble_controllers/sign_in_promo_bubble_controller_unittest.cc",
       "../browser/ui/passwords/credential_leak_dialog_controller_impl_unittest.cc",
       "../browser/ui/passwords/credential_manager_dialog_controller_impl_unittest.cc",
       "../browser/ui/qrcode_generator/qrcode_generator_bubble_controller_unittest.cc",
@@ -6636,10 +6627,6 @@ test("unit_tests") {
         "../browser/extensions/system_display/system_display_serialization_unittest.cc",
         "../renderer/extensions/accessibility_private_hooks_delegate_unittest.cc",
       ]
-    }
-
-    if (enable_autofill_assistant_api) {
-      sources += [ "../browser/extensions/api/autofill_assistant_private/extension_access_token_fetcher_unittest.cc" ]
     }
 
     allow_circular_includes_from = [

@@ -18,6 +18,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -1123,15 +1125,16 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest, Upgrade) {
   EXPECT_EQ(GetManager().GetRegisteredSystemAppsForTesting().size(),
             app_ids.size());
 
-  for (const auto& app_id : app_ids) {
-    const auto type = GetManager().GetSystemAppTypeForAppId(app_id).value();
+  // Some system web apps keep their resources (e.g. html pages) in real
+  // Chrome OS images. Here we test a few apps whose resources are bundled in
+  // chrome and always available. These apps are able to cover the code path we
+  // execute when launching the app.
+  const SystemAppType apps_to_launch[] = {
+      SystemAppType::SETTINGS,
+      SystemAppType::MEDIA,  // Uses File Handling with launch directory
+  };
 
-    // We don't launch Terminal in browsertest, because it requires resources
-    // that are only available in Chrome OS images.
-    if (type == SystemAppType::TERMINAL)
-      continue;
-
-    // Launch other System Apps normally, and check the app's launch_url loads.
+  for (const auto& type : apps_to_launch) {
     EXPECT_TRUE(LaunchApp(type));
   }
 }
@@ -1504,6 +1507,143 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
                                 1);
 }
 
+class SystemWebAppManagerContextMenuBrowserTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerContextMenuBrowserTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppsForContestMenuTest();
+  }
+  ~SystemWebAppManagerContextMenuBrowserTest() override = default;
+
+ protected:
+  std::unique_ptr<TestRenderViewContextMenu> CreateContextMenu(
+      content::WebContents* web_contents,
+      const GURL& link_href) {
+    content::ContextMenuParams params;
+    params.unfiltered_link_url = link_href;
+    params.link_url = link_href;
+    params.src_url = link_href;
+    params.link_text = std::u16string();
+    params.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
+    params.page_url = web_contents->GetVisibleURL();
+    params.source_type = ui::MENU_SOURCE_NONE;
+    auto menu = std::make_unique<TestRenderViewContextMenu>(
+        web_contents->GetMainFrame(), params);
+    menu->Init();
+    return menu;
+  }
+
+  // See TestSystemWebAppInstallation::SetUpAppsForContestMenuTest.
+  const SystemAppType kAppTypeSingleWindow = SystemAppType::SETTINGS;
+  const SystemAppType kAppTypeMultiWindow = SystemAppType::FILE_MANAGER;
+  const SystemAppType kAppTypeSingleWindowTabStrip = SystemAppType::MEDIA;
+  const SystemAppType kAppTypeMultiWindowTabStrip = SystemAppType::HELP;
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest,
+                       LinkToAppItself) {
+  WaitForTestSystemAppInstall();
+
+  {
+    // Single window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindow);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Single window, has tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindowTabStrip);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Multi window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindow);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Multi window, has tab strip.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindowTabStrip);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest,
+                       LinkToOtherSystemWebApp) {
+  WaitForTestSystemAppInstall();
+
+  {
+    // Typical SWA, single window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindow);
+    auto menu = CreateContextMenu(web_contents,
+                                  GetStartUrl(kAppTypeSingleWindowTabStrip));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Deliberately test on a multi-window, tab-strip app to cover edge cases.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindowTabStrip);
+    auto menu =
+        CreateContextMenu(web_contents, GetStartUrl(kAppTypeMultiWindow));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest, WebLink) {
+  WaitForTestSystemAppInstall();
+
+  GURL kWebUrl = GURL("https://example.com/");
+
+  {
+    // Typical SWA, single window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindow);
+    auto menu = CreateContextMenu(web_contents, kWebUrl);
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Deliberately test on a multi-window, tab-strip app to cover edge cases.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindowTabStrip);
+    auto menu = CreateContextMenu(web_contents, kWebUrl);
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+}
+
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerBrowserTest);
 
@@ -1557,5 +1697,8 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerDefaultBoundsTest);
 #endif
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppManagerContextMenuBrowserTest);
 
 }  // namespace web_app

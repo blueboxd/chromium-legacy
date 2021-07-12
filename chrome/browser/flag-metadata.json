@@ -836,6 +836,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "crostini-enable-dlc",
+    "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "crostini-gpu-support",
     "owners": [ "nverne", "benwells" ],
     "expiry_milestone": 95
@@ -849,6 +854,11 @@
     "name": "crostini-use-buster-image",
     "owners": [ "davidmunro@google.com", "clumptini@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "crostini-use-dlc",
+    "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
+    "expiry_milestone": 92
   },
   {
     "name": "cryptauth-v2-device-activity-status",
@@ -1028,11 +1038,6 @@
     "name": "diagnostics-app-navigation",
     "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "dice-web-signin-interception",
-    "owners": [ "droger", "my-chrome-everywhere@google.com" ],
-    "expiry_milestone": 92
   },
   {
     "name": "disable-accelerated-2d-canvas",
@@ -2798,8 +2803,8 @@
   },
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
-    "owners": [ "qingsi" ],
-    "expiry_milestone": 90
+    "owners": [ "hta" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-webrtc-hybrid-agc",

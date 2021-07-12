@@ -4209,6 +4209,11 @@ const char kCrostiniUseBusterImageDescription[] =
 const char kCrostiniGpuSupportName[] = "Crostini GPU Support";
 const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
 
+const char kCrostiniUseDlcName[] = "Crostini Use DLC";
+const char kCrostiniUseDlcDescription[] =
+    "Download the termina VM using the new DLC service instead of the old "
+    "component updater.";
+
 const char kCrostiniResetLxdDbName[] = "Crostini Reset LXD DB on launch";
 const char kCrostiniResetLxdDbDescription[] =
     "Recreates the LXD database every time we launch it";
@@ -5304,12 +5309,6 @@ const char kEnableJXLName[] = "Enable JXL image format";
 const char kEnableJXLDescription[] =
     "Adds image decoding support for the JPEG XL image format.";
 #endif  // BUILDFLAG(ENABLE_JXL_DECODER)
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-const char kDiceWebSigninInterceptionName[] = "Dice Web-Signin Interception";
-const char kDiceWebSigninInterceptionDescription[] =
-    "If enabled, Chrome may promote profile creation after signin on the web.";
-#endif
 
 #if BUILDFLAG(ENABLE_NACL)
 const char kNaclName[] = "Native Client";

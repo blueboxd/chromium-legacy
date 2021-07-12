@@ -218,18 +218,13 @@ void CheckHistograms(const base::HistogramTester& histogram_tester,
           ? DiceInterceptedSessionStartupHelper::Result::kReconcilorSuccess
           : DiceInterceptedSessionStartupHelper::Result::kMultiloginSuccess,
       1);
-  histogram_tester.ExpectTotalCount("Profile.Guest.SigninTransferred.Lifetime",
-                                    intercept_to_guest ? 1 : 0);
-  histogram_tester.ExpectBucketCount("Profile.EphemeralGuest.Signin", true,
-                                     intercept_to_guest ? 1 : 0);
 }
 
 }  // namespace
 
 class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
  public:
-  DiceWebSigninInterceptorBrowserTest()
-      : feature_list_(kDiceWebSigninInterceptionFeature) {}
+  DiceWebSigninInterceptorBrowserTest() = default;
 
   Profile* profile() { return browser()->profile(); }
 
@@ -256,9 +251,6 @@ class DiceWebSigninInterceptorBrowserTest : public InProcessBrowserTest {
         interceptor_delegates_[profile];
     return interceptor_delegate;
   }
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
 
  private:
   // InProcessBrowserTest:

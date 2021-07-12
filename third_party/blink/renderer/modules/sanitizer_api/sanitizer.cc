@@ -140,10 +140,10 @@ Element* Sanitizer::sanitizeFor(ScriptState* script_state,
   return element;
 }
 
-void Sanitizer::ElementSetSanitizedHTML(ScriptState* script_state,
-                                        Element& element,
-                                        const String& markup,
-                                        ExceptionState& exception_state) {
+void Sanitizer::ElementSetHTML(ScriptState* script_state,
+                               Element& element,
+                               const String& markup,
+                               ExceptionState& exception_state) {
   Element* new_element =
       sanitizeFor(script_state, element.localName(), markup, exception_state);
   if (!new_element || exception_state.HadException())
@@ -373,13 +373,13 @@ Node* Sanitizer::KeepElement(Node* node,
   return node;
 }
 
-SanitizerConfig* Sanitizer::config() const {
+SanitizerConfig* Sanitizer::getConfiguration() const {
   return SanitizerConfigCopy(config_dictionary_
                                  ? config_dictionary_.Get()
                                  : SanitizerConfigImpl::defaultConfig());
 }
 
-SanitizerConfig* Sanitizer::defaultConfig() {
+SanitizerConfig* Sanitizer::getDefaultConfiguration() {
   return SanitizerConfigCopy(SanitizerConfigImpl::defaultConfig());
 }
 

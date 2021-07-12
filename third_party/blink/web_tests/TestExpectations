@@ -1214,14 +1214,6 @@ crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.htm
 
 # ====== MathMLCore-only tests from here ======
 
-crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-006.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction-009.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/direction/direction.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/inferred-mrow-stretchy.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-001.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/operators/mo-axis-height-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/presentation-markup/scripts/cramped-001.html [ Failure ]
-
 # These tests fail because we don't support MathML ink metrics.
 crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-001.html [ Failure ]
 crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-002.html [ Failure ]
@@ -1238,6 +1230,7 @@ crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-002.
 crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-004.html [ Failure ]
 
 # These tests fail because we don't support MathML tables.
+crbug.com/1125111 external/wpt/mathml/presentation-markup/direction/direction-006.html [ Failure ]
 crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-001.html [ Failure ]
 crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-002.html [ Failure ]
 crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-axis-height.html [ Failure ]
@@ -1252,6 +1245,7 @@ crbug.com/1093840 external/wpt/mathml/relations/html5-tree/math-global-event-han
 # These tests fail because we don't parse math display values according to the spec.
 crbug.com/1127222 external/wpt/css/css-display/display-math-on-pseudo-elements-001.html [ Failure ]
 crbug.com/1127222 external/wpt/css/css-display/display-math-on-pseudo-elements-002.html [ Failure ]
+crbug.com/1127222 external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-001.html [ Failure ]
 
 # This test fails on windows. It should really be made more reliable and take
 # into account fallback parameters.
@@ -4155,8 +4149,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/empty-mask.svg [ Failure
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/focus-ring.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/focus-ring-text.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Pass Skip ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/mouse-move-on-svg-container.xhtml [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/mouse-move-on-svg-container-standalone.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/svg-root-with-opacity.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-match-highlight.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/transformed-outlines.svg [ Failure ]
@@ -4182,9 +4174,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/columns-do-not-apply.html 
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/getextentofchar-nonbmp.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/non-invertible-matrix-text.svg [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-background-color.xhtml [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-1.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-2.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-dragging-outside-3.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-styles.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/surrogate-pair-attribute-positions.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
@@ -4901,7 +4890,7 @@ crbug.com/1207342 http/tests/devtools/console/console-api-on-call-frame.js [ Pas
 crbug.com/1207342 http/tests/devtools/console/worker-eval-contains-stack.js [ Pass Failure ]
 crbug.com/1207342 http/tests/devtools/console/nested-worker-eval-contains-stack.js [ Pass Failure ]
 crbug.com/1207342 http/tests/devtools/console/console-error-on-call-frame.js [ Pass Failure ]
-crbug.com/1207342 http/tests/devtools/console/console-context-selector.js [ Pass Failure ]
+crbug.com/1207342 crbug.com/1046784 http/tests/devtools/console/console-context-selector.js [ Pass Failure Timeout ]
 crbug.com/1207342 http/tests/devtools/indexeddb/live-update-indexeddb-content.js [ Pass Failure ]
 crbug.com/1207342 http/tests/devtools/compiler-source-mapping-debug.js [ Pass Failure ]
 crbug.com/1207342 http/tests/devtools/network/parse-form-data.js [ Pass Failure ]
@@ -5887,8 +5876,6 @@ crbug.com/1061043 fast/plugins/keypress-event.html [ Failure Pass ]
 crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Failure Pass ]
 
 crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-property-on-main.html [ Failure Pass ]
-
-crbug.com/1091665 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Failure Pass ]
 
 # [virtual/...]external/wpt/web-animation test flakes
 crbug.com/1064065 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Failure Pass ]
@@ -7309,3 +7296,7 @@ crbug.com/1215068 http/tests/devtools/tracing/tracing-timeline-load.js [ Skip ]
 
 # Sheriff 2021-07-07
 crbug.com/1227092 [ Win ] virtual/scroll-unification/fast/events/selection-autoscroll-borderbelt.html [ Failure Pass ]
+
+# Sheriff 2021-07-12
+crbug.com/1228149 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Timeout ]
+crbug.com/1228149 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Timeout ]

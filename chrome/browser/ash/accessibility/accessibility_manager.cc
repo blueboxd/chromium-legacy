@@ -14,13 +14,13 @@
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/components/audio/sounds.h"
 #include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/accessibility_focus_ring_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -83,6 +83,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -845,7 +846,7 @@ void AccessibilityManager::OnDictationChanged(bool triggered_by_user) {
 
   // Only need to check SODA installation and locale preference if offline
   // dictation is enabled.
-  if (!::switches::IsExperimentalAccessibilityDictationOfflineEnabled())
+  if (!features::IsExperimentalAccessibilityDictationOfflineEnabled())
     return;
 
   const bool enabled =

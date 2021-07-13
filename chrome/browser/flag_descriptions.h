@@ -2356,6 +2356,9 @@ extern const char kBluetoothAggressiveAppearanceFilterDescription[];
 extern const char kBluetoothFixA2dpPacketSizeName[];
 extern const char kBluetoothFixA2dpPacketSizeDescription[];
 
+extern const char kBluetoothRevampName[];
+extern const char kBluetoothRevampDescription[];
+
 extern const char kBluetoothWbsDogfoodName[];
 extern const char kBluetoothWbsDogfoodDescription[];
 
@@ -2850,6 +2853,9 @@ extern const char kNearbySharingWebRtcDescription[];
 
 extern const char kPhoneHubCameraRollName[];
 extern const char kPhoneHubCameraRollDescription[];
+
+extern const char kPhoneHubRecentAppsName[];
+extern const char kPhoneHubRecentAppsDescription[];
 
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];

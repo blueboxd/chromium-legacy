@@ -4114,6 +4114,11 @@ const char kBluetoothFixA2dpPacketSizeDescription[] =
     "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
     "audio quality and may fix audio stutter.";
 
+const char kBluetoothRevampName[] = "Bluetooth Revamp";
+const char kBluetoothRevampDescription[] =
+    "Enables the Chrome OS Bluetooth Revamp, which updates Bluetooth system UI "
+    "and related infrastructure.";
+
 const char kBluetoothWbsDogfoodName[] = "Bluetooth WBS dogfood";
 const char kBluetoothWbsDogfoodDescription[] =
     "Enables Bluetooth wideband speech mic as default audio option. "
@@ -4937,6 +4942,11 @@ const char kPhoneHubCameraRollName[] = "Camera Roll in Phone Hub";
 const char kPhoneHubCameraRollDescription[] =
     "Enables the Camera Roll feature in Phone Hub, which allows users to "
     "access recent photos and videos taken on a connected Android device.";
+
+const char kPhoneHubRecentAppsName[] = "Recent Apps in Phone Hub";
+const char kPhoneHubRecentAppsDescription[] =
+    "Enables the Recent Apps feature in Phone Hub, which allows users to "
+    "relaunch a recently streamed app.";
 
 const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
 const char kReduceDisplayNotificationsDescription[] =

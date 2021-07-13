@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/barrier_closure.h"
@@ -288,7 +288,7 @@ void SetLoginExtensionApiLaunchExtensionIdPref(const AccountId& account_id,
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
   DCHECK(profile);
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetString(prefs::kLoginExtensionApiLaunchExtensionId, extension_id);
+  prefs->SetString(::prefs::kLoginExtensionApiLaunchExtensionId, extension_id);
   prefs->CommitPendingWrite();
 }
 
@@ -1476,7 +1476,7 @@ void ExistingUserController::StartAutoLoginTimer() {
   if (data_snapshotd_manager && !data_snapshotd_manager->IsAutoLoginAllowed() &&
       data_snapshotd_manager->IsAutoLoginConfigured()) {
     data_snapshotd_manager->set_reset_autologin_callback(
-        base::BindOnce(&ExistingUserController::ResetAutoLoginTimer,
+        base::BindOnce(&ExistingUserController::StartAutoLoginTimer,
                        weak_factory_.GetWeakPtr()));
     return;
   }

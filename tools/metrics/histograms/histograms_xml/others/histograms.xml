@@ -6830,6 +6830,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Graphics.Smoothness.FrameSequenceLength" units="count"
     expires_after="2021-08-15">
+  <obsolete>
+    Removed 2021-07-09.
+  </obsolete>
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -10637,6 +10640,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>chrome-creation@google.com</owner>
   <summary>
     Records the number of times the user changed templates when creating a note.
+  </summary>
+</histogram>
+
+<histogram name="NoteCreation.SelectedTemplate" enum="NoteTemplate"
+    expires_after="2021-12-01">
+  <owner>sebsg@chromium.org</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records which template the user selected when creating their note.
   </summary>
 </histogram>
 
@@ -19029,6 +19041,15 @@ regressions. -->
   <summary>
     Identical to Webapp.Update.ManifestUpdateResult but restricted to just
     default installed web apps.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.UrlHandling.DialogState"
+    enum="WebAppUrlHandlingDialogState" expires_after="2022-06-25">
+  <owner>mek@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the user action taken on the URL Handling intent picker dialog.
   </summary>
 </histogram>
 

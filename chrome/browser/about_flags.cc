@@ -3004,6 +3004,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBluetoothFixA2dpPacketSizeName,
      flag_descriptions::kBluetoothFixA2dpPacketSizeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kBluetoothFixA2dpPacketSize)},
+    {"bluetooth-revamp", flag_descriptions::kBluetoothRevampName,
+     flag_descriptions::kBluetoothRevampDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kBluetoothRevamp)},
     {"bluetooth-wbs-dogfood", flag_descriptions::kBluetoothWbsDogfoodName,
      flag_descriptions::kBluetoothWbsDogfoodDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kBluetoothWbsDogfood)},
@@ -4057,8 +4060,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityDictationOfflineName,
      flag_descriptions::kExperimentalAccessibilityDictationOfflineDescription,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilityDictationOffline)},
+     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityDictationOffline)},
     {"enable-experimental-accessibility-switch-access-text",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextDescription,
@@ -7427,6 +7429,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-phone-hub-camera-roll", flag_descriptions::kPhoneHubCameraRollName,
      flag_descriptions::kPhoneHubCameraRollDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPhoneHubCameraRoll)},
+
+    {"enable-phone-hub-recent-apps", flag_descriptions::kPhoneHubRecentAppsName,
+     flag_descriptions::kPhoneHubRecentAppsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kPhoneHubRecentApps)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"sameparty-cookies-considered-first-party",

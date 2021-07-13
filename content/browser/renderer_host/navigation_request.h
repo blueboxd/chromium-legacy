@@ -890,6 +890,10 @@ class CONTENT_EXPORT NavigationRequest
 
   base::WeakPtr<NavigationRequest> GetWeakPtr();
 
+  bool is_potentially_prerendered_page_activation_for_testing() const {
+    return is_potentially_prerendered_page_activation_for_testing_;
+  }
+
   int prerender_frame_tree_node_id() const {
     DCHECK(prerender_frame_tree_node_id_.has_value())
         << "Must be called after StartNavigation()";
@@ -897,6 +901,12 @@ class CONTENT_EXPORT NavigationRequest
   }
 
   void RenderFallbackContentForObjectTag();
+
+  // Returns the vector of web features used during the navigation, whose
+  // recording was delayed until the new document that used them commits.
+  //
+  // Empties this instance's vector.
+  std::vector<blink::mojom::WebFeature> TakeWebFeaturesToLog();
 
   // Helper for logging crash keys related to a NavigationRequest (e.g.
   // "navigation_request_url" and "navigation_request_initiator").  The crash
@@ -943,6 +953,20 @@ class CONTENT_EXPORT NavigationRequest
       RenderFrameHostImpl* rfh_restored_from_back_forward_cache,
       int initiator_process_id,
       bool was_opener_suppressed);
+
+  // Checks if this navigation may activate a prerendered page. If it's
+  // possible, schedules to start running CommitDeferringConditions for
+  // prerendered page activation and returns true.
+  bool MaybeStartPrerenderingActivationChecks();
+
+  // Called from OnCommitDeferringConditionChecksComplete() if this request is
+  // activating a prerendered page.
+  void OnPrerenderingActivationChecksComplete(
+      CommitDeferringCondition::NavigationType navigation_type,
+      absl::optional<int> candidate_prerender_frame_tree_node_id);
+
+  // Called from BeginNavigation() or OnPrerenderingActivationChecksComplete().
+  void BeginNavigationImpl();
 
   // Checks if the response requests an isolated origin via the
   // Origin-Agent-Cluster header, and if so opts in the origin to be isolated.
@@ -1013,11 +1037,23 @@ class CONTENT_EXPORT NavigationRequest
   void OnWillProcessResponseChecksComplete(
       NavigationThrottle::ThrottleCheckResult result);
 
+  // Runs CommitDeferringConditions.
+  //
+  // For prerendered page activation, this is called at the beginning of the
+  // navigation (i.e., in BeginNavigation()). This is because activating a
+  // prerendered page must be an atomic, synchronous operation so there is no
+  // chance for the prerender to be cancelled during the operation. The
+  // CommitDeferringConditions are asynchronous, so they run at the beginning
+  // of navigation. Once they finish, the atomic activation sequence runs.
+  void RunCommitDeferringConditions();
+
   // Similar to the NavigationThrottle checks above but this is called from
   // CommitDeferringConditionRunner rather than NavigationThrottles and is
   // invoked after all throttle checks and commit checks have completed and the
   // navigation can proceed to commit.
-  void OnCommitDeferringConditionChecksComplete() override;
+  void OnCommitDeferringConditionChecksComplete(
+      CommitDeferringCondition::NavigationType navigation_type,
+      absl::optional<int> candidate_prerender_frame_tree_node_id) override;
 
   // Called either by OnFailureChecksComplete() or OnRequestFailed() directly.
   // |error_page_content| contains the content of the error page (i.e. flattened
@@ -1556,6 +1592,11 @@ class CONTENT_EXPORT NavigationRequest
   // are met. CommitDeferringConditionRunner is responsible for deferring a
   // commit if needed and resuming it, by calling
   // OnCommitDeferringConditionChecksComplete, once all checks passed.
+  //
+  // For prerendered page activation, it doesn't run the NavigationThrottles and
+  // run the CommitDeferringConditionRunner at the beginning of
+  // BeginNavigation(). See the comment on RunCommitDeferringConditions() for
+  // details.
   std::unique_ptr<CommitDeferringConditionRunner> commit_deferrer_;
 
   // Indicates whether the navigation changed which NavigationEntry is current.
@@ -1793,7 +1834,12 @@ class CONTENT_EXPORT NavigationRequest
 
   net::IsolationInfo isolation_info_for_subresources_;
 
-  // Prerender2:
+  // Set while CommitDeferringConditions are running for prerendered page
+  // activation. This is needed as PrerenderHost hasn't been reserved and
+  // prerender_frame_tree_node_id() is not available yet while they are
+  // running.
+  bool is_potentially_prerendered_page_activation_for_testing_ = false;
+
   // The root frame tree node id of the prerendered page. This will be a valid
   // FrameTreeNode id when this navigation will activate a prerendered page.
   // For all other navigations this will be
@@ -1801,6 +1847,7 @@ class CONTENT_EXPORT NavigationRequest
   // when BeginNavigation is called so the optional will be empty until then
   // and callers must not query its value before it's been computed.
   absl::optional<int> prerender_frame_tree_node_id_;
+
   // Used to store a cloned NavigationEntry for activating a prerendered page.
   // |prerender_navigation_entry_| is cloned and stored in NavigationRequest
   // when the prerendered page is transferred to the target FrameTree and is
@@ -1820,6 +1867,11 @@ class CONTENT_EXPORT NavigationRequest
   network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
   network::mojom::PrivateNetworkRequestPolicy private_network_request_policy_ =
       network::mojom::PrivateNetworkRequestPolicy::kWarn;
+
+  // The list of web features that were used by the new document during
+  // navigation. These can only be logged once the document commits, so they are
+  // held in this vector until then.
+  std::vector<blink::mojom::WebFeature> web_features_to_log_;
 
   // Messages to be printed on the console in the target RenderFrameHost of this
   // NavigationRequest.

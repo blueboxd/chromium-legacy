@@ -995,10 +995,17 @@
       'Lollipop Phone Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+
+      # Not available for android x86 & x64 platforms since this GN target
+      # asserts "enable_vr" which is only true for arm & arm64 on android
+      # platform. See //chrome/android/BUILD.gn and
+      # //device/vr/buildflags/buildflags.gni
       'android-11-x86-fyi-rel',
+      'android-12-x64-fyi-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-x86-rel-non-cq',
       'android-pie-x86-rel',
+
       'android-pie-arm64-rel', # https://crbug.com/1010211
       'ToTAndroid',
       'android-asan',  # https://crbug.com/964562
@@ -1889,6 +1896,13 @@
         },
       },
     },
+  },
+  'mac_signing_tests': {
+    'remove_from': [
+      # TODO(crbug.com/1220743): Re-enable.
+      'Mac10.11 Tests',
+      'Mac10.12 Tests',
+    ]
   },
   'maps_pixel_passthrough_test': {
     'modifications': {
@@ -3046,9 +3060,15 @@
   'vr_android_unittests': {
     'remove_from': [
       'android-lollipop-arm-rel',
+
+      # Not available for android x86 & x64 platforms since this GN target
+      # asserts "enable_vr" which is only true for arm & arm64 on android
+      # platform. See //chrome/browser/android/vr/BUILD.gn and
+      # //device/vr/buildflags/buildflags.gni
       'android-marshmallow-x86-rel-non-cq',
       'android-pie-x86-rel',
       'android-11-x86-fyi-rel',
+      'android-12-x64-fyi-rel',
     ],
   },
   'vr_common_unittests': {
@@ -3308,11 +3328,6 @@
       },
     },
   },
-  'webview_cts_tests_gtest': {
-    'remove_from': [
-      'android-marshmallow-arm64-rel-dual-coverage',
-    ],
-  },
   'webview_instrumentation_test_apk': {
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
@@ -3360,11 +3375,6 @@
         ],
       },
     },
-  },
-  'webview_ui_instrumentation_tests': {
-    'remove_from': [
-      'android-marshmallow-arm64-rel-dual-coverage',
-    ],
   },
   'webview_ui_test_app_test_apk': {
     'remove_from': [

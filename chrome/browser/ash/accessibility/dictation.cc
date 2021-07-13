@@ -5,7 +5,7 @@
 #include "chrome/browser/ash/accessibility/dictation.h"
 
 #include "ash/components/audio/sounds.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_map.h"
 #include "base/metrics/histogram_functions.h"
@@ -29,7 +29,6 @@
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
@@ -79,7 +78,7 @@ std::string GetUserLangOrLocaleFromSystem(Profile* profile) {
 
 std::string GetUserLocale(Profile* profile) {
   std::string locale;
-  if (switches::IsExperimentalAccessibilityDictationOfflineEnabled()) {
+  if (features::IsExperimentalAccessibilityDictationOfflineEnabled()) {
     // Get the user's chosen dictation locale from their preference in settings.
     // This is guaranteed to be a supported locale and won't be empty, since
     // the pref is set using DetermineDefaultSupportedLocale() as soon as
@@ -214,7 +213,7 @@ const base::flat_map<std::string, bool> Dictation::GetAllSupportedLocales() {
     // By default these languages are not supported offline.
     supported_locales[locale] = false;
   }
-  if (switches::IsExperimentalAccessibilityDictationOfflineEnabled()) {
+  if (features::IsExperimentalAccessibilityDictationOfflineEnabled()) {
     std::vector<std::string> offline_languages =
         speech::SodaInstaller::GetInstance()->GetAvailableLanguages();
     for (auto language : offline_languages) {
@@ -268,7 +267,7 @@ bool Dictation::OnToggleDictation() {
   base::UmaHistogramSparse("Accessibility.CrosDictation.Language",
                            base::HashMetricName(locale));
 
-  if (switches::IsExperimentalAccessibilityDictationOfflineEnabled() &&
+  if (features::IsExperimentalAccessibilityDictationOfflineEnabled() &&
       OnDeviceSpeechRecognizer::IsOnDeviceSpeechRecognizerAvailable(locale)) {
     // On-device recognition is behind a flag and then only available if
     // SODA is installed on-device.

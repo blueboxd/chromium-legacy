@@ -15,10 +15,14 @@ component("common") {
   sources = [
     "device.cc",
     "device.h",
+    "fast_pair/fast_pair_decoder.cc",
+    "fast_pair/fast_pair_decoder.h",
     "log_buffer.cc",
     "log_buffer.h",
     "logging.cc",
     "logging.h",
+    "pair_failure.cc",
+    "pair_failure.h",
     "protocol.cc",
     "protocol.h",
   ]
@@ -28,7 +32,11 @@ component("common") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "logging_unittest.cc" ]
+
+  sources = [
+    "fast_pair/fast_pair_decoder_unittest.cc",
+    "logging_unittest.cc",
+  ]
 
   deps = [
     ":common",

@@ -3932,6 +3932,20 @@ Unknown properties are collapsed to zero. -->
   <int value="13" label="Account is not present in Chrome"/>
 </enum>
 
+<enum name="ArcResizeLockState">
+<!-- Value from components/arc/mojom/compatibility_mode.mojom -->
+
+  <summary>
+    Defines the types of resize lock setting status that overrides the state
+    Android calculates
+  </summary>
+  <int value="0" label="UNDEFINED"/>
+  <int value="1" label="READY"/>
+  <int value="2" label="ON"/>
+  <int value="3" label="OFF"/>
+  <int value="4" label="FULLY_LOCKED"/>
+</enum>
+
 <enum name="ArcSdkVersionUpgradeType">
   <summary>Defines the types of ARC SDK version upgrade</summary>
   <int value="0" label="NO_UPGRADE"/>
@@ -17999,7 +18013,6 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="10" label="11.1"/>
   <int value="11" label="12.0"/>
   <int value="12" label="12.1"/>
-  <int value="13" label="12.2"/>
 </enum>
 
 <enum name="D3D11InitializeResult">
@@ -18069,6 +18082,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="2" label="D3D_FEATURE_LEVEL_12_1"/>
   <int value="3" label="D3D_FEATURE_LEVEL_11_0"/>
   <int value="4" label="D3D_FEATURE_LEVEL_11_1"/>
+  <int value="5" label="D3D_FEATURE_LEVEL_12_2"/>
 </enum>
 
 <enum name="D3D9InitializeResult">
@@ -22482,6 +22496,9 @@ Called by update_document_policy_enum.py.-->
 <enum name="DriveApiErrorCode">
 <!-- Generated from google_apis/drive/drive_api_error_codes.h -->
 
+  <obsolete>
+    Obsolete 02/2019 as it's no longer used in any metrics.
+  </obsolete>
   <int value="200" label="HTTP_SUCCESS"/>
   <int value="201" label="HTTP_CREATED"/>
   <int value="204" label="HTTP_NO_CONTENT"/>
@@ -28753,6 +28770,11 @@ Called by update_extension_histograms.py.-->
   <int value="1556"
       label="ACCESSIBILITY_PRIVATE_GETLOCALIZEDDOMKEYSTRINGFORKEYCODE"/>
   <int value="1557" label="SCRIPTING_REGISTERCONTENTSCRIPTS"/>
+  <int value="1558" label="WMDESKSPRIVATE_CAPTUREACTIVEDESKANDSAVETEMPLATE"/>
+  <int value="1559" label="WMDESKSPRIVATE_UPDATEDESKTEMPLATE"/>
+  <int value="1560" label="WMDESKSPRIVATE_GETSAVEDDESKTEMPLATES"/>
+  <int value="1561" label="WMDESKSPRIVATE_DELETEDESKTEMPLATE"/>
+  <int value="1562" label="WMDESKSPRIVATE_LAUNCHDESKTEMPLATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -29373,6 +29395,7 @@ Called by update_extension_permission.py.-->
   <int value="228" label="kSearch"/>
   <int value="229" label="kTabGroups"/>
   <int value="230" label="kScripting"/>
+  <int value="231" label="kWmDesksPrivate"/>
 </enum>
 
 <enum name="ExtensionPointEnableState">
@@ -33953,6 +33976,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3955" label="SameSiteNoneIncludedBySamePartyAncestors"/>
   <int value="3956" label="SameSiteNoneIncludedBySameSiteLax"/>
   <int value="3957" label="SameSiteNoneIncludedBySameSiteStrict"/>
+  <int value="3958"
+      label="PrivateNetworkAccessNonSecureContextsAllowedDeprecationTrial"/>
+  <int value="3959" label="V8URLPattern_Constructor"/>
+  <int value="3960" label="V8URLPattern_Test_Method"/>
+  <int value="3961" label="V8URLPattern_Exec_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43998,16 +44026,25 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="KaleidoscopeCacheHit">
+  <obsolete>
+    Deprecated as of 2020/12.
+  </obsolete>
   <int value="0" label="Cache Hit"/>
   <int value="1" label="Cache Miss"/>
 </enum>
 
 <enum name="KaleidoscopeDialogClosedBoolean">
+  <obsolete>
+    Deprecated as of 2020/12.
+  </obsolete>
   <int value="0" label="The user did not open a watch action"/>
   <int value="1" label="The user did open a watch action"/>
 </enum>
 
 <enum name="KaleidoscopeFirstRunProgress">
+  <obsolete>
+    Deprecated as of 2020/12.
+  </obsolete>
   <int value="0" label="Completed"/>
   <int value="1" label="Provider Selection"/>
   <int value="2" label="Media Feeds Consent"/>
@@ -44015,6 +44052,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="KaleidoscopeNavigation">
+  <obsolete>
+    Deprecated as of 2020/12.
+  </obsolete>
   <int value="0" label="Normal navigation"/>
 </enum>
 
@@ -46813,6 +46853,7 @@ from previous Chrome versions.
   <int value="-1565683260" label="EnableSwitchAccessPointScanning:disabled"/>
   <int value="-1564232131"
       label="OmniboxOnDeviceHeadProviderNonIncognito:enabled"/>
+  <int value="-1563539313" label="PhoneHubRecentApps:enabled"/>
   <int value="-1562065709" label="ForceEnableDevicesPage:enabled"/>
   <int value="-1561252720" label="AutofillCreditCardUploadFeedback:disabled"/>
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
@@ -47203,6 +47244,7 @@ from previous Chrome versions.
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1271441871" label="AmbientColor:enabled"/>
   <int value="-1270634957" label="PhoneHubUseBle:enabled"/>
+  <int value="-1270082532" label="BluetoothRevamp:disabled"/>
   <int value="-1269962982" label="SyncUSSPasswords:disabled"/>
   <int value="-1269093329" label="AndroidOmniboxPreviewsBadge:disabled"/>
   <int value="-1269084216" label="ash-md"/>
@@ -47705,6 +47747,8 @@ from previous Chrome versions.
   <int value="-868138290" label="CrostiniPortForwarding:disabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
+  <int value="-866097797"
+      label="ExperimentalAccessibilityDictationOffline:disabled"/>
   <int value="-864266073" label="cros-regions-mode"/>
   <int value="-864234985" label="UseDdljsonApi:enabled"/>
   <int value="-864232986" label="StartSurfaceAndroid:disabled"/>
@@ -48561,6 +48605,7 @@ from previous Chrome versions.
   <int value="-118993417" label="TLS13HardeningForLocalAnchors:disabled"/>
   <int value="-118897826" label="IntensiveWakeUpThrottling:enabled"/>
   <int value="-116692797" label="HTTPAuthCommittedInterstitials:enabled"/>
+  <int value="-116172457" label="PhoneHubRecentApps:disabled"/>
   <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
   <int value="-114807608" label="TerminalSystemApp:disabled"/>
   <int value="-114768488" label="ImmersiveFullscreen:enabled"/>
@@ -49129,6 +49174,8 @@ from previous Chrome versions.
   <int value="359896413" label="SplitPartiallyOccludedQuads:disabled"/>
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
   <int value="360599302" label="enable-gpu-rasterization"/>
+  <int value="361984896"
+      label="ExperimentalAccessibilityDictationOffline:enabled"/>
   <int value="362623880"
       label="HoldingSpaceInProgressDownloadsIntegration:disabled"/>
   <int value="362644448" label="memlog-in-process"/>
@@ -50624,6 +50671,7 @@ from previous Chrome versions.
   <int value="1593917165" label="SimplifiedNTP:disabled"/>
   <int value="1594247626" label="ContentSuggestionsSettings:enabled"/>
   <int value="1594664550" label="NTPModernLayout:enabled"/>
+  <int value="1594993731" label="BluetoothRevamp:enabled"/>
   <int value="1595208893" label="AudioWorkletRealtimeThread:enabled"/>
   <int value="1597880096" label="FocusMode:disabled"/>
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
@@ -51004,6 +51052,7 @@ from previous Chrome versions.
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1907273605" label="NtpZeroSuggest:disabled"/>
+  <int value="1909117215" label="animated-image-resume"/>
   <int value="1910240042" label="enable-experimental-fullscreen-exit-ui"/>
   <int value="1911002680" label="TFLiteLanguageDetectionEnabled:enabled"/>
   <int value="1913263516" label="OculusVR:enabled"/>
@@ -58505,6 +58554,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="No apps available"/>
   <int value="8" label="Web app launched successfully"/>
   <int value="9" label="Web app missing"/>
+</enum>
+
+<enum name="NoteTemplate">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Classic"/>
+  <int value="2" label="Friendly"/>
+  <int value="3" label="Fresh"/>
+  <int value="4" label="Powerful"/>
+  <int value="5" label="Impactful"/>
+  <int value="6" label="Lovely"/>
+  <int value="7" label="Groovy"/>
+  <int value="8" label="Monochrome"/>
+  <int value="9" label="Bold"/>
+  <int value="10" label="Dreamy"/>
 </enum>
 
 <enum name="NotificationActionType">
@@ -85105,6 +85168,15 @@ others/histograms.xml -->
   <int value="12" label="System app management on ChromeOS"/>
   <int value="13" label="Placeholder app management for preinstalled apps"/>
   <int value="14" label="Externally managed Arc apps"/>
+</enum>
+
+<enum name="WebAppUrlHandlingDialogState">
+  <summary>State of the URL Handling intent picker dialog.</summary>
+  <int value="0" label="Dialog Closed"/>
+  <int value="1" label="Remember open in broswer"/>
+  <int value="2" label="Open in browser"/>
+  <int value="3" label="Remember open in app"/>
+  <int value="4" label="Open in app"/>
 </enum>
 
 <enum name="WebAppUrlLoaderResult">

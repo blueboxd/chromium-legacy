@@ -210,6 +210,7 @@ extern const char kChromeUIUntrustedVideoTutorialsHost[];
 extern const char kChromeUIUntrustedVideoPlayerUrl[];
 extern const char kChromeUIWebApksHost[];
 #else
+extern const char kChromeUIAppServiceInternalsHost[];
 extern const char kChromeUINearbyInternalsHost[];
 extern const char kChromeUIReadLaterHost[];
 extern const char kChromeUIReadLaterURL[];
@@ -277,8 +278,8 @@ extern const char kChromeUIPasswordChangeHost[];
 extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIPrintManagementUrl[];
 extern const char kChromeUIPowerHost[];
-extern const char kChromeUIProjectorSelfieCamHost[];
-extern const char kChromeUIProjectorSelfieCamURL[];
+extern const char kChromeUIProjectorHost[];
+extern const char kChromeUIProjectorURL[];
 extern const char kChromeUIScanningAppURL[];
 extern const char kChromeUIScreenlockIconHost[];
 extern const char kChromeUIScreenlockIconURL[];

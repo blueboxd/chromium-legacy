@@ -191,6 +191,11 @@ const base::Feature kBluetoothFixA2dpPacketSize{
 const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the Chrome OS Bluetooth Revamp, which updates Bluetooth
+// system UI and related infrastructure. See https://crbug.com/1010321.
+const base::Feature kBluetoothRevamp{"BluetoothRevamp",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Bluetooth WBS microphone be selected as default
 // audio input option.
 const base::Feature kBluetoothWbsDogfood{"BluetoothWbsDogfood",
@@ -635,6 +640,9 @@ const base::Feature kLacrosSupport{"LacrosSupport",
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables new flow for license packaged devices with enterprise license.
+const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Limits the windows listed in Alt-Tab to the ones in the currently active
 // desk.
@@ -713,6 +721,10 @@ const base::Feature kMultilingualTyping{"MultilingualTyping",
 // also making the Nearby Connections WebRTC defaults longer.
 const base::Feature kNearbyKeepAliveFix{"NearbyKeepAliveFix",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                        
+// Controls whether new Lockscreen reauth layout is shown or not.
+const base::Feature kNewLockScreenReauthLayout{
+    "NewLockScreenReauthLayout", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether new OOBE layout is shown or not.
 const base::Feature kNewOobeLayout{"NewOobeLayout",
@@ -785,6 +797,11 @@ const base::Feature kPhoneHub{"PhoneHub", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the Camera Roll feature in Phone Hub, which allows users to access
 // recent photos and videos taken on a connected Android device
 const base::Feature kPhoneHubCameraRoll{"PhoneHubCameraRoll",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the Recent Apps feature in Phone Hub, which allows users to relaunch
+// the streamed app.
+const base::Feature kPhoneHubRecentApps{"PhoneHubRecentApps",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPinSetupForManagedUsers{"PinSetupForManagedUsers",
@@ -1179,6 +1196,10 @@ bool IsBluetoothAdvertisementMonitoringEnabled() {
   return base::FeatureList::IsEnabled(kBluetoothAdvertisementMonitoring);
 }
 
+bool IsBluetoothRevampEnabled() {
+  return base::FeatureList::IsEnabled(kBluetoothRevamp);
+}
+
 bool IsCaptureModeEnabled() {
   return base::FeatureList::IsEnabled(kCaptureMode);
 }
@@ -1306,6 +1327,10 @@ bool IsKeyboardBasedDisplayArrangementInSettingsEnabled() {
       kKeyboardBasedDisplayArrangementInSettings);
 }
 
+bool IsLicensePackagedOobeFlowEnabled() {
+  return base::FeatureList::IsEnabled(kLicensePackagedOobeFlow);
+}
+
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
@@ -1352,6 +1377,10 @@ bool IsOAuthIppEnabled() {
   return base::FeatureList::IsEnabled(kEnableOAuthIpp);
 }
 
+bool IsNewLockScreenReauthLayoutEnabled() {
+  return base::FeatureList::IsEnabled(kNewLockScreenReauthLayout);
+}
+
 bool IsNewOobeLayoutEnabled() {
   return base::FeatureList::IsEnabled(kNewOobeLayout);
 }
@@ -1394,6 +1423,10 @@ bool IsPhoneHubCameraRollEnabled() {
 
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
+}
+
+bool IsPhoneHubRecentAppsEnabled() {
+  return base::FeatureList::IsEnabled(kPhoneHubRecentApps);
 }
 
 bool IsPinAutosubmitBackfillFeatureEnabled() {

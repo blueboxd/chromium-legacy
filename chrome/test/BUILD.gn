@@ -3323,6 +3323,7 @@ if (!is_android) {
         "../browser/chromeos/extensions/wallpaper_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_manager_browsertest.cc",
         "../browser/chromeos/extensions/wallpaper_private_apitest.cc",
+        "../browser/chromeos/extensions/wm/wm_desks_private_apitest.cc",
         "../browser/chromeos/first_run/drive_first_run_browsertest.cc",
         "../browser/chromeos/full_restore/full_restore_app_launch_handler_browsertest.cc",
         "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
@@ -4463,7 +4464,6 @@ test("unit_tests") {
     "../browser/profiles/profile_info_cache_unittest.h",
     "../browser/profiles/profile_manager_unittest.cc",
     "../browser/profiles/profiles_state_unittest.cc",
-    "../browser/profiling_host/background_profiling_triggers_unittest.cc",
     "../browser/profiling_host/chrome_client_connection_manager_unittest.cc",
     "../browser/push_messaging/budget_database_unittest.cc",
     "../browser/push_messaging/push_messaging_app_identifier_unittest.cc",
@@ -6657,6 +6657,7 @@ test("unit_tests") {
       "//extensions/renderer:unit_test_support",
       "//extensions/strings",
       "//google_apis",
+      "//google_apis/common",
       "//google_apis/drive",
       "//media/cast:test_support",
       "//services/device/public/cpp/hid:test_support",
@@ -6810,6 +6811,7 @@ test("unit_tests") {
       "../browser/safe_browsing/download_protection/download_feedback_service_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_unittest.cc",
       "../browser/safe_browsing/download_protection/download_protection_service_unittest.cc",
+      "../browser/safe_browsing/download_protection/download_protection_util_unittest.cc",
       "../browser/safe_browsing/download_protection/download_request_maker_unittest.cc",
       "../browser/safe_browsing/download_protection/file_analyzer_unittest.cc",
       "../browser/safe_browsing/download_protection/path_sanitizer_unittest.cc",
@@ -8876,6 +8878,13 @@ if (!is_fuchsia && !is_android) {
 
       # For Skia Gold code, which has some GPU-specific unittests.
       "//build/skia_gold_common/",
+
+      # Not actually needed, but the way Telemetry looks for tests ends up
+      # looking in the unexpected_passes directory, which has a dependency on
+      # this.
+      # TODO(crbug.com/1227899): Remove this dependency once this target only
+      # includes the things it needs instead of all of //content/test/gpu/.
+      "//testing/unexpected_passes_common/",
     ]
 
     data_deps = [ "//testing:test_scripts_shared" ]

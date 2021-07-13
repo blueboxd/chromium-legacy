@@ -10,13 +10,13 @@
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
@@ -6040,6 +6040,9 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithDockedMagnifierOn) {
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
 
+  // Use the bounds at this point as reference for comparison later.
+  gfx::Rect bounds = GetBarWidget()->GetWindowBoundsInScreen();
+
   // The bar should be destroyed when the Docked Magnifier is on.
   accessibility_controller->docked_magnifier().SetEnabled(true);
   EXPECT_TRUE(accessibility_controller->docked_magnifier().enabled());
@@ -6050,6 +6053,9 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithDockedMagnifierOn) {
   EXPECT_FALSE(accessibility_controller->docked_magnifier().enabled());
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
+
+  // The bounds should be the same with its original value.
+  EXPECT_EQ(bounds, GetBarWidget()->GetWindowBoundsInScreen());
 }
 
 // Tests that the bar will not be created if ChromeVox is on.
@@ -6063,6 +6069,9 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithChromeVoxOn) {
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
 
+  // Use the bounds at this point as reference for comparison later.
+  gfx::Rect bounds = GetBarWidget()->GetWindowBoundsInScreen();
+
   // The bar should be destroyed when Chromevox is on.
   accessibility_controller->spoken_feedback().SetEnabled(true);
   EXPECT_TRUE(accessibility_controller->spoken_feedback().enabled());
@@ -6073,6 +6082,9 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithChromeVoxOn) {
   EXPECT_FALSE(accessibility_controller->spoken_feedback().enabled());
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
+
+  // The bounds should be the same with its original value.
+  EXPECT_EQ(bounds, GetBarWidget()->GetWindowBoundsInScreen());
 }
 
 // TODO(afakhry): Add more tests:

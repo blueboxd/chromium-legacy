@@ -288,6 +288,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SubresourceFilter.Experimental.ReadyToCommitResultsInCommit"
     enum="Boolean" expires_after="2021-11-14">
+  <obsolete>
+    Replaced in 07/2021 with
+    SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2.
+  </obsolete>
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -305,6 +309,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="SubresourceFilter.Experimental.ReadyToCommitResultsInCommit.RestrictedAdFrameNavigation"
     enum="Boolean" expires_after="2021-11-14">
+  <obsolete>
+    Replaced in 07/2021 with
+    SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2.RestrictedAdFrameNavigation.
+  </obsolete>
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -321,6 +329,44 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Excludes top-level frame navigations, same-document navigations, navigations
     that are not handled by the network stack (e.g. about: URLs) and navigations
     with no available RenderFrameHost.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2"
+    enum="Boolean" expires_after="2022-01-12">
+  <owner>alexmt@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    For every navigation observed by the subresource filter that passes through
+    ReadyToCommitNavigation, whether the navigation results in a commit.
+    Recorded when the navigation finishes.
+
+    Excludes top-level frame navigations, same-document navigations, navigations
+    that are not handled by the network stack (e.g. about: URLs), navigations
+    with no available RenderFrameHost, and navigations with a dead RenderFrame.
+  </summary>
+</histogram>
+
+<histogram
+    name="SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2.RestrictedAdFrameNavigation"
+    enum="Boolean" expires_after="2022-01-12">
+  <owner>alexmt@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    For every 'restricted' navigation observed by the subresource filter that
+    passes through ReadyToCommitNavigation and occurs in an ad frame, whether
+    the navigation results in a commit. Recorded when the navigation finishes.
+
+    A restricted navigation is one that is either to a URL matching an allowlist
+    rule on the filter list, or is both to a URL that matches no filter list
+    rule and is same-origin with the top-level frame's URL. Note that, if there
+    is a sequence of restricted navigations, each will be counted individually.
+
+    Excludes top-level frame navigations, same-document navigations, navigations
+    that are not handled by the network stack (e.g. about: URLs), navigations
+    with no available RenderFrameHost, and navigations with a dead RenderFrame.
   </summary>
 </histogram>
 
@@ -563,8 +609,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="SubresourceFilter.PageLoad.SubresourceEvaluation.TotalCPUDuration"
-    units="microseconds" expires_after="2020-01-26">
-  <owner>pkalinnikov@chromium.org</owner>
+    units="microseconds" expires_after="2022-01-12">
+  <owner>alexmt@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Whenever a page load is finished with subresource filtering activated,
     records the total thread CPU time spent on evaluating subresource requests,
@@ -572,13 +619,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Note: this histogram is emitted for all clients, both ones which have
     high-resolution timer available and those which don't.
+
+    Warning: This metric expired after 01/2020 and was unexpired 07/2021. Data
+    may be missing.
   </summary>
 </histogram>
 
 <histogram
     name="SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration"
-    units="microseconds" expires_after="M78">
-  <owner>pkalinnikov@chromium.org</owner>
+    units="microseconds" expires_after="2022-01-12">
+  <owner>alexmt@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Whenever a page load is finished with subresource filtering activated,
     records the total real time spent on evaluating subresource requests,
@@ -587,6 +638,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Note: this histogram is emitted for all clients, both ones which have
     high-resolution timer available and those which don't.
+
+    Warning: This metric expired after M78 and was unexpired 07/2021. Data may
+    be missing.
   </summary>
 </histogram>
 
@@ -631,8 +685,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration"
-    units="microseconds" expires_after="2020-01-26">
-  <owner>pkalinnikov@chromium.org</owner>
+    units="microseconds" expires_after="2022-01-12">
+  <owner>alexmt@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Whenever a subresource of a document is evaluated against the ruleset,
     records the thread CPU time spent on calculating whether it should be
@@ -643,12 +698,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     will cause this metric to have an abnormal distribution. When considering
     revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
     solution.
+
+    Warning: This metric expired after 01/2020 and was unexpired 07/2021. Data
+    may be missing.
   </summary>
 </histogram>
 
 <histogram name="SubresourceFilter.SubresourceLoad.Evaluation.WallDuration"
-    units="microseconds" expires_after="M85">
-  <owner>pkalinnikov@chromium.org</owner>
+    units="microseconds" expires_after="2022-01-12">
+  <owner>alexmt@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Whenever a subresource of a document is evaluated against the ruleset,
     records how much time was spent on calculating whether it should be allowed
@@ -659,6 +718,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     will cause this metric to have an abnormal distribution. When considering
     revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
     solution.
+
+    Warning: This metric expired after M85 and was unexpired 07/2021. Data may
+    be missing
   </summary>
 </histogram>
 

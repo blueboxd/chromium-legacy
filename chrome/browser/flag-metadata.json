@@ -486,6 +486,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "bluetooth-revamp",
+    "owners": [ "khorimoto", "cros-connectivity@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "bluetooth-sessionized-metrics",
     "owners": [ "yudiliu", "chromeos-bluetooth@google.com" ],
     "expiry_milestone": 93
@@ -858,7 +863,7 @@
   {
     "name": "crostini-use-dlc",
     "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "cryptauth-v2-device-activity-status",
@@ -2302,6 +2307,11 @@
   {
     "name": "enable-phone-hub-camera-roll",
     "owners": [ "mattwalliser", "jasonsun", "cros-cameraroll@google.com" ],
+    "expiry_milestone": 97
+  },
+  {
+    "name": "enable-phone-hub-recent-apps",
+    "owners": [ "dhnishi", "cros-recentapps@google.com" ],
     "expiry_milestone": 97
   },
   {

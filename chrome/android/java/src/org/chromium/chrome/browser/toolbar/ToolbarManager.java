@@ -567,7 +567,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     (url) -> mBookmarkBridgeSupplier.hasValue()
                             && mBookmarkBridgeSupplier.get().isBookmarked(url),
                     VoiceToolbarButtonController::isToolbarMicEnabled, jankTracker,
-                    exploreIconProvider);
+                    exploreIconProvider,
+                    new UserEducationHelper(mActivity, mHandler));
             // clang-format on
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             mLocationBar = locationBarCoordinator;
@@ -804,6 +805,12 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     };
                     mControlContainer.addOnLayoutChangeListener(mLayoutChangeListener);
                 }
+            }
+
+            @Override
+            public void onAndroidVisibilityChanged(int visibility) {
+                // TODO(crbug/1223069): Remove this workaround for default method desugaring in D8
+                // causing AbstractMethodErrors in some cases once fixed upstream.
             }
         };
         mBrowserControlsSizer.addObserver(mBrowserControlsObserver);

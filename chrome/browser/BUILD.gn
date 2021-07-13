@@ -318,8 +318,6 @@ static_library("browser") {
     "component_updater/crl_set_component_installer.h",
     "component_updater/crowd_deny_component_installer.cc",
     "component_updater/crowd_deny_component_installer.h",
-    "component_updater/file_type_policies_component_installer.cc",
-    "component_updater/file_type_policies_component_installer.h",
     "component_updater/first_party_sets_component_installer.cc",
     "component_updater/first_party_sets_component_installer.h",
     "component_updater/floc_component_installer.cc",
@@ -1953,6 +1951,7 @@ static_library("browser") {
     "//chrome/browser/touch_to_fill",
     "//chrome/browser/ui",
     "//chrome/browser/ui/webui/app_management:mojo_bindings",
+    "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
     "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings",
     "//chrome/browser/ui/webui/download_shelf:mojo_bindings",
@@ -2750,8 +2749,6 @@ static_library("browser") {
       "android/history_report/usage_reports_buffer_service.h",
       "android/hung_renderer_infobar_delegate.cc",
       "android/hung_renderer_infobar_delegate.h",
-      "android/image_fetcher/image_fetcher_bridge.cc",
-      "android/image_fetcher/image_fetcher_bridge.h",
       "android/instantapps/instant_apps_infobar_delegate.cc",
       "android/instantapps/instant_apps_infobar_delegate.h",
       "android/instantapps/instant_apps_settings.cc",
@@ -3308,6 +3305,7 @@ static_library("browser") {
       "//components/feed:feature_list",
       "//components/feed/core/v2:feed_core_v2",
       "//components/feed/mojom:mojo_bindings",
+      "//components/image_fetcher:android",
       "//components/image_fetcher/core:metrics",
       "//components/infobars/android",
       "//components/installedapp/android",
@@ -6022,6 +6020,7 @@ static_library("browser") {
       "//components/mirroring/mojom:service",
       "//components/mirroring/service:mirroring_service",
       "//extensions/components/javascript_dialog_extensions_client",
+      "//google_apis/common",
       "//google_apis/drive",
       "//services/device/public/mojom",
     ]
@@ -6655,6 +6654,13 @@ static_library("browser") {
       "//components/safe_browsing/content/browser/download:download_stats",
       "//components/safe_browsing/content/common:file_type_policies",
       "//components/safe_browsing/content/common/proto:download_file_types_proto",
+    ]
+  }
+
+  if (!is_fuchsia) {
+    sources += [
+      "component_updater/file_type_policies_component_installer.cc",
+      "component_updater/file_type_policies_component_installer.h",
     ]
   }
 }

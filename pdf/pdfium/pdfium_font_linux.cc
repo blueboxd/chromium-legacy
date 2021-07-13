@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/i18n/encoding_detection.h"
@@ -105,10 +106,6 @@ BlinkFontMapper& GetBlinkFontMapper() {
   return *mapper;
 }
 
-bool UsePepperMapping() {
-  return PDFiumEngine::GetFontMappingMode() != FontMappingMode::kBlink;
-}
-
 blink::WebFontDescription::Weight WeightToBlinkWeight(int weight) {
   static_assert(blink::WebFontDescription::kWeight100 == 0, "Blink Weight min");
   static_assert(blink::WebFontDescription::kWeight900 == 8, "Blink Weight max");
@@ -139,12 +136,20 @@ void* MapFont(FPDF_SYSFONTINFO*,
               int pitch_family,
               const char* face,
               int* exact) {
+  if (PDFiumEngine::GetFontMappingMode() == FontMappingMode::kNoMapping)
+    return nullptr;
+
   // Pretend the system does not have the Symbol font to force a fallback to
   // the built in Symbol font in CFX_FontMapper::FindSubstFont().
   if (strcmp(face, "Symbol") == 0)
     return nullptr;
 
+  // TODO(crbug.com/702993): `blink::WebFontDescription::family` is a
+  // `blink::WebString`, which can only be used if Blink is initialized. Store
+  // the field in `font_family` for now, but remove the variable when this code
+  // will only execute in a renderer process.
   blink::WebFontDescription desc;
+  std::string font_family;
 
   if (pitch_family & FXFONT_FF_FIXEDPITCH) {
     desc.generic_family = blink::WebFontDescription::kGenericFamilyMonospace;
@@ -203,7 +208,7 @@ void* MapFont(FPDF_SYSFONTINFO*,
   size_t i;
   for (i = 0; i < base::size(kPdfFontSubstitutions); ++i) {
     if (strcmp(face, kPdfFontSubstitutions[i].pdf_name) == 0) {
-      desc.family = blink::WebString::FromUTF8(kPdfFontSubstitutions[i].face);
+      font_family = kPdfFontSubstitutions[i].face;
       if (kPdfFontSubstitutions[i].bold)
         desc.weight = blink::WebFontDescription::kWeightBold;
       if (kPdfFontSubstitutions[i].italic)
@@ -228,14 +233,16 @@ void* MapFont(FPDF_SYSFONTINFO*,
     if (face_utf8.empty())
       return nullptr;
 
-    desc.family = blink::WebString::FromUTF8(face_utf8);
+    font_family = face_utf8;
     desc.weight = WeightToBlinkWeight(weight);
     desc.italic = italic > 0;
   }
 
-  if (UsePepperMapping())
-    return MapPepperFont(desc, charset);
+  if (PDFiumEngine::GetFontMappingMode() == FontMappingMode::kPepper)
+    return MapPepperFont(desc, font_family, charset);
 
+  DCHECK_EQ(PDFiumEngine::GetFontMappingMode(), FontMappingMode::kBlink);
+  desc.family = blink::WebString::FromUTF8(font_family);
   return GetBlinkFontMapper().MapFont(desc, charset);
 }
 
@@ -244,18 +251,20 @@ unsigned long GetFontData(FPDF_SYSFONTINFO*,
                           unsigned int table,
                           unsigned char* buffer,
                           unsigned long buf_size) {
-  if (UsePepperMapping())
+  if (PDFiumEngine::GetFontMappingMode() == FontMappingMode::kPepper)
     return GetPepperFontData(font_id, table, buffer, buf_size);
 
+  DCHECK_EQ(PDFiumEngine::GetFontMappingMode(), FontMappingMode::kBlink);
   return GetBlinkFontMapper().GetFontData(font_id, table, buffer, buf_size);
 }
 
 void DeleteFont(FPDF_SYSFONTINFO*, void* font_id) {
-  if (UsePepperMapping()) {
+  if (PDFiumEngine::GetFontMappingMode() == FontMappingMode::kPepper) {
     DeletePepperFont(font_id);
     return;
   }
 
+  DCHECK_EQ(PDFiumEngine::GetFontMappingMode(), FontMappingMode::kBlink);
   GetBlinkFontMapper().DeleteFont(font_id);
 }
 

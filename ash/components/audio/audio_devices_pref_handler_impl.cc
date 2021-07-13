@@ -81,13 +81,12 @@ bool MigrateDeviceIdInSettings(base::DictionaryValue* settings,
   DCHECK_EQ(2, device.stable_device_id_version);
 
   std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-  std::unique_ptr<base::Value> value;
-  if (!settings->Remove(old_device_id, &value))
+  absl::optional<base::Value> value = settings->ExtractKey(old_device_id);
+  if (!value)
     return false;
 
   DCHECK_EQ(intended_key, GetDeviceIdString(device));
-  settings->SetPath(intended_key,
-                    base::Value::FromUniquePtrValue(std::move(value)));
+  settings->SetPath(intended_key, std::move(*value));
   return true;
 }
 
@@ -122,9 +121,9 @@ void AudioDevicesPrefHandlerImpl::SetOutputVolumePrefValue(
   // if one exists.
   if (device.stable_device_id_version == 2) {
     std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-    device_volume_settings_->Remove(old_device_id, nullptr);
+    device_volume_settings_->RemoveKey(old_device_id);
   }
-  device_volume_settings_->SetDouble(GetDeviceIdString(device), value);
+  device_volume_settings_->SetDoubleKey(GetDeviceIdString(device), value);
 
   SaveDevicesVolumePref();
 }
@@ -140,11 +139,11 @@ void AudioDevicesPrefHandlerImpl::SetInputGainPrefValue(
   // |device_volume_settings_|.
   // TODO(baileyberro): Remove this check in M94.
   if (device_volume_settings_->HasKey(device_id)) {
-    device_volume_settings_->Remove(device_id, nullptr);
+    device_volume_settings_->RemoveKey(device_id);
     SaveDevicesVolumePref();
   }
 
-  device_gain_settings_->SetDouble(device_id, value);
+  device_gain_settings_->SetDoubleKey(device_id, value);
   SaveDevicesGainPref();
 }
 
@@ -165,7 +164,7 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
   // if one exists.
   if (device.stable_device_id_version == 2) {
     std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-    device_mute_settings_->Remove(old_device_id, nullptr);
+    device_mute_settings_->RemoveKey(old_device_id);
   }
   device_mute_settings_->SetInteger(GetDeviceIdString(device),
                                     mute ? kPrefMuteOn : kPrefMuteOff);
@@ -184,7 +183,7 @@ void AudioDevicesPrefHandlerImpl::SetDeviceActive(const AudioDevice& device,
   // if one exists.
   if (device.stable_device_id_version == 2) {
     std::string old_device_id = GetVersionedDeviceIdString(device, 1);
-    device_state_settings_->Remove(old_device_id, nullptr);
+    device_state_settings_->RemoveKey(old_device_id);
   }
   device_state_settings_->SetPath(GetDeviceIdString(device), std::move(dict));
   SaveDevicesStatePref();
@@ -390,7 +389,7 @@ void AudioDevicesPrefHandlerImpl::MigrateDeviceVolumeGainSettings(
     // If there was no recorded value for deprecated device ID, use value from
     // global vloume pref.
     double old_volume = local_state_->GetDouble(prefs::kAudioVolumePercent);
-    device_volume_settings_->SetDouble(device_key, old_volume);
+    device_volume_settings_->SetDoubleKey(device_key, old_volume);
   }
   SaveDevicesVolumePref();
 }

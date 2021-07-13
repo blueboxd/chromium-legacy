@@ -86,6 +86,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBluetoothFixA2dpPacketSize;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBluetoothPhoneFilter;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBluetoothRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBluetoothWbsDogfood;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBorealisDiskManagement;
@@ -239,6 +240,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosSupport;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLanguageSettingsUpdate2;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kLicensePackagedOobeFlow;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLimitAltTabToActiveDesk;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLockScreenHideSensitiveNotificationsSupport;
@@ -264,6 +267,8 @@ extern const base::Feature kMinimumChromeVersion;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMojoDBusRelay;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kMultilingualTyping;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNearbyKeepAliveFix;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kNewLockScreenReauthLayout;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNewOobeLayout;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kNightLight;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -293,6 +298,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kOverviewButton;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPerDeskShelf;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHub;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHubCameraRoll;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHubRecentApps;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPinSetupForManagedUsers;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPipRoundedCorners;
@@ -425,6 +431,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBackgroundBlurEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBentoBarEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsBluetoothAdvertisementMonitoringEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBluetoothRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptureModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCellularActivationUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -461,6 +468,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsKeyboardBasedDisplayArrangementInSettingsEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLicensePackagedOobeFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsLockScreenHideSensitiveNotificationsSupported();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLockScreenInlineReplyEnabled();
@@ -472,6 +480,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinimumChromeVersionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMinorModeRestrictionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNearbyKeepAliveFixEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNetworkingInDiagnosticsAppEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNewLockScreenReauthLayoutEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNewOobeLayoutEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNotificationExpansionAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -485,6 +494,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPciguardUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPerDeskShelfEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubCameraRollEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubRecentAppsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitBackfillFeatureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitFeatureEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinSetupForManagedUsersEnabled();

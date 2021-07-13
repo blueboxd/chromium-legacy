@@ -18,20 +18,18 @@ namespace diagnostics {
 namespace {
 
 namespace network_mojom = ::chromeos::network_config::mojom;
-using network_mojom::ConnectionStateType;
-using network_mojom::NetworkType;
 
 bool IsSupportedNetworkType(network_mojom::NetworkType type) {
   switch (type) {
-    case NetworkType::kWiFi:
-    case NetworkType::kCellular:
-    case NetworkType::kEthernet:
+    case network_mojom::NetworkType::kWiFi:
+    case network_mojom::NetworkType::kCellular:
+    case network_mojom::NetworkType::kEthernet:
       return true;
-    case NetworkType::kMobile:
-    case NetworkType::kTether:
-    case NetworkType::kVPN:
-    case NetworkType::kAll:
-    case NetworkType::kWireless:
+    case network_mojom::NetworkType::kMobile:
+    case network_mojom::NetworkType::kTether:
+    case network_mojom::NetworkType::kVPN:
+    case network_mojom::NetworkType::kAll:
+    case network_mojom::NetworkType::kWireless:
       return false;
   }
 }
@@ -41,40 +39,41 @@ bool IsNetworkOnline(network_mojom::ConnectionStateType connection_state) {
 }
 
 constexpr mojom::NetworkState ConnectionStateToNetworkState(
-    ConnectionStateType connection_state) {
+    network_mojom::ConnectionStateType connection_state) {
   switch (connection_state) {
-    case ConnectionStateType::kOnline:
+    case network_mojom::ConnectionStateType::kOnline:
       return mojom::NetworkState::kOnline;
-    case ConnectionStateType::kConnected:
+    case network_mojom::ConnectionStateType::kConnected:
       return mojom::NetworkState::kConnected;
-    case ConnectionStateType::kPortal:
+    case network_mojom::ConnectionStateType::kPortal:
       return mojom::NetworkState::kPortal;
-    case ConnectionStateType::kConnecting:
+    case network_mojom::ConnectionStateType::kConnecting:
       return mojom::NetworkState::kConnecting;
-    case ConnectionStateType::kNotConnected:
+    case network_mojom::ConnectionStateType::kNotConnected:
       return mojom::NetworkState::kNotConnected;
   }
 }
 
-constexpr mojom::NetworkType GetNetworkType(NetworkType type) {
+constexpr mojom::NetworkType ConvertNetworkType(
+    network_mojom::NetworkType type) {
   switch (type) {
-    case NetworkType::kWiFi:
+    case network_mojom::NetworkType::kWiFi:
       return mojom::NetworkType::kWiFi;
-    case NetworkType::kCellular:
+    case network_mojom::NetworkType::kCellular:
       return mojom::NetworkType::kCellular;
-    case NetworkType::kEthernet:
+    case network_mojom::NetworkType::kEthernet:
       return mojom::NetworkType::kEthernet;
-    case NetworkType::kMobile:
-    case NetworkType::kTether:
-    case NetworkType::kVPN:
-    case NetworkType::kAll:
-    case NetworkType::kWireless:
+    case network_mojom::NetworkType::kMobile:
+    case network_mojom::NetworkType::kTether:
+    case network_mojom::NetworkType::kVPN:
+    case network_mojom::NetworkType::kAll:
+    case network_mojom::NetworkType::kWireless:
       NOTREACHED();
       return mojom::NetworkType::kUnsupported;
   }
 }
 
-mojom::IPConfigPropertiesPtr GetIPConfigProperties(
+mojom::IPConfigPropertiesPtr PopulateIPConfigProperties(
     network_mojom::IPConfigProperties* ip_config_props) {
   mojom::IPConfigPropertiesPtr ip_config = mojom::IPConfigProperties::New();
   ip_config->ip_address = ip_config_props->ip_address;
@@ -84,7 +83,7 @@ mojom::IPConfigPropertiesPtr GetIPConfigProperties(
   return ip_config;
 }
 
-mojom::WiFiStatePropertiesPtr PopulateNetworkStateProperties(
+mojom::WiFiStatePropertiesPtr PopulateWiFiStateProperties(
     network_mojom::NetworkTypeStateProperties* network_type_props) {
   auto wifi_props = mojom::WiFiStateProperties::New();
   wifi_props->signal_strength = network_type_props->get_wifi()->signal_strength;
@@ -108,28 +107,23 @@ mojom::CellularStatePropertiesPtr PopulateCellularStateProperties(
 
 // Uses the network type to determine which network properties to
 // add the mojom::Network struct.
-mojom::NetworkTypePropertiesPtr GetNetworkTypeProperties(
+mojom::NetworkTypePropertiesPtr PopulateNetworkTypeProperties(
     network_mojom::NetworkTypeStateProperties* network_type_props,
     mojom::NetworkType type) {
   auto type_properties = mojom::NetworkTypeProperties::New();
   switch (type) {
-    case mojom::NetworkType::kWiFi: {
+    case mojom::NetworkType::kWiFi:
       type_properties->set_wifi(
-          PopulateNetworkStateProperties(network_type_props));
+          PopulateWiFiStateProperties(network_type_props));
       break;
-    }
-    case mojom::NetworkType::kEthernet: {
-      auto ethernet_props = mojom::EthernetStateProperties::New();
+    case mojom::NetworkType::kEthernet:
       type_properties->set_ethernet(
           PopulateEthernetStateProperties(network_type_props));
       break;
-    }
-    case mojom::NetworkType::kCellular: {
-      auto cellular_props = mojom::CellularStateProperties::New();
+    case mojom::NetworkType::kCellular:
       type_properties->set_cellular(
           PopulateCellularStateProperties(network_type_props));
       break;
-    }
     case mojom::NetworkType::kUnsupported:
       NOTREACHED();
       break;
@@ -144,13 +138,13 @@ mojom::NetworkPtr CreateNetwork(const NetworkProperties& network_props,
   network->name = network_props.network_state->name;
   network->state = ConnectionStateToNetworkState(
       network_props.network_state->connection_state);
-  network->type = GetNetworkType(network_props.network_state->type);
-  network->type_properties = GetNetworkTypeProperties(
+  network->type = ConvertNetworkType(network_props.network_state->type);
+  network->type_properties = PopulateNetworkTypeProperties(
       network_props.network_state->type_state.get(), network->type);
-  bool has_ip_config = network_props.managed_properties &&
-                       network_props.managed_properties->saved_ip_config;
+  const bool has_ip_config = network_props.managed_properties &&
+                             network_props.managed_properties->saved_ip_config;
   if (has_ip_config) {
-    network->ip_config = GetIPConfigProperties(
+    network->ip_config = PopulateIPConfigProperties(
         network_props.managed_properties->saved_ip_config.get());
   }
 
@@ -185,8 +179,7 @@ NetworkHealthProvider::~NetworkHealthProvider() = default;
 NetworkProperties& NetworkHealthProvider::GetNetworkProperties(
     const std::string& guid) {
   DCHECK(base::Contains(network_properties_map_, guid));
-  auto network_props_iter = network_properties_map_.find(guid);
-  return network_props_iter->second;
+  return network_properties_map_.at(guid);
 }
 
 void NetworkHealthProvider::GetNetworkState() {

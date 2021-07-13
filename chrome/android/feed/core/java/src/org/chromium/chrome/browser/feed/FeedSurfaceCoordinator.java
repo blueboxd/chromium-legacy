@@ -27,6 +27,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
@@ -476,6 +477,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             view = (RecyclerView) mHybridListRenderer.bind(mContentManager);
             view.setId(R.id.feed_stream_recycler_view);
             view.setClipToPadding(false);
+            view.setBackgroundColor(mActivity.getResources().getColor(R.color.default_bg_color));
         } else {
             view = null;
         }
@@ -837,6 +839,8 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
 
     private boolean isReliabilityLoggingEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_RELIABILITY_LOGGING)
-                && mPrivacyPreferencesManager.isMetricsReportingEnabled();
+                && (mPrivacyPreferencesManager.isMetricsReportingEnabled()
+                        || CommandLine.getInstance().hasSwitch(
+                                "force-enable-feed-reliability-logging"));
     }
 }

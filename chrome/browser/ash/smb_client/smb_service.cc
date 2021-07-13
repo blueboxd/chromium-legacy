@@ -56,9 +56,6 @@ const char kModeKey[] = "mode";
 const char kModeDropDownValue[] = "drop_down";
 const char kModePreMountValue[] = "pre_mount";
 const char kModeUnknownValue[] = "unknown";
-const base::TimeDelta kHostDiscoveryInterval = base::TimeDelta::FromSeconds(60);
-// -3 is chosen because -1 and -2 have special meaning in smbprovider.
-const int32_t kInvalidMountId = -3;
 // Maximum number of smbfs shares to be mounted at the same time, only enforced
 // on user-initiated mount requests.
 const size_t kMaxSmbFsShares = 16;
@@ -103,11 +100,6 @@ void RecordMountResult(SmbMountResult result) {
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.MountResult", result);
 }
 
-void RecordRemountResult(SmbMountResult result) {
-  DCHECK_LE(result, SmbMountResult::kMaxValue);
-  UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.RemountResult", result);
-}
-
 void RecordAuthenticationMethod(AuthMethod method) {
   DCHECK_LE(method, AuthMethod::kMaxValue);
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.AuthenticationMethod", method);
@@ -141,7 +133,6 @@ SmbService::SmbService(Profile* profile,
                        std::unique_ptr<base::TickClock> tick_clock)
     : provider_id_(file_system_provider::ProviderId::CreateFromNativeId("smb")),
       profile_(profile),
-      tick_clock_(std::move(tick_clock)),
       registry_(profile) {
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
   DCHECK(user);
@@ -262,28 +253,7 @@ void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
           std::move(shares_callback)));
 }
 
-void SmbService::UpdateSharePath(int32_t mount_id,
-                                 const std::string& share_path,
-                                 StartReadDirIfSuccessfulCallback reply) {
-  GetSmbProviderClient()->UpdateSharePath(
-      mount_id, share_path,
-      base::BindOnce(&SmbService::OnUpdateSharePathResponse, AsWeakPtr(),
-                     mount_id, std::move(reply)));
-}
-
-void SmbService::OnUpdateSharePathResponse(
-    int32_t mount_id,
-    StartReadDirIfSuccessfulCallback reply,
-    smbprovider::ErrorType error) {
-  if (error != smbprovider::ERROR_OK) {
-    LOG(ERROR) << "Failed to update the share path for mount id " << mount_id;
-    std::move(reply).Run(false /* should_retry_start_read_dir */);
-    return;
-  }
-  std::move(reply).Run(true /* should_retry_start_read_dir */);
-}
-
-void SmbService::Mount(const file_system_provider::MountOptions& options,
+void SmbService::Mount(const std::string& display_name,
                        const base::FilePath& share_path,
                        const std::string& username_input,
                        const std::string& password_input,
@@ -358,26 +328,6 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
     }
   }
 
-  // Construct the file system ID before calling mount so that numerous
-  // arguments don't have to be plumbed through.
-  file_system_provider::MountOptions provider_options(options);
-  if (use_kerberos) {
-    provider_options.file_system_id =
-        CreateFileSystemId(share_path, use_kerberos);
-  } else {
-    std::string full_username;
-    if (save_credentials) {
-      // Only save the username if the user request credentials be saved.
-      full_username = username;
-      if (!workgroup.empty()) {
-        DCHECK(!username.empty());
-        full_username.append("@");
-        full_username.append(workgroup);
-      }
-    }
-    provider_options.file_system_id =
-        CreateFileSystemIdForUser(share_path, full_username);
-  }
   std::vector<uint8_t> salt;
   if (save_credentials && !password.empty()) {
     // Only generate a salt if threre's a password and we've been asked to save
@@ -386,10 +336,9 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
     salt.resize(kSaltLength);
     crypto::RandBytes(salt);
   }
-  SmbShareInfo info(parsed_url, options.display_name, username, workgroup,
-                    use_kerberos, salt);
-  MountInternal(provider_options, info, password, save_credentials,
-                false /* skip_connect */,
+  SmbShareInfo info(parsed_url, display_name, username, workgroup, use_kerberos,
+                    salt);
+  MountInternal(info, password, save_credentials, false /* skip_connect */,
                 base::BindOnce(&SmbService::MountInternalDone,
                                base::Unretained(this), std::move(callback),
                                info, should_open_file_manager_after_mount));
@@ -420,7 +369,6 @@ void SmbService::MountInternalDone(MountResponse callback,
 }
 
 void SmbService::MountInternal(
-    const file_system_provider::MountOptions& options,
     const SmbShareInfo& info,
     const std::string& password,
     bool save_credentials,
@@ -494,28 +442,6 @@ void SmbService::OnSmbfsMountDone(const std::string& smbfs_mount_id,
   std::move(callback).Run(SmbMountResult::kSuccess, mount->mount_path());
 }
 
-int32_t SmbService::GetMountId(
-    const file_system_provider::ProvidedFileSystemInfo& info) const {
-  const auto iter = mount_id_map_.find(info.file_system_id());
-  if (iter == mount_id_map_.end()) {
-    // Either the mount process has not yet completed, or it failed to provide
-    // us with a mount id.
-    return kInvalidMountId;
-  }
-  return iter->second;
-}
-
-base::File::Error SmbService::Unmount(
-    const std::string& file_system_id,
-    file_system_provider::Service::UnmountReason reason) {
-  base::File::Error result = GetProviderService()->UnmountFileSystem(
-      provider_id_, file_system_id, reason);
-  // Always erase the mount_id, because at this point, the share has already
-  // been unmounted in smbprovider.
-  mount_id_map_.erase(file_system_id);
-  return result;
-}
-
 file_system_provider::Service* SmbService::GetProviderService() const {
   return file_system_provider::Service::Get(profile_);
 }
@@ -531,10 +457,6 @@ SmbProviderClient* SmbService::GetSmbProviderClient() const {
 }
 
 void SmbService::RestoreMounts() {
-  std::vector<file_system_provider::ProvidedFileSystemInfo>
-      provided_file_systems =
-          GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
-
   std::vector<SmbUrl> preconfigured_shares =
       GetPreconfiguredSharePathsForPremount();
 
@@ -542,23 +464,16 @@ void SmbService::RestoreMounts() {
   // Restore smbfs shares.
   saved_smbfs_shares = registry_.GetAll();
 
-  if (!provided_file_systems.empty() || !saved_smbfs_shares.empty() ||
-      !preconfigured_shares.empty()) {
+  if (!saved_smbfs_shares.empty() || !preconfigured_shares.empty()) {
     share_finder_->DiscoverHostsInNetwork(base::BindOnce(
         &SmbService::OnHostsDiscovered, AsWeakPtr(),
-        std::move(provided_file_systems), std::move(saved_smbfs_shares),
-        std::move(preconfigured_shares)));
+        std::move(saved_smbfs_shares), std::move(preconfigured_shares)));
   }
 }
 
 void SmbService::OnHostsDiscovered(
-    const std::vector<file_system_provider::ProvidedFileSystemInfo>&
-        file_systems,
     const std::vector<SmbShareInfo>& saved_smbfs_shares,
     const std::vector<SmbUrl>& preconfigured_shares) {
-  for (const auto& file_system : file_systems) {
-    Remount(file_system);
-  }
   for (const auto& smbfs_share : saved_smbfs_shares) {
     MountSavedSmbfsShare(smbfs_share);
   }
@@ -567,98 +482,10 @@ void SmbService::OnHostsDiscovered(
   }
 }
 
-void SmbService::OnHostsDiscoveredForUpdateSharePath(
-    int32_t mount_id,
-    const std::string& share_path,
-    StartReadDirIfSuccessfulCallback reply) {
-  SmbUrl resolved_url(share_path);
-  if (share_finder_->TryResolveUrl(SmbUrl(share_path), &resolved_url)) {
-    UpdateSharePath(mount_id, resolved_url.ToString(), std::move(reply));
-  } else {
-    std::move(reply).Run(false /* should_retry_start_read_dir */);
-  }
-}
-
-void SmbService::Remount(
-    const file_system_provider::ProvidedFileSystemInfo& file_system_info) {
-  const base::FilePath share_path =
-      GetSharePathFromFileSystemId(file_system_info.file_system_id());
-  const bool is_kerberos_chromad =
-      IsKerberosChromadFileSystemId(file_system_info.file_system_id());
-
-  std::string workgroup;
-  std::string username;
-
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
-  DCHECK(user);
-  if (is_kerberos_chromad) {
-    DCHECK(user->IsActiveDirectoryUser());
-
-    ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
-  } else {
-    absl::optional<std::string> user_workgroup =
-        GetUserFromFileSystemId(file_system_info.file_system_id());
-    if (user_workgroup &&
-        !ParseUserName(*user_workgroup, &username, &workgroup)) {
-      LOG(ERROR) << "Failed to parse username/workgroup from file system ID";
-    }
-  }
-
-  SmbUrl parsed_url(share_path.value());
-  if (!parsed_url.IsValid()) {
-    OnRemountResponse(file_system_info.file_system_id(),
-                      smbprovider::ERROR_INVALID_URL, kInvalidMountId);
-    return;
-  }
-
-  // If using kerberos, the hostname should not be resolved since kerberos
-  // service tickets are keyed on hostname.
-  const SmbUrl resolved_url = is_kerberos_chromad
-                                  ? parsed_url
-                                  : share_finder_->GetResolvedUrl(parsed_url);
-
-  // An empty password is passed to Mount to conform with the credentials API
-  // which expects username & workgroup strings along with a password file
-  // descriptor.
-  SmbProviderClient::MountOptions smb_mount_options;
-  smb_mount_options.original_path = parsed_url.ToString();
-  smb_mount_options.username = username;
-  smb_mount_options.workgroup = workgroup;
-  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
-  smb_mount_options.skip_connect = true;
-  smb_mount_options.restore_password =
-      !username.empty() && !is_kerberos_chromad;
-  smb_mount_options.account_hash = user->username_hash();
-  GetSmbProviderClient()->Mount(
-      base::FilePath(resolved_url.ToString()), smb_mount_options,
-      MakeFdWithContents(""),
-      base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
-                     file_system_info.file_system_id()));
-}
-
-void SmbService::OnRemountResponse(const std::string& file_system_id,
-                                   smbprovider::ErrorType error,
-                                   int32_t mount_id) {
-  RecordRemountResult(TranslateErrorToMountResult(error));
-
-  if (error != smbprovider::ERROR_OK) {
-    LOG(ERROR) << "SmbService: failed to restore filesystem with error: "
-               << error;
-    // Note: The filesystem isn't removed on failure because doing so will
-    // stop persisting the mount. The mount should only be removed as a result
-    // of user action, and not due to failures, which might be transient (i.e.
-    // smbprovider crashed).
-    return;
-  }
-
-  DCHECK_GE(mount_id, 0);
-  mount_id_map_[file_system_id] = mount_id;
-}
-
 void SmbService::MountSavedSmbfsShare(const SmbShareInfo& info) {
   MountInternal(
-      {} /* fsp::MountOptions, ignored by smbfs */, info, "" /* password */,
-      true /* save_credentials */, true /* skip_connect */,
+      info, "" /* password */, true /* save_credentials */,
+      true /* skip_connect */,
       base::BindOnce(
           [](SmbMountResult result, const base::FilePath& mount_path) {
             LOG_IF(ERROR, result != SmbMountResult::kSuccess)
@@ -667,25 +494,13 @@ void SmbService::MountSavedSmbfsShare(const SmbShareInfo& info) {
 }
 
 void SmbService::MountPreconfiguredShare(const SmbUrl& share_url) {
-  file_system_provider::MountOptions mount_options;
-  mount_options.display_name =
+  std::string display_name =
       base::FilePath(share_url.ToString()).BaseName().value();
-  mount_options.writable = true;
-  // |is_chromad_kerberos| is false because we do not pass user and workgroup
-  // at mount time. Premounts also do not get remounted and currently
-  // |is_chromad_kerberos| is only used at remounts to determine if the share
-  // was mounted with chromad kerberos.
-  // TODO(crbug.com/922269): Support kerberos for preconfigured shares.
-  mount_options.file_system_id = CreateFileSystemId(
-      base::FilePath(share_url.ToString()), false /* is_chromad_kerberos */);
-  // Disable remounting of preconfigured shares.
-  mount_options.persistent = false;
-
   // Note: Preconfigured shares are mounted without credentials.
-  SmbShareInfo info(share_url, mount_options.display_name, "" /* username */,
+  SmbShareInfo info(share_url, display_name, "" /* username */,
                     "" /* workgroup */, false /* use_kerberos */);
   MountInternal(
-      mount_options, info, "" /* password */, false /* save_credentials */,
+      info, "" /* password */, false /* save_credentials */,
       true /* skip_connect */,
       base::BindOnce(&SmbService::OnMountPreconfiguredShareDone, AsWeakPtr()));
 }
@@ -742,13 +557,7 @@ void SmbService::CompleteSetup() {
   share_finder_ = std::make_unique<SmbShareFinder>(GetSmbProviderClient());
   RegisterHostLocators();
 
-  GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
-      base::BindRepeating(&SmbService::GetMountId, base::Unretained(this)),
-      base::BindRepeating(&SmbService::Unmount, base::Unretained(this)),
-      base::BindRepeating(&SmbService::RequestCredentials,
-                          base::Unretained(this)),
-      base::BindRepeating(&SmbService::RequestUpdatedSharePath,
-                          base::Unretained(this))));
+  GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>());
   RestoreMounts();
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 
@@ -861,43 +670,6 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(
   return preconfigured_urls;
 }
 
-void SmbService::RequestCredentials(const std::string& share_path,
-                                    int32_t mount_id,
-                                    base::OnceClosure reply) {
-  smb_dialog::SmbCredentialsDialog::Show(
-      base::NumberToString(mount_id), share_path,
-      base::BindOnce(&SmbService::OnSmbCredentialsDialogShown, AsWeakPtr(),
-                     mount_id, std::move(reply)));
-}
-
-void SmbService::OnSmbCredentialsDialogShown(int32_t mount_id,
-                                             base::OnceClosure reply,
-                                             bool canceled,
-                                             const std::string& username,
-                                             const std::string& password) {
-  if (canceled) {
-    return;
-  }
-
-  std::string parsed_username = username;
-  std::string workgroup;
-  ParseUserName(username, &parsed_username, &workgroup);
-
-  GetSmbProviderClient()->UpdateMountCredentials(
-      mount_id, workgroup, parsed_username, MakeFdWithContents(password),
-      base::BindOnce(
-          [](int32_t mount_id, base::OnceClosure reply,
-             smbprovider::ErrorType error) {
-            if (error == smbprovider::ERROR_OK) {
-              std::move(reply).Run();
-            } else {
-              LOG(ERROR) << "Failed to update the credentials for mount id "
-                         << mount_id;
-            }
-          },
-          mount_id, std::move(reply)));
-}
-
 std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropdown() const {
   auto drop_down_paths = GetPreconfiguredSharePaths(kModeDropDownValue);
   auto fallback_paths = GetPreconfiguredSharePaths(kModeUnknownValue);
@@ -911,32 +683,6 @@ std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropdown() const {
 
 std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForPremount() const {
   return GetPreconfiguredSharePaths(kModePreMountValue);
-}
-
-void SmbService::RequestUpdatedSharePath(
-    const std::string& share_path,
-    int32_t mount_id,
-    StartReadDirIfSuccessfulCallback reply) {
-  if (ShouldRunHostDiscoveryAgain()) {
-    previous_host_discovery_time_ = tick_clock_->NowTicks();
-    share_finder_->DiscoverHostsInNetwork(
-        base::BindOnce(&SmbService::OnHostsDiscoveredForUpdateSharePath,
-                       AsWeakPtr(), mount_id, share_path, std::move(reply)));
-    return;
-  }
-  // Host discovery did not run, but try to resolve the hostname in case a
-  // previous host discovery found the host.
-  SmbUrl resolved_url(share_path);
-  if (share_finder_->TryResolveUrl(SmbUrl(share_path), &resolved_url)) {
-    UpdateSharePath(mount_id, share_path, std::move(reply));
-  } else {
-    std::move(reply).Run(false /* should_retry_start_read_dir */);
-  }
-}
-
-bool SmbService::ShouldRunHostDiscoveryAgain() const {
-  return tick_clock_->NowTicks() >
-         previous_host_discovery_time_ + kHostDiscoveryInterval;
 }
 
 void SmbService::OnNetworkChanged(

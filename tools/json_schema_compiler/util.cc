@@ -56,24 +56,35 @@ bool PopulateItem(const base::Value& from, bool* out, std::u16string* error) {
 }
 
 bool PopulateItem(const base::Value& from, double* out) {
-  return from.GetAsDouble(out);
+  absl::optional<double> maybe_double = from.GetIfDouble();
+  if (maybe_double.has_value()) {
+    if (out)
+      *out = maybe_double.value();
+    return true;
+  }
+  return false;
 }
 
 bool PopulateItem(const base::Value& from, double* out, std::u16string* error) {
-  if (!from.GetAsDouble(out))
+  if (!from.is_double())
     return ReportError(from, base::Value::Type::DOUBLE, error);
+  *out = from.GetDouble();
   return true;
 }
 
 bool PopulateItem(const base::Value& from, std::string* out) {
-  return from.GetAsString(out);
+  if (!from.is_string())
+    return false;
+  *out = from.GetString();
+  return true;
 }
 
 bool PopulateItem(const base::Value& from,
                   std::string* out,
                   std::u16string* error) {
-  if (!from.GetAsString(out))
+  if (!from.is_string())
     return ReportError(from, base::Value::Type::STRING, error);
+  *out = from.GetString();
   return true;
 }
 

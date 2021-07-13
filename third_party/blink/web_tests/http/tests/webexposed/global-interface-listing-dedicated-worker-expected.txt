@@ -18,11 +18,17 @@ Starting worker: resources/global-interface-listing-worker.js.php
 [Worker]     setter onabort
 [Worker] interface AudioData
 [Worker]     attribute @@toStringTag
-[Worker]     getter buffer
+[Worker]     getter duration
+[Worker]     getter format
+[Worker]     getter numberOfChannels
+[Worker]     getter numberOfFrames
+[Worker]     getter sampleRate
 [Worker]     getter timestamp
+[Worker]     method allocationSize
 [Worker]     method clone
 [Worker]     method close
 [Worker]     method constructor
+[Worker]     method copyTo
 [Worker] interface AudioDecoder
 [Worker]     static method isConfigSupported
 [Worker]     attribute @@toStringTag
@@ -1254,12 +1260,6 @@ Starting worker: resources/global-interface-listing-worker.js.php
 [Worker]     getter stride
 [Worker]     method constructor
 [Worker]     method readInto
-[Worker] interface Profiler : EventTarget
-[Worker]     attribute @@toStringTag
-[Worker]     getter sampleInterval
-[Worker]     getter stopped
-[Worker]     method constructor
-[Worker]     method stop
 [Worker] interface ProgressEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter lengthComputable
@@ -1831,6 +1831,7 @@ Starting worker: resources/global-interface-listing-worker.js.php
 [Worker]     getter codedRect
 [Worker]     getter codedRegion
 [Worker]     getter codedWidth
+[Worker]     getter colorSpace
 [Worker]     getter cropHeight
 [Worker]     getter cropLeft
 [Worker]     getter cropTop

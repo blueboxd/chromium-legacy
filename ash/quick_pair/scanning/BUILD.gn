@@ -12,6 +12,10 @@ source_set("scanning") {
     "fast_pair/fast_pair_scanner.h",
     "fast_pair/fast_pair_scanner_impl.cc",
     "fast_pair/fast_pair_scanner_impl.h",
+    "range_calculations.cc",
+    "range_calculations.h",
+    "range_tracker.cc",
+    "range_tracker.h",
     "scanner_broker.h",
     "scanner_broker_impl.cc",
     "scanner_broker_impl.h",
@@ -44,7 +48,11 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "fast_pair/fast_pair_scanner_unittest.cc" ]
+  sources = [
+    "fast_pair/fast_pair_scanner_unittest.cc",
+    "range_calculations_unittest.cc",
+    "range_tracker_unittest.cc",
+  ]
 
   deps = [
     ":scanning",

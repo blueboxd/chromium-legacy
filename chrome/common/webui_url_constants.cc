@@ -217,6 +217,7 @@ const char kChromeUIUntrustedVideoPlayerUrl[] =
     "chrome-untrusted://video-tutorials/";
 const char kChromeUIWebApksHost[] = "webapks";
 #else
+const char kChromeUIAppServiceInternalsHost[] = "app-service-internals";
 const char kChromeUINearbyInternalsHost[] = "nearby-internals";
 const char kChromeUIReadLaterHost[] = "read-later.top-chrome";
 const char kChromeUIReadLaterURL[] = "chrome://read-later.top-chrome/";
@@ -287,8 +288,8 @@ const char kChromeUIPasswordChangeHost[] = "password-change";
 const char kChromeUIPasswordChangeUrl[] = "chrome://password-change";
 const char kChromeUIPrintManagementUrl[] = "chrome://print-management";
 const char kChromeUIPowerHost[] = "power";
-const char kChromeUIProjectorSelfieCamHost[] = "projector-selfie-cam";
-const char kChromeUIProjectorSelfieCamURL[] = "chrome://projector-selfie-cam/";
+const char kChromeUIProjectorHost[] = "projector";
+const char kChromeUIProjectorURL[] = "chrome://projector/";
 const char kChromeUIScanningAppURL[] = "chrome://scanning";
 const char kChromeUIScreenlockIconHost[] = "screenlock-icon";
 const char kChromeUIScreenlockIconURL[] = "chrome://screenlock-icon/";

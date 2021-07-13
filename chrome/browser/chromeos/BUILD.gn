@@ -406,6 +406,7 @@ source_set("chromeos") {
     "//extensions/browser/kiosk",
     "//extensions/common",
     "//extensions/common:mojom",
+    "//google_apis/common",
     "//google_apis/drive",
     "//gpu",
     "//gpu/ipc/host",
@@ -3221,6 +3222,8 @@ source_set("chromeos") {
     "extensions/wallpaper_function_base.h",
     "extensions/wallpaper_private_api.cc",
     "extensions/wallpaper_private_api.h",
+    "extensions/wm/wm_desks_private_api.cc",
+    "extensions/wm/wm_desks_private_api.h",
   ]
 
   if (use_iioservice) {
@@ -3566,6 +3569,7 @@ static_library("test_support") {
     "//crypto:platform",
     "//google_apis",
     "//google_apis:test_support",
+    "//google_apis/common",
     "//google_apis/drive:test_support",
     "//net",
     "//net:test_support",
@@ -4296,6 +4300,7 @@ source_set("unit_tests") {
     # builds as well.
     "../ui/views/frame/immersive_mode_controller_chromeos_unittest.cc",
     "../ui/views/select_file_dialog_extension_unittest.cc",
+    "../ui/webui/chromeos/in_session_password_change/lock_screen_reauth_dialogs_unittest.cc",
     "../ui/webui/chromeos/login/l10n_util_test_util.cc",
     "../ui/webui/chromeos/login/l10n_util_test_util.h",
     "../ui/webui/chromeos/login/l10n_util_unittest.cc",
@@ -4439,6 +4444,7 @@ source_set("unit_tests") {
     "//dbus",
     "//device/bluetooth",
     "//google_apis:test_support",
+    "//google_apis/common",
     "//google_apis/drive:test_support",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system:system",

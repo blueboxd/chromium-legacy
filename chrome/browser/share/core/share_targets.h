@@ -17,6 +17,8 @@ class ShareTargetsObserver;
 
 class ShareTargets {
  public:
+  ShareTargets(const ShareTargets&) = delete;
+  ShareTargets& operator=(const ShareTargets&) = delete;
   virtual ~ShareTargets();
 
   static ShareTargets* GetInstance();  // Singleton
@@ -72,6 +74,7 @@ class ShareTargets {
 
   // Notify all ShareTargetsObservers registered that the ShareTargets have been
   // updated.
+  void NotifyObserver(ShareTargetsObserver* observer);
   void NotifyShareTargetUpdated();
 
   base::ObserverList<ShareTargetsObserver>::Unchecked observers_;

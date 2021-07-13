@@ -32,6 +32,7 @@ import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import '../controls/extension_controlled_indicator.js';
 import '../controls/settings_toggle_button.js';
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.js';
+import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.js';
 import '../prefs/prefs.js';
@@ -43,7 +44,7 @@ import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {Router} from '../router.js';
 import '../settings_shared_css.js';
 import '../site_favicon.js';
-import {PasswordCheckBehavior, PasswordCheckBehaviorInterface} from './password_check_behavior.js';
+import {PasswordCheckMixin, PasswordCheckMixinInterface} from './password_check_behavior.js';
 import './password_list_item.js';
 import './passwords_list_handler.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
@@ -76,7 +77,7 @@ function isEditable(element) {
  * @implements {I18nBehaviorInterface}
  * @implements {MergePasswordsStoreCopiesBehaviorInterface}
  * @implements {MergeExceptionsStoreCopiesBehaviorInterface}
- * @implements {PasswordCheckBehaviorInterface}
+ * @implements {PasswordCheckMixinInterface}
  * @implements {WebUIListenerBehaviorInterface}
  */
 const PasswordsSectionElementBase = mixinBehaviors(
@@ -85,11 +86,10 @@ const PasswordsSectionElementBase = mixinBehaviors(
       WebUIListenerBehavior,
       MergeExceptionsStoreCopiesBehavior,
       MergePasswordsStoreCopiesBehavior,
-      PasswordCheckBehavior,
       GlobalScrollTargetBehavior,
       PrefsBehavior,
     ],
-    PolymerElement);
+    PasswordCheckMixin(PolymerElement));
 
 /** @polymer */
 class PasswordsSectionElement extends PasswordsSectionElementBase {
@@ -402,6 +402,9 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
     afterNextRender(this, function() {
       IronA11yAnnouncer.requestAvailability();
     });
+
+    HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
+        TrustSafetyInteraction.OPENED_PASSWORD_MANAGER);
   }
 
   /** @override */

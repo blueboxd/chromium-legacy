@@ -101,8 +101,7 @@ class PerProcessInitializer final {
       return;
 
     DCHECK(!IsSDKInitializedViaPlugin());
-    // TODO(crbug.com/1111024): Support JavaScript.
-    InitializeSDK(/*enable_v8=*/false, FontMappingMode::kBlink);
+    InitializeSDK(/*enable_v8=*/true, FontMappingMode::kBlink);
     SetIsSDKInitializedViaPlugin(true);
   }
 
@@ -262,8 +261,8 @@ bool PdfViewWebPlugin::InitializeCommon(
     SetBackgroundColor(params->background_color.value());
 
   PerProcessInitializer::GetInstance().Acquire();
-  InitializeEngine(std::make_unique<PDFiumEngine>(
-      this, PDFiumFormFiller::ScriptOption::kNoJavaScript));
+
+  InitializeEngine(std::make_unique<PDFiumEngine>(this, params->script_option));
   LoadUrl(params->src_url, /*is_print_preview=*/false);
   set_url(params->original_url);
   post_message_sender_.set_container(Container());

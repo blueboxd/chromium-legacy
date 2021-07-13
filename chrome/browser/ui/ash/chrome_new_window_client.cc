@@ -53,12 +53,11 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -91,59 +90,23 @@ namespace {
 constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
     {{ChromePage::ACCOUNTS,
       chromeos::settings::mojom::kManageOtherPeopleSubpagePath},
-     {ChromePage::ACCOUNTMANAGER,
-      chromeos::settings::mojom::kMyAccountsSubpagePath},
-     {ChromePage::AMBIENTMODE,
-      chromeos::settings::mojom::kAmbientModeSubpagePath},
-     {ChromePage::ANDROIDAPPSDETAILS,
-      chromeos::settings::mojom::kGooglePlayStoreSubpagePath},
-     {ChromePage::ANDROIDAPPSDETAILSINBROWSERSETTINGS,
-      chromeos::settings::mojom::kGooglePlayStoreSubpagePath},
-     {ChromePage::APPMANAGEMENT,
-      chromeos::settings::mojom::kAppManagementSubpagePath},
-     {ChromePage::APPMANAGEMENTDETAILS,
-      chromeos::settings::mojom::kAppDetailsSubpagePath},
-     {ChromePage::ASSISTANT, chromeos::settings::mojom::kAssistantSubpagePath},
      {ChromePage::BLUETOOTH,
       chromeos::settings::mojom::kBluetoothDevicesSubpagePath},
      {ChromePage::BLUETOOTHDEVICES,
       chromeos::settings::mojom::kBluetoothDevicesSubpagePath},
-     {ChromePage::CELLULAR,
-      chromeos::settings::mojom::kMobileDataNetworksSubpagePath},
      {ChromePage::CHANGEPICTURE,
       chromeos::settings::mojom::kChangePictureSubpagePath},
-     {ChromePage::CONNECTEDDEVICES,
-      chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath},
-     {ChromePage::CROSTINISHAREDPATHS,
-      chromeos::settings::mojom::kCrostiniManageSharedFoldersSubpagePath},
-     {ChromePage::CROSTINISHAREDUSBDEVICES,
-      chromeos::settings::mojom::kCrostiniUsbPreferencesSubpagePath},
-     {ChromePage::CROSTINIEXPORTIMPORT,
-      chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath},
      {ChromePage::CUPSPRINTERS,
       chromeos::settings::mojom::kPrintingDetailsSubpagePath},
      {ChromePage::DATETIME, chromeos::settings::mojom::kDateAndTimeSectionPath},
      {ChromePage::DISPLAY, chromeos::settings::mojom::kDisplaySubpagePath},
-     {ChromePage::ETHERNET,
-      chromeos::settings::mojom::kEthernetDetailsSubpagePath},
-     {ChromePage::EXTERNALSTORAGE,
-      chromeos::settings::mojom::kExternalStorageSubpagePath},
      {ChromePage::HELP, chromeos::settings::mojom::kAboutChromeOsSectionPath},
-     {ChromePage::INTERNET, chromeos::settings::mojom::kNetworkSectionPath},
      {ChromePage::KEYBOARDOVERLAY,
       chromeos::settings::mojom::kKeyboardSubpagePath},
-     {ChromePage::KNOWNNETWORKS,
-      chromeos::settings::mojom::kKnownNetworksSubpagePath},
-     {ChromePage::OSLANGUAGES,
-      chromeos::settings::mojom::kLanguagesAndInputSectionPath},
-     {ChromePage::OSLANGUAGESEDITDICTIONARY,
-      chromeos::settings::mojom::kEditDictionarySubpagePath},
      {ChromePage::OSLANGUAGESINPUT,
       chromeos::settings::mojom::kInputSubpagePath},
      {ChromePage::OSLANGUAGESLANGUAGES,
       chromeos::settings::mojom::kLanguagesSubpagePath},
-     {ChromePage::OSLANGUAGESSMARTINPUTS,
-      chromeos::settings::mojom::kSmartInputsSubpagePath},
      {ChromePage::LOCKSCREEN,
       chromeos::settings::mojom::kSecurityAndSignInSubpagePath},
      {ChromePage::MAIN, ""},
@@ -155,37 +118,14 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
       chromeos::settings::mojom::kMultiDeviceSectionPath},
      {ChromePage::NETWORKSTYPEVPN,
       chromeos::settings::mojom::kVpnDetailsSubpagePath},
-     {ChromePage::PLUGINVMSHAREDPATHS,
-      chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath},
-     {ChromePage::OSACCESSIBILITY,
-      chromeos::settings::mojom::kAccessibilitySectionPath},
-     {ChromePage::OSPEOPLE, chromeos::settings::mojom::kPeopleSectionPath},
-     {ChromePage::OSPRINTING, chromeos::settings::mojom::kPrintingSectionPath},
-     {ChromePage::OSPRIVACY,
-      chromeos::settings::mojom::kPrivacyAndSecuritySectionPath},
-     {ChromePage::OSRESET, chromeos::settings::mojom::kResetSectionPath},
-     {ChromePage::OSSEARCH,
-      chromeos::settings::mojom::kSearchAndAssistantSectionPath},
      {ChromePage::POINTEROVERLAY,
       chromeos::settings::mojom::kPointersSubpagePath},
      {ChromePage::POWER, chromeos::settings::mojom::kPowerSubpagePath},
-     {ChromePage::SEARCHSUBPAGE, chromeos::settings::mojom::kSearchSubpagePath},
-     {ChromePage::SMARTLOCKSETTINGS,
-      chromeos::settings::mojom::kSmartLockSubpagePath},
      {ChromePage::STORAGE, chromeos::settings::mojom::kStorageSubpagePath},
-     {ChromePage::STYLUS, chromeos::settings::mojom::kStylusSubpagePath},
-     {ChromePage::SWITCHACCESS,
-      chromeos::settings::mojom::kSwitchAccessOptionsSubpagePath},
-     {ChromePage::TETHERSETTINGS,
-      chromeos::settings::mojom::kMobileDataNetworksSubpagePath},
-     {ChromePage::WIFI, chromeos::settings::mojom::kWifiNetworksSubpagePath},
-     {ChromePage::KERBEROS, chromeos::settings::mojom::kKerberosSectionPath},
-     {ChromePage::KERBEROSACCOUNTSV2,
-      chromeos::settings::mojom::kKerberosAccountsV2SubpagePath}};
+     {ChromePage::WIFI, chromeos::settings::mojom::kWifiNetworksSubpagePath}};
 
 constexpr std::pair<arc::mojom::ChromePage, const char*>
     kBrowserSettingsMapping[] = {
-        {ChromePage::ACCESSIBILITY, chrome::kAccessibilitySubPage},
         {ChromePage::APPEARANCE, chrome::kAppearanceSubPage},
         {ChromePage::AUTOFILL, chrome::kAutofillSubPage},
         {ChromePage::CLEARBROWSERDATA, chrome::kClearBrowserDataSubPage},
@@ -195,7 +135,6 @@ constexpr std::pair<arc::mojom::ChromePage, const char*>
         {ChromePage::PASSWORDS, chrome::kPasswordManagerSubPage},
         {ChromePage::PRIVACY, chrome::kPrivacySubPage},
         {ChromePage::RESET, chrome::kResetSubPage},
-        {ChromePage::PRINTING, chrome::kPrintingSettingsSubPage},
         {ChromePage::SEARCH, chrome::kSearchSubPage},
         {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage},
         {ChromePage::LANGUAGES, chrome::kLanguagesSubPage},
@@ -205,23 +144,6 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
     {{ChromePage::ABOUTBLANK, url::kAboutBlankURL},
      {ChromePage::ABOUTDOWNLOADS, "chrome://downloads/"},
      {ChromePage::ABOUTHISTORY, "chrome://history/"}};
-
-constexpr arc::mojom::ChromePage kDeprecatedPages[] = {
-    ChromePage::DEPRECATED_CROSTINIDISKRESIZE,
-    ChromePage::DEPRECATED_DOWNLOADEDCONTENT,
-    ChromePage::DEPRECATED_KERBEROSACCOUNTS,
-    ChromePage::DEPRECATED_OSLANGUAGESDETAILS,
-    ChromePage::DEPRECATED_OSLANGUAGESINPUTMETHODS,
-    ChromePage::DEPRECATED_PLUGINVMDETAILS,
-};
-
-// mojom::ChromePage::LAST returns the amount of valid entries - 1.
-static_assert(base::size(kOSSettingsMapping) +
-                      base::size(kBrowserSettingsMapping) +
-                      base::size(kAboutPagesMapping) +
-                      base::size(kDeprecatedPages) ==
-                  static_cast<size_t>(arc::mojom::ChromePage::LAST) + 1,
-              "ChromePage mapping is out of sync");
 
 void RestoreTabUsingProfile(Profile* profile) {
   sessions::TabRestoreService* service =

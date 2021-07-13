@@ -725,7 +725,7 @@ if (is_android) {
     sources = [
       "../browser/android/customtabs/custom_tabs_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
-      "../browser/autofill/android/save_address_profile_flow_manager_browsertest.cc",
+      "../browser/autofill/android/save_update_address_profile_flow_manager_browsertest.cc",
       "../browser/browsing_data/access_context_audit_browsertest.cc",
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/metrics/metrics_service_user_demographics_browsertest.cc",
@@ -1623,6 +1623,7 @@ if (!is_android) {
       "../browser/page_load_metrics/observers/live_tab_count_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/prefetch_proxy_page_load_metrics_observer_browsertest.cc",
+      "../browser/page_load_metrics/observers/prerender_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/security_state_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/signed_exchange_page_load_metrics_browsertest.cc",
       "../browser/page_load_metrics/observers/third_party_metrics_observer_browsertest.cc",
@@ -1824,7 +1825,7 @@ if (!is_android) {
       "../browser/ui/autofill/payments/card_unmask_prompt_view_tester.h",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_browsertest.cc",
       "../browser/ui/autofill/payments/save_upi_bubble_controller_impl_browsertest.cc",
-      "../browser/ui/autofill/save_address_profile_bubble_controller_impl_browsertest.cc",
+      "../browser/ui/autofill/save_update_address_profile_bubble_controller_impl_browsertest.cc",
       "../browser/ui/blocked_content/popup_opener_tab_helper_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
       "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
@@ -4460,8 +4461,6 @@ test("unit_tests") {
     "../browser/profiles/incognito_mode_policy_handler_unittest.cc",
     "../browser/profiles/profile_attributes_storage_unittest.cc",
     "../browser/profiles/profile_downloader_unittest.cc",
-    "../browser/profiles/profile_info_cache_unittest.cc",
-    "../browser/profiles/profile_info_cache_unittest.h",
     "../browser/profiles/profile_manager_unittest.cc",
     "../browser/profiles/profiles_state_unittest.cc",
     "../browser/profiling_host/chrome_client_connection_manager_unittest.cc",
@@ -5326,8 +5325,8 @@ test("unit_tests") {
     sources += [
       "../browser/android/search_permissions/search_permissions_service_unittest.cc",
       "../browser/autofill/address_accessory_controller_impl_unittest.cc",
-      "../browser/autofill/android/save_address_profile_message_controller_unittest.cc",
-      "../browser/autofill/android/save_address_profile_prompt_controller_unittest.cc",
+      "../browser/autofill/android/save_update_address_profile_message_controller_unittest.cc",
+      "../browser/autofill/android/save_update_address_profile_prompt_controller_unittest.cc",
       "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
       "../browser/autofill/autofill_keyboard_accessory_adapter_unittest.cc",
       "../browser/autofill/autofill_offer_notification_infobar_delegate_mobile_unittest.cc",
@@ -6831,7 +6830,6 @@ test("unit_tests") {
       "../browser/safe_browsing/incident_reporting/tracked_preference_incident_unittest.cc",
       "../browser/safe_browsing/local_two_phase_testserver.cc",
       "../browser/safe_browsing/local_two_phase_testserver.h",
-      "../browser/safe_browsing/safe_browsing_navigation_observer_unittest.cc",
       "../browser/safe_browsing/verdict_cache_manager_factory_unittest.cc",
       "../common/safe_browsing/binary_feature_extractor_unittest.cc",
       "../common/safe_browsing/download_type_util_unittest.cc",
@@ -7311,7 +7309,7 @@ test("unit_tests") {
       "../browser/ui/views/webid/webid_dialog_views_unittest.cc",
       "../browser/ui/views/window_name_prompt_unittest.cc",
     ]
-    if (is_linux || is_chromeos_lacros) {
+    if (is_linux) {
       sources += [ "../browser/ui/views/frame/browser_frame_view_layout_linux_native_unittest.cc" ]
     }
     if (enable_plugins) {
@@ -7330,10 +7328,12 @@ test("unit_tests") {
     }
     if (!is_chromeos_ash) {
       sources += [
-        "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",
         "../browser/ui/views/sync/one_click_signin_dialog_view_unittest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_unittest.cc",
       ]
+    }
+    if (!is_chromeos) {
+      sources += [ "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc" ]
     }
     if (use_aura) {
       sources += [

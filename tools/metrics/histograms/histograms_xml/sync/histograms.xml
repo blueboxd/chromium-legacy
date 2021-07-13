@@ -770,7 +770,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Sync.ModelTypeMemoryKB" units="KB"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>mastiz@chromium.org</owner>
   <owner>jkrcal@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1071,7 +1071,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.PostedClientToServerMessageLatency" units="ms"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
@@ -1109,7 +1109,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.PostedGetUpdatesOrigin" enum="SyncGetUpdatesOrigin"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>mastiz@chromium.org</owner>
   <owner>jkrcal@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1414,13 +1414,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sync.TrustedVaultKeyRetrievalTrigger"
-    enum="TrustedVaultKeyRetrievalTrigger" expires_after="2021-11-01">
+    enum="TrustedVaultUserActionTrigger" expires_after="2021-11-01">
   <owner>mmoskvitin@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
-    Recorded when user clicks/taps on trusted vault error button. Buckets
-    represents the UI elements which contain trusted vault error button.
+    Recorded when user clicks/taps on trusted vault error button for the
+    keys-missing error state. Buckets represents the UI elements which contain
+    trusted vault error button.
+  </summary>
+</histogram>
+
+<histogram name="Sync.TrustedVaultRecoverabilityDegradedFixTrigger"
+    enum="TrustedVaultUserActionTrigger" expires_after="2021-11-01">
+  <owner>mmoskvitin@google.com</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Recorded when user clicks/taps on trusted vault error button for the
+    recoverability-degraded error state. Buckets represents the UI elements
+    which contain trusted vault error button.
   </summary>
 </histogram>
 

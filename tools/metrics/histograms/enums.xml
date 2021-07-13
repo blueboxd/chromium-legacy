@@ -5202,6 +5202,7 @@ others/histograms.xml -->
   <int value="2" label="User chose 'not now'"/>
   <int value="3" label="Ui hidden due to trigger condition no longer true"/>
   <int value="4" label="User swipe-dismissed the bottom sheet"/>
+  <int value="5" label="UI timeout"/>
 </enum>
 
 <enum name="AutofillAssistantLiteScriptStarted">
@@ -7503,6 +7504,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="246" label="MDDH_INVALID_ALL_ORIGINS_PERMITTED"/>
   <int value="247" label="MDDH_INVALID_PERMITTED_ORIGIN"/>
   <int value="248" label="MDDH_NOT_TOP_LEVEL"/>
+  <int value="249" label="RFH_DID_CHANGE_IFRAME_ATTRIBUTE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -20077,6 +20079,7 @@ Called by update_debug_scenarios.py.-->
   <int value="108" label="Extension install friction"/>
   <int value="109" label="File handling permission request"/>
   <int value="110" label="Enterprise confirmation"/>
+  <int value="111" label="App Identity Update Confirmation"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -25865,7 +25868,7 @@ Called by update_document_policy_enum.py.-->
   <int value="862" label="DeviceScheduledReboot"/>
   <int value="863" label="ReportDeviceLoginLogout"/>
   <int value="864" label="RemoteDebuggingAllowed"/>
-  <int value="865" label="ManagedWebAppsAccessToDeviceAttributesAllowed"/>
+  <int value="865" label="DeviceAttributesAllowedForOrigins"/>
   <int value="866" label="BrowserSwitcherParsingMode"/>
   <int value="867" label="DefaultJavaScriptJitSetting"/>
   <int value="868" label="JavaScriptJitAllowedForSites"/>
@@ -33833,7 +33836,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3813" label="WebAppManifestCaptureLinks"/>
   <int value="3814" label="SanitizerAPICreated"/>
   <int value="3815" label="SanitizerAPIDefaultConfiguration"/>
-  <int value="3816" label="SanitizerAPIToString"/>
+  <int value="3816" label="OBSOLETE_SanitizerAPIToString"/>
   <int value="3817" label="SanitizerAPIToFragment"/>
   <int value="3818" label="SanitizerAPIActionTaken"/>
   <int value="3819" label="SanitizerAPIFromString"/>
@@ -46668,6 +46671,7 @@ from previous Chrome versions.
   <int value="-1720653947" label="WebRtcHybridAgc:disabled"/>
   <int value="-1719833926" label="disable-answers-in-suggest"/>
   <int value="-1719699712" label="AudioPlayerJsModules:enabled"/>
+  <int value="-1718644168" label="SharingHubLinkToggle:disabled"/>
   <int value="-1718074215" label="HomepageSettingsUIConversion:enabled"/>
   <int value="-1716654100" label="tab-capture-downscale-quality"/>
   <int value="-1716140224" label="EnableEmbeddedAssistantUI:disabled"/>
@@ -47733,6 +47737,7 @@ from previous Chrome versions.
   <int value="-880087793" label="OmniboxPedalsBatch2:enabled"/>
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
+  <int value="-879024703" label="pwa-update-dialog-for-name-and-icon:enabled"/>
   <int value="-876773120" label="TabbedAppOverflowMenuActionBar:enabled"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
   <int value="-875217114"
@@ -48843,6 +48848,7 @@ from previous Chrome versions.
   <int value="61466986" label="AsyncDns:disabled"/>
   <int value="63187126" label="DownloadsAutoResumptionNative:enabled"/>
   <int value="64942701" label="OfflinePagesSvelteConcurrentLoading:disabled"/>
+  <int value="65245449" label="FilesBannerFramework:enabled"/>
   <int value="66897259" label="ModalPermissionDialogView:enabled"/>
   <int value="67639499" label="stop-loading-in-background:disabled"/>
   <int value="73929836" label="VrBrowsingInCustomTab:enabled"/>
@@ -50597,6 +50603,7 @@ from previous Chrome versions.
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1515334367" label="ToolbarMicIphAndroid:disabled"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
+  <int value="1517988103" label="FilesBannerFramework:disabled"/>
   <int value="1518833340" label="MediaAppDisplayExif:enabled"/>
   <int value="1518946321" label="DisableProcessReuse:disabled"/>
   <int value="1519067750" label="ActionableContentSettings:disabled"/>
@@ -50645,6 +50652,7 @@ from previous Chrome versions.
   <int value="1569982806" label="BentoBar:enabled"/>
   <int value="1570178909" label="NewOverviewLayout:enabled"/>
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>
+  <int value="1572464760" label="pwa-update-dialog-for-name-and-icon:disabled"/>
   <int value="1573860827" label="EnableImeSandbox:enabled"/>
   <int value="1575978252" label="PasswordLeakDetection:enabled"/>
   <int value="1577205328"
@@ -50830,6 +50838,7 @@ from previous Chrome versions.
   <int value="1717788959" label="SlowDCTimerInterruptsWin:disabled"/>
   <int value="1717987538" label="NTPTilesLowerResolutionFavicons:enabled"/>
   <int value="1718341860" label="NTPButton:enabled"/>
+  <int value="1718421370" label="SharingHubLinkToggle:enabled"/>
   <int value="1719189460" label="EnablePasswordSelection:disabled"/>
   <int value="1719958026" label="QueryTiles:enabled"/>
   <int value="1722748383" label="EnableAppReinstallZeroState:disabled"/>
@@ -70879,6 +70888,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Cached StyleSheetContents was reused"/>
 </enum>
 
+<enum name="RestoreResult">
+  <int value="0" label="Finish"/>
+  <int value="1" label="Not finish"/>
+</enum>
+
 <enum name="RestoreSetting">
   <int value="0" label="Unknown"/>
   <int value="1" label="Always restore"/>
@@ -81437,7 +81451,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Second attempt"/>
 </enum>
 
-<enum name="TrustedVaultKeyRetrievalTrigger">
+<enum name="TrustedVaultUserActionTrigger">
   <int value="0" label="Settings page"/>
   <int value="1" label="Profile menu"/>
   <int value="2" label="OS-level notification"/>

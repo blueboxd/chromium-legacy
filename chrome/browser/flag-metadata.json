@@ -3011,7 +3011,12 @@
   },
   {
     "name": "files-archivemount",
-    "owners": [ "fdegros", "nigeltao"],
+    "owners": [ "fdegros", "nigeltao" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "files-banner-framework",
+    "owners": [ "benreich", "lucmult" ],
     "expiry_milestone": 100
   },
   {
@@ -4980,6 +4985,11 @@
     "name": "sharing-hub-desktop-omnibox",
     "owners": [ "kristipark", "chrome-sharing-eng@google.com" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "sharing-hub-link-toggle",
+    "owners": [ "sophey", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "sharing-prefer-vapid",

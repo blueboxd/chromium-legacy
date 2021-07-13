@@ -1956,7 +1956,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   CGRect statusBarFrame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), 0);
   _fakeStatusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
   [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-  if (IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     _fakeStatusBarView.backgroundColor = UIColor.blackColor;
     _fakeStatusBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     DCHECK(self.contentArea);
@@ -2028,7 +2028,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _voiceSearchController->SetDispatcher(
         static_cast<id<LoadQueryCommands>>(self.commandDispatcher));
 
-  if (IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     if (base::FeatureList::IsEnabled(kModernTabStrip)) {
       self.tabStripCoordinator =
           [[TabStripCoordinator alloc] initWithBrowser:self.browser];
@@ -2325,7 +2325,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // because the tab strip slides behind it when showing the thumb strip.
     UIView* primaryToolbarView =
         self.primaryToolbarCoordinator.viewController.view;
-    if (IsIPadIdiom()) {
+    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
       if (base::FeatureList::IsEnabled(kModernTabStrip) &&
           self.tabStripCoordinator) {
         [self addChildViewController:self.tabStripCoordinator.viewController];
@@ -2753,7 +2753,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     passwordTabHelper->SetDispatcher(self.browser->GetCommandDispatcher());
   }
 
-  if (!IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
     OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(self);
   }
 
@@ -2805,7 +2805,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     passwordTabHelper->SetDispatcher(nil);
   }
 
-  if (!IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
     OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
   }
 
@@ -3771,8 +3771,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
   }
 
-  // No custom context menu if no valid url is available.
-  if (!params.link_url.is_valid())
+  // Copy the link_url and src_url to allow the block to safely
+  // capture them (capturing references would lead to UAF).
+  const GURL link = params.link_url;
+  const bool isLink = link.is_valid();
+  const GURL imageUrl = params.src_url;
+  const bool isImage = imageUrl.is_valid();
+
+  // Presents a custom menu only if there is a valid url
+  // or a valid image.
+  if (!isLink && !isImage)
     return;
 
   base::RecordAction(
@@ -3781,10 +3789,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/1140387): Add support for the context menu images.
 
   __weak BrowserViewController* weakSelf = self;
-  GURL link = params.link_url;
-  bool isLink = link.is_valid();
-  GURL imageUrl = params.src_url;
-  bool isImage = imageUrl.is_valid();
 
   const GURL& lastCommittedURL = webState->GetLastCommittedURL();
   web::Referrer referrer(lastCommittedURL, web::ReferrerPolicyDefault);
@@ -3799,61 +3803,63 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [[ActionFactory alloc] initWithBrowser:self.browser
                                     scenario:menuScenario];
 
-  if (link.SchemeIs(url::kJavaScriptScheme)) {
-    // Open.
-    UIAction* open = [actionFactory actionToOpenJavascriptWithBlock:^{
-      [weakSelf openJavascript:base::SysUTF8ToNSString(link.GetContent())];
-    }];
-    [menuElements addObject:open];
-  }
-
-  if (web::UrlHasWebScheme(link)) {
-    // Open in New Tab.
-    UIAction* openNewTab = [actionFactory actionToOpenInNewTabWithBlock:^{
-      BrowserViewController* strongSelf = weakSelf;
-      if (!strongSelf)
-        return;
-      UrlLoadParams params = UrlLoadParams::InNewTab(link);
-      params.SetInBackground(YES);
-      params.in_incognito = strongSelf.isOffTheRecord;
-      params.append_to = kCurrentTab;
-      UrlLoadingBrowserAgent::FromBrowser(strongSelf.browser)->Load(params);
-    }];
-
-    [menuElements addObject:openNewTab];
-
-    if (!_isOffTheRecord) {
-      // Open in Incognito Tab.
-      UIAction* openIncognitoTab =
-          [actionFactory actionToOpenInNewIncognitoTabWithURL:link
-                                                   completion:nil];
-      [menuElements addObject:openIncognitoTab];
+  if (isLink) {
+    if (link.SchemeIs(url::kJavaScriptScheme)) {
+      // Open.
+      UIAction* open = [actionFactory actionToOpenJavascriptWithBlock:^{
+        [weakSelf openJavascript:base::SysUTF8ToNSString(link.GetContent())];
+      }];
+      [menuElements addObject:open];
     }
 
-    if (base::ios::IsMultipleScenesSupported()) {
-      // Open in New Window.
-      UIAction* openNewWindow = [actionFactory
-          actionToOpenInNewWindowWithURL:link
-                          activityOrigin:WindowActivityContextMenuOrigin];
+    if (web::UrlHasWebScheme(link)) {
+      // Open in New Tab.
+      UIAction* openNewTab = [actionFactory actionToOpenInNewTabWithBlock:^{
+        BrowserViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+        UrlLoadParams params = UrlLoadParams::InNewTab(link);
+        params.SetInBackground(YES);
+        params.in_incognito = strongSelf.isOffTheRecord;
+        params.append_to = kCurrentTab;
+        UrlLoadingBrowserAgent::FromBrowser(strongSelf.browser)->Load(params);
+      }];
 
-      [menuElements addObject:openNewWindow];
-    }
+      [menuElements addObject:openNewTab];
 
-    if (link.SchemeIsHTTPOrHTTPS()) {
-      NSString* innerText = params.link_text;
-      if ([innerText length] > 0) {
-        // Add to reading list.
-        UIAction* addToReadingList =
-            [actionFactory actionToAddToReadingListWithBlock:^{
-              [weakSelf addToReadingListURL:link title:innerText];
-            }];
-        [menuElements addObject:addToReadingList];
+      if (!_isOffTheRecord) {
+        // Open in Incognito Tab.
+        UIAction* openIncognitoTab =
+            [actionFactory actionToOpenInNewIncognitoTabWithURL:link
+                                                     completion:nil];
+        [menuElements addObject:openIncognitoTab];
       }
-    }
 
-    // Copy Link.
-    UIAction* copyLink = [actionFactory actionToCopyURL:link];
-    [menuElements addObject:copyLink];
+      if (base::ios::IsMultipleScenesSupported()) {
+        // Open in New Window.
+        UIAction* openNewWindow = [actionFactory
+            actionToOpenInNewWindowWithURL:link
+                            activityOrigin:WindowActivityContextMenuOrigin];
+
+        [menuElements addObject:openNewWindow];
+      }
+
+      if (link.SchemeIsHTTPOrHTTPS()) {
+        NSString* innerText = params.link_text;
+        if ([innerText length] > 0) {
+          // Add to reading list.
+          UIAction* addToReadingList =
+              [actionFactory actionToAddToReadingListWithBlock:^{
+                [weakSelf addToReadingListURL:link title:innerText];
+              }];
+          [menuElements addObject:addToReadingList];
+        }
+      }
+
+      // Copy Link.
+      UIAction* copyLink = [actionFactory actionToCopyURL:link];
+      [menuElements addObject:copyLink];
+    }
   }
 
   if (isImage) {
@@ -5385,14 +5391,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)showTrustedVaultReauthForFetchKeysWithTrigger:
-    (syncer::KeyRetrievalTriggerForUMA)trigger {
+    (syncer::TrustedVaultUserActionTriggerForUMA)trigger {
   [self.dispatcher
       showTrustedVaultReauthForFetchKeysFromViewController:self
                                                    trigger:trigger];
 }
 
 - (void)showTrustedVaultReauthForDegradedRecoverabilityWithTrigger:
-    (syncer::KeyRetrievalTriggerForUMA)trigger {
+    (syncer::TrustedVaultUserActionTriggerForUMA)trigger {
   [self.dispatcher
       showTrustedVaultReauthForDegradedRecoverabilityFromViewController:self
                                                                 trigger:

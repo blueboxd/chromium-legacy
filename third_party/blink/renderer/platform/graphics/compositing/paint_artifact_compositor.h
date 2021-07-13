@@ -246,11 +246,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                                     const PendingLayer&,
                                     cc::LayerSelection& layer_selection);
 
-  // Updates the cc::Layer associated with a |pending_layer| following a paint.
-  // This includes both raster invalidation and updating the cc::Layer
-  // properties (bounds, background_color, etc).
-  void UpdateRepaintedLayer(PendingLayer& pending_layer,
-                            cc::LayerSelection& layer_selection);
+  // Updates |content_layer_client| associated with a |pending_layer| following
+  // a paint. This includes updating the drawings and raster invalidation.
+  void UpdateRepaintedContentLayerClient(
+      const PendingLayer& pending_layer,
+      ContentLayerClientImpl& content_layer_client);
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
@@ -302,11 +302,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   scoped_refptr<cc::Layer> ScrollHitTestLayerForPendingLayer(
       const PendingLayer&);
 
-  // Finds an existing scroll hit test layer for the pending layer, returning
-  // nullptr if none exists.
-  scoped_refptr<cc::Layer> ExistingScrollHitTestLayerForPendingLayer(
-      const PendingLayer&) const;
-
   // Finds an existing or creates a new scrollbar layer for the pending layer,
   // returning nullptr if the layer is not a scrollbar layer.
   scoped_refptr<cc::ScrollbarLayerBase> ScrollbarLayerForPendingLayer(
@@ -340,8 +335,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       const PendingLayer* previous_layer) const;
 
   void UpdateDebugInfo() const;
-
-  cc::ScrollbarLayerBase* ScrollbarLayer(CompositorElementId);
 
   // For notifying blink of composited scrolling.
   base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks_;

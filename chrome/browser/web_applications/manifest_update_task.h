@@ -27,6 +27,8 @@ struct InstallableData;
 }
 
 namespace web_app {
+enum class AppIdentityUpdate;
+struct IconDiff;
 
 // Checks for whether file handlers have changed. Ignores differences in names,
 // which aren't stored in the apps::FileHandlers, and ordering, which may
@@ -42,7 +44,7 @@ bool HaveProtocolHandlersChanged(
     const std::vector<blink::Manifest::ProtocolHandler>& new_handlers);
 
 class AppIconManager;
-class AppRegistrar;
+class WebAppRegistrar;
 class WebAppUiManager;
 class InstallManager;
 class OsIntegrationManager;
@@ -95,7 +97,7 @@ class ManifestUpdateTask final
                      content::WebContents* web_contents,
                      StoppedCallback stopped_callback,
                      bool hang_for_testing,
-                     const AppRegistrar& registrar,
+                     const WebAppRegistrar& registrar,
                      const AppIconManager& icon_manager,
                      WebAppUiManager* ui_manager,
                      InstallManager* install_manager,
@@ -117,6 +119,7 @@ class ManifestUpdateTask final
     kPendingInstallableData,
     kPendingIconDownload,
     kPendingIconReadFromDisk,
+    kPendingAppIdentityCheck,
     kPendingWindowsClosed,
     kPendingMaybeReadExistingIcons,
     kPendingInstallation,
@@ -129,7 +132,11 @@ class ManifestUpdateTask final
   void OnIconsDownloaded(bool success, IconsMap icons_map);
   void OnAllIconsRead(IconsMap downloaded_icons_map,
                       IconBitmaps disk_icon_bitmaps);
-  bool IsUpdateNeededForIconContents(
+  void OnPostAppIdentityUpdateCheck(
+      IconsMap downloaded_icons_map,
+      IconBitmaps disk_icon_bitmaps,
+      AppIdentityUpdate app_identity_update_allowed);
+  IconDiff IsUpdateNeededForIconContents(
       const IconBitmaps& disk_icon_bitmaps) const;
   void OnAllShortcutsMenuIconsRead(
       ShortcutsMenuIconBitmaps disk_shortcuts_menu_icons);
@@ -146,7 +153,7 @@ class ManifestUpdateTask final
       InstallResultCode code);
   void DestroySelf(ManifestUpdateResult result);
 
-  const AppRegistrar& registrar_;
+  const WebAppRegistrar& registrar_;
   const AppIconManager& icon_manager_;
   WebAppUiManager& ui_manager_;
   InstallManager& install_manager_;
@@ -160,6 +167,7 @@ class ManifestUpdateTask final
   const AppId app_id_;
   StoppedCallback stopped_callback_;
   bool hang_for_testing_ = false;
+  bool app_identity_update_allowed_ = false;
 
 #if DCHECK_IS_ON()
   bool* destructor_called_ptr_ = nullptr;

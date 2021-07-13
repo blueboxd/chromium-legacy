@@ -1996,6 +1996,9 @@ extern const char kSmartSuggestionForLargeDownloadsDescription[];
 extern const char kStartSurfaceAndroidName[];
 extern const char kStartSurfaceAndroidDescription[];
 
+extern const char kSharingHubLinkToggleName[];
+extern const char kSharingHubLinkToggleDescription[];
+
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
@@ -2676,6 +2679,9 @@ extern const char kMagnifierContinuousMouseFollowingModeSettingDescription[];
 
 extern const char kFilesArchivemountName[];
 extern const char kFilesArchivemountDescription[];
+
+extern const char kFilesBannerFrameworkName[];
+extern const char kFilesBannerFrameworkDescription[];
 
 extern const char kFilesSinglePartitionFormatName[];
 extern const char kFilesSinglePartitionFormatDescription[];

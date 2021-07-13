@@ -67,7 +67,6 @@ AccountInfo CreateTestAccountInfo(const std::string& name,
   }
   account_info.locale = "en";
   account_info.picture_url = "https://example.com";
-  account_info.is_child_account = false;
   EXPECT_EQ(is_valid, account_info.IsValid());
   return account_info;
 }
@@ -1099,7 +1098,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
                              AccountTrackerService::MIGRATION_NOT_STARTED);
 
     ListPrefUpdate update(&pref_service_, prefs::kAccountInfo);
-    update->Clear();
+    update->ClearList();
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", email);
     dict->SetString("email", email);
@@ -1162,7 +1161,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
 
     ListPrefUpdate update(&pref_service_, prefs::kAccountInfo);
-    update->Clear();
+    update->ClearList();
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", email1);
     dict->SetString("email", email1);

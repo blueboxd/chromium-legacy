@@ -30,7 +30,6 @@
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
@@ -107,8 +106,8 @@ class FakeFileHandlingExpiryService
 
 class WebAppFileHandlingTestBase : public WebAppControllerBrowserTest {
  public:
-  WebAppProviderBase* provider() {
-    return WebAppProviderBase::GetProviderBase(profile());
+  WebAppProvider* provider() {
+    return WebAppProvider::GetForWebApps(profile());
   }
 
   FileHandlerManager& file_handler_manager() {
@@ -117,7 +116,7 @@ class WebAppFileHandlingTestBase : public WebAppControllerBrowserTest {
         .file_handler_manager_for_testing();
   }
 
-  AppRegistrar& registrar() { return provider()->registrar(); }
+  WebAppRegistrar& registrar() { return provider()->registrar(); }
 
   GURL GetSecureAppURL() {
     return https_server()->GetURL("app.com", "/ssl/google.html");

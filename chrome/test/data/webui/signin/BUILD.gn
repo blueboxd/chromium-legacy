@@ -3,6 +3,13 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/preprocess_if_expr.gni")
+
+preprocess_if_expr("preprocess") {
+  in_folder = "./"
+  out_folder = "$target_gen_dir"
+  in_files = [ "profile_card_menu_test.js" ]
+}
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -49,6 +56,7 @@ js_library("dice_web_signin_intercept_test") {
     "..:chai_assert",
     "..:test_util.m",
     "//chrome/browser/resources/signin/dice_web_signin_intercept:dice_web_signin_intercept_app",
+    "//third_party/polymer/v3_0/components-chromium/paper-spinner:paper-spinner-lite",
     "//ui/webui/resources/js:cr.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]

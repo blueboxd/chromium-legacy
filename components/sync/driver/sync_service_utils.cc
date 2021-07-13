@@ -74,9 +74,15 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
   return UploadState::NOT_ACTIVE;
 }
 
-void RecordKeyRetrievalTrigger(KeyRetrievalTriggerForUMA trigger) {
+void RecordKeyRetrievalTrigger(TrustedVaultUserActionTriggerForUMA trigger) {
   base::UmaHistogramEnumeration("Sync.TrustedVaultKeyRetrievalTrigger",
                                 trigger);
+}
+
+void RecordRecoverabilityDegradedFixTrigger(
+    TrustedVaultUserActionTriggerForUMA trigger) {
+  base::UmaHistogramEnumeration(
+      "Sync.TrustedVaultRecoverabilityDegradedFixTrigger", trigger);
 }
 
 bool ShouldOfferTrustedVaultOptIn(const SyncService* service) {

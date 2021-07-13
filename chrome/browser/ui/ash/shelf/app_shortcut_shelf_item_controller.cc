@@ -30,9 +30,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -120,8 +120,8 @@ class AppMatcher {
              const URLPattern& refocus_pattern)
       : app_id_(app_id), refocus_pattern_(refocus_pattern) {
     DCHECK(profile);
-    if (web_app::WebAppProviderBase* provider =
-            web_app::WebAppProviderBase::GetProviderBase(profile)) {
+    if (web_app::WebAppProvider* provider =
+            web_app::WebAppProvider::GetForWebApps(profile)) {
       if (provider->registrar().IsLocallyInstalled(app_id)) {
         registrar_ = &provider->registrar();
       }
@@ -220,7 +220,7 @@ class AppMatcher {
   // AppMatcher is stack allocated. Pointer members below are not owned.
 
   // registrar_ is set when app_id_ is a web app.
-  const web_app::AppRegistrar* registrar_ = nullptr;
+  const web_app::WebAppRegistrar* registrar_ = nullptr;
 
   // extension_ is set when app_id_ is a hosted app.
   const Extension* extension_ = nullptr;
@@ -563,10 +563,10 @@ bool AppShortcutShelfItemController::AllowNextLaunchAttempt() {
 }
 
 bool AppShortcutShelfItemController::IsWindowedWebApp() {
-  if (web_app::WebAppProviderBase* provider =
-          web_app::WebAppProviderBase::GetProviderBase(
+  if (web_app::WebAppProvider* provider =
+          web_app::WebAppProvider::GetForWebApps(
               ChromeShelfController::instance()->profile())) {
-    web_app::AppRegistrar& registrar = provider->registrar();
+    web_app::WebAppRegistrar& registrar = provider->registrar();
     if (registrar.IsLocallyInstalled(app_id())) {
       return registrar.GetAppUserDisplayMode(app_id()) !=
              web_app::DisplayMode::kBrowser;

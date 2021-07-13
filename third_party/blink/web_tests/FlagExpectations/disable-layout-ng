@@ -161,11 +161,6 @@ crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-int
 crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-003.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-028.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-029.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-030.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-031.html [ Failure ]
-crbug.com/1045599 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-038.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-025.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-026.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/grid-item-spanning-and-orthogonal-flows.html [ Failure ]
@@ -217,6 +212,9 @@ crbug.com/591099 external/wpt/css/css-position/position-absolute-replaced-no-int
 crbug.com/591099 external/wpt/css/css-position/position-relative-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/position-relative-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/position-relative-004.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-position/position-relative-011.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-position/position-relative-012.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-position/position-relative-013.html [ Failure ]
 
 ### external/wpt/css/css-position/static-position/
 crbug.com/591099 external/wpt/css/css-position/static-position/htb-ltr-rtl.tentative.html [ Failure ]
@@ -833,7 +831,7 @@ crbug.com/840659 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/* [ Skip ]
 # MathML depends on LayoutNG.
 crbug.com/6606 external/wpt/mathml/* [ Skip ]
 
-crbug.com/1034944 http/tests/webexposed/global-interface-listing.php [ Skip ]
+crbug.com/1034944 webexposed/global-interface-listing.html [ Skip ]
 
 # TODO(iopopesc) these need to be rebaselined for focus ring changes.
 crbug.com/1035582 fast/css/focus-ring-detached.html [ Failure ]

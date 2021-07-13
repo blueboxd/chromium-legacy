@@ -15083,35 +15083,25 @@
       For detailed information on valid input patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy. This policy only matches based on origin, so any path in the URL pattern is ignored.''',
     },
     {
-      'name': 'ManagedWebAppsAccessToDeviceAttributesAllowed',
+      'name': 'DeviceAttributesAllowedForOrigins',
       'owners': ['file://components/policy/resources/OWNERS', 'anqing@chromium.org'],
-      'type': 'main',
-      'schema': { 'type': 'boolean' },
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'supported_on': ['chrome_os:93-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'items': [
-        {
-          'value': True,
-          'caption': 'Allow force-installed web applications to query for device attributes.',
-        },
-        {
-          'value': False,
-          'caption': 'Prevent force-installed web applications from querying for device attributes.',
-        },
-      ],
-      'example_value': True,
-      'default': True,
+      'example_value': ['https://www.google.com', 'https://www.example.com'],
       'id': 865,
-      'caption': '''Allow force-installed web applications to query for device attributes.''',
+      'caption': '''Allow origins to query for device attributes''',
       'tags': [],
-      'desc': '''Setting the policy to allow force-installed web applications to get device attributes (e.g. serial number, hostname) by using Device Attributes web API.
+      'desc': '''Setting the policy to allow some origins of force-installed web applications to get device attributes (e.g. serial number, hostname) by using Device Attributes API.
 
-      If this policy is set to true or not configured, the Device Attributes web API will be allowed to force-installed web applications.
-
-      If this policy is set to false, the Device Attributes web API will be disallowed.''',
+      Device Attributes API is a list of web APIs, please see https://wicg.github.io/WebApiDevice/device_attributes. They are only available to origins which correspond to force-installed web applications via <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME">WebAppInstallForceList</ph> or the one configured in the Kiosk session.'''
     },
     {
       'name': 'QuicAllowed',
@@ -20820,7 +20810,7 @@
           'caption': '''Default behavior for LBS.''',
         },
         {
-          'name': 'Strict',
+          'name': 'IESiteListMode',
           'value': 1,
           'caption': '''More compatible with Microsoft IE/Edge enterprise mode sitelists.''',
         },
@@ -20836,15 +20826,17 @@
       'tags': [],
       'desc': '''This policy controls how <ph name="PRODUCT_NAME">Google Chrome</ph> interprets sitelist/greylist policies for the Legacy Browser Support feature. It affects the following policies: <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph>, <ph name="URL_GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph>, <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph>, <ph name="EXTERNAL_SITELIST_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph>, and <ph name="EXTERNAL_GREYLIST_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph>.
 
-      If 'Default' (0) or unset, URL matching is less strict. Rules that do not contain "/" look for a substring anywhere in the URL's hostname.
+      If 'Default' (0) or unset, URL matching is less strict. Rules that do not contain "/" look for a substring anywhere in the URL's hostname. Matching the path component of a URL is case-sensitive.
 
-      If 'Strict' (1), URL matching is more strict. Rules that do not contain "/" only match at the end of the hostname. They must also be at a domain name boundary. This is more compatible with <ph name="MS_IE_PRODUCT_NAME">Microsoft® Internet Explorer®</ph> and <ph name="MS_EDGE_PRODUCT_NAME">Microsoft® Edge®</ph>.
+      If 'IESiteListMode' (1), URL matching is more strict. Rules that do not contain "/" only match at the end of the hostname. They must also be at a domain name boundary. Matching the path component of a URL is case-insensitive. This is more compatible with <ph name="MS_IE_PRODUCT_NAME">Microsoft® Internet Explorer®</ph> and <ph name="MS_EDGE_PRODUCT_NAME">Microsoft® Edge®</ph>.
 
-      For example, with the rule "example.com":
+      For example, with the rules "example.com" and "acme.com/abc":
 
-      "http://example.com/" and "http://subdomain.example.com/" match regardless of parsing mode.
+      "http://example.com/", "http://subdomain.example.com/" and "http://acme.com/abc" match regardless of parsing mode.
 
-      "http://notexample.com/", "http://example.com.invalid.com/" and "http://example.comabc/" only match in 'Default' mode.''',
+      "http://notexample.com/", "http://example.com.invalid.com/", "http://example.comabc/" only match in 'Default' mode.
+
+      "http://acme.com/ABC" only matches in 'IESiteListMode'.''',
     },
     {
       'id': 519,

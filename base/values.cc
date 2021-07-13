@@ -1469,10 +1469,6 @@ ListValue::ListValue(span<const Value> in_list) : Value(in_list) {}
 ListValue::ListValue(ListStorage&& in_list) noexcept
     : Value(std::move(in_list)) {}
 
-void ListValue::Clear() {
-  list().clear();
-}
-
 bool ListValue::Set(size_t index, std::unique_ptr<Value> in_value) {
   if (!in_value)
     return false;
@@ -1574,15 +1570,6 @@ void ListValue::AppendString(StringPiece in_value) {
 
 void ListValue::AppendString(const std::u16string& in_value) {
   list().emplace_back(in_value);
-}
-
-bool ListValue::Insert(size_t index, std::unique_ptr<Value> in_value) {
-  DCHECK(in_value);
-  if (index > list().size())
-    return false;
-
-  list().insert(list().begin() + index, std::move(*in_value));
-  return true;
 }
 
 void ListValue::Swap(ListValue* other) {

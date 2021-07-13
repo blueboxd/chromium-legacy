@@ -17,11 +17,11 @@
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/webui_url_constants.h"
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 #include "extensions/browser/entry_info.h"
@@ -57,9 +57,9 @@ void FindWebTasks(Profile* profile,
     }
   }
 
-  web_app::WebAppProviderBase* provider =
-      web_app::WebAppProviderBase::GetProviderBase(profile);
-  web_app::AppRegistrar& registrar = provider->registrar();
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForWebApps(profile);
+  web_app::WebAppRegistrar& registrar = provider->registrar();
   web_app::OsIntegrationManager& os_integration_manager =
       provider->os_integration_manager();
 
@@ -121,9 +121,9 @@ void ExecuteWebTask(Profile* profile,
                     const TaskDescriptor& task,
                     const std::vector<storage::FileSystemURL>& file_system_urls,
                     FileTaskFinishedCallback done) {
-  web_app::WebAppProviderBase* provider =
-      web_app::WebAppProviderBase::GetProviderBase(profile);
-  web_app::AppRegistrar& registrar = provider->registrar();
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForWebApps(profile);
+  web_app::WebAppRegistrar& registrar = provider->registrar();
 
   if (!registrar.IsInstalled(task.app_id)) {
     std::move(done).Run(

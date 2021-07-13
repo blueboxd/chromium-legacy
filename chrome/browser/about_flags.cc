@@ -3451,6 +3451,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(content_creation::kWebNotesStylizeEnabled,
                                     kWebNoteStylizeVariations,
                                     "WebNotesStylize")},
+    {"sharing-hub-link-toggle", flag_descriptions::kSharingHubLinkToggleName,
+     flag_descriptions::kSharingHubLinkToggleDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kSharingHubLinkToggle)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
@@ -4225,6 +4228,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-archivemount", flag_descriptions::kFilesArchivemountName,
      flag_descriptions::kFilesArchivemountDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesArchivemount)},
+    {"files-banner-framework", flag_descriptions::kFilesBannerFrameworkName,
+     flag_descriptions::kFilesBannerFrameworkDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesBannerFramework)},
     {"files-filters-in-recents", flag_descriptions::kFiltersInRecentsName,
      flag_descriptions::kFiltersInRecentsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecents)},
@@ -6810,12 +6816,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(language::kDesktopDetailedLanguageSettings)},
 #endif
 
-#if defined(OS_ANDROID)
     {"pwa-update-dialog-for-name-and-icon",
      flag_descriptions::kPwaUpdateDialogForNameAndIconName,
-     flag_descriptions::kPwaUpdateDialogForNameAndIconDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kPwaUpdateDialogForNameAndIcon)},
-#endif
+     flag_descriptions::kPwaUpdateDialogForNameAndIconDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPwaUpdateDialogForNameAndIcon)},
 
     {"sync-autofill-wallet-offer-data",
      flag_descriptions::kSyncAutofillWalletOfferDataName,

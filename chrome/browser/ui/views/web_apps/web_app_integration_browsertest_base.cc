@@ -35,7 +35,6 @@
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
@@ -639,7 +638,7 @@ void WebAppIntegrationBrowserTestBase::LaunchInternal(
       << "No app installed for scope: " << action_param;
   auto app_id = app_state->id;
   auto* web_app_provider = GetProvider();
-  AppRegistrar& app_registrar = web_app_provider->registrar();
+  WebAppRegistrar& app_registrar = web_app_provider->registrar();
   DisplayMode display_mode = app_registrar.GetAppEffectiveDisplayMode(app_id);
   if (display_mode == blink::mojom::DisplayMode::kBrowser) {
     ui_test_utils::UrlLoadObserver url_observer(
@@ -760,8 +759,7 @@ void WebAppIntegrationBrowserTestBase::UninstallInternal(
   ASSERT_TRUE(app_state.has_value())
       << "No app installed for scope: " << action_param;
   auto app_id = app_state->id;
-  WebAppProviderBase* const provider =
-      WebAppProviderBase::GetProviderBase(profile());
+  WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile());
   base::RunLoop run_loop;
 
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));

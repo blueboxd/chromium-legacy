@@ -281,8 +281,6 @@ extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
 extern const char kHatsOnboardingSurveyCycleEndTs[];
 extern const char kHatsOnboardingDeviceIsSelected[];
-extern const char kQuickUnlockPinSecret[];
-extern const char kQuickUnlockFingerprintRecord[];
 extern const char kEolStatus[];
 extern const char kEndOfLifeDate[];
 extern const char kEolNotificationDismissed[];
@@ -290,11 +288,6 @@ extern const char kFirstEolWarningDismissed[];
 extern const char kSecondEolWarningDismissed[];
 extern const char kPinUnlockFeatureNotificationShown[];
 extern const char kFingerprintUnlockFeatureNotificationShown[];
-extern const char kQuickUnlockModeAllowlist[];
-extern const char kQuickUnlockTimeout[];
-extern const char kPinUnlockMinimumLength[];
-extern const char kPinUnlockMaximumLength[];
-extern const char kPinUnlockWeakPinsAllowed[];
 extern const char kPinUnlockAutosubmitEnabled[];
 extern const char kCastReceiverEnabled[];
 extern const char kMinimumAllowedChromeVersion[];
@@ -535,7 +528,6 @@ extern const char kManagedSerialAllowUsbDevicesForUrls[];
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];
 extern const char kProfilesNumCreated[];
-extern const char kGuestProfilesNumCreated[];
 extern const char kProfileAttributes[];
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kLegacyProfileNamesMigrated[];
@@ -1156,7 +1148,7 @@ extern const char kPdfAnnotationsEnabled[];
 extern const char kExplicitlyAllowedNetworkPorts[];
 
 #if !defined(OS_ANDROID)
-extern const char kManagedWebAppsAccessToDeviceAttributesAllowed[];
+extern const char kDeviceAttributesAllowedForOrigins[];
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

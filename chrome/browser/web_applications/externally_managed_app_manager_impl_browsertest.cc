@@ -12,14 +12,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
 #include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -41,13 +41,12 @@ class ExternallyManagedAppManagerImplBrowserTest : public InProcessBrowserTest {
         OsIntegrationManager::ScopedSuppressOsHooksForTesting();
   }
 
-  AppRegistrar& registrar() {
-    return WebAppProviderBase::GetProviderBase(browser()->profile())
-        ->registrar();
+  WebAppRegistrar& registrar() {
+    return WebAppProvider::GetForWebApps(browser()->profile())->registrar();
   }
 
   ExternallyManagedAppManager& externally_managed_app_manager() {
-    return WebAppProviderBase::GetProviderBase(browser()->profile())
+    return WebAppProvider::GetForWebApps(browser()->profile())
         ->externally_managed_app_manager();
   }
 
@@ -180,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 
   // Start an installation but don't wait for it to finish.
-  WebAppProviderBase::GetProviderBase(browser()->profile())
+  WebAppProvider::GetForWebApps(browser()->profile())
       ->externally_managed_app_manager()
       .Install(std::move(install_options), base::DoNothing());
 

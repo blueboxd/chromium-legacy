@@ -146,6 +146,7 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/session_sync_prefs.h"
@@ -626,6 +627,7 @@ const char kNumberSignInPasswordPromoShown[] =
     "profile.number_sign_in_password_promo_shown";
 const char kSignInPasswordPromoRevive[] =
     "profile.sign_in_password_promo_revive";
+const char kGuestProfilesNumCreated[] = "profile.guest_profiles_created";
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 constexpr char kProfileSwitchInterceptionDeclinedPref[] =
     "signin.ProfileSwitchInterceptionDeclinedPref";
@@ -803,6 +805,7 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kWasSignInPasswordPromoClicked, false);
   registry->RegisterIntegerPref(kNumberSignInPasswordPromoShown, 0);
   registry->RegisterBooleanPref(kSignInPasswordPromoRevive, false);
+  registry->RegisterIntegerPref(kGuestProfilesNumCreated, 1);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   registry->RegisterDictionaryPref(kProfileSwitchInterceptionDeclinedPref);
@@ -1105,6 +1108,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
+  syncer::SyncTransportDataPrefs::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   omnibox::RegisterProfilePrefs(registry);
@@ -1582,6 +1586,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kWasSignInPasswordPromoClicked);
   profile_prefs->ClearPref(kNumberSignInPasswordPromoShown);
   profile_prefs->ClearPref(kSignInPasswordPromoRevive);
+  profile_prefs->ClearPref(kGuestProfilesNumCreated);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   profile_prefs->ClearPref(kProfileSwitchInterceptionDeclinedPref);
 #endif

@@ -484,6 +484,11 @@ const base::Feature kFastPair{"FastPair", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFilesArchivemount{"FilesArchivemount",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the updated banner framework.
+// https://crbug.com/1228128
+const base::Feature kFilesBannerFramework{"FilesBannerFramework",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the System Web App (SWA) version of file manager.
 const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -854,6 +859,10 @@ const base::Feature kQuickAnswersTranslationCloudAPI{
 // Controls whether to enable quick answers V2 features.
 const base::Feature kQuickAnswersV2{"QuickAnswersV2",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables fingerprint quick unlock.
+const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the PIN auto submit feature is enabled.
 const base::Feature kQuickUnlockPinAutosubmit{"QuickUnlockPinAutosubmit",

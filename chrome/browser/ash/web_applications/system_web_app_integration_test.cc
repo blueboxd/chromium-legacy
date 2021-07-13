@@ -44,8 +44,8 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
   EXPECT_EQ(GetManager().GetAppIdForSystemApp(app_type), app_id);
   EXPECT_TRUE(GetManager().IsSystemWebApp(app_id));
 
-  web_app::AppRegistrar& registrar =
-      web_app::WebAppProviderBase::GetProviderBase(profile())->registrar();
+  web_app::WebAppRegistrar& registrar =
+      web_app::WebAppProvider::GetForWebApps(profile())->registrar();
   EXPECT_EQ(title, registrar.GetAppShortName(app_id));
   EXPECT_EQ(base::ASCIIToUTF16(title),
             app_browser->window()->GetNativeWindow()->GetTitle());

@@ -39,11 +39,19 @@ using l10n_util::GetNSStringF;
     initWithBaseViewController:(UIViewController*)viewController
                        browser:(Browser*)browser
                         intent:(SigninTrustedVaultDialogIntent)intent
-                       trigger:(syncer::KeyRetrievalTriggerForUMA)trigger {
+                       trigger:(syncer::TrustedVaultUserActionTriggerForUMA)
+                                   trigger {
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
-    syncer::RecordKeyRetrievalTrigger(trigger);
     _intent = intent;
+    switch (intent) {
+      case SigninTrustedVaultDialogIntentFetchKeys:
+        syncer::RecordKeyRetrievalTrigger(trigger);
+        break;
+      case SigninTrustedVaultDialogIntentDegradedRecoverability:
+        syncer::RecordRecoverabilityDegradedFixTrigger(trigger);
+        break;
+    }
   }
   return self;
 }

@@ -1466,7 +1466,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           BrowserContext::CreateRandomMediaDeviceIDSalt()),
       document_associated_data_(
           std::make_unique<DocumentAssociatedData>(*this)),
-      lifecycle_state_(lifecycle_state) {
+      lifecycle_state_(lifecycle_state),
+      anonymous_(parent_ ? parent_->anonymous() : false) {
   DCHECK(delegate_);
   DCHECK(lifecycle_state_ == LifecycleStateImpl::kSpeculative ||
          lifecycle_state_ == LifecycleStateImpl::kPrerendering ||
@@ -3156,7 +3157,7 @@ void RenderFrameHostImpl::RenderFrameCreated() {
       // deleted immediately after crash, whereas prerender gets cancelled and
       // bfcache entry gets evicted.
       DCHECK_EQ(frame_tree_node_->current_frame_host(), this);
-      frame_tree_node_->frame_tree()->delegate()->NotifyPageChanged();
+      frame_tree_node_->frame_tree()->delegate()->NotifyPageChanged(GetPage());
     }
   }
 
@@ -3452,7 +3453,7 @@ void RenderFrameHostImpl::CreateChildFrame(
 void RenderFrameHostImpl::DidNavigate(
     const mojom::DidCommitProvisionalLoadParams& params,
     NavigationRequest* navigation_request,
-    bool did_create_new_document) {
+    bool was_within_same_document) {
   // Keep track of the last committed URL and origin in the RenderFrameHost
   // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
   // stay correct even if the render_frame_host later becomes pending deletion.
@@ -3504,6 +3505,10 @@ void RenderFrameHostImpl::DidNavigate(
   // the renderer process.
   last_http_status_code_ = params.http_status_code;
 
+  // Navigations that activate an existing bfcached or prerendered document do
+  // not create a new document.
+  bool did_create_new_document =
+      !navigation_request->IsPageActivation() && !was_within_same_document;
   if (did_create_new_document)
     DidCommitNewDocument(params, navigation_request);
 
@@ -3534,6 +3539,17 @@ void RenderFrameHostImpl::DidNavigate(
     // frame owns both parent's required document policy and child frame's frame
     // owner element which contains child's required document policy, so there
     // is no need to store required document policy in proxies.
+  }
+
+  if (!was_within_same_document) {
+    // Dispatch a notification when a main frame non-same-document navigation
+    // changes the current Page in the FrameTree. We do this here to
+    // ensure that this navigation has updated all relevant properties of
+    // RenderFrameHost / Page (e.g. RenderFrameHost::GetLastCommittedURL).
+    FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
+    if (frame_tree_node->IsMainFrame()) {
+      frame_tree_node->frame_tree()->delegate()->NotifyPageChanged(GetPage());
+    }
   }
 }
 
@@ -5269,6 +5285,15 @@ void RenderFrameHostImpl::SetUnloadACKCallbackForTesting(
   unload_ack_callback_ = callback;
 }
 
+const net::HttpResponseHeaders* RenderFrameHostImpl::GetLastResponseHeaders() {
+  // This shouldn't be called before committing the document as this value is
+  // set during call to RenderFrameHostImpl::DidNavigate which happens after
+  // commit.
+  DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kSpeculative);
+  DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kPendingCommit);
+  return last_response_head_ ? last_response_head_->headers.get() : nullptr;
+}
+
 void RenderFrameHostImpl::DidBlockNavigation(
     const GURL& blocked_url,
     const GURL& initiator_url,
@@ -5988,9 +6013,10 @@ void RenderFrameHostImpl::DidChangeOpener(
                                                       GetSiteInstance());
 }
 
-void RenderFrameHostImpl::DidChangeCSPAttribute(
+void RenderFrameHostImpl::DidChangeIframeAttributes(
     const blink::FrameToken& child_frame_token,
-    network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute) {
+    network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute,
+    bool anonymous) {
   if (parsed_csp_attribute &&
       !ValidateCSPAttribute(parsed_csp_attribute->header->header_value)) {
     bad_message::ReceivedBadMessage(GetProcess(),
@@ -5998,12 +6024,13 @@ void RenderFrameHostImpl::DidChangeCSPAttribute(
     return;
   }
 
-  auto* child =
-      FindAndVerifyChild(child_frame_token, bad_message::RFH_CSP_ATTRIBUTE);
+  auto* child = FindAndVerifyChild(
+      child_frame_token, bad_message::RFH_DID_CHANGE_IFRAME_ATTRIBUTE);
   if (!child)
     return;
 
   child->frame_tree_node()->set_csp_attribute(std::move(parsed_csp_attribute));
+  child->frame_tree_node()->set_anonymous(anonymous);
 }
 
 void RenderFrameHostImpl::DidChangeFramePolicy(
@@ -9982,15 +10009,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   if (!is_same_document_navigation) {
-    // Dispatch update notification when a new Page is created for navigations
-    // which results in creation of new document.
-    if (navigation_request->frame_tree_node()->IsMainFrame()) {
-      navigation_request->frame_tree_node()
-          ->frame_tree()
-          ->delegate()
-          ->NotifyPageChanged();
-    }
-
     DCHECK_EQ(navigation_request->is_overriding_user_agent() &&
                   frame_tree_node_->IsMainFrame(),
               params->is_overriding_user_agent);
@@ -10140,6 +10158,7 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   // Store the required CSP (it will be used by the AncestorThrottle if
   // this frame embeds a subframe when that subframe navigates).
   required_csp_ = navigation_request->TakeRequiredCSP();
+  anonymous_ = navigation_request->anonymous();
 
   coep_reporter_ = navigation_request->TakeCoepReporter();
   if (coep_reporter_) {

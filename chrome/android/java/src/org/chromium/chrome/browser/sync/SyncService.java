@@ -13,8 +13,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
-import org.chromium.components.sync.KeyRetrievalTriggerForUMA;
 import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.TrustedVaultUserActionTriggerForUMA;
 
 import java.util.Date;
 import java.util.Set;
@@ -307,7 +307,13 @@ public abstract class SyncService {
      * Records TrustedVaultKeyRetrievalTrigger histogram.
      */
     public abstract void recordKeyRetrievalTrigger(
-            @KeyRetrievalTriggerForUMA int keyRetrievalTrigger);
+            @TrustedVaultUserActionTriggerForUMA int trigger);
+
+    /**
+     * Records TrustedVaultRecoverabilityDegradedFixTrigger histogram.
+     */
+    public abstract void recordRecoverabilityDegradedFixTrigger(
+            @TrustedVaultUserActionTriggerForUMA int trigger);
 
     /** @return Whether the user should be offered to opt in to trusted vault encryption. */
     public abstract boolean shouldOfferTrustedVaultOptIn();

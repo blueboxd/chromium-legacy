@@ -3500,6 +3500,10 @@ const char kStartSurfaceAndroidDescription[] =
     "Enable showing the start surface when launching Chrome via the "
     "launcher.";
 
+const char kSharingHubLinkToggleName[] = "Sharing Hub Link Toggle";
+const char kSharingHubLinkToggleDescription[] =
+    "Enable the link toggle in the Sharing Hub.";
+
 const char kStrictSiteIsolationName[] = "Strict site isolation";
 const char kStrictSiteIsolationDescription[] =
     "Security mode that enables site isolation for all sites (SitePerProcess). "
@@ -4660,6 +4664,11 @@ const char kMagnifierContinuousMouseFollowingModeSettingDescription[] =
 const char kFilesArchivemountName[] = "Archivemount in Files App";
 const char kFilesArchivemountDescription[] =
     "Enable mounting various archive formats in File Manager.";
+
+const char kFilesBannerFrameworkName[] =
+    "Updated Banner framework in Files app";
+const char kFilesBannerFrameworkDescription[] =
+    "Enable the updated branner framework in Files app";
 
 const char kFilesSinglePartitionFormatName[] =
     "Enable Partitioning of Removable Disks.";

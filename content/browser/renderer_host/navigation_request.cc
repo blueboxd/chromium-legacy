@@ -1238,6 +1238,12 @@ NavigationRequest::NavigationRequest(
       initiator_frame_token_(begin_params_->initiator_frame_token),
       initiator_process_id_(initiator_process_id),
       was_opener_suppressed_(was_opener_suppressed),
+      // The document to commit will be anonymous if either the iframe element
+      // has the 'anonymous' attribute set or the parent document is anonymous.
+      anonymous_(frame_tree_node->anonymous() ||
+                 (frame_tree_node->parent()
+                      ? frame_tree_node->parent()->anonymous()
+                      : false)),
       previous_page_ukm_source_id_(
           frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
@@ -3693,7 +3699,7 @@ void NavigationRequest::OnRedirectChecksComplete(
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
     net::HttpRequestHeaders client_hints_extra_headers;
-    ParseAndPersistAcceptCHForNagivation(
+    ParseAndPersistAcceptCHForNavigation(
         commit_params_->redirects.back(),
         commit_params_->redirect_response.back()->parsed_headers,
         browser_context, client_hints_delegate, frame_tree_node_);
@@ -4088,7 +4094,7 @@ void NavigationRequest::CommitNavigation() {
     absl::optional<std::vector<network::mojom::WebClientHintsType>>
         opt_in_hints_from_response;
     if (response()) {
-      opt_in_hints_from_response = ParseAndPersistAcceptCHForNagivation(
+      opt_in_hints_from_response = ParseAndPersistAcceptCHForNavigation(
           common_params_->url, response()->parsed_headers, browser_context,
           client_hints_delegate, frame_tree_node_);
     }

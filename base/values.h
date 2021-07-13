@@ -823,10 +823,6 @@ class BASE_EXPORT ListValue : public Value {
   explicit ListValue(span<const Value> in_list);
   explicit ListValue(ListStorage&& in_list) noexcept;
 
-  // Clears the contents of this ListValue
-  // DEPRECATED, use `ClearList()` instead.
-  void Clear();
-
   // Returns the number of Values in this list.
   // DEPRECATED, use `GetList()::size()` instead.
   size_t GetSize() const { return list().size(); }
@@ -877,12 +873,6 @@ class BASE_EXPORT ListValue : public Value {
   void AppendInteger(int in_value);
   void AppendString(StringPiece in_value);
   void AppendString(const std::u16string& in_value);
-
-  using Value::Insert;
-  // Insert a Value at index.
-  // Returns true if successful, or false if the index was out of range.
-  // DEPRECATED, use `Value::Insert()` instead.
-  bool Insert(size_t index, std::unique_ptr<Value> in_value);
 
   // Swaps contents with the `other` list.
   // DEPRECATED, use `GetList()::swap()` instead.

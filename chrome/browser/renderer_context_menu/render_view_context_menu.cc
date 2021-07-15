@@ -1103,7 +1103,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
         GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
   } else if ((!params_.selection_text.empty() ||
               params_.opened_from_highlight) &&
-              params_.media_type == ContextMenuDataMediaType::kNone) {
+             params_.media_type == ContextMenuDataMediaType::kNone) {
     // Probably just text.
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ContextMenu.SelectedOptionDesktop.SelectedText", enum_id,
@@ -1461,7 +1461,7 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
   }
 
-  auto* const provider = web_app::WebAppProvider::GetForWebApps(profile);
+  auto* const provider = web_app::WebAppProvider::Get(profile);
   menu_model_.AddItem(
       IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
       l10n_util::GetStringFUTF16(
@@ -2041,8 +2041,16 @@ void RenderViewContextMenu::AppendSharedClipboardItem() {
 }
 
 void RenderViewContextMenu::AppendLensRegionSearchItem() {
+  int resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH;
+  if (lens::features::kRegionSearchUseMenuItemAltText1.Get()) {
+    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1;
+  } else if (lens::features::kRegionSearchUseMenuItemAltText2.Get()) {
+    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT2;
+  } else if (lens::features::kRegionSearchUseMenuItemAltText3.Get()) {
+    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT3;
+  }
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH,
-                                  IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH);
+                                  resource_id);
 }
 
 // Menu delegate functions -----------------------------------------------------
@@ -3347,7 +3355,8 @@ void RenderViewContextMenu::ExecTranslate() {
   translate::TranslateManager* manager =
       chrome_translate_client->GetTranslateManager();
   DCHECK(manager);
-  manager->InitiateManualTranslation(true, true);
+  manager->ShowTranslateUI(/*auto_translate=*/true,
+                           /*triggered_from_menu=*/true);
 }
 
 void RenderViewContextMenu::ExecLanguageSettings(int event_flags) {

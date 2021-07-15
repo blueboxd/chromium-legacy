@@ -51,6 +51,8 @@ PageInfoNewBubbleView::PageInfoNewBubbleView(
   view_factory_ = std::make_unique<PageInfoViewFactory>(
       presenter_.get(), ui_delegate_.get(), this);
 
+  SetTitle(presenter_->GetSimpleSiteName());
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   page_container_ = AddChildView(
@@ -66,10 +68,14 @@ void PageInfoNewBubbleView::OpenMainPage() {
 }
 
 void PageInfoNewBubbleView::OpenSecurityPage() {
+  presenter_->RecordPageInfoAction(
+      PageInfo::PageInfoAction::PAGE_INFO_SECURITY_DETAILS_OPENED);
   page_container_->SwitchToPage(view_factory_->CreateSecurityPageView());
 }
 
 void PageInfoNewBubbleView::OpenPermissionPage(ContentSettingsType type) {
+  presenter_->RecordPageInfoAction(
+      PageInfo::PageInfoAction::PAGE_INFO_PERMISSION_DIALOG_OPENED);
   page_container_->SwitchToPage(view_factory_->CreatePermissionPageView(type));
 }
 

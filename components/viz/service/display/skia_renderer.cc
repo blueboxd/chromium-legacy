@@ -1317,8 +1317,8 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
   // Applying the scissor explicitly means avoiding a clipRect() call and
   // allows more quads to be batched together in a DrawEdgeAAImageSet call
   if (scissor_rect) {
-    if (CanExplicitlyScissor(quad, draw_region,
-                             params.content_device_transform)) {
+    if (CanExplicitlyScissor(quad, draw_region, params.content_device_transform,
+                             *scissor_rect)) {
       ApplyExplicitScissor(quad, *scissor_rect, params.content_device_transform,
                            &params.aa_flags, &params.visible_rect);
       params.vis_tex_coords = params.visible_rect;
@@ -1358,7 +1358,8 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
 bool SkiaRenderer::CanExplicitlyScissor(
     const DrawQuad* quad,
     const gfx::QuadF* draw_region,
-    const gfx::Transform& contents_device_transform) const {
+    const gfx::Transform& contents_device_transform,
+    const gfx::Rect& scissor_rect) const {
   // PICTURE_CONTENT is not like the others, since it is executing a list of
   // draw calls into the canvas.
   if (quad->material == DrawQuad::Material::kPictureContent)
@@ -1371,11 +1372,14 @@ bool SkiaRenderer::CanExplicitlyScissor(
   // This is slightly different than
   // gfx::Transform::IsPositiveScaleAndTranslation in that it also allows zero
   // scales. This is because in the common orthographic case the z scale is 0.
-  if (!contents_device_transform.IsScaleOrTranslation())
+  if (!contents_device_transform.IsScaleOrTranslation() ||
+      contents_device_transform.matrix().get(0, 0) < 0.0f ||
+      contents_device_transform.matrix().get(1, 1) < 0.0f ||
+      contents_device_transform.matrix().get(2, 2) < 0.0f) {
     return false;
+  }
 
-  // Sanity check: we should not have a Compositor CompositorRenderPassDrawQuad
-  // here.
+  // State check: should not have a CompositorRenderPassDrawQuad if we got here.
   DCHECK_NE(quad->material, DrawQuad::Material::kCompositorRenderPass);
   if (quad->material == DrawQuad::Material::kAggregatedRenderPass) {
     // If the renderpass has filters, the filters may modify the effective
@@ -1386,9 +1390,18 @@ bool SkiaRenderer::CanExplicitlyScissor(
       return false;
   }
 
-  return contents_device_transform.matrix().get(0, 0) >= 0.0 &&
-         contents_device_transform.matrix().get(1, 1) >= 0.0 &&
-         contents_device_transform.matrix().get(2, 2) >= 0.0;
+  // If the intersection of the scissor and the quad's visible_rect results in
+  // subpixel device-space geometry, do not drop the scissor. Otherwise Skia
+  // sees an unclipped anti-aliased hairline and uses different AA methods that
+  // would cause the rasterized result to extend beyond the scissor.
+  gfx::RectF device_bounds(quad->visible_rect);
+  contents_device_transform.TransformRect(&device_bounds);
+  device_bounds.Intersect(gfx::RectF(scissor_rect));
+  if (device_bounds.width() < 1.0f || device_bounds.height() < 1.0f) {
+    return false;
+  }
+
+  return true;
 }
 
 const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
@@ -2822,10 +2835,14 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   auto* shared_quad_state =
       const_cast<SharedQuadState*>(quad->shared_quad_state);
 
-  gfx::Transform quad_to_target_transform_inverse(
-      gfx::Transform::kSkipInitialization);
+  absl::optional<gfx::Transform> quad_to_target_transform_inverse;
   if (shared_quad_state->clip_rect ||
       !shared_quad_state->mask_filter_info.IsEmpty()) {
+    // We cannot handle rotation with clip rect or mask filter.
+    DCHECK(
+        shared_quad_state->quad_to_target_transform.Preserves2dAxisAlignment());
+    quad_to_target_transform_inverse.emplace(
+        gfx::Transform::kSkipInitialization);
     // Flatten before inverting, since we're interested in how points
     // with z=0 in local space map to the clip rect, not in how the clip
     // rect at z=0 in device space maps to some other z in local space.
@@ -2833,7 +2850,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
         shared_quad_state->quad_to_target_transform);
     flat_quad_to_target_transform.FlattenTo2d();
     bool result = flat_quad_to_target_transform.GetInverse(
-        &quad_to_target_transform_inverse);
+        &*quad_to_target_transform_inverse);
     DCHECK(result) << "flat_quad_to_target_transform.GetInverse() failed";
   }
 
@@ -2844,7 +2861,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
     // TODO(dbaron): This operation is likely not to be valid if
     // quad_to_target_transform_inverse.HasPerspective().
     gfx::RectF clip_rect(*shared_quad_state->clip_rect);
-    quad_to_target_transform_inverse.TransformRect(&clip_rect);
+    quad_to_target_transform_inverse->TransformRect(&clip_rect);
     auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect.value(),
                                  gfx::ToEnclosedRect(clip_rect));
   }
@@ -2853,7 +2870,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   // (translation, scaling, rotation, etc), so remove them.
   if (!shared_quad_state->mask_filter_info.IsEmpty()) {
     auto result = shared_quad_state->mask_filter_info.Transform(
-        quad_to_target_transform_inverse);
+        *quad_to_target_transform_inverse);
     DCHECK(result) << "shared_quad_state->mask_filter_info.Transform() failed.";
   }
 

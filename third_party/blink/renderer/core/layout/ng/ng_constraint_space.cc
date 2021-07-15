@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_interface.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -123,7 +125,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   builder.SetPercentageResolutionSize(percentage_size);
   builder.SetIsFixedInlineSize(fixed_inline);
   builder.SetIsFixedBlockSize(fixed_block);
-  builder.SetIsFixedBlockSizeIndefinite(!fixed_block_is_definite);
+  builder.SetIsInitialBlockSizeIndefinite(!fixed_block_is_definite);
   // HTML element with display:table is shrink-to-fit.
   bool shrink_to_fit =
       block.SizesLogicalWidthToFitContent(style.LogicalWidth()) ||

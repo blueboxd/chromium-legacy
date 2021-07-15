@@ -138,11 +138,10 @@ struct BackupRefPtrImpl {
     // page. This, however, can't be easily checked for direct maps, where a
     // pointer on a consecutive super page may easily land in its first
     // partition page.
-#if !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+    // TODO(bartekn): Keep the assert for non-DirectMap as well as for the
+    // first page of DirectMap allocations.
+#if 0
     if (ret) {
-      // TODO(bartekn): Keep the assert for non-DirectMap as well as for the
-      // first page of DirectMap allocations when ENABLE_BRP_DIRECTMAP_SUPPORT
-      // is on.
       DCHECK(reinterpret_cast<uintptr_t>(ptr) % kSuperPageSize >=
              PartitionPageSize());
     }
@@ -157,7 +156,7 @@ struct BackupRefPtrImpl {
       DCHECK(ptr != nullptr);
       AcquireInternal(ptr);
     }
-#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#if !defined(PA_HAS_64_BITS_POINTERS)
     else
       AddressPoolManagerBitmap::IncrementOutsideOfBRPPoolPtrRefCount(ptr);
 #endif
@@ -171,7 +170,7 @@ struct BackupRefPtrImpl {
       DCHECK(wrapped_ptr != nullptr);
       ReleaseInternal(wrapped_ptr);
     }
-#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#if !defined(PA_HAS_64_BITS_POINTERS)
     else
       AddressPoolManagerBitmap::DecrementOutsideOfBRPPoolPtrRefCount(
           wrapped_ptr);

@@ -1829,8 +1829,7 @@ AutotestPrivateWaitForSystemWebAppsInstallFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateWaitForSystemWebAppsInstallFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForWebApps(profile);
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -1856,8 +1855,7 @@ AutotestPrivateGetRegisteredSystemWebAppsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForWebApps(profile);
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -1891,8 +1889,7 @@ AutotestPrivateIsSystemWebAppOpenFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateIsSystemWebAppOpenFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProvider::GetForWebApps(profile);
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -4094,8 +4091,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
   PWARegistrarObserver(Profile* profile,
                        base::OnceCallback<void(const web_app::AppId&)> callback)
       : callback_(std::move(callback)) {
-    observation_.Observe(
-        &web_app::WebAppProvider::GetForWebApps(profile)->registrar());
+    observation_.Observe(&web_app::WebAppProvider::Get(profile)->registrar());
   }
   ~PWARegistrarObserver() override {}
 
@@ -4687,6 +4683,64 @@ ExtensionFunction::ResponseAction AutotestPrivatePinShelfIconFunction::Run() {
 
   controller->PinAppWithID(params->app_id);
   return RespondNow(NoArguments());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetShelfIconPinFunction
+////////////////////////////////////////////////////////////////////////////////
+AutotestPrivateSetShelfIconPinFunction::
+    AutotestPrivateSetShelfIconPinFunction() = default;
+AutotestPrivateSetShelfIconPinFunction::
+    ~AutotestPrivateSetShelfIconPinFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetShelfIconPinFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetShelfIconPin::Params> params(
+      api::autotest_private::SetShelfIconPin::Params::Create(*args_));
+
+  ChromeShelfController* const controller = ChromeShelfController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+
+  const std::vector<api::autotest_private::ShelfIconPinUpdateParam>&
+      update_params = params->update_params;
+
+  // Save the app IDs causing errors.
+  std::vector<std::string> problematic_app_ids;
+
+  for (const auto& update_param : update_params) {
+    const std::string& app_id = update_param.app_id;
+    if (!controller->AllowedToSetAppPinState(app_id, update_param.pinned))
+      problematic_app_ids.push_back(app_id);
+  }
+
+  if (!problematic_app_ids.empty()) {
+    return RespondNow(
+        Error(base::StrCat({"Unable to update pin state: ",
+                            base::JoinString(problematic_app_ids, ",")})));
+  }
+
+  // Save the ids of the apps whose pin states are updated. Note that the apps
+  // which reach the target pin states before api function execution are not
+  // included in `updated_apps`.
+  std::vector<std::string> updated_apps;
+
+  for (const auto& update_param : update_params) {
+    const std::string& app_id = update_param.app_id;
+
+    // Already reach the target pin state. No op.
+    if (update_param.pinned == controller->IsAppPinned(app_id))
+      continue;
+
+    if (update_param.pinned)
+      controller->PinAppWithID(app_id);
+    else
+      controller->UnpinAppWithID(app_id);
+    updated_apps.push_back(app_id);
+  }
+
+  return RespondNow(ArgumentList(
+      api::autotest_private::SetShelfIconPin::Results::Create(updated_apps)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

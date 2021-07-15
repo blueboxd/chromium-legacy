@@ -33,15 +33,20 @@ class BASE_EXPORT AddressPoolManagerBitmap {
   static constexpr uint64_t kAddressSpaceSize = 4ull * kGiB;
 
   // For BRP pool, we use partition page granularity to eliminate the guard
-  // pages at the ends. This is needed so that pointers to the end of an
-  // allocation that immediately precede a super page in BRP pool don't
-  // accidentally fall into that pool.
+  // pages from the bitmap at the ends:
+  // - Eliminating the guard page at the beginning is needed so that pointers
+  //   to the end of an allocation that immediately precede a super page in BRP
+  //   pool don't accidentally fall into that pool.
+  // - Eliminating the guard page at the end is to ensure that the last page
+  //   of the address space isn't in the BRP pool. This allows using sentinels
+  //   like reinterpret_cast<void*>(-1) without a risk of triggering BRP logic
+  //   on an invalid address. (Note, 64-bit systems don't have this problem as
+  //   the upper half of the address space always belongs to the OS.)
   //
-  // Note, direct map allocations may also belong to this pool (depending on the
-  // ENABLE_BRP_DIRECTMAP_SUPPORT setting). The same logic as above applies. It
-  // is important to note, however, that the granularity used here has to be a
-  // minimum of partition page size and direct map allocation granularity. Since
-  // DirectMapAllocationGranularity() is no smaller than
+  // Note, direct map allocations also belong to this pool. The same logic as
+  // above applies. It is important to note, however, that the granularity used
+  // here has to be a minimum of partition page size and direct map allocation
+  // granularity. Since DirectMapAllocationGranularity() is no smaller than
   // PageAllocationGranularity(), we don't need to decrease the bitmap
   // granularity any further.
   static constexpr size_t kBitShiftOfBRPPoolBitmap = PartitionPageShift();
@@ -97,7 +102,7 @@ class BASE_EXPORT AddressPoolManagerBitmap {
         brp_pool_bits_)[address_as_uintptr >> kBitShiftOfBRPPoolBitmap];
   }
 
-#if BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
   static void IncrementOutsideOfBRPPoolPtrRefCount(const void* address) {
     uintptr_t address_as_uintptr = reinterpret_cast<uintptr_t>(address);
 
@@ -148,7 +153,7 @@ class BASE_EXPORT AddressPoolManagerBitmap {
                std::memory_order_relaxed) == 0;
 #endif
   }
-#endif  // BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
  private:
   friend class AddressPoolManager;
@@ -157,14 +162,14 @@ class BASE_EXPORT AddressPoolManagerBitmap {
 
   static std::bitset<kNonBRPPoolBits> non_brp_pool_bits_ GUARDED_BY(GetLock());
   static std::bitset<kBRPPoolBits> brp_pool_bits_ GUARDED_BY(GetLock());
-#if BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
 #if BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
   static std::array<std::atomic_bool, kAddressSpaceSize / kSuperPageSize>
       brp_forbidden_super_page_map_;
 #endif
   static std::array<std::atomic_uint32_t, kAddressSpaceSize / kSuperPageSize>
       super_page_refcount_map_;
-#endif  // BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 };
 
 }  // namespace internal

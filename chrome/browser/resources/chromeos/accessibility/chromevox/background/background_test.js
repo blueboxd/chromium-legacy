@@ -3565,3 +3565,48 @@ TEST_F('ChromeVoxBackgroundTest', 'NewTabRead', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'NestedMenuHints', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <div role="menu" aria-orientation="vertical">
+      <div role="menu" aria-orientation="horizontal">
+        <div tabindex="0" role="menuitem">hello</div>
+        <div tabindex="0" role="menuitem">bro</div>
+      </div>
+    </div>
+  `;
+  this.runWithLoadedTree(site, function(root) {
+    mockFeedback
+        .expectSpeech(
+            'Press left or right arrow to navigate; enter to activate')
+        .call(
+            () => assertFalse(mockFeedback.utteranceInQueue(
+                'Press up or down arrow to navigate; enter to activate')))
+        .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'SkipLabelDescriptionFor', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <p>start</p>
+    <label>
+      <input type="checkbox" name="enableSpeechLogging">
+      <span>Enable speech logging</span>
+    </label>
+    <p>end</p>
+  `;
+  this.runWithLoadedTree(site, function(root) {
+    mockFeedback.expectSpeech('start')
+        .call(doCmd('nextObject'))
+        .expectSpeech('Enable speech logging', 'Check box')
+        .call(doCmd('nextObject'))
+        .expectSpeech('end')
+        .call(doCmd('previousObject'))
+        .expectSpeech('Enable speech logging', 'Check box')
+        .call(doCmd('previousObject'))
+        .expectSpeech('start')
+        .replay();
+  });
+});

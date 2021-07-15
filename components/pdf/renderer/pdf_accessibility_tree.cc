@@ -19,11 +19,13 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "pdf/accessibility_structs.h"
 #include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/null_ax_action_target.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -53,10 +55,6 @@ gfx::RectF PpFloatRectToGfxRectF(const PP_FloatRect& r) {
 
 gfx::RectF PPRectToGfxRectF(const PP_Rect& r) {
   return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
-}
-
-gfx::Vector2dF PpPointToVector2dF(const PP_Point& p) {
-  return gfx::Vector2dF(p.x, p.y);
 }
 
 // This class is used as part of our heuristic to determine which text runs live
@@ -1273,13 +1271,13 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
 }
 
 void PdfAccessibilityTree::SetAccessibilityViewportInfo(
-    const PP_PrivateAccessibilityViewportInfo& viewport_info) {
+    const chrome_pdf::AccessibilityViewportInfo& viewport_info) {
   zoom_ = viewport_info.zoom;
   scale_ = viewport_info.scale;
   CHECK_GT(zoom_, 0);
   CHECK_GT(scale_, 0);
-  scroll_ = PpPointToVector2dF(viewport_info.scroll);
-  offset_ = PpPointToVector2dF(viewport_info.offset);
+  scroll_ = gfx::PointF(viewport_info.scroll).OffsetFromOrigin();
+  offset_ = gfx::PointF(viewport_info.offset).OffsetFromOrigin();
 
   selection_start_page_index_ = viewport_info.selection_start_page_index;
   selection_start_char_index_ = viewport_info.selection_start_char_index;
@@ -1299,21 +1297,20 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
 }
 
 void PdfAccessibilityTree::SetAccessibilityDocInfo(
-    const PP_PrivateAccessibilityDocInfo& doc_info) {
+    const chrome_pdf::AccessibilityDocInfo& doc_info) {
   content::RenderAccessibility* render_accessibility =
       GetRenderAccessibilityIfEnabled();
   if (!render_accessibility)
     return;
 
   ClearAccessibilityNodes();
-  doc_info_ = doc_info;
+  page_count_ = doc_info.page_count;
   doc_node_ =
       CreateNode(ax::mojom::Role::kPdfRoot, ax::mojom::Restriction::kReadOnly,
                  render_accessibility, &nodes_);
-  doc_node_->AddStringAttribute(
-      ax::mojom::StringAttribute::kName,
-      l10n_util::GetPluralStringFUTF8(IDS_PDF_DOCUMENT_PAGE_COUNT,
-                                      doc_info.page_count));
+  doc_node_->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                l10n_util::GetPluralStringFUTF8(
+                                    IDS_PDF_DOCUMENT_PAGE_COUNT, page_count_));
 
   // Because all of the coordinates are expressed relative to the
   // doc's coordinates, the origin of the doc must be (0, 0). Its
@@ -1346,8 +1343,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   if (invalid_plugin_message_received_)
     return;
 
-  CHECK_GE(page_index, 0U);
-  CHECK_LT(page_index, doc_info_.page_count);
+  CHECK_LT(page_index, page_count_);
   ++next_page_index_;
 
   ui::AXNodeData* page_node =
@@ -1367,7 +1363,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   AddPageContent(page_node, page_bounds, page_index, text_runs, chars,
                  page_objects, render_accessibility);
 
-  if (page_index == doc_info_.page_count - 1)
+  if (page_index == page_count_ - 1)
     Finish();
 }
 

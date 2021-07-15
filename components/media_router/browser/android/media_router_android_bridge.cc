@@ -156,7 +156,8 @@ void MediaRouterAndroidBridge::OnSinksReceived(
                                             jsource_urn, i);
     sinks_converted.push_back(MediaSink(
         ConvertJavaStringToUTF8(env, jsink_urn.obj()),
-        ConvertJavaStringToUTF8(env, jsink_name.obj()), SinkIconType::GENERIC));
+        ConvertJavaStringToUTF8(env, jsink_name.obj()), SinkIconType::GENERIC,
+        mojom::MediaRouteProviderId::ANDROID_CAF));
   }
   native_media_router_->OnSinksReceived(
       ConvertJavaStringToUTF8(env, jsource_urn), sinks_converted);

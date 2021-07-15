@@ -164,6 +164,7 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
   int web_app_button_height = 0;
   if (web_app_frame_toolbar_) {
     web_app_button_height =
+        FrameEdgeInsets(restored).top() +
         web_app_frame_toolbar_->GetPreferredSize().height() + kVerticalPadding;
   }
   return std::max(std::max(icon_height, caption_button_height),
@@ -352,15 +353,15 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     // slightly uncentered with restored windows, so when the window is
     // restored, instead of calculating the remaining space from below the
     // frame border, we calculate from below the 3D edge.
-    const int unavailable_px_at_top = FrameEdgeInsets(false).top();
+    const int unavailable_dip_at_top = FrameEdgeInsets(false).top();
     // When the icon is shorter than the minimum space we reserve for the
     // caption button, we vertically center it.  We want to bias rounding to
     // put extra space below the icon, since we'll use the same Y coordinate for
     // the title, and the majority of the font weight is below the centerline.
     const int available_height = NonClientTopHeight(false);
     const int icon_height =
-        unavailable_px_at_top + size + kContentEdgeShadowThickness;
-    const int y = unavailable_px_at_top + (available_height - icon_height) / 2;
+        unavailable_dip_at_top + size + kContentEdgeShadowThickness;
+    const int y = unavailable_dip_at_top + (available_height - icon_height) / 2;
 
     // Want same spacing adjacent to the icon as above when the icon is the
     // first element in the frame. We'll use this spacing again to ensure
@@ -379,9 +380,10 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
 
     if (should_show_toolbar) {
       std::pair<int, int> remaining_bounds =
-          web_app_frame_toolbar_->LayoutInContainer(available_space_leading_x_,
-                                                    available_space_trailing_x_,
-                                                    0, available_height);
+          web_app_frame_toolbar_->LayoutInContainer(
+              available_space_leading_x_, available_space_trailing_x_,
+              unavailable_dip_at_top,
+              available_height - unavailable_dip_at_top);
       available_space_leading_x_ = remaining_bounds.first;
       available_space_trailing_x_ = remaining_bounds.second;
     }
@@ -643,13 +645,14 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBarForWindowControlsOverlay(
         web_app_frame_toolbar_->GetPreferredSize().width();
   }
 
+  auto insets = FrameBorderInsets(/*restored=*/false);
+
   caption_button_placeholder_container_->SetBounds(
-      container_x, FrameBorderInsets(/*restored=*/false).top(),
-      minimum_size_for_buttons_, height);
+      container_x, insets.top(), minimum_size_for_buttons_ - insets.width(),
+      height);
 
   web_app_frame_toolbar_->LayoutForWindowControlsOverlay(
-      gfx::Rect(x, FrameBorderInsets(/*restored=*/false).top(),
-                web_app_frame_toolbar_view_width, height));
+      gfx::Rect(x, insets.top(), web_app_frame_toolbar_view_width, height));
 
   int bounding_rect_width =
       web_app_frame_toolbar_->bounds().x() - available_space_leading_x_;

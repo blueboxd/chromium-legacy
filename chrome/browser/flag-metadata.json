@@ -296,14 +296,33 @@
     "expiry_milestone": 96
   },
   {
+    "name": "assistant-explicit-voice-consent",
+    "owners": [
+      "basiaz",
+      "chrome-voice@google.com"
+    ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "assistant-intent-page-url",
-    "owners": [ "jds", "chrome-language@google.com" ],
+    "owners": [
+      "jds",
+      "chrome-language@google.com"
+    ],
     "expiry_milestone": 94
   },
   {
     "name": "assistant-intent-translate-info",
     "owners": [ "jds", "chrome-language@google.com" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "assistant-voice-consent-taps-counter",
+    "owners": [
+      "basiaz",
+      "chrome-voice@google.com"
+    ],
+    "expiry_milestone": 96
   },
   {
     "name": "auto-screen-brightness",
@@ -3026,8 +3045,8 @@
   },
   {
     "name": "files-single-partition-format",
-    "owners": [ "austinct", "oto" ],
-    "expiry_milestone": 90
+    "owners": [ "austinct", "petermarshall" ],
+    "expiry_milestone": 95
   },
   {
     "name": "files-swa",
@@ -3987,6 +4006,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "ntp-realbox-suggestion-answers",
+    "owners": [ "mahmadi", "mfacey" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "ntp-recipe-tasks-module",
     "owners": [ "mahmadi", "tiborg" ],
     "expiry_milestone": 96
@@ -4252,6 +4276,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "omnibox-updated-connection-security-indicators",
+    "owners": [ "meacer", "chrome-trusty-transport@google.com" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "omnibox-webui-omnibox-popup",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 99
@@ -4509,6 +4538,11 @@
     "expiry_milestone": 100
   },
   {
+    "name":"productivity-reorder-apps",
+    "owners":["andrewxu", "cros-system-ui-eng@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "prominent-dark-mode-active-tab-title",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
@@ -4587,6 +4621,11 @@
     "name": "query-tiles-swap-trending",
     "owners": [ "qinmin" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "quick-settings-pwa-notifications",
+    "owners": [ "yulunwu" ],
+    "expiry_milestone": 100
   },
   {
     "name": "quiet-notification-prompts",
@@ -4757,6 +4796,15 @@
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
     "expiry_milestone": 93
+  },
+  {
+    "name":
+      "safe-browsing-passwordcheck-integration-for-saved-passwords-android",
+    "owners": [
+      "rsamp",
+      "chrome-safebrowsing-core@google.com"
+    ],
+    "expiry_milestone": 95
   },
   {
     "name": "safety-check-chrome-cleaner-child",

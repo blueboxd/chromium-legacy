@@ -633,6 +633,14 @@ constexpr char kProfileSwitchInterceptionDeclinedPref[] =
     "signin.ProfileSwitchInterceptionDeclinedPref";
 #endif
 
+const char kSuggestionsBlocklist[] = "suggestions.blacklist";
+const char kSuggestionsData[] = "suggestions.data";
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Deprecated 07/2021.
+const char kExtensionCheckupOnStartup[] = "extensions.checkup_on_startup";
+#endif
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -809,6 +817,13 @@ void RegisterProfilePrefsForMigration(
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   registry->RegisterDictionaryPref(kProfileSwitchInterceptionDeclinedPref);
+#endif
+
+  registry->RegisterStringPref(kSuggestionsBlocklist, std::string());
+  registry->RegisterStringPref(kSuggestionsData, std::string());
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  registry->RegisterBooleanPref(kExtensionCheckupOnStartup, false);
 #endif
 }
 
@@ -1589,6 +1604,14 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kGuestProfilesNumCreated);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   profile_prefs->ClearPref(kProfileSwitchInterceptionDeclinedPref);
+#endif
+
+  profile_prefs->ClearPref(kSuggestionsBlocklist);
+  profile_prefs->ClearPref(kSuggestionsData);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Added 2021/07.
+  profile_prefs->ClearPref(kExtensionCheckupOnStartup);
 #endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

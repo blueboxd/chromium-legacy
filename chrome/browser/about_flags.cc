@@ -23,6 +23,7 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -2022,11 +2023,25 @@ const FeatureEntry::FeatureParam kLensCameraAssistedSearchLensButtonStart[] = {
 const FeatureEntry::FeatureParam kLensCameraAssistedSearchLensButtonEnd[] = {
     {"searchBoxStartVariantForLensCameraAssistedSearch", "false"}};
 
+const FeatureEntry::FeatureParam
+    kLensCameraAssistedSkipAgsaVersionCheckEnabled[] = {
+        {"skipAgsaVersionCheck", "true"}};
+
+const FeatureEntry::FeatureParam
+    kLensCameraAssistedSkipAgsaVersionCheckDisabled[] = {
+        {"skipAgsaVersionCheck", "false"}};
+
 const FeatureEntry::FeatureVariation kLensCameraAssistedSearchVariations[] = {
     {"(Lens then Mic)", kLensCameraAssistedSearchLensButtonStart,
      base::size(kLensCameraAssistedSearchLensButtonStart), nullptr},
     {"(Mic then Lens)", kLensCameraAssistedSearchLensButtonEnd,
-     base::size(kLensCameraAssistedSearchLensButtonEnd), nullptr}};
+     base::size(kLensCameraAssistedSearchLensButtonEnd), nullptr},
+    {"(without AGSA version check)",
+     kLensCameraAssistedSkipAgsaVersionCheckEnabled,
+     base::size(kLensCameraAssistedSkipAgsaVersionCheckEnabled), nullptr},
+    {"(with AGSA version check )",
+     kLensCameraAssistedSkipAgsaVersionCheckDisabled,
+     base::size(kLensCameraAssistedSkipAgsaVersionCheckDisabled), nullptr}};
 
 const FeatureEntry::FeatureParam kLensContextMenuTranslateHideRemoveIcon[] = {
     {"hideChipRemoveIcon", "true"}};
@@ -2221,55 +2236,6 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
      kQuietNotificationPromptsWithAdaptiveActivation,
      base::size(kQuietNotificationPromptsWithAdaptiveActivation), nullptr},
 };
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-const FeatureEntry::FeatureParam kExtensionsCheckup_Startup_Performance[] = {
-    {extensions_features::kExtensionsCheckupBannerMessageParameter,
-     extensions_features::kPerformanceMessage},
-    {extensions_features::kExtensionsCheckupEntryPointParameter,
-     extensions_features::kStartupEntryPoint}};
-const FeatureEntry::FeatureParam kExtensionsCheckup_Startup_Privacy[] = {
-    {extensions_features::kExtensionsCheckupBannerMessageParameter,
-     extensions_features::kPrivacyMessage},
-    {extensions_features::kExtensionsCheckupEntryPointParameter,
-     extensions_features::kStartupEntryPoint}};
-const FeatureEntry::FeatureParam kExtensionsCheckup_Startup_Neutral[] = {
-    {extensions_features::kExtensionsCheckupBannerMessageParameter,
-     extensions_features::kNeutralMessage},
-    {extensions_features::kExtensionsCheckupEntryPointParameter,
-     extensions_features::kStartupEntryPoint}};
-const FeatureEntry::FeatureParam kExtensionsCheckup_Promo_Performance[] = {
-    {extensions_features::kExtensionsCheckupBannerMessageParameter,
-     extensions_features::kPerformanceMessage},
-    {extensions_features::kExtensionsCheckupEntryPointParameter,
-     extensions_features::kNtpPromoEntryPoint}};
-const FeatureEntry::FeatureParam kExtensionsCheckup_Promo_Privacy[] = {
-    {extensions_features::kExtensionsCheckupBannerMessageParameter,
-     extensions_features::kPrivacyMessage},
-    {extensions_features::kExtensionsCheckupEntryPointParameter,
-     extensions_features::kNtpPromoEntryPoint}};
-const FeatureEntry::FeatureParam kExtensionsCheckup_Promo_Neutral[] = {
-    {extensions_features::kExtensionsCheckupBannerMessageParameter,
-     extensions_features::kNeutralMessage},
-    {extensions_features::kExtensionsCheckupEntryPointParameter,
-     extensions_features::kNtpPromoEntryPoint}};
-
-const FeatureEntry::FeatureVariation kExtensionsCheckupVariations[] = {
-    {"On Startup - Performance Focused Message",
-     kExtensionsCheckup_Startup_Performance,
-     base::size(kExtensionsCheckup_Startup_Performance), nullptr},
-    {"On Startup - Privacy Focused Message", kExtensionsCheckup_Startup_Privacy,
-     base::size(kExtensionsCheckup_Startup_Privacy), nullptr},
-    {"On Startup - Neutral Focused Message", kExtensionsCheckup_Startup_Neutral,
-     base::size(kExtensionsCheckup_Startup_Neutral), nullptr},
-    {"NTP Promo - Performance Focused Message",
-     kExtensionsCheckup_Promo_Performance,
-     base::size(kExtensionsCheckup_Promo_Performance), nullptr},
-    {"NTP Promo - Privacy Focused Message", kExtensionsCheckup_Promo_Privacy,
-     base::size(kExtensionsCheckup_Promo_Privacy), nullptr},
-    {"NTP Promo - Neutral Focused Message", kExtensionsCheckup_Promo_Neutral,
-     base::size(kExtensionsCheckup_Promo_Neutral), nullptr}};
-#endif  // ENABLE_EXTENSIONS
 
 // TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
 // cache is implemented.
@@ -2638,6 +2604,26 @@ constexpr char kBorealisDiskManagementInternalName[] =
     "borealis-disk-management";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if defined(OS_ANDROID)
+// The variations of Continuous Search.
+const FeatureEntry::FeatureParam kContinuousSearchAfterSecondSrp[] = {
+    {"trigger_mode", "1"}};
+
+const FeatureEntry::FeatureParam kContinuousSearchOnReverseScroll[] = {
+    {"trigger_mode", "2"}};
+
+const FeatureEntry::FeatureParam kContinuousSearchPermanentDismissal[] = {
+    {"permanent_dismissal_threshold", "3"}};
+
+const FeatureEntry::FeatureVariation kContinuousSearchFeatureVariations[] = {
+    {"show after second SRP", kContinuousSearchAfterSecondSrp,
+     base::size(kContinuousSearchAfterSecondSrp), nullptr},
+    {"show on reverse scroll", kContinuousSearchOnReverseScroll,
+     base::size(kContinuousSearchOnReverseScroll), nullptr},
+    {"with permanent dismissal", kContinuousSearchPermanentDismissal,
+     base::size(kContinuousSearchPermanentDismissal), nullptr}};
+#endif  // defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2754,11 +2740,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableNaCl)},
 #endif  // ENABLE_NACL
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"extension-checkup", flag_descriptions::kExtensionsCheckupName,
-     flag_descriptions::kExtensionsCheckupDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(extensions_features::kExtensionsCheckup,
-                                    kExtensionsCheckupVariations,
-                                    "ExtensionsCheckup")},
     {"extensions-on-chrome-urls",
      flag_descriptions::kExtensionsOnChromeUrlsName,
      flag_descriptions::kExtensionsOnChromeUrlsDescription, kOsAll,
@@ -3420,6 +3401,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVoiceButtonInTopToolbar)},
+    {"assistant-explicit-voice-consent",
+     flag_descriptions::kAssistantExplicitVoiceConsentName,
+     flag_descriptions::kAssistantExplicitVoiceConsentDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAssistantExplicitVoiceConsent)},
     {"assistant-intent-page-url",
      flag_descriptions::kAssistantIntentPageUrlName,
      flag_descriptions::kAssistantIntentPageUrlDescription, kOsAndroid,
@@ -3428,6 +3413,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAssistantIntentTranslateInfoName,
      flag_descriptions::kAssistantIntentTranslateInfoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAssistantIntentTranslateInfo)},
+    {"assistant-voice-consent-taps-counter",
+     flag_descriptions::kAssistantVoiceConstentTapsCounterName,
+     flag_descriptions::kAssistantVoiceConstentTapsCounterDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAssistantVoiceConsentTapsCounter)},
     {"share-button-in-top-toolbar",
      flag_descriptions::kShareButtonInTopToolbarName,
      flag_descriptions::kShareButtonInTopToolbarDescription, kOsAndroid,
@@ -4632,6 +4622,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDoubleTapToZoomInTabletModeName,
      flag_descriptions::kDoubleTapToZoomInTabletModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kDoubleTapToZoomInTabletMode)},
+
+    {"quick-settings-pwa-notifications",
+     flag_descriptions::kQuickSettingsPWANotificationsName,
+     flag_descriptions::kQuickSettingsPWANotificationsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kQuickSettingsPWANotifications)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
@@ -4683,7 +4678,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {flag_descriptions::kScrollableTabStripFlagId,
      flag_descriptions::kScrollableTabStripName,
-     flag_descriptions::kScrollableTabStripDescription, kOsDesktop,
+     flag_descriptions::kScrollableTabStripDescription,
+     kOsMac | kOsWin | kOsLinux,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollableTabStrip,
                                     kTabScrollingVariations,
                                     "TabScrolling")},
@@ -4771,6 +4767,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-modules-redesigned", flag_descriptions::kNtpModulesRedesignedName,
      flag_descriptions::kNtpModulesRedesignedDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesigned)},
+
+    {"ntp-realbox-suggestion-answers",
+     flag_descriptions::kNtpRealboxSuggestionAnswersName,
+     flag_descriptions::kNtpRealboxSuggestionAnswersDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kNtpRealboxSuggestionAnswers)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -5793,6 +5794,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnhancedProtectionPromoAndroidName,
      flag_descriptions::kEnhancedProtectionPromoAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEnhancedProtectionPromoCard)},
+
+    {"safe-browsing-passwordcheck-integration-for-saved-passwords-android",
+     flag_descriptions::
+         kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidName,
+     flag_descriptions::
+         kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         safe_browsing::
+             kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7000,7 +7011,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"continuous-search", flag_descriptions::kContinuousSearchName,
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kContinuousSearch)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kContinuousSearch,
+                                    kContinuousSearchFeatureVariations,
+                                    "ContinuousSearchVariations")},
 
     {"enable-experimental-accessibility-labels",
      flag_descriptions::kExperimentalAccessibilityLabelsName,
@@ -7237,6 +7250,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kSanitizerAPI)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"productivity-reorder-apps", flag_descriptions::kLauncherAppSortName,
+     flag_descriptions::kLauncherAppSortDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kLauncherAppSort)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-desktop-pwas-app-icon-shortcuts-menu-ui",
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIName,
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIDescription, kOsCrOS,
@@ -7452,10 +7471,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kBorealisDiskManagement)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"https-only-mode-setting", flag_descriptions::kHttpsOnlyModeName,
-     flag_descriptions::kHttpsOnlyModeDescription, kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kHttpsOnlyMode)},
-
 #if defined(OS_ANDROID)
     {"dynamic-color-android", flag_descriptions::kDynamicColorAndroidName,
      flag_descriptions::kDynamicColorAndroidDescription, kOsAndroid,
@@ -7476,6 +7491,15 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          ash::features::kHoldingSpaceInProgressDownloadsIntegration)},
+#endif
+
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
+    defined(OS_MAC) || (defined(OS_ANDROID))
+    {"omnibox-updated-connection-security-indicators",
+     flag_descriptions::kOmniboxUpdatedConnectionSecurityIndicatorsName,
+     flag_descriptions::kOmniboxUpdatedConnectionSecurityIndicatorsDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kUpdatedConnectionSecurityIndicators)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

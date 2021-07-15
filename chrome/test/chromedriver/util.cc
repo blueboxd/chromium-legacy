@@ -562,8 +562,8 @@ bool GetOptionalSafeInt(const base::DictionaryValue* dict,
   // Check if we have a normal int, which is always a safe int.
   int temp_int;
   bool temp_has_value;
-  if (GetOptionalValueDeprecated(dict, path, &temp_int, &temp_has_value,
-                                 &base::Value::GetAsInteger)) {
+  if (GetOptionalValue(dict, path, &temp_int, &temp_has_value,
+                       &base::Value::GetIfInt)) {
     if (has_value != nullptr)
       *has_value = temp_has_value;
     if (temp_has_value)
@@ -599,7 +599,7 @@ bool SetSafeInt(base::DictionaryValue* dict,
   if (in_value_64 == int_value)
     return dict->SetInteger(path, in_value_64);
   else
-    return dict->SetDouble(path, in_value_64);
+    return dict->SetDoublePath(path, in_value_64);
 }
 
 std::string WebViewIdToWindowHandle(const std::string& web_view_id) {

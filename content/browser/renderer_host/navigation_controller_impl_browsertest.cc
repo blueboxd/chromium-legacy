@@ -152,19 +152,42 @@ class NavigationControllerBrowserTestBase : public ContentBrowserTest {
   }
 };
 
+void InitBackForwardCacheFeature(base::test::ScopedFeatureList* feature_list,
+                                 bool enable_back_forward_cache) {
+  if (!enable_back_forward_cache)
+    return;
+
+  std::vector<base::test::ScopedFeatureList::FeatureAndParams> features;
+  features.push_back(
+      {features::kBackForwardCache, {{"enable_same_site", "true"}}});
+  features.push_back({kBackForwardCacheNoTimeEviction, {}});
+  features.push_back({features::kBackForwardCacheMemoryControls, {}});
+  feature_list->InitWithFeaturesAndParameters(features, {});
+}
+
 class NavigationControllerBrowserTest
     : public NavigationControllerBrowserTestBase,
-      public ::testing::WithParamInterface<std::string> {
+      public ::testing::WithParamInterface<
+          std::tuple<std::string /* render_document_level */,
+                     bool /* enable_back_forward_cache*/>> {
  public:
   NavigationControllerBrowserTest() {
     InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
-                                       GetParam());
+                                       std::get<0>(GetParam()));
+    InitBackForwardCacheFeature(&feature_list_for_back_forward_cache_,
+                                std::get<1>(GetParam()));
   }
 
   // Provides meaningful param names instead of /0, /1, ...
   static std::string DescribeParams(
       const testing::TestParamInfo<ParamType>& info) {
-    return GetRenderDocumentLevelNameForTestParams(info.param);
+    std::string render_document_level;
+    bool enable_back_forward_cache;
+    std::tie(render_document_level, enable_back_forward_cache) = info.param;
+    return base::StringPrintf(
+        "%s_%s",
+        GetRenderDocumentLevelNameForTestParams(render_document_level).c_str(),
+        enable_back_forward_cache ? "BFCacheEnabled" : "BFCacheDisabled");
   }
 
  protected:
@@ -213,17 +236,22 @@ class NavigationControllerBrowserTest
 
  private:
   base::test::ScopedFeatureList feature_list_for_render_document_;
+  base::test::ScopedFeatureList feature_list_for_back_forward_cache_;
 };
 
 // Base class for tests that need to supply modifications to EmbeddedTestServer
 // which are required to be complete before it is started.
 class NavigationControllerBrowserTestNoServer
     : public ContentBrowserTest,
-      public ::testing::WithParamInterface<std::string> {
+      public ::testing::WithParamInterface<
+          std::tuple<std::string /* render_document_level */,
+                     bool /* enable_back_forward_cache*/>> {
  public:
   NavigationControllerBrowserTestNoServer() {
     InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
-                                       GetParam());
+                                       std::get<0>(GetParam()));
+    InitBackForwardCacheFeature(&feature_list_for_back_forward_cache_,
+                                std::get<1>(GetParam()));
   }
 
  protected:
@@ -238,6 +266,7 @@ class NavigationControllerBrowserTestNoServer
 
  private:
   base::test::ScopedFeatureList feature_list_for_render_document_;
+  base::test::ScopedFeatureList feature_list_for_back_forward_cache_;
 };
 
 // Ensure that tests can navigate subframes cross-site in both default mode and
@@ -5750,10 +5779,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   entry2->root_node()->children[0]->frame_entry->set_frame_unique_name("wrong");
 
   // With BackForwardCache page is restored from cache instead of getting
-  // recreated on history navigation, disable back-forward cache to force a
+  // recreated on history navigation, disable back/forward cache to force a
   // reload and a URL fetch.
-  DisableBackForwardCacheForTesting(
-      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  DisableBackForwardCacheForTesting(contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // 4. Go back, recreating the iframe. The subframe entry won't be found, and
   // we should fall back to the default URL.
@@ -5847,10 +5876,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(0U, entry2->root_node()->children.size());
 
   // With BackForwardCache page is restored from cache instead of getting
-  // recreated on history navigation, disable back-forward cache to force a
+  // recreated on history navigation, disable back/forward cache to force a
   // reload and a URL fetch.
-  DisableBackForwardCacheForTesting(
-      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  DisableBackForwardCacheForTesting(contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // 3. Go back, recreating the iframe.  The subframe will have a new name this
   // time, so we won't find a history item for it.  We should let the new data
@@ -5955,6 +5984,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // forms injected into about:blank pages.  See https://crbug.com/657896.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedInjectedBlankSubframe) {
+  // The test assumes the previous iframe gets deleted after navigation and
+  // later recreated on history navigations. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   // 1. Start on a page that injects a nested iframe into an injected
   // about:blank iframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -6052,6 +6087,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // https://crbug.com/657896#c9).
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedInjectedSrcdocSubframe) {
+  // The test assumes the previous iframe gets deleted after navigation and
+  // later recreated on history navigations. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   // 1. Start on a page that injects a nested iframe srcdoc which contains a
   // nested iframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -6275,6 +6315,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // - Main frame redirect, clearing the children (step 8).
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_BackWithRedirect) {
+  // The test assumes the previous iframe gets deleted after navigation and
+  // later recreated on history navigations. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   // 1. Start on a page with two frames.
   GURL initial_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
@@ -6449,6 +6495,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // (This wasn't working initially).
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        FrameNavigationEntry_SameOriginBackWithRedirect) {
+  // The test assumes the previous iframe gets deleted after navigation and
+  // later recreated on history navigations. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   // 1. Start on a page with an iframe.
   GURL initial_url(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_data_iframe.html"));
@@ -7122,6 +7174,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 IN_PROC_BROWSER_TEST_P(
     NavigationControllerBrowserTest,
     ReplacedNavigationEntryData_BackAfterReplaceStateWithRedirect) {
+  // The test assumes the previous iframe gets deleted after navigation and
+  // later recreated on history navigations. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
@@ -9320,6 +9378,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackFromPageWithReplaceStateInBeforeUnload) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
+  // With BackForwardCache, old frame doesn't fire beforeunload handlers as the
+  // page is stored in BackForwardCache on navigation.
+  controller.GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -10266,6 +10328,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // navigation in the main frame.  See https://crbug.com/597322.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        ForwardInSubframeWithPendingForward) {
+  // The test expects history navigations to be not instant, so that it can
+  // start another forward navigation while another forward navigation has
+  // already started.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   // Navigate to a page with an iframe.
   GURL url_a(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_data_iframe.html"));
@@ -10367,11 +10434,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_TRUE(delayer.WaitForRequestStart());
 
   NavigationController& controller = shell()->web_contents()->GetController();
-
-  TestNavigationManager back_manager(
-      shell()->web_contents(), embedded_test_server()->GetURL("/title1.html"));
   controller.GoBack();
-  back_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_TRUE(controller.CanGoForward());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
@@ -11634,13 +11698,9 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 namespace {
 
 class RequestMonitoringNavigationBrowserTest
-    : public ContentBrowserTest,
-      public ::testing::WithParamInterface<std::string> {
+    : public NavigationControllerBrowserTest {
  public:
-  RequestMonitoringNavigationBrowserTest() {
-    InitAndEnableRenderDocumentFeature(&feature_list_for_render_document_,
-                                       GetParam());
-  }
+  RequestMonitoringNavigationBrowserTest() = default;
 
   const net::test_server::HttpRequest* FindAccumulatedRequest(
       const GURL& url_to_find) {
@@ -11689,7 +11749,6 @@ class RequestMonitoringNavigationBrowserTest
   }
 
   std::vector<net::test_server::HttpRequest> accumulated_requests_;
-  base::test::ScopedFeatureList feature_list_for_render_document_;
   // Must be last member.
   base::WeakPtrFactory<RequestMonitoringNavigationBrowserTest> weak_factory_{
       this};
@@ -12437,6 +12496,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // See https://crbug.com/765291.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackSameDocumentAfterBlockedSubframe) {
+  // The test assumes the previous iframe gets deleted after navigation and
+  // later recreated on history navigations. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -12546,6 +12610,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // main frame instead (and does a 404 instead of XFO error).
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        BackSameDocumentAfter404MainFrame) {
+  // This test expects going back to trigger a new page load and fetch a URL
+  // (which would fail with a 404 error). Disable back/forward cache to ensure
+  // that it doesn't happen.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
   // 1) Navigate to |start_url|.
@@ -13023,10 +13093,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   prev_spare = curr_spare;
 
   // With BackForwardCache the old process won't get deleted on navigation as it
-  // is still in use by the bfcached document, disable back-forward cache to
+  // is still in use by the bfcached document, disable back/forward cache to
   // ensure that the process gets deleted.
-  DisableBackForwardCacheForTesting(
-      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  DisableBackForwardCacheForTesting(contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   RenderProcessHostWatcher prev_host_watcher(
       prev_host, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
@@ -13908,10 +13978,10 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // This test expects using different SiteInstance/URL when navigating back.
   // This won't happen with BackForwardCache as document is restored directly
-  // instead of redirecting, disable back-forward cache to ensure that redirect
+  // instead of redirecting, disable back/forward cache to ensure that redirect
   // happens on history navigation.
-  DisableBackForwardCacheForTesting(
-      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  DisableBackForwardCacheForTesting(contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Back, which should redirect to |url3|.
   FrameNavigateParamsCapturer capturer(root);
@@ -14328,10 +14398,10 @@ IN_PROC_BROWSER_TEST_P(
              };)"));
 
   // With BackForwardCache, old RenderFrameHost won't enter pending deletion
-  // on navigation as it is stored in bfcache, disable back-forward cache to
+  // on navigation as it is stored in bfcache, disable back/forward cache to
   // ensure that the RFH will enter pending deletion state.
-  DisableBackForwardCacheForTesting(
-      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  DisableBackForwardCacheForTesting(contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Navigate the main frame cross-process and wait for the unload event to
   // fire.
@@ -16363,7 +16433,12 @@ IN_PROC_BROWSER_TEST_P(
   // [url1(subframe), url1(url2), *url3]
 
   {
-    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+    // We are waiting for two navigations here: main frame and subframe.
+    // However, when back/forward cache is enabled, back navigation to a page
+    // with subframes will not trigger a subframe navigation (since the
+    // subframe is cached with the page).
+    TestNavigationObserver navigation_observer(
+        shell()->web_contents(), IsBackForwardCacheEnabled() ? 1 : 2);
     shell()->GoBackOrForward(-1);
     navigation_observer.WaitForNavigationFinished();
   }
@@ -16375,9 +16450,16 @@ IN_PROC_BROWSER_TEST_P(
   // first main document.
   // The second NavigateToURL navigates to a new main document.
   // The back navigation navigates back both main document and a child document
-  // and they are related to the first main document.
-  EXPECT_THAT(GetProcessedMainDocumentSequenceNumbers(),
-              ElementsAre(1, 1, 1, 2, 1, 1));
+  // and they are related to the first main document (except when same-site
+  // back/forward cache is enabled, where we only navigate the main frame, since
+  // the subframe is cached and doesn't need reconstruction/navigation).
+  if (!IsBackForwardCacheEnabled()) {
+    EXPECT_THAT(GetProcessedMainDocumentSequenceNumbers(),
+                ElementsAre(1, 1, 1, 2, 1, 1));
+  } else {
+    EXPECT_THAT(GetProcessedMainDocumentSequenceNumbers(),
+                ElementsAre(1, 1, 1, 2, 1));
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -17559,6 +17641,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
 
+  // The test assumes the current page and its iframes gets deleted after
+  // navigation and later recreated on the back navigation. Disable back/forward
+  // cache to ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   // Navigate main frame to another url.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title2.html")));
@@ -17995,48 +18083,66 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_FALSE(navigation);
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         NavigationControllerAlertDialogBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         NavigationControllerBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         NavigationControllerBrowserTestNoServer,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NavigationControllerAlertDialogBrowserTest,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NavigationControllerBrowserTest,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NavigationControllerBrowserTestNoServer,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
 INSTANTIATE_TEST_SUITE_P(
     All,
     NavigationControllerDebugHistoryInterventionNoUserActivation,
-    testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
     NavigationControllerBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         NavigationControllerHistoryInterventionBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NavigationControllerHistoryInterventionBrowserTest,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
 INSTANTIATE_TEST_SUITE_P(
     All,
     NavigationControllerMainDocumentSequenceNumberBrowserTest,
-    testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
     NavigationControllerBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         RequestMonitoringNavigationBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         SandboxedNavigationControllerBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         SandboxedNavigationControllerWithBfcacheBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         SandboxedNavigationControllerPopupBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()),
-                         NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    RequestMonitoringNavigationBrowserTest,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SandboxedNavigationControllerBrowserTest,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SandboxedNavigationControllerWithBfcacheBrowserTest,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SandboxedNavigationControllerPopupBrowserTest,
+    testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
+                     testing::Bool()),
+    NavigationControllerBrowserTest::DescribeParams);
 INSTANTIATE_TEST_SUITE_P(
     All,
     InitialEmptyDocNavigationControllerBrowserTest,

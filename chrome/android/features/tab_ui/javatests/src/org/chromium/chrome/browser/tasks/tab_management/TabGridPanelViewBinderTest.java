@@ -34,11 +34,11 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.widget.ChromeImageView;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests for {@link TabGridPanelViewBinder}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
+public class TabGridPanelViewBinderTest extends DummyUiChromeActivityTestCase {
     private static final int CONTENT_TOP_MARGIN = 56;
     private PropertyModel mModel;
     private PropertyModelChangeProcessor mMCP;
@@ -289,17 +289,17 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testSetDialogBackgroundResource() {
-        int normalResourceId = R.drawable.tab_grid_dialog_background;
-        int incognitoResourceId = R.drawable.tab_grid_dialog_background_incognito;
+    public void testSetDialogBackgroundColor() {
+        int normalColor =
+                ContextCompat.getColor(getActivity(), R.color.tab_grid_dialog_background_color);
+        int incognitoColor = ContextCompat.getColor(
+                getActivity(), R.color.tab_grid_dialog_background_color_incognito);
         // Default setup is in normal mode.
-        Assert.assertEquals(
-                normalResourceId, mTabGridDialogView.getBackgroundDrawableResourceIdForTesting());
+        Assert.assertEquals(normalColor, mTabGridDialogView.getBackgroundColorForTesting());
 
-        mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOURCE_ID, incognitoResourceId);
+        mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_COLOR, incognitoColor);
 
-        Assert.assertEquals(incognitoResourceId,
-                mTabGridDialogView.getBackgroundDrawableResourceIdForTesting());
+        Assert.assertEquals(incognitoColor, mTabGridDialogView.getBackgroundColorForTesting());
     }
 
     @Test

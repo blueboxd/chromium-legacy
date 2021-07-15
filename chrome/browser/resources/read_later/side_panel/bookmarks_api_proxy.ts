@@ -41,8 +41,12 @@ export class BookmarksApiProxy {
     }));
   }
 
-  openBookmark(url: string) {
-    this.handler.openBookmark({url});
+  openBookmark(url: string, depth: number) {
+    this.handler.openBookmark({url}, depth);
+  }
+
+  showContextMenu(id: string, x: number, y: number) {
+    this.handler.showContextMenu(id, {x, y});
   }
 
   static getInstance() {

@@ -20,7 +20,6 @@ constexpr base::FeatureParam<base::TimeDelta> kDelayFetchParam(
     &ntp_features::kNtpChromeCartModule,
     "delay-fetch-discount",
     base::TimeDelta::FromHours(6));
-const int kImmediateFetchSec = 0;
 }  // namespace
 
 CartLoader::CartLoader(Profile* profile)
@@ -39,9 +38,10 @@ CartDiscountUpdater::~CartDiscountUpdater() = default;
 
 void CartDiscountUpdater::update(
     const std::string& cart_url,
-    const cart_db::ChromeCartContentProto new_proto) {
+    const cart_db::ChromeCartContentProto new_proto,
+    const bool is_tester) {
   GURL url(cart_url);
-  cart_service_->UpdateDiscounts(url, std::move(new_proto));
+  cart_service_->UpdateDiscounts(url, std::move(new_proto), is_tester);
 }
 
 CartLoaderAndUpdaterFactory::CartLoaderAndUpdaterFactory(Profile* profile)
@@ -78,27 +78,23 @@ void FetchDiscountWorker::Start(base::TimeDelta delay) {
   // Post a delay task to avoid an infinite loop for creating the CartService.
   // Since CartLoader and CartDiscountUpdater both depend on CartService.
   content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
-      ->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&FetchDiscountWorker::PrepareToFetch,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         base::TimeDelta::FromSeconds(kImmediateFetchSec)),
-          delay);
+      ->PostDelayedTask(FROM_HERE,
+                        base::BindOnce(&FetchDiscountWorker::PrepareToFetch,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                        delay);
 }
 
-void FetchDiscountWorker::PrepareToFetch(base::TimeDelta delay_fetch) {
+void FetchDiscountWorker::PrepareToFetch() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Load all active carts.
-  auto cart_loaded_callback =
-      base::BindOnce(&FetchDiscountWorker::ReadyToFetch,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(delay_fetch));
+  auto cart_loaded_callback = base::BindOnce(&FetchDiscountWorker::ReadyToFetch,
+                                             weak_ptr_factory_.GetWeakPtr());
   auto loader = cart_loader_and_updater_factory_->createCartLoader();
   loader->LoadAllCarts(std::move(cart_loaded_callback));
 }
 
 void FetchDiscountWorker::ReadyToFetch(
-    base::TimeDelta delay_fetch,
     bool success,
     std::vector<CartDB::KeyAndValue> proto_pairs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -109,12 +105,11 @@ void FetchDiscountWorker::ReadyToFetch(
       base::BindOnce(&FetchDiscountWorker::AfterDiscountFetched,
                      weak_ptr_factory_.GetWeakPtr());
 
-  backend_task_runner_->PostDelayedTask(
+  backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FetchInBackground, std::move(pending_factory),
                      std::move(fetcher), std::move(done_fetching_callback),
-                     std::move(proto_pairs)),
-      delay_fetch);
+                     std::move(proto_pairs)));
 }
 
 void FetchDiscountWorker::FetchInBackground(
@@ -133,32 +128,36 @@ void FetchDiscountWorker::FetchInBackground(
 // TODO(meiliang): Follow up to use BindPostTask.
 void FetchDiscountWorker::DoneFetchingInBackground(
     AfterFetchingCallback after_fetching_callback,
-    CartDiscountFetcher::CartDiscountMap discounts) {
+    CartDiscountFetcher::CartDiscountMap discounts,
+    bool is_tester) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
       ->PostTask(FROM_HERE,
                  base::BindOnce(
                      [](AfterFetchingCallback callback,
-                        CartDiscountFetcher::CartDiscountMap map) {
-                       std::move(callback).Run(std::move(map));
+                        CartDiscountFetcher::CartDiscountMap map, bool tester) {
+                       std::move(callback).Run(std::move(map), tester);
                      },
-                     std::move(after_fetching_callback), std::move(discounts)));
+                     std::move(after_fetching_callback), std::move(discounts),
+                     is_tester));
 }
 
 void FetchDiscountWorker::AfterDiscountFetched(
-    CartDiscountFetcher::CartDiscountMap discounts) {
+    CartDiscountFetcher::CartDiscountMap discounts,
+    bool is_tester) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  auto update_discount_callback =
-      base::BindOnce(&FetchDiscountWorker::OnUpdatingDiscounts,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(discounts));
+  auto update_discount_callback = base::BindOnce(
+      &FetchDiscountWorker::OnUpdatingDiscounts, weak_ptr_factory_.GetWeakPtr(),
+      std::move(discounts), is_tester);
   auto loader = cart_loader_and_updater_factory_->createCartLoader();
   loader->LoadAllCarts(std::move(update_discount_callback));
 }
 
 void FetchDiscountWorker::OnUpdatingDiscounts(
     CartDiscountFetcher::CartDiscountMap discounts,
+    bool is_tester,
     bool success,
     std::vector<CartDB::KeyAndValue> proto_pairs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -182,7 +181,7 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
     if (!discounts.count(cart_url)) {
       cart_discount_proto->clear_discount_text();
       cart_discount_proto->clear_discount_info();
-      updater->update(cart_url, std::move(cart_proto));
+      updater->update(cart_url, std::move(cart_proto), is_tester);
       continue;
     }
 
@@ -197,7 +196,7 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
     *cart_discount_proto->mutable_discount_info() = {discount_infos.begin(),
                                                      discount_infos.end()};
 
-    updater->update(cart_url, std::move(cart_proto));
+    updater->update(cart_url, std::move(cart_proto), is_tester);
   }
 
   if (base::GetFieldTrialParamByFeatureAsBool(
@@ -205,6 +204,6 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
           ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam,
           false)) {
     // Continue to work
-    PrepareToFetch(kDelayFetchParam.Get());
+    Start(kDelayFetchParam.Get());
   }
 }

@@ -616,8 +616,12 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   }
 
   if (config.support_invalid_for_testing_algorithm) {
-    device_info_->algorithms.push_back(
+    device_info_->algorithms->push_back(
         static_cast<int32_t>(CoseAlgorithmIdentifier::kInvalidForTesting));
+  }
+
+  if (config.advertised_algorithms.has_value()) {
+    device_info_->algorithms = *config.advertised_algorithms;
   }
 
   if (config.pin_support || config.pin_uv_auth_token_support) {
@@ -708,10 +712,12 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
       CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
   std::vector<uint8_t> response_data;
 
+  mutable_state()->transact_callback = std::move(cb);
+
   switch (ctap_command) {
     case CtapRequestCommand::kAuthenticatorGetInfo:
       if (!request_bytes.empty()) {
-        ReturnCtap2Response(std::move(cb),
+        ReturnCtap2Response(std::move(mutable_state()->transact_callback),
                             CtapDeviceResponseCode::kCtap2ErrOther);
         return 0;
       }
@@ -773,7 +779,8 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
 
   // Call |callback| via the |MessageLoop| because |AuthenticatorImpl| doesn't
   // support callback hairpinning.
-  ReturnCtap2Response(std::move(cb), response_code, std::move(response_data));
+  ReturnCtap2Response(std::move(mutable_state()->transact_callback),
+                      response_code, std::move(response_data));
   return 0;
 }
 

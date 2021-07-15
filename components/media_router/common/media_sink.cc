@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/media_router/common/media_sink.h"
+
 #include "base/i18n/string_compare.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
@@ -12,7 +13,7 @@ namespace media_router {
 MediaSink::MediaSink(const MediaSink::Id& sink_id,
                      const std::string& name,
                      SinkIconType icon_type,
-                     MediaRouteProviderId provider_id)
+                     mojom::MediaRouteProviderId provider_id)
     : sink_id_(sink_id),
       name_(name),
       icon_type_(icon_type),

@@ -752,6 +752,15 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH" desc="The name of the Lens Region Search command in the content area context menu">
             Search part of the page with Google Lens
           </message>
+          <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1" desc="The name of the Lens Region Search command in the content area context menu">
+            Drag to search images with Google Lens
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT2" desc="The name of the Lens Region Search command in the content area context menu">
+            Drag over images to search with Google Lens
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT3" desc="The name of the Lens Region Search command in the content area context menu">
+            Search your screen with Google Lens
+          </message>
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="The name of the Go to 'url' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
           </message>
@@ -995,6 +1004,15 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH" desc="In Title Case: The name of the Lens Region Search command in the content area context menu">
             Search Part of the Page with Google Lens
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1" desc="In Title Case: The name of the Lens Region Search command in the content area context menu">
+            Drag to Search Images with Google Lens
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT2" desc="In Title Case: The name of the Lens Region Search command in the content area context menu">
+            Drag over Images to Search with Google Lens
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT3" desc="In Title Case: The name of the Lens Region Search command in the content area context menu">
+            Search Your Screen with Google Lens
           </message>
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="In Title Case: The name of the Go to url for 'string' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
@@ -3527,10 +3545,10 @@ are declared in tools/grit/grit_rule.gni.
        Share this tab instead
       </message>
       <message name="IDS_TAB_SHARING_INFOBAR_STOP_BUTTON" desc="Text displayed on the button to stop sharing a tab.">
-       Stop
+       Stop sharing
       </message>
-      <message name="IDS_TAB_SHARING_INFOBAR_SWITCH_TO_BUTTON" desc="Text displayed on an infobar button offering to change focus to another tab.">
-       Switch to tab (<ph name="TAB_ORIGIN">$1<ex>meet.google.com</ex></ph>)
+      <message name="IDS_TAB_SHARING_INFOBAR_SWITCH_TO_BUTTON" desc="The user is sharing (presenting) a tab via a screensharing app like Google Meet. This button allows the user to continue sharing a tab but view a different tab [url] at the same time.">
+       View tab <ph name="TAB_ORIGIN">$1<ex>meet.google.com</ex></ph>
       </message>
       <message name="IDS_TAB_SHARING_INFOBAR_SWITCH_TO_CAPTURER_BUTTON" desc="Text displayed on an infobar button offering to change focus to the capturer if its hostname cannot be determined. (Otherwise, IDS_TAB_SHARING_INFOBAR_SWITCH_TO_BUTTON will be used.)">
        Switch to capturing tab
@@ -5892,10 +5910,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Why am I seeing this?
       </message>
       <message name="IDS_NTP_MODULES_TASKS_INFO" desc="Text shown in the body of the info dialog of a task module.">
-        You're seeing this item based on your previous activity using Google services. You can see your data, delete it, and change your settings at <ph name="BEGIN_LINK">&lt;a href="https://myactivity.google.com/" target="_blank"&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
+        You're seeing this item based on your previous activity using Google services. You can see your data, delete it, and change your settings at <ph name="BEGIN_LINK1">&lt;a href="https://myactivity.google.com/" target="_blank"&gt;</ph>myactivity.google.com<ph name="END_LINK1">&lt;/a&gt;</ph>.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        Learn about the data Google collects and why at <ph name="BEGIN_LINK">&lt;a href="https://policies.google.com/" target="_blank"&gt;</ph>policies.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
+        Learn about the data Google collects and why at <ph name="BEGIN_LINK2">&lt;a href="https://policies.google.com/" target="_blank"&gt;</ph>policies.google.com<ph name="END_LINK2">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_NTP_MODULES_SHOPPING_TASKS_INFO_CLOSE" desc="Text shown on close button of a task module.">
         Close
@@ -8758,6 +8776,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON" desc="Button in the header of desktop user menu that prompts the user to sign in again to fix the out-of-date signin info error.">
         Sign in again
       </message>
+      <message name="IDS_SYNC_NEEDS_VERIFICATION_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view/notification for the case where sync needs to verify the user.">
+        Sync needs to verify it's you
+      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON" desc="Button in the header of desktop user menu that prompts the user to enter the sync passphrase to fix the out-of-date passphrase error.">
         Enter passphrase
       </message>
@@ -10149,8 +10170,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_DESKTOP_MEDIA_PICKER_TEXT_DELEGATED" desc="Text for the window picker dialog shown when desktop capture is requested by an app to be used by a tab.">
         <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> wants to share the contents of your screen with <ph name="TARGET_NAME">$2<ex>https://google.com</ex></ph>.
       </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE" desc="Text for the checkbox on the window picker dialog, when checked, audio will be shared, otherwise just video sharing">
-        Share audio
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_SCREEN" desc="Text for the checkbox on the window picker dialog which is displayed when attempting to share a screen. In that case, when checked, system audio will be shared; otherwise only video.">
+        Share system audio
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_WINDOW" desc="Text for the checkbox on the window picker dialog which is displayed when attempting to share a window. In that case, when checked, window audio will be shared; otherwise only video.">
+        Share window audio
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TAB" desc="Text for the checkbox on the window picker dialog which is displayed when attempting to share a tab. In that case, when checked, tab audio will be shared; otherwise only video.">
+        Share tab audio
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN" desc="Text for the button on the window picker dialog, clicking which takes one to full screen sharing" meaning="Refers to the device's entire screen. Short for 'share the entire screen'.">
         Entire Screen
@@ -10622,8 +10649,31 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_TEXT" desc="Permission request shown if the user is opening a file using a PWA with registered file handlers. Follows a prompt: 'This site would like to:'">
         Open <ph name="FILE_EXTENSIONS">$1<ex>.txt, .csv, .md</ex></ph> files
       </message>
-      <message name="IDS_WEB_APP_FILE_HANDLING_EXTENSION_LIST_SEPARATOR" desc="Text/punctuation that separates a list of file types/extensions, such as .txt or .csv." meaning="List separator for file extensions.">
+      <message name="IDS_WEB_APP_FILE_HANDLING_LIST_SEPARATOR" desc="Text/punctuation that separates items in a lists. For example, this is used in a list of files, such as 'todo_list.txt, shopping_list.txt', and file types/extensions, such as '.txt, .csv.'" meaning="List separator for files.">
          , '''
+      </message>
+      <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_TITLE" desc="Title of permission request dialog that is when the user is opening a file using a PWA.">
+        Open file?
+      </message>
+      <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_TITLE_MULTIPLE" desc="Title of permission request dialog that is shown when the user is opening multiple files using a PWA.">
+        Open files?
+      </message>
+      <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_DESCRIPTION" desc="Descriptive text in permission request dialog that is shown when the user is opening a file using a PWA.">
+        <ph name="APP_ORIGIN">$1<ex>example.com</ex></ph> wants to open this file:
+      </message>
+      <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_DESCRIPTION_MULTIPLE" desc="Descriptive text in permission request dialog that is shown when the user is opening multiple files using a PWA.">
+        <ph name="APP_ORIGIN">$1<ex>example.com</ex></ph> wants to open these files:
+      </message>
+      <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_STICKY_CHOICE" desc="In permission request dialog that is shown when the user is opening files in a PWA: text for a toggle that makes the permission decision permanent (single file format).">
+        Don't ask again when opening this file format in this app:
+<ph name="FILE_FORMAT">$1<ex>TXT</ex></ph>
+      </message>
+      <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_STICKY_CHOICE_MULTIPLE" desc="In permission request dialog that is shown when the user is opening files in a PWA: text for a toggle that makes the permission decision permanent (multiple file formats).">
+        Don't ask again when opening these file formats in this app:
+<ph name="FILE_FORMATS">$1<ex>TXT, CSV, DOC</ex></ph>
+      </message>
+      <message name="IDS_WEB_APP_FILE_HANDLING_PERMISSION_DONT_ALLOW" desc="In permission request dialog that is shown when the user is opening files in a PWA: text for button that doesn't allow PWA to open the file(s).">
+        Don't allow
       </message>
     </if>
 

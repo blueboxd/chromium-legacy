@@ -145,6 +145,7 @@ import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabHost;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabHostRegistry;
+import org.chromium.chrome.browser.tabmodel.IncognitoTabHostUtils;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -671,7 +672,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         return getCompositorViewHolder().getLayerTitleCache();
                     },
                     mOverviewModeBehaviorSupplier,
-                    mRootUiCoordinator::getTopUiThemeColorProvider);
+                    mRootUiCoordinator::getTopUiThemeColorProvider, mJankTracker);
             mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
@@ -691,7 +692,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         return getCompositorViewHolder().getLayerTitleCache();
                     },
                     mOverviewModeBehaviorSupplier,
-                    mRootUiCoordinator::getTopUiThemeColorProvider);
+                    mRootUiCoordinator::getTopUiThemeColorProvider, mJankTracker);
             mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
@@ -798,7 +799,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             // Check for incognito tabs to handle the case where Chrome was swiped away in the
             // background.
-            if (!IncognitoUtils.doIncognitoTabsExist()) {
+            if (!IncognitoTabHostUtils.doIncognitoTabsExist()) {
                 IncognitoNotificationManager.dismissIncognitoNotification();
                 DownloadNotificationService.getInstance().cancelOffTheRecordDownloads();
             }

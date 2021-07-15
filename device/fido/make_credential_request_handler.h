@@ -95,7 +95,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
                             FidoAuthenticator* authenticator) override;
 
   // AuthTokenRequester::Delegate:
-  void AuthenticatorSelectedForPINUVAuthToken(
+  bool AuthenticatorSelectedForPINUVAuthToken(
       FidoAuthenticator* authenticator) override;
   void CollectPIN(pin::PINEntryReason reason,
                   pin::PINEntryError error,
@@ -131,9 +131,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       CtapDeviceResponseCode response_code,
       absl::optional<AuthenticatorMakeCredentialResponse> response);
   void HandleExcludedAuthenticator(FidoAuthenticator* authenticator);
-  void HandleInapplicableAuthenticator(
-      FidoAuthenticator* authenticator,
-      std::unique_ptr<CtapMakeCredentialRequest> request);
+  void HandleInapplicableAuthenticator(FidoAuthenticator* authenticator,
+                                       MakeCredentialStatus status);
   void OnEnrollmentComplete(std::unique_ptr<CtapMakeCredentialRequest> request);
   void OnEnrollmentDismissed();
   void DispatchRequestWithToken(

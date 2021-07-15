@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -54,7 +55,10 @@ class FakeClientSideDetectionService : public ClientSideDetectionService {
 
   void SetModel(const ClientSideModel& model) { model_ = model; }
 
-  std::string GetModelStr() override { return model_.SerializeAsString(); }
+  const std::string& GetModelStr() override {
+    client_side_model_ = model_.SerializeAsString();
+    return client_side_model_;
+  }
 
   void SetRequestCallback(const base::RepeatingClosure& closure) {
     request_callback_ = closure;
@@ -65,12 +69,16 @@ class FakeClientSideDetectionService : public ClientSideDetectionService {
   ClientReportPhishingRequestCallback saved_callback_;
   ClientSideModel model_;
   std::string access_token_;
+  std::string client_side_model_;
   base::RepeatingClosure request_callback_;
 };
 
 class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
-  MockSafeBrowsingUIManager() : SafeBrowsingUIManager(nullptr) {}
+  MockSafeBrowsingUIManager()
+      : SafeBrowsingUIManager(
+            nullptr,
+            std::make_unique<ChromeSafeBrowsingBlockingPageFactory>()) {}
 
   MOCK_METHOD1(DisplayBlockingPage, void(const UnsafeResource& resource));
 

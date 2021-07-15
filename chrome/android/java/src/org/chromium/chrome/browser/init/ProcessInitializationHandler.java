@@ -415,14 +415,14 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(
                 () -> TosDialogBehaviorSharedPrefInvalidator.refreshSharedPreferenceIfTosSkipped());
         deferredStartupHandler.addDeferredTask(
-                () -> OfflineMeasurementsBackgroundTask.maybeScheduleTaskAndReportMetrics());
+                () -> OfflineMeasurementsBackgroundTask.maybeScheduleTask());
         deferredStartupHandler.addDeferredTask(() -> QueryTileUtils.isQueryTilesEnabledOnNTP());
         deferredStartupHandler.addDeferredTask(
                 ()
                         -> AssistantVoiceSearchService.reportStartupUserEligibility(
                                 ContextUtils.getApplicationContext()));
         deferredStartupHandler.addDeferredTask(
-                () -> GlobalAppLocaleController.getInstance().recordOverrideLangauge());
+                () -> GlobalAppLocaleController.getInstance().recordOverrideLanguageMetrics());
     }
 
     private void initChannelsAsync() {

@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -26,12 +26,48 @@ namespace pdf {
 
 namespace {
 
+// The background color for the PDF viewer in string format. Keep it in-sync
+// with `BACKGROUND_COLOR` in chrome/browser/resources/pdf/pdf_viewer.js.
+static const char kPdfViewerBackgroundColor[] = "4283586137";
+
+// TODO(https://crbug.com/1227206): Change the "background-color" attribute
+// value depending on the actual plugin params. For example, when the plugin is
+// for Print Preview, its background color should be different.
 std::string GenerateResponse(const GURL& source_url, const GURL& original_url) {
-  return base::StrCat({R"(<!DOCTYPE html>
-<html style="height:100%; width:100%">
-<embed type="application/x-google-chrome-pdf" width="100%" height="100%")",
-                       " src=\"", source_url.spec(), "\" original-url=\"",
-                       original_url.spec(), "\">"});
+  // TODO(crbug.com/1228987): This script in this response is never executed
+  // when JavaScript is blocked throughout the browser (set in
+  // chrome://settings/content/javascript). A permanent solution would likely
+  // have to hook into postMessage() natively.
+  static constexpr char kResponseTemplate[] = R"(<!DOCTYPE html>
+<style>
+body,
+embed,
+html {
+  height: 100%;
+  margin: 0;
+  width: 100%;
+}
+</style>
+<embed type="application/x-google-chrome-pdf" src="$1" original-url="$2"
+       background-color="$3">
+<script>
+const channel = new MessageChannel();
+const plugin = document.querySelector('embed');
+
+plugin.addEventListener('message', e => channel.port1.postMessage(e.data));
+channel.port1.onmessage = e => plugin.postMessage(e.data);
+
+window.parent.postMessage(
+    {type: 'connect', token: plugin.getAttribute('src')}, '$4',
+    [channel.port2]);
+</script>
+)";
+
+  return base::ReplaceStringPlaceholders(
+      kResponseTemplate,
+      {source_url.spec(), original_url.spec(), kPdfViewerBackgroundColor,
+       source_url.GetOrigin().spec()},
+      /*offsets=*/nullptr);
 }
 
 }  // namespace

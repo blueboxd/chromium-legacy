@@ -35,7 +35,6 @@ source_set("chromeos") {
     "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
     "//chrome/browser/ui/webui/chromeos/emoji:mojo_bindings",
     "//chromeos/components/security_token_pin",
-    "//chromeos/dbus:anomaly_detector_proto",
     "//chromeos/dbus:cicerone_proto",
     "//chromeos/dbus:concierge_proto",
     "//chromeos/dbus:runtime_probe_proto",
@@ -44,6 +43,7 @@ source_set("chromeos") {
     "//chromeos/dbus:vm_disk_management_proto",
     "//chromeos/dbus:vm_permission_service_proto",
     "//chromeos/dbus:vm_sk_forwarding_proto",
+    "//chromeos/dbus/anomaly_detector:proto",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/metrics",
     "//chromeos/services/assistant/public/mojom",
@@ -187,6 +187,7 @@ source_set("chromeos") {
     "//chromeos/dbus:plugin_vm_service_proto",
     "//chromeos/dbus:update_engine_proto",
     "//chromeos/dbus:vm_plugin_dispatcher_proto",
+    "//chromeos/dbus/anomaly_detector",
     "//chromeos/dbus/attestation",
     "//chromeos/dbus/attestation:attestation_proto",
     "//chromeos/dbus/audio",
@@ -194,7 +195,9 @@ source_set("chromeos") {
     "//chromeos/dbus/authpolicy:authpolicy_proto",
     "//chromeos/dbus/biod",
     "//chromeos/dbus/cdm_factory_daemon",
+    "//chromeos/dbus/chunneld",
     "//chromeos/dbus/constants",
+    "//chromeos/dbus/cros_disks",
     "//chromeos/dbus/cros_healthd",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
@@ -2119,6 +2122,10 @@ source_set("chromeos") {
     "../ash/power/auto_screen_brightness/fake_observer.h",
     "../ash/power/auto_screen_brightness/gaussian_trainer.cc",
     "../ash/power/auto_screen_brightness/gaussian_trainer.h",
+    "../ash/power/auto_screen_brightness/light_provider_mojo.cc",
+    "../ash/power/auto_screen_brightness/light_provider_mojo.h",
+    "../ash/power/auto_screen_brightness/light_samples_observer.cc",
+    "../ash/power/auto_screen_brightness/light_samples_observer.h",
     "../ash/power/auto_screen_brightness/metrics_reporter.cc",
     "../ash/power/auto_screen_brightness/metrics_reporter.h",
     "../ash/power/auto_screen_brightness/model_config.cc",
@@ -2921,6 +2928,8 @@ source_set("chromeos") {
     "policy/reporting/single_install_event_log.h",
     "policy/rsu/lookup_key_uploader.cc",
     "policy/rsu/lookup_key_uploader.h",
+    "policy/scheduled_task_handler/device_scheduled_reboot_handler.cc",
+    "policy/scheduled_task_handler/device_scheduled_reboot_handler.h",
     "policy/scheduled_task_handler/device_scheduled_update_checker.cc",
     "policy/scheduled_task_handler/device_scheduled_update_checker.h",
     "policy/scheduled_task_handler/os_and_policies_update_checker.cc",
@@ -2943,8 +2952,6 @@ source_set("chromeos") {
     "policy/server_backed_state/server_backed_state_keys_broker.h",
     "policy/status_collector/activity_storage.cc",
     "policy/status_collector/activity_storage.h",
-    "policy/status_collector/affiliated_session_service.cc",
-    "policy/status_collector/affiliated_session_service.h",
     "policy/status_collector/app_info_generator.cc",
     "policy/status_collector/app_info_generator.h",
     "policy/status_collector/child_activity_storage.cc",
@@ -2956,6 +2963,8 @@ source_set("chromeos") {
     "policy/status_collector/enterprise_activity_storage.cc",
     "policy/status_collector/enterprise_activity_storage.h",
     "policy/status_collector/interval_map.h",
+    "policy/status_collector/managed_session_service.cc",
+    "policy/status_collector/managed_session_service.h",
     "policy/status_collector/status_collector.cc",
     "policy/status_collector/status_collector.h",
     "policy/status_collector/status_collector_state.cc",
@@ -3226,19 +3235,6 @@ source_set("chromeos") {
     "extensions/wm/wm_desks_private_api.h",
   ]
 
-  if (use_iioservice) {
-    sources -= [
-      "../ash/power/auto_screen_brightness/als_file_reader.cc",
-      "../ash/power/auto_screen_brightness/als_file_reader.h",
-    ]
-    sources += [
-      "../ash/power/auto_screen_brightness/light_provider_mojo.cc",
-      "../ash/power/auto_screen_brightness/light_provider_mojo.h",
-      "../ash/power/auto_screen_brightness/light_samples_observer.cc",
-      "../ash/power/auto_screen_brightness/light_samples_observer.h",
-    ]
-  }
-
   if (use_cups) {
     configs += [ "//printing:cups" ]
     deps += [
@@ -3315,6 +3311,8 @@ source_set("chromeos") {
       "chromebox_for_meetings/logger/cfm_logger_service.h",
       "chromebox_for_meetings/logger/reporting_pipeline.cc",
       "chromebox_for_meetings/logger/reporting_pipeline.h",
+      "chromebox_for_meetings/network_settings/network_settings_service.cc",
+      "chromebox_for_meetings/network_settings/network_settings_service.h",
       "chromebox_for_meetings/service_adaptor.cc",
       "chromebox_for_meetings/service_adaptor.h",
     ]
@@ -3546,6 +3544,8 @@ static_library("test_support") {
     "//chromeos/components/drivefs:test_support",
     "//chromeos/cryptohome",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/chunneld",
+    "//chromeos/dbus/cros_disks",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//chromeos/dbus/dlcservice",
@@ -3981,6 +3981,8 @@ source_set("unit_tests") {
     "../ash/power/auto_screen_brightness/als_samples_unittest.cc",
     "../ash/power/auto_screen_brightness/brightness_monitor_impl_unittest.cc",
     "../ash/power/auto_screen_brightness/gaussian_trainer_unittest.cc",
+    "../ash/power/auto_screen_brightness/light_provider_mojo_unittest.cc",
+    "../ash/power/auto_screen_brightness/light_samples_observer_unittest.cc",
     "../ash/power/auto_screen_brightness/metrics_reporter_unittest.cc",
     "../ash/power/auto_screen_brightness/model_config_loader_impl_unittest.cc",
     "../ash/power/auto_screen_brightness/modeller_impl_unittest.cc",
@@ -4228,6 +4230,7 @@ source_set("unit_tests") {
     "policy/reporting/install_event_log_util_unittest.cc",
     "policy/reporting/single_arc_app_install_event_log_unittest.cc",
     "policy/rsu/lookup_key_uploader_unittest.cc",
+    "policy/scheduled_task_handler/test/device_scheduled_reboot_handler_unittest.cc",
     "policy/scheduled_task_handler/test/device_scheduled_update_checker_unittest.cc",
     "policy/scheduled_task_handler/test/fake_scheduled_task_executor.cc",
     "policy/scheduled_task_handler/test/fake_scheduled_task_executor.h",
@@ -4236,10 +4239,10 @@ source_set("unit_tests") {
     "policy/server_backed_state/device_cloud_state_keys_uploader_unittest.cc",
     "policy/server_backed_state/server_backed_state_keys_broker_unittest.cc",
     "policy/status_collector/activity_storage_unittest.cc",
-    "policy/status_collector/affiliated_session_service_unittest.cc",
     "policy/status_collector/app_info_generator_unittest.cc",
     "policy/status_collector/enterprise_activity_storage_unittest.cc",
     "policy/status_collector/interval_map_unittest.cc",
+    "policy/status_collector/managed_session_service_unittest.cc",
     "policy/uploading/heartbeat_scheduler_unittest.cc",
     "policy/uploading/status_uploader_unittest.cc",
     "policy/uploading/system_log_uploader_unittest.cc",
@@ -4371,11 +4374,14 @@ source_set("unit_tests") {
     "//chromeos/components/phonehub:test_support",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/proximity_auth:test_support",
+    "//chromeos/components/sensors:test_support",
     "//chromeos/components/tether:test_support",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/anomaly_detector",
     "//chromeos/dbus/attestation",
     "//chromeos/dbus/attestation:attestation_proto",
     "//chromeos/dbus/authpolicy",
+    "//chromeos/dbus/cros_disks",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
     "//chromeos/dbus/dlcservice:test_support",
@@ -4470,15 +4476,6 @@ source_set("unit_tests") {
     "//ui/events/devices:test_support",
     "//ui/shell_dialogs",
   ]
-  if (use_iioservice) {
-    sources -=
-        [ "../ash/power/auto_screen_brightness/als_file_reader_unittest.cc" ]
-    sources += [
-      "../ash/power/auto_screen_brightness/light_provider_mojo_unittest.cc",
-      "../ash/power/auto_screen_brightness/light_samples_observer_unittest.cc",
-    ]
-    deps += [ "//chromeos/components/sensors:test_support" ]
-  }
 
   if (use_udev) {
     deps += [ "//device/udev_linux:test_support" ]

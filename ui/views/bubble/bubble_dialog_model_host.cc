@@ -12,6 +12,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -223,7 +224,7 @@ BubbleDialogModelHost::BubbleDialogModelHost(
 
   // TODO(pbos): Consider refactoring ::SetExtraView() so it can be called after
   // the Widget is created and still be picked up. Moving this to
-  // OnDialogInitialized() will not work until then.
+  // OnWidgetInitialized() will not work until then.
   auto* extra_button = model_->extra_button(GetPassKey());
   if (extra_button) {
     SetExtraView(std::make_unique<MdTextButton>(
@@ -293,7 +294,7 @@ View* BubbleDialogModelHost::GetInitiallyFocusedView() {
       FindDialogModelHostField(model_->GetFieldByUniqueId(unique_id.value())));
 }
 
-void BubbleDialogModelHost::OnDialogInitialized() {
+void BubbleDialogModelHost::OnWidgetInitialized() {
   // Dialog buttons are added on dialog initialization.
   if (GetOkButton()) {
     AddDialogModelHostFieldForExistingView(

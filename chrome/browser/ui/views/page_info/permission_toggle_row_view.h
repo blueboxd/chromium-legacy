@@ -18,6 +18,10 @@ class Label;
 class ToggleButton;
 }  // namespace views
 
+namespace test {
+class PageInfoBubbleViewTestApi;
+}  // namespace test
+
 // A view that shows a permission that a site is able to access, and
 // allows the user to control via toggle whether that access is granted. Has a
 // button that opens a subpage with more controls.
@@ -37,6 +41,8 @@ class PermissionToggleRowView : public views::View {
   void ResetPermission();
 
  private:
+  friend class test::PageInfoBubbleViewTestApi;
+
   void OnToggleButtonPressed();
   void InitForUserSource(bool should_show_spacer_view);
   void InitForManagedSource(ChromePageInfoUiDelegate* delegate);

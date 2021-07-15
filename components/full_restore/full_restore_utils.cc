@@ -23,6 +23,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kWindowIdKey, 0)
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kRestoreWindowIdKey, 0)
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kGhostWindowSessionIdKey, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kAppIdKey, nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kBrowserAppNameKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAppTypeBrowser, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(int32_t, kActivationIndexKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kParentToHiddenContainerKey, false)
@@ -105,6 +106,13 @@ bool HasAppTypeBrowser(const base::FilePath& profile_path) {
     return false;
 
   return FullRestoreReadHandler::GetInstance()->HasAppTypeBrowser(profile_path);
+}
+
+bool HasBrowser(const base::FilePath& profile_path) {
+  if (!full_restore::features::IsFullRestoreEnabled())
+    return false;
+
+  return FullRestoreReadHandler::GetInstance()->HasBrowser(profile_path);
 }
 
 bool HasWindowInfo(int32_t restore_window_id) {

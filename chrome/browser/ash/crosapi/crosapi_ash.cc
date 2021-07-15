@@ -11,6 +11,8 @@
 #include "ash/components/account_manager/account_manager_ash.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "base/dcheck_is_on.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi_factory.h"
 #include "chrome/browser/ash/crosapi/automation_ash.h"
@@ -32,6 +34,7 @@
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_reporting_ash.h"
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
+#include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/power_ash.h"
 #include "chrome/browser/ash/crosapi/prefs_ash.h"
 #include "chrome/browser/ash/crosapi/remoting_ash.h"
@@ -112,6 +115,7 @@ CrosapiAsh::CrosapiAsh()
       metrics_reporting_ash_(std::make_unique<MetricsReportingAsh>(
           g_browser_process->local_state())),
       native_theme_service_ash_(std::make_unique<NativeThemeServiceAsh>()),
+      networking_attributes_ash_(std::make_unique<NetworkingAttributesAsh>()),
       power_ash_(std::make_unique<PowerAsh>()),
       prefs_ash_(
           std::make_unique<PrefsAsh>(g_browser_process->profile_manager(),
@@ -173,6 +177,14 @@ void CrosapiAsh::BindBrowserServiceHost(
     mojo::PendingReceiver<crosapi::mojom::BrowserServiceHost> receiver) {
   browser_service_host_ash_->BindReceiver(receiver_set_.current_context(),
                                           std::move(receiver));
+}
+
+void CrosapiAsh::BindChromeAppPublisher(
+    mojo::PendingReceiver<mojom::AppPublisher> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  apps::StandaloneBrowserExtensionApps* chrome_apps =
+      apps::StandaloneBrowserExtensionAppsFactory::GetForProfile(profile);
+  chrome_apps->RegisterChromeAppsCrosapiHost(std::move(receiver));
 }
 
 void CrosapiAsh::BindFileManager(
@@ -315,6 +327,11 @@ void CrosapiAsh::BindDownloadController(
   download_controller_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindNetworkingAttributes(
+    mojo::PendingReceiver<mojom::NetworkingAttributes> receiver) {
+  networking_attributes_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindSensorHalClient(
     mojo::PendingRemote<chromeos::sensors::mojom::SensorHalClient> remote) {
   chromeos::sensors::SensorHalDispatcher::GetInstance()->RegisterClient(
@@ -355,7 +372,7 @@ void CrosapiAsh::BindVideoCaptureDeviceFactory(
   video_capture_device_factory_ash_->BindReceiver(std::move(receiver));
 }
 
-void CrosapiAsh::BindAppPublisher(
+void CrosapiAsh::BindWebAppPublisher(
     mojo::PendingReceiver<mojom::AppPublisher> receiver) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   apps::WebAppsCrosapi* web_apps =

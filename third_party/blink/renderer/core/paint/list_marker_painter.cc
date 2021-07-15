@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
-#include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
@@ -86,8 +85,8 @@ void ListMarkerPainter::PaintSymbol(const PaintInfo& paint_info,
                                     const ComputedStyle& style,
                                     const LayoutRect& marker) {
   DCHECK(object);
-  DCHECK(style.GetListStyleType());
-  DCHECK(style.GetListStyleType()->IsCounterStyle());
+  DCHECK(style.ListStyleType());
+  DCHECK(style.ListStyleType()->IsCounterStyle());
   GraphicsContext& context = paint_info.context;
   ScopedDarkModeElementRoleOverride list_symbol(
       &context, DarkModeFilter::ElementRole::kListSymbol);
@@ -101,7 +100,7 @@ void ListMarkerPainter::PaintSymbol(const PaintInfo& paint_info,
   context.SetStrokeStyle(kSolidStroke);
   context.SetStrokeThickness(1.0f);
   IntRect snapped_rect = PixelSnappedIntRect(marker);
-  const AtomicString& type = style.GetListStyleType()->GetCounterStyleName();
+  const AtomicString& type = style.ListStyleType()->GetCounterStyleName();
   if (type == "disc") {
     context.FillEllipse(FloatRect(snapped_rect));
   } else if (type == "circle") {

@@ -88,6 +88,8 @@ PASS oldChildWindow.navigator.virtualKeyboard.boundingRect.y is newChildWindow.n
 PASS oldChildWindow.navigator.virtualKeyboard.ongeometrychange is newChildWindow.navigator.virtualKeyboard.ongeometrychange
 PASS oldChildWindow.navigator.virtualKeyboard.overlaysContent is newChildWindow.navigator.virtualKeyboard.overlaysContent
 PASS oldChildWindow.navigator.webdriver is newChildWindow.navigator.webdriver
+PASS oldChildWindow.navigator.windowControlsOverlay.ongeometrychange is newChildWindow.navigator.windowControlsOverlay.ongeometrychange
+PASS oldChildWindow.navigator.windowControlsOverlay.visible is newChildWindow.navigator.windowControlsOverlay.visible
 PASS oldChildWindow.navigator.xr.ondevicechange is newChildWindow.navigator.xr.ondevicechange
 PASS oldChildWindow.onabort is newChildWindow.onabort
 PASS oldChildWindow.onafterprint is newChildWindow.onafterprint
@@ -172,7 +174,6 @@ PASS oldChildWindow.onratechange is newChildWindow.onratechange
 PASS oldChildWindow.onrejectionhandled is newChildWindow.onrejectionhandled
 PASS oldChildWindow.onreset is newChildWindow.onreset
 PASS oldChildWindow.onresize is newChildWindow.onresize
-PASS oldChildWindow.onscreenschange is newChildWindow.onscreenschange
 PASS oldChildWindow.onscroll is newChildWindow.onscroll
 PASS oldChildWindow.onscrollend is newChildWindow.onscrollend
 PASS oldChildWindow.onsearch is newChildWindow.onsearch

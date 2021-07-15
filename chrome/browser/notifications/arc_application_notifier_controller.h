@@ -11,7 +11,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/notifier_controller.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 
 class AppUpdate;
@@ -39,18 +38,24 @@ class ArcApplicationNotifierController
                           bool enabled) override;
 
  private:
-  void SetIcon(std::string app_id, gfx::ImageSkia image);
-  void CallLoadIcon(bool allow_placeholder_icon, std::string app_id);
-  void OnLoadIcon(std::string app_id, apps::mojom::IconValuePtr icon_value);
+  void CallLoadIcon(const std::string& app_id, bool allow_placeholder_icon);
+  void OnLoadIcon(const std::string& app_id,
+                  apps::mojom::IconValuePtr icon_value);
+  void SetIcon(const std::string& app_id, gfx::ImageSkia image);
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
 
+  // Needed to load icons for ARC apps.
   Profile* last_used_profile_ = nullptr;
   NotifierController::Observer* observer_;
+
+  // Used to keep track of all PWA start URLs to prevent creation of duplicate
+  // notifier metadata.
   std::map<std::string, std::string> package_to_app_ids_;
+
   base::WeakPtrFactory<ArcApplicationNotifierController> weak_ptr_factory_{
       this};
 };

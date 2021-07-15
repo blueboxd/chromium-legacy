@@ -131,6 +131,16 @@ struct COMPONENT_EXPORT(SQL) DatabaseOptions {
   // TODO(pwnall): Replace the default with an invalid value after all
   //               sql::Database users explicitly initialize page_size.
   int cache_size = 0;
+
+  // Stores mmap failures in the SQL schema, instead of the meta table.
+  //
+  // This option is strongly discouraged for new databases, and will eventually
+  // be removed.
+  //
+  // If this option is true, the mmap status is stored in the database schema.
+  // Like any other schema change, changing the mmap status invalidates all
+  // pre-compiled SQL statements.
+  bool mmap_alt_status_discouraged = false;
 };
 
 // Handle to an open SQLite database.
@@ -180,11 +190,6 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Returns whether a database will be opened in WAL mode.
   bool UseWALMode() const;
-
-  // Call to use alternative status-tracking for mmap.  Usually this is tracked
-  // in the meta table, but some databases have no meta table.
-  // TODO(shess): Maybe just have all databases use the alt option?
-  void set_mmap_alt_status() { mmap_alt_status_ = true; }
 
   // Opt out of memory-mapped file I/O.
   void set_mmap_disabled() { mmap_disabled_ = true; }
@@ -347,21 +352,27 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Attached databases---------------------------------------------------------
 
-  // SQLite supports attaching multiple database files to a single connection.
+  // Attaches an existing database to this connection.
   //
-  // Attach the database in |other_db_path| to the current connection under
-  // |attachment_point|. |attachment_point| must only contain characters from
-  // [a-zA-Z0-9_].
+  // `attachment_point` must only contain lowercase letters.
+  //
+  // Attachment APIs are only exposed for use in recovery. General use is
+  // discouraged in Chrome. The README has more details.
   //
   // On the SQLite version shipped with Chrome (3.21+, Oct 2017), databases can
   // be attached while a transaction is opened. However, these databases cannot
   // be detached until the transaction is committed or aborted.
-  //
-  // These APIs are only exposed for use in recovery. They are extremely subtle
-  // and are not useful for features built on top of //sql.
   bool AttachDatabase(const base::FilePath& other_db_path,
                       base::StringPiece attachment_point,
                       InternalApiToken);
+
+  // Detaches a database that was previously attached with AttachDatabase().
+  //
+  // `attachment_point` must match the argument of a previously successsful
+  // AttachDatabase() call.
+  //
+  // Attachment APIs are only exposed for use in recovery. General use is
+  // discouraged in Chrome. The README has more details.
   bool DetachDatabase(base::StringPiece attachment_point, InternalApiToken);
 
   // Statements ----------------------------------------------------------------
@@ -760,9 +771,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // databases (incorrect use of the API) from calls to once-valid
   // databases.
   bool poisoned_ = false;
-
-  // |true| to use alternate storage for tracking mmap status.
-  bool mmap_alt_status_ = false;
 
   // |true| if SQLite memory-mapped I/O is not desired for this database.
   bool mmap_disabled_;

@@ -645,6 +645,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const QueryOptions& options,
                         QueryResults* result);
 
+  // Performs a brute force search over the database to find any host names that
+  // match the `host_name` string. Returns any matches.
+  URLRows GetMatchesForHost(const std::u16string& host_name);
+
   // Clusters ------------------------------------------------------------------
 
   // Convert `AnnotatedVisitRow`s to `AnnotatedVisit`s. Drops rows without
@@ -718,6 +722,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void NotifyURLsModified(const URLRows& changed_urls,
                           bool is_from_expiration) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
+  void NotifyVisitDeleted(const VisitRow& visit) override;
 
   // Deleting all history ------------------------------------------------------
 

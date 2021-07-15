@@ -17,12 +17,12 @@ namespace quick_pair {
 
 class FastPairPresenter;
 
-class UIBrokerImpl : public UIBroker {
+class COMPONENT_EXPORT(QUICK_PAIR_UI) UIBrokerImpl : public UIBroker {
  public:
   UIBrokerImpl();
   UIBrokerImpl(const UIBrokerImpl&) = delete;
   UIBrokerImpl& operator=(const UIBrokerImpl&) = delete;
-  ~UIBrokerImpl();
+  ~UIBrokerImpl() final;
 
   // UIBroker:
   void AddObserver(Observer* observer) override;

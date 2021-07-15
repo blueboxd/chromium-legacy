@@ -609,7 +609,7 @@ const base::Feature kImeMozcProto{"ImeMozcProto",
 // If enabled, options page for each input method will be opened in ChromeOS
 // settings. Otherwise it will be opened in a new web page in Chrome browser.
 const base::Feature kImeOptionsInSettings{"ImeOptionsInSettings",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable system emoji picker.
 const base::Feature kImeSystemEmojiPicker{"SystemEmojiPicker",
@@ -645,6 +645,11 @@ const base::Feature kLacrosSupport{"LacrosSupport",
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables sorting app icons shown on the launcher.
+const base::Feature kLauncherAppSort{"LauncherAppSort",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables new flow for license packaged devices with enterprise license.
 const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -726,7 +731,7 @@ const base::Feature kMultilingualTyping{"MultilingualTyping",
 // also making the Nearby Connections WebRTC defaults longer.
 const base::Feature kNearbyKeepAliveFix{"NearbyKeepAliveFix",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-                                        
+
 // Controls whether new Lockscreen reauth layout is shown or not.
 const base::Feature kNewLockScreenReauthLayout{
     "NewLockScreenReauthLayout", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -997,7 +1002,7 @@ const base::Feature kSyncConsentOptional{"SyncConsentOptional",
 
 // Enables battery indicator for styluses in the palette tray
 const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables using the system input engine for physical typing in
 // languages based on latin script.
@@ -1334,6 +1339,10 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 bool IsKeyboardBasedDisplayArrangementInSettingsEnabled() {
   return base::FeatureList::IsEnabled(
       kKeyboardBasedDisplayArrangementInSettings);
+}
+
+bool IsLauncherAppSortEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherAppSort);
 }
 
 bool IsLicensePackagedOobeFlowEnabled() {

@@ -86,6 +86,8 @@ extern const char kReportDeviceVersionInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceActivityTimes[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceAudioStatus[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceBoardStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceBootMode[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceCpuInfo[];
@@ -229,6 +231,9 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kUnaffiliatedArcAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kDeviceHostnameTemplate[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceHostnameUserConfigurable[];
+
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kVirtualMachinesAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
@@ -344,6 +349,7 @@ using ::chromeos::kDeviceDisabledMessage;
 using ::chromeos::kDeviceDisplayResolution;
 using ::chromeos::kDeviceDockMacAddressSource;
 using ::chromeos::kDeviceHostnameTemplate;
+using ::chromeos::kDeviceHostnameUserConfigurable;
 using ::chromeos::kDeviceLoginScreenInputMethods;
 using ::chromeos::kDeviceLoginScreenLocales;
 using ::chromeos::kDeviceLoginScreenSystemInfoEnforced;
@@ -382,6 +388,7 @@ using ::chromeos::kReleaseChannelDelegated;
 using ::chromeos::kReleaseLtsTag;
 using ::chromeos::kReportDeviceActivityTimes;
 using ::chromeos::kReportDeviceAppInfo;
+using ::chromeos::kReportDeviceAudioStatus;
 using ::chromeos::kReportDeviceBacklightInfo;
 using ::chromeos::kReportDeviceBluetoothInfo;
 using ::chromeos::kReportDeviceBoardStatus;

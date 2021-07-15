@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
@@ -52,16 +51,14 @@ import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
-import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 
 import java.lang.reflect.Field;
 
 /**
  * An activity that talks with application and activity level delegates for async initialization.
  */
-public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatActivity
-        implements ChromeActivityNativeDelegate, BrowserParts, ModalDialogManagerHolder {
+public abstract class AsyncInitializationActivity
+        extends ChromeBaseAppCompatActivity implements ChromeActivityNativeDelegate, BrowserParts {
     @VisibleForTesting
     public static final String FIRST_DRAW_COMPLETED_TIME_MS_UMA = "FirstDrawCompletedTime";
     private static final String TAG = "AsyncInitActivity";
@@ -254,7 +251,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             String url = IntentHandler.getUrlFromIntent(intent);
             if (url == null) return;
             // Blocking pre-connect for all off-the-record profiles.
-            if (!IncognitoUtils.hasAnyIncognitoExtra(intent.getExtras())) {
+            if (!IntentHandler.hasAnyIncognitoExtra(intent.getExtras())) {
                 WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
                         Profile.getLastUsedRegularProfile(), url);
             }
@@ -660,16 +657,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Nullable
     public ActivityWindowAndroid getWindowAndroid() {
         return mWindowAndroid;
-    }
-
-    /**
-     * @return The {@link ModalDialogManager} that manages the display of modal dialogs (e.g.
-     *         JavaScript dialogs).
-     */
-    @Override
-    public ModalDialogManager getModalDialogManager() {
-        // TODO(jinsukkim): Remove this method in favor of super.getModalDialogManagerSupplier().
-        return getModalDialogManagerSupplier().get();
     }
 
     /**

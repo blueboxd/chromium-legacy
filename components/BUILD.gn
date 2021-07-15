@@ -162,7 +162,6 @@ test("components_unittests") {
     "//components/subresource_filter/core/browser:unit_tests",
     "//components/subresource_filter/core/common:unit_tests",
     "//components/subresource_filter/tools:unit_tests",
-    "//components/suggestions:unit_tests",
     "//components/sync:unit_tests",
     "//components/sync_bookmarks:unit_tests",
     "//components/sync_preferences:unit_tests",
@@ -735,6 +734,7 @@ if (!is_ios) {
       deps += [
         "//components/pdf/browser",
         "//components/pdf/renderer",
+        "//pdf:accessibility_structs",
         "//pdf:features",
       ]
     }

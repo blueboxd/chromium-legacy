@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -182,14 +183,9 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   bool should_filter = ShouldFilterEvent(pointer_event);
   // We are about to dispatch this event. It has to be trusted at this point.
   pointer_event->SetTrusted(true);
-
-  if (frame_ && frame_->DomWindow()) {
-    WindowPerformance* performance =
-        DOMWindowPerformance::performance(*(frame_->DomWindow()));
-    if (performance && EventTiming::IsEventTypeForEventTiming(*pointer_event)) {
-      performance->eventCounts()->Add(event_type);
-    }
-  }
+  std::unique_ptr<EventTiming> event_timing;
+  if (frame_ && frame_->DomWindow())
+    event_timing = EventTiming::Create(frame_->DomWindow(), *pointer_event);
 
   if (should_filter &&
       !HasPointerEventListener(frame_->GetEventHandlerRegistry()))

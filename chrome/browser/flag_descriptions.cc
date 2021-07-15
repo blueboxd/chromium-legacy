@@ -39,6 +39,11 @@ const char kAccountIdMigrationDescription[] =
     "Migrate to use Gaia ID instead of the email as the account identifer for "
     "the Identity Manager.";
 
+const char kLauncherAppSortName[] = "Productivity experiment: Reorder Apps";
+const char kLauncherAppSortDescription[] =
+    "To evaluate an enhanced Launcher experience that enables users to reorder "
+    "their apps in order to find them more easily.";
+
 const char kAlignFontDisplayAutoTimeoutWithLCPGoalName[] =
     "Align 'font-display: auto' timeout with LCP goal";
 const char kAlignFontDisplayAutoTimeoutWithLCPGoalDescription[] =
@@ -246,6 +251,19 @@ const char kDnsOverHttpsDescription[] =
     "Enables DNS over HTTPS. When this feature is enabled, your browser may "
     "try to use a secure HTTPS connection to look up the addresses of websites "
     "and other web resources.";
+
+extern const char kAssistantExplicitVoiceConsentName[] =
+    "AssistantExplicitVoiceConsent";
+extern const char kAssistantExplicitVoiceConsentDescription[] =
+    "When enabled, backing off from the consent screen by tapping outside of "
+    "it or pressing the back button are not treated as rejection";
+
+extern const char kAssistantVoiceConstentTapsCounterName[] =
+    "AssistantVoiceConsentTapsCounter";
+extern const char kAssistantVoiceConstentTapsCounterDescription[] =
+    "When enabled, a specified (by a feature param) number of taps outside of "
+    "the consent screen or back button presses will be ignored, but the next "
+    "one will be treated as rejection";
 
 const char kAutofillAlwaysReturnCloudTokenizedCardName[] =
     "Return cloud token details for server credit cards when possible";
@@ -1262,10 +1280,6 @@ const char kExtensionContentVerificationEnforce[] =
 const char kExtensionContentVerificationEnforceStrict[] =
     "Enforce strict (hard fail if we can't get hashes)";
 
-const char kExtensionsCheckupName[] = "Extensions Checkup";
-const char kExtensionsCheckupDescription[] =
-    "Enable the extensions checkup experiment";
-
 const char kExtensionsOnChromeUrlsName[] = "Extensions on chrome:// URLs";
 const char kExtensionsOnChromeUrlsDescription[] =
     "Enables running extensions on chrome:// URLs, where extensions explicitly "
@@ -1877,6 +1891,11 @@ const char kOmniboxUIMaxAutocompleteMatchesName[] =
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
+
+const char kOmniboxUpdatedConnectionSecurityIndicatorsName[] =
+    "Omnibox Updated connection security indicators";
+const char kOmniboxUpdatedConnectionSecurityIndicatorsDescription[] =
+    "Use new connection security indicators for https pages in the omnibox.";
 
 const char kOmniboxMaxURLMatchesName[] = "Omnibox Max URL Matches";
 const char kOmniboxMaxURLMatchesDescription[] =
@@ -3461,6 +3480,13 @@ const char kSafeBrowsingClientSideDetectionAndroidName[] =
 const char kSafeBrowsingClientSideDetectionAndroidDescription[] =
     "Enable DOM feature collection on Safe Browsing pings on Android";
 
+const char kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidName[] =
+    "Safe Browsing PasswordCheck Integration for Saved Passwords Android";
+const char
+    kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidDescription[] =
+        "Allows Android Chrome users to change their saved passwords through "
+        "password reuse warning on phishing or low reputation sites.";
+
 const char kEnhancedProtectionPromoAndroidName[] =
     "Enable enhanced protection promo card on Android on the New Tab Page";
 const char kEnhancedProtectionPromoAndroidDescription[] =
@@ -3725,6 +3751,11 @@ const char kNtpModulesDragAndDropDescription[] =
 const char kNtpModulesRedesignedName[] = "NTP Modules Redesigned";
 const char kNtpModulesRedesignedDescription[] =
     "Shows the redesigned modules on the New Tab Page.";
+
+const char kNtpRealboxSuggestionAnswersName[] =
+    "NTP Realbox Suggestion Answers";
+const char kNtpRealboxSuggestionAnswersDescription[] =
+    "Shows suggestion answers in the NTP Realbox when enabled.";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
@@ -4312,6 +4343,13 @@ const char kDoubleTapToZoomInTabletModeName[] =
 const char kDoubleTapToZoomInTabletModeDescription[] =
     "If Enabled, double tapping in webpages while in tablet mode will zoom the "
     "page.";
+
+const char kQuickSettingsPWANotificationsName[] =
+    "Enable setting of PWA notification permissions in quick settings ";
+const char kQuickSettingsPWANotificationsDescription[] =
+    "Replace website notification permissions with PWA notification "
+    "permissions in the quick settings menu. Website notification permissions "
+    "settings will be migrated to the lacros - chrome browser.";
 
 const char kDriveFsBidirectionalNativeMessagingName[] =
     "Enable bidirectional native messaging for DriveFS";

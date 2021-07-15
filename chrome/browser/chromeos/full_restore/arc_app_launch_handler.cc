@@ -35,6 +35,7 @@
 #include "components/full_restore/restore_data.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "ui/display/display.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace {
@@ -264,7 +265,19 @@ void ArcAppLaunchHandler::OnWindowDestroying(aura::Window* window) {
   if (!session_id.has_value())
     return;
 
+  auto it = session_id_to_window_id_.find(session_id.value());
+  if (it == session_id_to_window_id_.end())
+    return;
+
+  auto window_id = it->second;
   session_id_to_window_id_.erase(session_id.value());
+
+  const std::string* arc_app_id =
+      window->GetProperty(::full_restore::kAppIdKey);
+  if (!arc_app_id || arc_app_id->empty())
+    return;
+
+  RemoveWindow(*arc_app_id, window_id);
 }
 
 void ArcAppLaunchHandler::LoadRestoreData() {
@@ -335,6 +348,23 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
       RecordArcGhostWindowLaunch(/*is_arc_ghost_window=*/false);
     }
 #endif
+
+    const auto& file_path = handler_->profile_->GetPath();
+    int32_t event_flags = data_it.second->event_flag.value();
+    int64_t display_id = data_it.second->display_id.has_value()
+                             ? data_it.second->display_id.value()
+                             : display::kInvalidDisplayId;
+    if (data_it.second->intent.has_value()) {
+      ::full_restore::SaveAppLaunchInfo(
+          file_path,
+          std::make_unique<::full_restore::AppLaunchInfo>(
+              app_id, event_flags, std::move(data_it.second->intent.value()),
+              arc_session_id, display_id));
+    } else {
+      ::full_restore::SaveAppLaunchInfo(
+          file_path, std::make_unique<::full_restore::AppLaunchInfo>(
+                         app_id, event_flags, arc_session_id, display_id));
+    }
 
     if (launch_ghost_window)
       continue;

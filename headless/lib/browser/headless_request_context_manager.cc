@@ -26,7 +26,7 @@
 #include "services/network/url_request_context_builder_mojo.h"
 
 #if defined(HEADLESS_USE_PREFS)
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"  // nogncheck
 #include "content/public/common/network_service_util.h"
 #endif
 
@@ -215,7 +215,7 @@ HeadlessRequestContextManager::CreateSystemContext(
       network_context_params.get(), cert_verifier_creation_params.get());
   network_context_params->cert_verifier_params =
       content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
-  network_service->CreateNetworkContext(
+  content::CreateNetworkContextInNetworkService(
       manager->system_context_.InitWithNewPipeAndPassReceiver(),
       std::move(network_context_params));
 

@@ -2412,6 +2412,7 @@ static_library("browser") {
       "//chromeos/components/quick_answers/public/cpp:prefs",
       "//chromeos/dbus/attestation",
       "//chromeos/dbus/attestation:attestation_proto",
+      "//chromeos/dbus/cros_disks",
       "//chromeos/dbus/cryptohome",
       "//chromeos/dbus/power",
       "//chromeos/dbus/userdataauth:userdataauth",
@@ -2461,7 +2462,7 @@ static_library("browser") {
     sources += [ "net/net_error_diagnostics_dialog_stub.cc" ]
   }
 
-  if (is_posix || is_fuchsia) {
+  if (is_posix) {
     sources += [
       "download/trusted_sources_manager_posix.cc",
       "google/google_update_settings_posix.cc",
@@ -3061,6 +3062,8 @@ static_library("browser") {
       "optimization_guide/android/optimization_guide_tab_url_provider_android.h",
       "page_load_metrics/observers/android_page_load_metrics_observer.cc",
       "page_load_metrics/observers/android_page_load_metrics_observer.h",
+      "page_load_metrics/observers/offline_measurements_page_load_metrics_observer.cc",
+      "page_load_metrics/observers/offline_measurements_page_load_metrics_observer.h",
       "password_check/android/password_check_bridge.cc",
       "password_check/android/password_check_bridge.h",
       "password_check/android/password_check_manager.cc",
@@ -3242,6 +3245,7 @@ static_library("browser") {
       "//chrome/browser/notifications:jni_headers",
       "//chrome/browser/notifications/chime/android",
       "//chrome/browser/notifications/scheduler/public",
+      "//chrome/browser/offline_pages/measurements/proto:offline_measurements_proto",
       "//chrome/browser/optimization_guide/android:jni_headers",
       "//chrome/browser/password_check/android:jni_headers",
       "//chrome/browser/password_check/android:password_check_enums_srcjar",
@@ -3801,6 +3805,8 @@ static_library("browser") {
       "metrics/tab_stats/tab_stats_tracker.cc",
       "metrics/tab_stats/tab_stats_tracker.h",
       "metrics/tab_stats/tab_stats_tracker_delegate.h",
+      "metrics/usage_scenario/system_event_provider.cc",
+      "metrics/usage_scenario/system_event_provider.h",
       "metrics/usage_scenario/tab_usage_scenario_tracker.cc",
       "metrics/usage_scenario/tab_usage_scenario_tracker.h",
       "metrics/usage_scenario/usage_scenario_data_store.cc",
@@ -4301,7 +4307,7 @@ static_library("browser") {
       deps += [ "//chrome:packed_resources_integrity" ]
     }
 
-    if (is_posix || is_fuchsia) {
+    if (is_posix) {
       sources += [
         "chrome_browser_main_posix.cc",
         "chrome_browser_main_posix.h",
@@ -4554,6 +4560,10 @@ static_library("browser") {
       "notifications/notification_platform_bridge_chromeos.h",
       "notifications/notification_platform_bridge_delegate.h",
       "notifications/notifier_controller.h",
+      "notifications/notifier_dataset.cc",
+      "notifications/notifier_dataset.h",
+      "notifications/pwa_notifier_controller.cc",
+      "notifications/pwa_notifier_controller.h",
       "notifications/web_page_notifier_controller.cc",
       "notifications/web_page_notifier_controller.h",
       "performance_manager/mechanisms/userspace_swap_chromeos.cc",
@@ -4772,6 +4782,8 @@ static_library("browser") {
       "lacros/feedback_util.h",
       "lacros/immersive_context_lacros.cc",
       "lacros/immersive_context_lacros.h",
+      "lacros/lacros_extension_apps_publisher.cc",
+      "lacros/lacros_extension_apps_publisher.h",
       "lacros/lacros_memory_pressure_evaluator.cc",
       "lacros/lacros_memory_pressure_evaluator.h",
       "lacros/lacros_prefs.cc",
@@ -5154,6 +5166,8 @@ static_library("browser") {
       "mac/initial_prefs.mm",
       "mac/install_from_dmg.h",
       "mac/install_from_dmg.mm",
+      "mac/key_window_notifier.cc",
+      "mac/key_window_notifier.h",
       "mac/keystone_glue.h",
       "mac/keystone_glue.mm",
       "mac/keystone_registration.h",
@@ -5252,6 +5266,10 @@ static_library("browser") {
         "mac/install_updater.mm",
       ]
     }
+  }
+
+  if (is_win || is_linux) {
+    deps += [ "//chrome/browser/privacy:traffic_annotation_proto" ]
   }
 
   if (is_linux || is_win || is_mac) {
@@ -5357,7 +5375,7 @@ static_library("browser") {
     }
   }
 
-  if (is_posix || is_fuchsia) {
+  if (is_posix) {
     sources += [
       "shutdown_signal_handlers_posix.cc",
       "shutdown_signal_handlers_posix.h",
@@ -5513,7 +5531,7 @@ static_library("browser") {
   }
 
   if (is_posix && !is_mac) {
-    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+    # TODO(crbug.com/1226159): Complete crash reporting integration on Fuchsia.
     sources += [
       "//chrome/app/chrome_crash_reporter_client.cc",
       "//chrome/app/chrome_crash_reporter_client.h",
@@ -7024,7 +7042,7 @@ static_library("test_support") {
     "//ui/gfx:test_support",
   ]
 
-  if (!is_android && !is_fuchsia) {
+  if (!is_android) {
     deps += [ "//components/policy/test_support" ]
   }
 
@@ -7134,6 +7152,7 @@ static_library("test_support") {
       "//chromeos:test_support",
       "//chromeos/attestation:test_support",
       "//chromeos/dbus",
+      "//chromeos/dbus/cros_disks",
       "//chromeos/disks",
       "//chromeos/login/auth",
       "//components/session_manager/core",

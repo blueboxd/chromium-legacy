@@ -66,6 +66,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private boolean mPrivacyDisclaimersVisible;
     private boolean mClearBrowsingDataButtonVisible;
     private String mQueryText = EMPTY_QUERY;
+    private String mHostName;
 
     private boolean mDisableScrollToLoadForTest;
 
@@ -98,7 +99,11 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mAreHeadersInitialized = false;
         mIsLoadingItems = true;
         mClearOnNextQueryComplete = true;
-        mHistoryProvider.queryHistory(mQueryText);
+        if (mHostName != null) {
+            mHistoryProvider.queryHistoryForHost(mHostName);
+        } else {
+            mHistoryProvider.queryHistory(mQueryText);
+        }
     }
 
     @Override
@@ -396,20 +401,24 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         // If the history header is not showing (e.g. when there is no browsing history),
         // mClearBrowsingDataButton will be null.
         if (mClearBrowsingDataButton == null) return;
-        boolean shouldShowButton = UserPrefs.get(Profile.getLastUsedRegularProfile())
-                                           .getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY);
+
+        boolean shouldShowButton;
+        if (mManager.getShouldShowClearDataIfAvailable()) {
+            shouldShowButton = UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                       .getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY);
+        } else {
+            shouldShowButton = false;
+        }
         if (mClearBrowsingDataButtonVisible == shouldShowButton) return;
         mClearBrowsingDataButtonVisible = shouldShowButton;
         mPrivacyDisclaimerBottomSpace.setVisibility(shouldShowButton ? View.GONE : View.VISIBLE);
+
         if (mAreHeadersInitialized) setHeaders();
     }
 
-    /**
-     * Sets the query text.
-     * @param query The text to be searched for.
-     */
-    void setQueryText(String query) {
-        mQueryText = query;
+    /** @param hostName The hostName to retrieve history entries for. */
+    public void setHostName(String hostName) {
+        mHostName = hostName;
     }
 
     @VisibleForTesting

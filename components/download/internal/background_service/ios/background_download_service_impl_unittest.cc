@@ -11,12 +11,14 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "components/download/internal/background_service/client_set.h"
 #include "components/download/internal/background_service/ios/background_download_task_helper.h"
 #include "components/download/internal/background_service/test/test_store.h"
 #include "components/download/public/background_service/test/mock_client.h"
 #include "testing/platform_test.h"
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::NiceMock;
 using ServiceStatus = download::BackgroundDownloadService::ServiceStatus;
@@ -43,7 +45,8 @@ class MockBackgroundDownloadTaskHelper : public BackgroundDownloadTaskHelper {
               (const std::string& guid,
                const RequestParams&,
                const SchedulingParams&,
-               CompletionCallback),
+               CompletionCallback,
+               UpdateCallback),
               (override));
 };
 
@@ -61,10 +64,11 @@ class BackgroundDownloadServiceImplTest : public PlatformTest {
     client_ = client.get();
     auto clients = std::make_unique<DownloadClientMap>();
     clients->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
+    auto client_set = std::make_unique<ClientSet>(std::move(clients));
     auto download_helper = std::make_unique<MockBackgroundDownloadTaskHelper>();
     download_helper_ = download_helper.get();
     service_ = std::make_unique<BackgroundDownloadServiceImpl>(
-        std::move(clients), std::move(model), std::move(download_helper));
+        std::move(client_set), std::move(model), std::move(download_helper));
   }
 
   BackgroundDownloadService* service() { return service_.get(); }
@@ -92,12 +96,14 @@ class BackgroundDownloadServiceImplTest : public PlatformTest {
 
 TEST_F(BackgroundDownloadServiceImplTest, InitSuccess) {
   EXPECT_EQ(ServiceStatus::STARTING_UP, service()->GetStatus());
+  EXPECT_CALL(*client_, OnServiceInitialized(false, _));
   store_->TriggerInit(/*success=*/true, empty_entries());
   EXPECT_EQ(ServiceStatus::READY, service()->GetStatus());
 }
 
 TEST_F(BackgroundDownloadServiceImplTest, InitFailure) {
   EXPECT_EQ(ServiceStatus::STARTING_UP, service()->GetStatus());
+  EXPECT_CALL(*client_, OnServiceUnavailable());
   store_->TriggerInit(/*success=*/false, empty_entries());
   EXPECT_EQ(ServiceStatus::UNAVAILABLE, service()->GetStatus());
 }
@@ -115,8 +121,8 @@ TEST_F(BackgroundDownloadServiceImplTest, StartDownloadDbFailure) {
 TEST_F(BackgroundDownloadServiceImplTest, StartDownloadHelperFailure) {
   store_->TriggerInit(/*success=*/true, empty_entries());
   EXPECT_CALL(start_callback_, Run(kGuid, StartResult::ACCEPTED));
-  EXPECT_CALL(*download_helper_, StartDownload(_, _, _, _))
-      .WillOnce(RunCallback<3>(/*success=*/false, base::FilePath()));
+  EXPECT_CALL(*download_helper_, StartDownload(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<3>(/*success=*/false, base::FilePath()));
   EXPECT_CALL(*client_,
               OnDownloadFailed(kGuid, CompletionInfoIs(base::FilePath()),
                                download::Client::FailureReason::UNKNOWN));
@@ -130,11 +136,26 @@ TEST_F(BackgroundDownloadServiceImplTest, StartDownloadHelperFailure) {
 TEST_F(BackgroundDownloadServiceImplTest, StartDownloadSuccess) {
   store_->TriggerInit(/*success=*/true, empty_entries());
   EXPECT_CALL(start_callback_, Run(kGuid, StartResult::ACCEPTED));
-  EXPECT_CALL(*download_helper_, StartDownload(_, _, _, _))
-      .WillOnce(RunCallback<3>(/*success=*/true, base::FilePath(kFilePath)));
+  EXPECT_CALL(*download_helper_, StartDownload(_, _, _, _, _))
+      .WillOnce(
+          RunOnceCallback<3>(/*success=*/true, base::FilePath(kFilePath)));
   EXPECT_CALL(
       *client_,
       OnDownloadSucceeded(kGuid, CompletionInfoIs(base::FilePath(kFilePath))));
+  auto download_params = CreateDownloadParams(kURL);
+  service()->StartDownload(std::move(download_params));
+  store_->TriggerUpdate(/*success=*/true);
+  EXPECT_EQ(kGuid, store_->LastUpdatedEntry()->guid);
+  task_environment_.RunUntilIdle();
+}
+
+// Verifies Client::OnDownloadUpdated() is called.
+TEST_F(BackgroundDownloadServiceImplTest, OnDownloadUpdated) {
+  store_->TriggerInit(/*success=*/true, empty_entries());
+  EXPECT_CALL(start_callback_, Run(kGuid, StartResult::ACCEPTED));
+  EXPECT_CALL(*download_helper_, StartDownload(_, _, _, _, _))
+      .WillOnce(RunCallback<4>(10u));
+  EXPECT_CALL(*client_, OnDownloadUpdated(kGuid, 0u, 10u));
   auto download_params = CreateDownloadParams(kURL);
   service()->StartDownload(std::move(download_params));
   store_->TriggerUpdate(/*success=*/true);

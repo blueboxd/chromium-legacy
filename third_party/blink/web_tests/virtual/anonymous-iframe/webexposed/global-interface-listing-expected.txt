@@ -2258,7 +2258,6 @@ interface Element : Node
     getter shadowRoot
     getter slot
     getter tagName
-    method SetHTML
     method after
     method animate
     method append
@@ -2308,6 +2307,7 @@ interface Element : Node
     method setAttributeNS
     method setAttributeNode
     method setAttributeNodeNS
+    method setHTML
     method setPointerCapture
     method toggleAttribute
     method webkitMatchesSelector
@@ -5759,6 +5759,7 @@ interface Navigator
     getter webdriver
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
+    getter windowControlsOverlay
     getter xr
     method canShare
     method clearAppBadge
@@ -6404,13 +6405,6 @@ interface PictureInPictureWindow : EventTarget
     getter width
     method constructor
     setter onresize
-interface Plane
-    attribute @@toStringTag
-    getter length
-    getter rows
-    getter stride
-    method constructor
-    method readInto
 interface Plugin
     attribute @@toStringTag
     getter description
@@ -8185,17 +8179,10 @@ interface Screen
     getter availWidth
     getter colorDepth
     getter height
-    getter id
-    getter internal
     getter isExtended
-    getter left
     getter onchange
     getter orientation
     getter pixelDepth
-    getter primary
-    getter scaleFactor
-    getter top
-    getter touchSupport
     getter width
     method addEventListener
     method constructor
@@ -9123,21 +9110,14 @@ interface VideoFrame
     attribute @@toStringTag
     getter codedHeight
     getter codedRect
-    getter codedRegion
     getter codedWidth
     getter colorSpace
-    getter cropHeight
-    getter cropLeft
-    getter cropTop
-    getter cropWidth
     getter displayHeight
     getter displayWidth
     getter duration
     getter format
-    getter planes
     getter timestamp
     getter visibleRect
-    getter visibleRegion
     method allocationSize
     method clone
     method close
@@ -10633,6 +10613,18 @@ interface Window : EventTarget
     attribute PERSISTENT
     attribute TEMPORARY
     method constructor
+interface WindowControlsOverlay : EventTarget
+    attribute @@toStringTag
+    getter ongeometrychange
+    getter visible
+    method constructor
+    method getBoundingClientRect
+    setter ongeometrychange
+interface WindowControlsOverlayGeometryChangeEvent : Event
+    attribute @@toStringTag
+    getter boundingRect
+    getter visible
+    method constructor
 interface Worker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -11407,7 +11399,6 @@ namespace CSS
     getter onrejectionhandled
     getter onreset
     getter onresize
-    getter onscreenschange
     getter onscroll
     getter onscrollend
     getter onsearch
@@ -11495,10 +11486,8 @@ namespace CSS
     method getDigitalGoodsService
     method getLockScreenData
     method getScreens
-    method getScreensDeprecated
     method getSelection
     method getWindowSegments
-    method isMultiScreen
     method matchMedia
     method moveBy
     method moveTo
@@ -11624,7 +11613,6 @@ namespace CSS
     setter onrejectionhandled
     setter onreset
     setter onresize
-    setter onscreenschange
     setter onscroll
     setter onscrollend
     setter onsearch

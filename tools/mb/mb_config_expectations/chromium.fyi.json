@@ -428,7 +428,6 @@
       "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
-      "enable_brp_directmap_support": true,
       "enable_runtime_backup_ref_ptr_control": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -440,7 +439,6 @@
       "target_os": "android",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_brp_pool_blocklist": true,
       "use_goma": true
     }
   },
@@ -449,7 +447,6 @@
       "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
-      "enable_brp_directmap_support": true,
       "enable_runtime_backup_ref_ptr_control": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -461,7 +458,6 @@
       "target_os": "android",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_brp_pool_blocklist": true,
       "use_goma": true
     }
   },
@@ -797,7 +793,6 @@
       "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
-      "enable_brp_directmap_support": true,
       "enable_runtime_backup_ref_ptr_control": true,
       "is_component_build": false,
       "is_debug": false,
@@ -806,7 +801,6 @@
       "target_cpu": "x64",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_brp_pool_blocklist": true,
       "use_goma": true
     }
   },
@@ -897,6 +891,16 @@
     "gn_args": {
       "is_component_build": false,
       "is_debug": false,
+      "use_goma": true
+    }
+  },
+  "linux-exp-code-coverage": {
+    "gn_args": {
+      "is_clang": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "use_clang_coverage": true,
       "use_goma": true
     }
   },
@@ -1071,7 +1075,6 @@
       "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
-      "enable_brp_directmap_support": true,
       "enable_runtime_backup_ref_ptr_control": true,
       "is_component_build": false,
       "is_debug": false,
@@ -1080,7 +1083,6 @@
       "target_cpu": "x64",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_brp_pool_blocklist": true,
       "use_goma": true
     }
   },
@@ -1089,7 +1091,6 @@
       "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
-      "enable_brp_directmap_support": true,
       "enable_runtime_backup_ref_ptr_control": true,
       "is_component_build": false,
       "is_debug": false,
@@ -1098,7 +1099,6 @@
       "target_cpu": "x86",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_brp_pool_blocklist": true,
       "use_goma": true
     }
   },

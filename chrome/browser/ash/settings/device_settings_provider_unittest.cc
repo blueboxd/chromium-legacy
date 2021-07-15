@@ -91,6 +91,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         device_policy_->payload().mutable_device_reporting();
     proto->set_report_version_info(enable_reporting);
     proto->set_report_activity_times(enable_reporting);
+    proto->set_report_audio_status(enable_reporting);
     proto->set_report_boot_mode(enable_reporting);
     proto->set_report_location(enable_reporting);
     proto->set_report_network_interfaces(enable_reporting);
@@ -170,6 +171,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     const char* reporting_settings[] = {
         kReportDeviceVersionInfo,
         kReportDeviceActivityTimes,
+        kReportDeviceAudioStatus,
         kReportDeviceBoardStatus,
         kReportDeviceBootMode,
         // Device location reporting is not currently supported.
@@ -404,6 +406,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetDeviceDataRoamingEnabled(bool data_roaming_enabled) {
+    em::DataRoamingEnabledProto* proto =
+        device_policy_->payload().mutable_data_roaming_enabled();
+    proto->set_data_roaming_enabled(data_roaming_enabled);
+    BuildAndInstallDevicePolicy();
+  }
+
   void VerifyDevicePrinterList(const char* policy_key,
                                std::vector<std::string>& values) {
     base::Value list(base::Value::Type::LIST);
@@ -501,9 +510,8 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
   const base::Value* value = provider_->Get(kReleaseChannel);
   ASSERT_TRUE(value);
-  std::string string_value;
-  EXPECT_TRUE(value->GetAsString(&string_value));
-  EXPECT_TRUE(string_value.empty());
+  ASSERT_TRUE(value->is_string());
+  EXPECT_TRUE(value->GetString().empty());
 
   // Sets should succeed though and be readable from the cache.
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
@@ -520,8 +528,8 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   // Verify the change has been applied.
   const base::Value* saved_value = provider_->Get(kReleaseChannel);
   ASSERT_TRUE(saved_value);
-  EXPECT_TRUE(saved_value->GetAsString(&string_value));
-  ASSERT_EQ("stable-channel", string_value);
+  ASSERT_TRUE(saved_value->is_string());
+  ASSERT_EQ("stable-channel", saved_value->GetString());
 }
 
 TEST_F(DeviceSettingsProviderTestEnterprise, NoPolicyDefaultsOn) {
@@ -1279,6 +1287,48 @@ TEST_F(DeviceSettingsProviderTest, DeviceScheduledReboot) {
   expected_val.SetKey("day_of_month", base::Value(15));
   SetDeviceScheduledReboot(json_string);
   VerifyPolicyValue(kDeviceScheduledReboot, &expected_val);
+}
+
+TEST_F(DeviceSettingsProviderTest, DataRoamingEnabledWithFeatureFlag) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      ash::features::kCellularAllowPerNetworkRoaming);
+  SetDeviceDataRoamingEnabled(false);
+
+  profile_->ScopedCrosSettingsTestHelper()
+      ->InstallAttributes()
+      ->SetCloudManaged(policy::PolicyBuilder::kFakeDomain,
+                        policy::PolicyBuilder::kFakeDeviceId);
+  BuildAndInstallDevicePolicy();
+
+  // Cloud managed device value.
+  const base::Value* value = provider_->Get(kSignedDataRoamingEnabled);
+  ASSERT_TRUE(value);
+  ASSERT_TRUE(value->is_bool());
+  EXPECT_FALSE(value->GetBool());
+
+  profile_->ScopedCrosSettingsTestHelper()
+      ->InstallAttributes()
+      ->SetConsumerOwned();
+  BuildAndInstallDevicePolicy();
+
+  // Consumer owned device value.
+  value = provider_->Get(kSignedDataRoamingEnabled);
+  ASSERT_TRUE(value);
+  EXPECT_TRUE(value->GetBool());
+}
+
+TEST_F(DeviceSettingsProviderTest, DataRoamingEnabledWithoutFeatureFlag) {
+  SetDeviceDataRoamingEnabled(false);
+
+  profile_->ScopedCrosSettingsTestHelper()
+      ->InstallAttributes()
+      ->SetConsumerOwned();
+
+  // Consumer owned device value.
+  const base::Value* value = provider_->Get(kSignedDataRoamingEnabled);
+  ASSERT_TRUE(value);
+  ASSERT_TRUE(value->is_bool());
+  EXPECT_FALSE(value->GetBool());
 }
 
 // Checks that content_protection decodes correctly.

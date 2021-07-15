@@ -58,6 +58,10 @@ extern const ui::ClassProperty<int32_t>* const kGhostWindowSessionIdKey;
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<std::string*>* const kAppIdKey;
 
+// A property key to store the browser app name.
+COMPONENT_EXPORT(FULL_RESTORE)
+extern const ui::ClassProperty<std::string*>* const kBrowserAppNameKey;
+
 // A property key to indicate that the browser window type is an app type.
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<bool>* const kAppTypeBrowser;
@@ -138,6 +142,11 @@ void SetActiveProfilePath(const base::FilePath& profile_path);
 // Otherwise, returns false.
 COMPONENT_EXPORT(FULL_RESTORE)
 bool HasAppTypeBrowser(const base::FilePath& profile_path);
+
+// Returns true if there are normal browsers from the full restore file.
+// Otherwise, returns false.
+COMPONENT_EXPORT(FULL_RESTORE)
+bool HasBrowser(const base::FilePath& profile_path);
 
 // Returns true if there is a window info for |restore_window_id| from the full
 // restore file. Otherwise, returns false. This interface can't be used for Arc

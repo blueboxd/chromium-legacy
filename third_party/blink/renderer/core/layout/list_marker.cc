@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker_image.h"
 #include "third_party/blink/renderer/core/layout/layout_outside_list_marker.h"
-#include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -271,7 +270,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
     return;
   }
 
-  if (!style.GetListStyleType()) {
+  if (!style.ListStyleType()) {
     marker_text_type_ = kNotText;
     return;
   }
@@ -314,7 +313,11 @@ LayoutUnit ListMarker::WidthOfSymbol(const ComputedStyle& style) {
   DCHECK(font_data);
   if (!font_data)
     return LayoutUnit();
-  const AtomicString& name = style.GetListStyleType()->GetCounterStyleName();
+  if (UNLIKELY(style.SpecifiedFontSize() == 0)) {
+    // See http://crbug.com/1228157
+    return LayoutUnit();
+  }
+  const AtomicString& name = style.ListStyleType()->GetCounterStyleName();
   if (name == "disclosure-open" || name == "disclosure-closed")
     return DisclosureSymbolSize(style);
   return LayoutUnit((font_data->GetFontMetrics().Ascent() * 2 / 3 + 1) / 2 + 2);
@@ -331,7 +334,7 @@ std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForInside(
   switch (GetListStyleCategory(document, list_item_style)) {
     case ListStyleCategory::kSymbol: {
       const AtomicString& name =
-          list_item_style.GetListStyleType()->GetCounterStyleName();
+          list_item_style.ListStyleType()->GetCounterStyleName();
       if (name == "disclosure-open" || name == "disclosure-closed") {
         return {LayoutUnit(), LayoutUnit(kClosureMarkerMarginEm *
                                          marker_style.SpecifiedFontSize())};
@@ -368,7 +371,7 @@ std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForOutside(
           return {};
         const FontMetrics& font_metrics = font_data->GetFontMetrics();
         const AtomicString& name =
-            list_item_style.GetListStyleType()->GetCounterStyleName();
+            list_item_style.ListStyleType()->GetCounterStyleName();
         LayoutUnit offset =
             (name == "disclosure-open" || name == "disclosure-closed")
                 ? DisclosureSymbolSize(marker_style)
@@ -397,7 +400,7 @@ LayoutRect ListMarker::RelativeSymbolMarkerRect(const ComputedStyle& style,
   // http://crbug.com/543193
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
   const int ascent = font_metrics.Ascent();
-  const AtomicString& name = style.GetListStyleType()->GetCounterStyleName();
+  const AtomicString& name = style.ListStyleType()->GetCounterStyleName();
   if (name == "disclosure-open" || name == "disclosure-closed") {
     LayoutUnit marker_size = DisclosureSymbolSize(style);
     relative_rect = LayoutRect(LayoutUnit(), ascent - marker_size, marker_size,
@@ -416,15 +419,15 @@ LayoutRect ListMarker::RelativeSymbolMarkerRect(const ComputedStyle& style,
 
 const CounterStyle& ListMarker::GetCounterStyle(Document& document,
                                                 const ComputedStyle& style) {
-  DCHECK(style.GetListStyleType());
-  DCHECK(style.GetListStyleType()->IsCounterStyle());
-  return style.GetListStyleType()->GetCounterStyle(document);
+  DCHECK(style.ListStyleType());
+  DCHECK(style.ListStyleType()->IsCounterStyle());
+  return style.ListStyleType()->GetCounterStyle(document);
 }
 
 ListMarker::ListStyleCategory ListMarker::GetListStyleCategory(
     Document& document,
     const ComputedStyle& style) {
-  const ListStyleTypeData* list_style = style.GetListStyleType();
+  const ListStyleTypeData* list_style = style.ListStyleType();
   if (!list_style)
     return ListStyleCategory::kNone;
   if (list_style->IsString())

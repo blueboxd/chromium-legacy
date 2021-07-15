@@ -47,6 +47,7 @@
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -126,6 +127,7 @@ class BatteryView : public views::View {
 
     icon_->SetImage(stylus_battery_delegate_.GetBatteryImage());
     label_->SetVisible(stylus_battery_delegate_.IsBatteryLevelLow() &&
+                       stylus_battery_delegate_.IsBatteryStatusEligible() &&
                        !stylus_battery_delegate_.IsBatteryStatusStale() &&
                        !stylus_battery_delegate_.IsBatteryCharging());
   }

@@ -361,9 +361,9 @@ bool IsPrintingNodeOrPdfFrame(blink::WebLocalFrame* frame,
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool IsPrintToPdfRequested(const base::DictionaryValue& job_settings) {
-  PrinterType type = static_cast<PrinterType>(
+  mojom::PrinterType type = static_cast<mojom::PrinterType>(
       job_settings.FindIntKey(kSettingPrinterType).value());
-  return type == PrinterType::kPdf;
+  return type == mojom::PrinterType::kPdf;
 }
 
 bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,
@@ -702,7 +702,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/nullptr,
-      /*is_hidden=*/false, /*is_inside_portal=*/false,
+      /*is_hidden=*/false, /*is_prerendering=*/false,
+      /*is_inside_portal=*/false,
       /*compositing_enabled=*/false, /*widgets_never_composited=*/false,
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
       *source_frame.GetAgentGroupScheduler(),
@@ -981,6 +982,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/this,
       /*is_hidden=*/false,
+      /*is_prerendering=*/false,
       /*is_inside_portal=*/false,
       /*compositing_enabled=*/false,
       /*widgets_never_composited=*/false,

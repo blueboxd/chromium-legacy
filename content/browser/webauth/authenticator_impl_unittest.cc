@@ -3738,6 +3738,53 @@ TEST_F(AuthenticatorImplTest, GetPublicKey) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, AlgorithmsOmitted) {
+  // Some CTAP 2.0 security keys shipped support for algorithms other than
+  // ECDSA P-256 but the algorithms field didn't exist then. makeCredential
+  // requests should get routed to them anyway.
+
+  device::VirtualCtap2Device::Config config;
+  // Remove the algorithms field from the getInfo.
+  config.advertised_algorithms.emplace(absl::nullopt);
+  virtual_device_factory_->SetCtap2Config(config);
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  // Test that an Ed25519 credential can still be created. (The virtual
+  // authenticator supports that algorithm.)
+  {
+    const int32_t algo =
+        static_cast<int32_t>(device::CoseAlgorithmIdentifier::kEdDSA);
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->public_key_parameters = GetTestPublicKeyCredentialParameters(algo);
+    MakeCredentialResult result =
+        AuthenticatorMakeCredential(std::move(options));
+    ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+    const auto& response = result.response;
+    EXPECT_EQ(response->public_key_algo, algo);
+  }
+
+  // Test that requesting an unsupported algorithm still collects a touch.
+  {
+    bool touched = false;
+    virtual_device_factory_->mutable_state()->simulate_press_callback =
+        base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
+          touched = true;
+          return true;
+        });
+
+    const int32_t algo = static_cast<int32_t>(
+        device::CoseAlgorithmIdentifier::kInvalidForTesting);
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->public_key_parameters = GetTestPublicKeyCredentialParameters(algo);
+    MakeCredentialResult result =
+        AuthenticatorMakeCredential(std::move(options));
+    EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    EXPECT_TRUE(touched);
+  }
+}
+
 TEST_F(AuthenticatorImplTest, VirtualAuthenticatorPublicKeyAlgos) {
   // Exercise all the public key types in the virtual authenticator for create()
   // and get().
@@ -5154,6 +5201,62 @@ TEST_F(PINAuthenticatorImplTest, ExcludeListBatchesIncludePinToken) {
             AuthenticatorStatus::CREDENTIAL_EXCLUDED);
 }
 
+TEST_F(PINAuthenticatorImplTest, RemoveSecondAuthenticator) {
+  // Create two PIN-capable devices. Touch one of them to trigger a prompt for
+  // a PIN. Remove the other. Don't crash.
+  base::RepeatingCallback<void(bool)> disconnect_1, disconnect_2;
+
+  device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_1;
+  device_1.state->pin = kTestPIN;
+  device_1.config.pin_support = true;
+  std::tie(disconnect_1, device_1.disconnect_events) =
+      device::FidoDeviceDiscovery::EventStream<bool>::New();
+
+  device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_2;
+  device_2.state->pin = kTestPIN;
+  device_2.config.pin_support = true;
+  std::tie(disconnect_2, device_2.disconnect_events) =
+      device::FidoDeviceDiscovery::EventStream<bool>::New();
+
+  int callbacks = 0;
+  auto touch_callback = [&](int device_num) -> bool {
+    callbacks++;
+    if (callbacks == 1) {
+      // Wait for the other authenticator to be triggered.
+      return false;
+    } else if (callbacks == 2) {
+      // Touch authenticator to collect a PIN.
+      return true;
+    } else {
+      CHECK_EQ(callbacks, 3);
+
+      // Disconnect other authenticator then complete with a touch.
+      if (device_num == 1) {
+        disconnect_2.Run(false);
+      } else {
+        disconnect_1.Run(false);
+      }
+      return true;
+    }
+  };
+
+  device_1.state->simulate_press_callback = base::BindLambdaForTesting(
+      [&](VirtualFidoDevice* _) -> bool { return touch_callback(1); });
+  device_2.state->simulate_press_callback = base::BindLambdaForTesting(
+      [&](VirtualFidoDevice* _) -> bool { return touch_callback(2); });
+
+  auto discovery =
+      std::make_unique<device::test::MultipleVirtualFidoDeviceFactory>();
+  discovery->AddDevice(std::move(device_1));
+  discovery->AddDevice(std::move(device_2));
+  AuthenticatorEnvironmentImpl::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
+
+  test_client_.expected = {
+      {PINReason::kChallenge, kTestPIN16, device::kMaxPinRetries}};
+  EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
+}
+
 class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
   struct TestCase {
@@ -5711,6 +5814,152 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvBlockedFallBackToPin) {
   EXPECT_TRUE(test_client_.collected_pin);
   EXPECT_EQ(device::kMinPinLength, test_client_.min_pin_length);
   EXPECT_EQ(5, virtual_device_factory_->mutable_state()->uv_retries);
+}
+
+class BlockingAuthenticatorRequestDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  explicit BlockingAuthenticatorRequestDelegate(
+      base::OnceClosure* const callback)
+      : callback_(callback) {}
+
+  void RegisterActionCallbacks(
+      base::OnceClosure cancel_callback,
+      base::RepeatingClosure start_over_callback,
+      device::FidoRequestHandlerBase::RequestCallback request_callback,
+      base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
+    cancel_callback_ = std::move(cancel_callback);
+  }
+
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
+    if (callback_ && *callback_) {
+      std::move(*callback_).Run();
+    }
+    return true;
+  }
+
+  void Cancel() { std::move(cancel_callback_).Run(); }
+
+ private:
+  base::OnceClosure* const callback_;
+  base::OnceClosure cancel_callback_;
+};
+
+class BlockingDelegateContentBrowserClient : public ContentBrowserClient {
+ public:
+  explicit BlockingDelegateContentBrowserClient(
+      base::OnceClosure* const callback)
+      : callback_(callback) {}
+
+  WebAuthenticationDelegate* GetWebAuthenticationDelegate() override {
+    return &web_authentication_delegate_;
+  }
+
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host) override {
+    auto ret =
+        std::make_unique<BlockingAuthenticatorRequestDelegate>(callback_);
+    delegate_ = ret.get();
+    return ret;
+  }
+
+  void Cancel() { delegate_->Cancel(); }
+
+ private:
+  TestWebAuthenticationDelegate web_authentication_delegate_;
+  base::OnceClosure* const callback_;
+  BlockingAuthenticatorRequestDelegate* delegate_ = nullptr;
+};
+
+class BlockingDelegateAuthenticatorImplTest : public AuthenticatorImplTest {
+ public:
+  BlockingDelegateAuthenticatorImplTest() = default;
+
+  BlockingDelegateAuthenticatorImplTest(
+      const BlockingDelegateAuthenticatorImplTest&) = delete;
+  BlockingDelegateAuthenticatorImplTest& operator=(
+      const BlockingDelegateAuthenticatorImplTest&) = delete;
+
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+ protected:
+  base::OnceClosure blocked_on_error_callback_;
+  BlockingDelegateContentBrowserClient test_client_{
+      &blocked_on_error_callback_};
+
+ private:
+  ContentBrowserClient* old_client_ = nullptr;
+};
+
+TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
+  // Create a fingerprint-reading device and a UP-only device. Advance the
+  // first till it's waiting for a fingerprint then simulate a touch on the
+  // UP device that claims that it failed due to an excluded credential.
+  // When the error is showing in the UI, have the fingerprint device resolve
+  // the UV with an error. Don't crash (crbug.com/1225899).
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->exclude_credentials = GetTestCredentials();
+
+  device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_1;
+  scoped_refptr<VirtualFidoDevice::State> state_1 = device_1.state;
+  device_1.state->simulate_press_callback =
+      base::BindLambdaForTesting([&](VirtualFidoDevice* _) -> bool {
+        // Drop all makeCredential requests. The reply will be sent when
+        // the second authenticator is asked for a fingerprint.
+        return false;
+      });
+
+  device::test::MultipleVirtualFidoDeviceFactory::DeviceDetails device_2;
+  scoped_refptr<VirtualFidoDevice::State> state_2 = device_2.state;
+  device_2.config.internal_uv_support = true;
+  device_2.config.pin_support = true;
+  device_2.config.pin_uv_auth_token_support = true;
+  device_2.config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
+  device_2.state->pin = kTestPIN;
+  device_2.state->fingerprints_enrolled = true;
+  device_2.state->uv_retries = 8;
+  device_2.state->simulate_press_callback =
+      base::BindLambdaForTesting([&](VirtualFidoDevice* _) -> bool {
+        // If asked for a fingerprint, fail the makeCredential request by
+        // simulating a matched excluded credential by the other authenticator.
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(state_1->transact_callback),
+                                      std::vector<uint8_t>{static_cast<uint8_t>(
+                                          device::CtapDeviceResponseCode::
+                                              kCtap2ErrCredentialExcluded)}));
+        return false;
+      });
+
+  auto discovery =
+      std::make_unique<device::test::MultipleVirtualFidoDeviceFactory>();
+  discovery->AddDevice(std::move(device_1));
+  discovery->AddDevice(std::move(device_2));
+  AuthenticatorEnvironmentImpl::GetInstance()
+      ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
+
+  blocked_on_error_callback_ = base::BindLambdaForTesting([&]() {
+    // When the UI should show an error, have the second authenticator reply
+    // to the fingerprint touch and cancel the transaction.
+    std::move(state_2->transact_callback)
+        .Run(std::vector<uint8_t>{static_cast<uint8_t>(
+            device::CtapDeviceResponseCode::kCtap2ErrOperationDenied)});
+    test_client_.Cancel();
+  });
+
+  EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
+            AuthenticatorStatus::CREDENTIAL_EXCLUDED);
 }
 
 // ResidentKeyTestAuthenticatorRequestDelegate is a delegate that:

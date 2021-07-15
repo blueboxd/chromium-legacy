@@ -146,6 +146,7 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
          PIXEL_FORMAT_ABGR == video_frame->format() ||
+         PIXEL_FORMAT_XBGR == video_frame->format() ||
          PIXEL_FORMAT_XB30 == video_frame->format() ||
          PIXEL_FORMAT_XR30 == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format())
@@ -1376,6 +1377,9 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
 
   // TODO(nazabris): Support OOP-R code path here that does not have GrContext.
   if (!raster_context_provider || !raster_context_provider->GrContext())
+    return false;
+
+  if (raster_context_provider->ContextCapabilities().disable_legacy_mailbox)
     return false;
 
   // Trigger resource allocation for dst texture to back SkSurface.

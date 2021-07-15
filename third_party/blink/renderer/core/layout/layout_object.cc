@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/image_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -83,6 +84,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -714,7 +716,7 @@ bool LayoutObject::IsListMarkerForSummary() const {
         ListMarker::ListStyleCategory::kSymbol)
       return false;
     const AtomicString& name =
-        StyleRef().GetListStyleType()->GetCounterStyleName();
+        StyleRef().ListStyleType()->GetCounterStyleName();
     return name == "disclosure-open" || name == "disclosure-closed";
   }
   return false;
@@ -3856,21 +3858,6 @@ void LayoutObject::WillBeRemovedFromTree() {
 
   if (LocalFrameView* frame_view = GetFrameView())
     frame_view->GetPaintTimingDetector().LayoutObjectWillBeDestroyed(*this);
-
-  // Merge |next_text_combine| into |previous_text_combine| if needed.
-  // See http:://crbug.com/1227066
-  auto* const previous_text_combine =
-      DynamicTo<LayoutNGTextCombine>(PreviousSibling());
-  if (LIKELY(!previous_text_combine))
-    return;
-  auto* const next_text_combine = DynamicTo<LayoutNGTextCombine>(NextSibling());
-  if (LIKELY(!next_text_combine))
-    return;
-  while (auto* child = next_text_combine->FirstChild()) {
-    next_text_combine->RemoveChild(child);
-    previous_text_combine->AddChild(child);
-  }
-  Parent()->RemoveChild(next_text_combine);
 }
 
 void LayoutObject::SetNeedsPaintPropertyUpdate() {
@@ -4952,6 +4939,19 @@ LayoutUnit LayoutObject::FlipForWritingModeInternal(
     return position;
   return (box_for_flipping ? box_for_flipping : ContainingBlock())
       ->FlipForWritingMode(position, width);
+}
+
+void LayoutObject::MarkForLayout(LayoutInvalidationReasonForTracing reason,
+                                 MarkingBehavior mark_parents,
+                                 SubtreeLayoutScope* layouter) {
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+      "LayoutInvalidationTracking",
+      inspector_layout_invalidation_tracking_event::Data, this, reason);
+  if (mark_parents == kMarkContainerChain &&
+      (!layouter || layouter->Root() != this)) {
+    MarkContainerChainForLayout(!layouter, layouter);
+  }
 }
 
 bool LayoutObject::SelfPaintingLayerNeedsVisualOverflowRecalc() const {

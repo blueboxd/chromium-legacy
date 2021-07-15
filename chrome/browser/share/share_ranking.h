@@ -28,6 +28,8 @@ class ShareRanking : public base::SupportsUserData::Data {
   using GetRankingCallback =
       base::OnceCallback<void(absl::optional<Ranking> result)>;
 
+  static ShareRanking* Get(Profile* profile);
+
   explicit ShareRanking(Profile* profile,
                         std::unique_ptr<BackingDb> backing_db = nullptr);
   ~ShareRanking() override;
@@ -118,8 +120,8 @@ class ShareRanking : public base::SupportsUserData::Data {
   void OnRankGetOldRankingDone(std::unique_ptr<PendingRankCall> pending,
                                absl::optional<Ranking> ranking);
 
-  // Return the default initial ranking, which depends on the locale.
-  Ranking GetDefaultInitialRanking();
+  // Return the default initial ranking, which depends on the current locale.
+  Ranking GetDefaultInitialRankingForType(const std::string& type);
 
   bool init_finished_ = false;
   leveldb_proto::Enums::InitStatus db_init_status_;

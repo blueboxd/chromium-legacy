@@ -102,6 +102,11 @@ const char kReportDeviceVersionInfo[] =
 const char kReportDeviceActivityTimes[] =
     "cros.device_status.report_activity_times";
 
+// A boolean pref that indicates whether device sound volume should be recorded
+// and reported along with device policy requests.
+const char kReportDeviceAudioStatus[] =
+    "cros.device_status.report_audio_status";
+
 // A boolean pref that determines whether the board status should be
 // included in status reports to the device management server.
 const char kReportDeviceBoardStatus[] =
@@ -406,6 +411,11 @@ const char kCastReceiverName[] = "cros.device.cast_receiver.name";
 // A boolean pref that indicates whether unaffiliated users are allowed to
 // use ARC.
 const char kUnaffiliatedArcAllowed[] = "cros.device.unaffiliated_arc_allowed";
+
+// A boolean pref that indicates whether users are allowed to configure the
+// device hostname.
+const char kDeviceHostnameUserConfigurable[] =
+    "cros.device.hostname_user_configurable";
 
 // String that is used as a template for generating device hostname (that is
 // used in DHCP requests).

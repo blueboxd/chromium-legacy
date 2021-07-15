@@ -6,6 +6,7 @@
 
 #include "ash/constants/app_types.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
@@ -13,9 +14,11 @@
 #include "components/full_restore/app_launch_info.h"
 #include "components/full_restore/full_restore_file_handler.h"
 #include "components/full_restore/full_restore_info.h"
+#include "components/full_restore/full_restore_read_handler.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "components/full_restore/restore_data.h"
 #include "components/full_restore/window_info.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/sessions/core/session_id.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
@@ -28,6 +31,15 @@ namespace {
 // Delay between when an update is received, and when we save it to the
 // full restore file.
 constexpr base::TimeDelta kSaveDelay = base::TimeDelta::FromMilliseconds(2500);
+
+const char kCrxAppPrefix[] = "_crx_";
+
+std::string GetAppIdFromAppName(const std::string& app_name) {
+  std::string prefix(kCrxAppPrefix);
+  if (app_name.substr(0, prefix.length()) != prefix)
+    return std::string();
+  return app_name.substr(prefix.length());
+}
 
 }  // namespace
 
@@ -52,6 +64,15 @@ void FullRestoreSaveHandler::SetPrimaryProfilePath(
 void FullRestoreSaveHandler::SetActiveProfilePath(
     const base::FilePath& profile_path) {
   active_profile_path_ = profile_path;
+}
+
+void FullRestoreSaveHandler::SetAppRegistryCache(
+    const base::FilePath& profile_path,
+    apps::AppRegistryCache* app_registry_cache) {
+  if (app_registry_cache)
+    profile_path_to_app_registry_cache_[profile_path] = app_registry_cache;
+  else
+    profile_path_to_app_registry_cache_.erase(profile_path);
 }
 
 void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
@@ -102,8 +123,24 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
     // If the window is an app type browser window, set `app_type_browser` as
     // true, to call the browser session restore to restore apps for the next
     // system startup.
-    if (window->GetProperty(full_restore::kAppTypeBrowser))
+    if (window->GetProperty(full_restore::kAppTypeBrowser)) {
       app_launch_info->app_type_browser = true;
+
+      std::string* browser_app_name =
+          window->GetProperty(full_restore::kBrowserAppNameKey);
+      if (browser_app_name) {
+        std::string app_id = GetAppIdFromAppName(*browser_app_name);
+        auto it =
+            profile_path_to_app_registry_cache_.find(active_profile_path_);
+        if (it != profile_path_to_app_registry_cache_.end() && it->second &&
+            it->second->GetAppType(app_id) == apps::mojom::AppType::kUnknown) {
+          // If the app doesn't exist in AppRegistryCache, this window is an
+          // extension window, and we don't need to save the launch info for the
+          // extension.
+          return;
+        }
+      }
+    }
   }
 
   AddAppLaunchInfo(active_profile_path_, std::move(app_launch_info));
@@ -271,7 +308,7 @@ void FullRestoreSaveHandler::AddAppLaunchInfo(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::ModifyWindowId(const base::FilePath& profile_path,
@@ -287,7 +324,7 @@ void FullRestoreSaveHandler::ModifyWindowId(const base::FilePath& profile_path,
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::ModifyWindowInfo(
@@ -304,7 +341,7 @@ void FullRestoreSaveHandler::ModifyWindowInfo(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::ModifyThemeColor(
@@ -322,7 +359,7 @@ void FullRestoreSaveHandler::ModifyThemeColor(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::RemoveApp(const base::FilePath& profile_path,
@@ -335,7 +372,7 @@ void FullRestoreSaveHandler::RemoveApp(const base::FilePath& profile_path,
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::RemoveAppRestoreData(
@@ -350,7 +387,7 @@ void FullRestoreSaveHandler::RemoveAppRestoreData(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::RemoveWindowInfo(
@@ -365,14 +402,14 @@ void FullRestoreSaveHandler::RemoveWindowInfo(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::ClearRestoreData(
     const base::FilePath& profile_path) {
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 int32_t FullRestoreSaveHandler::GetArcSessionId() {
@@ -401,7 +438,19 @@ void FullRestoreSaveHandler::ClearForTesting() {
   app_id_to_app_launch_infos_.clear();
 }
 
-void FullRestoreSaveHandler::MaybeStartSaveTimer() {
+void FullRestoreSaveHandler::MaybeStartSaveTimer(
+    const base::FilePath& profile_path) {
+  if (!base::Contains(been_read_profile_paths_, profile_path)) {
+    // FullRestoreSaveHandler might be called to save the help app before
+    // FullRestoreAppLaunchHandler reads the full restore data from the full
+    // restore file during the system startup phase, e.g. when a new user login.
+    // So call FullRestoreReadHandler to read the file before saving the new
+    // data.
+    FullRestoreReadHandler::GetInstance()->ReadFromFile(profile_path,
+                                                        base::DoNothing());
+    been_read_profile_paths_.insert(profile_path);
+  }
+
   if (!save_timer_.IsRunning() && save_running_.empty()) {
     save_timer_.Start(FROM_HERE, kSaveDelay,
                       base::BindOnce(&FullRestoreSaveHandler::Save,

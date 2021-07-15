@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
-#include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 #include "third_party/blink/renderer/core/style/list_style_type_data.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -323,7 +322,7 @@ ListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory() const {
 
 const CounterStyle& LayoutListMarker::GetCounterStyle() const {
   NOT_DESTROYED();
-  const ListStyleTypeData* list_style_data = StyleRef().GetListStyleType();
+  const ListStyleTypeData* list_style_data = StyleRef().ListStyleType();
   DCHECK(list_style_data);
   DCHECK(list_style_data->IsCounterStyle());
   return list_style_data->GetCounterStyle(GetDocument());

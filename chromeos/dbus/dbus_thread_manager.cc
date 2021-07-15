@@ -10,14 +10,14 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
-#include "chromeos/dbus/anomaly_detector_client.h"
+#include "chromeos/dbus/anomaly_detector/anomaly_detector_client.h"
 #include "chromeos/dbus/arc/arc_data_snapshotd_client.h"
 #include "chromeos/dbus/arc/arc_keymaster_client.h"
 #include "chromeos/dbus/arc/arc_midis_client.h"
 #include "chromeos/dbus/arc/arc_obb_mounter_client.h"
-#include "chromeos/dbus/cec_service_client.h"
-#include "chromeos/dbus/chunneld_client.h"
-#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cec_service/cec_service_client.h"
+#include "chromeos/dbus/chunneld/chunneld_client.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_clients_browser.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
@@ -44,11 +44,9 @@ namespace chromeos {
 static DBusThreadManager* g_dbus_thread_manager = nullptr;
 static DBusThreadManagerSetter* g_setter = nullptr;
 
-DBusThreadManager::DBusThreadManager(ClientSet client_set) {
-  if (client_set == DBusThreadManager::kAll)
-    clients_browser_ = std::make_unique<DBusClientsBrowser>(use_real_clients_);
-  // NOTE: When there are clients only used by ash, create them here.
-}
+DBusThreadManager::DBusThreadManager()
+    : clients_browser_(
+          std::make_unique<DBusClientsBrowser>(use_real_clients_)) {}
 
 DBusThreadManager::~DBusThreadManager() {
   // Delete all D-Bus clients before shutting down the system bus.
@@ -210,15 +208,10 @@ void DBusThreadManager::InitializeClients() {
 }
 
 // static
-void DBusThreadManager::Initialize(ClientSet client_set) {
-  CHECK(!g_dbus_thread_manager);
-  g_dbus_thread_manager = new DBusThreadManager(client_set);
-  g_dbus_thread_manager->InitializeClients();
-}
-
-// static
 void DBusThreadManager::Initialize() {
-  Initialize(kAll);
+  CHECK(!g_dbus_thread_manager);
+  g_dbus_thread_manager = new DBusThreadManager();
+  g_dbus_thread_manager->InitializeClients();
 }
 
 // static

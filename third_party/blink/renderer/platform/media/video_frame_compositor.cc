@@ -31,7 +31,7 @@ constexpr const char VideoFrameCompositor::kTracingCategory[];
 
 VideoFrameCompositor::VideoFrameCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    std::unique_ptr<blink::WebVideoFrameSubmitter> submitter)
+    std::unique_ptr<WebVideoFrameSubmitter> submitter)
     : task_runner_(task_runner),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       background_rendering_timer_(
@@ -84,16 +84,17 @@ VideoFrameCompositor::~VideoFrameCompositor() {
     client_->StopUsingProvider();
 }
 
-void VideoFrameCompositor::EnableSubmission(const viz::SurfaceId& id,
-                                            media::VideoRotation rotation,
-                                            bool force_submit) {
+void VideoFrameCompositor::EnableSubmission(
+    const viz::SurfaceId& id,
+    media::VideoTransformation transform,
+    bool force_submit) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If we're switching to |submitter_| from some other client, then tell it.
   if (client_ && client_ != submitter_.get())
     client_->StopUsingProvider();
 
-  submitter_->SetRotation(rotation);
+  submitter_->SetTransform(transform);
   submitter_->SetForceSubmit(force_submit);
   submitter_->EnableSubmission(id);
   client_ = submitter_.get();
@@ -313,10 +314,10 @@ void VideoFrameCompositor::StopForceBeginFrames() {
   submitter_->SetForceBeginFrames(false);
 }
 
-std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
+std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
 VideoFrameCompositor::GetLastPresentedFrameMetadata() {
   auto frame_metadata =
-      std::make_unique<blink::WebMediaPlayer::VideoFramePresentationMetadata>();
+      std::make_unique<WebMediaPlayer::VideoFramePresentationMetadata>();
 
   scoped_refptr<media::VideoFrame> last_frame;
   {
@@ -380,11 +381,6 @@ bool VideoFrameCompositor::ProcessNewFrame(
   }
 
   return true;
-}
-
-void VideoFrameCompositor::UpdateRotation(media::VideoRotation rotation) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  submitter_->SetRotation(rotation);
 }
 
 void VideoFrameCompositor::SetIsPageVisible(bool is_visible) {

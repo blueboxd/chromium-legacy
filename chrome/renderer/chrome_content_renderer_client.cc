@@ -207,16 +207,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
+#include "chrome/renderer/pdf/chrome_pdf_internal_plugin_delegate.h"
 #include "components/pdf/common/internal_plugin_helpers.h"
 #include "components/pdf/renderer/internal_plugin_renderer_helpers.h"
-
-// TODO(crbug.com/1218971): Refactor this; only needed for
-// `chrome_pdf::PdfViewWebPlugin::PrintClient`.
-#include "pdf/pdf_view_web_plugin.h"
-#if BUILDFLAG(ENABLE_PRINTING)
-#include "chrome/renderer/chrome_pdf_view_web_plugin_print_client.h"
-#endif  // BUILDFLAG(ENABLE_PRINTING)
-
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -750,8 +743,20 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
 #if BUILDFLAG(ENABLE_PDF)
   if (plugin_info->actual_mime_type == pdf::kInternalPluginMimeType &&
       pdf::IsInternalPluginExternallyHandled()) {
-    // TODO(crbug.com/1123621): Handle internally if in the PDF content frame.
-    return true;
+    // Only actually treat the internal PDF plugin as externally handled if
+    // used within an origin allowed to create the internal PDF plugin;
+    // otherwise, let Blink try to create the in-process PDF plugin.
+    url::Origin frame_origin = render_frame->GetWebFrame()->GetSecurityOrigin();
+    if (IsPdfInternalPluginAllowedOrigin(frame_origin)) {
+      // TODO(crbug.com/1225756): Until this is fixed, allow Print Preview to
+      // create the in-process plugin directly within its own frames.
+      if (frame_origin ==
+          url::Origin::Create(GURL(chrome::kChromeUIPrintURL))) {
+        DCHECK_EQ(original_url.GetOrigin(), chrome::kChromeUIPrintURL);
+        return false;
+      }
+      return true;
+    }
   }
 #endif  // BUILDFLAG(ENABLE_PDF)
   return ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
@@ -1044,16 +1049,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 #if BUILDFLAG(ENABLE_PDF)
         if (info.name ==
             ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName)) {
-          std::unique_ptr<chrome_pdf::PdfViewWebPlugin::PrintClient>
-              print_client;
-#if BUILDFLAG(ENABLE_PRINTING)
-          print_client =
-              std::make_unique<ChromePdfViewWebPluginPrintClient>(render_frame);
-#endif  // BUILDFLAG(ENABLE_PRINTING)
-          WebPlugin* internal_pdf_plugin = pdf::MaybeCreateInternalPlugin(
-              render_frame, std::move(print_client), params);
-          if (internal_pdf_plugin)
-            return internal_pdf_plugin;
+          return pdf::CreateInternalPlugin(
+              info, std::move(params), render_frame,
+              std::make_unique<ChromePdfInternalPluginDelegate>(render_frame));
         }
 #endif  // BUILDFLAG(ENABLE_PDF)
 

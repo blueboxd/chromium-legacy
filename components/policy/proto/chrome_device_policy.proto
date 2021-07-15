@@ -111,6 +111,11 @@ message NetworkHostnameProto {
   optional string device_hostname_template = 1;
 }
 
+message HostnameUserConfigurableProto {
+  // Determines if user is allowed to configure the device hostname
+  optional bool device_hostname_user_configurable = 1 [default = false];
+}
+
 // Policies to turn on portions of the device status reports.
 // If changed, the default values have to be updated in
 // chrome/browser/chromeos/policy/status_collector/device_status_collector.cc
@@ -143,6 +148,7 @@ message DeviceReportingProto {
   optional bool report_system_info = 25 [default = false];
   optional bool report_print_jobs = 26 [default = false];
   optional bool report_login_logout = 27 [default = false];
+  optional bool report_audio_status = 28 [default = true];
 
   // Frequency to report device status, default to 3 hours.
   // If changed, the default value has to be updated in
@@ -1967,4 +1973,5 @@ message ChromeDeviceSettingsProto {
       device_pci_peripheral_data_access_enabled_v2 = 123;
   optional DeviceRestrictedManagedGuestSessionEnabledProto
       device_restricted_managed_guest_session_enabled = 124;
+  optional HostnameUserConfigurableProto hostname_user_configurable = 125;
 }

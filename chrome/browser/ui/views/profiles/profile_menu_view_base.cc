@@ -46,6 +46,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -649,7 +650,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
     const std::u16string& button_text,
     ui::NativeTheme::ColorId background_color_id,
     const base::RepeatingClosure& action,
-    bool show_badge) {
+    bool show_sync_badge) {
   const int kDescriptionIconSpacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -687,7 +688,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
            .SetDefault(views::kMarginsKey,
                        gfx::Insets(0, kDescriptionIconSpacing));
 
-  if (show_badge) {
+  if (show_sync_badge) {
     description_container->AddChildView(std::make_unique<SyncImageView>(this));
   } else {
     // If there is no image, the description is centered.

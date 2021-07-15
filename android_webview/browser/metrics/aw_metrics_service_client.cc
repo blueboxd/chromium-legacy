@@ -13,6 +13,7 @@
 #include "android_webview/common/metrics/app_package_name_logging_rule.h"
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -67,6 +68,7 @@ AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
   return g_aw_metrics_service_client;
 }
 
+// static
 void AwMetricsServiceClient::SetInstance(
     std::unique_ptr<AwMetricsServiceClient> aw_metrics_service_client) {
   DCHECK(!g_aw_metrics_service_client);
@@ -77,7 +79,7 @@ void AwMetricsServiceClient::SetInstance(
 
 AwMetricsServiceClient::AwMetricsServiceClient(
     std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)) {}
+    : time_created_(base::Time::Now()), delegate_(std::move(delegate)) {}
 
 AwMetricsServiceClient::~AwMetricsServiceClient() = default;
 
@@ -104,20 +106,29 @@ bool AwMetricsServiceClient::ShouldRecordPackageName() {
     return ::metrics::AndroidMetricsServiceClient::ShouldRecordPackageName();
   }
 
+  base::UmaHistogramEnumeration(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      package_name_record_status_);
   return cached_package_name_record_.has_value() &&
          cached_package_name_record_.value().IsAppPackageNameAllowed();
 }
 
 void AwMetricsServiceClient::SetAppPackageNameLoggingRule(
     absl::optional<AppPackageNameLoggingRule> record) {
-  if (!record.has_value())
-    return;
-
   absl::optional<AppPackageNameLoggingRule> cached_record =
       GetCachedAppPackageNameLoggingRule();
+  if (!record.has_value()) {
+    package_name_record_status_ =
+        cached_record.has_value()
+            ? AppPackageNameLoggingRuleStatus::kNewVersionFailedUseCache
+            : AppPackageNameLoggingRuleStatus::kNewVersionFailedNoCache;
+    return;
+  }
 
   if (cached_record.has_value() &&
       record.value().IsSameAs(cached_package_name_record_.value())) {
+    package_name_record_status_ =
+        AppPackageNameLoggingRuleStatus::kSameVersionAsCache;
     return;
   }
 
@@ -126,6 +137,12 @@ void AwMetricsServiceClient::SetAppPackageNameLoggingRule(
   local_state->Set(prefs::kMetricsAppPackageNameLoggingRule,
                    record.value().ToDictionary());
   cached_package_name_record_ = record;
+  package_name_record_status_ =
+      AppPackageNameLoggingRuleStatus::kNewVersionLoaded;
+
+  UmaHistogramTimes(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay",
+      base::Time::Now() - time_created_);
 }
 
 absl::optional<AppPackageNameLoggingRule>
@@ -138,6 +155,10 @@ AwMetricsServiceClient::GetCachedAppPackageNameLoggingRule() {
   DCHECK(local_state);
   cached_package_name_record_ = AppPackageNameLoggingRule::FromDictionary(
       *(local_state->Get(prefs::kMetricsAppPackageNameLoggingRule)));
+  if (cached_package_name_record_.has_value()) {
+    package_name_record_status_ =
+        AppPackageNameLoggingRuleStatus::kNotLoadedUseCache;
+  }
   return cached_package_name_record_;
 }
 
@@ -228,6 +249,18 @@ void JNI_AwMetricsServiceClient_SetOnFinalMetricsCollectedListenerForTesting(
       ->SetOnFinalMetricsCollectedListenerForTesting(base::BindRepeating(
           base::android::RunRunnableAndroid,
           base::android::ScopedJavaGlobalRef<jobject>(listener)));
+}
+
+// static
+void JNI_AwMetricsServiceClient_SetAppPackageNameLoggingRuleForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& version,
+    jlong expiry_date_ms) {
+  AwMetricsServiceClient::GetInstance()->SetAppPackageNameLoggingRule(
+      AppPackageNameLoggingRule(
+          base::Version(base::android::ConvertJavaStringToUTF8(env, version)),
+          base::Time::UnixEpoch() +
+              base::TimeDelta::FromMilliseconds(expiry_date_ms)));
 }
 
 }  // namespace android_webview

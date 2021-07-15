@@ -209,12 +209,6 @@ void CountFiringEventListeners(const Event& event,
   }
 }
 
-void RegisterWithScheduler(ExecutionContext* execution_context,
-                           const AtomicString& event_type) {
-  if (!execution_context || !execution_context->GetScheduler())
-    return;
-}
-
 }  // namespace
 
 EventTargetData::EventTargetData() = default;
@@ -535,8 +529,6 @@ void EventTarget::AddedEventListener(
       }
     }
   }
-
-  RegisterWithScheduler(GetExecutionContext(), event_type);
 
   if (event_util::IsDOMMutationEventType(event_type)) {
     if (ExecutionContext* context = GetExecutionContext()) {
@@ -984,6 +976,11 @@ void EventTarget::DispatchEnqueuedEvent(Event* event,
   }
   probe::AsyncTask async_task(context, event->async_task_id());
   DispatchEvent(*event);
+}
+
+void EventTargetWithInlineData::Trace(Visitor* visitor) const {
+  EventTargetData::Trace(visitor);
+  EventTarget::Trace(visitor);
 }
 
 STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,

@@ -17,7 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
@@ -60,7 +60,7 @@ struct FieldInfo;
 // TODO(crbug.com/1217071): Move PasswordStoreSync to local backend.
 class PasswordStore : protected PasswordStoreSync,
                       public PasswordStoreInterface,
-                      public SmartBubbleStatsStore {
+                      protected SmartBubbleStatsStore {
  public:
   // Used to notify that unsynced credentials are about to be deleted.
   class UnsyncedCredentialsDeletionNotifier {
@@ -108,9 +108,10 @@ class PasswordStore : protected PasswordStoreSync,
       base::OnceClosure completion,
       base::OnceCallback<void(bool)> sync_completion =
           base::NullCallback()) override;
-  void RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                  base::Time delete_end,
-                                  base::OnceClosure completion) override;
+  void RemoveLoginsCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      base::OnceCallback<void(bool)> completion) override;
   void DisableAutoSignInForOrigins(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;
@@ -128,16 +129,6 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveObserver(Observer* observer) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
 
-  // SmartBubbleStatsStore:
-  void AddSiteStats(const InteractionsStats& stats) override;
-  void RemoveSiteStats(const GURL& origin_domain) override;
-  void GetSiteStats(const GURL& origin_domain,
-                    PasswordStoreConsumer* consumer) override;
-  void RemoveStatisticsByOriginAndTime(
-      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
-      base::Time delete_begin,
-      base::Time delete_end,
-      base::OnceClosure completion) override;
 
   // Reports usage metrics for the database. |sync_username|, and
   // |custom_passphrase_sync_enabled|, and |is_under_advanced_protection|
@@ -182,12 +173,6 @@ class PasswordStore : protected PasswordStoreSync,
                              base::Time remove_end,
                              base::OnceClosure completion);
 
-  // Deletes and re-creates the whole PasswordStore, unless it is already empty
-  // anyway. If |completion| is not null, it will be posted to the
-  // |main_task_runner_| once the process is complete. The bool parameter
-  // indicates whether any data was actually cleared.
-  void ClearStore(base::OnceCallback<void(bool)> completion);
-
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
 
@@ -222,6 +207,17 @@ class PasswordStore : protected PasswordStoreSync,
   };
 
   ~PasswordStore() override;
+
+  // SmartBubbleStatsStore:
+  void AddSiteStats(const InteractionsStats& stats) override;
+  void RemoveSiteStats(const GURL& origin_domain) override;
+  void GetSiteStats(const GURL& origin_domain,
+                    PasswordStoreConsumer* consumer) override;
+  void RemoveStatisticsByOriginAndTime(
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
+      base::Time delete_begin,
+      base::Time delete_end,
+      base::OnceClosure completion) override;
 
   // Create a TaskRunner to be saved in |background_task_runner_|.
   virtual scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
@@ -317,8 +313,7 @@ class PasswordStore : protected PasswordStoreSync,
   GetSyncControllerDelegateOnBackgroundSequence() = 0;
 
   // Called by *Internal() methods once the underlying data-modifying operation
-  // has been performed. Notifies observers that password store data may have
-  // been changed.
+  // has been performed.
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
 
   // Invokes callback and notifies observers if there was a change to the list
@@ -350,6 +345,10 @@ class PasswordStore : protected PasswordStoreSync,
   // |success| is true if initialization was successful. Sets the
   // |init_status_|.
   void OnInitCompleted(bool success);
+
+  // Notifies observers that password store data may have been changed.
+  void NotifyLoginsChangedOnMainSequence(
+      const PasswordStoreChangeList& changes);
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   // Invokes |consumer|->OnGetPasswordStoreResults() on the caller's thread with
@@ -390,9 +389,10 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveLoginInternal(const PasswordForm& form);
   void UpdateLoginWithPrimaryKeyInternal(const PasswordForm& new_form,
                                          const PasswordForm& old_primary_key);
-  void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
-                                          base::Time delete_end,
-                                          base::OnceClosure completion);
+  void RemoveLoginsCreatedBetweenInternal(
+      base::Time delete_begin,
+      base::Time delete_end,
+      base::OnceCallback<void(bool)> completion);
   void RemoveStatisticsByOriginAndTimeInternal(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
@@ -412,8 +412,6 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveFieldInfoByTimeInternal(base::Time remove_begin,
                                      base::Time remove_end,
                                      base::OnceClosure completion);
-
-  void ClearStoreInternal(base::OnceCallback<void(bool)> completion);
 
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with
@@ -486,7 +484,7 @@ class PasswordStore : protected PasswordStoreSync,
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // The observers.
-  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
+  base::ObserverList<Observer, /*check_empty=*/true> observers_;
 
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 

@@ -785,13 +785,15 @@ network::mojom::IPAddressSpace CalculateIPAddressSpace(
   return IPAddressSpaceForSpecialScheme(url);
 }
 
-// Returns true if the parent's COEP policy should block a child embedded
-// in an <iframe>.
-bool CoepBlockIframe(
-    network::mojom::CrossOriginEmbedderPolicyValue parent_coep,
-    network::mojom::CrossOriginEmbedderPolicyValue child_coep) {
-  return network::CompatibleWithCrossOriginIsolated(parent_coep) &&
-         !network::CompatibleWithCrossOriginIsolated(child_coep);
+// Returns true if the parent's COEP policy `parent_coep` should block a child
+// embedded in an <iframe> loaded with `child_coep` policy. The `anonymous`
+// parameter reflects whether the child will be loaded as an anonymous document.
+bool CoepBlockIframe(network::mojom::CrossOriginEmbedderPolicyValue parent_coep,
+                     network::mojom::CrossOriginEmbedderPolicyValue child_coep,
+                     bool anonymous) {
+  return !anonymous &&
+         (network::CompatibleWithCrossOriginIsolated(parent_coep) &&
+          !network::CompatibleWithCrossOriginIsolated(child_coep));
 }
 
 // Computes the history offset of the new document compared to the current one.
@@ -1009,7 +1011,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*data_url_as_string=*/std::string(),
 #endif
           /*is_browser_initiated=*/false,
-          frame_tree_node->frame_tree()->is_prerendering(),
           /*web_bundle_physical_url=*/GURL(),
           /*base_url_override_for_web_bundle=*/GURL(),
           /*document_ukm_source_id=*/ukm::kInvalidSourceId,
@@ -1132,7 +1133,6 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           std::string() /* data_url_as_string */,
 #endif
           false /* is_browser_initiated */,
-          frame_tree_node->frame_tree()->is_prerendering(),
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,
           ukm::kInvalidSourceId /* document_ukm_source_id */,
@@ -2957,15 +2957,15 @@ void NavigationRequest::OnResponseStarted(
         cross_origin_embedder_policy.value = parent_coep.value;
 
       if (CoepBlockIframe(parent_coep.report_only_value,
-                          cross_origin_embedder_policy.value)) {
+                          cross_origin_embedder_policy.value, anonymous())) {
         if (parent_coep_reporter) {
           parent_coep_reporter->QueueNavigationReport(redirect_chain_[0],
                                                       /*report_only=*/true);
         }
       }
 
-      if (CoepBlockIframe(parent_coep.value,
-                          cross_origin_embedder_policy.value)) {
+      if (CoepBlockIframe(parent_coep.value, cross_origin_embedder_policy.value,
+                          anonymous())) {
         if (parent_coep_reporter) {
           parent_coep_reporter->QueueNavigationReport(redirect_chain_[0],
                                                       /*report_only=*/false);
@@ -3965,16 +3965,6 @@ void NavigationRequest::CommitErrorPage(
   redirect_chain_.clear();
   redirect_chain_.push_back(GetURL());
 
-  // Set `is_prerendering` here so it's accurate before sending it to the
-  // renderer, as it may be out of sync with the source of truth which is the
-  // frame tree state. The frame tree may have changed if activation happened
-  // while this navigation is occurring in an iframe.
-  // TODO(crbug.com/1189481): With MPArch, the NavigationRequest should be
-  // notified when it transfers frame trees, and commit_params should be updated
-  // then.
-  commit_params_->is_prerendering =
-      frame_tree_node_->frame_tree()->is_prerendering();
-
   ReadyToCommitNavigation(true /* is_error */);
 
   // Use a separate cache shard, and no cookies, for error pages.
@@ -4144,16 +4134,6 @@ void NavigationRequest::CommitNavigation() {
       web_bundle_handle_.reset();
     }
   }
-
-  // Set `is_prerendering` here so it's accurate before sending it to the
-  // renderer, as it may be out of sync with the source of truth which is the
-  // frame tree state. The frame tree may have changed if activation happened
-  // while this navigation is occurring in an iframe.
-  // TODO(crbug.com/1189481): With MPArch, the NavigationRequest should be
-  // notified when it transfers frame trees, and commit_params should be updated
-  // then.
-  commit_params_->is_prerendering =
-      frame_tree_node_->frame_tree()->is_prerendering();
 
   if (!IsSameDocument())
     GetNavigationController()->PopulateAppHistoryEntryVectors(this);
@@ -6335,6 +6315,9 @@ NavigationRequest::EnforceCOEP() {
   // https://html.spec.whatwg.org/#check-a-navigation-response's-adherence-to-its-embedder-policy
   auto* parent_frame = GetParentFrame();
   if (!parent_frame) {
+    return absl::nullopt;
+  }
+  if (anonymous()) {
     return absl::nullopt;
   }
   const auto& url = common_params_->url;

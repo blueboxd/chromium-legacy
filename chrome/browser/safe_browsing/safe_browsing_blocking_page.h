@@ -36,14 +36,20 @@
 #include "components/safe_browsing/content/browser/base_blocking_page.h"
 #include "components/safe_browsing/content/browser/base_ui_manager.h"
 
+namespace history {
+class HistoryService;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
 
-class SafeBrowsingBlockingPageFactory;
+class SafeBrowsingNavigationObserverManager;
+class SafeBrowsingMetricsCollector;
 class ThreatDetails;
+class TriggerManager;
 
 class SafeBrowsingBlockingPage : public BaseBlockingPage {
  public:
@@ -54,22 +60,6 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
       kTypeForTesting;
 
   ~SafeBrowsingBlockingPage() override;
-
-  // Creates a blocking page. |should_trigger_reporting| controls whether a
-  // safe browsing extended reporting report will be created for this blocking
-  // page.
-  static SafeBrowsingBlockingPage* CreateBlockingPage(
-      BaseUIManager* ui_manager,
-      content::WebContents* web_contents,
-      const GURL& main_frame_url,
-      const UnsafeResource& unsafe_resource,
-      bool should_trigger_reporting);
-
-  // Makes the passed |factory| the factory used to instantiate
-  // SafeBrowsingBlockingPage objects. Useful for tests.
-  static void RegisterFactory(SafeBrowsingBlockingPageFactory* factory) {
-    factory_ = factory;
-  }
 
   // SecurityInterstitialPage method:
   security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
@@ -102,6 +92,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 
   // Don't instantiate this class directly, use CreateBlockingPage instead.
+  // |trigger_manager| may be null, in which case reporting will not occur.
   SafeBrowsingBlockingPage(
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
@@ -112,6 +103,10 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
           controller_client,
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
       bool should_trigger_reporting,
+      history::HistoryService* history_service,
+      SafeBrowsingNavigationObserverManager* navigation_observer_manager,
+      SafeBrowsingMetricsCollector* metrics_collector,
+      TriggerManager* trigger_manager,
       network::SharedURLLoaderFactory* url_loader_for_testing = nullptr);
 
   // Called when an interstitial is closed, either due to a click through or a
@@ -132,12 +127,11 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
 
   // The threat source that triggers the blocking page.
   ThreatSource threat_source_;
-
-  // The factory used to instantiate SafeBrowsingBlockingPage objects.
-  // Useful for tests, so they can provide their own implementation of
-  // SafeBrowsingBlockingPage.
-  static SafeBrowsingBlockingPageFactory* factory_;
  private:
+  history::HistoryService* history_service_ = nullptr;
+  SafeBrowsingNavigationObserverManager* navigation_observer_manager_ = nullptr;
+  SafeBrowsingMetricsCollector* metrics_collector_ = nullptr;
+  TriggerManager* trigger_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };

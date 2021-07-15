@@ -4182,6 +4182,9 @@
         'tast_expr': '("group:mainline" && "dep:lacros")',
         'timeout_sec': 10800,
       },
+      'ozone_unittests': {
+        'timeout_sec': 10800,
+      },
     },
 
     'layout_ng_gtests': {
@@ -7303,6 +7306,7 @@
       'linux_lacros_chrome_browsertests_version_skew': {
         'variants': [
           'LACROS_VERSION_SKEW_CANARY',
+          'LACROS_VERSION_SKEW_DEV',
         ]
       },
     },

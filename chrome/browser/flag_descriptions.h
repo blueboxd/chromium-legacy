@@ -108,6 +108,9 @@ extern const char kForceStartupSigninPromoDescription[];
 extern const char kDetectedSourceLanguageOptionName[];
 extern const char kDetectedSourceLanguageOptionDescription[];
 
+extern const char kLauncherAppSortName[];
+extern const char kLauncherAppSortDescription[];
+
 extern const char kDetectFormSubmissionOnFormClearName[];
 extern const char kDetectFormSubmissionOnFormClearDescription[];
 
@@ -156,6 +159,12 @@ extern const char kAndroidPictureInPictureAPIDescription[];
 
 extern const char kAppCacheName[];
 extern const char kAppCacheDescription[];
+
+extern const char kAssistantExplicitVoiceConsentName[];
+extern const char kAssistantExplicitVoiceConsentDescription[];
+
+extern const char kAssistantVoiceConstentTapsCounterName[];
+extern const char kAssistantVoiceConstentTapsCounterDescription[];
 
 extern const char kAutofillAlwaysReturnCloudTokenizedCardName[];
 extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
@@ -726,9 +735,6 @@ extern const char kExtensionContentVerificationBootstrap[];
 extern const char kExtensionContentVerificationEnforce[];
 extern const char kExtensionContentVerificationEnforceStrict[];
 
-extern const char kExtensionsCheckupName[];
-extern const char kExtensionsCheckupDescription[];
-
 extern const char kExtensionsOnChromeUrlsName[];
 extern const char kExtensionsOnChromeUrlsDescription[];
 
@@ -1070,6 +1076,9 @@ extern const char kOmniboxMaxZeroSuggestMatchesDescription[];
 
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
+
+extern const char kOmniboxUpdatedConnectionSecurityIndicatorsName[];
+extern const char kOmniboxUpdatedConnectionSecurityIndicatorsDescription[];
 
 extern const char kOmniboxMaxURLMatchesName[];
 extern const char kOmniboxMaxURLMatchesDescription[];
@@ -1978,6 +1987,11 @@ extern const char kRequestDesktopSiteForTabletsDescription[];
 extern const char kSafeBrowsingClientSideDetectionAndroidName[];
 extern const char kSafeBrowsingClientSideDetectionAndroidDescription[];
 
+extern const char
+    kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidName[];
+extern const char
+    kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroidDescription[];
+
 extern const char kEnhancedProtectionPromoAndroidName[];
 extern const char kEnhancedProtectionPromoAndroidDescription[];
 
@@ -2127,6 +2141,9 @@ extern const char kNtpModulesDragAndDropDescription[];
 
 extern const char kNtpModulesRedesignedName[];
 extern const char kNtpModulesRedesignedDescription[];
+
+extern const char kNtpRealboxSuggestionAnswersName[];
+extern const char kNtpRealboxSuggestionAnswersDescription[];
 
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
@@ -2472,6 +2489,9 @@ extern const char kDisableOfficeEditingComponentAppDescription[];
 
 extern const char kDoubleTapToZoomInTabletModeName[];
 extern const char kDoubleTapToZoomInTabletModeDescription[];
+
+extern const char kQuickSettingsPWANotificationsName[];
+extern const char kQuickSettingsPWANotificationsDescription[];
 
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];

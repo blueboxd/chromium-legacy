@@ -28,6 +28,7 @@
               "external/wpt/css/css-animations",
               "external/wpt/css/css-scroll-snap",
               "external/wpt/css/css-transforms/animation",
+              "external/wpt/css/css-transforms/individual-transform/animation",
               "external/wpt/feature-policy/experimental-features",
               "external/wpt/permissions-policy/experimental-features",
               "external/wpt/html/canvas/offscreen/manual/convert-to-blob",
@@ -341,6 +342,7 @@
     "prefix": "layout_ng_block_frag",
     "bases": ["external/wpt/css/css-break",
               "external/wpt/css/css-contain",
+              "external/wpt/css/css-position/static-position/multicol",
               "external/wpt/css/css-multicol",
               "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
               "fast/forms/fieldset",
@@ -1135,18 +1137,14 @@
   {
     "prefix": "anonymous-iframe",
     "bases": ["webexposed/element-instance-property-listing.html",
-              "webexposed/global-interface-listing.html"],
+              "webexposed/global-interface-listing.html",
+              "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe/"],
     "args": ["--enable-blink-features=AnonymousIframe"]
   },
   {
     "prefix": "popup-disabled",
     "bases": [],
     "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "playback_speed_button",
-    "bases": ["http/tests/media/controls", "media/controls"],
-    "args": [ "--enable-features=PlaybackSpeedButton" ]
   },
   {
     "prefix": "dialogfocus-old-behavior",

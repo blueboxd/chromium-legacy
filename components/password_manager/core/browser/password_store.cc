@@ -70,8 +70,7 @@ std::vector<PasswordFormDigest> ConvertToForms(
 
 }  // namespace
 
-PasswordStore::PasswordStore()
-    : observers_(new base::ObserverListThreadSafe<Observer>()) {}
+PasswordStore::PasswordStore() = default;
 
 bool PasswordStore::Init(PrefService* prefs,
                          base::RepeatingClosure sync_enabled_or_disabled_cb) {
@@ -137,9 +136,10 @@ void PasswordStore::RemoveLoginsByURLAndTime(
       std::move(completion), std::move(sync_completion));
 }
 
-void PasswordStore::RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                               base::Time delete_end,
-                                               base::OnceClosure completion) {
+void PasswordStore::RemoveLoginsCreatedBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    base::OnceCallback<void(bool)> completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(
       base::BindOnce(&PasswordStore::RemoveLoginsCreatedBetweenInternal, this,
@@ -233,36 +233,6 @@ SmartBubbleStatsStore* PasswordStore::GetSmartBubbleStatsStore() {
   return this;
 }
 
-void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(&PasswordStore::AddSiteStatsImpl, this, stats));
-}
-
-void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(
-      base::BindOnce(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
-}
-
-void PasswordStore::GetSiteStats(const GURL& origin_domain,
-                                 PasswordStoreConsumer* consumer) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  PostStatsTaskAndReplyToConsumerWithResult(
-      consumer,
-      base::BindOnce(&PasswordStore::GetSiteStatsImpl, this, origin_domain));
-}
-
-void PasswordStore::RemoveStatisticsByOriginAndTime(
-    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
-    base::Time delete_begin,
-    base::Time delete_end,
-    base::OnceClosure completion) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(
-      &PasswordStore::RemoveStatisticsByOriginAndTimeInternal, this,
-      origin_filter, delete_begin, delete_end, std::move(completion)));
-}
-
 void PasswordStore::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled,
                                   bool is_under_advanced_protection) {
@@ -352,18 +322,12 @@ void PasswordStore::RemoveFieldInfoByTime(base::Time remove_begin,
                               std::move(completion)));
 }
 
-void PasswordStore::ClearStore(base::OnceCallback<void(bool)> completion) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(&PasswordStore::ClearStoreInternal, this,
-                              std::move(completion)));
-}
-
 void PasswordStore::AddObserver(Observer* observer) {
-  observers_->AddObserver(observer);
+  observers_.AddObserver(observer);
 }
 
 void PasswordStore::RemoveObserver(Observer* observer) {
-  observers_->RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 bool PasswordStore::ScheduleTask(base::OnceClosure task) {
@@ -400,6 +364,36 @@ PasswordStore::~PasswordStore() {
   DCHECK(shutdown_called_);
 }
 
+void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(base::BindOnce(&PasswordStore::AddSiteStatsImpl, this, stats));
+}
+
+void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
+}
+
+void PasswordStore::GetSiteStats(const GURL& origin_domain,
+                                 PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  PostStatsTaskAndReplyToConsumerWithResult(
+      consumer,
+      base::BindOnce(&PasswordStore::GetSiteStatsImpl, this, origin_domain));
+}
+
+void PasswordStore::RemoveStatisticsByOriginAndTime(
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
+    base::Time delete_begin,
+    base::Time delete_end,
+    base::OnceClosure completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(base::BindOnce(
+      &PasswordStore::RemoveStatisticsByOriginAndTimeInternal, this,
+      origin_filter, delete_begin, delete_end, std::move(completion)));
+}
+
 scoped_refptr<base::SequencedTaskRunner>
 PasswordStore::CreateBackgroundTaskRunner() const {
   return base::ThreadPool::CreateSequencedTaskRunner(
@@ -410,8 +404,10 @@ void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   if (!changes.empty()) {
-    observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged,
-                       base::RetainedRef(this), changes);
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&PasswordStore::NotifyLoginsChangedOnMainSequence, this,
+                       changes));
   }
 }
 
@@ -428,6 +424,18 @@ void PasswordStore::OnInitCompleted(bool success) {
   base::UmaHistogramBoolean("PasswordManager.PasswordStoreInitResult", success);
   TRACE_EVENT_NESTABLE_ASYNC_END0(
       "passwords", "PasswordStore::InitOnBackgroundSequence", this);
+}
+
+void PasswordStore::NotifyLoginsChangedOnMainSequence(
+    const PasswordStoreChangeList& changes) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+
+  if (changes.empty())
+    return;
+
+  for (auto& observer : observers_) {
+    observer.OnLoginsChanged(this, changes);
+  }
 }
 
 void PasswordStore::PostLoginsTaskAndReplyToConsumerWithResult(
@@ -530,7 +538,7 @@ void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
 void PasswordStore::RemoveLoginsCreatedBetweenInternal(
     base::Time delete_begin,
     base::Time delete_end,
-    base::OnceClosure completion) {
+    base::OnceCallback<void(bool)> completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords",
                "PasswordStore::RemoveLoginsCreatedBetweenInternal");
@@ -543,8 +551,10 @@ void PasswordStore::RemoveLoginsCreatedBetweenInternal(
   // sync codebase needs to update metadata atomically together with the login
   // data.
   CommitTransaction();
-  if (completion)
-    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
+  if (completion) {
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(completion), !changes.empty()));
+  }
 }
 
 void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(
@@ -594,18 +604,6 @@ void PasswordStore::RemoveFieldInfoByTimeInternal(
   RemoveFieldInfoByTimeImpl(remove_begin, remove_end);
   if (completion)
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
-}
-
-void PasswordStore::ClearStoreInternal(
-    base::OnceCallback<void(bool)> completion) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  bool should_clear = !IsEmpty();
-  if (should_clear)
-    DeleteAndRecreateDatabaseFile();
-  if (completion) {
-    main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(completion), should_clear));
-  }
 }
 
 std::vector<std::unique_ptr<PasswordForm>> PasswordStore::GetLoginsImpl(

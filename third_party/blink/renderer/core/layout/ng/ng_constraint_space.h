@@ -458,13 +458,13 @@ class CORE_EXPORT NGConstraintSpace final {
   bool IsFixedBlockSize() const { return bitfields_.is_fixed_block_size; }
 
   // The constraint space can have any of the combinations:
-  // (1) !IsFixedBlockSize && !IsFixedBlockSizeIndefinite -- default
-  // (2) !IsFixedBlockSize && IsFixedBlockSizeIndefinite -- Treat your height as
-  //     indefinite when calculating your intrinsic block size.
-  // (3) IsFixedBlockSize && !IsFixedBlockSizeIndefinite -- You must be this
+  // (1) !IsFixedBlockSize && !IsInitialBlockSizeIndefinite -- default
+  // (2) !IsFixedBlockSize && IsInitialBlockSizeIndefinite -- Treat your height
+  //     as indefinite when calculating your intrinsic block size.
+  // (3) IsFixedBlockSize && !IsInitialBlockSizeIndefinite -- You must be this
   //     size and your children can resolve % block size against it.
-  // (4) IsFixedBlockSize && IsFixedBlockSizeIndefinite -- You must be this
-  //     size but your children canNOT resolve % block size against it.
+  // (4) IsFixedBlockSize && IsInitialBlockSizeIndefinite -- You must be this
+  //     size but your children *cannot* resolve % block size against it.
   //
   // The layout machinery (CalculateChildPercentageSize,
   // CalculateInitialFragmentGeometry, etc) handles all this, so individual
@@ -472,9 +472,8 @@ class CORE_EXPORT NGConstraintSpace final {
   // specified block sizes influence the value passed to
   // SetIntrinsicBlock(intrinsic_block_size). If that happens, they need to
   // explicitly handle case 2 above.
-  // TODO(dgrogan): This method needs a new name now that #2 above exists.
-  bool IsFixedBlockSizeIndefinite() const {
-    return bitfields_.is_fixed_block_size_indefinite;
+  bool IsInitialBlockSizeIndefinite() const {
+    return bitfields_.is_initial_block_size_indefinite;
   }
 
   // Returns the behavior of an 'auto' inline/block main-size.
@@ -494,11 +493,10 @@ class CORE_EXPORT NGConstraintSpace final {
   // If this is a child of a table-cell.
   bool IsTableCellChild() const { return bitfields_.is_table_cell_child; }
 
-  // If we should apply the restricted block-size measuring behavior. See where
-  // this is set within |NGBlockLayoutAlgorithm| for the conditions when this
-  // applies.
-  bool IsMeasuringRestrictedBlockSizeTableCellChild() const {
-    return bitfields_.is_measuring_restricted_block_size_table_cell_child;
+  // If we should apply the restricted block-size behavior. See where this is
+  // set within |NGBlockLayoutAlgorithm| for the conditions when this applies.
+  bool IsRestrictedBlockSizeTableCellChild() const {
+    return bitfields_.is_restricted_block_size_table_cell_child;
   }
 
   bool IsPaintedAtomically() const { return bitfields_.is_painted_atomically; }
@@ -1342,9 +1340,9 @@ class CORE_EXPORT NGConstraintSpace final {
               static_cast<unsigned>(NGAutoBehavior::kFitContent)),
           is_fixed_inline_size(false),
           is_fixed_block_size(false),
-          is_fixed_block_size_indefinite(false),
+          is_initial_block_size_indefinite(false),
           is_table_cell_child(false),
-          is_measuring_restricted_block_size_table_cell_child(false),
+          is_restricted_block_size_table_cell_child(false),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
@@ -1372,11 +1370,11 @@ class CORE_EXPORT NGConstraintSpace final {
     bool AreBlockSizeConstraintsEqual(const Bitfields& other) const {
       return block_auto_behavior == other.block_auto_behavior &&
              is_fixed_block_size == other.is_fixed_block_size &&
-             is_fixed_block_size_indefinite ==
-                 other.is_fixed_block_size_indefinite &&
+             is_initial_block_size_indefinite ==
+                 other.is_initial_block_size_indefinite &&
              is_table_cell_child == other.is_table_cell_child &&
-             is_measuring_restricted_block_size_table_cell_child ==
-                 other.is_measuring_restricted_block_size_table_cell_child;
+             is_restricted_block_size_table_cell_child ==
+                 other.is_restricted_block_size_table_cell_child;
     }
 
     unsigned has_rare_data : 1;
@@ -1403,9 +1401,9 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned block_auto_behavior : 2;   // NGAutoBehavior
     unsigned is_fixed_inline_size : 1;
     unsigned is_fixed_block_size : 1;
-    unsigned is_fixed_block_size_indefinite : 1;
+    unsigned is_initial_block_size_indefinite : 1;
     unsigned is_table_cell_child : 1;
-    unsigned is_measuring_restricted_block_size_table_cell_child : 1;
+    unsigned is_restricted_block_size_table_cell_child : 1;
 
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage
     unsigned percentage_block_storage : 2;            // NGPercentageStorage

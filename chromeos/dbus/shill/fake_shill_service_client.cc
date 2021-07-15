@@ -525,10 +525,10 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   ShillProfileClient::TestInterface* profile_test =
       ShillProfileClient::Get()->GetTestInterface();
   if (property == shill::kProfileProperty) {
-    std::string profile_path;
-    if (value.GetAsString(&profile_path)) {
-      if (!profile_path.empty())
-        profile_test->AddService(profile_path, service_path);
+    const std::string* profile_path = value.GetIfString();
+    if (profile_path) {
+      if (!profile_path->empty())
+        profile_test->AddService(*profile_path, service_path);
     } else {
       LOG(ERROR) << "Profile value is not a String!";
     }
@@ -541,10 +541,8 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
 
   // Notify the Manager if the state changed (affects DefaultService).
   if (property == shill::kStateProperty) {
-    std::string state;
-    value.GetAsString(&state);
     ShillManagerClient::Get()->GetTestInterface()->ServiceStateChanged(
-        service_path, state);
+        service_path, value.is_string() ? value.GetString() : std::string());
   }
 
   // If the State or Visibility changes, the sort order of service lists may
@@ -613,7 +611,7 @@ bool FakeShillServiceClient::ClearConfiguredServiceProperties(
 
 std::string FakeShillServiceClient::FindServiceMatchingGUID(
     const std::string& guid) {
-  for (const auto& service_pair : stub_services_.DictItems()) {
+  for (const auto service_pair : stub_services_.DictItems()) {
     const auto& service_path = service_pair.first;
     const auto& service_properties = service_pair.second;
 
@@ -633,7 +631,7 @@ std::string FakeShillServiceClient::FindSimilarService(
   if (!template_type)
     return std::string();
 
-  for (const auto& service_pair : stub_services_.DictItems()) {
+  for (const auto service_pair : stub_services_.DictItems()) {
     const auto& service_path = service_pair.first;
     const auto& service_properties = service_pair.second;
 

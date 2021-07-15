@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/accelerators.h"
-#include "ash/shortcut_viewer/keyboard_shortcut_item.h"
+#include "ash/public/cpp/keyboard_shortcut_item.h"
 #include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "base/hash/md5.h"
 #include "base/macros.h"
@@ -23,9 +23,9 @@
 namespace {
 
 // The total number of Ash accelerators.
-constexpr int kAshAcceleratorsTotalNum = 122;
+constexpr int kAshAcceleratorsTotalNum = 123;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "d98f8f70fdb27653e43fca2cafeee1ca";
+constexpr char kAshAcceleratorsHash[] = "2eb0030cecca7fdf9ea2ec181f02ce43";
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).
@@ -106,15 +106,13 @@ std::string HashChromeAcceleratorMapping(
   return MD5DigestToBase16(digest);
 }
 
-std::string AcceleratorIdToString(
-    const keyboard_shortcut_viewer::AcceleratorId& accelerator_id) {
+std::string AcceleratorIdToString(const ash::AcceleratorId& accelerator_id) {
   return base::StringPrintf("keycode=%d ", accelerator_id.keycode) +
          ModifiersToString(accelerator_id.modifiers);
 }
 
 std::string AcceleratorIdsToString(
-    const std::vector<keyboard_shortcut_viewer::AcceleratorId>&
-        accelerator_ids) {
+    const std::vector<ash::AcceleratorId>& accelerator_ids) {
   std::vector<std::string> msgs;
   for (const auto& id : accelerator_ids)
     msgs.emplace_back(AcceleratorIdToString(id));
@@ -142,10 +140,10 @@ class KeyboardShortcutViewerMetadataTest : public testing::Test {
 
  protected:
   // Ash accelerator ids.
-  std::set<keyboard_shortcut_viewer::AcceleratorId> ash_accelerator_ids_;
+  std::set<ash::AcceleratorId> ash_accelerator_ids_;
 
   // Chrome accelerator ids.
-  std::set<keyboard_shortcut_viewer::AcceleratorId> chrome_accelerator_ids_;
+  std::set<ash::AcceleratorId> chrome_accelerator_ids_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutViewerMetadataTest);
@@ -185,7 +183,7 @@ TEST_F(KeyboardShortcutViewerMetadataTest, CheckAcceleratorIdHasAccelerator) {
 
 // Test that AcceleratorIds have no duplicates.
 TEST_F(KeyboardShortcutViewerMetadataTest, CheckAcceleratorIdsNoDuplicates) {
-  std::set<keyboard_shortcut_viewer::AcceleratorId> accelerator_ids;
+  std::set<ash::AcceleratorId> accelerator_ids;
   for (const auto& shortcut_item :
        keyboard_shortcut_viewer::GetKeyboardShortcutItemList()) {
     for (const auto& accelerator_id : shortcut_item.accelerator_ids) {

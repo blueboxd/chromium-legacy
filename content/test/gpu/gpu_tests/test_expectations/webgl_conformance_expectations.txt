@@ -487,6 +487,9 @@ crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/asin/asin_001_to_006.html [ Failure ]
 crbug.com/1227129 [ mac angle-metal passthrough ] conformance/glsl/misc/ternary-operators-in-initializers.html [ Failure ]
 
+# Mac / Passthrough command decoder / Metal / AMD
+crbug.com/1227767 [ bigsur amd-0x6821 angle-metal passthrough ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
+
 # Mac / Passthrough command decoder / Metal / Intel
 crbug.com/1144258 [ mac angle-metal passthrough intel-0x3e9b ] conformance/glsl/functions/glsl-function-atan-xy.html [ Failure ]
 crbug.com/angleproject/4846 [ mac angle-metal passthrough intel ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
@@ -857,3 +860,7 @@ crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/mis
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
 crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
 crbug.com/1190853 [ mac angle-swiftshader passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
+
+#######################################################################
+# Automated Entries After This Point - Do Not Manually Add Below Here #
+#######################################################################

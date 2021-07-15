@@ -1923,7 +1923,8 @@ class AuditorUI:
     The compiled proto is located ${self.build_path}/pyproto/ and generated
     as a part of compiling Chrome."""
     # Use the build path to import the compiled traffic annotation proto.
-    proto_path = self.build_path / "pyproto" / "tools" / "traffic_annotation"
+    proto_path = (self.build_path / "pyproto" / "chrome" / "browser" /
+                  "privacy")
     sys.path.insert(0, str(proto_path))
 
     try:
@@ -2014,6 +2015,7 @@ if __name__ == "__main__":
       action="store_true")
   args_parser.add_argument("--limit",
                            default=5,
+                           type=int,
                            help="Limit for the maximum number of returned "
                            " errors. Use 0 for unlimited.")
   args_parser.add_argument("--annotations-file",

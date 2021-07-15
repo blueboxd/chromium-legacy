@@ -38,6 +38,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/smhasher/src/MurmurHash2.h"
 #include "url/gurl.h"
 
@@ -234,7 +235,7 @@ namespace apps {
 WebApkInstallTask::WebApkInstallTask(Profile* profile,
                                      const std::string& app_id)
     : profile_(profile),
-      web_app_provider_(web_app::WebAppProvider::GetForWebApps(profile_)),
+      web_app_provider_(web_app::WebAppProvider::Get(profile_)),
       app_id_(app_id),
       package_name_to_update_(
           webapk_prefs::GetWebApkPackageName(profile_, app_id_)),

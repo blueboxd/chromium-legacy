@@ -1645,9 +1645,12 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
 void HistoryBackend::QueryHistoryText(const std::u16string& text_query,
                                       const QueryOptions& options,
                                       QueryResults* result) {
-  URLRows text_matches;
-  db_->GetTextMatchesWithAlgorithm(text_query, options.matching_algorithm,
-                                   &text_matches);
+  URLRows text_matches =
+      options.host_only
+          ? GetMatchesForHost(text_query)
+          : db_->GetTextMatchesWithAlgorithm(
+                text_query, options.matching_algorithm.value_or(
+                                query_parser::MatchingAlgorithm::DEFAULT));
 
   std::vector<URLResult> matching_visits;
   VisitVector visits;  // Declare outside loop to prevent re-construction.
@@ -1681,6 +1684,23 @@ void HistoryBackend::QueryHistoryText(const std::u16string& text_query,
 
   if (!has_more_results && options.begin_time <= first_recorded_time_)
     result->set_reached_beginning(true);
+}
+
+URLRows HistoryBackend::GetMatchesForHost(const std::u16string& host_name) {
+  URLRows results;
+  URLDatabase::URLEnumerator iter;
+
+  if (db_ && db_->InitURLEnumeratorForEverything(&iter)) {
+    URLRow row;
+    std::string host_name_utf8 = base::UTF16ToUTF8(host_name);
+    while (iter.GetNextURL(&row)) {
+      if (row.url().is_valid() && row.url().host() == host_name_utf8) {
+        results.push_back(std::move(row));
+      }
+    }
+  }
+
+  return results;
 }
 
 RedirectList HistoryBackend::QueryRedirectsFrom(const GURL& from_url) {
@@ -2407,6 +2427,10 @@ void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
   delegate_->NotifyURLsDeleted(std::move(deletion_info));
 }
 
+void HistoryBackend::NotifyVisitDeleted(const VisitRow& visit) {
+  tracker_.RemoveVisitById(visit.visit_id);
+}
+
 // Deleting --------------------------------------------------------------------
 
 void HistoryBackend::DeleteAllHistory() {
@@ -2457,6 +2481,8 @@ void HistoryBackend::DeleteAllHistory() {
   kept_url_rows.clear();
 
   db_->GetStartDate(&first_recorded_time_);
+
+  tracker_.Clear();
 
   // Send out the notification that history is cleared. The in-memory database
   // will pick this up and clear itself.

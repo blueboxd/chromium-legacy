@@ -62,7 +62,7 @@ public class SyncErrorCardPreferenceTest {
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(5).build();
+            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(6).build();
 
     private FakeSyncServiceImpl mFakeSyncServiceImpl;
 
@@ -301,7 +301,6 @@ public class SyncErrorCardPreferenceTest {
     }
 
     private View getPersonalizedSyncPromoView() {
-        return mSettingsActivityTestRule.getActivity().findViewById(
-                R.id.signin_promo_view_container);
+        return mSettingsActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_wrapper);
     }
 }

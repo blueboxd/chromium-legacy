@@ -58,7 +58,7 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -947,7 +947,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     options->crash_report_info_fetcher =
         base::BindRepeating(&GetEmptyCrashReportInfo);
     options->app_info_generator = std::make_unique<policy::AppInfoGenerator>(
-        base::TimeDelta::FromDays(0));
+        nullptr, base::TimeDelta::FromDays(0));
     return options;
   }
 
@@ -3608,8 +3608,8 @@ TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {
   MockRegularUserWithAffiliation(account_id, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceAppInfo, true);
-  status_collector_->GetAffiliatedSessionServiceForTesting()
-      ->OnUserProfileLoaded(account_id);
+  status_collector_->GetManagedSessionServiceForTesting()->OnUserProfileLoaded(
+      account_id);
   auto* app_proxy =
       apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get());
   auto app1 = apps::mojom::App::New();

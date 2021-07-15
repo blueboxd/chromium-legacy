@@ -620,6 +620,7 @@
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "chrome/browser/pdf/chrome_pdf_stream_delegate.h"
+#include "chrome/common/pdf_util.h"
 #include "components/pdf/browser/pdf_navigation_throttle.h"
 #include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
 #include "components/pdf/common/internal_plugin_helpers.h"
@@ -3360,15 +3361,14 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
           browser->app_controller()->HasAppId()) {
         const web_app::AppId& app_id = browser->app_controller()->GetAppId();
         const web_app::WebAppRegistrar& registrar =
-            web_app::WebAppProvider::GetForWebApps(profile)->registrar();
+            web_app::WebAppProvider::Get(profile)->registrar();
         if (registrar.IsLocallyInstalled(app_id))
           web_prefs->web_app_scope = registrar.GetAppScope(app_id);
 
         if (browser->app_controller()->is_for_system_web_app()) {
           auto system_app_type = browser->app_controller()->system_app_type();
           const web_app::SystemWebAppManager& system_web_app_manager =
-              web_app::WebAppProvider::GetForWebApps(profile)
-                  ->system_web_app_manager();
+              web_app::WebAppProvider::Get(profile)->system_web_app_manager();
           web_prefs->allow_scripts_to_close_windows =
               system_web_app_manager.AllowScriptsToCloseWindows(
                   system_app_type.value());
@@ -3787,6 +3787,11 @@ std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
       CHECK(0);
       return std::wstring();
   }
+}
+
+std::wstring
+ChromeContentBrowserClient::GetLPACCapabilityNameForNetworkService() {
+  return std::wstring(L"lpacChromeNetworkSandbox");
 }
 
 // Note: Only use sparingly to add Chrome specific sandbox functionality here.
@@ -5842,22 +5847,7 @@ bool ChromeContentBrowserClient::ShouldAllowPluginCreation(
     const content::PepperPluginInfo& plugin_info) {
 #if BUILDFLAG(ENABLE_PDF)
   if (plugin_info.name == ChromeContentClient::kPDFInternalPluginName) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    // Allow embedding the internal PDF plugin in the built-in PDF extension.
-    if (embedder_origin.scheme() == extensions::kExtensionScheme &&
-        embedder_origin.host() == extension_misc::kPdfExtensionId) {
-      return true;
-    }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-    // Allow embedding the internal PDF plugin in chrome://print.
-    if (embedder_origin == url::Origin::Create(GURL(chrome::kChromeUIPrintURL)))
-      return true;
-
-    // Only allow the PDF plugin in the known, trustworthy origins that are
-    // allowlisted above.  See also https://crbug.com/520422 and
-    // https://crbug.com/1027173.
-    return false;
+    return IsPdfInternalPluginAllowedOrigin(embedder_origin);
   }
 #endif  // BUILDFLAG(ENABLE_PDF)
 

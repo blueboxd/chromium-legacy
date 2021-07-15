@@ -46,15 +46,30 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_M92/chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v93.0.4573.0/test_ash_chrome',
     ],
-    'identifier': 'Lacros version skew testing ash 92.0.4499.0',
+    'identifier': 'Lacros version skew testing ash 93.0.4573.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_M92',
-          'revision': 'version:92.0.4499.0',
+          'location': 'lacros_version_skew_tests_v93.0.4573.0',
+          'revision': 'version:93.0.4573.0',
+        },
+      ],
+    },
+  },
+  'LACROS_VERSION_SKEW_DEV': {
+    'args': [
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v93.0.4570.0/test_ash_chrome',
+    ],
+    'identifier': 'Lacros version skew testing ash 93.0.4570.0',
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
+          'location': 'lacros_version_skew_tests_v93.0.4570.0',
+          'revision': 'version:93.0.4570.0',
         },
       ],
     },
@@ -416,7 +431,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.98',
+          'revision': 'version:92.0.4515.101',
         }
       ],
     },
@@ -440,7 +455,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.162',
+          'revision': 'version:91.0.4472.164',
         }
       ],
     },
@@ -488,7 +503,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.98',
+          'revision': 'version:92.0.4515.101',
         }
       ],
     },
@@ -512,7 +527,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.162',
+          'revision': 'version:91.0.4472.164',
         }
       ],
     },
@@ -560,7 +575,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M92',
-          'revision': 'version:92.0.4515.98',
+          'revision': 'version:92.0.4515.101',
         }
       ],
     },
@@ -584,7 +599,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M91',
-          'revision': 'version:91.0.4472.162',
+          'revision': 'version:91.0.4472.164',
         }
       ],
     },
@@ -616,35 +631,35 @@
   'CROS_ATLAS_TOT': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R93-14052.0.0',
+      'cros_img': 'atlas-release/R93-14083.0.0',
     },
     'identifier': 'ATLAS_TOT',
   },
   'CROS_ATLAS_TOT-1': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R92-13982.38.0',
+      'cros_img': 'atlas-release/R92-13982.52.0',
     },
     'identifier': 'ATLAS_TOT-1',
   },
   'CROS_EVE_TOT': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R93-14052.0.0',
+      'cros_img': 'eve-release/R93-14083.0.0',
     },
     'identifier': 'EVE_TOT',
   },
   'CROS_EVE_TOT-1': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R92-13982.38.0',
+      'cros_img': 'eve-release/R92-13982.52.0',
     },
     'identifier': 'EVE_TOT-1',
   },
   'CROS_KEVIN_TOT': {
     'skylab': {
       'cros_board': 'kevin',
-      'cros_img': 'kevin-release/R93-14052.0.0',
+      'cros_img': 'kevin-release/R93-14083.0.0',
     },
     'identifier': 'KEVIN_TOT',
   },

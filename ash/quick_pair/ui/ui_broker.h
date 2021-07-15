@@ -15,7 +15,7 @@ namespace quick_pair {
 // The UIBroker is the entry point for the UI component in the Quick Pair
 // system. It is responsible for brokering the 'show UI' calls to the correct
 // Presenter implementation, and exposing user actions taken on that UI.
-class UIBroker {
+class COMPONENT_EXPORT(QUICK_PAIR_UI) UIBroker {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -28,6 +28,8 @@ class UIBroker {
     virtual void OnAssociateAccountAction(const Device& device,
                                           AssociateAccountAction action) = 0;
   };
+
+  virtual ~UIBroker() = default;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;

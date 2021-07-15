@@ -107,6 +107,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/cascading_property.h"
 #include "ui/views/controls/button/label_button.h"
@@ -117,6 +118,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/image_model_utils.h"
 #include "ui/views/metrics.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -1300,9 +1302,10 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
                                       ui::NativeTheme::kColorId_MenuIconColor);
   }
 
-  button_drag_utils::SetDragImage(node->url(), node->GetTitle(),
-                                  *icon.GetImage().ToImageSkia(), &press_pt,
-                                  *widget, data);
+  button_drag_utils::SetDragImage(
+      node->url(), node->GetTitle(),
+      views::GetImageSkiaFromImageModel(icon, GetNativeTheme()), &press_pt,
+      *widget, data);
   WriteBookmarkDragData(node, data);
 }
 

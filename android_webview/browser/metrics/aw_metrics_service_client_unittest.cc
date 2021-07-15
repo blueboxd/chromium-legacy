@@ -9,6 +9,7 @@
 #include "android_webview/common/aw_features.h"
 #include "android_webview/common/metrics/app_package_name_logging_rule.h"
 #include "base/metrics/user_metrics.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -17,6 +18,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace android_webview {
+
+using AppPackageNameLoggingRuleStatus =
+    AwMetricsServiceClient::AppPackageNameLoggingRuleStatus;
 
 namespace {
 
@@ -60,6 +64,7 @@ class AwMetricsServiceClientTest : public testing::Test {
 }  // namespace
 
 TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_CacheNotSet) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
       android_webview::features::kWebViewAppsPackageNamesAllowlist);
@@ -67,9 +72,18 @@ TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_CacheNotSet) {
   AwMetricsServiceClient* client = GetClient();
   EXPECT_FALSE(client->ShouldRecordPackageName());
   EXPECT_FALSE(client->GetCachedAppPackageNameLoggingRule().has_value());
+
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay", 0);
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      AppPackageNameLoggingRuleStatus::kNotLoadedNoCache, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus", 1);
 }
 
 TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_WithCache) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
       android_webview::features::kWebViewAppsPackageNamesAllowlist);
@@ -88,10 +102,19 @@ TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_WithCache) {
   EXPECT_TRUE(client->ShouldRecordPackageName());
   ASSERT_TRUE(cached_record.has_value());
   EXPECT_TRUE(expected_record.IsSameAs(cached_record.value()));
+
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay", 0);
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      AppPackageNameLoggingRuleStatus::kNotLoadedUseCache, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus", 1);
 }
 
 TEST_F(AwMetricsServiceClientTest,
        TestShouldRecordPackageName_TestShouldNotRecordPackageName) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
       android_webview::features::kWebViewAppsPackageNamesAllowlist);
@@ -106,10 +129,19 @@ TEST_F(AwMetricsServiceClientTest,
   EXPECT_FALSE(client->ShouldRecordPackageName());
   ASSERT_TRUE(cached_record.has_value());
   EXPECT_TRUE(expected_record.IsSameAs(cached_record.value()));
+
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay", 1);
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      AppPackageNameLoggingRuleStatus::kNewVersionLoaded, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus", 1);
 }
 
 TEST_F(AwMetricsServiceClientTest,
        TestShouldRecordPackageName_TestShouldRecordPackageName) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
       android_webview::features::kWebViewAppsPackageNamesAllowlist);
@@ -126,10 +158,19 @@ TEST_F(AwMetricsServiceClientTest,
   EXPECT_TRUE(client->ShouldRecordPackageName());
   ASSERT_TRUE(cached_record.has_value());
   EXPECT_TRUE(expected_record.IsSameAs(cached_record.value()));
+
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay", 1);
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      AppPackageNameLoggingRuleStatus::kNewVersionLoaded, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus", 1);
 }
 
 TEST_F(AwMetricsServiceClientTest,
        TestShouldRecordPackageName_TestFailureAfterValidResult) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
       android_webview::features::kWebViewAppsPackageNamesAllowlist);
@@ -148,6 +189,61 @@ TEST_F(AwMetricsServiceClientTest,
   EXPECT_TRUE(client->ShouldRecordPackageName());
   ASSERT_TRUE(cached_record.has_value());
   EXPECT_TRUE(expected_record.IsSameAs(cached_record.value()));
+
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay", 1);
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      AppPackageNameLoggingRuleStatus::kNewVersionFailedUseCache, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus", 1);
+}
+
+TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_FailedResult) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      android_webview::features::kWebViewAppsPackageNamesAllowlist);
+
+  AwMetricsServiceClient* client = GetClient();
+  client->SetAppPackageNameLoggingRule(
+      absl::optional<AppPackageNameLoggingRule>());
+
+  EXPECT_FALSE(client->ShouldRecordPackageName());
+
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay", 0);
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      AppPackageNameLoggingRuleStatus::kNewVersionFailedNoCache, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus", 1);
+}
+
+TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_SameAsCache) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      android_webview::features::kWebViewAppsPackageNamesAllowlist);
+
+  AwMetricsServiceClient* client = GetClient();
+  TestingPrefServiceSimple* prefs = GetPrefs();
+
+  AppPackageNameLoggingRule record(
+      base::Version(kTestAllowlistVersion),
+      base::Time::Now() + base::TimeDelta::FromDays(1));
+  prefs->Set(prefs::kMetricsAppPackageNameLoggingRule, record.ToDictionary());
+  client->SetAppPackageNameLoggingRule(record);
+
+  EXPECT_TRUE(client->ShouldRecordPackageName());
+
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay", 0);
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      AppPackageNameLoggingRuleStatus::kSameVersionAsCache, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus", 1);
 }
 
 }  // namespace android_webview

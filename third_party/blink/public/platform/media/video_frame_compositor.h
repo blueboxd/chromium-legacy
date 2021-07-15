@@ -81,7 +81,7 @@ class BLINK_PLATFORM_EXPORT VideoFrameCompositor
   // though it may be constructed on any thread.
   VideoFrameCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      std::unique_ptr<blink::WebVideoFrameSubmitter> submitter);
+      std::unique_ptr<WebVideoFrameSubmitter> submitter);
 
   VideoFrameCompositor(const VideoFrameCompositor&) = delete;
   VideoFrameCompositor& operator=(const VideoFrameCompositor&) = delete;
@@ -96,7 +96,7 @@ class BLINK_PLATFORM_EXPORT VideoFrameCompositor
   // Signals the VideoFrameSubmitter to prepare to receive BeginFrames and
   // submit video frames given by VideoFrameCompositor.
   virtual void EnableSubmission(const viz::SurfaceId& id,
-                                media::VideoRotation rotation,
+                                media::VideoTransformation rotation,
                                 bool force_submit);
 
   // cc::VideoFrameProvider implementation. These methods must be called on the
@@ -147,11 +147,8 @@ class BLINK_PLATFORM_EXPORT VideoFrameCompositor
   // Used to populate the VideoFrameMetadata of video.requestVideoFrameCallback
   // callbacks. See https://wicg.github.io/video-rvfc/.
   // Can be called on any thread.
-  virtual std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>
+  virtual std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
   GetLastPresentedFrameMetadata();
-
-  // Updates the rotation information for frames given to |submitter_|.
-  void UpdateRotation(media::VideoRotation rotation);
 
   // Should be called when page visibility changes. Notifies |submitter_|.
   virtual void SetIsPageVisible(bool is_visible);
@@ -172,7 +169,7 @@ class BLINK_PLATFORM_EXPORT VideoFrameCompositor
   }
 
   void set_submitter_for_test(
-      std::unique_ptr<blink::WebVideoFrameSubmitter> submitter) {
+      std::unique_ptr<WebVideoFrameSubmitter> submitter) {
     submitter_ = std::move(submitter);
   }
 
@@ -289,7 +286,7 @@ class BLINK_PLATFORM_EXPORT VideoFrameCompositor
   // AutoOpenCloseEvent for begin/end events.
   std::unique_ptr<base::trace_event::AutoOpenCloseEvent<kTracingCategory>>
       auto_open_close_;
-  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_;
+  std::unique_ptr<WebVideoFrameSubmitter> submitter_;
 
   base::WeakPtrFactory<VideoFrameCompositor> weak_ptr_factory_{this};
 };

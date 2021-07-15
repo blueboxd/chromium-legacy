@@ -31,6 +31,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/with_feature_override.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
@@ -454,6 +455,21 @@ class PDFExtensionTestWithTestGuestViewManager : public PDFExtensionTest {
 
  private:
   TestGuestViewManagerFactory factory_;
+};
+
+// Parameterized version of `PDFExtensionTest` for testing identical behavior
+// with the unseasoned PDF feature disabled and enabled.
+//
+// If a behavior is specific to one of these states, consider testing with
+// `PDFExtensionUnseasonedDisabledTest` or `PDFExtensionUnseasonedEnabledTest`
+// instead. Tests can also be conditional on `IsParamFeatureEnabled()`, but only
+// use this if the tests are almost identical.
+class PDFExtensionTestWithUnseasonedOverride
+    : public base::test::WithFeatureOverride,
+      public PDFExtensionTest {
+ public:
+  PDFExtensionTestWithUnseasonedOverride()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
 };
 
 // This test is a re-implementation of
@@ -1012,6 +1028,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPropertiesDialog) {
   RunTestsInJsModule("viewer_properties_dialog_test.js", "document_info.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PostMessageProxy) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("post_message_proxy_test.js", "test.pdf");
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Printing) {
   RunTestsInJsModule("printing_icon_test.js", "test.pdf");
@@ -1153,7 +1175,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionServiceWorkerJSTest, Interception) {
 
 // Ensure that the internal PDF plugin application/x-google-chrome-pdf won't be
 // loaded if it's not loaded in the chrome extension page.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureInternalPluginDisabled) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithUnseasonedOverride,
+                       EnsureInternalPluginDisabled) {
   std::string url = embedded_test_server()->GetURL("/pdf/test.pdf").spec();
   std::string data_url =
       "data:text/html,"
@@ -1474,7 +1497,14 @@ bool RetrieveGuestContents(WebContents** out_guest_contents,
   return true;
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInIframe) {
+// Flaky, see crbug.com/1228762
+#if defined(OS_CHROMEOS)
+#define MAYBE_PdfAccessibilityInIframe DISABLED_PdfAccessibilityInIframe
+#else
+#define MAYBE_PdfAccessibilityInIframe PdfAccessibilityInIframe
+#endif
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_PdfAccessibilityInIframe) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   GURL test_iframe_url(embedded_test_server()->GetURL("/pdf/test-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);
@@ -3442,6 +3472,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
   ASSERT_EQ(web_contents->GetURL(), pdf_url);
 }
 
+// TODO(crbug.com/1123621): Probably can get rid of these tests once the
+// unseasoned PDF viewer loads end-to-end.
 class PDFExtensionUnseasonedTest
     : public PDFExtensionTestWithTestGuestViewManager {
  protected:
@@ -3523,3 +3555,5 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionUnseasonedEnabledTest,
 
   EXPECT_TRUE(container->TakeTransferrableURLLoader());
 }
+
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionTestWithUnseasonedOverride);

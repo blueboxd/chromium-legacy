@@ -35,6 +35,7 @@
     },
     'chrome.pgo': {
       'android-arm32-pgo': 'official_goma_android_arm32_pgo',
+      'android-arm64-pgo': 'official_goma_android_arm64_pgo',
       'linux-pgo': 'official_goma_linux_pgo',
       'mac-pgo': 'official_goma_mac_pgo',
       'win32-pgo': 'official_goma_x86_pgo',
@@ -341,6 +342,7 @@
       'linux-chromeos-js-code-coverage': 'chromeos_with_codecs_release_bot_javascript_coverage',
       'linux-chromium-tests-staging-builder': 'release_bot',
       'linux-code-coverage': 'clang_code_coverage',
+      'linux-exp-code-coverage': 'clang_code_coverage',
       'linux-example-builder': 'release_bot',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
       'linux-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64',
@@ -911,6 +913,7 @@
 
     'tryserver.chrome.pgo': {
       'android-arm32-pgo': 'official_goma_android_arm32_pgo',
+      'android-arm64-pgo': 'official_goma_android_arm64_pgo',
       'linux-pgo': 'official_goma_linux_pgo',
       'mac-pgo': 'official_goma_mac_pgo',
       'win32-pgo': 'official_goma_x86_pgo',
@@ -2463,7 +2466,11 @@
     ],
 
     'official_goma_android_arm32_pgo': [
-      'official', 'goma', 'android', 'arm', 'minimal_symbols', 'no_default_afdo', 'pgo_phase_1',
+      'official', 'goma', 'android', 'arm', 'no_symbols', 'no_default_afdo', 'pgo_phase_1',
+    ],
+
+    'official_goma_android_arm64_pgo': [
+      'official', 'goma', 'android', 'arm64', 'no_symbols', 'no_default_afdo', 'pgo_phase_1',
     ],
 
     'official_goma_mac': [
@@ -3435,7 +3442,7 @@
     },
 
     'backuprefptr': {
-      'gn_args': 'use_allocator="partition" use_backup_ref_ptr=true enable_runtime_backup_ref_ptr_control=true enable_brp_directmap_support=true use_brp_pool_blocklist=true never_remove_from_brp_pool_blocklist=true enable_backup_ref_ptr_slow_checks=true',
+      'gn_args': 'use_allocator="partition" use_backup_ref_ptr=true enable_runtime_backup_ref_ptr_control=true never_remove_from_brp_pool_blocklist=true enable_backup_ref_ptr_slow_checks=true',
     },
 
     # Used to pass the list of files to instrument for coverage to the compile

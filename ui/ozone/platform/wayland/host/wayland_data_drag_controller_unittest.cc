@@ -354,7 +354,8 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithFileContents) {
 }
 
 TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
-  auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+  auto* data_offer =
+      data_device_manager_->data_device()->CreateAndSendDataOffer();
   data_offer->OnOffer(kMimeTypeText,
                       ToClipboardData(std::string(kSampleTextForDragAndDrop)));
 
@@ -393,7 +394,8 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
 }
 
 TEST_P(WaylandDataDragControllerTest, DropSeveralMimeTypes) {
-  auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+  auto* data_offer =
+      data_device_manager_->data_device()->CreateAndSendDataOffer();
   data_offer->OnOffer(kMimeTypeText,
                       ToClipboardData(std::string(kSampleTextForDragAndDrop)));
   data_offer->OnOffer(
@@ -447,7 +449,8 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedUriList) {
                  {"/home/user/file", "/home/guest/file"}}};
 
   for (const auto& kCase : kCases) {
-    auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+    auto* data_offer =
+        data_device_manager_->data_device()->CreateAndSendDataOffer();
     data_offer->OnOffer(kMimeTypeURIList, ToClipboardData(kCase.content));
 
     EXPECT_CALL(*drop_handler_, MockOnDragEnter()).Times(1);
@@ -500,7 +503,8 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
        "file:///files/are/ok", u"The policy allows that"}};
 
   for (const auto& kCase : kCases) {
-    auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+    auto* data_offer =
+        data_device_manager_->data_device()->CreateAndSendDataOffer();
     data_offer->OnOffer(kMimeTypeMozillaURL, ToClipboardData(kCase.content));
 
     EXPECT_CALL(*drop_handler_, MockOnDragEnter()).Times(1);
@@ -555,7 +559,8 @@ TEST_P(WaylandDataDragControllerTest, StartAndCancel) {
 }
 
 TEST_P(WaylandDataDragControllerTest, ForeignDragHandleAskAction) {
-  auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+  auto* data_offer =
+      data_device_manager_->data_device()->CreateAndSendDataOffer();
   data_offer->OnOffer(kMimeTypeText,
                       ToClipboardData(std::string(kSampleTextForDragAndDrop)));
   data_offer->OnSourceActions(WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE |
@@ -811,12 +816,12 @@ TEST_P(WaylandDataDragControllerTest, AsyncNoopStartDrag) {
 
   // Override test server's data device drag delegate such that
   // wl_data_device.start_drag no-ops.
-  struct NoopDragDeviceDelegate : public wl::TestDataDevice::Delegate {
+  struct NoopDragDeviceDelegate : public wl::TestDataDevice::DragDelegate {
     void StartDrag(wl::TestDataSource* source,
                    wl::MockSurface* origin,
                    uint32_t serial) override {}
   } noop_drag_delegate;
-  data_device_manager_->data_device()->set_delegate(&noop_drag_delegate);
+  data_device_manager_->data_device()->set_drag_delegate(&noop_drag_delegate);
 
   FocusAndPressLeftPointerButton(window_.get(), &delegate_);
 

@@ -57,11 +57,15 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
     private ContinuousNavigationUserDataImpl mCurrentUserData;
     private @PageCategory int mPageCategory;
     private boolean mVisible;
-    private boolean mScrolled;
+    private boolean mDismissed;
+    private boolean mUiShown;
     // The navigation index when CSN metadata was retrieved.
     private int mStartNavigationIndex;
     private int mSrpVisits;
     private BrowserControlsStateProvider.Observer mScrollObserver;
+
+    private boolean mScrolled;
+    private boolean mProviderButtonClicked;
 
     @IntDef({TriggerMode.ALWAYS, TriggerMode.AFTER_SECOND_SRP, TriggerMode.ON_REVERSE_SCROLL})
     @Retention(RetentionPolicy.SOURCE)
@@ -83,7 +87,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
         mResources = resources;
 
         mRootViewModel.set(ContinuousSearchListProperties.DISMISS_CLICK_CALLBACK,
-                (v) -> invalidateOnUserRequest());
+                (v) -> dismissOnUserRequest());
         if (mThemeColorProvider != null) {
             mThemeColorProvider.addThemeColorObserver(this);
             int themeColor = mThemeColorProvider.getThemeColor();
@@ -96,14 +100,28 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
         initScrollObserver();
     }
 
-    private void invalidateOnUserRequest() {
-        // |mCurrentUserData| should *almost* always be non-null here. This is because we invalidate
-        // the UI immediately after nullifying |mCurrentUserData|.
-        // There might be a rare race condition where the user manages to click the dismiss button
-        // after |mCurrentUserData| is nullified and before the UI is invalidated. In that case,
-        // |#invalidateOnUserRequest| will be no-op. However, the UI will be dismissed eventually
-        // when |#onInvalidate| is called.
-        if (mCurrentUserData != null) mCurrentUserData.invalidateData();
+    private void dismissOnUserRequest() {
+        // To avoid showing for duration of the current SRP session don't delete the data, instead
+        // hide the UI permamently. Data will be deleted as soon as the SRP session is over.
+        mDismissed = true;
+        ContinuousSearchConfiguration.recordDismissed();
+        setVisibility(false, null);
+    }
+
+    private void reset() {
+        // Only record the metrics if the UI was shown.
+        if (mUiShown) recordUiMetrics();
+        mModelList.clear();
+        mDismissed = false;
+        mOnSrp = false;
+        mUiShown = false;
+        mScrolled = false;
+        mProviderButtonClicked = false;
+        mSrpVisits = 0;
+    }
+
+    private boolean shouldShow() {
+        return mModelList.size() > 0 && !mOnSrp && !mDismissed;
     }
 
     /**
@@ -135,12 +153,6 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
     @Override
     public void onInvalidate() {
         setVisibility(false, this::reset);
-    }
-
-    private void reset() {
-        mModelList.clear();
-        mOnSrp = false;
-        mSrpVisits = 0;
     }
 
     @Override
@@ -195,7 +207,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                 shouldTrigger = mSrpVisits >= 2;
                 break;
         }
-        setVisibility(mModelList.size() > 0 && !mOnSrp && shouldTrigger, null);
+        setVisibility(shouldShow() && shouldTrigger, null);
     }
 
     private @TriggerMode int getTriggerMode() {
@@ -269,6 +281,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                     navigationController.goToNavigationIndex(mStartNavigationIndex);
                 }
             }
+            mProviderButtonClicked = true;
         } else if (mCurrentTab != null && url != null) {
             LoadUrlParams params = new LoadUrlParams(url.getSpec());
             params.setReferrer(
@@ -283,8 +296,8 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
     }
 
     private void setVisibility(boolean visibility, Runnable onHideFinished) {
-        if (mVisible && !visibility) recordListScrolled();
         mVisible = visibility;
+        if (mVisible) mUiShown = true;
         mSetLayoutVisibility.onResult(new VisibilitySettings(mVisible, onHideFinished));
     }
 
@@ -292,11 +305,16 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
         mScrolled = true;
     }
 
-    private void recordListScrolled() {
-        RecordHistogram.recordBooleanHistogram("Browser.ContinuousSearch.UI.CarouselScrolled"
-                        + SearchUrlHelper.getHistogramSuffixForPageCategory(mPageCategory),
-                mScrolled);
-        mScrolled = false;
+    private void recordUiMetrics() {
+        String histogramSuffix = SearchUrlHelper.getHistogramSuffixForPageCategory(mPageCategory);
+
+        RecordHistogram.recordBooleanHistogram(
+                "Browser.ContinuousSearch.UI.CarouselScrolled2" + histogramSuffix, mScrolled);
+        RecordHistogram.recordBooleanHistogram(
+                "Browser.ContinuousSearch.UI.ProviderButtonClicked" + histogramSuffix,
+                mProviderButtonClicked);
+        RecordHistogram.recordBooleanHistogram(
+                "Browser.ContinuousSearch.UI.DismissButtonClicked" + histogramSuffix, mDismissed);
     }
 
     private void initScrollObserver() {
@@ -308,8 +326,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                     int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
                 if (mVisible) return;
 
-                final boolean shouldShow = mModelList.size() > 0 && !mOnSrp;
-                if (!shouldShow) return;
+                if (!shouldShow()) return;
 
                 // Show the UI only when the browser controls are fully hidden then on any
                 // subsequent reverse scroll the omnibox will be shown along with the UI.
@@ -363,6 +380,8 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
     }
 
     void destroy() {
+        reset();
+
         if (mCurrentUserData != null) mCurrentUserData.removeObserver(this);
         if (mThemeColorProvider != null) mThemeColorProvider.removeThemeColorObserver(this);
 

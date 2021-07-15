@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/public/mojom/test_api.test-mojom.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/file_system_access/file_system_chooser_test_helpers.h"
 #include "content/browser/prerender/prerender_host.h"
 #include "content/browser/prerender/prerender_host_registry.h"
@@ -69,6 +70,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
@@ -270,6 +272,14 @@ class PrerenderBrowserTest : public ContentBrowserTest {
       EXPECT_EQ(rfhi->lifecycle_state(),
                 RenderFrameHostImpl::LifecycleStateImpl::kActive);
       EXPECT_FALSE(rfhi->frame_tree()->is_prerendering());
+
+      // Check that each document can use a deferred Mojo interface. Choose
+      // WebLocks API as the feature is enabled by default and does not require
+      // permission.
+      const std::string kMojoScript = R"(
+          navigator.locks.request('hi', {mode:'shared'}, () => {});
+      )";
+      EXPECT_TRUE(ExecJs(rfhi, kMojoScript));
     }
   }
 
@@ -1278,8 +1288,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIframe) {
 
 // Blank <iframe> is a special case. Tests that the blank iframe knows the
 // prerendering state as well.
-// TODO(https://crbug.com/1185965): This test is disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderBlankIframe) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBlankIframe) {
   TestHostPrerenderingState(GetUrl("/page_with_blank_iframe.html"));
 }
 
@@ -2591,11 +2600,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenURLInPrerenderingFrame) {
 // Ensures WebContents::OpenURL with a cross-origin URL targeting a frame in a
 // prerendered host will successfully navigate that frame, though it should be
 // deferred until activation.
-// TODO(bokan): This test exposes a race condition between the iframe
-// navigation and the prerenderingchange event being dispatched.
-// https://crbug.com/1213454.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_OpenURLCrossOriginInPrerenderingFrame) {
+                       OpenURLCrossOriginInPrerenderingFrame) {
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_blank_iframe.html");
   const GURL kNewIframeUrl = GetCrossOriginUrl("/simple_page.html");
@@ -2673,9 +2679,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   auto* prerender_ftn = prerendered_rfh->frame_tree_node();
   EXPECT_FALSE(prerender_ftn->HasNavigation());
 
-  // Now navigate the primary page to the prerendered URL so that we activate
-  // the prerender. Use a CommitDeferringCondition to pause activation
-  // before it completes.
+  // Start an activation navigation for the prerender. Use a
+  // CommitDeferringCondition to pause activation before it completes.
   TestNavigationManager activation_observer(shell()->web_contents(),
                                             kPrerenderingUrl);
   MockCommitDeferringConditionWrapper condition(/*is_ready_to_commit=*/false);
@@ -2686,6 +2691,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
     // Wait for the condition to pause the activation.
     condition.WaitUntilInvoked();
+    NavigationRequest* request =
+        web_contents_impl()->GetFrameTree()->root()->navigation_request();
+    EXPECT_TRUE(request->IsCommitDeferringConditionDeferredForTesting());
     EXPECT_EQ(web_contents()->GetURL(), kInitialUrl);
   }
 
@@ -2719,10 +2727,88 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_EQ(shell()->web_contents()->GetURL(), kPrerenderingUrl);
 }
 
-// Ensures WebContents::OpenURL to a frame in a currently activating (i.e.
-// "reserved") prerendering host navigates the frame.
+// Tests that cross-origin subframe navigations in a prerendered page are
+// deferred even if they start after the a navigation starts that will
+// attempt to activate the prerendered page.
+//
+// Regression test for https://crbug.com/1190262.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       OpenURLInReservedPrerenderingFrame) {
+                       CrossOriginSubframeNavigationDuringActivation) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/page_with_blank_iframe.html");
+  const GURL kCrossOriginUrl = GetCrossOriginUrl("/simple_page.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  ASSERT_EQ(shell()->web_contents()->GetURL(), kInitialUrl);
+
+  // Start prerendering `kPrerenderingUrl`.
+  int prerender_host_id = RenderFrameHost::kNoFrameTreeNodeId;
+  RenderFrameHost* prerender_main_frame = nullptr;
+  {
+    prerender_host_id = AddPrerender(kPrerenderingUrl);
+    ASSERT_NE(prerender_host_id, RenderFrameHost::kNoFrameTreeNodeId);
+
+    prerender_main_frame = GetPrerenderedMainFrameHost(prerender_host_id);
+    RenderFrameHost* child_frame = ChildFrameAt(prerender_main_frame, 0);
+    ASSERT_TRUE(child_frame);
+  }
+
+  // Start an activation navigation for the prerender. Use a
+  // CommitDeferringCondition to pause activation before it completes.
+  test::PrerenderHostObserver prerender_observer(*web_contents(),
+                                                 kPrerenderingUrl);
+  TestNavigationManager activation_observer(shell()->web_contents(),
+                                            kPrerenderingUrl);
+  MockCommitDeferringConditionWrapper condition(/*is_ready_to_commit=*/false);
+  {
+    MockCommitDeferringConditionInstaller installer(condition.PassToDelegate());
+    ASSERT_TRUE(ExecJs(web_contents()->GetMainFrame(),
+                       JsReplace("location = $1", kPrerenderingUrl)));
+
+    // Wait for the condition to pause the activation.
+    condition.WaitUntilInvoked();
+    NavigationRequest* request =
+        web_contents_impl()->GetFrameTree()->root()->navigation_request();
+    EXPECT_TRUE(request->IsCommitDeferringConditionDeferredForTesting());
+    EXPECT_EQ(web_contents()->GetURL(), kInitialUrl);
+  }
+
+  // Start a cross-origin subframe navigation in the prerendered page. It
+  // should be deferred.
+  std::string kNavigateScript = R"(
+    document.querySelector('iframe').src = $1;
+  )";
+  TestNavigationManager iframe_nav_observer(shell()->web_contents(),
+                                            kCrossOriginUrl);
+  ASSERT_TRUE(ExecJs(prerender_main_frame,
+                     JsReplace(kNavigateScript, kCrossOriginUrl)));
+
+  iframe_nav_observer.WaitForFirstYieldAfterDidStartNavigation();
+
+  // The PrerenderSubframeNavigationThrottle should defer it until activation.
+  auto* child_ftn =
+      FrameTreeNode::GloballyFindByID(prerender_host_id)->child_at(0);
+  auto* child_navigation = child_ftn->navigation_request();
+  ASSERT_NE(child_navigation, nullptr);
+  EXPECT_TRUE(child_navigation->IsDeferredForTesting());
+
+  // Allow the activation navigation to complete.
+  condition.CallResumeClosure();
+  activation_observer.WaitForNavigationFinished();
+  EXPECT_TRUE(activation_observer.was_prerendered_page_activation());
+
+  // The iframe navigation should finish.
+  iframe_nav_observer.WaitForNavigationFinished();
+  EXPECT_EQ(ChildFrameAt(prerender_main_frame, 0)->GetLastCommittedURL(),
+            kCrossOriginUrl);
+}
+
+// Tests WebContents::OpenURL to a frame in a prerendered page when a
+// navigation that will attempt to activate the page has already started. The
+// subframe navigation should succeed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       OpenURLInSubframeDuringActivation) {
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_blank_iframe.html");
   const GURL kNewIframeUrl = GetUrl("/simple_page.html");
@@ -2746,8 +2832,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
     ASSERT_TRUE(child_frame);
   }
 
-  // Now navigate the primary page to the prerendered URL so that we activate
-  // the prerender.
+  // Start an activation navigation for the prerender. Use a
+  // CommitDeferringCondition to pause activation before it completes.
   test::PrerenderHostObserver prerender_observer(*web_contents(),
                                                  kPrerenderingUrl);
   TestNavigationManager activation_observer(shell()->web_contents(),
@@ -2760,11 +2846,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
     // Wait for the condition to pause the activation.
     condition.WaitUntilInvoked();
+    NavigationRequest* request =
+        web_contents_impl()->GetFrameTree()->root()->navigation_request();
+    EXPECT_TRUE(request->IsCommitDeferringConditionDeferredForTesting());
     EXPECT_EQ(web_contents()->GetURL(), kInitialUrl);
   }
 
-  // Use the OpenURL API to navigate the iframe in the reserved prerendering
-  // frame tree. This navigation should succeed.
+  // Use the OpenURL API to navigate the iframe in the prerendering frame tree.
+  // This navigation should succeed.
   {
     TestNavigationManager iframe_observer(shell()->web_contents(),
                                           kNewIframeUrl);
@@ -2776,12 +2865,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
     EXPECT_EQ(child_frame->GetLastCommittedURL(), kNewIframeUrl);
   }
 
-  // Allow the navigation to complete to activation, the iframe navigation
-  // should be able to finish.  Ensure the navigation completes in the iframe.
-  {
-    condition.CallResumeClosure();
-    prerender_observer.WaitForActivation();
-  }
+  // Allow the activation navigation to complete.
+  condition.CallResumeClosure();
+  activation_observer.WaitForNavigationFinished();
+  EXPECT_TRUE(activation_observer.was_prerendered_page_activation());
 }
 
 class ScopedDataSaverTestContentBrowserClient
@@ -3539,6 +3626,39 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FrameOwnerPropertiesDisplayNone) {
 
   EXPECT_FALSE(prerender_frame_host->IsFrameDisplayNone());
   EXPECT_FALSE(iframe_host->IsFrameDisplayNone());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TriggeredPrerenderUkm) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  ASSERT_EQ(web_contents()->GetURL(), kInitialUrl);
+
+  // PrerenderPageLoad metric should not be recorded yet.
+  EXPECT_EQ(0u,
+            ukm_recorder
+                .GetEntriesByName(ukm::builders::PrerenderPageLoad::kEntryName)
+                .size());
+
+  // Start a prerender.
+  ASSERT_NE(AddPrerender(kPrerenderingUrl),
+            RenderFrameHost::kNoFrameTreeNodeId);
+
+  // PrerenderPageLoad:TriggeredPrerender is recorded for the initiator page
+  // load.
+  const std::vector<const ukm::mojom::UkmEntry*> entries =
+      ukm_recorder.GetEntriesByName(
+          ukm::builders::PrerenderPageLoad::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(web_contents()->GetMainFrame()->GetPageUkmSourceId(),
+            entries.front()->source_id);
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::PrerenderPageLoad::kTriggeredPrerenderName, 1);
 }
 
 }  // namespace

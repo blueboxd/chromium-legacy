@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -30,6 +31,8 @@ namespace {
 
 constexpr char kGoogleSearchUrlPrefix[] = "https://www.google.com/search?q=";
 
+constexpr char kFeedbackDescriptionTemplate[] = "#QuickAnswers\nQuery:%s\n";
+
 }  // namespace
 
 QuickAnswersUiController::QuickAnswersUiController(
@@ -42,10 +45,10 @@ QuickAnswersUiController::~QuickAnswersUiController() {
   user_consent_view_ = nullptr;
 }
 
-void QuickAnswersUiController::CreateQuickAnswersView(
-    const gfx::Rect& bounds,
-    const std::string& title,
-    const std::string& query) {
+void QuickAnswersUiController::CreateQuickAnswersView(const gfx::Rect& bounds,
+                                                      const std::string& title,
+                                                      const std::string& query,
+                                                      bool is_internal) {
   // Currently there are timing issues that causes the quick answers view is not
   // dismissed. TODO(updowndota): Remove the special handling after the root
   // cause is found.
@@ -57,7 +60,7 @@ void QuickAnswersUiController::CreateQuickAnswersView(
   DCHECK(!user_notice_view_);
   DCHECK(!user_consent_view_);
   SetActiveQuery(query);
-  quick_answers_view_ = new QuickAnswersView(bounds, title, this);
+  quick_answers_view_ = new QuickAnswersView(bounds, title, is_internal, this);
   quick_answers_view_->GetWidget()->ShowInactive();
 }
 
@@ -186,6 +189,12 @@ void QuickAnswersUiController::OnSettingsButtonPressed() {
   controller_->DismissQuickAnswers(/*is_active=*/true);
 
   controller_->OpenQuickAnswersSettings();
+}
+
+void QuickAnswersUiController::OnReportQueryButtonPressed() {
+  NewWindowDelegate::GetInstance()->OpenFeedbackPage(
+      NewWindowDelegate::FeedbackSource::kFeedbackSourceQuickAnswers,
+      base::StringPrintf(kFeedbackDescriptionTemplate, query_.c_str()));
 }
 
 void QuickAnswersUiController::OnUserConsentResult(bool consented) {

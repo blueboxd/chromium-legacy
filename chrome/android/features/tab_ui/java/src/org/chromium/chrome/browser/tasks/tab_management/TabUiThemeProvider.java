@@ -8,12 +8,12 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.elevation.ElevationOverlayProvider;
@@ -60,18 +60,6 @@ public class TabUiThemeProvider {
                               .compositeOverlayWithThemeSurfaceColorIfNeeded(tabElevation);
             return ColorStateList.valueOf(colorInt);
         }
-    }
-
-    /**
-     * Returns the {@link Drawable} for tab grid card background view based on the incognito mode.
-     *
-     * @param context {@link Context} used to retrieve color.
-     * @param isIncognito Whether the color is used for incognito mode.
-     * @return The {@link Drawable} for tab grid card view.
-     */
-    public static Drawable getCardViewBackgroundDrawable(Context context, boolean isIncognito) {
-        return ApiCompatibilityUtils.getDrawable(context.getResources(),
-                isIncognito ? R.drawable.popup_bg_dark : R.drawable.popup_bg_tinted);
     }
 
     /**
@@ -284,13 +272,57 @@ public class TabUiThemeProvider {
      *
      * @param context {@link Context} used to retrieve color.
      * @param isIncognito Whether the color is used for incognito mode.
+     * @param isSelected Whether the tab is currently selected.
      * @return The {@link ColorStateList} for hovered tab grid card background.
      */
     public static ColorStateList getHoveredCardBackgroundTintList(
-            Context context, boolean isIncognito) {
-        return AppCompatResources.getColorStateList(context,
-                isIncognito ? R.color.hovered_tab_grid_card_background_color_incognito
-                            : R.color.hovered_tab_grid_card_background_color);
+            Context context, boolean isIncognito, boolean isSelected) {
+        if (!themeRefactorEnabled()) {
+            return AppCompatResources.getColorStateList(context,
+                    isIncognito ? R.color.hovered_tab_grid_card_background_color_incognito
+                                : R.color.hovered_tab_grid_card_background_color);
+        }
+
+        if (isIncognito) {
+            @ColorRes
+            int colorRes = isSelected ? R.color.incognito_tab_group_hovered_bg_selected_color
+                                      : R.color.incognito_tab_group_hovered_bg_color;
+            return AppCompatResources.getColorStateList(context, colorRes);
+        } else {
+            if (isSelected) {
+                @ColorInt
+                int baseColor = MaterialColors.getColor(context, R.attr.colorPrimary, TAG);
+                int alpha = context.getResources().getInteger(
+                        R.integer.tab_grid_hovered_card_background_selected_color_alpha);
+                return ColorStateList.valueOf(
+                        MaterialColors.compositeARGBWithAlpha(baseColor, alpha));
+            } else {
+                float backgroundElevation =
+                        context.getResources().getDimension(R.dimen.default_elevation_4);
+                @ColorInt
+                int baseColor =
+                        new ElevationOverlayProvider(context)
+                                .compositeOverlayWithThemeSurfaceColorIfNeeded(backgroundElevation);
+                int alpha = context.getResources().getInteger(
+                        R.integer.tab_grid_hovered_card_background_color_alpha);
+                return ColorStateList.valueOf(
+                        MaterialColors.compositeARGBWithAlpha(baseColor, alpha));
+            }
+        }
+    }
+
+    /**
+     * Returns the color used for tab grid dialog background based on the incognito mode.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @return The background color for tab grid dialog.
+     */
+    @ColorInt
+    public static int getTabGridDialogBackgroundColor(Context context, boolean isIncognito) {
+        return ContextCompat.getColor(context,
+                isIncognito ? R.color.tab_grid_dialog_background_color_incognito
+                            : R.color.tab_grid_dialog_background_color);
     }
 
     /**
@@ -341,6 +373,17 @@ public class TabUiThemeProvider {
     }
 
     /**
+     * Return the padding around favicon if it is visible.
+     * @param context {@link Context} used to retrieve dimension.
+     * @return The padding space around favicon.
+     */
+    public static float getTabCardTopFaviconPadding(Context context) {
+        return context.getResources().getDimension(themeRefactorEnabled()
+                        ? R.dimen.tab_grid_card_favicon_padding
+                        : R.dimen.tab_list_card_padding);
+    }
+
+    /**
      * Returns the style resource Id that requires for Tab UI.
      *
      * @return The resource Id for the theme overlay used for tab UI.
@@ -351,7 +394,8 @@ public class TabUiThemeProvider {
                                       : R.style.ThemeRefactorOverlay_Disabled_TabUi;
     }
 
-    private static boolean themeRefactorEnabled() {
+    /** Return if theme refactor is enabled. **/
+    static boolean themeRefactorEnabled() {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.THEME_REFACTOR_ANDROID);
     }
 }

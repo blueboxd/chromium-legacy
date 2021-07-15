@@ -2009,6 +2009,10 @@ ci.cipd_builder(
                 "cipd_yaml": "third_party/android_sdk/cipd/build-tools/30.0.1.yaml",
             },
             {
+                "sdk_package_name": "build-tools;31.0.0",
+                "cipd_yaml": "third_party/android_sdk/cipd/build-tools/31.0.0.yaml",
+            },
+            {
                 "sdk_package_name": "cmdline-tools;latest",
                 "cipd_yaml": "third_party/android_sdk/cipd/cmdline-tools.yaml",
             },
@@ -2029,6 +2033,10 @@ ci.cipd_builder(
                 "cipd_yaml": "third_party/android_sdk/cipd/platforms/android-30.yaml",
             },
             {
+                "sdk_package_name": "platforms;android-31",
+                "cipd_yaml": "third_party/android_sdk/cipd/platforms/android-31.yaml",
+            },
+            {
                 "sdk_package_name": "platform-tools",
                 "cipd_yaml": "third_party/android_sdk/cipd/platform-tools.yaml",
             },
@@ -2036,11 +2044,15 @@ ci.cipd_builder(
                 "sdk_package_name": "sources;android-29",
                 "cipd_yaml": "third_party/android_sdk/cipd/sources/android-29.yaml",
             },
-            # Not yet available as R is not released to AOSP.
-            #{
-            #    'sdk_package_name': 'sources;android-30',
-            #    'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-30.yaml'
-            #},
+            {
+                "sdk_package_name": "sources;android-30",
+                "cipd_yaml": "third_party/android_sdk/cipd/sources/android-30.yaml",
+            },
+            # TODO(crbug.com/1223110): Enable once S is released to AOSP.
+            # {
+            #     "sdk_package_name": "sources;android-31",
+            #     "cipd_yaml": "third_party/android_sdk/cipd/sources/android-31.yaml",
+            # },
             {
                 "sdk_package_name": "system-images;android-23;google_apis;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-23/google_apis/x86.yaml",
@@ -2077,16 +2089,14 @@ ci.cipd_builder(
                 "sdk_package_name": "system-images;android-30;google_apis_playstore;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-30/google_apis_playstore/x86.yaml",
             },
-            # Preview system images for Android S.
-            # Should be updated once it is fully released.
-            # sdkmanager don't have x86 for Android S so use x86_64 for now.
+            # sdkmanager don't have x86 for android-31 so use x86_64.
             {
-                "sdk_package_name": "system-images;android-S;google_apis;x86_64",
-                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-S/google_apis/x86_64.yaml",
+                "sdk_package_name": "system-images;android-31;google_apis;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-31/google_apis/x86_64.yaml",
             },
             {
-                "sdk_package_name": "system-images;android-S;google_apis_playstore;x86_64",
-                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-S/google_apis_playstore/x86_64.yaml",
+                "sdk_package_name": "system-images;android-31;google_apis_playstore;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-31/google_apis_playstore/x86_64.yaml",
             },
         ],
     },
@@ -3771,6 +3781,7 @@ ci.fyi_builder(
     goma_jobs = 250,
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
+    reclient_rewrapper_env = {"RBE_cache_silo": "Comparison Linux - cache siloed"},
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
     configure_kitchen = True,
@@ -4244,6 +4255,19 @@ ci.fyi_coverage_builder(
     ),
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
+    triggered_by = [],
+)
+
+ci.fyi_coverage_builder(
+    name = "linux-exp-code-coverage",
+    console_view_entry = consoles.console_view_entry(
+        category = "code_coverage",
+        short_name = "lnx",
+    ),
+    use_clang_coverage = True,
+    coverage_test_types = ["overall"],
+    schedule = "triggered",
+    coverage_reference_commit = "c942891373445199f69afd905965ad1e89cdee09",
     triggered_by = [],
 )
 

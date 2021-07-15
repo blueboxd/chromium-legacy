@@ -13,6 +13,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
+#include "content/browser/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -99,6 +100,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     CancelHost(frame_tree_node_id, PrerenderHost::FinalStatus::kDestroyed);
     return RenderFrameHost::kNoFrameTreeNodeId;
   }
+
+  RecordPrerenderTriggered(initiator_render_frame_host);
 
   return frame_tree_node_id;
 }
@@ -275,6 +278,21 @@ PrerenderHost* PrerenderHostRegistry::FindHostByUrlForTesting(
       return iter.second.get();
   }
   return nullptr;
+}
+
+void PrerenderHostRegistry::CancelAllHostsForTesting() {
+  DCHECK(reserved_prerender_host_by_frame_tree_node_id_.empty())
+      << "It is not possible to cancel reserved hosts, so they must not exist "
+         "when trying to cancel all hosts";
+
+  for (auto& iter : prerender_host_by_frame_tree_node_id_) {
+    // Asynchronously delete the prerender host.
+    ScheduleToDeleteAbandonedHost(
+        std::move(iter.second),
+        PrerenderHost::FinalStatus::kCancelAllHostsForTesting);
+  }
+  // After we're done scheduling deletion, clear the map.
+  prerender_host_by_frame_tree_node_id_.clear();
 }
 
 base::WeakPtr<PrerenderHostRegistry> PrerenderHostRegistry::GetWeakPtr() {

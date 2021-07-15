@@ -245,14 +245,10 @@ void ArcResizeLockManager::OnWindowPropertyChanged(aura::Window* window,
                               ash::kArcResizeLockTypeKey))) {
                         return;
                       }
-                      window->SetProperty(ash::kResizeShadowTypeKey,
-                                          ash::ResizeShadowType::kLock);
                       manager->EnableResizeLock(window);
                     },
                     weak_ptr_factory_.GetWeakPtr()));
   } else {
-    window->SetProperty(ash::kResizeShadowTypeKey,
-                        ash::ResizeShadowType::kUnlock);
     DisableResizeLock(window);
   }
 }
@@ -275,8 +271,6 @@ void ArcResizeLockManager::EnableResizeLock(aura::Window* window) {
   const bool inserted = resize_lock_enabled_windows_.insert(window).second;
   if (!inserted)
     return;
-
-  bool is_first_launch = false;
 
   const auto app_id = GetAppId(window);
   DCHECK(app_id);
@@ -301,23 +295,21 @@ void ArcResizeLockManager::EnableResizeLock(aura::Window* window) {
     // As we updated the resize lock state above, we need to update compat mode
     // button.
     UpdateCompatModeButton(window);
-    is_first_launch = true;
+
+    if (ShouldShowSplashScreenDialog(pref_delegate_)) {
+      const bool is_for_unresizable =
+          window->GetProperty(ash::kArcResizeLockTypeKey) ==
+          ash::ArcResizeLockType::FULLY_LOCKED;
+      WindowActivationObserver::RunOnActivated(
+          window, base::BindOnce(&ArcSplashScreenDialogView::Show, window,
+                                 is_for_unresizable));
+    }
   }
 
+  window->SetProperty(ash::kResizeShadowTypeKey, ash::ResizeShadowType::kLock);
   // Show lock shadow effect on window. ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->resize_shadow_controller()->ShowShadow(window);
-
-  // Because we use the compat mode button as the "anchor" in the splash, we
-  // need to show it after the setup of the compat mode button.
-  if (is_first_launch && ShouldShowSplashScreenDialog(pref_delegate_)) {
-    const bool is_for_unresizable =
-        window->GetProperty(ash::kArcResizeLockTypeKey) ==
-        ash::ArcResizeLockType::FULLY_LOCKED;
-    WindowActivationObserver::RunOnActivated(
-        window, base::BindOnce(&ArcSplashScreenDialogView::Show, window,
-                               is_for_unresizable));
-  }
 }
 
 void ArcResizeLockManager::DisableResizeLock(aura::Window* window) {
@@ -325,6 +317,8 @@ void ArcResizeLockManager::DisableResizeLock(aura::Window* window) {
   if (!erased)
     return;
 
+  window->SetProperty(ash::kResizeShadowTypeKey,
+                      ash::ResizeShadowType::kUnlock);
   // Hide shadow effect on window. ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->resize_shadow_controller()->HideShadow(window);
@@ -405,14 +399,29 @@ void ArcResizeLockManager::UpdateCompatModeButton(aura::Window* window) {
     case ash::ArcResizeLockType::RESIZE_LIMITED:
     case ash::ArcResizeLockType::RESIZABLE:
       compat_mode_button->SetEnabled(true);
+      frame_view->SetToggleResizeLockMenuCallback(base::BindRepeating(
+          &ArcResizeLockManager::ToggleResizeToggleMenu,
+          base::Unretained(this), frame_view->frame()));
       break;
     case ash::ArcResizeLockType::FULLY_LOCKED:
       compat_mode_button->SetEnabled(false);
+      frame_view->ClearToggleResizeLockMenuCallback();
       break;
   }
 }
 
-void ArcResizeLockManager::ToggleResizeToggleMenu(views::Widget* widget) {
+void ArcResizeLockManager::ToggleResizeToggleMenu(
+    views::Widget* widget) {
+  aura::Window* window = widget->GetNativeWindow();
+  if (!window || !ash::IsArcWindow(window))
+    return;
+
+  auto* frame_view = ash::NonClientFrameViewAsh::Get(window);
+  DCHECK(frame_view);
+  const auto* compat_mode_button =
+      frame_view->GetHeaderView()->GetFrameHeader()->GetCenterButton();
+  if (!compat_mode_button || !compat_mode_button->GetEnabled())
+    return;
   resize_toggle_menu_.reset();
   resize_toggle_menu_ =
       std::make_unique<ResizeToggleMenu>(widget, pref_delegate_);

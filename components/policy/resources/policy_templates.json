@@ -911,6 +911,7 @@
         'ReportDeviceBootMode',
         'ReportDeviceUsers',
         'ReportDeviceActivityTimes',
+        'ReportDeviceAudioStatus',
         'ReportDeviceLocation',
         'ReportDeviceNetworkInterfaces',
         'ReportDeviceHardwareStatus',
@@ -950,6 +951,7 @@
         'DeviceDataRoamingEnabled',
         'NetworkThrottlingEnabled',
         'DeviceHostnameTemplate',
+        'DeviceHostnameUserConfigurable',
         'DeviceWiFiFastTransitionEnabled',
         'DeviceWiFiAllowed',
         'DeviceDockMacAddressSource',
@@ -9526,6 +9528,37 @@
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
+      'name': 'ReportDeviceAudioStatus',
+      'owners': ['cros-reporting-team@google.com', 'tylergarrett@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Report audio status',
+        },
+        {
+          'value': False,
+          'caption': 'Do not report audio status',
+        },
+      ],
+      'example_value': False,
+      'default': True,
+      'id': 873,
+      'caption': '''Report device audio status''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to enabled or leaving it unset has enrolled devices report device audio volume.
+
+      Setting the policy to Disabled means enrolled devices don't record or report audio status.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
       'name': 'ReportDeviceBootMode',
       'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org'],
       'type': 'main',
@@ -15131,7 +15164,7 @@
           'type': 'object',
           'properties': {
             'allowCorporateKeyUsage': {
-              'description': '''If set to true, this extension can use all keys that are designated for corporate usage to sign arbitrary data. If set to false, it cannot access any such keys and the user cannot grant such permission either.''',
+              'description': '''If set to true, this extension can use all keys that are designated for corporate usage to sign arbitrary data. If set to false, it cannot access any such keys and the user cannot grant such permission either. As an exception, an extension can access such a key exactly once if the same extension generated that key.''',
               'type': 'boolean',
             },
           },
@@ -18341,6 +18374,39 @@
       Leaving the policy unset or if the value after substitution isn't a valid hostname, no hostname is set in DHCP request.'''
     },
     {
+      'name': 'DeviceHostnameUserConfigurable',
+      'owners': ['khorimoto@google.com', 'cros-connectivity@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'device_only': True,
+      'features': {
+        'can_be_mandatory': True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow managed user to configure device hostname',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent managed user from configuring device hostname',
+        },
+      ],
+      'example_value': True,
+      'default': False,
+      'id': 874,
+      'caption': '''Allow user to configure their device hostname''',
+      'tags': [],
+      'desc': '''Determine whether a user is allowed to configure the device hostname.
+
+      If <ph name="DEVICE_HOSTNAME_TEMPLATE_POLICY_NAME">DeviceHostnameTemplate</ph> is set, the admininistrator sets hostname and the user cannot choose regardless of what this policy is set to.
+      If this policy is set to True and <ph name="DEVICE_HOSTNAME_TEMPLATE_POLICY_NAME">DeviceHostnameTemplate</ph> is not set, the admininistrator does not set hostname and the user can choose one.
+      If this policy is set to False and <ph name="DEVICE_HOSTNAME_TEMPLATE_POLICY_NAME">DeviceHostnameTemplate</ph> is not set, the admininistrator does not set hostname and the user cannot choose one, hence the default name is used.'''
+    },
+    {
       'name': 'AbusiveExperienceInterventionEnforce',
       'owners': ['shivanisha@chromium.org', 'csharrison@chromium.org'],
       'type': 'main',
@@ -20057,7 +20123,7 @@
     },
     {
       'name': 'CoalesceH2ConnectionsWithClientCertificatesForHosts',
-      'owners': ['nharper@chromium.org', 'rsleevi@chromium.org'],
+      'owners': ['rsleevi@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -22929,7 +22995,7 @@
     },
     {
       'name': 'HSTSPolicyBypassList',
-      'owners': ['nharper@chromium.org', 'rsleevi@chromium.org'],
+      'owners': ['asymmetric@chromium.org', 'rsleevi@chromium.org'],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -26755,6 +26821,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceTransferSAMLCookies': 'saml_settings.transfer_saml_cookies',
     'LoginVideoCaptureAllowedUrls': 'login_video_capture_allowed_urls.urls',
     'DeviceHostnameTemplate': 'network_hostname.device_hostname_template',
+    'DeviceHostnameUserConfigurable': 'hostname_user_configurable.device_hostname_user_configurable',
     'DeviceKerberosEncryptionTypes': 'device_kerberos_encryption_types.types',
     'LogUploadEnabled': 'device_log_upload_settings.system_log_upload_enabled',
     'DeviceVariationsRestrictParameter': 'variations_parameter.parameter',
@@ -26813,6 +26880,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'SystemTimezone': 'system_timezone.timezone',
     'SystemTimezoneAutomaticDetection': 'system_timezone.timezone_detection_type',
     'ReportDeviceActivityTimes': 'device_reporting.report_activity_times',
+    'ReportDeviceAudioStatus': 'device_reporting.report_audio_status',
     'ReportDeviceBootMode': 'device_reporting.report_boot_mode',
     'ReportDeviceLocation': 'device_reporting.report_location',
     'ReportDeviceNetworkInterfaces': 'device_reporting.report_network_interfaces',
@@ -27272,6 +27340,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceBootMode',
         'ReportDeviceUsers',
         'ReportDeviceActivityTimes',
+        'ReportDeviceAudioStatus',
         'ReportDeviceLocation',
         'ReportDeviceNetworkInterfaces',
         'ReportDeviceHardwareStatus',
@@ -27384,6 +27453,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 872,
+  'highest_id_currently_used': 874,
   'highest_atomic_group_id_currently_used': 40
 }

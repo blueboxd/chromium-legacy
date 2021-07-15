@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/security_interstitial_idn_test.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/policy/policy_test_utils.h"
@@ -35,6 +36,8 @@
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page_factory.h"
+#include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
@@ -250,14 +253,9 @@ bool ClickAndWaitForDetach(Browser* browser, const std::string& node_id) {
 // A SafeBrowingUIManager class that allows intercepting malware details.
 class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
  public:
-  FakeSafeBrowsingUIManager()
-      : TestSafeBrowsingUIManager(),
-        threat_details_done_(false),
-        hit_report_sent_(false) {}
-  explicit FakeSafeBrowsingUIManager(SafeBrowsingService* service)
-      : TestSafeBrowsingUIManager(service),
-        threat_details_done_(false),
-        hit_report_sent_(false) {}
+  explicit FakeSafeBrowsingUIManager(
+      std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory)
+      : TestSafeBrowsingUIManager(std::move(blocking_page_factory)) {}
 
   // Overrides SafeBrowsingUIManager
   void SendSerializedThreatDetails(content::BrowserContext* browser_context,
@@ -307,8 +305,8 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
  private:
   std::string report_;
   base::OnceClosure threat_details_done_callback_;
-  bool threat_details_done_;
-  bool hit_report_sent_;
+  bool threat_details_done_ = false;
+  bool hit_report_sent_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingUIManager);
 };
@@ -362,7 +360,15 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                 unsafe_resources,
                 manager),
             display_options,
-            should_trigger_reporting),
+            should_trigger_reporting,
+            HistoryServiceFactory::GetForProfile(
+                Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+                ServiceAccessType::EXPLICIT_ACCESS),
+            SafeBrowsingNavigationObserverManagerFactory::GetForBrowserContext(
+                web_contents->GetBrowserContext()),
+            SafeBrowsingMetricsCollectorFactory::GetForProfile(
+                Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+            g_browser_process->safe_browsing_service()->trigger_manager()),
         wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
     SetThreatDetailsProceedDelayForTesting(100);
@@ -465,18 +471,20 @@ class SafeBrowsingBlockingPageBrowserTest
       content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
     // the browser is started but after threads are created.
-    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager());
+    auto blocking_page_factory =
+        std::make_unique<TestSafeBrowsingBlockingPageFactory>();
+    raw_blocking_page_factory_ = blocking_page_factory.get();
+    factory_.SetTestUIManager(
+        new FakeSafeBrowsingUIManager(std::move(blocking_page_factory)));
     factory_.SetTestDatabaseManager(new FakeSafeBrowsingDatabaseManager(
         content::GetUIThreadTaskRunner({}),
         content::GetIOThreadTaskRunner({})));
     SafeBrowsingService::RegisterFactory(&factory_);
-    SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
     ThreatDetails::RegisterFactory(&details_factory_);
   }
 
   void TearDown() override {
     InProcessBrowserTest::TearDown();
-    SafeBrowsingBlockingPage::RegisterFactory(nullptr);
     SafeBrowsingService::RegisterFactory(nullptr);
     ThreatDetails::RegisterFactory(nullptr);
   }
@@ -764,7 +772,7 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void SetAlwaysShowBackToSafety(bool val) {
-    blocking_page_factory_.SetAlwaysShowBackToSafety(val);
+    raw_blocking_page_factory_->SetAlwaysShowBackToSafety(val);
   }
 
  protected:
@@ -797,7 +805,7 @@ class SafeBrowsingBlockingPageBrowserTest
 
   base::test::ScopedFeatureList scoped_feature_list_;
   TestSafeBrowsingServiceFactory factory_;
-  TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
+  TestSafeBrowsingBlockingPageFactory* raw_blocking_page_factory_;
   net::EmbeddedTestServer https_server_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageBrowserTest);
@@ -1816,12 +1824,12 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
       content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
     // the browser is started but after threads are created.
-    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager());
+    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager(
+        std::make_unique<TestSafeBrowsingBlockingPageFactory>()));
     factory_.SetTestDatabaseManager(new FakeSafeBrowsingDatabaseManager(
         content::GetUIThreadTaskRunner({}),
         content::GetIOThreadTaskRunner({})));
     SafeBrowsingService::RegisterFactory(&factory_);
-    SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
     ThreatDetails::RegisterFactory(&details_factory_);
   }
 
@@ -1977,7 +1985,6 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
 
  private:
   TestSafeBrowsingServiceFactory factory_;
-  TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
   TestThreatDetailsFactory details_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageDelayedWarningBrowserTest);
@@ -2734,10 +2741,11 @@ class SafeBrowsingBlockingPageIDNTest
         contents->GetMainFrame()->GetRoutingID());
     resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER4;
 
-    return SafeBrowsingBlockingPage::CreateBlockingPage(
-        sb_service->ui_manager().get(), contents,
+    auto* ui_manager = sb_service->ui_manager().get();
+    return ui_manager->blocking_page_factory()->CreateSafeBrowsingPage(
+        ui_manager, contents,
         is_subresource ? GURL("http://mainframe.example.com/") : request_url,
-        resource, true);
+        {resource}, true);
   }
 };
 
@@ -2826,12 +2834,12 @@ class SafeBrowsingBlockingPageEnhancedProtectionMessageTest
       content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
     // the browser is started but after threads are created.
-    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager());
+    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager(
+        std::make_unique<TestSafeBrowsingBlockingPageFactory>()));
     factory_.SetTestDatabaseManager(new FakeSafeBrowsingDatabaseManager(
         content::GetUIThreadTaskRunner({}),
         content::GetIOThreadTaskRunner({})));
     SafeBrowsingService::RegisterFactory(&factory_);
-    SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
     ThreatDetails::RegisterFactory(&details_factory_);
   }
 
@@ -2850,7 +2858,6 @@ class SafeBrowsingBlockingPageEnhancedProtectionMessageTest
 
  private:
   TestSafeBrowsingServiceFactory factory_;
-  TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
   TestThreatDetailsFactory details_factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -2969,12 +2976,12 @@ class SafeBrowsingBlockingPageRealTimeUrlCheckTest
       content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
     // the browser is started but after threads are created.
-    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager());
+    factory_.SetTestUIManager(new FakeSafeBrowsingUIManager(
+        std::make_unique<TestSafeBrowsingBlockingPageFactory>()));
     factory_.SetTestDatabaseManager(new FakeSafeBrowsingDatabaseManager(
         content::GetUIThreadTaskRunner({}),
         content::GetIOThreadTaskRunner({})));
     SafeBrowsingService::RegisterFactory(&factory_);
-    SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
   }
 
  protected:
@@ -2989,7 +2996,6 @@ class SafeBrowsingBlockingPageRealTimeUrlCheckTest
 
  private:
   TestSafeBrowsingServiceFactory factory_;
-  TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageRealTimeUrlCheckTest);

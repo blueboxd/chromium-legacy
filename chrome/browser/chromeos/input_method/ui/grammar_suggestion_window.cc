@@ -9,7 +9,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -21,7 +20,13 @@ namespace ui {
 namespace ime {
 
 namespace {
-constexpr SkColor kSecondaryIconColor = gfx::kGoogleGrey500;
+
+constexpr SkColor kGrammarColor = gfx::kGoogleGrey700;
+constexpr int kGrammarPaddingSize = 4;
+constexpr float kSuggestionBorderRadius = 2;
+// Large enough to make the background a circle.
+constexpr float kIconBorderRadius = 100;
+constexpr int kWindowOffsetY = -4;
 
 bool ShouldHighlight(const views::Button& button) {
   return button.GetState() == views::Button::STATE_HOVERED ||
@@ -37,7 +42,8 @@ GrammarSuggestionWindow::GrammarSuggestionWindow(gfx::NativeView parent,
   SetCanActivate(false);
   DCHECK(parent);
   set_parent_window(parent);
-  set_margins(gfx::Insets());
+  set_margins(gfx::Insets(kGrammarPaddingSize, kGrammarPaddingSize,
+                          kGrammarPaddingSize, kGrammarPaddingSize));
 
   SetArrow(views::BubbleBorder::Arrow::BOTTOM_LEFT);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -95,7 +101,7 @@ void GrammarSuggestionWindow::OnThemeChanged() {
 
   ignore_button_->SetImage(
       views::Button::ButtonState::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kCloseIcon, kSecondaryIconColor));
+      gfx::CreateVectorIcon(views::kCloseIcon, kGrammarColor));
 
   BubbleDialogDelegateView::OnThemeChanged();
 }
@@ -121,7 +127,10 @@ void GrammarSuggestionWindow::Hide() {
 }
 
 void GrammarSuggestionWindow::SetSuggestion(const std::u16string& suggestion) {
-  suggestion_button_->SetView(SuggestionDetails{.text = suggestion});
+  suggestion_button_->SetView(SuggestionDetails{
+      .text = suggestion,
+      .text_color = kGrammarColor,
+  });
 }
 
 void GrammarSuggestionWindow::SetButtonHighlighted(
@@ -137,17 +146,22 @@ void GrammarSuggestionWindow::SetButtonHighlighted(
   if (highlighted) {
     switch (button.id) {
       case ButtonId::kSuggestion:
-        suggestion_button_->SetBackground(
-            views::CreateSolidBackground(kButtonHighlightColor));
+        suggestion_button_->SetBackground(views::CreateRoundedRectBackground(
+            kButtonHighlightColor, kSuggestionBorderRadius));
         break;
       case ButtonId::kIgnoreSuggestion:
-        ignore_button_->SetBackground(
-            views::CreateSolidBackground(kButtonHighlightColor));
+        ignore_button_->SetBackground(views::CreateRoundedRectBackground(
+            kButtonHighlightColor, kIconBorderRadius));
         break;
       default:
         break;
     }
   }
+}
+
+void GrammarSuggestionWindow::SetBounds(gfx::Rect bounds) {
+  bounds.Offset(0, kWindowOffsetY);
+  SetAnchorRect(bounds);
 }
 
 SuggestionView* GrammarSuggestionWindow::GetSuggestionButtonForTesting() {

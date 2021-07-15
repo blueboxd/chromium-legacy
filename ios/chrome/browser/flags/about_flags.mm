@@ -698,6 +698,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInterestFeedNoticeCardAutoDismissDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(feed::kInterestFeedNoticeCardAutoDismiss)},
+    {"autofill-address-verification-in-save-prompt",
+     flag_descriptions::kEnableAutofillAddressSavePromptAddressVerificationName,
+     flag_descriptions::
+         kEnableAutofillAddressSavePromptAddressVerificationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillAddressProfileSavePromptAddressVerificationSupport)},
     {"autofill-address-save-prompt",
      flag_descriptions::kEnableAutofillAddressSavePromptName,
      flag_descriptions::kEnableAutofillAddressSavePromptDescription,
@@ -1008,8 +1016,8 @@ std::vector<std::string> RegisterAllFeatureVariationParameters(
 
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            flags_ui::FlagAccess access,
-                           base::ListValue* supported_entries,
-                           base::ListValue* unsupported_entries) {
+                           base::Value::ListStorage& supported_entries,
+                           base::Value::ListStorage& unsupported_entries) {
   GetGlobalFlagsState().GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::BindRepeating(&SkipConditionalFeatureEntry));

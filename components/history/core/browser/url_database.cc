@@ -48,7 +48,7 @@ URLDatabase::~URLDatabase() = default;
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
 // kURLRowFields.
-void URLDatabase::FillURLRow(const sql::Statement& s, URLRow* i) {
+void URLDatabase::FillURLRow(sql::Statement& s, URLRow* i) {
   DCHECK(i);
   i->set_id(s.ColumnInt64(0));
   i->set_url(GURL(s.ColumnString(1)));
@@ -404,18 +404,20 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
   return true;
 }
 
-URLRows URLDatabase::GetTextMatches(const std::u16string& query) {
-  return GetTextMatchesWithAlgorithm(query,
-                                     query_parser::MatchingAlgorithm::DEFAULT);
+bool URLDatabase::GetTextMatches(const std::u16string& query,
+                                 URLRows* results) {
+  return GetTextMatchesWithAlgorithm(
+      query, query_parser::MatchingAlgorithm::DEFAULT, results);
 }
 
-URLRows URLDatabase::GetTextMatchesWithAlgorithm(
+bool URLDatabase::GetTextMatchesWithAlgorithm(
     const std::u16string& query,
-    query_parser::MatchingAlgorithm algorithm) {
+    query_parser::MatchingAlgorithm algorithm,
+    URLRows* results) {
   query_parser::QueryNodeVector query_nodes;
   query_parser::QueryParser::ParseQueryNodes(query, algorithm, &query_nodes);
 
-  URLRows results;
+  results->clear();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE hidden = 0"));
 
@@ -438,10 +440,10 @@ URLRows URLDatabase::GetTextMatchesWithAlgorithm(
       URLResult info;
       FillURLRow(statement, &info);
       if (info.url().is_valid())
-        results.push_back(info);
+        results->push_back(info);
     }
   }
-  return results;
+  return !results->empty();
 }
 
 bool URLDatabase::InitKeywordSearchTermsTable() {

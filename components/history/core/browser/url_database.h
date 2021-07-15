@@ -183,14 +183,14 @@ class URLDatabase {
 
   // Performs a brute force search over the database to find any URLs or titles
   // which match the `query` string, using the default text matching algorithm.
-  // Returns any matches.
-  URLRows GetTextMatches(const std::u16string& query);
+  // Returns any matches in `results`.
+  bool GetTextMatches(const std::u16string& query, URLRows* results);
 
   // Same as GetTextMatches, using `algorithm` as the text matching
   // algorithm.
-  URLRows GetTextMatchesWithAlgorithm(
-      const std::u16string& query,
-      query_parser::MatchingAlgorithm algorithm);
+  bool GetTextMatchesWithAlgorithm(const std::u16string& query,
+                                   query_parser::MatchingAlgorithm algorithm,
+                                   URLRows* results);
 
   // Keyword Search Terms ------------------------------------------------------
 
@@ -293,7 +293,7 @@ class URLDatabase {
 
   // Convenience to fill a URLRow. Must be in sync with the fields in
   // kHistoryURLRowFields.
-  static void FillURLRow(const sql::Statement& s, URLRow* i);
+  static void FillURLRow(sql::Statement& s, URLRow* i);
 
   // Returns the database for the functions in this interface. The descendant of
   // this class implements these functions to return its objects.

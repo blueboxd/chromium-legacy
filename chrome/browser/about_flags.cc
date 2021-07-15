@@ -4009,6 +4009,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeSystemEmojiPickerName,
      flag_descriptions::kImeSystemEmojiPickerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeSystemEmojiPicker)},
+    {"enable-cros-ime-system-emoji-picker-clipboard",
+     flag_descriptions::kImeSystemEmojiPickerClipboardName,
+     flag_descriptions::kImeSystemEmojiPickerClipboardDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeSystemEmojiPickerClipboard)},
     {"enable-cros-language-settings-update-2",
      flag_descriptions::kCrosLanguageSettingsUpdate2Name,
      flag_descriptions::kCrosLanguageSettingsUpdate2Description, kOsCrOS,
@@ -7669,8 +7673,8 @@ std::vector<std::string> RegisterAllFeatureVariationParameters(
 
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            flags_ui::FlagAccess access,
-                           base::ListValue* supported_entries,
-                           base::ListValue* unsupported_entries) {
+                           base::Value::ListStorage& supported_entries,
+                           base::Value::ListStorage& unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::BindRepeating(&ShouldSkipConditionalFeatureEntry,
@@ -7682,8 +7686,8 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
 void GetFlagFeatureEntriesForDeprecatedPage(
     flags_ui::FlagsStorage* flags_storage,
     flags_ui::FlagAccess access,
-    base::ListValue* supported_entries,
-    base::ListValue* unsupported_entries) {
+    base::Value::ListStorage& supported_entries,
+    base::Value::ListStorage& unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::BindRepeating(&ShouldSkipNonDeprecatedFeatureEntry));

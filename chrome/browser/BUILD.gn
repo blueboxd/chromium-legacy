@@ -5406,6 +5406,10 @@ static_library("browser") {
       "renderer_context_menu/spelling_options_submenu_observer.cc",
       "renderer_context_menu/spelling_options_submenu_observer.h",
     ]
+
+    # Lens Region Search feature is available on all desktop platforms except Mac.
+    # TODO(crbug/1229334): Add Mac support for Lens Region Search feature.
+    deps += [ "//chrome/browser/lens/region_search" ]
   }
 
   if (is_win || is_chromeos_ash || is_mac) {
@@ -6105,6 +6109,13 @@ static_library("browser") {
       "media/cdm_pref_service_helper.cc",
       "media/cdm_pref_service_helper.h",
     ]
+
+    if (enable_media_foundation_widevine_cdm) {
+      sources += [
+        "component_updater/media_foundation_widevine_cdm_component_installer.cc",
+        "component_updater/media_foundation_widevine_cdm_component_installer.h",
+      ]
+    }
   }
 
   if (enable_chrome_notifications) {

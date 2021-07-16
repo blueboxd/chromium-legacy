@@ -312,7 +312,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (!it.value().GetAsDictionary(&quic_args)) {
         LOG(ERROR) << "Quic config params \"" << it.value()
                    << "\" is not a dictionary value";
-        effective_experimental_options->Remove(it.key(), nullptr);
+        effective_experimental_options->RemoveKey(it.key());
         continue;
       }
 
@@ -588,7 +588,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (!it.value().GetAsDictionary(&async_dns_args)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a dictionary value";
-        effective_experimental_options->Remove(it.key(), nullptr);
+        effective_experimental_options->RemoveKey(it.key());
         continue;
       }
       async_dns_args->GetBoolean(kAsyncDnsEnable, &async_dns_enable);
@@ -597,7 +597,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (!it.value().GetAsDictionary(&stale_dns_args)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a dictionary value";
-        effective_experimental_options->Remove(it.key(), nullptr);
+        effective_experimental_options->RemoveKey(it.key());
         continue;
       }
       if (stale_dns_args->GetBoolean(kStaleDnsEnable, &stale_dns_enable) &&
@@ -637,7 +637,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (!it.value().GetAsDictionary(&host_resolver_rules_args)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a dictionary value";
-        effective_experimental_options->Remove(it.key(), nullptr);
+        effective_experimental_options->RemoveKey(it.key());
         continue;
       }
       host_resolver_rules_enable = host_resolver_rules_args->GetString(
@@ -647,7 +647,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (!it.value().GetAsDictionary(&nel_args)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a dictionary value";
-        effective_experimental_options->Remove(it.key(), nullptr);
+        effective_experimental_options->RemoveKey(it.key());
         continue;
       }
       nel_args->GetBoolean(kNetworkErrorLoggingEnable, &nel_enable);
@@ -670,15 +670,14 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (!it.value().is_bool()) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a bool";
-        effective_experimental_options->Remove(it.key(), nullptr);
+        effective_experimental_options->RemoveKey(it.key());
         continue;
       }
       disable_ipv6_on_wifi = it.value().GetBool();
     } else if (it.key() == kSSLKeyLogFile) {
-      std::string ssl_key_log_file_string;
-      if (it.value().GetAsString(&ssl_key_log_file_string)) {
+      if (it.value().is_string()) {
         base::FilePath ssl_key_log_file(
-            base::FilePath::FromUTF8Unsafe(ssl_key_log_file_string));
+            base::FilePath::FromUTF8Unsafe(it.value().GetString()));
         if (!ssl_key_log_file.empty()) {
           // SetSSLKeyLogger is only safe to call before any SSLClientSockets
           // are created. This should not be used if there are multiple
@@ -694,7 +693,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (!it.value().GetAsDictionary(&nqe_args)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a dictionary value";
-        effective_experimental_options->Remove(it.key(), nullptr);
+        effective_experimental_options->RemoveKey(it.key());
         continue;
       }
 
@@ -712,7 +711,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     } else {
       LOG(WARNING) << "Unrecognized Cronet experimental option \"" << it.key()
                    << "\" with params \"" << it.value();
-      effective_experimental_options->Remove(it.key(), nullptr);
+      effective_experimental_options->RemoveKey(it.key());
     }
   }
 

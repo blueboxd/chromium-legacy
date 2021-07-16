@@ -5,8 +5,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
 #include <algorithm>
-#include <bitset>
-#include <cmath>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -14,16 +12,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/containers/contains.h"
-#include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/i18n/character_encoding.h"
 #include "base/lazy_instance.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -37,22 +32,17 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/base_tracing.h"
 #include "base/trace_event/optional_trace_event.h"
-#include "base/trace_event/trace_conversion_helper.h"
-#include "base/trace_event/traced_value.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/render_accessibility_host.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/bad_message.h"
@@ -64,33 +54,28 @@
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
-#include "content/browser/devtools/protocol/audits.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/data_url_blob_reader.h"
-#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/feature_observer.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
-#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/loader/navigation_early_hints_manager.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/log_console_message.h"
 #include "content/browser/manifest/manifest_manager_host.h"
+#include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
-#include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
-#include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/prerender/prerender_metrics.h"
@@ -101,8 +86,6 @@
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/cookie_utils.h"
-#include "content/browser/renderer_host/cross_process_frame_connector.h"
-#include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -122,7 +105,6 @@
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -130,7 +112,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/sms/webotp_service.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
@@ -154,30 +135,20 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/worker_host/dedicated_worker_host_factory_impl.h"
-#include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
-#include "content/common/content_constants_internal.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/debug_utils.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.mojom.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/common/navigation_params_utils.h"
-#include "content/common/render_message_filter.mojom.h"
-#include "content/common/renderer.mojom.h"
 #include "content/common/state_transitions.h"
 #include "content/public/browser/ax_event_notification_details.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_plugin_guest_manager.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
-#include "content/public/browser/idle_manager.h"
-#include "content/public/browser/media_player_watch_time.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -188,35 +159,25 @@
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/origin_util.h"
 #include "content/public/common/page_visibility_state.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/referrer_type_converters.h"
-#include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "device/gamepad/gamepad_monitor.h"
-#include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
-#include "media/base/user_input_monitor.h"
 #include "media/learning/common/value.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/schemeful_site.h"
-#include "net/cookies/cookie_constants.h"
-#include "services/device/public/cpp/device_features.h"
-#include "services/device/public/mojom/sensor_provider.mojom.h"
-#include "services/device/public/mojom/wake_lock.mojom.h"
-#include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
@@ -224,62 +185,37 @@
 #include "services/network/public/cpp/not_implemented_url_loader_factory.h"
 #include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
-#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
-#include "services/network/public/mojom/cookie_access_observer.mojom.h"
-#include "services/network/public/mojom/ip_address_space.mojom.h"
-#include "services/network/public/mojom/mdns_responder.mojom.h"
-#include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/url_loader.mojom-shared.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/loader/inter_process_time_ticks_converter.h"
-#include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
-#include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
-#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
-#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
-#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
-#include "third_party/blink/public/mojom/compute_pressure/compute_pressure.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 #include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom.h"
-#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
-#include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
-#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
-#include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/mojom/sms/webotp_service.mojom.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom.h"
-#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
-#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_common.h"
-#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/geometry/quad_f.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -302,6 +238,10 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
+#endif
+
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
+#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #endif
 
 namespace content {
@@ -871,7 +811,8 @@ enum class VerifyDidCommitParamsDifference {
   kShouldUpdateHistory = 7,
   kGesture = 8,
   kShouldReplaceCurrentEntry = 9,
-  kMaxValue = kShouldReplaceCurrentEntry,
+  kURL = 10,
+  kMaxValue = kURL,
 };
 
 bool ValidateCSPAttribute(const std::string& value) {
@@ -1106,6 +1047,22 @@ const GURL& GetLastDocumentLoadingURL(
     return last_committed_url;
   // Otherwise, return the last document URL.
   return last_document_url;
+}
+
+// Whether the navigation went through the special path for loadDataWithBaseURL
+// navigations that sets the "loading URL" to the data: URL used to commit,
+// instead of defaulting the "loading URL" to the document URL (which in most
+// cases will be the "base URL").
+// See RenderFrameImpl::GetLoadingUrl() and BuildDocumentStateFromParams() for
+// more details. Note that the checks are a bit different: it checks for
+// validity instead of whether the URL is empty or not, as the URL received
+// by the renderer would have gone through reparsing, so invalid URLs will also
+// end up as empty in the renderer.
+bool LoadingURLForDocumentIsDataURL(
+    const blink::mojom::CommonNavigationParams& common_params) {
+  return common_params.base_url_for_data_url.is_valid() &&
+         common_params.history_url_for_data_url.is_valid() &&
+         common_params.url.SchemeIs(url::kDataScheme);
 }
 
 }  // namespace
@@ -10191,17 +10148,9 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   renderer_url_info_.document_has_unreachable_url_from_load_data_with_base_url =
       navigation_request->IsLoadDataWithBaseURLAndHasUnreachableURL();
 
-  // Mark whether the document went through the special path for
-  // loadDataWithBaseURL navigations that sets the "loading URL" to the data:
-  // URL used to commit, instead of defaulting the "loading URL" to the document
-  // URL (which in most cases will be the base URL).
-  // See RenderFrameImpl::GetLoadingUrl() and BuildDocumentStateFromParams() for
-  // more details.
+  // See comment in LoadingURLForDocumentIsDataURL().
   renderer_url_info_.loading_url_for_document_is_data_url =
-      !navigation_request->common_params().base_url_for_data_url.is_empty() &&
-      !navigation_request->common_params()
-           .history_url_for_data_url.is_empty() &&
-      navigation_request->common_params().url.SchemeIs(url::kDataScheme);
+      LoadingURLForDocumentIsDataURL(navigation_request->common_params());
 
   // If we still have a PeakGpuMemoryTracker, then the loading it was observing
   // never completed. Cancel it's callback so that we don't report partial
@@ -11017,6 +10966,71 @@ bool CalculateShouldReplaceCurrentEntry(
   return result;
 }
 
+// Calculates the "loading" URL for a given navigation. This tries to replicate
+// RenderFrameImpl::GetLoadingUrl() and is used to predict the value of "url" in
+// DidCommitProvisionalLoadParams. Note that this is a bit different from
+// GetLastDocumentLoadingURL(), which predicts the loading URL of an
+// already-committed document for URL comparison purposes.
+GURL CalculateLoadingURL(
+    NavigationRequest* request,
+    const mojom::DidCommitProvisionalLoadParams& params,
+    const RenderFrameHostImpl::RendererURLInfo& last_renderer_url_info,
+    bool last_document_is_error_page,
+    const GURL& last_committed_url) {
+  if (params.url.IsAboutBlank() && params.url.ref_piece() == "blocked") {
+    // Some navigations can still be blocked by the renderer during the commit,
+    // changing the URL to "about:blank#blocked". Currently we have no way of
+    // predicting this in the browser, so just return the URL given by the
+    // renderer in this case.
+    // TODO(https://crbug.com/1131832): Block the navigations in the browser
+    // instead and remove |params| as a parameter to this function.
+    return params.url;
+  }
+
+  if (!request->common_params().url.is_valid()) {
+    // Empty URL (and invalid URLs, which are converted to the empty URL due
+    // to IPC URL reparsing) will be rewritten to "about:blank" in the renderer.
+    // TODO(https://crbug.com/1131832): Do the rewrite in the browser.
+    return GURL(url::kAboutBlankURL);
+  }
+
+  if (request->IsSameDocument()) {
+    // Documents that have an "override" URL (some loadDataWithBaseURL
+    // navigations, error pages) will continue using that URL even after
+    // same-document navigations.
+    if (last_renderer_url_info.loading_url_for_document_is_data_url ||
+        last_document_is_error_page)
+      return last_committed_url;
+
+    // For all other same-document navigations, return the
+    // CommonNavigationParams' url.
+    return request->common_params().url;
+  }
+
+  if (request->IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer()) {
+    // Handle loadDataWithBaseURL navigations. See MaybeGetOverriddenURL() in
+    // render_frame_impl.cc.
+    // If the navigation qualifies, the URL returned will be the URL in
+    // CommonNavigationParams (the data: URL).
+    if (LoadingURLForDocumentIsDataURL(request->common_params()))
+      return request->common_params().url;
+
+    // Otherwise, the "unreachable URL" (history URL) will be used if it's set.
+    if (request->common_params().history_url_for_data_url.is_valid())
+      return request->common_params().history_url_for_data_url;
+
+    // Finally, the "document URL" will be used for all other cases. If the
+    // base URL is set, the document URL will be the base URL. If not, it will
+    // use the CommonNavigationParams' URL, which is handled further below.
+    if (request->common_params().base_url_for_data_url.is_valid())
+      return request->common_params().base_url_for_data_url;
+  }
+
+  // For all other navigations, the returned URL should be the same as the URL
+  // in CommonNavigationParams.
+  return request->common_params().url;
+}
+
 bool ShouldVerify(const std::string& param) {
 #if DCHECK_IS_ON()
   return true;
@@ -11054,6 +11068,7 @@ void RenderFrameHostImpl::
   // - should_update_history
   // - gesture
   // - should_replace_current_entry
+  // - url
   // TODO(crbug.com/1131832): Verify more params.
   // We can know if we're going to be in an error page after this navigation
   // if the net error code is not net::OK, or if we're doing a same-document
@@ -11110,6 +11125,9 @@ void RenderFrameHostImpl::
               is_error_page_, last_committed_url_,
               renderer_url_info_.last_document_url));
 
+  const GURL browser_url = CalculateLoadingURL(
+      request, params, renderer_url_info_, is_error_page_, last_committed_url_);
+
   if ((!ShouldVerify("intended_as_new_entry") ||
        request->commit_params().intended_as_new_entry ==
            params.intended_as_new_entry) &&
@@ -11126,7 +11144,8 @@ void RenderFrameHostImpl::
       (!ShouldVerify("gesture") || browser_gesture == renderer_gesture) &&
       (!ShouldVerify("should_replace_current_entry") ||
        browser_should_replace_current_entry ==
-           params.should_replace_current_entry)) {
+           params.should_replace_current_entry) &&
+      (!ShouldVerify("url") || browser_url == params.url)) {
     return;
   }
 
@@ -11208,6 +11227,11 @@ void RenderFrameHostImpl::
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "replace_renderer",
                         params.should_replace_current_entry);
 
+  SCOPED_CRASH_KEY_STRING256("VerifyDidCommit", "url_browser",
+                             browser_url.possibly_invalid_spec());
+  SCOPED_CRASH_KEY_STRING256("VerifyDidCommit", "url_renderer",
+                             params.url.possibly_invalid_spec());
+
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_same_document",
                         is_same_document_navigation);
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_history_api",
@@ -11254,8 +11278,6 @@ void RenderFrameHostImpl::
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "was_click",
                         request->WasInitiatedByLinkClick());
 
-  SCOPED_CRASH_KEY_STRING256("VerifyDidCommit", "navigation_url",
-                             params.url.possibly_invalid_spec());
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "nav_url_blank",
                         params.url.IsAboutBlank());
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "nav_url_srcdoc",
@@ -11321,6 +11343,7 @@ void RenderFrameHostImpl::
   DCHECK_EQ(browser_gesture, renderer_gesture);
   DCHECK_EQ(browser_should_replace_current_entry,
             params.should_replace_current_entry);
+  DCHECK_EQ(browser_url, params.url);
 
   // Log histograms to trigger Chrometto slow reports, allowing us to see traces
   // to analyze what happened in these navigations.
@@ -11361,6 +11384,10 @@ void RenderFrameHostImpl::
       params.should_replace_current_entry) {
     LogVerifyDidCommitParamsDifference(
         VerifyDidCommitParamsDifference::kShouldReplaceCurrentEntry);
+  }
+
+  if (browser_url != params.url) {
+    LogVerifyDidCommitParamsDifference(VerifyDidCommitParamsDifference::kURL);
   }
 
   base::debug::DumpWithoutCrashing();

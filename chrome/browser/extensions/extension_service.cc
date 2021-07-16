@@ -39,7 +39,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
-#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -80,6 +79,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/event_router.h"
@@ -913,8 +913,9 @@ void ExtensionService::MaybeEnableRemotelyDisabledExtension(
 
 void ExtensionService::ClearGreylistedAcknowledgedStateAndMaybeReenable(
     const std::string& extension_id) {
-  bool is_on_sb_list = (extension_prefs_->GetExtensionBlocklistState(
-                            extension_id) != NOT_BLOCKLISTED);
+  bool is_on_sb_list = (blocklist_prefs::GetSafeBrowsingExtensionBlocklistState(
+                            extension_id, extension_prefs_) !=
+                        BitMapBlocklistState::NOT_BLOCKLISTED);
   bool is_on_omaha_list =
       blocklist_prefs::HasAnyOmahaGreylistState(extension_id, extension_prefs_);
   if (is_on_sb_list || is_on_omaha_list) {
@@ -933,9 +934,8 @@ void ExtensionService::MaybeDisableGreylistedExtension(
     BitMapBlocklistState new_state) {
 #if DCHECK_IS_ON()
   bool has_new_state_on_sb_list =
-      (blocklist_prefs::BlocklistStateToBitMapBlocklistState(
-           extension_prefs_->GetExtensionBlocklistState(extension_id)) ==
-       new_state);
+      (blocklist_prefs::GetSafeBrowsingExtensionBlocklistState(
+           extension_id, extension_prefs_) == new_state);
   bool has_new_state_on_omaha_list = blocklist_prefs::HasOmahaBlocklistState(
       extension_id, new_state, extension_prefs_);
   DCHECK(has_new_state_on_sb_list || has_new_state_on_omaha_list);
@@ -2291,8 +2291,9 @@ void ExtensionService::UpdateBlocklistedExtensions(
       continue;
     }
     registry_->RemoveBlocklisted(*it);
-    extension_prefs_->SetExtensionBlocklistState(extension->id(),
-                                                 NOT_BLOCKLISTED);
+    blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+        extension->id(), BitMapBlocklistState::NOT_BLOCKLISTED,
+        extension_prefs_);
     AddExtension(extension.get());
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.UnblacklistInstalled",
                               extension->location());
@@ -2307,8 +2308,9 @@ void ExtensionService::UpdateBlocklistedExtensions(
       continue;
     }
     registry_->AddBlocklisted(extension);
-    extension_prefs_->SetExtensionBlocklistState(extension->id(),
-                                                 BLOCKLISTED_MALWARE);
+    blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+        extension->id(), BitMapBlocklistState::BLOCKLISTED_MALWARE,
+        extension_prefs_);
     UnloadExtension(*it, UnloadedExtensionReason::BLOCKLIST);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlacklistInstalled",
                               extension->location());

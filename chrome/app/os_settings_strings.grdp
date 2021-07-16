@@ -409,7 +409,7 @@
     Spelling and grammar check
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_SPELL_AND_GRAMMAR_CHECK_DESCRIPTION" desc="Description for the spell and grammar check section.">
-    Grammar check currently avaiable for English only
+    Grammar check currently available for English only
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_SPELL_CHECK_ENHANCED_LABEL" desc="Label for enhanced spell check toggle, the type of spell check that sends the text the user types to Google spelling service. It is important that it is communicated that the text the user types will be sent to Google.">
     Enhanced spell check in Chrome browser (text is sent to Google for spelling suggestions)
@@ -802,6 +802,18 @@
   </message>
   <message name="IDS_SETTINGS_DARK_MODE_SCHEDULE_SUNSET_TO_SUNRISE" desc="The label of the option to set the automatic schedule of the Dark Mode feature to turn on at sunset and off at sunrise.">
     Sunset to sunrise
+  </message>
+  <message name="IDS_SETTINGS_DARK_MODE_SUBLABEL_SUNSET_TO_SUNRISE_OFF" desc="The sub label for row in personalization settings page that indicates that dark mode is off and will be automatically turned on at sunset.">
+    Off / Will turn on automatically at sunset
+  </message>
+  <message name="IDS_SETTINGS_DARK_MODE_SUBLABEL_SUNSET_TO_SUNRISE_ON" desc="The sub label for row in personalization settings page that indicates that dark mode is on and will be automatically turned off at sunrise.">
+    On / Will turn off automatically at sunrise
+  </message>
+  <message name="IDS_SETTINGS_DARK_MODE_SUBLABEL_CUSTOM_OFF" desc="The sub label for row in personalization settings page that indicates that dark mode is off and will be automatically turned on at the user's custom start time.">
+    Off / Will turn on automatically at <ph name="TIME">$1<ex>6:30 PM</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_DARK_MODE_SUBLABEL_CUSTOM_ON" desc="The sub label for row in personalization settings page that indicates dark mode is on and will be automatically turned off at the user's custom end time.">
+    On / Will turn off automatically at <ph name="TIME">$1<ex>10:45 AM</ex></ph>
   </message>
 
   <!-- Search and Assistant section. -->
@@ -2813,8 +2825,8 @@ Press an assigned switch to remove assignment
   <message name="IDS_SETTINGS_INTERNET_TETHER_NOT_SETUP_WITH_LEARN_MORE_LINK" desc="Text shown when viewing the Mobile data page and no instant tether network is available">
     No device detected. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_INTERNET_SHOW_EID_POPUP_BUTTON_LABEL" desc="A11y and tooltop label for EID and QR code popup show button when viewing cellular network list">
-    Show device EID and QR code popup
+  <message name="IDS_SETTINGS_INTERNET_SHOW_EID_POPUP_BUTTON_LABEL" desc="A11y and tooltop label for EID and QR Code popup show button when viewing cellular network list">
+    Show device EID and QR Code popup
   </message>
   <message name="IDS_SETTINGS_INTERNET_ESIM_NO_CONNECTION_ERROR_TOAST" desc="Message in toast displayed when user tries to perform an eSIM operation when not connected to a non-cellular network.">
     Connect to Wi-Fi or Ethernet to set up eSIM

@@ -8368,6 +8368,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Anchor element has same host as document host"/>
 </enum>
 
+<enum name="BooleanAnnotated">
+  <int value="0" label="Not Annotated"/>
+  <int value="1" label="Annotated"/>
+</enum>
+
 <enum name="BooleanAttached">
   <int value="0" label="Detached"/>
   <int value="1" label="Attached"/>
@@ -25889,6 +25894,8 @@ Called by update_document_policy_enum.py.-->
   <int value="872" label="RestrictedManagedGuestSessionEnabled"/>
   <int value="873" label="ReportDeviceAudioStatus"/>
   <int value="874" label="DeviceHostnameUserConfigurable"/>
+  <int value="875" label="ReportDeviceNetworkConfiguration"/>
+  <int value="876" label="ReportDeviceNetworkStatus"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -33404,9 +33411,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3386" label="V8FontManager_Query_Method"/>
   <int value="3387" label="AudioContextBaseLatency"/>
   <int value="3388" label="V8Window_GetScreens_Method"/>
-  <int value="3389" label="V8Window_IsMultiScreen_Method"/>
-  <int value="3390" label="V8Window_Onscreenschange_AttributeGetter"/>
-  <int value="3391" label="V8Window_Onscreenschange_AttributeSetter"/>
+  <int value="3389" label="OBSOLETE_V8Window_IsMultiScreen_Method"/>
+  <int value="3390" label="OBSOLETE_V8Window_Onscreenschange_AttributeGetter"/>
+  <int value="3391" label="OBSOLETE_V8Window_Onscreenschange_AttributeSetter"/>
   <int value="3392" label="DOMWindowOpenPositioningFeaturesCrossScreen"/>
   <int value="3393" label="DOMWindowSetWindowRectCrossScreen"/>
   <int value="3394" label="FullscreenCrossScreen"/>
@@ -46200,6 +46207,7 @@ from previous Chrome versions.
   <int value="-2119530966" label="enable-webrtc-dtls12"/>
   <int value="-2119493239" label="enable-app-info-dialog-mac"/>
   <int value="-2118893353" label="WebRtcRemoteEventLog:enabled"/>
+  <int value="-2118062187" label="WebUIBrandingUpdate:enabled"/>
   <int value="-2117621241" label="ExperimentalProductivityFeatures:enabled"/>
   <int value="-2117201726" label="disable-gpu-rasterization"/>
   <int value="-2117169027" label="UpdateHoverAtBeginFrame:enabled"/>
@@ -46329,6 +46337,7 @@ from previous Chrome versions.
   <int value="-2013551096" label="ViewsSimplifiedFullscreenUI:disabled"/>
   <int value="-2013124655" label="EnableEphemeralFlashPermission:disabled"/>
   <int value="-2012990889" label="SpannableInlineAutocomplete:enabled"/>
+  <int value="-2012779758" label="ReduceUserAgent:disabled"/>
   <int value="-2012449550" label="OmniboxMostVisitedTiles:enabled"/>
   <int value="-2012266745"
       label="OmniboxLocalZeroSuggestFrecencyRanking:disabled"/>
@@ -48767,6 +48776,7 @@ from previous Chrome versions.
   <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
   <int value="-27287076" label="DesktopPWAsTabStripSettings:disabled"/>
   <int value="-27213807" label="GlobalMediaControls:enabled"/>
+  <int value="-25025176" label="PerformantSplitViewResizing:enabled"/>
   <int value="-24570936" label="DestroyProfileOnBrowserClose:disabled"/>
   <int value="-24217468" label="QuickAnswersTextAnnotator:enabled"/>
   <int value="-23804418"
@@ -48783,6 +48793,7 @@ from previous Chrome versions.
   <int value="-17698200" label="DoubleTapToZoomInTabletMode:disabled"/>
   <int value="-17373827" label="SharingDeviceExpiration:enabled"/>
   <int value="-16824589" label="ash-shelf-color"/>
+  <int value="-16413037" label="ReduceUserAgent:enabled"/>
   <int value="-16086999" label="TrimOnFreeze:enabled"/>
   <int value="-15879016"
       label="OmniboxUIExperimentUnboldSuggestionText:disabled"/>
@@ -49391,6 +49402,7 @@ from previous Chrome versions.
   <int value="484581911" label="ServiceWorkerSubresourceFilter:disabled"/>
   <int value="484596410" label="EnterpriseRealtimeExtensionRequest:disabled"/>
   <int value="485957747" label="finch-seed-ignore-pending-download"/>
+  <int value="487605950" label="PerformantSplitViewResizing:disabled"/>
   <int value="487810392" label="EnablePalmOnToolTypePalm:enabled"/>
   <int value="491258649" label="UseFirstPartySet"/>
   <int value="491334698" label="ConditionalTabStripAndroid:enabled"/>
@@ -50128,6 +50140,7 @@ from previous Chrome versions.
   <int value="1106579567" label="ProfilesUIRevamp:enabled"/>
   <int value="1106890743"
       label="SafeBrowsingkRealTimeUrlLookupEnterpriseGaEndpoint:enabled"/>
+  <int value="1107293950" label="WebUIBrandingUpdate:disabled"/>
   <int value="1107543566" label="enable-one-copy"/>
   <int value="1108663108" label="disable-device-discovery-notifications"/>
   <int value="1109907837"
@@ -62115,8 +62128,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Feature Disabled"/>
   <int value="1" label="Disallowed"/>
   <int value="2" label="First Contentful Paint"/>
-  <int value="3" label="Timeout"/>
+  <int value="3" label="FCP Timeout"/>
   <int value="4" label="Not Deferred"/>
+  <int value="5" label="Document Transition"/>
+  <int value="6" label="Document Transition Timeout"/>
 </enum>
 
 <enum name="PaintHoldingInputTiming">
@@ -62400,6 +62415,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Password Settings"/>
   <int value="1" label="Safety Check"/>
   <int value="2" label="Password Breach Dialog"/>
+  <int value="3" label="PhishGuard Dialog"/>
 </enum>
 
 <enum name="PasswordCheckResolutionAction">
@@ -74932,6 +74948,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SigninReauthStates">
+  <obsolete>
+    Removed 2021-07.
+  </obsolete>
   <int value="0" label="Account mismatch"/>
   <int value="1" label="Reauth Shown"/>
 </enum>
@@ -79678,6 +79697,13 @@ would be helpful to identify which type is being sent.
   <int value="1" label="User opened the Tab Search UI via keyboard navigation"/>
   <int value="2" label="User opened the Tab Search UI via keyboard shortcut"/>
   <int value="3" label="User opened the Tab Search UI via touch gesture"/>
+</enum>
+
+<enum name="TabSearchRecentlyClosedItemOpenAction">
+  <int value="0"
+      label="Opened a recently closed item from an unfiltered item list"/>
+  <int value="1"
+      label="Opened a recently closed item from a filtered item list"/>
 </enum>
 
 <enum name="TabSearchTabSwitchAction">

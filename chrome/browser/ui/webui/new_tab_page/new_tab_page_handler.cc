@@ -352,8 +352,9 @@ NewTabPageHandler::~NewTabPageHandler() {
 
 // static
 void NewTabPageHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kNtpModulesVisible, true);
   registry->RegisterListPref(prefs::kNtpDisabledModules, true);
+  registry->RegisterListPref(prefs::kNtpModulesOrder, true);
+  registry->RegisterBooleanPref(prefs::kNtpModulesVisible, true);
 }
 
 void NewTabPageHandler::SetMostVisitedSettings(bool custom_links_enabled,
@@ -573,6 +574,15 @@ void NewTabPageHandler::OnModulesLoadedWithData() {
   CHECK(hats_service);
   hats_service->LaunchDelayedSurveyForWebContents(kHatsSurveyTriggerNtpModules,
                                                   web_contents_, 0);
+}
+
+void NewTabPageHandler::SetModulesOrder(
+    const std::vector<std::string>& module_ids) {
+  base::Value module_ids_value(base::Value::Type::LIST);
+  for (const auto& module_id : module_ids) {
+    module_ids_value.Append(module_id);
+  }
+  profile_->GetPrefs()->Set(prefs::kNtpModulesOrder, module_ids_value);
 }
 
 void NewTabPageHandler::OnPromoDataUpdated() {

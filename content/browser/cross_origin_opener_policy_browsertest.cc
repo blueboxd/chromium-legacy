@@ -13,6 +13,7 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -1206,8 +1207,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 // Try to host into the same cross-origin isolated process, two cross-origin
 // documents. The second's response sets CSP:sandbox, so its origin is opaque
 // and derived from the first.
+//
+// Variants:
+// 1. CrossOriginIsolatedOpeneeCspSandbox
+// 2. CrossOriginIsolatedOpeneeOpenerSandbox
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
-                       CrossOriginIsolatedWithDifferentOrigin) {
+                       CrossOriginIsolatedWithOpeneeCspSandbox) {
   GURL opener_url =
       https_server()->GetURL("a.com",
                              "/set-header?"
@@ -1243,18 +1248,70 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_EQ(opener_current_main_document->last_http_status_code(), 200);
   EXPECT_EQ(openee_current_main_document->last_http_status_code(), 200);
 
-  // We have two main documents in the same cross-origin isolated process from a
-  // different origin.
-  // TODO(https://crbug.com/1115426): Investigate what needs to be done.
+  // We have two main documents in different cross-origin isolated process.
   EXPECT_NE(opener_current_main_document->GetLastCommittedOrigin(),
             openee_current_main_document->GetLastCommittedOrigin());
-  EXPECT_EQ(opener_current_main_document->GetProcess(),
+  EXPECT_NE(opener_current_main_document->GetProcess(),
             openee_current_main_document->GetProcess());
-  EXPECT_EQ(opener_current_main_document->GetSiteInstance(),
+  EXPECT_NE(opener_current_main_document->GetSiteInstance(),
             openee_current_main_document->GetSiteInstance());
 
-  // TODO(arthursonzogni): Check whether the processes are marked as
-  // cross-origin isolated or not.
+  EXPECT_TRUE(
+      opener_current_main_document->GetSiteInstance()->IsCrossOriginIsolated());
+  EXPECT_TRUE(
+      openee_current_main_document->GetSiteInstance()->IsCrossOriginIsolated());
+}
+
+// Variants:
+// 1. CrossOriginIsolatedOpeneeCspSandbox
+// 2. CrossOriginIsolatedOpeneeOpenerSandbox
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       CrossOriginIsolatedOpeneeOpenerSandbox) {
+  // The URL used by both the openee and the opener.
+  GURL url = https_server()->GetURL(
+      "a.com",
+      "/set-header?"
+      "Cross-Origin-Opener-Policy: same-origin&"
+      "Cross-Origin-Embedder-Policy: require-corp&"
+      "Content-Security-Policy: sandbox allow-scripts allow-popups");
+
+  // Load the first window.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderFrameHostImpl* opener_current_main_document = current_frame_host();
+
+  // Load the second window.
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(ExecJs(current_frame_host(), JsReplace("window.open($1)", url)));
+  WebContents* popup = shell_observer.GetShell()->web_contents();
+  WaitForLoadStop(popup);
+
+  RenderFrameHostImpl* openee_current_main_document =
+      static_cast<WebContentsImpl*>(popup)
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+
+  // Popups with a sandboxing flag, inherited from their opener, are not
+  // allowed to navigate to a document with a Cross-Origin-Opener-Policy that
+  // is not "unsafe-none". As a result, the navigation in the popup ended up
+  // loading an error document.
+
+  EXPECT_EQ(opener_current_main_document->GetLastCommittedURL(), url);
+  EXPECT_EQ(openee_current_main_document->GetLastCommittedURL(), url);
+  EXPECT_EQ(opener_current_main_document->last_http_status_code(), 200);
+  EXPECT_EQ(openee_current_main_document->last_http_status_code(), 0);
+
+  EXPECT_NE(opener_current_main_document->GetLastCommittedOrigin(),
+            openee_current_main_document->GetLastCommittedOrigin());
+  EXPECT_NE(opener_current_main_document->GetProcess(),
+            openee_current_main_document->GetProcess());
+  EXPECT_NE(opener_current_main_document->GetSiteInstance(),
+            openee_current_main_document->GetSiteInstance());
+
+  EXPECT_TRUE(
+      opener_current_main_document->GetSiteInstance()->IsCrossOriginIsolated());
+  EXPECT_FALSE(
+      openee_current_main_document->GetSiteInstance()->IsCrossOriginIsolated());
 }
 
 // Navigate in between two documents. Check the virtual browsing context group
@@ -2518,6 +2575,70 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_NE(current_si->GetProcess(), previous_si->GetProcess());
     EXPECT_FALSE(current_si->IsCrossOriginIsolated());
   }
+}
+
+// Regression test for https://crbug.com/1226909.
+IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
+                       NavigatePopupToErrorAndCrash) {
+  GURL isolated_page(
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+
+  // Initial cross-origin isolated page.
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
+  SiteInstanceImpl* main_si = current_frame_host()->GetSiteInstance();
+  EXPECT_TRUE(main_si->IsCrossOriginIsolated());
+
+  ShellAddedObserver shell_observer;
+  GURL error_url(embedded_test_server()->GetURL("/close-socket"));
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", error_url)));
+  WebContentsImpl* popup_web_contents =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  WaitForLoadStop(popup_web_contents);
+
+  // The popup should commit an error page with default COOP.
+  EXPECT_EQ(PAGE_TYPE_ERROR, popup_web_contents->GetController()
+                                 .GetLastCommittedEntry()
+                                 ->GetPageType());
+  EXPECT_FALSE(popup_web_contents->GetMainFrame()
+                   ->GetSiteInstance()
+                   ->IsCrossOriginIsolated());
+  EXPECT_EQ(CoopUnsafeNone(),
+            popup_web_contents->GetMainFrame()->cross_origin_opener_policy());
+
+  url::Origin error_origin =
+      popup_web_contents->GetMainFrame()->GetLastCommittedOrigin();
+
+  // Simulate the popup renderer process crashing.
+  RenderProcessHost* popup_process =
+      popup_web_contents->GetMainFrame()->GetProcess();
+  EXPECT_NE(popup_process, current_frame_host()->GetProcess());
+
+  ASSERT_TRUE(popup_process);
+  {
+    RenderProcessHostWatcher crash_observer(
+        popup_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    popup_process->Shutdown(0);
+    crash_observer.Wait();
+  }
+
+  // Try to navigate the popup. This should not be possible, since the opener
+  // relationship should be closed.
+  EXPECT_TRUE(
+      ExecJs(current_frame_host(), "window.w.location = 'about:blank';"));
+  WaitForLoadStop(popup_web_contents);
+
+  // The popup should not have navigated.
+  EXPECT_EQ(error_origin,
+            popup_web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  EXPECT_FALSE(popup_web_contents->GetMainFrame()
+                   ->GetSiteInstance()
+                   ->IsCrossOriginIsolated());
+  EXPECT_EQ(CoopUnsafeNone(),
+            popup_web_contents->GetMainFrame()->cross_origin_opener_policy());
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,

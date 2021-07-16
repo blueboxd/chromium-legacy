@@ -320,9 +320,121 @@ public class TabUiThemeProvider {
      */
     @ColorInt
     public static int getTabGridDialogBackgroundColor(Context context, boolean isIncognito) {
-        return ContextCompat.getColor(context,
-                isIncognito ? R.color.tab_grid_dialog_background_color_incognito
-                            : R.color.tab_grid_dialog_background_color);
+        if (!themeRefactorEnabled()) {
+            return ContextCompat.getColor(context,
+                    isIncognito ? R.color.tab_grid_dialog_background_color_incognito
+                                : R.color.tab_grid_dialog_background_color);
+        }
+
+        if (isIncognito) {
+            return ApiCompatibilityUtils.getColor(
+                    context.getResources(), R.color.incognito_tab_grid_dialog_background_color);
+        } else {
+            return MaterialColors.getColor(context, R.attr.colorSurface, TAG);
+        }
+    }
+
+    @ColorInt
+    private static int getTabGridDialogUngroupBarBackgroundColor(
+            Context context, boolean isIncognito, boolean isTabHovered) {
+        if (!themeRefactorEnabled()) {
+            @ColorRes
+            int colorRes;
+            if (isTabHovered) {
+                colorRes = isIncognito ? R.color.tab_grid_card_selected_color_incognito
+                                       : R.color.tab_grid_card_selected_color;
+            } else {
+                colorRes = isIncognito ? R.color.tab_grid_dialog_background_color_incognito
+                                       : R.color.tab_grid_dialog_background_color;
+            }
+            return ApiCompatibilityUtils.getColor(context.getResources(), colorRes);
+        }
+
+        if (isIncognito) {
+            return ApiCompatibilityUtils.getColor(context.getResources(),
+                    isTabHovered ? R.color.incognito_tab_grid_dialog_ungroup_bar_bg_hovered_color
+                                 : R.color.incognito_tab_grid_dialog_background_color);
+        } else {
+            return MaterialColors.getColor(
+                    context, isTabHovered ? R.attr.colorPrimary : R.attr.colorSurface, TAG);
+        }
+    }
+
+    @ColorInt
+    private static int getTabGridDialogUngroupBarTextColor(
+            Context context, boolean isIncognito, boolean isTabHovered) {
+        if (!themeRefactorEnabled()) {
+            @ColorRes
+            int colorRes;
+            if (isTabHovered) {
+                colorRes = R.color.tab_grid_dialog_ungroup_button_text_color_hovered;
+            } else {
+                colorRes = isIncognito ? R.color.tab_grid_dialog_ungroup_button_text_color_incognito
+                                       : R.color.tab_grid_dialog_ungroup_button_text_color;
+            }
+            return ApiCompatibilityUtils.getColor(context.getResources(), colorRes);
+        }
+
+        if (isIncognito) {
+            return ApiCompatibilityUtils.getColor(context.getResources(),
+                    isTabHovered ? R.color.incognito_tab_grid_dialog_ungroup_bar_text_hovered_color
+                                 : R.color.incognito_tab_grid_dialog_ungroup_bar_text_color);
+        } else {
+            return MaterialColors.getColor(
+                    context, isTabHovered ? R.attr.colorOnPrimary : R.attr.colorPrimary, TAG);
+        }
+    }
+
+    /**
+     * Returns the background color used for the ungroup bar in tab grid dialog.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @return The background color for the ungroup bar in tab grid dialog.
+     */
+    @ColorInt
+    public static int getTabGridDialogUngroupBarTextColor(Context context, boolean isIncognito) {
+        return getTabGridDialogUngroupBarTextColor(context, isIncognito, false);
+    }
+
+    /**
+     * Returns the background color used for the ungroup bar in tab grid dialog when a tab is
+     * hovered.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @return The background color for the ungroup bar in tab grid dialog.
+     */
+    @ColorInt
+    public static int getTabGridDialogUngroupBarHoveredTextColor(
+            Context context, boolean isIncognito) {
+        return getTabGridDialogUngroupBarTextColor(context, isIncognito, true);
+    }
+
+    /**
+     * Returns the color used for the ungroup bar text in tab grid dialog.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @return The color for the ungroup bar text in tab grid dialog.
+     */
+    @ColorInt
+    public static int getTabGridDialogUngroupBarBackgroundColor(
+            Context context, boolean isIncognito) {
+        return getTabGridDialogUngroupBarBackgroundColor(context, isIncognito, false);
+    }
+
+    /**
+     * Returns the color used for the ungroup bar text in tab grid dialog when a tab is hovered.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @return The color for the ungroup bar text in tab grid dialog.
+     */
+    @ColorInt
+    public static int getTabGridDialogUngroupBarHoveredBackgroundColor(
+            Context context, boolean isIncognito) {
+        return getTabGridDialogUngroupBarBackgroundColor(context, isIncognito, true);
     }
 
     /**
@@ -380,6 +492,17 @@ public class TabUiThemeProvider {
     public static float getTabCardTopFaviconPadding(Context context) {
         return context.getResources().getDimension(themeRefactorEnabled()
                         ? R.dimen.tab_grid_card_favicon_padding
+                        : R.dimen.tab_list_card_padding);
+    }
+
+    /**
+     * Return the size represented by dimension for padding between tab cards.
+     * @param context {@link Context} to retrieve dimension.
+     * @return The padding between tab cards in float number.
+     */
+    public static float getTabCardPaddingDimension(Context context) {
+        return context.getResources().getDimension(themeRefactorEnabled()
+                        ? R.dimen.tab_grid_card_thumbnail_margin
                         : R.dimen.tab_list_card_padding);
     }
 

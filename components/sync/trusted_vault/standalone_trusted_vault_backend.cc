@@ -83,7 +83,7 @@ std::vector<std::vector<uint8_t>> GetAllVaultKeys(
   return vault_keys;
 }
 
-void RetrieveIsRecoverabilityDegradedCompleted(
+void DownloadIsRecoverabilityDegradedCompleted(
     base::OnceCallback<void(bool)> cb,
     TrustedVaultRecoverabilityStatus status) {
   std::move(cb).Run(status == TrustedVaultRecoverabilityStatus::kDegraded);
@@ -324,9 +324,9 @@ void StandaloneTrustedVaultBackend::GetIsRecoverabilityDegraded(
   // TODO(crbug.com/1201659): Improve this logic properly and add test coverage,
   // including throttling and periodic polling.
   ongoing_get_recoverability_request_ =
-      connection_->RetrieveIsRecoverabilityDegraded(
+      connection_->DownloadIsRecoverabilityDegraded(
           account_info,
-          base::BindOnce(&RetrieveIsRecoverabilityDegradedCompleted,
+          base::BindOnce(&DownloadIsRecoverabilityDegradedCompleted,
                          std::move(cb)));
 }
 
@@ -532,6 +532,9 @@ void StandaloneTrustedVaultBackend::OnDeviceRegistered(
 
   switch (status) {
     case TrustedVaultRegistrationStatus::kSuccess:
+    case TrustedVaultRegistrationStatus::kAlreadyRegistered:
+      // kAlreadyRegistered handled as success, because it only means that
+      // client doesn't fully handled successful device registration before.
       per_user_vault->mutable_local_device_registration_info()
           ->set_device_registered(true);
       WriteToDisk(data_, file_path_);
@@ -566,13 +569,27 @@ void StandaloneTrustedVaultBackend::OnDeviceRegisteredWithoutKeys(
   // no local keys available. Detected server-side key should be stored upon
   // successful completion, but |vault_key| emptiness still needs to be checked
   // before that - there might be StoreKeys() call during handling the request.
-  if (status == TrustedVaultRegistrationStatus::kSuccess &&
-      per_user_vault->vault_key().empty()) {
-    AssignBytesToProtoString(
-        vault_key_and_version.key,
-        per_user_vault->add_vault_key()->mutable_key_material());
-    per_user_vault->set_last_vault_key_version(vault_key_and_version.version);
-    // WriteToDisk() will be called by OnDeviceRegistered().
+  switch (status) {
+    case TrustedVaultRegistrationStatus::kSuccess:
+    case TrustedVaultRegistrationStatus::kAlreadyRegistered:
+      // This method can be called only if device registration was triggered
+      // while no local keys available. Detected server-side key should be
+      // stored upon successful completion (or if device was already registered,
+      // e.g. previous response wasn't handled properly), but |vault_key|
+      // emptiness still needs to be checked before that - there might be
+      // StoreKeys() call during handling the request.
+      if (per_user_vault->vault_key().empty()) {
+        AssignBytesToProtoString(
+            vault_key_and_version.key,
+            per_user_vault->add_vault_key()->mutable_key_material());
+        per_user_vault->set_last_vault_key_version(
+            vault_key_and_version.version);
+        // WriteToDisk() will be called by OnDeviceRegistered().
+      }
+      break;
+    case TrustedVaultRegistrationStatus::kLocalDataObsolete:
+    case TrustedVaultRegistrationStatus::kOtherError:
+      break;
   }
   OnDeviceRegistered(status);
 }

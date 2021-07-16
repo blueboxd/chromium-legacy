@@ -440,59 +440,42 @@ const FeatureEntry::FeatureVariation kReaderModeDiscoverabilityVariations[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kAdaptiveButton_AlwaysNone[] = {
+    {"mode", "always-none"}};
+const FeatureEntry::FeatureParam kAdaptiveButton_AlwaysNewTab[] = {
+    {"mode", "always-new-tab"}};
+const FeatureEntry::FeatureParam kAdaptiveButton_AlwaysShare[] = {
+    {"mode", "always-share"}};
+const FeatureEntry::FeatureParam kAdaptiveButton_AlwaysVoice[] = {
+    {"mode", "always-voice"}};
 const FeatureEntry::FeatureVariation kAdaptiveButtonInTopToolbarVariations[] = {
-    {
-        "Always None",
-        (FeatureEntry::FeatureParam[]){{"mode", "always-none"}},
-        1,
-        nullptr,
-    },
-    {
-        "Always New Tab",
-        (FeatureEntry::FeatureParam[]){{"mode", "always-new-tab"}},
-        1,
-        nullptr,
-    },
-    {
-        "Always Share",
-        (FeatureEntry::FeatureParam[]){{"mode", "always-share"}},
-        1,
-        nullptr,
-    },
-    {
-        "Always Voice",
-        (FeatureEntry::FeatureParam[]){{"mode", "always-voice"}},
-        1,
-        nullptr,
-    },
+    {"Always None", kAdaptiveButton_AlwaysNone,
+     base::size(kAdaptiveButton_AlwaysNone), nullptr},
+    {"Always New Tab", kAdaptiveButton_AlwaysNewTab,
+     base::size(kAdaptiveButton_AlwaysNewTab), nullptr},
+    {"Always Share", kAdaptiveButton_AlwaysShare,
+     base::size(kAdaptiveButton_AlwaysShare), nullptr},
+    {"Always Voice", kAdaptiveButton_AlwaysVoice,
+     base::size(kAdaptiveButton_AlwaysVoice), nullptr},
 };
 
+const FeatureEntry::FeatureParam kAdaptiveButtonCustomization_NewTab[] = {
+    {"default_segment", "new-tab"},
+    {"ignore_segmentation_results", "true"}};
+const FeatureEntry::FeatureParam kAdaptiveButtonCustomization_Share[] = {
+    {"default_segment", "share"},
+    {"ignore_segmentation_results", "true"}};
+const FeatureEntry::FeatureParam kAdaptiveButtonCustomization_Voice[] = {
+    {"default_segment", "voice"},
+    {"ignore_segmentation_results", "true"}};
 const FeatureEntry::FeatureVariation
     kAdaptiveButtonInTopToolbarCustomizationVariations[] = {
-        {
-            "New Tab",
-            (FeatureEntry::FeatureParam[]){
-                {"default_segment", "new-tab"},
-                {"ignore_segmentation_results", "true"}},
-            1,
-            nullptr,
-        },
-        {
-            "Share",
-            (FeatureEntry::FeatureParam[]){
-                {"default_segment", "share"},
-                {"ignore_segmentation_results", "true"}},
-            1,
-            nullptr,
-        },
-        {
-            "Voice",
-            (FeatureEntry::FeatureParam[]){
-                {"default_segment", "voice"},
-                {"ignore_segmentation_results", "true"}},
-            1,
-            nullptr,
-        },
+        {"New Tab", kAdaptiveButtonCustomization_NewTab,
+         base::size(kAdaptiveButtonCustomization_NewTab), nullptr},
+        {"Share", kAdaptiveButtonCustomization_Share,
+         base::size(kAdaptiveButtonCustomization_Share), nullptr},
+        {"Voice", kAdaptiveButtonCustomization_Voice,
+         base::size(kAdaptiveButtonCustomization_Voice), nullptr},
 };
 #endif  // OS_ANDROID
 
@@ -1523,12 +1506,65 @@ const FeatureEntry::FeatureParam
         {features::kTabHoverCardImagesNotReadyDelayParameterName, "800"},
         {features::kTabHoverCardImagesLoadingDelayParameterName, "300"},
         {features::kTabHoverCardImagesLoadedDelayParameterName, "300"}};
+const FeatureEntry::FeatureParam
+    kTabHoverCardImagesImmediatePlaceholderCrossfade[] = {
+        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
+        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
+        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+        {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.0"}};
+const FeatureEntry::FeatureParam
+    kTabHoverCardImagesEarlySlidePlaceholderCrossfade[] = {
+        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
+        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
+        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+        {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.25"}};
+const FeatureEntry::FeatureParam
+    kTabHoverCardImagesMidSlidePlaceholderCrossfade[] = {
+        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
+        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
+        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+        {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.5"}};
+const FeatureEntry::FeatureParam kTabHoverCardImagesLatePlaceholderCrossfade[] =
+    {{features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
+     {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
+     {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+     {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "1.0"}};
+const FeatureEntry::FeatureParam
+    kTabHoverCardImagesSmallAdditionalFullWidthDelay[] = {
+        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
+        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
+        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+        {features::kTabHoverCardAdditionalMaxWidthDelay, "200"}};
+const FeatureEntry::FeatureParam
+    kTabHoverCardImagesLargeAdditionalFullWidthDelay[] = {
+        {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
+        {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
+        {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+        {features::kTabHoverCardAdditionalMaxWidthDelay, "500"}};
 
 const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
     {" capture speed", kTabHoverCardImagesOptimizationCaptureSpeed,
      base::size(kTabHoverCardImagesOptimizationCaptureSpeed), nullptr},
     {" resource usage", kTabHoverCardImagesOptimizationResourceUsage,
-     base::size(kTabHoverCardImagesOptimizationResourceUsage), nullptr}};
+     base::size(kTabHoverCardImagesOptimizationResourceUsage), nullptr},
+    {" immediate placeholder crossfade",
+     kTabHoverCardImagesImmediatePlaceholderCrossfade,
+     base::size(kTabHoverCardImagesImmediatePlaceholderCrossfade), nullptr},
+    {" early-transition placeholder crossfade",
+     kTabHoverCardImagesEarlySlidePlaceholderCrossfade,
+     base::size(kTabHoverCardImagesEarlySlidePlaceholderCrossfade), nullptr},
+    {" mid-transition placeholder crossfade",
+     kTabHoverCardImagesMidSlidePlaceholderCrossfade,
+     base::size(kTabHoverCardImagesMidSlidePlaceholderCrossfade), nullptr},
+    {" placeholder crossfade on land",
+     kTabHoverCardImagesLatePlaceholderCrossfade,
+     base::size(kTabHoverCardImagesImmediatePlaceholderCrossfade), nullptr},
+    {" small full width show delay",
+     kTabHoverCardImagesSmallAdditionalFullWidthDelay,
+     base::size(kTabHoverCardImagesSmallAdditionalFullWidthDelay), nullptr},
+    {" large full width show delay",
+     kTabHoverCardImagesLargeAdditionalFullWidthDelay,
+     base::size(kTabHoverCardImagesLargeAdditionalFullWidthDelay), nullptr}};
 
 const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
     {features::kPromoBrowserCommandIdParam, "0"}};
@@ -2170,9 +2206,9 @@ const FeatureEntry::FeatureVariation kRequestDesktopSiteForTabletsVariations[] =
       base::size(kRequestDesktopSiteForTablets1920), nullptr}};
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
 const FeatureEntry::FeatureVariation
     kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations[] = {
-#if defined(OS_ANDROID)
         {
             "relevance-1000",
             (FeatureEntry::FeatureParam[]){
@@ -2193,23 +2229,6 @@ const FeatureEntry::FeatureVariation
                 {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
                  "decrease-relevances"}},
             3,
-            nullptr,
-        }};
-#else   // !defined(OS_ANDROID)
-        {
-            "model-500k-queries",
-            (FeatureEntry::FeatureParam[]){
-                {OmniboxFieldTrial::kOnDeviceHeadModelLocaleConstraint,
-                 "500000"}},
-            1,
-            nullptr,
-        },
-        {
-            "model-1m-queries",
-            (FeatureEntry::FeatureParam[]){
-                {OmniboxFieldTrial::kOnDeviceHeadModelLocaleConstraint,
-                 "1000000"}},
-            1,
             nullptr,
         }};
 #endif  // defined(OS_ANDROID)
@@ -4323,6 +4342,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderIncognito)},
 
+#if defined(OS_ANDROID)
     {"omnibox-on-device-head-suggestions-non-incognito",
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription,
@@ -4330,12 +4350,8 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          omnibox::kOnDeviceHeadProviderNonIncognito,
          kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations,
-#if defined(OS_ANDROID)
-         "OmniboxOnDeviceHeadNonIncognitoTuningMobile"
-#else   // !defined(OS_ANDROID)
-         "OmniboxOnDeviceHeadSuggestBigModel"
+         "OmniboxOnDeviceHeadNonIncognitoTuningMobile")},
 #endif  // defined(OS_ANDROID)
-         )},
 
     {"omnibox-on-focus-suggestions-contextual-web",
      flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebName,
@@ -6324,7 +6340,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"reduce-user-agent", flag_descriptions::kReduceUserAgentName,
      flag_descriptions::kReduceUserAgentDescription, kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(blink::features::kFreezeUserAgent)},
+     FEATURE_VALUE_TYPE(blink::features::kReduceUserAgent)},
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-user-data-snapshot", flag_descriptions::kUserDataSnapshotName,
@@ -6994,12 +7010,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSwipeToMoveCursor)},
 #endif  // defined(OS_ANDROID)
 
-    {"use-of-hash-affiliation-fetcher",
-     flag_descriptions::kUseOfHashAffiliationFetcherName,
-     flag_descriptions::kUseOfHashAffiliationFetcherDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kUseOfHashAffiliationFetcher)},
-
     {"safety-check-weak-passwords",
      flag_descriptions::kSafetyCheckWeakPasswordsName,
      flag_descriptions::kSafetyCheckWeakPasswordsDescription, kOsDesktop,
@@ -7010,6 +7020,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSettingsLandingPageRedesignName,
      flag_descriptions::kSettingsLandingPageRedesignDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSettingsLandingPageRedesign)},
+
+    {"webui-branding-update", flag_descriptions::kWebUIBrandingUpdateName,
+     flag_descriptions::kWebUIBrandingUpdateDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUIBrandingUpdate)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -7390,6 +7404,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"clipboard-custom-formats", flag_descriptions::kClipboardCustomFormatsName,
      flag_descriptions::kClipboardCustomFormatsDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kClipboardCustomFormats)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"performant-split-view-resizing",
+     flag_descriptions::kPerformantSplitViewResizing,
+     flag_descriptions::kPerformantSplitViewResizingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kPerformantSplitViewResizing)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"privacy-review", flag_descriptions::kPrivacyReviewName,
      flag_descriptions::kPrivacyReviewDescription, kOsDesktop,

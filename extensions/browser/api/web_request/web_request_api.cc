@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
@@ -182,6 +183,7 @@ void LogRequestAction(RequestAction action) {
   DCHECK_NE(RequestAction::MAX, action);
   UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequestAction", action,
                             RequestAction::MAX);
+  TRACE_EVENT1("extensions", "WebRequestAction", "action", action);
 }
 
 // Returns the corresponding EventTypes for the given |event_name|. If
@@ -2327,6 +2329,8 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
     rv = net::ERR_BLOCKED_BY_CLIENT;
     RecordNetworkRequestBlocked(request->ukm_source_id,
                                 canceled_by_extension.value());
+    TRACE_EVENT2("extensions", "NetworkRequestBlockedByClient", "extension",
+                 canceled_by_extension.value(), "id", request->id);
   }
 
   if (!blocked_request.callback.is_null()) {
@@ -2573,14 +2577,15 @@ WebRequestInternalAddEventListenerFunction::Run() {
         browser_context(), args_list[2], &extra_info_spec));
   }
 
-  std::string event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &event_name));
-
-  std::string sub_event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &sub_event_name));
-
-  int web_view_instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &web_view_instance_id));
+  const auto& event_name_value = args_list[3];
+  const auto& sub_event_name_value = args_list[4];
+  const auto& web_view_instance_id_value = args_list[5];
+  EXTENSION_FUNCTION_VALIDATE(event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(sub_event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(web_view_instance_id_value.is_int());
+  std::string event_name = event_name_value.GetString();
+  std::string sub_event_name = sub_event_name_value.GetString();
+  int web_view_instance_id = web_view_instance_id_value.GetInt();
 
   int render_process_id = source_process_id();
 
@@ -2651,19 +2656,24 @@ void WebRequestInternalEventHandledFunction::OnError(
 
 ExtensionFunction::ResponseAction
 WebRequestInternalEventHandledFunction::Run() {
-  std::string event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
+  const auto& list = args_->GetList();
+  EXTENSION_FUNCTION_VALIDATE(list.size() >= 5);
+  const auto& event_name_value = list[0];
+  const auto& sub_event_name_value = list[1];
+  const auto& request_id_str_value = list[2];
+  const auto& web_view_instance_id_value = list[3];
+  EXTENSION_FUNCTION_VALIDATE(event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(sub_event_name_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(request_id_str_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(web_view_instance_id_value.is_int());
+  std::string event_name = event_name_value.GetString();
+  std::string sub_event_name = sub_event_name_value.GetString();
+  std::string request_id_str = request_id_str_value.GetString();
+  int web_view_instance_id = web_view_instance_id_value.GetInt();
 
-  std::string sub_event_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &sub_event_name));
-
-  std::string request_id_str;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &request_id_str));
   uint64_t request_id;
   EXTENSION_FUNCTION_VALIDATE(base::StringToUint64(request_id_str,
                                                    &request_id));
-  int web_view_instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &web_view_instance_id));
 
   int render_process_id = source_process_id();
 

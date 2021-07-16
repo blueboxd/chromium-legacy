@@ -16,13 +16,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -150,6 +150,9 @@ ExtensionInstallProto::Type GetType(Manifest::Type type) {
       return ExtensionInstallProto::SHARED_MODULE;
     case Manifest::TYPE_LOGIN_SCREEN_EXTENSION:
       return ExtensionInstallProto::LOGIN_SCREEN_EXTENSION;
+    case Manifest::TYPE_CHROMEOS_SYSTEM_EXTENSION:
+      // TODO(mgawad): introduce new CHROMEOS_SYSTEM_EXTENSION type.
+      return ExtensionInstallProto::EXTENSION;
     case Manifest::NUM_LOAD_TYPES:
       NOTREACHED();
       // Fall through.

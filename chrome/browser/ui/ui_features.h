@@ -92,6 +92,8 @@ extern const base::Feature kTabHoverCardImages;
 extern const char kTabHoverCardImagesNotReadyDelayParameterName[];
 extern const char kTabHoverCardImagesLoadingDelayParameterName[];
 extern const char kTabHoverCardImagesLoadedDelayParameterName[];
+extern const char kTabHoverCardImagesCrossfadePreviewAtParameterName[];
+extern const char kTabHoverCardAdditionalMaxWidthDelay[];
 
 extern const base::Feature kTabOutlinesInLowContrastThemes;
 
@@ -158,6 +160,10 @@ extern const base::Feature kToolbarUseHardwareBitmapDraw;
 extern const base::Feature kUseRelaunchToUpdateString;
 
 extern const base::Feature kWebUIBubblePerProfilePersistence;
+
+#if !defined(ANDROID)
+extern const base::Feature kWebUIBrandingUpdate;
+#endif
 
 extern const base::Feature kWebUIDownloadShelf;
 

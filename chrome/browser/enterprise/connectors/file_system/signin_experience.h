@@ -14,14 +14,33 @@ class WebContents;
 
 namespace enterprise_connectors {
 
+// Retrieve FileSystemSettings for |profile|; null if connector is disabled.
+absl::optional<FileSystemSettings> GetFileSystemSettings(Profile* profile);
+
+// Retrieve FileSystemSettings for |download_item|, considering its associated
+// profile and originating URL; null if connector is disabled.
+absl::optional<FileSystemSettings> GetFileSystemSettings(
+    download::DownloadItem* download_item);
+
 using AuthorizationCompletedCallback =
     FileSystemSigninDialogDelegate::AuthorizationCompletedCallback;
 
-void StartSigninExperienceForDownloadItem(
+// Start the sign in experience as triggered by a download item.
+void StartFileSystemConnectorSigninExperienceForDownloadItem(
     content::WebContents* web_contents,
     const FileSystemSettings& settings,
     AuthorizationCompletedCallback callback);
 
+// Start the sign in experience as triggered by the settings page.
+void StartFileSystemConnectorSigninExperienceForSettingsPage(
+    Profile* profile,
+    base::OnceCallback<void(bool)> callback);
+
+// Clear authentication tokens.
+bool ClearFileSystemConnectorLinkedAccount(const FileSystemSettings& settings,
+                                           PrefService* prefs);
+
+// Run |callback| with a GoogleServiceAuthError that indicates cancellation.
 void ReturnCancellation(AuthorizationCompletedCallback callback);
 
 }  // namespace enterprise_connectors

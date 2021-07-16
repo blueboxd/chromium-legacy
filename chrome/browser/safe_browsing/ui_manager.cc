@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_subresource_tab_helper.h"
-#include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/prefs/pref_service.h"
@@ -115,17 +113,20 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
+
+  if (!web_contents) {
+    // Tab is gone.
+    resource.DispatchCallback(FROM_HERE, false /*proceed*/,
+                              false /*showed_interstitial*/);
+    return;
+  }
+
   prerender::NoStatePrefetchContents* no_state_prefetch_contents =
-      web_contents
-          ? prerender::ChromeNoStatePrefetchContentsDelegate::FromWebContents(
-                web_contents)
-          : nullptr;
-  if (!web_contents || no_state_prefetch_contents) {
-    if (no_state_prefetch_contents) {
-      no_state_prefetch_contents->Destroy(
-          prerender::FINAL_STATUS_SAFE_BROWSING);
-    }
-    // Tab is gone or it's being prerendered.
+      prerender::ChromeNoStatePrefetchContentsDelegate::FromWebContents(
+          web_contents);
+  if (no_state_prefetch_contents) {
+    no_state_prefetch_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
+    // Tab is being prerendered.
     resource.DispatchCallback(FROM_HERE, false /*proceed*/,
                               false /*showed_interstitial*/);
     return;

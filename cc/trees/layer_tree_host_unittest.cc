@@ -60,6 +60,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise.h"
@@ -2751,6 +2752,17 @@ class LayerTreeHostTestViewportRectChangeBlockedMainThread
       case 0:
         EXPECT_EQ(initial_local_surface_id_,
                   host_impl->active_tree()->local_surface_id_from_parent());
+        // Main creates a new |target_local_surface_id_| and posts it back to
+        // the Compositor thread in ChangeViewportRect. However if it is
+        // possible for a new Impl frame to start before the queued setting of
+        // |target_local_surface_id_| has been processed. So ignore those.
+        //
+        // The |source_frame_number| will not advance until a new tree has
+        // been committed. Which will not occur until we've passed here and
+        // called StopDeferringCommits. If the test times out there there is a
+        // bug in syncing the id.
+        if (!host_impl->target_local_surface_id().is_valid())
+          return;
         EXPECT_EQ(target_local_surface_id_,
                   host_impl->target_local_surface_id());
         // On slower configurations more than one frame at the original
@@ -9487,7 +9499,9 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredCommit
 
  private:
   void DeferCommitOnMain() {
-    layer_tree_host()->StartDeferringCommits(base::TimeDelta::FromDays(1));
+    layer_tree_host()->StartDeferringCommits(
+        base::TimeDelta::FromDays(1),
+        PaintHoldingReason::kFirstContentfulPaint);
   }
 
   void PostDeferCommit() {

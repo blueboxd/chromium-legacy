@@ -1063,6 +1063,12 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolu
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-052.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-054.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-057.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-058.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-059.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-060.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-061.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-062.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-063.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-065.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-066.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflow-clip-000.html [ Pass ]
@@ -1240,8 +1246,6 @@ crbug.com/1227598 external/wpt/mathml/relations/css-styling/width-height-001.htm
 crbug.com/1093840 external/wpt/mathml/relations/html5-tree/math-global-event-handlers.tentative.html [ Pass Timeout ]
 
 # These tests fail because we don't parse math display values according to the spec.
-crbug.com/1127222 external/wpt/css/css-display/display-math-on-pseudo-elements-001.html [ Failure ]
-crbug.com/1127222 external/wpt/css/css-display/display-math-on-pseudo-elements-002.html [ Failure ]
 crbug.com/1127222 external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-001.html [ Failure ]
 
 # This test fails on windows. It should really be made more reliable and take
@@ -1866,7 +1870,6 @@ crbug.com/346473 fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
-crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 
 # In addition to having no support on Mac, the following test times out
 # regularly on Windows.
@@ -2603,6 +2606,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10 ] external/wpt/wasm/jsapi/exception/basic.tentative.any.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/density-size-correction/density-corrected-image-svg-aspect-ratio-cross-origin.sub.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/browsers/browsing-the-web/navigating-across-documents/replace-before-load/location-setter-user-click.html [ Timeout ]
@@ -2937,7 +2941,6 @@ crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCDataChannel-close.html [ Tim
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-worker.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/simulcast/vp8.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/protocol/handover-datachannel.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/simulcast/setParameters-active.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-errors.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCPeerConnection-helper-test.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/protocol/candidate-exchange.https.html [ Timeout ]
@@ -3198,7 +3201,6 @@ crbug.com/626703 [ Mac ] external/wpt/web-locks/query-ordering.tentative.https.h
 crbug.com/626703 external/wpt/fetch/connection-pool/network-partition-key.html [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] virtual/plz-dedicated-worker/external/wpt/fetch/connection-pool/network-partition-key.html [ Failure Pass Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Failure Pass Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
@@ -3772,6 +3774,12 @@ crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-047.html 
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-052.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-054.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-057.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-058.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-059.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-060.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-061.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-062.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-063.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-065.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-066.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-000.html [ Failure ]
@@ -4861,7 +4869,6 @@ crbug.com/1207342 http/tests/devtools/sources/debugger-pause/debugger-eval-while
 crbug.com/1207342 http/tests/devtools/sources/debugger-pause/debugger-mute-exception.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-pause/debugger-change-variable.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-pause/debugger-resume-button-in-overlay.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-pause/skip-pauses-until-reload.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-pause/function-name-in-callstack.js [ Failure Pass ]
@@ -5278,9 +5285,6 @@ crbug.com/919789 paint/invalidation/window-resize/* [ Pass Timeout ]
 crbug.com/1021627 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure Pass Timeout ]
 crbug.com/1130876 fast/dynamic/window-resize-scrollbars-test.html [ Failure Pass ]
 
-# Sheriff 2019-03-27
-crbug.com/835943 [ Release ] http/tests/appcache/non-html.xhtml [ Crash Failure Pass Timeout ]
-
 # Sheriff 2019-03-28
 crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Crash Failure Pass ]
 crbug.com/946711 [ Release ] http/tests/devtools/editor/text-editor-search-switch-editor.js [ Crash Failure Pass Timeout ]
@@ -5386,7 +5390,6 @@ crbug.com/985232 [ Win7 ] external/wpt/html/semantics/scripting-1/the-script-ele
 crbug.com/986282 external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Failure Pass ]
 
 # Sheriff 2019-07-26
-crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
 crbug.com/874866 [ Debug Linux ] media/controls/doubletap-to-jump-backwards.html [ Failure ]
 crbug.com/988246 external/wpt/cookie-store/serviceworker_cookiechange_eventhandler_mismatched_subscription.tentative.https.any.serviceworker.html [ Skip ]
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Failure Pass ]
@@ -5820,7 +5823,7 @@ crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrol
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/no-hover-during-smooth-keyboard-scroll.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scroll-animation-on-by-default.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-scroll-latching-on-scrollbar.html [ Failure ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
+crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Pass Failure ]
 
 # fast/scrolling/events
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/events/overscroll-event-fired-to-document.html [ Failure Timeout ]
@@ -6455,14 +6458,12 @@ crbug.com/1181667 [ Linux ] external/wpt/css/selectors/focus-visible-011.html [ 
 crbug.com/1045052 [ Linux ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Failure Pass Timeout ]
 crbug.com/1045052 [ Linux ] virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Failure Pass Timeout ]
 crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Failure Pass ]
-crbug.com/1181886 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html [ Pass Timeout ]
 
 # Sheriff 2021-02-25
 crbug.com/1182673 [ Win7 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Timeout ]
 crbug.com/1182675 [ Linux ] dom/attr/id-update-map-crash.html [ Failure Pass ]
 crbug.com/1182677 [ Linux ] external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-video.https.html [ Failure Pass ]
 crbug.com/1182682 [ Linux ] http/tests/devtools/service-workers/service-workers-view.js [ Failure Pass ]
-crbug.com/1182511 [ Linux ] external/wpt/pointerevents/pointerevent_movementxy.html?touch [ Failure Pass Timeout ]
 
 # Sheriff 2021-03-01
 crbug.com/1183243 [ Linux ] http/tests/devtools/console/console-external-array.js [ Failure Pass ]
@@ -6610,7 +6611,6 @@ crbug.com/1193979 [ Mac ] fast/events/tabindex-focus-blur-all.html [ Failure Pas
 crbug.com/1196201 fast/events/mouse-event-source-device-event-sender.html [ Failure Pass ]
 
 # Sheriff 2021-04-13
-crbug.com/1198515 [ Mac ] external/wpt/web-animations/timing-model/animations/playing-an-animation.html [ Failure Pass ]
 crbug.com/1198698 external/wpt/clear-site-data/storage.https.html [ Pass Timeout ]
 
 # Sheriff 2021-04-14
@@ -6638,12 +6638,9 @@ crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-e
 
 # Sheriff 2021-04-22
 crbug.com/1191990 [ Linux ] http/tests/serviceworker/clients-openwindow.html [ Failure Pass ]
-crbug.com/1198443 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure Pass Timeout ]
 
 # Sheriff 2021-04-23
 crbug.com/1198832 [ Linux ] external/wpt/css/css-sizing/aspect-ratio/replaced-element-003.html [ Failure Pass ]
-crbug.com/1202040 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure Pass Timeout ]
-crbug.com/1202040 virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure Pass Timeout ]
 crbug.com/1202051 virtual/scroll-unification/scrollbars/layout-viewport-scrollbars-hidden.html [ Failure Pass ]
 crbug.com/1202051 virtual/scroll-unification-prefer_compositing_to_lcd_text/scrollbars/layout-viewport-scrollbars-hidden.html [ Failure Pass ]
 crbug.com/1197528 [ Linux ] pointer-lock/pointerlockchange-pointerlockerror-events.html [ Failure Pass ]
@@ -7084,7 +7081,6 @@ crbug.com/1201406 [ Mac11.0 ] external/wpt/webrtc-stats/supported-stats.html [ F
 crbug.com/1201406 [ Mac11.0 ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure ]
 crbug.com/1201406 [ Mac11.0 ] http/tests/credentialmanager/credentialscontainer-create-from-nested-frame.html [ Crash Timeout ]
 crbug.com/1201406 [ Mac11.0 ] http/tests/credentialmanager/credentialscontainer-create-origins.html [ Crash Timeout ]
-crbug.com/1201406 [ Mac11.0 ] http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Crash Timeout ]
 crbug.com/1201406 [ Mac11.0 ] http/tests/credentialmanager/publickeycredential-same-origin-with-ancestors.html [ Crash Timeout ]
 crbug.com/1201406 [ Mac11.0 ] http/tests/credentialmanager/register-then-sign.html [ Crash Timeout ]
 crbug.com/1201406 [ Mac11.0 ] http/tests/inspector-protocol/webauthn/webauthn-add-virtual-authenticator.js [ Crash Timeout ]
@@ -7304,9 +7300,9 @@ crbug.com/1228432 [ Linux ] external/wpt/video-rvfc/request-video-frame-callback
 crbug.com/1227710 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Pass ]
 
 # Sheriff 2021-07-13
-crbug.com/1220114 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass ]
+crbug.com/1220114 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass Timeout ]
 crbug.com/1228788 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-audio.https.html [ Failure Pass ]
-crbug.com/1228772 [ Linux ] external/wpt/webrtc/simulcast/h264.https.html [ Crash Pass Failure ]
+crbug.com/1228772 [ Linux ] external/wpt/webrtc/simulcast/h264.https.html [ Crash Failure Pass ]
 crbug.com/1228772 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Pass ]
 crbug.com/1228959 [ Linux ] virtual/scroll-unification/fast/scroll-snap/snaps-after-wheel-scrolling-single-tick.html [ Failure Pass ]
 
@@ -7347,5 +7343,20 @@ crbug.com/1225643 [ Mac ] external/wpt/webrtc/simulcast/basic.https.html [ Pass 
 crbug.com/1229212 inspector-protocol/heap-profiler/heap-samples-in-snapshot.js [ Failure ]
 
 # Sheriff 2021-07-15
-crbug.com/1229439 [ Mac10.14 ] virtual/dark-color-scheme/media/audio-focus-ring.html [ Pass Failure ]
-crbug.com/1229439 [ Mac10.14 ] media/audio-repaint.html [ Pass Failure ]
+crbug.com/1229439 [ Mac10.14 ] virtual/dark-color-scheme/media/audio-focus-ring.html [ Failure Pass ]
+crbug.com/1229439 [ Mac10.14 ] media/audio-repaint.html [ Failure Pass ]
+crbug.com/1229666 external/wpt/html/semantics/forms/form-submission-0/urlencoded2.window.html [ Pass Timeout ]
+crbug.com/1229666 virtual/synchronous_html_parser/external/wpt/html/semantics/forms/form-submission-0/urlencoded2.window.html [ Pass Timeout ]
+crbug.com/1093027 http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html [ Pass Failure Crash Timeout ]
+crbug.com/1229701 virtual/synchronous_html_parser/http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Pass Timeout ]
+# The next test was originally skipped on mac for lack of support (crbug.com/613672). It is now skipped everywhere due to flakiness.
+crbug.com/1229708 fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
+crbug.com/1229711 [ Linux ] http/tests/devtools/console-resource-errors.js [ Pass Failure ]
+crbug.com/1229725 http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Failure Crash ]
+crbug.com/1229785 external/wpt/webrtc/simulcast/setParameters-active.https.html [ Pass Timeout ]
+crbug.com/1085647 external/wpt/pointerevents/compat/pointerevent_mouse-pointer-preventdefault.html [ Pass Timeout ]
+crbug.com/1087232 http/tests/devtools/network/network-worker-fetch-blocked.js [ Pass Failure ]
+crbug.com/1229801 http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Pass Failure ]
+crbug.com/1229802 fast/events/pointerevents/multi-touch-events.html [ Pass Failure ]
+crbug.com/835943 http/tests/appcache/non-html.xhtml [ Crash Failure Pass Timeout ]
+crbug.com/1181886 external/wpt/pointerevents/pointerevent_movementxy.html?* [ Failure Pass Timeout ]

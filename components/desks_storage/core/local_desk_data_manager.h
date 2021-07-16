@@ -14,13 +14,17 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "components/desks_storage/core/desk_model.h"
 
-namespace desks_storage {
-
+namespace ash {
 class DeskTemplate;
+}
+
+namespace desks_storage {
 
 // The LocalDeskDataManager is the local storage implementation of
 // the DeskModel interface and handles storage operations for local
 // desk templates.
+//
+// TODO(crbug: 1227215): add calls to DeskModelObserver
 class LocalDeskDataManager : public DeskModel {
  public:
   explicit LocalDeskDataManager(const base::FilePath& path);
@@ -30,11 +34,11 @@ class LocalDeskDataManager : public DeskModel {
   ~LocalDeskDataManager() override;
 
   // DeskModel:
-  void GetAllUuids(GetAllUuidsCallback callback) override;
+  void GetAllEntries(GetAllEntriesCallback callback) override;
   void DeleteAllEntries(DeleteEntryCallback callback) override;
   void GetEntryByUUID(const std::string& uuid,
                       GetEntryByUuidCallback callback) override;
-  void AddOrUpdateEntry(std::unique_ptr<DeskTemplate> new_entry,
+  void AddOrUpdateEntry(std::unique_ptr<ash::DeskTemplate> new_entry,
                         AddOrUpdateEntryCallback callback) override;
   void DeleteEntry(const std::string& uuid,
                    DeleteEntryCallback callback) override;
@@ -44,6 +48,12 @@ class LocalDeskDataManager : public DeskModel {
   // This file path points to the user data directory's subdirectory:
   // "/path/to/user/data/dir/templates"
   const base::FilePath local_path_;
+  // This vector is used so that this class will own desk_templates
+  // retrieved via GetAllEntries.
+  //
+  // TODO implement full cache model instead of using this for just
+  // GetAllEntries.
+  std::vector<std::unique_ptr<ash::DeskTemplate>> desk_template_entries_;
 };
 
 }  // namespace desks_storage

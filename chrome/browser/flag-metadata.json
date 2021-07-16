@@ -3449,7 +3449,7 @@
   },
   {
     "name": "instant-tethering",
-    "owners": [ "hansberry", "khorimoto", "vecore", "cros-system-services@google.com" ],
+    "owners": [ "hansberry", "khorimoto", "cros-system-services@google.com" ],
     // Though Instant Tethering is now a launched feature, it is only marked enabled on select,
     // approved boards which have passed hardware verification and received server config seeds
     // marking it as enabled. This means it is actually disabled-by-default, and since test machines
@@ -3917,12 +3917,12 @@
   },
   {
     "name": "nearby-keep-alive-fix",
-    "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
+    "owners": [ "danlee@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
     "expiry_milestone": 98
   },
   {
     "name": "nearby-sharing",
-    "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
+    "owners": [ "danlee@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
     "expiry_milestone": 95
   },
   {
@@ -3932,12 +3932,12 @@
   },
   {
     "name": "nearby-sharing-device-contacts",
-    "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
+    "owners": [ "danlee@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
     "expiry_milestone": 95
   },
   {
     "name": "nearby-sharing-webrtc",
-    "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
+    "owners": [ "danlee@google.com", "cros-system-services@google.com", "cross-device-team@google.com" ],
     "expiry_milestone": 95
   },
   {
@@ -4441,6 +4441,11 @@
   {
     "name": "percent-based-scrolling",
     "owners": [ "arakeri@microsoft.com", "gerchiko@microsoft.com" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "performant-split-view-resizing",
+    "owners": [ "dandersson", "riomat" ],
     "expiry_milestone": 100
   },
   {
@@ -5444,7 +5449,7 @@
   },
   {
     "name": "updated_cellular_activation_ui",
-    "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-connectivity@google.com" ],
+    "owners": [ "azeemarshad", "khorimoto", "cros-connectivity@google.com" ],
     "expiry_milestone": 95
   },
   {
@@ -5468,7 +5473,7 @@
   },
   {
     "name": "use-custom-messages-domain",
-    "owners": [ "azeemarshad", "jonmann", "vecore" ],
+    "owners": [ "azeemarshad", "jonmann" ],
     // This flag is used for QA and development.
     "expiry_milestone": -1
   },
@@ -5681,6 +5686,11 @@
     "name": "webpage-text-accessibility",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 91
+  },
+  {
+    "name": "webui-branding-update",
+    "owners": [ "dpapad@chromium.org", "johntlee@chromium.org" ],
+    "expiry_milestone": 99
   },
   {
     "name": "webui-dark-mode",

@@ -168,7 +168,7 @@ def try_builder(
             fail("Try Windows builder {} must disable ATS".format(name))
 
     # TODO(crbug.com/1143122): remove this after migration.
-    experiments["chromium.chromium_tests.use_rbe_cas"] = 5
+    experiments["chromium.chromium_tests.use_rbe_cas"] = 0
 
     # Define the builder first so that any validation of luci.builder arguments
     # (e.g. bucket) occurs before we try to use it
@@ -303,6 +303,17 @@ def chromium_dawn_builder(*, name, **kwargs):
         name = name,
         builder_group = "tryserver.chromium.dawn",
         builderless = False,
+        cores = None,
+        goma_backend = builders.goma.backend.RBE_PROD,
+        service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
+        **kwargs
+    )
+
+def chromium_dawn_builderless_builder(*, name, **kwargs):
+    return try_builder(
+        name = name,
+        builder_group = "tryserver.chromium.dawn",
+        builderless = True,
         cores = None,
         goma_backend = builders.goma.backend.RBE_PROD,
         service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
@@ -563,8 +574,10 @@ try_ = struct(
     chromium_angle_builder = chromium_angle_builder,
     chromium_angle_ios_builder = chromium_angle_ios_builder,
     chromium_angle_mac_builder = chromium_angle_mac_builder,
+    chromium_angle_pinned_builder = chromium_angle_pinned_builder,
     chromium_chromiumos_builder = chromium_chromiumos_builder,
     chromium_dawn_builder = chromium_dawn_builder,
+    chromium_dawn_builderless_builder = chromium_dawn_builderless_builder,
     chromium_linux_builder = chromium_linux_builder,
     chromium_mac_builder = chromium_mac_builder,
     chromium_mac_ios_builder = chromium_mac_ios_builder,

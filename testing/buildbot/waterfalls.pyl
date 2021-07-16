@@ -2863,7 +2863,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'fuchsia_gtests',
+          'gtest_tests': 'fuchsia_experimental_gtests',
         },
         'mixins': [
           'arm64',
@@ -2908,7 +2908,7 @@
         },
         'test_suites': {
           'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
-          'gtest_tests': 'web_engine_gtests',
+          'gtest_tests': 'fuchsia_experimental_gtests',
         },
       },
       'ios-asan': {
@@ -3051,6 +3051,38 @@
         'test_suites': {
           'isolated_scripts': 'ios15_sdk_simulator_tests'
         },
+      },
+      'lacros-amd64-generic-rel (goma cache silo)': {
+        'additional_compile_targets': [
+          'chrome',
+          'lacros_version_metadata',
+          'linux_symbols',
+          'symupload',
+          'strip_chrome_binary',
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chrome_sizes',
+        },
+        'os_type': 'chromeos',
+      },
+      'lacros-amd64-generic-rel (reclient)': {
+        'additional_compile_targets': [
+          'chrome',
+          'lacros_version_metadata',
+          'linux_symbols',
+          'symupload',
+          'strip_chrome_binary',
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chrome_sizes',
+        },
+        'os_type': 'chromeos',
       },
       'lacros-amd64-generic-rel-fyi': {
         'additional_compile_targets': [
@@ -5149,7 +5181,7 @@
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_13_latest_beta',
+          'xcode_13a5155e',
           'xctest',
         ],
         'test_suites': {

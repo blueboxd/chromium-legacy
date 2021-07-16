@@ -125,6 +125,7 @@ void ProcessJoinSecurityDomainsResponse(
     const std::string& response_body) {
   switch (http_status) {
     case TrustedVaultRequest::HttpStatus::kSuccess:
+    case TrustedVaultRequest::HttpStatus::kConflict:
       break;
     case TrustedVaultRequest::HttpStatus::kOtherError:
       std::move(callback).Run(TrustedVaultRegistrationStatus::kOtherError,
@@ -140,7 +141,15 @@ void ProcessJoinSecurityDomainsResponse(
   }
 
   sync_pb::JoinSecurityDomainsResponse response;
-  if (!response.ParseFromString(response_body)) {
+  if (http_status == TrustedVaultRequest::HttpStatus::kConflict) {
+    sync_pb::JoinSecurityDomainsErrorDetail error_detail;
+    if (!error_detail.ParseFromString(response_body)) {
+      std::move(callback).Run(TrustedVaultRegistrationStatus::kOtherError,
+                              /*last_key_version=*/0);
+      return;
+    }
+    response = error_detail.already_exists_response();
+  } else if (!response.ParseFromString(response_body)) {
     std::move(callback).Run(TrustedVaultRegistrationStatus::kOtherError,
                             /*last_key_version=*/0);
     return;
@@ -153,8 +162,11 @@ void ProcessJoinSecurityDomainsResponse(
                             /*last_key_version=*/0);
     return;
   }
-  std::move(callback).Run(TrustedVaultRegistrationStatus::kSuccess,
-                          last_key_version);
+  std::move(callback).Run(
+      http_status == TrustedVaultRequest::HttpStatus::kConflict
+          ? TrustedVaultRegistrationStatus::kAlreadyRegistered
+          : TrustedVaultRegistrationStatus::kSuccess,
+      last_key_version);
 }
 
 void ProcessDownloadKeysResponse(
@@ -169,7 +181,7 @@ void ProcessDownloadKeysResponse(
                           processed_response.last_key_version);
 }
 
-void ProcessRetrieveIsRecoverabilityDegradedResponse(
+void ProcessDownloadIsRecoverabilityDegradedResponse(
     TrustedVaultConnection::IsRecoverabilityDegradedCallback callback,
     TrustedVaultRequest::HttpStatus http_status,
     const std::string& response_body) {
@@ -181,6 +193,7 @@ void ProcessRetrieveIsRecoverabilityDegradedResponse(
     case TrustedVaultRequest::HttpStatus::kOtherError:
     case TrustedVaultRequest::HttpStatus::kNotFound:
     case TrustedVaultRequest::HttpStatus::kBadRequest:
+    case TrustedVaultRequest::HttpStatus::kConflict:
       std::move(callback).Run(TrustedVaultRecoverabilityStatus::kError);
       return;
   }
@@ -273,7 +286,7 @@ TrustedVaultConnectionImpl::DownloadNewKeys(
 }
 
 std::unique_ptr<TrustedVaultConnection::Request>
-TrustedVaultConnectionImpl::RetrieveIsRecoverabilityDegraded(
+TrustedVaultConnectionImpl::DownloadIsRecoverabilityDegraded(
     const CoreAccountInfo& account_info,
     IsRecoverabilityDegradedCallback callback) {
   auto request = std::make_unique<TrustedVaultRequest>(
@@ -285,7 +298,7 @@ TrustedVaultConnectionImpl::RetrieveIsRecoverabilityDegraded(
   request->FetchAccessTokenAndSendRequest(
       account_info.account_id, GetOrCreateURLLoaderFactory(),
       access_token_fetcher_.get(),
-      base::BindOnce(&ProcessRetrieveIsRecoverabilityDegradedResponse,
+      base::BindOnce(&ProcessDownloadIsRecoverabilityDegradedResponse,
                      std::move(callback)));
 
   return request;

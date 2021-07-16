@@ -943,9 +943,6 @@ extern const char kMouseSubframeNoImplicitCaptureDescription[];
 extern const char kMutingCompromisedCredentialsName[];
 extern const char kMutingCompromisedCredentialsDescription[];
 
-extern const char kUseOfHashAffiliationFetcherName[];
-extern const char kUseOfHashAffiliationFetcherDescription[];
-
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
 
@@ -2880,6 +2877,9 @@ extern const char kNearbySharingDeviceContactsDescription[];
 extern const char kNearbySharingWebRtcName[];
 extern const char kNearbySharingWebRtcDescription[];
 
+extern const char kPerformantSplitViewResizing[];
+extern const char kPerformantSplitViewResizingDescription[];
+
 extern const char kPhoneHubCameraRollName[];
 extern const char kPhoneHubCameraRollDescription[];
 
@@ -3069,6 +3069,9 @@ extern const char kInstallableInkDropDescription[];
 
 extern const char kEnableOopPrintDriversName[];
 extern const char kEnableOopPrintDriversDescription[];
+
+extern const char kWebUIBrandingUpdateName[];
+extern const char kWebUIBrandingUpdateDescription[];
 
 extern const char kWebuiFeedbackName[];
 extern const char kWebuiFeedbackDescription[];

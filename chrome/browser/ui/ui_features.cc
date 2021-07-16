@@ -148,6 +148,10 @@ const char kTabHoverCardImagesNotReadyDelayParameterName[] =
 const char kTabHoverCardImagesLoadingDelayParameterName[] =
     "page_loading_delay";
 const char kTabHoverCardImagesLoadedDelayParameterName[] = "page_loaded_delay";
+const char kTabHoverCardImagesCrossfadePreviewAtParameterName[] =
+    "crossfade_preview_at";
+const char kTabHoverCardAdditionalMaxWidthDelay[] =
+    "additional_max_width_delay";
 
 // Enables tab outlines in additional situations for accessibility.
 const base::Feature kTabOutlinesInLowContrastThemes{
@@ -211,6 +215,11 @@ const base::Feature kUseRelaunchToUpdateString{
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.
 const base::Feature kWebUIBubblePerProfilePersistence{
     "WebUIBubblePerProfilePersistence", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if !defined(ANDROID)
+const base::Feature kWebUIBrandingUpdate{"WebUIBrandingUpdate",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Enables the WebUI Download Shelf instead of the Views framework Download
 // Shelf. See https://crbug.com/1180372.

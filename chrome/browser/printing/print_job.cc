@@ -499,29 +499,15 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   switch (event_details.type()) {
-    case JobEventDetails::FAILED: {
+    case JobEventDetails::FAILED:
       // No need to cancel since the worker already canceled itself.
       Stop();
       break;
-    }
-    case JobEventDetails::USER_INIT_DONE:
-    case JobEventDetails::DEFAULT_INIT_DONE:
-    case JobEventDetails::USER_INIT_CANCELED: {
-      DCHECK_EQ(event_details.document(), document_.get());
-      break;
-    }
-    case JobEventDetails::NEW_DOC:
-    case JobEventDetails::JOB_DONE:
-    case JobEventDetails::ALL_PAGES_REQUESTED: {
-      // Don't care.
-      break;
-    }
-    case JobEventDetails::DOC_DONE: {
+    case JobEventDetails::DOC_DONE:
       // This will call `Stop()` and broadcast a `JOB_DONE` message.
       content::GetUIThreadTaskRunner({})->PostTask(
           FROM_HERE, base::BindOnce(&PrintJob::OnDocumentDone, this));
       break;
-    }
 #if defined(OS_WIN)
     case JobEventDetails::PAGE_DONE:
       if (pdf_conversion_state_) {
@@ -531,10 +517,8 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
       document_->DropPage(event_details.page());
       break;
 #endif  // defined(OS_WIN)
-    default: {
-      NOTREACHED();
+    default:
       break;
-    }
   }
 }
 

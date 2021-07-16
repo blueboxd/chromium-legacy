@@ -2727,12 +2727,6 @@ const char kUseFirstPartySetDescription[] =
     "Use the provided list of origins as a First-Party Set, with the first "
     "valid origin as the owner of the set.";
 
-const char kUseOfHashAffiliationFetcherName[] =
-    "Use of Hash Affiliation Fetcher";
-const char kUseOfHashAffiliationFetcherDescription[] =
-    "All requests to the affiliation fetcher are made through the hash prefix "
-    "lookup. Enables use of Hash Affiliation Service for non-synced users.";
-
 const char kUsernameFirstFlowName[] = "Username first flow voting";
 const char kUsernameFirstFlowDescription[] =
     "Support of sending votes on username first flow i.e. login "
@@ -4991,6 +4985,11 @@ const char kNearbySharingWebRtcName[] = "Nearby Sharing WebRTC";
 const char kNearbySharingWebRtcDescription[] =
     "Enables use of WebRTC in Nearby Share.";
 
+const char kPerformantSplitViewResizing[] = "Performant Split View Resizing";
+const char kPerformantSplitViewResizingDescription[] =
+    "If enabled, windows may be moved instead of scaled when resizing split "
+    "view in tablet mode.";
+
 const char kPhoneHubCameraRollName[] = "Camera Roll in Phone Hub";
 const char kPhoneHubCameraRollDescription[] =
     "Enables the Camera Roll feature in Phone Hub, which allows users to "
@@ -5296,6 +5295,10 @@ const char kEnableOopPrintDriversName[] =
 const char kEnableOopPrintDriversDescription[] =
     "Enables printing interactions with the operating system to be performed "
     "out-of-process.";
+
+const char kWebUIBrandingUpdateName[] = "WebUI Branding Update";
+const char kWebUIBrandingUpdateDescription[] =
+    "Changes various UI components in WebUI pages to have a more modern look.";
 
 const char kWebuiFeedbackName[] = "WebUI Feedback";
 const char kWebuiFeedbackDescription[] =

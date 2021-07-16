@@ -23,6 +23,7 @@ import("//chrome/services/speech/buildflags.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//components/captive_portal/core/features.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
@@ -615,15 +616,15 @@ static_library("test_support") {
   }
 }
 
-group("telemetry_gpu_integration_test") {
-  testonly = true
-  data_deps = [
-    "//content/test:telemetry_gpu_integration_test_support",
-    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-  ]
-}
-
-if (is_android) {
+if (!is_android) {
+  group("telemetry_gpu_integration_test") {
+    testonly = true
+    data_deps = [
+      "//content/test:telemetry_gpu_integration_test_support",
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+    ]
+  }
+} else {
   template("telemetry_gpu_integration_test_android_template") {
     forward_variables_from(invoker, [ "telemetry_target_suffix" ])
     group(target_name) {
@@ -2350,6 +2351,10 @@ if (!is_android) {
       ]
     }
 
+    if (is_cfm) {
+      sources += [ "../browser/ui/webui/chromeos/chromebox_for_meetings/network_settings_dialog_browsertest.cc" ]
+    }
+
     if (!is_chromeos_ash) {
       sources += [
         "../browser/policy/test/hardware_acceleration_mode_enabled_browsertest.cc",
@@ -2867,7 +2872,6 @@ if (!is_android) {
         "../browser/ui/views/extensions/extension_install_friction_dialog_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_installed_bubble_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc",
-        "../browser/ui/views/extensions/extensions_menu_view_browsertest.cc",
         "../browser/ui/views/extensions/extensions_side_panel_controller_browsertest.cc",
         "../browser/ui/views/extensions/extensions_toolbar_browsertest.cc",
         "../browser/ui/views/extensions/extensions_toolbar_browsertest.h",
@@ -3986,15 +3990,15 @@ group("telemetry_perf_unittests_base") {
   data_deps = [ "//testing:test_scripts_shared" ]
 }
 
-group("telemetry_perf_unittests") {
-  testonly = true
-  data_deps = [
-    ":telemetry_perf_unittests_base",
-    "//tools/perf:perf",
-  ]
-}
-
-if (is_android) {
+if (!is_android) {
+  group("telemetry_perf_unittests") {
+    testonly = true
+    data_deps = [
+      ":telemetry_perf_unittests_base",
+      "//tools/perf:perf",
+    ]
+  }
+} else {
   template("telemetry_perf_unittests_android_template") {
     forward_variables_from(invoker, [ "telemetry_target_suffix" ])
     group(target_name) {
@@ -4022,15 +4026,15 @@ group("telemetry_perf_tests_base") {
   ]
 }
 
-group("telemetry_perf_tests") {
-  testonly = true
-  data_deps = [
-    ":telemetry_perf_tests_base",
-    "//tools/perf/:perf",
-  ]
-}
-
-if (is_android) {
+if (!is_android) {
+  group("telemetry_perf_tests") {
+    testonly = true
+    data_deps = [
+      ":telemetry_perf_tests_base",
+      "//tools/perf/:perf",
+    ]
+  }
+} else {
   template("telemetry_perf_tests_android_template") {
     forward_variables_from(invoker, [ "telemetry_target_suffix" ])
     group(target_name) {
@@ -4123,14 +4127,14 @@ template("performance_test_suite_template_base") {
   }
 }
 
-template("performance_test_suite_template") {
-  forward_variables_from(invoker, [ "override_board" ])
-  performance_test_suite_template_base(target_name) {
-    data_deps = [ "//chrome/test:telemetry_perf_tests" ]
+if (!is_android) {
+  template("performance_test_suite_template") {
+    forward_variables_from(invoker, [ "override_board" ])
+    performance_test_suite_template_base(target_name) {
+      data_deps = [ "//chrome/test:telemetry_perf_tests" ]
+    }
   }
-}
-
-if (is_android) {
+} else {
   template("performance_test_suite_template_android") {
     forward_variables_from(invoker,
                            [
@@ -4144,10 +4148,11 @@ if (is_android) {
   }
 }
 
-performance_test_suite_template("performance_test_suite") {
-}
-
-if (is_android) {
+if (!is_android) {
+  performance_test_suite_template("performance_test_suite") {
+  }
+} else {
+  import("//tools/perf/chrome_telemetry_build/android_browser_types.gni")
   foreach(_target_suffix, telemetry_android_browser_target_suffixes) {
     performance_test_suite_template_android(
         "performance_test_suite${_target_suffix}") {
@@ -4673,6 +4678,7 @@ test("unit_tests") {
       "../browser/metrics/thread_watcher_android_unittest.cc",
       "../browser/notifications/notification_channels_provider_android_unittest.cc",
       "../browser/optimization_guide/android/optimization_guide_tab_url_provider_android_unittest.cc",
+      "../browser/password_manager/android/biometric_authenticator_android_unittest.cc",
       "../browser/password_manager/android/password_ui_view_android_unittest.cc",
       "../browser/search/contextual_search_policy_handler_android_unittest.cc",
       "../browser/share/share_history_unittest.cc",
@@ -6648,8 +6654,10 @@ test("unit_tests") {
         "../browser/extensions/external_provider_impl_chromeos_unittest.cc",
         "../browser/extensions/system_display/display_info_provider_chromeos_unittest.cc",
         "../browser/extensions/system_display/system_display_serialization_unittest.cc",
+        "../common/chromeos/extensions/manifest_tests/extension_manifests_chromeos_system_extension_unittest.cc",
         "../renderer/extensions/accessibility_private_hooks_delegate_unittest.cc",
       ]
+      deps += [ "../common/chromeos/extensions" ]
     }
 
     allow_circular_includes_from = [
@@ -7553,7 +7561,11 @@ if (!is_android) {
       "permissions/permission_request_manager_test_api.h",
     ]
     if (is_mac) {
-      sources += [ "base/in_process_browser_test_mac.mm" ]
+      sources += [
+        "../browser/ui/test/test_browser_dialog_mac.h",
+        "../browser/ui/test/test_browser_dialog_mac.mm",
+        "base/in_process_browser_test_mac.mm",
+      ]
     }
 
     configs += [ "//build/config:precompiled_headers" ]
@@ -7825,10 +7837,17 @@ if (!is_android) {
       "../browser/ui/signin_view_controller_interactive_uitest.cc",
       "../browser/ui/startup/invalid_user_data_dir_interactive_uitest.cc",
       "../browser/ui/startup/startup_browser_creator_interactive_uitest.cc",
+      "../browser/ui/test/test_browser_dialog.cc",
+      "../browser/ui/test/test_browser_dialog.h",
+      "../browser/ui/test/test_browser_ui.cc",
+      "../browser/ui/test/test_browser_ui.h",
       "../browser/ui/translate/translate_bubble_test_utils.h",
       "../browser/ui/views/accessibility/caption_bubble_controller_views_browsertest.cc",
       "../browser/ui/views/content_test_utils.cc",
       "../browser/ui/views/content_test_utils.h",
+      "../browser/ui/views/extensions/extensions_menu_view_interactive_uitest.cc",
+      "../browser/ui/views/extensions/extensions_toolbar_browsertest.cc",
+      "../browser/ui/views/extensions/extensions_toolbar_browsertest.h",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_interactive_uitest.cc",
       "../browser/ui/views/web_dialog_view_browsertest.cc",
       "../browser/webauth_interactive_uitest.cc",
@@ -7954,6 +7973,7 @@ if (!is_android) {
       "//ui/base:base_interactive_ui_tests",
       "//ui/base:test_support",
       "//ui/base/clipboard:clipboard_test_support",
+      "//ui/compositor:test_support",
       "//ui/display:display_manager_test_api",
       "//ui/display:test_support",
       "//ui/display/manager",
@@ -9001,15 +9021,15 @@ if (is_mac || is_win || is_android) {
     data_deps = [ "//testing:test_scripts_shared" ]
   }
 
-  group("rendering_representative_perf_tests") {
-    testonly = true
-    data_deps = [
-      ":rendering_representative_perf_tests_base",
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
-  }
-
-  if (is_android) {
+  if (!is_android) {
+    group("rendering_representative_perf_tests") {
+      testonly = true
+      data_deps = [
+        ":rendering_representative_perf_tests_base",
+        "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+      ]
+    }
+  } else {
     template("rendering_representative_perf_tests_android_template") {
       forward_variables_from(invoker, [ "telemetry_target_suffix" ])
       group(target_name) {

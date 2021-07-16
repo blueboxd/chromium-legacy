@@ -1610,9 +1610,6 @@ config("default_warnings") {
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
 
-          # TODO(https://crbug.com/989932): Evaluate and possibly enable.
-          "-Wno-implicit-int-float-conversion",
-
           # TODO(https://crbug.com/999886): Clean up, enable.
           "-Wno-final-dtor-non-final-class",
 
@@ -2055,6 +2052,11 @@ if (is_win) {
       "-fdata-sections",
       "-ffunction-sections",
     ]
+    if (!is_nacl && is_clang) {
+      # We don't care about unique section names, this makes object files a bit
+      # smaller.
+      common_optimize_on_cflags += [ "-fno-unique-section-names" ]
+    }
 
     common_optimize_on_ldflags += [
       # Specifically tell the linker to perform optimizations.

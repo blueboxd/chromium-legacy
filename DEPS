@@ -190,7 +190,7 @@ vars = {
   # luci-go CIPD package version.
   # Make sure the revision is uploaded by infra-packagers builder.
   # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-  'luci_go': 'git_revision:91a04914ac71b7b6fe7b95ce8691d45eeb69bf4f',
+  'luci_go': 'git_revision:d10ff2af1182ccaad573bc5acb84a36f4c280876',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
@@ -222,7 +222,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '385e0d77bee08d99bbdb71285048fdf144138975',
+  'skia_revision': '657e375a16e651da6db2683941fad4600587eb72',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -651,7 +651,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'JCsCRWvADh9xEX_PV2s2UrX5YNpLtTgJQWPCQn5T5KUC',
+          'version': 'fvEId-G6mcDn7wqWAKltvTLPp9m345D92nqbGxE3iDwC',
         },
       ],
       'dep_type': 'cipd',
@@ -1360,7 +1360,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '390161883794a40acb72e661d14c39b712cd70ec',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c7fe0544178af59648a5251f7ef3d1cc57a8449d',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1553,7 +1553,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '1ade45cbadfd19298d2c47dc538962d4425ad2dd',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@36456846a4affb738fc3f012cc8f1c8c86ef0595',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@df0528b581a1709ccad790c205d3c11d0b657ed6',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a5eef48d1aaace36bf59c4bd10dff0db942cb6ea',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c65a7761f0b44b0154b1d73784ab205313640351',
     'condition': 'checkout_src_internal',
   },
 

@@ -1059,6 +1059,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "device-posture",
+    "owners": [ "alexis.menard@intel.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "diagnostics-app",
     "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 92
@@ -1384,11 +1389,6 @@
   {
     "name": "enable-assistant-app-support",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 88
-  },
-  {
-    "name": "enable-assistant-better-onboarding",
-    "owners": ["croissant-eng"],
     "expiry_milestone": 88
   },
   {
@@ -3035,12 +3035,12 @@
   },
   {
     "name": "file-handling-api",
-    "owners": [ "huangdarwin", "mgiuca", "cmp" ],
+    "owners": [ "estade", "mgiuca", "cmp" ],
     "expiry_milestone": 95
   },
   {
     "name": "file-handling-icons",
-    "owners": [ "huangdarwin", "mgiuca", "cmp" ],
+    "owners": [ "estade", "mgiuca", "cmp" ],
     "expiry_milestone": 95
   },
   {

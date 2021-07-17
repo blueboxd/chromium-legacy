@@ -110,6 +110,7 @@ class ASH_EXPORT AppListControllerImpl
       std::vector<std::unique_ptr<SearchResultMetadata>> results) override;
   void SetItemMetadata(const std::string& id,
                        std::unique_ptr<AppListItemMetadata> data) override;
+  void SetItemIconVersion(const std::string& id, int icon_version) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
   void SetItemNotificationBadgeColor(const std::string& id,
                                      const SkColor color) override;
@@ -227,6 +228,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnStateTransitionAnimationCompleted(AppListViewState state) override;
   void OnViewStateChanged(AppListViewState state) override;
   int AdjustAppListViewScrollOffset(int offset, ui::EventType type) override;
+  void LoadIcon(const std::string& app_id) override;
 
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
@@ -353,7 +355,8 @@ class ASH_EXPORT AppListControllerImpl
 
   void SetKeyboardTraversalMode(bool engaged);
 
-  // Returns current visibility of the Assistant page.
+  // Returns whether the assistant page is showing (either in bubble app list or
+  // fullscreen app list).
   bool IsShowingEmbeddedAssistantUI() const;
 
   // Get updated app list view state after dragging from shelf.
@@ -420,6 +423,10 @@ class ASH_EXPORT AppListControllerImpl
   // Returns true if home screen should be shown based on the current
   // configuration.
   bool ShouldShowHomeScreen() const;
+
+  // Returns true if the bubble app list should be shown (instead of the
+  // fullscreen app list), based on tablet mode state and the feature flag.
+  bool ShouldShowAppListBubble() const;
 
   // Updates home launcher scale and opacity when the overview mode state
   // changes. `show_home_launcher` - whether the home launcher should be shown.

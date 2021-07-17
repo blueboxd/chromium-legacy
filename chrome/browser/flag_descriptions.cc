@@ -920,6 +920,12 @@ const char kWinrtGeolocationImplementationDescription[] =
     "Enables usage of the Windows.Devices.Geolocation WinRT APIs on Windows "
     "for geolocation";
 
+extern const char kEnableExtendedSyncPromosCapabilityName[] =
+    "Enables reading the extended sync promo account capability";
+extern const char kEnableExtendedSyncPromosCapabilityDescription[] =
+    "When enabled, starts reading the account capability to decide whether "
+    "or not Chrome should display an extended sync promo";
+
 const char kEnableFencedFramesName[] = "Enable the <fencedframe> element.";
 const char kEnableFencedFramesDescription[] =
     "Fenced frames are an experimental web platform feature that allows "
@@ -1428,9 +1434,9 @@ const char kHostedAppShimCreationName[] =
 const char kHostedAppShimCreationDescription[] =
     "Create app shims on Mac when creating a hosted app.";
 
-const char kHttpsOnlyModeName[] = "HTTPS-Only Mode Setting";
+const char kHttpsOnlyModeName[] = "HTTPS-First Mode Setting";
 const char kHttpsOnlyModeDescription[] =
-    "Adds a setting under chrome://settings/security to opt-in to HTTPS-Only "
+    "Adds a setting under chrome://settings/security to opt-in to HTTPS-First "
     "Mode.";
 
 const char kIgnoreGpuBlocklistName[] = "Override software rendering list";
@@ -3253,6 +3259,10 @@ const char kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[] =
     "Only enable the upload of clicks/views in Feed V2 after reaching "
     "conditions.";
 
+const char kMessagesForAndroidChromeSurveyName[] = "Chrome Survey Messages UI";
+const char kMessagesForAndroidChromeSurveyDescription[] =
+    "When enabled, survey prompt will use the new Messages UI.";
+
 const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
 const char kMessagesForAndroidInfrastructureDescription[] =
     "When enabled, will initialize Messages UI infrastructure";
@@ -3820,10 +3830,6 @@ const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";
 const char kOmniboxKeywordSearchButtonDescription[] =
     "Enable the omnibox keyword search button which offers a way to search "
     "on specific sites from the omnibox.";
-
-const char kOmniboxRefinedFocusStateName[] = "Omnibox refined focus state UI";
-const char kOmniboxRefinedFocusStateDescription[] =
-    "Enables new changes to the UI indicating focus and hover states.";
 
 const char kOmniboxShortBookmarkSuggestionsName[] =
     "Omnibox short bookmark suggestions";

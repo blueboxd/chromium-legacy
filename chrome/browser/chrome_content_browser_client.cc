@@ -569,7 +569,7 @@
 #include "chrome/browser/chrome_browser_main_parts_lacros.h"
 #include "chrome/browser/lacros/chrome_browser_main_extra_parts_lacros.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_lacros.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "ui/base/ui_base_switches.h"
 #endif
 
@@ -5544,7 +5544,8 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
     blink::NavigationDownloadPolicy* download_policy) {
   const auto* throttle_manager = subresource_filter::
       ContentSubresourceFilterThrottleManager::FromWebContents(web_contents);
-  if (throttle_manager && throttle_manager->IsFrameTaggedAsAd(frame_host)) {
+  if (throttle_manager &&
+      throttle_manager->IsRenderFrameHostTaggedAsAd(frame_host)) {
     download_policy->SetAllowed(blink::NavigationDownloadType::kAdFrame);
     if (!user_gesture) {
       if (base::FeatureList::IsEnabled(
@@ -5773,7 +5774,7 @@ bool ChromeContentBrowserClient::IsOriginTrialRequiredForAppCache(
 void ChromeContentBrowserClient::BindBrowserControlInterface(
     mojo::ScopedMessagePipeHandle pipe) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  chromeos::LacrosChromeServiceImpl::Get()->BindReceiver(
+  chromeos::LacrosService::Get()->BindReceiver(
       chrome::GetVersionString(chrome::WithExtendedStable(true)));
 #endif
 }

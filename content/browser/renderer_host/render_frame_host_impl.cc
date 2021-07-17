@@ -3844,6 +3844,15 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(),
                "error", error_code);
 
+  // Cancel prerendering if DidFailLoadWithError is called during prerendering.
+  // Don't dispatch the DidFailLoad event in such a case as the embedders are
+  // unaware of prerender page yet and shouldn't show any user-visible changes
+  // from an inactive RenderFrameHost.
+  if (lifecycle_state() == LifecycleStateImpl::kPrerendering) {
+    CancelPrerendering(PrerenderHost::FinalStatus::kDidFailLoad);
+    return;
+  }
+
   GURL validated_url(url);
   GetProcess()->FilterURL(false, &validated_url);
 
@@ -11560,12 +11569,16 @@ RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
 blink::mojom::AuthenticatorStatus
 RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
     const std::string& relying_party_id,
-    const url::Origin& effective_origin) {
+    const url::Origin& effective_origin,
+    bool is_payment_credential_creation) {
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
       GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
           effective_origin,
-          WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
+          is_payment_credential_creation
+              ? WebAuthRequestSecurityChecker::RequestType::
+                    kMakePaymentCredential
+              : WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
           &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;

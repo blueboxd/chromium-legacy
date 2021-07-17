@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/data_transfer_util.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
@@ -115,8 +116,10 @@ ClipboardHostImpl::ClipboardHostImpl(
     : DocumentServiceBase(render_frame_host, std::move(receiver)) {
   clipboard_writer_ = std::make_unique<ui::ScopedClipboardWriter>(
       ui::ClipboardBuffer::kCopyPaste,
-      std::make_unique<ui::DataTransferEndpoint>(
-          render_frame_host->GetLastCommittedOrigin()));
+      render_frame_host->GetBrowserContext()->IsOffTheRecord()
+          ? nullptr
+          : std::make_unique<ui::DataTransferEndpoint>(
+                render_frame_host->GetLastCommittedOrigin()));
 }
 
 void ClipboardHostImpl::Create(
@@ -500,7 +503,7 @@ void ClipboardHostImpl::PasteIfPolicyAllowed(
     std::move(callback).Run(ClipboardPasteContentAllowed(true));
     return;
   }
-
+  const size_t data_size = data.size();
   auto policy_cb =
       base::BindOnce(&ClipboardHostImpl::PasteIfPolicyAllowedCallback,
                      weak_ptr_factory_.GetWeakPtr(), clipboard_buffer,
@@ -514,7 +517,8 @@ void ClipboardHostImpl::PasteIfPolicyAllowed(
 
     ui::DataTransferPolicyController::Get()->PasteIfAllowed(
         ui::Clipboard::GetForCurrentThread()->GetSource(clipboard_buffer),
-        CreateDataEndpoint().get(), web_contents, std::move(policy_cb));
+        CreateDataEndpoint().get(), data_size, web_contents,
+        std::move(policy_cb));
     return;
   }
   std::move(policy_cb).Run(/*is_allowed=*/true);
@@ -582,6 +586,9 @@ void ClipboardHostImpl::CleanupObsoleteRequests() {
 
 std::unique_ptr<ui::DataTransferEndpoint>
 ClipboardHostImpl::CreateDataEndpoint() {
+  if (render_frame_host()->GetBrowserContext()->IsOffTheRecord()) {
+    return nullptr;
+  }
   return std::make_unique<ui::DataTransferEndpoint>(
       render_frame_host()->GetLastCommittedOrigin(),
       render_frame_host()->HasTransientUserActivation());

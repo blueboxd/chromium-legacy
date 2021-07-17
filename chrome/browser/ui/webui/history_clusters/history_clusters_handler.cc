@@ -37,7 +37,47 @@
 #include "ui/base/l10n/time_format.h"
 #endif
 
+namespace history_clusters {
+
 namespace {
+
+// Translate a `AnnotatedVisit` to `mojom::VisitPtr`.
+mojom::URLVisitPtr VisitToMojom(
+    const history::ScoredAnnotatedVisit& scored_annotated_visit) {
+  auto visit_mojom = mojom::URLVisit::New();
+  auto& annotated_visit = scored_annotated_visit.annotated_visit;
+  visit_mojom->normalized_url = annotated_visit.url_row.url();
+  visit_mojom->raw_urls.push_back(annotated_visit.url_row.url());
+  visit_mojom->last_visit_time = annotated_visit.visit_row.visit_time;
+  visit_mojom->first_visit_time = annotated_visit.visit_row.visit_time;
+  visit_mojom->page_title = base::UTF16ToUTF8(annotated_visit.url_row.title());
+  visit_mojom->relative_date = base::UTF16ToUTF8(ui::TimeFormat::Simple(
+      ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
+      base::Time::Now() - annotated_visit.visit_row.visit_time));
+  if (annotated_visit.context_annotations.is_existing_part_of_tab_group ||
+      annotated_visit.context_annotations.is_placed_in_tab_group) {
+    visit_mojom->annotations.push_back(mojom::Annotation::kTabGrouped);
+  }
+  if (annotated_visit.context_annotations.is_existing_bookmark ||
+      annotated_visit.context_annotations.is_new_bookmark) {
+    visit_mojom->annotations.push_back(mojom::Annotation::kBookmarked);
+  }
+  visit_mojom->score = scored_annotated_visit.score;
+  return visit_mojom;
+}
+
+std::vector<mojom::ClusterPtr> ClustersToMojom(
+    const std::vector<history::Cluster> clusters) {
+  std::vector<mojom::ClusterPtr> clusters_mojom;
+  for (const auto& cluster : clusters) {
+    auto cluster_mojom = mojom::Cluster::New();
+    cluster_mojom->id = cluster.cluster_id;
+    for (const auto& visit : cluster.scored_annotated_visits)
+      cluster_mojom->visits.push_back(VisitToMojom(visit));
+    clusters_mojom.emplace_back(std::move(cluster_mojom));
+  }
+  return clusters_mojom;
+}
 
 // Exists temporarily only for developer usage. Never enabled via variations.
 // TODO(mahmadi): Remove once on-device clustering backend is more mature.
@@ -47,8 +87,7 @@ const base::Feature kUIDevelopmentMakeFakeHistoryClusters{
 }  // namespace
 
 HistoryClustersHandler::HistoryClustersHandler(
-    mojo::PendingReceiver<history_clusters::mojom::PageHandler>
-        pending_page_handler,
+    mojo::PendingReceiver<mojom::PageHandler> pending_page_handler,
     Profile* profile,
     content::WebContents* web_contents)
     : profile_(profile),
@@ -66,15 +105,14 @@ HistoryClustersHandler::HistoryClustersHandler(
 HistoryClustersHandler::~HistoryClustersHandler() = default;
 
 void HistoryClustersHandler::SetPage(
-    mojo::PendingRemote<history_clusters::mojom::Page> pending_page) {
+    mojo::PendingRemote<mojom::Page> pending_page) {
   page_.Bind(std::move(pending_page));
 }
 
-void HistoryClustersHandler::QueryClusters(
-    history_clusters::mojom::QueryParamsPtr query_params) {
+void HistoryClustersHandler::QueryClusters(mojom::QueryParamsPtr query_params) {
   const std::string& query = query_params->query;
   const size_t max_count = query_params->max_count;
-  base::Time end_time = query_params->max_time.value_or(base::Time());
+  base::Time end_time = query_params->end_time.value_or(base::Time());
   auto result_callback =
       base::BindOnce(&HistoryClustersHandler::OnClustersQueryResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(query_params));
@@ -84,17 +122,18 @@ void HistoryClustersHandler::QueryClusters(
     query_task_tracker_.TryCancelAll();
     auto* history_clusters_service =
         HistoryClustersServiceFactory::GetForBrowserContext(profile_);
-    // TODO(crbug.com/1220765): Supply `continuation_max_time` in
-    //  `result_callback` once the service supports paging.
+    // TODO(crbug.com/1220765): Supply `continuation_end_time` in
+    // `result_callback` once the service supports paging.
     history_clusters_service->QueryClusters(
         query, end_time, max_count,
-        base::BindOnce(std::move(result_callback), absl::nullopt),
+        base::BindOnce(&ClustersToMojom)
+            .Then(base::BindOnce(std::move(result_callback), absl::nullopt)),
         &query_task_tracker_);
   } else {
 #if defined(CHROME_BRANDED)
     OnMemoriesDebugMessage(
         "HistoryClustersHandler Error: No UI Mocks on Official Build.");
-    page_->OnClustersQueryResult(history_clusters::mojom::QueryResult::New());
+    page_->OnClustersQueryResult(mojom::QueryResult::New());
 #else
     OnMemoriesDebugMessage("HistoryClustersHandler: Loading UI Mock clusters.");
     // Cancel pending tasks, if any.
@@ -106,7 +145,7 @@ void HistoryClustersHandler::QueryClusters(
 }
 
 void HistoryClustersHandler::RemoveVisits(
-    std::vector<history_clusters::mojom::URLVisitPtr> visits,
+    std::vector<mojom::URLVisitPtr> visits,
     RemoveVisitsCallback callback) {
   // Reject the request if a pending task exists or the set of visits is empty.
   if (remove_task_tracker_.HasTrackedTasks() || visits.empty()) {
@@ -145,34 +184,34 @@ void HistoryClustersHandler::OnMemoriesDebugMessage(
 }
 
 void HistoryClustersHandler::OnClustersQueryResult(
-    history_clusters::mojom::QueryParamsPtr original_query_params,
-    const absl::optional<base::Time>& continuation_max_time,
-    std::vector<history_clusters::mojom::ClusterPtr> cluster_mojoms) {
-  auto result_mojom = history_clusters::mojom::QueryResult::New();
+    mojom::QueryParamsPtr original_query_params,
+    const absl::optional<base::Time>& continuation_end_time,
+    std::vector<mojom::ClusterPtr> cluster_mojoms) {
+  auto result_mojom = mojom::QueryResult::New();
   result_mojom->query = original_query_params->query;
-  // Continuation queries have a value for `max_time`. Mark the result as such.
-  result_mojom->is_continuation = original_query_params->max_time.has_value();
-  result_mojom->continuation_max_time = continuation_max_time;
+  // Continuation queries have a value for `end_time`. Mark the result as such.
+  result_mojom->is_continuation = original_query_params->end_time.has_value();
+  result_mojom->continuation_end_time = continuation_end_time;
   result_mojom->clusters = std::move(cluster_mojoms);
   page_->OnClustersQueryResult(std::move(result_mojom));
 }
 
 void HistoryClustersHandler::OnVisitsRemoved(
-    std::vector<history_clusters::mojom::URLVisitPtr> visits) {
+    std::vector<mojom::URLVisitPtr> visits) {
   page_->OnVisitsRemoved(std::move(visits));
 }
 
 #if !defined(CHROME_BRANDED)
 void HistoryClustersHandler::QueryHistoryService(
     const std::string& query,
-    base::Time max_time,
+    base::Time end_time,
     size_t max_count,
-    std::vector<history_clusters::mojom::ClusterPtr> cluster_mojoms,
+    std::vector<mojom::ClusterPtr> cluster_mojoms,
     QueryResultsCallback callback) {
   if (max_count > 0 && cluster_mojoms.size() == max_count) {
     // Enough clusters have been created. Run the callback with those Clusters
     // along with the continuation max time threshold.
-    std::move(callback).Run(max_time, std::move(cluster_mojoms));
+    std::move(callback).Run(end_time, std::move(cluster_mojoms));
     return;
   }
 
@@ -181,33 +220,33 @@ void HistoryClustersHandler::QueryHistoryService(
                                            ServiceAccessType::EXPLICIT_ACCESS);
   history::QueryOptions query_options;
   query_options.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
-  query_options.end_time = max_time;
+  query_options.end_time = end_time;
   // Make sure to look back far enough to find some visits.
   query_options.begin_time =
       query_options.end_time.LocalMidnight() - base::TimeDelta::FromDays(90);
   history_service->QueryHistory(
       base::UTF8ToUTF16(query), query_options,
       base::BindOnce(&HistoryClustersHandler::OnHistoryQueryResults,
-                     weak_ptr_factory_.GetWeakPtr(), query, max_time, max_count,
+                     weak_ptr_factory_.GetWeakPtr(), query, end_time, max_count,
                      std::move(cluster_mojoms), std::move(callback)),
       &query_task_tracker_);
 }
 
 void HistoryClustersHandler::OnHistoryQueryResults(
     const std::string& query,
-    base::Time max_time,
+    base::Time end_time,
     size_t max_count,
-    std::vector<history_clusters::mojom::ClusterPtr> cluster_mojoms,
+    std::vector<mojom::ClusterPtr> cluster_mojoms,
     QueryResultsCallback callback,
     history::QueryResults results) {
   if (results.empty()) {
     // No more results to create Clusters from. Run the callback with the
     // Clusters created so far.
-    std::move(callback).Run(max_time, std::move(cluster_mojoms));
+    std::move(callback).Run(end_time, std::move(cluster_mojoms));
     return;
   }
 
-  auto cluster_mojom = history_clusters::mojom::Cluster::New();
+  auto cluster_mojom = mojom::Cluster::New();
   cluster_mojom->id = rand();
 
   const TemplateURLService* template_url_service =
@@ -226,7 +265,7 @@ void HistoryClustersHandler::OnHistoryQueryResults(
   std::set<std::u16string> related_searches;
 
   // Keep track of visits in this cluster.
-  std::vector<history_clusters::mojom::URLVisitPtr> visits;
+  std::vector<mojom::URLVisitPtr> visits;
 
   // Keep track of the randomly generated scores between 0 and 1.
   std::vector<double> scores;
@@ -241,7 +280,7 @@ void HistoryClustersHandler::OnHistoryQueryResults(
       break;
     }
 
-    auto visit = history_clusters::mojom::URLVisit::New();
+    auto visit = mojom::URLVisit::New();
     visit->raw_urls.push_back(result.url());
     visit->normalized_url = result.url();
     visit->page_title = base::UTF16ToUTF8(result.title());
@@ -272,8 +311,7 @@ void HistoryClustersHandler::OnHistoryQueryResults(
           search_terms_args, search_terms_data));
 
       // Annotate the visit accordingly.
-      visit->annotations.push_back(
-          history_clusters::mojom::Annotation::kSearchResultsPage);
+      visit->annotations.push_back(mojom::Annotation::kSearchResultsPage);
 
       // Also offer this as a related search query.
       related_searches.insert(normalized_search_query);
@@ -290,8 +328,7 @@ void HistoryClustersHandler::OnHistoryQueryResults(
           content::WebContents* web_contents =
               tab_strip_model->GetWebContentsAt(index);
           if (result.url() == web_contents->GetLastCommittedURL()) {
-            visit->annotations.push_back(
-                history_clusters::mojom::Annotation::kTabGrouped);
+            visit->annotations.push_back(mojom::Annotation::kTabGrouped);
             break;
           }
         }
@@ -304,8 +341,7 @@ void HistoryClustersHandler::OnHistoryQueryResults(
       model->GetBookmarks(&bookmarks);
       for (const auto& bookmark : bookmarks) {
         if (result.url() == bookmark.url) {
-          visit->annotations.push_back(
-              history_clusters::mojom::Annotation::kBookmarked);
+          visit->annotations.push_back(mojom::Annotation::kBookmarked);
           break;
         }
       }
@@ -345,7 +381,7 @@ void HistoryClustersHandler::OnHistoryQueryResults(
             default_search_provider->url_ref();
         const std::string& search_url = search_url_ref.ReplaceSearchTerms(
             search_terms_args, search_terms_data);
-        auto search_query_mojom = history_clusters::mojom::SearchQuery::New();
+        auto search_query_mojom = mojom::SearchQuery::New();
         search_query_mojom->query = search_query_utf8;
         search_query_mojom->url = GURL(search_url);
         cluster_mojom->visits[0]->related_searches.push_back(
@@ -363,10 +399,12 @@ void HistoryClustersHandler::OnHistoryQueryResults(
 
   // Continue to extract Clusters from 11:59:59pm of the day before the
   // Cluster's `last_visit_time`.
-  max_time = cluster_mojom->last_visit_time.LocalMidnight() -
+  end_time = cluster_mojom->last_visit_time.LocalMidnight() -
              base::TimeDelta::FromSeconds(1);
   cluster_mojoms.push_back(std::move(cluster_mojom));
-  QueryHistoryService(query, max_time, max_count, std::move(cluster_mojoms),
+  QueryHistoryService(query, end_time, max_count, std::move(cluster_mojoms),
                       std::move(callback));
 }
 #endif
+
+}  // namespace history_clusters

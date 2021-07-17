@@ -1910,7 +1910,7 @@
   },
   {
     "name": "enable-extended-sync-promos-capability",
-    "owners": ["fernandex", "msarda"],
+    "owners": ["fernandex", "msarda", "aliceywang"],
     "expiry_milestone": 100
   },
   {
@@ -3777,6 +3777,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "messages-for-android-chrome-survey",
+    "owners": [ "pavely", "aishwaryarj" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "messages-for-android-infrastructure",
     "owners": [ "pavely", "lazzzis" ],
     "expiry_milestone": 95
@@ -4198,11 +4203,6 @@
   {
     "name": "omnibox-pedals-default-icon-colored",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "omnibox-refined-focus-state",
-    "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
   },
   {

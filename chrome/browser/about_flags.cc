@@ -1541,6 +1541,11 @@ const FeatureEntry::FeatureParam
         {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
         {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
         {features::kTabHoverCardAdditionalMaxWidthDelay, "500"}};
+const FeatureEntry::FeatureParam kTabHoverCardImagesAlternateFormat[] = {
+    {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
+    {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
+    {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+    {features::kTabHoverCardAlternateFormat, "1"}};
 
 const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
     {" capture speed", kTabHoverCardImagesOptimizationCaptureSpeed,
@@ -1564,7 +1569,9 @@ const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
      base::size(kTabHoverCardImagesSmallAdditionalFullWidthDelay), nullptr},
     {" large full width show delay",
      kTabHoverCardImagesLargeAdditionalFullWidthDelay,
-     base::size(kTabHoverCardImagesLargeAdditionalFullWidthDelay), nullptr}};
+     base::size(kTabHoverCardImagesLargeAdditionalFullWidthDelay), nullptr},
+    {" alternate hover card format", kTabHoverCardImagesAlternateFormat,
+     base::size(kTabHoverCardImagesAlternateFormat), nullptr}};
 
 const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
     {features::kPromoBrowserCommandIdParam, "0"}};
@@ -4405,10 +4412,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxKeywordSearchButtonName,
      flag_descriptions::kOmniboxKeywordSearchButtonDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxKeywordSearchButton)},
-    {"omnibox-refined-focus-state",
-     flag_descriptions::kOmniboxRefinedFocusStateName,
-     flag_descriptions::kOmniboxRefinedFocusStateDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxRefinedFocusState)},
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
@@ -5677,6 +5680,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnhancedNetworkVoices)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+    {"enable-extended-sync-promos-capability",
+     flag_descriptions::kEnableExtendedSyncPromosCapabilityName,
+     flag_descriptions::kEnableExtendedSyncPromosCapabilityDescription,
+     flags_ui::kOsAndroid, FEATURE_VALUE_TYPE(switches::kMinorModeSupport)},
+
     {"enable-fenced-frames", flag_descriptions::kEnableFencedFramesName,
      flag_descriptions::kEnableFencedFramesDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kFencedFrames,
@@ -6787,6 +6795,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWindowNaming)},
 
 #if defined(OS_ANDROID)
+    {"messages-for-android-chrome-survey",
+     flag_descriptions::kMessagesForAndroidChromeSurveyName,
+     flag_descriptions::kMessagesForAndroidChromeSurveyDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidChromeSurvey)},
     {"messages-for-android-infrastructure",
      flag_descriptions::kMessagesForAndroidInfrastructureName,
      flag_descriptions::kMessagesForAndroidInfrastructureDescription,
@@ -7149,7 +7161,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-vaapi-vp9-kSVC-encode-acceleration",
      flag_descriptions::kVaapiVP9kSVCEncoderName,
      flag_descriptions::kVaapiVP9kSVCEncoderDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(media::kVp9kSVCHWEncoding)},
+     FEATURE_VALUE_TYPE(media::kVaapiVp9kSVCHWEncoding)},
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
@@ -7502,6 +7514,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBorealisDiskManagementDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBorealisDiskManagement)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"https-only-mode-setting", flag_descriptions::kHttpsOnlyModeName,
+     flag_descriptions::kHttpsOnlyModeDescription, kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kHttpsOnlyMode)},
 
 #if defined(OS_ANDROID)
     {"dynamic-color-android", flag_descriptions::kDynamicColorAndroidName,

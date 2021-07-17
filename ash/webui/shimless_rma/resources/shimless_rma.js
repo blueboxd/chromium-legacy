@@ -11,6 +11,7 @@ import './onboarding_select_components_page.js';
 import './onboarding_update_page.js';
 import './onboarding_wait_for_manual_wp_disable_page.js';
 import './onboarding_wp_disable_complete_page.js';
+import './reimaging_device_information_page.js';
 import './reimaging_firmware_update_page.js';
 import './reimaging_provisioning_page.js';
 import './shimless_rma_shared_css.js';
@@ -114,6 +115,12 @@ const StateComponentMapping = {
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.VISIBLE,
   },
+  [RmaState.kUpdateDeviceInformation]: {
+    componentIs: 'reimaging-device-information-page',
+    btnNext: ButtonState.VISIBLE,
+    btnCancel: ButtonState.HIDDEN,
+    btnBack: ButtonState.VISIBLE,
+  },
   [RmaState.kProvisionDevice]: {
     componentIs: 'reimaging-provisioning-page',
     btnNext: ButtonState.VISIBLE,
@@ -191,12 +198,12 @@ export class ShimlessRmaElement extends PolymerElement {
 
   /** @private */
   fetchNextState_() {
-    return this.shimlessRmaService_.getNextState();
+    return this.shimlessRmaService_.transitionNextState();
   }
 
   /** @private */
   fetchPrevState_() {
-    return this.shimlessRmaService_.getPrevState();
+    return this.shimlessRmaService_.transitionPreviousState();
   }
 
   /**

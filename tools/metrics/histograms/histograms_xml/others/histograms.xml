@@ -2101,12 +2101,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Canvas.TextMetrics.SetFont" units="microseconds"
+    expires_after="2021-07-14">
+  <obsolete>
+    Retired in M93, replaced by Canvas.TextMetrics.SetFont2 which has a wider
+    range.
+  </obsolete>
+  <owner>yiyix@chromium.org</owner>
+  <owner>fserb@chromium.org</owner>
+  <summary>
+    Time spent in microseconds to perform calls to SetFont in Canvas for
+    Canvas2d. It's measured each time SetFont is called.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram name="Canvas.TextMetrics.SetFont2" units="microseconds"
     expires_after="2022-01-31">
   <owner>yiyix@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
     Time spent in microseconds to perform calls to SetFont in Canvas for
     Canvas2d. It's measured each time SetFont is called.
+
+    This differs from Canvas.TextMetrics.SetFont in that it uses buckets up to
+    ten seconds rather than ten milliseconds (due to a change in the underlying
+    histogramming function called).
 
     Warning: This metric may include reports from clients with low-resolution
     clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
@@ -9134,7 +9158,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Linux.Distro.Debian" enum="LinuxDistroDebianVersion"
-    expires_after="2021-10-25">
+    expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -9144,7 +9170,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Linux.Distro.Fedora" enum="LinuxDistroFedoraVersion"
-    expires_after="2021-10-25">
+    expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -9154,7 +9182,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Linux.Distro.Mint" enum="LinuxDistroMintVersion"
-    expires_after="2021-10-25">
+    expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -9164,7 +9194,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Linux.Distro.OpenSuseLeap"
-    enum="LinuxDistroOpenSuseLeapVersion" expires_after="2021-10-25">
+    enum="LinuxDistroOpenSuseLeapVersion" expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -9174,7 +9206,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Linux.Distro.Ubuntu" enum="LinuxDistroUbuntuVersion"
-    expires_after="2021-10-25">
+    expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -9183,14 +9217,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Linux.Distro2" enum="LinuxDistro2" expires_after="2021-12-26">
+<histogram name="Linux.Distro2" enum="LinuxDistro2" expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>The Linux distro used. Logged on each start up.</summary>
 </histogram>
 
 <histogram name="Linux.GlibcVersion" enum="LinuxGlibcVersion"
-    expires_after="2021-08-15">
+    expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -11013,12 +11051,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OffscreenCanvas.TextMetrics.SetFont" units="microseconds"
+    expires_after="2021-07-14">
+  <obsolete>
+    Retired in M93, replaced by OffscreenCanvas.TextMetrics.SetFont2 which has a
+    wider range.
+  </obsolete>
+  <owner>yiyix@chromium.org</owner>
+  <owner>fserb@chromium.org</owner>
+  <summary>
+    Time spent in microseconds to perform call SetFont in canvas for
+    OffscreenCanvas. It's measured each time SetFont is called.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
+<histogram name="OffscreenCanvas.TextMetrics.SetFont2" units="microseconds"
     expires_after="2022-01-31">
   <owner>yiyix@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
     Time spent in microseconds to perform call SetFont in canvas for
     OffscreenCanvas. It's measured each time SetFont is called.
+
+    This differs from OffscreenCanvas.TextMetrics.SetFont in that it uses
+    buckets up to ten seconds rather than ten milliseconds (due to a change in
+    the underlying histogramming function called).
 
     Warning: This metric may include reports from clients with low-resolution
     clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports

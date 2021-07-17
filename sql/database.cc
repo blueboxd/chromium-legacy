@@ -201,6 +201,7 @@ Database::StatementRef::StatementRef(Database* database,
                                      sqlite3_stmt* stmt,
                                      bool was_valid)
     : database_(database), stmt_(stmt), was_valid_(was_valid) {
+  DCHECK_EQ(database == nullptr, stmt == nullptr);
   if (database)
     database_->StatementRefCreated(this);
 }
@@ -741,6 +742,11 @@ size_t Database::GetAppropriateMmapSize() {
   return mmap_ofs;
 }
 
+int Database::SqlitePrepareFlags() const {
+  return options_.enable_virtual_tables_discouraged ? 0
+                                                    : SQLITE_PREPARE_NO_VTAB;
+}
+
 void Database::TrimMemory() {
   TRACE_EVENT0("sql", "Database::TrimMemory");
 
@@ -780,6 +786,8 @@ bool Database::Raze() {
       .exclusive_locking = true,
       .page_size = options_.page_size,
       .cache_size = 0,
+      .enable_virtual_tables_discouraged =
+          options_.enable_virtual_tables_discouraged,
   });
   if (!null_db.OpenInMemory()) {
     DLOG(DCHECK) << "Unable to open in-memory database.";
@@ -1119,7 +1127,7 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
   while ((rc == SQLITE_OK) && *sql) {
     sqlite3_stmt* sqlite_statement;
     const char* leftover_sql;
-    rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
+    rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
                             &sqlite_statement, &leftover_sql);
     // Stop if an error is encountered.
     if (rc != SQLITE_OK)
@@ -1230,14 +1238,12 @@ scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
 
 scoped_refptr<Database::StatementRef> Database::GetUniqueStatement(
     const char* sql) {
-  return GetStatementImpl(this, sql);
+  return GetStatementImpl(sql);
 }
 
 scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
-    sql::Database* tracking_db,
-    const char* sql) const {
+    const char* sql) {
   DCHECK(sql);
-  DCHECK(!tracking_db || tracking_db == this);
 
   // Return inactive statement.
   if (!db_)
@@ -1249,7 +1255,7 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
   // TODO(pwnall): Cached statements (but not unique statements) should be
   //               prepared with prepFlags set to SQLITE_PREPARE_PERSISTENT.
   sqlite3_stmt* sqlite_statement;
-  int rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
+  int rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
                               &sqlite_statement, /* pzTail= */ nullptr);
   if (rc != SQLITE_OK) {
     OnSqliteError(rc, nullptr, sql);
@@ -1271,22 +1277,16 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
 
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, false);
   }
-  return base::MakeRefCounted<StatementRef>(tracking_db, sqlite_statement,
-                                            true);
+  return base::MakeRefCounted<StatementRef>(this, sqlite_statement, true);
 }
 
-scoped_refptr<Database::StatementRef> Database::GetUntrackedStatement(
-    const char* sql) const {
-  return GetStatementImpl(nullptr, sql);
-}
-
-std::string Database::GetSchema() const {
+std::string Database::GetSchema() {
   // The ORDER BY should not be necessary, but relying on organic
   // order for something like this is questionable.
   static const char kSql[] =
       "SELECT type, name, tbl_name, sql "
       "FROM sqlite_master ORDER BY 1, 2, 3, 4";
-  Statement statement(GetUntrackedStatement(kSql));
+  Statement statement(GetUniqueStatement(kSql));
 
   std::string schema;
   while (statement.Step()) {
@@ -1312,7 +1312,7 @@ bool Database::IsSQLValid(const char* sql) {
   }
 
   sqlite3_stmt* sqlite_statement = nullptr;
-  if (sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
+  if (sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
                          &sqlite_statement,
                          /* pzTail= */ nullptr) != SQLITE_OK) {
     return false;
@@ -1322,23 +1322,23 @@ bool Database::IsSQLValid(const char* sql) {
   return true;
 }
 
-bool Database::DoesIndexExist(base::StringPiece index_name) const {
+bool Database::DoesIndexExist(base::StringPiece index_name) {
   return DoesSchemaItemExist(index_name, "index");
 }
 
-bool Database::DoesTableExist(base::StringPiece table_name) const {
+bool Database::DoesTableExist(base::StringPiece table_name) {
   return DoesSchemaItemExist(table_name, "table");
 }
 
-bool Database::DoesViewExist(base::StringPiece view_name) const {
+bool Database::DoesViewExist(base::StringPiece view_name) {
   return DoesSchemaItemExist(view_name, "view");
 }
 
 bool Database::DoesSchemaItemExist(base::StringPiece name,
-                                   base::StringPiece type) const {
+                                   base::StringPiece type) {
   static const char kSql[] =
       "SELECT 1 FROM sqlite_master WHERE type=? AND name=?";
-  Statement statement(GetUntrackedStatement(kSql));
+  Statement statement(GetUniqueStatement(kSql));
 
   if (!statement.is_valid()) {
     // The database is corrupt.
@@ -1352,7 +1352,7 @@ bool Database::DoesSchemaItemExist(base::StringPiece name,
 }
 
 bool Database::DoesColumnExist(const char* table_name,
-                               const char* column_name) const {
+                               const char* column_name) {
   // sqlite3_table_column_metadata uses out-params to return column definition
   // details, such as the column type and whether it allows NULL values. These
   // aren't needed to compute the current method's result, so we pass in nullptr

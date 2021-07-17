@@ -3792,6 +3792,17 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="Busy"/>
 </enum>
 
+<enum name="ArcOptInNetworkErrorAction">
+  <summary>
+    Defines Arc optin dialog actions when a network-related provisioning error
+    occurs.
+  </summary>
+  <int value="0" label="Window closed"/>
+  <int value="1" label="Retry clicked"/>
+  <int value="2" label="SendFeedback clicked"/>
+  <int value="3" label="CheckNetwork clicked"/>
+</enum>
+
 <enum name="ArcOptInResult">
   <summary>
     Defines Arc OptIn flow states. Normally each OptIn flow reports 2-3 states;
@@ -8546,6 +8557,12 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanCoalesced">
   <int value="0" label="not coalesced"/>
   <int value="1" label="coalesced"/>
+</enum>
+
+<enum name="BooleanCodePathUsage">
+  <summary>The result if a code path is being used.</summary>
+  <int value="0" label="Unused Code Path"/>
+  <int value="1" label="Used Code Path"/>
 </enum>
 
 <enum name="BooleanColorSpaceSupported">
@@ -25896,6 +25913,7 @@ Called by update_document_policy_enum.py.-->
   <int value="874" label="DeviceHostnameUserConfigurable"/>
   <int value="875" label="ReportDeviceNetworkConfiguration"/>
   <int value="876" label="ReportDeviceNetworkStatus"/>
+  <int value="877" label="DataLeakPreventionClipboardCheckSizeLimit"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -46665,6 +46683,7 @@ from previous Chrome versions.
   <int value="-1760624380"
       label="ImprovedCookieControlsForThirdPartyCookieBlocking:enabled"/>
   <int value="-1760146324" label="CellularAllowPerNetworkRoaming:disabled"/>
+  <int value="-1759403147" label="MinorModeSupport:disabled"/>
   <int value="-1758468685" label="DownloadHomeV2:disabled"/>
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
   <int value="-1754262889" label="RemoteCopyPersistentNotification:enabled"/>
@@ -46797,6 +46816,7 @@ from previous Chrome versions.
   <int value="-1644308778" label="WASAPIRawAudioCapture:disabled"/>
   <int value="-1643933608" label="SyncAutofillWalletOfferData:enabled"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
+  <int value="-1639534120" label="VaapiVp9kSVCHWEncoding:enabled"/>
   <int value="-1639050182" label="NavigationPredictorRendererWarmup:enabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
   <int value="-1635048938" label="DetectFormSubmissionOnFormClear:disabled"/>
@@ -47311,6 +47331,7 @@ from previous Chrome versions.
       label="OminboxUIExperimentUseGenericSearchEngineIcon:disabled"/>
   <int value="-1256187739" label="ClientStorageAccessContextAuditing:disabled"/>
   <int value="-1255427595" label="HomePageButtonForceEnabled:enabled"/>
+  <int value="-1254961530" label="MessagesForAndroidChromeSurvey:disabled"/>
   <int value="-1254640444"
       label="OmniboxEnableClipboardProviderTextSuggestions:disabled"/>
   <int value="-1254221389" label="AssistantBetterOnboarding:enabled"/>
@@ -47724,6 +47745,7 @@ from previous Chrome versions.
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
   <int value="-926236394" label="SendTabToSelfHistory:enabled"/>
+  <int value="-926039080" label="VaapiVp9kSVCHWEncoding:disabled"/>
   <int value="-920204598" label="ScrollAnchorSerialization:enabled"/>
   <int value="-918900957" label="AutofillCreditCardAssist:disabled"/>
   <int value="-918618075" label="enable-service-worker"/>
@@ -49380,6 +49402,7 @@ from previous Chrome versions.
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="469999350" label="NotificationScheduleService:disabled"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
+  <int value="470307075" label="MessagesForAndroidChromeSurvey:enabled"/>
   <int value="471224152" label="WinUseHybridSpellChecker:enabled"/>
   <int value="471519375" label="NewOsSettingsSearch:disabled"/>
   <int value="471560693" label="webview-verbose-logging"/>
@@ -50046,7 +50069,6 @@ from previous Chrome versions.
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
-  <int value="1036511742" label="Vp9kSVCHWEncoding:enabled"/>
   <int value="1036565901" label="AssistPersonalInfo:enabled"/>
   <int value="1036958177"
       label="enable-experimental-accessibility-dictation-extension"/>
@@ -50616,7 +50638,6 @@ from previous Chrome versions.
   <int value="1473967338" label="OmniboxShortBookmarkSuggestions:enabled"/>
   <int value="1474861626" label="disable-multi-mirroring"/>
   <int value="1475210901" label="AvatarToolbarButton:disabled"/>
-  <int value="1475813759" label="Vp9kSVCHWEncoding:disabled"/>
   <int value="1478075250" label="QuickAnswersTextAnnotator:disabled"/>
   <int value="1478461926" label="GlobalMediaControlsPictureInPicture:enabled"/>
   <int value="1479248574" label="disable-voice-input"/>
@@ -50990,6 +51011,7 @@ from previous Chrome versions.
   <int value="1794586887"
       label="AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers:enabled"/>
   <int value="1795186324" label="SyncPseudoUSSExtensionSettings:disabled"/>
+  <int value="1796436890" label="MinorModeSupport:enabled"/>
   <int value="1796592669" label="InstalledAppsInCbd:disabled"/>
   <int value="1797872070" label="CellularUseExternalEuicc:disabled"/>
   <int value="1798347197"
@@ -54445,6 +54467,7 @@ Called by update_use_counter_css.py.-->
   <int value="8" label="AddToHomescreenIPH"/>
   <int value="9" label="SendTabToSelf"/>
   <int value="10" label="ReaderMode"/>
+  <int value="11" label="ChromeSurvey"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -65873,6 +65896,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="kNavigationRequestNetworkFailure"/>
   <int value="21" label="kMaxNumOfRunningPrerendersExceeded"/>
   <int value="22" label="kCancelAllHostsForTesting"/>
+  <int value="23" label="kDidFailLoad"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
@@ -86261,6 +86285,11 @@ Called by update_scheduler_enums.py.-->
   <int value="19" label="History page opened"/>
   <int value="20" label="History page individual entry removed"/>
   <int value="21" label="History page individual entry clicked"/>
+  <int value="22" label="Password reuse allowed"/>
+  <int value="23" label="Change password clicked"/>
+  <int value="24" label="Safety tip help opened"/>
+  <int value="25" label="Chooser object deleted"/>
+  <int value="26" label="Reset certificate decisions clicked"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">

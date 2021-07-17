@@ -631,6 +631,9 @@ extern const char kDownloadLaterDescription[];
 extern const char kDownloadLaterDebugOnWifiName[];
 extern const char kDownloadLaterDebugOnWifiNameDescription[];
 
+extern const char kEnableExtendedSyncPromosCapabilityName[];
+extern const char kEnableExtendedSyncPromosCapabilityDescription[];
+
 extern const char kEnableFencedFramesName[];
 extern const char kEnableFencedFramesDescription[];
 
@@ -1865,6 +1868,9 @@ extern const char kInterestFeedV2ClickAndViewActionsConditionalUploadName[];
 extern const char
     kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[];
 
+extern const char kMessagesForAndroidChromeSurveyName[];
+extern const char kMessagesForAndroidChromeSurveyDescription[];
+
 extern const char kMessagesForAndroidInfrastructureName[];
 extern const char kMessagesForAndroidInfrastructureDescription[];
 
@@ -2188,9 +2194,6 @@ extern const char kOmniboxPedalsDefaultIconColoredDescription[];
 
 extern const char kOmniboxKeywordSearchButtonName[];
 extern const char kOmniboxKeywordSearchButtonDescription[];
-
-extern const char kOmniboxRefinedFocusStateName[];
-extern const char kOmniboxRefinedFocusStateDescription[];
 
 extern const char kSCTAuditingName[];
 extern const char kSCTAuditingDescription[];

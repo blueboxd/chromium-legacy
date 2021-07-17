@@ -906,6 +906,27 @@
             ]
         }
     ],
+    "AutocompleteFilterForMeaningfulNames": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutocompleteFilterForMeaningfulNames"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillAPIServer": [
         {
             "platforms": [
@@ -1222,6 +1243,48 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillRefillWithRendererIds"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillServerBehaviors": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "MoreKnownVotes_Enabled-2021-06"
+                },
+                {
+                    "name": "RankedSignatures_Enabled-2021-06"
+                }
+            ]
+        }
+    ],
+    "AutofillServerTypeTakesPrecedence": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillServerTypeTakesPrecedence"
                     ]
                 }
             ]
@@ -3345,6 +3408,26 @@
             ]
         }
     ],
+    "EarlyHintsPreloadForNavigation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EarlyHintsPreloadForNavigation"
+                    ]
+                }
+            ]
+        }
+    ],
     "EarlyLibraryLoad": [
         {
             "platforms": [
@@ -3543,7 +3626,7 @@
                     "name": "Enabled",
                     "params": {
                         "availability": "any",
-                        "event_trigger": "name:iph_feed_header_menu_triggered;comparator:<5;window:360;storage:360",
+                        "event_trigger": "name:iph_feed_header_menu_triggered;comparator:==0;window:360;storage:360",
                         "event_used": "name:feed_header_menu_clicked;comparator:==0;window:360;storage:360",
                         "session_rate": "==0"
                     },
@@ -3670,6 +3753,23 @@
                     "name": "Enabled",
                     "enable_features": [
                         "GMSCoreEmoji"
+                    ]
+                }
+            ]
+        }
+    ],
+    "GlobalMediaControlsCastStartStop": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GlobalMediaControlsCastStartStop"
                     ]
                 }
             ]
@@ -7821,129 +7921,6 @@
                     "name": "Async",
                     "disable_features": [
                         "SyncWindowDestruction"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabGridLayoutAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "allow_to_refetch": "true",
-                        "tab_grid_layout_android_new_tab": "NewTabVariation",
-                        "thumbnail_aspect_ratio": "0.85"
-                    },
-                    "enable_features": [
-                        "TabGridLayoutAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabGroupsAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TabGroupsAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabGroupsDragAndDrop": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:iph_tabgroups_drag_and_drop;comparator:==0;window:30;storage:365",
-                        "event_trigger2": "name:iph_tabgroups_drag_and_drop;comparator:<2;window:90;storage:365",
-                        "event_used": "name:tab_drag_and_drop_to_group;comparator:==0;window:365;storage:365",
-                        "session_rate": "<1"
-                    },
-                    "enable_features": [
-                        "IPH_TabGroupsDragAndDrop"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabGroupsQuicklyComparePages": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:iph_tabgroups_longtap;comparator:==0;window:30;storage:365",
-                        "event_trigger2": "name:iph_tabgroups_longtap;comparator:<2;window:90;storage:365",
-                        "event_used": "name:tabgroups_dummy;comparator:==0;window:1;storage:1",
-                        "session_rate": "<1"
-                    },
-                    "enable_features": [
-                        "IPH_TabGroupsQuicklyComparePages"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabGroupsTapToSeeAnotherTab": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:iph_tabgroups_strip;comparator:==0;window:30;storage:365",
-                        "event_trigger2": "name:iph_tabgroups_strip;comparator:<2;window:90;storage:365",
-                        "event_used": "name:tabgroups_dummy;comparator:==0;window:1;storage:1",
-                        "session_rate": "<1"
-                    },
-                    "enable_features": [
-                        "IPH_TabGroupsTapToSeeAnotherTab"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabGroupsYourTabsTogether": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:iph_tabgroups_grouped_card;comparator:==0;window:30;storage:365",
-                        "event_trigger2": "name:iph_tabgroups_grouped_card;comparator:<2;window:90;storage:365",
-                        "event_used": "name:tabgroups_dummy;comparator:==0;window:1;storage:1",
-                        "session_rate": "<1"
-                    },
-                    "enable_features": [
-                        "IPH_TabGroupsYourTabsTogether"
                     ]
                 }
             ]

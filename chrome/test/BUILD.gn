@@ -1023,6 +1023,7 @@ if (!is_android) {
       "//chrome/browser/web_applications:web_applications_test_support",
       "//chrome/browser/web_applications/extensions",
       "//chrome/browser/webaudio:browser_tests",
+      "//chrome/common:version_header",
       "//chrome/common/privacy_budget:test_support",
       "//chrome/renderer",
       "//chrome/services/removable_storage_writer:lib",
@@ -1691,6 +1692,7 @@ if (!is_android) {
       "../browser/policy/test/policy_browsertest.cc",
       "../browser/policy/test/policy_statistics_collector_browsertest.cc",
       "../browser/policy/test/policy_test_google_browsertest.cc",
+      "../browser/policy/test/promotional_tabs_enabled_policy_browsertest.cc",
       "../browser/policy/test/proxy_policies_browsertest.cc",
       "../browser/policy/test/restore_on_startup_policy_browsertest.cc",
       "../browser/policy/test/safe_browsing_policy_browsertest.cc",
@@ -2255,6 +2257,7 @@ if (!is_android) {
         "//chromeos/dbus/cros_healthd",
         "//chromeos/dbus/cryptohome",
         "//chromeos/dbus/cryptohome:cryptohome_proto",
+        "//chromeos/dbus/image_burner",
         "//chromeos/dbus/power",
         "//chromeos/dbus/services:test_support",
         "//chromeos/dbus/session_manager",
@@ -2432,7 +2435,6 @@ if (!is_android) {
       sources += [
         "../browser/external_protocol/external_protocol_policy_browsertest.cc",
         "../browser/lifetime/application_lifetime_browsertest.cc",
-        "../browser/policy/test/promotional_tabs_enabled_policy_browsertest.cc",
       ]
     }
 
@@ -3403,6 +3405,7 @@ if (!is_android) {
         "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
         "../browser/ui/app_list/app_service/app_service_app_item_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
+        "../browser/ui/app_list/chrome_app_list_item_browsertest.cc",
         "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
         "../browser/ui/app_list/search/app_list_search_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
@@ -5374,6 +5377,7 @@ test("unit_tests") {
       "../browser/password_manager/android/generated_password_saved_message_delegate_unittest.cc",
       "../browser/password_manager/android/password_accessory_controller_impl_unittest.cc",
       "../browser/password_manager/android/password_generation_controller_impl_unittest.cc",
+      "../browser/password_manager/android/password_store_android_backend_unittest.cc",
       "../browser/password_manager/android/save_password_infobar_delegate_android_unittest.cc",
       "../browser/password_manager/android/save_password_message_delegate_unittest.cc",
       "../browser/password_manager/android/update_password_infobar_delegate_android_unittest.cc",
@@ -6247,6 +6251,7 @@ test("unit_tests") {
       "//chrome/services/sharing/nearby/decoder:unit_tests",
       "//chrome/services/sharing/nearby/platform:unit_tests",
       "//chromeos/assistant:buildflags",
+      "//chromeos/dbus/image_loader",
       "//chromeos/dbus/u2f",
       "//chromeos/services/nearby/public/cpp:test_support",
       "//components/arc:arc_test_support",
@@ -6318,6 +6323,7 @@ test("unit_tests") {
     }
   }
 
+  # TODO(crbug.com/1229899): Clean up and move this to a separate target.
   if (enable_extensions) {
     sources += [
       "../../apps/saved_files_service_unittest.cc",
@@ -6656,7 +6662,10 @@ test("unit_tests") {
         "../common/chromeos/extensions/manifest_tests/extension_manifests_chromeos_system_extension_unittest.cc",
         "../renderer/extensions/accessibility_private_hooks_delegate_unittest.cc",
       ]
-      deps += [ "../common/chromeos/extensions" ]
+      deps += [
+        "../common/chromeos/extensions",
+        "//chromeos/dbus/image_burner",
+      ]
     }
 
     allow_circular_includes_from = [

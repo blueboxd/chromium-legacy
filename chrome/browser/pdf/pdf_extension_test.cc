@@ -146,6 +146,18 @@ using ui::AXTreeFormatter;
 namespace {
 const int kNumberLoadTestParts = 10;
 
+// `base::test::WithFeatureOverride` for `chrome_pdf::features::kPdfUnseasoned`.
+// This should be the first class a test fixture inherits from.
+//
+// This class should be used only for tests that are identical or substantially
+// identical in Pepper and Pepper-free modes. Otherwise, it makes more sense to
+// define separate test fixtures for each mode.
+class WithUnseasonedOverride : public base::test::WithFeatureOverride {
+ public:
+  WithUnseasonedOverride()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
+};
+
 #if defined(OS_MAC)
 const int kDefaultKeyModifier = blink::WebInputEvent::kMetaKey;
 #else
@@ -394,7 +406,11 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-class PDFExtensionTestWithTestGuestViewManager : public PDFExtensionTest {
+class PDFExtensionTestWithUnseasonedOverride : public WithUnseasonedOverride,
+                                               public PDFExtensionTest {};
+
+class PDFExtensionTestWithTestGuestViewManager
+    : public PDFExtensionTestWithUnseasonedOverride {
  public:
   PDFExtensionTestWithTestGuestViewManager() {
     GuestViewManager::set_factory_for_testing(&factory_);
@@ -425,27 +441,12 @@ class PDFExtensionTestWithTestGuestViewManager : public PDFExtensionTest {
   TestGuestViewManagerFactory factory_;
 };
 
-// Parameterized version of `PDFExtensionTest` for testing identical behavior
-// with the unseasoned PDF feature disabled and enabled.
-//
-// If a behavior is specific to one of these states, consider testing with
-// `PDFExtensionUnseasonedDisabledTest` or `PDFExtensionUnseasonedEnabledTest`
-// instead. Tests can also be conditional on `IsParamFeatureEnabled()`, but only
-// use this if the tests are almost identical.
-class PDFExtensionTestWithUnseasonedOverride
-    : public base::test::WithFeatureOverride,
-      public PDFExtensionTest {
- public:
-  PDFExtensionTestWithUnseasonedOverride()
-      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
-};
-
 // This test is a re-implementation of
 // WebPluginContainerTest.PluginDocumentPluginIsFocused, which was introduced
 // for https://crbug.com/536637. The original implementation checked that the
 // BrowserPlugin hosting the pdf extension was focused; in this re-write, we
 // make sure the guest view's WebContents has focus.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
                        PdfInMainFrameHasFocus) {
   // Load test HTML, and verify the text area has focus.
   GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
@@ -470,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // has the correct URL for the PDF extension.
 // TODO(wjmaclean): Are there any attributes we can/should test with respect to
 // the extension's loaded html?
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
                        PdfExtensionLoadedInGuest) {
   // Load test HTML, and verify the text area has focus.
   GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
@@ -512,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // This test verifies that when a PDF is served with a restrictive
 // Content-Security-Policy, the embed tag is still sized correctly.
 // Regression test for https://crbug.com/271452.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
                        CSPDoesNotBlockEmbedStyles) {
   GURL main_url(embedded_test_server()->GetURL("/pdf/test-csp.pdf"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -541,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // This test verifies that when a PDF is served with
 // Content-Security-Policy: sandbox, this is ignored and the PDF is displayed.
 // Regression test for https://crbug.com/1187122.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
                        CSPWithSandboxDoesNotBlockPDF) {
   GURL main_url(embedded_test_server()->GetURL("/pdf/test-csp-sandbox.pdf"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -565,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // This test verifies that Content-Security-Policy's frame-ancestors 'none'
 // directive is effective on a PDF response.
 // Regression test for https://crbug.com/1107535.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
                        CSPFrameAncestorsCanBlockEmbedding) {
   WebContents* web_contents = GetActiveWebContents();
   content::WebContentsConsoleObserver console_observer(web_contents);
@@ -586,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 // This test verifies that Content-Security-Policy's frame-ancestors directive
 // overrides an X-Frame-Options header on a PDF response.
 // Regression test for https://crbug.com/1107535.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
                        CSPFrameAncestorsOverridesXFrameOptions) {
   GURL main_url(
       embedded_test_server()->GetURL("/pdf/frame-test-csp-and-xfo.html"));
@@ -664,20 +665,12 @@ class PDFExtensionLoadTest
   }
 };
 
-// Disabled because it's flaky.
-// See the issue for details: https://crbug.com/826055.
-#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(ADDRESS_SANITIZER)
-#define MAYBE_Load(suffix) DISABLED_Load##suffix
-#else
-#define MAYBE_Load(suffix) Load##suffix
-#endif
-IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, MAYBE_Load()) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, Load) {
   LoadAllPdfsTest("pdf");
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, MAYBE_Load(Private)) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, LoadPrivate) {
   LoadAllPdfsTest("pdf_private");
 }
 #endif
@@ -712,10 +705,7 @@ class DownloadAwaiter : public content::DownloadManager::Observer {
 };
 
 // Tests behavior when the PDF plugin is disabled in preferences.
-class PDFPluginDisabledTest : public PDFExtensionTest {
- public:
-  PDFPluginDisabledTest() {}
-
+class PDFPluginDisabledTest : public PDFExtensionTestWithUnseasonedOverride {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionTest::SetUpCommandLine(command_line);
@@ -795,7 +785,7 @@ class PDFPluginDisabledTest : public PDFExtensionTest {
   std::unique_ptr<DownloadAwaiter> download_awaiter_;
 };
 
-IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, DirectNavigationToPDF) {
+IN_PROC_BROWSER_TEST_P(PDFPluginDisabledTest, DirectNavigationToPDF) {
   // Navigate to a PDF and test that it is downloaded.
   GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ui_test_utils::NavigateToURL(browser(), pdf_url);
@@ -809,7 +799,7 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, DirectNavigationToPDF) {
 #else
 #define MAYBE_EmbedPdfPlaceholderWithCSP EmbedPdfPlaceholderWithCSP
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
+IN_PROC_BROWSER_TEST_P(PDFPluginDisabledTest,
                        MAYBE_EmbedPdfPlaceholderWithCSP) {
   // Navigate to a page with CSP that uses <embed> to embed a PDF as a plugin.
   GURL embed_page_url =
@@ -829,7 +819,7 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
   ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
 }
 
-IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, IframePdfPlaceholderWithCSP) {
+IN_PROC_BROWSER_TEST_P(PDFPluginDisabledTest, IframePdfPlaceholderWithCSP) {
   // Navigate to a page that uses <iframe> to embed a PDF as a plugin.
   GURL iframe_page_url =
       embedded_test_server()->GetURL("/pdf/pdf_iframe_csp.html");
@@ -839,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, IframePdfPlaceholderWithCSP) {
   ValidateSingleSuccessfulDownloadAndNoPDFPluginLaunch();
 }
 
-IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
+IN_PROC_BROWSER_TEST_P(PDFPluginDisabledTest,
                        IframePlaceholderInjectedIntoNewWindow) {
   // This is an unusual test to verify crbug.com/924823. We are injecting the
   // HTML for a PDF IFRAME into a newly created popup with an undefined URL.
@@ -916,6 +906,9 @@ class PDFExtensionJSTest : public PDFExtensionJSTestBase {
   ~PDFExtensionJSTest() override = default;
 };
 
+class PDFExtensionJSTestWithUnseasonedOverride : public WithUnseasonedOverride,
+                                                 public PDFExtensionJSTest {};
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Basic) {
   RunTestsInJsModule("basic_test.js", "test.pdf");
 
@@ -927,75 +920,81 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, BasicPlugin) {
   RunTestsInJsModule("basic_plugin_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Viewport) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Viewport) {
   RunTestsInJsModule("viewport_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Layout3) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Layout3) {
   RunTestsInJsModule("layout_test.js", "test-layout3.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Layout4) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Layout4) {
   RunTestsInJsModule("layout_test.js", "test-layout4.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Bookmark) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Bookmark) {
   RunTestsInJsModule("bookmarks_test.js", "test-bookmarks-with-zoom.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Navigator) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Navigator) {
   RunTestsInJsModule("navigator_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ParamsParser) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, ParamsParser) {
   RunTestsInJsModule("params_parser_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ZoomManager) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, ZoomManager) {
   RunTestsInJsModule("zoom_manager_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, GestureDetector) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       GestureDetector) {
   RunTestsInJsModule("gesture_detector_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, TouchHandling) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       TouchHandling) {
   RunTestsInJsModule("touch_handling_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Elements) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Elements) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("material_elements_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, DownloadControls) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       DownloadControls) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("download_controls_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Title) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Title) {
   RunTestsInJsModule("title_test.js", "test-title.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, WhitespaceTitle) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       WhitespaceTitle) {
   RunTestsInJsModule("whitespace_title_test.js", "test-whitespace-title.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PageChange) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, PageChange) {
   RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Metrics) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Metrics) {
   RunTestsInJsModule("metrics_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPasswordDialog) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ViewerPasswordDialog) {
   RunTestsInJsModule("viewer_password_dialog_test.js", "encrypted.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ArrayBufferAllocator) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ArrayBufferAllocator) {
   // Run several times to see if there are issues with unloading.
   RunTestsInJsModule("beep_test.js", "array_buffer.pdf");
   RunTestsInJsModule("beep_test.js", "array_buffer.pdf");
@@ -1009,37 +1008,42 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, RedirectsFailInPlugin) {
   RunTestsInJsModule("redirects_fail_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerToolbar) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ViewerToolbar) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_toolbar_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPdfSidenav) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ViewerPdfSidenav) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_pdf_sidenav_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerThumbnailBar) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ViewerThumbnailBar) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_thumbnail_bar_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerThumbnail) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ViewerThumbnail) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_thumbnail_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Fullscreen) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Fullscreen) {
   // Use a PDF document with multiple pages, to exercise navigating between
   // pages.
   RunTestsInJsModule("fullscreen_test.js", "test-bookmarks.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPropertiesDialog) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ViewerPropertiesDialog) {
   // The properties dialog formats some values based on locale.
   base::test::ScopedRestoreICUDefaultLocale scoped_locale{"en_US"};
   // This will apply to the new processes spawned within RunTestsInJsModule(),
@@ -1048,14 +1052,15 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPropertiesDialog) {
   RunTestsInJsModule("viewer_properties_dialog_test.js", "document_info.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PostMessageProxy) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       PostMessageProxy) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("post_message_proxy_test.js", "test.pdf");
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Printing) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride, Printing) {
   RunTestsInJsModule("printing_icon_test.js", "test.pdf");
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1068,17 +1073,20 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Printing) {
 #else
 #define MAYBE_AnnotationsFeatureEnabled AnnotationsFeatureEnabled
 #endif
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, MAYBE_AnnotationsFeatureEnabled) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       MAYBE_AnnotationsFeatureEnabled) {
   RunTestsInJsModule("annotations_feature_enabled_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, AnnotationsToolbar) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       AnnotationsToolbar) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("annotations_toolbar_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerToolbarDropdown) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTestWithUnseasonedOverride,
+                       ViewerToolbarDropdown) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
   RunTestsInJsModule("viewer_toolbar_dropdown_test.js", "test.pdf");
@@ -3492,88 +3500,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderTest,
   ASSERT_EQ(web_contents->GetURL(), pdf_url);
 }
 
-// TODO(crbug.com/1123621): Probably can get rid of these tests once the
-// unseasoned PDF viewer loads end-to-end.
-class PDFExtensionUnseasonedTest
-    : public PDFExtensionTestWithTestGuestViewManager {
- protected:
-  static extensions::StreamContainer* GetStreamContainer(
-      WebContents* guest_contents) {
-    extensions::MimeHandlerViewGuest* guest =
-        extensions::MimeHandlerViewGuest::FromWebContents(guest_contents);
-    if (!guest) {
-      ADD_FAILURE() << "No MimeHandlerViewGuest";
-      return nullptr;
-    }
-
-    extensions::StreamContainer* container = guest->GetStreamWeakPtr().get();
-    EXPECT_TRUE(container);
-    return container;
-  }
-
-  // Loads a PDF viewer's guest `WebContents`. Unlike `EnsurePDFHasLoaded()`,
-  // this does not require that the PDF viewer loads completely, which is useful
-  // for testing the (currently) incomplete unseasoned PDF viewer.
-  WebContents* LoadGuestContentsOnly() {
-    if (!ui_test_utils::NavigateToURL(
-            browser(), embedded_test_server()->GetURL("/pdf/test.pdf"))) {
-      ADD_FAILURE() << "Initial navigation failed";
-      return nullptr;
-    }
-
-    WebContents* guest_contents =
-        GetGuestViewManager()->WaitForSingleGuestCreated();
-    if (!guest_contents) {
-      ADD_FAILURE() << "No guest WebContents";
-      return nullptr;
-    }
-
-    WaitForLoadStart(guest_contents);
-    EXPECT_TRUE(content::WaitForLoadStop(guest_contents));
-    return guest_contents;
-  }
-};
-
-class PDFExtensionUnseasonedDisabledTest : public PDFExtensionUnseasonedTest {
- protected:
-  std::vector<base::Feature> GetDisabledFeatures() const override {
-    std::vector<base::Feature> disabled =
-        PDFExtensionUnseasonedTest::GetDisabledFeatures();
-    disabled.push_back(chrome_pdf::features::kPdfUnseasoned);
-    return disabled;
-  }
-};
-
-class PDFExtensionUnseasonedEnabledTest : public PDFExtensionUnseasonedTest {
- protected:
-  std::vector<base::Feature> GetEnabledFeatures() const override {
-    std::vector<base::Feature> enabled =
-        PDFExtensionUnseasonedTest::GetEnabledFeatures();
-    enabled.push_back(chrome_pdf::features::kPdfUnseasoned);
-    return enabled;
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionUnseasonedDisabledTest,
-                       StreamLoaderRegisteredAsSubresource) {
-  WebContents* guest_contents = LoadGuestContentsOnly();
-  ASSERT_TRUE(guest_contents);
-
-  extensions::StreamContainer* container = GetStreamContainer(guest_contents);
-  ASSERT_TRUE(container);
-
-  EXPECT_FALSE(container->TakeTransferrableURLLoader());
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionUnseasonedEnabledTest,
-                       StreamLoaderNotRegisteredAsSubresource) {
-  WebContents* guest_contents = LoadGuestContentsOnly();
-  ASSERT_TRUE(guest_contents);
-
-  extensions::StreamContainer* container = GetStreamContainer(guest_contents);
-  ASSERT_TRUE(container);
-
-  EXPECT_TRUE(container->TakeTransferrableURLLoader());
-}
-
+// TODO(crbug.com/702993): Stop testing both modes after unseasoned launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionTestWithUnseasonedOverride);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    PDFExtensionTestWithTestGuestViewManager);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFPluginDisabledTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    PDFExtensionJSTestWithUnseasonedOverride);

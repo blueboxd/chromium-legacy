@@ -1166,6 +1166,11 @@ ci.android_fyi_builder(
         category = "emulator|12|x64",
         short_name = "rel",
     ),
+    # Bump to 6h for now since compile on x64 seems slower than x86. It could
+    # take 3h on Android-12 (For example ci.chromium.org/b/8841892751541698720)
+    # vs 1h on Android-11 (For example ci.chromium.org/b/8841899947736889024)
+    # TODO(crbug.com/1229245): Look into ways to improve the compile time.
+    execution_timeout = 6 * time.hour,
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -1993,11 +1998,11 @@ ci.cipd_builder(
             "tools/android/avd/proto/creation/generic_android28.textpb",
             "tools/android/avd/proto/creation/generic_android29.textpb",
             "tools/android/avd/proto/creation/generic_android30.textpb",
-            "tools/android/avd/proto/creation/generic_androidS.textpb",
+            "tools/android/avd/proto/creation/generic_android31.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android30.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_androidS.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android31.textpb",
         ],
     },
 )
@@ -6014,7 +6019,7 @@ ci.mac_ios_builder(
     # We don't have necessary capacity to run this configuration in CQ, but it
     # is part of the main waterfall
     main_console_view = "main",
-    xcode = xcode.x13a5155e,
+    xcode = xcode.x13a5192i,
 )
 
 ci.memory_builder(

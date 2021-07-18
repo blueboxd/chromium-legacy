@@ -222,7 +222,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '11a20bbbf4d5273729d5d4e3db194f56c6d8ba9b',
+  'skia_revision': '3d49efa8e1775512b47a5363b208c26d13d82bff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -234,7 +234,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '9ddaa68604ae0563743909fa1d27b56a47777fee',
+  'angle_revision': '32829f093e413f2df5ab0a4672a0a071fa546926',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1589,7 +1589,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '827cad9e402b63bbe38787456115bcb681a8a152',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '08e2fd0c65d3191eac85decd2a4793b3fe940993',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'b5cc3b2500c0ba9e8a1381b357e1a6c341c9f297',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '63cc46c1f5b0ed5012465f391d5fd7c5717aeab4',
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c6cf703b72c178c6032a5d37180c1bb3f63a3102',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b908e564b6c733b1bca87f5740e73f954fc7b093',
     'condition': 'checkout_src_internal',
   },
 
@@ -1672,7 +1672,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'LUnLvmG9knrgOUBqbI94jaHZ5fhbJfmgMabfn1jq97sC',
+        'version': '88X_UqDzg-7WMt33tTdiVcgQFI0vX4BQG6ykPp1XSfkC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1683,7 +1683,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'dTkp4-B28CyOs57XAtvKXJKgy5b00EBFy57VdMFCMWIC',
+        'version': '6Sq1hUX203irl6wSqJdF_YGYnIfvJ4wMJccLhRrAyjoC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -222,7 +222,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3d49efa8e1775512b47a5363b208c26d13d82bff',
+  'skia_revision': '8837c919fb8b5ef3a4683a57bc31df8ecda4fca1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '8ca22702d4bfb957d532f0bc25131d39f7e14609',
+  'devtools_frontend_revision': '34b35e4725a0f34f178ca82f6ca6bc63e409536d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -738,7 +738,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'YiuL0FMMTU_K_n0aBAT3GBA4dMfL8JHhn6dkcz5SFgAC',
+          'version': 'xXfTzt6__4_ooeFJUwsWc8CiehiWLlYQ-pX4VxOyAEoC',
       },
     ],
     'condition': 'checkout_android',
@@ -1592,7 +1592,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'b5cc3b2500c0ba9e8a1381b357e1a6c341c9f297',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '63cc46c1f5b0ed5012465f391d5fd7c5717aeab4',
+    Var('webrtc_git') + '/src.git' + '@' + '261af57d751d38be5cf234e4c146f8849d37e621',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1653,7 +1653,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b908e564b6c733b1bca87f5740e73f954fc7b093',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e448ac44b31c98f1a75893462070b6509fa02a71',
     'condition': 'checkout_src_internal',
   },
 

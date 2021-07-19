@@ -913,11 +913,6 @@ const char kNewMacNotificationAPIDescription[] =
     "Enables the usage of Apple's new notification API which will run on macOS "
     "10.14+";
 
-const char kNotificationsViaHelperAppName[] = "Notifications via helper app";
-const char kNotificationsViaHelperAppDescription[] =
-    "Enables the notification helper app to display alerts on macOS instead of "
-    "the XPC service";
-
 const char kWinrtGeolocationImplementationName[] =
     "WinRT Geolocation Implementation";
 const char kWinrtGeolocationImplementationDescription[] =
@@ -5189,6 +5184,12 @@ const char kVirtualKeyboardDisabledDescription[] =
 const char kVirtualKeyboardMultipasteName[] = "Virtual Keyboard MultiPaste";
 const char kVirtualKeyboardMultipasteDescription[] =
     "Show virtual keyboard with multipaste UI";
+
+const char kVirtualKeyboardMultipasteSuggestionName[] =
+    "Virtual Keyboard MultiPaste Suggestion";
+const char kVirtualKeyboardMultipasteSuggestionDescription[] =
+    "Show multipaste items in virtual keyboard suggestion bar if they are "
+    "copied recently";
 
 const char kVmStatusPageName[] = "VM status page";
 const char kVmStatusPageDescription[] = "Enable VM status page";

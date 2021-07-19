@@ -540,9 +540,6 @@ extern const char kMacCoreLocationBackendDescription[];
 extern const char kNewMacNotificationAPIName[];
 extern const char kNewMacNotificationAPIDescription[];
 
-extern const char kNotificationsViaHelperAppName[];
-extern const char kNotificationsViaHelperAppDescription[];
-
 extern const char kWinrtGeolocationImplementationName[];
 extern const char kWinrtGeolocationImplementationDescription[];
 
@@ -2998,6 +2995,9 @@ extern const char kVirtualKeyboardDisabledDescription[];
 
 extern const char kVirtualKeyboardMultipasteName[];
 extern const char kVirtualKeyboardMultipasteDescription[];
+
+extern const char kVirtualKeyboardMultipasteSuggestionName[];
+extern const char kVirtualKeyboardMultipasteSuggestionDescription[];
 
 extern const char kVmStatusPageName[];
 extern const char kVmStatusPageDescription[];

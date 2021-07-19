@@ -22,8 +22,10 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace chrome_pdf {
+struct AccessibilityCharInfo;
 struct AccessibilityDocInfo;
 struct AccessibilityPageInfo;
+struct AccessibilityTextRunInfo;
 struct AccessibilityViewportInfo;
 }  // namespace chrome_pdf
 
@@ -45,8 +47,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   ~PdfAccessibilityTree() override;
 
   static bool IsDataFromPluginValid(
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
       const ppapi::PdfAccessibilityPageObjects& page_objects);
 
   // Stores the page index and annotation index in the page.
@@ -65,8 +67,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       const chrome_pdf::AccessibilityDocInfo& doc_info);
   void SetAccessibilityPageInfo(
       const chrome_pdf::AccessibilityPageInfo& page_info,
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
       const ppapi::PdfAccessibilityPageObjects& page_objects);
   void HandleAction(const PP_PdfAccessibilityActionData& action_data);
   absl::optional<AnnotationInfo> GetPdfAnnotationInfoFromAXNode(
@@ -121,8 +123,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       ui::AXNodeData* page_node,
       const gfx::RectF& page_bounds,
       uint32_t page_index,
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
       const ppapi::PdfAccessibilityPageObjects& page_objects,
       content::RenderAccessibility* render_accessibility);
 

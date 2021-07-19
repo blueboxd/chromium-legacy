@@ -382,7 +382,27 @@
           "SavingBrowserHistoryDisabled": true
         },
         "prefs": {
-          "history.saving_disabled": {}
+          "history.saving_disabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SavingBrowserHistoryDisabled": false
+        },
+        "prefs": {
+          "history.saving_disabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "history.saving_disabled": {
+            "default_value": false
+          }
         }
       }
     ]
@@ -1927,12 +1947,30 @@
     ],
     "policy_pref_mapping_tests": [
       {
-        "policies": {
-          "DisableAuthNegotiateCnameLookup": true
-        },
+        "note": "Checking default value (no policies set)",
+        "policies": { },
         "prefs": {
           "auth.disable_negotiate_cname_lookup": {
-            "location": "local_state"
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": { "DisableAuthNegotiateCnameLookup": true },
+        "prefs": {
+          "auth.disable_negotiate_cname_lookup": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "DisableAuthNegotiateCnameLookup": false },
+        "prefs": {
+          "auth.disable_negotiate_cname_lookup": {
+            "location": "local_state",
+            "value": false
           }
         }
       }
@@ -1947,12 +1985,30 @@
     ],
     "policy_pref_mapping_tests": [
       {
-        "policies": {
-          "EnableAuthNegotiatePort": true
-        },
+        "note": "Checking default value (no policies set)",
+        "policies": { },
         "prefs": {
           "auth.enable_negotiate_port": {
-            "location": "local_state"
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": { "EnableAuthNegotiatePort": true },
+        "prefs": {
+          "auth.enable_negotiate_port": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "EnableAuthNegotiatePort": false },
+        "prefs": {
+          "auth.enable_negotiate_port": {
+            "location": "local_state",
+            "value": false
           }
         }
       }
@@ -7947,6 +8003,17 @@
             "value": 90
           }
         }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "power.ac_screen_brightness_percent": {
+            "default_value": -1
+          },
+          "power.battery_screen_brightness_percent": {
+            "default_value": -1
+          }
+        }
       }
     ]
   },
@@ -11475,12 +11542,20 @@
     ]
   },
   "DataLeakPreventionClipboardCheckSizeLimit": {
-    "os": ["chromeos"],
+    "os": [
+      "chromeos"
+    ],
     "can_be_recommended": false,
     "policy_pref_mapping_tests": [
       {
-        "policies": { "DataLeakPreventionClipboardCheckSizeLimit": 50 },
-        "prefs": { "policy.dlp_clipboard_check_size_limit": { "location": "local_state" } }
+        "policies": {
+          "DataLeakPreventionClipboardCheckSizeLimit": 50
+        },
+        "prefs": {
+          "policy.dlp_clipboard_check_size_limit": {
+            "location": "local_state"
+          }
+        }
       }
     ]
   },

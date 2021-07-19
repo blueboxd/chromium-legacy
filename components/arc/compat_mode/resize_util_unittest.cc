@@ -25,6 +25,11 @@ class FakeToastManager : public ash::ToastManager {
   void Show(const ash::ToastData& data) override { called_show_ = true; }
   void Cancel(const std::string& id) override { called_cancel_ = true; }
 
+  void ResetState() {
+    called_show_ = false;
+    called_cancel_ = false;
+  }
+
   bool called_show() { return called_show_; }
   bool called_cancel() { return called_cancel_; }
 
@@ -62,11 +67,11 @@ TEST_F(ResizeUtilTest, TestResizeLockToPhone) {
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, false);
   EXPECT_TRUE(widget()->IsMaximized());
   ResizeLockToPhone(widget(), pref_delegate());
+  SyncResizeLockPropertyWithMojoState(widget());
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_LT(widget()->GetWindowBoundsInScreen().width(),
             widget()->GetWindowBoundsInScreen().height());
-  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
-            ResizeCompatMode::kPhone);
+  EXPECT_EQ(PredictCurrentMode(widget()), ResizeCompatMode::kPhone);
 }
 
 // Test that resize tablet works properly in both needs-confirmation and no
@@ -78,11 +83,11 @@ TEST_F(ResizeUtilTest, TestResizeLockToTablet) {
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, false);
   EXPECT_TRUE(widget()->IsMaximized());
   ResizeLockToTablet(widget(), pref_delegate());
+  SyncResizeLockPropertyWithMojoState(widget());
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_GT(widget()->GetWindowBoundsInScreen().width(),
             widget()->GetWindowBoundsInScreen().height());
-  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
-            ResizeCompatMode::kTablet);
+  EXPECT_EQ(PredictCurrentMode(widget()), ResizeCompatMode::kTablet);
 }
 
 // Test that resize phone/tablet works properly on small displays.
@@ -95,6 +100,7 @@ TEST_F(ResizeUtilTest, TestResizeLockToPhoneTabletOnSmallDisplay) {
 
   // Shrink size according to the workarea size.
   ResizeLockToPhone(widget(), pref_delegate());
+  SyncResizeLockPropertyWithMojoState(widget());
   EXPECT_LT(widget()->GetWindowBoundsInScreen().width(),
             widget()->GetWindowBoundsInScreen().height());
   EXPECT_LT(widget()->GetWindowBoundsInScreen().width(), workarea_size.width());
@@ -103,6 +109,7 @@ TEST_F(ResizeUtilTest, TestResizeLockToPhoneTabletOnSmallDisplay) {
 
   // Don't shrink size so that Android can decide what to do.
   ResizeLockToTablet(widget(), pref_delegate());
+  SyncResizeLockPropertyWithMojoState(widget());
   EXPECT_GE(widget()->GetWindowBoundsInScreen().width(), workarea_size.width());
   EXPECT_GE(widget()->GetWindowBoundsInScreen().height(),
             workarea_size.height());
@@ -117,6 +124,7 @@ TEST_F(ResizeUtilTest, TestEnableResizing) {
   // needed.
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, true);
   EnableResizingWithConfirmationIfNeeded(widget(), pref_delegate());
+  SyncResizeLockPropertyWithMojoState(widget());
   EXPECT_NE(pref_delegate()->GetResizeLockState(kTestAppId),
             mojom::ArcResizeLockState::OFF);
   EXPECT_FALSE(fake_toast_manager.called_cancel());
@@ -125,12 +133,19 @@ TEST_F(ResizeUtilTest, TestEnableResizing) {
   // Test the state is changed without confirmation.
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, false);
   EnableResizingWithConfirmationIfNeeded(widget(), pref_delegate());
+  SyncResizeLockPropertyWithMojoState(widget());
   EXPECT_EQ(pref_delegate()->GetResizeLockState(kTestAppId),
             mojom::ArcResizeLockState::OFF);
-  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
-            ResizeCompatMode::kResizable);
+  EXPECT_EQ(PredictCurrentMode(widget()), ResizeCompatMode::kResizable);
   EXPECT_TRUE(fake_toast_manager.called_cancel());
   EXPECT_TRUE(fake_toast_manager.called_show());
+
+  // Test the state is not updated redundantly.
+  fake_toast_manager.ResetState();
+  EnableResizingWithConfirmationIfNeeded(widget(), pref_delegate());
+  SyncResizeLockPropertyWithMojoState(widget());
+  EXPECT_FALSE(fake_toast_manager.called_cancel());
+  EXPECT_FALSE(fake_toast_manager.called_show());
 }
 
 // Test that should show dialog screen dialog caps at a preset limit
@@ -148,8 +163,8 @@ TEST_F(ResizeUtilTest, TestShouldShowSplashScreenDialog) {
 TEST_F(ResizeUtilTest, TestPredictCurrentModeForUnresizable) {
   widget()->widget_delegate()->SetCanResize(false);
   ResizeLockToPhone(widget(), pref_delegate());
-  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
-            ResizeCompatMode::kPhone);
+  SyncResizeLockPropertyWithMojoState(widget());
+  EXPECT_EQ(PredictCurrentMode(widget()), ResizeCompatMode::kPhone);
 }
 
 }  // namespace arc

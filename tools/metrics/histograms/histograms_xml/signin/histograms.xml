@@ -597,6 +597,9 @@ prefs when the profile is loaded.  -->
 
 <histogram name="Signin.Intercept.SessionStartupDuration.{Method}" units="ms"
     expires_after="2021-08-12">
+  <obsolete>
+    Removed 2021-07.
+  </obsolete>
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -611,6 +614,9 @@ prefs when the profile is loaded.  -->
 
 <histogram name="Signin.Intercept.SessionStartupReconcileError"
     enum="BooleanPresent" expires_after="2021-12-19">
+  <obsolete>
+    Removed 2021-07.
+  </obsolete>
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -622,6 +628,9 @@ prefs when the profile is loaded.  -->
 
 <histogram name="Signin.Intercept.SessionStartupResult"
     enum="SigninInterceptSessionStartupResult" expires_after="2021-08-12">
+  <obsolete>
+    Removed 2021-07.
+  </obsolete>
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -827,7 +836,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.OAuth2MintToken.ApiCallResult"
-    enum="OAuth2MintTokenApiCallResult" expires_after="2021-11-14">
+    enum="OAuth2MintTokenApiCallResult" expires_after="2022-01-16">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>

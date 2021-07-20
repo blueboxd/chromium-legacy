@@ -12,7 +12,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/safe_browsing_blocking_page.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/browser/ping_manager.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -49,9 +49,11 @@ namespace safe_browsing {
 
 SafeBrowsingUIManager::SafeBrowsingUIManager(
     const scoped_refptr<SafeBrowsingService>& service,
+    std::unique_ptr<Delegate> delegate,
     std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory,
     const GURL& default_safe_page)
     : sb_service_(service),
+      delegate_(std::move(delegate)),
       blocking_page_factory_(std::move(blocking_page_factory)),
       default_safe_page_(default_safe_page) {}
 
@@ -210,6 +212,46 @@ void SafeBrowsingUIManager::CreateAllowlistForTesting(
   EnsureAllowlistCreated(web_contents);
 }
 
+// static
+std::string SafeBrowsingUIManager::GetThreatTypeStringForInterstitial(
+    safe_browsing::SBThreatType threat_type) {
+  switch (threat_type) {
+    case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
+    case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
+      return "SOCIAL_ENGINEERING";
+    case safe_browsing::SB_THREAT_TYPE_URL_MALWARE:
+    case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
+      return "MALWARE";
+    case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
+      return "UNWANTED_SOFTWARE";
+    case safe_browsing::SB_THREAT_TYPE_BILLING:
+      return "THREAT_TYPE_UNSPECIFIED";
+    case safe_browsing::SB_THREAT_TYPE_UNUSED:
+    case safe_browsing::SB_THREAT_TYPE_SAFE:
+    case safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE:
+    case safe_browsing::SB_THREAT_TYPE_EXTENSION:
+    case safe_browsing::SB_THREAT_TYPE_BLOCKLISTED_RESOURCE:
+    case safe_browsing::SB_THREAT_TYPE_API_ABUSE:
+    case safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER:
+    case safe_browsing::SB_THREAT_TYPE_CSD_ALLOWLIST:
+    case safe_browsing::
+        DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
+    case safe_browsing::SB_THREAT_TYPE_SAVED_PASSWORD_REUSE:
+    case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
+    case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
+    case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
+    case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_POPUP:
+    case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
+    case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
+    case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
+    case safe_browsing::SB_THREAT_TYPE_APK_DOWNLOAD:
+    case safe_browsing::SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
+    case safe_browsing::SB_THREAT_TYPE_ACCURACY_TIPS:
+      NOTREACHED();
+      break;
+  }
+  return std::string();
+}
 void SafeBrowsingUIManager::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observer_list_.AddObserver(observer);
@@ -222,7 +264,7 @@ void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
 
 const std::string SafeBrowsingUIManager::app_locale() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return g_browser_process->GetApplicationLocale();
+  return delegate_->GetApplicationLocale();
 }
 
 history::HistoryService* SafeBrowsingUIManager::history_service(
@@ -268,7 +310,7 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
   BaseUIManager::OnBlockingPageDone(resources, proceed, web_contents,
                                     main_frame_url, showed_interstitial);
   if (proceed && !resources.empty()) {
-    MaybeTriggerSecurityInterstitialProceededEvent(
+    delegate_->TriggerSecurityInterstitialProceededExtensionEventIfDesired(
         web_contents, main_frame_url,
         GetThreatTypeStringForInterstitial(resources[0].threat_type),
         /*net_error_code=*/0);
@@ -295,7 +337,7 @@ BaseBlockingPage* SafeBrowsingUIManager::CreateBlockingPageForSubresource(
           /*should_trigger_reporting=*/false);
 
   // Report that we showed an interstitial.
-  MaybeTriggerSecurityInterstitialShownEvent(
+  delegate_->TriggerSecurityInterstitialShownExtensionEventIfDesired(
       contents, blocked_url,
       GetThreatTypeStringForInterstitial(unsafe_resource.threat_type),
       /*net_error_code=*/0);

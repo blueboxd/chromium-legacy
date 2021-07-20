@@ -75,20 +75,9 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   void RemoveCertificate(mojom::KeystoreType keystore,
                          const std::vector<uint8_t>& certificate,
                          RemoveCertificateCallback callback) override;
-  void DEPRECATED_GetPublicKey(
-      const std::vector<uint8_t>& certificate,
-      mojom::KeystoreSigningAlgorithmName algorithm_name,
-      DEPRECATED_GetPublicKeyCallback callback) override;
-  void ExtensionGenerateKey(mojom::KeystoreType keystore,
-                            mojom::KeystoreSigningAlgorithmPtr algorithm,
-                            const absl::optional<std::string>& extension_id,
-                            ExtensionGenerateKeyCallback callback) override;
-  void ExtensionSign(KeystoreType keystore,
-                     const std::vector<uint8_t>& public_key,
-                     SigningScheme scheme,
-                     const std::vector<uint8_t>& data,
-                     const std::string& extension_id,
-                     ExtensionSignCallback callback) override;
+  void GetPublicKey(const std::vector<uint8_t>& certificate,
+                    mojom::KeystoreSigningAlgorithmName algorithm_name,
+                    GetPublicKeyCallback callback) override;
   void GenerateKey(mojom::KeystoreType keystore,
                    mojom::KeystoreSigningAlgorithmPtr algorithm,
                    GenerateKeyCallback callback) override;
@@ -109,6 +98,26 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   void CanUserGrantPermissionForKey(
       const std::vector<uint8_t>& public_key,
       CanUserGrantPermissionForKeyCallback callback) override;
+
+  // DEPRECATED, use `GenerateKey` instead.
+  void DEPRECATED_ExtensionGenerateKey(
+      mojom::KeystoreType keystore,
+      mojom::KeystoreSigningAlgorithmPtr algorithm,
+      const absl::optional<std::string>& extension_id,
+      DEPRECATED_ExtensionGenerateKeyCallback callback) override;
+  // DEPRECATED, use `Sign` instead.
+  void DEPRECATED_ExtensionSign(
+      KeystoreType keystore,
+      const std::vector<uint8_t>& public_key,
+      SigningScheme scheme,
+      const std::vector<uint8_t>& data,
+      const std::string& extension_id,
+      DEPRECATED_ExtensionSignCallback callback) override;
+  // DEPRECATED, use `GetPublicKey` instead.
+  void DEPRECATED_GetPublicKey(
+      const std::vector<uint8_t>& certificate,
+      mojom::KeystoreSigningAlgorithmName algorithm_name,
+      DEPRECATED_GetPublicKeyCallback callback) override;
 
  private:
   // Returns a correct instance of PlatformKeysService to use. If a specific
@@ -145,13 +154,6 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
                                    chromeos::platform_keys::Status status);
   static void DidRemoveCertificate(RemoveCertificateCallback callback,
                                    chromeos::platform_keys::Status status);
-  static void DidExtensionGenerateKey(
-      ExtensionGenerateKeyCallback callback,
-      const std::string& public_key,
-      absl::optional<crosapi::mojom::KeystoreError> error);
-  static void DidExtensionSign(ExtensionSignCallback callback,
-                               const std::string& signature,
-                               absl::optional<mojom::KeystoreError> error);
   static void DidGenerateKey(GenerateKeyCallback callback,
                              const std::string& public_key,
                              chromeos::platform_keys::Status status);
@@ -165,6 +167,16 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
                             chromeos::platform_keys::Status status);
   static void DidAddKeyTags(AddKeyTagsCallback callback,
                             chromeos::platform_keys::Status status);
+
+  // Parts of deprecated methods.
+  static void DEPRECATED_DidExtensionGenerateKey(
+      DEPRECATED_ExtensionGenerateKeyCallback callback,
+      const std::string& public_key,
+      absl::optional<crosapi::mojom::KeystoreError> error);
+  static void DEPRECATED_DidExtensionSign(
+      DEPRECATED_ExtensionSignCallback callback,
+      const std::string& signature,
+      absl::optional<mojom::KeystoreError> error);
 
   // Can be nullptr, should not be used directly, use GetPlatformKeys() instead.
   // Stores a pointer to a specific PlatformKeysService if it was specified in

@@ -56,8 +56,41 @@ class SafeBrowsingUIManager : public BaseUIManager {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
+  // Interface via which the embedder supplies contextual information to
+  // SafeBrowsingUIManager.
+  class Delegate {
+   public:
+    Delegate() = default;
+    virtual ~Delegate() = default;
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
+    // Returns the locale used by the application. It is the IETF language tag,
+    // defined in BCP 47. The region subtag is not included when it adds no
+    // distinguishing information to the language tag (e.g. both "en-US" and
+    // "fr" are correct here).
+    virtual const std::string& GetApplicationLocale() = 0;
+
+    // Notifies the embedder that given events occurred so that the embedder can
+    // trigger corresponding extension events if desired. This triggering is
+    // optional (e.g., not all embedders support extensions, even those who do
+    // might not wish to trigger extension events in incognito mode, etc).
+    virtual void TriggerSecurityInterstitialShownExtensionEventIfDesired(
+        content::WebContents* web_contents,
+        const GURL& page_url,
+        const std::string& reason,
+        int net_error_code) = 0;
+    virtual void TriggerSecurityInterstitialProceededExtensionEventIfDesired(
+        content::WebContents* web_contents,
+        const GURL& page_url,
+        const std::string& reason,
+        int net_error_code) = 0;
+  };
+
   SafeBrowsingUIManager(
       const scoped_refptr<SafeBrowsingService>& service,
+      std::unique_ptr<Delegate> delegate,
       std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory,
       const GURL& default_safe_page);
 
@@ -97,6 +130,9 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // expects the allowlist to exist, but the tests don't necessarily call
   // DisplayBlockingPage(), which creates it.
   static void CreateAllowlistForTesting(content::WebContents* web_contents);
+
+  static std::string GetThreatTypeStringForInterstitial(
+      safe_browsing::SBThreatType threat_type);
 
   // Add and remove observers. These methods must be invoked on the UI thread.
   void AddObserver(Observer* observer);
@@ -140,6 +176,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
 
   // Safebrowsing service.
   scoped_refptr<SafeBrowsingService> sb_service_;
+
+  std::unique_ptr<Delegate> delegate_;
 
   std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory_;
 

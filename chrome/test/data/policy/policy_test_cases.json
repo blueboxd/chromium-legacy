@@ -2077,7 +2077,8 @@
         },
         "prefs": {
           "auth.server_allowlist": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": "localhost"
           }
         }
       }
@@ -2093,12 +2094,25 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Default value (no policies set).",
+        "policies": { },
+        "prefs": {
+          "auth.server_allowlist": {
+            "location": "local_state",
+            "default_value": ""
+          }
+        }
+      },
+      {
+        "note": "New policy override deprecated one.",
         "policies": {
-          "AuthServerAllowlist": "localhost"
+          "AuthServerAllowlist": "192.168.0.*,192.168.1.*",
+          "AuthServerWhitelist": "192.168.0.*,192.168.1.*,192.168.2.*"
         },
         "prefs": {
           "auth.server_allowlist": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": "192.168.0.*,192.168.1.*"
           }
         }
       }
@@ -6351,21 +6365,6 @@
       }
     ]
   },
-  "ScreenLockDelayAC": {
-    "os": [
-      "chromeos"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "ScreenLockDelayAC": 600000
-        },
-        "prefs": {
-          "power.ac_screen_lock_delay_ms": {}
-        }
-      }
-    ]
-  },
   "IdleWarningDelayAC": {
     "os": [
       "chromeos"
@@ -6443,21 +6442,6 @@
         },
         "prefs": {
           "power.battery_screen_off_delay_ms": {}
-        }
-      }
-    ]
-  },
-  "ScreenLockDelayBattery": {
-    "os": [
-      "chromeos"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "ScreenLockDelayBattery": 600000
-        },
-        "prefs": {
-          "power.battery_screen_lock_delay_ms": {}
         }
       }
     ]
@@ -6723,12 +6707,77 @@
       }
     ]
   },
+  "ScreenLockDelayAC": {
+    "os": [
+      "chromeos"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "power.ac_screen_lock_delay_ms": {
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "note": "Simple value",
+        "policies": {
+          "ScreenLockDelayAC": 600000
+        },
+        "prefs": {
+          "power.ac_screen_lock_delay_ms": {
+            "location": "user_profile",
+            "value": 600000
+          }
+        }
+      }
+    ]
+  },
+  "ScreenLockDelayBattery": {
+    "os": [
+      "chromeos"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "power.battery_screen_lock_delay_ms": {
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "note": "Simple value",
+        "policies": {
+          "ScreenLockDelayBattery": 600000
+        },
+        "prefs": {
+          "power.battery_screen_lock_delay_ms": {
+            "value": 600000
+          }
+        }
+      }
+    ]
+  },
   "ScreenLockDelays": {
     "os": [
       "chromeos"
     ],
     "policy_pref_mapping_tests": [
       {
+        "note":"Check default values (no policies set)",
+        "prefs": {
+          "power.ac_screen_lock_delay_ms": {
+            "default_value": 0
+          },
+          "power.battery_screen_lock_delay_ms": {
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
           "ScreenLockDelays": {
             "AC": 6000,
@@ -6741,6 +6790,25 @@
           },
           "power.battery_screen_lock_delay_ms": {
             "value": 2000
+          }
+        }
+      },
+      {
+        "note": "Policy merging precedence (ScreenLockDelays wins)",
+        "policies": {
+          "ScreenLockDelays": {
+            "AC": 1,
+            "Battery": 2
+          },
+          "ScreenLockDelayBattery": 3,
+          "ScreenLockDelayAC": 4
+        },
+        "prefs": {
+          "power.ac_screen_lock_delay_ms": {
+            "value": 1
+          },
+          "power.battery_screen_lock_delay_ms": {
+            "value": 2
           }
         }
       }
@@ -8705,7 +8773,7 @@
     "os": [
       "chromeos"
     ],
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "reason_for_missing_test": "Maps into CrosSettings"
   },
   "AttestationEnabledForDevice": {
     "reason_for_missing_test": "Maps into CrosSettings"
@@ -9093,13 +9161,34 @@
       "chromeos",
       "android"
     ],
+    "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
         "policies": {
           "SafeBrowsingExtendedReportingEnabled": true
         },
         "prefs": {
-          "safebrowsing.scout_reporting_enabled": {}
+          "safebrowsing.scout_reporting_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SafeBrowsingExtendedReportingEnabled": false
+        },
+        "prefs": {
+          "safebrowsing.scout_reporting_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "safebrowsing.scout_reporting_enabled": {
+            "default_value": false
+          }
         }
       }
     ]
@@ -9194,11 +9283,24 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Checking default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "crostini.arc_adb_sideloading.user_pref": {
+            "location": "user_profile",
+            "default_value": 0
+          }
+        }
+      },
+      {
         "policies": {
           "CrostiniArcAdbSideloadingAllowed": 0
         },
         "prefs": {
-          "crostini.arc_adb_sideloading.user_pref": {}
+          "crostini.arc_adb_sideloading.user_pref": {
+            "location": "user_profile",
+            "value": 0
+          }
         }
       },
       {
@@ -9206,7 +9308,10 @@
           "CrostiniArcAdbSideloadingAllowed": 1
         },
         "prefs": {
-          "crostini.arc_adb_sideloading.user_pref": {}
+          "crostini.arc_adb_sideloading.user_pref": {
+            "location": "user_profile",
+            "value": 1
+          }
         }
       }
     ]
@@ -9227,7 +9332,7 @@
     ]
   },
   "DeviceCrostiniArcAdbSideloadingAllowed": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "reason_for_missing_test": "Maps into CrosSettings"
   },
   "DeviceSamlLoginAuthenticationType": {
     "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
@@ -11178,7 +11283,7 @@
     ]
   },
   "TabFreezingEnabled": {
-    "reason_for_missing_test": "Polic was removed"
+    "reason_for_missing_test": "Policy was removed"
   },
   "AccessibilityImageLabelsEnabled": {
     "os": [
@@ -11189,11 +11294,25 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "policies": {},
+        "prefs": {
+          "settings.a11y.enable_accessibility_image_labels": {
+            "location": "user_profile",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Check policy value",
         "policies": {
           "AccessibilityImageLabelsEnabled": true
         },
         "prefs": {
-          "settings.a11y.enable_accessibility_image_labels": {}
+          "settings.a11y.enable_accessibility_image_labels": {
+            "location": "user_profile",
+            "value": true
+          }
         }
       }
     ]

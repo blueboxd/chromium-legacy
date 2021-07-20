@@ -16510,6 +16510,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="10" label="Empty credential, called in autofill-assistant mode"/>
 </enum>
 
+<enum name="CredentialPhishedStatus">
+  <int value="0" label="Marked as phished"/>
+  <int value="1" label="Site marked as legitimate"/>
+</enum>
+
 <enum name="CreditCardUploadDisallowedNetwork">
   <int value="0" label="Elo card"/>
   <int value="1" label="JCB card"/>
@@ -67324,6 +67329,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="17" label="kWebAppProtocolHandlerLaunch"/>
   <int value="18" label="kExtensionUpdater"/>
   <int value="19" label="kProfileCreationFlow"/>
+  <int value="20" label="kPendingNotificationCloseEvent"/>
 </enum>
 
 <enum name="ProfileMenuActionableItem">
@@ -74938,6 +74944,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SigninInterceptSessionStartupResult">
+  <obsolete>
+    Removed 2021-07.
+  </obsolete>
   <int value="0" label="Nothing to do (Reconcilor)"/>
   <int value="1" label="Nothing to do (Multilogin)"/>
   <int value="2" label="Success (reconcilor)"/>

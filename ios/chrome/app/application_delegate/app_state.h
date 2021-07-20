@@ -97,6 +97,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // resets.
 @property(nonatomic, readonly) BOOL firstSceneHasInitializedUI;
 
+// YES if the views being presented should only support the portrait
+// orientation.
+@property(nonatomic, readonly) BOOL portraitOnly;
+
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch
 // the browser.
@@ -105,9 +109,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (BOOL)requiresHandlingAfterLaunchWithOptions:(NSDictionary*)launchOptions
                                stateBackground:(BOOL)stateBackground;
 
-// Logs duration of the session in the main tab model and records that chrome is
-// no longer in cold start.
-- (void)willResignActiveTabModel;
+// Logs duration of the session and records that chrome is no longer in cold
+// start.
+- (void)willResignActive;
 
 // Called when the application is getting terminated. It stops all outgoing
 // requests, config updates, clears the device sharing manager and stops the

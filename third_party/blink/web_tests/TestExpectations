@@ -4287,7 +4287,6 @@ crbug.com/709227 external/wpt/html/canvas/offscreen/path-objects/2d.path.stroke.
 crbug.com/709227 external/wpt/html/canvas/offscreen/pixel-manipulation/2d.imageData.create2.nonfinite.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/pixel-manipulation/2d.imageData.get.nonfinite.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/pixel-manipulation/2d.imageData.put.nonfinite.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/2d.getcontext.extraargs.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.idl.worker.html [ Failure ]
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
@@ -4296,7 +4295,6 @@ crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ C
 
 # ====== Begin of display: contents tests ======
 
-crbug.com/795217 external/wpt/css/css-display/display-contents-details.html [ Failure ]
 crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
 
 # ====== End of display: contents tests ======
@@ -7377,3 +7375,10 @@ crbug.com/1161244 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-
 
 # Sheriff 2021-07-19
 crbug.com/1230534 [ Linux ] external/wpt/webrtc/simulcast/vp8.https.html [ Pass Timeout ]
+
+# Temporary: Oilpan library launch
+crbug.com/1230599 [ Linux ] fast/workers/chromium/worker-document-leak.html [ Crash Pass ]
+crbug.com/1230599 [ Linux ] fast/workers/worker-close-more.html [ Crash Pass ]
+crbug.com/1230599 [ Linux ] fast/workers/worker-lifecycle.html [ Crash Pass ]
+crbug.com/1230599 [ Linux ] virtual/plz-dedicated-worker/fast/workers/chromium/worker-document-leak.html [ Crash ]
+crbug.com/1230599 [ Linux ] virtual/shared_array_buffer_on_desktop/fast/workers/dedicated-worker-lifecycle.html [ Crash Pass ]

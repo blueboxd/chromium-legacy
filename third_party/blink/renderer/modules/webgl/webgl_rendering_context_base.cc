@@ -586,6 +586,11 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
     ScriptState* script_state) {
   WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmapWebGL;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
+  if (!GetDrawingBuffer()) {
+    // Context is lost.
+    return nullptr;
+  }
+
   return MakeGarbageCollected<ImageBitmap>(
       GetDrawingBuffer()->TransferToStaticBitmapImage());
 }
@@ -622,16 +627,17 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage() {
   // the drawing buffer being smaller than the canvas size.
   // See https://crbug.com/845742.
   IntSize size = GetDrawingBuffer()->Size();
-  // Since we are grabbing a snapshot that is not for compositing, we use a
+  // We are grabbing a snapshot that is generally not for compositing, so use a
   // custom resource provider. This avoids consuming compositing-specific
-  // resources (e.g. GpuMemoryBuffer)
+  // resources (e.g. GpuMemoryBuffer). We tag the SharedImage with display usage
+  // since there are uncommon paths which may use this snapshot for compositing.
   auto color_params = CanvasRenderingContextColorParams().GetAsResourceParams();
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateSharedImageProvider(
           size, GetDrawingBuffer()->FilterQuality(), color_params,
           CanvasResourceProvider::ShouldInitialize::kNo,
           SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
-          is_origin_top_left_, 0u /*shared_image_usage_flags*/);
+          is_origin_top_left_, gpu::SHARED_IMAGE_USAGE_DISPLAY);
   if (!resource_provider || !resource_provider->IsValid()) {
     resource_provider = CanvasResourceProvider::CreateBitmapProvider(
         size, GetDrawingBuffer()->FilterQuality(), color_params,
@@ -7258,7 +7264,7 @@ cc::Layer* WebGLRenderingContextBase::CcLayer() const {
 }
 
 void WebGLRenderingContextBase::SetFilterQuality(
-    SkFilterQuality filter_quality) {
+    cc::PaintFlags::FilterQuality filter_quality) {
   if (!isContextLost() && GetDrawingBuffer()) {
     GetDrawingBuffer()->SetFilterQuality(filter_quality);
   }
@@ -8695,7 +8701,7 @@ CanvasResourceProvider* WebGLRenderingContextBase::
   } else {
     // TODO(fserb): why is this a BITMAP?
     temp = CanvasResourceProvider::CreateBitmapProvider(
-        size, kLow_SkFilterQuality, CanvasResourceParams(),
+        size, cc::PaintFlags::FilterQuality::kLow, CanvasResourceParams(),
         CanvasResourceProvider::ShouldInitialize::kNo);  // TODO: should this
                                                          // use the canvas's
   }

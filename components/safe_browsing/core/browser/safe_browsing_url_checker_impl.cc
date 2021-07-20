@@ -32,8 +32,22 @@ namespace {
 // the resource will be treated as if it were safe.
 const int kCheckUrlTimeoutMs = 5000;
 
+constexpr char kMatchResultHistogramName[] =
+    "SafeBrowsing.RT.LocalMatch.Result";
+
 void RecordCheckUrlTimeout(bool timed_out) {
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.CheckUrl.Timeout", timed_out);
+}
+
+void RecordLocalMatchResult(
+    AsyncMatch match_result,
+    network::mojom::RequestDestination request_destination) {
+  base::UmaHistogramEnumeration(kMatchResultHistogramName, match_result);
+  bool is_mainframe =
+      request_destination == network::mojom::RequestDestination::kDocument;
+  std::string suffix = is_mainframe ? ".Mainframe" : ".NonMainframe";
+  base::UmaHistogramEnumeration(kMatchResultHistogramName + suffix,
+                                match_result);
 }
 
 }  // namespace
@@ -169,8 +183,8 @@ SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
       database_manager_->CancelCheck(this);
     }
     const GURL& url = urls_[next_index_].url;
-    TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url",
-                           url.spec());
+    TRACE_EVENT_NESTABLE_ASYNC_END1("safe_browsing", "CheckUrl",
+                                    TRACE_ID_LOCAL(this), "url", url.spec());
   }
 }
 
@@ -241,7 +255,8 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
                               threat_type, SB_THREAT_TYPE_MAX + 1);
   }
 
-  TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url", url.spec());
+  TRACE_EVENT_NESTABLE_ASYNC_END1("safe_browsing", "CheckUrl",
+                                  TRACE_ID_LOCAL(this), "url", url.spec());
 
   const bool is_prefetch = (load_flags_ & net::LOAD_PREFETCH);
 
@@ -401,8 +416,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     SBThreatType threat_type = CheckWebUIUrls(url);
     if (threat_type != safe_browsing::SB_THREAT_TYPE_SAFE) {
       state_ = STATE_CHECKING_URL;
-      TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "CheckUrl", this, "url",
-                               url.spec());
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+          "safe_browsing", "CheckUrl", TRACE_ID_LOCAL(this), "url", url.spec());
 
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -412,8 +427,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       break;
     }
 
-    TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "CheckUrl", this, "url",
-                             url.spec());
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("safe_browsing", "CheckUrl",
+                                      TRACE_ID_LOCAL(this), "url", url.spec());
 
     // Start a timer to abort the check if it takes too long.
     timer_.Start(FROM_HERE,
@@ -436,7 +451,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           can_check_db_
               ? database_manager_->CheckUrlForHighConfidenceAllowlist(url, this)
               : AsyncMatch::NO_MATCH;
-      UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.LocalMatch.Result", match);
+      RecordLocalMatchResult(match, request_destination_);
       switch (match) {
         case AsyncMatch::ASYNC:
           // Hash-prefix matched. A call to
@@ -477,8 +492,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       timer_.Stop();
       RecordCheckUrlTimeout(/*timed_out=*/false);
 
-      TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url",
-                             url.spec());
+      TRACE_EVENT_NESTABLE_ASYNC_END1("safe_browsing", "CheckUrl",
+                                      TRACE_ID_LOCAL(this), "url", url.spec());
 
       if (!RunNextCallback(true, false))
         return;

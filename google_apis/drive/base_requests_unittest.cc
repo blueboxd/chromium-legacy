@@ -13,8 +13,6 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/drive/test_util.h"
@@ -40,7 +38,7 @@ const char kInvalidJsonString[] = "$$$";
 class FakeUrlFetchRequest : public UrlFetchRequestBase {
  public:
   FakeUrlFetchRequest(RequestSender* sender,
-                      EntryActionCallback callback,
+                      PrepareCallback callback,
                       const GURL& url)
       : UrlFetchRequestBase(sender, ProgressCallback(), ProgressCallback()),
         callback_(std::move(callback)),
@@ -59,54 +57,20 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
   void RunCallbackOnPrematureFailure(ApiErrorCode code) override {
     std::move(callback_).Run(code);
   }
-
-  EntryActionCallback callback_;
-  GURL url_;
-};
-
-class FakeMultipartUploadRequest : public MultipartUploadRequestBase {
- public:
-  FakeMultipartUploadRequest(base::SequencedTaskRunner* blocking_task_runner,
-                             const std::string& metadata_json,
-                             const std::string& content_type,
-                             int64_t content_length,
-                             const base::FilePath& local_file_path,
-                             FileResourceCallback callback,
-                             google_apis::ProgressCallback progress_callback,
-                             const GURL& url,
-                             std::string* upload_content_type,
-                             std::string* upload_content_data)
-      : MultipartUploadRequestBase(blocking_task_runner,
-                                   metadata_json,
-                                   content_type,
-                                   content_length,
-                                   local_file_path,
-                                   std::move(callback),
-                                   progress_callback),
-        url_(url),
-        upload_content_type_(upload_content_type),
-        upload_content_data_(upload_content_data) {}
-
-  ~FakeMultipartUploadRequest() override {}
-
-  std::string GetRequestType() const override { return "POST"; }
-
-  bool GetContentData(std::string* content_type,
-                      std::string* content_data) override {
-    const bool result =
-        MultipartUploadRequestBase::GetContentData(content_type, content_data);
-    *upload_content_type_ = *content_type;
-    *upload_content_data_ = *content_data;
-    return result;
+  google_apis::ApiErrorCode MapReasonToError(
+      google_apis::ApiErrorCode code,
+      const std::string& reason) override {
+    if (reason == "rateLimitExceeded")
+      return google_apis::HTTP_SERVICE_UNAVAILABLE;
+    return code;
   }
 
- protected:
-  GURL GetURL() const override { return url_; }
+  bool IsSuccessfulErrorCode(ApiErrorCode error) override {
+    return error == HTTP_SUCCESS;
+  }
 
- private:
-  const GURL url_;
-  std::string* const upload_content_type_;
-  std::string* const upload_content_data_;
+  PrepareCallback callback_;
+  GURL url_;
 };
 
 }  // namespace
@@ -189,8 +153,6 @@ class BaseRequestsTest : public testing::Test {
   std::string response_body_;
 };
 
-typedef BaseRequestsTest MultipartUploadRequestBaseTest;
-
 TEST_F(BaseRequestsTest, ParseValidJson) {
   std::unique_ptr<base::Value> json(ParseJson(kValidJsonString));
 
@@ -234,46 +196,6 @@ TEST_F(BaseRequestsTest, UrlFetchRequestBaseResponseCodeOverride) {
 
   // HTTP_FORBIDDEN (403) is overridden by the error reason.
   EXPECT_EQ(HTTP_SERVICE_UNAVAILABLE, error);
-}
-
-TEST_F(MultipartUploadRequestBaseTest, Basic) {
-  response_code_ = net::HTTP_OK;
-  response_body_ = "{\"kind\": \"drive#file\", \"id\": \"file_id\"}";
-  std::unique_ptr<google_apis::FileResource> file;
-  ApiErrorCode error = OTHER_ERROR;
-  base::RunLoop run_loop;
-  const base::FilePath source_path =
-      google_apis::test_util::GetTestFilePath("drive/text.txt");
-  std::string upload_content_type;
-  std::string upload_content_data;
-  std::unique_ptr<FakeMultipartUploadRequest> multipart_request =
-      std::make_unique<FakeMultipartUploadRequest>(
-          sender_->blocking_task_runner(), "{json:\"test\"}", "text/plain", 10,
-          source_path,
-          test_util::CreateQuitCallback(
-              &run_loop, test_util::CreateCopyResultCallback(&error, &file)),
-          ProgressCallback(), test_server_.base_url(), &upload_content_type,
-          &upload_content_data);
-  multipart_request->SetBoundaryForTesting("TESTBOUNDARY");
-  sender_->StartRequestWithAuthRetry(
-      std::make_unique<drive::SingleBatchableDelegateRequest>(
-          sender_.get(), std::move(multipart_request)));
-  run_loop.Run();
-  EXPECT_EQ("multipart/related; boundary=TESTBOUNDARY", upload_content_type);
-  EXPECT_EQ(
-      "--TESTBOUNDARY\n"
-      "Content-Type: application/json\n"
-      "\n"
-      "{json:\"test\"}\n"
-      "--TESTBOUNDARY\n"
-      "Content-Type: text/plain\n"
-      "\n"
-      "This is a sample file. I like chocolate and chips.\n"
-      "\n"
-      "--TESTBOUNDARY--",
-      upload_content_data);
-  ASSERT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ("file_id", file->file_id());
 }
 
 }  // namespace google_apis

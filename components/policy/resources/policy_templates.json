@@ -18613,9 +18613,7 @@
       'tags': [],
       'desc': '''Setting the policy to Enabled or leaving it unset prevents third-party software from injecting executable code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.
 
-      Setting the policy to Disabled allows this software to inject such code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.
-
-      Regardless of the value of this policy, the browser won't block third-party software from injecting executable code into its processes on a machine that's joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
+      Setting the policy to Disabled allows this software to inject such code into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s processes.'''
     },
     {
       'name': 'SpellcheckEnabled',
@@ -20954,7 +20952,7 @@
         'per_profile': True,
       },
       'default': 0,
-      'supported_on': ['chrome.*:93-'],
+      'future_on': ['chrome.*'],
       'caption': '''Sitelist parsing mode''',
       'tags': [],
       'desc': '''This policy controls how <ph name="PRODUCT_NAME">Google Chrome</ph> interprets sitelist/greylist policies for the Legacy Browser Support feature. It affects the following policies: <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph>, <ph name="URL_GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph>, <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph>, <ph name="EXTERNAL_SITELIST_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph>, and <ph name="EXTERNAL_GREYLIST_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph>.
@@ -24643,7 +24641,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['file://components/client_hints/OWNERS', 'yoavweiss@google.com', 'aarontag@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:84-', 'chrome.*:84-', 'android:84-'],
+      'supported_on': ['chrome_os:84-93', 'chrome.*:84-93', 'android:84-93'],
       'features': {
         'per_profile': False,
         'dynamic_refresh': True,
@@ -24654,13 +24652,11 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 725,
       'caption': '''Control the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature.''',
       'tags': [],
-      'desc': '''When enabled the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature sends granular request headers providing information about the user browser and environment.
+      'desc': '''Note that this policy was removed in M94.  This policy was intended for short-term adaptation purposes only.
 
+      When enabled the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature sends granular request headers providing information about the user browser and environment.
       This is an additive feature, but the new headers may break some websites that restrict the characters that requests may contain.
-
-      If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.
-
-      This enterprise policy is for short-term adaptation purposes and will be removed in Chrome 94.''',
+      If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.''',
     },
     {
       'name': 'SuggestedContentEnabled',

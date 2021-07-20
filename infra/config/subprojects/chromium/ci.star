@@ -436,6 +436,7 @@ consoles.console_view(
     short_name = short_name,
 ) for name, category, short_name in (
     ("fuchsia-fyi-arm64-size", "fyi", "a64-size"),
+    ("fuchsia-fyi-astro", "fyi", "astro"),
     ("fuchsia-builder-perf-fyi", "fyi", "builder-perf"),
     ("fuchsia-perf-fyi", "fyi", "perf"),
     ("fuchsia-x64", "ci", "x64-chrome"),
@@ -5814,6 +5815,10 @@ ci.mac_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     os = os.MAC_10_15,
+    experiments = {
+        # TODO(crbug.com/1225524): remove this.
+        "chromium.isolate.use_new_lib": 50,
+    },
 )
 
 ci.mac_builder(
@@ -6425,6 +6430,10 @@ ci.win_builder(
     cores = 32,
     main_console_view = "main",
     os = os.WINDOWS_ANY,
+    experiments = {
+        # TODO(crbug.com/1225524): remove this.
+        "chromium.isolate.use_new_lib": 50,
+    },
 )
 
 ci.win_builder(

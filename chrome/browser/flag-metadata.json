@@ -2041,8 +2041,8 @@
   },
   {
     "name": "enable-hostname-setting",
-    "owners": [ "jhawkins" ],
-    "expiry_milestone": 92
+    "owners": [ "khorimoto", "cros-connectivity@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "enable-image-reader",
@@ -4111,6 +4111,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "omnibox-document-provider-aso",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 96
+  },
+  {
     "name": "omnibox-drive-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
@@ -4191,6 +4196,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "omnibox-on-focus-suggestions-contextual-web-allow-srp",
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 97
+  },
+  {
     "name": "omnibox-pedals-batch2",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
@@ -4209,6 +4219,11 @@
     "name": "omnibox-pedals-default-icon-colored",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "omnibox-preserve-longer-shortcuts-text",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "omnibox-rich-autocompletion",
@@ -4387,7 +4402,7 @@
   {
     "name": "page-info-version-2-desktop",
     "owners": [ "bsep", "olesiamarukhno" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 95
   },
   {
     "name": "paint-preview-demo",

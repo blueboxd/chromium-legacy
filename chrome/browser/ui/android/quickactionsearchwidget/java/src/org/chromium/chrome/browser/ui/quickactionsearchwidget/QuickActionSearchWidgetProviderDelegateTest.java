@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.ui.quickactionsearchwidget;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -46,8 +47,9 @@ public class QuickActionSearchWidgetProviderDelegateTest {
     }
 
     private static final class TestDelegate extends QuickActionSearchWidgetProviderDelegate {
-        public TestDelegate(ComponentName widgetReceiverComponent) {
-            super(widgetReceiverComponent);
+        public TestDelegate(@QuickActionSearchWidgetType int widgetType,
+                ComponentName widgetReceiverComponent) {
+            super(widgetType, widgetReceiverComponent);
         }
 
         public final List<RemoteViews> mRemoteViews = new ArrayList<>();
@@ -77,7 +79,7 @@ public class QuickActionSearchWidgetProviderDelegateTest {
 
         ComponentName widgetReceiverComponent =
                 new ComponentName(mContext, QuickActionSearchWidgetReceiver.class);
-        mDelegate = new TestDelegate(widgetReceiverComponent);
+        mDelegate = new TestDelegate(QuickActionSearchWidgetType.SMALL, widgetReceiverComponent);
 
         setUpViews();
     }

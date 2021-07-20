@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "content/public/renderer/plugin_ax_tree_source.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/shared_impl/pdf_accessibility_shared.h"
@@ -30,9 +29,10 @@ struct AccessibilityViewportInfo;
 }  // namespace chrome_pdf
 
 namespace content {
+class PepperPluginInstance;
 class RenderAccessibility;
-class RendererPpapiHost;
-}
+class RenderFrame;
+}  // namespace content
 
 namespace gfx {
 class Transform;
@@ -42,8 +42,8 @@ namespace pdf {
 
 class PdfAccessibilityTree : public content::PluginAXTreeSource {
  public:
-  PdfAccessibilityTree(content::RendererPpapiHost* host,
-                       PP_Instance instance);
+  PdfAccessibilityTree(content::RenderFrame* render_frame,
+                       content::PepperPluginInstance* plugin_instance);
   ~PdfAccessibilityTree() override;
 
   static bool IsDataFromPluginValid(
@@ -125,8 +125,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       uint32_t page_index,
       const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
       const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
-      const ppapi::PdfAccessibilityPageObjects& page_objects,
-      content::RenderAccessibility* render_accessibility);
+      const ppapi::PdfAccessibilityPageObjects& page_objects);
 
   // Clears the local cache of node data used to create the tree so that
   // replacement node data can be introduced.
@@ -140,9 +139,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   ui::AXTree tree_;
 
   // Unowned. Must outlive |this|.
-  content::RendererPpapiHost* const host_;
+  content::RenderFrame* const render_frame_;
+  content::PepperPluginInstance* const plugin_instance_;
 
-  const PP_Instance instance_;
   // |zoom_| signifies the zoom level set in for the browser content.
   // |scale_| signifies the scale level set by user. Scale is applied
   // by the OS while zoom is applied by the application. Higher scale

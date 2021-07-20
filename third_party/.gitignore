@@ -7,6 +7,8 @@
 /adobe/flash/symbols
 /aemu-linux-arm64
 /aemu-linux-x64
+/aemu-mac-arm64
+/aemu-mac-x64
 /amd/
 /android_build_tools/aapt2/aapt2
 /android_build_tools/aapt2/lib64/*.so
@@ -71,6 +73,7 @@
 /dawn
 /depot_tools
 /devtools-frontend/src
+/devtools-frontend-internal
 /directxsdk
 /distributed_point_functions/src
 /dom_distiller_js/dist

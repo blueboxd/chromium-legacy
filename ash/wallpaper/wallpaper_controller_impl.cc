@@ -1064,20 +1064,22 @@ void WallpaperControllerImpl::SetOnlineWallpaperIfExists(
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   DCHECK(CanSetUserWallpaper(params.account_id));
 
-  // |asset_id| and |collection_id| are empty when the wallpaper is
-  // automatically set with daily refresh.
-  const absl::optional<uint64_t>& asset_id = params.asset_id;
-  if (asset_id.has_value()) {
-    const int asset_id_val = asset_id.value();
-    base::UmaHistogramSparse("Ash.Wallpaper.Image", asset_id_val);
-    DVLOG(1) << "SetOnlineWallpaperIfExists: asset_id=" << asset_id_val;
-  }
-  const std::string& collection_id = params.collection_id;
-  if (!collection_id.empty()) {
-    const int collection_id_hash = base::PersistentHash(collection_id);
-    base::UmaHistogramSparse("Ash.Wallpaper.Collection", collection_id_hash);
-    DVLOG(1) << "SetOnlineWallpaperIfExists: collection_id=" << collection_id
-             << " collection_id_hash=" << collection_id_hash;
+  if (params.from_user) {
+    // |asset_id| and |collection_id| are empty when the wallpaper is
+    // automatically refreshed by old wallpaper app.
+    const absl::optional<uint64_t>& asset_id = params.asset_id;
+    if (asset_id.has_value()) {
+      const int asset_id_val = asset_id.value();
+      base::UmaHistogramSparse("Ash.Wallpaper.Image", asset_id_val);
+      DVLOG(1) << "SetOnlineWallpaperIfExists: asset_id=" << asset_id_val;
+    }
+    const std::string& collection_id = params.collection_id;
+    if (!collection_id.empty()) {
+      const int collection_id_hash = base::PersistentHash(collection_id);
+      base::UmaHistogramSparse("Ash.Wallpaper.Collection", collection_id_hash);
+      DVLOG(1) << "SetOnlineWallpaperIfExists: collection_id=" << collection_id
+               << " collection_id_hash=" << collection_id_hash;
+    }
   }
 
   base::PostTaskAndReplyWithResult(
@@ -2398,14 +2400,11 @@ void WallpaperControllerImpl::HandleWallpaperInfoSyncedIn(
       break;
     case DAILY:
     case ONLINE:
-      // Skip setting |asset_id| and |collection_id| when wallpaper is synced
-      // acrossed devices. We don't want to log their impressions when
-      // wallpaper is synced.
       SetOnlineWallpaper(
-          OnlineWallpaperParams{account_id, /*asset_id=*/absl::nullopt,
-                                GURL(info.location),
-                                /*collection_id=*/std::string(), info.layout,
-                                /*preview_mode=*/false},
+          OnlineWallpaperParams{account_id, info.asset_id, GURL(info.location),
+                                info.collection_id, info.layout,
+                                /*preview_mode=*/false,
+                                /*from_user=*/false},
           base::DoNothing());
       break;
     case POLICY:
@@ -2459,6 +2458,10 @@ void WallpaperControllerImpl::SetDailyRefreshCollectionId(
   pref_service->SetString(kWallpaperCollectionId, collection_id);
 }
 
+std::string WallpaperControllerImpl::GetDailyRefreshCollectionId() const {
+  return GetCollectionId();
+}
+
 void WallpaperControllerImpl::OnGoogleDriveMounted() {
   AccountId account_id = GetActiveAccountId();
   WallpaperInfo local_info;
@@ -2488,9 +2491,11 @@ std::string WallpaperControllerImpl::GetCollectionId() const {
   return pref_service->GetString(kWallpaperCollectionId);
 }
 
-void WallpaperControllerImpl::UpdateDailyRefreshWallpaper() {
+void WallpaperControllerImpl::UpdateDailyRefreshWallpaper(
+    RefreshWallpaperCallback callback) {
   if (!IsDailyRefreshEnabled()) {
     daily_refresh_timer_.Stop();
+    std::move(callback).Run(false);
     return;
   }
 
@@ -2501,30 +2506,40 @@ void WallpaperControllerImpl::UpdateDailyRefreshWallpaper() {
         GetCollectionId(),
         base::BindOnce(&WallpaperControllerImpl::SetDailyWallpaper,
                        weak_factory_.GetWeakPtr(), GetActiveAccountId(),
+                       GetCollectionId(),
                        ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                       /*preview_mode=*/false));
+                       /*preview_mode=*/false, std::move(callback)));
   } else {
     StartDailyRefreshTimer();
+    std::move(callback).Run(false);
   }
 }
 
-void WallpaperControllerImpl::SetDailyWallpaper(const AccountId& account_id,
-                                                WallpaperLayout layout,
-                                                bool preview_mode,
-                                                const std::string& image_url) {
-  if (!image_url.empty()) {
+void WallpaperControllerImpl::SetDailyWallpaper(
+    const AccountId& account_id,
+    const std::string& collection_id,
+    WallpaperLayout layout,
+    bool preview_mode,
+    RefreshWallpaperCallback callback,
+    const absl::optional<uint64_t>& asset_id,
+    const std::string& image_url) {
+  if (asset_id.has_value() && !image_url.empty()) {
     SetOnlineWallpaper(
-        OnlineWallpaperParams{
-            account_id, /*asset_id=*/absl::nullopt, GURL(image_url),
-            /*collection_id=*/std::string(), layout, preview_mode},
+        OnlineWallpaperParams{account_id, asset_id, GURL(image_url),
+                              collection_id, layout, preview_mode,
+                              /*from_user=*/false},
         base::BindOnce(&WallpaperControllerImpl::OnSetDailyWallpaper,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   } else {
     OnFetchDailyWallpaperFailed();
+    std::move(callback).Run(false);
   }
 }
 
-void WallpaperControllerImpl::OnSetDailyWallpaper(bool success) {
+void WallpaperControllerImpl::OnSetDailyWallpaper(
+    RefreshWallpaperCallback callback,
+    bool success) {
+  std::move(callback).Run(success);
   if (success) {
     StartDailyRefreshTimer();
   } else {
@@ -2557,7 +2572,8 @@ void WallpaperControllerImpl::StartDailyRefreshTimer(base::TimeDelta delay) {
   daily_refresh_timer_.Start(
       FROM_HERE, desired_run_time,
       base::BindOnce(&WallpaperControllerImpl::UpdateDailyRefreshWallpaper,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(),
+                     base::DoNothing::Once<bool>()));
 }
 
 base::TimeDelta WallpaperControllerImpl::GetTimeToNextDailyRefreshUpdate()

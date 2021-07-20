@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "url/origin.h"
 
@@ -40,8 +39,6 @@ class CONTENT_EXPORT ClientHintsControllerDelegate {
       blink::WebEnabledClientHints* client_hints) = 0;
 
   virtual bool IsJavaScriptAllowed(const GURL& url) = 0;
-
-  virtual bool UserAgentClientHintEnabled() = 0;
 
   virtual blink::UserAgentMetadata GetUserAgentMetadata() = 0;
 

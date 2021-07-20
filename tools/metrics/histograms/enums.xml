@@ -3539,6 +3539,12 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="AppRequested">ANR requested explicitly by app.</int>
 </enum>
 
+<enum name="ArcAppShortcutStatus">
+  <summary>Defines ARC app shortcut result</summary>
+  <int value="0" label="Empty Icon"/>
+  <int value="1" label="Non-empty icon"/>
+</enum>
+
 <enum name="ArcAuthAccountCheckStatus">
   <int value="0" label="Account is up to date"/>
   <int value="1" label="New account"/>
@@ -43164,6 +43170,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     Freeze detection stopped after moving the hang report out of the Breakpad
     directory and into the |UTE| directory.
   </int>
+  <int value="2" label="After Crashpad DumpWithoutCrash">
+    Freeze detection stopped after calling DumpWithCrash from Crashpad.
+  </int>
 </enum>
 
 <enum name="IOSMenuAction">
@@ -46975,6 +46984,7 @@ from previous Chrome versions.
   <int value="-1525129540"
       label="OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover:disabled"/>
   <int value="-1524323669" label="InstalledAppsInCbd:enabled"/>
+  <int value="-1521544926" label="OmniboxPreserveLongerShortcutsText:disabled"/>
   <int value="-1521339691" label="UseGles2ForOopR:disabled"/>
   <int value="-1521160841" label="DismissNtpPromos:enabled"/>
   <int value="-1520952503" label="SearchReadyOmnibox:enabled"/>
@@ -47691,6 +47701,7 @@ from previous Chrome versions.
   <int value="-977476498" label="disable-eol-notification"/>
   <int value="-975787829" label="AutofillProfileServerValidation:enabled"/>
   <int value="-974882918" label="WebXRIncubations:disabled"/>
+  <int value="-974461595" label="OmniboxPreserveLongerShortcutsText:enabled"/>
   <int value="-974378602" label="WebAuthenticationCable:disabled"/>
   <int value="-973509424" label="NewTabPageIcons:disabled"/>
   <int value="-972945109" label="NtpRealbox:disabled"/>
@@ -48733,6 +48744,8 @@ from previous Chrome versions.
   <int value="-78035185" label="custom_summary"/>
   <int value="-77872983" label="BookmarkAppsMac:disabled"/>
   <int value="-77789682" label="SharingPreferVapid:disabled"/>
+  <int value="-77230883"
+      label="OmniboxOnFocusSuggestionsContextualWebAllowSRP:enabled"/>
   <int value="-77084779" label="ExperimentalFlingAnimation:enabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-76445689" label="WasmCodeCache:enabled"/>
@@ -50089,6 +50102,7 @@ from previous Chrome versions.
   <int value="1046981538" label="OfflinePagesShowAlternateDinoPage:disabled"/>
   <int value="1047110483" label="ShelfHotseat:disabled"/>
   <int value="1049339770" label="AppMenuMobileSiteOption:enabled"/>
+  <int value="1049346775" label="OmniboxDocumentProviderAso:disabled"/>
   <int value="1049885154" label="OfflinePagesPrefetching:disabled"/>
   <int value="1050048304" label="enable-font-cache-scaling"/>
   <int value="1050321458" label="new-profile-management"/>
@@ -50298,6 +50312,7 @@ from previous Chrome versions.
   <int value="1211284676" label="V8NoTurbo:enabled"/>
   <int value="1211756417"
       label="SessionRestorePrioritizesBackgroundUseCases:disabled"/>
+  <int value="1211803853" label="OmniboxDocumentProviderAso:enabled"/>
   <int value="1212526465" label="MediaAppPdfInInk:disabled"/>
   <int value="1214219155" label="gamepad-polling-interval"/>
   <int value="1214455758" label="VideoRotateToFullscreen:disabled"/>
@@ -50916,6 +50931,8 @@ from previous Chrome versions.
       label="ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes:enabled"/>
   <int value="1706682238" label="ContextualSearchTranslations:disabled"/>
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
+  <int value="1707873180"
+      label="OmniboxOnFocusSuggestionsContextualWebAllowSRP:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
   <int value="1711286384" label="ContextMenuCopyImage:disabled"/>
   <int value="1712622545" label="Memories:disabled"/>
@@ -55260,6 +55277,7 @@ Called by update_use_counter_css.py.-->
   <int value="12" label="DOLBYVISION"/>
   <int value="13" label="FLAC"/>
   <int value="14" label="AV1"/>
+  <int value="15" label="MPEG_H_AUDIO"/>
 </enum>
 
 <enum name="MultiAccountUpdateBubbleUserAction">
@@ -78258,6 +78276,9 @@ would be helpful to identify which type is being sent.
   <int value="22" label="Manage Google account"/>
   <int value="23" label="Clear YouTube history"/>
   <int value="24" label="Change Google password"/>
+  <int value="25" label="Incognito-mode clear browsing data"/>
+  <int value="26" label="Close Incognito windows"/>
+  <int value="27" label="Play Chrome Dino game"/>
 </enum>
 
 <enum name="SuggestionsResponseState">
@@ -87041,6 +87062,24 @@ Called by update_scheduler_enums.py.-->
   <int value="0" label="Same-origin redirect"/>
   <int value="1" label="Same-domain (but cross-origin) redirect"/>
   <int value="2" label="Cross-domain redirect"/>
+</enum>
+
+<enum name="WebViewForceDarkBehavior">
+  <int value="0" label="Force dark only"/>
+  <int value="1" label="Media query only"/>
+  <int value="2" label="Prefer media query over force dark"/>
+</enum>
+
+<enum name="WebViewForceDarkMode">
+  <int value="0" label="OS undefined, WebView off"/>
+  <int value="1" label="OS undefined, WebView auto"/>
+  <int value="2" label="OS undefined, WebView on"/>
+  <int value="3" label="OS no, WebView off"/>
+  <int value="4" label="OS no, WebView auto"/>
+  <int value="5" label="OS no, WebView on"/>
+  <int value="6" label="OS yes, WebView off"/>
+  <int value="7" label="OS yes, WebView auto"/>
+  <int value="8" label="OS yes, WebView on"/>
 </enum>
 
 <enum name="WebViewMixedContentMode">

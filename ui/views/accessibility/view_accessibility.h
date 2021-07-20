@@ -216,6 +216,13 @@ class VIEWS_EXPORT ViewAccessibility {
   // native accessibility object associated with this view.
   gfx::NativeViewAccessible GetFocusedDescendant();
 
+  // If true, moves accessibility focus to an ancestor.
+  void set_propagate_focus_to_ancestor(bool value) {
+    propagate_focus_to_ancestor_ = value;
+  }
+
+  bool propagate_focus_to_ancestor() { return propagate_focus_to_ancestor_; }
+
   // Used for testing. Allows a test to watch accessibility events.
   const AccessibilityEventsCallback& accessibility_events_callback() const;
   void set_accessibility_events_callback(AccessibilityEventsCallback callback);
@@ -270,6 +277,9 @@ class VIEWS_EXPORT ViewAccessibility {
 
   // This view's child tree id.
   absl::optional<ui::AXTreeID> child_tree_id_;
+
+  // Whether to move accessibility focus to an ancestor.
+  bool propagate_focus_to_ancestor_ = false;
 
 #if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Each instance of ViewAccessibility that's associated with a root View

@@ -1406,6 +1406,7 @@
       'android-11-x86-fyi-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.content_shell_test_apk.filter',
+          '--timeout-scale=2.0',
         ],
       },
       'android-marshmallow-x86-rel-non-cq': {
@@ -3106,7 +3107,7 @@
     'modifications': {
       'fuchsia-code-coverage': {
         'swarming': {
-          'shards': 14,
+          'shards': 28,
         },
       },
     },
@@ -3174,6 +3175,16 @@
         'args': [
           '--is-asan',
         ]
+      },
+    },
+  },
+  'webgpu_blink_web_tests': {
+    'modifications': {
+      # Increase the timeout with ASAN (crbug.com/1208253)
+      'Dawn Win10 x64 ASAN Release': {
+        'args': [
+          '--time-out-ms=48000',
+        ],
       },
     },
   },

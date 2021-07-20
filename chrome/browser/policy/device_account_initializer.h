@@ -11,14 +11,12 @@
 #include "chrome/browser/policy/enrollment_status.h"
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 class EnrollmentStatus;
@@ -66,6 +64,8 @@ class DeviceAccountInitializer : public CloudPolicyClient::Observer,
   };
 
   DeviceAccountInitializer(CloudPolicyClient* client, Delegate* delegate);
+  DeviceAccountInitializer(const DeviceAccountInitializer&) = delete;
+  DeviceAccountInitializer& operator=(const DeviceAccountInitializer&) = delete;
   ~DeviceAccountInitializer() override;
 
   // Starts process that downloads OAuth2 auth code and exchanges it to OAuth2
@@ -117,7 +117,6 @@ class DeviceAccountInitializer : public CloudPolicyClient::Observer,
   std::string robot_refresh_token_;
 
   base::WeakPtrFactory<DeviceAccountInitializer> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(DeviceAccountInitializer);
 };
 
 }  // namespace policy

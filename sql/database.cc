@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -248,6 +249,9 @@ Database::Database(DatabaseOptions options)
   DCHECK_LE(options.page_size, 65536);
   DCHECK(!(options.page_size & (options.page_size - 1)))
       << "page_size must be a power of two";
+  DCHECK(!options_.mmap_alt_status_discouraged ||
+         options_.enable_views_discouraged)
+      << "mmap_alt_status requires views";
 }
 
 Database::~Database() {
@@ -489,7 +493,7 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
   // SQLITE_ERROR often indicates some sort of mismatch between the statement
   // and the schema, possibly due to a failed schema migration.
   if (error == SQLITE_ERROR) {
-    static const char kVersionSql[] =
+    static constexpr char kVersionSql[] =
         "SELECT value FROM meta WHERE key='version'";
     sqlite3_stmt* sqlite_statement;
     // When the number of bytes passed to sqlite3_prepare_v3() includes the null
@@ -524,7 +528,7 @@ std::string Database::CollectErrorInfo(int error, Statement* stmt) const {
     // |rootpage| is not interesting for debugging, without the contents of the
     // database.  The COALESCE is because certain automatic elements will have a
     // |name| but no |sql|,
-    static const char kSchemaSql[] =
+    static constexpr char kSchemaSql[] =
         "SELECT COALESCE(sql,name) FROM sqlite_master";
     rc = sqlite3_prepare_v3(db_, kSchemaSql, sizeof(kSchemaSql),
                             SQLITE_PREPARE_NO_VTAB, &sqlite_statement,
@@ -786,6 +790,7 @@ bool Database::Raze() {
       .exclusive_locking = true,
       .page_size = options_.page_size,
       .cache_size = 0,
+      .enable_views_discouraged = options_.enable_views_discouraged,
       .enable_virtual_tables_discouraged =
           options_.enable_virtual_tables_discouraged,
   });
@@ -1252,11 +1257,17 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
+#if DCHECK_IS_ON()
+  const char* unused_sql = nullptr;
+  const char** unused_sql_ptr = &unused_sql;
+#else
+  constexpr const char** unused_sql_ptr = nullptr;
+#endif  // DCHECK_IS_ON()
   // TODO(pwnall): Cached statements (but not unique statements) should be
   //               prepared with prepFlags set to SQLITE_PREPARE_PERSISTENT.
   sqlite3_stmt* sqlite_statement;
   int rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
-                              &sqlite_statement, /* pzTail= */ nullptr);
+                              &sqlite_statement, unused_sql_ptr);
   if (rc != SQLITE_OK) {
     OnSqliteError(rc, nullptr, sql);
 
@@ -1277,6 +1288,12 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
 
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, false);
   }
+
+#if DCHECK_IS_ON()
+  DCHECK_EQ(unused_sql, sql + std::strlen(sql))
+      << "Unused text: " << std::string(unused_sql) << "\n"
+      << "in prepared SQL statement: " << std::string(sql);
+#endif  // DCHECK_IS_ON()
   return base::MakeRefCounted<StatementRef>(this, sqlite_statement, true);
 }
 
@@ -1311,12 +1328,24 @@ bool Database::IsSQLValid(const char* sql) {
     return false;
   }
 
+#if DCHECK_IS_ON()
+  const char* unused_sql = nullptr;
+  const char** unused_sql_ptr = &unused_sql;
+#else
+  constexpr const char** unused_sql_ptr = nullptr;
+#endif  // DCHECK_IS_ON()
+
   sqlite3_stmt* sqlite_statement = nullptr;
   if (sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, SqlitePrepareFlags(),
-                         &sqlite_statement,
-                         /* pzTail= */ nullptr) != SQLITE_OK) {
+                         &sqlite_statement, unused_sql_ptr) != SQLITE_OK) {
     return false;
   }
+
+#if DCHECK_IS_ON()
+  DCHECK_EQ(unused_sql, sql + std::strlen(sql))
+      << "Unused text: " << std::string(unused_sql) << "\n"
+      << "in SQL statement: " << std::string(sql);
+#endif  // DCHECK_IS_ON()
 
   sqlite3_finalize(sqlite_statement);
   return true;
@@ -1498,6 +1527,10 @@ bool Database::OpenInternal(const std::string& file_name,
   // configuration change, triggers are not executed. CREATE TRIGGER and DROP
   // TRIGGER still succeed.
   err = sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_TRIGGER, 0, nullptr);
+  DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
+
+  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_VIEW,
+                          options_.enable_views_discouraged ? 1 : 0, nullptr);
   DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
 
   // Enable extended result codes to provide more color on I/O errors.

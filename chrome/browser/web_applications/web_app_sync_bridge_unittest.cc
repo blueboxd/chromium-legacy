@@ -247,7 +247,7 @@ class WebAppSyncBridgeTest : public WebAppTest {
           ADD_FAILURE();
         }));
 
-    controller().SetUninstallWebAppsAfterSyncDelegate(
+    controller().SetUninstallFromSyncAfterRegistryUpdateDelegate(
         base::BindLambdaForTesting(
             [&](std::vector<std::unique_ptr<WebApp>> apps_to_uninstall,
                 TestWebAppRegistryController::RepeatingUninstallCallback
@@ -438,7 +438,7 @@ TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetLessThanServerSet) {
        expected_apps_to_install) {
     expected_app_to_install->SetIsLocallyInstalled(
         AreAppsLocallyInstalledBySync());
-    expected_app_to_install->SetIsInSyncInstall(true);
+    expected_app_to_install->SetIsFromSyncAndPendingInstallation(true);
   }
 
   Registry registry;
@@ -530,7 +530,7 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
   for (std::unique_ptr<WebApp>& app_to_add :
        CreateAppsList("https://example.org/", 10)) {
     app_to_add->SetIsLocallyInstalled(AreAppsLocallyInstalledBySync());
-    app_to_add->SetIsInSyncInstall(true);
+    app_to_add->SetIsFromSyncAndPendingInstallation(true);
 
     ConvertAppToEntityChange(*app_to_add, syncer::EntityChange::ACTION_ADD,
                              &entity_changes);
@@ -561,7 +561,7 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
 
   base::RunLoop run_loop;
   base::RepeatingClosure barrier_closure =
-      base::BarrierClosure(2, run_loop.QuitClosure());
+      base::BarrierClosure(3, run_loop.QuitClosure());
 
   controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
       [&](std::vector<WebApp*> apps_to_install,
@@ -579,23 +579,38 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
         barrier_closure.Run();
       }));
 
-  controller().SetUninstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
-      [&](std::vector<std::unique_ptr<WebApp>> apps_to_uninstall,
-          TestWebAppRegistryController::RepeatingUninstallCallback callback) {
-        for (std::unique_ptr<WebApp>& app_to_uninstall : apps_to_uninstall) {
-          // The app must be unregistered.
-          EXPECT_FALSE(registrar().GetAppById(app_to_uninstall->app_id()));
-          registry.erase(app_to_uninstall->app_id());
+  controller().SetUninstallFromSyncBeforeRegistryUpdateDelegate(
+      base::BindLambdaForTesting([&](std::vector<AppId> apps_to_uninstall) {
+        for (AppId& app_id : apps_to_uninstall) {
+          // The app must be registered.
+          EXPECT_TRUE(registrar().GetAppById(app_id));
         }
-
-        RunCallbacksOnUninstall(apps_to_uninstall, callback,
-                                /*uninstalled=*/true);
         barrier_closure.Run();
       }));
+  controller().SetUninstallFromSyncAfterRegistryUpdateDelegate(
+      base::BindLambdaForTesting(
+          [&](std::vector<std::unique_ptr<WebApp>> apps_to_uninstall,
+              TestWebAppRegistryController::RepeatingUninstallCallback
+                  callback) {
+            EXPECT_EQ(5ul,
+                      sync_bridge().GetAppsInSyncUninstallForTest().size());
+            for (std::unique_ptr<WebApp>& app_to_uninstall :
+                 apps_to_uninstall) {
+              // The app must be unregistered.
+              EXPECT_FALSE(registrar().GetAppById(app_to_uninstall->app_id()));
+              registry.erase(app_to_uninstall->app_id());
+            }
+
+            RunCallbacksOnUninstall(apps_to_uninstall, callback,
+                                    /*uninstalled=*/true);
+            barrier_closure.Run();
+          }));
 
   sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
                                  std::move(entity_changes));
   run_loop.Run();
+
+  EXPECT_EQ(0ul, sync_bridge().GetAppsInSyncUninstallForTest().size());
 
   EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
@@ -1050,13 +1065,13 @@ TEST_F(WebAppSyncBridgeTest,
 }
 
 // Test that any apps that are still pending install from sync (or,
-// |is_in_sync_install|) are continued to be installed when the bridge
-// initializes.
-TEST_F(WebAppSyncBridgeTest, InstallAppsInSyncInstall) {
+// |is_from_sync_and_pending_installation|) are continued to be installed when
+// the bridge initializes.
+TEST_F(WebAppSyncBridgeTest, InstallAppsFromSyncAndPendingInstallation) {
   AppsList apps_in_sync_install = CreateAppsList("https://example.com/", 10);
   for (std::unique_ptr<WebApp>& app : apps_in_sync_install) {
     app->SetIsLocallyInstalled(AreAppsLocallyInstalledBySync());
-    app->SetIsInSyncInstall(true);
+    app->SetIsFromSyncAndPendingInstallation(true);
   }
 
   Registry registry;

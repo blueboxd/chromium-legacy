@@ -172,6 +172,7 @@
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_sizes',
+          'gtest_tests': 'finch_smoke_tests',
         },
       },
       'linux-chromeos-chrome': {
@@ -795,16 +796,6 @@
           'isolated_scripts': 'cronet_dbg_isolated_scripts',
         },
       },
-      'android-cronet-x86-dbg-10-tests': {
-        'mixins': [
-          'enable_resultdb',
-          '10-x86-emulator',
-        ],
-        'test_suites': {
-          'gtest_tests': 'cronet_gtests',
-        },
-        'os_type': 'android',
-      },
       'android-cronet-x86-rel': {
         'additional_compile_targets': [
           'cronet_package',
@@ -1074,6 +1065,16 @@
         'test_suites': {
           'gtest_tests': 'android_12_emulator_gtests',
         }
+      },
+      'android-cronet-x86-dbg-10-tests': {
+        'mixins': [
+          'enable_resultdb',
+          '10-x86-emulator',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
       },
       'android-pie-arm64-wpt-rel-non-cq': {
         'mixins': [
@@ -1791,6 +1792,7 @@
         'mixins': [
           'chrome-tester-service-account',
           'linux-xenial',
+          'chrome-swarming-pool',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -1876,6 +1878,8 @@
         'mixins': [
           'chrome-tester-service-account',
           'mac_x64',
+          'chrome-swarming-pool',
+          'no_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -1987,6 +1991,7 @@
       'ToTWinOfficial': {
         'mixins': [
           'chrome-tester-service-account',
+          'chrome-swarming-pool',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -1995,10 +2000,18 @@
         'additional_compile_targets': [
           'chrome_official_builder',
         ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10',
+            },
+          ],
+        },
       },
       'ToTWinOfficial64': {
         'mixins': [
           'chrome-tester-service-account',
+          'chrome-swarming-pool',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -2007,6 +2020,13 @@
         'additional_compile_targets': [
           'chrome_official_builder',
         ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10',
+            },
+          ],
+        },
       },
       'ToTiOS': {
         'additional_compile_targets': [
@@ -5889,6 +5909,7 @@
       'WebRTC Chromium Android Builder': {},
       'WebRTC Chromium Android Tester': {
         'os_type': 'android',
+        'mixins': ['bullhead', 'marshmallow'],
         'test_suites': {
           'gtest_tests': 'webrtc_android_tests_with_baremetal_tests',
         },

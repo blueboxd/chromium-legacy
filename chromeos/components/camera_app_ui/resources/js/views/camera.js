@@ -132,8 +132,11 @@ export class Camera extends View {
      * @type {!ScannerOptions}
      * @private
      */
-    this.scannerOptions_ =
-        new ScannerOptions(this.start.bind(this), this.infoUpdater_);
+    this.scannerOptions_ = new ScannerOptions({
+      doReconfigure: this.start.bind(this),
+      doSwitchDevice: (deviceId) => this.options_.switchDevice(deviceId),
+      infoUpdater: this.infoUpdater_,
+    });
 
     /**
      * Video preview for the camera.
@@ -783,7 +786,7 @@ export class Camera extends View {
           await this.modes_.updateModeSelectionUI(deviceId);
           await this.modes_.updateMode(
               mode, factory, stream, this.facingMode_, deviceId, captureR);
-          await this.scannerOptions_.initialize(this.preview_.video);
+          await this.scannerOptions_.attachPreview(this.preview_.video);
           for (const l of this.configureCompleteListener_) {
             l();
           }
@@ -892,6 +895,6 @@ export class Camera extends View {
     // mode before stopping preview to close extra stream first.
     await this.modes_.clear();
     await this.preview_.close();
-    await this.scannerOptions_.uninitialize();
+    await this.scannerOptions_.detachPreview();
   }
 }

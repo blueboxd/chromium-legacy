@@ -3117,6 +3117,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-dns-proxy", flag_descriptions::kEnableDnsProxyName,
      flag_descriptions::kEnableDnsProxyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableDnsProxy)},
+    {"esim-policy", flag_descriptions::kESimPolicyName,
+     flag_descriptions::kESimPolicyDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kESimPolicy)},
     {"dns-proxy-enable-doh", flag_descriptions::kDnsProxyEnableDOHName,
      flag_descriptions::kDnsProxyEnableDOHDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(::features::kDnsProxyEnableDOH)},
@@ -3465,6 +3468,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"sharing-hub-link-toggle", flag_descriptions::kSharingHubLinkToggleName,
      flag_descriptions::kSharingHubLinkToggleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSharingHubLinkToggle)},
+    {"webnotes-publish", flag_descriptions::kWebNotesPublishName,
+     flag_descriptions::kWebNotesPublishDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(content_creation::kWebNotesPublish)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
@@ -4780,6 +4786,10 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpDriveModuleVariations,
                                     "DesktopNtpModules")},
 
+    {"ntp-photos-module", flag_descriptions::kNtpPhotosModuleName,
+     flag_descriptions::kNtpPhotosModuleDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpPhotosModule)},
+
     {"ntp-recipe-tasks-module", flag_descriptions::kNtpRecipeTasksModuleName,
      flag_descriptions::kNtpRecipeTasksModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpRecipeTasksModule,
@@ -5046,6 +5056,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQuickActionSearchWidgetAndroidName,
      flag_descriptions::kQuickActionSearchWidgetAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kQuickActionSearchWidgetAndroid)},
+
+    {"enable-quick-action-search-widget-android-dino-variant",
+     flag_descriptions::kQuickActionSearchWidgetAndroidDinoVariantName,
+     flag_descriptions::kQuickActionSearchWidgetAndroidDinoVariantDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kQuickActionSearchWidgetAndroidDinoVariant)},
 
 #endif  // OS_ANDROID
 
@@ -6809,6 +6826,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidChromeSurveyName,
      flag_descriptions::kMessagesForAndroidChromeSurveyDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidChromeSurvey)},
+    {"messages-for-android-grouped-permission",
+     flag_descriptions::kMessagesForAndroidGroupedPermissionName,
+     flag_descriptions::kMessagesForAndroidGroupedPermissionDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidGroupedPermission)},
     {"messages-for-android-infrastructure",
      flag_descriptions::kMessagesForAndroidInfrastructureName,
      flag_descriptions::kMessagesForAndroidInfrastructureDescription,
@@ -6818,6 +6840,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidPasswordsName,
      flag_descriptions::kMessagesForAndroidPasswordsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPasswords)},
+    {"messages-for-android-permission-update",
+     flag_descriptions::kMessagesForAndroidPermissionUpdateName,
+     flag_descriptions::kMessagesForAndroidPermissionUpdateDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidPermissionUpdate)},
     {"messages-for-android-popup-blocked",
      flag_descriptions::kMessagesForAndroidPopupBlockedName,
      flag_descriptions::kMessagesForAndroidPopupBlockedDescription, kOsAndroid,
@@ -7558,6 +7585,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUpdatedConnectionSecurityIndicatorsDescription,
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kUpdatedConnectionSecurityIndicators)},
+#endif
+
+#if defined(OS_ANDROID)
+    {"share-usage-ranking", flag_descriptions::kShareUsageRankingName,
+     flag_descriptions::kShareUsageRankingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kShareUsageRanking)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

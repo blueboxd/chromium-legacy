@@ -180,7 +180,6 @@
 #include "extensions/browser/extension_prefs.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
-#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
@@ -290,7 +289,9 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/file_system_provider/registry.h"
+#include "chrome/browser/ash/guest_os/guest_os_mime_types_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/ash/first_run/first_run.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_resources_remover.h"
@@ -324,6 +325,8 @@
 #include "chrome/browser/ash/policy/reporting/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/ash/policy/reporting/arc_app_install_event_logger.h"
 #include "chrome/browser/ash/policy/reporting/extension_install_event_log_manager_wrapper.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/ash/policy/status_collector/status_collector.h"
 #include "chrome/browser/ash/power/auto_screen_brightness/metrics_reporter.h"
 #include "chrome/browser/ash/power/power_metrics_reporter.h"
 #include "chrome/browser/ash/release_notes/release_notes_storage.h"
@@ -335,11 +338,8 @@
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api.h"
-#include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
-#include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/enterprise_printers_provider.h"
@@ -1278,7 +1278,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::quick_unlock::RegisterProfilePrefs(registry);
   ash::RegisterSamlProfilePrefs(registry);
   ash::ScreenTimeController::RegisterProfilePrefs(registry);
-  SecondaryAccountConsentLogger::RegisterPrefs(registry);
+  ash::SecondaryAccountConsentLogger::RegisterPrefs(registry);
   ash::EduCoexistenceConsentInvalidationController::RegisterProfilePrefs(
       registry);
   ash::SigninErrorNotifier::RegisterPrefs(registry);
@@ -1620,6 +1620,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 2021/07.
   profile_prefs->ClearPref(kExtensionCheckupOnStartup);
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 2021/07.
+  guest_os::GuestOsMimeTypesService::MigrateVerboseMimeTypePrefs(profile_prefs);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

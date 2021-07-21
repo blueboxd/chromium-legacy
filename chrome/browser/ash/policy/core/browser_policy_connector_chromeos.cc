@@ -28,7 +28,7 @@
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/notifications/adb_sideloading_policy_change_notification.h"
 #include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/policy/core/dm_token_storage.h"
@@ -54,14 +54,14 @@
 #include "chrome/browser/ash/policy/invalidation/affiliated_invalidation_service_provider_impl.h"
 #include "chrome/browser/ash/policy/networking/device_network_configuration_updater.h"
 #include "chrome/browser/ash/policy/remote_commands/affiliated_remote_commands_invalidator.h"
+#include "chrome/browser/ash/policy/scheduled_task_handler/device_scheduled_reboot_handler.h"
+#include "chrome/browser/ash/policy/scheduled_task_handler/device_scheduled_update_checker.h"
+#include "chrome/browser/ash/policy/scheduled_task_handler/scheduled_task_executor_impl.h"
+#include "chrome/browser/ash/policy/server_backed_state/device_cloud_state_keys_uploader.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/system/timezone_util.h"
-#include "chrome/browser/chromeos/policy/scheduled_task_handler/device_scheduled_reboot_handler.h"
-#include "chrome/browser/chromeos/policy/scheduled_task_handler/device_scheduled_update_checker.h"
-#include "chrome/browser/chromeos/policy/scheduled_task_handler/scheduled_task_executor_impl.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/device_cloud_state_keys_uploader.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/chrome_features.h"
@@ -136,8 +136,8 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS() {
   // (removing it now breaks tests). crbug.com/141016.
   if (chromeos::DBusThreadManager::IsInitialized() &&
       ash::DeviceSettingsService::IsInitialized()) {
-    std::unique_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store =
-        std::make_unique<DeviceCloudPolicyStoreChromeOS>(
+    std::unique_ptr<DeviceCloudPolicyStoreAsh> device_cloud_policy_store =
+        std::make_unique<DeviceCloudPolicyStoreAsh>(
             ash::DeviceSettingsService::Get(),
             chromeos::InstallAttributes::Get(), GetBackgroundTaskRunner());
 

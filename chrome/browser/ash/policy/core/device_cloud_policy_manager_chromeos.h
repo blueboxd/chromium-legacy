@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_scheduler.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 
@@ -33,6 +33,11 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace chromeos {
+
+namespace reporting {
+class LoginLogoutReporter;
+}  // namespace reporting
+
 class InstallAttributes;
 }  // namespace chromeos
 
@@ -41,7 +46,7 @@ class PrefService;
 
 namespace policy {
 
-class DeviceCloudPolicyStoreChromeOS;
+class DeviceCloudPolicyStoreAsh;
 class ForwardingSchemaRegistry;
 class HeartbeatScheduler;
 class SchemaRegistry;
@@ -67,7 +72,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // |task_runner| is the runner for policy refresh, heartbeat, and status
   // upload tasks.
   DeviceCloudPolicyManagerChromeOS(
-      std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
+      std::unique_ptr<DeviceCloudPolicyStoreAsh> store,
       std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker);
@@ -104,7 +109,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Disconnects the manager.
   virtual void Disconnect();
 
-  DeviceCloudPolicyStoreChromeOS* device_store() { return device_store_.get(); }
+  DeviceCloudPolicyStoreAsh* device_store() { return device_store_.get(); }
 
   // Return the StatusUploader used to communicate device status to the
   // policy server.
@@ -150,7 +155,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
-  std::unique_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
+  std::unique_ptr<DeviceCloudPolicyStoreAsh> device_store_;
 
   // Manages external data referenced by device policies.
   std::unique_ptr<CloudExternalDataManager> external_data_manager_;
@@ -167,6 +172,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Helper object that handles sending heartbeats over the GCM channel to
   // the server, to monitor connectivity.
   std::unique_ptr<HeartbeatScheduler> heartbeat_scheduler_;
+
+  // Object that reports login/logout events to the server.
+  std::unique_ptr<chromeos::reporting::LoginLogoutReporter>
+      login_logout_reporter_;
 
   // The TaskRunner used to do device status and log uploads.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

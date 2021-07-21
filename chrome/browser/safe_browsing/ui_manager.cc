@@ -10,11 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_subresource_tab_helper.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
@@ -33,9 +28,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/process_manager.h"
-#endif
 #include "ipc/ipc_message.h"
 #include "url/gurl.h"
 
@@ -95,15 +87,12 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
     hit_report.page_url = resource.original_url;
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  hit_report.extended_reporting_level =
-      profile ? GetExtendedReportingLevel(*profile->GetPrefs())
-              : SBER_LEVEL_OFF;
-  hit_report.is_enhanced_protection =
-      IsEnhancedProtectionEnabled(*profile->GetPrefs());
+  const auto& prefs = *delegate_->GetPrefs(web_contents->GetBrowserContext());
+
+  hit_report.extended_reporting_level = GetExtendedReportingLevel(prefs);
+  hit_report.is_enhanced_protection = IsEnhancedProtectionEnabled(prefs);
   hit_report.is_metrics_reporting_active =
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+      delegate_->IsMetricsAndCrashReportingEnabled();
 
   MaybeReportSafeBrowsingHit(hit_report, web_contents);
 
@@ -111,9 +100,7 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
     observer.OnSafeBrowsingHit(resource);
 }
 
-// static
 void SafeBrowsingUIManager::StartDisplayingBlockingPage(
-    scoped_refptr<SafeBrowsingUIManager> ui_manager,
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
 
@@ -125,8 +112,7 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
   }
 
   prerender::NoStatePrefetchContents* no_state_prefetch_contents =
-      prerender::ChromeNoStatePrefetchContentsDelegate::FromWebContents(
-          web_contents);
+      delegate_->GetNoStatePrefetchContentsIfExists(web_contents);
   if (no_state_prefetch_contents) {
     no_state_prefetch_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
     // Tab is being prerendered.
@@ -135,23 +121,14 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
     return;
   }
 
-// We don't show interstitials for extension triggered SB errors, since they
-// might not be visible, and cause the extension to hang. The request is just
-// cancelled instead.
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ProcessManager* extension_manager =
-      extensions::ProcessManager::Get(web_contents->GetBrowserContext());
-  if (extension_manager) {
-    extensions::ExtensionHost* extension_host =
-        extension_manager->GetExtensionHostForRenderFrameHost(
-            web_contents->GetMainFrame());
-    if (extension_host) {
-      resource.DispatchCallback(FROM_HERE, false /* proceed */,
-                                false /* showed_interstitial */);
-      return;
-    }
+  // We don't show interstitials for extension triggered SB errors, since they
+  // might not be visible, and cause the extension to hang. The request is just
+  // cancelled instead.
+  if (delegate_->IsHostingExtension(web_contents)) {
+    resource.DispatchCallback(FROM_HERE, false /* proceed */,
+                              false /* showed_interstitial */);
+    return;
   }
-#endif
 
   // With committed interstitials, if this is a main frame load, we need to
   // get the navigation URL and referrer URL from the navigation entry now,
@@ -164,11 +141,11 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
       security_interstitials::UnsafeResource resource_copy(resource);
       resource_copy.navigation_url = entry->GetURL();
       resource_copy.referrer_url = entry->GetReferrer().url;
-      ui_manager->DisplayBlockingPage(resource_copy);
+      DisplayBlockingPage(resource_copy);
       return;
     }
   }
-  ui_manager->DisplayBlockingPage(resource);
+  DisplayBlockingPage(resource);
 }
 
 // static
@@ -200,10 +177,9 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
   DVLOG(1) << "ReportSafeBrowsingHit: " << hit_report.malicious_url << " "
            << hit_report.page_url << " " << hit_report.referrer_url << " "
            << hit_report.is_subresource << " " << hit_report.threat_type;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   sb_service_->ping_manager()->ReportSafeBrowsingHit(
-      sb_service_->GetURLLoaderFactory(profile), hit_report);
+      sb_service_->GetURLLoaderFactory(web_contents->GetBrowserContext()),
+      hit_report);
 }
 
 // Static.
@@ -270,9 +246,7 @@ const std::string SafeBrowsingUIManager::app_locale() const {
 history::HistoryService* SafeBrowsingUIManager::history_service(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return HistoryServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-      ServiceAccessType::EXPLICIT_ACCESS);
+  return delegate_->GetHistoryService(web_contents->GetBrowserContext());
 }
 
 const GURL SafeBrowsingUIManager::default_safe_page() const {
@@ -295,9 +269,7 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
   if (!serialized.empty()) {
     DVLOG(1) << "Sending serialized threat details.";
     sb_service_->ping_manager()->ReportThreatDetails(
-        sb_service_->GetURLLoaderFactory(
-            Profile::FromBrowserContext(browser_context)),
-        serialized);
+        sb_service_->GetURLLoaderFactory(browser_context), serialized);
   }
 }
 

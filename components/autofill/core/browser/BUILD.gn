@@ -379,6 +379,8 @@ static_library("browser") {
       "payments/autofill_save_card_infobar_delegate_mobile.cc",
       "payments/autofill_save_card_infobar_delegate_mobile.h",
       "payments/autofill_save_card_infobar_mobile.h",
+      "payments/autofill_save_card_ui_utils_mobile.cc",
+      "payments/autofill_save_card_ui_utils_mobile.h",
       "ui/mobile_label_formatter.cc",
       "ui/mobile_label_formatter.h",
       "ui/payments/card_expiration_date_fix_flow_controller.h",
@@ -475,6 +477,10 @@ static_library("browser") {
       "//components/webauthn/core/browser",
       "//third_party/blink/public/common",
     ]
+  }
+
+  if (is_android) {
+    deps += [ "//components/messages/android:feature_flags" ]
   }
 
   if (!is_android && !is_ios) {

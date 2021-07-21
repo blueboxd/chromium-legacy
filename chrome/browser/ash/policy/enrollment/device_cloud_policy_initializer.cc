@@ -18,13 +18,13 @@
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_handler_chromeos.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_device_state.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/enrollment_status.h"
 #include "chrome/common/chrome_content_client.h"
@@ -60,7 +60,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     chromeos::InstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
-    DeviceCloudPolicyStoreChromeOS* policy_store,
+    DeviceCloudPolicyStoreAsh* policy_store,
     DeviceCloudPolicyManagerChromeOS* policy_manager,
     std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
     chromeos::system::StatisticsProvider* statistics_provider)

@@ -115,7 +115,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
@@ -1858,7 +1857,7 @@ void Browser::RendererResponsive(
       render_widget_host);
 }
 
-void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {
+void Browser::DidNavigatePrimaryMainFramePostCommit(WebContents* web_contents) {
   if (web_contents == tab_strip_model_->GetActiveWebContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
@@ -1872,13 +1871,6 @@ bool Browser::GuestSaveFrame(content::WebContents* guest_web_contents) {
   auto* guest_view =
       extensions::MimeHandlerViewGuest::FromWebContents(guest_web_contents);
   return guest_view && guest_view->PluginDoSave();
-}
-
-std::unique_ptr<content::ColorChooser> Browser::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor initial_color,
-    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 std::unique_ptr<content::EyeDropper> Browser::OpenEyeDropper(

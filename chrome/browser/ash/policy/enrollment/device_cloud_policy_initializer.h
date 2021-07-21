@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -44,7 +44,7 @@ class StatisticsProvider;
 namespace policy {
 class ActiveDirectoryJoinDelegate;
 class DeviceCloudPolicyManagerChromeOS;
-class DeviceCloudPolicyStoreChromeOS;
+class DeviceCloudPolicyStoreAsh;
 class DeviceManagementService;
 struct EnrollmentConfig;
 class EnrollmentHandlerChromeOS;
@@ -53,7 +53,7 @@ class EnrollmentStatus;
 // The |DeviceCloudPolicyInitializer| is a helper class which calls
 // `DeviceCloudPolicyManager::StartConnection` with a new `CloudPolicyClient`
 // for a given |DeviceManagementService|. It does so, once
-// - the `DeviceCloudPolicyStoreChromeOS` is initialized and has policy,
+// - the `DeviceCloudPolicyStoreAsh` is initialized and has policy,
 // - the `ServerBackedStateKeysBroker` is available,
 // - `chromeos::InstallAttributes::IsActiveDirectoryManaged() == false`
 //
@@ -81,7 +81,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       chromeos::InstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
-      DeviceCloudPolicyStoreChromeOS* policy_store,
+      DeviceCloudPolicyStoreAsh* policy_store,
       DeviceCloudPolicyManagerChromeOS* policy_manager,
       std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
       chromeos::system::StatisticsProvider* statistics_provider);
@@ -194,7 +194,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   chromeos::InstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
-  DeviceCloudPolicyStoreChromeOS* policy_store_;
+  DeviceCloudPolicyStoreAsh* policy_store_;
   DeviceCloudPolicyManagerChromeOS* policy_manager_;
   std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow_;
   chromeos::system::StatisticsProvider* statistics_provider_;

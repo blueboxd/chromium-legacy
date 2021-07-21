@@ -999,6 +999,12 @@ Unknown properties are collapsed to zero. -->
 <enum name="AccountCapabilitiesGetFromSystemLibraryResult">
   <int value="0" label="Success"/>
   <int value="1" label="Error (Generic)"/>
+  <int value="10" label="Error (Api Request Failed)"/>
+  <int value="11" label="Error (Api Error)"/>
+  <int value="12" label="Error (Api Not Permitted)"/>
+  <int value="13" label="Error (Api Unknown Capability)"/>
+  <int value="14" label="Error (Api Failed To Sync)"/>
+  <int value="15" label="Error (Api Not Available)"/>
   <int value="20" label="Error (Missing Capability)"/>
   <int value="21" label="Error (Unexpected Value)"/>
 </enum>
@@ -8065,6 +8071,18 @@ Called by update_bad_message_reasons.py.-->
   <int value="4" label="Invalid"/>
 </enum>
 
+<enum name="BluetoothUiSurface">
+  <int value="0" label="Settings - device list subpage"/>
+  <int value="1" label="Settings - device detail subpage"/>
+  <int value="2" label="Settings - pairing dialog"/>
+  <int value="3" label="Bluetooth Quick Settings"/>
+  <int value="4" label="Standalone Pairing dialog"/>
+  <int value="5" label="Paired notification"/>
+  <int value="6" label="Connected toast"/>
+  <int value="7" label="Disconnected toast"/>
+  <int value="8" label="OOBE HID Detection"/>
+</enum>
+
 <enum name="BlueZReasonOfDisconnection">
   <int value="1" label="Disconnected by local host"/>
   <int value="2" label="Disconnected by remote device"/>
@@ -12489,193 +12507,6 @@ In case of new special images, values 3 to 9 can be used. -->
   <int value="613" label="X_Takri"/>
 </enum>
 
-<enum name="CLD3LanguageCode">
-  <summary>
-    Hash values for the languages supported by CLD3. Each of these values is
-    computed by casting the output of base::HashMetricName(language_string_id)
-    to base::HistogramBase::Sample.
-  </summary>
-  <int value="-2132740958" label="gl"/>
-  <int value="-2112894028" label="haw"/>
-  <int value="-2092490813" label="fa"/>
-  <int value="-2084324285" label="iw"/>
-  <int value="-2070680532" label="hi"/>
-  <int value="-2070250592" label="zu"/>
-  <int value="-2042178987" label="si"/>
-  <int value="-2041104386" label="mi"/>
-  <int value="-2014954614" label="so"/>
-  <int value="-2005166181" label="ja-Latn"/>
-  <int value="-1999171202" label="lv"/>
-  <int value="-1998337622" label="es-CL"/>
-  <int value="-1994870905" label="lt"/>
-  <int value="-1986814580" label="om"/>
-  <int value="-1920649864" label="an"/>
-  <int value="-1898669966" label="zh-CN"/>
-  <int value="-1895779836" label="empty string"/>
-  <int value="-1872667487" label="rm"/>
-  <int value="-1855113037" label="vi"/>
-  <int value="-1828586117" label="de"/>
-  <int value="-1823968882" label="zh"/>
-  <int value="-1797669833" label="it-IT"/>
-  <int value="-1791051166" label="ha"/>
-  <int value="-1787999070" label="wa"/>
-  <int value="-1776903256" label="es-ES"/>
-  <int value="-1767491741" label="es-HN"/>
-  <int value="-1760672594" label="mr"/>
-  <int value="-1741747229" label="es-419"/>
-  <int value="-1735828230" label="zh-TW"/>
-  <int value="-1734070684" label="en-NZ"/>
-  <int value="-1731398502" label="wo"/>
-  <int value="-1696927720" label="la"/>
-  <int value="-1690250140" label="ja"/>
-  <int value="-1683177340" label="qu"/>
-  <int value="-1662603770" label="es-VE"/>
-  <int value="-1625830957" label="ln"/>
-  <int value="-1612285087" label="en-ZA"/>
-  <int value="-1566592213" label="hi-Latn"/>
-  <int value="-1558307126" label="es-CO"/>
-  <int value="-1532548885" label="pa"/>
-  <int value="-1515310228" label="ps"/>
-  <int value="-1453785110" label="rw"/>
-  <int value="-1452189651" label="es-CR"/>
-  <int value="-1346992143" label="nn"/>
-  <int value="-1284862637" label="ru"/>
-  <int value="-1273588087" label="kn"/>
-  <int value="-1242903543" label="es-UY"/>
-  <int value="-1230368678" label="kok"/>
-  <int value="-1211529228" label="gd"/>
-  <int value="-1159958698" label="tl"/>
-  <int value="-1136256351" label="zh-HK"/>
-  <int value="-1117024738" label="zh-Latn"/>
-  <int value="-1100371650" label="sn"/>
-  <int value="-1086322569" label="es-AR"/>
-  <int value="-1052948093" label="jw"/>
-  <int value="-1048980531" label="ur"/>
-  <int value="-1042449480" label="cy"/>
-  <int value="-1033645590" label="fil"/>
-  <int value="-1025520269" label="az"/>
-  <int value="-1010619188" label="ru-Latn"/>
-  <int value="-1000295094" label="no"/>
-  <int value="-950444864" label="tk"/>
-  <int value="-926982267" label="de-AT"/>
-  <int value="-887258309" label="hu"/>
-  <int value="-873154203" label="en-CA"/>
-  <int value="-862298602" label="st"/>
-  <int value="-851607677" label="sm"/>
-  <int value="-846401046" label="chr"/>
-  <int value="-838275151" label="xh"/>
-  <int value="-812926878" label="ug"/>
-  <int value="-780984386" label="fr-CA"/>
-  <int value="-750267977" label="bg"/>
-  <int value="-742603342" label="ca"/>
-  <int value="-740941224" label="ku"/>
-  <int value="-739605699" label="de-LI"/>
-  <int value="-734032818" label="km"/>
-  <int value="-717751759" label="lb"/>
-  <int value="-659007214" label="el"/>
-  <int value="-647197922" label="ceb"/>
-  <int value="-645438410" label="my"/>
-  <int value="-644560085" label="su"/>
-  <int value="-598481752" label="et"/>
-  <int value="-548175087" label="tt"/>
-  <int value="-450972170" label="oc"/>
-  <int value="-442590807" label="sd"/>
-  <int value="-441493751" label="el-Latn"/>
-  <int value="-439564761" label="he"/>
-  <int value="-433923634" label="en-US"/>
-  <int value="-429718906" label="sh"/>
-  <int value="-426630965" label="ga"/>
-  <int value="-415677801" label="it"/>
-  <int value="-403118581" label="sw"/>
-  <int value="-371077109" label="fr-FR"/>
-  <int value="-349113427" label="am"/>
-  <int value="-342591258" label="sq"/>
-  <int value="-302282167" label="ti"/>
-  <int value="-226066958" label="bg-Latn"/>
-  <int value="-219674420" label="ta"/>
-  <int value="-183664425" label="pt-PT"/>
-  <int value="-181870943" label="bn"/>
-  <int value="-110306666" label="sr"/>
-  <int value="-91748674" label="tn"/>
-  <int value="-78164291" label="kk"/>
-  <int value="-74147910" label="en"/>
-  <int value="-35182995" label="fi"/>
-  <int value="-5034744" label="ny"/>
-  <int value="42532257" label="id"/>
-  <int value="64053359" label="eu"/>
-  <int value="114573335" label="es"/>
-  <int value="121688617" label="eo"/>
-  <int value="124739394" label="lo"/>
-  <int value="132594104" label="be"/>
-  <int value="134866094" label="ka"/>
-  <int value="142304335" label="gn"/>
-  <int value="142313505" label="ro"/>
-  <int value="145030010" label="gu"/>
-  <int value="162326141" label="sl"/>
-  <int value="183952636" label="mg"/>
-  <int value="191168946" label="mk"/>
-  <int value="350748440" label="und"/>
-  <int value="357286655" label="af"/>
-  <int value="461111861" label="mt"/>
-  <int value="462869158" label="hy"/>
-  <int value="470982931" label="sv"/>
-  <int value="522435458" label="hr"/>
-  <int value="526531379" label="ml"/>
-  <int value="538270200" label="uk"/>
-  <int value="549800655" label="de-CH"/>
-  <int value="584710092" label="nb"/>
-  <int value="596295208" label="bs"/>
-  <int value="632444664" label="yue-HK"/>
-  <int value="673577439" label="cs"/>
-  <int value="720107264" label="es-PE"/>
-  <int value="729519028" label="or"/>
-  <int value="796588925" label="yo"/>
-  <int value="804120371" label="jv"/>
-  <int value="873647701" label="th"/>
-  <int value="910795716" label="ne"/>
-  <int value="911100675" label="de-DE"/>
-  <int value="925733725" label="ms"/>
-  <int value="1062172280" label="en-IN"/>
-  <int value="1092864716" label="ht"/>
-  <int value="1110169461" label="hmn"/>
-  <int value="1119752109" label="te"/>
-  <int value="1140816756" label="ar"/>
-  <int value="1152813109" label="to"/>
-  <int value="1166708194" label="is"/>
-  <int value="1196096274" label="es-US"/>
-  <int value="1199169847" label="en-AU"/>
-  <int value="1214473765" label="unknown"/>
-  <int value="1228519432" label="fo"/>
-  <int value="1282439493" label="es-MX"/>
-  <int value="1311313702" label="pt"/>
-  <int value="1312638242" label="pl"/>
-  <int value="1437205305" label="uz"/>
-  <int value="1482920614" label="yi"/>
-  <int value="1483760478" label="tg"/>
-  <int value="1552733612" label="da"/>
-  <int value="1628170778" label="pt-BR"/>
-  <int value="1638257274" label="sk"/>
-  <int value="1670494558" label="ko"/>
-  <int value="1704087523" label="ky"/>
-  <int value="1704315002" label="fr"/>
-  <int value="1708437566" label="it-CH"/>
-  <int value="1717583602" label="co"/>
-  <int value="1724977738" label="ia"/>
-  <int value="1754979806" label="fy"/>
-  <int value="1853848431" label="tr"/>
-  <int value="1884922344" label="ckb"/>
-  <int value="1921155040" label="br"/>
-  <int value="1988450082" label="tw"/>
-  <int value="2039992295" label="ig"/>
-  <int value="2077417554" label="fr-CH"/>
-  <int value="2078974161" label="ast"/>
-  <int value="2087142539" label="mn"/>
-  <int value="2094171128" label="mo"/>
-  <int value="2098003573" label="as"/>
-  <int value="2119087611" label="nl"/>
-  <int value="2147270293" label="en-GB"/>
-</enum>
-
 <enum name="ClearBrowsingDataTab">
   <int value="0" label="Basic"/>
   <int value="1" label="Advanced"/>
@@ -12750,6 +12581,15 @@ In case of new special images, values 3 to 9 can be used. -->
   <int value="2" label="User closed tab"/>
   <int value="3" label="Selected by content settings"/>
   <int value="4" label="User selection not permitted"/>
+</enum>
+
+<enum name="ClientIdSource">
+  <summary/>
+  <int value="0" label="Cached id matches local state"/>
+  <int value="1" label="From local state"/>
+  <int value="2" label="From backup"/>
+  <int value="3" label="New"/>
+  <int value="4" label="From provisional id"/>
 </enum>
 
 <enum name="ClientSidePhishingResult">
@@ -14807,6 +14647,13 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Securely Set Cookie Secure Request"/>
   <int value="3" label="Nonsecurely Set Cookie Secure Request"/>
   <int value="4" label="Securely Set Cookie Nonsecure Request"/>
+</enum>
+
+<enum name="CookieSameSite">
+  <int value="-1" label="No SameSite attribute is specified."/>
+  <int value="0" label="SameSite=None"/>
+  <int value="1" label="SameSite=Lax"/>
+  <int value="2" label="SameSite=Strict"/>
 </enum>
 
 <enum name="CookieSameSiteString">
@@ -33226,10 +33073,14 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3177" label="BreakIteratorTypeLine"/>
   <int value="3178" label="V8FileSystemDirectoryHandle_Resolve_Method"/>
   <int value="3179" label="V8FileSystemHandle_IsSameEntry_Method"/>
-  <int value="3180" label="V8RTCRtpSender_CreateEncodedAudioStreams_Method"/>
-  <int value="3181" label="V8RTCRtpSender_CreateEncodedVideoStreams_Method"/>
-  <int value="3182" label="V8RTCRtpReceiver_CreateEncodedAudioStreams_Method"/>
-  <int value="3183" label="V8RTCRtpReceiver_CreateEncodedVideoStreams_Method"/>
+  <int value="3180"
+      label="OBSOLETEV8RTCRtpSender_CreateEncodedAudioStreams_Method"/>
+  <int value="3181"
+      label="OBSOLETEV8RTCRtpSender_CreateEncodedVideoStreams_Method"/>
+  <int value="3182"
+      label="OBSOLETEV8RTCRtpReceiver_CreateEncodedAudioStreams_Method"/>
+  <int value="3183"
+      label="OBSOLETEV8RTCRtpReceiver_CreateEncodedVideoStreams_Method"/>
   <int value="3184" label="QuicTransport"/>
   <int value="3185" label="QuicTransportStreamApis"/>
   <int value="3186" label="QuicTransportDatagramApis"/>
@@ -33345,8 +33196,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3291" label="FlexRowGapPercentIndefinite"/>
   <int value="3292" label="V8RTCRtpSender_CreateEncodedStreams_Method"/>
   <int value="3293" label="V8RTCRtpReceiver_CreateEncodedStreams_Method"/>
-  <int value="3294" label="ForceEncodedAudioInsertableStreams"/>
-  <int value="3295" label="ForceEncodedVideoInsertableStreams"/>
+  <int value="3294" label="OBSOLETEForceEncodedAudioInsertableStreams"/>
+  <int value="3295" label="OBSOLETEForceEncodedVideoInsertableStreams"/>
   <int value="3296" label="TransformStyleContainingBlockComputedUsedMismatch"/>
   <int value="3297" label="OBSOLETE_AdditionalGroupingPropertiesForCompat"/>
   <int value="3298" label="PopupDoesNotExceedOwnerWindowBounds"/>
@@ -34035,6 +33886,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3959" label="V8URLPattern_Constructor"/>
   <int value="3960" label="V8URLPattern_Test_Method"/>
   <int value="3961" label="V8URLPattern_Exec_Method"/>
+  <int value="3962" label="SameSiteCookieInclusionChangedByCrossSiteRedirect"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41863,6 +41715,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Chrome - Read later"/>
 </enum>
 
+<enum name="IncognitoForcedStart">
+  <int value="0" label="No Incognito switch and not forced"/>
+  <int value="1" label="Incognito switch but not forced"/>
+  <int value="2" label="No Incognito switch but forced"/>
+  <int value="3" label="Incognito switch and forced"/>
+</enum>
+
 <enum name="Inconsistencies">
   <int value="1" label="RangeChecksum"/>
   <int value="2" label="BucketOrder"/>
@@ -44286,8 +44145,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="BO"/>
 </enum>
 
-<enum name="LanguageCode">
-  <summary>ISO 639 Language Codes.</summary>
+<enum name="LanguageDetectionModelState">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Model File Invalid"/>
+  <int value="2" label="Model File Valid and Available"/>
+</enum>
+
+<enum name="LanguageName">
+  <summary>
+    Hash values for the first two letters of a locale code. This is mapped to
+    the English name for each language. Only the first two letters are used so
+    country and script codes are ignored. The hash is created by
+    LanguageUsageMetrics::ToLanguageCode.
+  </summary>
   <int value="24929" label="Afar"/>
   <int value="24930" label="Abkhazian"/>
   <int value="24933" label="Avestan"/>
@@ -44815,12 +44685,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8025454" label="Zuni"/>
   <int value="8026232" label="No linguistic content"/>
   <int value="8026721" label="Zaza"/>
-</enum>
-
-<enum name="LanguageDetectionModelState">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Model File Invalid"/>
-  <int value="2" label="Model File Valid and Available"/>
 </enum>
 
 <enum name="LanguageSettingsActionType">
@@ -46003,6 +45867,193 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Main dialog accepted"/>
 </enum>
 
+<enum name="LocaleCodeISO639">
+  <summary>
+    Hash values for ISO 639 locale codes (including country and script tags e.g
+    &quot;en-US&quot;). Each of these values is computed by casting the output
+    of base::HashMetricName(locale_string_id) to base::HistogramBase::Sample.
+  </summary>
+  <int value="-2132740958" label="gl"/>
+  <int value="-2112894028" label="haw"/>
+  <int value="-2092490813" label="fa"/>
+  <int value="-2084324285" label="iw"/>
+  <int value="-2070680532" label="hi"/>
+  <int value="-2070250592" label="zu"/>
+  <int value="-2042178987" label="si"/>
+  <int value="-2041104386" label="mi"/>
+  <int value="-2014954614" label="so"/>
+  <int value="-2005166181" label="ja-Latn"/>
+  <int value="-1999171202" label="lv"/>
+  <int value="-1998337622" label="es-CL"/>
+  <int value="-1994870905" label="lt"/>
+  <int value="-1986814580" label="om"/>
+  <int value="-1920649864" label="an"/>
+  <int value="-1898669966" label="zh-CN"/>
+  <int value="-1895779836" label="empty string"/>
+  <int value="-1872667487" label="rm"/>
+  <int value="-1855113037" label="vi"/>
+  <int value="-1828586117" label="de"/>
+  <int value="-1823968882" label="zh"/>
+  <int value="-1797669833" label="it-IT"/>
+  <int value="-1791051166" label="ha"/>
+  <int value="-1787999070" label="wa"/>
+  <int value="-1776903256" label="es-ES"/>
+  <int value="-1767491741" label="es-HN"/>
+  <int value="-1760672594" label="mr"/>
+  <int value="-1741747229" label="es-419"/>
+  <int value="-1735828230" label="zh-TW"/>
+  <int value="-1734070684" label="en-NZ"/>
+  <int value="-1731398502" label="wo"/>
+  <int value="-1696927720" label="la"/>
+  <int value="-1690250140" label="ja"/>
+  <int value="-1683177340" label="qu"/>
+  <int value="-1662603770" label="es-VE"/>
+  <int value="-1625830957" label="ln"/>
+  <int value="-1612285087" label="en-ZA"/>
+  <int value="-1566592213" label="hi-Latn"/>
+  <int value="-1558307126" label="es-CO"/>
+  <int value="-1532548885" label="pa"/>
+  <int value="-1515310228" label="ps"/>
+  <int value="-1453785110" label="rw"/>
+  <int value="-1452189651" label="es-CR"/>
+  <int value="-1346992143" label="nn"/>
+  <int value="-1284862637" label="ru"/>
+  <int value="-1273588087" label="kn"/>
+  <int value="-1242903543" label="es-UY"/>
+  <int value="-1230368678" label="kok"/>
+  <int value="-1211529228" label="gd"/>
+  <int value="-1159958698" label="tl"/>
+  <int value="-1136256351" label="zh-HK"/>
+  <int value="-1117024738" label="zh-Latn"/>
+  <int value="-1100371650" label="sn"/>
+  <int value="-1086322569" label="es-AR"/>
+  <int value="-1052948093" label="jw"/>
+  <int value="-1048980531" label="ur"/>
+  <int value="-1042449480" label="cy"/>
+  <int value="-1033645590" label="fil"/>
+  <int value="-1025520269" label="az"/>
+  <int value="-1010619188" label="ru-Latn"/>
+  <int value="-1000295094" label="no"/>
+  <int value="-950444864" label="tk"/>
+  <int value="-926982267" label="de-AT"/>
+  <int value="-887258309" label="hu"/>
+  <int value="-873154203" label="en-CA"/>
+  <int value="-862298602" label="st"/>
+  <int value="-851607677" label="sm"/>
+  <int value="-846401046" label="chr"/>
+  <int value="-838275151" label="xh"/>
+  <int value="-812926878" label="ug"/>
+  <int value="-780984386" label="fr-CA"/>
+  <int value="-750267977" label="bg"/>
+  <int value="-742603342" label="ca"/>
+  <int value="-740941224" label="ku"/>
+  <int value="-739605699" label="de-LI"/>
+  <int value="-734032818" label="km"/>
+  <int value="-717751759" label="lb"/>
+  <int value="-659007214" label="el"/>
+  <int value="-647197922" label="ceb"/>
+  <int value="-645438410" label="my"/>
+  <int value="-644560085" label="su"/>
+  <int value="-598481752" label="et"/>
+  <int value="-548175087" label="tt"/>
+  <int value="-450972170" label="oc"/>
+  <int value="-442590807" label="sd"/>
+  <int value="-441493751" label="el-Latn"/>
+  <int value="-439564761" label="he"/>
+  <int value="-433923634" label="en-US"/>
+  <int value="-429718906" label="sh"/>
+  <int value="-426630965" label="ga"/>
+  <int value="-415677801" label="it"/>
+  <int value="-403118581" label="sw"/>
+  <int value="-371077109" label="fr-FR"/>
+  <int value="-349113427" label="am"/>
+  <int value="-342591258" label="sq"/>
+  <int value="-302282167" label="ti"/>
+  <int value="-226066958" label="bg-Latn"/>
+  <int value="-219674420" label="ta"/>
+  <int value="-183664425" label="pt-PT"/>
+  <int value="-181870943" label="bn"/>
+  <int value="-110306666" label="sr"/>
+  <int value="-91748674" label="tn"/>
+  <int value="-78164291" label="kk"/>
+  <int value="-74147910" label="en"/>
+  <int value="-35182995" label="fi"/>
+  <int value="-5034744" label="ny"/>
+  <int value="42532257" label="id"/>
+  <int value="64053359" label="eu"/>
+  <int value="114573335" label="es"/>
+  <int value="121688617" label="eo"/>
+  <int value="124739394" label="lo"/>
+  <int value="132594104" label="be"/>
+  <int value="134866094" label="ka"/>
+  <int value="142304335" label="gn"/>
+  <int value="142313505" label="ro"/>
+  <int value="145030010" label="gu"/>
+  <int value="162326141" label="sl"/>
+  <int value="183952636" label="mg"/>
+  <int value="191168946" label="mk"/>
+  <int value="350748440" label="und"/>
+  <int value="357286655" label="af"/>
+  <int value="461111861" label="mt"/>
+  <int value="462869158" label="hy"/>
+  <int value="470982931" label="sv"/>
+  <int value="522435458" label="hr"/>
+  <int value="526531379" label="ml"/>
+  <int value="538270200" label="uk"/>
+  <int value="549800655" label="de-CH"/>
+  <int value="584710092" label="nb"/>
+  <int value="596295208" label="bs"/>
+  <int value="632444664" label="yue-HK"/>
+  <int value="673577439" label="cs"/>
+  <int value="720107264" label="es-PE"/>
+  <int value="729519028" label="or"/>
+  <int value="796588925" label="yo"/>
+  <int value="804120371" label="jv"/>
+  <int value="873647701" label="th"/>
+  <int value="910795716" label="ne"/>
+  <int value="911100675" label="de-DE"/>
+  <int value="925733725" label="ms"/>
+  <int value="1062172280" label="en-IN"/>
+  <int value="1092864716" label="ht"/>
+  <int value="1110169461" label="hmn"/>
+  <int value="1119752109" label="te"/>
+  <int value="1140816756" label="ar"/>
+  <int value="1152813109" label="to"/>
+  <int value="1166708194" label="is"/>
+  <int value="1196096274" label="es-US"/>
+  <int value="1199169847" label="en-AU"/>
+  <int value="1214473765" label="unknown"/>
+  <int value="1228519432" label="fo"/>
+  <int value="1282439493" label="es-MX"/>
+  <int value="1311313702" label="pt"/>
+  <int value="1312638242" label="pl"/>
+  <int value="1437205305" label="uz"/>
+  <int value="1482920614" label="yi"/>
+  <int value="1483760478" label="tg"/>
+  <int value="1552733612" label="da"/>
+  <int value="1628170778" label="pt-BR"/>
+  <int value="1638257274" label="sk"/>
+  <int value="1670494558" label="ko"/>
+  <int value="1704087523" label="ky"/>
+  <int value="1704315002" label="fr"/>
+  <int value="1708437566" label="it-CH"/>
+  <int value="1717583602" label="co"/>
+  <int value="1724977738" label="ia"/>
+  <int value="1754979806" label="fy"/>
+  <int value="1853848431" label="tr"/>
+  <int value="1884922344" label="ckb"/>
+  <int value="1921155040" label="br"/>
+  <int value="1988450082" label="tw"/>
+  <int value="2039992295" label="ig"/>
+  <int value="2077417554" label="fr-CH"/>
+  <int value="2078974161" label="ast"/>
+  <int value="2087142539" label="mn"/>
+  <int value="2094171128" label="mo"/>
+  <int value="2098003573" label="as"/>
+  <int value="2119087611" label="nl"/>
+  <int value="2147270293" label="en-GB"/>
+</enum>
+
 <enum name="LocalFrameRootPurgeSignal">
   <int value="0" label="Initial"/>
   <int value="1" label="Multiple"/>
@@ -46327,6 +46378,8 @@ from previous Chrome versions.
   <int value="-2047071651" label="NearbySharing:enabled"/>
   <int value="-2046434739" label="enable-unsafe-webgpu-service"/>
   <int value="-2044939529" label="CrostiniResetLxdDb:disabled"/>
+  <int value="-2044252895"
+      label="QuickActionSearchWidgetAndroidDinoVariant:disabled"/>
   <int value="-2043331707" label="PasswordScriptsFetching:disabled"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
   <int value="-2042278511" label="SmartSuggestionForLargeDownloads:disabled"/>
@@ -47547,6 +47600,7 @@ from previous Chrome versions.
   <int value="-1108636917" label="DetectedSourceLanguageOption:enabled"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
+  <int value="-1105686819" label="ShareUsageRanking:enabled"/>
   <int value="-1105637876" label="FilteringScrollPrediction:enabled"/>
   <int value="-1104914981" label="frame-throttle-fps"/>
   <int value="-1103221768" label="DefaultChatWebApp:enabled"/>
@@ -47673,6 +47727,7 @@ from previous Chrome versions.
   <int value="-998731974" label="WinUseBrowserSpellChecker:enabled"/>
   <int value="-998310305" label="OmniboxContextMenuShowFullUrls:disabled"/>
   <int value="-998255750" label="ExperimentalKeyboardLockUI:enabled"/>
+  <int value="-997491100" label="ShareUsageRanking:disabled"/>
   <int value="-996868396" label="SmartDimNewMlAgent:enabled"/>
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-994558985" label="EnableNotificationIndicator:disabled"/>
@@ -47934,6 +47989,7 @@ from previous Chrome versions.
   <int value="-787238455" label="OmniboxZeroSuggestionsOnSERP:disabled"/>
   <int value="-784199026" label="EnableFilesAppCopyImage:enabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
+  <int value="-779392840" label="MessagesForAndroidGroupedPermission:disabled"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-778098896" label="EnableAggregatedMlSearchRanking:disabled"/>
   <int value="-778047974" label="CrostiniUseBusterImage:disabled"/>
@@ -48060,6 +48116,7 @@ from previous Chrome versions.
   <int value="-683370370" label="EnableAppDataSearch:enabled"/>
   <int value="-683306022" label="OverscrollHistoryNavigation:enabled"/>
   <int value="-682580680" label="DisableOfficeEditingComponentApp:disabled"/>
+  <int value="-682440269" label="WebNotesPublish:disabled"/>
   <int value="-681434111" label="WebFeed:disabled"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
@@ -48202,6 +48259,8 @@ from previous Chrome versions.
   <int value="-556662059" label="AuraWindowSubtreeCapture:enabled"/>
   <int value="-556218705" label="SlowDCTimerInterruptsWin:enabled"/>
   <int value="-555341956" label="AutofillSaveAndFillVPA:enabled"/>
+  <int value="-551434067"
+      label="QuickActionSearchWidgetAndroidDinoVariant:enabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
   <int value="-545419529" label="LauncherAppSort:disabled"/>
@@ -48456,6 +48515,7 @@ from previous Chrome versions.
   <int value="-338978205" label="NavigationMojoResponse:enabled"/>
   <int value="-338606027" label="TrimOnMemoryPressure:disabled"/>
   <int value="-338277966" label="DecoupleSyncFromAndroidMasterSync:enabled"/>
+  <int value="-336768659" label="NtpPhotosModule:enabled"/>
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
   <int value="-333216449" label="MouseSubframeNoImplicitCapture:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
@@ -48559,6 +48619,7 @@ from previous Chrome versions.
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-250543540" label="DeferAllScript:enabled"/>
   <int value="-249415830" label="FilteringScrollPrediction:disabled"/>
+  <int value="-249332966" label="MessagesForAndroidGroupedPermission:enabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
   <int value="-247542772" label="CheckOfflineCapability:enabled"/>
   <int value="-245342115" label="PermissionChip:enabled"/>
@@ -48592,6 +48653,7 @@ from previous Chrome versions.
   <int value="-215580565"
       label="OmniboxEnableClipboardProviderImageSuggestions:disabled"/>
   <int value="-215534141" label="NativeWindowNavButtons:enabled"/>
+  <int value="-214618160" label="ESimPolicy:enabled"/>
   <int value="-213518852" label="protect-sync-credential:enabled"/>
   <int value="-213214894" label="enable-chromevox-arc-support"/>
   <int value="-208587977" label="OmniboxMaterialDesignWeatherIcons:enabled"/>
@@ -49038,6 +49100,7 @@ from previous Chrome versions.
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
   <int value="151173516" label="CellularUseAttachApn:enabled"/>
   <int value="151630887" label="WebUIA11yEnhancements:disabled"/>
+  <int value="151825088" label="MessagesForAndroidPermissionUpdate:enabled"/>
   <int value="153347646" label="SmartDimModelV3:disabled"/>
   <int value="155977192" label="EnableFileManagerFormatDialog:disabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
@@ -49106,6 +49169,7 @@ from previous Chrome versions.
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
   <int value="218890378" label="ManualSaving:disabled"/>
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
+  <int value="219384037" label="ESimPolicy:disabled"/>
   <int value="221212638" label="StartSurfaceAndroid:enabled"/>
   <int value="221363150" label="ForceEnableFaceAe:disabled"/>
   <int value="221707633" label="AutofillFixOfferInIncognito:disabled"/>
@@ -49666,6 +49730,7 @@ from previous Chrome versions.
   <int value="659871291"
       label="ClearCrossSiteCrossBrowsingContextGroupWindowName:enabled"/>
   <int value="661020875" label="AutofillSaveCardShowNoThanks:disabled"/>
+  <int value="661537613" label="WebNotesPublish:enabled"/>
   <int value="662001716" label="ToolbarIphAndroid:disabled"/>
   <int value="662331859" label="ConversionMeasurement:enabled"/>
   <int value="662707634" label="DynamicColorAndroid:enabled"/>
@@ -49832,6 +49897,7 @@ from previous Chrome versions.
   <int value="787080596" label="DynamicTcmallocTuning:enabled"/>
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="788130042" label="PrivacySandboxSettings2:enabled"/>
+  <int value="791541863" label="NtpPhotosModule:disabled"/>
   <int value="792307132"
       label="KeyboardBasedDisplayArrangementInSettings:enabled"/>
   <int value="792884862" label="EnableSharedImageForWebview:enabled"/>
@@ -50063,6 +50129,7 @@ from previous Chrome versions.
       label="AutofillUseImprovedLabelDisambiguation:disabled"/>
   <int value="1009437086" label="AutofillEnableOfferNotification:disabled"/>
   <int value="1009976778" label="SidePanel:disabled"/>
+  <int value="1011550878" label="MessagesForAndroidPermissionUpdate:disabled"/>
   <int value="1012942422" label="HorizontalTabSwitcherAndroid:disabled"/>
   <int value="1015012662" label="ChromeOSDirectVideoDecoder:enabled"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
@@ -54495,6 +54562,9 @@ Called by update_use_counter_css.py.-->
   <int value="9" label="SendTabToSelf"/>
   <int value="10" label="ReaderMode"/>
   <int value="11" label="ChromeSurvey"/>
+  <int value="12" label="SaveCard"/>
+  <int value="13" label="GroupedPermission"/>
+  <int value="14" label="PermissionUpdate"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -58704,6 +58774,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Monochrome"/>
   <int value="9" label="Bold"/>
   <int value="10" label="Dreamy"/>
+</enum>
+
+<enum name="NotificationActionSource">
+  <int value="0" label="Browser app"/>
+  <int value="1" label="Helper app"/>
 </enum>
 
 <enum name="NotificationActionType">
@@ -65925,6 +66000,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="kMaxNumOfRunningPrerendersExceeded"/>
   <int value="22" label="kCancelAllHostsForTesting"/>
   <int value="23" label="kDidFailLoad"/>
+  <int value="24" label="kStop"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
@@ -70232,6 +70308,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="76" label="WakeLock"/>
   <int value="77" label="InternalInputBlocking"/>
   <int value="78" label="WebGL"/>
+  <int value="79" label="InternalPostMessageForwarding"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

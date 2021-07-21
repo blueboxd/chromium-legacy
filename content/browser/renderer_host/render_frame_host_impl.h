@@ -42,6 +42,7 @@
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
+#include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/keep_alive_handle_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
@@ -392,7 +393,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool Reload() override;
   bool IsDOMContentLoaded() override;
   void UpdateIsAdSubframe(bool is_ad_subframe) override;
-  blink::mojom::AuthenticatorStatus PerformGetAssertionWebAuthSecurityChecks(
+  std::pair<blink::mojom::AuthenticatorStatus, bool>
+  PerformGetAssertionWebAuthSecurityChecks(
       const std::string& relying_party_id,
       const url::Origin& effective_origin) override;
   blink::mojom::AuthenticatorStatus PerformMakeCredentialWebAuthSecurityChecks(
@@ -3861,8 +3863,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // CodeCacheHost processes requests to fetch / write generated code for
   // JavaScript / WebAssembly resources.
-  mojo::UniqueReceiverSet<blink::mojom::CodeCacheHost>
-      code_cache_host_receivers_;
+  CodeCacheHostImpl::ReceiverSet code_cache_host_receivers_;
 
   // Holds the mapping of names to URLs of reporting endpoints for the current
   // document, as parsed from the Reporting-Endpoints response header. This data

@@ -4,8 +4,12 @@
 
 import 'chrome://diagnostics/ip_config_info_drawer.js';
 
-import {assertTrue} from '../../chai_assert.js';
+import {Network} from 'chrome://diagnostics/diagnostics_types.js';
+import {fakeEthernetNetwork, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
+import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks, isVisible} from '../../test_util.m.js';
+
+import * as dx_utils from './diagnostics_test_utils.js';
 
 export function ipConfigInfoDrawerTestSuite() {
   /** @type {?IpConfigInfoDrawerElement} */
@@ -20,17 +24,119 @@ export function ipConfigInfoDrawerTestSuite() {
     ipConfigInfoDrawerElement = null;
   });
 
-  function initializeIpConfigInfoDrawerElement() {
+  /**
+   * @param {!Network=} network
+   */
+  function initializeIpConfigInfoDrawerElement(network = fakeEthernetNetwork) {
     ipConfigInfoDrawerElement = /** @type {!IpConfigInfoDrawerElement} */ (
         document.createElement('ip-config-info-drawer'));
+    ipConfigInfoDrawerElement.network = network;
     document.body.appendChild(ipConfigInfoDrawerElement);
     assertTrue(!!ipConfigInfoDrawerElement);
     return flushTasks();
   }
 
+  /**
+   * @param {string} selector
+   * @param {string} headerText
+   * @param {string} valueText
+   */
+  function assertDataPointHasExpectedHeaderAndValue(
+      selector, headerText, valueText) {
+    const dataPoint =
+        dx_utils.getDataPoint(ipConfigInfoDrawerElement, selector);
+    assertTrue(isVisible(dataPoint));
+    assertEquals(headerText, dataPoint.header);
+    assertEquals(valueText, dataPoint.value);
+  }
+
+  /**
+   * Selects the drawer's hideable content area if the drawer is expanded.
+   * @return {HTMLElement}
+   */
+  function getDrawerContentContainer() {
+    return /** @type {!HTMLElement} */ (
+        ipConfigInfoDrawerElement.$$('#ipConfigInfoElement'));
+  }
+
+  /**
+   * Selects the drawer's toggle button.
+   * @return {!HTMLElement}
+   */
+  function getDrawerToggle() {
+    const toggleButton = ipConfigInfoDrawerElement.$$('cr-expand-button');
+    assertTrue(!!toggleButton);
+    return /** @type {!HTMLElement} */ (toggleButton);
+  }
+
   test('IpConfigInfoDrawerInitialized', () => {
     return initializeIpConfigInfoDrawerElement().then(() => {
-      assertTrue(!!ipConfigInfoDrawerElement.$$('#ipConfigInfoElement'));
+      dx_utils.assertElementContainsText(
+          /** @type {HTMLElement} */ (
+              ipConfigInfoDrawerElement.$$('cr-expand-button > span')),
+          ipConfigInfoDrawerElement.i18n('ipConfigInfoDrawerTitle'));
     });
+  });
+
+  test('IpConfigInfoDrawerContentVisibilityTogglesOnClick', () => {
+    return initializeIpConfigInfoDrawerElement()
+        .then(() => {
+          // Initial state is unexpanded causing element to be hidden.
+          assertFalse(!!getDrawerContentContainer());
+        })
+        // Click toggle button to expand drawer.
+        .then(() => getDrawerToggle().click())
+        .then(() => {
+          // Confirm expanded state visibility is correctly updated.
+          assertTrue(!!(getDrawerContentContainer()));
+        });
+  });
+
+  test('ConfigDrawerOpenDisplaysMacAddressBasedOnNetwork', () => {
+    return initializeIpConfigInfoDrawerElement()
+        // Opening drawer to test visibility and content of data points.
+        .then(() => getDrawerToggle().click())
+        .then(() => {
+          assertDataPointHasExpectedHeaderAndValue(
+              '#macAddress',
+              ipConfigInfoDrawerElement.i18n('ipConfigInfoDrawerMacAddress'),
+              `${fakeEthernetNetwork.macAddress}`);
+        });
+  });
+
+  test('ConfigDrawerOpenDisplaysGatewayBasedOnNetwork', () => {
+    return initializeIpConfigInfoDrawerElement(fakeWifiNetwork)
+        // Opening drawer to test visibility and content of data points.
+        .then(() => getDrawerToggle().click())
+        .then(() => {
+          assertDataPointHasExpectedHeaderAndValue(
+              '#gateway',
+              ipConfigInfoDrawerElement.i18n('ipConfigInfoDrawerGateway'),
+              `${fakeWifiNetwork.ipConfig.gateway}`);
+        });
+  });
+
+  test('ConfigDrawerOpenDisplaysSubnetMaskBasedOnNetwork', () => {
+    const expectedSubnetMask = '255.255.255.0';
+    return initializeIpConfigInfoDrawerElement(fakeWifiNetwork)
+        // Opening drawer to test visibility and content of data points.
+        .then(() => getDrawerToggle().click())
+        .then(() => {
+          assertDataPointHasExpectedHeaderAndValue(
+              '#subnetMask',
+              ipConfigInfoDrawerElement.i18n('ipConfigInfoDrawerSubnetMask'),
+              expectedSubnetMask);
+        });
+  });
+
+  test('ConfigDrawerOpenDisplaysNameServersBasedOnNetwork', () => {
+    // Ethernet currently has no ipConfig object.
+    return initializeIpConfigInfoDrawerElement()
+        // Opening drawer to test visibility and content of data points.
+        .then(() => getDrawerToggle().click())
+        .then(() => {
+          assertDataPointHasExpectedHeaderAndValue(
+              '#nameServers', 'Name servers', '');
+        });
   });
 }

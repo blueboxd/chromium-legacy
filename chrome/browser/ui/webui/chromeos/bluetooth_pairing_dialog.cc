@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_shared_load_time_data_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/bluetooth_pairing_dialog_resources.h"
@@ -16,6 +16,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
 #include "device/bluetooth/public/cpp/bluetooth_address.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -37,7 +38,7 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
   };
   for (const auto& entry : localized_strings)
     html_source->AddLocalizedString(entry.name, entry.id);
-  chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);
+  chromeos::bluetooth::AddLoadTimeData(html_source);
 }
 
 }  // namespace
@@ -112,6 +113,9 @@ BluetoothPairingDialogUI::BluetoothPairingDialogUI(content::WebUI* web_ui)
                       kBluetoothPairingDialogResourcesSize),
       IDR_BLUETOOTH_PAIRING_DIALOG_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+
+  device::RecordUiSurfaceDisplayed(
+      device::BluetoothUiSurface::kStandalonePairingDialog);
 }
 
 BluetoothPairingDialogUI::~BluetoothPairingDialogUI() = default;

@@ -1084,13 +1084,14 @@ class FullRestoreAppLaunchHandlerArcAppBrowserTest
   void Restore() {
     test_full_restore_info_observer_.Reset();
 
-    app_launch_handler_ =
-        std::make_unique<FullRestoreAppLaunchHandler>(profile());
-    app_launch_handler_->SetShouldRestore();
-
     arc_app_launch_handler_ =
         FullRestoreArcTaskHandler::GetForProfile(profile())
             ->arc_app_launch_handler();
+    arc_app_launch_handler_->is_app_connection_ready_ = false;
+
+    app_launch_handler_ =
+        std::make_unique<FullRestoreAppLaunchHandler>(profile());
+    app_launch_handler_->SetShouldRestore();
 
     content::RunAllTasksUntilIdle();
   }
@@ -1955,7 +1956,11 @@ class ArcAppLaunchHandlerArcAppBrowserTest
   }
 
   void OnAppConnectionReady() {
-    DCHECK(arc_app_launch_handler_);
+    if (!arc_app_launch_handler_) {
+      arc_app_launch_handler_ =
+          FullRestoreArcTaskHandler::GetForProfile(profile())
+              ->arc_app_launch_handler();
+    }
     arc_app_launch_handler_->OnAppConnectionReady();
   }
 
@@ -2263,6 +2268,68 @@ IN_PROC_BROWSER_TEST_F(ArcAppLaunchHandlerArcAppBrowserTest, AppIsReadyLate) {
   StopInstance();
 }
 
+// Verify the restore process when the user clicks the `restore` button very
+// late after the OnAppConnectionReady is called.
+IN_PROC_BROWSER_TEST_F(ArcAppLaunchHandlerArcAppBrowserTest, RestoreLate) {
+  SetProfile();
+  InstallTestApps(kTestAppPackage, true);
+
+  const std::string app_id1 = GetTestApp1Id(kTestAppPackage);
+  const std::string app_id2 = GetTestApp2Id(kTestAppPackage);
+
+  int32_t session_id1 =
+      ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
+  int32_t session_id2 =
+      ::full_restore::FullRestoreSaveHandler::GetInstance()->GetArcSessionId();
+
+  SaveAppLaunchInfo(app_id1, session_id1);
+  SaveAppLaunchInfo(app_id2, session_id2);
+
+  // Simulate creating kTaskId1. The task id needs to match the |window_app_id|
+  // arg of CreateExoWindow.
+  int32_t kTaskId1 = 100;
+  CreateTask(app_id1, kTaskId1, session_id1);
+
+  // Create the window for the app1.
+  views::Widget* widget1 = CreateExoWindow("org.chromium.arc.100");
+  aura::Window* window1 = widget1->GetNativeWindow();
+
+  // Simulate creating kTaskId2 for the app2.
+  int32_t kTaskId2 = 101;
+  CreateTask(app_id2, kTaskId2, session_id2);
+
+  int32_t activation_index1 = 11;
+  SaveWindowInfo(window1, activation_index1,
+                 chromeos::WindowStateType::kNormal);
+
+  WaitForAppLaunchInfoSaved();
+
+  // Call OnAppConnectionReady to simulate the app connection is ready.
+  base::HistogramTester histogram_tester;
+  OnAppConnectionReady();
+
+  // Simulate the user clicks the `restore` button.
+  auto app_launch_handler =
+      std::make_unique<FullRestoreAppLaunchHandler>(profile());
+  app_launch_handler->SetShouldRestore();
+
+  content::RunAllTasksUntilIdle();
+
+  widget1->CloseNow();
+
+  app_host()->OnTaskDestroyed(kTaskId1);
+  app_host()->OnTaskDestroyed(kTaskId2);
+
+  EXPECT_TRUE(HasRestoreData());
+  VerifyWindows(activation_index1, app_id1, kTaskId1);
+  VerifyNoStackWindows(app_id2, kTaskId2);
+
+  EXPECT_EQ(
+      1, histogram_tester.GetBucketCount(kRestoredAppWindowCountHistogram, 2));
+
+  StopInstance();
+}
+
 class FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest
     : public SystemWebAppIntegrationTest {
  public:
@@ -2330,6 +2397,11 @@ class FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest
                  false /* should_notify_initialized */);
   }
 
+  bool HasWindowInfo(int32_t restore_window_id) {
+    return ::full_restore::FullRestoreReadHandler::GetInstance()->HasWindowInfo(
+        restore_window_id);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -2353,11 +2425,14 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
   // Close app_browser so that the SWA can be relaunched.
   web_app::CloseAndWait(app_browser);
 
+  ASSERT_FALSE(HasWindowInfo(window_id));
+
   // Set should restore.
   app_launch_handler->SetShouldRestore();
 
   // Wait for the restoration.
   content::RunAllTasksUntilIdle();
+  ASSERT_TRUE(HasWindowInfo(window_id));
 
   // Get the restored browser for the system web app.
   Browser* restore_app_browser = GetBrowserForWindowId(window_id);
@@ -2370,6 +2445,42 @@ IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
       window->GetProperty(::full_restore::kRestoreWindowIdKey);
 
   EXPECT_EQ(window_id, restore_window_id);
+}
+
+// Verify that when the full restore doesn't start, the browser window of the
+// SWA doesn't have the restore info.
+IN_PROC_BROWSER_TEST_P(FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest,
+                       LaunchSWAWithoutRestore) {
+  Browser* app_browser = LaunchSystemWebApp();
+  ASSERT_TRUE(app_browser);
+  ASSERT_NE(browser(), app_browser);
+
+  // Get the window id.
+  aura::Window* window = app_browser->window()->GetNativeWindow();
+  int32_t window_id = window->GetProperty(::full_restore::kWindowIdKey);
+
+  SaveWindowInfo(window);
+  WaitForAppLaunchInfoSaved();
+
+  // Create FullRestoreAppLaunchHandler.
+  auto app_launch_handler =
+      std::make_unique<FullRestoreAppLaunchHandler>(profile());
+
+  // Close app_browser so that the SWA can be relaunched.
+  web_app::CloseAndWait(app_browser);
+
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_FALSE(HasWindowInfo(window_id));
+
+  Browser* new_app_browser = LaunchSystemWebApp();
+
+  ASSERT_TRUE(new_app_browser);
+  ASSERT_NE(browser(), new_app_browser);
+
+  window = new_app_browser->window()->GetNativeWindow();
+  auto* window_state = ash::WindowState::Get(window);
+  EXPECT_FALSE(window_state->HasRestoreBounds());
 }
 
 // Verify the restoration if the SWA is not available when set

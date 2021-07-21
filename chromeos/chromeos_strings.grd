@@ -233,6 +233,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_ENTERPRISE_ENROLLMENT_BUTTON" desc="Text shown on enterprise enrollment button on oobe screen.">
         Enterprise enrollment
       </message>
+      <message name="IDS_ASH_SHELF_SIGNIN_BUTTON" desc="Text shown on sign in button on enrollment screen.">
+        Use as personal device
+      </message>
       <message name="IDS_ASH_SHELF_OS_INSTALL_BUTTON" desc="Text shown on install cloudready button on login screen.">
         Install CloudReady
       </message>
@@ -1523,6 +1526,18 @@ Try tapping the mic to ask me anything.
       <message name="IDS_NETWORK_DIAGNOSTICS_VIDEO_CONFERENCING_PROBLEM_MEDIA_FAILURE" desc="Error message shown when a connection cannot be established to the video conferencing media servers">
         Unable to connect to media servers
       </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_GATEWAY" desc="Label for `Gateway` address data-point in `IP Configuration` drawer.">
+        Gateway
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_MAC_ADDRESS" desc="Label for `MAC Address` data-point in `IP Configuration` drawer.">
+        MAC Address
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_SUBNET_MASK" desc="Label for `Subnet mask` data-point in `IP Configuration` drawer.">
+        Subnet mask
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_TITLE" desc="This element is the header for a collapsible content area responsible to showcasing IP related configuration data." >
+        IP Configuration
+      </message>
 
       <!-- Personalization App -->
       <message name="IDS_PERSONALIZATION_APP_TITLE" desc="Name of the system web app for personalizing ChromeOS.">
@@ -1564,6 +1579,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_DAILY_REFRESH" desc="Label to indicate the image is set by daily refresh">
         Daily Refresh
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_UNKNOWN_IMAGE_ATTRIBUTION" desc="Label for image attribution when it is empty">
+        Unknown
       </message>
 
       <!-- Traffic Counters UI -->

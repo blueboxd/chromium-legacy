@@ -2205,6 +2205,11 @@ const char kQuickActionSearchWidgetAndroidDescription[] =
     "When enabled, the quick action search widget will be available to add to "
     "the homescreen.";
 
+const char kQuickActionSearchWidgetAndroidDinoVariantName[] =
+    "Quick Action Search Widget - Dino Variant";
+const char kQuickActionSearchWidgetAndroidDinoVariantDescription[] =
+    "When enabled, the Dino widget will be available to add to the homescreen";
+
 const char kQuietNotificationPromptsName[] =
     "Quieter notification permission prompts";
 const char kQuietNotificationPromptsDescription[] =
@@ -3280,6 +3285,11 @@ const char kMessagesForAndroidChromeSurveyName[] = "Chrome Survey Messages UI";
 const char kMessagesForAndroidChromeSurveyDescription[] =
     "When enabled, survey prompt will use the new Messages UI.";
 
+const char kMessagesForAndroidGroupedPermissionName[] =
+    "Grouped Permission Messages UI";
+const char kMessagesForAndroidGroupedPermissionDescription[] =
+    "When enabled, grouped permission prompt will use the new Messages UI.";
+
 const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
 const char kMessagesForAndroidInfrastructureDescription[] =
     "When enabled, will initialize Messages UI infrastructure";
@@ -3287,6 +3297,11 @@ const char kMessagesForAndroidInfrastructureDescription[] =
 const char kMessagesForAndroidPasswordsName[] = "Passwords Messages UI";
 const char kMessagesForAndroidPasswordsDescription[] =
     "When enabled, password prompt will use the new Messages UI.";
+
+const char kMessagesForAndroidPermissionUpdateName[] =
+    "Permission Update Messages UI";
+const char kMessagesForAndroidPermissionUpdateDescription[] =
+    "When enabled, permission update prompt will use the new Messages UI.";
 
 const char kMessagesForAndroidPopupBlockedName[] = "Popup Blocked Messages UI";
 const char kMessagesForAndroidPopupBlockedDescription[] =
@@ -3489,6 +3504,12 @@ const char kRelatedSearchesUiDescription[] =
     "regardless of whether they are safe or useful. This requires the Related "
     "Searches feature flag to also be enabled.";
 
+const char kShareUsageRankingName[] =
+    "Incorporate usage history into share target ranking.";
+const char kShareUsageRankingDescription[] =
+    "Incorporate the history of which apps were shared to when producing the "
+    "ordered list of 3P share targets in the share hub.";
+
 const char kRequestDesktopSiteForTabletsName[] =
     "Request desktop site for tablets on Android";
 const char kRequestDesktopSiteForTabletsDescription[] =
@@ -3678,6 +3699,10 @@ const char kXsurfaceMetricsReportingName[] = "Xsurface Metrics Reporting";
 const char kXsurfaceMetricsReportingDescription[] =
     "Allows metrics reporting state to be passed to Xsurface";
 
+const char kWebNotesPublishName[] = "WebNotes Publish";
+const char kWebNotesPublishDescription[] =
+    "Allows users to save their created notes.";
+
 // Non-Android -----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
@@ -3751,6 +3776,10 @@ const char kNtpModulesDescription[] = "Shows modules on the New Tab Page.";
 const char kNtpDriveModuleName[] = "NTP Drive Module";
 const char kNtpDriveModuleDescription[] =
     "Shows the Google Drive module on the New Tab Page";
+
+const char kNtpPhotosModuleName[] = "NTP Photos Module";
+const char kNtpPhotosModuleDescription[] =
+    "Shows the Google Photos module on the New Tab Page";
 
 const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
 const char kNtpRecipeTasksModuleDescription[] =
@@ -4647,6 +4676,11 @@ const char kEnableSuggestedFilesName[] = "Enable Suggested Files";
 const char kEnableSuggestedFilesDescription[] =
     "Enable Suggested Files feature in Launcher, which will show file "
     "suggestions in the suggestion chips when the launcher is opened";
+
+const char kESimPolicyName[] = "Enable ESim Policy";
+const char kESimPolicyDescription[] =
+    "Enable the support for policy controlled provisioning and configuration "
+    "of eSIM cellular networks";
 
 const char kExoGamepadVibrationName[] = "Gamepad Vibration for Exo Clients";
 const char kExoGamepadVibrationDescription[] =

@@ -505,8 +505,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHostImpl* GetOpener() override;
   bool HasOriginalOpener() override;
   RenderFrameHostImpl* GetOriginalOpener() override;
+#if defined(OS_ANDROID)
   void DidChooseColorInColorChooser(SkColor color) override;
   void DidEndColorChooser() override;
+#endif
   int DownloadImage(const GURL& url,
                     bool is_favicon,
                     uint32_t preferred_size,
@@ -987,7 +989,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl* old_frame,
       RenderFrameHostImpl* new_frame) override;
   bool FocusLocationBarByDefault() override;
-  int GetOuterDelegateFrameTreeNodeId() override;
   void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override;
 
   // PageDelegate -------------------------------------------------------------
@@ -1000,14 +1001,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnBackgroundColorChanged(PageImpl& page) override;
 
   // blink::mojom::ColorChooserFactory ---------------------------------------
-
   void OnColorChooserFactoryReceiver(
       mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver);
+#if defined(OS_ANDROID)
   void OpenColorChooser(
       mojo::PendingReceiver<blink::mojom::ColorChooser> chooser,
       mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
       SkColor color,
       std::vector<blink::mojom::ColorSuggestionPtr> suggestions) override;
+#endif
 
   // FrameTree::Delegate -------------------------------------------------------
 
@@ -1017,6 +1019,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidChangeLoadProgress() override;
   bool IsHidden() override;
   void NotifyPageChanged(PageImpl& page) override;
+  int GetOuterDelegateFrameTreeNodeId() override;
 
   // NavigationControllerDelegate ----------------------------------------------
 
@@ -1295,6 +1298,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   }
 
  private:
+  using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree*)>;
+
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
 
@@ -1764,6 +1769,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl::FrameIterationCallbackImpl on_frame,
       bool include_speculative);
 
+  // Calls |on_frame_tree| for every FrameTree in this WebContents.
+  void ForEachFrameTree(FrameTreeIterationCallback on_frame_tree);
+
   // Returns the primary main frame, followed by the main frames of any other
   // outermost frame trees in this WebContents.
   std::vector<RenderFrameHostImpl*> GetOutermostMainFrames();
@@ -1917,8 +1925,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // while it is on the call stack, as that leads to use-after-frees.
   bool prevent_destruction_ = false;
 
-  // See getter above.
-  bool is_being_destroyed_;
+  bool is_being_destroyed_ = false;
 
   // Indicates whether we should notify about disconnection of this
   // WebContentsImpl. This is used to ensure disconnection notifications only
@@ -1978,9 +1985,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   gfx::Size device_emulation_size_;
   gfx::Size view_size_before_emulation_;
 
+#if defined(OS_ANDROID)
   // Holds information about a current color chooser dialog, if one is visible.
   class ColorChooserHolder;
   std::unique_ptr<ColorChooserHolder> color_chooser_holder_;
+#endif
 
   // Manages the embedder state for browser plugins, if this WebContents is an
   // embedder; NULL otherwise.

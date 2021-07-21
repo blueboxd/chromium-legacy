@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 #include "v8/include/cppgc/allocation.h"
@@ -38,11 +39,16 @@ class HeapVectorBacking final
   using ClassType = HeapVectorBacking<T, Traits>;
 
  public:
-  static T* ToArray(ClassType* backing) {
+  // Although the HeapVectorBacking is fully constructed, the array resulting
+  // from ToArray may not be fully constructed as the elements of the array are
+  // not initialized and may have null vtable pointers. Null vtable pointer
+  // violates CFI for polymorphic types.
+  NO_SANITIZE_UNRELATED_CAST ALWAYS_INLINE static T* ToArray(
+      ClassType* backing) {
     return reinterpret_cast<T*>(backing);
   }
 
-  static ClassType* FromArray(T* payload) {
+  ALWAYS_INLINE static ClassType* FromArray(T* payload) {
     return reinterpret_cast<ClassType*>(payload);
   }
 

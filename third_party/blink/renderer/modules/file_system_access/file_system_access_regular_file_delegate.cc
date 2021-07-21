@@ -21,24 +21,36 @@ FileSystemAccessRegularFileDelegate::FileSystemAccessRegularFileDelegate(
     base::PassKey<FileSystemAccessFileDelegate>)
     : backing_file_(std::move(backing_file)) {}
 
-int FileSystemAccessRegularFileDelegate::Read(int64_t offset,
-                                              base::span<uint8_t> data) {
-  // TODO(crbug.com/1218431): Implement this method.
-  NOTIMPLEMENTED();
-  return 0;
+FileErrorOr<int> FileSystemAccessRegularFileDelegate::Read(
+    int64_t offset,
+    base::span<uint8_t> data) {
+  int size = base::checked_cast<int>(data.size());
+  int result =
+      backing_file_.Read(offset, reinterpret_cast<char*>(data.data()), size);
+  if (result >= 0) {
+    return result;
+  }
+  return base::File::GetLastFileError();
 }
 
-int FileSystemAccessRegularFileDelegate::Write(int64_t offset,
-                                               const base::span<uint8_t> data) {
-  // TODO(crbug.com/1218431): Implement this method.
-  NOTIMPLEMENTED();
-  return 0;
+FileErrorOr<int> FileSystemAccessRegularFileDelegate::Write(
+    int64_t offset,
+    const base::span<uint8_t> data) {
+  int size = base::checked_cast<int>(data.size());
+  int result =
+      backing_file_.Write(offset, reinterpret_cast<char*>(data.data()), size);
+  if (size == result) {
+    return result;
+  }
+  return base::File::GetLastFileError();
 }
 
-int64_t FileSystemAccessRegularFileDelegate::GetLength() {
-  // TODO(crbug.com/1218431): Implement this method.
-  NOTIMPLEMENTED();
-  return 0;
+FileErrorOr<int64_t> FileSystemAccessRegularFileDelegate::GetLength() {
+  int64_t result = backing_file_.GetLength();
+  if (result >= 0) {
+    return result;
+  }
+  return base::File::GetLastFileError();
 }
 
 bool FileSystemAccessRegularFileDelegate::SetLength(int64_t length) {
@@ -48,20 +60,12 @@ bool FileSystemAccessRegularFileDelegate::SetLength(int64_t length) {
 }
 
 bool FileSystemAccessRegularFileDelegate::Flush() {
-  // TODO(crbug.com/1218431): Implement this method.
-  NOTIMPLEMENTED();
-  return false;
+  return backing_file_.Flush();
 }
 
 void FileSystemAccessRegularFileDelegate::Close() {
   // TODO(crbug.com/1218431): Implement this method.
   NOTIMPLEMENTED();
-}
-
-base::File::Error FileSystemAccessRegularFileDelegate::GetLastFileError() {
-  // TODO(crbug.com/1218431): Implement this method.
-  NOTIMPLEMENTED();
-  return base::File::Error::FILE_OK;
 }
 
 }  // namespace blink

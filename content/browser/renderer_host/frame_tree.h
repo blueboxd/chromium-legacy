@@ -139,6 +139,14 @@ class CONTENT_EXPORT FrameTree {
 
     // Called when current Page of this frame tree changes to `page`.
     virtual void NotifyPageChanged(PageImpl& page) = 0;
+
+    // If the FrameTree using this delegate is an inner/nested FrameTree, then
+    // there may be a FrameTreeNode in the outer FrameTree that is considered
+    // our outer delegate FrameTreeNode. This method returns the outer delegate
+    // FrameTreeNode ID if one exists. If we don't have a an outer delegate
+    // FrameTreeNode, this method returns
+    // FrameTreeNode::kFrameTreeNodeInvalidId.
+    virtual int GetOuterDelegateFrameTreeNodeId() = 0;
   };
 
   // Type of FrameTree instance.
@@ -408,6 +416,8 @@ class CONTENT_EXPORT FrameTree {
   bool IsFencedFrameTree() const { return is_fenced_frame_tree_; }
   void SetFencedFrameTreeForTesting() { is_fenced_frame_tree_ = true; }
 
+  bool IsBeingDestroyed() const { return is_being_destroyed_; }
+
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
@@ -460,6 +470,8 @@ class CONTENT_EXPORT FrameTree {
   // TODO(crbug.com/1123606): Integrate this with the MPArch based fenced frame
   // code once that lands. Possibly this will then be part of |type_|.
   bool is_fenced_frame_tree_ = false;
+
+  bool is_being_destroyed_ = false;
 
 #if DCHECK_IS_ON()
   // Whether Shutdown() was called.

@@ -339,7 +339,8 @@ class WebPageReplayUtil {
     }
     return true;
 #else
-    NOTREACHED() << "Recording is not supported on this platform.";
+    ADD_FAILURE() << "Recording is not supported on this platform!";
+    return false;
 #endif
   }
 

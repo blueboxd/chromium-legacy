@@ -643,6 +643,7 @@ class WebContentsImpl::WebContentsDestructionObserver
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestructionObserver);
 };
 
+#if defined(OS_ANDROID)
 // TODO(sreejakshetty): Make |WebContentsImpl::ColorChooserHolder| per-frame
 // instead of WebContents-owned.
 // WebContentsImpl::ColorChooserHolder -----------------------------------------
@@ -691,6 +692,7 @@ class WebContentsImpl::ColorChooserHolder : public blink::mojom::ColorChooser {
   // mojo renderer client.
   mojo::Remote<blink::mojom::ColorChooserClient> client_;
 };
+#endif
 
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
 WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
@@ -844,7 +846,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       upload_size_(0),
       upload_position_(0),
       is_resume_pending_(false),
-      is_being_destroyed_(false),
       notify_disconnection_(false),
       dialog_manager_(nullptr),
       is_showing_before_unload_dialog_(false),
@@ -903,7 +904,7 @@ WebContentsImpl::~WebContentsImpl() {
 
   // Imperfect sanity check against double free, given some crashes unexpectedly
   // observed in the wild.
-  CHECK(!is_being_destroyed_);
+  CHECK(!IsBeingDestroyed());
 
   // We generally keep track of is_being_destroyed_ to let other features know
   // to avoid certain actions during destruction.
@@ -949,7 +950,9 @@ WebContentsImpl::~WebContentsImpl() {
     dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
 
+#if defined(OS_ANDROID)
   color_chooser_holder_.reset();
+#endif
   find_request_manager_.reset();
 
   // Shutdown the primary FrameTree.
@@ -1325,6 +1328,19 @@ void WebContentsImpl::ForEachRenderFrameHostImpl(
       return;
     }
   }
+}
+
+void WebContentsImpl::ForEachFrameTree(
+    FrameTreeIterationCallback on_frame_tree) {
+  std::set<FrameTree*> frame_trees;
+  ForEachRenderFrameHost(base::BindRepeating(
+      [](std::set<FrameTree*>& frame_trees, RenderFrameHostImpl* rfh) {
+        frame_trees.insert(rfh->frame_tree());
+      },
+      std::ref(frame_trees)));
+
+  for (auto* frame_tree : frame_trees)
+    on_frame_tree.Run(frame_tree);
 }
 
 std::vector<RenderFrameHostImpl*> WebContentsImpl::GetOutermostMainFrames() {
@@ -1882,7 +1898,7 @@ base::ScopedClosureRunner WebContentsImpl::IncrementCapturerCount(
     bool stay_hidden,
     bool stay_awake) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::IncrementCapturerCount");
-  DCHECK(!is_being_destroyed_);
+  DCHECK(!IsBeingDestroyed());
   if (stay_hidden) {
     // A hidden capture should not have side effect on the web contents, so it
     // should not pass a non-empty |capture_size| which will cause side effect.
@@ -2787,7 +2803,12 @@ void WebContentsImpl::OnCookiesAccessed(RenderFrameHostImpl* rfh,
 
 void WebContentsImpl::Stop() {
   TRACE_EVENT0("content", "WebContentsImpl::Stop");
-  frame_tree_.StopLoading();
+  ForEachFrameTree(base::BindRepeating(
+      [](FrameTree* frame_tree) { frame_tree->StopLoading(); }));
+  if (blink::features::IsPrerender2Enabled()) {
+    GetPrerenderHostRegistry()->CancelAllHosts(
+        PrerenderHost::FinalStatus::kStop);
+  }
   observers_.NotifyObservers(&WebContentsObserver::NavigationStopped);
 }
 
@@ -3038,12 +3059,12 @@ void WebContentsImpl::RenderWidgetDeleted(
     RenderWidgetHostImpl* render_widget_host) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RenderWidgetDeleted",
                         "render_widget_host", render_widget_host);
-  // Note that |is_being_destroyed_| can be true at this point as
+  // Note that IsBeingDestroyed() can return true at this point as
   // ~WebContentsImpl() calls RFHM::ClearRFHsPendingShutdown(), which might lead
   // us here.
   created_widgets_.erase(render_widget_host);
 
-  if (is_being_destroyed_)
+  if (IsBeingDestroyed())
     return;
 
   if (render_widget_host == mouse_lock_widget_)
@@ -3152,12 +3173,15 @@ bool WebContentsImpl::PreHandleGestureEvent(
 }
 
 RenderWidgetHostInputEventRouter* WebContentsImpl::GetInputEventRouter() {
-  if (!is_being_destroyed_ && GetOuterWebContents())
-    return GetOuterWebContents()->GetInputEventRouter();
+  if (!IsBeingDestroyed()) {
+    if (GetOuterWebContents())
+      return GetOuterWebContents()->GetInputEventRouter();
 
-  if (!rwh_input_event_router_.get() && !is_being_destroyed_)
-    rwh_input_event_router_ =
-        std::make_unique<RenderWidgetHostInputEventRouter>();
+    if (!rwh_input_event_router_.get()) {
+      rwh_input_event_router_ =
+          std::make_unique<RenderWidgetHostInputEventRouter>();
+    }
+  }
   return rwh_input_event_router_.get();
 }
 
@@ -3167,7 +3191,7 @@ void WebContentsImpl::ReplicatePageFocus(bool is_focused) {
   // Focus loss may occur while this WebContents is being destroyed.  Don't
   // send the message in this case, as the main frame's RenderFrameHost and
   // other state has already been cleared.
-  if (is_being_destroyed_)
+  if (IsBeingDestroyed())
     return;
 
   frame_tree_.ReplicatePageFocus(is_focused);
@@ -5030,6 +5054,7 @@ RenderFrameHostImpl* WebContentsImpl::GetOriginalOpener() {
   return opener_ftn ? opener_ftn->current_frame_host() : nullptr;
 }
 
+#if defined(OS_ANDROID)
 void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
   OPTIONAL_TRACE_EVENT1("content",
                         "WebContentsImpl::DidChooseColorInColorChooser",
@@ -5042,6 +5067,7 @@ void WebContentsImpl::DidEndColorChooser() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DidEndColorChooser");
   color_chooser_holder_.reset();
 }
+#endif
 
 int WebContentsImpl::DownloadImage(
     const GURL& url,
@@ -5517,17 +5543,23 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     RenderFrameHostImpl* render_frame_host,
     const LoadCommittedDetails& details,
     const mojom::DidCommitProvisionalLoadParams& params) {
+  // The render_frame_host is always a main frame.
+  DCHECK(render_frame_host->is_main_frame());
   OPTIONAL_TRACE_EVENT1("content,navigation",
                         "WebContentsImpl::DidNavigateMainFramePostCommit",
                         "render_frame_host", render_frame_host);
+  bool is_primary_main_frame = render_frame_host->IsInPrimaryMainFrame();
+
   if (details.is_navigation_to_different_page()) {
-    // Clear the status bubble. This is a workaround for a bug where WebKit
-    // doesn't let us know that the cursor left an element during a
-    // transition (this is also why the mouse cursor remains as a hand after
-    // clicking on a link); see bugs 1184641 and 980803. We don't want to
-    // clear the bubble when a user navigates to a named anchor in the same
-    // page.
-    ClearTargetURL();
+    if (is_primary_main_frame) {
+      // Clear the status bubble. This is a workaround for a bug where WebKit
+      // doesn't let us know that the cursor left an element during a
+      // transition (this is also why the mouse cursor remains as a hand after
+      // clicking on a link); see bugs 1184641 and 980803. We don't want to
+      // clear the bubble when a user navigates to a named anchor in the same
+      // page.
+      ClearTargetURL();
+    }
 
     RenderWidgetHostViewBase* rwhvb = static_cast<RenderWidgetHostViewBase*>(
         render_frame_host->GetMainFrame()->GetView());
@@ -5535,8 +5567,8 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
       rwhvb->OnDidNavigateMainFrameToNewPage();
   }
 
-  if (delegate_)
-    delegate_->DidNavigateMainFramePostCommit(this);
+  if (is_primary_main_frame && delegate_)
+    delegate_->DidNavigatePrimaryMainFramePostCommit(this);
 
   PageImpl& page = render_frame_host->GetPage();
   if (page.IsPrimary()) {
@@ -6084,6 +6116,7 @@ void WebContentsImpl::OnColorChooserFactoryReceiver(
   color_chooser_factory_receivers_.Add(this, std::move(receiver));
 }
 
+#if defined(OS_ANDROID)
 void WebContentsImpl::OpenColorChooser(
     mojo::PendingReceiver<blink::mojom::ColorChooser> chooser_receiver,
     mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
@@ -6110,6 +6143,7 @@ void WebContentsImpl::OpenColorChooser(
     color_chooser_holder_.reset();
   }
 }
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 void WebContentsImpl::OnPepperInstanceCreated(RenderFrameHostImpl* source,
@@ -6307,7 +6341,7 @@ void WebContentsImpl::ResetLoadProgressState() {
 // loading, or done loading.
 void WebContentsImpl::LoadingStateChanged(bool to_different_document,
                                           LoadNotificationDetails* details) {
-  if (is_being_destroyed_)
+  if (IsBeingDestroyed())
     return;
 
   bool is_loading = IsLoading();
@@ -6936,7 +6970,7 @@ void WebContentsImpl::InnerWebContentsAttached(
 void WebContentsImpl::InnerWebContentsDetached(
     WebContents* inner_web_contents) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::InnerWebContentsCreated");
-  if (!is_being_destroyed_)
+  if (!IsBeingDestroyed())
     OnAudioStateChanged();
 }
 
@@ -6978,7 +7012,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   // current_frame_host() for the root FrameTreeNode has already been cleared.
   // Since the WebContents is going away, none of the work here is needed, so
   // just return early.
-  if (is_being_destroyed_)
+  if (IsBeingDestroyed())
     return;
 
   if (rvh != GetRenderViewHost()) {
@@ -7153,7 +7187,7 @@ void WebContentsImpl::DidStopLoading() {
 
 void WebContentsImpl::DidChangeLoadProgress() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DidChangeLoadProgress");
-  if (is_being_destroyed_)
+  if (IsBeingDestroyed())
     return;
   double load_progress = frame_tree_.load_progress();
 
@@ -7943,10 +7977,6 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
   is_showing_before_unload_dialog_ = false;
 }
 
-int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
-  return node_.outer_contents_frame_tree_node_id();
-}
-
 RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {
   return frame_tree_.root()->render_manager();
 }
@@ -8120,7 +8150,7 @@ void WebContentsImpl::NotifyFindReply(int request_id,
                                       int active_match_ordinal,
                                       bool final_update) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::NotifyFindReply");
-  if (delegate_ && !is_being_destroyed_ &&
+  if (delegate_ && !IsBeingDestroyed() &&
       !GetMainFrame()->GetProcess()->FastShutdownStarted()) {
     delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
                          active_match_ordinal, final_update);
@@ -8857,6 +8887,10 @@ void WebContentsImpl::NotifyPageChanged(PageImpl& page) {
   observers_.NotifyObservers(&WebContentsObserver::PrimaryPageChanged, page);
 }
 
+int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
+  return node_.outer_contents_frame_tree_node_id();
+}
+
 void WebContentsImpl::RenderFrameHostStateChanged(
     RenderFrameHost* render_frame_host,
     LifecycleState old_state,
@@ -8874,6 +8908,7 @@ void WebContentsImpl::RenderFrameHostStateChanged(
                           dict.Add("new", new_state);
                         });
 
+#if defined(OS_ANDROID)
   if (old_state == LifecycleState::kActive && !render_frame_host->GetParent()) {
     // TODO(sreejakshetty): Remove this reset when ColorChooserHolder becomes
     // per-frame.
@@ -8881,6 +8916,7 @@ void WebContentsImpl::RenderFrameHostStateChanged(
     // kActive.
     color_chooser_holder_.reset();
   }
+#endif
 
   observers_.NotifyObservers(&WebContentsObserver::RenderFrameHostStateChanged,
                              render_frame_host, old_state, new_state);
@@ -8907,7 +8943,7 @@ void WebContentsImpl::DecrementCapturerCount(bool stay_hidden,
   DCHECK_GE(visible_capturer_count_, 0);
   DCHECK_GE(stay_awake_capturer_count_, 0);
 
-  if (is_being_destroyed_)
+  if (IsBeingDestroyed())
     return;
 
   const bool is_being_captured = IsBeingCaptured();

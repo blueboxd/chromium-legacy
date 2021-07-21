@@ -33,6 +33,13 @@ class ChromeSafeBrowsingUIManagerDelegate
       const GURL& page_url,
       const std::string& reason,
       int net_error_code) override;
+  prerender::NoStatePrefetchContents* GetNoStatePrefetchContentsIfExists(
+      content::WebContents* web_contents) override;
+  bool IsHostingExtension(content::WebContents* web_contents) override;
+  PrefService* GetPrefs(content::BrowserContext* browser_context) override;
+  history::HistoryService* GetHistoryService(
+      content::BrowserContext* browser_context) override;
+  bool IsMetricsAndCrashReportingEnabled() override;
 };
 
 }  // namespace safe_browsing

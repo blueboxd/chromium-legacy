@@ -26,13 +26,14 @@
 #include "chrome/browser/ash/attestation/enrollment_policy_observer.h"
 #include "chrome/browser/ash/attestation/machine_certificate_uploader_impl.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/ash/login/reporting/login_logout_reporter.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/core/policy_pref_names.h"
 #include "chrome/browser/ash/policy/remote_commands/device_commands_factory_chromeos.h"
 #include "chrome/browser/ash/policy/rsu/lookup_key_uploader.h"
+#include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/uploading/heartbeat_scheduler.h"
 #include "chrome/browser/chromeos/policy/uploading/status_uploader.h"
 #include "chrome/browser/chromeos/policy/uploading/system_log_uploader.h"
@@ -81,7 +82,7 @@ bool IsForcedReEnrollmentEnabled() {
 }  // namespace
 
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
-    std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
+    std::unique_ptr<DeviceCloudPolicyStoreAsh> store,
     std::unique_ptr<CloudExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ServerBackedStateKeysBroker* state_keys_broker)
@@ -121,6 +122,8 @@ void DeviceCloudPolicyManagerChromeOS::RemoveDeviceCloudPolicyManagerObserver(
 
 // Keep clean up order as the reversed creation order.
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
+  login_logout_reporter_.reset();
+
   heartbeat_scheduler_.reset();
   syslog_uploader_.reset();
   status_uploader_.reset();
@@ -237,6 +240,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
     heartbeat_scheduler_ = std::make_unique<HeartbeatScheduler>(
         g_browser_process->gcm_driver(), client(), device_store_.get(),
         install_attributes->GetDeviceId(), task_runner_);
+    login_logout_reporter_ =
+        std::make_unique<chromeos::reporting::LoginLogoutReporter>();
   }
 
   NotifyConnected();

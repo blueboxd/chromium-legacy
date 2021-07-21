@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './data_point.js';
 import './diagnostics_fonts_css.js';
 import './diagnostics_shared_css.js';
 
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Network} from './diagnostics_types.js';
+import {getSubnetMaskFromRoutingPrefix} from './diagnostics_utils.js';
 
 /**
  * @fileoverview
@@ -17,5 +23,100 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  properties: {},
+  behaviors: [I18nBehavior],
+
+  properties: {
+    /**
+     * @protected
+     * @type {boolean}
+     */
+    expanded_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * @protected
+     * @type {string}
+     */
+    gateway_: {
+      type: String,
+      computed: 'computeGateway_(network.ipConfig.gateway)',
+    },
+
+    /**
+     * @protected
+     * @type {string}
+     */
+    macAddress_: {
+      type: String,
+      computed: 'computeMacAddress_(network.macAddress)',
+    },
+
+    /**
+     * @protected
+     * @type {string}
+     */
+    nameServers_: {
+      type: String,
+      computed: 'computeNameServers_(network.ipConfig.nameServers)',
+    },
+
+    /** @type {!Network} */
+    network: {
+      type: Object,
+    },
+
+    /**
+     * @protected
+     * @type {string}
+     */
+    subnetMask_: {
+      type: String,
+      computed: 'computeSubnetMask_(network.ipConfig.routingPrefix)',
+    },
+  },
+
+  /**
+   * @protected
+   * @return {string}
+   */
+  computeGateway_() {
+    if (this.network.ipConfig && this.network.ipConfig.gateway) {
+      return this.network.ipConfig.gateway;
+    }
+    return '';
+  },
+
+  /**
+   * @protected
+   * @return {string}
+   */
+  computeMacAddress_() {
+    return this.network.macAddress || '';
+  },
+
+  /**
+   * @protected
+   * @return {string}
+   */
+  computeNameServers_() {
+    // Both ipConfig and nameServers could be null.
+    if (this.network.ipConfig && this.network.ipConfig.nameServers) {
+      return this.network.ipConfig.nameServers.join(', ');
+    }
+    return '';
+  },
+
+  /**
+   * @protected
+   * @return {string}
+   */
+  computeSubnetMask_() {
+    if (this.network.ipConfig && this.network.ipConfig.routingPrefix) {
+      return getSubnetMaskFromRoutingPrefix(
+          this.network.ipConfig.routingPrefix);
+    }
+    return '';
+  },
 });

@@ -2416,6 +2416,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "enable-quick-action-search-widget-android-dino-variant",
+    "owners": [ "maxtauro@google.com", "ender@google.com" ],
+    "expiry_milestone": 98
+  },
+  {
     "name": "enable-quick-answers",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 95
@@ -2955,6 +2960,11 @@
     "name": "enterprise-reporting-api-keychain-recreation",
     "owners": ["zmin", "sacomoto"],
     "expiry_milestone": 92
+  },
+  {
+    "name": "esim-policy",
+    "owners": [ "azeemarshad", "jiajunz@google.com", "cros-connectivity@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "ev-details-in-page-info",
@@ -3787,12 +3797,22 @@
     "expiry_milestone": 99
   },
   {
+    "name": "messages-for-android-grouped-permission",
+    "owners": [ "pavely", "lazzzis" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "messages-for-android-infrastructure",
     "owners": [ "pavely", "lazzzis" ],
     "expiry_milestone": 95
   },
   {
     "name": "messages-for-android-passwords",
+    "owners": [ "pavely", "lazzzis" ],
+    "expiry_milestone": 99
+  },
+  {
+    "name": "messages-for-android-permission-update",
     "owners": [ "pavely", "lazzzis" ],
     "expiry_milestone": 99
   },
@@ -4028,6 +4048,11 @@
   {
     "name": "ntp-modules-redesigned",
     "owners": [ "doei", "mahmadi", "tiborg" ],
+    "expiry_milestone": 96
+  },
+  {
+    "name": "ntp-photos-module",
+    "owners": [ "jerem", "tiborg" ],
     "expiry_milestone": 96
   },
   {
@@ -5040,6 +5065,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "share-usage-ranking",
+    "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "shared-clipboard-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 90
@@ -5691,6 +5721,11 @@
     "name": "webid",
     "owners": [ "kenrb", "goto", "majidvp"],
     "expiry_milestone": 96
+  },
+  {
+    "name": "webnotes-publish",
+    "owners": [ "sebsg", "gayane"],
+    "expiry_milestone": 97
   },
   {
     "name": "webnotes-stylize",

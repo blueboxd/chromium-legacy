@@ -1217,6 +1217,7 @@ config("compiler_deterministic") {
     # we build same files with same compile flag.
     # Other paths are already given in relative, no need to normalize them.
     if (is_nacl) {
+      # TODO(https://crbug.com/1231236): Use -ffile-compilation-dir= here.
       cflags += [
         "-Xclang",
         "-fdebug-compilation-dir",
@@ -1582,8 +1583,7 @@ config("default_warnings") {
 
   if (is_clang) {
     cflags += [
-      # TODO(thakis): Consider -Wloop-analysis (turns on
-      # -Wrange-loop-analysis too).
+      "-Wloop-analysis",
 
       # TODO(thakis): This used to be implied by -Wno-unused-function,
       # which we no longer use. Check if it makes sense to remove

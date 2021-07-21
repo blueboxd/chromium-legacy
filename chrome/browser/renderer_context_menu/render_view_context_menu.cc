@@ -976,7 +976,8 @@ void RenderViewContextMenu::InitMenu() {
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_LENS_REGION_SEARCH)) {
-    if (base::FeatureList::IsEnabled(lens::features::kLensRegionSearch)) {
+    if (base::FeatureList::IsEnabled(lens::features::kLensRegionSearch) &&
+        search::DefaultSearchProviderIsGoogle(GetProfile())) {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
       AppendLensRegionSearchItem();
     }
@@ -2398,7 +2399,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
-      OpenURLWithExtraHeaders(params_.link_url, GURL(),
+      // Pass along the |referring_url| so we can show it in browser UI. Note
+      // that this won't and shouldn't be sent via the referrer header.
+      OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
                               WindowOpenDisposition::OFF_THE_RECORD,
                               ui::PAGE_TRANSITION_LINK, "" /* extra_headers */,
                               true /* started_from_context_menu */);
@@ -2828,7 +2831,6 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
   }
   std::string source_lang =
       chrome_translate_client->GetLanguageState().source_language();
-  std::string target_lang = GetTargetLanguage();
   // Note that we intentionally enable the menu even if the source and
   // target languages are identical.  This is to give a way to user to
   // translate a page that might contains text fragments in a different
@@ -2836,10 +2838,6 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
   return ((params_.edit_flags & ContextMenuDataEditFlags::kCanTranslate) !=
           0) &&
          !source_lang.empty() &&  // Did we receive the page language yet?
-         // There are some application locales which can't be used as a
-         // target language for translation. In that case GetTargetLanguage()
-         // may return empty.
-         !target_lang.empty() &&
          // Disable on the Instant Extended NTP.
          !search::IsInstantNTP(embedder_web_contents_);
 }
@@ -2961,8 +2959,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
     return false;
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::ClipboardFormatType::GetPlainTextType(),
-      ui::ClipboardBuffer::kCopyPaste,
+      ui::ClipboardFormatType::PlainTextType(), ui::ClipboardBuffer::kCopyPaste,
       CreateDataEndpoint(/*notify_if_restricted=*/false).get());
 }
 

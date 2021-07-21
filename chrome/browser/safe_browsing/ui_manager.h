@@ -29,6 +29,10 @@ namespace history {
 class HistoryService;
 }  // namespace history
 
+namespace prerender {
+class NoStatePrefetchContents;
+}
+
 namespace safe_browsing {
 
 class BaseBlockingPage;
@@ -86,6 +90,26 @@ class SafeBrowsingUIManager : public BaseUIManager {
         const GURL& page_url,
         const std::string& reason,
         int net_error_code) = 0;
+
+    // Gets the NoStatePrefetchContents instance associated with |web_contents|
+    // if one exists (i.e., if |web_contents| is being prerendered).
+    virtual prerender::NoStatePrefetchContents*
+    GetNoStatePrefetchContentsIfExists(content::WebContents* web_contents) = 0;
+
+    // Returns true if |web_contents| is hosting a page for an extension.
+    virtual bool IsHostingExtension(content::WebContents* web_contents) = 0;
+
+    // Returns the PrefService that the embedder associates with
+    // |browser_context|.
+    virtual PrefService* GetPrefs(content::BrowserContext* browser_context) = 0;
+
+    // Returns the HistoryService that the embedder associates with
+    // |browser_context|.
+    virtual history::HistoryService* GetHistoryService(
+        content::BrowserContext* browser_context) = 0;
+
+    // Returns true if metrics reporting is enabled.
+    virtual bool IsMetricsAndCrashReportingEnabled() = 0;
   };
 
   SafeBrowsingUIManager(
@@ -95,11 +119,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
       const GURL& default_safe_page);
 
   // Displays a SafeBrowsing interstitial.
-  // |ui_manager| is the manager which eventually displays the blocking page.
   // |resource| is the unsafe resource for which the warning is displayed.
-  static void StartDisplayingBlockingPage(
-      scoped_refptr<SafeBrowsingUIManager> ui_manager,
-      const UnsafeResource& resource);
+  void StartDisplayingBlockingPage(const UnsafeResource& resource);
 
   // Called to stop or shutdown operations on the UI thread. This may be called
   // multiple times during the life of the UIManager. Should be called

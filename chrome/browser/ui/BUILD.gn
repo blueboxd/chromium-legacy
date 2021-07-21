@@ -82,7 +82,6 @@ static_library("ui") {
     "browser_ui_prefs.h",
     "chrome_select_file_policy.cc",
     "chrome_select_file_policy.h",
-    "color_chooser.h",
     "confirm_bubble.h",
     "cookie_controls/cookie_controls_service.cc",
     "cookie_controls/cookie_controls_service.h",
@@ -603,7 +602,6 @@ static_library("ui") {
     "//ui/compositor",
     "//ui/content_accelerators",
     "//ui/display",
-    "//ui/display/manager",
     "//ui/events:gesture_detection",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -663,6 +661,11 @@ static_library("ui") {
       "android/autofill/card_unmask_prompt_view_android.h",
       "android/autofill/credit_card_scanner_view_android.cc",
       "android/autofill/credit_card_scanner_view_android.h",
+      "android/autofill/save_card_message_confirm_controller.cc",
+      "android/autofill/save_card_message_confirm_controller.h",
+      "android/autofill/save_card_message_confirm_delegate.h",
+      "android/autofill/save_card_message_controller_android.cc",
+      "android/autofill/save_card_message_controller_android.h",
       "android/autofill/save_update_address_profile_prompt_view_android.cc",
       "android/autofill/save_update_address_profile_prompt_view_android.h",
       "android/autofill/snackbar/autofill_snackbar_view_android.cc",
@@ -670,7 +673,6 @@ static_library("ui") {
       "android/chrome_http_auth_handler.cc",
       "android/chrome_http_auth_handler.h",
       "android/chrome_javascript_app_modal_dialog_android.cc",
-      "android/color_chooser_dialog_android.cc",
       "android/context_menu_helper.cc",
       "android/context_menu_helper.h",
       "android/device_dialog/chrome_bluetooth_chooser_android_delegate.cc",
@@ -824,6 +826,7 @@ static_library("ui") {
       "//components/infobars/android",
       "//components/infobars/content",
       "//components/javascript_dialogs/android:jni_headers",
+      "//components/messages/android",
       "//components/messages/android:feature_flags",
       "//components/navigation_interception",
       "//components/optimization_guide/proto:optimization_guide_proto",
@@ -1609,7 +1612,7 @@ static_library("ui") {
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
       "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
-      "//chrome/browser/web_applications/components",
+      "//chrome/browser/web_applications",
       "//chrome/common:buildflags",
       "//chrome/common:version_header",
       "//chrome/common/search:generate_chrome_colors_info",
@@ -1675,8 +1678,6 @@ static_library("ui") {
 
     if (enable_extensions) {
       deps += [
-        "//chrome/browser/web_applications",
-        "//chrome/browser/web_applications/components",
         "//chrome/browser/web_applications/extensions",
         "//google_apis/drive",
       ]
@@ -2276,10 +2277,10 @@ static_library("ui") {
       "webui/chromeos/assistant_optin/assistant_optin_ui.h",
       "webui/chromeos/assistant_optin/assistant_optin_utils.cc",
       "webui/chromeos/assistant_optin/assistant_optin_utils.h",
-      "webui/chromeos/bluetooth_dialog_localized_strings_provider.cc",
-      "webui/chromeos/bluetooth_dialog_localized_strings_provider.h",
       "webui/chromeos/bluetooth_pairing_dialog.cc",
       "webui/chromeos/bluetooth_pairing_dialog.h",
+      "webui/chromeos/bluetooth_shared_load_time_data_provider.cc",
+      "webui/chromeos/bluetooth_shared_load_time_data_provider.h",
       "webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.cc",
       "webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h",
       "webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.cc",
@@ -2873,6 +2874,7 @@ static_library("ui") {
       "//ui/chromeos/events",
       "//ui/chromeos/strings:strings_provider",
       "//ui/compositor_extra",
+      "//ui/display/manager",
       "//ui/events/ozone/layout:layout",
       "//ui/file_manager:file_manager",
       "//ui/ozone",
@@ -3210,8 +3212,6 @@ static_library("ui") {
       "cocoa/browser_window_command_handler.mm",
       "cocoa/chrome_command_dispatcher_delegate.h",
       "cocoa/chrome_command_dispatcher_delegate.mm",
-      "cocoa/color_chooser_mac.h",
-      "cocoa/color_chooser_mac.mm",
       "cocoa/confirm_quit.cc",
       "cocoa/confirm_quit.h",
       "cocoa/confirm_quit_panel_controller.h",
@@ -3384,9 +3384,6 @@ static_library("ui") {
       "views/chrome_cleaner_dialog_win.h",
       "views/chrome_cleaner_reboot_dialog_win.cc",
       "views/chrome_cleaner_reboot_dialog_win.h",
-      "views/color_chooser_dialog.cc",
-      "views/color_chooser_dialog.h",
-      "views/color_chooser_win.cc",
       "views/critical_notification_bubble_view.cc",
       "views/critical_notification_bubble_view.h",
       "views/frame/browser_desktop_window_tree_host.h",
@@ -4728,13 +4725,6 @@ static_library("ui") {
       sources += [
         "views/frame/desktop_browser_frame_aura.cc",
         "views/frame/desktop_browser_frame_aura.h",
-      ]
-    }
-
-    if (!is_win) {
-      sources += [
-        "views/color_chooser_aura.cc",
-        "views/color_chooser_aura.h",
       ]
     }
   }

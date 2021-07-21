@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "v8/include/cppgc/custom-space.h"
 #include "v8/include/cppgc/explicit-management.h"
 #include "v8/include/cppgc/object-size-trait.h"
@@ -30,11 +31,16 @@ class HeapHashTableBacking final
   using ValueType = typename Table::ValueType;
 
  public:
-  static ValueType* ToArray(ClassType* backing) {
+  // Although the HeapHashTableBacking is fully constructed, the array resulting
+  // from ToArray may not be fully constructed as the elements of the array are
+  // not initialized and may have null vtable pointers. Null vtable pointer
+  // violates CFI for polymorphic types.
+  NO_SANITIZE_UNRELATED_CAST ALWAYS_INLINE static ValueType* ToArray(
+      ClassType* backing) {
     return reinterpret_cast<ValueType*>(backing);
   }
 
-  static ClassType* FromArray(ValueType* array) {
+  ALWAYS_INLINE static ClassType* FromArray(ValueType* array) {
     return reinterpret_cast<ClassType*>(array);
   }
 

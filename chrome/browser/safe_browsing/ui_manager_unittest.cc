@@ -22,6 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/content/browser/safe_browsing_blocking_page.h"
 #include "components/safe_browsing/content/browser/safe_browsing_blocking_page_factory.h"
 #include "components/safe_browsing/core/browser/db/util.h"
@@ -41,13 +42,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_host.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/manifest.h"
-#include "extensions/common/manifest_constants.h"
-#endif
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -162,7 +156,10 @@ class TestSafeBrowsingBlockingPageFactory
 class TestSafeBrowsingUIManagerDelegate
     : public SafeBrowsingUIManager::Delegate {
  public:
-  TestSafeBrowsingUIManagerDelegate() = default;
+  TestSafeBrowsingUIManagerDelegate() {
+    safe_browsing::RegisterProfilePrefs(pref_service_.registry());
+  }
+
   ~TestSafeBrowsingUIManagerDelegate() override = default;
 
   // SafeBrowsingUIManager::Delegate:
@@ -177,17 +174,41 @@ class TestSafeBrowsingUIManagerDelegate
       const GURL& page_url,
       const std::string& reason,
       int net_error_code) override {}
+  prerender::NoStatePrefetchContents* GetNoStatePrefetchContentsIfExists(
+      content::WebContents* web_contents) override {
+    return nullptr;
+  }
+  bool IsHostingExtension(content::WebContents* web_contents) override {
+    return is_hosting_extension_;
+  }
+  PrefService* GetPrefs(content::BrowserContext* browser_context) override {
+    return &pref_service_;
+  }
+  history::HistoryService* GetHistoryService(
+      content::BrowserContext* browser_context) override {
+    return nullptr;
+  }
+  bool IsMetricsAndCrashReportingEnabled() override { return false; }
+
+  void set_is_hosting_extension(bool is_hosting_extension) {
+    is_hosting_extension_ = is_hosting_extension;
+  }
 
  private:
   std::string app_locale_ = "en-us";
+  bool is_hosting_extension_ = false;
+  TestingPrefServiceSimple pref_service_;
 };
 
 class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   SafeBrowsingUIManagerTest()
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+    auto ui_manager_delegate =
+        std::make_unique<TestSafeBrowsingUIManagerDelegate>();
+    raw_ui_manager_delegate_ = ui_manager_delegate.get();
     ui_manager_ = new SafeBrowsingUIManager(
-        nullptr, std::make_unique<TestSafeBrowsingUIManagerDelegate>(),
+        nullptr, std::move(ui_manager_delegate),
         std::make_unique<TestSafeBrowsingBlockingPageFactory>(),
         GURL("chrome://new-tab-page/"));
   }
@@ -281,9 +302,13 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   SafeBrowsingUIManager* ui_manager() { return ui_manager_.get(); }
+  TestSafeBrowsingUIManagerDelegate* ui_manager_delegate() {
+    return raw_ui_manager_delegate_;
+  }
 
  private:
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
+  TestSafeBrowsingUIManagerDelegate* raw_ui_manager_delegate_ = nullptr;
   ScopedTestingLocalState scoped_testing_local_state_;
 };
 
@@ -609,44 +634,26 @@ TEST_F(SafeBrowsingUIManagerTest, ShowBlockPageNoCallback) {
   ui_manager()->DisplayBlockingPage(resource);
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(SafeBrowsingUIManagerTest, NoInterstitialInExtensions) {
   // Pretend the current web contents is in an extension.
-  base::DictionaryValue manifest;
-  manifest.SetString(extensions::manifest_keys::kName, "TestComponentApp");
-  manifest.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
-  manifest.SetString(extensions::manifest_keys::kApp, "true");
-  manifest.SetString(extensions::manifest_keys::kPlatformAppBackgroundPage,
-                     std::string());
-  std::string error;
-  scoped_refptr<extensions::Extension> app;
-  app = extensions::Extension::Create(
-      base::FilePath(), extensions::mojom::ManifestLocation::kComponent,
-      manifest, 0, &error);
-  extensions::ProcessManager* extension_manager =
-      extensions::ProcessManager::Get(web_contents()->GetBrowserContext());
-  extension_manager->CreateBackgroundHost(app.get(), GURL("background.html"));
-  extensions::ExtensionHost* host =
-      extension_manager->GetBackgroundHostForExtension(app->id());
+  ui_manager_delegate()->set_is_hosting_extension(true);
 
   security_interstitials::UnsafeResource resource =
       MakeUnsafeResource(kBadURL, false /* is_subresource */);
   resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
-      host->host_contents()->GetMainFrame()->GetProcess()->GetID(),
-      host->host_contents()->GetMainFrame()->GetRoutingID());
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID());
 
   SafeBrowsingCallbackWaiter waiter;
   resource.callback =
       base::BindRepeating(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
                           base::Unretained(&waiter));
   resource.callback_sequence = content::GetUIThreadTaskRunner({});
-  SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager(), resource);
+  ui_manager()->StartDisplayingBlockingPage(resource);
   waiter.WaitForCallback();
   EXPECT_FALSE(waiter.proceed());
   EXPECT_FALSE(waiter.showed_interstitial());
-  delete host;
 }
-#endif
 
 TEST_F(SafeBrowsingUIManagerTest, InvalidRenderFrameHostId) {
   security_interstitials::UnsafeResource resource =

@@ -114,6 +114,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
     &shared_highlighting::kSharedHighlightingV2,
     &shared_highlighting::kSharedHighlightingAmp,
+    &features::kElasticOverscroll,
     &features::kPrivacySandboxSettings,
     &features::kPrivacySandboxSettings2,
     &features::kPrioritizeBootstrapTasks,
@@ -172,6 +173,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableForThirdParties,
     &kCCTResourcePrefetch,
     &kDarkenWebsitesCheckboxInThemesSetting,
+    &kQuickActionSearchWidgetAndroidDinoVariant,
     &kDontAutoHideBrowserControls,
     &kChromeShareHighlightsAndroid,
     &kChromeShareLongScreenshot,
@@ -539,6 +541,10 @@ const base::Feature kContextualSearchTranslations{
 
 const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
     "DarkenWebsitesCheckboxInThemesSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kQuickActionSearchWidgetAndroidDinoVariant{
+    "QuickActionSearchWidgetAndroidDinoVariant",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};

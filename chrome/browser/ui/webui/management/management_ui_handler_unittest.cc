@@ -45,15 +45,15 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/ash/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/ash/policy/dlp/mock_dlp_rules_manager.h"
 #include "chrome/browser/ash/policy/enrollment/device_cloud_policy_initializer.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/ash/policy/status_collector/status_collector.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
-#include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "chrome/browser/chromeos/policy/uploading/status_uploader.h"
 #include "chrome/browser/chromeos/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -178,7 +178,7 @@ class TestDeviceCloudPolicyManagerChromeOS
     : public policy::DeviceCloudPolicyManagerChromeOS {
  public:
   TestDeviceCloudPolicyManagerChromeOS(
-      std::unique_ptr<policy::DeviceCloudPolicyStoreChromeOS> store,
+      std::unique_ptr<policy::DeviceCloudPolicyStoreAsh> store,
       policy::ServerBackedStateKeysBroker* state_keys_broker)
       : DeviceCloudPolicyManagerChromeOS(std::move(store),
                                          nullptr,
@@ -425,8 +425,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
   void SetUpConnectManager() {
     RegisterLocalState(local_state_.registry());
-    std::unique_ptr<policy::DeviceCloudPolicyStoreChromeOS> store =
-        std::make_unique<policy::DeviceCloudPolicyStoreChromeOS>(
+    std::unique_ptr<policy::DeviceCloudPolicyStoreAsh> store =
+        std::make_unique<policy::DeviceCloudPolicyStoreAsh>(
             device_settings_service_.get(), install_attributes_->Get(),
             base::ThreadTaskRunnerHandle::Get());
     manager_ = std::make_unique<TestDeviceCloudPolicyManagerChromeOS>(

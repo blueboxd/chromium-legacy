@@ -27,6 +27,16 @@
 namespace chromeos {
 namespace network_diagnostics {
 
+namespace {
+
+mojom::RoutineResultPtr CreateResult(mojom::RoutineVerdict verdict,
+                                     mojom::RoutineProblemsPtr problems) {
+  return mojom::RoutineResult::New(verdict, std::move(problems),
+                                   base::Time::Now());
+}
+
+}  // namespace
+
 NetworkDiagnostics::NetworkDiagnostics(
     chromeos::DebugDaemonClient* debug_daemon_client) {
   DCHECK(debug_daemon_client);
@@ -44,193 +54,220 @@ void NetworkDiagnostics::BindReceiver(
 }
 
 void NetworkDiagnostics::LanConnectivity(LanConnectivityCallback callback) {
-  auto routine = std::make_unique<LanConnectivityRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<LanConnectivityRoutine> routine,
-         LanConnectivityCallback callback,
-         mojom::RoutineVerdict verdict) { std::move(callback).Run(verdict); },
-      std::move(routine), std::move(callback)));
+  RunLanConnectivity(base::BindOnce(
+      [](LanConnectivityCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(result->verdict);
+      },
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::SignalStrength(SignalStrengthCallback callback) {
-  auto routine = std::make_unique<SignalStrengthRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<SignalStrengthRoutine> routine,
-         SignalStrengthCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::SignalStrengthProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunSignalStrength(base::BindOnce(
+      [](SignalStrengthCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_signal_strength_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::GatewayCanBePinged(
     GatewayCanBePingedCallback callback) {
-  auto routine =
-      std::make_unique<GatewayCanBePingedRoutine>(debug_daemon_client_);
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<GatewayCanBePingedRoutine> routine,
-         GatewayCanBePingedCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::GatewayCanBePingedProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunGatewayCanBePinged(base::BindOnce(
+      [](GatewayCanBePingedCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_gateway_can_be_pinged_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::HasSecureWiFiConnection(
     HasSecureWiFiConnectionCallback callback) {
-  auto routine = std::make_unique<HasSecureWiFiConnectionRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<HasSecureWiFiConnectionRoutine> routine,
-         HasSecureWiFiConnectionCallback callback,
-         mojom::RoutineVerdict verdict,
-         const std::vector<mojom::HasSecureWiFiConnectionProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunHasSecureWiFiConnection(base::BindOnce(
+      [](HasSecureWiFiConnectionCallback callback,
+         mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(
+                result->problems->get_has_secure_wifi_connection_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::DnsResolverPresent(
     DnsResolverPresentCallback callback) {
-  auto routine = std::make_unique<DnsResolverPresentRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<DnsResolverPresentRoutine> routine,
-         DnsResolverPresentCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::DnsResolverPresentProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunDnsResolverPresent(base::BindOnce(
+      [](DnsResolverPresentCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_dns_resolver_present_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::DnsLatency(DnsLatencyCallback callback) {
-  auto routine = std::make_unique<DnsLatencyRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<DnsLatencyRoutine> routine,
-         DnsLatencyCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::DnsLatencyProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunDnsLatency(base::BindOnce(
+      [](DnsLatencyCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_dns_latency_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::DnsResolution(DnsResolutionCallback callback) {
-  auto routine = std::make_unique<DnsResolutionRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<DnsResolutionRoutine> routine,
-         DnsResolutionCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::DnsResolutionProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunDnsResolution(base::BindOnce(
+      [](DnsResolutionCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_dns_resolution_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::CaptivePortal(CaptivePortalCallback callback) {
-  auto routine = std::make_unique<CaptivePortalRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<CaptivePortalRoutine> routine,
-         CaptivePortalCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::CaptivePortalProblem>& problems) {
-        std::move(callback).Run(verdict, problems);
+  RunCaptivePortal(base::BindOnce(
+      [](CaptivePortalCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_captive_portal_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::HttpFirewall(HttpFirewallCallback callback) {
-  auto routine = std::make_unique<HttpFirewallRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<HttpFirewallRoutine> routine,
-         HttpFirewallCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::HttpFirewallProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunHttpFirewall(base::BindOnce(
+      [](HttpFirewallCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_http_firewall_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::HttpsFirewall(HttpsFirewallCallback callback) {
-  auto routine = std::make_unique<HttpsFirewallRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<HttpsFirewallRoutine> routine,
-         HttpsFirewallCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::HttpsFirewallProblem>& problems) {
-        std::move(callback).Run(verdict, std::move(problems));
+  RunHttpsFirewall(base::BindOnce(
+      [](HttpsFirewallCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_https_firewall_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::HttpsLatency(HttpsLatencyCallback callback) {
-  auto routine = std::make_unique<HttpsLatencyRoutine>();
-  auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
-  routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<HttpsLatencyRoutine> routine,
-         HttpsLatencyCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::HttpsLatencyProblem>& problems) {
-        std::move(callback).Run(verdict, problems);
+  RunHttpsLatency(base::BindOnce(
+      [](HttpsLatencyCallback callback, mojom::RoutineResultPtr result) {
+        std::move(callback).Run(
+            result->verdict,
+            std::move(result->problems->get_https_latency_problems()));
       },
-      std::move(routine), std::move(callback)));
+      std::move(callback)));
 }
 
 void NetworkDiagnostics::VideoConferencing(
     const absl::optional<std::string>& stun_server_name,
     VideoConferencingCallback callback) {
-  auto routine = std::make_unique<VideoConferencingRoutine>();
-  if (stun_server_name.has_value()) {
+  RunVideoConferencing(
+      std::move(stun_server_name),
+      base::BindOnce(
+          [](VideoConferencingCallback callback,
+             mojom::RoutineResultPtr result) {
+            std::move(callback).Run(
+                result->verdict,
+                result->problems->get_video_conferencing_problems(), "");
+          },
+          std::move(callback)));
+}
+
+void NetworkDiagnostics::RunLanConnectivity(
+    RunLanConnectivityCallback callback) {
+  auto routine = std::make_unique<LanConnectivityRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunSignalStrength(RunSignalStrengthCallback callback) {
+  auto routine = std::make_unique<SignalStrengthRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunGatewayCanBePinged(
+    RunGatewayCanBePingedCallback callback) {
+  auto routine =
+      std::make_unique<GatewayCanBePingedRoutine>(debug_daemon_client_);
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunHttpFirewall(RunHttpFirewallCallback callback) {
+  auto routine = std::make_unique<HttpFirewallRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunHttpsFirewall(RunHttpsFirewallCallback callback) {
+  auto routine = std::make_unique<HttpsFirewallRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunHasSecureWiFiConnection(
+    RunHasSecureWiFiConnectionCallback callback) {
+  auto routine = std::make_unique<HasSecureWiFiConnectionRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunDnsResolverPresent(
+    RunDnsResolverPresentCallback callback) {
+  auto routine = std::make_unique<DnsResolverPresentRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunDnsLatency(RunDnsLatencyCallback callback) {
+  auto routine = std::make_unique<DnsLatencyRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunDnsResolution(RunDnsResolutionCallback callback) {
+  auto routine = std::make_unique<DnsResolutionRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunCaptivePortal(RunCaptivePortalCallback callback) {
+  auto routine = std::make_unique<CaptivePortalRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunHttpsLatency(RunHttpsLatencyCallback callback) {
+  auto routine = std::make_unique<HttpsLatencyRoutine>();
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunVideoConferencing(
+    const absl::optional<std::string>& stun_server_name,
+    RunVideoConferencingCallback callback) {
+  std::unique_ptr<NetworkDiagnosticsRoutine> routine;
+  if (stun_server_name) {
     routine =
         std::make_unique<VideoConferencingRoutine>(stun_server_name.value());
+  } else {
+    routine = std::make_unique<VideoConferencingRoutine>();
   }
+  RunRoutine(std::move(routine), std::move(callback));
+}
+
+void NetworkDiagnostics::RunRoutine(
+    std::unique_ptr<NetworkDiagnosticsRoutine> routine,
+    RoutineResultCallback callback) {
   auto* const routine_ptr = routine.get();
-  // RunRoutine() takes a lambda callback that takes ownership of the routine.
-  // This ensures that the routine stays alive when it makes asynchronous mojo
-  // calls. The routine will be destroyed when the lambda exits.
   routine_ptr->RunRoutine(base::BindOnce(
-      [](std::unique_ptr<VideoConferencingRoutine> routine,
-         VideoConferencingCallback callback, mojom::RoutineVerdict verdict,
-         const std::vector<mojom::VideoConferencingProblem>& problems,
-         const absl::optional<std::string>& support_details) {
-        std::move(callback).Run(verdict, problems, support_details);
-      },
+      &NetworkDiagnostics::HandleResult, weak_ptr_factory_.GetWeakPtr(),
       std::move(routine), std::move(callback)));
+}
+
+void NetworkDiagnostics::HandleResult(
+    std::unique_ptr<NetworkDiagnosticsRoutine> routine,
+    RoutineResultCallback callback,
+    mojom::RoutineResultPtr result) {
+  std::move(callback).Run(std::move(result));
 }
 
 }  // namespace network_diagnostics

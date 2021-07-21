@@ -38,7 +38,6 @@
 #include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
-#include "content/browser/renderer_host/raw_clipboard_host_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_host.h"
@@ -350,10 +349,22 @@ void BindTextSuggestionHostForFrame(
 }
 #endif
 
+// Get the service worker's worker process ID and post a task to bind the
+// receiver on a USER_VISIBLE task runner.
+// This is necessary because:
+// - Binding the host itself and checking the ID on the task's thread may cause
+//   a UAF if the host has been deleted in the meantime.
+// - The process ID is not yet populated at the time `PopulateInterfaceBinders`
+//   is called.
 void BindFileUtilitiesHost(
-    const ServiceWorkerHost* host,
+    ServiceWorkerHost* host,
     mojo::PendingReceiver<blink::mojom::FileUtilitiesHost> receiver) {
-  FileUtilitiesHostImpl::Create(host->worker_process_id(), std::move(receiver));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FileUtilitiesHostImpl::Create, host->worker_process_id(),
+                     std::move(receiver)));
 }
 
 template <typename WorkerHost, typename Interface>
@@ -995,8 +1006,6 @@ void PopulateBinderMapWithContext(
 
   map->Add<blink::mojom::ClipboardHost>(
       base::BindRepeating(&ClipboardHostImpl::Create));
-  map->Add<blink::mojom::RawClipboardHost>(
-      base::BindRepeating(&RawClipboardHostImpl::Create));
   map->Add<blink::mojom::SpeculationHost>(
       base::BindRepeating(&SpeculationHostImpl::Bind));
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(host,
@@ -1231,9 +1240,7 @@ void PopulateServiceWorkerBinders(ServiceWorkerHost* host,
 
   // static binders
   map->Add<blink::mojom::FileUtilitiesHost>(
-      base::BindRepeating(&BindFileUtilitiesHost, host),
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+      base::BindRepeating(&BindFileUtilitiesHost, host));
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
       base::BindRepeating(&BindBarcodeDetectionProvider));
   map->Add<shape_detection::mojom::FaceDetectionProvider>(

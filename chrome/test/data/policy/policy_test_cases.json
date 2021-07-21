@@ -1211,6 +1211,7 @@
     "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
+        "note": "value 'enhanced'",
         "policies": {
           "SafeBrowsingProtectionLevel": 2
         },
@@ -1219,6 +1220,69 @@
             "value": true
           },
           "safebrowsing.enhanced": {
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "value 'standard'",
+        "policies": {
+          "SafeBrowsingProtectionLevel": 1
+        },
+        "prefs": {
+          "safebrowsing.enabled": {
+            "value": true
+          },
+          "safebrowsing.enhanced": {
+            "value": false
+          }
+        }
+      },
+      {
+        "note": "value 'disabled'",
+        "policies": {
+          "SafeBrowsingProtectionLevel": 0
+        },
+        "prefs": {
+          "safebrowsing.enabled": {
+            "value": false
+          },
+          "safebrowsing.enhanced": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "safebrowsing.enabled": {
+            "default_value": true
+          },
+          "safebrowsing.enhanced": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "SafeBrowsingProtectionLevel overrules SafeBrowsingEnabled",
+        "policies": {
+          "SafeBrowsingProtectionLevel": 0,
+          "SafeBrowsingEnabled": true
+        },
+        "prefs": {
+          "safebrowsing.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "note": "SafeBrowsingProtectionLevel overrules SafeBrowsingEnabled",
+        "policies": {
+          "SafeBrowsingProtectionLevel": 1,
+          "SafeBrowsingEnabled": false
+        },
+        "prefs": {
+          "safebrowsing.enabled": {
             "value": true
           }
         }
@@ -1594,16 +1658,40 @@
   },
   "SafeBrowsingForTrustedSourcesEnabled": {
     "os": [
-      "win"
+      "win",
+      "linux",
+      "mac",
+      "chromeos",
+      "android"
     ],
     "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
         "policies": {
+          "SafeBrowsingForTrustedSourcesEnabled": true
+        },
+        "prefs": {
+          "safebrowsing_for_trusted_sources_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
           "SafeBrowsingForTrustedSourcesEnabled": false
         },
         "prefs": {
-          "safebrowsing_for_trusted_sources_enabled": {}
+          "safebrowsing_for_trusted_sources_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "safebrowsing_for_trusted_sources_enabled": {
+            "default_value": true
+          }
         }
       }
     ]
@@ -2095,7 +2183,7 @@
     "policy_pref_mapping_tests": [
       {
         "note": "Default value (no policies set).",
-        "policies": { },
+        "policies": {},
         "prefs": {
           "auth.server_allowlist": {
             "location": "local_state",
@@ -2444,13 +2532,92 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "spellcheck.forced_dictionaries": {
+            "default_value": []
+          },
+          "browser.enable_spellchecking": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Simple value & enables spellchecking pref",
         "policies": {
           "SpellcheckLanguage": [
             "fr"
           ]
         },
         "prefs": {
-          "spellcheck.forced_dictionaries": {}
+          "spellcheck.forced_dictionaries": {
+            "value": [
+              "fr"
+            ]
+          },
+          "browser.enable_spellchecking": {
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check that SpellcheckEnabled precedes this one",
+        "policies": {
+          "SpellcheckLanguage": [
+            "fr"
+          ],
+          "SpellcheckEnabled": false
+        },
+        "prefs": {
+          "spellcheck.forced_dictionaries": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "Invalid values get filtered out",
+        "policies": {
+          "SpellcheckLanguage": [
+            "fr",
+            "frrrrrr"
+          ]
+        },
+        "prefs": {
+          "spellcheck.forced_dictionaries": {
+            "value": [
+              "fr"
+            ]
+          }
+        }
+      },
+      {
+        "note": "Language transforms",
+        "policies": {
+          "SpellcheckLanguage": [
+            "af-ZA"
+          ]
+        },
+        "prefs": {
+          "spellcheck.forced_dictionaries": {
+            "value": [
+              "af"
+            ]
+          }
+        }
+      },
+      {
+        "note": "Whitespace trimming",
+        "policies": {
+          "SpellcheckLanguage": [
+            "    fr "
+          ]
+        },
+        "prefs": {
+          "spellcheck.forced_dictionaries": {
+            "value": [
+              "fr"
+            ]
+          }
         }
       }
     ]
@@ -2463,13 +2630,56 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "spellcheck.blocked_dictionaries": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
           "SpellcheckLanguageBlacklist": [
             "fr"
           ]
         },
         "prefs": {
-          "spellcheck.blocked_dictionaries": {}
+          "spellcheck.blocked_dictionaries": {
+            "value": [
+              "fr"
+            ]
+          }
+        }
+      },
+      {
+        "note": "SpellcheckEnabled precedence",
+        "policies": {
+          "SpellcheckLanguageBlacklist": [
+            "fr"
+          ],
+          "SpellcheckEnabled": false
+        },
+        "prefs": {
+          "spellcheck.blocked_dictionaries": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "SpellcheckLanguage precedence",
+        "policies": {
+          "SpellcheckLanguageBlacklist": [
+            "fr"
+          ],
+          "SpellcheckLanguage": [
+            "fr"
+          ]
+        },
+        "prefs": {
+          "spellcheck.blocked_dictionaries": {
+            "value": []
+          }
         }
       }
     ]
@@ -2482,13 +2692,74 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "spellcheck.blocked_dictionaries": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
           "SpellcheckLanguageBlocklist": [
             "fr"
           ]
         },
         "prefs": {
-          "spellcheck.blocked_dictionaries": {}
+          "spellcheck.blocked_dictionaries": {
+            "value": [
+              "fr"
+            ]
+          }
+        }
+      },
+      {
+        "note": "SpellcheckEnabled precedence",
+        "policies": {
+          "SpellcheckLanguageBlocklist": [
+            "fr"
+          ],
+          "SpellcheckEnabled": false
+        },
+        "prefs": {
+          "spellcheck.blocked_dictionaries": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "SpellcheckLanguage precedence",
+        "policies": {
+          "SpellcheckLanguageBlocklist": [
+            "fr"
+          ],
+          "SpellcheckLanguage": [
+            "fr"
+          ]
+        },
+        "prefs": {
+          "spellcheck.blocked_dictionaries": {
+            "value": []
+          }
+        }
+      },
+      {
+        "note": "Precedence over SpellcheckLanguageBlacklist",
+        "policies": {
+          "SpellcheckLanguageBlocklist": [
+            "fr", "it"
+          ],
+          "SpellcheckLanguageBlacklist": [
+            "it", "es"
+          ]
+        },
+        "prefs": {
+          "spellcheck.blocked_dictionaries": {
+            "value": [
+              "fr", "it"
+            ]
+          }
         }
       }
     ]
@@ -2520,11 +2791,22 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "browser.enable_spellchecking": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
           "SpellcheckEnabled": false
         },
         "prefs": {
-          "browser.enable_spellchecking": {}
+          "browser.enable_spellchecking": {
+            "value": false
+          }
         }
       }
     ]
@@ -3608,10 +3890,30 @@
     "policy_pref_mapping_tests": [
       {
         "policies": {
+          "ScreenCaptureAllowed": true
+        },
+        "prefs": {
+          "hardware.screen_capture_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
           "ScreenCaptureAllowed": false
         },
         "prefs": {
-          "hardware.screen_capture_enabled": {}
+          "hardware.screen_capture_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "hardware.screen_capture_enabled": {
+            "default_value": true
+          }
         }
       }
     ]
@@ -4806,11 +5108,22 @@
     "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "spellcheck.use_spelling_service": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
-          "SpellCheckServiceEnabled": false
+          "SpellCheckServiceEnabled": true
         },
         "prefs": {
-          "spellcheck.use_spelling_service": {}
+          "spellcheck.use_spelling_service": {
+            "value": true
+          }
         }
       }
     ]
@@ -5205,12 +5518,23 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Default value (no policies set).",
+        "prefs": {
+          "ssl.version_min": {
+            "location": "local_state",
+            "default_value": ""
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
           "SSLVersionMin": "tls1.1"
         },
         "prefs": {
           "ssl.version_min": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": "tls1.1"
           }
         }
       }
@@ -6766,7 +7090,7 @@
     ],
     "policy_pref_mapping_tests": [
       {
-        "note":"Check default values (no policies set)",
+        "note": "Check default values (no policies set)",
         "prefs": {
           "power.ac_screen_lock_delay_ms": {
             "default_value": 0
@@ -7416,11 +7740,22 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "ssl.error_override_allowed": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
-          "SSLErrorOverrideAllowed": true
+          "SSLErrorOverrideAllowed": false
         },
         "prefs": {
-          "ssl.error_override_allowed": {}
+          "ssl.error_override_allowed": {
+            "value": false
+          }
         }
       }
     ]
@@ -7435,15 +7770,26 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set)",
+        "prefs": {
+          "ssl.error_override_allowed_for_origins": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "Simple value",
         "policies": {
           "SSLErrorOverrideAllowedForOrigins": [
-            "google.com"
+            "meow.com",
+            "woof.net"
           ]
         },
         "prefs": {
           "ssl.error_override_allowed_for_origins": {
             "value": [
-              "google.com"
+              "meow.com",
+              "woof.net"
             ]
           }
         }
@@ -8298,7 +8644,27 @@
           "SamlInSessionPasswordChangeEnabled": true
         },
         "prefs": {
-          "saml.in_session_password_change_enabled": {}
+          "saml.in_session_password_change_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SamlInSessionPasswordChangeEnabled": false
+        },
+        "prefs": {
+          "saml.in_session_password_change_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "saml.in_session_password_change_enabled": {
+            "default_value": false
+          }
         }
       }
     ]
@@ -8313,7 +8679,17 @@
           "SamlPasswordExpirationAdvanceWarningDays": 7
         },
         "prefs": {
-          "saml.password_expiration_advance_warning_days": {}
+          "saml.password_expiration_advance_warning_days": {
+            "value": 7
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "saml.password_expiration_advance_warning_days": {
+            "default_value": 14
+          }
         }
       }
     ]
@@ -9482,12 +9858,16 @@
     "policy_pref_mapping_tests": [
       {
         "policies": {
-          "SafeBrowsingAllowlistDomains": [
+          "SafeBrowsingWhitelistDomains": [
             "google.com"
           ]
         },
         "prefs": {
-          "safebrowsing.safe_browsing_whitelist_domains": {}
+          "safebrowsing.safe_browsing_whitelist_domains": {
+            "value": [
+              "google.com"
+            ]
+          }
         }
       }
     ]
@@ -9507,7 +9887,38 @@
           ]
         },
         "prefs": {
-          "safebrowsing.safe_browsing_whitelist_domains": {}
+          "safebrowsing.safe_browsing_whitelist_domains": {
+            "value": [
+              "google.com"
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "safebrowsing.safe_browsing_whitelist_domains": {
+            "default_value": [
+            ]
+          }
+        }
+      },
+      {
+        "note": "SafeBrowsingWhitelistDomains has been deprecated, and the new name should take precedence.",
+        "policies": {
+          "SafeBrowsingWhitelistDomains": [
+            "old.name.com"
+          ],
+          "SafeBrowsingAllowlistDomains": [
+            "new.name.com"
+          ]
+        },
+        "prefs": {
+          "safebrowsing.safe_browsing_whitelist_domains": {
+            "value": [
+              "new.name.com"
+            ]
+          }
         }
       }
     ]
@@ -10498,12 +10909,54 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "value for disabled",
         "policies": {
           "SafeSitesFilterBehavior": 0
         },
         "prefs": {
           "policy.safe_sites_filter_behavior": {
             "value": 0
+          }
+        }
+      },
+      {
+        "note": "value for enabled",
+        "policies": {
+          "SafeSitesFilterBehavior": 1
+        },
+        "prefs": {
+          "policy.safe_sites_filter_behavior": {
+            "value": 1
+          }
+        }
+      },
+      {
+        "note": "invalid value should be clamped",
+        "policies": {
+          "SafeSitesFilterBehavior": 2
+        },
+        "prefs": {
+          "policy.safe_sites_filter_behavior": {
+            "value": 1
+          }
+        }
+      },
+      {
+        "note": "invalid value should be clamped",
+        "policies": {
+          "SafeSitesFilterBehavior": -1
+        },
+        "prefs": {
+          "policy.safe_sites_filter_behavior": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "policy.safe_sites_filter_behavior": {
+            "default_value": 0
           }
         }
       }

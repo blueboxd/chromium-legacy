@@ -619,8 +619,10 @@ ci.android_builder(
         category = "builder|det",
         short_name = "rel",
     ),
+    cores = 32,
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 7 * time.hour,
+    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     notifies = ["Deterministic Android"],
     tree_closing = True,
 )
@@ -1497,6 +1499,7 @@ ci.chromium_builder(
 ci.chromium_builder(
     name = "fuchsia-official",
     branch_selector = branches.STANDARD_MILESTONE,
+    builderless = False,
     main_console_view = "main",
     console_view_entry = [
         consoles.console_view_entry(
@@ -5815,10 +5818,6 @@ ci.mac_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     os = os.MAC_10_15,
-    experiments = {
-        # TODO(crbug.com/1225524): remove this.
-        "chromium.isolate.use_new_lib": 50,
-    },
 )
 
 ci.mac_builder(
@@ -6430,10 +6429,6 @@ ci.win_builder(
     cores = 32,
     main_console_view = "main",
     os = os.WINDOWS_ANY,
-    experiments = {
-        # TODO(crbug.com/1225524): remove this.
-        "chromium.isolate.use_new_lib": 50,
-    },
 )
 
 ci.win_builder(

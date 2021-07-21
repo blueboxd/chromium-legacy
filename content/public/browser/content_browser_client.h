@@ -30,6 +30,7 @@
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/generated_code_cache_settings.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/mojo_binder_policy_map.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/page_visibility_state.h"
@@ -72,14 +73,17 @@
 #endif
 
 namespace net {
-class AuthCredentials;
 class SiteForCookies;
 class IsolationInfo;
 }  // namespace net
 
 class GURL;
+
+// TODO(ellyjones): This synonym shouldn't need to exist - call sites should get
+// the definition from LoginDelegate directly. Migrate all users over, then
+// delete this.
 using LoginAuthRequiredCallback =
-    base::OnceCallback<void(const absl::optional<net::AuthCredentials>&)>;
+    content::LoginDelegate::LoginAuthRequiredCallback;
 
 namespace base {
 class CommandLine;
@@ -1955,13 +1959,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Determines if a clipboard paste containing |data| of type |data_type| is
   // allowed in this renderer frame.  Possible data types supported for paste
   // are in the ClipboardHostImpl class.  Text based formats will use the
-  // data_type ui::ClipboardFormatType::GetPlainTextType() unless it is known
+  // data_type ui::ClipboardFormatType::PlainTextType() unless it is known
   // to be of a more specific type, like RTF or HTML, in which case a type
-  // such as ui::ClipboardFormatType::GetRtfType() or
-  // ui::ClipboardFormatType::GetHtmlType() is used.
+  // such as ui::ClipboardFormatType::RtfType() or
+  // ui::ClipboardFormatType::HtmlType() is used.
   //
   // It is also possible for the data type to be
-  // ui::ClipboardFormatType::GetWebCustomDataType() indicating that the paste
+  // ui::ClipboardFormatType::WebCustomDataType() indicating that the paste
   // uses a custom data format.  It is up to the implementation to attempt to
   // understand the type if possible.  It is acceptable to deny pastes of
   // unknown data types.

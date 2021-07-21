@@ -6111,6 +6111,52 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Feedback.Duration.FetchSystemInformation" units="ms"
+    expires_after="2022-06-22">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the elapsed time from the start of fetching system information to
+    when the data has been retrieved. Fires during the process of sending a
+    feedback report on Chrome or Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Feedback.Duration.FormOpenToSubmit" units="s"
+    expires_after="2022-06-22">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the elapsed time from when the feedback app window is opened to when
+    the backend receives the send report request submitted by a user. Fires
+    during the process of sending a feedback report on Chrome or Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Feedback.Duration.FormSubmitToConfirmation" units="ms"
+    expires_after="2022-06-22">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the elapsed time from when the backend receives the send report
+    request submitted by a user to when it starts to send confirmation back to
+    the frontend. Fires during the process of sending a feedback report on
+    Chrome or Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Feedback.Duration.FormSubmitToSendQueue" units="ms"
+    expires_after="2022-06-22">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the elapsed time from when the backend receives the send report
+    request submitted by a user and the report has been added to the send queue.
+    Fires during the process of sending a feedback report on Chrome or Chrome
+    OS.
+  </summary>
+</histogram>
+
 <histogram name="Feedback.HappinessTrackingSurvey.BubbleUsage"
     enum="HappinessTrackingSurveyDesktopBubbleUsage" expires_after="M82">
   <owner>weili@chromium.org</owner>
@@ -8590,7 +8636,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="LanguageSettings.AppLanguagePrompt.Language"
-    enum="CLD3LanguageCode" expires_after="2021-12-01">
+    enum="LocaleCodeISO639" expires_after="2021-12-01">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -8634,7 +8680,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode"
+<histogram name="LanguageUsage.AcceptLanguage" enum="LanguageName"
     expires_after="2021-12-01">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -8654,7 +8700,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageCode"
+<histogram name="LanguageUsage.ApplicationLanguage" enum="LanguageName"
     expires_after="2021-12-01">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -8664,7 +8710,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="LanguageUsage.MostFrequentPageLanguages" enum="LanguageCode"
+<histogram name="LanguageUsage.MostFrequentPageLanguages" enum="LanguageName"
     expires_after="2021-12-01">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
@@ -8740,7 +8786,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="LanguageUsage.UI.Android.OverrideLanguage"
-    enum="CLD3LanguageCode" expires_after="2021-12-01">
+    enum="LocaleCodeISO639" expires_after="2021-12-01">
   <owner>perrier@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -11811,6 +11857,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     multiplied by 100. The histogram is capped at 20000 (equivalent to 2 cores
     fully loaded). I.e. 4 cores busy at 25% each will read as 25 * 4 * 100 =
     10000.
+
+    NOTE: This metric has one signigicant limitation, it doesn't report the CPU
+    usage of processes that terminate before the end of the interval. This means
+    that short lived processes will rarely be included in the data. Furthermore,
+    we know that short-lived processes are very common (see
+    Renderer.ProcessLifetime). A future version of this metric will address this
+    limitation.
   </summary>
   <token key="ProcessName" variants="ProcessName"/>
 <!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
@@ -11829,6 +11882,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Average disk utilization of a process, recorded at every two-minute
     interval. The amount of data transferred (Total I/O bytes per second) for a
     given process.
+
+    NOTE: This metric has one signigicant limitation, it doesn't report the CPU
+    usage of processes that terminate before the end of the interval. This means
+    that short lived processes will rarely be included in the data. Furthermore,
+    we know that short-lived processes are very common (see
+    Renderer.ProcessLifetime). A future version of this metric will address this
+    limitation.
   </summary>
 </histogram>
 
@@ -11842,6 +11902,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Monitor and the battery menu. This incorporates CPU utilization, idle
     wakeups, IO, and task QoS level using per-machine-model weights. Divide by
     100 to match Activity Monitor's scale. Recorded every two minutes.
+
+    NOTE: This metric has one signigicant limitation, it doesn't report the CPU
+    usage of processes that terminate before the end of the interval. This means
+    that short lived processes will rarely be included in the data. Furthermore,
+    we know that short-lived processes are very common (see
+    Renderer.ProcessLifetime). A future version of this metric will address this
+    limitation.
   </summary>
   <token key="ProcessName" variants="ProcessName"/>
 <!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
@@ -11869,6 +11936,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>markchang@chromium.org</owner>
   <summary>
     The average CPU idle wakeups per second, sampled every two minutes.
+
+    NOTE: This metric has one signigicant limitation, it doesn't report the CPU
+    usage of processes that terminate before the end of the interval. This means
+    that short lived processes will rarely be included in the data. Furthermore,
+    we know that short-lived processes are very common (see
+    Renderer.ProcessLifetime). A future version of this metric will address this
+    limitation.
   </summary>
   <token key="ProcessName" variants="ProcessName"/>
 <!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
@@ -11886,6 +11960,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     two minutes. This is a subset of wakeups that indicate that the processor
     complex was taken out of low-power state. For more info, see the
     powermetrics man page on macOS.
+
+    NOTE: This metric has one signigicant limitation, it doesn't report the CPU
+    usage of processes that terminate before the end of the interval. This means
+    that short lived processes will rarely be included in the data. Furthermore,
+    we know that short-lived processes are very common (see
+    Renderer.ProcessLifetime). A future version of this metric will address this
+    limitation.
   </summary>
   <token key="ProcessName" variants="ProcessName"/>
 <!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->

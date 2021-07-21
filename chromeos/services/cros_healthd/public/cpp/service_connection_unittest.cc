@@ -174,6 +174,24 @@ class MockCrosHealthdNetworkObserver
       receiver_;
 };
 
+class MockCrosHealthdAudioObserver : public mojom::CrosHealthdAudioObserver {
+ public:
+  MockCrosHealthdAudioObserver() : receiver_{this} {}
+  MockCrosHealthdAudioObserver(const MockCrosHealthdAudioObserver&) = delete;
+  MockCrosHealthdAudioObserver& operator=(const MockCrosHealthdAudioObserver&) =
+      delete;
+
+  MOCK_METHOD(void, OnUnderrun, (), (override));
+  MOCK_METHOD(void, OnSevereUnderrun, (), (override));
+
+  mojo::PendingRemote<mojom::CrosHealthdAudioObserver> pending_remote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<mojom::CrosHealthdAudioObserver> receiver_;
+};
+
 class MockNetworkHealthService : public NetworkHealthService {
  public:
   MockNetworkHealthService() : receiver_{this} {}
@@ -257,6 +275,55 @@ class MockNetworkDiagnosticsRoutines : public NetworkDiagnosticsRoutines {
               VideoConferencing,
               (const absl::optional<std::string>&,
                NetworkDiagnosticsRoutines::VideoConferencingCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunLanConnectivity,
+              (NetworkDiagnosticsRoutines::RunLanConnectivityCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunSignalStrength,
+              (NetworkDiagnosticsRoutines::RunSignalStrengthCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunGatewayCanBePinged,
+              (NetworkDiagnosticsRoutines::RunGatewayCanBePingedCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunHasSecureWiFiConnection,
+              (NetworkDiagnosticsRoutines::RunHasSecureWiFiConnectionCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunDnsResolverPresent,
+              (NetworkDiagnosticsRoutines::RunDnsResolverPresentCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunDnsLatency,
+              (NetworkDiagnosticsRoutines::RunDnsLatencyCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunDnsResolution,
+              (NetworkDiagnosticsRoutines::RunDnsResolutionCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunCaptivePortal,
+              (NetworkDiagnosticsRoutines::RunCaptivePortalCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunHttpFirewall,
+              (NetworkDiagnosticsRoutines::RunHttpFirewallCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunHttpsFirewall,
+              (NetworkDiagnosticsRoutines::RunHttpsFirewallCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunHttpsLatency,
+              (NetworkDiagnosticsRoutines::RunHttpsLatencyCallback),
+              (override));
+  MOCK_METHOD(void,
+              RunVideoConferencing,
+              (const absl::optional<std::string>&,
+               NetworkDiagnosticsRoutines::RunVideoConferencingCallback),
               (override));
 
   mojo::PendingRemote<NetworkDiagnosticsRoutines> pending_remote() {
@@ -743,6 +810,21 @@ TEST_F(CrosHealthdServiceConnectionTest, AddLidObserver) {
     run_loop.Quit();
   }));
   FakeCrosHealthdClient::Get()->EmitLidClosedEventForTesting();
+
+  run_loop.Run();
+}
+
+// Test that we can add a audio observer.
+TEST_F(CrosHealthdServiceConnectionTest, AddAudioObserver) {
+  MockCrosHealthdAudioObserver observer;
+  ServiceConnection::GetInstance()->AddAudioObserver(observer.pending_remote());
+
+  // Send out an event to make sure the observer is connected.
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnUnderrun()).WillOnce(Invoke([&]() {
+    run_loop.Quit();
+  }));
+  FakeCrosHealthdClient::Get()->EmitAudioUnderrunEventForTesting();
 
   run_loop.Run();
 }

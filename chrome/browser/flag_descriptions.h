@@ -622,6 +622,9 @@ extern const char kMemlogStackModeNative[];
 extern const char kMemlogStackModeNativeWithThreadNames[];
 extern const char kMemlogStackModePseudo[];
 
+extern const char kQuickActionSearchWidgetAndroidDinoVariantName[];
+extern const char kQuickActionSearchWidgetAndroidDinoVariantDescription[];
+
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
@@ -1880,11 +1883,17 @@ extern const char
 extern const char kMessagesForAndroidChromeSurveyName[];
 extern const char kMessagesForAndroidChromeSurveyDescription[];
 
+extern const char kMessagesForAndroidGroupedPermissionName[];
+extern const char kMessagesForAndroidGroupedPermissionDescription[];
+
 extern const char kMessagesForAndroidInfrastructureName[];
 extern const char kMessagesForAndroidInfrastructureDescription[];
 
 extern const char kMessagesForAndroidPasswordsName[];
 extern const char kMessagesForAndroidPasswordsDescription[];
+
+extern const char kMessagesForAndroidPermissionUpdateName[];
+extern const char kMessagesForAndroidPermissionUpdateDescription[];
 
 extern const char kMessagesForAndroidPopupBlockedName[];
 extern const char kMessagesForAndroidPopupBlockedDescription[];
@@ -1989,6 +1998,9 @@ extern const char kRelatedSearchesSimplifiedUxDescription[];
 
 extern const char kRelatedSearchesUiName[];
 extern const char kRelatedSearchesUiDescription[];
+
+extern const char kShareUsageRankingName[];
+extern const char kShareUsageRankingDescription[];
 
 extern const char kSingleTouchSelectName[];
 extern const char kSingleTouchSelectDescription[];
@@ -2096,6 +2108,9 @@ extern const char kWebNotesStylizeDescription[];
 extern const char kXsurfaceMetricsReportingName[];
 extern const char kXsurfaceMetricsReportingDescription[];
 
+extern const char kWebNotesPublishName[];
+extern const char kWebNotesPublishDescription[];
+
 // Non-Android ----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
@@ -2138,6 +2153,9 @@ extern const char kNtpModulesDescription[];
 
 extern const char kNtpDriveModuleName[];
 extern const char kNtpDriveModuleDescription[];
+
+extern const char kNtpPhotosModuleName[];
+extern const char kNtpPhotosModuleDescription[];
 
 extern const char kNtpRecipeTasksModuleName[];
 extern const char kNtpRecipeTasksModuleDescription[];
@@ -2645,6 +2663,9 @@ extern const char kEnableQuickAnswersTranslationCloudAPIDescription[];
 
 extern const char kEnableQuickAnswersV2Name[];
 extern const char kEnableQuickAnswersV2Description[];
+
+extern const char kESimPolicyName[];
+extern const char kESimPolicyDescription[];
 
 extern const char kPluginVmFullscreenName[];
 extern const char kPluginVmFullscreenDescription[];

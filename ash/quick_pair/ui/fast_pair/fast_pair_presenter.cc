@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/ui/actions.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -19,14 +20,17 @@ FastPairPresenter::FastPairPresenter() = default;
 
 FastPairPresenter::~FastPairPresenter() = default;
 
-void FastPairPresenter::ShowDiscovery(const Device& device,
+void FastPairPresenter::ShowDiscovery(scoped_refptr<Device> device,
                                       DiscoveryCallback callback) {
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   notification_controller_->ShowDiscoveryNotification(
-      base::ASCIIToUTF16(device.metadata_id), gfx::Image(),
+      base::ASCIIToUTF16(device->metadata_id), gfx::Image(),
       base::BindOnce(&FastPairPresenter::OnDiscoveryClicked,
-                     weak_pointer_factory_.GetWeakPtr(), std::move(callback)),
+                     weak_pointer_factory_.GetWeakPtr(),
+                     std::move(split_callback.first)),
       base::BindOnce(&FastPairPresenter::OnDiscoveryDismissed,
-                     weak_pointer_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_pointer_factory_.GetWeakPtr(),
+                     std::move(split_callback.second)));
 }
 
 void FastPairPresenter::OnDiscoveryClicked(DiscoveryCallback callback) {
@@ -39,20 +43,23 @@ void FastPairPresenter::OnDiscoveryDismissed(DiscoveryCallback callback,
                                          : DiscoveryAction::kDismissed);
 }
 
-void FastPairPresenter::ShowPairing(const Device& device) {
+void FastPairPresenter::ShowPairing(scoped_refptr<Device> device) {
   notification_controller_->ShowPairingNotification(
-      base::ASCIIToUTF16(device.metadata_id), gfx::Image(), base::DoNothing(),
+      base::ASCIIToUTF16(device->metadata_id), gfx::Image(), base::DoNothing(),
       base::DoNothing());
 }
 
-void FastPairPresenter::ShowPairingFailed(const Device& device,
+void FastPairPresenter::ShowPairingFailed(scoped_refptr<Device> device,
                                           PairingFailedCallback callback) {
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   notification_controller_->ShowErrorNotification(
-      base::ASCIIToUTF16(device.metadata_id), gfx::Image(),
+      base::ASCIIToUTF16(device->metadata_id), gfx::Image(),
       base::BindOnce(&FastPairPresenter::OnNavigateToSettings,
-                     weak_pointer_factory_.GetWeakPtr(), std::move(callback)),
+                     weak_pointer_factory_.GetWeakPtr(),
+                     std::move(split_callback.first)),
       base::BindOnce(&FastPairPresenter::OnPairingFailedDismissed,
-                     weak_pointer_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_pointer_factory_.GetWeakPtr(),
+                     std::move(split_callback.second)));
 }
 
 void FastPairPresenter::OnNavigateToSettings(PairingFailedCallback callback) {
@@ -66,10 +73,10 @@ void FastPairPresenter::OnPairingFailedDismissed(PairingFailedCallback callback,
 }
 
 void FastPairPresenter::ShowAssociateAccount(
-    const Device& device,
+    scoped_refptr<Device> device,
     AssociateAccountCallback callback) {}
 
-void FastPairPresenter::ShowCompanionApp(const Device& device,
+void FastPairPresenter::ShowCompanionApp(scoped_refptr<Device> device,
                                          CompanionAppCallback callback) {}
 
 }  // namespace quick_pair

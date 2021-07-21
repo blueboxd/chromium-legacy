@@ -3747,6 +3747,26 @@
             ]
         }
     ],
+    "FixFirstInputDelayForDesktop": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FixFirstInputDelayForDesktop"
+                    ]
+                }
+            ]
+        }
+    ],
     "FuzzyAppSearch": [
         {
             "platforms": [
@@ -4609,35 +4629,6 @@
                     "name": "Enabled_20200323",
                     "enable_features": [
                         "IntentBlockExternalFormRedirectsNoGesture"
-                    ]
-                }
-            ]
-        }
-    ],
-    "InterestCohortAPIOriginTrial": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_50",
-                    "params": {
-                        "finch_config_version": "2",
-                        "minimum_history_domain_size_required": "7",
-                        "update_interval": "168h"
-                    },
-                    "enable_features": [
-                        "FederatedLearningOfCohorts",
-                        "FlocIdSortingLshBasedComputation",
-                        "FlocPagesWithAdResourcesDefaultIncludedInFlocComputation",
-                        "InterestCohortAPIOriginTrial",
-                        "InterestCohortFeaturePolicy"
                     ]
                 }
             ]

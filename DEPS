@@ -279,7 +279,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '4082b863c1c7f3f034b2b737c38c4ad2376686ec',
+  'freetype_revision': '801cd842e27c85cb1d5000f6397f382ffe295daa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c5c0135d01e837cfe07238cb577c7a9c00fc960a',
+  'devtools_frontend_revision': 'feb3b6392821d63f62b81677e94e7ebe36dba59e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -347,7 +347,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7dbda40209b0b37cb3fb5587ab566bf603d7d799',
+  'dawn_revision': '909a3c3ccffe959c6627816ba7e2f0f35f9b3fbb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -983,7 +983,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'f203f97cdc2be1d07151386f6f036fb23b3ffe46',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '300bd5fd4d772b54826eb2f98dcc3a6bfe47a129',
       'condition': 'checkout_chromeos',
   },
 
@@ -1389,7 +1389,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'aab2d4af0bbce0d8d5cc45202d6eec8d130dbea5',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'eaf4d48102375db00bf40a60ba7299bc8842b487',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1648,7 +1648,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'v3HXOS7MJkC2TfycHGZS1dHlQ_BosbzqLeuDXXLbxMUC',
+          'version': '4iy6PO3bO0fujafbQ4I4eWhD8ErkBKf5xAnGzPrziIUC',
         },
       ],
       'dep_type': 'cipd',
@@ -1668,7 +1668,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'nx0V9Budj8K1DfPIdKA9oakeQE7SPTMIvVwqzX0DkF4C',
+          'version': '_9rtsnZzHBJ4851DtK33jnz7UzMZ77SqJ9sYpciBwiMC',
         },
       ],
       'dep_type': 'cipd',
@@ -1682,7 +1682,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@99d6587b625567d44365ec5af0ca49f85a5ff415',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4dcd50ad03d0562fffe4e096e56428142d068708',
     'condition': 'checkout_src_internal',
   },
 
@@ -1701,7 +1701,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'oaXK5N5cXxFJ_nE5koGGPT1IQumi_tYTc7suEbL2nOgC',
+        'version': 'ZlTGnqls3Wsawh9cehEo-7zcYTTr7gwL1n4a70U1r9UC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1712,7 +1712,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '9kKuyr-hCQ0u1-4ohi2CMmkAwb1X7llLGb57NXYyZYEC',
+        'version': 'IMZXkU8_JS73gqHZnRpaL6aveE8-XLk2eBP55w83viEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

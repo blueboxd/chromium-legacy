@@ -902,8 +902,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // It is safe to access the default profile here.
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
   // Check if Chrome got launched by clicking on a notification.
-  if ([notify userInfo][NSApplicationLaunchUserNotificationKey])
-    LogLaunchedViaNotificationAction(NotificationActionSource::kBrowser);
+  if (@available(macOS 10.8, *)) {
+    if ([notify userInfo][NSApplicationLaunchUserNotificationKey])
+      LogLaunchedViaNotificationAction(NotificationActionSource::kBrowser);
+  }
 
   if (g_browser_process->browser_policy_connector()
           ->chrome_browser_cloud_management_controller()

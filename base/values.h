@@ -466,7 +466,7 @@ class BASE_EXPORT Value {
   // exist, this operation fails, leaves underlying Values untouched and returns
   // `false`. In case intermediate dictionaries become empty as a result of this
   // path removal, they will be removed as well.
-  // Note: If there is only one component in the path, use `ExtractKey()`
+  // Note: If there is only one component in the path, use `RemoveKey()`
   // instead.
   //
   // Example:
@@ -886,9 +886,6 @@ class BASE_EXPORT ListValue : public Value {
   //      it != list_value.GetList().end(); ++it) {
   //   ...
 
-  // DEPRECATED, use `Value::Clone()` instead.
-  // TODO(crbug.com/646113): Delete this and migrate callsites.
-  ListValue* DeepCopy() const;
   // DEPRECATED, use `Value::Clone()` instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   std::unique_ptr<ListValue> CreateDeepCopy() const;

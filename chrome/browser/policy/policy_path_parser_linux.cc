@@ -11,7 +11,6 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 
 #include "base/logging.h"
-#include "base/notreached.h"
 
 namespace policy {
 
@@ -54,12 +53,6 @@ base::FilePath::StringType ExpandPathVariables(
     }
   }
   return result;
-}
-
-void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
-  // This function is not implemented in Linux because we don't support the
-  // policy on this platform.
-  NOTREACHED();
 }
 
 }  // namespace path_parser

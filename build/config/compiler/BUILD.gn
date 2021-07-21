@@ -1599,6 +1599,11 @@ config("default_warnings") {
         # TODO(thakis): https://crbug.com/617318
         # Currently goma can not handle case sensitiveness for windows well.
         cflags += [ "-Wno-nonportable-include-path" ]
+
+        if (llvm_force_head_revision) {
+          # Warns in ATL headers; see https://crbug.com/1208419.
+          cflags += [ "-Wno-null-pointer-subtraction" ]
+        }
       }
 
       if (current_toolchain == host_toolchain || !use_xcode_clang) {
@@ -2391,6 +2396,16 @@ config("symbols") {
       cflags += [ "-g2" ]
     }
 
+    if (!is_nacl && is_clang && !is_tsan && !is_asan) {
+      # gcc generates dwarf-aranges by default on -g1 and -g2. On clang it has
+      # to be manually enabled.
+      #
+      # It is skipped in tsan and asan because enabling it causes some
+      # formatting changes in the output which would require fixing bunches
+      # of expectation regexps.
+      cflags += [ "-gdwarf-aranges" ]
+    }
+
     if (is_apple) {
       swiftflags = [ "-g" ]
     }
@@ -2482,6 +2497,12 @@ config("minimal_symbols") {
     if (!is_nacl || is_clang) {
       cflags += [ "-g1" ]
     }
+
+    if (!is_nacl && is_clang && !is_tsan && !is_asan) {
+      # See comment for -gdwarf-aranges in config("symbols").
+      cflags += [ "-gdwarf-aranges" ]
+    }
+
     ldflags = []
     if (is_android && is_clang) {
       # Android defaults to symbol_level=1 builds in production builds

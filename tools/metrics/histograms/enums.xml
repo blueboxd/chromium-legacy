@@ -1147,6 +1147,7 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="kClosed"/>
   <int value="3" label="kIgnorePressed"/>
   <int value="4" label="kLearnMorePressed"/>
+  <int value="5" label="kDisabledByExperiment"/>
 </enum>
 
 <enum name="AccuracyTipStatus">
@@ -7840,6 +7841,23 @@ Called by update_bad_message_reasons.py.-->
   <int value="5" label="Unknown connection error"/>
   <int value="6" label="Unsupported device"/>
   <int value="7" label="Not connectable"/>
+</enum>
+
+<enum name="BluetoothDeviceType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Computer"/>
+  <int value="2" label="Phone"/>
+  <int value="3" label="Modem"/>
+  <int value="4" label="Audio"/>
+  <int value="5" label="Car Audio"/>
+  <int value="6" label="Video"/>
+  <int value="7" label="Peripheral"/>
+  <int value="8" label="Joystick"/>
+  <int value="9" label="Gamepad"/>
+  <int value="10" label="Keyboard"/>
+  <int value="11" label="Mouse"/>
+  <int value="12" label="Tablet"/>
+  <int value="13" label="Keyboard Mouse Combo"/>
 </enum>
 
 <enum name="BluetoothDiscoveryOutcomes">
@@ -79572,7 +79590,7 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Scanning"/>
   <int value="5" label="Web Store"/>
   <int value="6" label="Canvas"/>
-  <int value="7" label="Google News"/>
+  <int value="7" label="[Deprecated] Google News"/>
   <int value="8" label="Explore"/>
 </enum>
 

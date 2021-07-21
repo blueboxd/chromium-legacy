@@ -1565,6 +1565,9 @@
             "experiments": [
                 {
                     "name": "Enabled_20210201",
+                    "params": {
+                        "holdback_chance": "0.0"
+                    },
                     "enable_features": [
                         "PermissionPredictions"
                     ]
@@ -4262,21 +4265,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableFullPageScreenshot"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSMessagesOverlay": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InfobarOverlayUI"
                     ]
                 }
             ]
@@ -8360,26 +8348,6 @@
                     "name": "TurnOffStreamingMediaCaching",
                     "enable_features": [
                         "TurnOffStreamingMediaCachingOnBattery"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UdpSocketPosixAlwaysUpdateBytesReceived": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UdpSocketPosixAlwaysUpdateBytesReceived"
                     ]
                 }
             ]

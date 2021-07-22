@@ -32,6 +32,12 @@ component("soda") {
       "//ui/base",
     ]
   }
+  if (is_mac && is_component_build) {
+    frameworks = [
+      "CoreFoundation.framework",
+      "Foundation.framework",
+    ]
+  }
 }
 
 source_set("constants") {

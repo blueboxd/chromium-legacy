@@ -10,31 +10,38 @@
 namespace media {
 
 PixelBufferTransferer::PixelBufferTransferer() {
-  OSStatus error =
-      VTPixelTransferSessionCreate(nil, transfer_session_.InitializeInto());
-  // There is no known way to make session creation fail, so we do not deal with
-  // failures gracefully.
-  CHECK(error == noErr) << "Creating a VTPixelTransferSession failed: "
-                        << error;
+  if (__builtin_available(macOS 10.8, *)) {
+    OSStatus error =
+        VTPixelTransferSessionCreate(nil, transfer_session_.InitializeInto());
+    // There is no known way to make session creation fail, so we do not deal with
+    // failures gracefully.
+    CHECK(error == noErr) << "Creating a VTPixelTransferSession failed: "
+                          << error;
+  }
 }
 
 bool PixelBufferTransferer::TransferImage(CVPixelBufferRef source,
                                           CVPixelBufferRef destination) {
   DCHECK(source);
   DCHECK(destination);
-  OSStatus error = VTPixelTransferSessionTransferImage(transfer_session_,
-                                                       source, destination);
-  if (error == kVTPixelTransferNotSupportedErr) {
-    // This source/destination transfer operation is not supported.
-    return false;
+  if (__builtin_available(macOS 10.8, *)) {
+    OSStatus error = VTPixelTransferSessionTransferImage(transfer_session_,
+                                                         source, destination);
+    if (error == kVTPixelTransferNotSupportedErr) {
+      // This source/destination transfer operation is not supported.
+      return false;
+    }
+    CHECK(error == noErr)
+        << "Unexpected VTPixelTransferSessionTransferImage error: " << error;
+    return true;
   }
-  CHECK(error == noErr)
-      << "Unexpected VTPixelTransferSessionTransferImage error: " << error;
-  return true;
+  return false;
 }
 
 PixelBufferTransferer::~PixelBufferTransferer() {
-  VTPixelTransferSessionInvalidate(transfer_session_);
+  if (__builtin_available(macOS 10.8, *)) {
+    VTPixelTransferSessionInvalidate(transfer_session_);
+  }
 }
 
 }  // namespace media

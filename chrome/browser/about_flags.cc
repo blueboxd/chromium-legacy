@@ -1546,6 +1546,7 @@ const FeatureEntry::FeatureParam kTabHoverCardImagesAlternateFormat[] = {
     {features::kTabHoverCardImagesNotReadyDelayParameterName, "500"},
     {features::kTabHoverCardImagesLoadingDelayParameterName, "100"},
     {features::kTabHoverCardImagesLoadedDelayParameterName, "0"},
+    {features::kTabHoverCardImagesCrossfadePreviewAtParameterName, "0.25"},
     {features::kTabHoverCardAlternateFormat, "1"}};
 
 const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
@@ -6336,11 +6337,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccountIdMigrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(switches::kAccountIdMigration)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    // TODO(https://crbug.com/1032161): Implement and enable for ChromeOS.
-    {"raw-clipboard", flag_descriptions::kRawClipboardName,
-     flag_descriptions::kRawClipboardDescription, kOsMac | kOsWin | kOsLinux,
-     FEATURE_VALUE_TYPE(blink::features::kRawClipboard)},
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
     {"paint-preview-demo", flag_descriptions::kPaintPreviewDemoName,

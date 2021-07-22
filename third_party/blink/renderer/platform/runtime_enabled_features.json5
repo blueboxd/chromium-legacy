@@ -490,6 +490,9 @@
       status: "experimental",
     },
     {
+      name: "CrossOriginWebAssemblyModuleSharingAllowed",
+    },
+    {
       name: "CSS3Text",
       status: "experimental",
     },
@@ -1794,10 +1797,6 @@
     {
       name: "QuotaChange",
       status: "experimental",
-    },
-    {
-      // Enabled when blink::features::kRawClipboard is enabled.
-      name: "RawClipboard",
     },
     {
       name: "RemotePlayback",

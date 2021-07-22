@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 
 #include "base/containers/mru_cache.h"
 #include "base/metrics/field_trial_params.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/url_formatter.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -42,12 +44,14 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -59,6 +63,12 @@ namespace {
 // Maximum number of lines that a title label occupies.
 constexpr int kHoverCardTitleMaxLines = 2;
 
+constexpr int kHorizontalMargin = 18;
+constexpr int kVerticalMargin = 10;
+constexpr int kFootnoteVerticalMargin = 8;
+constexpr gfx::Insets kTitleMargins(kVerticalMargin, kHorizontalMargin);
+constexpr gfx::Insets kAlertMargins(kFootnoteVerticalMargin, kHorizontalMargin);
+
 bool CustomShadowsSupported() {
 #if defined(OS_WIN)
   return ui::win::IsAeroGlassEnabled();
@@ -67,7 +77,7 @@ bool CustomShadowsSupported() {
 #endif
 }
 
-std::unique_ptr<views::View> CreateAlertView(const TabAlertState& state) {
+std::unique_ptr<views::Label> CreateAlertView(const TabAlertState& state) {
   auto alert_state_label = std::make_unique<views::Label>(
       std::u16string(), views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_PRIMARY);
@@ -113,35 +123,15 @@ bool UseAlternateHoverCardFormat() {
   return use_alternate_format != 0;
 }
 
-}  // namespace
-
-// This is a label with two tweaks:
-// - a solid background color, which can have alpha
-// - a function to make the foreground and background color fade away (via
-//   alpha) to zero as an animation progresses
-//
-// It is used to overlay the old title and domain values as a hover card slide
-// animation happens.
-class TabHoverCardBubbleView::FadeLabel : public views::Label {
+// Label that renders its background in a solid color. Placed in front of a
+// normal label either by being later in the draw order or on a layer, it can
+// be used to animate a fade-out.
+class SolidLabel : public views::Label {
  public:
+  METADATA_HEADER(SolidLabel);
   using Label::Label;
-
-  METADATA_HEADER(FadeLabel);
-
-  FadeLabel() = default;
-  ~FadeLabel() override = default;
-
-  // Sets the fade-out of the label as |percent| in the range [0, 1]. Since
-  // FadeLabel is designed to mask new text with the old and then fade away, the
-  // higher the percentage the less opaque the label.
-  void SetFade(double percent) {
-    if (percent >= 1.0)
-      SetText(std::u16string());
-    const SkAlpha alpha = base::saturated_cast<SkAlpha>(
-        std::numeric_limits<SkAlpha>::max() * (1.0 - percent));
-    SetBackgroundColor(SkColorSetA(GetBackgroundColor(), alpha));
-    SetEnabledColor(SkColorSetA(GetEnabledColor(), alpha));
-  }
+  SolidLabel() = default;
+  ~SolidLabel() override = default;
 
  protected:
   // views::Label:
@@ -150,8 +140,103 @@ class TabHoverCardBubbleView::FadeLabel : public views::Label {
   }
 };
 
-BEGIN_METADATA(TabHoverCardBubbleView, FadeLabel, views::Label)
+BEGIN_METADATA(SolidLabel, views::Label)
 END_METADATA
+
+}  // namespace
+
+// This view overlays and fades out an old version of the text of a label,
+// while displaying the new text underneath. It is used to fade out the old
+// value of the title and domain labels on the hover card when the tab switches
+// or the tab title changes.
+class TabHoverCardBubbleView::FadeLabel : public views::View {
+ public:
+  FadeLabel(int context, int num_lines) {
+    primary_label_ = AddChildView(std::make_unique<views::Label>(
+        std::u16string(), context, views::style::STYLE_PRIMARY));
+    primary_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    primary_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
+    primary_label_->SetMultiLine(num_lines > 1);
+    if (num_lines > 1)
+      primary_label_->SetMaxLines(num_lines);
+
+    label_fading_out_ = AddChildView(std::make_unique<SolidLabel>(
+        std::u16string(), context, views::style::STYLE_PRIMARY));
+    label_fading_out_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label_fading_out_->SetVerticalAlignment(gfx::ALIGN_TOP);
+    label_fading_out_->SetMultiLine(num_lines > 1);
+    if (num_lines > 1)
+      label_fading_out_->SetMaxLines(num_lines);
+    label_fading_out_->GetViewAccessibility().OverrideIsIgnored(true);
+
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+  }
+
+  ~FadeLabel() override = default;
+
+  void SetText(std::u16string text, absl::optional<bool> is_filename) {
+    if (was_filename_.has_value())
+      SetMultilineParams(label_fading_out_, was_filename_.value());
+    label_fading_out_->SetText(primary_label_->GetText());
+    if (is_filename.has_value())
+      SetMultilineParams(primary_label_, is_filename.value());
+    was_filename_ = is_filename;
+    primary_label_->SetText(text);
+  }
+
+  // Sets the fade-out of the label as |percent| in the range [0, 1]. Since
+  // FadeLabel is designed to mask new text with the old and then fade away, the
+  // higher the percentage the less opaque the label.
+  void SetFade(double percent) {
+    percent_ = std::min(1.0, percent);
+    if (percent_ == 1.0)
+      label_fading_out_->SetText(std::u16string());
+    const SkAlpha alpha = base::saturated_cast<SkAlpha>(
+        std::numeric_limits<SkAlpha>::max() * (1.0 - percent_));
+    label_fading_out_->SetBackgroundColor(
+        SkColorSetA(label_fading_out_->GetBackgroundColor(), alpha));
+    label_fading_out_->SetEnabledColor(
+        SkColorSetA(label_fading_out_->GetEnabledColor(), alpha));
+  }
+
+  std::u16string GetText() const { return primary_label_->GetText(); }
+
+ protected:
+  // views::View:
+  gfx::Size GetMaximumSize() const override {
+    return gfx::Tween::SizeValueBetween(percent_,
+                                        label_fading_out_->GetPreferredSize(),
+                                        primary_label_->GetPreferredSize());
+  }
+
+  gfx::Size CalculatePreferredSize() const override {
+    return primary_label_->GetPreferredSize();
+  }
+
+  gfx::Size GetMinimumSize() const override {
+    return primary_label_->GetMinimumSize();
+  }
+
+  int GetHeightForWidth(int width) const override {
+    return primary_label_->GetHeightForWidth(width);
+  }
+
+ private:
+  static void SetMultilineParams(views::Label* label, bool is_filename) {
+    if (is_filename) {
+      label->SetMultiLine(false);
+      label->SetElideBehavior(gfx::ELIDE_MIDDLE);
+    } else {
+      label->SetElideBehavior(gfx::ELIDE_TAIL);
+      label->SetMultiLine(true);
+    }
+  }
+
+  views::Label* primary_label_;
+  SolidLabel* label_fading_out_;
+  absl::optional<bool> was_filename_;
+  double percent_ = 1.0;
+};
 
 // Represents the preview image on the hover card. Allows for a new image to be
 // faded in over the old image.
@@ -161,10 +246,12 @@ class TabHoverCardBubbleView::ThumbnailView
  public:
   // Specifies which (if any) of the corners of the preview image will be
   // rounded. See SetRoundedCorners() below for more information.
-  enum RoundedCorners { kNone, kTopCorners, kBottomCorners };
+  enum class RoundedCorners { kNone, kTopCorners, kBottomCorners };
 
-  ThumbnailView()
-      : AnimationDelegateViews(this), image_transition_animation_(this) {
+  explicit ThumbnailView(TabHoverCardBubbleView* bubble_view)
+      : AnimationDelegateViews(this),
+        bubble_view_(bubble_view),
+        image_transition_animation_(this) {
     constexpr base::TimeDelta kImageTransitionDuration =
         kHoverCardSlideDuration;
     image_transition_animation_.SetDuration(kImageTransitionDuration);
@@ -176,26 +263,7 @@ class TabHoverCardBubbleView::ThumbnailView
     image_fading_out_->SetPaintToLayer();
     image_fading_out_->layer()->SetOpacity(0.0f);
 
-    // Because all preview images should be the same size, we can just set the
-    // preferred size of this view and then use a FillLayout to force the to
-    // ImageViews to the correct size.
-    SetPreferredSize(TabStyle::GetPreviewImageSize());
     SetLayoutManager(std::make_unique<views::FillLayout>());
-  }
-
-  // Set the preview image to be visible. Included to match with Hide().
-  void Show() { SetVisible(true); }
-
-  // Set the preview image to not be visible. Stops any current fade animation
-  // and clears out all of the images to prevent flicker when the preview image
-  // transitions from visible to invisible and vice-versa.
-  void Hide() {
-    SetVisible(false);
-    // This will result in the fading image being discarded via the canceled
-    // event.
-    image_transition_animation_.End();
-    target_tab_image_->SetImage(gfx::ImageSkia());
-    target_tab_image_->SetBackground(nullptr);
   }
 
   // Sets the appropriate rounded corners for the preview image, for platforms
@@ -223,14 +291,14 @@ class TabHoverCardBubbleView::ThumbnailView
   // Sets the new preview image. The old image will be faded out.
   void SetTargetTabImage(gfx::ImageSkia preview_image) {
     StartFadeOut();
-    SetImage(target_tab_image_, preview_image, /* is_placeholder = */ false);
-    showing_placeholder_image_ = false;
+    SetImage(target_tab_image_, preview_image, ImageType::kThumbnail);
+    image_type_ = ImageType::kThumbnail;
   }
 
   // Clears the preview image and replaces it with a placeholder image. The old
   // image will be faded out.
   void SetPlaceholderImage() {
-    if (showing_placeholder_image_)
+    if (image_type_ == ImageType::kPlaceholder)
       return;
 
     // Theme provider may be null if there is no associated widget. In that case
@@ -254,44 +322,74 @@ class TabHoverCardBubbleView::ThumbnailView
     constexpr gfx::Size kNoPreviewImageSize{64, 64};
     const gfx::ImageSkia no_preview_image = gfx::CreateVectorIcon(
         kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
-    SetImage(target_tab_image_, no_preview_image, /* is_placeholder = */ true);
-    showing_placeholder_image_ = true;
+    SetImage(target_tab_image_, no_preview_image, ImageType::kPlaceholder);
+    image_type_ = ImageType::kPlaceholder;
+  }
+
+  void ClearImage() {
+    if (image_type_ == ImageType::kNone)
+      return;
+
+    StartFadeOut();
+    SetImage(target_tab_image_, gfx::ImageSkia(), ImageType::kNone);
+    image_type_ = ImageType::kNone;
+  }
+
+  void SetWaitingForImage() {
+    if (image_type_ == ImageType::kNone) {
+      image_type_ = ImageType::kNoneButWaiting;
+      InvalidateLayout();
+    }
   }
 
  private:
+  enum class ImageType { kNone, kNoneButWaiting, kPlaceholder, kThumbnail };
+
   // Creates an image view with the appropriate default properties.
   static std::unique_ptr<views::ImageView> CreateImageView() {
     auto image_view = std::make_unique<views::ImageView>();
-    using Alignment = views::ImageView::Alignment;
-    image_view->SetHorizontalAlignment(Alignment::kCenter);
-    image_view->SetVerticalAlignment(Alignment::kCenter);
+    image_view->SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
     return image_view;
   }
 
   // Sets `image` on `image_view_`, configuring the image appropriately based
   // on whether it's a placeholder or not.
-  static void SetImage(views::ImageView* image_view,
-                       gfx::ImageSkia image,
-                       bool is_placeholder) {
+  void SetImage(views::ImageView* image_view,
+                gfx::ImageSkia image,
+                ImageType image_type) {
     image_view->SetImage(image);
-    if (is_placeholder) {
-      image_view->SetImage(image);
-      image_view->SetImageSize(image.size());
-
-      // Also possibly regenerate the background if it has changed.
-      const SkColor background_color = image_view->GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
-      if (!image_view->background() ||
-          image_view->background()->get_color() != background_color) {
+    switch (image_type) {
+      case ImageType::kNone:
+      case ImageType::kNoneButWaiting:
         image_view->SetBackground(
-            views::CreateSolidBackground(background_color));
-      }
-    } else {
-      const gfx::Size preview_size = TabStyle::GetPreviewImageSize();
-      image_view->SetImage(image);
-      image_view->SetImageSize(GetPreviewImageSize(image.size(), preview_size));
-      image_view->SetBackground(nullptr);
+            views::CreateSolidBackground(bubble_view_->color()));
+        break;
+      case ImageType::kPlaceholder:
+        image_view->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
+        image_view->SetImageSize(image.size());
+        image_view->SetBackground(views::CreateSolidBackground(
+            image_view->GetThemeProvider()->GetColor(
+                ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND)));
+        break;
+      case ImageType::kThumbnail:
+        image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+        image_view->SetImageSize(
+            GetPreviewImageSize(image.size(), TabStyle::GetPreviewImageSize()));
+        image_view->SetBackground(nullptr);
+        break;
     }
+  }
+
+  // views::View:
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+
+  gfx::Size CalculatePreferredSize() const override {
+    return image_type_ == ImageType::kNone ? gfx::Size()
+                                           : TabStyle::GetPreviewImageSize();
+  }
+
+  gfx::Size GetMaximumSize() const override {
+    return TabStyle::GetPreviewImageSize();
   }
 
   // views::AnimationDelegateViews:
@@ -301,7 +399,7 @@ class TabHoverCardBubbleView::ThumbnailView
 
   void AnimationEnded(const gfx::Animation* animation) override {
     image_fading_out_->layer()->SetOpacity(0.0f);
-    image_fading_out_->SetImage(gfx::ImageSkia());
+    SetImage(image_fading_out_, gfx::ImageSkia(), ImageType::kNone);
   }
 
   void AnimationCanceled(const gfx::Animation* animation) override {
@@ -319,8 +417,6 @@ class TabHoverCardBubbleView::ThumbnailView
       return;
 
     gfx::ImageSkia old_image = target_tab_image_->GetImage();
-    if (old_image.isNull())
-      return;
 
     if (image_transition_animation_.is_animating()) {
       // If we're already animating and we've barely faded out the previous old
@@ -340,15 +436,17 @@ class TabHoverCardBubbleView::ThumbnailView
       // (while we swap the new image in behind) we have to rewind the
       // animation.
       image_transition_animation_.SetCurrentValue(1.0 - current_value);
-      SetImage(image_fading_out_, old_image, showing_placeholder_image_);
+      SetImage(image_fading_out_, old_image, image_type_);
       AnimationProgressed(&image_transition_animation_);
 
     } else {
-      SetImage(image_fading_out_, old_image, showing_placeholder_image_);
+      SetImage(image_fading_out_, old_image, image_type_);
       image_fading_out_->layer()->SetOpacity(1.0f);
       image_transition_animation_.Start();
     }
   }
+
+  TabHoverCardBubbleView* const bubble_view_;
 
   // Displays the image that we are trying to display for the target/current
   // tab. Placed under `image_fading_out_` so that it is revealed as the
@@ -364,10 +462,10 @@ class TabHoverCardBubbleView::ThumbnailView
   // times (it's not necessarily a single smooth animation).
   gfx::LinearAnimation image_transition_animation_;
 
-  // Records whether `target_tab_image_` is showing a placeholder image. Used
-  // to configure `image_fading_out_` when the target image becomes the
-  // previous image and fades out.
-  bool showing_placeholder_image_ = false;
+  // Records what type of image `target_tab_image_` is showing. Used to
+  // configure `image_fading_out_` when the target image becomes the previous
+  // image and fades out.
+  ImageType image_type_ = ImageType::kNone;
 };
 
 // static
@@ -399,48 +497,20 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // navigating through the tab strip.
   set_focus_traversable_from_anchor_view(false);
 
-  title_label_ = AddChildView(std::make_unique<views::Label>(
-      std::u16string(), CONTEXT_TAB_HOVER_CARD_TITLE,
-      views::style::STYLE_PRIMARY));
-  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
-  title_label_->SetMultiLine(true);
-  title_label_->SetMaxLines(kHoverCardTitleMaxLines);
-
-  title_fade_label_ = AddChildView(std::make_unique<FadeLabel>(
-      std::u16string(), CONTEXT_TAB_HOVER_CARD_TITLE,
-      views::style::STYLE_PRIMARY));
-  title_fade_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_fade_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
-  title_fade_label_->SetMultiLine(true);
-  title_fade_label_->SetMaxLines(kHoverCardTitleMaxLines);
-  title_fade_label_->GetViewAccessibility().OverrideIsIgnored(true);
-
-  domain_label_ = AddChildView(std::make_unique<views::Label>(
-      std::u16string(), views::style::CONTEXT_DIALOG_BODY_TEXT,
-      views::style::STYLE_SECONDARY,
-      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
-  domain_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
-  domain_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  domain_label_->SetMultiLine(false);
-
-  domain_fade_label_ = AddChildView(std::make_unique<FadeLabel>(
-      std::u16string(), views::style::CONTEXT_DIALOG_BODY_TEXT,
-      views::style::STYLE_SECONDARY,
-      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
-  domain_fade_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
-  domain_fade_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  domain_fade_label_->SetMultiLine(false);
-  domain_fade_label_->GetViewAccessibility().OverrideIsIgnored(true);
+  title_label_ = AddChildView(std::make_unique<FadeLabel>(
+      CONTEXT_TAB_HOVER_CARD_TITLE, kHoverCardTitleMaxLines));
+  domain_label_ = AddChildView(
+      std::make_unique<FadeLabel>(views::style::CONTEXT_DIALOG_BODY_TEXT, 1));
 
   if (TabHoverCardController::AreHoverCardImagesEnabled()) {
     if (UseAlternateHoverCardFormat()) {
-      thumbnail_view_ = AddChildViewAt(std::make_unique<ThumbnailView>(), 0);
+      thumbnail_view_ =
+          AddChildViewAt(std::make_unique<ThumbnailView>(this), 0);
       thumbnail_view_->SetRoundedCorners(
           ThumbnailView::RoundedCorners::kTopCorners,
           corner_radius_.value_or(0));
     } else {
-      thumbnail_view_ = AddChildView(std::make_unique<ThumbnailView>());
+      thumbnail_view_ = AddChildView(std::make_unique<ThumbnailView>(this));
       thumbnail_view_->SetRoundedCorners(
           ThumbnailView::RoundedCorners::kBottomCorners,
           corner_radius_.value_or(0));
@@ -455,19 +525,13 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   layout->SetMainAxisAlignment(views::LayoutAlignment::kStart);
   layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   layout->SetCollapseMargins(true);
-  layout->SetChildViewIgnoredByLayout(title_fade_label_, true);
-  layout->SetChildViewIgnoredByLayout(domain_fade_label_, true);
-
-  constexpr int kHorizontalMargin = 18;
-  constexpr int kVerticalMargin = 10;
-
-  gfx::Insets title_margins(kVerticalMargin, kHorizontalMargin);
 
   // In some browser types (e.g. ChromeOS terminal app) we hide the domain
   // label. In those cases, we need to adjust the bottom margin of the title
   // element because it is no longer above another text element and needs a
   // bottom margin.
   const bool show_domain = tab->controller()->ShowDomainInHoverCards();
+  gfx::Insets title_margins = kTitleMargins;
   domain_label_->SetVisible(show_domain);
   if (show_domain) {
     title_margins.set_bottom(0);
@@ -480,17 +544,20 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kUnbounded));
+                               views::MaximumFlexSizeRule::kScaleToMaximum)
+          .WithOrder(2));
+  thumbnail_view_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kScaleToMaximum)
+          .WithOrder(1));
 
   // Set up widget.
 
   views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);
 
-  constexpr int kFootnoteVerticalMargin = 8;
-  GetBubbleFrameView()->SetFootnoteMargins(
-      gfx::Insets(kFootnoteVerticalMargin, kHorizontalMargin,
-                  kFootnoteVerticalMargin, kHorizontalMargin));
+  GetBubbleFrameView()->SetFootnoteMargins(kAlertMargins);
   GetBubbleFrameView()->SetPreferredArrowAdjustment(
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
   GetBubbleFrameView()->set_hit_test_transparent(true);
@@ -523,19 +590,13 @@ ax::mojom::Role TabHoverCardBubbleView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kNone;
 }
 
-void TabHoverCardBubbleView::Layout() {
-  View::Layout();
-  title_fade_label_->SetBoundsRect(title_label_->bounds());
-  domain_fade_label_->SetBoundsRect(domain_label_->bounds());
-}
-
 void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   // Preview image is never visible for the active tab.
   if (thumbnail_view_) {
     if (tab->IsActive())
-      thumbnail_view_->Hide();
+      thumbnail_view_->ClearImage();
     else
-      thumbnail_view_->Show();
+      thumbnail_view_->SetWaitingForImage();
   }
 
   std::u16string title;
@@ -555,13 +616,11 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
     alert_state_ = Tab::GetAlertStateToShow(tab->data().alert_state);
   }
   std::u16string domain;
+  bool is_filename = false;
   if (domain_url.SchemeIsFile()) {
-    title_label_->SetMultiLine(false);
-    title_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
+    is_filename = true;
     domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_FILE_URL_SOURCE);
   } else {
-    title_label_->SetElideBehavior(gfx::ELIDE_TAIL);
-    title_label_->SetMultiLine(true);
     if (domain_url.SchemeIsBlob()) {
       domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_BLOB_URL_SOURCE);
     } else {
@@ -574,35 +633,51 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
           net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
     }
   }
-  title_fade_label_->SetText(title_label_->GetText());
-  title_label_->SetText(title);
+  title_label_->SetText(title, is_filename);
+  domain_label_->SetText(domain, absl::nullopt);
 
+  const bool alternate_layout = UseAlternateHoverCardFormat();
   if (alert_state_ != old_alert_state) {
-    GetBubbleFrameView()->SetFootnoteView(
-        alert_state_.has_value() ? CreateAlertView(*alert_state_) : nullptr);
+    std::unique_ptr<views::Label> alert_label =
+        alert_state_.has_value() ? CreateAlertView(*alert_state_) : nullptr;
+    if (alternate_layout) {
+      if (alert_label) {
+        // Simulate the same look as the footnote view.
+        // TODO(dfried): should we add this as a variation of
+        // FootnoteContainerView? Currently it's only used here.
+        alert_label->SetBackground(
+            views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_BubbleFooterBackground)));
+        alert_label->SetBorder(views::CreatePaddedBorder(
+            views::CreateSolidSidedBorder(
+                0, 0, 1, 0,
+                GetNativeTheme()->GetSystemColor(
+                    ui::NativeTheme::kColorId_FootnoteContainerBorder)),
+            kAlertMargins));
+      }
+      GetBubbleFrameView()->SetHeaderView(std::move(alert_label));
+    } else {
+      GetBubbleFrameView()->SetFootnoteView(std::move(alert_label));
+    }
+
+    if (thumbnail_view_) {
+      // We only clip the corners of the fade image when there isn't a header
+      // or footer.
+      ThumbnailView::RoundedCorners corners =
+          ThumbnailView::RoundedCorners::kNone;
+      if (!alert_state_.has_value()) {
+        corners = alternate_layout
+                      ? ThumbnailView::RoundedCorners::kTopCorners
+                      : ThumbnailView::RoundedCorners::kBottomCorners;
+      }
+      thumbnail_view_->SetRoundedCorners(corners, corner_radius_.value_or(0));
+    }
   }
-
-  // We only clip the corners of the fade image when there isn't a footer.
-  if (thumbnail_view_ && !UseAlternateHoverCardFormat()) {
-    thumbnail_view_->SetRoundedCorners(
-        GetBubbleFrameView()->GetFootnoteView()
-            ? ThumbnailView::RoundedCorners::kNone
-            : ThumbnailView::RoundedCorners::kBottomCorners,
-        corner_radius_.value_or(0));
-  }
-
-  domain_fade_label_->SetText(domain_label_->GetText());
-  domain_label_->SetText(domain);
-
-  // Because we may have changed the card's contents, if the card has yet to be
-  // shown, ensure that it starts at the correct size.
-  if (!GetWidget()->IsVisible())
-    SizeToContents();
 }
 
 void TabHoverCardBubbleView::SetTextFade(double percent) {
-  title_fade_label_->SetFade(percent);
-  domain_fade_label_->SetFade(percent);
+  title_label_->SetFade(percent);
+  domain_label_->SetFade(percent);
 }
 
 void TabHoverCardBubbleView::SetTargetTabImage(gfx::ImageSkia preview_image) {
@@ -615,6 +690,14 @@ void TabHoverCardBubbleView::SetPlaceholderImage() {
   DCHECK(thumbnail_view_)
       << "This method should only be called when preview images are enabled.";
   thumbnail_view_->SetPlaceholderImage();
+}
+
+std::u16string TabHoverCardBubbleView::GetTitleTextForTesting() const {
+  return title_label_->GetText();
+}
+
+std::u16string TabHoverCardBubbleView::GetDomainTextForTesting() const {
+  return domain_label_->GetText();
 }
 
 // static
@@ -643,11 +726,6 @@ void TabHoverCardBubbleView::OnThemeChanged() {
     GetWidget()->Close();
     return;
   }
-
-  // Update fade labels' background color to match that of the the original
-  // label since these child views are ignored by layout.
-  title_fade_label_->SetBackgroundColor(title_label_->GetBackgroundColor());
-  domain_fade_label_->SetBackgroundColor(domain_label_->GetBackgroundColor());
 }
 
 BEGIN_METADATA(TabHoverCardBubbleView, views::BubbleDialogDelegateView)

@@ -626,6 +626,8 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
       {"restrictSigninLabel", IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL},
       {"deviceOwnerLabel", IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL},
       {"removeUserTooltip", IDS_SETTINGS_USERS_REMOVE_USER_TOOLTIP},
+      {"userRemovedMessage", IDS_SETTINGS_USERS_USER_REMOVED_MESSAGE},
+      {"userAddedMessage", IDS_SETTINGS_USERS_USER_ADDED_MESSAGE},
       {"addUsers", IDS_SETTINGS_USERS_ADD_USERS},
       {"addUsersEmail", IDS_SETTINGS_USERS_ADD_USERS_EMAIL},
       {"userExistsError", IDS_SETTINGS_USER_EXISTS_ERROR},
@@ -850,6 +852,10 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
+  html_source->AddBoolean(
+      "smartLockUIRevampEnabled",
+      base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp));
+
   AddAccountManagerPageStrings(html_source, profile());
   AddLockScreenPageStrings(html_source, profile()->GetPrefs());
   AddFingerprintListStrings(html_source);
@@ -995,6 +1001,10 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   };
   RegisterNestedSettingBulk(mojom::Subpage::kFingerprint, kFingerprintSettings,
                             generator);
+
+  // Smart Lock -- main setting is on multidevice page, but is mirrored here
+  generator->RegisterNestedAltSetting(mojom::Setting::kSmartLockOnOff,
+                                      mojom::Subpage::kSecurityAndSignIn);
 
   // Manage other people.
   generator->RegisterTopLevelSubpage(IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE,

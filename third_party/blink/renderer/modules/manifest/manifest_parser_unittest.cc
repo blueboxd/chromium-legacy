@@ -114,6 +114,22 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_TRUE(manifest->shortcuts.IsEmpty());
 }
 
+TEST_F(ManifestParserTest, UnrecognizedFieldsIgnored) {
+  auto& manifest = ParseManifest(
+      R"({
+        "unrecognizable_manifest_field": ["foo"],
+        "name": "bar"
+      })");
+
+  // Unrecognized Manifest fields are not a parsing error.
+  EXPECT_EQ(0u, GetErrorCount());
+
+  // Check that subsequent fields parsed.
+  ASSERT_FALSE(IsManifestEmpty(manifest));
+  ASSERT_EQ(manifest->name, "bar");
+  ASSERT_EQ(DefaultDocumentUrl().BaseAsString(), manifest->scope.GetString());
+}
+
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
   auto& manifest = ParseManifest(
       "{ \"name\": 42, \"short_name\": 4, \"id\": 12,"
@@ -274,10 +290,47 @@ TEST_F(ManifestParserTest, IdParseRules) {
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ("start?query=a", manifest->id);
   }
+  // Invalid type.
+  {
+    auto& manifest =
+        ParseManifest("{\"start_url\": \"/start?query=a\", \"id\": 1}");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("start?query=a", manifest->id);
+  }
   // Empty string.
   {
     auto& manifest =
         ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \"\" }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("", manifest->id);
+  }
+  // Full url.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"start_url\": \"/start?query=a\", \"id\": \"http://foo.com/foo\" "
+        "}");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("foo", manifest->id);
+  }
+  // Full url with different origin.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"start_url\": \"/start?query=a\", \"id\": "
+        "\"http://another.com/foo\" }");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("start?query=a", manifest->id);
+  }
+  // Relative path
+  {
+    auto& manifest =
+        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \".\" }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("", manifest->id);
+  }
+  // Absolute path
+  {
+    auto& manifest =
+        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \"/\" }");
     ASSERT_EQ(0u, GetErrorCount());
     EXPECT_EQ("", manifest->id);
   }

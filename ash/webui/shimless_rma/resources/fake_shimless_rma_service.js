@@ -45,6 +45,12 @@ export class FakeShimlessRmaService {
      */
     this.automaticallyTriggerProvisioningObservation_ = false;
 
+    /**
+     * Control automatically triggering calibration observations.
+     * @private {boolean}
+     */
+    this.automaticallyTriggerCalibrationObservation_ = false;
+
     this.reset();
   }
 
@@ -144,29 +150,17 @@ export class FakeShimlessRmaService {
   /**
    * @return {!Promise<!StateResult>}
    */
-  checkForNetworkConnection() {
-    const resolver = new PromiseResolver();
-    this.stateIndex_++;
-    this.methods_.resolveMethod('checkForNetworkConnection')
-        .then((nextState) => {
-          if (nextState.state === RmaState.kUpdateChrome) {
-            this.stateIndex_++;
-          }
-          resolver.resolve(nextState);
-        });
-    return resolver.promise;
+  beginFinalization() {
+    return this.getNextStateForMethod_(
+        'beginFinalization', RmaState.kWelcomeScreen);
   }
 
   /**
-   * Sets the return value of checkForNetworkConnection() which is the
-   * next state (either network selection page or the step afterwards).
-   * @param {!StateResult} nextState
+   * @return {!Promise<!StateResult>}
    */
-  setCheckForNetworkConnection(nextState) {
-    assert(
-        nextState.state === RmaState.kUpdateChrome ||
-        nextState.state === RmaState.kConfigureNetwork);
-    this.methods_.setResult('checkForNetworkConnection', nextState);
+  networkSelectionComplete() {
+    return this.getNextStateForMethod_(
+        'networkSelectionComplete', RmaState.kConfigureNetwork);
   }
 
   /**
@@ -470,6 +464,10 @@ export class FakeShimlessRmaService {
               /** @type {!CalibrationComponent} */ (component),
               /** @type {number} */ (progress));
         });
+    if (this.automaticallyTriggerCalibrationObservation_) {
+      this.triggerCalibrationObserver(
+          CalibrationComponent.kAccelerometer, 100, 1500);
+    }
   }
 
   /**
@@ -500,6 +498,13 @@ export class FakeShimlessRmaService {
    */
   automaticallyTriggerProvisioningObservation() {
     this.automaticallyTriggerProvisioningObservation_ = true;
+  }
+
+  /**
+   * Trigger calibration observations when an observer is added.
+   */
+  automaticallyTriggerCalibrationObservation() {
+    this.automaticallyTriggerCalibrationObservation_ = true;
   }
 
   /**
@@ -644,7 +649,10 @@ export class FakeShimlessRmaService {
 
     this.methods_.register('abortRma');
 
-    this.methods_.register('checkForNetworkConnection');
+    this.methods_.register('beginFinalization');
+
+    this.methods_.register('networkSelectionComplete');
+
     this.methods_.register('getCurrentChromeVersion');
     this.methods_.register('checkForChromeUpdates');
     this.methods_.register('updateChrome');

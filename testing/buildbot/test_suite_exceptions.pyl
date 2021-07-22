@@ -557,9 +557,7 @@
       'Mac10.15 Tests', # https://crbug.com/1042757
       'Mac10.15 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
-      'Linux TSan (bionic)',  # https://crbug.com/368525
       'Linux TSan Tests',  # https://crbug.com/368525
-      # TODO(crbug.com/1200904): Remove after migration
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
@@ -777,12 +775,6 @@
   },
   'cc_unittests': {
     'modifications': {
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 3,
@@ -1009,16 +1001,7 @@
       'Lollipop Phone Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
-
-      # Not available for android x86 & x64 platforms since this GN target
-      # asserts "enable_vr" which is only true for arm & arm64 on android
-      # platform. See //chrome/android/BUILD.gn and
-      # //device/vr/buildflags/buildflags.gni
-      'android-11-x86-fyi-rel',
-      'android-12-x64-fyi-rel',
       'android-lollipop-arm-rel',
-      'android-marshmallow-x86-rel-non-cq',
-      'android-pie-x86-rel',
 
       'android-pie-arm64-rel', # https://crbug.com/1010211
       'ToTAndroid',
@@ -1150,12 +1133,6 @@
           'shards': 5,
         },
       },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 2,
@@ -1218,12 +1195,6 @@
       'Linux ASan Tests (sandboxed)': {
         'swarming': {
           'shards': 10, # https://crbug.com/1103330
-        },
-      },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        'swarming': {
-          'shards': 15,
         },
       },
       'Linux TSan Tests': {
@@ -1474,8 +1445,6 @@
   'crashpad_tests': {
     'remove_from': [
       'linux-win_cross-rel', # https://crbug.com/762167
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)',
       # https://crbug.com/crashpad/304
       'Linux TSan Tests',
       'ToTLinuxTSan',
@@ -1606,22 +1575,6 @@
         },
       },
       'Linux CFI': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
         'args': [
           '--use-gpu-in-tests',
           '--no-xvfb',
@@ -1806,13 +1759,6 @@
           'shards': 5,
         },
       },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        # These are slow on the TSan bots for some reason, crbug.com/794372
-        'swarming': {
-          'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
-        },
-      },
       'Linux TSan Tests': {
         # These are slow on the TSan bots for some reason, crbug.com/794372
         'swarming': {
@@ -1916,13 +1862,6 @@
         },
       },
     },
-  },
-  'mac_signing_tests': {
-    'remove_from': [
-      # TODO(crbug.com/1220743): Re-enable.
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-    ]
   },
   'maps_pixel_passthrough_test': {
     'modifications': {
@@ -2174,8 +2113,6 @@
   },
   'nacl_helper_nonsfi_unittests': {
     'remove_from': [
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)',  # Sets enable_nacl=false.
       'Linux TSan Tests',  # Sets enable_nacl=false.
     ],
   },
@@ -2183,8 +2120,6 @@
     'remove_from': [
       'ToTMacASan',  # The mac asan tot bot sets enable_nacl=false
       'linux-win_cross-rel',  # Sets enable_nacl=false, https://crbug.com/774186
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)',  # The TSan bot sets enable_nacl=false
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
     ],
@@ -2223,12 +2158,6 @@
         'swarming': {
           'shards': 2,
         },
-      },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        'swarming': {
-          'shards': 4,
-        }
       },
       'Linux TSan Tests': {
         'swarming': {
@@ -2675,12 +2604,6 @@
           'shards': 4,
         },
       },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        'swarming': {
-          'shards': 6,
-        },
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 6,
@@ -2934,12 +2857,6 @@
           'shards': 2,
         },
       },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 2,
@@ -3080,15 +2997,6 @@
   'vr_android_unittests': {
     'remove_from': [
       'android-lollipop-arm-rel',
-
-      # Not available for android x86 & x64 platforms since this GN target
-      # asserts "enable_vr" which is only true for arm & arm64 on android
-      # platform. See //chrome/browser/android/vr/BUILD.gn and
-      # //device/vr/buildflags/buildflags.gni
-      'android-marshmallow-x86-rel-non-cq',
-      'android-pie-x86-rel',
-      'android-11-x86-fyi-rel',
-      'android-12-x64-fyi-rel',
     ],
   },
   'vr_common_unittests': {
@@ -3208,12 +3116,6 @@
         # crbug.com/794372
         'swarming': {
           'shards': 5,
-        },
-      },
-      # TODO(crbug.com/1200904): Remove after migration
-      'Linux TSan (bionic)': {
-        'swarming': {
-          'shards': 2,
         },
       },
       'Linux TSan Tests': {

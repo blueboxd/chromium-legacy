@@ -187,6 +187,8 @@
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/browser/ui/webui/chromeos/emoji/emoji_picker.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/emoji/emoji_ui.h"
+#include "chrome/browser/ui/webui/chromeos/enterprise_casting/enterprise_casting.mojom.h"
+#include "chrome/browser/ui/webui/chromeos/enterprise_casting/enterprise_casting_ui.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -239,8 +241,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
-#include "chromeos/components/demo_mode_app_ui/demo_mode_app_ui.h"
-#include "chromeos/components/demo_mode_app_ui/mojom/demo_mode_app_ui.mojom.h"
 #include "chromeos/components/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"  // nogncheck crbug.com/1125897
 #include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"  // nogncheck crbug.com/1125897
 #include "chromeos/components/telemetry_extension_ui/mojom/system_events_service.mojom.h"  // nogncheck crbug.com/1125897
@@ -893,15 +893,13 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       launcher_internals::mojom::PageHandlerFactory,
       chromeos::LauncherInternalsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      enterprise_casting::mojom::PageHandlerFactory,
+      chromeos::EnterpriseCastingUI>(map);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
-  if (chromeos::features::IsDemoModeSWAEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        chromeos::mojom::demo_mode::PageHandlerFactory,
-        chromeos::DemoModeAppUI>(map);
-  }
-
   if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
     RegisterWebUIControllerInterfaceBinder<
         chromeos::health::mojom::DiagnosticsService,

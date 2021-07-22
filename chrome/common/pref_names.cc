@@ -2530,10 +2530,6 @@ const char kCloudPrintPrinters[] = "cloud_print.user_settings.printers";
 // A boolean indicating whether submitting jobs to Google Cloud Print is
 // blocked by policy.
 const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
-// A boolean indicating whether Cloud Print deprecation warnings should be
-// suppressed.
-const char kCloudPrintDeprecationWarningsSuppressed[] =
-    "cloud_print.deprecation_warnings_suppressed";
 
 // Preference to store proxy settings.
 const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
@@ -2971,6 +2967,10 @@ const char kIsolateOrigins[] = "site_isolation.isolate_origins";
 
 // Boolean that specifies opting into --site-per-process (full Site Isolation).
 const char kSitePerProcess[] = "site_isolation.site_per_process";
+
+// Boolean that enable cross-origin sharing for WebAssembly modules.
+const char kCrossOriginWebAssemblyModuleSharingEnabled[] =
+    "profile.cross_origin_webassembly_module_sharing_enabled";
 
 #if !defined(OS_ANDROID)
 // Boolean to allow SharedArrayBuffer in non-crossOriginIsolated contexts.

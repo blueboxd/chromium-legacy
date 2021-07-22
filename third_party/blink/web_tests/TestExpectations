@@ -4028,6 +4028,7 @@ virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-trac
 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-003.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
+virtual/layout-ng-grid/external/wpt/css/css-grid/grid-within-flexbox-indefinite.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-018.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-028.html [ Failure ]
 virtual/layout-ng-grid/external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-029.html [ Failure ]
@@ -5708,7 +5709,7 @@ crbug.com/1048149 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-ste
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-appearance-zoom125.html [ Crash Pass ]
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-top-left-selection-position-after-reopen.html [ Crash Pass ]
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-zoom150-bottom-edge-no-nan.html [ Crash Pass ]
-crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appearance-zoom150.html [ Crash Failure Pass ]
+crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appearance-zoom150.html [ Crash Pass ]
 
 # SwANGLE issues
 crbug.com/1204234 css3/blending/background-blend-mode-single-accelerated-element.html [ Failure ]
@@ -6738,10 +6739,6 @@ crbug.com/1208213 external/wpt/css/css-transforms/add-child-in-empty-layer.html 
 # Sheriff 2021-05-12
 crbug.com/1095540 [ Debug Linux ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/resize-corner-tracking-touch.html [ Failure Pass ]
 
-# Sheriff 2021-05-13
-crbug.com/1208774 [ Mac ] external/wpt/webcodecs/videoDecoder-codec-specific.any.html?h264_annexb [ Failure Pass ]
-crbug.com/1208774 [ Mac ] external/wpt/webcodecs/videoDecoder-codec-specific.any.worker.html?h264_annexb [ Failure Pass ]
-
 # For SkiaRenderer on MacOS
 crbug.com/1208173 [ Mac ] animations/animation-paused-hardware.html [ Failure ]
 crbug.com/1208173 [ Mac ] animations/missing-values-first-keyframe.html [ Failure ]
@@ -7207,6 +7204,9 @@ crbug.com/1228246 http/tests/inspector-protocol/network/same-site-issue-warn-coo
 crbug.com/1228246 http/tests/inspector-protocol/network/same-site-issue-warn-cookie-strict-subresource-context-downgrade.js [ Crash Failure Pass Skip Timeout ]
 crbug.com/1228246 http/tests/inspector-protocol/network/webbundle.js [ Crash Failure Pass Skip Timeout ]
 
+# linux_layout_tests_layout_ng_disabled needs its own baselines.
+crbug.com/1231699 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-composite.html [ Pass Failure ]
+
 # Other devtools flaky tests outside of http/tests/inspector-protocol/network.
 crbug.com/1228261 http/tests/devtools/console/console-context-selector.js [ Crash Failure Pass Skip Timeout ]
 crbug.com/1228261 http/tests/inspector-protocol/browser-grant-permissions.js [ Crash Failure Pass Skip Timeout ]
@@ -7253,8 +7253,6 @@ crbug.com/1161244 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-
 
 # Sheriff 2021-07-19
 crbug.com/1230534 [ Linux ] external/wpt/webrtc/simulcast/vp8.https.html [ Pass Timeout ]
-
-crbug.com/1230836 [ Mac ] fast/forms/calendar-picker/date-picker-appearance-zoom150.html [ Crash Failure Pass ]
 
 # Sheriff 2021-07-21
 crbug.com/1231431 external/wpt/html/cross-origin-embedder-policy/reporting-to-endpoint.https.html [ Failure ]

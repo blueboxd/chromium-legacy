@@ -701,7 +701,6 @@ extern const char kCloudPrintXmppPingTimeout[];
 extern const char kCloudPrintPrinters[];
 extern const char kCloudPrintSubmitEnabled[];
 extern const char kCloudPrintUserSettings[];
-extern const char kCloudPrintDeprecationWarningsSuppressed[];
 
 extern const char kMaxConnectionsPerProxy[];
 
@@ -1033,6 +1032,8 @@ extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 
 extern const char kIsolateOrigins[];
 extern const char kSitePerProcess[];
+
+extern const char kCrossOriginWebAssemblyModuleSharingEnabled[];
 
 #if !defined(OS_ANDROID)
 extern const char kSharedArrayBufferUnrestrictedAccessAllowed[];

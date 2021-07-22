@@ -106,16 +106,6 @@ void DockKeyboard() {
                  @"Keyboard animations still present.");
 }
 
-// Waits for the keyboard to appear. Returns NO on timeout.
-BOOL WaitForKeyboardToAppear() {
-  GREYCondition* waitForKeyboard = [GREYCondition
-      conditionWithName:@"Wait for keyboard"
-                  block:^BOOL {
-                    return [EarlGrey isKeyboardShownWithError:nil];
-                  }];
-  return [waitForKeyboard waitWithTimeout:kWaitForActionTimeout];
-}
-
 }  // namespace
 
 // Integration Tests for fallback coordinator.
@@ -236,29 +226,11 @@ BOOL WaitForKeyboardToAppear() {
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 
-  // TODO(crbug.com/1220724): iOS 15 phones seem to act more like iPads now,
-  // dismissing the keyboard when tapping on the option above. Confirm that this
-  // is expected and either fix, or remove this comment.
-  BOOL isIOS15 = NO;
-  if (@available(iOS 15, *)) {
-    isIOS15 = YES;
-  }
-
-  // Verify the status of the icons.
-  if ([ChromeEarlGrey isIPadIdiom] || isIOS15) {
-    // Hidden on iPad.
-    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-        assertWithMatcher:grey_notVisible()];
-    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  } else {
-    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-        assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-        assertWithMatcher:grey_userInteractionEnabled()];
-    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  }
+  // Verify icons are not present now that the selected field is a picker.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Tests that the input accessory view continues working after a picker is
@@ -317,9 +289,6 @@ BOOL WaitForKeyboardToAppear() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
-  // Wait for the accessory icon to appear.
-  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
-
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
   [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
@@ -327,15 +296,6 @@ BOOL WaitForKeyboardToAppear() {
   // Verify the status of the icons.
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-
-  // TODO(crbug.com/1227392): This doesn't appear to work on iOS15 phone. It
-  // appears the profiles icon is visible and selected (so interaction
-  // disabled), but the keyboard itself is visible. As a workaround, tap the
-  // keyboard icon and continue the test.
-  if (![ChromeEarlGrey isIPadIdiom] && isIOS15) {
-    [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-        performAction:grey_tap()];
-  }
 
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_userInteractionEnabled()];
@@ -406,9 +366,6 @@ BOOL WaitForKeyboardToAppear() {
   // Bring up the regular keyboard again.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
-
-  // Wait for the accessory icon to appear.
-  GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.

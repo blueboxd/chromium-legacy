@@ -45,9 +45,9 @@ function setupFakeShimlessRmaService_() {
 
   service.setGetComponentListResult(fakeComponents);
   service.setReimageRequiredResult(false);
-  service.setCheckForNetworkConnection(fakeStates[2]);
   service.automaticallyTriggerDisableWriteProtectionObservation();
   service.automaticallyTriggerProvisioningObservation();
+  service.automaticallyTriggerCalibrationObservation();
 
   service.setGetOriginalSerialNumberResult('serial# 0001')
   service.setGetRegionListResult(fakeDeviceRegions);

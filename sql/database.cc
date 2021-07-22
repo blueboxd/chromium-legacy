@@ -1215,6 +1215,45 @@ bool Database::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   return Execute(sql);
 }
 
+bool Database::ExecuteScriptForTesting(const char* sql_script) {
+  DCHECK(sql_script);
+  if (!db_) {
+    DCHECK(poisoned_) << "Illegal use of Database without a db";
+    return false;
+  }
+
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
+
+  while (*sql_script) {
+    sqlite3_stmt* sqlite_statement;
+    int sqlite_error = sqlite3_prepare_v3(db_, sql_script, /* nByte= */ -1,
+                                          SqlitePrepareFlags(),
+                                          &sqlite_statement, &sql_script);
+    if (sqlite_error != SQLITE_OK)
+      return false;
+
+    if (!sqlite_statement) {
+      // Trailing comment or whitespace after the last semicolon.
+      return true;
+    }
+
+    // TODO(pwnall): Investigate restricting ExecuteScriptForTesting() to
+    //               statements that don't produce any result rows.
+    do {
+      sqlite_error = sqlite3_step(sqlite_statement);
+    } while (sqlite_error == SQLITE_ROW);
+
+    // sqlite3_finalize() returns SQLITE_OK if the most recent sqlite3_step()
+    // returned SQLITE_DONE or SQLITE_ROW, otherwise the error code.
+    sqlite_error = sqlite3_finalize(sqlite_statement);
+    if (sqlite_error != SQLITE_OK)
+      return false;
+  }
+
+  return true;
+}
+
 scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
     StatementID id,
     const char* sql) {
@@ -1294,6 +1333,9 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
       << "Unused text: " << std::string(unused_sql) << "\n"
       << "in prepared SQL statement: " << std::string(sql);
 #endif  // DCHECK_IS_ON()
+
+  DCHECK(sqlite_statement) << "No SQL statement in string: " << sql;
+
   return base::MakeRefCounted<StatementRef>(this, sqlite_statement, true);
 }
 
@@ -1346,6 +1388,8 @@ bool Database::IsSQLValid(const char* sql) {
       << "Unused text: " << std::string(unused_sql) << "\n"
       << "in SQL statement: " << std::string(sql);
 #endif  // DCHECK_IS_ON()
+
+  DCHECK(sqlite_statement) << "No SQL statement in string: " << sql;
 
   sqlite3_finalize(sqlite_statement);
   return true;

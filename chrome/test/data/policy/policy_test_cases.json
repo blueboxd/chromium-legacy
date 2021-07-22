@@ -3070,11 +3070,31 @@
     "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "browser.show_home_button": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ShowHomeButton": false
+        },
+        "prefs": {
+          "browser.show_home_button": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "ShowHomeButton": true
         },
         "prefs": {
-          "browser.show_home_button": {}
+          "browser.show_home_button": {
+            "value": true
+          }
         }
       }
     ]
@@ -5102,7 +5122,17 @@
         },
         "prefs": {
           "google.services.username_pattern": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": ".*@google.com"
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "google.services.username_pattern": {
+            "location": "local_state",
+            "default_value": ""
           }
         }
       }
@@ -5181,19 +5211,57 @@
   "BuiltInDnsClientEnabled": {
     "os": [
       "win",
-      "linux",
+      "linux"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set).",
+        "prefs": {
+          "async_dns.enabled": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Simple value.",
+        "policies": {
+          "BuiltInDnsClientEnabled": true
+        },
+        "prefs": {
+          "async_dns.enabled": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "BuiltInDnsClientEnabled.FeatureEnabledByDefault": {
+    "os": [
       "mac",
       "android",
       "chromeos"
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set).",
+        "prefs": {
+          "async_dns.enabled": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Simple value.",
         "policies": {
-          "BuiltInDnsClientEnabled": true
+          "BuiltInDnsClientEnabled": false
         },
         "prefs": {
           "async_dns.enabled": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": false
           }
         }
       }
@@ -5209,12 +5277,23 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check default values (no policies set).",
+        "prefs": {
+          "async_dns.additional_dns_query_types_enabled": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Simple value.",
         "policies": {
           "AdditionalDnsQueryTypesEnabled": false
         },
         "prefs": {
           "async_dns.additional_dns_query_types_enabled": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": false
           }
         }
       }
@@ -5932,7 +6011,27 @@
           "RoamingProfileSupportEnabled": true
         },
         "prefs": {
-          "sync.enable_local_sync_backend": {}
+          "sync.enable_local_sync_backend": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "RoamingProfileSupportEnabled": false
+        },
+        "prefs": {
+          "sync.enable_local_sync_backend": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "sync.enable_local_sync_backend": {
+            "default_value": false
+          }
         }
       }
     ]
@@ -6405,9 +6504,43 @@
           "SAMLOfflineSigninTimeLimit": 0
         },
         "prefs": {
-          "saml.offline_signin_time_limit": {}
+          "saml.offline_signin_time_limit": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "note": "Minimum value",
+        "policies": {
+          "SAMLOfflineSigninTimeLimit": -1
+        },
+        "prefs": {
+          "saml.offline_signin_time_limit": {
+            "value": -1
+          }
+        }
+      },
+      {
+        "note": "Value below minimum should be clamped to minimum",
+        "policies": {
+          "SAMLOfflineSigninTimeLimit": -2
+        },
+        "prefs": {
+          "saml.offline_signin_time_limit": {
+            "value": -1
+          }
+        }
+      },
+      {
+        "note": "Default value (14 days)",
+        "policies": {},
+        "prefs": {
+          "saml.offline_signin_time_limit": {
+            "default_value": 1209600
+          }
         }
       }
+
     ]
   },
   "GaiaLockScreenOfflineSigninTimeLimitDays": {
@@ -6441,7 +6574,61 @@
             "value": 0
           }
         }
+      },
+      {
+        "note": "Minimum value",
+        "policies": {
+          "SamlLockScreenOfflineSigninTimeLimitDays": -2
+        },
+        "prefs": {
+          "saml.lock_screen_offline_signin_time_limit": {
+            "value": -2
+          }
+        }
+      },
+      {
+        "note": "Maximum value",
+        "policies": {
+          "SamlLockScreenOfflineSigninTimeLimitDays": 365
+        },
+        "prefs": {
+          "saml.lock_screen_offline_signin_time_limit": {
+            "value": 365
+          }
+        }
+      },
+      {
+        "note": "Value below minimum should be mapped to minimum",
+        "policies": {
+          "SamlLockScreenOfflineSigninTimeLimitDays": -3
+        },
+        "prefs": {
+          "saml.lock_screen_offline_signin_time_limit": {
+            "value": -2
+          }
+        }
+      },
+      {
+        "note": "Value above maximum should be mapped to maximum",
+        "policies": {
+          "SamlLockScreenOfflineSigninTimeLimitDays": 366
+        },
+        "prefs": {
+          "saml.lock_screen_offline_signin_time_limit": {
+            "value": 365
+          }
+        }
+      },
+      {
+        "note": "Default value",
+        "policies": {},
+        "prefs": {
+          "saml.lock_screen_offline_signin_time_limit": {
+            "default_value": -2
+          }
+        }
       }
+
     ]
   },
   "DriveDisabled": {
@@ -7476,8 +7663,36 @@
     "os": [
       "chromeos"
     ],
+    "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
+        "note": "default value",
+        "policies": {},
+        "prefs": {
+          "settings.a11y.screen_magnifier": {
+            "default_value": false
+          },
+          "ash.docked_magnifier.enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "value MagnifierType::kDisabled",
+        "policies": {
+          "ScreenMagnifierType": 0
+        },
+        "prefs": {
+          "settings.a11y.screen_magnifier": {
+            "value": false
+          },
+          "ash.docked_magnifier.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "note": "value MagnifierType::kFull",
         "policies": {
           "ScreenMagnifierType": 1
         },
@@ -7486,7 +7701,39 @@
             "value": true
           },
           "ash.docked_magnifier.enabled": {
+            "note": "Another controller is overriding this value with the same user value, causing it to be marked as user controller and not recommended",
+            "check_for_recommended": false,
             "value": false
+          }
+        }
+      },
+      {
+        "note": "value MagnifierType::kDocked",
+        "policies": {
+          "ScreenMagnifierType": 2
+        },
+        "prefs": {
+          "settings.a11y.screen_magnifier": {
+            "note": "Another controller is overriding this value with the same user value, causing it to be marked as user controller and not recommended",
+            "check_for_recommended": false,
+            "value": false
+          },
+          "ash.docked_magnifier.enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "value out-of-range is ignored",
+        "policies": {
+          "ScreenMagnifierType": 3
+        },
+        "prefs": {
+          "settings.a11y.screen_magnifier": {
+            "default_value": false
+          },
+          "ash.docked_magnifier.enabled": {
+            "default_value": false
           }
         }
       }
@@ -8115,11 +8362,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "arc.status_reporting_enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "ReportArcStatusEnabled": false
         },
         "prefs": {
-          "arc.status_reporting_enabled": {}
+          "arc.status_reporting_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ReportArcStatusEnabled": true
+        },
+        "prefs": {
+          "arc.status_reporting_enabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -8165,11 +8432,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "multidevice.sms_connect_allowed": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "SmsMessagesAllowed": false
         },
         "prefs": {
-          "multidevice.sms_connect_allowed": {}
+          "multidevice.sms_connect_allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "SmsMessagesAllowed": true
+        },
+        "prefs": {
+          "multidevice.sms_connect_allowed": {
+            "value": true
+          }
         }
       }
     ]
@@ -8180,11 +8467,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "wifi_sync.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "WifiSyncAndroidAllowed": false
         },
         "prefs": {
-          "wifi_sync.allowed": {}
+          "wifi_sync.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "WifiSyncAndroidAllowed": true
+        },
+        "prefs": {
+          "wifi_sync.allowed": {
+            "value": true
+          }
         }
       }
     ]
@@ -8195,11 +8502,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "smart_lock_signin.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "SmartLockSigninAllowed": false
         },
         "prefs": {
-          "smart_lock_signin.allowed": {}
+          "smart_lock_signin.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "SmartLockSigninAllowed": true
+        },
+        "prefs": {
+          "smart_lock_signin.allowed": {
+            "value": true
+          }
         }
       }
     ]
@@ -8210,11 +8537,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "tether.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "InstantTetheringAllowed": false
         },
         "prefs": {
-          "tether.allowed": {}
+          "tether.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "InstantTetheringAllowed": true
+        },
+        "prefs": {
+          "tether.allowed": {
+            "value": true
+          }
         }
       }
     ]
@@ -8225,11 +8572,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "phone_hub.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "PhoneHubAllowed": false
         },
         "prefs": {
-          "phone_hub.allowed": {}
+          "phone_hub.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "PhoneHubAllowed": true
+        },
+        "prefs": {
+          "phone_hub.allowed": {
+            "value": true
+          }
         }
       }
     ]
@@ -8240,11 +8607,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "phone_hub_notifications.allowed": {
+            "default_value": true
+          }
+        }
+      },
+      {
         "policies": {
           "PhoneHubNotificationsAllowed": false
         },
         "prefs": {
-          "phone_hub_notifications.allowed": {}
+          "phone_hub_notifications.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "PhoneHubNotificationsAllowed": true
+        },
+        "prefs": {
+          "phone_hub_notifications.allowed": {
+            "value": true
+          }
         }
       }
     ]
@@ -8255,11 +8642,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "phone_hub_task_continuation.allowed": {
+            "default_value": true
+          }
+        }
+      },
+      {
         "policies": {
           "PhoneHubTaskContinuationAllowed": false
         },
         "prefs": {
-          "phone_hub_task_continuation.allowed": {}
+          "phone_hub_task_continuation.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "PhoneHubTaskContinuationAllowed": true
+        },
+        "prefs": {
+          "phone_hub_task_continuation.allowed": {
+            "value": true
+          }
         }
       }
     ]
@@ -8270,12 +8677,30 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "nearby_sharing.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "NearbyShareAllowed": false
         },
         "prefs": {
           "nearby_sharing.enabled": {
             "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "NearbyShareAllowed": true
+        },
+        "prefs": {
+          "nearby_sharing.enabled": {
+            "default_value": false
           }
         }
       }
@@ -8666,11 +9091,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "settings.voice_interaction.hotword.enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "VoiceInteractionHotwordEnabled": false
+        },
+        "prefs": {
+          "settings.voice_interaction.hotword.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "VoiceInteractionHotwordEnabled": true
         },
         "prefs": {
-          "settings.voice_interaction.hotword.enabled": {}
+          "settings.voice_interaction.hotword.enabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -8684,11 +9129,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "web_package.signed_exchange.enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
         "policies": {
           "SignedHTTPExchangeEnabled": false
         },
         "prefs": {
-          "web_package.signed_exchange.enabled": {}
+          "web_package.signed_exchange.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "SignedHTTPExchangeEnabled": true
+        },
+        "prefs": {
+          "web_package.signed_exchange.enabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -8759,6 +9224,14 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "lock_screen_reauthentication_enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "LockScreenReauthenticationEnabled": true
         },
@@ -8786,11 +9259,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "crostini.vm_management_cli_allowed_by_policy": {
+            "default_value": true
+          }
+        }
+      },
+      {
         "policies": {
           "VmManagementCliAllowed": false
         },
         "prefs": {
-          "crostini.vm_management_cli_allowed_by_policy": {}
+          "crostini.vm_management_cli_allowed_by_policy": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "VmManagementCliAllowed": true
+        },
+        "prefs": {
+          "crostini.vm_management_cli_allowed_by_policy": {
+            "value": true
+          }
         }
       }
     ]
@@ -8804,11 +9297,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "browser.shared_clipboard_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
         "policies": {
           "SharedClipboardEnabled": false
         },
         "prefs": {
-          "browser.shared_clipboard_enabled": {}
+          "browser.shared_clipboard_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "SharedClipboardEnabled": true
+        },
+        "prefs": {
+          "browser.shared_clipboard_enabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -8828,12 +9341,30 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "browser.click_to_call_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
         "policies": {
           "ClickToCallEnabled": false
         },
         "prefs": {
           "browser.click_to_call_enabled": {
             "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ClickToCallEnabled": true
+        },
+        "prefs": {
+          "browser.click_to_call_enabled": {
+            "value": true
           }
         }
       }
@@ -8851,11 +9382,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "login_display_password_button_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "LoginDisplayPasswordButtonEnabled": false
         },
         "prefs": {
-          "login_display_password_button_enabled": {}
+          "login_display_password_button_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "LoginDisplayPasswordButtonEnabled": true
+        },
+        "prefs": {
+          "login_display_password_button_enabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -8864,7 +9415,17 @@
     "os": [
       "chromeos"
     ],
+    "can_be_recommended": true,
     "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "settings.suggested_content_enabled": {
+            "value": false,
+            "check_for_recommended": false
+          }
+        }
+      },
       {
         "policies": {
           "SuggestedContentEnabled": false
@@ -8872,6 +9433,16 @@
         "prefs": {
           "settings.suggested_content_enabled": {
             "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "SuggestedContentEnabled": true
+        },
+        "prefs": {
+          "settings.suggested_content_enabled": {
+            "value": true
           }
         }
       }
@@ -8883,12 +9454,30 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "borealis.allowed_for_user": {
+            "default_value": true
+          }
+        }
+      },
+      {
         "policies": {
           "UserBorealisAllowed": false
         },
         "prefs": {
           "borealis.allowed_for_user": {
             "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "UserBorealisAllowed": true
+        },
+        "prefs": {
+          "borealis.allowed_for_user": {
+            "value": true
           }
         }
       }
@@ -9099,7 +9688,7 @@
     "reason_for_missing_test": "Chrome OS device policy used by update_engine only, not used in Chrome."
   },
   "ReportDeviceLocation": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "reason_for_missing_test": "Maps into CrosSettings"
   },
   "SystemTimezone": {
     "reason_for_missing_test": "Maps into CrosSettings"
@@ -9655,7 +10244,6 @@
       "chromeos",
       "android"
     ],
-    "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
         "policies": {
@@ -10392,11 +10980,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "settings.voice_interaction.context.enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "VoiceInteractionContextEnabled": false
+        },
+        "prefs": {
+          "settings.voice_interaction.context.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "VoiceInteractionContextEnabled": true
         },
         "prefs": {
-          "settings.voice_interaction.context.enabled": {}
+          "settings.voice_interaction.context.enabled": {
+            "value": true
+          }
         }
       }
     ]

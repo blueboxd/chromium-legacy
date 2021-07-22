@@ -192,8 +192,6 @@ body.taking.video #options-group :not(#open-ptz-panel) {
 }
 
 #shutters-group {
-  --shutter-size: 60px;
-
   bottom: var(--shutter-vertical-center);
   display: flex;
   flex-direction: column;
@@ -287,8 +285,9 @@ body.should-handle-intent-result #modes-group {
 }
 
 #confirm-result-groups>button {
-  flex: 0 0 76px;
   height: 72px;
+  margin-bottom: 2px;
+  margin-top: 2px;
   width: 72px;
 }
 

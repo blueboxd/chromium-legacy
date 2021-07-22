@@ -12,9 +12,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types_base.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -124,70 +124,6 @@ using IDLUnrestrictedDouble = IDLFloatingPointNumberTypeBase<
     bindings::IDLFloatingPointNumberConvMode::kUnrestricted>;
 
 // Strings
-// The "Base" classes are always templatized and require users to specify how JS
-// null and/or undefined are supposed to be handled.
-template <V8StringResourceMode Mode>
-struct IDLByteStringBase final : public IDLBaseHelper<String> {};
-template <V8StringResourceMode Mode>
-struct IDLStringBase final : public IDLBaseHelper<String> {};
-template <V8StringResourceMode Mode>
-struct IDLUSVStringBase final : public IDLBaseHelper<String> {};
-
-template <V8StringResourceMode Mode>
-struct IDLStringStringContextTrustedHTMLBase final
-    : public IDLBaseHelper<String> {};
-template <V8StringResourceMode Mode>
-struct IDLStringStringContextTrustedScriptBase final
-    : public IDLBaseHelper<String> {};
-template <V8StringResourceMode Mode>
-struct IDLUSVStringStringContextTrustedScriptURLBase final
-    : public IDLBaseHelper<String> {};
-
-// Define non-template versions of the above for simplicity.
-using IDLByteString = IDLByteStringBase<V8StringResourceMode::kDefaultMode>;
-using IDLString = IDLStringBase<V8StringResourceMode::kDefaultMode>;
-using IDLUSVString = IDLUSVStringBase<V8StringResourceMode::kDefaultMode>;
-
-// Nullable strings
-using IDLByteStringOrNull =
-    IDLByteStringBase<V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
-using IDLStringOrNull =
-    IDLStringBase<V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
-using IDLUSVStringOrNull =
-    IDLUSVStringBase<V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
-
-// [TreatNullAs] Strings
-using IDLStringTreatNullAsEmptyString =
-    IDLStringBase<V8StringResourceMode::kTreatNullAsEmptyString>;
-
-// [StringContext] Strings
-using IDLStringStringContextTrustedHTML =
-    IDLStringStringContextTrustedHTMLBase<V8StringResourceMode::kDefaultMode>;
-using IDLStringStringContextTrustedScript =
-    IDLStringStringContextTrustedScriptBase<V8StringResourceMode::kDefaultMode>;
-using IDLUSVStringStringContextTrustedScriptURL =
-    IDLUSVStringStringContextTrustedScriptURLBase<
-        V8StringResourceMode::kDefaultMode>;
-using IDLStringStringContextTrustedHTMLOrNull =
-    IDLStringStringContextTrustedHTMLBase<
-        V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
-using IDLStringStringContextTrustedScriptOrNull =
-    IDLStringStringContextTrustedScriptBase<
-        V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
-using IDLUSVStringStringContextTrustedScriptURLOrNull =
-    IDLUSVStringStringContextTrustedScriptURLBase<
-        V8StringResourceMode::kTreatNullAndUndefinedAsNullString>;
-using IDLStringStringContextTrustedHTMLTreatNullAsEmptyString =
-    IDLStringStringContextTrustedHTMLBase<
-        V8StringResourceMode::kTreatNullAsEmptyString>;
-using IDLStringStringContextTrustedScriptTreatNullAsEmptyString =
-    IDLStringStringContextTrustedScriptBase<
-        V8StringResourceMode::kTreatNullAsEmptyString>;
-using IDLUSVStringStringContextTrustedScriptURLTreatNullAsEmptyString =
-    IDLUSVStringStringContextTrustedScriptURLBase<
-        V8StringResourceMode::kTreatNullAsEmptyString>;
-
-// Strings for the new bindings generator
 
 namespace bindings {
 
@@ -204,51 +140,48 @@ struct IDLStringTypeBase : public IDLBaseHelper<String> {};
 
 // ByteString
 template <bindings::IDLStringConvMode mode>
-struct IDLByteStringBaseV2 final : public IDLStringTypeBase {};
-using IDLByteStringV2 =
-    IDLByteStringBaseV2<bindings::IDLStringConvMode::kDefault>;
+struct IDLByteStringBase final : public IDLStringTypeBase {};
+using IDLByteString = IDLByteStringBase<bindings::IDLStringConvMode::kDefault>;
 
 // DOMString
 template <bindings::IDLStringConvMode mode>
-struct IDLStringBaseV2 final : public IDLStringTypeBase {};
-using IDLStringV2 = IDLStringBaseV2<bindings::IDLStringConvMode::kDefault>;
-using IDLStringTreatNullAsEmptyStringV2 =
-    IDLStringBaseV2<bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
+struct IDLStringBase final : public IDLStringTypeBase {};
+using IDLString = IDLStringBase<bindings::IDLStringConvMode::kDefault>;
+using IDLStringTreatNullAsEmptyString =
+    IDLStringBase<bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
 
 // USVString
 template <bindings::IDLStringConvMode mode>
-struct IDLUSVStringBaseV2 final : public IDLStringTypeBase {};
-using IDLUSVStringV2 =
-    IDLUSVStringBaseV2<bindings::IDLStringConvMode::kDefault>;
+struct IDLUSVStringBase final : public IDLStringTypeBase {};
+using IDLUSVString = IDLUSVStringBase<bindings::IDLStringConvMode::kDefault>;
 
 // [StringContext=TrustedHTML] DOMString
 template <bindings::IDLStringConvMode mode>
-struct IDLStringStringContextTrustedHTMLBaseV2 final
-    : public IDLStringTypeBase {};
-using IDLStringStringContextTrustedHTMLV2 =
-    IDLStringStringContextTrustedHTMLBaseV2<
-        bindings::IDLStringConvMode::kDefault>;
-using IDLStringStringContextTrustedHTMLTreatNullAsEmptyStringV2 =
-    IDLStringStringContextTrustedHTMLBaseV2<
+struct IDLStringStringContextTrustedHTMLBase final : public IDLStringTypeBase {
+};
+using IDLStringStringContextTrustedHTML = IDLStringStringContextTrustedHTMLBase<
+    bindings::IDLStringConvMode::kDefault>;
+using IDLStringStringContextTrustedHTMLTreatNullAsEmptyString =
+    IDLStringStringContextTrustedHTMLBase<
         bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
 
 // [StringContext=TrustedScript] DOMString
 template <bindings::IDLStringConvMode mode>
-struct IDLStringStringContextTrustedScriptBaseV2 final
+struct IDLStringStringContextTrustedScriptBase final
     : public IDLStringTypeBase {};
-using IDLStringStringContextTrustedScriptV2 =
-    IDLStringStringContextTrustedScriptBaseV2<
+using IDLStringStringContextTrustedScript =
+    IDLStringStringContextTrustedScriptBase<
         bindings::IDLStringConvMode::kDefault>;
-using IDLStringStringContextTrustedScriptTreatNullAsEmptyStringV2 =
-    IDLStringStringContextTrustedScriptBaseV2<
+using IDLStringStringContextTrustedScriptTreatNullAsEmptyString =
+    IDLStringStringContextTrustedScriptBase<
         bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
 
 // [StringContext=TrustedScriptURL] USVString
 template <bindings::IDLStringConvMode mode>
-struct IDLUSVStringStringContextTrustedScriptURLBaseV2 final
+struct IDLUSVStringStringContextTrustedScriptURLBase final
     : public IDLStringTypeBase {};
-using IDLUSVStringStringContextTrustedScriptURLV2 =
-    IDLUSVStringStringContextTrustedScriptURLBaseV2<
+using IDLUSVStringStringContextTrustedScriptURL =
+    IDLUSVStringStringContextTrustedScriptURLBase<
         bindings::IDLStringConvMode::kDefault>;
 
 // object

@@ -8,6 +8,11 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/drive/drivefs_native_message_host.h"
+#include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
+#include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
@@ -151,7 +156,144 @@ void SystemNotificationManager::HandleDeviceEvent(
   }
 }
 
-void SystemNotificationManager::HandleEvent(const extensions::Event& event) {}
+namespace file_manager_private = extensions::api::file_manager_private;
+
+std::unique_ptr<message_center::Notification>
+SystemNotificationManager::MakeDriveSyncErrorNotification(
+    const extensions::Event& event,
+    base::Value::ListView& event_arguments) {
+  std::unique_ptr<message_center::Notification> notification;
+  file_manager_private::DriveSyncErrorEvent sync_error;
+  const char* id;
+  std::u16string title =
+      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL);
+  std::u16string message;
+  if (file_manager_private::DriveSyncErrorEvent::Populate(event_arguments[0],
+                                                          &sync_error)) {
+    id = file_manager_private::ToString(sync_error.type);
+    switch (sync_error.type) {
+      case file_manager_private::
+          DRIVE_SYNC_ERROR_TYPE_DELETE_WITHOUT_PERMISSION:
+        message = l10n_util::GetStringFUTF16(
+            IDS_FILE_BROWSER_SYNC_DELETE_WITHOUT_PERMISSION_ERROR,
+            base::UTF8ToUTF16(event.event_url.ExtractFileName()));
+        notification = CreateNotification(id, title, message);
+        break;
+      case file_manager_private::DRIVE_SYNC_ERROR_TYPE_SERVICE_UNAVAILABLE:
+        notification =
+            CreateNotification(id, IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL,
+                               IDS_FILE_BROWSER_SYNC_SERVICE_UNAVAILABLE_ERROR);
+        break;
+      case file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_SERVER_SPACE:
+        message = l10n_util::GetStringFUTF16(
+            IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE,
+            base::UTF8ToUTF16(event.event_url.ExtractFileName()));
+        notification = CreateNotification(id, title, message);
+        break;
+      case file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_LOCAL_SPACE:
+        notification =
+            CreateNotification(id, IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL,
+                               IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_HEADER);
+        break;
+      case file_manager_private::DRIVE_SYNC_ERROR_TYPE_MISC:
+        message = l10n_util::GetStringFUTF16(
+            IDS_FILE_BROWSER_SYNC_MISC_ERROR,
+            base::UTF8ToUTF16(event.event_url.ExtractFileName()));
+        notification = CreateNotification(id, title, message);
+        break;
+      default:
+        DLOG(WARNING) << "Unknown Drive Sync error: " << sync_error.type;
+        break;
+    }
+  }
+  return notification;
+}
+
+const char* kDriveDialogId = "swa-drive-confirm-dialog";
+
+void SystemNotificationManager::HandleDriveDialogClick(
+    absl::optional<int> button_index) {
+  drivefs::mojom::DialogResult result = drivefs::mojom::DialogResult::kDismiss;
+  if (button_index) {
+    if (button_index.value() == 1) {
+      result = drivefs::mojom::DialogResult::kAccept;
+    } else {
+      result = drivefs::mojom::DialogResult::kReject;
+    }
+  }
+  // Send the dialog result to the callback stored in DriveFS on dialog
+  // creation.
+  if (drivefs_event_router_) {
+    drivefs_event_router_->OnDialogResult(result);
+  }
+  GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
+                                         kDriveDialogId);
+}
+
+std::unique_ptr<message_center::Notification>
+SystemNotificationManager::MakeDriveConfirmDialogNotification(
+    const extensions::Event& event,
+    base::Value::ListView& event_arguments) {
+  std::unique_ptr<message_center::Notification> notification;
+  file_manager_private::DriveConfirmDialogEvent dialog_event;
+  const char* id;
+  std::u16string title =
+      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL);
+  std::u16string message;
+  if (file_manager_private::DriveConfirmDialogEvent::Populate(
+          event_arguments[0], &dialog_event)) {
+    std::vector<message_center::ButtonInfo> notification_buttons;
+    id = file_manager_private::ToString(dialog_event.type);
+    notification = ash::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kDriveDialogId,
+        l10n_util::GetStringUTF16(IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL),
+        l10n_util::GetStringUTF16(IDS_FILE_BROWSER_OFFLINE_ENABLE_MESSAGE),
+        std::u16string(), GURL(), message_center::NotifierId(),
+        message_center::RichNotificationData(),
+        new message_center::HandleNotificationClickDelegate(base::BindRepeating(
+            &SystemNotificationManager::HandleDriveDialogClick,
+            weak_ptr_factory_.GetWeakPtr())),
+        kNotificationGoogleIcon,
+        message_center::SystemNotificationWarningLevel::NORMAL);
+
+    notification_buttons.push_back(message_center::ButtonInfo(
+        l10n_util::GetStringUTF16(IDS_FILE_BROWSER_OFFLINE_ENABLE_REJECT)));
+    notification_buttons.push_back(message_center::ButtonInfo(
+        l10n_util::GetStringUTF16(IDS_FILE_BROWSER_OFFLINE_ENABLE_ACCEPT)));
+    notification->set_buttons(notification_buttons);
+  }
+  return notification;
+}
+
+void SystemNotificationManager::HandleEvent(const extensions::Event& event) {
+  if (!swa_enabled_) {
+    return;
+  }
+  base::Value::ListView event_arguments;
+
+  event_arguments = event.event_args->GetList();
+  if (event_arguments.size() < 1) {
+    return;
+  }
+  std::unique_ptr<message_center::Notification> notification;
+  switch (event.histogram_value) {
+    case extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_SYNC_ERROR:
+      notification = MakeDriveSyncErrorNotification(event, event_arguments);
+      break;
+    case extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_CONFIRM_DIALOG:
+      notification = MakeDriveConfirmDialogNotification(event, event_arguments);
+      break;
+    default:
+      DLOG(WARNING) << "Unhandled event: " << event.event_name;
+      break;
+  }
+
+  if (notification) {
+    GetNotificationDisplayService()->Display(
+        NotificationHandler::Type::TRANSIENT, *notification,
+        /*metadata=*/nullptr);
+  }
+}
 
 void SystemNotificationManager::HandleCopyStart(
     int copy_id,
@@ -165,8 +307,6 @@ void SystemNotificationManager::HandleCopyStart(
 }
 
 const char* kSwaFileOperationPrefix = "swa-file-operation-";
-
-namespace file_manager_private = extensions::api::file_manager_private;
 
 void SystemNotificationManager::HandleCopyEvent(
     int copy_id,
@@ -228,9 +368,88 @@ void SystemNotificationManager::HandleCopyEvent(
   }
 }
 
+const char* kRemovableNotificationId = "swa-removable-device-id";
+
+void SystemNotificationManager::HandleRemovableNotificationClick(
+    const std::string& path,
+    absl::optional<int> button_index) {
+  if (button_index) {
+    if (button_index.value() == 0) {
+      base::FilePath volume_root(path);
+      platform_util::ShowItemInFolder(profile_, volume_root);
+    } else {
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile_, chromeos::settings::mojom::kExternalStorageSubpagePath);
+    }
+  }
+
+  GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
+                                         kRemovableNotificationId);
+}
+
+std::unique_ptr<message_center::Notification>
+SystemNotificationManager::MakeRemovableNotification(
+    file_manager_private::MountCompletedEvent& event,
+    const Volume& volume) {
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kRemovableNotificationId,
+          l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE),
+          l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE),
+          std::u16string(), GURL(), message_center::NotifierId(),
+          message_center::RichNotificationData(),
+          new message_center::HandleNotificationClickDelegate(
+              base::BindRepeating(
+                  &SystemNotificationManager::HandleRemovableNotificationClick,
+                  weak_ptr_factory_.GetWeakPtr(), volume.mount_path().value())),
+          kNotificationGoogleIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+
+  std::vector<message_center::ButtonInfo> notification_buttons;
+  notification_buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL)));
+  notification_buttons.push_back(
+      message_center::ButtonInfo(l10n_util::GetStringUTF16(
+          IDS_REMOVABLE_DEVICE_OPEN_SETTTINGS_BUTTON_LABEL)));
+  notification->set_buttons(notification_buttons);
+
+  return notification;
+}
+
+void SystemNotificationManager::HandleMountCompletedEvent(
+    file_manager_private::MountCompletedEvent& event,
+    const Volume& volume) {
+  if (!swa_enabled_) {
+    return;
+  }
+  std::unique_ptr<message_center::Notification> notification;
+
+  switch (event.event_type) {
+    case file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT:
+      if (event.should_notify) {
+        notification = MakeRemovableNotification(event, volume);
+      }
+      break;
+    default:
+      DLOG(WARNING) << "Unhandled mount event for type " << event.event_type;
+      break;
+  }
+
+  if (notification) {
+    GetNotificationDisplayService()->Display(
+        NotificationHandler::Type::TRANSIENT, *notification,
+        /*metadata=*/nullptr);
+  }
+}
+
 NotificationDisplayService*
 SystemNotificationManager::GetNotificationDisplayService() {
   return NotificationDisplayServiceFactory::GetForProfile(profile_);
+}
+
+void SystemNotificationManager::SetDriveFSEventRouter(
+    DriveFsEventRouter* drivefs_event_router) {
+  drivefs_event_router_ = drivefs_event_router;
 }
 
 }  // namespace file_manager

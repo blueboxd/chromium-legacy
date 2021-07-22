@@ -23,7 +23,6 @@
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
 #include "chrome/browser/safe_browsing/chrome_ui_manager_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -32,6 +31,7 @@
 #include "components/safe_browsing/content/browser/client_side_detection_service.h"
 #include "components/safe_browsing/content/browser/client_side_model_loader.h"
 #include "components/safe_browsing/content/browser/client_side_phishing_model.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/db/test_database_manager.h"
@@ -150,9 +150,8 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
 
 class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
-  explicit MockSafeBrowsingUIManager(SafeBrowsingService* service)
+  MockSafeBrowsingUIManager()
       : SafeBrowsingUIManager(
-            service,
             std::make_unique<ChromeSafeBrowsingUIManagerDelegate>(),
             std::make_unique<ChromeSafeBrowsingBlockingPageFactory>(),
             GURL(chrome::kChromeUINewTabURL)) {}
@@ -323,11 +322,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     // Inject service classes.
     csd_service_ = std::make_unique<MockClientSideDetectionService>();
     database_manager_ = new StrictMock<MockSafeBrowsingDatabaseManager>();
-    ui_manager_ = new StrictMock<MockSafeBrowsingUIManager>(
-        // TODO(crbug/925153): Port consumers of the SafeBrowsingService to
-        // use the interface in components/safe_browsing, and remove this cast.
-        static_cast<safe_browsing::SafeBrowsingService*>(
-            SafeBrowsingService::CreateSafeBrowsingService()));
+    ui_manager_ = new StrictMock<MockSafeBrowsingUIManager>();
 
     identity_test_env_.MakePrimaryAccountAvailable("user@gmail.com",
                                                    signin::ConsentLevel::kSync);

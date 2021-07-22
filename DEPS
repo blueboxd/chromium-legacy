@@ -228,7 +228,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '64e67c346c3fe386cda542386831f65d39098bda',
+  'skia_revision': 'fb212256cad3e9f9d8bd6c191f7590e885313da3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a015f1f24f198037c845f4ec24f6e0c3cc211419',
+  'devtools_frontend_revision': '657d45ced51861fff065e9a9e6133ab4441bc4a2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -680,7 +680,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'YJC4scXTq0Y8HjJ2pr8FDtf-_5_6kcggHIJyNN9Z4MwC',
+          'version': 'SLmcnNX6hlBBRyjobb-bJEInBX6Tl_Hp1gIsWy-q-hQC',
         },
       ],
       'dep_type': 'cipd',
@@ -1582,7 +1582,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '1ade45cbadfd19298d2c47dc538962d4425ad2dd',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@fe4d8297589b45f87d7a9511ff1ef04c3077dbc4',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d85297cbd31bf173ae54ee66ba3ebf9d1d8a6ea6',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',

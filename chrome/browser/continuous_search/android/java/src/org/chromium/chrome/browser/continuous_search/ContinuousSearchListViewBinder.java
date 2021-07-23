@@ -47,19 +47,16 @@ class ContinuousSearchListViewBinder {
      */
     static void bindListItem(PropertyModel model, View view, PropertyKey propertyKey) {
         ContinuousSearchChipView chipView = view.findViewById(R.id.csn_chip);
-        boolean showResultTitle = model.get(ListItemProperties.SHOW_RESULT_TITLE);
+        boolean isTwoLineChipView = chipView.isTwoLineChipView();
 
-        if (ListItemProperties.SHOW_RESULT_TITLE == propertyKey && showResultTitle) {
-            chipView.initTwoLineChipView();
-        } else if (ListItemProperties.LABEL == propertyKey && showResultTitle) {
-            assert chipView.twoLineChipViewInitialized();
+        if (ListItemProperties.LABEL == propertyKey && isTwoLineChipView) {
             setupTextView(chipView.getPrimaryTextView(), model.get(ListItemProperties.LABEL),
                     view.getResources().getDimensionPixelSize(R.dimen.csn_chip_text_max_width),
                     TruncateAt.END);
         } else if (ListItemProperties.URL == propertyKey) {
             GURL url = model.get(ListItemProperties.URL);
-            TextView textView = showResultTitle ? chipView.getSecondaryTextView()
-                                                : chipView.getPrimaryTextView();
+            TextView textView = isTwoLineChipView ? chipView.getSecondaryTextView()
+                                                  : chipView.getPrimaryTextView();
 
             String safeUrl = "";
             if (url != null) {

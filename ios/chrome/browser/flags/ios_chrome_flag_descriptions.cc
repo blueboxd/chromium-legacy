@@ -116,12 +116,6 @@ const char kDefaultBrowserFullscreenPromoExperimentDescription[] =
     "When enabled, will show a modified default browser fullscreen modal promo "
     "UI.";
 
-const char kDefaultBrowserFullscreenPromoCTAExperimentName[] =
-    "Default Browser Fullscreen modal experiment with different CTA";
-const char kDefaultBrowserFullscreenPromoCTAExperimentDescription[] =
-    "When enabled, will show a modified default browser fullscreen modal promo "
-    "UI.";
-
 const char kDelayThresholdMinutesToUpdateGaiaCookieName[] =
     "Delay for polling (in minutes) to verify the existence of GAIA cookies.";
 const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[] =
@@ -505,10 +499,6 @@ const char kURLBlocklistIOSName[] = "URL Blocklist Policy";
 const char kURLBlocklistIOSDescription[] =
     "When enabled, URLs can be blocked/allowed by the URLBlocklist/URLAllowlist"
     "enterprise policies.";
-
-const char kUseJSForErrorPageName[] = "Enable new error page workflow";
-const char kUseJSForErrorPageDescription[] =
-    "Use JavaScript for the error pages";
 
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =

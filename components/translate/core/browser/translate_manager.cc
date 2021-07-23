@@ -288,14 +288,7 @@ bool TranslateManager::CanManuallyTranslate(bool menuLogging) {
   }
 
   const std::string source_language = language_state_.source_language();
-  if (source_language.empty()) {
-    if (!menuLogging)
-      return false;
-    TranslateBrowserMetrics::ReportMenuTranslationUnavailableReason(
-        TranslateBrowserMetrics::MenuTranslationUnavailableReason::
-            kSourceLangUnknown);
-    can_translate = false;
-  }
+
   // Translation of unknown source language pages is supported on Desktop
   // platforms, experimentally supported on Android and not supported on iOS.
   bool unknown_source_supported = true;
@@ -306,7 +299,8 @@ bool TranslateManager::CanManuallyTranslate(bool menuLogging) {
   unknown_source_supported = false;
 #endif
   if (!unknown_source_supported &&
-      source_language == translate::kUnknownLanguageCode) {
+      (source_language == translate::kUnknownLanguageCode ||
+       source_language.empty())) {
     if (!menuLogging)
       return false;
     TranslateBrowserMetrics::ReportMenuTranslationUnavailableReason(
@@ -918,9 +912,8 @@ void TranslateManager::FilterIsTranslatePossible(
   if (!ignore_missing_key_for_testing_ &&
       !::google_apis::HasAPIKeyConfigured()) {
     // Without an API key, translate won't work, so don't offer to translate in
-    // the first place. Leave prefs::kOfferTranslateEnabled on, though, because
-    // that settings syncs and we don't want to turn off translate everywhere
-    // else.
+    // the first place. Leave kOfferTranslateEnabled on, though, because that
+    // settings syncs and we don't want to turn off translate everywhere else.
     decision->PreventAllTriggering();
     decision->initiation_statuses.push_back(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_KEY);

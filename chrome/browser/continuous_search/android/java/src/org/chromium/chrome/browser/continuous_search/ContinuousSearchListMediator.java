@@ -216,7 +216,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                 ChromeFeatureList.CONTINUOUS_SEARCH, TRIGGER_MODE_PARAM, TriggerMode.ALWAYS);
     }
 
-    private boolean shouldShowResultTitle() {
+    boolean shouldShowResultTitle() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.CONTINUOUS_SEARCH, SHOW_RESULT_TITLE_PARAM, false);
     }
@@ -260,7 +260,6 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                 getBackgroundColorForParentBackgroundColor(mThemeColorProvider.getThemeColor());
         boolean useDarkColors = shouldUseDarkElementColors(backgroundColor);
         return new PropertyModel.Builder(ListItemProperties.ALL_KEYS)
-                .with(ListItemProperties.SHOW_RESULT_TITLE, shouldShowResultTitle())
                 .with(ListItemProperties.LABEL, text)
                 .with(ListItemProperties.URL, url)
                 .with(ListItemProperties.IS_SELECTED, false)

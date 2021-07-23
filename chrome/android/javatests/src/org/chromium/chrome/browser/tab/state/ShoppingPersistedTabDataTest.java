@@ -90,7 +90,8 @@ public class ShoppingPersistedTabDataTest {
                 mOptimizationGuideBridgeJniMock,
                 HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(),
                 OptimizationGuideDecision.TRUE, null);
-        PersistedTabDataConfiguration.setUseTestConfig(true);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> PersistedTabDataConfiguration.setUseTestConfig(true));
         Profile.setLastUsedProfileForTesting(mProfileMock);
         doReturn(true).when(mNavigationHandle).isInPrimaryMainFrame();
     }
@@ -107,6 +108,8 @@ public class ShoppingPersistedTabDataTest {
         shoppingPersistedTabData.registerIsTabSaveEnabledSupplier(supplier);
         shoppingPersistedTabData.setPriceMicros(
                 ShoppingPersistedTabDataTestUtils.PRICE_MICROS, null);
+        shoppingPersistedTabData.setCurrencyCode(
+                ShoppingPersistedTabDataTestUtils.GREAT_BRITAIN_CURRENCY_CODE);
         ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
         ShoppingPersistedTabData deserialized = new ShoppingPersistedTabData(tab);
         deserialized.deserialize(serialized);
@@ -114,6 +117,8 @@ public class ShoppingPersistedTabDataTest {
                 ShoppingPersistedTabDataTestUtils.PRICE_MICROS, deserialized.getPriceMicros());
         Assert.assertEquals(
                 ShoppingPersistedTabData.NO_PRICE_KNOWN, deserialized.getPreviousPriceMicros());
+        Assert.assertEquals(ShoppingPersistedTabDataTestUtils.GREAT_BRITAIN_CURRENCY_CODE,
+                deserialized.getCurrencyCode());
         MetricsResult metricsResult =
                 deserialized.getPriceDropMetricsLoggerForTesting().getMetricsResultForTesting();
         Assert.assertFalse(metricsResult.isProductDetailPage);

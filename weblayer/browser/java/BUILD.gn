@@ -176,6 +176,8 @@ android_library("java") {
     "org/chromium/weblayer_private/WebMessageReplyProxyImpl.java",
     "org/chromium/weblayer_private/WebShareServiceFactory.java",
     "org/chromium/weblayer_private/WebappsHelper.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothChooserAndroidDelegate.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothScanningPromptAndroidDelegate.java",
     "org/chromium/weblayer_private/media/MediaRouteDialogFragmentImpl.java",
     "org/chromium/weblayer_private/media/MediaRouterClientImpl.java",
     "org/chromium/weblayer_private/media/MediaSessionManager.java",
@@ -301,6 +303,7 @@ android_library("java") {
 
   if (enable_arcore) {
     sources += [
+      "org/chromium/weblayer_private/ArCompositorDelegateImpl.java",
       "org/chromium/weblayer_private/ArCompositorDelegateProviderImpl.java",
       "org/chromium/weblayer_private/ArCoreVersionUtils.java",
     ]
@@ -488,6 +491,8 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/WebMessageReplyProxyImpl.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
     "org/chromium/weblayer_private/WebappsHelper.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothChooserAndroidDelegate.java",
+    "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothScanningPromptAndroidDelegate.java",
     "org/chromium/weblayer_private/media/MediaRouterClientImpl.java",
     "org/chromium/weblayer_private/media/MediaStreamManager.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",

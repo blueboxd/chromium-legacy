@@ -1279,6 +1279,32 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Voice"/>
 </enum>
 
+<enum name="AdaptiveToolbarRadioButtonState">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Auto with new tab"/>
+  <int value="2" label="Auto with share"/>
+  <int value="3" label="Auto with voice"/>
+  <int value="4" label="New tab"/>
+  <int value="5" label="Share"/>
+  <int value="6" label="Voice"/>
+</enum>
+
+<enum name="AdaptiveToolbarSegmentSwitch">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="None to new tab"/>
+  <int value="2" label="None to share"/>
+  <int value="3" label="None to voice"/>
+  <int value="4" label="New tab to none"/>
+  <int value="5" label="Share to none"/>
+  <int value="6" label="Voice to none"/>
+  <int value="7" label="New tab to share"/>
+  <int value="8" label="New tab to voice"/>
+  <int value="9" label="Share to new tab"/>
+  <int value="10" label="Share to voice"/>
+  <int value="11" label="Voice to new tab"/>
+  <int value="12" label="Voice to share"/>
+</enum>
+
 <enum name="AdbSideloadingPromptEvent">
   <int value="0" label="Prompt shown"/>
   <int value="1" label="Prompt skipped"/>
@@ -6842,6 +6868,7 @@ others/histograms.xml -->
 <enum name="AwDebugCall">
   <int value="0" label="setCpuAffinityToLittleCores"/>
   <int value="1" label="enableIdleThrottling"/>
+  <int value="2" label="enablePowerScheduler"/>
 </enum>
 
 <enum name="BackForwardCacheActionAfterPagehide">
@@ -8273,6 +8300,8 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="originator_client_item_id is a valid GUID"/>
   <int value="2" label="GUID field left empty"/>
   <int value="3" label="GUID was inferred"/>
+  <int value="4"
+      label="GUID cannot be inferred (possibly update with client tag)"/>
 </enum>
 
 <enum name="BookmarkLaunchLocation">
@@ -28695,6 +28724,7 @@ Called by update_extension_histograms.py.-->
   <int value="1561" label="WMDESKSPRIVATE_DELETEDESKTEMPLATE"/>
   <int value="1562" label="WMDESKSPRIVATE_LAUNCHDESKTEMPLATE"/>
   <int value="1563" label="AUTOTESTPRIVATE_SETSHELFICONPIN"/>
+  <int value="1564" label="SCRIPTING_GETREGISTEREDCONTENTSCRIPTS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -46486,6 +46516,7 @@ from previous Chrome versions.
   <int value="-1996233283"
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
   <int value="-1996087238" label="kAutofillEnableOffersInDownstream:enabled"/>
+  <int value="-1995534832" label="DownloadProgressMessage:disabled"/>
   <int value="-1993730028" label="CrostiniPortForwarding:enabled"/>
   <int value="-1992999120" label="composite-after-paint"/>
   <int value="-1990614981" label="StoragePressureUI:disabled"/>
@@ -49118,6 +49149,7 @@ from previous Chrome versions.
   <int value="131881947" label="D3DVsync:enabled"/>
   <int value="132560299"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
+  <int value="132907995" label="DownloadProgressMessage:enabled"/>
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
   <int value="136924140" label="OfflineIndicatorV2:enabled"/>
   <int value="138345654" label="enable-ambient-authentication-in-incognito"/>

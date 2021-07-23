@@ -94,15 +94,12 @@ public class ContinuousSearchListViewBinderTest {
         when(chipView.getSecondaryTextView()).thenReturn(textView);
 
         // Test label and url setup based on whether we should show result titles.
-        model.set(ListItemProperties.SHOW_RESULT_TITLE, false);
-        inOrder.verify(chipView, times(0)).initTwoLineChipView();
+        when(chipView.isTwoLineChipView()).thenReturn(false);
         model.set(ListItemProperties.LABEL, label);
         inOrder.verify(chipView, times(0)).getPrimaryTextView();
         model.set(ListItemProperties.URL, url);
         inOrder.verify(chipView).getPrimaryTextView();
-        model.set(ListItemProperties.SHOW_RESULT_TITLE, true);
-        inOrder.verify(chipView).initTwoLineChipView();
-        when(chipView.twoLineChipViewInitialized()).thenReturn(true);
+        when(chipView.isTwoLineChipView()).thenReturn(true);
         model.set(ListItemProperties.LABEL, anotherLabel);
         inOrder.verify(chipView).getPrimaryTextView();
         model.set(ListItemProperties.URL, anotherUrl);

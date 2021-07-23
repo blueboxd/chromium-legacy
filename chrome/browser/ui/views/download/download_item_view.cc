@@ -151,6 +151,7 @@ class TransparentButton : public views::Button {
       : Button(Button::PressedCallback()) {
     views::InstallRectHighlightPathGenerator(this);
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+    SetHasInkDropActionOnClick(true);
     set_context_menu_controller(parent);
     // Button subclasses need to provide this because the default color is
     // kPlaceholderColor. In theory we could statically compute it in the
@@ -1411,6 +1412,14 @@ bool DownloadItemView::SubmitDownloadToFeedbackService(
 
 void DownloadItemView::ExecuteCommand(DownloadCommands::Command command) {
   commands_.ExecuteCommand(command);
+}
+
+std::u16string DownloadItemView::GetStatusTextForTesting() const {
+  return GetStatusTextAndStyle().first;
+}
+
+void DownloadItemView::OpenItemForTesting() {
+  OpenButtonPressed();
 }
 
 DEFINE_ENUM_CONVERTERS(download::DownloadItemMode,

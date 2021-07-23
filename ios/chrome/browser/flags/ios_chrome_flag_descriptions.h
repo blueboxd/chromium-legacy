@@ -84,12 +84,6 @@ extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-// Title and description for the flag to show a modified fullscreen modal promo
-// with a button that would send the users in the Settings.app to update the
-// default browser. Different from kDefaultBrowserFullscreenPromoExperimentName.
-extern const char kDefaultBrowserFullscreenPromoCTAExperimentName[];
-extern const char kDefaultBrowserFullscreenPromoCTAExperimentDescription[];
-
 // Title and description for the flag to add the button in the settings to send
 // the users in the Settings.app to update the default browser.
 extern const char kDefaultBrowserSettingsName[];
@@ -442,10 +436,6 @@ extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 // enterprise policy.
 extern const char kURLBlocklistIOSName[];
 extern const char kURLBlocklistIOSDescription[];
-
-// Title and description for the flag to enable the new error page workflow.
-extern const char kUseJSForErrorPageName[];
-extern const char kUseJSForErrorPageDescription[];
 
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.

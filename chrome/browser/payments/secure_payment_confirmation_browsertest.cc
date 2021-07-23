@@ -67,7 +67,10 @@ class SecurePaymentConfirmationTest
       public WebDataServiceConsumer {
  public:
   SecurePaymentConfirmationTest() {
-    feature_list_.InitAndEnableFeature(features::kSecurePaymentConfirmation);
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kSecurePaymentConfirmation,
+                              features::kSecurePaymentConfirmationDebug},
+        /*disabled_features=*/{});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -179,9 +182,22 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
             test_controller()->app_descriptions().front().label);
 }
 
+class SecurePaymentConfirmationDisableDebugTest
+    : public SecurePaymentConfirmationTest {
+ public:
+  SecurePaymentConfirmationDisableDebugTest() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kSecurePaymentConfirmation},
+        /*disabled_features=*/{features::kSecurePaymentConfirmationDebug});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // canMakePayment() and hasEnrolledInstrument() should return false on
 // platforms without a compatible authenticator.
-IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDisableDebugTest,
                        CanMakePayment_NoAuthenticator) {
   test_controller()->SetHasAuthenticator(false);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
@@ -588,6 +604,33 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
+class SecurePaymentConfirmationCreationDisableDebugTest
+    : public SecurePaymentConfirmationCreationTest {
+ public:
+  SecurePaymentConfirmationCreationDisableDebugTest() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kSecurePaymentConfirmation},
+        /*disabled_features=*/{features::kSecurePaymentConfirmationDebug});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationDisableDebugTest,
+                       RequireUserVerifyingPlatformAuthenticator) {
+  test_controller()->SetHasAuthenticator(false);
+  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
+  NavigateTo("a.com", "/secure_payment_confirmation.html");
+  RespondToFutureEnrollments(/*confirm=*/true);
+  EXPECT_EQ(
+      "NotAllowedError: A user verifying platform authenticator is required "
+      "for payments.",
+      content::EvalJs(GetActiveWebContents(),
+                      content::JsReplace("createPaymentCredential($1)",
+                                         GetDefaultIconURL())));
+}
+
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        LookupPaymentCredential) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
@@ -623,6 +666,22 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
+}
+
+// b.com cannot create a credential with RP = "a.com".
+IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+                       RelyingPartyIsEnforced) {
+  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
+  NavigateTo("b.com", "/secure_payment_confirmation.html");
+  RespondToFutureEnrollments(/*confirm=*/true);
+  EXPECT_EQ(
+      "SecurityError: The relying party ID is not a registrable domain suffix "
+      "of, nor equal to the current domain.",
+      content::EvalJs(
+          GetActiveWebContents(),
+          content::JsReplace("createCredentialAndReturnItsIdentifier($1)",
+                             GetDefaultIconURL()))
+          .ExtractString());
 }
 
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
@@ -808,15 +867,13 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest, NonexistentIcon) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
 
-  EXPECT_EQ(
-      "a JavaScript error: \"NetworkError: Unable to download payment "
-      "instrument icon.\"\n",
-      content::EvalJs(
-          GetActiveWebContents(),
-          content::JsReplace(
-              "createCredentialAndReturnItsIdentifier($1)",
-              https_server()->GetURL("a.com", "/nonexistent.png").spec()))
-          .error);
+  EXPECT_EQ("NetworkError: Unable to download payment instrument icon.",
+            content::EvalJs(
+                GetActiveWebContents(),
+                content::JsReplace(
+                    "createCredentialAndReturnItsIdentifier($1)",
+                    https_server()->GetURL("a.com", "/nonexistent.png").spec()))
+                .ExtractString());
 
   ExpectEnrollDialogShown(
       SecurePaymentConfirmationEnrollDialogShown::kCouldNotShow, 1);
@@ -835,14 +892,12 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest, InsecureIcon) {
   std::string icon_url =
       embedded_test_server()->GetURL("a.com", "/icon.png").spec();
 
-  EXPECT_EQ(
-      "a JavaScript error: \"SecurityError: 'instrument.icon' should be a "
-      "secure URL\"\n",
-      content::EvalJs(
-          GetActiveWebContents(),
-          content::JsReplace("createCredentialAndReturnItsIdentifier($1)",
-                             icon_url))
-          .error);
+  EXPECT_EQ("SecurityError: 'instrument.icon' should be a secure URL",
+            content::EvalJs(
+                GetActiveWebContents(),
+                content::JsReplace("createCredentialAndReturnItsIdentifier($1)",
+                                   icon_url))
+                .ExtractString());
   ExpectNoEnrollDialogShown();
   ExpectNoEnrollDialogResult();
   ExpectNoEnrollSystemPromptResult();
@@ -916,15 +971,14 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   RespondToFutureEnrollments(/*confirm=*/true);
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/false);
   EXPECT_EQ(
-      "a JavaScript error: \"NotAllowedError: The operation either timed out "
-      "or was not allowed. See: "
-      "https://www.w3.org/TR/webauthn-2/"
-      "#sctn-privacy-considerations-client.\"\n",
+      "NotAllowedError: The operation either timed out or was not allowed. "
+      "See: "
+      "https://www.w3.org/TR/webauthn-2/#sctn-privacy-considerations-client.",
       content::EvalJs(
           GetActiveWebContents(),
           content::JsReplace("createCredentialAndReturnItsIdentifier($1)",
                              GetDefaultIconURL()))
-          .error);
+          .ExtractString());
 
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
                           1);

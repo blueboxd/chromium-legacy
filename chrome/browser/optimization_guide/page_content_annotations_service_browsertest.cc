@@ -20,6 +20,7 @@
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/test_model_info_builder.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/optimization_guide/proto/page_topics_model_metadata.pb.h"
 #include "content/public/test/browser_test.h"
@@ -190,9 +191,12 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
             .AppendASCII("optimization_guide")
             .AppendASCII("bert_page_topics_model.tflite");
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->OverrideTargetModelFileForTesting(
-            proto::OPTIMIZATION_TARGET_PAGE_TOPICS, any_metadata,
-            model_file_path);
+        ->OverrideTargetModelForTesting(
+            proto::OPTIMIZATION_TARGET_PAGE_TOPICS,
+            optimization_guide::TestModelInfoBuilder()
+                .SetModelFilePath(model_file_path)
+                .SetModelMetadata(any_metadata)
+                .Build());
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
     bool expect_model_loaded = !model_is_lazily_loaded_;
@@ -409,10 +413,9 @@ class PageContentAnnotationsServiceLoadEachExecutionTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Flaky: crbug/1208866
 // Regression test for crbug/1204162.
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceLoadEachExecutionTest,
-                       DISABLED_ModelLoadsAndExecutes) {
+                       ModelLoadsAndExecutes) {
   base::HistogramTester histogram_tester;
 
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));

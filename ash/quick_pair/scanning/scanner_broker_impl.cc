@@ -9,6 +9,10 @@
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/common/protocol.h"
+#include "ash/quick_pair/scanning/fast_pair/fast_pair_discoverable_scanner.h"
+#include "ash/quick_pair/scanning/fast_pair/fast_pair_scanner.h"
+#include "ash/quick_pair/scanning/fast_pair/fast_pair_scanner_impl.h"
+#include "ash/quick_pair/scanning/range_tracker.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
@@ -33,7 +37,7 @@ void ScannerBrokerImpl::OnGetAdapter(
   if (start_scanning_on_adapter_callbacks_.empty())
     return;
 
-  QP_LOG(INFO) << __func__ << ": Running saved callbacks.";
+  QP_LOG(VERBOSE) << __func__ << ": Running saved callbacks.";
 
   for (auto& callback : start_scanning_on_adapter_callbacks_)
     std::move(callback).Run();
@@ -51,10 +55,11 @@ void ScannerBrokerImpl::RemoveObserver(Observer* observer) {
 
 void ScannerBrokerImpl::StartScanning(Protocol protocol) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  QP_LOG(INFO) << __func__ << ": protocol=" << protocol;
+  QP_LOG(VERBOSE) << __func__ << ": protocol=" << protocol;
 
   if (!adapter_) {
-    QP_LOG(INFO) << __func__ << ": No adapter yet, saving callback for later.";
+    QP_LOG(VERBOSE) << __func__
+                    << ": No adapter yet, saving callback for later.";
 
     start_scanning_on_adapter_callbacks_.push_back(
         base::BindOnce(&ScannerBrokerImpl::StartScanning,
@@ -70,7 +75,7 @@ void ScannerBrokerImpl::StartScanning(Protocol protocol) {
 }
 
 void ScannerBrokerImpl::StopScanning(Protocol protocol) {
-  QP_LOG(INFO) << __func__ << ": protocol=" << protocol;
+  QP_LOG(VERBOSE) << __func__ << ": protocol=" << protocol;
 
   switch (protocol) {
     case Protocol::kFastPair:
@@ -80,11 +85,26 @@ void ScannerBrokerImpl::StopScanning(Protocol protocol) {
 }
 
 void ScannerBrokerImpl::StartFastPairScanning() {
-  QP_LOG(INFO) << "Starting Fast Pair Scanning.";
+  DCHECK(!fast_pair_discoverable_scanner_);
+  DCHECK(adapter_);
+
+  QP_LOG(VERBOSE) << "Starting Fast Pair Scanning.";
+
+  scoped_refptr<FastPairScanner> fast_pair_scanner =
+      base::MakeRefCounted<FastPairScannerImpl>();
+
+  fast_pair_discoverable_scanner_ =
+      std::make_unique<FastPairDiscoverableScanner>(
+          fast_pair_scanner, std::make_unique<RangeTracker>(adapter_),
+          base::BindRepeating(&ScannerBrokerImpl::NotifyDeviceFound,
+                              weak_pointer_factory_.GetWeakPtr()),
+          base::BindRepeating(&ScannerBrokerImpl::NotifyDeviceLost,
+                              weak_pointer_factory_.GetWeakPtr()));
 }
 
 void ScannerBrokerImpl::StopFastPairScanning() {
-  QP_LOG(INFO) << "Stoping Fast Pair Scanning.";
+  fast_pair_discoverable_scanner_.reset();
+  QP_LOG(VERBOSE) << "Stopping Fast Pair Scanning.";
 }
 
 void ScannerBrokerImpl::NotifyDeviceFound(scoped_refptr<Device> device) {

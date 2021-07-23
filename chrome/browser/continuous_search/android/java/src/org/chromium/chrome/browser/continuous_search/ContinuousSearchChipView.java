@@ -19,11 +19,11 @@ import org.chromium.ui.widget.ChipView;
  * View responsible for showing CSN result items.
  */
 public class ContinuousSearchChipView extends ChipView {
-    private boolean mTwoLineChipViewInitialized;
+    private boolean mIsTwoLineChipView;
 
     public ContinuousSearchChipView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mTwoLineChipViewInitialized = false;
+        mIsTwoLineChipView = false;
     }
 
     /**
@@ -31,7 +31,7 @@ public class ContinuousSearchChipView extends ChipView {
      * TODO(crbug.com/1231230): Move this logic to ChipView.
      */
     void initTwoLineChipView() {
-        assert !mTwoLineChipViewInitialized;
+        assert !mIsTwoLineChipView;
         TextView primaryText = getPrimaryTextView();
         // Initialize secondary TextView
         TextView secondaryText = getSecondaryTextView();
@@ -59,11 +59,11 @@ public class ContinuousSearchChipView extends ChipView {
         layout.addView(primaryText);
         layout.addView(secondaryText);
         addView(layout);
-        mTwoLineChipViewInitialized = true;
+        mIsTwoLineChipView = true;
     }
 
-    boolean twoLineChipViewInitialized() {
-        return mTwoLineChipViewInitialized;
+    boolean isTwoLineChipView() {
+        return mIsTwoLineChipView;
     }
 
     private void setupTextView(TextView textView) {

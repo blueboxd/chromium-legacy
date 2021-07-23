@@ -9,7 +9,7 @@ import './base_page.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {ShimlessRmaServiceInterface} from './shimless_rma_types.js';
+import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 
 /**
  * @fileoverview
@@ -94,7 +94,7 @@ export class OnboardingUpdatePageElement extends PolymerElement {
    * @private
    */
   getCurrentVersionText_() {
-    this.shimlessRmaService_.getCurrentChromeVersion().then((res) => {
+    this.shimlessRmaService_.getCurrentOsVersion().then((res) => {
       this.currentVersion = res.version;
       this.currentVersionText_ = `Current version ${this.currentVersion}`;
     });
@@ -104,7 +104,7 @@ export class OnboardingUpdatePageElement extends PolymerElement {
   /** @protected */
   onUpdateCheckButtonClicked_() {
     this.checkInProgress_ = true;
-    this.shimlessRmaService_.checkForChromeUpdates().then((res) => {
+    this.shimlessRmaService_.checkForOsUpdates().then((res) => {
       if (res.updateAvailable) {
         this.updateAvailable_ = true;
         // TODO(joonbug): i18n string
@@ -129,6 +129,11 @@ export class OnboardingUpdatePageElement extends PolymerElement {
    */
   updateCheckButtonHidden_() {
     return !this.networkAvailable || this.updateAvailable_;
+  }
+
+  /** @return {!Promise<StateResult>} */
+  onNextButtonClick() {
+    return this.shimlessRmaService_.updateOsSkipped();
   }
 };
 

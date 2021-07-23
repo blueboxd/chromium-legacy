@@ -1236,11 +1236,8 @@ crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-001.
 crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-002.html [ Failure ]
 crbug.com/1124298 external/wpt/mathml/presentation-markup/spaces/space-like-004.html [ Failure ]
 
-# These tests fail because we don't support MathML tables.
-crbug.com/1125111 external/wpt/mathml/presentation-markup/direction/direction-006.html [ Failure ]
-crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-001.html [ Failure ]
-crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-002.html [ Failure ]
-crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-axis-height.html [ Failure ]
+# This test fail because we don't properly center elements in MathML tables.
+crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-003.html [ Failure ]
 
 # These tests fail because some CSS properties affect MathML layout.
 crbug.com/1227601 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
@@ -2614,8 +2611,6 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.12 ] external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-video.https.html [ Timeout ]
-crbug.com/626703 [ Win7 ] external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-video.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Timeout ]
@@ -6469,7 +6464,6 @@ crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface
 # Sheriff 2021-02-25
 crbug.com/1182673 [ Win7 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Timeout ]
 crbug.com/1182675 [ Linux ] dom/attr/id-update-map-crash.html [ Failure Pass ]
-crbug.com/1182677 [ Linux ] external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-video.https.html [ Failure Pass ]
 crbug.com/1182682 [ Linux ] http/tests/devtools/service-workers/service-workers-view.js [ Failure Pass ]
 
 # Sheriff 2021-03-01
@@ -7264,3 +7258,8 @@ crbug.com/1231431 virtual/plz-service-worker/external/wpt/html/cross-origin-embe
 crbug.com/1222097 [ Mac ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Failure Pass ]
 crbug.com/1222097 [ Mac ] virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Failure Pass ]
 crbug.com/1231915 [ Mac10.12 ] external/wpt/selection/textcontrols/selectionchange-bubble.html [ Pass Timeout ]
+crbug.com/1231989 [ Linux ] external/wpt/html/cross-origin-embedder-policy/shared-workers.https.html [ Pass Failure ]
+
+# Sheriff 2021-07-23
+crbug.com/1232388 [ Mac10.12 ] external/wpt/html/rendering/non-replaced-elements/hidden-elements.html [ Pass Failure ]
+crbug.com/1232417 external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-video.https.html [ Pass Failure Timeout ]

@@ -50,15 +50,6 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
       {"clearSearch", IDS_CLEAR_SEARCH},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
-
-  html_source->AddString(
-      "searchNoOsResultsHelp",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SEARCH_NO_RESULTS_HELP,
-          base::ASCIIToUTF16(chrome::kOsSettingsSearchHelpURL)));
-
-  // TODO(crbug/1080777): Remove this flag and JS codepaths effected.
-  html_source->AddBoolean("newOsSettingsSearch", true);
 }
 
 void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
@@ -130,7 +121,6 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"dismiss", IDS_SETTINGS_DISMISS},
       {"done", IDS_DONE},
       {"edit", IDS_SETTINGS_EDIT},
-      {"endTime", IDS_SETTINGS_END_TIME},
       {"extensionsLinkTooltip", IDS_SETTINGS_MENU_EXTENSIONS_LINK_TOOLTIP},
       {"learnMore", IDS_LEARN_MORE},
       {"shortcutBannerDismissed", IDS_SETTINGS_SHORTCUT_BANNER_DISMISSED},
@@ -144,7 +134,6 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"searchResultsBubbleText", IDS_SEARCH_RESULTS_BUBBLE_TEXT},
       {"settings", IDS_SETTINGS_SETTINGS},
       {"settingsAltPageTitle", IDS_SETTINGS_ALT_PAGE_TITLE},
-      {"startTime", IDS_SETTINGS_START_TIME},
       {"subpageArrowRoleDescription", IDS_SETTINGS_SUBPAGE_BUTTON},
       {"subpageBackButtonAriaLabel",
        IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_LABEL},

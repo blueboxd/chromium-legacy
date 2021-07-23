@@ -6356,6 +6356,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"media-app-handles-pdf", flag_descriptions::kMediaAppHandlesPdfName,
      flag_descriptions::kMediaAppHandlesPdfDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppHandlesPdf)},
+    {"media-app-multi-window", flag_descriptions::kMediaAppMultiWindowName,
+     flag_descriptions::kMediaAppMultiWindowDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kMediaAppMultiWindow)},
     {"release-notes-notification",
      flag_descriptions::kReleaseNotesNotificationName,
      flag_descriptions::kReleaseNotesNotificationDescription, kOsCrOS,
@@ -7030,6 +7033,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillEnablePasswordInfoBarAccountIndicationFooter)},
+
+    {"incognito-ntp-realbox", flag_descriptions::kIncognitoNtpRealBoxName,
+     flag_descriptions::kIncognitoNtpRealBoxDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kIncognitoNtpRealBox)},
+
+    {"incognito-ntp-revamp", flag_descriptions::kIncognitoNtpRevampName,
+     flag_descriptions::kIncognitoNtpRevampDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kIncognitoNtpRevamp)},
 
     {"incognito-screenshot", flag_descriptions::kIncognitoScreenshotName,
      flag_descriptions::kIncognitoScreenshotDescription, kOsAndroid,

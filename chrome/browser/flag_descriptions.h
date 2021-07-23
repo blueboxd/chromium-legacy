@@ -868,6 +868,12 @@ extern const char kIncognitoClearBrowsingDataDialogForDesktopDescription[];
 extern const char kUpdateHistoryEntryPointsInIncognitoName[];
 extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 
+extern const char kIncognitoNtpRealBoxName[];
+extern const char kIncognitoNtpRealBoxDescription[];
+
+extern const char kIncognitoNtpRevampName[];
+extern const char kIncognitoNtpRevampDescription[];
+
 extern const char kIncognitoScreenshotName[];
 extern const char kIncognitoScreenshotDescription[];
 
@@ -2883,8 +2889,8 @@ extern const char kMediaAppDisplayExifDescription[];
 extern const char kMediaAppHandlesPdfName[];
 extern const char kMediaAppHandlesPdfDescription[];
 
-extern const char kMediaAppVideoName[];
-extern const char kMediaAppVideoDescription[];
+extern const char kMediaAppMultiWindowName[];
+extern const char kMediaAppMultiWindowDescription[];
 
 extern const char kMeteredShowToggleName[];
 extern const char kMeteredShowToggleDescription[];

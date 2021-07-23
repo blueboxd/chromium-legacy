@@ -1498,6 +1498,15 @@ const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
     "removed for iOS and Desktop. An educative placeholder will be shown for "
     "Android history page.";
 
+const char kIncognitoNtpRealBoxName[] =
+    "Incognito New Tab Page Real Search Box";
+const char kIncognitoNtpRealBoxDescription[] =
+    "When enabled, Incognito New Tap Page will display a Real Search Box.";
+
+const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
+const char kIncognitoNtpRevampDescription[] =
+    "When enabled, Incognito new tab page will have an updated UI";
+
 const char kIncognitoScreenshotName[] = "Incognito Screenshot";
 const char kIncognitoScreenshotDescription[] =
     "Enables Incognito screenshots on Android. It will also make Incognito "
@@ -4993,10 +5002,9 @@ const char kMediaAppHandlesPdfName[] = "Media App Handles PDF";
 const char kMediaAppHandlesPdfDescription[] =
     "Enables opening PDF files by default in chrome://media-app";
 
-const char kMediaAppVideoName[] = "Media App Handles Video";
-const char kMediaAppVideoDescription[] =
-    "Use chrome://media-app as the default handler for video. Hides the "
-    "deprecated VideoPlayer chrome app as a file handler.";
+const char kMediaAppMultiWindowName[] = "Media App Multi Window";
+const char kMediaAppMultiWindowDescription[] =
+    "Enables opening multiple instances of chrome://media-app";
 
 const char kMeteredShowToggleName[] = "Show Metered Toggle";
 const char kMeteredShowToggleDescription[] =

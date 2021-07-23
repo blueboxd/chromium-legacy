@@ -2651,6 +2651,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromiumAndroidLinker.BrowserLoadTime" units="ms"
     expires_after="M99">
+  <obsolete>
+    Replaced by ChromiumAndroidLinker.BrowserLoadTime2 in 2021-07.
+  </obsolete>
   <owner>rsesek@chromium.org</owner>
   <summary>
     The amount of time it took to load the native libraries in the browser
@@ -2698,11 +2701,30 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromiumAndroidLinker.RendererLoadTime" units="ms"
     expires_after="M99">
+  <obsolete>
+    Replaced by ChromiumAndroidLinker.ChildLoadTime2 in 2021-07.
+  </obsolete>
   <owner>rsesek@chromium.org</owner>
   <summary>
     The amount of time it took to load the native libraries in the renderer
     process.
   </summary>
+</histogram>
+
+<histogram name="ChromiumAndroidLinker.{ProcessType}LoadTime2" units="ms"
+    expires_after="2022-07-20">
+  <owner>pasko@chromium.org</owner>
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    The amount of time it took to load the native libraries in {ProcessType}.
+  </summary>
+  <token key="ProcessType">
+    <variant name="Browser" summary="the browser process"/>
+    <variant name="Child"
+        summary="a child process (isolated, privileged) if the library was
+                 not loaded by the App Zygote prior to spawning the process"/>
+    <variant name="Zygote" summary="the App Zygote"/>
+  </token>
 </histogram>
 
 <histogram name="Chromoting.Connections" enum="State"
@@ -13011,7 +13033,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.CheckOriginForAbuseTime" units="ms"
-    expires_after="M96">
+    expires_after="M98">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -13022,7 +13044,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.DeliverQueuedMessageTime" units="ms"
-    expires_after="M96">
+    expires_after="M98">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -13045,7 +13067,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.DeliveryStatus.FindServiceWorker"
-    enum="ServiceWorkerStatusCode" expires_after="M96">
+    enum="ServiceWorkerStatusCode" expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13056,7 +13078,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.DeliveryStatus.ServiceWorkerEvent"
-    enum="ServiceWorkerStatusCode" expires_after="M96">
+    enum="ServiceWorkerStatusCode" expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13077,7 +13099,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.MessageHandledTime" units="ms"
-    expires_after="M96">
+    expires_after="M98">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -13088,7 +13110,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.PushSubscriptionChangeStatus"
-    enum="PushEventStatus" expires_after="M94">
+    enum="PushEventStatus" expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -13100,7 +13122,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.ReceivedMessageInBackground" enum="Boolean"
-    expires_after="2021-08-29">
+    expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13141,7 +13163,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.TimeToReadPersistedMessages" units="ms"
-    expires_after="M94">
+    expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13153,7 +13175,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationGCMResult" enum="GCMClientResult"
-    expires_after="M94">
+    expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13164,7 +13186,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationIIDResult" enum="InstanceIDResult"
-    expires_after="M94">
+    expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13175,7 +13197,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationReason"
-    enum="PushUnregistrationReason" expires_after="M94">
+    enum="PushUnregistrationReason" expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13185,7 +13207,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UnregistrationStatus"
-    enum="PushUnregistrationStatus" expires_after="M94">
+    enum="PushUnregistrationStatus" expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13195,7 +13217,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.UserVisibleStatus" enum="PushUserVisibleStatus"
-    expires_after="M96">
+    expires_after="M98">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -13206,7 +13228,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PushMessaging.VisibleNotificationCount" units="notifications"
-    expires_after="M94">
+    expires_after="M98">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>

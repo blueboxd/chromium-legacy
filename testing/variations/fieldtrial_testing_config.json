@@ -139,21 +139,6 @@
             ]
         }
     ],
-    "AndroidBottomSheetPwaInstall": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PwaInstallUseBottomSheet"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidClipboardSuggestionContentHidden": [
         {
             "platforms": [
@@ -4193,21 +4178,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "InterestFeedNoticeCardAutoDismiss"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSErrorPageRefactoring": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseJSForErrorPage"
                     ]
                 }
             ]
@@ -9613,6 +9583,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WinrtSensorsImplementation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WipeDataOnChildAccountSigninAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WipeDataOnChildAccountSignin"
                     ]
                 }
             ]

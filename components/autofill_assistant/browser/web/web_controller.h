@@ -258,6 +258,11 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
+  // Blur the current |element| that might have focus to remove its focus.
+  virtual void BlurField(
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
   // Inputs the specified codepoints into |element|. Expects the |element| to
   // have focus. Key presses will have a delay of
   // |key_press_delay_in_millisecond| between them. Returns the result through
@@ -391,6 +396,11 @@ class WebController {
                               const std::vector<std::string>&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void ExecuteVoidJsWithoutArguments(
+      const ElementFinder::Result& element,
+      const std::string& js_snippet,
+      WebControllerErrorInfoProto::WebAction web_action,
+      base::OnceCallback<void(const ClientStatus&)> callback);
   void OnScrollWindow(base::OnceCallback<void(const ClientStatus&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::EvaluateResult> result);

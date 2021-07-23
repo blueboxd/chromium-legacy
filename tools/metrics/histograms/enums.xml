@@ -2487,12 +2487,18 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidWebViewProxySchemeFilterType">
+  <obsolete>
+    Removed in July 2021.
+  </obsolete>
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
   <int value="2" label="ALL"/>
 </enum>
 
 <enum name="AndroidWebViewProxyUrlType">
+  <obsolete>
+    Removed in July 2021.
+  </obsolete>
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
   <int value="2" label="DIRECT"/>
@@ -33936,6 +33942,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3960" label="V8URLPattern_Test_Method"/>
   <int value="3961" label="V8URLPattern_Exec_Method"/>
   <int value="3962" label="SameSiteCookieInclusionChangedByCrossSiteRedirect"/>
+  <int value="3963"
+      label="BlobStoreAccessAcrossAgentClustersInResolveAsURLLoaderFactory"/>
+  <int value="3964"
+      label="BlobStoreAccessAcrossAgentClustersInResolveForNavigation"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46957,6 +46967,7 @@ from previous Chrome versions.
   <int value="-1639534120" label="VaapiVp9kSVCHWEncoding:enabled"/>
   <int value="-1639050182" label="NavigationPredictorRendererWarmup:enabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
+  <int value="-1636188191" label="IncognitoNtpRevamp:enabled"/>
   <int value="-1635048938" label="DetectFormSubmissionOnFormClear:disabled"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
   <int value="-1634490190"
@@ -47074,6 +47085,7 @@ from previous Chrome versions.
   <int value="-1550541457" label="DisplayIdentification:disabled"/>
   <int value="-1549871007" label="OneGoogleBarOnLocalNtp:disabled"/>
   <int value="-1549356351" label="SyncPseudoUSSExtensionSettings:enabled"/>
+  <int value="-1548904154" label="MediaAppMultiWindow:enabled"/>
   <int value="-1547953198" label="FullRestore:enabled"/>
   <int value="-1547247328" label="OverrideTranslateTriggerInIndia:disabled"/>
   <int value="-1546903171" label="enable-touch-drag-drop"/>
@@ -47552,6 +47564,7 @@ from previous Chrome versions.
   <int value="-1203742042" label="enable-gesture-selection"/>
   <int value="-1201741587" label="DataReductionProxyDecidesTransform:disabled"/>
   <int value="-1201183153" label="enable-centered-app-list"/>
+  <int value="-1199738132" label="MediaAppMultiWindow:disabled"/>
   <int value="-1199159971"
       label="ContextualSuggestionsIPHReverseScroll:enabled"/>
   <int value="-1198304634"
@@ -48158,6 +48171,7 @@ from previous Chrome versions.
   <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
   <int value="-706159808" label="QuickAnswersOnEditableText:disabled"/>
   <int value="-705746939" label="ChromeDuet:enabled"/>
+  <int value="-705212373" label="IncognitoNtpRevamp:disabled"/>
   <int value="-704459022" label="ContinuousSearch:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
@@ -48305,6 +48319,7 @@ from previous Chrome versions.
   <int value="-580897686" label="SharedHighlightingAmp:enabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
+  <int value="-575161504" label="IncognitoNtpRealBox:enabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
   <int value="-574217217" label="kSignInProfileCreationEnterprise:enabled"/>
   <int value="-574000901" label="AVIF:enabled"/>
@@ -49708,6 +49723,7 @@ from previous Chrome versions.
   <int value="595168244" label="NotificationExpansionAnimation:enabled"/>
   <int value="595371145" label="OmniboxRichEntitySuggestions:disabled"/>
   <int value="596106994" label="CustomFeedbackUi:enabled"/>
+  <int value="597360137" label="IncognitoNtpRealBox:disabled"/>
   <int value="597542937" label="TabbedAppOverflowMenuRegroup:enabled"/>
   <int value="598827460" label="enable-roboto-font-ui"/>
   <int value="598926697" label="VrLaunchIntent:disabled"/>

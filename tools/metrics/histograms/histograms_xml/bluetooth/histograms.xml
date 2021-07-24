@@ -150,6 +150,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="BluetoothPairedStates" variants="BluetoothPairedStates"/>
 </histogram>
 
+<histogram name="Bluetooth.ChromeOS.Forget.Result" enum="ForgetResult"
+    expires_after="2022-07-21">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>Emitted each time a device forget attempt completes.</summary>
+</histogram>
+
 <histogram
     name="Bluetooth.ChromeOS.Pairing.Duration.Failure{BluetoothTransportTypes}"
     units="ms" expires_after="2022-03-05">
@@ -238,6 +245,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     well as when the Bluetooth adapter powered state changes (i.e., from off to
     on or vice versa).
   </summary>
+</histogram>
+
+<histogram name="Bluetooth.ChromeOS.PoweredState.{Operation}.Result"
+    enum="BooleanSuccess" expires_after="2022-07-21">
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>Record emitted when an {Operation}.</summary>
+  <token key="Operation">
+    <variant name="Disable"
+        summary="attempt to disable Bluetooth has completed"/>
+    <variant name="Enable" summary="attempt to enable Bluetooth has completed"/>
+  </token>
 </histogram>
 
 <histogram name="Bluetooth.ChromeOS.UiSurfaceDisplayed"

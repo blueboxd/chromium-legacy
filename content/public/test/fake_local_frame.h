@@ -124,7 +124,6 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       const GURL& url_before_redirects,
       bool had_redirect,
       network::mojom::SourceLocationPtr source_location) override;
-  void ActivateForPrerendering(base::TimeTicks activation_start) override;
   void BindDevToolsAgent(
       mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver)
@@ -135,7 +134,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
 #endif
   void HandleRendererDebugURL(const GURL& url) override;
   void GetCanonicalUrlForSharing(
-      GetCanonicalUrlForSharingCallback callback) override;
+      base::OnceCallback<void(const absl::optional<GURL>&)> callback) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

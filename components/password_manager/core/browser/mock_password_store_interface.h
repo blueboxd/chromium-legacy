@@ -47,11 +47,6 @@ class MockPasswordStoreInterface : public PasswordStoreInterface {
               GetLogins,
               (const PasswordFormDigest&, PasswordStoreConsumer*),
               (override));
-
-  MOCK_METHOD(void,
-              GetLoginsByPassword,
-              (const std::u16string&, PasswordStoreConsumer*),
-              (override));
   MOCK_METHOD(void,
               GetAutofillableLogins,
               (PasswordStoreConsumer*),
@@ -64,6 +59,7 @@ class MockPasswordStoreInterface : public PasswordStoreInterface {
   MOCK_METHOD(void, AddObserver, (Observer*), (override));
   MOCK_METHOD(void, RemoveObserver, (Observer*), (override));
   MOCK_METHOD(SmartBubbleStatsStore*, GetSmartBubbleStatsStore, (), (override));
+  MOCK_METHOD(FieldInfoStore*, GetFieldInfoStore, (), (override));
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;

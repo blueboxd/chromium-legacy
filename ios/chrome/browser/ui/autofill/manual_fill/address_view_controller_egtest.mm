@@ -122,7 +122,8 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that the "Manage Addresses..." action works.
-- (void)testManageAddressesActionOpensAddressSettings {
+// TODO(crbug.com/
+- (void)DISABLED_testManageAddressesActionOpensAddressSettings {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
@@ -204,7 +205,8 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the Address View Controller is dismissed when tapping the
 // keyboard icon.
-- (void)testKeyboardIconDismissAddressController {
+// TODO(crbug.com/1232510) Re-enable.
+- (void)DISABLED_testKeyboardIconDismissAddressController {
   if ([ChromeEarlGrey isIPadIdiom]) {
     // The keyboard icon is never present in iPads.
     EARL_GREY_TEST_SKIPPED(@"Test is not applicable for iPad");

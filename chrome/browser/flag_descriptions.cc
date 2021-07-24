@@ -752,12 +752,6 @@ const char kDesktopPWAsPrefixAppNameInWindowTitleDescription[] =
     "Prefix the window title of installed PWAs with the name of the PWA. On "
     "ChromeOS this is visible only in the window/activity switcher.";
 
-const char kDesktopPWAsAppIconShortcutsMenuName[] =
-    "Desktop PWAs app icon shortcuts menu";
-const char kDesktopPWAsAppIconShortcutsMenuDescription[] =
-    "Enable installed PWAs to include a menu of shortcuts associated with the "
-    "app icon in the taskbar on Windows, or the dock on macOS or Linux.";
-
 const char kDesktopPWAsAppIconShortcutsMenuUIName[] =
     "Desktop PWAs app icon shortcuts menu UI";
 const char kDesktopPWAsAppIconShortcutsMenuUIDescription[] =
@@ -1152,10 +1146,13 @@ const char kMemlogStackModeNative[] = "Native";
 const char kMemlogStackModeNativeWithThreadNames[] = "Native with thread names";
 const char kMemlogStackModePseudo[] = "Trace events";
 
-const char kEnableLensRegionSearchName[] = "Enable Lens Region Search";
+const char kEnableLensRegionSearchFlagId[] = "enable-lens-region-search";
+const char kEnableLensRegionSearchName[] =
+    "Search your screen with Google Lens";
 const char kEnableLensRegionSearchDescription[] =
-    "Enables a context menu option allowing the user to search a selected"
-    "area of the page with Google Lens.";
+    "Right click and select \"Search part of the page with Google Lens\" to "
+    "search any region of the site to learn more about the visual content you "
+    "see while you browse and shop on the web.";
 
 const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
@@ -2306,14 +2303,6 @@ const char kSchemefulSameSiteDescription[] =
     "Modify the same-site computation such that origins with the same "
     "registrable domain but different schemes are considered cross-site. This "
     "change only applies to cookies with the 'SameSite' attribute.";
-
-const char kScreenCaptureTestName[] = "Screen capture test";
-const char kScreenCaptureTestDescription[] =
-    "Enables an improved screen capture experience which aims to increase "
-    "productivity by making screen capture discoverable, intuitive, and "
-    "powerful. When enabled, access a new screen capture entry point from "
-    "quick settings. Select the capture type and selection default from the "
-    "capture mode UI bar. Try out new screen recording functionality.";
 
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";

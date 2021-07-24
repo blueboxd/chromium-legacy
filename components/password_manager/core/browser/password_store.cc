@@ -30,7 +30,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/get_logins_with_affiliations_request_handler.h"
 #include "components/password_manager/core/browser/insecure_credentials_consumer.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
@@ -274,15 +273,6 @@ void PasswordStore::GetLogins(const PasswordFormDigest& form,
                                     {form});
 }
 
-void PasswordStore::GetLoginsByPassword(
-    const std::u16string& plain_text_password,
-    PasswordStoreConsumer* consumer) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  PostLoginsTaskAndReplyToConsumerWithResult(
-      consumer, base::BindOnce(&PasswordStore::GetLoginsByPasswordImpl, this,
-                               plain_text_password));
-}
-
 void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
 
@@ -316,6 +306,10 @@ void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
 
 SmartBubbleStatsStore* PasswordStore::GetSmartBubbleStatsStore() {
   return backend_->GetSmartBubbleStatsStore();
+}
+
+FieldInfoStore* PasswordStore::GetFieldInfoStore() {
+  return backend_->GetFieldInfoStore();
 }
 
 void PasswordStore::ReportMetrics(const std::string& sync_username,
@@ -379,32 +373,6 @@ void PasswordStore::GetMatchingInsecureCredentials(
         base::BindOnce(&PasswordStore::GetMatchingInsecureCredentialsImpl, this,
                        signon_realm));
   }
-}
-
-void PasswordStore::AddFieldInfo(const FieldInfo& field_info) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(
-      base::BindOnce(&PasswordStore::AddFieldInfoImpl, this, field_info));
-}
-
-void PasswordStore::GetAllFieldInfo(PasswordStoreConsumer* consumer) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  auto get_all_field_info_task =
-      base::BindOnce(&PasswordStore::GetAllFieldInfoImpl, this);
-  consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
-      background_task_runner_.get(), FROM_HERE,
-      std::move(get_all_field_info_task),
-      base::BindOnce(&PasswordStoreConsumer::OnGetAllFieldInfo,
-                     consumer->GetWeakPtr()));
-}
-
-void PasswordStore::RemoveFieldInfoByTime(base::Time remove_begin,
-                                          base::Time remove_end,
-                                          base::OnceClosure completion) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(&PasswordStore::RemoveFieldInfoByTimeInternal,
-                              this, remove_begin, remove_end,
-                              std::move(completion)));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -474,16 +442,6 @@ PasswordStoreChangeList PasswordStore::DisableAutoSignInForOriginsImpl(
   return PasswordStoreChangeList();
 }
 
-std::vector<std::unique_ptr<PasswordForm>>
-PasswordStore::FillMatchingLoginsByPassword(
-    const std::u16string& plain_text_password) {
-  // TODO(crbug.com/1217070): Move as implementation detail into backend.
-  LOG(ERROR) << "Called function without implementation: " << __func__;
-  // TODO(crbug.com/1217070): Move as implementation detail into backend.
-  LOG(ERROR) << "Called function without implementation: " << __func__;
-  return std::vector<std::unique_ptr<PasswordForm>>();
-}
-
 PasswordStoreChangeList PasswordStore::AddInsecureCredentialImpl(
     const InsecureCredential& insecure_credential) {
   // TODO(crbug.com/1217070): Move as implementation detail into backend.
@@ -512,23 +470,6 @@ PasswordStore::GetMatchingInsecureCredentialsImpl(
   // TODO(crbug.com/1217070): Move as implementation detail into backend.
   LOG(ERROR) << "Called function without implementation: " << __func__;
   return std::vector<InsecureCredential>();
-}
-
-void PasswordStore::AddFieldInfoImpl(const FieldInfo& field_info) {
-  // TODO(crbug.com/1217070): Move as implementation detail into backend.
-  LOG(ERROR) << "Called function without implementation: " << __func__;
-}
-
-std::vector<FieldInfo> PasswordStore::GetAllFieldInfoImpl() {
-  // TODO(crbug.com/1217070): Move as implementation detail into backend.
-  LOG(ERROR) << "Called function without implementation: " << __func__;
-  return std::vector<FieldInfo>();
-}
-
-void PasswordStore::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
-                                              base::Time remove_end) {
-  // TODO(crbug.com/1217070): Move as implementation detail into backend.
-  LOG(ERROR) << "Called function without implementation: " << __func__;
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -639,23 +580,6 @@ void PasswordStore::UnblocklistInternal(
     notify_callback = std::move(notify_callback).Then(std::move(completion));
 
   handler->InvokeOnCompletion(std::move(notify_callback));
-}
-
-void PasswordStore::RemoveFieldInfoByTimeInternal(
-    base::Time remove_begin,
-    base::Time remove_end,
-    base::OnceClosure completion) {
-  RemoveFieldInfoByTimeImpl(remove_begin, remove_end);
-  if (completion)
-    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
-}
-
-std::vector<std::unique_ptr<PasswordForm>>
-PasswordStore::GetLoginsByPasswordImpl(
-    const std::u16string& plain_text_password) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("passwords", "PasswordStore::GetLoginsByPasswordImpl");
-  return FillMatchingLoginsByPassword(plain_text_password);
 }
 
 std::vector<InsecureCredential>

@@ -3019,6 +3019,9 @@ if (!is_android) {
         "//ui/views",
         "//url",
       ]
+      if (use_aura) {
+        deps += [ "//ui/aura:test_support" ]
+      }
     }
 
     if ((!is_android || enable_vr) && !is_ios) {
@@ -3428,7 +3431,6 @@ if (!is_android) {
         "../browser/ui/ash/back_gesture_browsertest.cc",
         "../browser/ui/ash/capture_mode_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
-        "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/clipboard_history_browsertest.cc",
         "../browser/ui/ash/desks_client_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
@@ -6453,7 +6455,6 @@ test("unit_tests") {
       "../browser/extensions/component_loader_unittest.cc",
       "../browser/extensions/context_menu_matcher_unittest.cc",
       "../browser/extensions/convert_user_script_unittest.cc",
-      "../browser/extensions/convert_web_app_unittest.cc",
       "../browser/extensions/dev_mode_bubble_delegate_unittest.cc",
       "../browser/extensions/error_console/error_console_unittest.cc",
       "../browser/extensions/event_router_forwarder_unittest.cc",
@@ -6939,6 +6940,7 @@ test("unit_tests") {
       "../browser/enterprise/connectors/file_system/box_uploader_test_helper.cc",
       "../browser/enterprise/connectors/file_system/box_uploader_test_helper.h",
       "../browser/enterprise/connectors/file_system/box_uploader_unittest.cc",
+      "../browser/enterprise/connectors/file_system/signin_experience_unittest.cc",
       "../browser/enterprise/connectors/file_system/test_helper.cc",
       "../browser/enterprise/connectors/file_system/test_helper.h",
     ]

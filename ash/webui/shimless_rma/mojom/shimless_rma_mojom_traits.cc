@@ -18,11 +18,12 @@ using MojomRmadErrorCode = ash::shimless_rma::mojom::RmadErrorCode;
 using ProtoRmadErrorCode = rmad::RmadErrorCode;
 
 using MojomComponentType = ash::shimless_rma::mojom::ComponentType;
-using ProtoComponentType = rmad::ComponentRepairState_Component;
+using ProtoComponentType = rmad::RmadComponent;
 
 using MojomComponentRepairState =
-    ash::shimless_rma::mojom::ComponentRepairState;
-using ProtoComponentRepairState = rmad::ComponentRepairState_RepairState;
+    ash::shimless_rma::mojom::ComponentRepairStatus;
+using ProtoComponentRepairState =
+    rmad::ComponentsRepairState_ComponentRepairStatus_RepairStatus;
 
 using MojomCalibrationComponent =
     ash::shimless_rma::mojom::CalibrationComponent;
@@ -79,9 +80,13 @@ MojomRmadErrorCode EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::ToMojom(
     case ProtoRmadErrorCode::RMAD_ERROR_OK:
       return MojomRmadErrorCode::kOk;
     case ProtoRmadErrorCode::RMAD_ERROR_WAIT:
-      return MojomRmadErrorCode::KWait;
+      return MojomRmadErrorCode::kWait;
     case ProtoRmadErrorCode::RMAD_ERROR_NEED_REBOOT:
-      return MojomRmadErrorCode::KNeedReboot;
+      return MojomRmadErrorCode::kNeedReboot;
+    case ProtoRmadErrorCode::RMAD_ERROR_EXPECT_REBOOT:
+      return MojomRmadErrorCode::kExpectReboot;
+    case ProtoRmadErrorCode::RMAD_ERROR_EXPECT_SHUTDOWN:
+      return MojomRmadErrorCode::kExpectShutdown;
     case ProtoRmadErrorCode::RMAD_ERROR_RMA_NOT_REQUIRED:
       return MojomRmadErrorCode::kRmaNotRequired;
     case ProtoRmadErrorCode::RMAD_ERROR_STATE_HANDLER_MISSING:
@@ -130,6 +135,8 @@ MojomRmadErrorCode EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::ToMojom(
       return MojomRmadErrorCode::kDeviceInfoInvalid;
     case ProtoRmadErrorCode::RMAD_ERROR_CALIBRATION_FAILED:
       return MojomRmadErrorCode::kCalibrationFailed;
+    case ProtoRmadErrorCode::RMAD_ERROR_MISSING_CALIBRATION_COMPONENT:
+      return MojomRmadErrorCode::kCalibrationMissingComponent;
     case ProtoRmadErrorCode::RMAD_ERROR_PROVISIONING_FAILED:
       return MojomRmadErrorCode::kProvisioningFailed;
     case ProtoRmadErrorCode::RMAD_ERROR_POWERWASH_FAILED:
@@ -163,11 +170,17 @@ bool EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::FromMojom(
     case MojomRmadErrorCode::kOk:
       *out = ProtoRmadErrorCode::RMAD_ERROR_OK;
       return true;
-    case MojomRmadErrorCode::KWait:
+    case MojomRmadErrorCode::kWait:
       *out = ProtoRmadErrorCode::RMAD_ERROR_WAIT;
       return true;
-    case MojomRmadErrorCode::KNeedReboot:
+    case MojomRmadErrorCode::kNeedReboot:
       *out = ProtoRmadErrorCode::RMAD_ERROR_NEED_REBOOT;
+      return true;
+    case MojomRmadErrorCode::kExpectReboot:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_EXPECT_REBOOT;
+      return true;
+    case MojomRmadErrorCode::kExpectShutdown:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_EXPECT_SHUTDOWN;
       return true;
     case MojomRmadErrorCode::kRmaNotRequired:
       *out = ProtoRmadErrorCode::RMAD_ERROR_RMA_NOT_REQUIRED;
@@ -239,6 +252,9 @@ bool EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::FromMojom(
     case MojomRmadErrorCode::kDeviceInfoInvalid:
       *out = ProtoRmadErrorCode::RMAD_ERROR_DEVICE_INFO_INVALID;
       return true;
+    case MojomRmadErrorCode::kCalibrationMissingComponent:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_MISSING_CALIBRATION_COMPONENT;
+      return true;
     case MojomRmadErrorCode::kCalibrationFailed:
       *out = ProtoRmadErrorCode::RMAD_ERROR_CALIBRATION_FAILED;
       return true;
@@ -279,20 +295,52 @@ bool EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::FromMojom(
 MojomComponentType EnumTraits<MojomComponentType, ProtoComponentType>::ToMojom(
     ProtoComponentType component) {
   switch (component) {
-    case rmad::ComponentRepairState::RMAD_COMPONENT_MAINBOARD_REWORK:
+    case rmad::RmadComponent::RMAD_COMPONENT_MAINBOARD_REWORK:
       return MojomComponentType::kMainboardRework;
-    case rmad::ComponentRepairState::RMAD_COMPONENT_KEYBOARD:
-      return MojomComponentType::kKeyboard;
-    case rmad::ComponentRepairState::RMAD_COMPONENT_SCREEN:
-      return MojomComponentType::kScreen;
-    case rmad::ComponentRepairState::RMAD_COMPONENT_TRACKPAD:
-      return MojomComponentType::kTrackpad;
-    case rmad::ComponentRepairState::RMAD_COMPONENT_POWER_BUTTON:
-      return MojomComponentType::kPowerButton;
-    case rmad::ComponentRepairState::RMAD_COMPONENT_THUMB_READER:
-      return MojomComponentType::kThumbReader;
 
-    case rmad::ComponentRepairState::RMAD_COMPONENT_UNKNOWN:
+    case rmad::RmadComponent::RMAD_COMPONENT_AUDIO_CODEC:
+      return MojomComponentType::kAudioCodec;
+    case rmad::RmadComponent::RMAD_COMPONENT_BATTERY:
+      return MojomComponentType::kBattery;
+    case rmad::RmadComponent::RMAD_COMPONENT_STORAGE:
+      return MojomComponentType::kStorage;
+    case rmad::RmadComponent::RMAD_COMPONENT_VPD_CACHED:
+      return MojomComponentType::kVpdCached;
+    case rmad::RmadComponent::RMAD_COMPONENT_NETWORK:  // Obsolete in M91.
+      return MojomComponentType::kNetwork;
+    case rmad::RmadComponent::RMAD_COMPONENT_CAMERA:
+      return MojomComponentType::kCamera;
+    case rmad::RmadComponent::RMAD_COMPONENT_STYLUS:
+      return MojomComponentType::kStylus;
+    case rmad::RmadComponent::RMAD_COMPONENT_TOUCHPAD:
+      return MojomComponentType::kTouchpad;
+    case rmad::RmadComponent::RMAD_COMPONENT_TOUCHSCREEN:
+      return MojomComponentType::kTouchsreen;
+    case rmad::RmadComponent::RMAD_COMPONENT_DRAM:
+      return MojomComponentType::kDram;
+    case rmad::RmadComponent::RMAD_COMPONENT_DISPLAY_PANEL:
+      return MojomComponentType::kDisplayPanel;
+    case rmad::RmadComponent::RMAD_COMPONENT_CELLULAR:
+      return MojomComponentType::kCellular;
+    case rmad::RmadComponent::RMAD_COMPONENT_ETHERNET:
+      return MojomComponentType::kEthernet;
+    case rmad::RmadComponent::RMAD_COMPONENT_WIRELESS:
+      return MojomComponentType::kWireless;
+
+    // Additional rmad components.
+    case rmad::RmadComponent::RMAD_COMPONENT_GYROSCOPE:
+      return MojomComponentType::kGyroscope;
+    case rmad::RmadComponent::RMAD_COMPONENT_ACCELEROMETER:
+      return MojomComponentType::kAccelerometer;
+    case rmad::RmadComponent::RMAD_COMPONENT_SCREEN:
+      return MojomComponentType::kScreen;
+
+    case rmad::RmadComponent::RMAD_COMPONENT_KEYBOARD:
+      return MojomComponentType::kKeyboard;
+    case rmad::RmadComponent::RMAD_COMPONENT_POWER_BUTTON:
+      return MojomComponentType::kPowerButton;
+
+    case rmad::RmadComponent::RMAD_COMPONENT_UNKNOWN:
     default:
       NOTREACHED();
       return MojomComponentType::kComponentUnknown;
@@ -307,22 +355,68 @@ bool EnumTraits<MojomComponentType, ProtoComponentType>::FromMojom(
     ProtoComponentType* out) {
   switch (component) {
     case MojomComponentType::kMainboardRework:
-      *out = rmad::ComponentRepairState::RMAD_COMPONENT_MAINBOARD_REWORK;
+      *out = ProtoComponentType::RMAD_COMPONENT_MAINBOARD_REWORK;
       return true;
-    case MojomComponentType::kKeyboard:
-      *out = rmad::ComponentRepairState::RMAD_COMPONENT_KEYBOARD;
+
+    case MojomComponentType::kAudioCodec:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_AUDIO_CODEC;
+      return true;
+    case MojomComponentType::kBattery:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_BATTERY;
+      return true;
+    case MojomComponentType::kStorage:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_STORAGE;
+      return true;
+    case MojomComponentType::kVpdCached:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_VPD_CACHED;
+      return true;
+    case MojomComponentType::kNetwork:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_NETWORK;
+      return true;  // Obsolete in M91.
+    case MojomComponentType::kCamera:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_CAMERA;
+      return true;
+    case MojomComponentType::kStylus:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_STYLUS;
+      return true;
+    case MojomComponentType::kTouchpad:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_TOUCHPAD;
+      return true;
+    case MojomComponentType::kTouchsreen:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_TOUCHSCREEN;
+      return true;
+    case MojomComponentType::kDram:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_DRAM;
+      return true;
+    case MojomComponentType::kDisplayPanel:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_DISPLAY_PANEL;
+      return true;
+    case MojomComponentType::kCellular:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_CELLULAR;
+      return true;
+    case MojomComponentType::kEthernet:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_ETHERNET;
+      return true;
+    case MojomComponentType::kWireless:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_WIRELESS;
+      return true;
+
+      // Additional rmad components.
+    case MojomComponentType::kGyroscope:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_GYROSCOPE;
+      return true;
+    case MojomComponentType::kAccelerometer:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_ACCELEROMETER;
       return true;
     case MojomComponentType::kScreen:
-      *out = rmad::ComponentRepairState::RMAD_COMPONENT_SCREEN;
+      *out = rmad::RmadComponent::RMAD_COMPONENT_SCREEN;
       return true;
-    case MojomComponentType::kTrackpad:
-      *out = rmad::ComponentRepairState::RMAD_COMPONENT_TRACKPAD;
+
+    case MojomComponentType::kKeyboard:
+      *out = rmad::RmadComponent::RMAD_COMPONENT_KEYBOARD;
       return true;
     case MojomComponentType::kPowerButton:
-      *out = rmad::ComponentRepairState::RMAD_COMPONENT_POWER_BUTTON;
-      return true;
-    case MojomComponentType::kThumbReader:
-      *out = rmad::ComponentRepairState::RMAD_COMPONENT_THUMB_READER;
+      *out = rmad::RmadComponent::RMAD_COMPONENT_POWER_BUTTON;
       return true;
 
     case MojomComponentType::kComponentUnknown:
@@ -339,14 +433,18 @@ MojomComponentRepairState
 EnumTraits<MojomComponentRepairState, ProtoComponentRepairState>::ToMojom(
     ProtoComponentRepairState state) {
   switch (state) {
-    case rmad::ComponentRepairState::RMAD_REPAIR_ORIGINAL:
+    case rmad::ComponentsRepairState_ComponentRepairStatus::
+        RMAD_REPAIR_STATUS_ORIGINAL:
       return MojomComponentRepairState::kOriginal;
-    case rmad::ComponentRepairState::RMAD_REPAIR_REPLACED:
+    case rmad::ComponentsRepairState_ComponentRepairStatus::
+        RMAD_REPAIR_STATUS_REPLACED:
       return MojomComponentRepairState::kReplaced;
-    case rmad::ComponentRepairState::RMAD_REPAIR_MISSING:
+    case rmad::ComponentsRepairState_ComponentRepairStatus::
+        RMAD_REPAIR_STATUS_MISSING:
       return MojomComponentRepairState::kMissing;
 
-    case rmad::ComponentRepairState::RMAD_REPAIR_UNKNOWN:
+    case rmad::ComponentsRepairState_ComponentRepairStatus::
+        RMAD_REPAIR_STATUS_UNKNOWN:
     default:
       NOTREACHED();
       return MojomComponentRepairState::kRepairUnknown;
@@ -360,13 +458,16 @@ bool EnumTraits<MojomComponentRepairState, ProtoComponentRepairState>::
     FromMojom(MojomComponentRepairState state, ProtoComponentRepairState* out) {
   switch (state) {
     case MojomComponentRepairState::kOriginal:
-      *out = rmad::ComponentRepairState::RMAD_REPAIR_ORIGINAL;
+      *out = rmad::ComponentsRepairState_ComponentRepairStatus::
+          RMAD_REPAIR_STATUS_ORIGINAL;
       return true;
     case MojomComponentRepairState::kReplaced:
-      *out = rmad::ComponentRepairState::RMAD_REPAIR_REPLACED;
+      *out = rmad::ComponentsRepairState_ComponentRepairStatus::
+          RMAD_REPAIR_STATUS_REPLACED;
       return true;
     case MojomComponentRepairState::kMissing:
-      *out = rmad::ComponentRepairState::RMAD_REPAIR_MISSING;
+      *out = rmad::ComponentsRepairState_ComponentRepairStatus::
+          RMAD_REPAIR_STATUS_MISSING;
       return true;
 
     case MojomComponentRepairState::kRepairUnknown:
@@ -452,14 +553,14 @@ bool EnumTraits<MojomProvisioningStep, ProtoProvisioningStep>::FromMojom(
 }
 
 bool StructTraits<ash::shimless_rma::mojom::ComponentDataView,
-                  rmad::ComponentRepairState>::
+                  rmad::ComponentsRepairState_ComponentRepairStatus>::
     Read(ash::shimless_rma::mojom::ComponentDataView data,
-         rmad::ComponentRepairState* out) {
-  rmad::ComponentRepairState_Component name;
-  rmad::ComponentRepairState_RepairState repair_state;
-  if (data.ReadComponent(&name) && data.ReadState(&repair_state)) {
-    out->set_name(name);
-    out->set_repair_state(repair_state);
+         rmad::ComponentsRepairState_ComponentRepairStatus* out) {
+  rmad::RmadComponent component;
+  rmad::ComponentsRepairState_ComponentRepairStatus_RepairStatus repair_status;
+  if (data.ReadComponent(&component) && data.ReadState(&repair_status)) {
+    out->set_component(component);
+    out->set_repair_status(repair_status);
     return true;
   }
   return false;

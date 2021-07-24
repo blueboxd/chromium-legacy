@@ -5458,15 +5458,12 @@
                     "params": {
                         "EntitySuggestionsReduceLatencyDecoderTimeout": "405",
                         "MaxZeroSuggestMatches": "10",
-                        "OmniboxBookmarkPathsCounterfactual": "enabled",
-                        "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",
                         "OmniboxMaxURLMatches": "7",
                         "RichAutocompletionAutocompleteNonPrefixAll": "true",
                         "RichAutocompletionAutocompleteTitles": "true",
                         "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
-                        "OmniboxBookmarkPaths",
                         "OmniboxClobberTriggersContextualWebZeroSuggest",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
@@ -5475,7 +5472,6 @@
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
-                        "OmniboxShortBookmarkSuggestionsByTotalInputLength",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "SearchSuggestChips"
@@ -6394,6 +6390,28 @@
                     },
                     "enable_features": [
                         "PersistentHistograms"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PowerScheduler2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_ThrottleIdleAndNopAnimation",
+                    "params": {
+                        "include_charging": "true",
+                        "min_cputime_ratio": "0.5",
+                        "min_time_in_mode_ms": "500",
+                        "policy": "kThrottleIdleAndNopAnimation",
+                        "process_types": "browser,renderer"
+                    },
+                    "enable_features": [
+                        "PowerScheduler"
                     ]
                 }
             ]

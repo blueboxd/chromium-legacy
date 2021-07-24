@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
+#include "components/password_manager/core/browser/field_info_store.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -50,7 +51,6 @@ class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
 class InsecureCredentialsConsumer;
 class PasswordStoreConsumer;
-struct FieldInfo;
 
 // Partial, cross-platform implementation for storing form passwords.
 // The login request/manipulation API is not threadsafe and must be used
@@ -116,8 +116,6 @@ class PasswordStore : public PasswordStoreInterface {
                    base::OnceClosure completion) override;
   void GetLogins(const PasswordFormDigest& form,
                  PasswordStoreConsumer* consumer) override;
-  void GetLoginsByPassword(const std::u16string& plain_text_password,
-                           PasswordStoreConsumer* consumer) override;
   void GetAutofillableLogins(PasswordStoreConsumer* consumer) override;
   void GetAllLogins(PasswordStoreConsumer* consumer) override;
   void GetAllLoginsWithAffiliationAndBrandingInformation(
@@ -125,6 +123,7 @@ class PasswordStore : public PasswordStoreInterface {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
+  FieldInfoStore* GetFieldInfoStore() override;
 
   // Reports usage metrics for the database. |sync_username|, and
   // |custom_passphrase_sync_enabled|, and |is_under_advanced_protection|
@@ -153,21 +152,6 @@ class PasswordStore : public PasswordStoreInterface {
   // includes Android affiliated credentials.
   void GetMatchingInsecureCredentials(const std::string& signon_realm,
                                       InsecureCredentialsConsumer* consumer);
-
-  // Adds information about field. If the record for given form_signature and
-  // field_signature already exists, the new one will be ignored.
-  void AddFieldInfo(const FieldInfo& field_info);
-
-  // Retrieves all field info and notifies |consumer| on completion. The request
-  // will be cancelled if the consumer is destroyed.
-  void GetAllFieldInfo(PasswordStoreConsumer* consumer);
-
-  // Removes all leaked credentials in the given date range. If |completion| is
-  // not null, it will be posted to the |main_task_runner_| after deletions have
-  // been completed. Should be called on the UI thread.
-  void RemoveFieldInfoByTime(base::Time remove_begin,
-                             base::Time remove_end,
-                             base::OnceClosure completion);
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
@@ -220,11 +204,6 @@ class PasswordStore : public PasswordStoreInterface {
   virtual PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 
-  // Finds and returns all not-blocklisted PasswordForms with the specified
-  // |plain_text_password| stored in the credential database.
-  virtual std::vector<std::unique_ptr<PasswordForm>>
-  FillMatchingLoginsByPassword(const std::u16string& plain_text_password);
-
   // Synchronous implementation for manipulating with information about
   // insecure credentials.
   // Returns PasswordStoreChangeList for the updated password forms.
@@ -237,13 +216,6 @@ class PasswordStore : public PasswordStoreInterface {
   virtual std::vector<InsecureCredential> GetAllInsecureCredentialsImpl();
   virtual std::vector<InsecureCredential> GetMatchingInsecureCredentialsImpl(
       const std::string& signon_realm);
-
-  // Synchronous implementation for manipulating with information about field
-  // info.
-  virtual void AddFieldInfoImpl(const FieldInfo& field_info);
-  virtual std::vector<FieldInfo> GetAllFieldInfoImpl();
-  virtual void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
-                                         base::Time remove_end);
 
   // Returns the sync controller delegate for syncing passwords. It must be
   // called on the background sequence.
@@ -329,21 +301,12 @@ class PasswordStore : public PasswordStoreInterface {
       base::Time remove_end,
       base::OnceClosure completion);
 
-  void RemoveFieldInfoByTimeInternal(base::Time remove_begin,
-                                     base::Time remove_end,
-                                     base::OnceClosure completion);
-
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with
   // the results when done.
   // Note: subclasses should implement FillMatchingLogins() instead.
   std::vector<std::unique_ptr<PasswordForm>> GetLoginsImpl(
       const PasswordFormDigest& form);
-
-  // Finds all credentials with the specified |plain_text_password|.
-  // Note: subclasses should implement FillMatchingLoginsByPassword() instead.
-  std::vector<std::unique_ptr<PasswordForm>> GetLoginsByPasswordImpl(
-      const std::u16string& plain_text_password);
 
   // Extended version of GetMatchingInsecureCredentialsImpl that also returns
   // credentials stored for the specified affiliated Android applications or Web

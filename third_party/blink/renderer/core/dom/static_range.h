@@ -32,7 +32,6 @@ class CORE_EXPORT StaticRange final : public AbstractRange {
                              const StaticRangeInit*,
                              ExceptionState&);
 
-  explicit StaticRange(Document&);
   StaticRange(Document&,
               Node* start_container,
               unsigned start_offset,
@@ -40,31 +39,21 @@ class CORE_EXPORT StaticRange final : public AbstractRange {
               unsigned end_offset);
 
   Node* startContainer() const override { return start_container_.Get(); }
-  void setStartContainer(Node* start_container) {
-    start_container_ = start_container;
-  }
-
   unsigned startOffset() const override { return start_offset_; }
-  void setStartOffset(unsigned start_offset) { start_offset_ = start_offset; }
 
   Node* endContainer() const override { return end_container_.Get(); }
-  void setEndContainer(Node* end_container) { end_container_ = end_container; }
-
   unsigned endOffset() const override { return end_offset_; }
-  void setEndOffset(unsigned end_offset) { end_offset_ = end_offset; }
 
   bool collapsed() const override {
     return start_container_ == end_container_ && start_offset_ == end_offset_;
   }
-
-  void setStart(Node* container, unsigned offset);
-  void setEnd(Node* container, unsigned offset);
 
   Range* toRange(ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
   bool IsValid() const;
   bool CrossesContainBoundary() const;
   bool IsStaticRange() const override { return true; }
+  Document& OwnerDocument() const override { return *owner_document_.Get(); }
 
   void Trace(Visitor*) const override;
 
@@ -75,7 +64,10 @@ class CORE_EXPORT StaticRange final : public AbstractRange {
   Member<Node> end_container_;
   unsigned end_offset_ = 0;
   mutable bool is_valid_ = false;
-  mutable uint64_t dom_tree_version_ = 0;
+  mutable bool crosses_contain_boundary_ = false;
+  mutable uint64_t dom_tree_version_for_is_valid_ = 0;
+  mutable uint64_t style_version_for_crosses_contain_boundary_ =
+      static_cast<uint64_t>(-1);
 };
 
 using StaticRangeVector = HeapVector<Member<StaticRange>>;

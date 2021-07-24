@@ -20,7 +20,10 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/field_info_store.h"
+#include "components/password_manager/core/browser/field_info_table.h"
+#include "components/password_manager/core/browser/mock_field_info_store.h"
+#include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/vote_uploads_test_matchers.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -451,14 +454,13 @@ TEST_F(VotesUploaderTest, UploadSingleUsernameMultipleFieldsInUsernameForm) {
 
 #if !defined(OS_ANDROID)
   ServerFieldTypeSet expected_types = {SINGLE_USERNAME};
-  EXPECT_CALL(
-      mock_autofill_download_manager_,
-      StartUploadRequest(AllOf(SignatureIs(kSingleUsernameFormSignature),
-                               UploadedSingleUsernameVoteTypeIs(
-                                   autofill::AutofillUploadContents::Field::
-                                       NOT_EDITED_IN_PROMPT)),
-                         false, expected_types, std::string(), true,
-                         /* pref_service= */ nullptr));
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(
+                  AllOf(SignatureIs(kSingleUsernameFormSignature),
+                        UploadedSingleUsernameVoteTypeIs(
+                            autofill::AutofillUploadContents::Field::WEAK)),
+                  false, expected_types, std::string(), true,
+                  /* pref_service= */ nullptr));
 #else
   EXPECT_CALL(mock_autofill_download_manager_, StartUploadRequest).Times(0);
 #endif  // !defined(OS_ANDROID)
@@ -483,14 +485,13 @@ TEST_F(VotesUploaderTest, UploadNotSingleUsernameForWhitespaces) {
       MakeSimpleSingleUsernamePredictions());
 
   ServerFieldTypeSet expected_types = {NOT_USERNAME};
-  EXPECT_CALL(
-      mock_autofill_download_manager_,
-      StartUploadRequest(
-          AllOf(SignatureIs(kSingleUsernameFormSignature),
-                UploadedSingleUsernameVoteTypeIs(
-                    autofill::AutofillUploadContents::Field::HAD_WHITESPACES)),
-          false, expected_types, std::string(), true,
-          /* pref_service= */ nullptr));
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(
+                  AllOf(SignatureIs(kSingleUsernameFormSignature),
+                        UploadedSingleUsernameVoteTypeIs(
+                            autofill::AutofillUploadContents::Field::STRONG)),
+                  false, expected_types, std::string(), true,
+                  /* pref_service= */ nullptr));
 
   votes_uploader.MaybeSendSingleUsernameVote();
 }
@@ -513,16 +514,15 @@ TEST_F(VotesUploaderTest, SingleUsernameValueSuggestedAndAccepted) {
 
 #if !defined(OS_ANDROID)
   ServerFieldTypeSet expected_types = {SINGLE_USERNAME};
-  EXPECT_CALL(
-      mock_autofill_download_manager_,
-      StartUploadRequest(AllOf(SignatureIs(kSingleUsernameFormSignature),
-                               UploadedSingleUsernameVoteTypeIs(
-                                   autofill::AutofillUploadContents::Field::
-                                       NOT_EDITED_IN_PROMPT)),
-                         /*form_was_autofilled=*/false, expected_types,
-                         /*login_form_signature=*/"",
-                         /*observed_submission=*/true,
-                         /*pref_service=*/nullptr));
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(
+                  AllOf(SignatureIs(kSingleUsernameFormSignature),
+                        UploadedSingleUsernameVoteTypeIs(
+                            autofill::AutofillUploadContents::Field::WEAK)),
+                  /*form_was_autofilled=*/false, expected_types,
+                  /*login_form_signature=*/"",
+                  /*observed_submission=*/true,
+                  /*pref_service=*/nullptr));
 #else
   EXPECT_CALL(mock_autofill_download_manager_, StartUploadRequest).Times(0);
 #endif  // !defined(OS_ANDROID)
@@ -549,16 +549,15 @@ TEST_F(VotesUploaderTest, SingleUsernameOtherValueSuggestedAndAccepted) {
 
 #if !defined(OS_ANDROID)
   ServerFieldTypeSet expected_types = {NOT_USERNAME};
-  EXPECT_CALL(
-      mock_autofill_download_manager_,
-      StartUploadRequest(AllOf(SignatureIs(kSingleUsernameFormSignature),
-                               UploadedSingleUsernameVoteTypeIs(
-                                   autofill::AutofillUploadContents::Field::
-                                       NOT_EDITED_IN_PROMPT)),
-                         /*form_was_autofilled=*/false, expected_types,
-                         /*login_form_signature=*/"",
-                         /*observed_submission=*/true,
-                         /*pref_service=*/nullptr));
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(
+                  AllOf(SignatureIs(kSingleUsernameFormSignature),
+                        UploadedSingleUsernameVoteTypeIs(
+                            autofill::AutofillUploadContents::Field::WEAK)),
+                  /*form_was_autofilled=*/false, expected_types,
+                  /*login_form_signature=*/"",
+                  /*observed_submission=*/true,
+                  /*pref_service=*/nullptr));
 #else
   EXPECT_CALL(mock_autofill_download_manager_, StartUploadRequest).Times(0);
 #endif  // !defined(OS_ANDROID)
@@ -585,16 +584,15 @@ TEST_F(VotesUploaderTest, SingleUsernameValueSetInPrompt) {
 
 #if !defined(OS_ANDROID)
   ServerFieldTypeSet expected_types = {SINGLE_USERNAME};
-  EXPECT_CALL(
-      mock_autofill_download_manager_,
-      StartUploadRequest(
-          AllOf(SignatureIs(kSingleUsernameFormSignature),
-                UploadedSingleUsernameVoteTypeIs(
-                    autofill::AutofillUploadContents::Field::EDITED_IN_PROMPT)),
-          /*form_was_autofilled=*/false, expected_types,
-          /*login_form_signature=*/"",
-          /*observed_submission=*/true,
-          /*pref_service=*/nullptr));
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(
+                  AllOf(SignatureIs(kSingleUsernameFormSignature),
+                        UploadedSingleUsernameVoteTypeIs(
+                            autofill::AutofillUploadContents::Field::STRONG)),
+                  /*form_was_autofilled=*/false, expected_types,
+                  /*login_form_signature=*/"",
+                  /*observed_submission=*/true,
+                  /*pref_service=*/nullptr));
 #else
   EXPECT_CALL(mock_autofill_download_manager_, StartUploadRequest).Times(0);
 #endif  // !defined(OS_ANDROID)
@@ -620,16 +618,15 @@ TEST_F(VotesUploaderTest, SingleUsernameValueDeletedInPrompt) {
 
 #if !defined(OS_ANDROID)
   ServerFieldTypeSet expected_types = {NOT_USERNAME};
-  EXPECT_CALL(
-      mock_autofill_download_manager_,
-      StartUploadRequest(
-          AllOf(SignatureIs(kSingleUsernameFormSignature),
-                UploadedSingleUsernameVoteTypeIs(
-                    autofill::AutofillUploadContents::Field::EDITED_IN_PROMPT)),
-          /*form_was_autofilled=*/false, expected_types,
-          /*login_form_signature=*/"",
-          /*observed_submission=*/true,
-          /*pref_service=*/nullptr));
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(
+                  AllOf(SignatureIs(kSingleUsernameFormSignature),
+                        UploadedSingleUsernameVoteTypeIs(
+                            autofill::AutofillUploadContents::Field::STRONG)),
+                  /*form_was_autofilled=*/false, expected_types,
+                  /*login_form_signature=*/"",
+                  /*observed_submission=*/true,
+                  /*pref_service=*/nullptr));
 #else
   EXPECT_CALL(mock_autofill_download_manager_, StartUploadRequest).Times(0);
 #endif  // !defined(OS_ANDROID)
@@ -669,15 +666,20 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
   votes_uploader.set_saved_username(single_username_candidate_value);
 
   // Init store and expect that adding field info is called.
-  scoped_refptr<MockPasswordStore> store = new MockPasswordStore;
-  store->Init(/*prefs=*/nullptr);
+  scoped_refptr<MockPasswordStoreInterface> store =
+      new testing::StrictMock<MockPasswordStoreInterface>();
 
 #if defined(OS_ANDROID)
-  EXPECT_CALL(*store, AddFieldInfoImpl).Times(0);
+  EXPECT_CALL(*store, GetFieldInfoStore)
+      .WillRepeatedly(testing::Return(nullptr));
 #else
-  EXPECT_CALL(*store, AddFieldInfoImpl(FieldInfoHasData(
-                          kSingleUsernameFormSignature,
-                          kSingleUsernameFieldSignature, SINGLE_USERNAME)));
+  MockFieldInfoStore mock_field_store_;
+  EXPECT_CALL(*store, GetFieldInfoStore)
+      .WillRepeatedly(testing::Return(&mock_field_store_));
+  EXPECT_CALL(mock_field_store_,
+              AddFieldInfo(FieldInfoHasData(kSingleUsernameFormSignature,
+                                            kSingleUsernameFieldSignature,
+                                            SINGLE_USERNAME)));
 #endif  // defined(OS_ANDROID)
 
   // Init FieldInfoManager.
@@ -687,7 +689,6 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
 
   votes_uploader.MaybeSendSingleUsernameVote();
   task_environment_.RunUntilIdle();
-  store->ShutdownOnUIThread();
 }
 
 TEST_F(VotesUploaderTest, DontUploadSingleUsernameWhenAlreadyUploaded) {

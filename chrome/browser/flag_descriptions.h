@@ -449,9 +449,6 @@ extern const char kEnableBrowsingDataLifetimeManagerDescription[];
 extern const char kColorProviderRedirectionName[];
 extern const char kColorProviderRedirectionDescription[];
 
-extern const char kDesktopPWAsAppIconShortcutsMenuName[];
-extern const char kDesktopPWAsAppIconShortcutsMenuDescription[];
-
 extern const char kDesktopPWAsAppIconShortcutsMenuUIName[];
 extern const char kDesktopPWAsAppIconShortcutsMenuUIDescription[];
 
@@ -646,6 +643,7 @@ extern const char kEnableFencedFramesDescription[];
 extern const char kEnableGamepadButtonAxisEventsName[];
 extern const char kEnableGamepadButtonAxisEventsDescription[];
 
+extern const char kEnableLensRegionSearchFlagId[];
 extern const char kEnableLensRegionSearchName[];
 extern const char kEnableLensRegionSearchDescription[];
 
@@ -1314,9 +1312,6 @@ extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
 
 extern const char kSchemefulSameSiteName[];
 extern const char kSchemefulSameSiteDescription[];
-
-extern const char kScreenCaptureTestName[];
-extern const char kScreenCaptureTestDescription[];
 
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];

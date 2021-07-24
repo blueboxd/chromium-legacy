@@ -3621,6 +3621,8 @@ static_library("browser") {
       "enterprise/connectors/enterprise_connectors_policy_handler.h",
       "enterprise/connectors/file_system/access_token_fetcher.cc",
       "enterprise/connectors/file_system/access_token_fetcher.h",
+      "enterprise/connectors/file_system/account_info_utils.cc",
+      "enterprise/connectors/file_system/account_info_utils.h",
       "enterprise/connectors/file_system/box_api_call_endpoints.cc",
       "enterprise/connectors/file_system/box_api_call_endpoints.h",
       "enterprise/connectors/file_system/box_api_call_flow.cc",
@@ -3678,6 +3680,7 @@ static_library("browser") {
       "enterprise/signals/context_info_fetcher.h",
       "enterprise/signals/device_info_fetcher.cc",
       "enterprise/signals/device_info_fetcher.h",
+      "enterprise/signals/signals_common.h",
       "feedback/feedback_dialog_utils.cc",
       "feedback/feedback_dialog_utils.h",
       "feedback/feedback_uploader_chrome.cc",
@@ -6883,6 +6886,7 @@ grit("resources") {
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings_webui_js",
       "//chrome/browser/ui/webui/settings/chromeos:mojom_js",
+      "//chrome/browser/ui/webui/settings/chromeos/os_apps_page/mojom:mojom_js",
     ]
   }
 

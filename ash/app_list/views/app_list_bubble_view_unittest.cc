@@ -20,6 +20,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -181,6 +182,15 @@ TEST_F(AppListBubbleViewTest, OpeningBubbleFocusesSearchBox) {
   EXPECT_TRUE(search_box_view->is_search_box_active());
 }
 
+TEST_F(AppListBubbleViewTest, SearchBoxTextUsesPrimaryTextColor) {
+  ShowAppList();
+
+  views::Textfield* search_box = GetSearchBoxView()->search_box();
+  EXPECT_EQ(search_box->GetTextColor(),
+            AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextColorPrimary));
+}
+
 TEST_F(AppListBubbleViewTest, SearchBoxShowsAssistantButton) {
   SimulateAssistantEnabled();
   ShowAppList();
@@ -242,17 +252,14 @@ TEST_F(AppListBubbleViewTest, TypingTextShowsSearchPage) {
   AppListBubbleSearchPage* search_page = GetSearchPage();
 
   // Type some text.
-  auto* generator = GetEventGenerator();
-  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
-  generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  PressAndReleaseKey(ui::VKEY_A);
 
   // Search page is shown.
   EXPECT_FALSE(apps_page->GetVisible());
   EXPECT_TRUE(search_page->GetVisible());
 
   // Backspace to remove the text.
-  generator->PressKey(ui::VKEY_BACK, ui::EF_NONE);
-  generator->ReleaseKey(ui::VKEY_BACK, ui::EF_NONE);
+  PressAndReleaseKey(ui::VKEY_BACK);
 
   // Apps page is shown.
   EXPECT_TRUE(apps_page->GetVisible());

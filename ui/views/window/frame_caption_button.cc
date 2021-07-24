@@ -261,6 +261,12 @@ gfx::Size FrameCaptionButton::GetInkDropSize() const {
   return gfx::Size(2 * GetInkDropCornerRadius(), 2 * GetInkDropCornerRadius());
 }
 
+gfx::Insets FrameCaptionButton::GetInkdropInsets(
+    const gfx::Size& button_size) const {
+  return gfx::Insets((button_size.height() - GetInkDropSize().height()) / 2,
+                     (button_size.width() - GetInkDropSize().width()) / 2);
+}
+
 void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
   constexpr SkAlpha kHighlightVisibleOpacity = 0x14;
   SkAlpha highlight_alpha = SK_AlphaTRANSPARENT;
@@ -334,12 +340,6 @@ int FrameCaptionButton::GetAlphaForIcon(int base_alpha) const {
   return base_alpha * inactive_alpha;
 }
 
-gfx::Insets FrameCaptionButton::GetInkdropInsets(
-    const gfx::Size& button_size) const {
-  return gfx::Insets((button_size.height() - GetInkDropSize().height()) / 2,
-                     (button_size.width() - GetInkDropSize().width()) / 2);
-}
-
 void FrameCaptionButton::UpdateInkDropBaseColor() {
   using color_utils::GetColorWithMaxContrast;
   // A typical implementation would simply do
@@ -385,5 +385,7 @@ DEFINE_ENUM_CONVERTERS(
      u"CAPTION_BUTTON_ICON_ZOOM"},
     {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_CENTER,
      u"CAPTION_BUTTON_ICON_CENTER"},
+    {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_CUSTOM,
+     u"CAPTION_BUTTON_ICON_CUSTOM"},
     {views::CaptionButtonIcon::CAPTION_BUTTON_ICON_COUNT,
      u"CAPTION_BUTTON_ICON_COUNT"})

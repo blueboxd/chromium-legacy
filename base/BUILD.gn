@@ -168,6 +168,7 @@ component("base") {
     "atomicops_internals_atomicword_compat.h",
     "atomicops_internals_portable.h",
     "auto_reset.h",
+    "barrier_callback.h",
     "barrier_closure.cc",
     "barrier_closure.h",
     "base64.cc",
@@ -1646,6 +1647,7 @@ component("base") {
       "fuchsia/koid.h",
       "fuchsia/process_context.cc",
       "fuchsia/process_context.h",
+      "fuchsia/scheduler.h",
       "fuchsia/scoped_fx_logger.cc",
       "fuchsia/scoped_fx_logger.h",
       "fuchsia/scoped_service_binding.h",
@@ -1715,6 +1717,7 @@ component("base") {
     ]
 
     deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
       "//third_party/fuchsia-sdk/sdk/pkg/async-default",
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-cpp",
@@ -2868,6 +2871,7 @@ test("base_unittests") {
     "at_exit_unittest.cc",
     "atomicops_unittest.cc",
     "auto_reset_unittest.cc",
+    "barrier_callback_unittest.cc",
     "barrier_closure_unittest.cc",
     "base64_unittest.cc",
     "base64url_unittest.cc",

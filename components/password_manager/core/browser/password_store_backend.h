@@ -16,6 +16,7 @@ namespace password_manager {
 
 struct PasswordForm;
 
+class FieldInfoStore;
 class SmartBubbleStatsStore;
 
 using LoginsResult = std::vector<std::unique_ptr<PasswordForm>>;
@@ -91,13 +92,9 @@ class PasswordStoreBackend {
   virtual void DisableAutoSignInForOriginsAsync(
       PasswordStoreChangeListReply callback,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {}
-  virtual void FillMatchingLoginsByPasswordAsync(
-      LoginsReply callback,
-      const std::u16string& plain_text_password) {}
-  virtual void FillAutofillableLoginsAsync(LoginsReply callback) {}
-  virtual void FillBlocklistLoginsAsync(LoginsReply callback) {}
 
   virtual SmartBubbleStatsStore* GetSmartBubbleStatsStore() = 0;
+  virtual FieldInfoStore* GetFieldInfoStore() = 0;
 };
 
 }  // namespace password_manager

@@ -232,17 +232,8 @@ SmartBubbleStatsStore* TestPasswordStore::GetSmartBubbleStatsStore() {
   return nullptr;
 }
 
-std::vector<std::unique_ptr<PasswordForm>>
-TestPasswordStore::FillMatchingLoginsByPassword(
-    const std::u16string& plain_text_password) {
-  std::vector<std::unique_ptr<PasswordForm>> matched_forms;
-  for (const auto& elements : stored_passwords_) {
-    for (const auto& password_form : elements.second) {
-      if (password_form.password_value == plain_text_password)
-        matched_forms.push_back(std::make_unique<PasswordForm>(password_form));
-    }
-  }
-  return matched_forms;
+FieldInfoStore* TestPasswordStore::GetFieldInfoStore() {
+  return nullptr;
 }
 
 void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,
@@ -317,19 +308,6 @@ TestPasswordStore::GetMatchingInsecureCredentialsImpl(
                  return credential.signon_realm == signon_realm;
                });
   return result;
-}
-
-void TestPasswordStore::AddFieldInfoImpl(const FieldInfo& field_info) {
-  NOTIMPLEMENTED();
-}
-std::vector<FieldInfo> TestPasswordStore::GetAllFieldInfoImpl() {
-  NOTIMPLEMENTED();
-  return std::vector<FieldInfo>();
-}
-
-void TestPasswordStore::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
-                                                  base::Time remove_end) {
-  NOTIMPLEMENTED();
 }
 
 void TestPasswordStore::SetUnsyncedCredentialsDeletionNotifier(

@@ -408,6 +408,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   BrowserContext* GetBrowserContext() override;
   void ReportInspectorIssue(blink::mojom::InspectorIssueInfoPtr info) override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
+  void GetCanonicalUrl(
+      base::OnceCallback<void(const absl::optional<GURL>&)> callback) override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -729,11 +731,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Allows overriding the last committed origin in tests.
   void SetLastCommittedOriginForTesting(const url::Origin& origin);
-
-  // Fetch the link-rel canonical URL to be used for sharing to external
-  // applications.
-  void GetCanonicalUrlForSharing(
-      blink::mojom::LocalFrame::GetCanonicalUrlForSharingCallback callback);
 
   // Get HTML data for this RenderFrame by serializing contents on the renderer
   // side and replacing all links to both same-site and cross-site resources
@@ -1720,9 +1717,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelPrerenderingByMojoBinderPolicy(const std::string& interface_name);
 
   // Prerender2:
-  // Tells the renderer to dispatch the prerenderingchange event. Expects to
-  // receive an acknowledgement via DidActivateForPrerendering().
-  void ActivateForPrerendering();
+  // Called when the Activate IPC is sent to the renderer. Puts the
+  // MojoPolicyBinderApplier in "loose" mode via PrepareToGrantAll() until
+  // DidActivateForPrerending() is called.
+  void RendererWillActivateForPrerendering();
+
+  // Prerender2:
+  // Called when the Activate IPC is acknowledged by the renderer. Relinquishes
+  // the MojoPolicyBinderApplier.
+  void RendererDidActivateForPrerendering();
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy()
@@ -2028,7 +2031,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const absl::optional<std::u16string>& source_id,
       const absl::optional<std::u16string>& untrusted_stack_trace) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
-  void DidActivateForPrerendering() override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -3749,12 +3751,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // The Page object associated with the main document. It is nullptr for
     // subframes.
     std::unique_ptr<PageImpl> owned_page;
-
-    // Prerender2:
-    // The activation start time for prerendering which is passed to the
-    // renderer process, and will be accessible in the prerendered page as
-    // PerformanceNavigationTiming.activationStart.
-    absl::optional<base::TimeTicks> activation_start_time_for_prerendering;
   };
 
   std::unique_ptr<DocumentAssociatedData> document_associated_data_;
@@ -3846,11 +3842,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PolicyContainer. Cf. the documentation string of the PolicyContainerHost
   // class for more information.
   scoped_refptr<PolicyContainerHost> policy_container_host_;
-
-  // Prerender2:
-  // This is true while notifying the frame in the renderer of activation for
-  // prerendering.
-  bool is_notifying_activation_for_prerendering_ = false;
 
   // The current document's HTTP response head. This is used by back-forward
   // cache, for navigating a second time toward the same document.

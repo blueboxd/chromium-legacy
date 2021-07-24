@@ -219,6 +219,7 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
                PasswordStoreChangeListReply callback),
               (override));
   MOCK_METHOD(SmartBubbleStatsStore*, GetSmartBubbleStatsStore, (), (override));
+  MOCK_METHOD(FieldInfoStore*, GetFieldInfoStore, (), (override));
 };
 
 PasswordForm MakePasswordForm(const std::string& signon_realm) {
@@ -866,70 +867,6 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
   store->ShutdownOnUIThread();
 }
 
-// Tests if all credentials in the store with a specific password are
-// successfully transferred to the consumer.
-TEST_F(PasswordStoreTest, GetLogisByPassword) {
-  static constexpr char16_t tested_password[] = u"duplicated_password";
-  static constexpr char16_t another_tested_password[] = u"some_other_password";
-  static constexpr char16_t untested_password[] = u"and_another_password";
-
-  // The first, third and forth credentials use the same password, but the forth
-  // is blocklisted.
-  static constexpr PasswordFormData kTestCredentials[] = {
-      // Has the specified password:
-      {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", u"", u"", u"",
-       u"username_value_1", tested_password, kTestLastUsageTime, 1},
-      // Has another password:
-      {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", u"", u"", u"",
-       u"username_value_2", another_tested_password, kTestLastUsageTime, 1},
-      // Has the specified password:
-      {PasswordForm::Scheme::kHtml, kTestAndroidRealm3, "", "", u"", u"", u"",
-       u"username_value_3", tested_password, kTestLastUsageTime, 1},
-      // Has a third password:
-      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", u"",
-       u"", u"", u"username_value_4", untested_password, kTestLastUsageTime, 1},
-      // A PasswordFormData with nullptr as the username_value will be converted
-      // in a blocklisted PasswordForm in FillPasswordFormWithData().
-      // Has the specified password, but is blocklisted.
-      {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", u"",
-       u"", u"", nullptr, tested_password, kTestLastUsageTime, 1}};
-
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
-  store->Init(nullptr);
-
-  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-  for (const auto& test_credential : kTestCredentials) {
-    all_credentials.push_back(FillPasswordFormWithData(test_credential));
-    store->AddLogin(*all_credentials.back());
-  }
-
-  MockPasswordStoreConsumer mock_consumer;
-  std::vector<std::unique_ptr<PasswordForm>> expected_results;
-  expected_results.push_back(
-      std::make_unique<PasswordForm>(*all_credentials[0]));
-  expected_results.push_back(
-      std::make_unique<PasswordForm>(*all_credentials[2]));
-
-  EXPECT_CALL(mock_consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(&expected_results)));
-  store->GetLoginsByPassword(tested_password, &mock_consumer);
-  WaitForPasswordStore();
-
-  // Tries to find all credentials with |another_tested_password|.
-  expected_results.clear();
-  expected_results.push_back(
-      std::make_unique<PasswordForm>(*all_credentials[1]));
-
-  EXPECT_CALL(mock_consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(&expected_results)));
-  store->GetLoginsByPassword(another_tested_password, &mock_consumer);
-  WaitForPasswordStore();
-
-  store->ShutdownOnUIThread();
-}
-
 TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   scoped_refptr<PasswordStore> store;
   MockPasswordStoreBackend* mock_backend;
@@ -1272,15 +1209,17 @@ TEST_F(PasswordStoreTest, GetAllFieldInfo) {
   FieldInfo field_info2{autofill::FormSignature(1002),
                         autofill::FieldSignature(10), autofill::PASSWORD,
                         base::Time::FromTimeT(2)};
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
-  store->AddFieldInfo(field_info1);
-  store->AddFieldInfo(field_info2);
+  FieldInfoStore* field_info_store = store->GetFieldInfoStore();
+
+  field_info_store->AddFieldInfo(field_info1);
+  field_info_store->AddFieldInfo(field_info2);
   MockPasswordStoreConsumer consumer;
   EXPECT_CALL(consumer, OnGetAllFieldInfo(
                             UnorderedElementsAre(field_info1, field_info2)));
-  store->GetAllFieldInfo(&consumer);
+  field_info_store->GetAllFieldInfo(&consumer);
   WaitForPasswordStore();
 
   store->ShutdownOnUIThread();
@@ -1298,27 +1237,29 @@ TEST_F(PasswordStoreTest, RemoveFieldInfo) {
                         autofill::FieldSignature(11), autofill::PASSWORD,
                         base::Time::FromTimeT(300)};
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
-  store->AddFieldInfo(field_info1);
-  store->AddFieldInfo(field_info2);
-  store->AddFieldInfo(field_info3);
+  FieldInfoStore* field_info_store = store->GetFieldInfoStore();
+
+  field_info_store->AddFieldInfo(field_info1);
+  field_info_store->AddFieldInfo(field_info2);
+  field_info_store->AddFieldInfo(field_info3);
 
   MockPasswordStoreConsumer consumer;
   EXPECT_CALL(consumer, OnGetAllFieldInfo(UnorderedElementsAre(
                             field_info1, field_info2, field_info3)));
-  store->GetAllFieldInfo(&consumer);
+  field_info_store->GetAllFieldInfo(&consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&consumer);
 
-  store->RemoveFieldInfoByTime(base::Time::FromTimeT(150),
-                               base::Time::FromTimeT(250),
-                               base::NullCallback());
+  field_info_store->RemoveFieldInfoByTime(base::Time::FromTimeT(150),
+                                          base::Time::FromTimeT(250),
+                                          base::DoNothing());
 
   EXPECT_CALL(consumer, OnGetAllFieldInfo(
                             UnorderedElementsAre(field_info1, field_info3)));
-  store->GetAllFieldInfo(&consumer);
+  field_info_store->GetAllFieldInfo(&consumer);
   WaitForPasswordStore();
 
   store->ShutdownOnUIThread();

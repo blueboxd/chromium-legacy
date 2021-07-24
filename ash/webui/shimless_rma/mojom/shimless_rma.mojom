@@ -6,6 +6,7 @@
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
 // Each synchronised enum is marked with a comment referencing the proto enum
 // and the source file.
+// See shimless_rma_mojom_traits.cc\h for the mapping functions.
 
 // Overview of Shimless RMA and the mojo interface.
 //
@@ -40,6 +41,7 @@ import "mojo/public/mojom/base/string16.mojom";
 // RMA states.
 // This must remain in sync with RmadState.StateCase (generated from the member
 // `oneof state`) in //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
 // TODO(crbug.com/1218175): Remove Rma prefix from name.
 enum RmaState {
   // Used as a safety fallback default, and therefore should always trigger safe
@@ -66,6 +68,7 @@ enum RmaState {
 // Defined error codes.
 // This must remain in sync with RmadErrorCode in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
 // TODO(crbug.com/1218175): Remove Rmad prefix from name.
 enum RmadErrorCode {
   // 0 is the default value. It should never be used.
@@ -73,75 +76,96 @@ enum RmadErrorCode {
   // No error.
   kOk = 1,
   // No error, and wait for a signal.
-  KWait = 2,
+  kWait = 2,
+
   // Need a reboot to continue.
-  KNeedReboot = 3,
+  kNeedReboot = 3,
+  // Expect a reboot soon.
+  kExpectReboot = 4,
+  // Expect a reboot soon.
+  kExpectShutdown = 5,
+
   // The device is not in RMA mode.
-  kRmaNotRequired = 4,
+  kRmaNotRequired = 6,
+
   // No corresponding state handler for a state.
-  kStateHandlerMissing = 5,
+  kStateHandlerMissing = 7,
   // State handler initialization failed.
-  kStateHandlerInitializationFailed = 6,
+  kStateHandlerInitializationFailed = 8,
   // The request could not be processed (e.g. bad proto).
-  kRequestInvalid = 7,
+  kRequestInvalid = 9,
   // The request is missing mandatory arguments.
-  kRequestArgsMissing = 8,
-  // The request arguments are violating some rules of the state.
-  kRequestArgsViolation = 9,
+  kRequestArgsMissing = 10,
+    // The request arguments are violating some rules of the state.
+  kRequestArgsViolation = 11,
   // It is not possible to go back to the previous state at this point.
-  kTransitionFailed = 10,
+  kTransitionFailed = 12,
+
   // Failed to abort the RMA process.
-  kAbortFailed = 11,
+  kAbortFailed = 13,
+
   // An expected component was not found.
-  kMissingComponent = 12,
+  kMissingComponent = 14,
+
   // Cannot get the RSU challenge code.
-  kWriteProtectDisableRsuNoChallenge = 13,
+  kWriteProtectDisableRsuNoChallenge = 15,
   // The RSU code was incorrect.
-  kWriteProtectDisableRsuCodeInvalid = 14,
+  kWriteProtectDisableRsuCodeInvalid = 16,
   // The battery was not disconnected when WP disable was required.
-  kWriteProtectDisableBatteryNotDisconnected = 15,
+  kWriteProtectDisableBatteryNotDisconnected = 17,
   // WP was not disabled when required.
-  kWriteProtectSignalNotDetected = 16,
+  kWriteProtectSignalNotDetected = 18,
+
   // Firmware image could not be downloaded because a network connection was
   // unavailable.
-  kReimagingDownloadNoNetwork = 17,
+  kReimagingDownloadNoNetwork = 19,
   // Firmware image download did not complete because of a network error.
-  kReimagingDownloadNetworkError = 18,
+  kReimagingDownloadNetworkError = 20,
   // The user cancelled the firmware image download.
-  kReimagingDownloadCancelled = 19,
+  kReimagingDownloadCancelled = 21,
   // No valid USB device with a firmware image was found.
-  kReimagingUsbNotFound = 20,
+  kReimagingUsbNotFound = 22,
   // More than one USB device with a firmware image was found.
-  kReimagingUsbTooManyFound = 21,
+  kReimagingUsbTooManyFound = 23,
   // The firmware image found was corrupt.
-  kReimagingUsbInvalidImage = 22,
+  kReimagingUsbInvalidImage = 24,
   // The firmware image could not be written.
-  kReimagingImagingFailed = 23,
+  kReimagingImagingFailed = 25,
   // An unexpected failure prevented imaging from completing.
-  kReimagingUnknownFailure = 24,
+  kReimagingUnknownFailure = 26,
+
   // The device info is incorrect.
-  kDeviceInfoInvalid = 25,
+  kDeviceInfoInvalid = 27,
+
+  // Calibration component is missing.
+  kCalibrationMissingComponent = 28,
   // Calibration failed for a component.
-  kCalibrationFailed = 26,
+  kCalibrationFailed = 29,
+
   // Provisioning failed for the device.
-  kProvisioningFailed = 27,
+  kProvisioningFailed = 30,
+
   // Device could not be powerwashed.
-  kPowerwashFailed = 28,
+  kPowerwashFailed = 31,
+
   // Device finalization failed.
-  kFinalizationFailed = 29,
+  kFinalizationFailed = 32,
+
   // Logs failed to upload because the server could not be reached.
-  kLogUploadFtpServerCannotConnect = 30,
+  kLogUploadFtpServerCannotConnect = 33,
   // Logs failed to upload because the server refused the connection.
-  kLogUploadFtpServerConnectionRejected = 31,
+  kLogUploadFtpServerConnectionRejected = 34,
   // Logs failed to upload because the connection was interrupted.
-  kLogUploadFtpServerTransferFailed = 32,
+  kLogUploadFtpServerTransferFailed = 35,
+
   // It is not possible to cancel RMA finalization process at this point.
-  kCannotCancelRma = 33,
+  kCannotCancelRma = 36,
 };
 
 // Device components
-// This must remain in sync with ComponentRepairState::Component in
+// This maps to RmadComponent in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
 enum ComponentType {
   // Used as a safety fallback default, and therefore should always trigger safe
   // fallback behavior when present.
@@ -149,17 +173,40 @@ enum ComponentType {
   // NOTE: This is a special case for mainboards that will be restocked after
   // repair. The board will stay in RMA until it is used in another device.
   kMainboardRework = 1,
-  kKeyboard = 2,
-  kScreen = 3,
-  kTrackpad = 4,
-  kPowerButton = 5,
-  kThumbReader = 6,
+
+  // Standard components.
+  kAudioCodec = 2,
+  kBattery = 3,
+  kStorage = 4,
+  kVpdCached = 5,
+  kNetwork = 6,  // Obsolete in M91.
+  kCamera = 7,
+  kStylus = 8,
+  kTouchpad = 9,
+  kTouchsreen = 10,
+  kDram = 11,
+  kDisplayPanel = 12,
+  kCellular = 13,
+  kEthernet = 14,
+  kWireless = 15,
+
+  // Additional rmad components.
+  kGyroscope = 16,
+  kAccelerometer = 17,
+  kScreen = 18,
+
+  // Irrelevant components.
+  // TODO(chenghan): Do we really need these?
+  kKeyboard = 19,
+  kPowerButton = 20,
 };
 
 // Component repair state
-// This must remain in sync with ComponentRepairState::RepairState in
+// This must remain in sync with
+// ComponentsRepairState::ComponentRepairStatus::RepairStatus in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
-enum ComponentRepairState {
+// See shimless_rma_mojom_traits.cc\h.
+enum ComponentRepairStatus {
   // Used as a safety fallback default, and therefore should always trigger safe
   // fallback behavior when present.
   kRepairUnknown = 0,
@@ -171,12 +218,13 @@ enum ComponentRepairState {
 // A replaceable component and its repair state.
 struct Component {
   ComponentType component;
-  ComponentRepairState state;
+  ComponentRepairStatus state;
 };
 
 // This must remain in sync with
 // CalibrateComponentsState::CalibrateComponentsState in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
 enum CalibrationComponent {
   kCalibrateUnknown = 0,
   kAccelerometer = 1,
@@ -184,6 +232,7 @@ enum CalibrationComponent {
 
 // This must remain in sync with ProvisionDeviceState::ProvisioningStep in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
 enum ProvisioningStep {
   kProvisioningUnknown = 0,
   kInProgress = 1,

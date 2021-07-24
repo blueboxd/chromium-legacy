@@ -30,6 +30,11 @@ enum class DeviceSelectionUISurfaces {
   kSystemTray,
 };
 
+enum class PoweredStateOperation {
+  kEnable,
+  kDisable,
+};
+
 enum class UserInitiatedReconnectionUISurfaces {
   kSettings,
   kSystemTray,
@@ -65,6 +70,14 @@ enum class BluetoothUiSurface {
   kMaxValue = kOobeHidDetection
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ForgetResult {
+  kFailure = 0,
+  kSuccess = 1,
+  kMaxValue = kSuccess,
+};
+
 // Return filtered devices based on the filter type and max number of devices.
 DEVICE_BLUETOOTH_EXPORT device::BluetoothAdapter::DeviceList
 FilterBluetoothDeviceList(const BluetoothAdapter::DeviceList& devices,
@@ -90,8 +103,16 @@ DEVICE_BLUETOOTH_EXPORT void RecordDeviceSelectionDuration(
     bool was_paired,
     BluetoothTransport transport);
 
+// Record the result of device's Bluetooth being powered on or off.
+DEVICE_BLUETOOTH_EXPORT void RecordPoweredStateOperationResult(
+    PoweredStateOperation operation,
+    bool success);
+
 // Record each time the local device's Bluetooth is powered on or off.
 DEVICE_BLUETOOTH_EXPORT void RecordPoweredState(bool is_powered);
+
+// Record each time a device forget attempt completes.
+DEVICE_BLUETOOTH_EXPORT void RecordForgetResult(ForgetResult forget_result);
 
 // Record each time a bluetooth UI surface is displayed.
 DEVICE_BLUETOOTH_EXPORT void RecordUiSurfaceDisplayed(

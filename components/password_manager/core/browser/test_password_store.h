@@ -110,10 +110,7 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
       base::OnceCallback<void(bool)> sync_completion,
       PasswordStoreChangeListReply callback) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
-
-  // PasswordStore interface
-  std::vector<std::unique_ptr<PasswordForm>> FillMatchingLoginsByPassword(
-      const std::u16string& plain_text_password) override;
+  FieldInfoStore* GetFieldInfoStore() override;
 
   // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,
@@ -130,10 +127,6 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
   std::vector<InsecureCredential> GetAllInsecureCredentialsImpl() override;
   std::vector<InsecureCredential> GetMatchingInsecureCredentialsImpl(
       const std::string& signon_realm) override;
-  void AddFieldInfoImpl(const FieldInfo& field_info) override;
-  std::vector<FieldInfo> GetAllFieldInfoImpl() override;
-  void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
-                                 base::Time remove_end) override;
   void SetUnsyncedCredentialsDeletionNotifier(
       std::unique_ptr<UnsyncedCredentialsDeletionNotifier> deletion_notifier)
       override;

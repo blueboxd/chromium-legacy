@@ -392,8 +392,6 @@ void OsIntegrationManager::RegisterProtocolHandlers(
   // Disable protocol handler unregistration on Win7 due to bad interactions
   // between preinstalled app scenarios and the need for elevation to unregister
   // protocol handlers on that platform. See crbug.com/1224327 for context.
-  // TODO(crbug.com/1224747): remove this check and remove Win7 protocol handler
-  // support in Shell classes.
 #if defined(OS_WIN)
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     std::move(callback).Run(true);
@@ -535,8 +533,6 @@ void OsIntegrationManager::UnregisterProtocolHandlers(
   // Disable protocol handler unregistration on Win7 due to bad interactions
   // between preinstalled app scenarios and the need for elevation to unregister
   // protocol handlers on that platform. See crbug.com/1224327 for context.
-  // TODO(crbug.com/1224747): remove this check and remove Win7 protocol handler
-  // support in Shell classes.
 #if defined(OS_WIN)
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     std::move(callback).Run(true);
@@ -576,16 +572,12 @@ void OsIntegrationManager::UpdateShortcutsMenu(
     const AppId& app_id,
     const WebApplicationInfo& web_app_info) {
   DCHECK(shortcut_manager_);
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu) &&
-      !web_app_info.shortcuts_menu_item_infos.empty()) {
+  if (web_app_info.shortcuts_menu_item_infos.empty()) {
+    shortcut_manager_->UnregisterShortcutsMenuWithOs(app_id);
+  } else {
     shortcut_manager_->RegisterShortcutsMenuWithOs(
         app_id, web_app_info.shortcuts_menu_item_infos,
         web_app_info.shortcuts_menu_icon_bitmaps);
-  } else {
-    // Unregister shortcuts menu when feature is disabled or
-    // shortcuts_menu_item_infos is empty.
-    shortcut_manager_->UnregisterShortcutsMenuWithOs(app_id);
   }
 }
 
@@ -697,9 +689,7 @@ void OsIntegrationManager::OnShortcutsCreated(
       options.add_to_quick_launch_bar) {
     AddAppToQuickLaunchBar(app_id);
   }
-  if (shortcuts_created && options.os_hooks[OsHookType::kShortcutsMenu] &&
-      base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu)) {
+  if (shortcuts_created && options.os_hooks[OsHookType::kShortcutsMenu]) {
     if (web_app_info) {
       RegisterShortcutsMenu(
           app_id, web_app_info->shortcuts_menu_item_infos,

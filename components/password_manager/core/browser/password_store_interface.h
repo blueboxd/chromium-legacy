@@ -16,6 +16,7 @@ namespace password_manager {
 
 struct PasswordForm;
 
+class FieldInfoStore;
 class PasswordStoreConsumer;
 class SmartBubbleStatsStore;
 
@@ -115,13 +116,6 @@ class PasswordStoreInterface : public RefcountedKeyedService {
   virtual void GetLogins(const PasswordFormDigest& form,
                          PasswordStoreConsumer* consumer) = 0;
 
-  // Searches for credentials with the specified `plain_text_password`, and
-  // notifies `consumer` on completion. The request will be cancelled if the
-  // consumer is destroyed.
-  // TODO(crbug.com/1217070): Use a smart pointer for consumer.
-  virtual void GetLoginsByPassword(const std::u16string& plain_text_password,
-                                   PasswordStoreConsumer* consumer) = 0;
-
   // Gets the complete list of non-blocklist PasswordForms.`consumer` will be
   // notified on completion.
   // TODO(crbug.com/1217070): Use a smart pointer for consumer.
@@ -147,6 +141,9 @@ class PasswordStoreInterface : public RefcountedKeyedService {
 
   // Returns the store responsible for smart bubble behaviour websites stats.
   virtual SmartBubbleStatsStore* GetSmartBubbleStatsStore() = 0;
+
+  // Returns the store responsible for field info stats.
+  virtual FieldInfoStore* GetFieldInfoStore() = 0;
 
  protected:
   ~PasswordStoreInterface() override = default;

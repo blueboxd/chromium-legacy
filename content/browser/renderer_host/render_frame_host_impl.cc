@@ -209,6 +209,7 @@
 #include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
+#include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom.h"
@@ -2131,10 +2132,22 @@ RenderFrameHostImpl::GetPendingIsolationInfoForSubresources() {
   return config.isolation_info();
 }
 
-void RenderFrameHostImpl::GetCanonicalUrlForSharing(
-    blink::mojom::LocalFrame::GetCanonicalUrlForSharingCallback callback) {
+void RenderFrameHostImpl::GetCanonicalUrl(
+    base::OnceCallback<void(const absl::optional<GURL>&)> callback) {
   if (IsRenderFrameCreated()) {
-    GetAssociatedLocalFrame()->GetCanonicalUrlForSharing(std::move(callback));
+    // Validate that the URL returned by the renderer is HTTP(S) only. It is allowed to be
+    // cross-origin.
+    auto validate_and_forward =
+        [](base::OnceCallback<void(const absl::optional<GURL>&)> callback,
+           const absl::optional<GURL>& url) {
+          if (url && url->is_valid() && url->SchemeIsHTTPOrHTTPS()) {
+            std::move(callback).Run(url);
+          } else {
+            std::move(callback).Run(absl::nullopt);
+          }
+        };
+    GetAssociatedLocalFrame()->GetCanonicalUrlForSharing(
+        base::BindOnce(validate_and_forward, std::move(callback)));
   } else {
     std::move(callback).Run(absl::nullopt);
   }
@@ -3290,24 +3303,24 @@ void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
   delegate_->FrameSizeChanged(this, frame_size);
 }
 
-void RenderFrameHostImpl::DidActivateForPrerendering() {
+void RenderFrameHostImpl::RendererDidActivateForPrerendering() {
   DCHECK(blink::features::IsPrerender2Enabled());
-  if (!is_notifying_activation_for_prerendering_) {
-    mojo::ReportBadMessage("RFHI: DidActivateForPrerendering is unexpected");
-    return;
-  }
-  is_notifying_activation_for_prerendering_ = false;
 
-  // The renderer calls `DidActivateForPrerendering()` to notify that it fired
-  // the prerenderingchange event on a document. The browser now runs any
-  // binders that were deferred during prerendering. This corresponds to the
-  // following steps of the activate algorithm:
+  // RendererDidActivateForPrerendering() is called after the renderer has
+  // notified that it fired the prerenderingchange event on the documents. The
+  // browser now runs any binders that were deferred during prerendering. This
+  // corresponds to the following steps of the activate algorithm:
   //
   // https://jeremyroman.github.io/alternate-loading-modes/#prerendering-browsing-context-activate
   // Step 8.3.4. "For each steps in doc's post-prerendering activation steps
   // list:"
   // Step 8.3.4.1. "Run steps."
-  broker_.ReleaseMojoBinderPolicies();
+
+  // Release Mojo capability control to run the binders. The RenderFrameHostImpl
+  // may have been created after activation started, in which case it already
+  // does not have Mojo capability control applied.
+  if (broker_.GetMojoBinderPolicyApplier())
+    broker_.ReleaseMojoBinderPolicies();
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(
@@ -7984,6 +7997,14 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       },
       base::Unretained(this)));
 
+  associated_registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<blink::mojom::DisplayCutoutHost>
+             receiver) {
+        impl->delegate()->BindDisplayCutoutHost(impl, std::move(receiver));
+      },
+      base::Unretained(this)));
+
   mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
       remote_interfaces;
   GetMojomFrameInRenderer()->GetInterfaceProvider(
@@ -8808,10 +8829,10 @@ void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
   CancelPrerendering(PrerenderHost::FinalStatus::kMojoBinderPolicy);
 }
 
-void RenderFrameHostImpl::ActivateForPrerendering() {
+void RenderFrameHostImpl::RendererWillActivateForPrerendering() {
   DCHECK(blink::features::IsPrerender2Enabled());
 
-  // Loosen the policies of the mojo capability control during dispatching the
+  // Loosen the policies of the Mojo capability control during dispatching the
   // prerenderingchange event in Blink, because the page may start legitimately
   // using controlled interfaces once prerenderingchange is dispatched. We
   // cannot release policies at this point, i.e., we cannot run the deferred
@@ -8821,24 +8842,6 @@ void RenderFrameHostImpl::ActivateForPrerendering() {
   auto* applier = broker_.GetMojoBinderPolicyApplier();
   DCHECK(applier) << "prerendering pages should have a policy applier";
   applier->PrepareToGrantAll();
-
-  DCHECK(!is_notifying_activation_for_prerendering_);
-  is_notifying_activation_for_prerendering_ = true;
-
-  // Currently cross origin iframes are deferred. So the origin must be same
-  // as the main frame's origin. But if we will decide not to defer the cross
-  // origin iframes, we need to remove the DCHECK_EQ and change the code not
-  // to send |activation_start_time_for_prerendering| to the renderer.
-  DCHECK_EQ(GetLastCommittedOrigin(), GetMainFrame()->GetLastCommittedOrigin());
-
-  // Notify the renderer of activation to update the prerendering state and
-  // dispatch the prerenderingchange event.
-  GetAssociatedLocalFrame()->ActivateForPrerendering(
-      *GetMainFrame()
-           ->document_associated_data_->activation_start_time_for_prerendering);
-
-  for (auto& child : children_)
-    child->current_frame_host()->ActivateForPrerendering();
 }
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(
@@ -9983,18 +9986,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       // Set the NavigationStart time for
       // PerformanceNavigationTiming.activationStart.
       // https://jeremyroman.github.io/alternate-loading-modes/#performance-navigation-timing-extension
-
-      // Currently, prerendering is only supported on same-origin pages. When
-      // supporting cross-origin prerendering (https://crbug.com/1176054), we
-      // need to change this CHECK to "if ()" not to send the activation start
-      // time to the prerendering page so that it is not used to send
-      // identifiers between origins.
-      CHECK_EQ(GetLastCommittedOrigin(),
-               navigation_request->GetOriginToCommit());
-      DCHECK(
-          !document_associated_data_->activation_start_time_for_prerendering);
-      document_associated_data_->activation_start_time_for_prerendering =
-          navigation_request->NavigationStart();
+      GetPage().SetActivationStartTime(navigation_request->NavigationStart());
     }
 
   } else {
@@ -11065,6 +11057,45 @@ void LogVerifyDidCommitParamsDifference(
   UMA_HISTOGRAM_ENUMERATION("Navigation.VerifyDidCommitParams", difference);
 }
 
+std::string GetURLTypeForCrashKey(const GURL& url) {
+  if (url == kUnreachableWebDataURL)
+    return "error";
+  if (url == kBlockedURL)
+    return "blocked";
+  if (url.IsAboutBlank())
+    return "about:blank";
+  if (url.IsAboutSrcdoc())
+    return "about:srcdoc";
+  if (url.is_empty())
+    return "empty";
+  if (!url.is_valid())
+    return "invalid";
+  return url.scheme();
+}
+
+std::string GetURLRelationForCrashKey(
+    const GURL& actual_url,
+    const GURL& predicted_url,
+    const blink::mojom::CommonNavigationParams& common_params,
+    const GURL& last_committed_url,
+    const RenderFrameHostImpl::RendererURLInfo& renderer_url_info) {
+  if (actual_url == predicted_url)
+    return "as predicted";
+  if (actual_url == last_committed_url)
+    return "last committed";
+  if (actual_url == common_params.url)
+    return "common params URL";
+  if (actual_url == common_params.base_url_for_data_url)
+    return "base URL";
+  if (actual_url == common_params.history_url_for_data_url)
+    return "common params history URL";
+  if (actual_url == renderer_url_info.last_document_url)
+    return "last document URL";
+  if (actual_url == renderer_url_info.last_history_url)
+    return "last history URL";
+  return "unknown";
+}
+
 void RenderFrameHostImpl::
     VerifyThatBrowserAndRendererCalculatedDidCommitParamsMatch(
         NavigationRequest* request,
@@ -11172,16 +11203,16 @@ void RenderFrameHostImpl::
       "VerifyDidCommit", "prev_ldwbu",
       renderer_url_info_
           .document_has_unreachable_url_from_load_data_with_base_url);
-  SCOPED_CRASH_KEY_BOOL(
-      "VerifyDidCommit", "base_url_fdu_empty",
-      request->common_params().base_url_for_data_url.is_empty());
+  SCOPED_CRASH_KEY_STRING32(
+      "VerifyDidCommit", "history_url_fdu_type",
+      GetURLTypeForCrashKey(request->common_params().base_url_for_data_url));
 #if defined(OS_ANDROID)
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "data_url_empty",
                         request->commit_params().data_url_as_string.empty());
 #endif
-  SCOPED_CRASH_KEY_BOOL(
-      "VerifyDidCommit", "history_url_fdu_empty",
-      request->common_params().history_url_for_data_url.is_empty());
+  SCOPED_CRASH_KEY_STRING32(
+      "VerifyDidCommit", "history_url_fdu_type",
+      GetURLTypeForCrashKey(request->common_params().history_url_for_data_url));
 
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "intended_browser",
                         request->commit_params().intended_as_new_entry);
@@ -11248,6 +11279,16 @@ void RenderFrameHostImpl::
   SCOPED_CRASH_KEY_STRING256("VerifyDidCommit", "url_renderer",
                              params.url.possibly_invalid_spec());
 
+  SCOPED_CRASH_KEY_STRING32(
+      "VerifyDidCommit", "url_relation",
+      GetURLRelationForCrashKey(params.url, browser_url,
+                                request->common_params(), GetLastCommittedURL(),
+                                renderer_url_info_));
+  SCOPED_CRASH_KEY_STRING32("VerifyDidCommit", "url_browser_type",
+                            GetURLTypeForCrashKey(browser_url));
+  SCOPED_CRASH_KEY_STRING32("VerifyDidCommit", "url_renderer_type",
+                            GetURLTypeForCrashKey(params.url));
+
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_same_document",
                         is_same_document_navigation);
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_history_api",
@@ -11294,15 +11335,6 @@ void RenderFrameHostImpl::
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "was_click",
                         request->WasInitiatedByLinkClick());
 
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "nav_url_blank",
-                        params.url.IsAboutBlank());
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "nav_url_srcdoc",
-                        params.url.IsAboutSrcdoc());
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "nav_url_blocked",
-                        params.url == kBlockedURL);
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "nav_url_error",
-                        params.url == kUnreachableWebDataURL);
-
   SCOPED_CRASH_KEY_STRING256("VerifyDidCommit", "original_req_url",
                              request->commit_params().original_url.spec());
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "original_same_doc",
@@ -11323,14 +11355,8 @@ void RenderFrameHostImpl::
   SCOPED_CRASH_KEY_STRING256("VerifyDidCommit", "last_history_url",
                              renderer_url_info_.last_history_url.spec());
 
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "last_url_empty",
-                        GetLastCommittedURL().is_empty());
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "last_url_blank",
-                        GetLastCommittedURL().IsAboutBlank());
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "last_url_srcdoc",
-                        GetLastCommittedURL().IsAboutSrcdoc());
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "last_url_error",
-                        GetLastCommittedURL() == kUnreachableWebDataURL);
+  SCOPED_CRASH_KEY_STRING32("VerifyDidCommit", "last_url_type",
+                            GetURLTypeForCrashKey(GetLastCommittedURL()));
 
   SCOPED_CRASH_KEY_STRING256("VerifyDidCommit", "last_method",
                              last_http_method_);

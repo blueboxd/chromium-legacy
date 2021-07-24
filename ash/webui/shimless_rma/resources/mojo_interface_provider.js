@@ -6,7 +6,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 
 import {fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeStates} from './fake_data.js';
 import {FakeShimlessRmaService} from './fake_shimless_rma_service.js'
-import {Component, ComponentRepairState, ComponentType, NetworkConfigServiceInterface, RmadErrorCode, RmaState, ShimlessRmaService, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
+import {Component, ComponentRepairStatus, ComponentType, NetworkConfigServiceInterface, RmadErrorCode, RmaState, ShimlessRmaService, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
 
 /**
  * @fileoverview
@@ -100,4 +100,20 @@ export function getNetworkConfigService() {
 
   assert(!!networkConfigService);
   return networkConfigService;
+}
+
+/**
+ * @param {number} error
+ * @return {string}
+ */
+export function rmadErrorString(error) {
+  if (error === RmadErrorCode.kOk) {
+    return '';
+  }
+  for (const [k, v] of Object.entries(RmadErrorCode)) {
+    if (v === error) {
+      return 'Error: ' + k + '(' + error + ')';
+    }
+  }
+  return 'Error: unknown (' + error + ')';
 }

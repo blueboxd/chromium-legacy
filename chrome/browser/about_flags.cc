@@ -3017,9 +3017,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"dark-light-mode", flag_descriptions::kDarkLightTestName,
      flag_descriptions::kDarkLightTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDarkLightMode)},
-    {"screen-capture", flag_descriptions::kScreenCaptureTestName,
-     flag_descriptions::kScreenCaptureTestDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kCaptureMode)},
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
@@ -3671,11 +3668,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultMeetWebAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(web_app::kDefaultMeetWebApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-    // TODO(https://crbug.com/1069293): Add macOS and Linux implementations.
-    {"enable-desktop-pwas-app-icon-shortcuts-menu",
-     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuName,
-     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsAppIconShortcutsMenu)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-desktop-pwas-attention-badging-cros",
      flag_descriptions::kDesktopPWAsAttentionBadgingCrOSName,
@@ -7391,6 +7383,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    // TODO(https://crbug.com/1069293): Add macOS and Linux implementations.
     {"enable-desktop-pwas-app-icon-shortcuts-menu-ui",
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIName,
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIDescription, kOsCrOS,
@@ -7436,7 +7429,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSuggestVirtualCardsOnIncompleteForm)},
 
-    {"enable-lens-region-search",
+    {flag_descriptions::kEnableLensRegionSearchFlagId,
      flag_descriptions::kEnableLensRegionSearchName,
      flag_descriptions::kEnableLensRegionSearchDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(lens::features::kLensRegionSearch)},

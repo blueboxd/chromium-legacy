@@ -228,7 +228,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2955c26908936fb8c2708176f1555a9e7a6dab0f',
+  'skia_revision': 'feb459a1fb51b7117eee3e8bb9f1f2990b0c3090',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -240,7 +240,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cc69d861ab98a39cb7830b4c9f022f0775fd2dd3',
+  'angle_revision': '939ea5f41eff2bc7c8863efe9614cd93785c7f26',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'dc2b94430c63a002a9c2c52b897077f598ffbb5e',
+  'devtools_frontend_revision': 'ee65173d43589b404a09922135cf27e41dcf6e41',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -347,7 +347,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '6515e20a1e7f72e97428071b0cc33b9161d12b39',
+  'dawn_revision': 'd7086c91d38fa011964119094204867a60f86da5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -610,7 +610,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'eae90fc9ae1e9a01a02669c41680308a759069c0',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'e6fefe659c226cd2310748ccd3894d91e458aef5',
       'condition': 'checkout_ios',
   },
 
@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'fzlC8T5ARk4LBJO463nuUp88hZxweAzVanP2eWls8e0C',
+          'version': 'NQuyJGRniAsJjX9cymNhAouw3szKWapPol8v0sEAWYoC',
       },
     ],
     'condition': 'checkout_android',
@@ -1618,7 +1618,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '827cad9e402b63bbe38787456115bcb681a8a152',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '8ef4eba6d5145d057e81e65fef208b7612f861a8',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ae3c1f6522bbbd21490fbdf655d45560228c0dfc',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '0d6d9488ae5183b5f0ebe7617dbfc4d13df37a8c',
@@ -1682,7 +1682,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@549bc3f1ba2818e6469d194d0eaa988397f2fbb5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@60942cbee7bbef2af85f75f1c5fd610f0d12537b',
     'condition': 'checkout_src_internal',
   },
 

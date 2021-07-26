@@ -184,10 +184,30 @@
     "policy_pref_mapping_tests": [
       {
         "policies": {
+          "SearchSuggestEnabled": true
+        },
+        "prefs": {
+          "search.suggest_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
           "SearchSuggestEnabled": false
         },
         "prefs": {
-          "search.suggest_enabled": {}
+          "search.suggest_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "search.suggest_enabled": {
+            "default_value": true
+          }
         }
       }
     ]
@@ -443,11 +463,37 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check the default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "history.deleting_enabled": {
+            "location": "user_profile",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Check the policy value: true",
+        "policies": {
+          "AllowDeletingBrowserHistory": true
+        },
+        "prefs": {
+          "history.deleting_enabled": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check the policy value: false",
         "policies": {
           "AllowDeletingBrowserHistory": false
         },
         "prefs": {
-          "history.deleting_enabled": {}
+          "history.deleting_enabled": {
+            "location": "user_profile",
+            "value": false
+          }
         }
       }
     ]
@@ -1561,17 +1607,91 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "sync.apps": {
+            "default_value": false
+          },
+          "sync.autofill": {
+            "default_value": false
+          },
+          "sync.bookmarks": {
+            "default_value": false
+          },
+          "sync.extensions": {
+            "default_value": false
+          },
+          "sync.passwords": {
+            "default_value": false
+          },
+          "sync.preferences": {
+            "default_value": false
+          },
+          "sync.reading_list": {
+            "default_value": false
+          },
+          "sync.tabs": {
+            "default_value": false
+          },
+          "sync.themes": {
+            "default_value": false
+          },
+          "sync.typed_urls": {
+            "default_value": false
+          },
+          "sync.wifi_configurations": {
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "SyncTypesListDisabled": [
+            "apps",
+            "autofill",
+            "bookmarks",
+            "extensions",
+            "passwords",
             "preferences",
-            "bookmarks"
+            "readingList",
+            "tabs",
+            "themes",
+            "typedUrls",
+            "wifiConfigurations"
           ]
         },
         "prefs": {
-          "sync.preferences": {
+          "sync.apps": {
+            "value": false
+          },
+          "sync.autofill": {
             "value": false
           },
           "sync.bookmarks": {
+            "value": false
+          },
+          "sync.extensions": {
+            "value": false
+          },
+          "sync.passwords": {
+            "value": false
+          },
+          "sync.preferences": {
+            "value": false
+          },
+          "sync.reading_list": {
+            "value": false
+          },
+          "sync.tabs": {
+            "value": false
+          },
+          "sync.themes": {
+            "value": false
+          },
+          "sync.typed_urls": {
+            "value": false
+          },
+          "sync.wifi_configurations": {
             "value": false
           }
         }
@@ -2045,12 +2165,35 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "auth.schemes": {
+            "location": "local_state",
+            "default_value": "basic,digest,ntlm,negotiate"
+          }
+        }
+      },
+      {
         "policies": {
-          "AuthSchemes": "AuthSchemes"
+          "AuthSchemes": "negotiate"
         },
         "prefs": {
           "auth.schemes": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": "negotiate"
+          }
+        }
+      },
+      {
+        "note": "Empty value",
+        "policies": {
+          "AuthSchemes": ""
+        },
+        "prefs": {
+          "auth.schemes": {
+            "location": "local_state",
+            "value": ""
           }
         }
       }
@@ -2232,7 +2375,8 @@
         },
         "prefs": {
           "auth.negotiate_delegate_whitelist": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": "localhost"
           }
         }
       }
@@ -2248,12 +2392,36 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "auth.negotiate_delegate_whitelist": {
+            "location": "local_state",
+            "default_value": ""
+          }
+        }
+      },
+      {
         "policies": {
-          "AuthNegotiateDelegateAllowlist": "localhost"
+          "AuthNegotiateDelegateAllowlist": "localhost,*.example.com"
         },
         "prefs": {
           "auth.negotiate_delegate_whitelist": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": "localhost,*.example.com"
+          }
+        }
+      },
+      {
+        "note": "New policy overrides deprecated one",
+        "policies": {
+          "AuthNegotiateDelegateAllowlist": "localhost",
+          "AuthNegotiateDelegateWhitelist": "localhost,*.example.com"
+        },
+        "prefs": {
+          "auth.negotiate_delegate_whitelist": {
+            "location": "local_state",
+            "value": "localhost"
           }
         }
       }
@@ -2267,12 +2435,23 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "auth.negotiate_delegate_by_kdc_policy": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "AuthNegotiateDelegateByKdcPolicy": true
         },
         "prefs": {
           "auth.negotiate_delegate_by_kdc_policy": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": true
           }
         }
       }
@@ -2321,12 +2500,36 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check the default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "auth.allow_cross_origin_prompt": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Check the policy value: true",
         "policies": {
           "AllowCrossOriginAuthPrompt": true
         },
         "prefs": {
           "auth.allow_cross_origin_prompt": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check the policy value: false",
+        "policies": {
+          "AllowCrossOriginAuthPrompt": false
+        },
+        "prefs": {
+          "auth.allow_cross_origin_prompt": {
+            "location": "local_state",
+            "value": false
           }
         }
       }
@@ -3128,6 +3331,24 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "devtools.availability": {
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeveloperToolsDisabled": false
+        },
+        "prefs": {
+          "devtools.availability": {
+            "value": 1
+          }
+        }
+      },
+      {
         "policies": {
           "DeveloperToolsDisabled": true
         },
@@ -3148,7 +3369,47 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "devtools.availability": {
+            "default_value": 0
+          }
+        }
+      },
+      {
         "policies": {
+          "DeveloperToolsAvailability": 0
+        },
+        "prefs": {
+          "devtools.availability": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeveloperToolsAvailability": 1
+        },
+        "prefs": {
+          "devtools.availability": {
+            "value": 1
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeveloperToolsAvailability": 2
+        },
+        "prefs": {
+          "devtools.availability": {
+            "value": 2
+          }
+        }
+      },
+      {
+        "note": "DeveloperToolsAvailability overwrites DeveloperToolsDisabled if both are set",
+        "policies": {
+          "DeveloperToolsDisabled": false,
           "DeveloperToolsAvailability": 2
         },
         "prefs": {
@@ -4493,7 +4754,19 @@
           ]
         },
         "prefs": {
-          "profile.managed_sensors_allowed_for_urls": {}
+          "profile.managed_sensors_allowed_for_urls": {
+            "value": [
+              "[*.]google.com"
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "profile.managed_sensors_allowed_for_urls": {
+            "default_value": []
+          }
         }
       }
     ]
@@ -4515,7 +4788,19 @@
           ]
         },
         "prefs": {
-          "profile.managed_sensors_blocked_for_urls": {}
+          "profile.managed_sensors_blocked_for_urls": {
+            "value": [
+              "[*.]google.com"
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "profile.managed_sensors_blocked_for_urls": {
+            "default_value": []
+          }
         }
       }
     ]
@@ -4682,7 +4967,19 @@
         },
         "prefs": {
           "managed.serial_allow_all_ports_for_urls": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": [
+              "https://www.google.com"
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "managed.serial_allow_all_ports_for_urls": {
+            "location": "local_state",
+            "default_value": []
           }
         }
       }
@@ -4739,11 +5036,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "disable_3d_apis": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "Disable3DAPIs": false
+        },
+        "prefs": {
+          "disable_3d_apis": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "Disable3DAPIs": true
         },
         "prefs": {
-          "disable_3d_apis": {}
+          "disable_3d_apis": {
+            "value": true
+          }
         }
       }
     ]
@@ -5210,11 +5527,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "printing.print_preview_disabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "DisablePrintPreview": false
         },
         "prefs": {
-          "printing.print_preview_disabled": {}
+          "printing.print_preview_disabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DisablePrintPreview": true
+        },
+        "prefs": {
+          "printing.print_preview_disabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -5312,11 +5649,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "safebrowsing.proceed_anyway_disabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DisableSafeBrowsingProceedAnyway": false
+        },
+        "prefs": {
+          "safebrowsing.proceed_anyway_disabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "DisableSafeBrowsingProceedAnyway": true
         },
         "prefs": {
-          "safebrowsing.proceed_anyway_disabled": {}
+          "safebrowsing.proceed_anyway_disabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -5363,11 +5720,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "disable_screenshots": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DisableScreenshots": false
+        },
+        "prefs": {
+          "disable_screenshots": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "DisableScreenshots": true
         },
         "prefs": {
-          "disable_screenshots": {}
+          "disable_screenshots": {
+            "value": true
+          }
         }
       }
     ]
@@ -5977,18 +6354,21 @@
     ],
     "policy_pref_mapping_tests": [
       {
-        "os": [
-          "win",
-          "linux",
-          "mac",
-          "chromeos",
-          "android"
-        ],
         "policies": {
           "AllowedDomainsForApps": "google.com,mit.edu"
         },
         "prefs": {
-          "settings.allowed_domains_for_apps": {}
+          "settings.allowed_domains_for_apps": {
+            "value": "google.com,mit.edu"
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "settings.allowed_domains_for_apps": {
+            "default_value": ""
+          }
         }
       }
     ]
@@ -6214,6 +6594,14 @@
             "value": "C:\\Users\\test_user_name\\AppData\\Roaming"
           }
         }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "sync.local_sync_backend_dir": {
+            "default_value": ""
+          }
+        }
       }
     ]
   },
@@ -6230,6 +6618,14 @@
         "prefs": {
           "sync.local_sync_backend_dir": {
             "value": "/Users/test_user_name/chrome_roaming_profile_dir"
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "sync.local_sync_backend_dir": {
+            "default_value": ""
           }
         }
       }
@@ -6819,11 +7215,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "gdata.disabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DriveDisabled": false
+        },
+        "prefs": {
+          "gdata.disabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "DriveDisabled": true
         },
         "prefs": {
-          "gdata.disabled": {}
+          "gdata.disabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -6834,11 +7250,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "gdata.cellular.disabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DriveDisabledOverCellular": false
+        },
+        "prefs": {
+          "gdata.cellular.disabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "DriveDisabledOverCellular": true
         },
         "prefs": {
-          "gdata.cellular.disabled": {}
+          "gdata.cellular.disabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -6865,11 +7301,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "hardware.external_storage_disabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ExternalStorageDisabled": false
+        },
+        "prefs": {
+          "hardware.external_storage_disabled": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "ExternalStorageDisabled": true
         },
         "prefs": {
-          "hardware.external_storage_disabled": {}
+          "hardware.external_storage_disabled": {
+            "value": true
+          }
         }
       }
     ]
@@ -6880,11 +7336,31 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "hardware.external_storage_read_only": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ExternalStorageReadOnly": false
+        },
+        "prefs": {
+          "hardware.external_storage_read_only": {
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "ExternalStorageReadOnly": true
         },
         "prefs": {
-          "hardware.external_storage_read_only": {}
+          "hardware.external_storage_read_only": {
+            "value": true
+          }
         }
       }
     ]
@@ -7085,7 +7561,46 @@
           "ScreenOffDelayAC": 480000
         },
         "prefs": {
-          "power.ac_screen_off_delay_ms": {}
+          "power.ac_screen_off_delay_ms": {
+            "value": 480000
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "power.ac_screen_off_delay_ms": {
+            "default_value": 450000
+          }
+        }
+      },
+      {
+        "note": "negative values are clamped to 0",
+        "policies": {
+          "ScreenOffDelayAC": -1
+        },
+        "prefs": {
+          "power.ac_screen_off_delay_ms": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "note": "This policy is deprecated, and the new policy takes precedence",
+        "policies": {
+          "ScreenOffDelayAC": 111,
+          "PowerManagementIdleSettings": {
+            "AC": {
+              "Delays": {
+                "ScreenOff": 222
+              }
+            }
+          }
+        },
+        "prefs": {
+          "power.ac_screen_off_delay_ms": {
+            "value": 222
+          }
         }
       }
     ]
@@ -7830,13 +8345,34 @@
     "os": [
       "chromeos"
     ],
+    "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
         "policies": {
           "SelectToSpeakEnabled": true
         },
         "prefs": {
-          "settings.a11y.select_to_speak": {}
+          "settings.a11y.select_to_speak": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SelectToSpeakEnabled": false
+        },
+        "prefs": {
+          "settings.a11y.select_to_speak": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "settings.a11y.select_to_speak": {
+            "default_value": false
+          }
         }
       }
     ]
@@ -8355,12 +8891,33 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "hardware_acceleration_mode.enabled": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "HardwareAccelerationModeEnabled": false
+        },
+        "prefs": {
+          "hardware_acceleration_mode.enabled": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
         "policies": {
           "HardwareAccelerationModeEnabled": true
         },
         "prefs": {
           "hardware_acceleration_mode.enabled": {
-            "location": "local_state"
+            "location": "local_state",
+            "value": true
           }
         }
       }
@@ -9000,7 +9557,19 @@
           ]
         },
         "prefs": {
-          "settings.language.allowed_input_methods": {}
+          "settings.language.allowed_input_methods": {
+            "value": [
+              "xkb:us::en"
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "settings.language.allowed_input_methods": {
+            "default_value": []
+          }
         }
       }
     ]
@@ -10062,7 +10631,42 @@
     "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
   },
   "DeviceLoginScreenCaretHighlightEnabled": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "os": [
+      "chromeos"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "settings.a11y.caret_highlight": {
+            "location": "signin_profile",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceLoginScreenCaretHighlightEnabled": true
+        },
+        "prefs": {
+          "settings.a11y.caret_highlight": {
+            "location": "signin_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceLoginScreenCaretHighlightEnabled": false
+        },
+        "prefs": {
+          "settings.a11y.caret_highlight": {
+            "location": "signin_profile",
+            "value": false
+          }
+        }
+      }
+    ]
   },
   "DeviceLoginScreenMonoAudioEnabled": {
     "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
@@ -10092,10 +10696,81 @@
     "reason_for_missing_test": "Maps into CrosSettings"
   },
   "UptimeLimit": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "os": [
+      "chromeos"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "automatic_reboot.uptime_limit": {
+            "location": "local_state",
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "UptimeLimit": 86400
+        },
+        "prefs": {
+          "automatic_reboot.uptime_limit": {
+            "location": "local_state",
+            "value": 86400
+          }
+        }
+      },
+      {
+        "note": "Values are clamped to be at least 3,600.",
+        "policies": {
+          "UptimeLimit": 1200
+        },
+        "prefs": {
+          "automatic_reboot.uptime_limit": {
+            "location": "local_state",
+            "value": 3600
+          }
+        }
+      }
+    ]
   },
   "RebootAfterUpdate": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "os": [
+      "chromeos"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "RebootAfterUpdate": true
+        },
+        "prefs": {
+          "automatic_reboot.reboot_after_update": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "RebootAfterUpdate": false
+        },
+        "prefs": {
+          "automatic_reboot.reboot_after_update": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "automatic_reboot.reboot_after_update": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      }
+    ]
   },
   "DeviceScheduledReboot": {
     "os": [
@@ -10134,7 +10809,7 @@
     "reason_for_missing_test": "Maps into CrosSettings"
   },
   "AllowKioskAppControlChromeVersion": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "reason_for_missing_test": "This policy has no pref as it is only directly read by the update engine daemon."
   },
   "LoginAuthenticationBehavior": {
     "reason_for_missing_test": "Maps into CrosSettings"
@@ -10431,7 +11106,7 @@
     ]
   },
   "DeviceQuickFixBuildToken": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "reason_for_missing_test": "This policy has no pref as it is only directly read by the update engine daemon."
   },
   "AbusiveExperienceInterventionEnforce": {
     "os": [
@@ -10460,21 +11135,35 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "note": "Check the default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "profile.managed_default_content_settings.ads": {
+            "location": "user_profile",
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "note": "Check the policy value: 1",
         "policies": {
           "AdsSettingForIntrusiveAdsSites": 1
         },
         "prefs": {
           "profile.managed_default_content_settings.ads": {
+            "location": "user_profile",
             "value": 1
           }
         }
       },
       {
+        "note": "Check the policy value: 2",
         "policies": {
           "AdsSettingForIntrusiveAdsSites": 2
         },
         "prefs": {
           "profile.managed_default_content_settings.ads": {
+            "location": "user_profile",
             "value": 2
           }
         }
@@ -12444,6 +13133,15 @@
                   }
                 ]
               }
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "enterprise_connectors.send_download_to_cloud": {
+            "default_value": [
             ]
           }
         }

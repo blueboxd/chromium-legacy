@@ -6,7 +6,6 @@ import * as animate from '../animation.js';
 import {
   assert,
   assertInstanceof,
-  assertString,
 } from '../chrome_util.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -45,7 +44,8 @@ import {windowController} from '../window_controller.js';
 import {Layout} from './camera/layout.js';
 import {
   Modes,
-  PhotoHandler,    // eslint-disable-line no-unused-vars
+  PhotoHandler,  // eslint-disable-line no-unused-vars
+  Scanner,
   ScannerHandler,  // eslint-disable-line no-unused-vars
   setAvc1Parameters,
   Video,
@@ -57,6 +57,7 @@ import {ScannerOptions} from './camera/scanner_options.js';
 import * as timertick from './camera/timertick.js';
 import {VideoEncoderOptions} from './camera/video_encoder_options.js';
 import {PTZPanel} from './ptz_panel.js';
+import {ReviewDocument} from './review_document.js';
 import {PrimarySettings} from './settings.js';
 import {View} from './view.js';
 import {WarningType} from './warning.js';
@@ -113,12 +114,20 @@ export class Camera extends View {
     this.perfLogger_ = perfLogger;
 
     /**
+     * @type {!ReviewDocument}
+     * @private
+     */
+    this.reviewDocumentView_ = new ReviewDocument();
+
+    /**
      * @const {!Array<!View>}
      * @private
      */
     this.subViews_ = [
       new PrimarySettings(infoUpdater, photoPreferrer, videoPreferrer),
       new PTZPanel(),
+      this.reviewDocumentView_,
+      new View(ViewName.FLASH),
     ];
 
     /**
@@ -261,6 +270,14 @@ export class Camera extends View {
      * @private
      */
     this.configureCompleteListener_ = new Set();
+
+    /**
+     * Preview constraints saved for temporarily close/restore preview
+     * before/after |ScannerHandler| review document result.
+     * @type {?MediaStreamConstraints}
+     * @private
+     */
+    this.constraints_ = null;
 
     /**
      * Gets type of ways to trigger shutter from click event.
@@ -626,6 +643,53 @@ export class Camera extends View {
   /**
    * @override
    */
+  async handleResultDocument({blob, resolution}, name) {
+    // TODO(b/190689433): Send metrics event for counting usage.
+    try {
+      await this.resultSaver_.savePhoto(blob, name);
+    } catch (e) {
+      toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
+      throw e;
+    }
+  }
+
+  /**
+   * @return {!Promise}
+   * @private
+   */
+  async restorePreviewInScannerMode_() {
+    assert(this.constraints_ !== null);
+    await this.preview_.open(this.constraints_);
+    const scannerMode = assertInstanceof(this.modes_.current, Scanner);
+    scannerMode.updatePreview(this.preview_.stream);
+  }
+
+  /**
+   * @override
+   */
+  async setReviewDocument(blob) {
+    this.constraints_ = this.preview_.getConstraits();
+    await this.preview_.close();
+    try {
+      await this.reviewDocumentView_.setReviewDocument(blob);
+    } catch (e) {
+      await this.restorePreviewInScannerMode_();
+      throw e;
+    }
+  }
+
+  /**
+   * @override
+   */
+  async getDocumentReviewResult() {
+    const result = await this.reviewDocumentView_.startReview();
+    await this.restorePreviewInScannerMode_();
+    return result;
+  }
+
+  /**
+   * @override
+   */
   createVideoSaver() {
     return this.resultSaver_.startSaveVideo(this.outputVideoRotation_);
   }
@@ -636,6 +700,21 @@ export class Camera extends View {
   playShutterEffect() {
     sound.play(dom.get('#sound-shutter', HTMLAudioElement));
     animate.play(this.preview_.video);
+  }
+
+  /**
+   * @override
+   */
+  playBlockingShutterEffect() {
+    sound.play(dom.get('#sound-shutter', HTMLAudioElement));
+    nav.open(ViewName.FLASH);
+  }
+
+  /**
+   * @override
+   */
+  clearBlockingShutterEffect() {
+    nav.close(ViewName.FLASH);
   }
 
   /**
@@ -714,7 +793,7 @@ export class Camera extends View {
 
   /**
    * Try start stream reconfiguration with specified mode and device id.
-   * @param {?string} deviceId Null if the default camera should be started.
+   * @param {string} deviceId
    * @param {!Mode} mode
    * @return {!Promise<boolean>} If found suitable stream and reconfigure
    *     successfully.
@@ -724,8 +803,7 @@ export class Camera extends View {
     state.set(state.State.USE_FAKE_CAMERA, deviceOperator === null);
     let resolCandidates;
     if (deviceOperator) {
-      resolCandidates =
-          this.modes_.getResolutionCandidates(mode, assertString(deviceId));
+      resolCandidates = this.modes_.getResolutionCandidates(mode, deviceId);
     } else {
       resolCandidates = this.modes_.getFakeResolutionCandidates(mode, deviceId);
     }
@@ -807,7 +885,7 @@ export class Camera extends View {
 
   /**
    * Try start stream reconfiguration with specified device id.
-   * @param {?string} deviceId
+   * @param {string} deviceId
    * @return {!Promise<boolean>} If found suitable stream and reconfigure
    *     successfully.
    */

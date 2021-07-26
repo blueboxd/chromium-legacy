@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Filenamer} from '../../../models/file_namer.js';
+import {ChromeHelper} from '../../../mojo/chrome_helper.js';
 import {
-  Facing,      // eslint-disable-line no-unused-vars
+  Facing,  // eslint-disable-line no-unused-vars
+  MimeType,
   Resolution,  // eslint-disable-line no-unused-vars
 } from '../../../type.js';
 
@@ -14,11 +17,97 @@ import {
 } from './photo.js';
 
 /**
+ * Contains photo taking result.
+ * @typedef {{
+ *     resolution: !Resolution,
+ *     blob: !Blob,
+ * }}
+ */
+export let DocumentResult;
+
+/**
  * Provides external dependency functions used by photo mode and handles the
  * captured result photo.
  * @interface
  */
-export class ScannerHandler {}
+export class ScannerHandler {
+  /**
+   * Plays UI effect shutter effect blocking all UI operation.
+   */
+  playBlockingShutterEffect() {}
+
+  /**
+   * Clears UI effect shutter effect blocking all UI operation.
+   */
+  clearBlockingShutterEffect() {}
+
+  /**
+   * @param {!Blob} blob Jpeg Blob as scanned document.
+   * @return {!Promise}
+   */
+  async setReviewDocument(blob) {}
+
+  /**
+   * @return {!Promise<?MimeType>} Returns which mime type user choose to save.
+   *     Null for cancel document.
+   */
+  async getDocumentReviewResult() {}
+
+  /**
+   * Handles the result document.
+   * @param {!DocumentResult} result
+   * @param {string} name Name of the document result to be saved as.
+   * @return {!Promise}
+   * @abstract
+   */
+  handleResultDocument(result, name) {}
+}
+
+/**
+ * @implements {PhotoHandler}
+ */
+class DocumentPhotoHandler {
+  /**
+   * @param {!ScannerHandler} handler
+   */
+  constructor(handler) {
+    /**
+     * @const {!ScannerHandler}
+     */
+    this.handler_ = handler;
+  }
+
+  /**
+   * @override
+   */
+  async handleResultPhoto({blob: rawBlob, resolution}) {
+    const namer = new Filenamer();
+    const helper = await ChromeHelper.getInstance();
+    const corners = await helper.scanDocumentCorners(rawBlob);
+    const jpegBlob =
+        await helper.convertToDocument(rawBlob, corners, MimeType.JPEG);
+
+    await this.handler_.setReviewDocument(jpegBlob);
+    this.handler_.clearBlockingShutterEffect();
+    const mimeType = await this.handler_.getDocumentReviewResult();
+    if (mimeType === null) {
+      return;
+    }
+    const name = namer.newDocumentName(mimeType);
+    let blob = jpegBlob;
+    if (mimeType === MimeType.PDF) {
+      blob = await helper.convertToPdf(blob);
+    }
+    await this.handler_.handleResultDocument({blob, resolution}, name);
+  }
+
+  /**
+   * @override
+   */
+  playShutterEffect() {
+    this.handler_.playBlockingShutterEffect();
+  }
+}
 
 /**
  * Photo mode capture controller.
@@ -31,7 +120,7 @@ export class Scanner extends Photo {
    * @param {!ScannerHandler} handler
    */
   constructor(stream, facing, captureResolution, handler) {
-    super(stream, facing, captureResolution, /** @type {!PhotoHandler} */ ({}));
+    super(stream, facing, captureResolution, new DocumentPhotoHandler(handler));
 
     /**
      * @const {!ScannerHandler}

@@ -396,6 +396,8 @@
 #endif  // BUILDFLAG(DFMIFY_DEV_UI)
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
+#elif defined(OS_FUCHSIA)
+#include "chrome/browser/chrome_browser_main_parts_fuchsia.h"
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1260,6 +1262,9 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
 #elif defined(OS_POSIX)
   main_parts =
       std::make_unique<ChromeBrowserMainPartsPosix>(parameters, &startup_data_);
+#elif defined(OS_FUCHSIA)
+  main_parts = std::make_unique<ChromeBrowserMainPartsFuchsia>(parameters,
+                                                               &startup_data_);
 #else
   NOTREACHED();
   main_parts =
@@ -2364,7 +2369,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
     command_line->AppendSwitch(switches::kEnableThreadInstructionCount);
   }
-#endif
+
+  // Opt into a hardened stack canary mitigation if it hasn't already been
+  // force-disabled.
+  if (!browser_command_line.HasSwitch(switches::kChangeStackGuardOnFork)) {
+    command_line->AppendSwitchASCII(switches::kChangeStackGuardOnFork,
+                                    switches::kChangeStackGuardOnForkEnabled);
+  }
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 }
 
 std::string

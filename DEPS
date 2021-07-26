@@ -228,7 +228,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd5a9701116535cd126b7e55d2971a5421c6bd21c',
+  'skia_revision': '8933de7bd03b1d381f7f6cc858e4e0824f1c72b5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -347,7 +347,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'f004b6ec2afd877f758d74d00c609addc266d879',
+  'dawn_revision': '68c771a637d5987ba762f9880ab2c619441ebf47',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'XWs6FeALDGo5rMiwBz_ldNEzujIY_M-CdZ-u3OQnKUcC',
+          'version': 'BBsKAFypi3QvJqCKAH6Zu_klqAsnYopHnIdS4DtEGcoC',
       },
     ],
     'condition': 'checkout_android',
@@ -1701,7 +1701,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'wJOpqUY8p5ZHLNvyOIdhFXqVDhy6yIbrzIUl0nJ_808C',
+        'version': '8JqDf2_Jd92xAgPZFKxdjdxgNYznMWSbQLG0_eSkny8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

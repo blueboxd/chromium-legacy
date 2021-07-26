@@ -777,6 +777,8 @@ message ActionProto {
     DeleteSelectedPasswordProto delete_password = 83;
     EditSelectedPasswordProto edit_password = 84;
     BlurFieldProto blur_field = 85;
+    ResetPendingCredentialsProto reset_pending_credentials = 86;
+    SaveSubmittedPasswordProto save_submitted_password = 87;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -2518,6 +2520,15 @@ message EditSelectedPasswordProto {
   // The client memory key where the new password is stored.
   optional string memory_key = 1;
 }
+
+// Clears potentially submitted or pending forms in password manager. Used to
+// make password manager "forget" about any previously processed form that
+// is pending or submitted.
+message ResetPendingCredentialsProto {}
+
+// Saves the current submitted password to the password store. The action
+// fails if the password manager has no record of a submitted password.
+message SaveSubmittedPasswordProto {}
 
 // Configures the UI of the autofill assistant client.
 message ConfigureUiStateProto {

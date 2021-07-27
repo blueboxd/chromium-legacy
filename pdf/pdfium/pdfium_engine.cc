@@ -435,9 +435,7 @@ std::string GetXYZParamsString(FPDF_DEST dest, PDFiumPage* page) {
   }
 
   if (has_zoom) {
-    if (zoom == 0.0f)
-      NOTREACHED();
-
+    DCHECK_NE(zoom, 0);
     xyz_params += base::NumberToString(zoom);
   } else {
     xyz_params += "null";
@@ -988,7 +986,7 @@ std::vector<uint8_t> PDFiumEngine::PrintPages(
 std::vector<uint8_t> PDFiumEngine::PrintPagesAsRasterPdf(
     const std::vector<int>& page_numbers,
     const blink::WebPrintParams& print_params) {
-  DCHECK(HasPermission(PERMISSION_PRINT_LOW_QUALITY));
+  DCHECK(HasPermission(DocumentPermission::kPrintLowQuality));
 
   // If document is not downloaded yet, disable printing.
   if (doc() && !doc_loader_->IsDocumentComplete())
@@ -1004,7 +1002,7 @@ std::vector<uint8_t> PDFiumEngine::PrintPagesAsRasterPdf(
 std::vector<uint8_t> PDFiumEngine::PrintPagesAsPdf(
     const std::vector<int>& page_numbers,
     const blink::WebPrintParams& print_params) {
-  DCHECK(HasPermission(PERMISSION_PRINT_HIGH_QUALITY));
+  DCHECK(HasPermission(DocumentPermission::kPrintHighQuality));
   DCHECK(doc());
 
   KillFormFocus();
@@ -2160,7 +2158,7 @@ void PDFiumEngine::InvalidateAllPages() {
 }
 
 std::string PDFiumEngine::GetSelectedText() {
-  if (!HasPermission(PDFEngine::PERMISSION_COPY))
+  if (!HasPermission(DocumentPermission::kCopy))
     return std::string();
 
   std::u16string result;
@@ -2266,7 +2264,7 @@ void PDFiumEngine::HandleAccessibilityAction(
       }
       break;
     }
-    default:
+    case AccessibilityAction::kNone:
       NOTREACHED();
       break;
   }
@@ -2328,10 +2326,8 @@ std::vector<uint8_t> PDFiumEngine::GetAttachmentData(size_t index) {
   unsigned long data_size_bytes;
   bool is_attachment_readable = FPDFAttachment_GetFile(
       attachment, content_buf.data(), length_bytes, &data_size_bytes);
-  if (!is_attachment_readable || length_bytes != data_size_bytes) {
-    NOTREACHED();
-    return std::vector<uint8_t>();
-  }
+  DCHECK(is_attachment_readable);
+  DCHECK_EQ(length_bytes, data_size_bytes);
 
   return content_buf;
 }
@@ -4131,9 +4127,6 @@ bool PDFiumEngine::HandleTabEventWithModifiers(int modifiers) {
         return false;
       return !!FORM_OnKeyDown(form(), pages_[last_focused_page_]->GetPage(),
                               FWL_VKEY_Tab, modifiers);
-    default:
-      NOTREACHED();
-      return false;
   }
 }
 
@@ -4203,9 +4196,6 @@ bool PDFiumEngine::HandleTabBackward(int modifiers) {
         break;
       case FocusElementType::kDocument:
         UpdateFocusItemType(FocusElementType::kNone);
-        break;
-      default:
-        NOTREACHED();
         break;
     }
   }

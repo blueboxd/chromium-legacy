@@ -2031,10 +2031,9 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
 };
 
 const FeatureEntry::FeatureParam kWebFeed_accelerator[] = {
-    {"recommendation_style", "accelerator"}};
+    {"intro_style", "accelerator"}};
 
-const FeatureEntry::FeatureParam kWebFeed_IPH[] = {
-    {"recommendation_style", "IPH"}};
+const FeatureEntry::FeatureParam kWebFeed_IPH[] = {{"intro_style", "IPH"}};
 
 const FeatureEntry::FeatureVariation kWebFeedVariations[] = {
     {"accelerator recommendations", kWebFeed_accelerator,
@@ -7651,6 +7650,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShareUsageRankingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kShareUsageRanking)},
 #endif
+
+    {"enable-safe-browsing-per-profile-network-contexts",
+     flag_descriptions::kSafeBrowsingPerProfileNetworkContextsName,
+     flag_descriptions::kSafeBrowsingPerProfileNetworkContextsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingSeparateNetworkContexts)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

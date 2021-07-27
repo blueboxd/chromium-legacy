@@ -96,7 +96,7 @@ class OzonePlatformScenic : public OzonePlatform,
     BindInMainProcessIfNecessary();
 
     // Allow tests to create a view themselves.
-    if (!properties.view_token.value) {
+    if (!properties.view_token) {
       CHECK(properties.allow_null_view_token_for_test);
       ui::fuchsia::InitializeViewTokenAndPresentView(&properties);
     }

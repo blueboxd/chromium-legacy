@@ -592,7 +592,8 @@ static_library("test_support") {
       "//chrome/common/extensions/api",
       "//components/guest_view/browser:test_support",
       "//extensions:test_support",
-      "//google_apis/drive:test_support",
+      "//google_apis/common:test_support",
+      "//google_apis/drive",
     ]
 
     deps += [
@@ -1666,7 +1667,6 @@ if (!is_android) {
       "../browser/picture_in_picture/picture_in_picture_window_controller_browsertest.cc",
       "../browser/plugins/pdf_iframe_navigation_throttle_browsertest.cc",
       "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
-      "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
       "../browser/policy/cloud/device_management_service_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
       "../browser/policy/policy_network_browsertest.cc",
@@ -2256,6 +2256,7 @@ if (!is_android) {
         "//chromeos/components/media_app_ui",
         "//chromeos/components/media_app_ui:browser_test_support",
         "//chromeos/components/print_management",
+        "//chromeos/components/projector_app",
         "//chromeos/components/smbfs",
         "//chromeos/components/web_applications/test:test_support",
         "//chromeos/cryptohome",
@@ -2837,7 +2838,8 @@ if (!is_android) {
         "//components/media_router/browser:test_support",
         "//components/media_router/common:test_support",
         "//components/web_package:test_support",
-        "//google_apis/drive:test_support",
+        "//google_apis/common:test_support",
+        "//google_apis/drive",
 
         # TODO(rockot) bug 505926: The chrome_extensions_browsertests target
         # should be deleted and this line removed. See the
@@ -5865,6 +5867,10 @@ test("unit_tests") {
             [ "../browser/updater/browser_updater_client_mac_unittest.mm" ]
       }
     }
+    if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
+      sources +=
+          [ "../browser/ui/webui/settings/url_handlers_handler_unittest.cc" ]
+    }
 
     deps += [
       "//chrome:packed_resources_integrity_hash",
@@ -6216,7 +6222,7 @@ test("unit_tests") {
       "../browser/ui/ash/assistant/device_actions_unittest.cc",
       "../browser/ui/ash/assistant/search_and_assistant_enabled_checker_unittest.cc",
       "../browser/ui/ash/holding_space/holding_space_keyed_service_unittest.cc",
-      "../browser/ui/ash/ime_controller_client_unittest.cc",
+      "../browser/ui/ash/ime_controller_client_impl_unittest.cc",
       "../browser/ui/ash/in_session_auth_dialog_client_unittest.cc",
       "../browser/ui/ash/keyboard/chrome_keyboard_ui_unittest.cc",
       "../browser/ui/ash/keyboard/chrome_keyboard_web_contents_unittest.cc",
@@ -7781,7 +7787,10 @@ if (!is_android) {
       ]
 
       if (enable_extensions) {
-        deps += [ "//google_apis/drive:test_support" ]
+        deps += [
+          "//google_apis/common:test_support",
+          "//google_apis/drive",
+        ]
       }
     }
   }
@@ -8877,7 +8886,10 @@ if (!is_android) {
     ]
 
     if (enable_extensions) {
-      deps += [ "//google_apis/drive:test_support" ]
+      deps += [
+        "//google_apis/common:test_support",
+        "//google_apis/drive",
+      ]
     }
 
     if (use_ozone) {
@@ -9001,7 +9013,10 @@ if (!is_android) {
       ]
 
       if (enable_extensions) {
-        deps += [ "//google_apis/drive:test_support" ]
+        deps += [
+          "//google_apis/common:test_support",
+          "//google_apis/drive",
+        ]
       }
 
       if (use_ozone) {

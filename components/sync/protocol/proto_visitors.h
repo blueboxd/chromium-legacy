@@ -38,6 +38,7 @@
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sharing_message_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
 #include "components/sync/protocol/sync_invalidations_payload.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
@@ -263,6 +264,7 @@ VISIT_PROTO_FIELDS(const sync_pb::BookmarkSpecifics& proto) {
   VISIT(icon_url);
   VISIT_REP(meta_info);
   VISIT(full_title);
+  VISIT(parent_guid);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ChromiumExtensionsActivity& proto) {

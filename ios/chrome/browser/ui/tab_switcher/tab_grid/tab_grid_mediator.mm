@@ -14,7 +14,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/scoped_multi_source_observation.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#import "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/ios/web_favicon_driver.h"
+#import "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -35,7 +37,6 @@
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -470,21 +471,29 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   [self.delegate tabGridMediator:self shareURLs:URLs anchor:buttonAnchor];
 }
 
-- (NSArray<UIMenuElement*>*)addToButtonMenuElementsForGridViewController:
-    (GridViewController*)gridViewController {
+- (NSArray<UIMenuElement*>*)addToButtonMenuElementsForItems:
+    (NSArray<NSString*>*)items {
   ActionFactory* actionFactory =
       [[ActionFactory alloc] initWithScenario:MenuScenario::kTabGridAddTo];
-  __weak GridViewController* weakGrid = gridViewController;
+
   __weak TabGridMediator* weakSelf = self;
+
+  UIAction* bookmarkAction = [actionFactory actionToBookmarkWithBlock:^{
+    [weakSelf addItemsToBookmarks:items];
+  }];
+  // Bookmarking can be disabled from prefs (from an enterprise policy),
+  // if that's the case grey out the option in the menu.
+  BOOL isEditBookmarksEnabled =
+      self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
+          bookmarks::prefs::kEditBookmarksEnabled);
+  if (!isEditBookmarksEnabled)
+    bookmarkAction.attributes = UIMenuElementAttributesDisabled;
+
   return @[
     [actionFactory actionToAddToReadingListWithBlock:^{
-      [weakSelf
-          addItemsToReadingList:weakGrid.selectedShareableItemIDsForEditing];
+      [weakSelf addItemsToReadingList:items];
     }],
-    [actionFactory actionToBookmarkWithBlock:^{
-      [weakSelf
-          addItemsToBookmarks:weakGrid.selectedShareableItemIDsForEditing];
-    }]
+    bookmarkAction
   ];
 }
 

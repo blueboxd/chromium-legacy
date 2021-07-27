@@ -60,6 +60,7 @@
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
+#include "content/browser/font_access/font_access_manager_impl.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/idle/idle_manager_impl.h"
@@ -8803,6 +8804,12 @@ void RenderFrameHostImpl::GetFeatureObserver(
 
 void RenderFrameHostImpl::BindRenderAccessibilityHost(
     mojo::PendingReceiver<mojom::RenderAccessibilityHost> receiver) {
+  // There must be an accessibility token as
+  // RenderAccessibilityImpl::ScheduleSendPendingAccessibilityEvents will only
+  // attempt to send updates once it has created one, which happens as part of
+  // the commit which in turns updates the browser's token before this method
+  // could be called.
+  DCHECK(GetAXTreeID().token());
   render_accessibility_host_ = base::SequenceBound<RenderAccessibilityHost>(
       base::FeatureList::IsEnabled(
           features::kRenderAccessibilityHostDeserializationOffMainThread)
@@ -8985,7 +8992,7 @@ void RenderFrameHostImpl::GetHidService(
 }
 #endif
 
-IdleManager* RenderFrameHostImpl::GetIdleManager() {
+IdleManagerImpl* RenderFrameHostImpl::GetIdleManager() {
   return idle_manager_.get();
 }
 
@@ -8998,8 +9005,7 @@ void RenderFrameHostImpl::BindIdleManager(
     return;
   }
 
-  idle_manager_->CreateService(std::move(receiver),
-                               GetMainFrame()->GetLastCommittedOrigin());
+  idle_manager_->CreateService(std::move(receiver));
   OnSchedulerTrackedFeatureUsed(
       blink::scheduler::WebSchedulerTrackedFeature::kIdleManager);
 }
@@ -9195,8 +9201,7 @@ void RenderFrameHostImpl::GetFontAccessManager(
     mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver) {
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetFontAccessManager()
-      ->BindReceiver(FontAccessManagerImpl::BindingContext(
-                         GetLastCommittedOrigin(), GetGlobalId()),
+      ->BindReceiver(GetLastCommittedOrigin(), GetGlobalId(),
                      std::move(receiver));
 }
 
@@ -9894,7 +9899,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
         params->transition, params->should_replace_current_entry,
         params->gesture, redirects, params->url, is_same_document_navigation,
         same_document_params &&
-            same_document_params->is_history_api_navigation);
+            same_document_params->same_document_navigation_type ==
+                blink::mojom::SameDocumentNavigationType::kHistoryApi);
   }
 
   DCHECK(navigation_request);
@@ -11142,7 +11148,9 @@ void RenderFrameHostImpl::
 
   const bool is_same_document_navigation = !!same_document_params;
   const bool is_same_document_history_api_navigation =
-      same_document_params && same_document_params->is_history_api_navigation;
+      same_document_params &&
+      same_document_params->same_document_navigation_type ==
+          blink::mojom::SameDocumentNavigationType::kHistoryApi;
   DCHECK_EQ(is_same_document_navigation, request->IsSameDocument());
 
   const int64_t browser_post_id =

@@ -31,6 +31,10 @@ namespace content {
 class CONTENT_EXPORT FontEnumerationCache {
  public:
   FontEnumerationCache();
+
+  FontEnumerationCache(const FontEnumerationCache&) = delete;
+  FontEnumerationCache& operator=(const FontEnumerationCache&) = delete;
+
   ~FontEnumerationCache();
 
   using CacheTaskCallback =
@@ -44,10 +48,6 @@ class CONTENT_EXPORT FontEnumerationCache {
   void QueueShareMemoryRegionWhenReady(
       scoped_refptr<base::TaskRunner> task_runner,
       CacheTaskCallback callback);
-
-  // Returns whether the cache population has completed and the shared memory
-  // region is ready.
-  bool IsFontEnumerationCacheReady();
 
   // This will set an override for the system locale setting. Unfortunately,
   // only the Windows platform is supported at this time.
@@ -78,6 +78,10 @@ class CONTENT_EXPORT FontEnumerationCache {
   void StartCallbacksTaskQueue();
 
   bool IsFontEnumerationCacheValid() const;
+
+  // Returns whether the cache population has completed and the shared memory
+  // region is ready.
+  bool IsFontEnumerationCacheReady();
 
   // Build the cache given a properly formed enumeration cache table.
   void BuildEnumerationCache(

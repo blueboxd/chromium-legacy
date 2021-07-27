@@ -6,7 +6,7 @@
  *
  * Other contributors:
  *   Robert O'Callahan <roc+@cs.cmu.edu>
- *   David Baron <dbaron@fas.harvard.edu>
+ *   David Baron <dbaron@dbaron.org>
  *   Christian Biesinger <cbiesinger@web.de>
  *   Randall Jesup <rjesup@wgate.com>
  *   Roland Mainz <roland.mainz@informatik.med.uni-giessen.de>
@@ -197,7 +197,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_cull_rect_update_(false),
       forces_children_cull_rect_update_(false),
       descendant_needs_cull_rect_update_(false),
-      previous_paint_result_(kFullyPainted),
+      previous_paint_result_(kMayBeClippedByCullRect),
       needs_paint_phase_descendant_outlines_(false),
       needs_paint_phase_float_(false),
       has_non_isolated_descendant_with_blend_mode_(false),

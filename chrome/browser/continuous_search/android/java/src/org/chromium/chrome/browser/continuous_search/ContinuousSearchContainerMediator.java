@@ -37,6 +37,7 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
             new TokenHolder(this::onVisibilityTokenUpdate);
 
     private Runnable mOnFinishedHide;
+    private Runnable mOnFinishedShow;
     private boolean mInitialized;
     private boolean mIsVisible;
     private boolean mWantVisible;
@@ -103,11 +104,15 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
      * Displays the container. This will increase the top controls height with an animation that
      * is controlled by cc and displays the container.
      */
-    void show() {
+    void show(Runnable onFinishedShow) {
         mOnFinishedHide = null;
+        mOnFinishedShow = onFinishedShow;
         mWantVisible = true;
 
-        if (mIsVisible) return;
+        if (mIsVisible) {
+            runOnFinishedShow();
+            return;
+        }
 
         mInitializeLayout.run();
         mInitialized = true;
@@ -124,6 +129,7 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
      */
     void hide(Runnable onFinishedHide) {
         mOnFinishedHide = onFinishedHide;
+        mOnFinishedShow = null;
         mWantVisible = false;
 
         if (!mInitialized || !mIsVisible) {
@@ -175,8 +181,9 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
         // TODO(crbug/1217105): updateState() should be calculated relative to the content offset
         // rather than top offset to ensure this works properly regardless of whether this is
         // animated.
-        if (mModel.get(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY)
-                != View.VISIBLE) {
+        if (mModel == null
+                || mModel.get(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY)
+                        != View.VISIBLE) {
             // Avoid triggering on initial height change when making visible.
             return;
         }
@@ -222,6 +229,8 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
                                         : View.GONE);
         mModel.set(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY, androidViewState);
 
+        if (androidViewState == View.VISIBLE) runOnFinishedShow();
+
         final boolean doneHiding = !isUiVisible && !mIsVisible;
         if (doneHiding) {
             mHideToolbarShadow.onResult(false);
@@ -248,11 +257,19 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
         mModel.set(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY, androidViewState);
     }
 
+    // TODO(crbug.com/1232595): merge onFinishedShow and onFinishedHide logic.
     @VisibleForTesting
     void runOnFinishedHide() {
         if (mOnFinishedHide != null) {
             mOnFinishedHide.run();
             mOnFinishedHide = null;
+        }
+    }
+
+    void runOnFinishedShow() {
+        if (mOnFinishedShow != null) {
+            mOnFinishedShow.run();
+            mOnFinishedShow = null;
         }
     }
 

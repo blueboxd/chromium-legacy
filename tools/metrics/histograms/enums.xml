@@ -1146,13 +1146,17 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="kLostFocus"/>
   <int value="2" label="kClosed"/>
   <int value="3" label="kIgnorePressed"/>
-  <int value="4" label="kLearnMorePressed"/>
-  <int value="5" label="kDisabledByExperiment"/>
+  <int value="4" label="kOptOutPressed"/>
+  <int value="5" label="kLearnMorePressed"/>
+  <int value="6" label="kDisabledByExperiment"/>
 </enum>
 
 <enum name="AccuracyTipStatus">
   <int value="0" label="kNone"/>
   <int value="1" label="kShowAccuracyTip"/>
+  <int value="2" label="kEligibleForTipButUiDisabled"/>
+  <int value="3" label="kRateLimited"/>
+  <int value="4" label="kOptOut"/>
 </enum>
 
 <enum name="ActionAfterDoubleTap">
@@ -20241,6 +20245,11 @@ Called by update_debug_scenarios.py.-->
   <int value="15" label="Cache created (from empty files)"/>
 </enum>
 
+<enum name="DisplayCapturePolicyResult">
+  <int value="0" label="kDisallowed"/>
+  <int value="1" label="kAllowed"/>
+</enum>
+
 <enum name="DisplayLinkInstallationStatus">
   <int value="0" label="DisplayLink not installed"/>
   <int value="1" label="7.1 or earlier"/>
@@ -33960,6 +33969,7 @@ Called by update_use_counter_feature_enum.py.-->
       label="BlobStoreAccessAcrossAgentClustersInResolveAsURLLoaderFactory"/>
   <int value="3964"
       label="BlobStoreAccessAcrossAgentClustersInResolveForNavigation"/>
+  <int value="3965" label="TapDelayEnabled"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38527,6 +38537,19 @@ Called by update_permissions_policy_enum.py.-->
 </enum>
 
 <enum name="GetCurrentBrowsingContextMediaExplicitSelectionUserInteraction">
+  <obsolete>
+    Removed 07/2020
+  </obsolete>
+  <int value="0" label="kDialogDismissed"/>
+  <int value="1" label="kUserCancelled"/>
+  <int value="2" label="kUserSelectedScreen"/>
+  <int value="3" label="kUserSelectedWindow"/>
+  <int value="4" label="kUserSelectedOtherTab"/>
+  <int value="5" label="kUserSelectedThisTabAsGenericTab"/>
+  <int value="6" label="kUserSelectedThisTab"/>
+</enum>
+
+<enum name="GetDisplayMediaPreferCurrentTabExplicitSelectionUserInteraction">
   <int value="0" label="kDialogDismissed"/>
   <int value="1" label="kUserCancelled"/>
   <int value="2" label="kUserSelectedScreen"/>
@@ -42959,6 +42982,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Invalid icon_url"/>
   <int value="4" label="Non-unique meta_info keys"/>
   <int value="5" label="Invalid GUID"/>
+  <int value="6" label="Invalid parent GUID"/>
 </enum>
 
 <enum name="InvalidDevicePolicyFilesStatus">
@@ -47048,6 +47072,8 @@ from previous Chrome versions.
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
   <int value="-1596489715" label="AutoScreenBrightness:enabled"/>
   <int value="-1594298767" label="FullscreenToolbarReveal:enabled"/>
+  <int value="-1591974904"
+      label="SafeBrowsingSeparateNetworkContexts:disabled"/>
   <int value="-1591450227" label="enable-microphone-mute-switch-device"/>
   <int value="-1589720671"
       label="DebugHistoryInterventionNoUserActivation:disabled"/>
@@ -49106,6 +49132,7 @@ from previous Chrome versions.
   <int value="61205887" label="enable-text-input-focus-manager"/>
   <int value="61466986" label="AsyncDns:disabled"/>
   <int value="63187126" label="DownloadsAutoResumptionNative:enabled"/>
+  <int value="64016368" label="SafeBrowsingSeparateNetworkContexts:enabled"/>
   <int value="64942701" label="OfflinePagesSvelteConcurrentLoading:disabled"/>
   <int value="65245449" label="FilesBannerFramework:enabled"/>
   <int value="66897259" label="ModalPermissionDialogView:enabled"/>
@@ -65568,6 +65595,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="LoadMetadataError">
     Failed to load meta data from JSON.
   </int>
+  <int value="4" label="LoadModelError">Failed to load tflite model.</int>
+  <int value="5" label="CreateGraphExecutorError">
+    Failed to create graph executor.
+  </int>
 </enum>
 
 <enum name="PowerMLSmartDimComponentVersionType">
@@ -71300,7 +71331,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="CanvasCaptureStream"/>
   <int value="7" label="VideoCaptureStream"/>
   <int value="8" label="GetDisplayMedia"/>
-  <int value="9" label="GetCurrentBrowsingContextMedia"/>
+  <int value="9" label="OBSOLETE_GetCurrentBrowsingContextMedia"/>
 </enum>
 
 <enum name="RTCQuicStreamReadIntoResult">
@@ -81973,12 +82004,29 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UmaCleanExitConsistency">
+  <obsolete>
+    Deprecated 07/2021 in favor of UmaCleanExitConsistency2. Version 2 re-orders
+    and adds new buckets to support measuring the frequency with which the Local
+    State data is missing.
+  </obsolete>
   <int value="0" label="Dirty/Dirty (Registry/Local State)"/>
   <int value="1" label="Dirty/Clean (Registry/Local State)"/>
   <int value="2" label="Clean/Dirty (Registry/Local State)"/>
   <int value="3" label="Clean/Clean (Registry/Local State)"/>
   <int value="4" label="Missing/Dirty (Registry/Local State)"/>
   <int value="5" label="Missing/Clean (Registry/Local State)"/>
+</enum>
+
+<enum name="UmaCleanExitConsistency2">
+  <int value="0" label="Clean/Clean (Backup/Local State)"/>
+  <int value="1" label="Clean/Dirty (Backup/Local State)"/>
+  <int value="2" label="Clean/Missing (Backup/Local State)"/>
+  <int value="3" label="Dirty/Clean (Backup/Local State)"/>
+  <int value="4" label="Dirty/Dirty (Backup/Local State)"/>
+  <int value="5" label="Dirty/Missing (Backup/Local State)"/>
+  <int value="6" label="Missing/Clean (Backup/Local State)"/>
+  <int value="7" label="Missing/Dirty (Backup/Local State)"/>
+  <int value="8" label="Missing/Missing (Backup/Local State)"/>
 </enum>
 
 <enum name="UmaEntropySourceType">
@@ -89455,6 +89503,9 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="XFrameOptions">
+  <obsolete>
+    Removed from the code in July 2021.
+  </obsolete>
   <int value="0" label="NONE">
     A frame is loaded without any X-Frame-Options header.
   </int>

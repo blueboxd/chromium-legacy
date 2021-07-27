@@ -109,6 +109,8 @@ static_library("ui") {
     "login/login_navigation_throttle.h",
     "login/login_tab_helper.cc",
     "login/login_tab_helper.h",
+    "managed_ui.cc",
+    "managed_ui.h",
     "page_info/chrome_page_info_client.cc",
     "page_info/chrome_page_info_client.h",
     "page_info/chrome_page_info_delegate.cc",
@@ -1064,8 +1066,6 @@ static_library("ui") {
       "layout_constants.cc",
       "layout_constants.h",
       "location_bar/location_bar.h",
-      "managed_ui.cc",
-      "managed_ui.h",
       "media_router/cast_dialog_controller.h",
       "media_router/cast_dialog_model.cc",
       "media_router/cast_dialog_model.h",
@@ -1683,6 +1683,7 @@ static_library("ui") {
     if (enable_extensions) {
       deps += [
         "//chrome/browser/web_applications/extensions",
+        "//google_apis/common",
         "//google_apis/drive",
       ]
     }
@@ -2009,8 +2010,8 @@ static_library("ui") {
       "ash/holding_space/holding_space_util.h",
       "ash/image_downloader_impl.cc",
       "ash/image_downloader_impl.h",
-      "ash/ime_controller_client.cc",
-      "ash/ime_controller_client.h",
+      "ash/ime_controller_client_impl.cc",
+      "ash/ime_controller_client_impl.h",
       "ash/in_session_auth_dialog_client.cc",
       "ash/in_session_auth_dialog_client.h",
       "ash/keyboard/chrome_keyboard_bounds_observer.cc",
@@ -2504,8 +2505,6 @@ static_library("ui") {
       "webui/chromeos/onc_import_message_handler.h",
       "webui/chromeos/power_ui.cc",
       "webui/chromeos/power_ui.h",
-      "webui/chromeos/projector/projector_ui.cc",
-      "webui/chromeos/projector/projector_ui.h",
       "webui/chromeos/projector/selfie_cam_bubble_manager.cc",
       "webui/chromeos/projector/selfie_cam_bubble_manager.h",
       "webui/chromeos/set_time_ui.cc",
@@ -2867,6 +2866,7 @@ static_library("ui") {
       "//extensions/browser/api/messaging",
       "//extensions/browser/api/virtual_keyboard_private",
       "//extensions/browser/api/vpn_provider",
+      "//google_apis/common",
       "//google_apis/drive",
       "//media/capture:capture_lib",
       "//mojo/public/js:resources_grit",
@@ -3579,6 +3579,8 @@ static_library("ui") {
     sources += [
       "startup/web_app_url_handling_startup_utils.cc",
       "startup/web_app_url_handling_startup_utils.h",
+      "webui/settings/url_handlers_handler.cc",
+      "webui/settings/url_handlers_handler.h",
     ]
   }
 
@@ -4538,7 +4540,6 @@ static_library("ui") {
 
     deps += [
       "//base",
-      "//base/util/timer",
       "//chrome/browser/ui/views",
       "//components/constrained_window",
       "//components/content_settings/browser/ui",

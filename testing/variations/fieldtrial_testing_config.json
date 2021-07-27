@@ -2352,6 +2352,26 @@
             ]
         }
     ],
+    "ContinuousSearchNavigation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "singleRow_TriggerAlways_20210726",
+                    "params": {
+                        "permanent_dismissal_threshold": "3",
+                        "show_result_title": "false",
+                        "trigger_mode": "0"
+                    },
+                    "enable_features": [
+                        "ContinuousSearch"
+                    ]
+                }
+            ]
+        }
+    ],
     "CopyLinkToTextDesktop": [
         {
             "platforms": [
@@ -3408,21 +3428,6 @@
             ]
         }
     ],
-    "EnableExtendedSyncPromosCability": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MinorModeSupport"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableManualPasswordGenerationIOS": [
         {
             "platforms": [
@@ -4342,6 +4347,21 @@
             ]
         }
     ],
+    "IOSUseUserDefaultsForExitedCleanlyBeacon": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "UseUserDefaultsForExitedCleanlyBeaconEnabler"
+                    ]
+                }
+            ]
+        }
+    ],
     "IdentifiabilityStudy": [
         {
             "platforms": [
@@ -5136,6 +5156,22 @@
                     },
                     "enable_features": [
                         "MobileIdentityConsistencyVar"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MobileMinorModeSupport": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MinorModeSupport"
                     ]
                 }
             ]
@@ -6079,7 +6115,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20200820",
+                    "name": "Enabled_20210726",
+                    "params": {
+                        "compress_bitmaps": "true"
+                    },
                     "enable_features": [
                         "PaintPreviewShowOnStartup"
                     ]
@@ -7371,6 +7410,27 @@
             ]
         }
     ],
+    "SafeBrowsingVisualFeaturesSizes": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210719",
+                    "params": {
+                        "min_height": "258",
+                        "min_width": "258",
+                        "phash_height": "192",
+                        "phash_width": "108"
+                    },
+                    "enable_features": [
+                        "VisualFeaturesSizes"
+                    ]
+                }
+            ]
+        }
+    ],
     "ScrollResamplingRollout": [
         {
             "platforms": [
@@ -7385,6 +7445,28 @@
                     },
                     "enable_features": [
                         "ResamplingScrollEvents"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SearchHistoryLink": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SearchHistoryLink",
+                        "SearchHistoryLinkIOS"
                     ]
                 }
             ]
@@ -7643,24 +7725,6 @@
                     "enable_features": [
                         "SiteIsolationForCrossOriginOpenerPolicy",
                         "SiteIsolationForOAuthSites"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SmartDimAutoMLModel": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "smart_dim_experimental_version": "20210201.1"
-                    },
-                    "enable_features": [
-                        "SmartDimExperimentalComponent"
                     ]
                 }
             ]

@@ -630,9 +630,9 @@ int32_t OutOfProcessInstance::PdfPrintBegin(
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {
-  if (engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))
+  if (engine()->HasPermission(DocumentPermission::kPrintHighQuality))
     return PP_PRINTOUTPUTFORMAT_PDF | PP_PRINTOUTPUTFORMAT_RASTER;
-  if (engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
+  if (engine()->HasPermission(DocumentPermission::kPrintLowQuality))
     return PP_PRINTOUTPUTFORMAT_RASTER;
   return 0;
 }
@@ -729,10 +729,6 @@ void OutOfProcessInstance::UpdateCursor(ui::mojom::CursorType new_cursor_type) {
       reinterpret_cast<const PPB_CursorControl_Dev*>(
           pp::Module::Get()->GetBrowserInterface(
               PPB_CURSOR_CONTROL_DEV_INTERFACE));
-  if (!cursor_interface) {
-    NOTREACHED();
-    return;
-  }
 
   cursor_interface->SetCursor(pp_instance(),
                               PPCursorTypeFromCursorType(cursor_type()),

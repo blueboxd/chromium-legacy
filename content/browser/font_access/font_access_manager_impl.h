@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FONT_ACCESS_FONT_ACCESS_MANAGER_IMPL_H_
 
 #include "base/sequence_checker.h"
+#include "base/thread_annotations.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/font_access_chooser.h"
 #include "content/public/browser/font_access_context.h"
@@ -44,25 +45,18 @@ class CONTENT_EXPORT FontAccessManagerImpl
       public FontAccessContext {
  public:
   FontAccessManagerImpl();
+
+  FontAccessManagerImpl(const FontAccessManagerImpl&) = delete;
+  FontAccessManagerImpl& operator=(const FontAccessManagerImpl&) = delete;
+
   ~FontAccessManagerImpl() override;
 
-  // Disallow copy and assign.
-  FontAccessManagerImpl(const FontAccessManagerImpl&) = delete;
-  FontAccessManagerImpl operator=(const FontAccessManagerImpl&) = delete;
-
-  struct BindingContext {
-    BindingContext(const url::Origin& origin, GlobalRenderFrameHostId frame_id)
-        : origin(origin), frame_id(frame_id) {}
-
-    url::Origin origin;
-    GlobalRenderFrameHostId frame_id;
-  };
-
   void BindReceiver(
-      const BindingContext& context,
+      url::Origin origin,
+      GlobalRenderFrameHostId frame_id,
       mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver);
 
-  // blink.mojom.FontAccessManager:
+  // blink::mojom::FontAccessManager:
   void EnumerateLocalFonts(EnumerateLocalFontsCallback callback) override;
   void ChooseLocalFonts(const std::vector<std::string>& selection,
                         ChooseLocalFontsCallback callback) override;
@@ -71,32 +65,41 @@ class CONTENT_EXPORT FontAccessManagerImpl
   void FindAllFonts(FindAllFontsCallback callback) override;
 
   void SkipPrivacyChecksForTesting(bool skip) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     skip_privacy_checks_for_testing_ = skip;
   }
 
  private:
+  struct BindingContext {
+    url::Origin origin;
+    GlobalRenderFrameHostId frame_id;
+  };
+
   void DidRequestPermission(EnumerateLocalFontsCallback callback,
                             blink::mojom::PermissionStatus status);
   void DidFindAllFonts(FindAllFontsCallback callback,
                        blink::mojom::FontEnumerationStatus,
                        base::ReadOnlySharedMemoryRegion);
-  void DidChooseLocalFonts(ChooseLocalFontsCallback callback,
+  void DidChooseLocalFonts(GlobalRenderFrameHostId frame_id,
+                           ChooseLocalFontsCallback callback,
                            blink::mojom::FontEnumerationStatus status,
                            std::vector<blink::mojom::FontMetadataPtr> fonts);
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   // Registered clients.
-  mojo::ReceiverSet<blink::mojom::FontAccessManager, BindingContext> receivers_;
+  mojo::ReceiverSet<blink::mojom::FontAccessManager, BindingContext> receivers_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
-  scoped_refptr<base::SequencedTaskRunner> ipc_task_runner_;
-  scoped_refptr<base::TaskRunner> results_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> ipc_task_runner_;
+  const scoped_refptr<base::TaskRunner> results_task_runner_;
 
-  bool skip_privacy_checks_for_testing_ = false;
+  bool skip_privacy_checks_for_testing_ GUARDED_BY_CONTEXT(sequence_checker_) =
+      false;
 
   // Here to keep the choosers alive for the user to interact with.
   std::map<GlobalRenderFrameHostId, std::unique_ptr<FontAccessChooser>>
-      choosers_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
+      choosers_ GUARDED_BY_CONTEXT(sequence_checker_);
 };
 
 }  // namespace content

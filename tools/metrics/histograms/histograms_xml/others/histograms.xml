@@ -9342,7 +9342,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Linux.WindowManager" enum="LinuxWindowManagerName"
-    expires_after="2021-08-01">
+    expires_after="never">
+<!-- expires-never: Needed to measure Linux ecosystem. -->
+
   <owner>pkotwicz@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>
@@ -9558,6 +9560,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Original Blink priority of the request that belongs to the main frame.
     Recorded for every request fetched via Blink, but only when the experiment
     to lower the priority of iframes is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Mac.UniversalLink.APIDuration" units="ms"
+    expires_after="2022-07-01">
+  <owner>avi@chromium.org</owner>
+  <owner>mark@chromium.org</owner>
+  <summary>
+    Native macOS apps can claim regions of the URL space for themselves, and so
+    on every navigation, Chromium calls the SFUniversalLink API to determine if
+    the URL being navigated to requires special handling. The SFUniversalLink
+    API is usually instantaneous, but for some machines it's very slow. This
+    metric logs the amount of time that it the SFUniversalLink API took to run,
+    if over 100ms. This metric is logged once per run of Chrome, because if that
+    API call ever takes longer than 100ms, it is disabled and never used again
+    in that run of Chrome.
   </summary>
 </histogram>
 
@@ -10478,7 +10496,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Mouse.ScrollAcceleration" enum="BooleanEnabled"
-    expires_after="2021-08-09">
+    expires_after="2022-06-15">
 <!-- Name completed by histogram_suffixes name="PreferenceChangeType" -->
 
   <owner>khorimoto@chromium.org</owner>

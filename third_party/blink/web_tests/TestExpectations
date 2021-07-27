@@ -4582,9 +4582,6 @@ crbug.com/827231 [ Win ] external/wpt/cookie-store/change_eventhandler_for_docum
 crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.https.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.https.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.https.html [ Failure ]
-crbug.com/961745 virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank-reload.https.html?legacy-samesite [ Failure ]
-crbug.com/961745 virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank-reload.https.html?legacy-samesite [ Failure ]
-crbug.com/961745 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open-reload.https.html?legacy-samesite [ Failure ]
 
 # When SameSiteByDefaultCookies is enabled (which is the case by default since
 # it's one of the experimental-web-platform-features, the Lax-allow-unsafe
@@ -4592,11 +4589,6 @@ crbug.com/961745 virtual/legacy-samesite/external/wpt/cookies/samesite/window-op
 crbug.com/990439 external/wpt/cookies/samesite/form-post-blank.https.html [ Failure ]
 crbug.com/990439 http/tests/cookies/same-site/popup-cross-site-post.https.html [ Failure ]
 
-# Temporarily disable some tests that produce non-deterministic outputs.
-crbug.com/1074441 external/wpt/cookies/samesite/iframe-reload.https.html [ Skip ]
-crbug.com/1074441 external/wpt/cookies/samesite/iframe.https.html [ Skip ]
-crbug.com/1074441 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe-reload.https.html?legacy-samesite [ Skip ]
-crbug.com/1074441 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe.https.html?legacy-samesite [ Skip ]
 # Flaky Windows-only content_shell crash
 crbug.com/1162205 [ Win ] virtual/schemeful-same-site/external/wpt/cookies/attributes/path-redirect.html [ Crash Pass ]
 crbug.com/1162205 [ Win ] external/wpt/cookies/attributes/path-redirect.html [ Crash Pass ]
@@ -5000,6 +4992,12 @@ crbug.com/1207342 http/tests/inspector-protocol/cpu-profiler/record-cpu-profile-
 crbug.com/1207342 http/tests/inspector-protocol/page/frameScheduledNavigation.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/persistence/persistence-external-change-breakpoints.js [ Failure Pass ]
 crbug.com/1207342 crbug.com/1135652 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Failure Pass Timeout ]
+crbug.com/1207342 http/tests/devtools/elements/event-listener-sidebar-custom-framework.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/elements/styles-2/pseudo-elements.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Failure Pass Timeout ]
+crbug.com/1207342 http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Failure Pass Timeout ]
+crbug.com/1207342 http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Failure Pass ]
 
 # Sheriff 2018-04-13
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
@@ -7176,8 +7174,6 @@ crbug.com/1215068 http/tests/devtools/tracing/tracing-timeline-load.js [ Skip ]
 crbug.com/1227092 [ Win ] virtual/scroll-unification/fast/events/selection-autoscroll-borderbelt.html [ Failure Pass ]
 
 # Sheriff 2021-07-12
-crbug.com/1228149 http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Timeout ]
-crbug.com/1228149 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Pass Timeout ]
 crbug.com/626703 [ Debug Mac10.15 ] external/wpt/css/CSS2/backgrounds/background-position-201.xht [ Failure Pass ]
 crbug.com/1228432 [ Linux ] external/wpt/video-rvfc/request-video-frame-callback-before-xr-session.https.html [ Pass Timeout ]
 

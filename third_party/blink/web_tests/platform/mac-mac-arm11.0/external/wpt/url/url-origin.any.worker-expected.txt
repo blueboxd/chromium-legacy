@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 309 tests; 302 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 324 tests; 316 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Origin parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -37,6 +37,8 @@ PASS Origin parsing: <?> against <http://example.org/foo/bar>
 PASS Origin parsing: </> against <http://example.org/foo/bar>
 PASS Origin parsing: <:23> against <http://example.org/foo/bar>
 PASS Origin parsing: </:23> against <http://example.org/foo/bar>
+PASS Origin parsing: <\x> against <http://example.org/foo/bar>
+PASS Origin parsing: <\\x\hello> against <http://example.org/foo/bar>
 PASS Origin parsing: <::> against <http://example.org/foo/bar>
 PASS Origin parsing: <::23> against <http://example.org/foo/bar>
 PASS Origin parsing: <foo://> against <http://example.org/foo/bar>
@@ -263,8 +265,8 @@ PASS Origin parsing: <wow:%NBD> against <about:blank>
 PASS Origin parsing: <wow:%1G> against <about:blank>
 PASS Origin parsing: <wow:￿> against <about:blank>
 FAIL Origin parsing: <http://example.com/U+d800𐟾U+dfff﷐﷏﷯ﷰ￾￿?U+d800𐟾U+dfff﷐﷏﷯ﷰ￾￿> against <about:blank> Failed to construct 'URL': Invalid URL
-FAIL Origin parsing: <http://!"$&'()*+,-.;=_`{|}~/> against <about:blank> Failed to construct 'URL': Invalid URL
-PASS Origin parsing: <sc://!"$&'()*+,-.;=_`{|}~/> against <about:blank>
+FAIL Origin parsing: <http://!"$&'()*+,-.;=_`{}~/> against <about:blank> Failed to construct 'URL': Invalid URL
+PASS Origin parsing: <sc://!"$&'()*+,-.;=_`{}~/> against <about:blank>
 PASS Origin parsing: <ftp://%e2%98%83> against <about:blank>
 PASS Origin parsing: <https://%e2%98%83> against <about:blank>
 PASS Origin parsing: <http://127.0.0.1:10100/relative_import.html> against <about:blank>
@@ -297,6 +299,7 @@ PASS Origin parsing: <http://4294967295> against <http://other.com/>
 PASS Origin parsing: <http://0xffffffff> against <http://other.com/>
 PASS Origin parsing: <http://256.256.256.256.256> against <http://other.com/>
 PASS Origin parsing: <https://0x.0x.0> against <about:blank>
+PASS Origin parsing: <asdf://%43%7C/> against <about:blank>
 PASS Origin parsing: <http://[1:0::]> against <http://example.net/>
 PASS Origin parsing: <sc://ñ> against <about:blank>
 PASS Origin parsing: <sc://ñ?x> against <about:blank>
@@ -318,5 +321,17 @@ PASS Origin parsing: <tag:joe@example.org,2001:foo/bar> against <about:blank>
 PASS Origin parsing: <non-special:cannot-be-a-base-url-\0~> against <about:blank>
 PASS Origin parsing: <https://www.example.com/path{path.html?query'=query#fragment<fragment> against <about:blank>
 PASS Origin parsing: <https://user:pass[@foo/bar> against <http://example.org>
+PASS Origin parsing: <foo:// !"$%&'()*+,-.;<=>@[\]^_`{|}~@host/> against <about:blank>
+PASS Origin parsing: <wss:// !"$%&'()*+,-.;<=>@[]^_`{|}~@host/> against <about:blank>
+PASS Origin parsing: <foo://joe: !"$%&'()*+,-.:;<=>@[\]^_`{|}~@host/> against <about:blank>
+PASS Origin parsing: <wss://joe: !"$%&'()*+,-.:;<=>@[]^_`{|}~@host/> against <about:blank>
+PASS Origin parsing: <foo://!"$%&'()*+,-.;=_`{}~/> against <about:blank>
+FAIL Origin parsing: <wss://!"$&'()*+,-.;=_`{}~/> against <about:blank> Failed to construct 'URL': Invalid URL
+PASS Origin parsing: <foo://host/ !"$%&'()*+,-./:;<=>@[\]^_`{|}~> against <about:blank>
+PASS Origin parsing: <wss://host/ !"$%&'()*+,-./:;<=>@[\]^_`{|}~> against <about:blank>
+PASS Origin parsing: <foo://host/dir/? !"$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank>
+PASS Origin parsing: <wss://host/dir/? !"$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank>
+PASS Origin parsing: <foo://host/dir/# !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank>
+PASS Origin parsing: <wss://host/dir/# !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~> against <about:blank>
 Harness: the test ran to completion.
 

@@ -1789,7 +1789,7 @@
   {
     "name": "enable-desktop-pwas-remove-status-bar",
     "owners": [ "dmurph@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 91
+    "expiry_milestone": 97
   },
   {
     "name": "enable-desktop-pwas-run-on-os-login",
@@ -2506,6 +2506,11 @@
   {
     "name": "enable-restricted-web-apis",
     "owners": [ "anqing", "apotapchuk" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "enable-safe-browsing-per-profile-network-contexts",
+    "owners": [ "drubery" ],
     "expiry_milestone": 95
   },
   {

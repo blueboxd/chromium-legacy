@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_provider.h"
 #include "chrome/browser/ui/ash/crosapi_new_window_delegate.h"
 #include "chrome/browser/ui/ash/desks_client.h"
-#include "chrome/browser/ui/ash/ime_controller_client.h"
+#include "chrome/browser/ui/ash/ime_controller_client_impl.h"
 #include "chrome/browser/ui/ash/in_session_auth_dialog_client.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
@@ -163,7 +163,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
             std::move(crosapi_new_window_delegate));
   }
 
-  ime_controller_client_ = std::make_unique<ImeControllerClient>(
+  ime_controller_client_ = std::make_unique<ImeControllerClientImpl>(
       chromeos::input_method::InputMethodManager::Get());
   ime_controller_client_->Init();
 
@@ -216,6 +216,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chromeos::features::IsProjectorEnabled()) {
     projector_client_ = std::make_unique<ProjectorClientImpl>();
   }
+
+  desks_client_ = std::make_unique<DesksClient>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
@@ -256,8 +258,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
-
-  desks_client_ = std::make_unique<DesksClient>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -274,6 +274,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   night_light_client_.reset();
   mobile_data_notifications_.reset();
   chrome_shelf_controller_initializer_.reset();
+  desks_client_.reset();
 
   wallpaper_controller_client_.reset();
   vpn_list_forwarder_.reset();

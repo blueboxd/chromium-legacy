@@ -814,6 +814,9 @@ extern const char kGpuRasterizationDescription[];
 extern const char kHandwritingGestureEditingName[];
 extern const char kHandwritingGestureEditingDescription[];
 
+extern const char kHandwritingLegacyRecognitionName[];
+extern const char kHandwritingLegacyRecognitionDescription[];
+
 extern const char kHardwareMediaKeyHandling[];
 extern const char kHardwareMediaKeyHandlingDescription[];
 
@@ -3192,8 +3195,6 @@ extern const char kPaintPreviewStartupDescription[];
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];
 extern const char kWebUITabStripDescription[];
-extern const char kWebUITabStripNTBInTabStripName[];
-extern const char kWebUITabStripNTBInTabStripDescription[];
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3233,6 +3234,11 @@ extern const char kAuraWindowSubtreeCaptureDescription[];
 extern const char kWebrtcPipeWireCapturerName[];
 extern const char kWebrtcPipeWireCapturerDescription[];
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+extern const char kWebKioskEnableLacrosName[];
+extern const char kWebKioskEnableLacrosDescription[];
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

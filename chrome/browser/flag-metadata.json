@@ -2117,6 +2117,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "enable-lacros-in-web-kiosk",
+    "owners": ["anqing", "apotapchuk"],
+    "expiry_milestone": 100
+  },
+  {
     "name": "enable-launcher-app-paging",
     "owners": [ "//ash/app_list/OWNERS" ],
     "expiry_milestone": 95
@@ -3327,6 +3332,11 @@
     "name": "handwriting-gesture-editing",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "handwriting-legacy-recognition",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "happiness-tracking-surveys-for-desktop-demo",

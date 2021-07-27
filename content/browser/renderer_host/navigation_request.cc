@@ -912,7 +912,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
             .GetEntry(entry->GetUniqueID());
     if (restored_entry) {
       rfh_restored_from_back_forward_cache =
-          restored_entry->render_frame_host.get();
+          restored_entry->render_frame_host();
     }
   }
 
@@ -1567,7 +1567,7 @@ NavigationRequest::~NavigationRequest() {
         return;
 
       RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
-          bfcache_entry->render_frame_host->GetGlobalId());
+          bfcache_entry->render_frame_host()->GetGlobalId());
       // RFH could have been deleted. E.g. eviction timer fired
       if (rfh && rfh->IsInBackForwardCache()) {
         // rfh is still in the cache so the navigation must have failed. But we
@@ -3023,7 +3023,7 @@ void NavigationRequest::OnResponseStarted(
     NavigationControllerImpl* controller = GetNavigationController();
     render_frame_host_ = controller->GetBackForwardCache()
                              .GetEntry(nav_entry_id_)
-                             ->render_frame_host.get();
+                             ->render_frame_host();
     // The only time GetEntry can return nullptr here, is if the document was
     // evicted from the BackForwardCache since this navigation started.
     //
@@ -3666,12 +3666,8 @@ void NavigationRequest::OnStartChecksComplete(
   if (IsServedFromBackForwardCache()) {
     loader_type = NavigationURLLoader::LoaderType::kNoopForBackForwardCache;
     DCHECK(rfh_restored_from_back_forward_cache_);
-    const network::mojom::URLResponseHeadPtr& last_response_head =
-        rfh_restored_from_back_forward_cache_->last_response_head();
-    // `last_response_head` may be nullptr if the page wasn't served from
-    // http(s).
-    if (last_response_head)
-      cached_response_head = last_response_head->Clone();
+    cached_response_head =
+        rfh_restored_from_back_forward_cache_->last_response_head()->Clone();
   } else if (IsPrerenderedPageActivation()) {
     loader_type = NavigationURLLoader::LoaderType::kNoopForPrerender;
     DCHECK(prerender_frame_tree_node_id_.has_value());
@@ -3681,15 +3677,13 @@ void NavigationRequest::OnStartChecksComplete(
             ->last_response_head();
     // TODO(https://crbug.com/1216997): Support the case the initial navigation
     // haven't received the response head at this point.
-    if (last_response_head)
+    if (last_response_head) {
       cached_response_head = last_response_head->Clone();
-  }
-  if ((loader_type ==
-           NavigationURLLoader::LoaderType::kNoopForBackForwardCache ||
-       loader_type == NavigationURLLoader::LoaderType::kNoopForPrerender) &&
-      !cached_response_head) {
-    cached_response_head = network::mojom::URLResponseHead::New();
-    cached_response_head->parsed_headers = network::mojom::ParsedHeaders::New();
+    } else {
+      cached_response_head = network::mojom::URLResponseHead::New();
+      cached_response_head->parsed_headers =
+          network::mojom::ParsedHeaders::New();
+    }
   }
 
   loader_ = NavigationURLLoader::Create(
@@ -4270,9 +4264,9 @@ void NavigationRequest::CommitPageActivation() {
   DCHECK_NE(IsServedFromBackForwardCache(), IsPrerenderedPageActivation());
 
   NavigationControllerImpl* controller = GetNavigationController();
-  std::unique_ptr<BackForwardCacheImpl::Entry> activated_entry;
 
   if (IsServedFromBackForwardCache()) {
+    std::unique_ptr<BackForwardCacheImpl::Entry> activated_entry;
     // Navigations served from the back-forward cache must be a history
     // navigation, and thus should have a valid |pending_history_list_offset|
     // value. We will pass that value and the |current_history_list_length|
@@ -4286,7 +4280,6 @@ void NavigationRequest::CommitPageActivation() {
         commit_params_->pending_history_list_offset;
     page_restore_params->current_history_list_length =
         commit_params_->current_history_list_length;
-
     activated_entry = controller->GetBackForwardCache().RestoreEntry(
         nav_entry_id_, std::move(page_restore_params));
     // The only time activated_entry can be nullptr here, is if the
@@ -4298,20 +4291,38 @@ void NavigationRequest::CommitPageActivation() {
     DCHECK(activated_entry || restarting_back_forward_cached_navigation_);
     if (!activated_entry)
       return;
+
+    base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
+    ReadyToCommitNavigation(false /* is_error */);
+    // The call above might block on showing a user dialog. The interaction of
+    // the user with this dialog might result in the WebContents owning this
+    // NavigationRequest to be destroyed. Return if this is the case.
+    if (!weak_self)
+      return;
+
+    // Move the BackForwardCacheImpl::Entry into RenderFrameHostManager, in
+    // preparation for committing. This entry may be either restored from the
+    // backforward cache.
+    DCHECK(activated_entry);
+    frame_tree_node_->render_manager()->RestorePage(
+        activated_entry->TakeStoredPage());
   } else {
-    activated_entry = GetPrerenderHostRegistry().ActivateReservedHost(
-        prerender_frame_tree_node_id_.value(), *this);
+    std::unique_ptr<StoredPage> stored_page =
+        GetPrerenderHostRegistry().ActivateReservedHost(
+            prerender_frame_tree_node_id_.value(), *this);
 
     // TODO(https://crbug.com/1181712): Determine the best way to handle
     // navigation when prerendering is cancelled during activation. This
     // includes the case where a navigation can be restarted.
-    if (!activated_entry) {
+    if (!stored_page) {
       // TODO(https://crbug.com/1126305): Record the final status for activation
       // failure.
       NOTIMPLEMENTED()
           << "The prerendered page was cancelled during activation";
       return;
     }
+
+    RenderFrameHostImpl* rfh = stored_page->render_frame_host.get();
 
     // The prerender page might have navigated. Update the URL and the redirect
     // chain, as the prerendered page might have been redirected or performed
@@ -4323,32 +4334,25 @@ void NavigationRequest::CommitPageActivation() {
     // activate a RenderFrameHost whose URL doesn't match the one that was
     // initially passed to NavigationRequest (or disallow subsequent navigations
     // in the main frame of the prerender frame tree).
-    common_params_->url =
-        activated_entry->render_frame_host->GetLastCommittedURL();
+    common_params_->url = rfh->GetLastCommittedURL();
     // TODO(https://crbug.com/1181712): We may have to add the entire redirect
     // chain.
     redirect_chain_.clear();
-    redirect_chain_.push_back(
-        activated_entry->render_frame_host->GetLastCommittedURL());
-  }
+    redirect_chain_.push_back(rfh->GetLastCommittedURL());
 
-  base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
-  ReadyToCommitNavigation(false /* is_error */);
-  // The call above might block on showing a user dialog. The interaction of
-  // the user with this dialog might result in the WebContents owning this
-  // NavigationRequest to be destroyed. Return if this is the case.
-  if (!weak_self)
-    return;
+    base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
+    ReadyToCommitNavigation(false /* is_error */);
+    // The call above might block on showing a user dialog. The interaction of
+    // the user with this dialog might result in the WebContents owning this
+    // NavigationRequest to be destroyed. Return if this is the case.
+    if (!weak_self)
+      return;
 
-  // Move the BackForwardCacheImpl::Entry into RenderFrameHostManager, in
-  // preparation for committing. This entry may be either restored from the
-  // backforward cache or a prerender activation.
-  if (IsServedFromBackForwardCache()) {
-    frame_tree_node_->render_manager()->RestoreFromBackForwardCache(
-        std::move(activated_entry));
-  } else {
+    // Move the StoredPage into RenderFrameHostManager, in
+    // preparation for committing. This entry may be used for prerendering.
+    DCHECK(stored_page);
     frame_tree_node_->render_manager()->ActivatePrerender(
-        std::move(activated_entry));
+        std::move(stored_page));
   }
 
   // Commit the page activation. This includes committing the RenderFrameHost

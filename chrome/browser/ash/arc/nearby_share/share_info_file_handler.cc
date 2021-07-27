@@ -14,8 +14,6 @@
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
@@ -66,7 +64,7 @@ scoped_refptr<storage::FileSystemContext> GetScopedFileSystemContext(
 }
 
 // Converts the given url to a FileSystemURL.
-file_manager::util::FileSystemURLAndHandle GetFileSystemURL(
+file_manager::util::FileSystemURLAndHandle GetFileSystemURLAndHandle(
     const storage::FileSystemContext& context,
     const GURL& url) {
   // Obtain the absolute path in the file system.
@@ -86,14 +84,15 @@ std::string StripPathComponents(const std::string& file_name) {
 ShareInfoFileHandler::FileShareConfig::FileShareConfig() = default;
 ShareInfoFileHandler::FileShareConfig::~FileShareConfig() = default;
 
-ShareInfoFileHandler::~ShareInfoFileHandler() = default;
-
-ShareInfoFileHandler::ShareInfoFileHandler(Profile* profile,
-                                           mojom::ShareIntentInfo* share_info,
-                                           base::FilePath directory)
-    : profile_(profile) {
+ShareInfoFileHandler::ShareInfoFileHandler(
+    Profile* profile,
+    mojom::ShareIntentInfo* share_info,
+    base::FilePath directory,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : profile_(profile), task_runner_(task_runner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
+  DCHECK(task_runner_);
   DCHECK(share_info);
 
   file_config_.directory = directory;
@@ -110,9 +109,20 @@ ShareInfoFileHandler::ShareInfoFileHandler(Profile* profile,
   }
 }
 
-file_manager::util::FileSystemURLAndHandle GetFileSystemContext(
-    content::BrowserContext* context,
-    const GURL& url) {
+ShareInfoFileHandler::~ShareInfoFileHandler() {
+  DCHECK(task_runner_);
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::list<base::ScopedTempDir> dirs_list) { dirs_list.clear(); },
+          std::move(scoped_temp_dirs_)));
+}
+
+// static
+file_manager::util::FileSystemURLAndHandle
+ShareInfoFileHandler::GetFileSystemURL(content::BrowserContext* context,
+                                       const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(context);
 
@@ -123,7 +133,7 @@ file_manager::util::FileSystemURLAndHandle GetFileSystemContext(
       GetScopedFileSystemContext(profile, url);
   DCHECK(file_system_context.get());
 
-  return GetFileSystemURL(*file_system_context, url);
+  return GetFileSystemURLAndHandle(*file_system_context, url);
 }
 
 const std::vector<base::FilePath>& ShareInfoFileHandler::GetFilePaths() const {
@@ -138,8 +148,8 @@ void ShareInfoFileHandler::StartPreparingFiles(
     CompletedCallback completed_callback,
     ProgressBarUpdateCallback update_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!completed_callback.is_null());
-  DCHECK(!update_callback.is_null());
+  DCHECK(completed_callback);
+  DCHECK(update_callback);
 
   completed_callback_ = std::move(completed_callback);
   update_callback_ = std::move(update_callback);
@@ -173,10 +183,8 @@ void ShareInfoFileHandler::StartPreparingFiles(
   }
 
   VLOG(1) << "Creating unique directory for share and converting URLs to files";
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      // USER_VISIBLE because of downloading files requested by the user and
-      // will help update UI on progress of transfers.
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&ShareInfoFileHandler::CreateDirectoryAndStreamFiles,
                      this),
       base::BindOnce(&ShareInfoFileHandler::OnCreatedDirectoryAndStreamingFiles,
@@ -217,7 +225,7 @@ bool ShareInfoFileHandler::CreateDirectoryAndStreamFiles() {
     DCHECK(it_context->get());
 
     const file_manager::util::FileSystemURLAndHandle isolated_file_system =
-        GetFileSystemURL(**it_context, url);
+        GetFileSystemURLAndHandle(**it_context, url);
 
     if (!isolated_file_system.url.is_valid()) {
       LOG(ERROR) << "Invalid FileSystemURL from handle.";

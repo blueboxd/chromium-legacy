@@ -241,6 +241,10 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [1850],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/signin/resources.grd": {
+    "META": {"sizes": {"includes": [50],}},
+    "includes": [1860],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_search/tab_search_resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [1880],
@@ -277,6 +281,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/bluetooth_internals/resources.grd": {
     "META": {"sizes": {"includes": [30],}},
     "includes": [2020],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/audio/resources.grd": {
+    "META": {"sizes": {"includes": [5]}},
+    "includes": [2025],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd": {
     "META": {"sizes": {"includes": [10],}},
@@ -367,6 +375,10 @@
     # Big alignment at start of section.
     "META": {"align": 100},
     "includes": [2320],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/common/chromeos/extensions/chromeos_system_extensions_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [2330],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {
     "includes": [2340],

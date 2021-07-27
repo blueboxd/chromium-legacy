@@ -9,8 +9,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
-#include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
+#include "weblayer/browser/safe_browsing/weblayer_safe_browsing_blocking_page_factory.h"
 
 namespace weblayer {
 
@@ -25,10 +25,12 @@ void SafeBrowsingSubresourceHelper::ReadyToCommitNavigation(
     security_interstitials::UnsafeResource resource;
     if (ui_manager_->PopUnsafeResourceForURL(navigation_handle->GetURL(),
                                              &resource)) {
-      SafeBrowsingBlockingPage* blocking_page =
-          SafeBrowsingBlockingPage::CreateBlockingPage(
+      WebLayerSafeBrowsingBlockingPageFactory factory;
+      safe_browsing::SafeBrowsingBlockingPage* blocking_page =
+          factory.CreateSafeBrowsingPage(
               ui_manager_, navigation_handle->GetWebContents(),
-              navigation_handle->GetURL(), resource);
+              navigation_handle->GetURL(), {resource},
+              /*should_trigger_reporting=*/false);
       security_interstitials::SecurityInterstitialTabHelper::
           AssociateBlockingPage(navigation_handle->GetWebContents(),
                                 navigation_handle->GetNavigationId(),

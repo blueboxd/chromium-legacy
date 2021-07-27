@@ -1909,6 +1909,10 @@ crbug.com/957181 external/wpt/resource-timing/nested-context-navigations-iframe.
 # through wpt.fyi
 crbug.com/1218565 external/wpt/resource-timing/TAO-match.html [ Failure Timeout ]
 
+# During work on crbug.com/1171767, we discovered a bug demonstrable through
+# WPT. Marking as a failing test until we update our implementation.
+crbug.com/1223118 external/wpt/resource-timing/initiator-type/link.html [ Failure ]
+
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html [ Skip ]
 
@@ -3120,7 +3124,6 @@ crbug.com/626703 external/wpt/css/css-ruby/ruby-intrinsic-isize-003.html [ Failu
 crbug.com/626703 [ Mac10.13 ] external/wpt/selection/contenteditable/modifying-selection-with-primary-mouse-button.tentative.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/streams/readable-streams/tee.any.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/streams/readable-streams/tee.any.worker.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/url/url-origin.any.worker.html [ Crash Failure ]
 crbug.com/1191547 external/wpt/html/semantics/forms/the-label-element/proxy-modifier-click-to-associated-element.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/websockets/cookies/001.html?wss&wpt_flags=https [ Failure ]
 crbug.com/626703 external/wpt/websockets/cookies/002.html?wss&wpt_flags=https [ Failure ]
@@ -4903,11 +4906,11 @@ crbug.com/1207342 http/tests/devtools/console/console-error-on-call-frame.js [ F
 crbug.com/1207342 http/tests/devtools/indexeddb/live-update-indexeddb-content.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/compiler-source-mapping-debug.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/network/parse-form-data.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/network/network-choose-preview-view.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/network/network-choose-preview-view.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/network/network-update-calculator-for-all-requests.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/network/network-filter-updated-requests.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/network/request-name-path.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/network/json-preview.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/network/json-preview.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/network/from-disk-cache-timing.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/service-workers/service-worker-pause.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/a11y-axe-core/sources/threads-a11y-test.js [ Failure Pass ]
@@ -5520,6 +5523,9 @@ crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/statef
 
 # Temporarily disabled to a breakpoint non-determinism issue.
 crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Failure Pass ]
+
+# Temporarily disabled to land a DevTools change
+crbug.com/782442 http/tests/devtools/console-xhr-logging.js [ Failure Pass ]
 
 # First frame not always painted in time
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Failure Pass ]
@@ -7146,9 +7152,18 @@ crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-sys
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-flush.https.tentative.worker.html [ Skip ]
 crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-flush.https.tentative.worker.html [ Pass ]
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
+crbug.com/1218431 [ Win ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
+crbug.com/1218431 [ Linux ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
+crbug.com/1218431 [ Fuchsia ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-getSize.https.tentative.worker.html [ Skip ]
 crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-getSize.https.tentative.worker.html [ Pass ]
+crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Skip ]
+crbug.com/1218431 [ Win ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
+crbug.com/1218431 [ Linux ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
+crbug.com/1218431 [ Fuchsia ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
+# Mac below 10.15 is not implemented yet.
+crbug.com/1218431 [ Mac ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Failure Pass ]
+crbug.com/1218431 [ Mac ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Failure Pass ]
 
 # DevTools roll
 crbug.com/1187573 http/tests/devtools/throttling/mobile-throttling.js [ Skip ]
@@ -7182,7 +7197,6 @@ crbug.com/1227710 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.h
 
 # Sheriff 2021-07-13
 crbug.com/1220114 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass Timeout ]
-crbug.com/1228788 [ Linux ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-audio.https.html [ Failure Pass ]
 crbug.com/1228772 [ Linux ] external/wpt/webrtc/simulcast/h264.https.html [ Crash Failure Pass Timeout ]
 crbug.com/1228772 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Pass ]
 crbug.com/1228959 [ Linux ] virtual/scroll-unification/fast/scroll-snap/snaps-after-wheel-scrolling-single-tick.html [ Failure Pass ]

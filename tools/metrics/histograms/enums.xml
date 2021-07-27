@@ -3484,6 +3484,16 @@ Unknown properties are collapsed to zero. -->
       label="selected all downloads, and then selected downloading the page"/>
 </enum>
 
+<enum name="AppPackageNameAllowlistParseStatus">
+  <int value="0" label="Allowlist is loaded successfully"/>
+  <int value="1" label="Used allowlist from cache"/>
+  <int value="2" label="Manifest is missing fileds"/>
+  <int value="3" label="Allowlist is expired"/>
+  <int value="4" label="Allowlist file is missing"/>
+  <int value="5" label="IO error"/>
+  <int value="6" label="Allowlist bloomfilter is malformatted"/>
+</enum>
+
 <enum name="AppPackageNameLoggingRuleStatus">
   <int value="0" label="Not loaded and no cache"/>
   <int value="1" label="Not loaded and using cached"/>
@@ -7079,6 +7089,8 @@ others/histograms.xml -->
   <int value="51"
       label="Unload handler exists in a sub frame, and the current
              experimental config doesn't permit it to be BFCached."/>
+  <int value="52" label="ServiceWorker is unregistered"/>
+  <int value="53" label="No valid HTTP response header"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -18860,6 +18872,7 @@ Called by update_debug_scenarios.py.-->
   <int value="3" label="kDebugBackForwardCacheMetricsMismatch"/>
   <int value="4" label="kDebugBrowserVsRendererOriginToCommit"/>
   <int value="5" label="kDebugBackForwardCacheEvictRestoreRace"/>
+  <int value="6" label="kDebugNoResponseHeadForHttpOrHttps"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -28754,6 +28767,7 @@ Called by update_extension_histograms.py.-->
   <int value="1562" label="WMDESKSPRIVATE_LAUNCHDESKTEMPLATE"/>
   <int value="1563" label="AUTOTESTPRIVATE_SETSHELFICONPIN"/>
   <int value="1564" label="SCRIPTING_GETREGISTEREDCONTENTSCRIPTS"/>
+  <int value="1565" label="OS_TELEMETRY_GETVPDINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -46782,6 +46796,7 @@ from previous Chrome versions.
   <int value="-1843677118" label="TwoPanesStartSurfaceAndroid:disabled"/>
   <int value="-1842511843" label="DiceWebSigninInterception:enabled"/>
   <int value="-1840821581" label="WebViewPowerSchedulerThrottleIdle:disabled"/>
+  <int value="-1840772138" label="WebKioskEnableLacros:disabled"/>
   <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839540507" label="OneGoogleBarModalOverlays:enabled"/>
@@ -46959,6 +46974,7 @@ from previous Chrome versions.
   <int value="-1687407363" label="KaleidoscopeModule:disabled"/>
   <int value="-1687406612" label="UseSkiaRenderer:disabled"/>
   <int value="-1686782572" label="ChromeHomeInactivitySheetExpansion:disabled"/>
+  <int value="-1685173786" label="HandwritingLegacyRecognition:enabled"/>
   <int value="-1684773837" label="TabEngagementReportingAndroid:disabled"/>
   <int value="-1684123448" label="disable-best-effort-tasks"/>
   <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
@@ -49328,6 +49344,7 @@ from previous Chrome versions.
   <int value="241187301" label="BrowserTouchBar:disabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
   <int value="245896533" label="SearchSuggestionsOnLocalNtp:enabled"/>
+  <int value="246106068" label="HandwritingLegacyRecognition:disabled"/>
   <int value="247200195" label="EnhancedProtectionPromoCard:enabled"/>
   <int value="250855010" label="WebAssemblyBaseline:disabled"/>
   <int value="254497185" label="VideoPlayerJsModules:enabled"/>
@@ -51261,6 +51278,7 @@ from previous Chrome versions.
       label="MigrateDefaultChromeAppToWebAppsNonGSuite:enabled"/>
   <int value="1814039202"
       label="CrossOriginEmbedderPolicyCredentialless:disabled"/>
+  <int value="1814310862" label="WebKioskEnableLacros:enabled"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1816174635" label="RequestUnbufferedDispatch:enabled"/>
   <int value="1816723085" label="SchemefulSameSite:enabled"/>
@@ -66138,6 +66156,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="22" label="kCancelAllHostsForTesting"/>
   <int value="23" label="kDidFailLoad"/>
   <int value="24" label="kStop"/>
+  <int value="25" label="kSslCertificateError"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">

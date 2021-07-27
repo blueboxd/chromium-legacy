@@ -67,8 +67,9 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
   void SelectClientCertificates(
       const std::vector<std::vector<uint8_t>>& certificate_authorities,
       SelectClientCertificatesCallback callback) override;
-  void GetCertificates(mojom::KeystoreType keystore,
-                       GetCertificatesCallback callback) override;
+  void DEPRECATED_GetCertificates(
+      mojom::KeystoreType keystore,
+      DEPRECATED_GetCertificatesCallback callback) override;
   void AddCertificate(mojom::KeystoreType keystore,
                       const std::vector<uint8_t>& certificate,
                       AddCertificateCallback callback) override;
@@ -118,6 +119,9 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
       const std::vector<uint8_t>& certificate,
       mojom::KeystoreSigningAlgorithmName algorithm_name,
       DEPRECATED_GetPublicKeyCallback callback) override;
+  // DEPRECATED, use `GetKeyStores` instead.
+  void DEPRECATED_GetKeyStores(
+      DEPRECATED_GetKeyStoresCallback callback) override;
 
  private:
   // Returns a correct instance of PlatformKeysService to use. If a specific
@@ -147,9 +151,10 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
       SelectClientCertificatesCallback callback,
       std::unique_ptr<net::CertificateList> matches,
       chromeos::platform_keys::Status status);
-  static void DidGetCertificates(GetCertificatesCallback callback,
-                                 std::unique_ptr<net::CertificateList> certs,
-                                 chromeos::platform_keys::Status status);
+  static void DEPRECATED_DidGetCertificates(
+      DEPRECATED_GetCertificatesCallback callback,
+      std::unique_ptr<net::CertificateList> certs,
+      chromeos::platform_keys::Status status);
   static void DidImportCertificate(AddCertificateCallback callback,
                                    chromeos::platform_keys::Status status);
   static void DidRemoveCertificate(RemoveCertificateCallback callback,
@@ -177,6 +182,11 @@ class KeystoreServiceAsh : public mojom::KeystoreService, public KeyedService {
       DEPRECATED_ExtensionSignCallback callback,
       const std::string& signature,
       absl::optional<mojom::KeystoreError> error);
+  static void DEPRECATED_DidGetKeyStores(
+      DEPRECATED_GetKeyStoresCallback callback,
+      std::unique_ptr<std::vector<chromeos::platform_keys::TokenId>>
+          platform_keys_token_ids,
+      chromeos::platform_keys::Status status);
 
   // Can be nullptr, should not be used directly, use GetPlatformKeys() instead.
   // Stores a pointer to a specific PlatformKeysService if it was specified in

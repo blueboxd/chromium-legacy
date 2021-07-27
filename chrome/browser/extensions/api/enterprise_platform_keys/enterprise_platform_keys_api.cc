@@ -213,8 +213,9 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
       api_epk::GetCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string error = ValidateCrosapi(
-      KeystoreService::kGetCertificatesMinVersion, browser_context());
+  std::string error =
+      ValidateCrosapi(KeystoreService::kDEPRECATED_GetCertificatesMinVersion,
+                      browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
@@ -228,12 +229,12 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
   auto c = base::BindOnce(
       &EnterprisePlatformKeysGetCertificatesFunction::OnGetCertificates, this);
   GetKeystoreService(browser_context())
-      ->GetCertificates(keystore, std::move(c));
+      ->DEPRECATED_GetCertificates(keystore, std::move(c));
   return RespondLater();
 }
 
 void EnterprisePlatformKeysGetCertificatesFunction::OnGetCertificates(
-    crosapi::mojom::GetCertificatesResultPtr result) {
+    crosapi::mojom::DEPRECATED_GetCertificatesResultPtr result) {
   if (result->is_error_message()) {
     Respond(Error(result->get_error_message()));
     return;
@@ -325,20 +326,20 @@ ExtensionFunction::ResponseAction
 EnterprisePlatformKeysInternalGetTokensFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetList().empty());
 
-  std::string error = ValidateCrosapi(KeystoreService::kGetKeyStoresMinVersion,
-                                      browser_context());
+  std::string error = ValidateCrosapi(
+      KeystoreService::kDEPRECATED_GetKeyStoresMinVersion, browser_context());
   if (!error.empty()) {
     return RespondNow(Error(error));
   }
 
   auto c = base::BindOnce(
       &EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores, this);
-  GetKeystoreService(browser_context())->GetKeyStores(std::move(c));
+  GetKeystoreService(browser_context())->DEPRECATED_GetKeyStores(std::move(c));
   return RespondLater();
 }
 
 void EnterprisePlatformKeysInternalGetTokensFunction::OnGetKeyStores(
-    crosapi::mojom::GetKeyStoresResultPtr result) {
+    crosapi::mojom::DEPRECATED_GetKeyStoresResultPtr result) {
   if (result->is_error_message()) {
     Respond(Error(result->get_error_message()));
     return;

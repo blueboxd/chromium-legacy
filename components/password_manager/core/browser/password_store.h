@@ -35,7 +35,6 @@
 class PrefService;
 
 namespace syncer {
-class ModelTypeControllerDelegate;
 class ProxyModelTypeControllerDelegate;
 }  // namespace syncer
 
@@ -124,6 +123,8 @@ class PasswordStore : public PasswordStoreInterface {
   void RemoveObserver(Observer* observer) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
   FieldInfoStore* GetFieldInfoStore() override;
+  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  CreateSyncControllerDelegate() override;
 
   // Reports usage metrics for the database. |sync_username|, and
   // |custom_passphrase_sync_enabled|, and |is_under_advanced_protection|
@@ -155,11 +156,6 @@ class PasswordStore : public PasswordStoreInterface {
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
-
-  // For sync codebase only: instantiates a proxy controller delegate to
-  // interact with PasswordSyncBridge. Must be called from the UI thread.
-  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
-  CreateSyncControllerDelegate();
 
 #if defined(UNIT_TEST)
   PasswordStoreBackend* GetBackendForTesting() { return backend_; }
@@ -208,13 +204,6 @@ class PasswordStore : public PasswordStoreInterface {
   virtual std::vector<InsecureCredential> GetAllInsecureCredentialsImpl();
   virtual std::vector<InsecureCredential> GetMatchingInsecureCredentialsImpl(
       const std::string& signon_realm);
-
-  // Returns the sync controller delegate for syncing passwords. It must be
-  // called on the background sequence.
-  // TODO(crbug.bom/1226042): Remove this after fully switching to the
-  // PasswordStoreInterface.
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetSyncControllerDelegateOnBackgroundSequence();
 
   // Invokes callback and notifies observers if there was a change to the list
   // of insecure passwords. It also informs Sync about the updated password

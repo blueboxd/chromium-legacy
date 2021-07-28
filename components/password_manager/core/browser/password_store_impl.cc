@@ -10,12 +10,16 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/field_info_table.h"
+#include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/model_type_controller_delegate.h"
+#include "components/sync/model/proxy_model_type_controller_delegate.h"
 
 namespace password_manager {
 
@@ -37,6 +41,18 @@ PasswordStoreChangeList BuildPasswordChangeListForInsecureCredentialsUpdate(
 }
 
 }  // namespace
+
+// TODO(crbug.com/1217071): Definition would clash with factory implementation
+// in the PasswordStoreAndroidBackend. Remove #if guard when Android doesn't
+// need to create a local backend anymore (i.e. when the feature is cleaned up).
+#if !defined(OS_ANDROID)
+std::unique_ptr<PasswordStoreBackend> PasswordStoreBackend::Create(
+    std::unique_ptr<LoginDatabase> login_db) {
+  // TODO(crbug.com/1217071): Once PasswordStoreImpl does not implement the
+  // PasswordStore abstract class anymore, return a local backend.
+  return nullptr;
+}
+#endif
 
 PasswordStoreImpl::PasswordStoreImpl(std::unique_ptr<LoginDatabase> login_db)
     : login_db_(std::move(login_db)) {
@@ -445,6 +461,20 @@ SmartBubbleStatsStore* PasswordStoreImpl::GetSmartBubbleStatsStore() {
 
 FieldInfoStore* PasswordStoreImpl::GetFieldInfoStore() {
   return this;
+}
+
+std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+PasswordStoreImpl::CreateSyncControllerDelegateFactory() {
+  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
+  // Note that a callback is bound for
+  // GetSyncControllerDelegateOnBackgroundSequence() because this getter itself
+  // must also run in the backend sequence, and the proxy object below will take
+  // care of that.
+  return std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+      background_task_runner(),
+      base::BindRepeating(
+          &PasswordStoreImpl::GetSyncControllerDelegateOnBackgroundSequence,
+          base::Unretained(this)));
 }
 
 void PasswordStoreImpl::AddSiteStats(const InteractionsStats& stats) {

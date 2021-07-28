@@ -10,14 +10,12 @@
 #include <vector>
 
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
 
 struct WebApplicationInfo;
 class SkBitmap;
-
-namespace blink {
-struct Manifest;
-}
 
 namespace content {
 class WebContents;
@@ -36,6 +34,11 @@ enum class ForInstallableSite {
   kUnknown,
 };
 
+// Converts from the manifest type to the Chrome type.
+apps::FileHandlers CreateFileHandlersFromManifest(
+    const std::vector<blink::Manifest::FileHandler>& manifest_file_handlers,
+    const GURL& app_scope);
+
 // Update the given WebApplicationInfo with information from the manifest.
 // Will sanitise the manifest fields to be suitable for installation to prevent
 // sites from using arbitrarily large amounts of disk space.
@@ -51,14 +54,18 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 
 // Populate shortcut item icon maps in WebApplicationInfo using the IconsMap.
+// This ignores icons that might have already existed in `web_app_info`.
 void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
-                               const IconsMap* icons_map);
+                               const IconsMap& icons_map);
 
-// Filter to only square icons, ensure that the necessary-sized icons are
-// available by resizing larger icons down to smaller sizes, and generating
-// icons for sizes where resizing is not possible. |icons_map| is optional.
-void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
-                                         const IconsMap* icons_map);
+// Populates main product icons into `web_app_info`. This method filters icons
+// from `icons_map` to only square icons and ensures that the necessary-sized
+// icons are available by resizing larger icons down to smaller sizes. When
+// `icons_map` is null or missing icons, it will generate icons for sizes where
+// resizing is not possible. Icons which were already populated in
+// `web_app_info` may be retained, and even used to generate missing icons.
+void PopulateProductIcons(WebApplicationInfo* web_app_info,
+                          const IconsMap* icons_map);
 
 // Record an app banner added to homescreen event to ensure banners are not
 // shown for this app.

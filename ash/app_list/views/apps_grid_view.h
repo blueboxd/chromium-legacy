@@ -42,6 +42,7 @@ class AppsGridViewTest;
 class AppsGridViewTestApi;
 }  // namespace test
 
+class AppDragIconProxy;
 class AppListA11yAnnouncer;
 class ApplicationDragAndDropHost;
 class AppListConfig;
@@ -104,7 +105,7 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Initializes the class. Calls virtual methods, so its code cannot be in the
   // constructor.
-  void Init();
+  virtual void Init();
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below
   // is no longer called to dynamically choosing those layout params.
@@ -270,6 +271,9 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }
+  const views::ViewModelT<AppListItemView>* view_model() const {
+    return &view_model_;
+  }
 
   // Returns true if any animation is running within the view.
   bool IsAnimationRunningForTest();
@@ -365,6 +369,10 @@ class ASH_EXPORT AppsGridView : public views::View,
   GridIndex GetIndexOfView(const AppListItemView* view) const;
   AppListItemView* GetViewAtIndex(const GridIndex& index) const;
 
+  // Returns the number of apps tiles per page. Folder grids may have different
+  // numbers of tiles from the main grid.
+  int TilesPerPage() const;
+
   // Returns the number of existing items in specified page. Returns 0 if |page|
   // is out of range.
   int GetItemsNumOfPage(int page) const;
@@ -395,6 +403,7 @@ class ASH_EXPORT AppsGridView : public views::View,
   AppListViewDelegate* app_list_view_delegate() const {
     return app_list_view_delegate_;
   }
+  const AppListItemList* item_list() const { return item_list_; }
 
   // TODO(crbug.com/1211608): Move these member variables to PagedAppsGridView.
   PaginationModel pagination_model_{this};
@@ -409,6 +418,10 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Subclasses need non-const access.
   AppListItemView* drag_view_ = nullptr;
+
+  // If app item drag is in progress, the icon proxy created for the app list
+  // item.
+  std::unique_ptr<AppDragIconProxy> drag_icon_proxy_;
 
   // The location of |drag_view_| when the drag started.
   gfx::Point drag_view_start_;
@@ -444,10 +457,6 @@ class ASH_EXPORT AppsGridView : public views::View,
     NEAR_ITEM,
     BETWEEN_ITEMS,
   };
-
-  // Returns the number of apps tiles per page. Folder grids may have different
-  // numbers of tiles from the main grid.
-  int TilesPerPage() const;
 
   // Updates from model.
   void Update();
@@ -504,16 +513,20 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Returns true if the current drag is occurring within a certain range of the
   // nearest item.
-  bool DragIsCloseToItem();
+  // `point` is the drag location in the apps grid's coordinates.
+  bool DragIsCloseToItem(const gfx::Point& point);
 
+  // Whether the current drag position is over an item.
+  // `point` is the drag location in the apps grid's coordinates.
   bool DragPointIsOverItem(const gfx::Point& point);
 
-  void TryStartDragAndDropHostDrag(Pointer pointer,
-                                   const gfx::Point& grid_location);
+  // Initiates drag and drop host drag as needed.
+  // `pointer` - The pointer that's used for dragging.
+  void TryStartDragAndDropHostDrag(Pointer pointer);
 
   // Prepares |drag_and_drop_host_| for dragging. |grid_location| contains
   // the drag point in this grid view's coordinates.
-  void StartDragAndDropHostDrag(const gfx::Point& grid_location);
+  void StartDragAndDropHostDrag();
 
   // Dispatch the drag and drop update event to the dnd host (if needed).
   void DispatchDragEventToDragAndDropHost(
@@ -656,24 +669,25 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Convert between the model index and the visual index. The model index
   // is the index of the item in AppListModel. The visual index is the Index
   // struct above with page/slot info of where to display the item.
-  GridIndex GetIndexFromModelIndex(int model_index) const;
-  int GetModelIndexFromIndex(const GridIndex& index) const;
+  virtual GridIndex GetIndexFromModelIndex(int model_index) const = 0;
+  virtual int GetModelIndexFromIndex(const GridIndex& index) const = 0;
 
   // Returns the last possible visual index to add an item view.
-  GridIndex GetLastTargetIndex() const;
+  virtual GridIndex GetLastTargetIndex() const = 0;
 
   // Returns the last possible visual index to add an item view in |page|.
-  GridIndex GetLastTargetIndexOfPage(int page) const;
+  virtual GridIndex GetLastTargetIndexOfPage(int page) const = 0;
 
   // Returns the target model index if moving the item view to specified target
   // visual index.
-  int GetTargetModelIndexForMove(AppListItemView* moved_view,
-                                 const GridIndex& index) const;
+  virtual int GetTargetModelIndexForMove(AppListItemView* moved_view,
+                                         const GridIndex& index) const = 0;
 
-  // Returns the target item index if moving the item view to specified target
-  // visual index.
-  size_t GetTargetItemIndexForMove(AppListItemView* moved_view,
-                                   const GridIndex& index) const;
+  // Returns the target `item_list_` index if moving the item view to specified
+  // target visual index.
+  virtual size_t GetTargetItemListIndexForMove(
+      AppListItemView* moved_view,
+      const GridIndex& index) const = 0;
 
   // Returns true if an item view exists in the visual index.
   bool IsValidIndex(const GridIndex& index) const;

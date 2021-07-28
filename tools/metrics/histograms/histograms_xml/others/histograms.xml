@@ -827,14 +827,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.Canceled" enum="BooleanCanceled"
-    expires_after="2021-08-09">
+    expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>Tracks whether the update job was canceled.</summary>
 </histogram>
 
 <histogram name="appcache.UpdateJob.ExistingCorruptionFixedInUpdate"
-    units="resources" expires_after="2021-08-09">
+    units="resources" expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -847,7 +847,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.ExistingResourceCheck" units="units"
-    expires_after="2021-08-09">
+    expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -857,7 +857,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.ExistingResourceCorrupt" units="units"
-    expires_after="2021-08-09">
+    expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -888,7 +888,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.ExistingResourceNotCorrupt"
-    units="resources" expires_after="2021-08-09">
+    units="resources" expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -916,7 +916,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.ExistingResourceOnlyNotCorrupt"
-    units="resources" expires_after="2021-08-09">
+    units="resources" expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>enne@chromium.org</owner>
   <summary>
@@ -931,7 +931,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.ExistingResourceReused" units="units"
-    expires_after="2021-08-09">
+    expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -941,14 +941,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="appcache.UpdateJob.FinalInternalState"
-    enum="AppCacheUpdateJobInternalState" expires_after="2021-08-09">
+    enum="AppCacheUpdateJobInternalState" expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>Tracks the final internal state for the update job.</summary>
 </histogram>
 
 <histogram name="appcache.UpdateJob.ResourceFreshness" units="days"
-    expires_after="2021-08-09">
+    expires_after="2021-10-05">
   <owner>cmp@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -5761,6 +5761,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="FamilyUser.ChromeBrowserEngagement.Duration" units="ms"
     expires_after="2021-07-14">
+  <obsolete>
+    Replaced with FamilyUser.ChromeBrowserEngagement.Duration2 in M94. The new
+    version fixed http://crbug.com/1221242.
+  </obsolete>
   <owner>agawronska@chromium.org</owner>
   <owner>tobyhuang@chromium.org</owner>
   <owner>xiqiruan@chromium.org</owner>
@@ -5770,6 +5774,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     current daily duration at the first session start on next day. This is only
     logged for active foreground time of Chrome browser. Ignores the time when
     video or audio is playing in the background, or Chrome browser is invisible.
+  </summary>
+</histogram>
+
+<histogram name="FamilyUser.ChromeBrowserEngagement.Duration2" units="ms"
+    expires_after="2022-07-14">
+  <owner>agawronska@chromium.org</owner>
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>xiqiruan@chromium.org</owner>
+  <owner>cros-families-eng@google.com</owner>
+  <summary>
+    Records the Chrome OS user Chrome browser usage in milliseconds. Reports
+    current daily duration at the first session start on next day. Despite daily
+    reporting, the uploaded duration can still exceed 24 hours if the user
+    continuously stays active for that long. This is only logged for active
+    foreground time of Chrome browser. Ignores the time when video or audio is
+    playing in the background, or Chrome browser is invisible. Also ignores the
+    time when UsageTimeStateNotifier::UsageTimeState is inactive.
   </summary>
 </histogram>
 
@@ -11942,6 +11963,87 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <!-- Usage scenario variant defined in tools/metrics/histograms/histograms_xml/power/histograms.xml  -->
 
   <token key="UsageScenario" variants="UsageScenario"/>
+</histogram>
+
+<histogram name="PerformanceMonitor.ResourceCoalition.BytesReadPerSecond"
+    units="milliBytesPerSecond" expires_after="2021-11-30">
+  <owner>sebmarchand@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The IO reads reported by the resource coalition mechanism on macOS. Reported
+    every 2 minutes. The data is reported as the rate per second during this
+    interval with a millibyte granularity.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceMonitor.ResourceCoalition.BytesWrittenPerSecond"
+    units="milliBytesPerSecond" expires_after="2021-11-30">
+  <owner>sebmarchand@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The IO writes reported by the resource coalition mechanism on macOS.
+    Reported every 2 minutes. The data is reported as the rate per second during
+    this interval with a millibyte granularity.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceMonitor.ResourceCoalition.CPUTime"
+    units="hundredth of percent" expires_after="2021-11-30">
+  <owner>sebmarchand@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Average CPU utilization reported by the resource coalition mechanism on
+    macOS. Read out at each two-minute interval. The utilization is in the
+    0-100% range per CPU, which is then summed up and multiplied by 100. The
+    histogram is capped at 20000 (equivalent to 2 cores fully loaded). I.e. 4
+    cores busy at 25% each will read as 25 * 4 * 100 = 10000.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceMonitor.ResourceCoalition.Energy"
+    units="milliwatts" expires_after="2021-11-30">
+  <owner>sebmarchand@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The energy usage reported by the resource coalition mechanism on macOS.
+    Reported every 2 minutes. Only available on devices with an ARM CPU.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceMonitor.ResourceCoalition.GPUTime"
+    units="hundredth of percent" expires_after="2021-11-30">
+  <owner>sebmarchand@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Average GPU utilization reported by the resource coalition mechanism on
+    macOS. Read out at each two-minute interval. The utilization is in the
+    0-100% range and is multiplied by 100. The histogram is capped at 10000
+    (equivalent to the GPU being used 100% of the time).
+  </summary>
+</histogram>
+
+<histogram
+    name="PerformanceMonitor.ResourceCoalition.InterruptWakeupsPerSecond"
+    units="milliWakeupsPerSecond" expires_after="2021-11-30">
+  <owner>sebmarchand@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The interrupt wakeup rate reported by the resource coalition mechanism on
+    macOS. Reported every 2 minutes. The data is reported as the rate per second
+    during this interval with a milliwakeup granularity.
+  </summary>
+</histogram>
+
+<histogram
+    name="PerformanceMonitor.ResourceCoalition.PlatformIdleWakeupsPerSecond"
+    units="milliWakeupsPerSecond" expires_after="2021-11-30">
+  <owner>sebmarchand@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The platform idle wakeup rate reported by the resource coalition mechanism
+    on macOS. Reported every 2 minutes. The data is reported as the rate per
+    second during this interval with a milliwakeup granularity.
+  </summary>
 </histogram>
 
 <histogram name="PeriodicBackgroundSync.Event.BatchSize" units="events"

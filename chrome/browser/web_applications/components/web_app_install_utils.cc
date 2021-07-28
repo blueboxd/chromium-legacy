@@ -29,6 +29,8 @@ namespace web_app {
 
 namespace {
 
+const char kChromeScheme[] = "chrome";
+
 // We restrict the number of icons to limit disk usage per installed PWA. This
 // value can change overtime as new features are added.
 constexpr int kMaxIcons = 20;
@@ -202,6 +204,39 @@ apps::UrlHandlers ToWebAppUrlHandlers(
 
 }  // namespace
 
+apps::FileHandlers CreateFileHandlersFromManifest(
+    const std::vector<blink::Manifest::FileHandler>& manifest_file_handlers,
+    const GURL& app_scope) {
+  apps::FileHandlers web_app_file_handlers;
+
+  for (const auto& manifest_file_handler : manifest_file_handlers) {
+    apps::FileHandler web_app_file_handler;
+    web_app_file_handler.action = manifest_file_handler.action;
+
+    for (const auto& it : manifest_file_handler.accept) {
+      apps::FileHandler::AcceptEntry web_app_accept_entry;
+      web_app_accept_entry.mime_type = base::UTF16ToUTF8(it.first);
+      for (const auto& manifest_file_extension : it.second) {
+        web_app_accept_entry.file_extensions.insert(
+            base::UTF16ToUTF8(manifest_file_extension));
+      }
+      web_app_file_handler.accept.push_back(std::move(web_app_accept_entry));
+    }
+
+    web_app_file_handlers.push_back(std::move(web_app_file_handler));
+
+    if (web_app_file_handlers.size() == kMaxFileHandlers &&
+        !app_scope.SchemeIs(kChromeScheme)) {
+      break;
+    }
+  }
+
+  DCHECK(web_app_file_handlers.size() <= kMaxFileHandlers ||
+         app_scope.SchemeIs(kChromeScheme));
+
+  return web_app_file_handlers;
+}
+
 void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                   const GURL& manifest_url,
                                   WebApplicationInfo* web_app_info) {
@@ -283,7 +318,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     web_app_info->icon_infos = std::move(web_app_icons);
 
   // TODO(crbug.com/1218210): Confirm incoming icons to write to web_app_info.
-  web_app_info->file_handlers = manifest.file_handlers;
+  web_app_info->file_handlers = CreateFileHandlersFromManifest(
+      manifest.file_handlers, web_app_info->scope);
 
   web_app_info->share_target = ToWebAppShareTarget(manifest.share_target);
 
@@ -335,7 +371,8 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 }
 
 void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
-                               const IconsMap* icons_map) {
+                               const IconsMap& icons_map) {
+  web_app_info->shortcuts_menu_icon_bitmaps.clear();
   for (auto& shortcut : web_app_info->shortcuts_menu_item_infos) {
     IconBitmaps shortcut_icon_bitmaps;
 
@@ -343,8 +380,8 @@ void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
       std::map<SquareSizePx, SkBitmap> bitmaps;
       for (const auto& icon :
            shortcut.GetShortcutIconInfosForPurpose(purpose)) {
-        auto it = icons_map->find(icon.url);
-        if (it != icons_map->end()) {
+        auto it = icons_map.find(icon.url);
+        if (it != icons_map.end()) {
           std::set<SquareSizePx> sizes_to_generate;
           sizes_to_generate.emplace(icon.square_size_px);
           SizeToBitmap resized_bitmaps(
@@ -362,11 +399,8 @@ void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
   }
 }
 
-void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
-                                         const IconsMap* icons_map) {
-  if (icons_map)
-    PopulateShortcutItemIcons(web_app_info, icons_map);
-
+void PopulateProductIcons(WebApplicationInfo* web_app_info,
+                          const IconsMap* icons_map) {
   std::vector<WebApplicationIconInfo> icon_infos_any;
   std::vector<WebApplicationIconInfo> icon_infos_maskable;
   std::vector<WebApplicationIconInfo> icon_infos_monochrome;

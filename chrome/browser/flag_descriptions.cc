@@ -252,18 +252,11 @@ const char kDnsOverHttpsDescription[] =
     "try to use a secure HTTPS connection to look up the addresses of websites "
     "and other web resources.";
 
-extern const char kAssistantExplicitVoiceConsentName[] =
-    "AssistantExplicitVoiceConsent";
-extern const char kAssistantExplicitVoiceConsentDescription[] =
-    "When enabled, backing off from the consent screen by tapping outside of "
-    "it or pressing the back button are not treated as rejection";
-
-extern const char kAssistantVoiceConstentTapsCounterName[] =
-    "AssistantVoiceConsentTapsCounter";
-extern const char kAssistantVoiceConstentTapsCounterDescription[] =
-    "When enabled, a specified (by a feature param) number of taps outside of "
-    "the consent screen or back button presses will be ignored, but the next "
-    "one will be treated as rejection";
+extern const char kAssistantConsentV2Name[] = "AssistanConsentV2";
+extern const char kAssistantConsentV2Description[] =
+    "Enables different strategies for handling backing off from the consent "
+    "screen without explicitly clicking yes/no buttons, i.e. when a user taps "
+    "outside of the sheet.";
 
 const char kAutofillAlwaysReturnCloudTokenizedCardName[] =
     "Return cloud token details for server credit cards when possible";
@@ -2370,6 +2363,11 @@ const char kSharedClipboardUIDescription[] =
     "Enables shared clipboard feature signals to be handled by showing "
     "a list of user's available devices to share the clipboard.";
 
+const char kSharingDesktopScreenshotsName[] = "Desktop Screenshots";
+const char kSharingDesktopScreenshotsDescription[] =
+    "Enables taking"
+    " screenshots from the desktop sharing hub.";
+
 const char kSharingHubDesktopAppMenuName[] = "Desktop Sharing Hub in App Menu";
 const char kSharingHubDesktopAppMenuDescription[] =
     "Enables the Chrome Sharing Hub in the 3-dot menu for desktop.";
@@ -4238,10 +4236,6 @@ const char kForceControlFaceAeDescription[] =
 const char kCategoricalSearchName[] = "Launcher Categorical Search";
 const char kCategoricalSearchDescription[] =
     "Launcher search results grouped by categories";
-
-const char kCdmFactoryDaemonName[] = "CDM Factory Daemon";
-const char kCdmFactoryDaemonDescription[] =
-    "Use the CDM daemon instead of the library CDM";
 
 const char kCellularAllowPerNetworkRoamingName[] =
     "Allow per-networking roaming";

@@ -953,6 +953,7 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter', # https://crbug.com/1010211
         ],
+        'ci_only': True, # https://crbug.com/1233700
       },
       'android-pie-x86-rel': {
         'args': [
@@ -2732,7 +2733,8 @@
       },
       'chromeos-kevin-chrome': {
         # TODO(crbug.com/1182948): Remove the experiment.
-        'experiment_percentage': 100,
+        # TODO(b/188822176): Restore to 100% when we have additional capacity.
+        'experiment_percentage': 0,
       },
       'linux-bionic-rel': {
         'args': [

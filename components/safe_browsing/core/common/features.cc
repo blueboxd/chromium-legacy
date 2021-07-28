@@ -30,7 +30,7 @@ const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
 
 const base::Feature kBetterTelemetryAcrossReports{
     "SafeBrowsingBetterTelemetryAcrossReports",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionForAndroid{
     "ClientSideDetectionModelOnAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -68,6 +68,9 @@ const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
 
 const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOmitNonUserGesturesFromReferrerChain{
+    "kOmitNonUserGesturesFromReferrerChain", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionForSignedInUsers {
   "SafeBrowsingPasswordProtectionForSignedInUsers",
@@ -164,6 +167,7 @@ constexpr struct {
     {&kClientSideDetectionWithToken, true},
     {&kDelayedWarnings, true},
     {&kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid, true},
+    {&kOmitNonUserGesturesFromReferrerChain, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kPasswordProtectionWithToken, true},
     {&kRealTimeUrlLookupReferrerChain, true},

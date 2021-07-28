@@ -58,19 +58,8 @@ enum class WindowSnapAcceleratorAction {
   kMaxValue = kCycleRightSnapInTablet,
 };
 
-// Notification ID for shortcut shown to tell users about new shortcuts.
-ASH_EXPORT extern const char kStartupNewShortcutNotificationId[];
-
 // Histogram for volume adjustment in tablet mode.
 ASH_EXPORT extern const char kTabletCountOfVolumeAdjustType[];
-
-// URL for keyboard shortcut help.
-ASH_EXPORT extern const char kKeyboardShortcutHelpPageUrl[];
-
-// Identifiers for toggling accelerator notifications.
-ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
-ASH_EXPORT extern const char kDockedMagnifierToggleAccelNotificationId[];
-ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 
 // UMA accessibility histogram names.
 ASH_EXPORT extern const char kAccessibilityHighContrastShortcut[];
@@ -118,6 +107,9 @@ class ASH_EXPORT AcceleratorControllerImpl
     // Registers the specified accelerators.
     void RegisterAccelerators(const AcceleratorData accelerators[],
                               size_t accelerators_length);
+
+    // Returns whether the action for this accelerator is enabled.
+    bool IsActionForAcceleratorEnabled(const ui::Accelerator& accelerator);
 
     // Returns the corresponding accelerator data if |action| maps to a
     // deprecated accelerator, otherwise return nullptr.
@@ -207,9 +199,6 @@ class ASH_EXPORT AcceleratorControllerImpl
   // Unregisters all keyboard accelerators for the specified target.
   void UnregisterAll(ui::AcceleratorTarget* target);
 
-  // Returns true if there is an action for |accelerator| and it is enabled.
-  bool IsActionForAcceleratorEnabled(const ui::Accelerator& accelerator) const;
-
   // AcceleratorControllerImpl:
   bool Process(const ui::Accelerator& accelerator) override;
   bool IsDeprecated(const ui::Accelerator& accelerator) const override;
@@ -267,6 +256,9 @@ class ASH_EXPORT AcceleratorControllerImpl
 
   // Registers the deprecated accelerators and their replacing new ones.
   void RegisterDeprecatedAccelerators();
+
+  // Returns true if there is an action for |accelerator| and it is enabled.
+  bool IsActionForAcceleratorEnabled(const ui::Accelerator& accelerator) const;
 
   // Returns whether |action| can be performed. The |accelerator| may provide
   // additional data the action needs.

@@ -15,7 +15,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -36,7 +36,10 @@ int GetSnappedWindowWidth(int ideal_width, aura::Window* window) {
       screen_util::GetDisplayWorkAreaBoundsInParent(window).width();
   const int min_width =
       window->delegate() ? window->delegate()->GetMinimumSize().width() : 0;
-  return base::ClampToRange(ideal_width, min_width, work_area_width);
+  if (work_area_width < min_width)
+    return base::clamp(ideal_width, work_area_width, min_width);
+  else
+    return base::clamp(ideal_width, min_width, work_area_width);
 }
 
 // Return true if the window or one of its ancestor returns true from

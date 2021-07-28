@@ -64,6 +64,14 @@ sync_pb::EntitySpecifics MakeSpecifics(ModelType model_type) {
   return specifics;
 }
 
+sync_pb::EntitySpecifics MakeBookmarkSpecificsToCommit() {
+  sync_pb::EntitySpecifics specifics = MakeSpecifics(BOOKMARKS);
+  // The worker DCHECKs for the validity of the |type| field for outgoing
+  // commits.
+  specifics.mutable_bookmark()->set_type(sync_pb::BookmarkSpecifics::URL);
+  return specifics;
+}
+
 }  // namespace
 
 // Syncer unit tests. Unfortunately a lot of these tests
@@ -224,9 +232,9 @@ class SyncerTest : public testing::Test,
   // not preceeded by GetUpdates.
   void ConfigureNoGetUpdatesRequired() {
     nudge_tracker_.OnInvalidationsEnabled();
-    nudge_tracker_.RecordSuccessfulSyncCycle(ProtocolTypes());
+    nudge_tracker_.RecordSuccessfulSyncCycle(ModelTypeSet::All());
 
-    ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
+    ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ModelTypeSet::All()));
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -261,7 +269,8 @@ TEST_F(SyncerTest, CommitFiltersThrottledEntries) {
   const ModelTypeSet throttled_types(BOOKMARKS);
 
   GetProcessor(BOOKMARKS)->AppendCommitRequest(
-      ClientTagHash::FromHashed("tag1"), MakeSpecifics(BOOKMARKS), "id1");
+      ClientTagHash::FromHashed("tag1"), MakeBookmarkSpecificsToCommit(),
+      "id1");
 
   // Sync without enabling bookmarks.
   mock_server_->ExpectGetUpdatesRequestTypes(
@@ -588,10 +597,10 @@ TEST_F(SyncerTest, CommitFailureWithConflict) {
       ->AppendCommitRequest(ClientTagHash::FromHashed("tag1"),
                             MakeSpecifics(PREFERENCES), "id1");
 
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ModelTypeSet::All()));
 
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ModelTypeSet::All()));
 
   GetProcessor(PREFERENCES)
       ->AppendCommitRequest(ClientTagHash::FromHashed("tag1"),
@@ -599,10 +608,10 @@ TEST_F(SyncerTest, CommitFailureWithConflict) {
 
   mock_server_->set_conflict_n_commits(1);
   EXPECT_FALSE(SyncShareNudge());
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(ModelTypeSet::All()));
 
-  nudge_tracker_.RecordSuccessfulSyncCycle(ProtocolTypes());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
+  nudge_tracker_.RecordSuccessfulSyncCycle(ModelTypeSet::All());
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ModelTypeSet::All()));
 }
 
 // Tests that sending debug info events on Commit works.
@@ -741,7 +750,8 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   bookmark_delay->set_delay_ms(950);
   command->set_client_invalidation_hint_buffer_size(11);
   GetProcessor(BOOKMARKS)->AppendCommitRequest(
-      ClientTagHash::FromHashed("tag1"), MakeSpecifics(BOOKMARKS), "id1");
+      ClientTagHash::FromHashed("tag1"), MakeBookmarkSpecificsToCommit(),
+      "id1");
   mock_server_->SetCommitClientCommand(std::move(command));
   EXPECT_TRUE(SyncShareNudge());
 
@@ -761,7 +771,8 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   bookmark_delay->set_delay_ms(1050);
   command->set_client_invalidation_hint_buffer_size(9);
   GetProcessor(BOOKMARKS)->AppendCommitRequest(
-      ClientTagHash::FromHashed("tag2"), MakeSpecifics(BOOKMARKS), "id2");
+      ClientTagHash::FromHashed("tag2"), MakeBookmarkSpecificsToCommit(),
+      "id2");
   mock_server_->SetCommitClientCommand(std::move(command));
   EXPECT_TRUE(SyncShareNudge());
 
@@ -826,7 +837,8 @@ TEST_F(SyncerTest, UpdateThenCommit) {
   mock_server_->AddUpdateDirectory(to_receive, parent_id, "x", 1, 10,
                                    foreign_cache_guid(), "-1");
   GetProcessor(BOOKMARKS)->AppendCommitRequest(
-      ClientTagHash::FromHashed("tag1"), MakeSpecifics(BOOKMARKS), to_commit);
+      ClientTagHash::FromHashed("tag1"), MakeBookmarkSpecificsToCommit(),
+      to_commit);
 
   EXPECT_TRUE(SyncShareNudge());
 
@@ -852,7 +864,8 @@ TEST_F(SyncerTest, UpdateFailsThenDontCommit) {
   mock_server_->AddUpdateDirectory(to_receive, parent_id, "x", 1, 10,
                                    foreign_cache_guid(), "-1");
   GetProcessor(BOOKMARKS)->AppendCommitRequest(
-      ClientTagHash::FromHashed("tag1"), MakeSpecifics(BOOKMARKS), to_commit);
+      ClientTagHash::FromHashed("tag1"), MakeBookmarkSpecificsToCommit(),
+      to_commit);
 
   mock_server_->FailNextPostBufferToPathCall();
   EXPECT_FALSE(SyncShareNudge());
@@ -1009,8 +1022,9 @@ TEST_P(MixedResult, ExtensionsActivity) {
   GetProcessor(PREFERENCES)
       ->AppendCommitRequest(ClientTagHash::FromHashed("pref1"),
                             MakeSpecifics(PREFERENCES), "prefid1");
+
   GetProcessor(BOOKMARKS)->AppendCommitRequest(
-      ClientTagHash::FromHashed("bookmark1"), MakeSpecifics(BOOKMARKS),
+      ClientTagHash::FromHashed("bookmark1"), MakeBookmarkSpecificsToCommit(),
       "bookmarkid2");
 
   if (ShouldFailBookmarkCommit()) {

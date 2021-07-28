@@ -296,7 +296,7 @@
     "expiry_milestone": 96
   },
   {
-    "name": "assistant-explicit-voice-consent",
+    "name": "assistant-consent-v2",
     "owners": [
       "basiaz",
       "chrome-voice@google.com"
@@ -315,14 +315,6 @@
     "name": "assistant-intent-translate-info",
     "owners": [ "jds", "chrome-language@google.com" ],
     "expiry_milestone": 94
-  },
-  {
-    "name": "assistant-voice-consent-taps-counter",
-    "owners": [
-      "basiaz",
-      "chrome-voice@google.com"
-    ],
-    "expiry_milestone": 96
   },
   {
     "name": "auto-screen-brightness",
@@ -578,11 +570,6 @@
     "name": "cct-incognito-available-to-third-party",
     "owners": [ "rhalavati", "//chrome/android/java/src/org/chromium/chrome/browser/customtabs/OWNERS" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "cdm-factory-daemon",
-    "owners": [ "jkardatzke", "xhwang", "chromeos-gfx-video@google.com" ],
-    "expiry_milestone": 91
   },
   {
     "name": "cellular-allow-per-network-roaming",
@@ -927,7 +914,7 @@
   {
     "name": "darken-websites-checkbox-in-themes-setting",
     "owners": [ "lazzzis@google.com", "twellington" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 98
   },
   {
     "name": "dcheck-is-fatal",
@@ -5128,6 +5115,11 @@
     "name": "shared-highlighting-v2",
     "owners": ["kmilka"],
     "expiry_milestone": 94
+  },
+  {
+    "name": "sharing-desktop-screenshots",
+    "owners": ["skare", "kmilka", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 99
   },
   {
     "name": "sharing-hub-desktop-app-menu",

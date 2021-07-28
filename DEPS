@@ -228,11 +228,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '84cc1f6acfb72245bbe2f9e5bdd69e0286d92d6e',
+  'skia_revision': 'dc409946e9f0745a74992a45c501d57f84e25aac',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f2166f2b301e403456d16e331a898a83d421ad3a',
+  'v8_revision': 'f931ad05e3d7c8600d9925770ad976ac007cd768',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -240,11 +240,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b8d6f8aa936d643c788f0ed9088f2ae162defc38',
+  'angle_revision': 'ef406f1b437dd2ac0603cc10db8621960b6e28b0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'fdb16bd6c291d5747112ccba33fab0bfbea9651e',
+  'swiftshader_revision': 'b8bcc42a41e53e492e0f64ad880b69093da15c10',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -255,7 +255,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': 'a10017c548b0805eb98e7847c37370dbd37cd8d6',
+  'boringssl_revision': '519c2986c73c23461b130ad19b93fd7d081353d5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '0f98271d2104cb41331696ddc21eb807bb0537c7',
+  'devtools_frontend_revision': '93f79d6e7b973f0b7aadde4547733ec0ce1cf11a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -347,7 +347,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '6e5b08054755dc92f1559b46620d4a9635205c0a',
+  'dawn_revision': '310895c203496af7abace0844a881f8b7da85771',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -391,11 +391,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'bfcda9198931d84428a4f731ebb0a0d100cbd6d2',
+  'libcxxabi_revision':    '24e92c2beed59b76ddabe7ceb5ee4b40f09e0712',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '23a5972165e98e93151f11386b11d8ae9e702897',
+  'libunwind_revision':    'e6a0f639f7d45ddde774024016bba09cedc3a921',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'hAFd0EgJfBH1SK6zb2EoExMtinQLG3OCXXqeKT6yCgwC',
+          'version': 'eJdH2d07LioVy9Wdmpo-L8XLuirTYu322gJXco9L_SsC',
       },
     ],
     'condition': 'checkout_android',
@@ -983,7 +983,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '396f029235c5cb7a4a73a1592c5e81051b2ac890',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'adb04020e2deb4e86ca3b76f57f15abbaca47e5f',
       'condition': 'checkout_chromeos',
   },
 
@@ -1372,7 +1372,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'edf4a248094deba72eebca50569de13458bb49ea',
+    Var('chromium_git') + '/openscreen' + '@' + 'd816f4dcef882eaa8d1e4a6de5f1ea2d8fdd7d8a',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + 'bf21ccb1007bb531b45d9978919a56ea5059c245',
@@ -1682,7 +1682,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@980fc51e34d099d28aaf9f2c882e1af82bd4cc71',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@96224fbd8e4139a0110eeaac0c9eddd172c6d90e',
     'condition': 'checkout_src_internal',
   },
 
@@ -1701,7 +1701,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '8JqDf2_Jd92xAgPZFKxdjdxgNYznMWSbQLG0_eSkny8C',
+        'version': 'GFDbp1De9VloLeLsTTMf28YCRn4BZASmfnwVECIEmq0C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1712,7 +1712,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'yk1oLbyqZLgPX_i7d2RxHZwmHxFM7l0ObNr7r2WOJ3AC',
+        'version': 'EN0-rXLiX9lY_HFS5_w3dG4Gh5Nqf_8SYOTFn1Udh7cC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

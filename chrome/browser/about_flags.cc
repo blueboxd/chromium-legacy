@@ -2180,6 +2180,14 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
 
 #if defined(OS_ANDROID)
 
+const FeatureEntry::FeatureParam kAssistantConsentV2_reprompts_counter[] = {
+    {"count", "3"}};
+
+const FeatureEntry::FeatureVariation kAssistantConsentV2_Variations[] = {
+    {"Limited Re-prompts", kAssistantConsentV2_reprompts_counter,
+     base::size(kAssistantConsentV2_reprompts_counter), nullptr},
+};
+
 const FeatureEntry::FeatureParam kIphMicToolbarGenericMessage[] = {
     {"generic_message", "true"}};
 const FeatureEntry::FeatureParam kIphMicToolbarExampleQuery[] = {
@@ -3475,10 +3483,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVoiceButtonInTopToolbar)},
-    {"assistant-explicit-voice-consent",
-     flag_descriptions::kAssistantExplicitVoiceConsentName,
-     flag_descriptions::kAssistantExplicitVoiceConsentDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAssistantExplicitVoiceConsent)},
+    {"assistant-consent-v2", flag_descriptions::kAssistantConsentV2Name,
+     flag_descriptions::kAssistantConsentV2Description, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAssistantConsentV2,
+                                    kAssistantConsentV2_Variations,
+                                    "AssistantConsentV2")},
     {"assistant-intent-page-url",
      flag_descriptions::kAssistantIntentPageUrlName,
      flag_descriptions::kAssistantIntentPageUrlDescription, kOsAndroid,
@@ -3487,11 +3496,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAssistantIntentTranslateInfoName,
      flag_descriptions::kAssistantIntentTranslateInfoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAssistantIntentTranslateInfo)},
-    {"assistant-voice-consent-taps-counter",
-     flag_descriptions::kAssistantVoiceConstentTapsCounterName,
-     flag_descriptions::kAssistantVoiceConstentTapsCounterDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAssistantVoiceConsentTapsCounter)},
     {"share-button-in-top-toolbar",
      flag_descriptions::kShareButtonInTopToolbarName,
      flag_descriptions::kShareButtonInTopToolbarDescription, kOsAndroid,
@@ -5443,6 +5447,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharedClipboardUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharedClipboardUI)},
 
+#if !defined(OS_ANDROID)
+    {"sharing-desktop-screenshots",
+     flag_descriptions::kSharingDesktopScreenshotsName,
+     flag_descriptions::kSharingDesktopScreenshotsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(sharing_hub::kDesktopScreenshots)},
+#endif
+
     {"sharing-prefer-vapid", flag_descriptions::kSharingPreferVapidName,
      flag_descriptions::kSharingPreferVapidDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingPreferVapid)},
@@ -6702,9 +6713,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewDragSpecInLauncherName,
      flag_descriptions::kNewDragSpecInLauncherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kNewDragSpecInLauncher)},
-    {"cdm-factory-daemon", flag_descriptions::kCdmFactoryDaemonName,
-     flag_descriptions::kCdmFactoryDaemonDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCdmFactoryDaemon)},
     {"shelf-drag-to-pin", flag_descriptions::kShelfDragToPinName,
      flag_descriptions::kShelfDragToPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragUnpinnedAppToPin)},
@@ -7389,13 +7397,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kLauncherAppSort)},
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // TODO(https://crbug.com/1069293): Add macOS and Linux implementations.
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX)
     {"enable-desktop-pwas-app-icon-shortcuts-menu-ui",
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIName,
-     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIDescription, kOsCrOS,
+     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIDescription,
+     kOsCrOS | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsAppIconShortcutsMenuUI)},
+#endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-input-event-logging",
      flag_descriptions::kEnableInputEventLoggingName,
      flag_descriptions::kEnableInputEventLoggingDescription, kOsCrOS,

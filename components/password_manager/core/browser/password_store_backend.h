@@ -10,9 +10,16 @@
 #include "base/callback_forward.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace syncer {
+class ProxyModelTypeControllerDelegate;
+}  // namespace syncer
+
 namespace password_manager {
+
+class LoginDatabase;
 
 struct PasswordForm;
 
@@ -95,6 +102,16 @@ class PasswordStoreBackend {
 
   virtual SmartBubbleStatsStore* GetSmartBubbleStatsStore() = 0;
   virtual FieldInfoStore* GetFieldInfoStore() = 0;
+
+  // For sync codebase only: instantiates a proxy controller delegate to
+  // react to sync events.
+  virtual std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  CreateSyncControllerDelegateFactory() = 0;
+
+  // Factory function for creating the backend. The Local backend requires the
+  // provided `login_db` for storage and Android backend for migration purposes.
+  static std::unique_ptr<PasswordStoreBackend> Create(
+      std::unique_ptr<LoginDatabase> login_db);
 };
 
 }  // namespace password_manager

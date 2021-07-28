@@ -372,12 +372,6 @@ class ExtensionPrefs : public KeyedService {
   void ClearInapplicableDisableReasonsForComponentExtension(
       const std::string& component_extension_id);
 
-  // Gets the set of extensions that have been blocklisted in prefs. This will
-  // return only the blocked extensions, not the "greylist" extensions.
-  // TODO(crbug.com/1193695): This method is not called in production, remove
-  // it.
-  std::set<std::string> GetBlocklistedExtensions() const;
-
   // Gets the key of blocklist acknowledged pref.
   // TODO(crbug.com/1193695): Remove this method once kPrefBlocklistAcknowledged
   // is removed.
@@ -403,14 +397,6 @@ class ExtensionPrefs : public KeyedService {
   // extension.
   void SetInstallLocation(const std::string& extension_id,
                           mojom::ManifestLocation location);
-
-  // Returns whether the extension with |id| has its blocklist bit set.
-  //
-  // WARNING: this only checks the extension's entry in prefs, so by definition
-  // can only check extensions that prefs knows about. There may be other
-  // sources of blocklist information, such as safebrowsing. You probably want
-  // to use Blocklist::GetBlocklistedIDs rather than this method.
-  bool IsExtensionBlocklisted(const std::string& id) const;
 
   // Increment the count of how many times we prompted the user to acknowledge
   // the given extension, and return the new count.

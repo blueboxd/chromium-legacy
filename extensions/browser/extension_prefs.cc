@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/event_router.h"
@@ -307,14 +308,6 @@ class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
 
 std::string JoinPrefs(const std::vector<base::StringPiece>& parts) {
   return base::JoinString(parts, ".");
-}
-
-// Checks if kPrefBlocklist is set to true in the base::DictionaryValue.
-// Return false if the value is false or kPrefBlocklist does not exist.
-// This is used to decide if an extension is blocklisted.
-bool IsBlocklistBitSet(const base::DictionaryValue* ext) {
-  bool bool_value;
-  return ext->GetBoolean(kPrefBlocklist, &bool_value) && bool_value;
 }
 
 // Whether SetAlertSystemFirstRun() should always return true, so that alerts
@@ -983,7 +976,7 @@ void ExtensionPrefs::AddDisableReason(
 void ExtensionPrefs::AddDisableReasons(const std::string& extension_id,
                                        int disable_reasons) {
   DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED) ||
-         IsExtensionBlocklisted(extension_id));
+         blocklist_prefs::IsExtensionBlocklisted(extension_id, this));
   ModifyDisableReasons(extension_id, disable_reasons, BIT_MAP_PREF_ADD);
 }
 
@@ -1077,40 +1070,12 @@ void ExtensionPrefs::ModifyBitMapPrefBits(const std::string& extension_id,
   }
 }
 
-std::set<std::string> ExtensionPrefs::GetBlocklistedExtensions() const {
-  std::set<std::string> ids;
-
-  const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(pref_names::kExtensions);
-  if (!extensions)
-    return ids;
-
-  for (base::DictionaryValue::Iterator it(*extensions);
-       !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().is_dict()) {
-      NOTREACHED() << "Invalid pref for extension " << it.key();
-      continue;
-    }
-    if (IsBlocklistBitSet(
-            static_cast<const base::DictionaryValue*>(&it.value()))) {
-      ids.insert(it.key());
-    }
-  }
-
-  return ids;
-}
-
 base::StringPiece ExtensionPrefs::GetPrefBlocklistAcknowledgedKey() {
   return kPrefBlocklistAcknowledged;
 }
 
 base::StringPiece ExtensionPrefs::GetPrefBlocklistKey() {
   return kPrefBlocklist;
-}
-
-bool ExtensionPrefs::IsExtensionBlocklisted(const std::string& id) const {
-  const base::DictionaryValue* ext_prefs = GetExtensionPref(id);
-  return ext_prefs && IsBlocklistBitSet(ext_prefs);
 }
 
 namespace {

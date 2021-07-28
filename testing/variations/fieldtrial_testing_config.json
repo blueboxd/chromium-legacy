@@ -3495,6 +3495,25 @@
             ]
         }
     ],
+    "EnterpriseFileSystemConnectors": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FileSystemConnectorsEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnterpriseRealtimeExtensionRequest": [
         {
             "platforms": [
@@ -5314,6 +5333,28 @@
             ]
         }
     ],
+    "NavigationThreadingOptimizations": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NavigationThreadingOptimizations"
+                    ]
+                }
+            ]
+        }
+    ],
     "NetworkServiceSandbox": [
         {
             "platforms": [
@@ -6449,6 +6490,25 @@
             ]
         }
     ],
+    "PolicyInstalledDesktopWebAppIdentityUpdate": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebAppManifestPolicyAppIdentityUpdate"
+                    ]
+                }
+            ]
+        }
+    ],
     "PowerScheduler2": [
         {
             "platforms": [
@@ -7225,28 +7285,6 @@
             ]
         }
     ],
-    "SafeBrowsingBetterTelemetryAcrossReports": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingBetterTelemetryAcrossReports"
-                    ]
-                }
-            ]
-        }
-    ],
     "SafeBrowsingCSDCompareModelsAndroid": [
         {
             "platforms": [
@@ -7254,9 +7292,9 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledFlatbuffer_20210629",
+                    "name": "EnabledFlatbuffer_20210723",
                     "params": {
-                        "reporter_omaha_tag": "25"
+                        "reporter_omaha_tag": "25.3"
                     },
                     "enable_features": [
                         "ClientSideDetectionModelIsFlatBuffer",
@@ -7265,9 +7303,9 @@
                     ]
                 },
                 {
-                    "name": "EnabledProtobuf_20210629",
+                    "name": "EnabledProtobuf_20210723",
                     "params": {
-                        "reporter_omaha_tag": "22"
+                        "reporter_omaha_tag": "25.2"
                     },
                     "enable_features": [
                         "ClientSideDetectionModelOnAndroid",
@@ -8064,6 +8102,25 @@
                     },
                     "enable_features": [
                         "TabRanker"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TabRestoreSubMenus": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabRestoreSubMenus"
                     ]
                 }
             ]
@@ -9103,6 +9160,21 @@
                         "Vulkan"
                     ],
                     "min_os_version": "10.0.0"
+                }
+            ]
+        }
+    ],
+    "WebAuthenticationCableSecondFactorV2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebAuthenticationCableSecondFactor"
+                    ]
                 }
             ]
         }

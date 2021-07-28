@@ -372,10 +372,6 @@ const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 
-// Experimental handling of accept-language via client hints.
-const base::Feature kLangClientHintHeader{"LangClientHintHeader",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLazyFrameVisibleLoadTimeMetrics {
@@ -537,10 +533,6 @@ const base::Feature kPepper3DImageChromium{"Pepper3DImageChromium",
 const base::Feature kPepperCrossOriginRedirectRestriction{
     "PepperCrossOriginRedirectRestriction", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Handle prefers-color-scheme user preference media feature via client hints.
-const base::Feature kPrefersColorSchemeClientHintHeader{
-    "PrefersColorSchemeClientHintHeader", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // All ProcessHost objects live on UI thread.
 // https://crbug.com/904556
 const base::Feature kProcessHostOnUI{"ProcessHostOnUI",
@@ -650,10 +642,6 @@ const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
 // for SecurePaymentConfirmation to be available.
 const base::Feature kSecurePaymentConfirmation{
     "SecurePaymentConfirmationBrowser", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Used to enable API changes for Secure Payment Confirmation.
-const base::Feature kSecurePaymentConfirmationAPIV2{
-    "SecurePaymentConfirmationAPIV2", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used to enable API changes for Secure Payment Confirmation.
 // TODO(crbug.com/1228924): Enable by default in M94.
@@ -862,11 +850,6 @@ const base::Feature kUnrestrictedSharedArrayBuffer{
 // to subframes.
 const base::Feature kUserActivationSameOriginVisibility{
     "UserActivationSameOriginVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// An experimental replacement for the `User-Agent` header, defined in
-// https://tools.ietf.org/html/draft-west-ua-client-hints.
-const base::Feature kUserAgentClientHint{"UserAgentClientHint",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables comparing browser and renderer's DidCommitProvisionalLoadParams in
 // RenderFrameHostImpl::VerifyThatBrowserAndRendererCalculatedDidCommitParamsMatch.

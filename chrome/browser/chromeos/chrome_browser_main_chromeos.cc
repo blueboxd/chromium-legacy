@@ -109,6 +109,7 @@
 #include "chrome/browser/ash/power/renderer_freezer.h"
 #include "chrome/browser/ash/power/smart_charging/smart_charging_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/quick_pair/quick_pair_browser_delegate_impl.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/settings/shutdown_policy_forwarder.h"
 #include "chrome/browser/ash/system/breakpad_consent_watcher.h"
@@ -201,6 +202,7 @@
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/quirks/quirks_manager.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/user_manager/user.h"
@@ -262,6 +264,13 @@ void InitializeNetworkPortalDetector() {
     network_portal_detector::SetNetworkPortalDetector(
         new NetworkPortalDetectorImpl());
   }
+}
+
+void ApplySigninProfileModifications(Profile* profile) {
+  DCHECK(ash::ProfileHelper::IsSigninProfile(profile));
+  auto* prefs = profile->GetPrefs();
+
+  prefs->SetBoolean(::prefs::kSafeBrowsingEnabled, false);
 }
 
 }  // namespace
@@ -791,6 +800,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // after AssistantStateClient.
   assistant_delegate_ = std::make_unique<AssistantBrowserDelegateImpl>();
 
+  quick_pair_delegate_ =
+      std::make_unique<ash::quick_pair::QuickPairBrowserDelegateImpl>();
+
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&version_loader::GetVersion, version_loader::VERSION_FULL),
@@ -966,6 +978,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     // to ensure it is correctly persisted.
     if (profile()->IsNewProfile())
       ProfileHelper::Get()->FlushProfile(profile());
+
+    ApplySigninProfileModifications(profile());
   } else {
     // Force loading of signin profile if it was not loaded before. It is
     // possible when we are restoring session or skipping login screen for some

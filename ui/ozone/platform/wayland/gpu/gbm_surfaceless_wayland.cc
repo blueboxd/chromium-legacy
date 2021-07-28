@@ -57,10 +57,11 @@ bool GbmSurfacelessWayland::ScheduleOverlayPlane(
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect,
     bool enable_blend,
+    const gfx::Rect& damage_rect,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   unsubmitted_frames_.back()->overlays.emplace_back(
       z_order, transform, image, bounds_rect, crop_rect, enable_blend,
-      std::move(gpu_fence));
+      damage_rect, std::move(gpu_fence));
   return true;
 }
 
@@ -244,8 +245,15 @@ void GbmSurfacelessWayland::MaybeSubmitFrames() {
       overlay_configs.push_back(
           ui::ozone::mojom::WaylandOverlayConfig::From(plane.second));
       overlay_configs.back()->buffer_id = plane.first;
-      if (plane.second.z_order == 0)
-        overlay_configs.back()->damage_region = submitted_frame->damage_region_;
+      // TODO(insert bug): For the primary plane, we receive damage via
+      // PostSubBufferAsync. Damage sent via overlay information is currently
+      // always a full damage. Take the intersection until we send correct
+      // damage via overlay information.
+      if (plane.second.z_order == 0 &&
+          !submitted_frame->damage_region_.IsEmpty()) {
+        overlay_configs.back()->damage_region.Intersect(
+            submitted_frame->damage_region_);
+      }
 #if DCHECK_IS_ON()
       if (plane.second.z_order == INT32_MIN)
         background_buffer_id_ = plane.first;

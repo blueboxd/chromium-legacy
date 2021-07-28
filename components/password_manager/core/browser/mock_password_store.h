@@ -13,6 +13,8 @@
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_backend.h"
+#include "components/sync/model/proxy_model_type_controller_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace password_manager {
@@ -23,7 +25,10 @@ class MockPasswordStore : public PasswordStore {
 
   // PasswordStoreInterface
 
-  MOCK_METHOD(void, GetAutofillableLogins, (PasswordStoreConsumer*), (override));
+  MOCK_METHOD(void,
+              GetAutofillableLogins,
+              (PasswordStoreConsumer*),
+              (override));
 
   MOCK_METHOD(void,
               DisableAutoSignInForOrigins,
@@ -84,10 +89,6 @@ class MockPasswordStore : public PasswordStore {
               GetMatchingInsecureCredentialsImpl,
               (const std::string&),
               (override));
-  MOCK_METHOD(base::WeakPtr<syncer::ModelTypeControllerDelegate>,
-              GetSyncControllerDelegateOnBackgroundSequence,
-              (),
-              (override));
   MOCK_METHOD(void,
               GetAllLoginsWithAffiliationAndBrandingInformation,
               (PasswordStoreConsumer*),
@@ -97,6 +98,10 @@ class MockPasswordStore : public PasswordStore {
 
   MOCK_METHOD(SmartBubbleStatsStore*, GetSmartBubbleStatsStore, (), (override));
   MOCK_METHOD(FieldInfoStore*, GetFieldInfoStore, (), (override));
+  MOCK_METHOD(std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>,
+              CreateSyncControllerDelegate,
+              (),
+              (override));
 
  protected:
   ~MockPasswordStore() override;

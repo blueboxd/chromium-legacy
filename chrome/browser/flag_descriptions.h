@@ -160,11 +160,8 @@ extern const char kAndroidPictureInPictureAPIDescription[];
 extern const char kAppCacheName[];
 extern const char kAppCacheDescription[];
 
-extern const char kAssistantExplicitVoiceConsentName[];
-extern const char kAssistantExplicitVoiceConsentDescription[];
-
-extern const char kAssistantVoiceConstentTapsCounterName[];
-extern const char kAssistantVoiceConstentTapsCounterDescription[];
+extern const char kAssistantConsentV2Name[];
+extern const char kAssistantConsentV2Description[];
 
 extern const char kAutofillAlwaysReturnCloudTokenizedCardName[];
 extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
@@ -1351,6 +1348,9 @@ extern const char kServiceWorkerSubresourceFilterDescription[];
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
 
+extern const char kSharingDesktopScreenshotsName[];
+extern const char kSharingDesktopScreenshotsDescription[];
+
 extern const char kSharingHubDesktopAppMenuName[];
 extern const char kSharingHubDesktopAppMenuDescription[];
 
@@ -2430,9 +2430,6 @@ extern const char kForceControlFaceAeDescription[];
 
 extern const char kCategoricalSearchName[];
 extern const char kCategoricalSearchDescription[];
-
-extern const char kCdmFactoryDaemonName[];
-extern const char kCdmFactoryDaemonDescription[];
 
 extern const char kCellularAllowPerNetworkRoamingName[];
 extern const char kCellularAllowPerNetworkRoamingDescription[];

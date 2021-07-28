@@ -87,7 +87,8 @@ void ExtensionTestMessageListener::Observe(
     sender_extension_id = function->extension_id();
 
   if (satisfied_ ||
-      (!extension_id_.empty() && sender_extension_id != extension_id_)) {
+      (!extension_id_.empty() && sender_extension_id != extension_id_) ||
+      (browser_context_ && function->browser_context() != browser_context_)) {
     return;
   }
 
@@ -122,5 +123,10 @@ void ExtensionTestMessageListener::Observe(
 
     if (quit_wait_closure_)
       std::move(quit_wait_closure_).Run();
+
+    if (on_satisfied_)
+      std::move(on_satisfied_).Run(message);
+    if (on_repeatedly_satisfied_)
+      on_repeatedly_satisfied_.Run(message);
   }
 }

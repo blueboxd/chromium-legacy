@@ -1143,12 +1143,10 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="AccuracyTipInteraction">
   <int value="0" label="kNoAction"/>
-  <int value="1" label="kLostFocus"/>
-  <int value="2" label="kClosed"/>
-  <int value="3" label="kIgnorePressed"/>
-  <int value="4" label="kOptOutPressed"/>
-  <int value="5" label="kLearnMorePressed"/>
-  <int value="6" label="kDisabledByExperiment"/>
+  <int value="1" label="kLearnMorePressed"/>
+  <int value="2" label="kOptOutPressed"/>
+  <int value="3" label="kClosed"/>
+  <int value="4" label="kDisabledByExperiment"/>
 </enum>
 
 <enum name="AccuracyTipStatus">
@@ -2845,6 +2843,8 @@ Unknown properties are collapsed to zero. -->
              &amp; Stable on Android"/>
   <int value="38" label="Manifest URL was changed during fetch"/>
   <int value="39" label="Manifest display_override value not supported"/>
+  <int value="40" label="Offline is not capable"/>
+  <int value="41" label="Pipeline should restart so it stops running one"/>
 </enum>
 
 <enum name="AppBannersInstallEvent">
@@ -12840,6 +12840,18 @@ In case of new special images, values 3 to 9 can be used. -->
   <int value="0" label="No Advantage"/>
   <int value="1" label="Header packets Only"/>
   <int value="30" label="More Than 30"/>
+</enum>
+
+<enum name="CoalitionIDAvailability">
+  <summary>
+    Details about whether or not it's possible to get coalition resource usage
+    data on the system.
+  </summary>
+  <int value="0" label="Available"/>
+  <int value="1" label="Not available"/>
+  <int value="2" label="Unable to get resource usage data from coalition"/>
+  <int value="3" label="Unable to get parent coalition ID"/>
+  <int value="4" label="Not alone in coalition"/>
 </enum>
 
 <enum name="ColorGamut">
@@ -28767,7 +28779,6 @@ Called by update_extension_histograms.py.-->
   <int value="1562" label="WMDESKSPRIVATE_LAUNCHDESKTEMPLATE"/>
   <int value="1563" label="AUTOTESTPRIVATE_SETSHELFICONPIN"/>
   <int value="1564" label="SCRIPTING_GETREGISTEREDCONTENTSCRIPTS"/>
-  <int value="1565" label="OS_TELEMETRY_GETVPDINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -33984,6 +33995,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3964"
       label="BlobStoreAccessAcrossAgentClustersInResolveForNavigation"/>
   <int value="3965" label="TapDelayEnabled"/>
+  <int value="3966" label="V8URLPattern_CompareComponent_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41874,6 +41886,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Tapped close button"/>
   <int value="2" label="Indirectly closed while visible"/>
   <int value="3" label="Indirectly closed while hidden"/>
+  <int value="4" label="Unknown dismissal reason"/>
 </enum>
 
 <enum name="InfoBarIdentifier">
@@ -46473,7 +46486,6 @@ from previous Chrome versions.
   <int value="-2082462043" label="ViewPasswords:disabled"/>
   <int value="-2082042818"
       label="AutofillCreditCardLastUsedDateDisplay:enabled"/>
-  <int value="-2081925750" label="AssistantVoiceConsentTapsCounter:enabled"/>
   <int value="-2080657940" label="DirectActions:disabled"/>
   <int value="-2080504230" label="TabHoverCards:disabled"/>
   <int value="-2077268643" label="disable-device-enumeration"/>
@@ -46520,6 +46532,7 @@ from previous Chrome versions.
   <int value="-2042278511" label="SmartSuggestionForLargeDownloads:disabled"/>
   <int value="-2041281386" label="MultiPaste:disabled"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
+  <int value="-2040360427" label="DesktopScreenshots:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
   <int value="-2039439354"
       label="OmniboxOnDeviceHeadProviderIncognito:disabled"/>
@@ -47994,6 +48007,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover:enabled"/>
   <int value="-897069393"
       label="kAutofillRationalizeRepeatedServerPredictions:disabled"/>
+  <int value="-895071695" label="DesktopScreenshots:enabled"/>
   <int value="-894214299" label="fill-on-account-select:enabled"/>
   <int value="-894185031" label="HighDynamicRange:disabled"/>
   <int value="-893673593" label="BentoOffline:disabled"/>
@@ -48661,6 +48675,7 @@ from previous Chrome versions.
   <int value="-338978205" label="NavigationMojoResponse:enabled"/>
   <int value="-338606027" label="TrimOnMemoryPressure:disabled"/>
   <int value="-338277966" label="DecoupleSyncFromAndroidMasterSync:enabled"/>
+  <int value="-337722581" label="AssistantConsentV2:enabled"/>
   <int value="-336768659" label="NtpPhotosModule:enabled"/>
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
   <int value="-333216449" label="MouseSubframeNoImplicitCapture:enabled"/>
@@ -49295,7 +49310,6 @@ from previous Chrome versions.
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
-  <int value="195472365" label="AssistantVoiceConsentTapsCounter:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
   <int value="196103097" label="PaintPreviewShowOnStartup:disabled"/>
   <int value="198719062" label="WebAssemblyLazyCompilation:disabled"/>
@@ -49918,7 +49932,6 @@ from previous Chrome versions.
   <int value="689577480" label="vr-shell-experimental-rendering"/>
   <int value="690185633" label="NonValidatingReloadOnNormalReload:disabled"/>
   <int value="691020108" label="NTPCondensedTileLayout:disabled"/>
-  <int value="691059209" label="AssistantExplicitVoiceConsent:disabled"/>
   <int value="693012666" label="QuickUnlockPin:disabled"/>
   <int value="693545401"
       label="AutofillEnableInfoBarAccountIndicationFooter:enabled"/>
@@ -51322,6 +51335,7 @@ from previous Chrome versions.
   <int value="1842219851" label="enable-incognito-window-counter"/>
   <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>
+  <int value="1844222711" label="AssistantConsentV2:disabled"/>
   <int value="1846717591" label="CaptureMode:disabled"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
   <int value="1847658464" label="MeteredShowToggle:disabled"/>
@@ -51658,7 +51672,6 @@ from previous Chrome versions.
   <int value="2106798283" label="SafetyTip:disabled"/>
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
-  <int value="2113976442" label="AssistantExplicitVoiceConsent:enabled"/>
   <int value="2114221139" label="EnableHostnameSetting:disabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2114894984" label="DelayCompetingLowPriorityRequests:enabled"/>
@@ -53476,6 +53489,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Valid match"/>
   <int value="1" label="Invalid match"/>
   <int value="2" label="Index Out of Bounds"/>
+  <int value="3" label="Native match dead"/>
 </enum>
 
 <enum name="MayLaunchUrlType">
@@ -85931,6 +85945,13 @@ others/histograms.xml -->
   <int value="1" label="Prerendered WebContents"/>
   <int value="2" label="Spare WebContents"/>
   <int value="3" label="Transferred WebContents"/>
+</enum>
+
+<enum name="WebFeedPostFollowDialogPresentation">
+  <int value="0"
+      label="Available - Post-follow dialog for an available web feed"/>
+  <int value="1"
+      label="Unavailable - Post-follow dialog for an unavailable web feed"/>
 </enum>
 
 <enum name="WebFeedRefreshStatus">

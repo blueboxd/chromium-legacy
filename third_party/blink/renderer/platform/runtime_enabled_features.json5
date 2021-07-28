@@ -495,7 +495,7 @@
     },
     {
       name: "CSSAccentColor",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Whether <image> values are allowed as counter style <symbol>
@@ -1951,9 +1951,6 @@
       origin_trial_feature_name: "SecurePaymentConfirmationV2",
       origin_trial_os: ["mac", "win", "android"],
       status: "experimental",
-    },
-    {
-      name: "SecurePaymentConfirmationAPIV2",
     },
     {
       name: "SecurePaymentConfirmationAPIV3",

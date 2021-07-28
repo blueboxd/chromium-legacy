@@ -1401,6 +1401,7 @@ crbug.com/1158554 external/wpt/css/css-conditional/css-supports-042.xht [ Failur
 crbug.com/1145970 wpt_internal/css/css-conditional/container-queries/* [ Skip ]
 crbug.com/1146092 wpt_internal/css/css-contain/* [ Skip ]
 crbug.com/1145970 virtual/container-queries/* [ Pass ]
+crbug.com/1197029 virtual/container-queries/wpt_internal/css/css-conditional/container-queries/auto-scrollbars-001.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-block-size.html [ Failure ]
 crbug.com/829028 virtual/container-queries/wpt_internal/css/css-contain/multicol-inline-size.html [ Failure ]
 
@@ -1602,6 +1603,7 @@ crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scro
 
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-018.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Failure ]
+crbug.com/1007065 external/wpt/css/css-overflow/overflow-codependent-scrollbars.html [ Failure ]
 
 crbug.com/745905 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
 crbug.com/745905 external/wpt/css/css-overflow/text-overflow-scroll-001.html [ Failure ]
@@ -4155,7 +4157,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/external/wpt/svg/types/scripted/SVG
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/ems-display-none.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/exs-display-none.svg [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/modify-transferred-listitem-different-attr.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/outline-offset-text.html [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/repaint-non-scaling-stroke-text.html [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/repaint-non-scaling-stroke-text-decoration.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-mask-update.svg [ Failure ]
@@ -4172,19 +4173,15 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textFeatures.svg [ F
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/css/text-shadow-multiple.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/empty-mask.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/focus-ring.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/focus-ring-text.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Pass Skip ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/svg-root-with-opacity.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-match-highlight.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/transformed-outlines.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/visibility-collapse.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dom/undefined-null.html [ Crash Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-dom-lengthAdjust-attr.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-dom-transform-attr.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-svgdom-lengthAdjust-prop.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/filters/feComponentTransfer-style-crash.xhtml [ Pass ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/filters/feDisplacementMap.svg [ Pass Timeout ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/filters/filter-on-filter-for-text.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/filters/filter-on-tspan.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/hittest/text-multiple-dx-values.svg [ Failure Pass ]
@@ -4203,13 +4200,10 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-background-color
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/selection-styles.xhtml [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/surrogate-pair-attribute-positions.html [ Failure Pass ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-outline-2.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/textPathBoundsBug.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-selection-deco-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-selection-text-03-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-with-geometric-precision.svg [ Skip ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/tspan-multiple-outline.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/tspan-multiple-outline-vertical.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/masking-mask-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-deco-01-b.svg [ Failure ]
@@ -4581,15 +4575,11 @@ crbug.com/773122 crbug.com/777813 [ Win ] virtual/text-antialias/font-ascent-mac
 # Cookie Store API
 crbug.com/827231 [ Win ] external/wpt/cookie-store/change_eventhandler_for_document_cookie.tentative.https.window.html [ Failure Pass Timeout ]
 
-# Failing SameSite cookies tests
-crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.https.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.https.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/samesite/window-open-reload.https.html [ Failure ]
-
 # When SameSiteByDefaultCookies is enabled (which is the case by default since
 # it's one of the experimental-web-platform-features, the Lax-allow-unsafe
 # intervention causes POST tests to fail.
 crbug.com/990439 external/wpt/cookies/samesite/form-post-blank.https.html [ Failure ]
+crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.https.html [ Failure ]
 crbug.com/990439 http/tests/cookies/same-site/popup-cross-site-post.https.html [ Failure ]
 
 # Flaky Windows-only content_shell crash
@@ -5717,7 +5707,7 @@ crbug.com/1048149 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-ste
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-appearance-zoom125.html [ Crash Pass ]
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-top-left-selection-position-after-reopen.html [ Crash Pass ]
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-zoom150-bottom-edge-no-nan.html [ Crash Pass ]
-crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appearance-zoom150.html [ Crash Pass ]
+crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appearance-zoom150.html [ Crash Failure Pass ]
 
 # SwANGLE issues
 crbug.com/1204234 css3/blending/background-blend-mode-single-accelerated-element.html [ Failure ]
@@ -7294,3 +7284,6 @@ crbug.com/1231907 [ Win7 ] virtual/oopr-canvas2d/fast/canvas/canvas-pattern-no-r
 crbug.com/1231907 [ Win7 ] virtual/oopr-canvas2d/fast/canvas/canvas-zero-length-lineCap.html [ Failure Pass ]
 crbug.com/1231907 [ Win7 ] virtual/oopr-canvas2d/fast/canvas/image-object-in-canvas.html [ Failure Pass ]
 crbug.com/1231907 [ Win7 ] virtual/oopr-canvas2d/fast/canvas/quadraticCurveTo.xml [ Failure Pass ]
+
+# Sheriff 2021-07-27
+crbug.com/1233557 [ Mac10.12 ] fast/forms/calendar-picker/date-picker-appearance-zoom150.html [ Failure Pass ]

@@ -483,7 +483,8 @@ TEST_P(StorageQueueTest, WriteIntoNewStorageQueueAndUploadWithFailures) {
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
-TEST_P(StorageQueueTest, WriteIntoNewStorageQueueReopenWriteMoreAndUpload) {
+// TODO(crbug.com/1233846): This test is very flaky.
+TEST_P(StorageQueueTest, DISABLED_WriteIntoNewStorageQueueReopenWriteMoreAndUpload) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
   WriteStringOrDie(kData[0]);
   WriteStringOrDie(kData[1]);
@@ -561,8 +562,17 @@ TEST_P(
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload \
+  DISABLED_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload
+#else
+#define MAYBE_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload \
+  WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload
+#endif
+
+// TODO(crbug.com/1194878) - Test is flaky on CrOS.
 TEST_P(StorageQueueTest,
-       WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload) {
+       MAYBE_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
   WriteStringOrDie(kData[0]);
   WriteStringOrDie(kData[1]);

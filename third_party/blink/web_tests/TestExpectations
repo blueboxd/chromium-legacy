@@ -3224,7 +3224,6 @@ crbug.com/626703 [ Mac ] external/wpt/web-locks/query-ordering.tentative.https.h
 crbug.com/626703 external/wpt/fetch/connection-pool/network-partition-key.html [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] virtual/plz-dedicated-worker/external/wpt/fetch/connection-pool/network-partition-key.html [ Failure Pass Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-before-load.https.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Failure Timeout ]
@@ -4213,7 +4212,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/zoom/page/zoom-zoom-coords.xhtm
 crbug.com/1179585 [ Mac10.12 ] virtual/layout_ng_svg_text/* [ Skip ]
 crbug.com/1179585 [ Mac10.13 ] virtual/layout_ng_svg_text/* [ Skip ]
 crbug.com/1179585 [ Mac10.14 ] virtual/layout_ng_svg_text/* [ Skip ]
-crbug.com/1179585 [ Mac11.0 ] virtual/layout_ng_svg_text/* [ Skip ]
 crbug.com/1179585 [ Win7 ] virtual/layout_ng_svg_text/* [ Skip ]
 
 # [css-animations]
@@ -6126,9 +6124,6 @@ crbug.com/1120330 virtual/threaded/external/wpt/permissions-policy/experimental-
 
 crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-navigate.https.html [ Failure Pass ]
 
-# Sheriff 2020-11-20
-crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
-
 # Mac11.0 rebaseline
 crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-trak.html [ Failure ]
 crbug.com/1123002 [ Mac11.0 ] external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs.html [ Failure ]
@@ -7249,7 +7244,6 @@ crbug.com/1229801 http/tests/devtools/elements/css-rule-hover-highlights-selecto
 crbug.com/1229802 fast/events/pointerevents/multi-touch-events.html [ Failure Pass ]
 crbug.com/835943 http/tests/appcache/non-html.xhtml [ Crash Failure Pass Timeout ]
 crbug.com/1181886 external/wpt/pointerevents/pointerevent_movementxy.html?* [ Failure Pass Timeout ]
-crbug.com/1161244 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html?* [ Pass Timeout ]
 
 # Sheriff 2021-07-19
 crbug.com/1230534 [ Linux ] external/wpt/webrtc/simulcast/vp8.https.html [ Pass Timeout ]
@@ -7287,3 +7281,15 @@ crbug.com/1231907 [ Win7 ] virtual/oopr-canvas2d/fast/canvas/quadraticCurveTo.xm
 
 # Sheriff 2021-07-27
 crbug.com/1233557 [ Mac10.12 ] fast/forms/calendar-picker/date-picker-appearance-zoom150.html [ Failure Pass ]
+
+# Sheriff 2021-07-28
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-after-duration.https.html [ Failure Pass ]
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-before-start.https.html [ Failure Pass ]
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-set-timing.https.html [ Failure Pass ]
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure Pass ]
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-overflow-hidden.https.html [ Failure Pass ]
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure Pass ]
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-cancel.https.html [ Failure Pass ]
+crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-get-timing-on-worklet-thread.https.html [ Failure Pass ]
+crbug.com/1233781 http/tests/serviceworker/window-close-during-registration.html [ Failure Pass ]
+crbug.com/1233792 [ Mac10.13 ] virtual/synchronous_html_parser/http/tests/inspector-protocol/runtime/eval-await-navigation-paused-message-order.js [ Failure Pass ]

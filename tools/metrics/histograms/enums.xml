@@ -8842,6 +8842,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Dispatched"/>
 </enum>
 
+<enum name="BooleanDisplayIdCollision">
+  <int value="0" label="No display ID collision"/>
+  <int value="1" label="Display ID collision detected"/>
+</enum>
+
 <enum name="BooleanDowngrade">
   <int value="0" label="Not downgraded"/>
   <int value="1" label="Downgraded"/>
@@ -28779,6 +28784,7 @@ Called by update_extension_histograms.py.-->
   <int value="1562" label="WMDESKSPRIVATE_LAUNCHDESKTEMPLATE"/>
   <int value="1563" label="AUTOTESTPRIVATE_SETSHELFICONPIN"/>
   <int value="1564" label="SCRIPTING_GETREGISTEREDCONTENTSCRIPTS"/>
+  <int value="1565" label="OS_TELEMETRY_GETVPDINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -33996,6 +34002,7 @@ Called by update_use_counter_feature_enum.py.-->
       label="BlobStoreAccessAcrossAgentClustersInResolveForNavigation"/>
   <int value="3965" label="TapDelayEnabled"/>
   <int value="3966" label="V8URLPattern_CompareComponent_Method"/>
+  <int value="3967" label="EarlyHintsPreload"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41755,6 +41762,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="SelectItem"/>
   <int value="3" label="UnselectItem"/>
   <int value="4" label="DeleteItem"/>
+  <int value="5" label="PasteSuggestion"/>
 </enum>
 
 <enum name="IMENonAutocorrectDiacriticStatus">

@@ -157,7 +157,7 @@ class TestSafeBrowsingUIManagerDelegate
   ~TestSafeBrowsingUIManagerDelegate() override = default;
 
   // SafeBrowsingUIManager::Delegate:
-  const std::string& GetApplicationLocale() override { return app_locale_; }
+  std::string GetApplicationLocale() override { return "en-us"; }
   void TriggerSecurityInterstitialShownExtensionEventIfDesired(
       content::WebContents* web_contents,
       const GURL& page_url,
@@ -189,12 +189,13 @@ class TestSafeBrowsingUIManagerDelegate
   }
   bool IsMetricsAndCrashReportingEnabled() override { return false; }
 
+  bool IsSendingOfHitReportsEnabled() override { return false; }
+
   void set_is_hosting_extension(bool is_hosting_extension) {
     is_hosting_extension_ = is_hosting_extension;
   }
 
  private:
-  std::string app_locale_ = "en-us";
   bool is_hosting_extension_ = false;
   TestingPrefServiceSimple pref_service_;
 };

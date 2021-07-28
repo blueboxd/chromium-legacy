@@ -1071,6 +1071,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_SCREEN_CAPTURES_TITLE" desc="Title of the screen captures area in the holding space bubble.">
         Screen captures
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_CHIP_TOOLTIP" desc="Tooltip for a chip representing a holding space item. The first placeholder, the PRIMARY_TEXT, is the filename of the holding space item's backing file. The second placeholder, the SECONDARY_TEXT, is the backing file's in-progress state. The in-progress state indicates if progress is paused as well as the number of received bytes and total bytes expected for the backing file.">
+        <ph name="PRIMARY_TEXT">$1<ex>filename.txt</ex></ph>, <ph name="SECONDARY_TEXT">$2<ex>Paused, 10/100 MB</ex></ph>
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL" desc="Title of the cancel option in the holding space item context menu.">
         Cancel
       </message>
@@ -3796,11 +3799,11 @@ Here are some things you can try to get started.
       </message>
 
       <!-- Debugd notification strings -->
-      <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_STARTED" desc="The label used for the notification to indicate network packet capture operation has started on the device.">
-        Network packet capture started
+      <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_STARTED" desc="The label used for the notification to indicate network packet capture operation has started and network information is being collected on the device.">
+        Collecting network information
       </message>
       <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_DESCRIPTION" desc="The message shown on notification bubble about ongoing network packet capture operation and the description of how to stop by clicking the button.">
-        Click stop to stop ongoing packet capture operations.
+        You can stop packet capture at any time.
       </message>
       <message name="IDS_ASH_DEBUG_STOP_PACKET_CAPTURE_BUTTON" desc="The label on notification button for user to stop the ongoing packet capture operation.">
         Stop

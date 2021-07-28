@@ -2354,6 +2354,7 @@ if (!is_android) {
         "../browser/policy/test/assistant_policy_browsertest.cc",
         "../browser/policy/test/audio_output_allowed_browsertest.cc",
         "../browser/policy/test/note_taking_on_lock_screen_policy_browsertest.cc",
+        "../browser/policy/test/screenshot_policy_browsertest.cc",
         "../browser/policy/test/session_length_limit_policy_browsertest.cc",
         "../browser/policy/test/suggested_content_policy_browsertest.cc",
         "../browser/policy/test/system_features_policy_browsertest.cc",
@@ -2826,7 +2827,10 @@ if (!is_android) {
           "../browser/extensions/api/virtual_keyboard_private/virtual_keyboard_private_apitest.cc",
         ]
 
-        deps += [ "//chrome/browser/error_reporting:test_support" ]
+        deps += [
+          "../browser/chromeos/extensions/telemetry/api:browser_tests",
+          "//chrome/browser/error_reporting:test_support",
+        ]
       }
 
       deps += [
@@ -3129,6 +3133,7 @@ if (!is_android) {
         "../browser/ash/file_manager/video_player_jstest.cc",
         "../browser/ash/first_run/drive_first_run_browsertest.cc",
         "../browser/ash/full_restore/full_restore_app_launch_handler_browsertest.cc",
+        "../browser/ash/input_method/input_method_engine_browsertests.cc",
         "../browser/ash/kerberos/kerberos_credentials_manager_factory_browsertest.cc",
         "../browser/ash/lock_screen_apps/note_taking_browsertest.cc",
         "../browser/ash/login/accessibility_browsertest.cc",
@@ -3386,7 +3391,6 @@ if (!is_android) {
         "../browser/chromeos/extensions/wallpaper_manager_browsertest.cc",
         "../browser/chromeos/extensions/wallpaper_private_apitest.cc",
         "../browser/chromeos/extensions/wm/wm_desks_private_apitest.cc",
-        "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
         "../browser/chromeos/input_method/native_input_method_engine_browsertest.cc",
         "../browser/chromeos/input_method/textinput_browsertest.cc",
         "../browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc",

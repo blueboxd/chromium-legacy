@@ -425,19 +425,8 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     GetState().SetFont(*cached_font, Host()->GetFontSelector());
   } else {
     auto* style =
-        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
+        CSSParser::ParseFont(new_font, Host()->GetTopExecutionContext());
     if (!style)
-      return;
-
-    CSSParser::ParseValue(style, CSSPropertyID::kFont, new_font, true,
-                          Host()->GetTopExecutionContext());
-
-    // According to
-    // http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
-    // the "inherit", "initial" and "unset" values must be ignored.
-    const CSSValue* font_value =
-        style->GetPropertyCSSValue(CSSPropertyID::kFontSize);
-    if (!font_value || font_value->IsCSSWideKeyword())
       return;
 
     FontDescription desc =
@@ -473,7 +462,7 @@ String OffscreenCanvasRenderingContext2D::direction() const {
              ? kRtlDirectionString
              : kLtrDirectionString;
 }
-void OffscreenCanvasRenderingContext2D::setTextLetterSpacing(
+void OffscreenCanvasRenderingContext2D::setLetterSpacing(
     const double letter_spacing) {
   if (UNLIKELY(!std::isfinite(letter_spacing)))
     return;
@@ -482,8 +471,7 @@ void OffscreenCanvasRenderingContext2D::setTextLetterSpacing(
     setFont(font());
 
   float letter_spacing_float = clampTo<float>(letter_spacing);
-  GetState().SetTextLetterSpacing(letter_spacing_float,
-                                  Host()->GetFontSelector());
+  GetState().SetLetterSpacing(letter_spacing_float, Host()->GetFontSelector());
 }
 
 void OffscreenCanvasRenderingContext2D::setWordSpacing(

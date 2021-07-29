@@ -256,7 +256,13 @@ const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin{
 // Replaces the origin text flash and the icon in web app notifications with
 // the name of the app and the icon of the app.
 const base::Feature kDesktopPWAsNotificationIconAndTitle{
-    "DesktopPWAsNotificationIconAndTitle", base::FEATURE_DISABLED_BY_DEFAULT};
+  "DesktopPWAsNotificationIconAndTitle",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables or disables Desktop PWAs to be auto-started on OS login.
 const base::Feature kDesktopPWAsRunOnOsLogin {
@@ -532,7 +538,7 @@ const base::Feature kIncognitoBrandConsistencyForAndroid{
 #endif
 
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+    defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 // When enabled, removes any theme or background customization done by the user
 // on the Incognito UI.
 const base::Feature kIncognitoBrandConsistencyForDesktop{

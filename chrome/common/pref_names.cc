@@ -1058,12 +1058,6 @@ const char kSystemProxyUserTrafficHostAndPort[] =
 const char kEduCoexistenceArcMigrationCompleted[] =
     "account_manager.edu_coexistence_arc_migration_completed";
 
-// Boolean pref indicating whether reusing the Chrome OS login credentials for
-// network authentication is allowed. Note: currently only used for managed
-// proxies secured with NTLM authentication.
-const char kIntegratedWebAuthenticationAllowed[] =
-    "auth.integrated_web_authentication_allowed";
-
 // List pref containing extension IDs that are exempt from the restricted
 // managed guest session clean-up procedure.
 const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
@@ -2088,10 +2082,10 @@ const char kAuthNegotiateDelegateByKdcPolicy[] =
     "auth.negotiate_delegate_by_kdc_policy";
 #endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Boolean that specifies whether NTLMv2 is enabled.
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Boolean whether Kerberos functionality is enabled.
@@ -2211,6 +2205,16 @@ const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
 // valid if it's not the default value; otherwise, no private-set-membership
 // decision has been made yet.
 const char kShouldRetrieveDeviceState[] = "ShouldRetrieveDeviceState";
+
+// An integer pref. Its valid values are defined in
+// enterprise_management::DeviceRegisterRequest::PsmExecutionResult enum which
+// indicates all possible PSM execution results in the Chrome OS enrollment
+// flow.
+const char kEnrollmentPsmResult[] = "EnrollmentPsmResult";
+
+// An int64 pref to record the timestamp of PSM retrieving the device's
+// determination successfully in the Chrome OS enrollment flow.
+const char kEnrollmentPsmDeterminationTime[] = "EnrollmentPsmDeterminationTime";
 
 // An integer pref with the maximum number of bits used by the client in a
 // previous auto-enrollment request. If the client goes through an auto update

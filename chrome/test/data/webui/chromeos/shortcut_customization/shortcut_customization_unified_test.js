@@ -7,6 +7,7 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import {acceleratorEditDialogTest} from './accelerator_edit_dialog_test.js';
 import {acceleratorEditViewTest} from './accelerator_edit_view_test.js';
 import {acceleratorRowTest} from './accelerator_row_test.js';
+import {acceleratorSubsectionTest} from './accelerator_subsection_test.js';
 import {acceleratorViewTest} from './accelerator_view_test.js';
 import {fakeShortcutProviderTest} from './fake_shortcut_provider_test.js';
 import {shortcutCustomizationAppTest} from './shortcut_customization_test.js';
@@ -18,11 +19,10 @@ function runSuite(suiteName, testFn) {
   suite(suiteName, testFn);
 }
 
-runSuite('ShortcutCustomizationApp', shortcutCustomizationAppTest);
 runSuite('AcceleratorEditViewTest', acceleratorEditViewTest);
 runSuite('AcceleratorViewTest', acceleratorViewTest);
 runSuite('AcceleratorRowTest', acceleratorRowTest);
-// TODO(jimmyxgong): Any test that runs after AcceleratorEditDialogTest
-// will fail right now. When fixed, alphabetize this list.
-runSuite('FakeShortcutProviderTest', fakeShortcutProviderTest);
 runSuite('AcceleratorEditDialogTest', acceleratorEditDialogTest);
+runSuite('AcceleratorSubsectionTest', acceleratorSubsectionTest);
+runSuite('FakeShortcutProviderTest', fakeShortcutProviderTest);
+runSuite('ShortcutCustomizationApp', shortcutCustomizationAppTest);

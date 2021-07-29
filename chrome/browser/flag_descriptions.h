@@ -1890,6 +1890,9 @@ extern const char kInterestFeedV2ClickAndViewActionsConditionalUploadName[];
 extern const char
     kInterestFeedV2ClickAndViewActionsConditionalUploadDescription[];
 
+extern const char kMessagesForAndroidAdsBlockedName[];
+extern const char kMessagesForAndroidAdsBlockedDescription[];
+
 extern const char kMessagesForAndroidChromeSurveyName[];
 extern const char kMessagesForAndroidChromeSurveyDescription[];
 
@@ -1934,6 +1937,9 @@ extern const char kPageInfoDiscoverabilityDescription[];
 
 extern const char kPageInfoHistoryName[];
 extern const char kPageInfoHistoryDescription[];
+
+extern const char kPasswordProtectionForSignedInUsersName[];
+extern const char kPasswordProtectionForSignedInUsersDescription[];
 
 extern const char kPhotoPickerVideoSupportName[];
 extern const char kPhotoPickerVideoSupportDescription[];
@@ -2049,9 +2055,6 @@ extern const char kSharingHubLinkToggleDescription[];
 
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
-
-extern const char kActionableContentSettingsName[];
-extern const char kActionableContentSettingsDescription[];
 
 extern const char kThemeRefactorAndroidName[];
 extern const char kThemeRefactorAndroidDescription[];

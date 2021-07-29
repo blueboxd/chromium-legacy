@@ -1183,11 +1183,6 @@ void NativeThemeBase::AdjustCheckboxRadioRectForPadding(SkRect* rect) const {
                 static_cast<int>(rect->bottom()) - 1);
 }
 
-float NativeThemeBase::AdjustBorderWidthByZoom(float border_width,
-                                               float) const {
-  return border_width;
-}
-
 SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
                                              SkScalar saturate_amount,
                                              SkScalar brighten_amount) const {
@@ -1393,7 +1388,7 @@ SkColor NativeThemeBase::GetControlColor(ControlColorId color_id,
   if (InForcedColorsMode() && features::IsForcedColorsEnabled())
     return GetHighContrastControlColor(color_id, color_scheme);
 
-  if(color_scheme == ColorScheme::kDark)
+  if (color_scheme == ColorScheme::kDark)
     return GetDarkModeControlColor(color_id);
 
   switch (color_id) {

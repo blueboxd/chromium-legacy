@@ -1122,8 +1122,7 @@ void WizardController::OnHidDetectionScreenExit(
   OnScreenExit(HIDDetectionView::kScreenId,
                HIDDetectionScreen::GetResultString(result));
 
-  if ((result == HIDDetectionScreen::Result::SKIP ||
-       result == HIDDetectionScreen::Result::SKIPPED_FOR_TESTS) &&
+  if (result == HIDDetectionScreen::Result::SKIPPED_FOR_TESTS &&
       current_screen_) {
     return;
   }
@@ -2278,18 +2277,6 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
         prescribed_enrollment_config_.management_domain.empty()
             ? policy::EnrollmentConfig::MODE_MANUAL
             : policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT;
-  }
-
-  // If enrollment token is specified via OOBE configuration use corresponding
-  // configuration.
-  auto* enrollment_token = wizard_context_->configuration.FindKeyOfType(
-      configuration::kEnrollmentToken, base::Value::Type::STRING);
-  if (enrollment_token && !enrollment_token->GetString().empty()) {
-    effective_config.mode =
-        policy::EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN;
-    effective_config.auth_mechanism =
-        policy::EnrollmentConfig::AUTH_MECHANISM_ATTESTATION;
-    effective_config.enrollment_token = enrollment_token->GetString();
   }
 
   EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());

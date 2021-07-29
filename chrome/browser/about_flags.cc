@@ -205,7 +205,6 @@
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/webapps/android/features.h"
 #include "components/browser_ui/photo_picker/android/features.h"
-#include "components/browser_ui/site_settings/android/features.h"
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/external_intents/android/external_intents_features.h"
 #include "components/power_scheduler/power_scheduler_features.h"
@@ -5924,6 +5923,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          safe_browsing::
              kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid)},
+
+    {"safe-browsing-password-protection-for-signed-in-users",
+     flag_descriptions::kPasswordProtectionForSignedInUsersName,
+     flag_descriptions::kPasswordProtectionForSignedInUsersDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(safe_browsing::kPasswordProtectionForSignedInUsers)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6882,6 +6887,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWindowNaming)},
 
 #if defined(OS_ANDROID)
+    {"messages-for-android-ads-blocked",
+     flag_descriptions::kMessagesForAndroidAdsBlockedName,
+     flag_descriptions::kMessagesForAndroidAdsBlockedDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidAdsBlocked)},
     {"messages-for-android-chrome-survey",
      flag_descriptions::kMessagesForAndroidChromeSurveyName,
      flag_descriptions::kMessagesForAndroidChromeSurveyDescription, kOsAndroid,
@@ -7189,13 +7198,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPdfXfaFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfXfaSupport)},
 #endif  // BUILDFLAG(ENABLE_PDF)
-
-#if defined(OS_ANDROID)
-    {"actionable-content-settings",
-     flag_descriptions::kActionableContentSettingsName,
-     flag_descriptions::kActionableContentSettingsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(browser_ui::kActionableContentSettings)},
-#endif
 
     {"send-tab-to-self-when-signed-in",
      flag_descriptions::kSendTabToSelfWhenSignedInName,

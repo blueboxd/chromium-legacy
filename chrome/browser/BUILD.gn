@@ -2012,6 +2012,8 @@ static_library("browser") {
     "//components/contextual_search/content:browser",
     "//components/contextual_search/content/common/mojom",
     "//components/contextual_search/core:browser",
+    "//components/continuous_search/browser",
+    "//components/continuous_search/common/public/mojom",
     "//components/cookie_config",
     "//components/country_codes",
     "//components/crash/core/browser",
@@ -4503,6 +4505,8 @@ static_library("browser") {
       "nearby_sharing/fast_initiation/constants.h",
       "nearby_sharing/fast_initiation/fast_initiation_advertiser.cc",
       "nearby_sharing/fast_initiation/fast_initiation_advertiser.h",
+      "nearby_sharing/fast_initiation/fast_initiation_scanner.cc",
+      "nearby_sharing/fast_initiation/fast_initiation_scanner.h",
       "nearby_sharing/incoming_frames_reader.cc",
       "nearby_sharing/incoming_frames_reader.h",
       "nearby_sharing/incoming_share_target_info.cc",
@@ -4786,6 +4790,8 @@ static_library("browser") {
   if (is_chromeos_lacros) {
     assert(enable_system_notifications)
     sources += [
+      "apps/app_service/app_service_proxy_lacros.cc",
+      "apps/app_service/app_service_proxy_lacros.h",
       "apps/app_service/fake_lacros_web_apps_host.cc",
       "apps/app_service/fake_lacros_web_apps_host.h",
       "chrome_browser_main_parts_lacros.cc",

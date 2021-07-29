@@ -320,7 +320,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[translate::prefs::kOfferTranslateEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[language::prefs::kFluentLanguages] =
+  (*s_allowlist)[translate::prefs::kBlockedLanguages] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)[language::prefs::kSelectedLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
@@ -665,7 +665,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Restore apps and pages on startup
-  (*s_allowlist)[chromeos::full_restore::kRestoreAppsAndPagesPrefName] =
+  (*s_allowlist)[ash::full_restore::kRestoreAppsAndPagesPrefName] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Timezone settings.

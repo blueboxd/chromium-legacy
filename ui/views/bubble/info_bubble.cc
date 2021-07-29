@@ -48,16 +48,20 @@ class InfoBubbleFrame : public BubbleFrameView {
   DISALLOW_COPY_AND_ASSIGN(InfoBubbleFrame);
 };
 
-InfoBubble::InfoBubble(View* anchor, const std::u16string& message)
-    : anchor_(anchor), frame_(nullptr), preferred_width_(0) {
-  DCHECK(anchor_);
-  SetAnchorView(anchor_);
-
+InfoBubble::InfoBubble(View* anchor,
+                       BubbleBorder::Arrow arrow,
+                       const std::u16string& message)
+    : BubbleDialogDelegateView(anchor, arrow) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 
   set_margins(LayoutProvider::Get()->GetInsetsMetric(
       InsetsMetric::INSETS_TOOLTIP_BUBBLE));
   SetCanActivate(false);
+  SetAccessibleRole(ax::mojom::Role::kAlertDialog);
+  // TODO(pbos): This hacks around a bug where focus order in the parent dialog
+  // breaks because it tries to focus InfoBubble without anything focusable in
+  // it. FocusSearch should handle this case and this should be removable.
+  set_focus_traversable_from_anchor_view(false);
 
   SetLayoutManager(std::make_unique<FillLayout>());
   label_ = AddChildView(std::make_unique<Label>(message));
@@ -68,7 +72,7 @@ InfoBubble::InfoBubble(View* anchor, const std::u16string& message)
 InfoBubble::~InfoBubble() = default;
 
 void InfoBubble::Show() {
-  widget_ = BubbleDialogDelegateView::CreateBubble(this);
+  BubbleDialogDelegateView::CreateBubble(this);
 
   UpdatePosition();
 }
@@ -100,11 +104,6 @@ gfx::Size InfoBubble::CalculatePreferredSize() const {
   return gfx::Size(pref_width, GetHeightForWidth(pref_width));
 }
 
-void InfoBubble::OnWidgetDestroyed(Widget* widget) {
-  if (widget == widget_)
-    widget_ = nullptr;
-}
-
 void InfoBubble::OnWidgetBoundsChanged(Widget* widget,
                                        const gfx::Rect& new_bounds) {
   BubbleDialogDelegateView::OnWidgetBoundsChanged(widget, new_bounds);
@@ -113,16 +112,17 @@ void InfoBubble::OnWidgetBoundsChanged(Widget* widget,
 }
 
 void InfoBubble::UpdatePosition() {
-  if (!widget_)
+  Widget* const widget = GetWidget();
+  if (!widget)
     return;
 
-  if (!anchor_->GetVisibleBounds().IsEmpty()) {
+  if (!GetAnchorView()->GetVisibleBounds().IsEmpty()) {
     SizeToContents();
-    widget_->SetVisibilityChangedAnimationsEnabled(true);
-    widget_->ShowInactive();
+    widget->SetVisibilityChangedAnimationsEnabled(true);
+    widget->ShowInactive();
   } else {
-    widget_->SetVisibilityChangedAnimationsEnabled(false);
-    widget_->Hide();
+    widget->SetVisibilityChangedAnimationsEnabled(false);
+    widget->Hide();
   }
 }
 

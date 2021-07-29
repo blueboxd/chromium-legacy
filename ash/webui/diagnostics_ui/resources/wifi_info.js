@@ -6,6 +6,7 @@ import './data_point.js';
 import './diagnostics_fonts_css.js';
 import './diagnostics_shared_css.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Network} from './diagnostics_types.js';
@@ -21,11 +22,23 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /** @type {!Network} */
     network: {
       type: Object,
     },
+
+    /**
+     * @protected
+     * @type {string}
+     */
+    signalStrength_: {
+      type: String,
+      computed:
+          'computeSignalStrength_(network.typeProperties.wifi.signalStrength)'
+    }
   },
 
   /**
@@ -45,4 +58,15 @@ Polymer({
     const ghz = (frequency / 1000).toFixed(3);
     return `${channel || '?'} (${ghz} GHz)`;
   },
+
+  /**
+   * @return {string}
+   */
+  computeSignalStrength_() {
+    if (this.network.typeProperties && this.network.typeProperties.wifi &&
+        this.network.typeProperties.wifi.signalStrength > 0) {
+      return `${this.network.typeProperties.wifi.signalStrength}`;
+    }
+    return '';
+  }
 });

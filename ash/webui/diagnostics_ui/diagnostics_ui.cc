@@ -136,7 +136,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"networkStateNotConnectedText", IDS_NETWORK_HEALTH_STATE_NOT_CONNECTED},
       {"networkStateOnlineText", IDS_NETWORK_HEALTH_STATE_ONLINE},
       {"networkStatePortalText", IDS_NETWORK_HEALTH_STATE_PORTAL},
-      {"noEthernet", IDS_DIAGNOSTICS_NO_ETHERNET},
+      {"networkSecurityLabel", IDS_NETWORK_DIAGNOSTICS_SECURITY},
       {"notEnoughAvailableMemoryMessage",
        IDS_DIAGNOSTICS_NOT_ENOUGH_AVAILABLE_MEMORY},
       {"overviewText", IDS_DIAGNOSTICS_OVERVIEW},
@@ -173,6 +173,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"testSuccess", IDS_DIAGNOSTICS_TEST_SUCCESS_TEXT},
       {"testSucceededBadgeText", IDS_DIAGNOSTICS_TEST_SUCCESS_BADGE_TEXT},
       {"troubleConnecting", IDS_DIAGNOSTICS_TROUBLE_CONNECTING},
+      {"troubleshootingText", IDS_DIAGNOSTICS_TROUBLESHOOTING_TEXT},
       {"versionInfo", IDS_DIAGNOSTICS_VERSION_INFO_TEXT},
       {"wifiLabel", IDS_NETWORK_TYPE_WIFI},
   };

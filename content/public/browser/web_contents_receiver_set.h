@@ -19,9 +19,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 class EmbeddedSearchClientFactoryImpl;
-class LiteVideoObserver;
 class OfflinePageTabHelper;
-class SupervisedUserNavigationObserver;
 class SyncEncryptionKeysTabHelper;
 
 namespace chrome_browser_net {
@@ -49,7 +47,6 @@ class SubresourceRedirectObserver;
 
 namespace content {
 
-class ConversionHost;
 class RenderFrameHost;
 class ScreenOrientationProvider;
 class TestFrameInterfaceBinder;
@@ -114,8 +111,6 @@ class WebContentsFrameReceiverSetPassKey {
   WebContentsFrameReceiverSetPassKey() = default;
 
   friend class ::EmbeddedSearchClientFactoryImpl;
-  friend class ::LiteVideoObserver;
-  friend class ::SupervisedUserNavigationObserver;
   friend class ::SyncEncryptionKeysTabHelper;
   friend class ::chrome_browser_net::NetErrorTabHelper;
   friend class ::extensions::ChromeWebViewPermissionHelperDelegate;
@@ -125,7 +120,6 @@ class WebContentsFrameReceiverSetPassKey {
   friend class ::printing::PrintManager;
   friend class ::security_interstitials::SecurityInterstitialTabHelper;
   friend class ::subresource_redirect::SubresourceRedirectObserver;
-  friend class ConversionHost;
   friend class ScreenOrientationProvider;
   friend class TestFrameInterfaceBinder;
   FRIEND_TEST_ALL_PREFIXES(WebContentsReceiverSetBrowserTest,

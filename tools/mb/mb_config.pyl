@@ -150,6 +150,7 @@
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-lacros-builder-rel': 'lacros_on_linux_release_bot',
+      'linux-lacros-dbg': 'lacros_on_linux_debug_bot',
       'linux-lacros-tester-rel': 'lacros_on_linux_release_bot',
       'linux-cfm-rel': 'linux_cfm_release_bot',
     },
@@ -725,6 +726,7 @@
     'internal.chrome.fyi': {
       'chromeos-amd64-generic-lacros-internal-rel': 'chromeos_amd64-generic_lacros_rel',
       'linux-autofill-captured-sites-rel': 'release_bot',
+      'linux-chrome-finch-fyi': 'official_goma',
       'linux-password-manager-captured-sites-rel': 'release_bot',
       'lorenz-graph-dbg': 'android_debug_static_external_bot',
       'mac-autofill-captured-sites-rel': 'release_bot',
@@ -896,6 +898,7 @@
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
       'linux-chrome': 'official_goma',
       'linux-chrome-beta': 'official_goma',
+      'linux-chrome-finch-fyi': 'official_goma',
       'linux-chrome-stable': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
       'mac-chrome': 'official_goma_mac',
@@ -2329,6 +2332,10 @@
 
     'lacros_on_linux_release_bot': [
       'lacros_on_linux', 'release_bot', 'also_build_ash_chrome',
+    ],
+
+    'lacros_on_linux_debug_bot': [
+      'lacros_on_linux', 'debug_bot', 'also_build_ash_chrome',
     ],
 
     'lacros_on_linux_release_not_build_ash_bot': [

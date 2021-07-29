@@ -762,6 +762,21 @@
             ]
         }
     ],
+    "AssistMultiWord": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210623",
+                    "enable_features": [
+                        "AssistMultiWord"
+                    ]
+                }
+            ]
+        }
+    ],
     "AssistPersonalInfo": [
         {
             "platforms": [
@@ -4266,7 +4281,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20210728",
                     "enable_features": [
                         "RestoreGAIACookiesOnUserAction"
                     ]
@@ -5690,21 +5705,6 @@
             ]
         }
     ],
-    "OopRasterizationDDL": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OopRasterizationDDL"
-                    ]
-                }
-            ]
-        }
-    ],
     "OptimizationHintsDesktopM91": [
         {
             "platforms": [
@@ -6477,7 +6477,8 @@
     "PowerScheduler2": [
         {
             "platforms": [
-                "android"
+                "android",
+                "android_webview"
             ],
             "experiments": [
                 {

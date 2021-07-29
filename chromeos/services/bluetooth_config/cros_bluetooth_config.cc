@@ -4,15 +4,21 @@
 
 #include "chromeos/services/bluetooth_config/cros_bluetooth_config.h"
 
+#include "chromeos/services/bluetooth_config/initializer.h"
 #include "chromeos/services/bluetooth_config/system_properties_provider_impl.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 
 namespace chromeos {
 namespace bluetooth_config {
 
 CrosBluetoothConfig::CrosBluetoothConfig(
+    Initializer& initializer,
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
-    : system_properties_provider_(
-          std::make_unique<SystemPropertiesProviderImpl>(bluetooth_adapter)) {}
+    : adapter_state_controller_(
+          initializer.CreateAdapterStateController(bluetooth_adapter)),
+      system_properties_provider_(
+          std::make_unique<SystemPropertiesProviderImpl>(
+              adapter_state_controller_.get())) {}
 
 CrosBluetoothConfig::~CrosBluetoothConfig() = default;
 
@@ -24,6 +30,10 @@ void CrosBluetoothConfig::BindPendingReceiver(
 void CrosBluetoothConfig::ObserveSystemProperties(
     mojo::PendingRemote<mojom::SystemPropertiesObserver> observer) {
   system_properties_provider_->Observe(std::move(observer));
+}
+
+void CrosBluetoothConfig::SetBluetoothEnabledState(bool enabled) {
+  adapter_state_controller_->SetBluetoothEnabledState(enabled);
 }
 
 }  // namespace bluetooth_config

@@ -49,11 +49,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "actionable-content-settings",
-    "owners": ["oroshiba", "dullweber"],
-    "expiry_milestone": 93
-  },
-  {
     "name": "adaptive-button-in-top-toolbar",
     "owners": [ "bttk", "chrome-segmentation-platform@google.com" ],
     "expiry_milestone": 94
@@ -1038,7 +1033,7 @@
   {
     "name": "detected-source-language-option",
     "owners": [ "cuianthony", "chrome-language@google.com" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 97
   },
   {
     "name": "device-discovery-notifications",
@@ -3819,6 +3814,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "messages-for-android-ads-blocked",
+    "owners": [ "pavely", "aishwaryarj" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "messages-for-android-chrome-survey",
     "owners": [ "pavely", "aishwaryarj" ],
     "expiry_milestone": 99
@@ -4888,6 +4888,15 @@
     "name": "safe-browsing-enhanced-protection-promo-android",
     "owners": [ "bdea", "chrome-safebrowsing-core@google.com" ],
     "expiry_milestone": 93
+  },
+  {
+    "name": "safe-browsing-password-protection-for-signed-in-users",
+    "owners": [
+      "bdea",
+      "xinghuilu",
+      "chrome-safebrowsing-core@google.com"
+    ],
+    "expiry_milestone": 96
   },
   {
     "name":

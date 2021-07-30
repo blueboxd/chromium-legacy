@@ -9,7 +9,14 @@ import '//resources/cr_elements/cr_input/cr_input.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {QrCode, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+
+// The size of each tile in pixels.
+const QR_CODE_TILE_SIZE = 5;
+// Amount of padding around the QR code in pixels.
+const QR_CODE_PADDING = 4 * QR_CODE_TILE_SIZE;
+// Styling for filled tiles in the QR code.
+const QR_CODE_FILL_STYLE = '#000000';
 
 /**
  * @fileoverview
@@ -33,11 +40,24 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
         value: {},
       },
 
+      /** @protected {number} */
+      canvasSize_: {
+        type: Number,
+        value: 0,
+      },
+
+      /** @protected {string} */
+      rsuChallenge_: {
+        type: String,
+        value: '',
+      },
+
       /** @protected {string} */
       rsuCode_: {
         type: String,
         value: '',
       },
+
     };
   }
 
@@ -45,6 +65,52 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
   ready() {
     super.ready();
     this.shimlessRmaService_ = getShimlessRmaService();
+    this.getRsuChallenge_();
+  }
+
+  /** @private */
+  getRsuChallenge_() {
+    this.shimlessRmaService_.getRsuDisableWriteProtectChallenge().then(
+        (result) => {
+          this.rsuChallenge_ = result.challenge;
+        });
+    this.shimlessRmaService_.getRsuDisableWriteProtectChallengeQrCode().then(
+        this.updateQrCode_.bind(this));
+  }
+
+  /**
+   * @private
+   * @param {?{qrCode: QrCode}} response
+   */
+  updateQrCode_(response) {
+    if (!response || !response.qrCode) {
+      return;
+    }
+    this.canvasSize_ =
+        response.qrCode.size * QR_CODE_TILE_SIZE + 2 * QR_CODE_PADDING;
+    const context = this.getCanvasContext_();
+    context.clearRect(0, 0, this.canvasSize_, this.canvasSize_);
+    context.fillStyle = QR_CODE_FILL_STYLE;
+    let index = 0;
+    for (let x = 0; x < response.qrCode.size; x++) {
+      for (let y = 0; y < response.qrCode.size; y++) {
+        if (response.qrCode.data[index]) {
+          context.fillRect(
+              x * QR_CODE_TILE_SIZE + QR_CODE_PADDING,
+              y * QR_CODE_TILE_SIZE + QR_CODE_PADDING, QR_CODE_TILE_SIZE,
+              QR_CODE_TILE_SIZE);
+        }
+        index++;
+      }
+    }
+  }
+
+  /**
+   * @private
+   * @return {!CanvasRenderingContext2D}
+   */
+  getCanvasContext_() {
+    return this.shadowRoot.querySelector('#qrCodeCanvas').getContext('2d');
   }
 
   /** @return {!Promise<!StateResult>} */

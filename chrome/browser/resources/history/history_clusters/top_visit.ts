@@ -119,7 +119,8 @@ class TopVisitElement extends PolymerElement {
         this.visit.relatedVisits.filter((visit: URLVisit) => {
           // 'Ghost' visits with scores of 0 (or below) are never to be shown,
           // unless the debug flag is switched on.
-          if (visit.score <= 0 && !loadTimeData.getBoolean('isDebug')) {
+          if (visit.score <= 0 &&
+              !loadTimeData.getBoolean('isHistoryClustersDebug')) {
             return false;
           }
           return visit.belowTheFold;
@@ -137,7 +138,8 @@ class TopVisitElement extends PolymerElement {
         this.visit.relatedVisits.filter((visit: URLVisit) => {
           // 'Ghost' visits with scores of 0 (or below) are never to be shown,
           // unless the debug flag is switched on.
-          if (visit.score <= 0 && !loadTimeData.getBoolean('isDebug')) {
+          if (visit.score <= 0 &&
+              !loadTimeData.getBoolean('isHistoryClustersDebug')) {
             return false;
           }
           return !visit.belowTheFold;

@@ -69,6 +69,13 @@ const char kConversionsDebugMode[] = "conversions-debug-mode";
 const char kCrossOriginWebAssemblyModuleSharingAllowed[] =
     "cross-origin-webassembly-module-sharing-allowed";
 
+// Enables gating of getDisplayMedia by the display-capture permissions-policy.
+// This switch supports the shipping of display-capture, as it allows admins to
+// temporarily disable display-capture gating with an Enterprise policy.
+// TODO(crbug.com/1233969): Remove this around m100.
+const char kDisplayCapturePermissionsPolicyAllowed[] =
+    "display-capture-permissions-policy-allowed";
+
 // Disable antialiasing on 2d canvas.
 const char kDisable2dCanvasAntialiasing[]   = "disable-canvas-aa";
 
@@ -338,13 +345,9 @@ const char kEnableCaretBrowsing[] = "enable-caret-browsing";
 // them off individually to identify the problematic feature anyway.
 //
 // At present this turns on:
-//   net::features::kCookiesWithoutSameSiteMustBeSecure
-//   net::features::kSameSiteByDefaultCookies
 //   net::features::kSameSiteDefaultChecksMethodRigorously
-// It will soon also turn on:
-//   content_settings::kImprovedCookieControls
-//   content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking
 //   net::features::kSchemefulSameSite
+//   net::features::kCookieSameSiteConsidersRedirectChain
 const char kEnableExperimentalCookieFeatures[] =
     "enable-experimental-cookie-features";
 

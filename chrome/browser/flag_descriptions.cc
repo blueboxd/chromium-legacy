@@ -2351,6 +2351,11 @@ const char kSidePanelDescription[] =
     "Enables a browser-level side panel for a useful and persistent way to "
     "access your Reading List and Bookmarks.";
 
+const char kSidePanelDragAndDropFlagId[] = "side-panel-drag-and-drop";
+const char kSidePanelDragAndDropName[] = "Side panel drag and drop";
+const char kSidePanelDragAndDropDescription[] =
+    "Enables drag and drop of bookmarks within the side panel.";
+
 const char kServiceWorkerSubresourceFilterName[] =
     "ServiceWorker subresource filter";
 const char kServiceWorkerSubresourceFilterDescription[] =
@@ -4384,6 +4389,13 @@ const char kDisplayIdentificationDescription[] =
     "in the Displays Settings page. Only shown when the Displays Settings page "
     "is open.";
 
+const char kFastPairName[] = "Enable Fast Pair";
+const char kFastPairDescription[] =
+    "Enables Google Fast Pair service which uses BLE to discover supported "
+    "nearby Bluetooth devices and surfaces a notification for quick pairing. "
+    "Use along with #bluetooth-advertisement-monitoring to allow background "
+    "scanning.";
+
 const char kUseHDRTransferFunctionName[] =
     "Monitor/Display HDR transfer function";
 const char kUseHDRTransferFunctionDescription[] =
@@ -5286,6 +5298,14 @@ const char kWifiSyncAndroidDescription[] =
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+extern const char kMultiProfileAccountConsistencyName[] =
+    "Account consistency for multi-profile.";
+extern const char kMultiProfileAccountConsistencyDescription[] =
+    "Enables integration of secondary profiles with the ChromeOS Account "
+    "Manager.";
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[] =

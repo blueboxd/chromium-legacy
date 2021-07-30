@@ -55,6 +55,8 @@ These builders must pass before a CL may land that affects files outside of
 
 * [linux-chromeos-rel](https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-chromeos-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-chromeos-rel))
 
+* [linux-lacros-rel](https://ci.chromium.org/p/chromium/builders/try/linux-lacros-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-lacros-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-lacros-rel))
+
 * [linux-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/try/linux-libfuzzer-asan-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-libfuzzer-asan-rel))
 
 * [linux-ozone-rel](https://ci.chromium.org/p/chromium/builders/try/linux-ozone-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-ozone-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-ozone-rel))
@@ -426,9 +428,6 @@ These builders are run on some percentage of builds. Their results are ignored
 by CQ. These are often used to test new configurations before they are added
 as required builders.
 
-These builders are currently disabled due to the cq_disable_experiments outages
-setting. See //infra/config/outages/README.md for more information.
-
 * [android-marshmallow-x86-rel-rts](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-x86-rel-rts) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-marshmallow-x86-rel-rts)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-marshmallow-x86-rel-rts))
   * Experiment percentage: 5.0
 
@@ -471,6 +470,9 @@ setting. See //infra/config/outages/README.md for more information.
 
 * [mac-rel-rts](https://ci.chromium.org/p/chromium/builders/try/mac-rel-rts) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+mac-rel-rts)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+mac-rel-rts))
   * Experiment percentage: 1.0
+
+* [win10-rel-orchestrator](https://ci.chromium.org/p/chromium/builders/try/win10-rel-orchestrator) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+win10-rel-orchestrator)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+win10-rel-orchestrator))
+  * Experiment percentage: 15.0
 
 * [win10_chromium_x64_rel_ng_rts](https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng_rts) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+win10_chromium_x64_rel_ng_rts)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+win10_chromium_x64_rel_ng_rts))
   * Experiment percentage: 5.0

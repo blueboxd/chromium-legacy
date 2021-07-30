@@ -1208,6 +1208,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
 #endif
   registry->RegisterBooleanPref(
       prefs::kCrossOriginWebAssemblyModuleSharingEnabled, true);
+  registry->RegisterBooleanPref(prefs::kDisplayCapturePermissionsPolicyEnabled,
+                                true);
   registry->RegisterBooleanPref(prefs::kSSLErrorOverrideAllowed, true);
   registry->RegisterListPref(prefs::kSSLErrorOverrideAllowedForOrigins);
   registry->RegisterBooleanPref(
@@ -2198,6 +2200,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
               prefs::kCrossOriginWebAssemblyModuleSharingEnabled)) {
         command_line->AppendSwitch(
             switches::kCrossOriginWebAssemblyModuleSharingAllowed);
+      }
+
+      if (prefs->GetBoolean(prefs::kDisplayCapturePermissionsPolicyEnabled)) {
+        command_line->AppendSwitch(
+            switches::kDisplayCapturePermissionsPolicyAllowed);
       }
 
       if (prefs->HasPrefPath(prefs::kAllowDinosaurEasterEgg) &&
@@ -3963,10 +3970,9 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       &throttles);
 #endif
 
-  content::WebContents* web_contents = handle->GetWebContents();
   if (auto* throttle_manager =
           subresource_filter::ContentSubresourceFilterThrottleManager::
-              FromWebContents(web_contents)) {
+              FromNavigationHandle(*handle)) {
     throttle_manager->MaybeAppendNavigationThrottles(handle, &throttles);
   }
 
@@ -4014,6 +4020,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   // the relevant extension API whenever an SSL interstitial is shown.
   SSLErrorHandler::SetClientCallbackOnInterstitialsShown(
       base::BindRepeating(&MaybeTriggerSecurityInterstitialShownEvent));
+  content::WebContents* web_contents = handle->GetWebContents();
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle,
       std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
@@ -5573,8 +5580,9 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
     content::RenderFrameHost* frame_host,
     bool user_gesture,
     blink::NavigationDownloadPolicy* download_policy) {
-  const auto* throttle_manager = subresource_filter::
-      ContentSubresourceFilterThrottleManager::FromWebContents(web_contents);
+  const auto* throttle_manager =
+      subresource_filter::ContentSubresourceFilterThrottleManager::FromPage(
+          frame_host->GetPage());
   if (throttle_manager &&
       throttle_manager->IsRenderFrameHostTaggedAsAd(frame_host)) {
     download_policy->SetAllowed(blink::NavigationDownloadType::kAdFrame);

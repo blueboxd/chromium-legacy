@@ -4,7 +4,7 @@
 
 import 'chrome://diagnostics/wifi_info.js';
 import {Network, WiFiStateProperties} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeWifiNetwork, fakeWiFiStateProperties} from 'chrome://diagnostics/fake_data.js';
+import {fakeDisconnectedWifiNetwork, fakeWifiNetwork, fakeWiFiStateProperties} from 'chrome://diagnostics/fake_data.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.m.js';
@@ -59,22 +59,28 @@ export function wifiInfoTestSuite() {
   test('WifiInfoPopulated', () => {
     const expectedGhz = 5.745;
     return initializeWifiInfo().then(() => {
-      assertTextContains(
-          getDataPointValue(wifiInfoElement, '#name'),
-          `${fakeWifiNetwork.name}`);
-      assertTextContains(
-          getDataPointValue(wifiInfoElement, '#ipAddress'),
+      assertDataPointHasExpectedHeaderAndValue(
+          wifiInfoElement, '#ssid', wifiInfoElement.i18n('networkSsidLabel'),
+          `${fakeWifiNetwork.typeProperties.wifi.ssid}`);
+      assertDataPointHasExpectedHeaderAndValue(
+          wifiInfoElement, '#ipAddress',
+          wifiInfoElement.i18n('networkIpAddressLabel'),
           `${fakeWifiNetwork.ipConfig.ipAddress}`);
-      assertTextContains(
-          getDataPointValue(wifiInfoElement, '#bssid'),
-          fakeWifiNetwork.typeProperties.wifi.bssid);
-      assertTextContains(
-          getDataPointValue(wifiInfoElement, '#signalStrength'),
+      assertDataPointHasExpectedHeaderAndValue(
+          wifiInfoElement, '#bssid', wifiInfoElement.i18n('networkBssidLabel'),
+          `${fakeWifiNetwork.typeProperties.wifi.bssid}`);
+      assertDataPointHasExpectedHeaderAndValue(
+          wifiInfoElement, '#security',
+          wifiInfoElement.i18n('networkSecurityLabel'), '');
+      assertDataPointHasExpectedHeaderAndValue(
+          wifiInfoElement, '#signalStrength',
+          wifiInfoElement.i18n('networkSignalStrengthLabel'),
           `${fakeWifiNetwork.typeProperties.wifi.signalStrength}`);
       // TODO(ashleydp): Update test expectation when 5 GHz channel conversion
       // algorithm provided.
-      assertTextContains(
-          getDataPointValue(wifiInfoElement, '#channel'),
+      assertDataPointHasExpectedHeaderAndValue(
+          wifiInfoElement, '#channel',
+          wifiInfoElement.i18n('networkChannelLabel'),
           `? (${expectedGhz} GHz)`);
     });
   });
@@ -109,6 +115,12 @@ export function wifiInfoTestSuite() {
     const testNetwork = getWifiNetworkWithWiFiStatePropertiesOf(
         /** @type {!WiFiStateProperties} */ ({frequency: 0}));
     return initializeWifiInfo(testNetwork).then(() => {
+      assertEquals(getDataPointValue(wifiInfoElement, '#channel'), '');
+    });
+  });
+
+  test('FrequencyUndefinedDisplaysEmptyString', () => {
+    return initializeWifiInfo(fakeDisconnectedWifiNetwork).then(() => {
       assertEquals(getDataPointValue(wifiInfoElement, '#channel'), '');
     });
   });

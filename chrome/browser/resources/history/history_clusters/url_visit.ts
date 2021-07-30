@@ -174,7 +174,7 @@ class VisitRowElement extends PolymerElement {
   }
 
   private computeDebugInfo_(): string {
-    if (!loadTimeData.getBoolean('isDebug')) {
+    if (!loadTimeData.getBoolean('isHistoryClustersDebug')) {
       return '';
     }
 

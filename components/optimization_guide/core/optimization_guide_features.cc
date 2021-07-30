@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "components/optimization_guide/core/insertion_ordered_set.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
@@ -198,19 +199,6 @@ int MaxServerBloomFilterByteSize() {
       kOptimizationHints, "max_bloom_filter_byte_size", 250 * 1024 /* 250KB */);
 }
 
-absl::optional<net::EffectiveConnectionType>
-GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
-  std::string param_value = base::GetFieldTrialParamValueByFeature(
-      kRemoteOptimizationGuideFetching,
-      "max_effective_connection_type_for_navigation_hints_fetch");
-
-  // Use a default value.
-  if (param_value.empty())
-    return net::EFFECTIVE_CONNECTION_TYPE_4G;
-
-  return net::GetEffectiveConnectionTypeForName(param_value);
-}
-
 base::TimeDelta GetHostHintsFetchRefreshDuration() {
   return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching, "hints_fetch_refresh_duration_in_hours",
@@ -368,6 +356,34 @@ uint64_t MaxSizeForPageContentTextDump() {
 bool ShouldWriteContentAnnotationsToHistoryService() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kPageContentAnnotations, "write_to_history_service", true);
+}
+
+std::vector<optimization_guide::proto::OptimizationTarget>
+GetPageContentModelsToExecute() {
+  if (!IsPageContentAnnotationEnabled())
+    return {};
+
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      kPageContentAnnotations, "models_to_execute");
+  if (value.empty()) {
+    // If param not explicitly set, run the page topics model by default.
+    return {optimization_guide::proto::OPTIMIZATION_TARGET_PAGE_TOPICS};
+  }
+
+  optimization_guide::InsertionOrderedSet<
+      optimization_guide::proto::OptimizationTarget>
+      model_targets;
+  std::vector<std::string> model_target_strings = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const auto& model_target_string : model_target_strings) {
+    optimization_guide::proto::OptimizationTarget model_target;
+    if (optimization_guide::proto::OptimizationTarget_Parse(model_target_string,
+                                                            &model_target)) {
+      model_targets.insert(model_target);
+    }
+  }
+
+  return model_targets.vector();
 }
 
 bool LoadModelFileForEachExecution() {

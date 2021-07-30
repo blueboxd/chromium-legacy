@@ -874,8 +874,7 @@ try_.chromium_chromiumos_builder(
     ssd = True,
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
-    # TODO(martiniss): Re-enable this once the test pool has calmed down
-    # tryjob = try_.job(),
+    tryjob = try_.job(),
     os = os.LINUX_BIONIC_REMOVE,
 )
 
@@ -1874,6 +1873,9 @@ try_.chromium_win_builder(
         "compilator": "win10-rel-compilator",
     },
     service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
+    tryjob = try_.job(
+        experiment_percentage = 15,
+    ),
 )
 
 try_.chromium_win_builder(

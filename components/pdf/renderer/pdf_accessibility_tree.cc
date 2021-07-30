@@ -366,7 +366,8 @@ class PdfAccessibilityTreeBuilder {
       ui::AXNodeData* page_node,
       content::RenderAccessibility* render_accessibility,
       std::vector<std::unique_ptr<ui::AXNodeData>>* nodes,
-      std::map<int32_t, PP_PdfPageCharacterIndex>* node_id_to_page_char_index,
+      std::map<int32_t, chrome_pdf::PageCharacterIndex>*
+          node_id_to_page_char_index,
       std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>*
           node_id_to_annotation_info)
       : text_runs_(text_runs),
@@ -463,7 +464,7 @@ class PdfAccessibilityTreeBuilder {
                                  para_node, &text_run_index);
         continue;
       } else {
-        PP_PdfPageCharacterIndex page_char_index = {
+        chrome_pdf::PageCharacterIndex page_char_index = {
             page_index_, text_run_start_indices_[text_run_index]};
 
         // This node is for the text inside the paragraph, it includes
@@ -567,7 +568,7 @@ class PdfAccessibilityTreeBuilder {
   }
 
   ui::AXNodeData* CreateStaticTextNode(
-      const PP_PdfPageCharacterIndex& page_char_index) {
+      const chrome_pdf::PageCharacterIndex& page_char_index) {
     ui::AXNodeData* static_text_node = CreateNode(
         ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
         render_accessibility_, nodes_);
@@ -578,7 +579,7 @@ class PdfAccessibilityTreeBuilder {
 
   ui::AXNodeData* CreateInlineTextBoxNode(
       const chrome_pdf::AccessibilityTextRunInfo& text_run,
-      const PP_PdfPageCharacterIndex& page_char_index) {
+      const chrome_pdf::PageCharacterIndex& page_char_index) {
     ui::AXNodeData* inline_text_box_node = CreateNode(
         ax::mojom::Role::kInlineTextBox, ax::mojom::Restriction::kReadOnly,
         render_accessibility_, nodes_);
@@ -868,7 +869,7 @@ class PdfAccessibilityTreeBuilder {
                        uint32_t end_text_run_index,
                        ui::AXNodeData* ax_node,
                        ui::AXNodeData** previous_on_line_node) {
-    PP_PdfPageCharacterIndex page_char_index = {
+    chrome_pdf::PageCharacterIndex page_char_index = {
         page_index_, text_run_start_indices_[start_text_run_index]};
     ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(page_char_index);
     ax_node->child_ids.push_back(ax_static_text_node->id);
@@ -1118,7 +1119,8 @@ class PdfAccessibilityTreeBuilder {
   ui::AXNodeData* page_node_;
   content::RenderAccessibility* render_accessibility_;
   std::vector<std::unique_ptr<ui::AXNodeData>>* nodes_;
-  std::map<int32_t, PP_PdfPageCharacterIndex>* node_id_to_page_char_index_;
+  std::map<int32_t, chrome_pdf::PageCharacterIndex>*
+      node_id_to_page_char_index_;
   std::map<int32_t, PdfAccessibilityTree::AnnotationInfo>*
       node_id_to_annotation_info_;
   float heading_font_size_threshold_ = 0;
@@ -1477,12 +1479,12 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
 bool PdfAccessibilityTree::FindCharacterOffset(
     const ui::AXNode& node,
     uint32_t char_offset_in_node,
-    PP_PdfPageCharacterIndex* page_char_index) const {
+    chrome_pdf::PageCharacterIndex& page_char_index) const {
   auto iter = node_id_to_page_char_index_.find(GetId(&node));
   if (iter == node_id_to_page_char_index_.end())
     return false;
-  page_char_index->char_index = iter->second.char_index + char_offset_in_node;
-  page_char_index->page_index = iter->second.page_index;
+  page_char_index.char_index = iter->second.char_index + char_offset_in_node;
+  page_char_index.page_index = iter->second.page_index;
   return true;
 }
 
@@ -1612,7 +1614,7 @@ bool PdfAccessibilityTree::ShowContextMenu() {
 }
 
 void PdfAccessibilityTree::HandleAction(
-    const PP_PdfAccessibilityActionData& action_data) {
+    const chrome_pdf::AccessibilityActionData& action_data) {
   action_handler_->HandleAccessibilityAction(action_data);
 }
 

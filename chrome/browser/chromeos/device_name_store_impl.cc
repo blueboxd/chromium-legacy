@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/device_name_store_impl.h"
 
-#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/device_name_applier_impl.h"
+#include "chrome/browser/chromeos/device_name_validator.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -14,33 +14,7 @@
 namespace chromeos {
 
 namespace {
-
 const char kDefaultDeviceName[] = "ChromeOS";
-
-// For maximum compatibility with existing network services (e.g., Active
-// Directory), the upper limit for hostname length is 15 characters.
-const int kMaxDeviceNameLength = 15;
-
-const char kDeviceNameAllowedChars[] = "0123456789-abcdefghijklmnopqrstuvwxyz";
-
-bool IsValidDeviceName(const std::string& device_name) {
-  // Device name be not be empty string.
-  if (device_name.empty())
-    return false;
-
-  // Device name should be <=15 characters long.
-  if (device_name.length() > kMaxDeviceNameLength)
-    return false;
-
-  // Device name may contain only letters, numbers and hyphens.
-  if (!base::ContainsOnlyChars(base::ToLowerASCII(device_name),
-                               kDeviceNameAllowedChars)) {
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 DeviceNameStoreImpl::DeviceNameStoreImpl(
@@ -66,6 +40,7 @@ DeviceNameStoreImpl::DeviceNameStoreImpl(
   if (device_name.empty())
     device_name = kDefaultDeviceName;
 
+  device_name_state_ = ComputeDeviceNameState();
   ChangeDeviceName(device_name);
 }
 
@@ -77,7 +52,23 @@ std::string DeviceNameStoreImpl::GetDeviceName() const {
   return prefs_->GetString(prefs::kDeviceName);
 }
 
-bool DeviceNameStoreImpl::IsConfiguringDeviceNameProhibitedByPolicy() {
+DeviceNameStore::DeviceNameState DeviceNameStoreImpl::ComputeDeviceNameState()
+    const {
+  if (!IsConfiguringDeviceNameProhibitedByPolicy())
+    return DeviceNameState::kCannotBeModifiedBecauseOfPolicy;
+
+  if (!user_manager::UserManager::Get()->IsCurrentUserOwner())
+    return DeviceNameState::kCannotBeModifiedBecauseNotDeviceOwner;
+
+  return DeviceNameState::kCanBeModified;
+}
+
+DeviceNameStore::DeviceNameMetadata DeviceNameStoreImpl::GetDeviceNameMetadata()
+    const {
+  return {GetDeviceName(), device_name_state_};
+}
+
+bool DeviceNameStoreImpl::IsConfiguringDeviceNameProhibitedByPolicy() const {
   switch (handler_->GetDeviceNamePolicy()) {
     case policy::DeviceNamePolicyHandler::DeviceNamePolicy::
         kPolicyHostnameNotConfigurable:
@@ -97,29 +88,36 @@ bool DeviceNameStoreImpl::IsConfiguringDeviceNameProhibitedByPolicy() {
 void DeviceNameStoreImpl::ChangeDeviceName(const std::string& device_name) {
   device_name_applier_->SetDeviceName(device_name);
   prefs_->SetString(prefs::kDeviceName, device_name);
-  NotifyDeviceNameChanged();
 }
 
-void DeviceNameStoreImpl::AttemptDeviceNameChange(
-    const std::string& device_name) {
-  if (GetDeviceName() == device_name)
+void DeviceNameStoreImpl::AttemptDeviceNameUpdate(
+    const std::string& new_device_name) {
+  std::string old_device_name = GetDeviceName();
+  DeviceNameStore::DeviceNameState new_state = ComputeDeviceNameState();
+
+  if (old_device_name == new_device_name && device_name_state_ == new_state)
     return;
 
-  ChangeDeviceName(device_name);
+  if (old_device_name != new_device_name)
+    ChangeDeviceName(new_device_name);
+
+  device_name_state_ = new_state;
+  NotifyDeviceNameChanged();
 }
 
 DeviceNameStore::SetDeviceNameResult DeviceNameStoreImpl::SetDeviceName(
     const std::string& new_device_name) {
-  if (!IsConfiguringDeviceNameProhibitedByPolicy())
+  if (device_name_state_ == DeviceNameState::kCannotBeModifiedBecauseOfPolicy)
     return SetDeviceNameResult::kProhibitedByPolicy;
 
-  if (!user_manager::UserManager::Get()->IsCurrentUserOwner())
+  if (device_name_state_ ==
+      DeviceNameState::kCannotBeModifiedBecauseNotDeviceOwner)
     return SetDeviceNameResult::kNotDeviceOwner;
 
   if (!IsValidDeviceName(new_device_name))
     return SetDeviceNameResult::kInvalidName;
 
-  AttemptDeviceNameChange(new_device_name);
+  AttemptDeviceNameUpdate(new_device_name);
   return SetDeviceNameResult::kSuccess;
 }
 
@@ -143,7 +141,7 @@ std::string DeviceNameStoreImpl::ComputeDeviceName() const {
 }
 
 void DeviceNameStoreImpl::OnHostnamePolicyChanged() {
-  AttemptDeviceNameChange(ComputeDeviceName());
+  AttemptDeviceNameUpdate(ComputeDeviceName());
 }
 
 }  // namespace chromeos

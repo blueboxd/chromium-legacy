@@ -22,7 +22,7 @@ suite('OsBluetoothPageTest', function() {
   });
 
   test('Base Test', function() {
-    const bluetoothSummary = bluetoothPage.$$('#bluetoothSummary');
+    const bluetoothSummary = bluetoothPage.$$('os-settings-bluetooth-summary');
     assertTrue(!!bluetoothSummary);
   });
 });

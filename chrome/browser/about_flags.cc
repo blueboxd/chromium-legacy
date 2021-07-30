@@ -1650,9 +1650,6 @@ const FeatureEntry::FeatureVariation
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
-    {language::kOverrideModelKey, language::kOverrideModelHeuristicValue},
-    {language::kEnforceRankerKey, "false"}};
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishGeo[] = {
     {language::kOverrideModelKey, language::kOverrideModelGeoValue},
     {language::kEnforceRankerKey, "false"}};
@@ -1662,9 +1659,6 @@ const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishBackoff[] = {
     {language::kBackoffThresholdKey, "0"}};
 const FeatureEntry::FeatureVariation
     kTranslateForceTriggerOnEnglishVariations[] = {
-        {"(Heuristic model without Ranker)",
-         kTranslateForceTriggerOnEnglishHeuristic,
-         base::size(kTranslateForceTriggerOnEnglishHeuristic), nullptr},
         {"(Geo model without Ranker)", kTranslateForceTriggerOnEnglishGeo,
          base::size(kTranslateForceTriggerOnEnglishGeo), nullptr},
         {"(Zero threshold)", kTranslateForceTriggerOnEnglishBackoff,
@@ -2510,16 +2504,28 @@ const FeatureEntry::Choice kFrameThrottleFpsChoices[] = {
      "30"}};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-const FeatureEntry::Choice kDrawPredictedPointsChoices[] = {
-    {flag_descriptions::kDrawPredictedPointsDefault, "", ""},
+const FeatureEntry::FeatureParam kDrawPredictedPointExperiment1Point12Ms[] = {
+    {"predicted_points", features::kDraw1Point12Ms}};
+const FeatureEntry::FeatureParam kDrawPredictedPointExperiment2Points6Ms[] = {
+    {"predicted_points", features::kDraw2Points6Ms}};
+const FeatureEntry::FeatureParam kDrawPredictedPointExperiment1Point6Ms[] = {
+    {"predicted_points", features::kDraw1Point6Ms}};
+const FeatureEntry::FeatureParam kDrawPredictedPointExperiment2Points3Ms[] = {
+    {"predicted_points", features::kDraw2Points3Ms}};
+
+const FeatureEntry::FeatureVariation kDrawPredictedPointVariations[] = {
     {flag_descriptions::kDraw1PredictedPoint12Ms,
-     switches::kDrawPredictedInkPoint, switches::kDraw1Point12Ms},
+     kDrawPredictedPointExperiment1Point12Ms,
+     base::size(kDrawPredictedPointExperiment1Point12Ms), nullptr},
     {flag_descriptions::kDraw2PredictedPoints6Ms,
-     switches::kDrawPredictedInkPoint, switches::kDraw2Points6Ms},
+     kDrawPredictedPointExperiment2Points6Ms,
+     base::size(kDrawPredictedPointExperiment2Points6Ms), nullptr},
     {flag_descriptions::kDraw1PredictedPoint6Ms,
-     switches::kDrawPredictedInkPoint, switches::kDraw1Point6Ms},
+     kDrawPredictedPointExperiment1Point6Ms,
+     base::size(kDrawPredictedPointExperiment1Point6Ms), nullptr},
     {flag_descriptions::kDraw2PredictedPoints3Ms,
-     switches::kDrawPredictedInkPoint, switches::kDraw2Points3Ms}};
+     kDrawPredictedPointExperiment2Points3Ms,
+     base::size(kDrawPredictedPointExperiment2Points3Ms), nullptr}};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::Choice kForceControlFaceAeChoices[] = {
@@ -4790,6 +4796,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanel)},
 
+    {flag_descriptions::kSidePanelDragAndDropFlagId,
+     flag_descriptions::kSidePanelDragAndDropName,
+     flag_descriptions::kSidePanelDragAndDropDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanelDragAndDrop)},
+
     {"tab-outlines-in-low-contrast-themes",
      flag_descriptions::kTabOutlinesInLowContrastThemesName,
      flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,
@@ -5698,6 +5709,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHideArcMediaNotificationsName,
      flag_descriptions::kHideArcMediaNotificationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHideArcMediaNotifications)},
+
+    {"fast-pair", flag_descriptions::kFastPairName,
+     flag_descriptions::kFastPairDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kFastPair)},
 
     {"reduce-display-notifications",
      flag_descriptions::kReduceDisplayNotificationsName,
@@ -7321,7 +7336,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"draw-predicted-ink-point", flag_descriptions::kDrawPredictedPointsName,
      flag_descriptions::kDrawPredictedPointsDescription, kOsAll,
-     MULTI_VALUE_TYPE(kDrawPredictedPointsChoices)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kDrawPredictedInkPoint,
+                                    kDrawPredictedPointVariations,
+                                    "DrawPredictedInkPoint")},
 
     {"enable-tflite-language-detection",
      flag_descriptions::kTFLiteLanguageDetectionName,
@@ -7677,6 +7694,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafeBrowsingPerProfileNetworkContextsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingSeparateNetworkContexts)},
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    {"multi-profile-account-consistency",
+     flag_descriptions::kMultiProfileAccountConsistencyName,
+     flag_descriptions::kMultiProfileAccountConsistencyDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(kMultiProfileAccountConsistency)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

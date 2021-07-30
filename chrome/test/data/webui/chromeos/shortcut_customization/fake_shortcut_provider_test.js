@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {fakeAcceleratorConfig, fakeLayoutInfo} from 'chrome://shortcut-customization/fake_data.js';
 import {FakeShortcutProvider} from 'chrome://shortcut-customization/fake_shortcut_provider.js';
-import {AcceleratorConfig} from 'chrome://shortcut-customization/shortcut_types.js';
+import {AcceleratorConfig, LayoutInfoList} from 'chrome://shortcut-customization/shortcut_types.js';
 
 import {assertDeepEquals} from '../../chai_assert.js';
 
@@ -25,6 +26,32 @@ export function fakeShortcutProviderTest() {
     provider.setFakeAcceleratorConfig(expected);
     return provider.getAllAcceleratorConfig().then((result) => {
       assertDeepEquals(expected, result);
+    });
+  });
+
+  test('GetAllAcceleratorConfigDefaultFake', () => {
+    // TODO(zentaro): Remove this test once real data is ready.
+    const expected = new Map();
+    provider.setFakeAcceleratorConfig(fakeAcceleratorConfig);
+    return provider.getAllAcceleratorConfig().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result);
+    });
+  });
+
+  test('GetLayoutInfoEmpty', () => {
+    /** @type {!LayoutInfoList} */
+    const expected = [];
+    provider.setFakeLayoutInfo(expected);
+    return provider.getLayoutInfo().then((result) => {
+      assertDeepEquals(expected, result);
+    });
+  });
+
+  test('GetLayoutInfoDefaultFake', () => {
+    // TODO(zentaro): Remove this test once real data is ready.
+    provider.setFakeLayoutInfo(fakeLayoutInfo);
+    return provider.getLayoutInfo().then((result) => {
+      assertDeepEquals(fakeLayoutInfo, result);
     });
   });
 }

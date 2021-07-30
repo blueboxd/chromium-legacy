@@ -202,6 +202,7 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -244,6 +245,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     public static final SettingsLauncher SETTINGS_LAUNCHER = new SettingsLauncherImpl();
 
+    public static final HashSet<String> TABBED_MODE_COMPONENT_NAMES = new HashSet<String>() {
+        {
+            add(ChromeTabbedActivity.class.getName());
+            add(MultiInstanceChromeTabbedActivity.class.getName());
+            add(ChromeTabbedActivity2.class.getName());
+            add(MAIN_LAUNCHER_ACTIVITY_NAME);
+        }
+    };
+
     /**
      * Identifies a histogram to use in {@link #maybeDispatchExplicitMainViewIntent(Intent, int)}.
      */
@@ -258,7 +268,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private static final String TAB_COUNT_ON_RETURN = "Tabs.TabCountOnStartScreenShown";
 
     private final MainIntentBehaviorMetrics mMainIntentMetrics;
-    private final @Nullable MultiInstanceManager mMultiInstanceManager;
+    private @Nullable MultiInstanceManager mMultiInstanceManager;
 
     private UndoBarController mUndoBarPopupController;
 
@@ -348,6 +358,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     private final AppLaunchDrawBlocker mAppLaunchDrawBlocker;
 
+    // ID assigned to each ChromeTabbedActivity instance in Android S+ where multi-instance feature
+    // is supported. This can be explicitly set in the incoming Intent or internally assigned.
+    private int mWindowId;
+
     private final IncognitoTabHost mIncognitoTabHost = new IncognitoTabHost() {
         @Override
         public boolean hasIncognitoTabs() {
@@ -401,18 +415,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     /**
-     * Return whether the passed in component name matches any of the supported tabbed mode
-     * activities.
-     */
-    public static boolean isTabbedModeComponentName(String componentName) {
-        return TextUtils.equals(componentName, ChromeTabbedActivity.class.getName())
-                || TextUtils.equals(
-                        componentName, MultiInstanceChromeTabbedActivity.class.getName())
-                || TextUtils.equals(componentName, ChromeTabbedActivity2.class.getName())
-                || TextUtils.equals(componentName, MAIN_LAUNCHER_ACTIVITY_NAME);
-    }
-
-    /**
      * Specify the proper non-.Main-aliased Chrome Activity for the given component.
      *
      * @param intent The intent to set the component for.
@@ -440,8 +442,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      */
     public ChromeTabbedActivity() {
         mMainIntentMetrics = new MainIntentBehaviorMetrics();
-        mMultiInstanceManager = MultiInstanceManager.create(this, getTabModelOrchestratorSupplier(),
-                getMultiWindowModeStateDispatcher(), getLifecycleDispatcher(), this);
 
         // AppLaunchDrawBlocker may block drawing the Activity content until the initial tab is
         // available.
@@ -451,6 +451,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 this::getIntent, this::shouldIgnoreIntent, this::isTablet,
                 this::shouldShowTabSwitcherOnStart);
         // clang-format on
+    }
+
+    @Override
+    protected void onPreCreate() {
+        super.onPreCreate();
+        mMultiInstanceManager = MultiInstanceManager.create(this, getTabModelOrchestratorSupplier(),
+                getMultiWindowModeStateDispatcher(), getLifecycleDispatcher(), this);
     }
 
     @Override
@@ -902,7 +909,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         super.onResumeWithNative();
 
         if (IncognitoUtils.shouldDestroyIncognitoProfileOnStartup(
-                    getTabModelSelector().getCurrentModel().isIncognito())) {
+                    getTabModelSelector().getCurrentModel().isIncognito(),
+                    TABBED_MODE_COMPONENT_NAMES)) {
             Profile.getLastUsedRegularProfile()
                     .getPrimaryOTRProfile(/*createIfNeeded=*/true)
                     .destroyWhenAppropriate();
@@ -1736,6 +1744,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     @Override
     protected void createTabModels() {
         assert mTabModelSelector == null;
+        assert mWindowId != TabWindowManager.INVALID_WINDOW_INDEX;
 
         Bundle savedInstanceState = getSavedInstanceState();
 
@@ -1743,21 +1752,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         boolean startIncognito = savedInstanceState != null
                 && savedInstanceState.getBoolean(IS_INCOGNITO_SELECTED, false);
 
-        int windowId = IntentUtils.safeGetIntExtra(
-                getIntent(), IntentHandler.EXTRA_WINDOW_ID, TabWindowManager.INVALID_WINDOW_INDEX);
-        int index = 0;
-        if (savedInstanceState != null && savedInstanceState.containsKey(WINDOW_INDEX)) {
-            // Activity is recreated after destruction. |windowId| must not be valid in this case.
-            assert windowId == TabWindowManager.INVALID_WINDOW_INDEX;
-            index = savedInstanceState.getInt(WINDOW_INDEX, 0);
-        } else if (mMultiInstanceManager != null) {
-            index = mMultiInstanceManager.allocInstanceId(windowId, getTaskId());
-        }
-
         mNextTabPolicySupplier = new ChromeNextTabPolicySupplier(mOverviewModeBehaviorSupplier);
 
-        boolean tabModelWasCreated =
-                mTabModelOrchestrator.createTabModels(this, this, mNextTabPolicySupplier, index);
+        boolean tabModelWasCreated = mTabModelOrchestrator.createTabModels(
+                this, this, mNextTabPolicySupplier, mWindowId);
         if (!tabModelWasCreated) {
             finish();
             return;
@@ -1766,7 +1764,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (mMultiInstanceManager != null) {
             int assignedIndex = TabWindowManagerSingleton.getInstance().getIndexForWindow(this);
             // The given index and the one computed by TabWindowManager should be one and the same.
-            assert !MultiWindowUtils.instanceSwitcherEnabled() || assignedIndex == index;
+            assert !MultiWindowUtils.instanceSwitcherEnabled() || assignedIndex == mWindowId;
             mMultiInstanceManager.initialize(assignedIndex, getTaskId());
         }
 
@@ -1896,12 +1894,35 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     protected boolean isStartedUpCorrectly(Intent intent) {
+        mWindowId = 0;
+        Bundle savedInstanceState = getSavedInstanceState();
+        int windowId = getExtraWindowIdFromIntent(intent);
+        if (savedInstanceState != null && savedInstanceState.containsKey(WINDOW_INDEX)) {
+            // Activity is recreated after destruction. |windowId| must not be valid in this case.
+            assert windowId == TabWindowManager.INVALID_WINDOW_INDEX;
+            mWindowId = savedInstanceState.getInt(WINDOW_INDEX, 0);
+        } else if (mMultiInstanceManager != null) {
+            // |allocInstanceId| doesn't do any disk I/O that would add a long-running task
+            // to pre-inflation startup.
+            mWindowId = mMultiInstanceManager.allocInstanceId(windowId, getTaskId());
+        }
+        if (mWindowId == TabWindowManager.INVALID_WINDOW_INDEX) {
+            Log.i(TAG, "Window ID not allocated. Finishing the activity");
+            Toast.makeText(this, R.string.max_number_of_windows, Toast.LENGTH_LONG).show();
+            return false;
+        }
+
         if (mMultiInstanceManager != null
                 && !mMultiInstanceManager.isStartedUpCorrectly(getTaskId())) {
             return false;
         }
 
         return super.isStartedUpCorrectly(intent);
+    }
+
+    private static int getExtraWindowIdFromIntent(Intent intent) {
+        return IntentUtils.safeGetIntExtra(
+                intent, IntentHandler.EXTRA_WINDOW_ID, TabWindowManager.INVALID_WINDOW_INDEX);
     }
 
     @Override

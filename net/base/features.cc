@@ -140,22 +140,16 @@ const base::Feature kTLS13KeyUpdate{"TLS13KeyUpdate",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPostQuantumCECPQ2{"PostQuantumCECPQ2",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPostQuantumCECPQ2SomeDomains{
     "PostQuantumCECPQ2SomeDomains", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::FeatureParam<std::string> kPostQuantumCECPQ2InitialLetters(
     &kPostQuantumCECPQ2SomeDomains,
     "InitialLetters",
-    "abcg");
+    "ag");
 
 const base::Feature kNetUnusedIdleSocketTimeout{
     "NetUnusedIdleSocketTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSameSiteByDefaultCookies{"SameSiteByDefaultCookies",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kCookiesWithoutSameSiteMustBeSecure{
-    "CookiesWithoutSameSiteMustBeSecure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kShortLaxAllowUnsafeThreshold{
     "ShortLaxAllowUnsafeThreshold", base::FEATURE_DISABLED_BY_DEFAULT};

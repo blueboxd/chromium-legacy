@@ -2617,6 +2617,17 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] external/wpt/screen-capture/permissions-policy-video.https.sub.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-position/position-absolute-iframe-print-001.sub.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-position/position-absolute-iframe-print-001.sub.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-position/position-absolute-iframe-print-001.sub.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-position/position-absolute-iframe-print-002.sub.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-position/position-absolute-iframe-print-002.sub.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-position/position-absolute-iframe-print-002.sub.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-staticrange-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/multicol-span-float-002.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-staticrange-004.html [ Failure ]
@@ -2981,7 +2992,7 @@ crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCDtlsTransport-getRemoteCerti
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-audio.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Timeout ]
-crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
+# crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCPeerConnection-iceConnectionState.https.html [ Timeout ]
@@ -3333,7 +3344,7 @@ crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-001
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-002-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-002-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-004-manual.html [ Skip ]
-crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onload-event.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/anonymous-button-content-box.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/inline-level.html [ Failure ]
@@ -3739,7 +3750,7 @@ crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-aft
 crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-ref.html [ Failure ]
 
 # Synthetic modules report the wrong location in errors
-crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.tentative.html [ Skip ]
+crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Skip ]
 
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-4.html [ Crash Timeout ]
@@ -4232,10 +4243,6 @@ crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibi
 
 crbug.com/619427 [ Mac ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure Pass ]
 
-# [css-ui] Imported tests from W3C suite.
-crbug.com/669473 external/wpt/css/css-ui/outline-005.html [ Failure ]
-crbug.com/669473 external/wpt/css/css-ui/outline-006.html [ Failure ]
-
 crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
@@ -4572,9 +4579,8 @@ crbug.com/773122 crbug.com/777813 [ Win ] virtual/text-antialias/font-ascent-mac
 # Cookie Store API
 crbug.com/827231 [ Win ] external/wpt/cookie-store/change_eventhandler_for_document_cookie.tentative.https.window.html [ Failure Pass Timeout ]
 
-# When SameSiteByDefaultCookies is enabled (which is the case by default since
-# it's one of the experimental-web-platform-features, the Lax-allow-unsafe
-# intervention causes POST tests to fail.
+# The "Lax+POST" or lax-allowing-unsafe intervention for SameSite-by-default
+# cookies causes POST tests to fail.
 crbug.com/990439 external/wpt/cookies/samesite/form-post-blank.https.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-post-blank-reload.https.html [ Failure ]
 crbug.com/990439 http/tests/cookies/same-site/popup-cross-site-post.https.html [ Failure ]
@@ -7288,6 +7294,9 @@ crbug.com/1233781 http/tests/serviceworker/window-close-during-registration.html
 crbug.com/1233792 virtual/synchronous_html_parser/http/tests/inspector-protocol/runtime/eval-await-navigation-paused-message-order.js [ Failure Pass ]
 crbug.com/1234057 [ Mac ] external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure Pass ]
 crbug.com/1234302 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Pass ]
+
+# Temporary disabling to allow landing https://webrtc-review.googlesource.com/c/src/+/227120
+crbug.com/webrtc/12906 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout Pass Failure ]
 
 # Sheriff 2021-07-29
 crbug.com/626703 [ Mac ] external/wpt/webrtc/simulcast/setParameters-active.https.html [ Failure Pass ]

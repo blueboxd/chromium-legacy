@@ -1342,6 +1342,10 @@ extern const char kSidePanelFlagId[];
 extern const char kSidePanelName[];
 extern const char kSidePanelDescription[];
 
+extern const char kSidePanelDragAndDropFlagId[];
+extern const char kSidePanelDragAndDropName[];
+extern const char kSidePanelDragAndDropDescription[];
+
 extern const char kServiceWorkerSubresourceFilterName[];
 extern const char kServiceWorkerSubresourceFilterDescription[];
 
@@ -2518,6 +2522,9 @@ extern const char kDisplayAlignmentAssistanceDescription[];
 extern const char kDisplayIdentificationName[];
 extern const char kDisplayIdentificationDescription[];
 
+extern const char kFastPairName[];
+extern const char kFastPairDescription[];
+
 extern const char kUseHDRTransferFunctionName[];
 extern const char kUseHDRTransferFunctionDescription[];
 
@@ -3060,6 +3067,11 @@ extern const char kWifiSyncAndroidDescription[];
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+extern const char kMultiProfileAccountConsistencyName[];
+extern const char kMultiProfileAccountConsistencyDescription[];
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 extern const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[];

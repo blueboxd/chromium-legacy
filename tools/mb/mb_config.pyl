@@ -753,7 +753,6 @@
     'official.chrome': {
       'fuchsia-arm64': 'official_fuchsia_arm64',
       'fuchsia-x64': 'official_fuchsia_x64',
-      'lacros64': 'chromeos_amd64-generic_lacros_official',
     },
 
     'official.chrome.continuous': {
@@ -1025,7 +1024,7 @@
       'linux-libfuzzer-asan-rel': 'libfuzzer_asan_release_trybot',
       'linux-mbi-mode-per-render-process-host-rel': 'gpu_tests_release_trybot_mbi_mode_per_render_process_host',
       'linux-mbi-mode-per-site-instance-rel': 'gpu_tests_release_trybot_mbi_mode_per_site_instance',
-      'linux-ozone-rel': 'ozone_linux_release_trybot',
+      'linux-ozone-rel': 'ozone_linux_release_trybot_no_symbols',
       'linux-perfetto-rel': 'perfetto_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
       'linux-rel-orchestrator': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
@@ -1118,8 +1117,8 @@
       'mac_upload_clang': 'release_bot',
       'mac_upload_clang_arm': 'release_bot',
       'mac-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_invert_fieldtrials',
-      'mac-rel': 'gpu_tests_release_trybot',
-      'mac-rel-rts': 'gpu_tests_release_trybot',
+      'mac-rel': 'gpu_tests_release_trybot_no_symbols',
+      'mac-rel-rts': 'gpu_tests_release_trybot_no_symbols',
       'mac-arm64-rel': 'mac_arm64_release_trybot',
     },
 
@@ -1177,7 +1176,7 @@
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win10_chromium_x64_rel_ng_rts': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'win10_chromium_x64_20h2_fyi_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
-      'win10-rel-orchestrator': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
+      'win10-rel-orchestrator': 'gpu_tests_release_trybot_no_resource_allowlisting_no_symbols',
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
       'win-celab-try-rel': 'release_bot_minimal_symbols',
@@ -2248,12 +2247,21 @@
       'no_symbols',
     ],
 
+    'gpu_tests_release_trybot_no_resource_allowlisting_no_symbols': [
+      'gpu_tests', 'release_trybot', 'no_resource_allowlisting',
+      'no_symbols',
+    ],
+
     'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials': [
       'gpu_tests', 'release_trybot', 'resource_allowlisting', 'invert_fieldtrials',
     ],
 
     'gpu_tests_release_trybot_x86': [
       'gpu_tests', 'release_trybot', 'x86',
+    ],
+
+    'gpu_tests_release_trybot_no_symbols': [
+      'gpu_tests', 'release_trybot', 'no_symbols',
     ],
 
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange': [
@@ -2589,8 +2597,8 @@
       'ozone_linux', 'release_bot',
     ],
 
-    'ozone_linux_release_trybot': [
-      'ozone_linux', 'release_trybot',
+    'ozone_linux_release_trybot_no_symbols': [
+      'ozone_linux', 'release_trybot', 'no_symbols',
     ],
 
     'perfetto_release_bot': [
@@ -3011,7 +3019,7 @@
 
     'chromeos_device': {
       'gn_args': 'is_chromeos_device=true ozone_platform_headless=true',
-      'mixins': ['goma'],
+      'mixins': ['dcheck_off', 'goma'],
     },
 
     'chromeos_device_reclient': {

@@ -454,7 +454,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     base::RunLoop copy_run_loop;
     bool copy_called = false;
     pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
-        CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+        CopyOutputRequest::ResultFormat::RGBA,
+        CopyOutputRequest::ResultDestination::kSystemMemory,
         base::BindOnce(&CopyCallback, &copy_called,
                        copy_run_loop.QuitClosure())));
     pass->id = CompositorRenderPassId{1u};
@@ -4469,7 +4470,8 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
     base::RunLoop copy_run_loop;
     bool copy_called = false;
     pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
-        CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+        CopyOutputRequest::ResultFormat::RGBA,
+        CopyOutputRequest::ResultDestination::kSystemMemory,
         base::BindOnce(&CopyCallback, &copy_called,
                        copy_run_loop.QuitClosure())));
     pass->id = CompositorRenderPassId{1u};
@@ -4497,9 +4499,9 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
 
 class SkiaDelegatedInkRendererTest : public DisplayTest {
  public:
+  void SetUp() override { EnablePrediction(); }
+
   void SetUpRenderers() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kDrawPredictedInkPoint, switches::kDraw1Point12Ms);
     // First set up the display to use the Skia renderer.
     RendererSettings settings;
     settings.use_skia_renderer = true;
@@ -4512,6 +4514,16 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
     ink_renderer_ = renderer.get();
     display_->renderer_for_testing()->SetDelegatedInkPointRendererSkiaForTest(
         std::move(renderer));
+  }
+
+  void EnablePrediction() {
+    base::FieldTrialParams params;
+    params["predicted_points"] = ::features::kDraw1Point12Ms;
+    base::test::ScopedFeatureList::FeatureAndParams prediction_params = {
+        features::kDrawPredictedInkPoint, params};
+
+    feature_list_.Reset();
+    feature_list_.InitWithFeaturesAndParameters({prediction_params}, {});
   }
 
   DelegatedInkPointRendererBase* ink_renderer() {
@@ -4676,6 +4688,8 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
 
   // Stub client kept in scope to prevent access violations during DrawAndSwap.
   StubDisplayClient client_;
+
+  base::test::ScopedFeatureList feature_list_;
 
  private:
   std::unordered_map<int32_t, std::vector<gfx::DelegatedInkPoint>> ink_points_;

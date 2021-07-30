@@ -2750,12 +2750,6 @@ const char kUnsafeWebGPUDescription[] =
     "Enables access to the experimental WebGPU API. Warning: As GPU sandboxing "
     "isn't implemented yet for the WebGPU API, it is possible to read GPU data "
     "for other processes.";
-const char kUnsafeWebGPUServiceName[] = "Unsafe WebGPU Service";
-const char kUnsafeWebGPUServiceDescription[] =
-    "Enables access to the experimental WebGPU API on service side but not "
-    "blink side."
-    "This is used to test origin trial code integrations before WebGPU is "
-    "enabled globally.";
 
 const char kUnsafeFastJSCallsName[] = "Unsafe fast JS calls";
 const char kUnsafeFastJSCallsDescription[] =
@@ -4305,10 +4299,10 @@ const char kCrostiniDiskResizingDescription[] =
     "Use preallocated user-resizeable disks for Crostini instead of sparse "
     "automatically sized disks.";
 
-const char kCrostiniUseBusterImageName[] = "New Crostini containers use Buster";
-const char kCrostiniUseBusterImageDescription[] =
-    "New Crostini containers use Debian Buster images instead of Debian "
-    "Stretch.";
+const char kCrostiniContainerInstallName[] =
+    "Debian version for new Crostini containers";
+const char kCrostiniContainerInstallDescription[] =
+    "New Crostini containers will use this debian version";
 
 const char kCrostiniGpuSupportName[] = "Crostini GPU Support";
 const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
@@ -4839,6 +4833,9 @@ const char kFrameThrottleFps30[] = "30 fps";
 const char kFullRestoreName[] = "Full restore";
 const char kFullRestoreDescription[] = "Chrome OS full restore";
 
+const char kFuseBoxName[] = "Enable ChromeOS FuseBox service";
+const char kFuseBoxDescription[] = "ChromeOS FuseBox service.";
+
 const char kHelpAppBackgroundPageName[] = "Help App Background Page";
 const char kHelpAppBackgroundPageDescription[] =
     "Enables the Background page in the help app. The background page is used "
@@ -5247,6 +5244,10 @@ const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] =
     "Always show virtual keyboard regardless of having a physical keyboard "
     "present";
+
+const char kVirtualKeyboardApiName[] = "Virtual Keyboard API";
+const char kVirtualKeyboardApiDescription[] =
+    "Enable the JS Virtual keyboard API, allowing manual control of the VK.";
 
 const char kVirtualKeyboardBorderedKeyName[] = "Virtual Keyboard Bordered Key";
 const char kVirtualKeyboardBorderedKeyDescription[] =

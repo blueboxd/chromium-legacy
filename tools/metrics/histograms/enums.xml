@@ -4036,6 +4036,19 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="FULLY_LOCKED"/>
 </enum>
 
+<enum name="ArcRestoreState">
+  <int value="0" label="Success"/>
+  <int value="1" label="Success With Memory Pressure"/>
+  <int value="2" label="Success With CPU Usage Rate Limiting"/>
+  <int value="3"
+      label="Success With Memory Pressure and CPU Usage Rate Limiting"/>
+  <int value="4" label="Failed With Memory Pressure"/>
+  <int value="5" label="Failed With CPU Usage Rate Limiting"/>
+  <int value="6"
+      label="Failed With Memory Pressure and CPU Usage Rate Limiting"/>
+  <int value="7" label="Failed With Unknown Reason"/>
+</enum>
+
 <enum name="ArcSdkVersionUpgradeType">
   <summary>Defines the types of ARC SDK version upgrade</summary>
   <int value="0" label="NO_UPGRADE"/>
@@ -16929,6 +16942,7 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="2" label="Debian Buster"/>
   <int value="3" label="Other Debian Version"/>
   <int value="4" label="Non-Debian OS"/>
+  <int value="5" label="Debian Bullseye"/>
 </enum>
 
 <enum name="CrostiniDiskImageStatus">
@@ -47430,6 +47444,7 @@ from previous Chrome versions.
   <int value="-1383597259" label="SyncUserConsentSeparateType:disabled"/>
   <int value="-1383145700"
       label="AutofillDoNotMigrateUnsupportedLocalCards:enabled"/>
+  <int value="-1382918690" label="VirtualKeyboardApi:enabled"/>
   <int value="-1382671832" label="OmniboxUIExperimentVerticalMargin:enabled"/>
   <int value="-1378071979" label="CroshSWA:enabled"/>
   <int value="-1377186702" label="DesktopIOSPromotion:disabled"/>
@@ -47521,6 +47536,7 @@ from previous Chrome versions.
   <int value="-1311575452"
       label="AutofillEnforceMinRequiredFieldsForUpload:disabled"/>
   <int value="-1311503211" label="MuteNotificationsDuringScreenShare:enabled"/>
+  <int value="-1311204345" label="FuseBox:disabled"/>
   <int value="-1311133348" label="VrBrowsingNativeAndroidUi:enabled"/>
   <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
   <int value="-1309828996"
@@ -49820,6 +49836,7 @@ from previous Chrome versions.
   <int value="573385109" label="SharedClipboardUI:enabled"/>
   <int value="575380532" label="ExperimentalAccessibilityLabels:disabled"/>
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
+  <int value="575441361" label="crostini-container-install-version"/>
   <int value="575829120" label="shelf-hotseat"/>
   <int value="576701073" label="WebPaymentsJustInTimePaymentApp:disabled"/>
   <int value="576878329" label="enable-background-blur"/>
@@ -50509,6 +50526,7 @@ from previous Chrome versions.
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1139756271" label="WebOTPCrossDevice:enabled"/>
   <int value="1140541604" label="WinrtGeolocationImplementation:enabled"/>
+  <int value="1140903063" label="FuseBox:enabled"/>
   <int value="1141918949" label="ContextualSearchLongpressPanelHelp:enabled"/>
   <int value="1142515376" label="enable-nacl"/>
   <int value="1142752111" label="CellularUseAttachApn:disabled"/>
@@ -51453,6 +51471,7 @@ from previous Chrome versions.
   <int value="1900529524" label="disable-touch-drag-drop"/>
   <int value="1901640438" label="EnableLauncherSearchNormalization:disabled"/>
   <int value="1903206193" label="NewWindowAppMenu:disabled"/>
+  <int value="1903444879" label="VirtualKeyboardApi:disabled"/>
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1907273605" label="NtpZeroSuggest:disabled"/>
@@ -81903,6 +81922,9 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Throttled client side"/>
   <int value="3" label="Attempting registration with newly generated keys"/>
   <int value="4" label="Attempting registration with preexisting keys"/>
+  <int value="5"
+      label="Attempting registration while having persistent authentication
+             error"/>
 </enum>
 
 <enum name="TrustedVaultFetchKeysAttempt">

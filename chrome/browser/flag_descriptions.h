@@ -1575,9 +1575,6 @@ extern const char kUnifiedPasswordManagerAndroidDescription[];
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
 
-extern const char kUnsafeWebGPUServiceName[];
-extern const char kUnsafeWebGPUServiceDescription[];
-
 extern const char kUnsafeFastJSCallsName[];
 extern const char kUnsafeFastJSCallsDescription[];
 
@@ -2471,8 +2468,8 @@ extern const char kCrosRegionsModeHide[];
 extern const char kCrostiniDiskResizingName[];
 extern const char kCrostiniDiskResizingDescription[];
 
-extern const char kCrostiniUseBusterImageName[];
-extern const char kCrostiniUseBusterImageDescription[];
+extern const char kCrostiniContainerInstallName[];
+extern const char kCrostiniContainerInstallDescription[];
 
 extern const char kCrostiniGpuSupportName[];
 extern const char kCrostiniGpuSupportDescription[];
@@ -2787,6 +2784,9 @@ extern const char kFrameThrottleFps30[];
 extern const char kFullRestoreName[];
 extern const char kFullRestoreDescription[];
 
+extern const char kFuseBoxName[];
+extern const char kFuseBoxDescription[];
+
 extern const char kHelpAppBackgroundPageName[];
 extern const char kHelpAppBackgroundPageDescription[];
 
@@ -3033,6 +3033,9 @@ extern const char kVaapiWebPImageDecodeAccelerationDescription[];
 
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
+
+extern const char kVirtualKeyboardApiName[];
+extern const char kVirtualKeyboardApiDescription[];
 
 extern const char kVirtualKeyboardBorderedKeyName[];
 extern const char kVirtualKeyboardBorderedKeyDescription[];

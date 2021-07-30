@@ -217,6 +217,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/arc/arc_features.h"
@@ -2534,6 +2535,15 @@ const FeatureEntry::Choice kForceControlFaceAeChoices[] = {
     {"Disable", media::switches::kForceControlFaceAe, "disable"}};
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const FeatureEntry::Choice kCrostiniContainerChoices[] = {
+    {"Default", "", ""},
+    {"Stretch", crostini::kCrostiniContainerFlag, "stretch"},
+    {"Buster", crostini::kCrostiniContainerFlag, "buster"},
+    {"Bullseye", crostini::kCrostiniContainerFlag, "bullseye"},
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if defined(OS_ANDROID)
 // The variations of --password-change-in-settings.
 const FeatureEntry::FeatureParam
@@ -4114,6 +4124,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemLatinPhysicalTypingName,
      flag_descriptions::kSystemLatinPhysicalTypingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSystemLatinPhysicalTyping)},
+    {"enable-cros-virtual-keyboard-api",
+     flag_descriptions::kVirtualKeyboardApiName,
+     flag_descriptions::kVirtualKeyboardApiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardApi)},
     {"enable-cros-virtual-keyboard-bordered-key",
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
@@ -4339,6 +4353,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          sandbox::policy::features::kForceSpectreVariant2Mitigation)},
+    {"fuse-box", flag_descriptions::kFuseBoxName,
+     flag_descriptions::kFuseBoxDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFuseBox)},
     {"spectre-v2-mitigation", flag_descriptions::kSpectreVariant2MitigationName,
      flag_descriptions::kSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(sandbox::policy::features::kSpectreVariant2Mitigation)},
@@ -5843,10 +5860,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
      flag_descriptions::kUnsafeWebGPUDescription, kOsMac | kOsLinux | kOsWin,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
-    {"enable-unsafe-webgpu-service",
-     flag_descriptions::kUnsafeWebGPUServiceName,
-     flag_descriptions::kUnsafeWebGPUServiceDescription,
-     kOsMac | kOsLinux | kOsWin, FEATURE_VALUE_TYPE(features::kWebGPUService)},
 
     {"enable-unsafe-fast-js-calls", flag_descriptions::kUnsafeFastJSCallsName,
      flag_descriptions::kUnsafeFastJSCallsDescription, kOsAll,
@@ -6336,10 +6349,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"crosh-swa", flag_descriptions::kCroshSWAName,
      flag_descriptions::kCroshSWADescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCroshSWA)},
-    {"crostini-use-buster-image",
-     flag_descriptions::kCrostiniUseBusterImageName,
-     flag_descriptions::kCrostiniUseBusterImageDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseBusterImage)},
+    {"crostini-container-install",
+     flag_descriptions::kCrostiniContainerInstallName,
+     flag_descriptions::kCrostiniContainerInstallDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kCrostiniContainerChoices)},
     {"crostini-disk-resizing", flag_descriptions::kCrostiniDiskResizingName,
      flag_descriptions::kCrostiniDiskResizingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniDiskResizing)},

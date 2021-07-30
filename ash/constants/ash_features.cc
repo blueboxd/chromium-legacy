@@ -287,9 +287,6 @@ const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
 const base::Feature kCrostiniResetLxdDb{"CrostiniResetLxdDb",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini using Buster container images.
-const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 // Use DLC instead of component updater for managing the Termina image if set
 // (and component updater instead of DLC if not).
 const base::Feature kCrostiniUseDlc{"CrostiniUseDlc",
@@ -518,6 +515,9 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 // TODO(https://crbug.com/1107185): Remove this after the feature is launched.
 const base::Feature kFullscreenAlertBubble{"EnableFullscreenBubble",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable ChromeOS FuseBox service.
+const base::Feature kFuseBox{"FuseBox", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables handle of `closeView` message from Gaia. The message is
 // supposed to end the flow.
@@ -1089,6 +1089,10 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 const base::Feature kVerticalSplitScreen{"VerticalSplitScreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the Virtual Keyboard API.
+const base::Feature kVirtualKeyboardApi{"VirtualKeyboardApi",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable using the floating virtual keyboard as the default option
 // on Chrome OS.
 const base::Feature kVirtualKeyboardFloatingDefault{
@@ -1121,7 +1125,7 @@ const base::Feature kWallpaperWebUI{"WallpaperWebUI",
 
 // Generates WebAPKs representing installed PWAs and installs them inside ARC.
 const base::Feature kWebApkGenerator{"WebApkGenerator",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables special handling of Chrome tab drags from a WebUI tab strip.
 // These will be treated similarly to a window drag, showing split view

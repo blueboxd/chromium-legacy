@@ -450,6 +450,13 @@ interesting attributes supported today.
   platform. Note that the `EnableIf` attribute can only be set once per
   definition.
 
+* **`[ServiceSandbox=value]`**:
+  The `ServiceSandbox` attribute is used in Chromium to tag which sandbox a
+  service hosting an implementation of interface will be launched in. This only
+  applies to `C++` bindings. `value` should match a constant defined in an
+  imported `sandbox.mojom.Sandbox` enum (for Chromium this is
+  `//sandbox/policy/mojom/sandbox.mojom`), such as `kService`.
+
 ## Generated Code For Target Languages
 
 When the bindings generator successfully processes an input Mojom file, it emits
@@ -599,8 +606,8 @@ struct Employee {
 
 *** note
 **NOTE:** Mojo object or handle types added with a `MinVersion` **MUST** be
-optional (nullable). See [Primitive Types](#Primitive-Types) for details on
-nullable values.
+optional (nullable) or primitive. See [Primitive Types](#Primitive-Types) for
+details on nullable values.
 ***
 
 By default, fields belong to version 0. New fields must be appended to the

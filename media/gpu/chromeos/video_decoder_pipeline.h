@@ -38,23 +38,12 @@ namespace media {
 class DmabufVideoFramePool;
 class MediaLog;
 
-// An interface that defines methods to operate on video decoder components
-// inside the VideoDecoderPipeline. The interface is similar to
-// media::VideoDecoder. The reason not using media::VideoDecoder is that some
-// decoders might need to attach an image processor to perform frame
-// processing, the output of VideoDecoder is not suitable when the
-// intermediate output cannot be rendered by the compositor.
-//
-// Note: All methods and callbacks should be called on the same sequence.
-class MEDIA_GPU_EXPORT DecoderInterface {
+// This interface extends VideoDecoder to provide a few more methods useful
+// for VideoDecoderPipeline operation. This class should be operated and
+// destroyed on |decoder_task_runner_|.
+class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
  public:
-  using InitCB = VideoDecoder::InitCB;
-  // TODO(crbug.com/998413): Replace VideoFrame to GpuMemoryBuffer-based
-  // instance.
-  using OutputCB = VideoDecoder::OutputCB;
-  using DecodeCB = VideoDecoder::DecodeCB;
-
-  // Client interface of DecoderInterface.
+  // Client interface of VideoDecoderMixin.
   class MEDIA_GPU_EXPORT Client {
    public:
     Client() = default;
@@ -65,7 +54,7 @@ class MEDIA_GPU_EXPORT DecoderInterface {
     virtual DmabufVideoFramePool* GetVideoFramePool() const = 0;
 
     // After this method is called from |decoder_|, the client needs to call
-    // DecoderInterface::ApplyResolutionChange() when all pending frames are
+    // VideoDecoderMixin::ApplyResolutionChange() when all pending frames are
     // flushed.
     virtual void PrepareChangeResolution() = 0;
 
@@ -79,47 +68,10 @@ class MEDIA_GPU_EXPORT DecoderInterface {
         const gfx::Rect& visible_rect) = 0;
   };
 
-  DecoderInterface(scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-                   base::WeakPtr<DecoderInterface::Client> client);
-  virtual ~DecoderInterface();
-
-  // Initializes a DecoderInterface with the given |config|, executing the
-  // |init_cb| upon completion. |output_cb| is called for each output frame
-  // decoded by Decode().
-  //
-  // Note:
-  // 1) DecoderInterface will be reinitialized if it was initialized before.
-  // 2) This method should not be called during pending decode or reset.
-  // 3) No DecoderInterface calls should be made before |init_cb| is executed
-  //    successfully.
-  // TODO(akahuang): Add an error notification method to handle misused case.
-  // 4) |init_cb| may be called before this returns.
-  virtual void Initialize(const VideoDecoderConfig& config,
-                          CdmContext* cdm_context,
-                          InitCB init_cb,
-                          const OutputCB& output_cb,
-                          const WaitingCB& waiting_cb) = 0;
-
-  // Requests a |buffer| to be decoded. The decode result will be returned via
-  // |decode_cb|.
-  //
-  // After decoding is finished the decoder calls |output_cb| specified in
-  // Initialize() for each decoded frame. |output_cb| may be called before or
-  // after |decode_cb|, including before Decode() returns.
-  //
-  // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
-  // |output_cb| must be called for each frame pending in the queue and
-  // |decode_cb| must be called after that. Callers will not call Decode()
-  // again until after the flush completes.
-  // TODO(akahuang): Add an error notification method to handle misused case.
-  virtual void Decode(scoped_refptr<DecoderBuffer> buffer,
-                      DecodeCB decode_cb) = 0;
-
-  // Resets decoder state. All pending Decode() requests will be finished or
-  // aborted before |closure| is called.
-  // Note: No VideoDecoder calls should be made before |closure| is executed.
-  // TODO(akahuang): Add an error notification method to handle misused case.
-  virtual void Reset(base::OnceClosure closure) = 0;
+  VideoDecoderMixin(
+      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+      base::WeakPtr<VideoDecoderMixin::Client> client);
+  ~VideoDecoderMixin() override;
 
   // After DecoderInterface calls |prepare_change_resolution_cb| passed
   // from the constructor, this method is called when the pipeline flushes
@@ -133,22 +85,22 @@ class MEDIA_GPU_EXPORT DecoderInterface {
 
  protected:
   // Decoder task runner. All public methods of
-  // DecoderInterface are executed at this task runner.
+  // VideoDecoderMixin are executed at this task runner.
   const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   // The WeakPtr client instance, bound to |decoder_task_runner_|.
-  base::WeakPtr<DecoderInterface::Client> client_;
+  base::WeakPtr<VideoDecoderMixin::Client> client_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecoderInterface);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderMixin);
 };
 
 class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
-                                              public DecoderInterface::Client {
+                                              public VideoDecoderMixin::Client {
  public:
   using CreateDecoderFunctionCB =
-      base::OnceCallback<std::unique_ptr<DecoderInterface>(
+      base::OnceCallback<std::unique_ptr<VideoDecoderMixin>(
           scoped_refptr<base::SequencedTaskRunner>,
-          base::WeakPtr<DecoderInterface::Client>)>;
+          base::WeakPtr<VideoDecoderMixin::Client>)>;
 
   // Creates a VideoDecoderPipeline instance that allocates VideoFrames from
   // |frame_pool| and converts the decoded VideoFrames using |frame_converter|.
@@ -179,7 +131,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   void Reset(base::OnceClosure reset_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
 
-  // DecoderInterface::Client implementation.
+  // VideoDecoderMixin::Client implementation.
   DmabufVideoFramePool* GetVideoFramePool() const override;
   void PrepareChangeResolution() override;
   // After picking a format, it instantiates an |image_processor_| if none of
@@ -227,7 +179,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // i.e. |image_processor_| or |frame_converter_| has pending frames.
   bool HasPendingFrames() const;
 
-  // Call DecoderInterface::ApplyResolutionChange() when we need to.
+  // Call VideoDecoderMixin::ApplyResolutionChange() when we need to.
   void CallApplyResolutionChangeIfNeeded();
 
   // Call |client_flush_cb_| with |status|.
@@ -277,7 +229,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
 
   // The current video decoder implementation. Valid after initialization is
   // successfully done.
-  std::unique_ptr<DecoderInterface> decoder_
+  std::unique_ptr<VideoDecoderMixin> decoder_
       GUARDED_BY_CONTEXT(decoder_sequence_checker_);
 
   // Only used after initialization on |decoder_task_runner_|.
@@ -291,7 +243,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   WaitingCB waiting_cb_ GUARDED_BY_CONTEXT(decoder_sequence_checker_);
 
   // True if we need to notify |decoder_| that the pipeline is flushed via
-  // DecoderInterface::ApplyResolutionChange().
+  // VideoDecoderMixin::ApplyResolutionChange().
   bool need_apply_new_resolution GUARDED_BY_CONTEXT(decoder_sequence_checker_) =
       false;
 

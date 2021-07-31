@@ -3238,6 +3238,7 @@ if (!is_android) {
         "../browser/speech/network_speech_recognizer_browsertest.cc",
         "../browser/speech/on_device_speech_recognizer_browsertest.cc",
         "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
+        "../browser/ui/app_list/app_list_remove_space_browsertest.cc",
         "../browser/ui/app_list/app_service/app_service_app_item_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
         "../browser/ui/app_list/chrome_app_list_item_browsertest.cc",
@@ -3889,7 +3890,10 @@ if (is_chromeos_lacros) {
 
     data = [ "data/media/" ]
 
-    data_deps = [ "//chrome:packed_resources" ]
+    data_deps = [
+      "//chrome:packed_resources",
+      "//testing/buildbot/filters:lacros_chrome_browsertests_filters",
+    ]
   }
 
   # This test target is intended for lacros chrome specific tests that depend
@@ -3924,7 +3928,10 @@ if (is_chromeos_lacros) {
       "//ui/platform_window",
     ]
 
-    data_deps = [ "//chrome:packed_resources" ]
+    data_deps = [
+      "//chrome:packed_resources",
+      "//testing/buildbot/filters:lacros_chrome_browsertests_filters",
+    ]
   }
 }
 
@@ -4332,6 +4339,7 @@ test("unit_tests") {
     # TODO(crbug.com/1186446): move p_s_d_impl_unittest.cc to the same directory
     # as presentation_service_delegate_impl.* files.
     "../browser/media/router/presentation/presentation_service_delegate_impl_unittest.cc",
+    "../browser/media/webrtc/capture_policy_utils_unittest.cc",
     "../browser/media/webrtc/media_stream_device_permission_context_unittest.cc",
     "../browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc",
     "../browser/metrics/chrome_metrics_extensions_helper_unittest.cc",
@@ -4407,6 +4415,7 @@ test("unit_tests") {
     "../browser/performance_manager/policies/working_set_trimmer_policy_unittest.cc",
     "../browser/performance_manager/test_support/page_aggregator.cc",
     "../browser/performance_manager/test_support/page_aggregator.h",
+    "../browser/performance_monitor/process_metrics_recorder_util_unittest.cc",
     "../browser/performance_monitor/system_monitor_unittest.cc",
     "../browser/permissions/abusive_origin_permission_revocation_request_unittests.cc",
     "../browser/permissions/adaptive_quiet_notification_permission_ui_enabler_unittest.cc",
@@ -6484,7 +6493,6 @@ test("unit_tests") {
       "../browser/extensions/install_tracker_unittest.cc",
       "../browser/extensions/install_verifier_unittest.cc",
       "../browser/extensions/installed_loader_unittest.cc",
-      "../browser/extensions/media_router_extension_access_logger_impl_unittest.cc",
       "../browser/extensions/menu_manager_unittest.cc",
       "../browser/extensions/omaha_attributes_handler_unittest.cc",
       "../browser/extensions/pack_extension_unittest.cc",
@@ -8079,6 +8087,7 @@ if (!is_android) {
         "../browser/ui/views/test/view_event_test_base.h",
         "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
         "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
+        "../browser/ui/views/translate/translate_bubble_view_interactive_uitest.cc",
         "../browser/ui/views/user_education/feature_promo_bubble_view_interactive_uitest.cc",
         "../browser/ui/views/user_education/feature_promo_snooze_interactive_uitest.cc",
       ]
@@ -9415,13 +9424,13 @@ if (is_chromeos_ash) {
 }
 
 if (is_linux) {
-  group("chrome_finch_smoke_tests") {
+  group("variations_smoke_tests") {
     testonly = true
     data_deps = [
       "//chrome",
       "//chrome/test/chromedriver",
       "//testing:test_scripts_shared",
     ]
-    data = [ "//testing/scripts/run_finch_smoke_tests.py" ]
+    data = [ "//testing/scripts/run_variations_smoke_tests.py" ]
   }
 }

@@ -19,26 +19,18 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 class EmbeddedSearchClientFactoryImpl;
-class OfflinePageTabHelper;
 
 namespace chrome_browser_net {
 class NetErrorTabHelper;
 }
 namespace extensions {
 class ExtensionFrameHost;
-class ChromeWebViewPermissionHelperDelegate;
 }  // namespace extensions
-namespace offline_pages {
-class OfflinePageTabHelper;
-}
 namespace page_load_metrics {
 class MetricsWebContentsObserver;
 }
 namespace printing {
 class PrintManager;
-}
-namespace security_interstitials {
-class SecurityInterstitialTabHelper;
 }
 namespace subresource_redirect {
 class SubresourceRedirectObserver;
@@ -111,12 +103,9 @@ class WebContentsFrameReceiverSetPassKey {
 
   friend class ::EmbeddedSearchClientFactoryImpl;
   friend class ::chrome_browser_net::NetErrorTabHelper;
-  friend class ::extensions::ChromeWebViewPermissionHelperDelegate;
   friend class ::extensions::ExtensionFrameHost;
-  friend class ::offline_pages::OfflinePageTabHelper;
   friend class ::page_load_metrics::MetricsWebContentsObserver;
   friend class ::printing::PrintManager;
-  friend class ::security_interstitials::SecurityInterstitialTabHelper;
   friend class ::subresource_redirect::SubresourceRedirectObserver;
   friend class ScreenOrientationProvider;
   friend class TestFrameInterfaceBinder;

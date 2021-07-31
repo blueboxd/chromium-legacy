@@ -60,14 +60,14 @@ absl::optional<Fourcc> PickRenderableFourcc(
 
 }  //  namespace
 
-DecoderInterface::DecoderInterface(
+VideoDecoderMixin::VideoDecoderMixin(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client)
+    base::WeakPtr<VideoDecoderMixin::Client> client)
     : decoder_task_runner_(std::move(decoder_task_runner)),
       client_(std::move(client)) {}
-DecoderInterface::~DecoderInterface() = default;
+VideoDecoderMixin::~VideoDecoderMixin() = default;
 
-bool DecoderInterface::NeedsTranscryption() {
+bool VideoDecoderMixin::NeedsTranscryption() {
   return false;
 }
 
@@ -189,6 +189,7 @@ void VideoDecoderPipeline::DestroyAsync(
 
 VideoDecoderType VideoDecoderPipeline::GetDecoderType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  // TODO(mcasas): query |decoder_| instead.
 #if BUILDFLAG(USE_VAAPI)
   return VideoDecoderType::kVaapi;
 #elif BUILDFLAG(USE_V4L2_CODEC)
@@ -207,18 +208,21 @@ bool VideoDecoderPipeline::IsPlatformDecoder() const {
 int VideoDecoderPipeline::GetMaxDecodeRequests() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
+  // TODO(mcasas): query |decoder_| instead.
   return 4;
 }
 
 bool VideoDecoderPipeline::NeedsBitstreamConversion() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
+  // TODO(mcasas): also query |decoder_|.
   return needs_bitstream_conversion_;
 }
 
 bool VideoDecoderPipeline::CanReadWithoutStalling() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
+  // TODO(mcasas): also query |decoder_|.
   return main_frame_pool_ && !main_frame_pool_->IsExhausted();
 }
 
@@ -292,7 +296,7 @@ void VideoDecoderPipeline::InitializeTask(const VideoDecoderConfig& config,
   }
 
   decoder_->Initialize(
-      config, cdm_context,
+      config, /* low_delay=*/false, cdm_context,
       base::BindOnce(&VideoDecoderPipeline::OnInitializeDone,
                      decoder_weak_this_, std::move(init_cb), cdm_context),
       base::BindRepeating(&VideoDecoderPipeline::OnFrameDecoded,

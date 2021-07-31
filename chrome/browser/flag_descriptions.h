@@ -120,6 +120,9 @@ extern const char kEditPasswordsInSettingsDescription[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 
+extern const char kEnableDrDcName[];
+extern const char kEnableDrDcDescription[];
+
 extern const char kEnableFtpName[];
 extern const char kEnableFtpDescription[];
 
@@ -524,9 +527,6 @@ extern const char kEnhancedNetworkVoicesDescription[];
 
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
-
-extern const char kMacCoreLocationImplementationName[];
-extern const char kMacCoreLocationImplementationDescription[];
 
 extern const char kMacCoreLocationBackendName[];
 extern const char kMacCoreLocationBackendDescription[];

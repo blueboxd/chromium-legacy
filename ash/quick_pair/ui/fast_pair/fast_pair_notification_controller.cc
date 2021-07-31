@@ -82,15 +82,22 @@ class NotificationDelegate : public message_center::NotificationDelegate {
   void Click(const absl::optional<int>& button_index,
              const absl::optional<std::u16string>& reply) override {
     // If the button displayed on the notification is clicked.
-    if (button_index) {
+    if (button_index && !is_complete_) {
+      is_complete_ = true;
       std::move(on_click_).Run();
     }
   }
 
   // message_center::NotificationDelegate override:
-  void Close(bool by_user) override { std::move(on_close_).Run(by_user); }
+  void Close(bool by_user) override {
+    if (!is_complete_) {
+      is_complete_ = true;
+      std::move(on_close_).Run(by_user);
+    }
+  }
 
  private:
+  bool is_complete_ = false;
   base::OnceClosure on_click_;
   base::OnceCallback<void(bool)> on_close_;
 };
@@ -136,7 +143,7 @@ void FastPairNotificationController::ShowDiscoveryNotification(
   discovery_notification->set_title(l10n_util::GetStringFUTF16(
       IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_TITLE, device_name));
   discovery_notification->set_message(l10n_util::GetStringFUTF16(
-      IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_MESSAGE, std::u16string()));
+      IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_MESSAGE, device_name));
 
   message_center::ButtonInfo connect_button(
       l10n_util::GetStringUTF16(IDS_FAST_PAIR_CONNECT_BUTTON));

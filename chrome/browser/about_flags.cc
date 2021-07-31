@@ -6272,13 +6272,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMacCoreLocationBackend)},
 #endif
 
-#if defined(OS_MAC)
-    {"enable-core-location-implementation",
-     flag_descriptions::kMacCoreLocationImplementationName,
-     flag_descriptions::kMacCoreLocationImplementationDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kMacCoreLocationImplementation)},
-#endif
-
 #if !defined(OS_ANDROID)
     {"mute-notification-snooze-action",
      flag_descriptions::kMuteNotificationSnoozeActionName,
@@ -7714,6 +7707,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMultiProfileAccountConsistencyDescription, kOsLinux,
      FEATURE_VALUE_TYPE(kMultiProfileAccountConsistency)},
 #endif
+
+    {"enable-drdc", flag_descriptions::kEnableDrDcName,
+     flag_descriptions::kEnableDrDcDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableDrDc)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

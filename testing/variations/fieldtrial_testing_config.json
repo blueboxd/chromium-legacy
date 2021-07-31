@@ -1437,6 +1437,58 @@
             ]
         }
     ],
+    "BrowserPrioritizeNativeWorkStudy": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "BrowserPrioritizeNative2000msAndInputQueue2",
+                    "params": {
+                        "prioritize_for_next_ms": "2000ms"
+                    },
+                    "enable_features": [
+                        "BrowserPrioritizeInputQueue",
+                        "BrowserPrioritizeNativeWork"
+                    ]
+                },
+                {
+                    "name": "BrowserPrioritizeNativeWorkAlwaysOn2",
+                    "params": {
+                        "prioritize_for_next_ms": "inf"
+                    },
+                    "enable_features": [
+                        "BrowserPrioritizeNativeWork"
+                    ],
+                    "disable_features": [
+                        "BrowserPrioritizeInputQueue"
+                    ]
+                },
+                {
+                    "name": "BrowserPrioritizeNativeWork2000msAfterInput2",
+                    "params": {
+                        "prioritize_for_next_ms": "2000ms"
+                    },
+                    "enable_features": [
+                        "BrowserPrioritizeNativeWork"
+                    ],
+                    "disable_features": [
+                        "BrowserPrioritizeInputQueue"
+                    ]
+                },
+                {
+                    "name": "BrowserPrioritizeInputQueue2",
+                    "enable_features": [
+                        "BrowserPrioritizeInputQueue"
+                    ],
+                    "disable_features": [
+                        "BrowserPrioritizeNativeWork"
+                    ]
+                }
+            ]
+        }
+    ],
     "BrowsingDataLifetimeManager": [
         {
             "platforms": [
@@ -2212,6 +2264,25 @@
             ]
         }
     ],
+    "CommercePriceTracking": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "PriceDropIndicators_20210729",
+                    "params": {
+                        "enable_price_tracking": "true",
+                        "price_tracking_with_optimization_guide": "true"
+                    },
+                    "enable_features": [
+                        "CommercePriceTracking"
+                    ]
+                }
+            ]
+        }
+    ],
     "CompositeAfterPaint": [
         {
             "platforms": [
@@ -2504,24 +2575,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CriticalPersistedTabData"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CrosMemoryAblationStudy": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "CrosMemoryAblationStudy",
-                    "params": {
-                        "ablation-size-mb": "10"
-                    },
-                    "enable_features": [
-                        "CrosMemoryAblationStudy"
                     ]
                 }
             ]
@@ -5548,6 +5601,7 @@
                         "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
+                        "OmniboxOnFocusSuggestionsContextualWebAllowSRP",
                         "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
                     ]
@@ -7051,6 +7105,48 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ReleaseNotesNotification"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RenderAccessibilityHostAvoidCopying": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RenderAccessibilityHostAvoidCopying"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RenderAccessibilityHostDeserializationOffMainThread": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RenderAccessibilityHostDeserializationOffMainThread"
                     ]
                 }
             ]
@@ -9588,6 +9684,21 @@
                         "TextfieldFocusOnTapUp",
                         "WebUITabStrip",
                         "WebUITabStripTabDragIntegration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebViewAppsPackageNamesAllowlist": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebViewAppsPackageNamesAllowlist"
                     ]
                 }
             ]

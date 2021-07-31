@@ -50,9 +50,9 @@ constexpr size_t kDpbOutputBufferExtraCount = limits::kMaxVideoFrames + 1;
 base::AtomicRefCount V4L2VideoDecoder::num_instances_(0);
 
 // static
-std::unique_ptr<DecoderInterface> V4L2VideoDecoder::Create(
+std::unique_ptr<VideoDecoderMixin> V4L2VideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client) {
+    base::WeakPtr<VideoDecoderMixin::Client> client) {
   DCHECK(decoder_task_runner->RunsTasksInCurrentSequence());
   DCHECK(client);
 
@@ -62,7 +62,7 @@ std::unique_ptr<DecoderInterface> V4L2VideoDecoder::Create(
     return nullptr;
   }
 
-  return base::WrapUnique<DecoderInterface>(new V4L2VideoDecoder(
+  return base::WrapUnique<VideoDecoderMixin>(new V4L2VideoDecoder(
       std::move(decoder_task_runner), std::move(client), std::move(device)));
 }
 
@@ -80,9 +80,9 @@ SupportedVideoDecoderConfigs V4L2VideoDecoder::GetSupportedConfigs() {
 
 V4L2VideoDecoder::V4L2VideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client,
+    base::WeakPtr<VideoDecoderMixin::Client> client,
     scoped_refptr<V4L2Device> device)
-    : DecoderInterface(std::move(decoder_task_runner), std::move(client)),
+    : VideoDecoderMixin(std::move(decoder_task_runner), std::move(client)),
       device_(std::move(device)),
       weak_this_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
@@ -119,6 +119,7 @@ V4L2VideoDecoder::~V4L2VideoDecoder() {
 }
 
 void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                  bool /*low_delay*/,
                                   CdmContext* cdm_context,
                                   InitCB init_cb,
                                   const OutputCB& output_cb,
@@ -186,6 +187,32 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_cb_ = std::move(output_cb);
   SetState(State::kInitialized);
   std::move(init_cb).Run(::media::OkStatus());
+}
+
+bool V4L2VideoDecoder::NeedsBitstreamConversion() const {
+  DCHECK(output_cb_) << "V4L2VideoDecoder hasn't been initialized";
+  NOTREACHED();
+  return (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) ||
+         (profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX);
+}
+
+bool V4L2VideoDecoder::CanReadWithoutStalling() const {
+  NOTIMPLEMENTED();
+  NOTREACHED();
+  return true;
+}
+
+int V4L2VideoDecoder::GetMaxDecodeRequests() const {
+  NOTREACHED();
+  return 4;
+}
+
+VideoDecoderType V4L2VideoDecoder::GetDecoderType() const {
+  return VideoDecoderType::kV4L2;
+}
+
+bool V4L2VideoDecoder::IsPlatformDecoder() const {
+  return true;
 }
 
 StatusCode V4L2VideoDecoder::InitializeBackend() {
@@ -454,8 +481,17 @@ void V4L2VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_NE(state_, State::kUninitialized);
 
+  // VideoDecoder interface: |decode_cb| can't be called from within Decode().
+  auto trampoline_decode_cb = base::BindOnce(
+      [](const scoped_refptr<base::SequencedTaskRunner>& this_sequence_runner,
+         DecodeCB decode_cb, Status status) {
+        this_sequence_runner->PostTask(
+            FROM_HERE, base::BindOnce(std::move(decode_cb), status));
+      },
+      base::SequencedTaskRunnerHandle::Get(), std::move(decode_cb));
+
   if (state_ == State::kError) {
-    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    std::move(trampoline_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -463,14 +499,14 @@ void V4L2VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     const StatusCode status = InitializeBackend();
     if (status != StatusCode::kOk) {
       SetState(State::kError);
-      std::move(decode_cb).Run(status);
+      std::move(trampoline_decode_cb).Run(status);
       return;
     }
   }
 
   const int32_t bitstream_id = bitstream_id_generator_.GetNextBitstreamId();
-  backend_->EnqueueDecodeTask(std::move(buffer), std::move(decode_cb),
-                              bitstream_id);
+  backend_->EnqueueDecodeTask(std::move(buffer),
+                              std::move(trampoline_decode_cb), bitstream_id);
 }
 
 bool V4L2VideoDecoder::StartStreamV4L2Queue(bool start_output_queue) {

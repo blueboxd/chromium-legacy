@@ -890,6 +890,8 @@ source_set("browser") {
     "file_system_access/file_system_access_directory_handle_impl.h",
     "file_system_access/file_system_access_error.cc",
     "file_system_access/file_system_access_error.h",
+    "file_system_access/file_system_access_file_delegate_host_impl.cc",
+    "file_system_access/file_system_access_file_delegate_host_impl.h",
     "file_system_access/file_system_access_file_handle_impl.cc",
     "file_system_access/file_system_access_file_handle_impl.h",
     "file_system_access/file_system_access_file_writer_impl.cc",
@@ -1825,8 +1827,6 @@ source_set("browser") {
     "ssl/ssl_manager.h",
     "ssl_private_key_impl.cc",
     "ssl_private_key_impl.h",
-    "starscan_load_observer.cc",
-    "starscan_load_observer.h",
     "startup_data_impl.cc",
     "startup_data_impl.h",
     "startup_helper.cc",
@@ -2165,6 +2165,7 @@ source_set("browser") {
       "android/text_suggestion_host_mojo_impl_android.cc",
       "android/text_suggestion_host_mojo_impl_android.h",
       "child_process_launcher_helper_android.cc",
+      "conversions/attribution_reporter_android.cc",
       "media/android/browser_gpu_video_accelerator_factories.cc",
       "media/android/browser_gpu_video_accelerator_factories.h",
       "media/android/media_player_renderer.cc",
@@ -2595,6 +2596,13 @@ source_set("browser") {
     sources += [
       "media/service_factory.cc",
       "media/service_factory.h",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "media/dcomp_surface_registry_broker.cc",
+      "media/dcomp_surface_registry_broker.h",
     ]
   }
 

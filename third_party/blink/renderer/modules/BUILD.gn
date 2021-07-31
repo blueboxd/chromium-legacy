@@ -40,8 +40,8 @@ component("modules") {
   configs += [
     ":modules_implementation",
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
+    # TODO(crbug.com/879657): Fix size_t to int truncations.
+    "//build/config/compiler:no_shorten_64_warnings",
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:non_test_config",
     "//third_party/blink/renderer:inside_blink",
@@ -137,6 +137,7 @@ component("modules") {
     "//third_party/blink/renderer/modules/sensor",
     "//third_party/blink/renderer/modules/service_worker",
     "//third_party/blink/renderer/modules/shapedetection",
+    "//third_party/blink/renderer/modules/shared_storage",
     "//third_party/blink/renderer/modules/speech",
     "//third_party/blink/renderer/modules/srcobject",
     "//third_party/blink/renderer/modules/storage",

@@ -288,6 +288,9 @@ class PersonalDataManager : public KeyedService,
   // Returns autofill offer data, including card-linked and promo code offers.
   virtual std::vector<AutofillOfferData*> GetAutofillOffers() const;
 
+  // Returns autofill offer data, but only for promo code offers.
+  std::vector<const AutofillOfferData*> GetAutofillPromoCodeOffers() const;
+
   // Returns the customized credit card art image for the |card_art_url|.
   virtual gfx::Image* GetCreditCardArtImageForUrl(
       const GURL& card_art_url) const;
@@ -544,6 +547,7 @@ class PersonalDataManager : public KeyedService,
                            RequestProfileServerValidity);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetProfileSuggestions_Validity);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, LogStoredCreditCardMetrics);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerCleaner;
@@ -667,7 +671,8 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<CreditCardCloudTokenData>>
       server_credit_card_cloud_token_data_;
 
-  // Offer data for user's credit cards.
+  // Autofill offer data, including card-linked offers for the user's credit
+  // cards as well as promo code offers.
   std::vector<std::unique_ptr<AutofillOfferData>> autofill_offer_data_;
 
   // The customized card art images for the URL.
@@ -799,6 +804,10 @@ class PersonalDataManager : public KeyedService,
   // Checks whether any virtual card metadata for server cards is new and makes
   // corresponding changes.
   void ProcessVirtualCardMetadataChanges();
+
+  // Returns the number of server credit cards that have a valid credit card art
+  // image.
+  size_t GetServerCardWithArtImageCount() const;
 
   // Stores the |app_locale| supplied on construction.
   const std::string app_locale_;

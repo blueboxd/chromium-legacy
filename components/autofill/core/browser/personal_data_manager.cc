@@ -1231,6 +1231,20 @@ std::vector<AutofillOfferData*> PersonalDataManager::GetAutofillOffers() const {
   return result;
 }
 
+std::vector<const AutofillOfferData*>
+PersonalDataManager::GetAutofillPromoCodeOffers() const {
+  if (!IsAutofillWalletImportEnabled())
+    return {};
+
+  std::vector<const AutofillOfferData*> result;
+  result.reserve(autofill_offer_data_.size());
+  for (const auto& data : autofill_offer_data_) {
+    if (data.get()->IsPromoCodeOffer())
+      result.push_back(data.get());
+  }
+  return result;
+}
+
 gfx::Image* PersonalDataManager::GetCreditCardArtImageForUrl(
     const GURL& card_art_url) const {
   if (!IsAutofillWalletImportEnabled())
@@ -1951,7 +1965,8 @@ void PersonalDataManager::LogStoredProfileMetrics() const {
 void PersonalDataManager::LogStoredCreditCardMetrics() const {
   if (!has_logged_stored_credit_card_metrics_) {
     AutofillMetrics::LogStoredCreditCardMetrics(
-        local_credit_cards_, server_credit_cards_, kDisusedDataModelTimeDelta);
+        local_credit_cards_, server_credit_cards_,
+        GetServerCardWithArtImageCount(), kDisusedDataModelTimeDelta);
 
     // Only log this info once per chrome user profile load.
     has_logged_stored_credit_card_metrics_ = true;
@@ -2442,6 +2457,12 @@ void PersonalDataManager::ProcessVirtualCardMetadataChanges() {
   }
   if (!updated_urls.empty())
     FetchImagesForUrls(updated_urls);
+}
+
+size_t PersonalDataManager::GetServerCardWithArtImageCount() const {
+  return base::ranges::count_if(
+      server_credit_cards_.begin(), server_credit_cards_.end(),
+      [](const auto& card) { return card->card_art_url().is_valid(); });
 }
 
 }  // namespace autofill

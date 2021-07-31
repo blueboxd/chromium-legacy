@@ -879,6 +879,8 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.chrome_public_test_apk.filter',
           '--timeout-scale=2.0',
         ],
+        # TODO(crbug.com/1137474): Remove after the test suite is green.
+        'experiment_percentage': 100,
         # TODO(crbug.com/1137474): Revisit the shard number once failed tests
         # are fixed.
         'swarming': {
@@ -934,7 +936,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'machine_type': 'n1-standard-8', # use 8-core to shorten runtime
+              'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
             },
           ],
           # See https://crbug.com/1230192, runs of 40-60 minutes at 20 shards.
@@ -1046,11 +1048,6 @@
     'modifications': {
       'android-web-platform-pie-x86-fyi-rel': {
         'swarming': {
-          'dimension_sets': [
-            {
-              'machine_type': 'n1-standard-8',
-            },
-          ],
           'shards': 18,
         },
       },
@@ -1260,6 +1257,8 @@
         ],
       },
       'android-11-x86-fyi-rel': {
+        # TODO(crbug.com/1137474): Remove after the test suite is green.
+        'experiment_percentage': 100,
         # TODO(crbug.com/1137474): Revisit the shard number once failed tests
         # are fixed.
         'swarming': {
@@ -2555,6 +2554,12 @@
       },
     },
     'modifications': {
+      'android-11-x86-fyi-rel': {
+        'args': [
+          # TODO(crbug.com/1234824): Fix the failed tests
+          '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
+        ],
+      },
       'android-nougat-arm64-rel': {
         # TODO(crbug.com/1108055): Remove this filter
         'args': [
@@ -2657,11 +2662,6 @@
           '--log-wptreport',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'machine_type': 'n1-standard-8',
-            },
-          ],
           'shards': 18,
         },
       },
@@ -3202,25 +3202,15 @@
       # TODO(crbug.com/1171555): remove this when test can run with more emulators
       'android-weblayer-pie-x86-wpt-fyi-rel': {
         'swarming': {
-          'dimension_sets': [
-            {
-              'machine_type': 'n1-standard-8',
-            },
-          ],
           'shards': 18,
         },
       },
       'android-weblayer-pie-x86-wpt-smoketest': {
         'args': [
-	  '--default-exclude',
+          '--default-exclude',
           '--include-file=../../third_party/blink/web_tests/android/WPTSmokeTestCases'
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'machine_type': 'n1-standard-8',
-            },
-          ],
           'shards': 3,
         },
       },

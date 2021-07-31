@@ -569,6 +569,11 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     WaitForOnPersonalDataChanged();
   }
 
+  void AddOfferDataForTest(AutofillOfferData offer_data) {
+    personal_data_->AddOfferDataForTest(
+        std::make_unique<AutofillOfferData>(offer_data));
+  }
+
   std::unique_ptr<PersonalDataManager> personal_data_;
 };
 
@@ -716,6 +721,11 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
   int GetLastVersionValidatedUpdate() {
     return personal_data_->pref_service_->GetInteger(
         prefs::kAutofillLastVersionValidated);
+  }
+
+  void AddOfferDataForTest(AutofillOfferData offer_data) {
+    personal_data_->AddOfferDataForTest(
+        std::make_unique<AutofillOfferData>(offer_data));
   }
 
   // Verifies the credit card art image fetching should begin.
@@ -2004,6 +2014,61 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   ResetPersonalDataManager(USER_MODE_INCOGNITO);
   EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+}
+
+// Tests that GetAutofillOffers returns all available offers.
+TEST_F(PersonalDataManagerTest, GetAutofillOffers) {
+  // Add two card-linked offers and one promo code offer.
+  AddOfferDataForTest(test::GetCardLinkedOfferData1());
+  AddOfferDataForTest(test::GetCardLinkedOfferData2());
+  AddOfferDataForTest(test::GetPromoCodeOfferData());
+
+  // Should return all three.
+  EXPECT_EQ(3U, personal_data_->GetAutofillOffers().size());
+}
+
+// Tests that GetAutofillOffers does not return any offers if
+// |IsAutofillWalletImportEnabled()| returns |false|.
+TEST_F(PersonalDataManagerMockTest, GetAutofillOffers_WalletImportDisabled) {
+  // Add a card-linked offer and a promo code offer.
+  AddOfferDataForTest(test::GetCardLinkedOfferData1());
+  AddOfferDataForTest(test::GetPromoCodeOfferData());
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
+      .WillOnce(QuitMessageLoop(&run_loop));
+  prefs::SetPaymentsIntegrationEnabled(prefs_.get(), false);
+
+  // Should return neither of them as the wallet import pref is disabled.
+  EXPECT_EQ(0U, personal_data_->GetAutofillOffers().size());
+}
+
+// Tests that GetAutofillPromoCodeOffers returns available promo code offers
+// only.
+TEST_F(PersonalDataManagerTest, GetAutofillPromoCodeOffers) {
+  // Add two card-linked offers and one promo code offer.
+  AddOfferDataForTest(test::GetCardLinkedOfferData1());
+  AddOfferDataForTest(test::GetCardLinkedOfferData2());
+  AddOfferDataForTest(test::GetPromoCodeOfferData());
+
+  // Only the promo code offer should be returned.
+  EXPECT_EQ(1U, personal_data_->GetAutofillPromoCodeOffers().size());
+}
+
+// Tests that GetAutofillPromoCodeOffers does not return any promo code offers
+// if |IsAutofillWalletImportEnabled()| returns |false|.
+TEST_F(PersonalDataManagerMockTest,
+       GetAutofillPromoCodeOffers_WalletImportDisabled) {
+  // Add a promo code offer.
+  AddOfferDataForTest(test::GetPromoCodeOfferData());
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
+      .WillOnce(QuitMessageLoop(&run_loop));
+  prefs::SetPaymentsIntegrationEnabled(prefs_.get(), false);
+
+  // Should not return the offer as the wallet import pref is disabled.
+  EXPECT_EQ(0U, personal_data_->GetAutofillOffers().size());
 }
 
 TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
@@ -6027,9 +6092,16 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
     }
   }
 
-  // Sets the virtual card enrollment state for the first card.
+  // Sets the virtual card enrollment state for the first three server cards.
   server_cards[0].set_virtual_card_enrollment_state(
       CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  server_cards[0].set_card_art_url(GURL("https://www.example.com/image1"));
+  server_cards[1].set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  server_cards[1].set_card_art_url(GURL("https://www.example.com/image1"));
+  server_cards[2].set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+  server_cards[2].set_card_art_url(GURL("https://www.example.com/image2"));
 
   SetServerCards(server_cards);
 
@@ -6047,6 +6119,8 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
   // Reload the database, which will log the stored profile counts.
   base::HistogramTester histogram_tester;
   ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  EXPECT_EQ(personal_data_->GetServerCardWithArtImageCount(), 3U);
 
   ASSERT_EQ(6U, personal_data_->GetCreditCards().size());
 
@@ -6071,6 +6145,8 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
       "Autofill.StoredCreditCardCount.Server.Unmasked", 2, 1);
   histogram_tester.ExpectTotalCount(
       "Autofill.StoredCreditCardCount.Server.WithVirtualCardMetadata", 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Server.WithCardArtImage", 3, 1);
 }
 
 TEST_F(PersonalDataManagerTest, CreateDataForTest) {

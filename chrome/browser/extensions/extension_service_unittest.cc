@@ -205,8 +205,6 @@ const char updates_from_webstore[] = "akjooamlhcgeopfifcmlggaebeocgokj";
 const char updates_from_webstore2[] = "oolblhbomdbcpmafphaodhjfcgbihcdg";
 const char updates_from_webstore3[] = "bmfoocgfinpmkmlbjhcbofejhkhlbchk";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
-const char cast_stable[] = "boadgeojelhgndaghljhdicfkmllpafd";
-const char cast_beta[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
 const char video_player_app[] = "jcgeabjmjgoblfofpppfkcoakmfobdko";
 const char kPrefBlocklist[] = "blacklist";
 
@@ -3442,10 +3440,6 @@ TEST_F(ExtensionServiceTest, SetUnsetBlocklistInPrefs) {
 // re-enabled if it's not present in the Safe Browsing blocklist.
 // Regression test for https://crbug.com/1107040.
 TEST_F(ExtensionServiceTest, NoUnsetBlocklistInPrefs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kDisableMalwareExtensionsRemotely);
-
   TestBlocklist test_blocklist;
   // A profile with 3 extensions installed: good0, good1, and good2.
   // We really only care about good0 for this test since the other
@@ -4673,10 +4667,6 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
 // Tests the malware Omaha attributes to remotely disable an extension for
 // malware.
 TEST_F(ExtensionServiceTest, DisableRemotelyForMalware) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kDisableMalwareExtensionsRemotely);
-
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
@@ -4702,10 +4692,6 @@ TEST_F(ExtensionServiceTest, DisableRemotelyForMalware) {
 // Tests not re-enabling previously remotely disabled extension if it's not the
 // only reason but the disable reasons should be gone.
 TEST_F(ExtensionServiceTest, NoEnableRemotelyDisabledExtension) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kDisableMalwareExtensionsRemotely);
-
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
@@ -7658,49 +7644,6 @@ TEST_F(ExtensionServiceTest, ReloadSharedModule) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(kExtensionId));
 }
 
-// Tests that extensions that have been migrated to component extensions can be
-// uninstalled.
-TEST_F(ExtensionServiceTest, UninstallMigratedExtensions) {
-  InitializeEmptyExtensionService();
-
-  scoped_refptr<const Extension> cast_extension =
-      ExtensionBuilder("stable")
-          .SetID(cast_stable)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
-  scoped_refptr<const Extension> cast_beta_extension =
-      ExtensionBuilder("beta")
-          .SetID(cast_beta)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
-  service()->AddExtension(cast_extension.get());
-  service()->AddExtension(cast_beta_extension.get());
-  ASSERT_TRUE(registry()->enabled_extensions().Contains(cast_stable));
-  ASSERT_TRUE(registry()->enabled_extensions().Contains(cast_beta));
-
-  service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_beta));
-}
-
-// Tests that extensions that have been migrated to component extensions can be
-// uninstalled even when they are disabled.
-TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
-  InitializeEmptyExtensionService();
-
-  scoped_refptr<const Extension> cast_extension =
-      ExtensionBuilder("stable")
-          .SetID(cast_stable)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
-  service()->AddExtension(cast_extension.get());
-  service()->DisableExtension(cast_stable, disable_reason::DISABLE_USER_ACTION);
-  ASSERT_TRUE(registry()->disabled_extensions().Contains(cast_stable));
-
-  service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
-}
-
 // Tests that component extensions that have been migrated can be uninstalled.
 TEST_F(ExtensionServiceTest, UninstallMigratedComponentExtensions) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
@@ -7746,23 +7689,16 @@ TEST_F(ExtensionServiceTest, UninstallMigratedExtensionsKeepsGoodComponents) {
 TEST_F(ExtensionServiceTest, UninstallMigratedExtensionsMultipleCalls) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
 
-  scoped_refptr<const Extension> cast_extension =
-      ExtensionBuilder("stable")
-          .SetID(cast_stable)
-          .SetLocation(ManifestLocation::kInternal)
-          .Build();
   scoped_refptr<const Extension> video_player_extension =
       ExtensionBuilder("video player")
           .SetID(video_player_app)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
-  service()->AddExtension(cast_extension.get());
   service()->AddComponentExtension(video_player_extension.get());
 
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
   EXPECT_FALSE(registry()->GetInstalledExtension(video_player_app));
 }
 

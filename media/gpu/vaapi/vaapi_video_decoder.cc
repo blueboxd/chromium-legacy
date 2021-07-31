@@ -92,10 +92,10 @@ VaapiVideoDecoder::DecodeTask::~DecodeTask() = default;
 VaapiVideoDecoder::DecodeTask::DecodeTask(DecodeTask&&) = default;
 
 // static
-std::unique_ptr<DecoderInterface> VaapiVideoDecoder::Create(
+std::unique_ptr<VideoDecoderMixin> VaapiVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client) {
-  return base::WrapUnique<DecoderInterface>(
+    base::WeakPtr<VideoDecoderMixin::Client> client) {
+  return base::WrapUnique<VideoDecoderMixin>(
       new VaapiVideoDecoder(std::move(decoder_task_runner), std::move(client)));
 }
 
@@ -112,8 +112,8 @@ SupportedVideoDecoderConfigs VaapiVideoDecoder::GetSupportedConfigs() {
 
 VaapiVideoDecoder::VaapiVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    base::WeakPtr<DecoderInterface::Client> client)
-    : DecoderInterface(std::move(decoder_task_runner), std::move(client)),
+    base::WeakPtr<VideoDecoderMixin::Client> client)
+    : VideoDecoderMixin(std::move(decoder_task_runner), std::move(client)),
       buffer_id_to_timestamp_(kTimestampCacheSize),
       weak_this_factory_(this) {
   VLOGF(2);
@@ -155,6 +155,7 @@ VaapiVideoDecoder::~VaapiVideoDecoder() {
 }
 
 void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                   bool /*low_delay*/,
                                    CdmContext* cdm_context,
                                    InitCB init_cb,
                                    const OutputCB& output_cb,
@@ -324,7 +325,10 @@ void VaapiVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   // If we're in the error state, immediately fail the decode task.
   if (state_ == State::kError) {
-    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    // VideoDecoder interface: |decode_cb| can't be called from within Decode().
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
@@ -826,6 +830,32 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
   decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VaapiVideoDecoder::HandleDecodeTask, weak_this_));
+}
+
+bool VaapiVideoDecoder::NeedsBitstreamConversion() const {
+  DCHECK(output_cb_) << "VaapiVideoDecoder hasn't been initialized";
+  NOTREACHED();
+  return (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) ||
+         (profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX);
+}
+
+bool VaapiVideoDecoder::CanReadWithoutStalling() const {
+  NOTIMPLEMENTED();
+  NOTREACHED();
+  return true;
+}
+
+int VaapiVideoDecoder::GetMaxDecodeRequests() const {
+  NOTREACHED();
+  return 4;
+}
+
+VideoDecoderType VaapiVideoDecoder::GetDecoderType() const {
+  return VideoDecoderType::kVaapi;
+}
+
+bool VaapiVideoDecoder::IsPlatformDecoder() const {
+  return true;
 }
 
 bool VaapiVideoDecoder::NeedsTranscryption() {

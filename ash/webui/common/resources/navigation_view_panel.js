@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MenuSelectorItem, SelectorItem, SelectorProperties} from './navigation_selector.js';
@@ -54,14 +55,24 @@ export class NavigationViewPanelElement extends PolymerElement {
   }
 
   /**
+   * Adds a new section to the top level navigation. The name and icon will
+   * be displayed in the side navigation. The content panel will create an
+   * instance of pageIs when navigated to. If id is null it will default to
+   * being equal to pageIs. In the case of adding multiple pages of the same
+   * type, id must be specified to distinguish them.
    * @param {string} name
    * @param {string} pageIs
    * @param {string} icon
+   * @param {?string} id
    * @param {!Array<SelectorItem>} subItems
    */
-  addSelector(name, pageIs, icon='', subItems=[]) {
-    let item = /** @type {SelectorItem} */ ({
-        'name': name, 'pageIs': pageIs, 'icon': icon});
+  addSelector(name, pageIs, icon = '', id = null, subItems = []) {
+    if (!id) {
+      id = pageIs;
+    }
+
+    let item = /** @type {SelectorItem} */ (
+        {'name': name, 'pageIs': pageIs, 'icon': icon, 'id': id});
     let property = /** @type {SelectorProperties} */ ({
         'isCollapsible': subItems.length,
         'isExpanded': false,
@@ -106,8 +117,7 @@ export class NavigationViewPanelElement extends PolymerElement {
       const functionCall = c[functionName];
       if (typeof functionCall === "function") {
         if (functionName === navigationPageChanged) {
-         const event = {
-            isActive: this.selectedItem.pageIs === c.id};
+          const event = {isActive: this.selectedItem.id === c.id};
           functionCall.call(c, event);
         } else {
           functionCall.call(c, params);
@@ -126,12 +136,11 @@ export class NavigationViewPanelElement extends PolymerElement {
 
     if (pageComponent === null) {
       pageComponent = document.createElement(pageName);
-      pageComponent.setAttribute('id', pageName);
+      assert(pageComponent);
+      pageComponent.setAttribute('id', item.id);
       pageComponent.setAttribute('class', 'view-content');
       pageComponent.hidden = true;
-      if (!pageComponent) {
-        console.error('Failed to create ' + pageName);
-      }
+
       this.$.navigationBody.appendChild(pageComponent);
     }
     return pageComponent;

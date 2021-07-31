@@ -299,7 +299,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '707f637087c413917af0d2c7be8866c79a005b68',
+  'catapult_revision': '4505381167a6d6d84ccf2897e903c18bc28f88e2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1478,7 +1478,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'lL9eGDPnjhLmu6ErFz6_fnCALFjGkGsl3IgkWQit-ugC'
+              'version': '7Qw4BSbScKvI8QCVSORMrBnyJGBU5P5TY1DbfaHlaVMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

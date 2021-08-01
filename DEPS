@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'rOx8FKu0Xea5Ep_QWAdGfZxkFrD2gLlSoZQRUkrHAnoC',
+          'version': '-ejWTHwQynBUFHUXxh2T08orTJFVdODeiMnbuxcWJFgC',
       },
     ],
     'condition': 'checkout_android',
@@ -1478,7 +1478,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '7Qw4BSbScKvI8QCVSORMrBnyJGBU5P5TY1DbfaHlaVMC'
+              'version': 'pmyID7CW-4NsGYefh7NnE4xj3AbHD5lu9r5GLO3rzMYC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1682,7 +1682,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7cbe3d05b4480b09b8e3d25c8df1e44a6380f017',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c7afd90d3f1181314b34fb2c6f7e7d44b290f51c',
     'condition': 'checkout_src_internal',
   },
 
@@ -1712,7 +1712,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'Sonb5WaENxL_8iqPtvFFqLyouCqO7EQyR0zj_jIXbZcC',
+        'version': '8KHvT8P7e6NwXccfUi7sMepluTjY5ZDtaTfBgHIbG98C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

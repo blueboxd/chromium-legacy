@@ -4122,7 +4122,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/exs-display-
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/modify-transferred-listitem-different-attr.html [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/repaint-non-scaling-stroke-text.html [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/repaint-non-scaling-stroke-text-decoration.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-mask-update.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-match-svg.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-rescale.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-viewbox-rescale.html [ Failure ]
@@ -4375,12 +4374,6 @@ crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-cra
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
 # known bug: import() inside set{Timeout,Interval}
-
-# WIP bug: dynamic import() base URL
-crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-external-classic.html [ Failure ]
-crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-external-module.html [ Failure ]
-crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-classic.html [ Failure ]
-crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-module.html [ Failure ]
 
 # Service worker updates need to handle redirect appropriately.
 crbug.com/889798 external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]

@@ -41,6 +41,12 @@ class FormCache {
   std::vector<FormData> ExtractNewForms(
       const FieldDataManager* field_data_manager);
 
+  // Modified version of ExtractNewForms(). It is used only if
+  // `AutofillUseNewFormExtraction` feature is enabled. Remove after the feature
+  // is deleted.
+  std::vector<FormData> ModifiedExtractNewForms(
+      const FieldDataManager* field_data_manager);
+
   // Resets the forms.
   void Reset();
 
@@ -56,24 +62,13 @@ class FormCache {
   bool ShowPredictions(const FormDataPredictions& form,
                        bool attach_predictions_to_dom);
 
-  // For a given |control_element| check whether it is eligible for manual
-  // filling on form interaction.
-  bool IsFormElementEligibleForManualFilling(
-      const blink::WebFormControlElement& control_element);
-
   // Stores the FieldRendererId of the fields that are eligible for manual
   // filling in a set.
   void SetFieldsEligibleForManualFilling(
       const std::vector<FieldRendererId>& fields_eligible_for_manual_filling);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(FormCacheBrowserTest, FreeDataOnElementRemoval);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormCacheBrowserTest,
-      RemoveReextractedModifiedNonSyntheticFormsWithSameRendererID);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormCacheBrowserTest,
-      RemoveReextractedModifiedSyntheticFormsWithSameRendererID);
+  friend class FormCacheTestApi;
 
   // Scans |control_elements| and returns the number of editable elements.
   // Also logs warning messages for deprecated attribute if
@@ -100,6 +95,11 @@ class FormCache {
   // The cached forms. Used to prevent re-extraction of forms.
   // TODO(crbug/896689) Move to std::map<unique_rederer_id, FormData>.
   std::set<FormData, FormData::IdentityComparator> parsed_forms_;
+
+  // Same as |parsed_forms_|, but moved to a different type. It is used only if
+  // `AutofillUseNewFormExtraction` feature is enabled. Remove after the feature
+  // is deleted.
+  std::map<FormRendererId, FormData> parsed_forms_rendererid_;
 
   // The synthetic FormData is for all the fieldsets in the document without a
   // form owner.

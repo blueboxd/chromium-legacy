@@ -3624,3 +3624,25 @@ TEST_F('ChromeVoxBackgroundTest', 'Abbreviation', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'EndOfText', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <p>start</p>
+    <div tabindex=0 role="textbox" contenteditable>123</div>
+  `;
+  this.runWithLoadedTree(site, function(root) {
+    const contentEditable = root.find({role: RoleType.TEXT_FIELD});
+
+    this.listenOnce(contentEditable, EventType.FOCUS, function() {
+      mockFeedback.call(press(KeyCode.RIGHT))
+          .expectSpeech('2')
+          .call(press(KeyCode.RIGHT))
+          .expectSpeech('3')
+          .call(press(KeyCode.RIGHT))
+          .expectSpeech('End of text')
+          .replay();
+    }.bind(this));
+    contentEditable.focus();
+  });
+});

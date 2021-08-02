@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
 
+#include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
@@ -14,6 +15,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -110,8 +112,7 @@ void ApplyOutlineOffset(IntRect& rect, int offset) {
 
 void PaintComplexOutline(GraphicsContext& graphics_context,
                          const Vector<IntRect> rects,
-                         const ComputedStyle& style,
-                         const Color& color) {
+                         const ComputedStyle& style) {
   DCHECK(!style.OutlineStyleIsAuto());
 
   // Construct a clockwise path along the outer edge of the outline.
@@ -182,12 +183,11 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
   if (!count)
     return;
 
-  Color outline_color = color;
+  Color color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
   bool use_transparency_layer = color.HasAlpha();
   if (use_transparency_layer) {
     graphics_context.BeginLayer(static_cast<float>(color.Alpha()) / 255);
-    outline_color =
-        Color(outline_color.Red(), outline_color.Green(), outline_color.Blue());
+    color.SetRGB(color.Red(), color.Green(), color.Blue());
   }
 
   DCHECK(count >= 4 && edges.size() == count);
@@ -207,8 +207,8 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
     if (edge.side == BoxSide::kLeft || edge.side == BoxSide::kBottom)
       std::swap(adjacent_width1, adjacent_width2);
     BoxBorderPainter::DrawLineForBoxSide(
-        graphics_context, edge.x1, edge.y1, edge.x2, edge.y2, edge.side,
-        outline_color, style.OutlineStyle(), adjacent_width1, adjacent_width2,
+        graphics_context, edge.x1, edge.y1, edge.x2, edge.y2, edge.side, color,
+        style.OutlineStyle(), adjacent_width1, adjacent_width2,
         /*antialias*/ false);
     adjacent_width_start = adjacent_width_end;
   }
@@ -217,11 +217,14 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
     graphics_context.EndLayer();
 }
 
-float GetFocusRingBorderRadius(const ComputedStyle& style,
-                               const PhysicalRect& reference_border_rect) {
-  // Default style is border-radius equal to outline width.
-  float border_radius = style.GetOutlineStrokeWidthForFocusRing();
+float DefaultFocusRingCornerRadius(const ComputedStyle& style) {
+  // Default style is corner radius equal to outline width.
+  return style.FocusRingStrokeWidth();
+}
 
+FloatRoundedRect::Radii GetFocusRingCornerRadii(
+    const ComputedStyle& style,
+    const PhysicalRect& reference_border_rect) {
   if (style.HasBorderRadius() &&
       (!style.HasEffectiveAppearance() || style.HasAuthorBorderRadius())) {
     int outset = style.OutlineOffsetInt();
@@ -229,17 +232,9 @@ float GetFocusRingBorderRadius(const ComputedStyle& style,
         RoundedBorderGeometry::PixelSnappedRoundedBorderWithOutsets(
             style, reference_border_rect,
             LayoutRectOutsets(outset, outset, outset, outset));
-    // For now we only support uniform border radius for all corners of the
-    // focus ring. Use the minimum radius of all corners to prevent the focus
-    // ring from overlapping with the element, but not smaller than the default
-    // border radius.
-    const auto& radii = rect.GetRadii();
-    return std::max(
-        border_radius,
-        std::min({radii.TopLeft().Width(), radii.TopLeft().Height(),
-                  radii.TopRight().Width(), radii.TopRight().Height(),
-                  radii.BottomRight().Width(), radii.BottomRight().Height(),
-                  radii.BottomLeft().Width(), radii.BottomLeft().Height()}));
+    auto radii = rect.GetRadii();
+    radii.SetMinimumRadius(DefaultFocusRingCornerRadius(style));
+    return radii;
   }
 
   if (!style.HasAuthorBorder() && style.HasEffectiveAppearance()) {
@@ -268,18 +263,93 @@ float GetFocusRingBorderRadius(const ComputedStyle& style,
         break;
     }
     if (part) {
-      border_radius =
+      float corner_radius =
           ui::NativeTheme::GetInstanceForWeb()->GetBorderRadiusForPart(
               part.value(), style.Width().GetFloatValue(),
               style.Height().GetFloatValue());
-
-      border_radius =
+      corner_radius =
           ui::NativeTheme::GetInstanceForWeb()->AdjustBorderRadiusByZoom(
-              part.value(), border_radius, style.EffectiveZoom());
+              part.value(), corner_radius, style.EffectiveZoom());
+      return FloatRoundedRect::Radii(corner_radius);
     }
   }
 
-  return border_radius;
+  return FloatRoundedRect::Radii(DefaultFocusRingCornerRadius(style));
+}
+
+void PaintSingleFocusRing(GraphicsContext& context,
+                          const Vector<IntRect>& rects,
+                          float width,
+                          int offset,
+                          const FloatRoundedRect::Radii& corner_radii,
+                          const Color& color) {
+  unsigned rect_count = rects.size();
+  if (!rect_count)
+    return;
+
+  SkRegion focus_ring_region;
+  for (unsigned i = 0; i < rect_count; i++) {
+    SkIRect r = rects[i];
+    if (r.isEmpty())
+      continue;
+    r.outset(offset, offset);
+    focus_ring_region.op(r, SkRegion::kUnion_Op);
+  }
+
+  if (focus_ring_region.isEmpty())
+    return;
+
+  if (focus_ring_region.isRect()) {
+    context.DrawFocusRingRect(
+        FloatRoundedRect(IntRect(focus_ring_region.getBounds()), corner_radii),
+        color, width);
+    return;
+  }
+
+  SkPath path;
+  if (!focus_ring_region.getBoundaryPath(&path))
+    return;
+  absl::optional<float> corner_radius = corner_radii.UniformRadius();
+  if (corner_radius.has_value()) {
+    context.DrawFocusRingPath(path, color, width, *corner_radius);
+    return;
+  }
+
+  // TODO(wangxianzhu): Bake non-uniform radii into the path. For now use the
+  // minimum radius.
+  float radius = std::min(
+      {corner_radii.TopLeft().Width(), corner_radii.TopLeft().Height(),
+       corner_radii.TopRight().Width(), corner_radii.TopRight().Height(),
+       corner_radii.BottomLeft().Width(), corner_radii.BottomLeft().Height(),
+       corner_radii.BottomRight().Width(),
+       corner_radii.BottomRight().Height()});
+  context.DrawFocusRingPath(path, color, width, radius);
+}
+
+void PaintFocusRing(GraphicsContext& context,
+                    const Vector<IntRect>& rects,
+                    const ComputedStyle& style,
+                    const FloatRoundedRect::Radii& corner_radii) {
+  Color inner_color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
+#if !defined(OS_MAC)
+  if (style.DarkColorScheme())
+    inner_color = Color::kWhite;
+#endif
+
+  const float outer_ring_width = style.FocusRingOuterStrokeWidth();
+  const float inner_ring_width = style.FocusRingInnerStrokeWidth();
+  const int offset = style.FocusRingOffset();
+  Color outer_color =
+      style.DarkColorScheme() ? Color(0x10, 0x10, 0x10) : Color::kWhite;
+  PaintSingleFocusRing(context, rects, outer_ring_width,
+                       offset + std::ceil(inner_ring_width), corner_radii,
+                       outer_color);
+  // Draw the inner ring using |outer_ring_width| (which should be wider than
+  // the additional offset of the outer ring) over the outer ring to ensure no
+  // gaps or AA artifacts.
+  DCHECK_GE(outer_ring_width, std::ceil(inner_ring_width));
+  PaintSingleFocusRing(context, rects, outer_ring_width, offset, corner_radii,
+                       inner_color);
 }
 
 }  // anonymous namespace
@@ -292,19 +362,9 @@ void OutlinePainter::PaintOutlineRects(
   for (auto& r : outline_rects)
     pixel_snapped_outline_rects.push_back(PixelSnappedIntRect(r));
 
-  Color color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
   if (style.OutlineStyleIsAuto()) {
-    // Logic in draw focus ring is dependent on whether the border is large
-    // enough to have an inset outline. Use the smallest border edge for that
-    // test.
-    float min_border_width =
-        std::min(std::min(style.BorderTopWidth(), style.BorderBottomWidth()),
-                 std::min(style.BorderLeftWidth(), style.BorderRightWidth()));
-    float border_radius = GetFocusRingBorderRadius(style, outline_rects[0]);
-    context.DrawFocusRing(pixel_snapped_outline_rects,
-                          style.GetOutlineStrokeWidthForFocusRing(),
-                          style.OutlineOffsetInt(), border_radius,
-                          min_border_width, color, style.UsedColorScheme());
+    auto corner_radii = GetFocusRingCornerRadii(style, outline_rects[0]);
+    PaintFocusRing(context, pixel_snapped_outline_rects, style, corner_radii);
     return;
   }
 
@@ -316,7 +376,19 @@ void OutlinePainter::PaintOutlineRects(
         AdjustedOutlineOffsetY(united_outline_rect, style.OutlineOffsetInt()));
     return;
   }
-  PaintComplexOutline(context, pixel_snapped_outline_rects, style, color);
+  PaintComplexOutline(context, pixel_snapped_outline_rects, style);
+}
+
+void OutlinePainter::PaintFocusRingPath(GraphicsContext& context,
+                                        const Path& focus_ring_path,
+                                        const ComputedStyle& style) {
+  // TODO(wangxianzhu):
+  // 1. Implement support for offset.
+  // 2. Implement double focus rings like rectangular focus rings.
+  context.DrawFocusRingPath(
+      focus_ring_path.GetSkPath(),
+      style.VisitedDependentColor(GetCSSPropertyOutlineColor()),
+      style.FocusRingStrokeWidth(), DefaultFocusRingCornerRadius(style));
 }
 
 }  // namespace blink

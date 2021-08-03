@@ -112,6 +112,7 @@ interface FileSystemDirectoryHandle extends FileSystemHandleBase {
       Promise<FileSystemDirectoryHandle>;
   getFileHandle(name: string, options?: FileSystemGetFileOptions):
       Promise<FileSystemFileHandle>;
+  removeEntry(name: string): Promise<void>;
   values(): IterableIterator<FileSystemHandle>;
 }
 
@@ -142,7 +143,7 @@ interface Window {
   }
 }
 
-// v8 specific stack information
+// v8 specific stack information.
 interface CallSite {
   getFileName(): string|undefined;
   getFunctionName(): string|undefined;
@@ -150,7 +151,22 @@ interface CallSite {
   getColumnNumber(): number|undefined;
 }
 
-// v8 specific stack trace customizing, see https://v8.dev/docs/stack-trace-api
+// v8 specific stack trace customizing, see https://v8.dev/docs/stack-trace-api.
 interface ErrorConstructor {
   prepareStackTrace(error: Error, structuredStackTrace: CallSite[]): void;
+}
+
+// Chrome private API for crash report.
+declare namespace chrome.crashReportPrivate {
+  export type ErrorInfo = {
+    message: string,
+    url: string,
+    columnNumber?: number,
+    debugId?: string,
+    lineNumber?: number,
+    product?: string,
+    stackTrace?: string,
+    version?: string,
+  };
+  export const reportError: (info: ErrorInfo, callback: () => void) => void;
 }

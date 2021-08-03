@@ -91,7 +91,7 @@
 #include "chrome/browser/ash/crosapi/local_printer_ash.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/lacros/account_manager_util.h"
+#include "chrome/browser/lacros/account_manager/account_manager_util.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #endif
@@ -181,6 +181,12 @@ const char kMediaSize[] = "mediaSize";
 const char kValue[] = "value";
 // Name of a dictionary pref holding the policy value for the sheets number.
 const char kSheets[] = "sheets";
+// Name of a dictionary pref holding the policy value for the color setting.
+const char kColor[] = "color";
+// Name of a dictionary pref holding the policy value for the duplex setting.
+const char kDuplex[] = "duplex";
+// Name of a dictionary pref holding the policy value for the pin setting.
+const char kPin[] = "pin";
 #endif  // defined(OS_CHROMEOS)
 // Name of a dictionary field indicating whether the 'Save to PDF' destination
 // is disabled.
@@ -299,6 +305,36 @@ base::Value PoliciesToValue(crosapi::mojom::PoliciesPtr ptr) {
     sheets_policy.SetIntKey(kValue, ptr->max_sheets_allowed);
     policies.SetKey(kSheets, std::move(sheets_policy));
   }
+
+  base::Value color_policy(base::Value::Type::DICTIONARY);
+  if (ptr->allowed_color_modes)
+    color_policy.SetIntKey(kAllowedMode,
+                           static_cast<int>(ptr->allowed_color_modes));
+  if (ptr->default_color_mode != printing::mojom::ColorModeRestriction::kUnset)
+    color_policy.SetIntKey(kDefaultMode,
+                           static_cast<int>(ptr->default_color_mode));
+  if (!color_policy.DictEmpty())
+    policies.SetKey(kColor, std::move(color_policy));
+
+  base::Value duplex_policy(base::Value::Type::DICTIONARY);
+  if (ptr->allowed_duplex_modes)
+    duplex_policy.SetIntKey(kAllowedMode,
+                            static_cast<int>(ptr->allowed_duplex_modes));
+  if (ptr->default_duplex_mode !=
+      printing::mojom::DuplexModeRestriction::kUnset)
+    duplex_policy.SetIntKey(kDefaultMode,
+                            static_cast<int>(ptr->default_duplex_mode));
+  if (!duplex_policy.DictEmpty())
+    policies.SetKey(kDuplex, std::move(duplex_policy));
+
+  base::Value pin_policy(base::Value::Type::DICTIONARY);
+  if (ptr->allowed_pin_modes != printing::mojom::PinModeRestriction::kUnset)
+    pin_policy.SetIntKey(kAllowedMode,
+                         static_cast<int>(ptr->allowed_pin_modes));
+  if (ptr->default_pin_mode != printing::mojom::PinModeRestriction::kUnset)
+    pin_policy.SetIntKey(kDefaultMode, static_cast<int>(ptr->default_pin_mode));
+  if (!pin_policy.DictEmpty())
+    policies.SetKey(kPin, std::move(pin_policy));
 
   return policies;
 }

@@ -13,9 +13,6 @@ export {ColorMode, createDestinationKey, Destination, DestinationCertificateStat
 export {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from './data/destination.js';
 // </if>
 export {PrinterType} from './data/destination_match.js';
-// <if expr="chromeos or lacros">
-export {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from './data/destination_policies.js';
-// </if>
 export {DestinationErrorType, DestinationStore} from './data/destination_store.js';
 export {PageLayoutInfo} from './data/document_info.js';
 export {LocalDestinationInfo, ProvisionalDestinationInfo} from './data/local_parsers.js';
@@ -31,11 +28,13 @@ export {PrinterState, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity}
 export {ScalingType} from './data/scaling.js';
 export {Size} from './data/size.js';
 export {Error, State} from './data/state.js';
-export {BackgroundGraphicsModeRestriction, CapabilitiesResponse, NativeInitialSettings, NativeLayer, NativeLayerImpl} from './native_layer.js';
+export {BackgroundGraphicsModeRestriction, CapabilitiesResponse, ColorModeRestriction, DuplexModeRestriction, NativeInitialSettings, NativeLayer, NativeLayerImpl, PinModeRestriction} from './native_layer.js';
 // <if expr="chromeos or lacros">
 export {NativeLayerCros, NativeLayerCrosImpl, PrinterSetupResponse, PrintServer, PrintServersConfig} from './native_layer_cros.js';
 // </if>
 export {getSelectDropdownBackground} from './print_preview_utils.js';
+export {PrintPreviewAdvancedSettingsDialogElement} from './ui/advanced_settings_dialog.js';
+export {PrintPreviewAdvancedSettingsItemElement} from './ui/advanced_settings_item.js';
 export {DEFAULT_MAX_COPIES} from './ui/copies_settings.js';
 export {DestinationState, NUM_PERSISTED_DESTINATIONS} from './ui/destination_settings.js';
 export {PDFPlugin, PluginProxy, PluginProxyImpl} from './ui/plugin_proxy.js';

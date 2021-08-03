@@ -1422,6 +1422,7 @@ if (!is_android) {
       "../browser/browsing_data/counters/history_counter_browsertest.cc",
       "../browser/browsing_data/counters/passwords_counter_browsertest.cc",
       "../browser/browsing_data/counters/sync_aware_counter_browsertest.cc",
+      "../browser/browsing_data/incognito_browsing_data_browsertest.cc",
       "../browser/browsing_data/navigation_entry_remover_browsertest.cc",
       "../browser/browsing_data/third_party_data_remover_browsertest.cc",
       "../browser/capability_delegation_browsertest.cc",
@@ -1916,7 +1917,6 @@ if (!is_android) {
       "../browser/ui/views/incognito_clear_browsing_data_dialog_browsertest.cc",
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/reader_mode/reader_mode_icon_view_browsertest.cc",
-      "../browser/ui/views/sharing/click_to_call_browsertest.cc",
       "../browser/ui/views/sharing/remote_copy_browsertest.cc",
       "../browser/ui/views/sharing/shared_clipboard_browsertest.cc",
       "../browser/ui/views/sharing/sharing_browsertest.cc",
@@ -2067,6 +2067,10 @@ if (!is_android) {
 
     if (enable_extensions) {
       sources += [ "../browser/extensions/preinstalled_apps_browsertest.cc" ]
+    }
+
+    if (enable_click_to_call) {
+      sources += [ "../browser/ui/views/sharing/click_to_call_browsertest.cc" ]
     }
 
     if (enable_pdf) {
@@ -5995,9 +5999,6 @@ test("unit_tests") {
       "../browser/renderer_context_menu/mock_render_view_context_menu.h",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
-      "../browser/sharing/click_to_call/click_to_call_context_menu_observer_unittest.cc",
-      "../browser/sharing/click_to_call/click_to_call_ui_controller_unittest.cc",
-      "../browser/sharing/click_to_call/click_to_call_utils_unittest.cc",
       "../browser/sharing/shared_clipboard/remote_copy_message_handler_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop_unittest.cc",
@@ -6291,6 +6292,14 @@ test("unit_tests") {
 
   if (use_x11 || use_ozone) {
     deps += [ "//ui/events/devices:test_support" ]
+  }
+
+  if (enable_click_to_call && !is_android) {
+    sources += [
+      "../browser/sharing/click_to_call/click_to_call_context_menu_observer_unittest.cc",
+      "../browser/sharing/click_to_call/click_to_call_ui_controller_unittest.cc",
+      "../browser/sharing/click_to_call/click_to_call_utils_unittest.cc",
+    ]
   }
 
   if (enable_background_contents) {
@@ -7651,7 +7660,6 @@ if (!is_android) {
       "//content/public/browser",
       "//extensions/buildflags",
       "//google_apis",
-      "//ppapi/shared_impl",
       "//printing/buildflags",
       "//services/device/public/cpp:test_support",
       "//skia",
@@ -7677,6 +7685,8 @@ if (!is_android) {
         "ppapi/ppapi_test_select_file_dialog_factory.cc",
         "ppapi/ppapi_test_select_file_dialog_factory.h",
       ]
+
+      deps += [ "//ppapi/shared_impl" ]
     }
 
     if (enable_extensions) {

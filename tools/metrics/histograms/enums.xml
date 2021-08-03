@@ -5162,6 +5162,16 @@ others/histograms.xml -->
   <int value="28" label="TILE_SUGGESTION"/>
 </enum>
 
+<enum name="AutoDSEPermissionRevertTransition">
+  <int value="0" label="NO_DECISION_ASK"/>
+  <int value="1" label="PRESERVE_ALLOW"/>
+  <int value="2" label="CONFLICT_ASK"/>
+  <int value="3" label="PRESERVE_BLOCK_ASK"/>
+  <int value="4" label="PRESERVE_BLOCK_ALLOW"/>
+  <int value="5" label="PRESERVE_BLOCK_BLOCK"/>
+  <int value="6" label="INVALID_END_STATE"/>
+</enum>
+
 <enum name="AutofillAddressProfileImportCountrySpecificFieldRequirement">
   <int value="0" label="All required fields present"/>
   <int value="1" label="Missing: ZIP"/>
@@ -10605,6 +10615,9 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="CaptivePortalProbeReason">
+  <obsolete>
+    Removed from code 2021-08.
+  </obsolete>
   <int value="0" label="UNSPECIFIED"/>
   <int value="1" label="TIMEOUT"/>
   <int value="2" label="CERTIFICATE_ERROR"/>
@@ -28823,6 +28836,7 @@ Called by update_extension_histograms.py.-->
   <int value="1565" label="OS_TELEMETRY_GETVPDINFO"/>
   <int value="1566" label="ACCESSIBILITY_PRIVATE_MAGNIFIERCENTERONPOINT"/>
   <int value="1567" label="STORAGE_SETACCESSLEVEL"/>
+  <int value="1568" label="OS_TELEMETRY_GETOEMDATA"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -50318,6 +50332,7 @@ from previous Chrome versions.
   <int value="946185008" label="EnableAppDataSearch:disabled"/>
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
   <int value="948351976" label="WallpaperWebUI:disabled"/>
+  <int value="948521531" label="StylusHandwriting:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="955425932" label="EnterpriseReportingInChromeOS:enabled"/>
@@ -51288,6 +51303,7 @@ from previous Chrome versions.
   <int value="1719958026" label="QueryTiles:enabled"/>
   <int value="1722748383" label="EnableAppReinstallZeroState:disabled"/>
   <int value="1723601083" label="enable-app-window-controls"/>
+  <int value="1724247189" label="StylusHandwriting:enabled"/>
   <int value="1724800383" label="AsmJsToWebAssembly:disabled"/>
   <int value="1725438666" label="NewStyleNotifications:enabled"/>
   <int value="1730094138" label="enable-md-storage-manager"/>
@@ -82398,19 +82414,22 @@ Full version information for the fingerprint enum values:
   <int value="0" label="kSuccess"/>
   <int value="1" label="kErrorReadJSONRules"/>
   <int value="2" label="kErrorRuleCountExceeded"/>
-  <int value="3" label="kErrorCreateTemporarySource"/>
-  <int value="4" label="kErrorWriteTemporaryJSONRuleset"/>
-  <int value="5" label="kErrorWriteTemporaryIndexedRuleset"/>
+  <int value="3" label="kErrorCreateTemporarySource_Deprecated"/>
+  <int value="4" label="kErrorWriteTemporaryJSONRuleset_Deprecated"/>
+  <int value="5" label="kErrorWriteTemporaryIndexedRuleset_Deprecated"/>
   <int value="6" label="kErrorInvalidRules"/>
   <int value="7" label="kErrorCreateDynamicRulesDirectory"/>
-  <int value="8" label="kErrorReplaceIndexedFile"/>
-  <int value="9" label="kErrorReplaceJSONFile"/>
+  <int value="8" label="kErrorReplaceIndexedFile_Deprecated"/>
+  <int value="9" label="kErrorReplaceJSONFile_Deprecated"/>
   <int value="10" label="kErrorCreateMatcher_InvalidPath"/>
   <int value="11" label="kErrorCreateMatcher_FileReadError"/>
   <int value="12" label="kErrorCreateMatcher_ChecksumMismatch"/>
   <int value="13" label="kErrorCreateMatcher_VersionMismatch"/>
   <int value="14" label="kErrorRegexTooLarge"/>
   <int value="15" label="kErrorRegexRuleCountExceeded"/>
+  <int value="16" label="kErrorSerializeToJson"/>
+  <int value="17" label="kErrorWriteJson"/>
+  <int value="18" label="kErrorWriteFlatbuffer"/>
 </enum>
 
 <enum name="UpdateEngineAttemptResult">

@@ -4,6 +4,7 @@
 
 #include "chromecast/cast_core/cast_runtime_service.h"
 
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 
 namespace chromecast {
@@ -16,8 +17,14 @@ std::unique_ptr<CastRuntimeService> CastRuntimeService::Create(
     media::MediaPipelineBackendManager* media_pipeline_backend_manager,
     CastRuntimeService::NetworkContextGetter network_context_getter,
     PrefService* pref_service) {
-  return std::make_unique<CastRuntimeService>(
-      std::move(network_context_getter));
+  return std::make_unique<CastRuntimeService>();
+}
+
+CastRuntimeService* CastRuntimeService::GetInstance() {
+  // TODO(b/186668532): Instead use the CastService singleton instead of
+  // creating a new one with NoDestructor.
+  static base::NoDestructor<CastRuntimeService> g_instance;
+  return g_instance.get();
 }
 
 }  // namespace chromecast

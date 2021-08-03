@@ -19,6 +19,9 @@
 # external/wpt/webgpu/cts.html, as the latter is not run.
 # ****************************************************************************
 
+# Workaround page loaded when content_shell starts, but not run as a test.
+crbug.com/1231599 wpt_internal/webgpu/000_run_me_first.html [ Skip ]
+
 ###
 ### Slow tests. Please prefer to split tests rather than adding to this section.
 ###
@@ -31,6 +34,12 @@ wpt_internal/webgpu/cts.html?q=webgpu:web_platform,copyToTexture,canvas:copy_con
 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_gl_context_canvas:* [ Slow ]
 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,rendering,draw:arguments:* [ Slow ]
 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,render_pass,storeOp:render_pass_store_op,color_attachment_only:* [ Slow ]
+# Intel only. Really slow and killed by the GPU watchdog?
+crbug.com/dawn/1046 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=false;indirect=true;drawCallTestParameter="firstVertex";type="float32x4";* [ Slow Crash ]
+crbug.com/dawn/1046 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=false;indirect=true;drawCallTestParameter="instanceCount";type="float32x4";* [ Slow Crash ]
+crbug.com/dawn/1046 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=false;indirect=true;drawCallTestParameter="vertexCount";type="float32x4";* [ Slow Crash ]
+crbug.com/dawn/1046 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=true;indirect=false;drawCallTestParameter="baseVertex";type="float32x4";* [ Slow Crash ]
+crbug.com/dawn/1046 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=true;indirect=false;drawCallTestParameter="vertexCountInIndexBuffer";type="float32x4";* [ Slow Crash ]
 
 ###
 ### Untriaged failures. Please prefer to triage thoroughly and file a bug!
@@ -46,26 +55,6 @@ wpt_internal/webgpu/cts.html?q=webgpu:web_platform,copyToTexture,canvas:copy_con
 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";format="depth32float";aspect="all";mipLevelCount=5;sampleCount=1;uninitializeMethod="StoreOpClear";layerCount=7;canaryOnCreation=false;* [ Failure ]
 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";format="r8unorm";aspect="all";mipLevelCount=5;sampleCount=1;uninitializeMethod="StoreOpClear";layerCount=1;nonPowerOfTwo=false;canaryOnCreation=false;* [ Failure ]
 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";format="rg8unorm";aspect="all";mipLevelCount=5;sampleCount=1;uninitializeMethod="StoreOpClear";layerCount=1;nonPowerOfTwo=false;canaryOnCreation=false;* [ Failure ]
-
-# Mac (Intel and AMD). Possibly nondeterministic.
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="r8snorm";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rg8snorm";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="r32float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rg16float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rgba8snorm";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rg11b10ufloat";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rg32float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rgba16float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rgba32float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="r8snorm";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rg8snorm";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="r32float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rg16float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba8snorm";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rg11b10ufloat";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rg32float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba16float";* [ Failure ]
-crbug.com/1161355 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba32float";* [ Failure ]
 
 ###
 ### Untriaged timeouts
@@ -107,6 +96,14 @@ crbug.com/dawn/1003 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,
 crbug.com/dawn/1003 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgb9e5ufloat";* [ Failure ]
 crbug.com/dawn/1003 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgb9e5ufloat";* [ Failure ]
 
+# Precision. Only on Mac Intel
+crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="r8snorm";* [ Failure ]
+crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rg8snorm";* [ Failure ]
+crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rgba8snorm";* [ Failure ]
+crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="r8snorm";* [ Failure ]
+crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rg8snorm";* [ Failure ]
+crbug.com/dawn/1047 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba8snorm";* [ Failure ]
+
 # Limits that should be updated.
 # maxStorageTexturePerShaderStage 8 -> 4
 crbug.com/dawn/796 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_pipeline_layout:* [ Failure ]
@@ -115,16 +112,6 @@ crbug.com/dawn/796 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,render_p
 # maxInterStageShaderComponents 64 -> 60 (crbug.com/dawn/759 [ Linux ][ Failure ] on NVIDIA will be recovered after the tests are fixed)
 crbug.com/dawn/802 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,rendering,draw:vertex_attributes,basic:* [ Skip ]
 
-# Robust access tests cause a lot of failures in various systems. Revisit expectations after the tests are fixed.
-crbug.com/dawn/1009 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:* [ Slow Failure ]
-crbug.com/dawn/1009 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:* [ Slow Failure ]
-crbug.com/dawn/1018 [ Mac ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:* [ Slow Failure Crash ]
-crbug.com/dawn/1011 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:indexed=false;indirect=false;* [ Crash Failure ]
-crbug.com/dawn/1011 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:indexed=false;indirect=true;* [ Crash Failure ]
-crbug.com/dawn/1011 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:indexed=true;indirect=false;* [ Crash Failure ]
-crbug.com/dawn/1011 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:indexed=true;indirect=true;* [ Crash Failure ]
-
-
 ###
 ### Test bugs (fixed upstream)
 ###
@@ -132,9 +119,6 @@ crbug.com/dawn/1011 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execu
 ###
 ### Platform-independent failures
 ###
-
-# This test runs first, and is often slow due to some browser startup not being complete.
-crbug.com/953991 wpt_internal/webgpu/000_run_me_first.html [ Slow ]
 
 crbug.com/dawn/999 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mappedAtCreation,smaller_getMappedRange:* [ Failure ]
 crbug.com/dawn/999 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mappedAtCreation,full_getMappedRange:* [ Failure ]
@@ -147,8 +131,8 @@ crbug.com/dawn/485 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,render_p
 crbug.com/1215024 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createComputePipeline:enrty_point_name_must_match:stageEntryPoint="main%5Cu0000";* [ Failure ]
 crbug.com/1215024 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createComputePipeline:enrty_point_name_must_match:stageEntryPoint="main%5Cu0000a";* [ Failure ]
 
-# Fails newly added validation.
-crbug.com/dawn/808 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,vertex_state,index_format:* [ Failure ]
+# Crash when creating the bindgroup. Most likely because we are using an invalid VkImageView
+crbug.com/dawn/1043 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:texture,resource_state:* [ Crash Failure ]
 
 # Failures because 1d, stencil8 and depth16unorm aren't implemented.
 crbug.com/dawn/129 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:texture_must_have_correct_dimension:viewDimension="1d";* [ Failure ]
@@ -224,7 +208,10 @@ crbug.com/1197369 wpt_internal/webgpu/cts.html?q=webgpu:web_platform,copyToTextu
 crbug.com/dawn/995 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,buffer,create:createBuffer_invalid_and_oom:* [ Failure ]
 
 # Validation of max dispatch size isn't implemented for dispatchIndirect
-crbug.com/dawn/1006 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,encoding,cmds,compute_pass:dispatch_sizes:dispatchType="indirect";* [ Skip ]
+crbug.com/dawn/1039 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,encoding,cmds,compute_pass:dispatch_sizes:dispatchType="indirect";* [ Skip ]
+
+# Validation for drawIndexedIndirect isn't implemented
+crbug.com/dawn/809 wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=true;indirect=true;* [ Skip ]
 
 # Dawn validation requires that aspects of attachments is "all", which the tests don't do.
 # See also crbug.com/dawn/603 for missing resource state D3D12_RESOURCE_STATE_DEPTH_WRITE that happens on the same tests.
@@ -233,9 +220,6 @@ crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_
 crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";readMethod="StencilTest";format="depth24plus-stencil8";* [ Failure Crash Timeout ]
 crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:format="depth24plus-stencil8";aspect1="depth-only";type1="render-target";* [ Failure ]
 crbug.com/dawn/812 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:format="depth24plus-stencil8";aspect1="stencil-only";type1="render-target";* [ Failure ]
-
-# Currently drawIndexedIndirect is disallowed due to missing of index buffer OOB validation. Skip the related tests.
-crbug.com/dawn/809 wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=true;indirect=true;* [ Skip ]
 
 ###
 ### Mac (Metal) specific
@@ -289,6 +273,10 @@ crbug.com/dawn/1013 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validati
 
 # Crashes or fails with "Backing is being accessed by both GL and Vulkan"
 crbug.com/1234041 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,queue,copyToTexture,CopyExternalImageToTexture:* [ Skip ]
+
+# VVLs want fillBuffer to be a multiple of 4
+crbug.com/dawn/1011 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=false;indirect=true;* [ Skip ]
+crbug.com/dawn/1011 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertex_buffer_access:indexed=true;indirect=false;* [ Skip ]
 
 ###
 ### Windows (D3D12) specific

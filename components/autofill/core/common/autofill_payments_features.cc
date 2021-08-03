@@ -108,16 +108,14 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 const base::Feature kAutofillEnableVirtualCard{
     "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
+// fields when data is available.
+const base::Feature kAutofillFillMerchantPromoCodeFields{
+    "AutofillFillMerchantPromoCodeFields", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable the fix for the offer feature in Incognito mode.
 const base::Feature kAutofillFixOfferInIncognito{
     "AutofillFixOfferInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// The merchant bound virtual card feature introduces new customized card art
-// images. This parameter defines the expiration of the fetched image in the
-// disk cache of the image fetcher.
-const base::FeatureParam<int> kAutofillImageFetcherDiskCacheExpirationInMinutes{
-    &kAutofillEnableMerchantBoundVirtualCards,
-    "autofill_image_fetcher_disk_cache_expiration_in_minutes", 10};
 
 // When enabled, Autofill will attempt to find merchant promo/coupon/gift code
 // fields when parsing forms.

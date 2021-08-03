@@ -153,11 +153,11 @@
     # MM emulator CQ builder currently has limited capacity so some composition
     # test suites cannot be fullly enabled at once.
     'android_marshmallow_emulator_limited_capacity_gtests': {
-      # Tests from chromium_gtests_for_devices_with_graphical_output
-      'unit_tests': {
-        'android_swarming': {
-          'shards': 2,
-        },
+      # Tests from android_specific_chromium_gtests
+      'android_sync_integration_tests': {
+        'args': [
+          '--test-launcher-batch-limit=1',
+        ],
       },
 
       # Tests from chromium_gtests
@@ -3976,12 +3976,8 @@
         # TODO(crbug.com/816629) - Move these args into //BUILD.gn.
         'name': 'webgpu_blink_web_tests_with_backend_validation',
         'args': [
-          # Disable parallel jobs to work around consistent test timeout flakes.
-          # Also, the first test is always flaky due to startup time, so force
-          # the order so we can suppress it.
-          # TODO(crbug.com/953991): Solve this and remove the workaround.
-          '--jobs=1',
-          '--order=natural',
+          # crbug.com/953991 Ensure WebGPU is ready before running tests
+          '--initialize-webgpu-adapter-at-startup',
           '--additional-driver-flag=--enable-dawn-backend-validation',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
@@ -4013,6 +4009,9 @@
         'resultdb': {
           'enable': True,
         },
+        'swarming': {
+          'shards': 4,
+        },
       },
     },
 
@@ -4021,12 +4020,8 @@
         # TODO(crbug.com/816629) - Move these args into //BUILD.gn.
         'name': 'webgpu_blink_web_tests',
         'args': [
-          # Disable parallel jobs to work around consistent test timeout flakes.
-          # Also, the first test is always flaky due to startup time, so force
-          # the order so we can suppress it.
-          # TODO(crbug.com/953991): Solve this and remove the workaround.
-          '--jobs=1',
-          '--order=natural',
+          # crbug.com/953991 Ensure WebGPU is ready before running tests
+          '--initialize-webgpu-adapter-at-startup',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
           # We need this flag to initialize ANGLE so that we can explicitly tell
@@ -4055,6 +4050,9 @@
         'resultdb': {
           'enable': True,
         },
+        'swarming': {
+          'shards': 4,
+        },
       },
     },
 
@@ -4065,12 +4063,8 @@
         # TODO(crbug.com/816629) - Move these args into //BUILD.gn.
         'name': 'webgpu_blink_web_tests_with_backend_validation',
         'args': [
-          # Disable parallel jobs to work around consistent test timeout flakes.
-          # Also, the first test is always flaky due to startup time, so force
-          # the order so we can suppress it.
-          # TODO(crbug.com/953991): Solve this and remove the workaround.
-          '--jobs=1',
-          '--order=natural',
+          # crbug.com/953991 Ensure WebGPU is ready before running tests
+          '--initialize-webgpu-adapter-at-startup',
           '--additional-driver-flag=--enable-dawn-backend-validation=partial',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
@@ -4101,6 +4095,9 @@
         'isolate_name': 'webgpu_blink_web_tests',
         'resultdb': {
           'enable': True,
+        },
+        'swarming': {
+          'shards': 4,
         },
       },
     },
@@ -4488,7 +4485,14 @@
 
     'mac_specific_chromium_gtests': {
       'sandbox_mac_unittests': {},
-      'updater_tests': {},
+      'updater_tests': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+      },
       'xr_browser_tests': {
         'test': 'xr_browser_tests',
       },
@@ -5144,11 +5148,24 @@
     },
 
     'updater_gtests': {
-      'updater_tests': {},
+      'updater_tests': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+      },
     },
 
     'updater_system_gtests': {
       'updater_tests_system': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -5523,7 +5540,14 @@
           ],
         },
       },
-      'updater_tests': {},
+      'updater_tests': {
+        'args': [
+          # Timeouts based on empirical observations of test runtimes, 2021-07.
+          '--test-launcher-timeout=90000',
+          '--ui-test-action-max-timeout=45000',
+          '--ui-test-action-timeout=40000',
+        ],
+      },
       'zucchini_unittests': {},
     },
 
@@ -5699,7 +5723,7 @@
 
     # List gtests that run on android-marshmallow-x86-rel builder.
     # Test suites will be gradually moved from
-    # android_marshmallow_wpr_gtests
+    # android_marshmallow_emulator_non_cq_gtests
     # to this one, when there are more GCE capacity.
     'android_marshmallow_emulator_gtests': [
       'android_emulator_specific_chrome_public_tests',
@@ -5712,8 +5736,8 @@
       #'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'android_wpr_record_replay_tests',
       #'chromium_gtests',
-      #'chromium_gtests_for_devices_with_graphical_output',
-      #'linux_flavor_specific_chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'linux_flavor_specific_chromium_gtests',
       #'weblayer_android_gtests',
       #'weblayer_gtests',
     ],
@@ -5721,14 +5745,13 @@
     # Note that tests here are gradually moved to
     # android_marshmallow_emulator_gtests (crbug.com/1127110)
     #
-    # The diff between android_lollipop_marshmallow_gtests and (
-    # android_marshmallow_wpr_gtests + android_marshmallow_emulator_gtests)
+    # The diff between android_lollipop_marshmallow_gtests and
+    # (android_marshmallow_emulator_non_cq_gtests +
+    # android_marshmallow_emulator_gtests)
     # is android_wpr_record_replay_tests
-    'android_marshmallow_wpr_gtests': [
+    'android_marshmallow_emulator_non_cq_gtests': [
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
-      'linux_flavor_specific_chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',
     ],

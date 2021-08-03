@@ -27,6 +27,7 @@
         },
         'mixins': [
           'chromeos-betty',
+          'has_native_resultdb_integration',
         ],
       },
       'chromeos-betty-pi-arc-chrome': {
@@ -35,6 +36,7 @@
         ],
         'mixins': [
           'chromeos-betty',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_vm_gtests',
@@ -44,6 +46,9 @@
       'chromeos-eve-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',
@@ -63,6 +68,9 @@
       'chromeos-kevin-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',
@@ -89,6 +97,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'lacros_all_tast_tests_eve',
@@ -319,7 +328,7 @@
           'gtest_tests': 'webview_bot_system_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -341,7 +350,7 @@
           'gtest_tests': 'webview_bot_system_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -362,7 +371,7 @@
           'gtest_tests': 'webview_bot_all_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -381,7 +390,7 @@
       },
       'Android WebView O (dbg)': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'oreo_fleet',
           'walleye',
         ],
@@ -396,7 +405,7 @@
       },
       'Android WebView P (dbg)': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -445,7 +454,7 @@
           'gtest_tests': 'android_lollipop_marshmallow_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -465,7 +474,7 @@
           'gtest_tests': 'android_lollipop_marshmallow_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -481,7 +490,7 @@
       },
       'Marshmallow 64 bit Tester': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
         ],
@@ -495,7 +504,7 @@
           'gtest_tests': 'android_lollipop_marshmallow_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -514,7 +523,7 @@
           'gtest_tests': 'android_nougat_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -544,7 +553,7 @@
           'gtest_tests': 'android_oreo_gtests',
         },
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
         ],
       },
       'android-10-arm64-rel': {
@@ -564,7 +573,7 @@
         'use_swarming': True,
         'os_type': 'android',
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
       },
       'android-arm64-proguard-rel': {
@@ -572,7 +581,7 @@
           'all',
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
         ],
@@ -585,7 +594,7 @@
       },
       'android-bfcache-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'lollipop',
           'hammerhead',
         ],
@@ -596,7 +605,7 @@
       },
       'android-cronet-arm-dbg': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'lollipop',
           'hammerhead',
         ],
@@ -620,7 +629,7 @@
       },
       'android-cronet-arm-rel-kitkat-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'kitkat',
           'hammerhead',
         ],
@@ -631,7 +640,7 @@
       },
       'android-cronet-arm-rel-lollipop-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'lollipop',
           'hammerhead',
         ],
@@ -674,7 +683,7 @@
       },
       'android-cronet-arm64-rel-marshmallow-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
         ],
@@ -685,7 +694,7 @@
       },
       'android-cronet-asan-arm-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'bullhead',
           'marshmallow',
         ],
@@ -700,7 +709,7 @@
       },
       'android-cronet-marshmallow-arm64-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
         ],
@@ -746,7 +755,7 @@
           'gtest_tests': 'android_incremental_tests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -761,7 +770,7 @@
       },
       'android-lollipop-arm-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'hammerhead',
           'lollipop',
         ],
@@ -778,7 +787,7 @@
       },
       'android-marshmallow-arm64-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'bullhead',
           'isolate_profile_data',
           'marshmallow',
@@ -796,7 +805,7 @@
       },
       'android-marshmallow-x86-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow-x86-emulator',
           'emulator-4-cores',
           'linux-xenial-or-bionic',
@@ -810,7 +819,7 @@
       },
       'android-marshmallow-x86-rel-non-cq': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow-x86-emulator',
           'emulator-4-cores',
           'linux-xenial-or-bionic',
@@ -818,13 +827,13 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'android_marshmallow_wpr_gtests',
+          'gtest_tests': 'android_marshmallow_emulator_non_cq_gtests',
           'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
         }
       },
       'android-nougat-arm64-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'nougat',
           'sailfish',
         ],
@@ -840,7 +849,7 @@
       },
       'android-pie-arm64-coverage-experimental-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'isolate_profile_data',
           'pie_fleet',
           'walleye',
@@ -859,7 +868,7 @@
       },
       'android-pie-arm64-dbg': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -870,7 +879,7 @@
       },
       'android-pie-arm64-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -890,7 +899,7 @@
       },
       'android-pie-x86-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-4-cores',
           'linux-xenial-or-bionic',
@@ -903,7 +912,7 @@
       },
       'android-weblayer-marshmallow-x86-rel-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow-x86-emulator',
           'emulator-4-cores',
           'linux-xenial-or-bionic',
@@ -916,7 +925,7 @@
       },
       'android-weblayer-oreo-x86-rel-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'oreo-x86-emulator',
           'emulator-4-cores',
           'linux-xenial-or-bionic',
@@ -929,7 +938,7 @@
       },
       'android-weblayer-pie-x86-rel-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-4-cores',
           'linux-xenial-or-bionic',
@@ -953,7 +962,7 @@
       },
       'Android WebView P FYI (rel)': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -972,7 +981,7 @@
         'mixins': [
           '11-x86-emulator',
           'emulator-4-cores',
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'linux-xenial-or-bionic',
           'x86-64',
         ],
@@ -985,7 +994,7 @@
         'mixins': [
           '12-x64-emulator',
           'emulator-4-cores',
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'linux-xenial-or-bionic',
           'x86-64',
         ],
@@ -996,7 +1005,7 @@
       },
       'android-cronet-x86-dbg-10-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           '10-x86-emulator',
         ],
         'test_suites': {
@@ -1006,7 +1015,7 @@
       },
       'android-pie-arm64-wpt-rel-non-cq': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -1018,7 +1027,7 @@
       },
       'android-web-platform-pie-x86-fyi-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-8-cores',
           'linux-xenial-or-bionic',
@@ -1032,7 +1041,7 @@
       },
       'android-weblayer-10-x86-rel-tests': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           '10-x86-emulator',
           'emulator-4-cores',
           'linux-xenial-or-bionic',
@@ -1045,7 +1054,7 @@
       },
       'android-weblayer-pie-x86-wpt-fyi-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-8-cores',
           'linux-xenial-or-bionic',
@@ -1059,7 +1068,7 @@
       },
       'android-weblayer-pie-x86-wpt-smoketest': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-8-cores',
           'linux-xenial-or-bionic',
@@ -1073,7 +1082,7 @@
       },
       'android-webview-pie-x86-wpt-fyi-rel': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-8-cores',
           'linux-xenial-or-bionic',
@@ -1099,7 +1108,7 @@
       'android-angle-arm64-nexus5x': {
         'os_type': 'android',
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
         ],
@@ -1112,7 +1121,7 @@
         'browser_config': 'android-chromium',
         'os_type': 'android',
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
         ],
@@ -1131,7 +1140,7 @@
         'os_type': 'mac',
         'mixins': [
           'mac_mini_intel_gpu_stable',
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'isolate_profile_data',
           'mac_toolchain',
           'out_dir_arg',
@@ -1382,6 +1391,7 @@
         'browser_config': 'cros-chrome',
         'mixins': [
           'chromeos-amd64-generic',
+          'has_native_resultdb_integration',
         ],
         'os_type': 'chromeos',
         'test_suites': {
@@ -1406,6 +1416,7 @@
         ],
         'mixins': [
           'chromeos-kevin',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',
@@ -1430,6 +1441,9 @@
       'lacros-arm-generic-rel': {
         'additional_compile_targets': [
           'chrome',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
         'os_type': 'chromeos'
       },
@@ -1554,7 +1568,7 @@
       },
       'ToTAndroid': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'lollipop',
           'hammerhead',
         ],
@@ -1609,7 +1623,7 @@
           'junit_tests': 'chromium_android_asan_junit_tests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
         'swarming': {
           'dimension_sets': [
@@ -1972,7 +1986,7 @@
           'all'
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -2004,7 +2018,7 @@
           'url_unittests'
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'ios_restart_device',
           'limited_capacity_bot',
           'mac_10.15',
@@ -2252,7 +2266,7 @@
         'mixins': [
           'lollipop',
           'hammerhead',
-          'enable_resultdb',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
@@ -2264,7 +2278,7 @@
       },
       'android-marshmallow-arm64-rel-swarming': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
@@ -2557,7 +2571,7 @@
           'gtest_tests': 'site_isolation_android_fyi_gtests',
         },
         'mixins': [
-          'enable_resultdb'
+          'has_native_resultdb_integration'
         ],
       },
       'TSAN Debug (reclient)': {
@@ -2607,7 +2621,7 @@
       },
       'VR Linux': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'linux-bionic',
         ],
         'additional_compile_targets': [
@@ -2619,7 +2633,7 @@
       },
       'VR Linux (reclient)': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'linux-bionic',
         ],
         'additional_compile_targets': [
@@ -2700,7 +2714,7 @@
           'gtest_tests': 'chromium_android_gtests',
         },
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -2711,7 +2725,7 @@
           'gtest_tests': 'chromium_android_gtests',
         },
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -2719,7 +2733,7 @@
       },
       'android-code-coverage': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'bullhead',
           'isolate_profile_data',
           'marshmallow',
@@ -2732,7 +2746,7 @@
       },
       'android-code-coverage-native': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'isolate_profile_data',
           'pie_fleet',
           'walleye',
@@ -2750,6 +2764,7 @@
         'browser_config': 'cros-chrome',
         'mixins': [
           'chromeos-amd64-generic',
+          'has_native_resultdb_integration',
         ],
         'os_type': 'chromeos',
         'test_suites': {
@@ -2776,6 +2791,7 @@
         'browser_config': 'cros-chrome',
         'mixins': [
           'chromeos-amd64-generic',
+          'has_native_resultdb_integration',
         ],
         'os_type': 'chromeos',
         'test_suites': {
@@ -2791,6 +2807,7 @@
         'browser_config': 'cros-chrome',
         'mixins': [
           'chromeos-amd64-generic',
+          'has_native_resultdb_integration',
         ],
         'os_type': 'chromeos',
         'test_suites': {
@@ -2897,7 +2914,7 @@
       },
       'ios-asan': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -2910,7 +2927,7 @@
       },
       'ios-simulator-code-coverage': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'ios_output_disabled_tests',
           'isolate_profile_data',
           'mac_11_x64',
@@ -2925,7 +2942,7 @@
       },
       'ios-simulator-cronet': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -2938,7 +2955,7 @@
       },
       'ios-simulator-multi-window': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -2951,7 +2968,7 @@
       },
       'ios-webkit-tot': {
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'ios_custom_webkit',
           'mac_11_x64',
           'mac_toolchain',
@@ -2970,7 +2987,7 @@
           'all',
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -2988,7 +3005,7 @@
           'all',
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_arm64',
           'mac_toolchain',
           'out_dir_arg',
@@ -3004,7 +3021,7 @@
           'all',
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -3025,7 +3042,7 @@
           'all',
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -3053,7 +3070,7 @@
           'chrome',
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'lacros_device_or_vm_tests_fyi',
@@ -3918,7 +3935,7 @@
         'mixins': [
           'marshmallow',
           'bullhead',
-          'enable_resultdb',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
@@ -3953,7 +3970,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'foster',
           'gpu-swarming-pool',
           'nougat_generic',
@@ -3968,7 +3985,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'gpu-swarming-pool',
           'hammerhead',
           'lollipop_generic',
@@ -3983,7 +4000,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
         ],
@@ -3999,7 +4016,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'gpu-swarming-pool',
           'lollipop_generic',
           'shamu',
@@ -4014,7 +4031,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'flounder',
           'gpu-swarming-pool',
           'marshmallow_generic',
@@ -4029,7 +4046,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -4045,7 +4062,7 @@
         'skip_merge_script': True,
         'mixins': [
           'android_r',
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'flame',
           'gpu-swarming-pool',
         ],
@@ -4059,7 +4076,7 @@
         'browser_config': 'android-chromium',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'marshmallow',
           'bullhead',
        ],
@@ -4072,7 +4089,7 @@
         'browser_config': 'android-chromium',
         'skip_merge_script': True,
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
@@ -4500,7 +4517,7 @@
         'skip_merge_script': True,
         'mixins': [
           'android_r',
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'flame',
           'gpu-swarming-pool',
         ],
@@ -5128,7 +5145,7 @@
           'all',
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'isolate_profile_data',
           'mac_11_x64',
           'mac_toolchain',
@@ -5145,7 +5162,7 @@
           'all'
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'isolate_profile_data',
           'mac_11_x64',
           'mac_toolchain',
@@ -5162,7 +5179,7 @@
           'all'
         ],
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'mac_11_x64',
           'mac_toolchain',
           'out_dir_arg',
@@ -5314,7 +5331,7 @@
           'gtest_tests': 'chromium_android_gtests',
         },
         'mixins': [
-          'enable_resultdb',
+          'has_native_resultdb_integration',
           'bullhead',
           'marshmallow',
         ],
@@ -5759,6 +5776,22 @@
           'dimension_sets': [
             {
               'integrity': 'high',
+            }
+          ]
+        },
+      },
+      'win10-updater-tester-dbg-uac': {
+        'mixins': [
+          'win10',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chromium.win.uac',
             }
           ]
         },
@@ -6455,6 +6488,9 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
         'test_suites': {
           'gtest_tests': 'chromeos_browser_integration_tests',
         },
@@ -6486,6 +6522,7 @@
         ],
         'mixins': [
           'chromeos-betty',
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_vm_gtests',
@@ -6495,6 +6532,9 @@
       'chromeos-eve-arc-r-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_gtests',

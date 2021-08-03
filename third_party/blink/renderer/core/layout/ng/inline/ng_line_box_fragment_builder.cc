@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 
 namespace blink {
 
@@ -23,6 +24,8 @@ void NGLineBoxFragmentBuilder::Reset() {
   last_inline_break_token_ = nullptr;
   oof_positioned_candidates_.Shrink(0);
   unpositioned_list_marker_ = NGUnpositionedListMarker();
+
+  bfc_block_offset_.reset();
 
   size_.inline_size = LayoutUnit();
   metrics_ = FontHeight::Empty();
@@ -43,9 +46,15 @@ void NGLineBoxFragmentBuilder::PropagateChildrenData(
   for (unsigned index = 0; index < children.size(); ++index) {
     auto& child = children[index];
     if (child.layout_result) {
-      PropagateChildData(child.layout_result->PhysicalFragment(),
-                         child.Offset(),
-                         /* relative_offset */ LogicalOffset());
+      // An accumulated relative offset is applied to an OOF once it reaches its
+      // inline container. Subtract out the relative offset to avoid adding it
+      // twice.
+      PropagateChildData(
+          child.layout_result->PhysicalFragment(),
+          child.Offset() -
+              ComputeRelativeOffsetForInline(*ConstraintSpace(),
+                                             child.PhysicalFragment()->Style()),
+          /* reltaive_offset */ LogicalOffset());
 
       // Skip over any children, the information should have already been
       // propagated into this layout result.

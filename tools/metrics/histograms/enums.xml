@@ -1143,8 +1143,8 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="AccuracyTipInteraction">
   <int value="0" label="kNoAction"/>
-  <int value="1" label="kLearnMorePressed"/>
-  <int value="2" label="kOptOutPressed"/>
+  <int value="1" label="kLearnMore"/>
+  <int value="2" label="kOptOut"/>
   <int value="3" label="kClosed"/>
   <int value="4" label="kDisabledByExperiment"/>
 </enum>
@@ -7009,6 +7009,7 @@ others/histograms.xml -->
   <int value="196620" label="kEmbedder-kExtensions"/>
   <int value="196621" label="kEmbedder-kExtensionMessaging"/>
   <int value="196622" label="kEmbedder-kExtensionMessagingForOpenPort"/>
+  <int value="196623" label="kEmbedder-kExtensionSentMessageToCachedFrame"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReasonShort">
@@ -28324,7 +28325,7 @@ Called by update_extension_histograms.py.-->
   <int value="1089" label="DELETED_DATAREDUCTIONPROXY_GETDATAUSAGE"/>
   <int value="1090"
       label="DELETED_EASYUNLOCKPRIVATE_SETUPCONNECTIONGETDEVICEADDRESS"/>
-  <int value="1091" label="TABCAPTURE_CAPTUREOFFSCREENTAB"/>
+  <int value="1091" label="DELETED_TABCAPTURE_CAPTUREOFFSCREENTAB"/>
   <int value="1092" label="LANGUAGESETTINGSPRIVATE_ADDSPELLCHECKWORD"/>
   <int value="1093" label="LANGUAGESETTINGSPRIVATE_REMOVESPELLCHECKWORD"/>
   <int value="1094" label="SETTINGSPRIVATE_GETDEFAULTZOOMFUNCTION"/>
@@ -28820,6 +28821,8 @@ Called by update_extension_histograms.py.-->
   <int value="1563" label="AUTOTESTPRIVATE_SETSHELFICONPIN"/>
   <int value="1564" label="SCRIPTING_GETREGISTEREDCONTENTSCRIPTS"/>
   <int value="1565" label="OS_TELEMETRY_GETVPDINFO"/>
+  <int value="1566" label="ACCESSIBILITY_PRIVATE_MAGNIFIERCENTERONPOINT"/>
+  <int value="1567" label="STORAGE_SETACCESSLEVEL"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -46698,6 +46701,8 @@ from previous Chrome versions.
   <int value="-1969636234" label="OmniboxRefinedFocusState:disabled"/>
   <int value="-1966445414" label="StylusBatteryStatus:disabled"/>
   <int value="-1965587041" label="omnibox-tab-switch-suggestions"/>
+  <int value="-1964730371"
+      label="AutofillFillMerchantPromoCodeFields:disabled"/>
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
   <int value="-1963838301"
       label="ShowSyncPausedReasonCookiesClearedOnExit:enabled"/>
@@ -49724,6 +49729,8 @@ from previous Chrome versions.
   <int value="460475728" label="wake-on-wifi-packet"/>
   <int value="461306840"
       label="AdaptiveButtonInTopToolbarCustomization:disabled"/>
+  <int value="461523297"
+      label="UsernameFirstFlowFallbackCrowdsourcing:enabled"/>
   <int value="461641589" label="WebAppWindowControlsOverlay:disabled"/>
   <int value="463582989" label="CompositorThreadedScrollbarScrolling:disabled"/>
   <int value="464226051" label="CrOSComponent:enabled"/>
@@ -50220,6 +50227,8 @@ from previous Chrome versions.
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="857716462" label="FeedInteractiveRefresh:enabled"/>
   <int value="859449217" label="MagnifierPanningImprovements:enabled"/>
+  <int value="859495772"
+      label="UsernameFirstFlowFallbackCrowdsourcing:disabled"/>
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
   <int value="864024033" label="IsolatePrerendersMustProbeOrigin:enabled"/>
@@ -50725,6 +50734,7 @@ from previous Chrome versions.
   <int value="1276120671" label="AutofillEnableOfferNotification:enabled"/>
   <int value="1276209777" label="ntp-switch-to-existing-tab"/>
   <int value="1277386636" label="QueryInOmnibox:disabled"/>
+  <int value="1278244152" label="AutofillFillMerchantPromoCodeFields:enabled"/>
   <int value="1278512661" label="SmartDimNewMlAgent:disabled"/>
   <int value="1279422279" label="query-tiles-country-code"/>
   <int value="1279584261" label="enable-carrier-switching"/>
@@ -73810,6 +73820,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ServiceWorkerInternalsLinkQuery">
+  <obsolete>
+    Removed 2021-08-03.
+  </obsolete>
   <int value="0" label="Accessed from DevTools"/>
   <int value="1" label="Accessed from outside DevTools"/>
 </enum>

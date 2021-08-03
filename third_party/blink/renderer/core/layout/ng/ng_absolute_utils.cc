@@ -431,8 +431,7 @@ bool ComputeOutOfFlowInlineDimensions(
     min_max_length_sizes = {LayoutUnit(), LayoutUnit::Max()};
   } else {
     min_max_length_sizes = ComputeMinMaxInlineSizes(
-        space, node, border_padding, MinMaxSizesFunc, &min_inline_length,
-        /* is_block_size_indefinite */ !can_compute_block_size_without_layout);
+        space, node, border_padding, MinMaxSizesFunc, &min_inline_length);
   }
 
   const auto writing_direction = style.GetWritingDirection();
@@ -530,6 +529,15 @@ scoped_refptr<const NGLayoutResult> ComputeOutOfFlowBlockDimensions(
   } else {
     min_max_length_sizes =
         ComputeMinMaxBlockSizes(space, style, border_padding);
+
+    // Manually resolve any intrinsic/content min/max block-sizes.
+    // TODO(crbug.com/1135207): |ComputeMinMaxBlockSizes()| should handle this.
+    if (style.LogicalMinHeight().IsContentOrIntrinsic())
+      min_max_length_sizes.min_size = IntrinsicBlockSizeFunc();
+    if (style.LogicalMaxHeight().IsContentOrIntrinsic())
+      min_max_length_sizes.max_size = IntrinsicBlockSizeFunc();
+    min_max_length_sizes.max_size =
+        std::max(min_max_length_sizes.max_size, min_max_length_sizes.min_size);
 
     // Tables are never allowed to go below their "auto" block-size.
     if (is_table)

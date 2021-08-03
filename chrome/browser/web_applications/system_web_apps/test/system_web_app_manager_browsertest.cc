@@ -238,15 +238,15 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
 // EvalJs because of some quirks surrounding origin trials and content security
 // policies.
 class SystemWebAppManagerFileHandlingBrowserTestBase
-    : public SystemWebAppBrowserTestBase,
-      public ::testing::WithParamInterface<SystemWebAppManagerTestParams> {
+    : public TestProfileTypeMixin<SystemWebAppBrowserTestBase> {
  public:
   using IncludeLaunchDirectory =
       TestSystemWebAppInstallation::IncludeLaunchDirectory;
 
   explicit SystemWebAppManagerFileHandlingBrowserTestBase(
       IncludeLaunchDirectory include_launch_directory)
-      : SystemWebAppBrowserTestBase(/*install_mock=*/false) {
+      : TestProfileTypeMixin<SystemWebAppBrowserTestBase>(
+            /*install_mock=*/false) {
     scoped_feature_blink_api_.InitWithFeatures(
         {blink::features::kFileHandlingAPI}, {});
 

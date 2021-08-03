@@ -1341,6 +1341,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3057,6 +3062,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3214,6 +3224,36 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://:blink_python_tests/"
+      },
+      {
+        "args": [
+          "--num-retries=3"
+        ],
+        "isolate_name": "blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "blink_web_tests",
+        "resultdb": {
+          "enable": true
+        },
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 25
+        },
+        "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
         "args": [
@@ -4765,6 +4805,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -6508,6 +6553,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -8333,6 +8383,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -10113,6 +10168,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -11779,6 +11839,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -12269,7 +12334,8 @@
         },
         "name": "absl_hardening_tests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12320,7 +12386,8 @@
         },
         "name": "absl_hardening_tests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12371,7 +12438,8 @@
         },
         "name": "base_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12422,7 +12490,8 @@
         },
         "name": "base_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12473,7 +12542,8 @@
         },
         "name": "base_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12524,7 +12594,8 @@
         },
         "name": "base_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12575,7 +12646,8 @@
         },
         "name": "base_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12626,7 +12698,8 @@
         },
         "name": "base_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12677,7 +12750,8 @@
         },
         "name": "base_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12728,7 +12802,8 @@
         },
         "name": "base_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12779,7 +12854,8 @@
         },
         "name": "boringssl_crypto_tests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12830,7 +12906,8 @@
         },
         "name": "boringssl_crypto_tests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12881,7 +12958,8 @@
         },
         "name": "boringssl_ssl_tests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12932,7 +13010,8 @@
         },
         "name": "boringssl_ssl_tests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12983,7 +13062,8 @@
         },
         "name": "components_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13034,7 +13114,8 @@
         },
         "name": "components_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13085,7 +13166,8 @@
         },
         "name": "components_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13136,7 +13218,8 @@
         },
         "name": "components_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13187,7 +13270,8 @@
         },
         "name": "components_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13238,7 +13322,8 @@
         },
         "name": "components_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13289,7 +13374,8 @@
         },
         "name": "components_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13340,7 +13426,8 @@
         },
         "name": "components_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13391,7 +13478,8 @@
         },
         "name": "crypto_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13442,7 +13530,8 @@
         },
         "name": "crypto_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13493,7 +13582,8 @@
         },
         "name": "gfx_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13544,7 +13634,8 @@
         },
         "name": "gfx_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13595,7 +13686,8 @@
         },
         "name": "gfx_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13646,7 +13738,8 @@
         },
         "name": "gfx_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13697,7 +13790,8 @@
         },
         "name": "gfx_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13748,7 +13842,8 @@
         },
         "name": "gfx_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13799,7 +13894,8 @@
         },
         "name": "gfx_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13850,7 +13946,8 @@
         },
         "name": "gfx_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13901,7 +13998,8 @@
         },
         "name": "google_apis_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13952,7 +14050,8 @@
         },
         "name": "google_apis_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14004,7 +14103,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14057,7 +14157,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14110,7 +14211,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14162,7 +14264,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14214,7 +14317,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14267,7 +14371,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14319,7 +14424,8 @@
         },
         "name": "ios_chrome_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14370,7 +14476,8 @@
         },
         "name": "ios_chrome_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14421,7 +14528,8 @@
         },
         "name": "ios_chrome_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14472,7 +14580,8 @@
         },
         "name": "ios_chrome_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14523,7 +14632,8 @@
         },
         "name": "ios_chrome_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14574,7 +14684,8 @@
         },
         "name": "ios_chrome_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14625,7 +14736,8 @@
         },
         "name": "ios_chrome_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14676,7 +14788,8 @@
         },
         "name": "ios_chrome_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14727,7 +14840,8 @@
         },
         "name": "ios_components_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14778,7 +14892,8 @@
         },
         "name": "ios_components_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14829,7 +14944,8 @@
         },
         "name": "ios_net_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14880,7 +14996,8 @@
         },
         "name": "ios_net_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14931,7 +15048,8 @@
         },
         "name": "ios_remoting_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14982,7 +15100,8 @@
         },
         "name": "ios_remoting_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15033,7 +15152,8 @@
         },
         "name": "ios_testing_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15084,7 +15204,8 @@
         },
         "name": "ios_testing_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15135,7 +15256,8 @@
         },
         "name": "ios_web_inttests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15186,7 +15308,8 @@
         },
         "name": "ios_web_inttests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15237,7 +15360,8 @@
         },
         "name": "ios_web_inttests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15288,7 +15412,8 @@
         },
         "name": "ios_web_inttests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15339,7 +15464,8 @@
         },
         "name": "ios_web_inttests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15390,7 +15516,8 @@
         },
         "name": "ios_web_inttests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15441,7 +15568,8 @@
         },
         "name": "ios_web_inttests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15492,7 +15620,8 @@
         },
         "name": "ios_web_inttests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15544,7 +15673,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15596,7 +15726,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15647,7 +15778,8 @@
         },
         "name": "ios_web_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15698,7 +15830,8 @@
         },
         "name": "ios_web_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15749,7 +15882,8 @@
         },
         "name": "ios_web_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15800,7 +15934,8 @@
         },
         "name": "ios_web_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15851,7 +15986,8 @@
         },
         "name": "ios_web_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15902,7 +16038,8 @@
         },
         "name": "ios_web_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15953,7 +16090,8 @@
         },
         "name": "ios_web_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16004,7 +16142,8 @@
         },
         "name": "ios_web_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16055,7 +16194,8 @@
         },
         "name": "ios_web_view_inttests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16106,7 +16246,8 @@
         },
         "name": "ios_web_view_inttests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16157,7 +16298,8 @@
         },
         "name": "ios_web_view_inttests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16208,7 +16350,8 @@
         },
         "name": "ios_web_view_inttests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16259,7 +16402,8 @@
         },
         "name": "ios_web_view_inttests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16310,7 +16454,8 @@
         },
         "name": "ios_web_view_inttests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16361,7 +16506,8 @@
         },
         "name": "ios_web_view_inttests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16412,7 +16558,8 @@
         },
         "name": "ios_web_view_inttests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16463,7 +16610,8 @@
         },
         "name": "ios_web_view_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16514,7 +16662,8 @@
         },
         "name": "ios_web_view_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16565,7 +16714,8 @@
         },
         "name": "ios_web_view_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16616,7 +16766,8 @@
         },
         "name": "ios_web_view_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16667,7 +16818,8 @@
         },
         "name": "ios_web_view_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16718,7 +16870,8 @@
         },
         "name": "ios_web_view_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16769,7 +16922,8 @@
         },
         "name": "ios_web_view_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16820,7 +16974,8 @@
         },
         "name": "ios_web_view_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16871,7 +17026,8 @@
         },
         "name": "net_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16922,7 +17078,8 @@
         },
         "name": "net_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16973,7 +17130,8 @@
         },
         "name": "services_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17024,7 +17182,8 @@
         },
         "name": "services_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17075,7 +17234,8 @@
         },
         "name": "skia_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17126,7 +17286,8 @@
         },
         "name": "skia_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17177,7 +17338,8 @@
         },
         "name": "skia_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17228,7 +17390,8 @@
         },
         "name": "skia_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17279,7 +17442,8 @@
         },
         "name": "skia_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17330,7 +17494,8 @@
         },
         "name": "skia_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17381,7 +17546,8 @@
         },
         "name": "skia_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17432,7 +17598,8 @@
         },
         "name": "skia_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17483,7 +17650,8 @@
         },
         "name": "sql_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17534,7 +17702,8 @@
         },
         "name": "sql_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17585,7 +17754,8 @@
         },
         "name": "ui_base_unittests_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17636,7 +17806,8 @@
         },
         "name": "ui_base_unittests_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17687,7 +17858,8 @@
         },
         "name": "ui_base_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17738,7 +17910,8 @@
         },
         "name": "ui_base_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17789,7 +17962,8 @@
         },
         "name": "ui_base_unittests_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17840,7 +18014,8 @@
         },
         "name": "ui_base_unittests_iPhone 6s Plus 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17891,7 +18066,8 @@
         },
         "name": "ui_base_unittests_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17942,7 +18118,8 @@
         },
         "name": "ui_base_unittests_iPhone SE (1st generation) 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17993,7 +18170,8 @@
         },
         "name": "url_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18044,7 +18222,8 @@
         },
         "name": "url_unittests_iPhone 6s 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18103,7 +18282,8 @@
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18155,7 +18335,8 @@
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18207,7 +18388,8 @@
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18259,7 +18441,8 @@
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18311,7 +18494,8 @@
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18363,7 +18547,8 @@
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18415,7 +18600,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18468,7 +18654,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18521,7 +18708,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18574,7 +18762,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18627,7 +18816,8 @@
         },
         "name": "ios_chrome_settings_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18680,7 +18870,8 @@
         },
         "name": "ios_chrome_settings_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18733,7 +18924,8 @@
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18786,7 +18978,8 @@
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18839,7 +19032,8 @@
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone X 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18892,7 +19086,8 @@
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone X 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18945,7 +19140,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18997,7 +19193,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19049,7 +19246,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19101,7 +19299,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19153,7 +19352,8 @@
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19205,7 +19405,8 @@
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19257,7 +19458,8 @@
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19309,7 +19511,8 @@
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19361,7 +19564,8 @@
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone X 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19413,7 +19617,8 @@
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone X 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19465,7 +19670,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19518,7 +19724,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19571,7 +19778,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19624,7 +19832,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19677,7 +19886,8 @@
         },
         "name": "ios_chrome_web_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19729,7 +19939,8 @@
         },
         "name": "ios_chrome_web_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19781,7 +19992,8 @@
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19833,7 +20045,8 @@
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19885,7 +20098,8 @@
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone X 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19937,7 +20151,8 @@
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone X 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19989,7 +20204,8 @@
         },
         "name": "ios_showcase_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20041,7 +20257,8 @@
         },
         "name": "ios_showcase_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20093,7 +20310,8 @@
         },
         "name": "ios_showcase_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20145,7 +20363,8 @@
         },
         "name": "ios_showcase_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20197,7 +20416,8 @@
         },
         "name": "ios_showcase_eg2tests_module_iPhone X 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20249,7 +20469,8 @@
         },
         "name": "ios_showcase_eg2tests_module_iPhone X 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20301,7 +20522,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20353,7 +20575,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20405,7 +20628,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPhone 7 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20457,7 +20681,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPhone 7 15.0",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20514,7 +20739,8 @@
         },
         "name": "absl_hardening_tests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20564,7 +20790,8 @@
         },
         "name": "boringssl_crypto_tests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20614,7 +20841,8 @@
         },
         "name": "boringssl_ssl_tests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20664,7 +20892,8 @@
         },
         "name": "crypto_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20714,7 +20943,8 @@
         },
         "name": "google_apis_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20765,7 +20995,8 @@
         },
         "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20816,7 +21047,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20868,7 +21100,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20920,7 +21153,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -20972,7 +21206,8 @@
         },
         "name": "ios_chrome_integration_eg2tests_module_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21024,7 +21259,8 @@
         },
         "name": "ios_chrome_settings_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21076,7 +21312,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21127,7 +21364,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21178,7 +21416,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21229,7 +21468,8 @@
         },
         "name": "ios_chrome_signin_eg2tests_module_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21280,7 +21520,8 @@
         },
         "name": "ios_chrome_smoke_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21331,7 +21572,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21383,7 +21625,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21435,7 +21678,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21487,7 +21731,8 @@
         },
         "name": "ios_chrome_ui_eg2tests_module_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21539,7 +21784,8 @@
         },
         "name": "ios_chrome_web_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21589,7 +21835,8 @@
         },
         "name": "ios_components_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21639,7 +21886,8 @@
         },
         "name": "ios_net_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21689,7 +21937,8 @@
         },
         "name": "ios_remoting_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21740,7 +21989,8 @@
         },
         "name": "ios_showcase_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21790,7 +22040,8 @@
         },
         "name": "ios_testing_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21841,7 +22092,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPad Air 2 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21892,7 +22144,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21943,7 +22196,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPhone 6s Plus 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -21994,7 +22248,8 @@
         },
         "name": "ios_web_shell_eg2tests_module_iPhone SE (1st generation) 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -22044,7 +22299,8 @@
         },
         "name": "net_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -22094,7 +22350,8 @@
         },
         "name": "services_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -22144,7 +22401,8 @@
         },
         "name": "sql_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -22194,7 +22452,8 @@
         },
         "name": "url_unittests_iPhone 6s 14.4",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -23506,6 +23765,11 @@
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
+        "args": [
+          "--test-launcher-timeout=90000",
+          "--ui-test-action-max-timeout=45000",
+          "--ui-test-action-timeout=40000"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

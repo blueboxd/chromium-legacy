@@ -1069,6 +1069,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolu
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-063.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-065.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-066.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-break/out-of-flow-in-multicolumn-073.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflow-clip-000.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflow-clip-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Pass ]
@@ -3001,7 +3002,7 @@ crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCDtlsTransport-getRemoteCerti
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-audio.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Timeout ]
-# crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/RTCPeerConnection-iceConnectionState.https.html [ Timeout ]
@@ -3821,6 +3822,7 @@ crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-062.html 
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-063.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-065.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-066.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-073.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Failure ]
@@ -4123,8 +4125,6 @@ crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/modi
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/repaint-non-scaling-stroke-text.html [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/repaint-non-scaling-stroke-text-decoration.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-match-svg.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-rescale.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-viewbox-rescale.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/transform-text-element.html [ Failure Pass ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/tspan-dynamic-positioning.svg [ Failure ]
 crbug.com/1179585 [ Mac ] virtual/layout_ng_svg_text/paint/invalidation/svg/use-detach.svg [ Failure ]
@@ -6044,9 +6044,6 @@ crbug.com/1111287 http/tests/devtools/sources/debugger-breakpoints/breakpoint-wi
 # Sheriff 2020-08-03
 crbug.com/1106429 virtual/percent-based-scrolling/max-percent-delta-page-zoom.html [ Failure Pass ]
 
-# Flaky test
-crbug.com/1112778 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/alpha/base-url-worker.sub.html [ Failure Pass ]
-
 # Sheriff 2020-08-05
 crbug.com/1113050 fast/borders/border-radius-mask-video-ratio.html [ Failure Pass ]
 crbug.com/1113127 fast/canvas/downsample-quality.html [ Crash Failure Pass ]
@@ -7242,9 +7239,6 @@ crbug.com/1233792 virtual/synchronous_html_parser/http/tests/inspector-protocol/
 crbug.com/1234057 [ Mac ] external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure Pass ]
 crbug.com/1234302 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Pass ]
 
-# Temporary disabling to allow landing https://webrtc-review.googlesource.com/c/src/+/227120
-crbug.com/webrtc/12906 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Failure Pass Timeout ]
-
 # Sheriff 2021-07-29
 crbug.com/626703 [ Mac ] external/wpt/webrtc/simulcast/setParameters-active.https.html [ Failure Pass ]
 crbug.com/626703 http/tests/security/cross-frame-access-put.html [ Failure Pass ]
@@ -7254,7 +7248,10 @@ crbug.com/626703 virtual/threaded/external/wpt/animation-worklet/worklet-animati
 crbug.com/626703 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-non-ascii-name.https.html [ Failure Pass ]
 crbug.com/626703 virtual/oopr-canvas2d/fast/canvas/canvas-composite-canvas.html [ Failure Pass ]
 
-# Sheriff 20121-07-30
+# Sheriff 2021-07-30
 crbug.com/1234619 external/wpt/screen-capture/permissions-policy-audio+video.https.sub.html [ Failure ]
 crbug.com/1234619 external/wpt/screen-capture/permissions-policy-audio.https.sub.html [ Failure ]
 crbug.com/1234619 external/wpt/screen-capture/permissions-policy-video.https.sub.html [ Failure ]
+
+# Sheriff 2021-08-02
+crbug.com/1235685 [ Mac10.14 ] virtual/scroll-unification/plugins/focus-change-4-change-focus-and-blur.html [ Failure Pass ]

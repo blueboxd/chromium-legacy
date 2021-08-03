@@ -1600,6 +1600,7 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleFakeData[] = {
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleAbandonedCartDiscount[] = {
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"},
+    {ntp_features::NtpChromeCartModuleAbandonedCartDiscountUseUtmParam, "true"},
     {"partner-merchant-pattern",
      "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"}};
 const FeatureEntry::FeatureParam kNtpChromeCartModuleHeuristicsImprovement[] = {
@@ -3338,6 +3339,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"username-first-flow", flag_descriptions::kUsernameFirstFlowName,
      flag_descriptions::kUsernameFirstFlowDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlow)},
+    {"username-first-flow-fallback-crowdsourcing",
+     flag_descriptions::kUsernameFirstFlowFallbackCrowdsourcingName,
+     flag_descriptions::kUsernameFirstFlowFallbackCrowdsourcingDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kUsernameFirstFlowFallbackCrowdsourcing)},
     {"username-first-flow-filling",
      flag_descriptions::kUsernameFirstFlowFillingName,
      flag_descriptions::kUsernameFirstFlowFillingDescription, kOsAll,
@@ -7711,6 +7718,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-drdc", flag_descriptions::kEnableDrDcName,
      flag_descriptions::kEnableDrDcDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableDrDc)},
+    {"autofill-fill-merchant-promo-code-fields",
+     flag_descriptions::kAutofillFillMerchantPromoCodeFieldsName,
+     flag_descriptions::kAutofillFillMerchantPromoCodeFieldsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillFillMerchantPromoCodeFields)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

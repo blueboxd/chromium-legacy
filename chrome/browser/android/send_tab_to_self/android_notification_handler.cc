@@ -59,6 +59,10 @@ void AndroidNotificationHandler::DisplayNewEntries(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
   for (const SendTabToSelfEntry* entry : new_entries) {
     if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2)) {
+      // Only enqueue a single message at a time.
+      if (message_ != nullptr)
+        return;
+
       content::WebContents* web_contents = GetWebContentsForProfile(profile_);
 
       message_ = std::make_unique<messages::MessageWrapper>(
@@ -80,8 +84,8 @@ void AndroidNotificationHandler::DisplayNewEntries(
           ResourceMapper::MapToJavaDrawableId(IDR_SEND_TAB_TO_SELF));
 
       // TODO(crbug.com/1220129): A valid WebContents shouldn't be needed here.
-      messages::MessageDispatcherBridge::Get()->EnqueueMessage(
-          message_.get(), web_contents, messages::MessageScopeType::WINDOW,
+      messages::MessageDispatcherBridge::Get()->EnqueueWindowScopedMessage(
+          message_.get(), web_contents->GetTopLevelNativeWindow(),
           messages::MessagePriority::kNormal);
     } else {
       JNIEnv* env = AttachCurrentThread();
@@ -121,6 +125,7 @@ void AndroidNotificationHandler::OnMessageOpened(GURL url) {
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
   params.should_replace_current_entry = false;
   GetWebContentsForProfile(profile_)->OpenURL(params);
+  message_.reset();
 }
 
 void AndroidNotificationHandler::OnMessageDismissed(

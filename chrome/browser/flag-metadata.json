@@ -382,6 +382,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "autofill-fill-merchant-promo-code-fields",
+    "owners": [ "jsaul@google.com", "payments-autofill-team@google.com" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "autofill-fix-offer-in-incognito",
     "owners": [ "siyua" ],
     "expiry_milestone": 97
@@ -5690,6 +5695,11 @@
     "name": "username-first-flow",
     "owners": [ "kazinova@google.com", "kolos" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "username-first-flow-fallback-crowdsourcing",
+    "owners": [ "kazinova@google.com", "kolos" ],
+    "expiry_milestone": 98
   },
   {
     "name": "username-first-flow-filling",

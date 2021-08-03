@@ -202,6 +202,9 @@ extern const char kAutofillEnableToolbarStatusChipDescription[];
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
 
+extern const char kAutofillFillMerchantPromoCodeFieldsName[];
+extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
+
 extern const char kAutofillFixOfferInIncognitoName[];
 extern const char kAutofillFixOfferInIncognitoDescription[];
 
@@ -961,6 +964,9 @@ extern const char kMutingCompromisedCredentialsDescription[];
 
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
+
+extern const char kUsernameFirstFlowFallbackCrowdsourcingName[];
+extern const char kUsernameFirstFlowFallbackCrowdsourcingDescription[];
 
 extern const char kUsernameFirstFlowFillingName[];
 extern const char kUsernameFirstFlowFillingDescription[];

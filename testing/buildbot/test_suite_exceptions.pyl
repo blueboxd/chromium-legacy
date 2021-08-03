@@ -61,9 +61,11 @@
   },
   'android_sync_integration_tests': {
    'remove_from': [
-     # Remove from CQ bots due to capacity.
-     'android-marshmallow-arm64-rel',
-     'android-lollipop-arm-rel',
+      # Remove from CQ bots due to capacity.
+      'android-marshmallow-arm64-rel',
+      'android-lollipop-arm-rel',
+
+      'android-marshmallow-x86-rel-non-cq', # runs on MM-x86-rel already
    ],
   },
   'android_webview_unittests': {
@@ -223,7 +225,6 @@
     'remove_from': [
       'mac-arm64-rel-tests', # TODO(https://crbug.com/1169240): Enable
       'Mac10.11 Tests',
-      'Mac10.12 Tests',
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
     ],
@@ -247,6 +248,11 @@
         ],
         'swarming': {
           'shards': 30,
+        },
+      },
+      'Mac10.12 Tests': {
+        'swarming': {
+          'shards': 25,
         },
       },
       'Mac10.13 Tests': {
@@ -764,7 +770,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.cc_unittests.filter',
         ],
       },
-      'android-marshmallow-x86-rel-non-cq': {
+      'android-marshmallow-x86-rel': {
         # https://crbug.com/1039860
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter',
@@ -2188,6 +2194,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.net_unittests.filter',
         ],
       },
+      'android-cronet-x86-dbg-10-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_10.net_unittests.filter',
+        ],
+      },
       'android-marshmallow-x86-rel-non-cq': {
         # crbug.com/1046060
         'args': [
@@ -2482,7 +2493,7 @@
           '--shard-timeout=300',
         ],
       },
-      'android-marshmallow-x86-rel-non-cq': {
+      'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
         ]
@@ -2968,7 +2979,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.viz_unittests.filter',
         ],
       },
-      'android-marshmallow-x86-rel-non-cq': {
+      'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
         ],

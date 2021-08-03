@@ -407,15 +407,20 @@ void NGInlineLayoutAlgorithm::CreateLine(
     PlaceRelativePositionedItems(line_box);
 
   // Apply any relative positioned offsets to any boxes (and their children).
-  box_states_->ApplyRelativePositioning(ConstraintSpace(), line_box);
+  Vector<LogicalOffset, 32> oof_relative_offsets(
+      box_states_->NumBoxFragments());
+  box_states_->ApplyRelativePositioning(ConstraintSpace(), line_box,
+                                        &oof_relative_offsets);
 
   // Create box fragments if needed. After this point forward, |line_box| is a
   // tree structure.
   // The individual children don't move position within the |line_box|, rather
   // the children have their layout_result, fragment, (or similar) set to null,
   // creating a "hole" in the array.
-  if (box_states_->HasBoxFragments())
-    box_states_->CreateBoxFragments(ConstraintSpace(), line_box);
+  if (box_states_->HasBoxFragments()) {
+    box_states_->CreateBoxFragments(ConstraintSpace(), line_box,
+                                    &oof_relative_offsets);
+  }
 
   // Update item index of the box states in the context.
   context_->SetItemIndex(line_info->ItemsData().items,
@@ -428,12 +433,8 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
   // Even if we have something in-flow, it may just be empty items that
   // shouldn't trigger creation of a line. Exit now if that's the case.
-  if (line_info->IsEmptyLine()) {
-    container_builder_.SetIsSelfCollapsing();
-    container_builder_.SetIsEmptyLineBox();
-    container_builder_.SetBaseDirection(line_info->BaseDirection());
+  if (line_info->IsEmptyLine())
     return;
-  }
 
   DCHECK(!line_box_metrics.IsEmpty());
 
@@ -458,7 +459,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
   if (line_info->UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
-  container_builder_.SetBaseDirection(line_info->BaseDirection());
   if (UNLIKELY(Node().IsTextCombine())) {
     // The effective size of combined text is 1em square[1]
     // [1] https://drafts.csswg.org/css-writing-modes-3/#text-combine-layout
@@ -1219,6 +1219,7 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
     // Success!
     container_builder_.SetBreakToken(line_breaker.CreateBreakToken(line_info));
+    container_builder_.SetBaseDirection(line_info.BaseDirection());
 
     // Propagate any break tokens for floats that we fragmented before or inside
     // to the block container.
@@ -1226,8 +1227,12 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
          line_breaker.PropagatedBreakTokens())
       context_->PropagateBreakToken(std::move(float_break_token));
 
-    if (is_empty_inline) {
-      DCHECK_EQ(container_builder_.BlockSize(), 0);
+    if (line_info.IsEmptyLine()) {
+      DCHECK_EQ(container_builder_.BlockSize(), LayoutUnit());
+      DCHECK(!container_builder_.BfcBlockOffset());
+
+      container_builder_.SetIsSelfCollapsing();
+      container_builder_.SetIsEmptyLineBox();
 
       // Margins should collapse across "certain zero-height line boxes".
       // https://drafts.csswg.org/css2/box.html#collapsing-margins

@@ -56,9 +56,9 @@ class SquarePhotoHandler {
   /**
    * @override
    */
-  async handleResultPhoto(result, ...args) {
+  async handleResultPhoto(result, name) {
     result.blob = await cropSquare(result.blob);
-    await this.handler_.handleResultPhoto(result, ...args);
+    await this.handler_.handleResultPhoto(result, name);
   }
 
   /**
@@ -66,6 +66,13 @@ class SquarePhotoHandler {
    */
   playShutterEffect() {
     this.handler_.playShutterEffect();
+  }
+
+  /**
+   * @override
+   */
+  waitPreviewReady() {
+    return this.handler_.waitPreviewReady();
   }
 }
 

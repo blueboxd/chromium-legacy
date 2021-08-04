@@ -312,6 +312,8 @@
       'android-code-coverage-native': 'gpu_tests_android_release_bot_no_symbols_arm64_fastbuild_native_coverage',
       'android-backuprefptr-arm-fyi-rel': 'release_trybot_backuprefptr_arm',
       'android-backuprefptr-arm64-fyi-rel': 'release_trybot_backuprefptr_arm64',
+      'arm-upload-perfetto': 'release_bot',
+      'arm64-upload-perfetto': 'release_bot',
       'chromeos-amd64-generic-rel-dchecks': 'chromeos_amd64-generic_use_fake_dbus_clients_dchecks',
       'chromeos-amd64-generic-rel (reclient)': 'chromeos_amd64-generic_use_fake_dbus_clients_reclient',
       # TODO(crbug.com/1235218): remove after the migration.
@@ -810,7 +812,7 @@
       # running on CQ.
       'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_google_native_coverage',
       'android-pie-arm64-coverage-experimental-rel': 'android_release_trybot_arm64_webview_google_expectations_native_coverage',
-      'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google_expectations',
+      'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google_expectations_fastbuild',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-rel': 'android_release_trybot_x86_fastbuild_webview_google',
       'android-web-platform-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google',
@@ -1489,9 +1491,9 @@
       'webview_google',
     ],
 
-    'android_release_trybot_arm64_webview_google_expectations': [
+    'android_release_trybot_arm64_webview_google_expectations_fastbuild': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
-      'webview_google', 'fail_on_android_expectations',
+      'android_fastbuild', 'webview_google', 'fail_on_android_expectations',
     ],
 
     # TODO(crbug/1182468) Remove these android coverage expectations after

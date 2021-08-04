@@ -1152,6 +1152,7 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/float-edge.html [ Pass ]
 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pass ]
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
+crbug.com/1236056 virtual/layout_ng_block_frag/external/wpt/css/css-break/ruby-001.html [ Failure ]
 crbug.com/1225630 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/large-actual-column-count.html [ Skip ]
 crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary.html [ Failure ]
@@ -2491,13 +2492,17 @@ crbug.com/27659 external/wpt/css/css-ruby/abs-in-ruby-base.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/block-ruby-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/block-ruby-002.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/block-ruby-005.html [ Failure ]
+crbug.com/27659 external/wpt/css/css-ruby/empty-ruby-base-container.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/empty-ruby-text-container-float.html [ Failure ]
+crbug.com/27659 external/wpt/css/css-ruby/improperly-contained-annotation-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/root-block-ruby.xhtml [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/root-ruby.xhtml [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-align-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-align-001a.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-align-002.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-align-002a.html [ Failure ]
+crbug.com/27659 external/wpt/css/css-ruby/ruby-base-container-abs.html [ Failure ]
+crbug.com/27659 external/wpt/css/css-ruby/ruby-base-container-float.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-bidi-002.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-bidi-003.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-box-generation-001.html [ Failure ]
@@ -2509,6 +2514,7 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-box-model-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-float-handling-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-intrinsic-isize-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-intrinsic-isize-002.html [ Failure ]
+crbug.com/27659 external/wpt/css/css-ruby/ruby-intrinsic-isize-003.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-justification-002.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-lang-specific-style-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-line-break-suppression-001.html [ Failure ]
@@ -2620,12 +2626,8 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-ruby/improperly-contained-annotation-001.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-ruby/ruby-base-container-abs.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-ruby/empty-ruby-base-container.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-2.https.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-ruby/ruby-base-container-float.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/simulcast/getStats.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/cross-origin-opener-policy/historical/coep-navigate-popup-unsafe-inherit.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/cross-origin-opener-policy/historical/coep-navigate-popup-unsafe-inherit.https.html [ Timeout ]
@@ -3143,7 +3145,6 @@ crbug.com/626703 [ Win10 ] virtual/offsetparent-old-behavior/external/wpt/shadow
 crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.sharedworker.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.serviceworker.html?wpt_flags=h2 [ Failure Timeout ]
-crbug.com/626703 external/wpt/css/css-ruby/ruby-intrinsic-isize-003.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/selection/contenteditable/modifying-selection-with-primary-mouse-button.tentative.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/streams/readable-streams/tee.any.html [ Crash Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/streams/readable-streams/tee.any.worker.html [ Failure ]
@@ -4127,11 +4128,8 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration.svg [
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textFeatures.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/empty-mask.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-match-highlight.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/visibility-collapse.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-dom-textLength-attr.html [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-svgdom-textLength-prop.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-dom-lengthAdjust-attr.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-svgdom-lengthAdjust-prop.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/stroke/non-scaling-stroke-text-decoration.html [ Failure ]
@@ -4145,8 +4143,6 @@ crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/getextentofchar-nonbmp.htm
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-selection-deco-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/text/text-selection-text-03-b.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/masking-mask-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-deco-01-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/W3C-SVG-1.1/text-text-03-b.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/zoom/page/zoom-zoom-coords.xhtml [ Failure ]
@@ -6158,6 +6154,9 @@ crbug.com/1141206 scrollbars/overflow-scrollbar-combinations.html [ Failure Pass
 crbug.com/1142877 [ Mac ] external/wpt/mediacapture-fromelement/capture.html [ Crash Failure Pass ]
 crbug.com/1142877 [ Debug Linux ] external/wpt/mediacapture-fromelement/capture.html [ Crash Failure Pass ]
 
+# Temporarily disabled to unblock https://crrev.com/c/3069289
+crbug.com/578269 inspector-protocol/debugger/message-channel-async-stack.js [ Failure Pass ]
+
 #Sheriff 2020-10-29
 crbug.com/1143720 [ Win7 ] external/wpt/media-source/mediasource-detach.html [ Failure Pass ]
 
@@ -6209,6 +6208,7 @@ crbug.com/1032451 virtual/threaded-no-composited-antialiasing/animations/stabili
 crbug.com/931646 [ Mac ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
 
 # Temporarily disabled to unblock https://crrev.com/c/3067319
+crbug.com/1199247 http/tests/devtools/console/console-external-array.js [ Failure Pass ]
 crbug.com/1199247 http/tests/devtools/console/console-log-side-effects.js [ Failure Pass ]
 
 # Win7 suggestion picker appearance tests have a scrollbar flakiness issue
@@ -6388,9 +6388,6 @@ crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface
 crbug.com/1182673 [ Win7 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Timeout ]
 crbug.com/1182675 [ Linux ] dom/attr/id-update-map-crash.html [ Failure Pass ]
 crbug.com/1182682 [ Linux ] http/tests/devtools/service-workers/service-workers-view.js [ Failure Pass ]
-
-# Sheriff 2021-03-01
-crbug.com/1183243 [ Linux ] http/tests/devtools/console/console-external-array.js [ Failure Pass ]
 
 # Temporarily disabled for https://crrev.com/c/2713104
 crbug.com/v8/11429 http/tests/devtools/profiler/cpu-profiler-profiling.js [ Failure Pass ]
@@ -7236,3 +7233,6 @@ crbug.com/1234619 external/wpt/screen-capture/permissions-policy-video.https.sub
 # Sheriff 2021-08-02
 crbug.com/1235685 [ Mac10.14 ] virtual/scroll-unification/plugins/focus-change-4-change-focus-and-blur.html [ Failure Pass ]
 crbug.com/1215390 [ Linux ] external/wpt/pointerevents/pointerevent_pointerId_scope.html [ Failure Pass ]
+
+# Sheriff 2021-08-04
+crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.js [ Failure Pass Crash ]

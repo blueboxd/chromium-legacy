@@ -1787,6 +1787,7 @@ if (!is_android) {
       "../browser/ssl/ocsp_browsertest.cc",
       "../browser/ssl/security_state_tab_helper_browsertest.cc",
       "../browser/ssl/ssl_browsertest.cc",
+      "../browser/ssl/ssl_prerender_browsertest.cc",
       "../browser/ssl/stateful_ssl_host_state_delegate_test.cc",
       "../browser/storage/durable_storage_browsertest.cc",
       "../browser/storage_access_api/api_browsertest.cc",
@@ -2115,7 +2116,11 @@ if (!is_android) {
     }
 
     if (is_chromeos) {
-      deps += [ "//chrome/browser/web_applications/app_service" ]
+      deps += [
+        "//chrome/browser/web_applications/app_service",
+        "//chromeos/ui/frame",
+      ]
+      sources += [ "../browser/ui/views/frame/browser_non_client_frame_view_chromeos_browsertest.cc" ]
     }
 
     if (is_linux && !is_chromeos_lacros) {
@@ -3105,7 +3110,7 @@ if (!is_android) {
         "../browser/ash/policy/affiliation/affiliation_test_helper.h",
         "../browser/ash/policy/affiliation/user_affiliation_browsertest.cc",
         "../browser/ash/policy/arc/unaffiliated_arc_allowed_browsertest.cc",
-        "../browser/ash/policy/core/browser_policy_connector_chromeos_browsertest.cc",
+        "../browser/ash/policy/core/browser_policy_connector_ash_browsertest.cc",
         "../browser/ash/policy/core/device_cloud_policy_browsertest.cc",
         "../browser/ash/policy/core/device_local_account_browsertest.cc",
         "../browser/ash/policy/core/device_policy_cros_browser_test.cc",
@@ -3309,7 +3314,6 @@ if (!is_android) {
         "../browser/ui/views/crostini/crostini_update_filesystem_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_dialog_bounds_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
-        "../browser/ui/views/frame/browser_non_client_frame_view_chromeos_browsertest.cc",
         "../browser/ui/views/frame/immersive_mode_browser_view_test.cc",
         "../browser/ui/views/frame/immersive_mode_controller_chromeos_browsertest.cc",
         "../browser/ui/views/frame/system_menu_model_builder_browsertest_chromeos.cc",

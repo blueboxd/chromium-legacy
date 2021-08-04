@@ -48,6 +48,8 @@ group("provider_api") {
     "//ios/public/provider/chrome/browser/lens:lens_api",
     "//ios/public/provider/chrome/browser/modals:modals_api",
     "//ios/public/provider/chrome/browser/risk_data:risk_data_api",
+    "//ios/public/provider/chrome/browser/signin:signin_error_api",
+    "//ios/public/provider/chrome/browser/signin:signin_resources_api",
     "//ios/public/provider/chrome/browser/text_zoom:text_zoom_api",
   ]
 }
@@ -64,7 +66,6 @@ source_set("test_support") {
     "//base",
     "//ios/public/provider/chrome/browser/discover_feed",
     "//ios/public/provider/chrome/browser/distribution",
-    "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/mailto:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
     "//ios/public/provider/chrome/browser/signin",
@@ -100,6 +101,8 @@ group("test_providers") {
     "//ios/public/provider/chrome/browser/lens:test_lens",
     "//ios/public/provider/chrome/browser/modals:test_modals",
     "//ios/public/provider/chrome/browser/risk_data:test_risk_data",
+    "//ios/public/provider/chrome/browser/signin:test_signin_error",
+    "//ios/public/provider/chrome/browser/signin:test_signin_resources",
     "//ios/public/provider/chrome/browser/text_zoom:test_text_zoom",
 
     # The provider API needs to provide MaterialDesignComponent API (as the

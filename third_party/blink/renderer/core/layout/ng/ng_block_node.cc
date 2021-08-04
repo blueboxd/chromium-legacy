@@ -711,7 +711,10 @@ void NGBlockNode::FinishLayout(
     input.override_inline_size = fragment.InlineSize();
     input.override_block_size = fragment.BlockSize();
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
-    box_->ForceLayout();
+    if (box_->NeedsLayout())
+      box_->LayoutIfNeeded();
+    else
+      box_->ForceLayout();
     DCHECK_EQ(box_->Size(), physical_fragment.Size().ToLayoutSize())
         << "Legacy layout was supposed to use the size that NG computed";
   }
@@ -1424,6 +1427,16 @@ void NGBlockNode::CopyChildFragmentPosition(
   LayoutPoint point = ToLayoutPoint(child_fragment, offset, container_fragment,
                                     previous_container_break_token);
   layout_box->SetLocationAndUpdateOverflowControlsIfNeeded(point);
+}
+
+void NGBlockNode::MakeRoomForExtraColumns(LayoutUnit block_size) const {
+  auto* block_flow = DynamicTo<LayoutBlockFlow>(GetLayoutBox());
+  DCHECK(block_flow && block_flow->MultiColumnFlowThread());
+  MultiColumnFragmentainerGroup& last_group =
+      block_flow->MultiColumnFlowThread()
+          ->LastMultiColumnSet()
+          ->LastFragmentainerGroup();
+  last_group.ExtendLogicalBottomInFlowThread(block_size);
 }
 
 void NGBlockNode::CopyFragmentItemsToLayoutBox(

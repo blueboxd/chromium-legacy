@@ -2141,6 +2141,13 @@ const FeatureEntry::FeatureVariation kLensContextMenuTranslateVariations[] = {
      base::size(kLensContextMenuTranslateHideRemoveIcon), nullptr},
 };
 
+const FeatureEntry::FeatureParam kDynamicColorFull[] = {
+    {"dynamic_color_full", "true"}};
+
+const FeatureEntry::FeatureVariation kDynamicColorAndroidVariations[] = {
+    {"(Full)", kDynamicColorFull, base::size(kDynamicColorFull), nullptr},
+};
+
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
@@ -4033,7 +4040,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2ClicksAndViewsConditionalUpload)},
 #endif  // OS_ANDROID
-    {"PasswordImport", flag_descriptions::kPasswordImportName,
+    {"password-import", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
     {"enable-force-dark", flag_descriptions::kForceWebContentsDarkModeName,
@@ -7190,7 +7197,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kContinuousSearch,
                                     kContinuousSearchFeatureVariations,
-                                    "ContinuousSearchVariations")},
+                                    "ContinuousSearchNavigation")},
 
     {"enable-experimental-accessibility-labels",
      flag_descriptions::kExperimentalAccessibilityLabelsName,
@@ -7672,7 +7679,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"dynamic-color-android", flag_descriptions::kDynamicColorAndroidName,
      flag_descriptions::kDynamicColorAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDynamicColorAndroid)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kDynamicColorAndroid,
+                                    kDynamicColorAndroidVariations,
+                                    "AndroidDynamicColor")},
 #endif  //   defined(OS_ANDROID)
 
 #if defined(OS_WIN)

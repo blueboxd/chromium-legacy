@@ -304,7 +304,7 @@ class BackgroundFetchServiceTest
     browser_context()->SetPermissionControllerDelegate(
         std::move(mock_permission_manager));
 
-    context_->InitializeOnCoreThread();
+    context_->Initialize();
     service_ = std::make_unique<BackgroundFetchServiceImpl>(
         context_, storage_key(),
         /* render_frame_tree_node_id= */ 0,
@@ -359,8 +359,10 @@ class BackgroundFetchServiceTest
                     blink::mojom::FetchAPIResponsePtr response));
 
   // ServiceWorkerContextCoreObserver implementation.
-  MOCK_METHOD2(OnRegistrationDeleted,
-               void(int64_t registration_id, const GURL& pattern));
+  MOCK_METHOD3(OnRegistrationDeleted,
+               void(int64_t registration_id,
+                    const GURL& pattern,
+                    const blink::StorageKey& key));
   MOCK_METHOD0(OnStorageWiped, void());
 
   // DevToolsBackgroundServicesContext::EventObserver implementation.
@@ -1166,7 +1168,7 @@ TEST_F(BackgroundFetchServiceTest, UnregisterServiceWorker) {
   {
     using blink::mojom::BackgroundFetchError;
     EXPECT_CALL(*this,
-                OnRegistrationDeleted(service_worker_registration_id, _));
+                OnRegistrationDeleted(service_worker_registration_id, _, _));
     FetchAndUnregisterServiceWorker(service_worker_registration_id,
                                     kExampleDeveloperId, std::move(requests),
                                     std::move(options), SkBitmap(), &error,

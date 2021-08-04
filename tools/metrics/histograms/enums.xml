@@ -1870,6 +1870,7 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="DINO_PAGE_OFFLINE_CONTENT"/>
   <int value="11" label="OFFLINE_INDICATOR"/>
   <int value="12" label="OFFLINE_CONTENT_NOTIFICATION"/>
+  <int value="13" label="DOWNLOAD_PROGRESS_MESSAGE"/>
 </enum>
 
 <enum name="AndroidEnhancedProtectionPromoAction">
@@ -2514,6 +2515,13 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
   <int value="2" label="DIRECT"/>
+</enum>
+
+<enum name="AndroidWebViewRenderProcessGoneResult">
+  <int value="0" label="Java Exception thrown inside onRenderProcessGone()"/>
+  <int value="1" label="Renderer crash not handled"/>
+  <int value="2" label="Renderer kill (OOM or update) not handled"/>
+  <int value="3" label="Crash was handled for all WebViews"/>
 </enum>
 
 <enum name="AndroidWebViewSafeModeResult">
@@ -14219,6 +14227,7 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Go to URL"/>
   <int value="20" label="Copy link to text"/>
   <int value="21" label="Search Image with Google Lens"/>
+  <int value="22" label="Search part of page with Google Lens"/>
 </enum>
 
 <enum name="ContextMenuOptionIOS">
@@ -25928,6 +25937,7 @@ Called by update_document_policy_enum.py.-->
   <int value="882" label="WindowCaptureAllowedByOrigins"/>
   <int value="883" label="TabCaptureAllowedByOrigins"/>
   <int value="884" label="SameOriginTabCaptureAllowedByOrigins"/>
+  <int value="885" label="AssistantVoiceMatchEnabledDuringOobe"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -33797,7 +33807,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3716" label="OBSOLETE_CSSPseudoHostCompoundList"/>
   <int value="3717" label="OBSOLETE_CSSPseudoHostContextCompoundList"/>
   <int value="3718" label="OBSOLETE_CSSPseudoHostDynamicSpecificity"/>
-  <int value="3719" label="GetCurrentBrowsingContextMedia"/>
+  <int value="3719" label="OBSOLETE_GetCurrentBrowsingContextMedia"/>
   <int value="3720" label="MouseEventRelativePositionForInlineElement"/>
   <int value="3721" label="V8SharedArrayBufferConstructedWithoutIsolation"/>
   <int value="3722" label="V8HTMLVideoElement_GetVideoPlaybackQuality_Method"/>
@@ -34428,6 +34438,9 @@ Called by update_permissions_policy_enum.py.-->
   <int value="38"
       label="After following an active web feed, the user tapped to dismiss
              the post-follow help dialog."/>
+  <int value="39"
+      label="After long-pressing on the feed and seeing the preview, the user
+             tapped on the preview."/>
 </enum>
 
 <enum name="FeedUserCommandType">
@@ -54849,6 +54862,7 @@ Called by update_use_counter_css.py.-->
   <int value="13" label="GroupedPermission"/>
   <int value="14" label="PermissionUpdate"/>
   <int value="15" label="AdsBlocked"/>
+  <int value="16" label="DownloadProgress"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -64254,7 +64268,7 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="PciePeripheralConnectivityResult">
 <!-- This must be kept current with PciePeripheralConnectivityResults
-        located in ash/components/pcie_peripheral/pcie_peripheral_manager.cc -->
+        located in ash/components/pcie_peripheral/pcie_peripheral_manager.h -->
 
   <int value="0" label="TBT-supported peripheral connected and allowed"/>
   <int value="1" label="TBT-only peripheral connected and blocked by Pciguard"/>
@@ -64262,6 +64276,8 @@ Called by update_net_trust_anchors.py.-->
       label="TBT-only peripheral connected and blocked due to guest session"/>
   <int value="3" label="Alt-mode fallback due to Pciguard"/>
   <int value="4" label="Alt-mode fallback in guest session"/>
+  <int value="5" label="Peripheral blocked"/>
+  <int value="6" label="Billboard device"/>
 </enum>
 
 <enum name="PdfCompositionStatus">
@@ -70954,6 +70970,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="112" label="IDC_CONTENT_CONTEXT_COPYLINKTOTEXT"/>
   <int value="113" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE"/>
   <int value="114" label="IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT"/>
+  <int value="115" label="IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
@@ -81910,25 +81927,59 @@ Full version information for the fingerprint enum values:
 
 <enum name="TranslationStatus">
   <int value="0" label="Uninitialized"/>
-  <int value="1" label="Succeeded, from manual translation"/>
+  <int value="1"
+      label="Deprecated 07/2021. Succeeded, from manual translation"/>
   <int value="2" label="Succeeded, automatic translation by user preference"/>
   <int value="3" label="Succeeded, automatic translation by link"/>
-  <int value="4" label="Reverted by user, manual translation"/>
+  <int value="4"
+      label="Deprecated 07/2021. Reverted by user, manual translation"/>
   <int value="5" label="Reverted by user, automatic translation"/>
   <int value="6" label="New translation requested by user"/>
   <int value="7" label="Abandoned"/>
-  <int value="8" label="Failed with no error, manual translation"/>
+  <int value="8"
+      label="Deprecated 07/2021. Failed with no error, manual translation"/>
   <int value="9" label="Failed with no error, automatic translation"/>
-  <int value="10" label="Failed with an error, manual translation"/>
+  <int value="10"
+      label="Deprecated 07/2021. Failed with an error, manual translation"/>
   <int value="11" label="Failed with an error, automatic translation"/>
+  <int value="12" label="Succeeded, from manual translation from Translate UI"/>
+  <int value="13"
+      label="Reverted by user, manual translation from Translate UI"/>
+  <int value="14"
+      label="Failed with no error, manual translation from Translate UI"/>
+  <int value="15"
+      label="Failed with an error, manual translation from Translate UI"/>
+  <int value="16" label="Succeeded, from manual translation from Context Menu"/>
+  <int value="17"
+      label="Reverted by user, manual translation from Context Menu"/>
+  <int value="18"
+      label="Failed with no error, manual translation from Context Menu"/>
+  <int value="19"
+      label="Failed with an error, manual translation from Context Menu"/>
 </enum>
 
 <enum name="TranslationType">
   <int value="0" label="Uninitialized"/>
-  <int value="1" label="Manual translation, first translation of page load"/>
-  <int value="2" label="Manual translation, after page was already translated"/>
+  <int value="1"
+      label="Deprecated 07/2021. Manual translation, first translation of
+             page load"/>
+  <int value="2"
+      label="Deprecated 07/2021. Manual translation, after page was already
+             translated"/>
   <int value="3" label="Automatic translation by user preference"/>
   <int value="4" label="Automatic translation by link"/>
+  <int value="5"
+      label="Manual translation from Translate UI, first translation of page
+             load"/>
+  <int value="6"
+      label="Manual translation from Translate UI, after page was already
+             translated"/>
+  <int value="7"
+      label="Manual translation from Context Menu, first translation of page
+             load"/>
+  <int value="8"
+      label="Manual translation Context Menu, after page was already
+             translated"/>
 </enum>
 
 <enum name="TrendingTileEvent">

@@ -50,6 +50,7 @@ class VaapiVideoDecoder : public VideoDecoderMixin,
                           public DecodeSurfaceHandler<VASurface> {
  public:
   static std::unique_ptr<VideoDecoderMixin> Create(
+      std::unique_ptr<MediaLog> media_log,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       base::WeakPtr<VideoDecoderMixin::Client> client);
 
@@ -114,6 +115,7 @@ class VaapiVideoDecoder : public VideoDecoderMixin,
   };
 
   VaapiVideoDecoder(
+      std::unique_ptr<MediaLog> media_log,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       base::WeakPtr<VideoDecoderMixin::Client> client);
   ~VaapiVideoDecoder() override;
@@ -150,6 +152,10 @@ class VaapiVideoDecoder : public VideoDecoderMixin,
 
   // Change the current |state_| to the specified |state|.
   void SetState(State state);
+
+  // Tell SetState() to change the |state_| to kError and send |message| to
+  // MediaLog and to LOG(ERROR).
+  void SetErrorState(std::string message);
 
   // Callback for the CDM to notify |this|.
   void OnCdmContextEvent(CdmContext::Event event);

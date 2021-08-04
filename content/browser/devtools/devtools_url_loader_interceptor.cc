@@ -89,11 +89,13 @@ DevToolsURLLoaderInterceptor::Modifications::Modifications(
     protocol::Maybe<std::string> modified_url,
     protocol::Maybe<std::string> modified_method,
     protocol::Maybe<protocol::Binary> modified_post_data,
-    std::unique_ptr<HeadersVector> modified_headers)
+    std::unique_ptr<HeadersVector> modified_headers,
+    protocol::Maybe<bool> intercept_response)
     : modified_url(std::move(modified_url)),
       modified_method(std::move(modified_method)),
       modified_post_data(std::move(modified_post_data)),
-      modified_headers(std::move(modified_headers)) {}
+      modified_headers(std::move(modified_headers)),
+      intercept_response(std::move(intercept_response)) {}
 
 DevToolsURLLoaderInterceptor::Modifications::Modifications(
     absl::optional<net::Error> error_reason,
@@ -878,6 +880,20 @@ Response InterceptionJob::InnerContinueRequest(
   }
   waiting_for_resolution_ = false;
 
+  if (modifications->intercept_response.isJust()) {
+    if (modifications->intercept_response.fromJust()) {
+      if (stage_ == InterceptionStage::REQUEST)
+        stage_ = InterceptionStage::BOTH;
+      else
+        stage_ = InterceptionStage::RESPONSE;
+    } else {
+      if (stage_ == InterceptionStage::BOTH)
+        stage_ = InterceptionStage::REQUEST;
+      else if (stage_ == InterceptionStage::RESPONSE)
+        stage_ = InterceptionStage::DONT_INTERCEPT;
+    }
+  }
+
   if (state_ == State::kAuthRequired) {
     if (!modifications->auth_challenge_response)
       return Response::InvalidParams("authChallengeResponse required.");
@@ -1123,7 +1139,8 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
   size_t iter = 0;
   while (headers.EnumerateHeader(&iter, name, &cookie_line)) {
     std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-        create_loader_params_->request.url, cookie_line, now, server_time);
+        create_loader_params_->request.url, cookie_line, now, server_time,
+        net::CookiePartitionKey::Todo());
     if (cookie)
       cookies.emplace_back(std::move(cookie));
   }

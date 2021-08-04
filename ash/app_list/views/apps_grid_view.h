@@ -145,16 +145,18 @@ class ASH_EXPORT AppsGridView : public views::View,
   void SetSelectedView(AppListItemView* view) override;
   void ClearSelectedView() override;
   bool IsSelectedView(const AppListItemView* view) const override;
-  void InitiateDrag(AppListItemView* view,
+  bool InitiateDrag(AppListItemView* view,
                     const gfx::Point& location,
-                    const gfx::Point& root_location) override;
+                    const gfx::Point& root_location,
+                    base::OnceClosure drag_start_callback,
+                    base::OnceClosure drag_end_callback) override;
   void StartDragAndDropHostDragAfterLongPress() override;
   bool UpdateDragFromItem(bool is_touch,
                           const ui::LocatedEvent& event) override;
   void EndDrag(bool cancel) override;
-  bool IsDragging() const override;
-  bool IsDraggedView(const AppListItemView* view) const override;
-  bool IsDragViewMoved(const AppListItemView& view) const override;
+
+  bool IsDragging() const;
+  bool IsDraggedView(const AppListItemView* view) const;
 
   void ClearDragState();
 
@@ -426,6 +428,17 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Subclasses need non-const access.
   AppListItemView* drag_view_ = nullptr;
 
+  // If set, a callback called when the dragged item starts moving during a drag
+  // (i.e. when the drag icon proxy gets created).
+  // Registered in `InitiateDrag()`
+  base::OnceClosure drag_start_callback_;
+
+  // If set, a callback called when an item drag ends, and drag state is
+  // cleared. It may get called before the drag icon proxy drop animation
+  // finishes.
+  // Registered in `InitiateDrag()`.
+  base::OnceClosure drag_end_callback_;
+
   // If app item drag is in progress, the icon proxy created for the app list
   // item.
   std::unique_ptr<AppDragIconProxy> drag_icon_proxy_;
@@ -692,29 +705,6 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Update number of columns and rows for apps within a folder.
   void UpdateColsAndRowsForFolder();
-
-  // Convert between the model index and the visual index. The model index
-  // is the index of the item in AppListModel. The visual index is the Index
-  // struct above with page/slot info of where to display the item.
-  virtual GridIndex GetIndexFromModelIndex(int model_index) const = 0;
-  virtual int GetModelIndexFromIndex(const GridIndex& index) const = 0;
-
-  // Returns the last possible visual index to add an item view.
-  virtual GridIndex GetLastTargetIndex() const = 0;
-
-  // Returns the last possible visual index to add an item view in |page|.
-  virtual GridIndex GetLastTargetIndexOfPage(int page) const = 0;
-
-  // Returns the target model index if moving the item view to specified target
-  // visual index.
-  virtual int GetTargetModelIndexForMove(AppListItemView* moved_view,
-                                         const GridIndex& index) const = 0;
-
-  // Returns the target `item_list_` index if moving the item view to specified
-  // target visual index.
-  virtual size_t GetTargetItemListIndexForMove(
-      AppListItemView* moved_view,
-      const GridIndex& index) const = 0;
 
   // Returns true if an item view exists in the visual index.
   bool IsValidIndex(const GridIndex& index) const;

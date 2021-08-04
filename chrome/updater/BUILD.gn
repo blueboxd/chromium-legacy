@@ -87,8 +87,6 @@ if (is_win || is_mac) {
       "enum_traits.h",
       "external_constants.cc",
       "external_constants.h",
-      "external_constants_builder.cc",
-      "external_constants_builder.h",
       "external_constants_default.cc",
       "external_constants_default.h",
       "installer.cc",
@@ -173,8 +171,8 @@ if (is_win || is_mac) {
         "launchd_util.cc",
         "launchd_util.h",
         "lib_util_mac.mm",
-        "mac/installer_dmg.h",
-        "mac/installer_dmg.mm",
+        "mac/install_from_archive.h",
+        "mac/install_from_archive.mm",
         "mac/mac_util.h",
         "mac/mac_util.mm",
         "mac/net/network.h",
@@ -195,6 +193,7 @@ if (is_win || is_mac) {
         "prefs_mac.mm",
         "service_factory_mac.mm",
         "setup_mac.mm",
+        "util_mac.mm",
       ]
 
       deps += [
@@ -433,6 +432,8 @@ if (is_win || is_mac) {
       "device_management/dm_response_validator_unittest.cc",
       "device_management/dm_storage_unittest.cc",
       "enum_traits_unittest.cc",
+      "external_constants_builder.cc",
+      "external_constants_builder.h",
       "external_constants_builder_unittest.cc",
       "external_constants_override_unittest.cc",
       "lib_util_unittest.cc",

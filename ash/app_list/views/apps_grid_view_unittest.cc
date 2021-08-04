@@ -498,7 +498,7 @@ class AppsGridViewDragAndDropTestBase : public AppsGridViewTest {
     // Ensure that the |root_from| point is correct if RTL.
     root_from.set_x(apps_grid_view->GetMirroredXInView(root_from.x()));
 
-    apps_grid_view->InitiateDrag(view, root_from, root_from);
+    view->InitiateDrag(root_from, root_from);
     current_drag_location_ = root_from;
     // Call UpdateDrag to trigger |apps_grid_view| change to cardified_state.
     UpdateDrag(pointer, from, apps_grid_view);
@@ -2490,6 +2490,9 @@ TEST_P(AppsGridViewDragAndDropTest, UpdateFolderBackgroundOnCancelDrag) {
   const int kTotalItems = 4;
   TestAppsGridViewFolderDelegate folder_delegate;
   apps_grid_view_->set_folder_delegate(&folder_delegate);
+  test::AppsGridViewTestApi(apps_grid_view_)
+      .GetPagedViewStructure()
+      ->Init(PagedViewStructure::Mode::kFullPages);
   model_->PopulateApps(kTotalItems);
   gfx::Point mouse_from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
   gfx::Point mouse_to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();

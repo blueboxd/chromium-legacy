@@ -3928,6 +3928,25 @@
             ]
         }
     ],
+    "GridAndGroupAndroidM5": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "enable_launch_bug_fix": "true",
+                        "enable_launch_polish": "true"
+                    },
+                    "enable_features": [
+                        "TabGroupsContinuationAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
     "GroupAutoCreationAndroid": [
         {
             "platforms": [
@@ -5688,25 +5707,6 @@
             ]
         }
     ],
-    "OmniboxPedalsBatch2": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Batch2Colored",
-                    "enable_features": [
-                        "OmniboxPedalsBatch2",
-                        "OmniboxPedalsDefaultIconColored"
-                    ]
-                }
-            ]
-        }
-    ],
     "OmniboxUpdatedConnectionSecurityIndicatorsIPH": [
         {
             "platforms": [
@@ -7391,6 +7391,28 @@
                     ],
                     "disable_features": [
                         "ClientSideDetectionModelIsFlatBuffer"
+                    ]
+                },
+                {
+                    "name": "EnabledTfLiteOnly_20210723",
+                    "params": {
+                        "reporter_omaha_tag": "25.4"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionModelIsFlatBuffer",
+                        "ClientSideDetectionModelOnAndroid",
+                        "ClientSideDetectionTag"
+                    ]
+                },
+                {
+                    "name": "EnabledTfLiteAndFlatbuffer_20210723",
+                    "params": {
+                        "reporter_omaha_tag": "25.5"
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionModelIsFlatBuffer",
+                        "ClientSideDetectionModelOnAndroid",
+                        "ClientSideDetectionTag"
                     ]
                 }
             ]

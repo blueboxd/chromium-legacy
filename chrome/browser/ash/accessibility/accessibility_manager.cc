@@ -60,6 +60,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
@@ -89,6 +90,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -874,7 +876,8 @@ void AccessibilityManager::OnDictationChanged(bool triggered_by_user) {
                                     locale);
   }
 
-  if (triggered_by_user && !enabled) {
+  if (triggered_by_user && !enabled &&
+      features::IsDictationOfflineAvailableAndEnabled()) {
     // Note: This should not be called at start-up or it will
     // push back SODA deletion each time start-up occurs with dictation
     // disabled.
@@ -883,10 +886,16 @@ void AccessibilityManager::OnDictationChanged(bool triggered_by_user) {
   }
 
   if (enabled) {
+    const std::string locale =
+        profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale);
+    if (triggered_by_user && ShouldShowNetworkDictationDialog(locale)) {
+      // Only show the Dictation dialog if Dictation was enabled by the user.
+      ShowNetworkDictationDialog();
+    }
+
     // TODO(crbug.com/1173135): Call MaybeInstallSoda when the dictation locale
     // pref changes.
-    MaybeInstallSoda(
-        profile_->GetPrefs()->GetString(prefs::kAccessibilityDictationLocale));
+    MaybeInstallSoda(locale);
   }
 }
 
@@ -1850,12 +1859,57 @@ void AccessibilityManager::ShowChromeVoxTutorial() {
       extension_misc::kChromeVoxExtensionId, std::move(event));
 }
 
-void AccessibilityManager::MaybeInstallSoda(const std::string& locale) {
-  if (!::features::IsExperimentalAccessibilityDictationOfflineEnabled())
-    return;
+bool AccessibilityManager::ShouldShowNetworkDictationDialog(
+    const std::string& locale) {
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kDictationAcceleratorDialogHasBeenAccepted)) {
+    return false;
+  }
 
-  // TODO(crbug.com/1173135): Check whether SODA is available on this device by
-  // checking (IsEnabled(ash::features::kOnDeviceSpeechRecognition)).
+  if (!features::IsDictationOfflineAvailableAndEnabled())
+    return true;
+
+  speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
+  std::vector<std::string> supported_languages =
+      soda_installer->GetAvailableLanguages();
+  if (std::find(supported_languages.begin(), supported_languages.end(),
+                locale) == supported_languages.end()) {
+    // Show the dialog for languages not supported by SODA.
+    return true;
+  }
+
+  return false;
+}
+
+void AccessibilityManager::ShowNetworkDictationDialog() {
+  const std::u16string title =
+      l10n_util::GetStringUTF16(IDS_ACCESSIBILITY_DICTATION_CONFIRMATION_TITLE);
+  const std::u16string text =
+      l10n_util::GetStringUTF16(IDS_ACCESSIBILITY_DICTATION_CONFIRMATION_TEXT);
+  AccessibilityController::Get()->ShowConfirmationDialog(
+      title, text,
+      base::BindOnce(&AccessibilityManager::OnNetworkDictationDialogAccepted,
+                     base::Unretained(this)),
+      base::BindOnce(&AccessibilityManager::OnNetworkDictationDialogDismissed,
+                     base::Unretained(this)),
+      base::BindOnce(&AccessibilityManager::OnNetworkDictationDialogDismissed,
+                     base::Unretained(this)));
+}
+
+void AccessibilityManager::OnNetworkDictationDialogAccepted() {
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
+}
+
+void AccessibilityManager::OnNetworkDictationDialogDismissed() {
+  SetDictationEnabled(false);
+}
+
+void AccessibilityManager::MaybeInstallSoda(const std::string& locale) {
+  if (!features::IsDictationOfflineAvailableAndEnabled()) {
+    return;
+  }
+
   speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
   if (soda_installer->IsSodaInstalled(speech::GetLanguageCode(locale)) ||
       soda_installer->IsSodaDownloading(speech::GetLanguageCode(locale)))

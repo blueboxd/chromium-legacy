@@ -15,7 +15,6 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
-#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/display_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -521,8 +521,24 @@ const std::vector<display::Display>& RenderWidgetHostViewBase::GetDisplays()
 }
 
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
-  if (host() && host()->delegate())
-    host()->delegate()->SendScreenRects();
+  bool force_sync_visual_properties = false;
+  // Delegate, which is usually WebContentsImpl, do not send rect updates for
+  // popups as they are not registered as FrameTreeNodes. Instead, send screen
+  // rects directly to host and force synchronization of visual properties so
+  // that blink knows host changed bounds. This only happens if the change was
+  // instantiated by system server/compositor (for example, Wayland, which
+  // may reposition a popup if part of it is going to be shown outside a
+  // display's work area. Note that Wayland clients cannot know where their
+  // windows are located and cannot adjust bounds).
+  if (widget_type_ == WidgetType::kPopup) {
+    if (host()) {
+      force_sync_visual_properties = true;
+      host()->SendScreenRects();
+    }
+  } else {
+    if (host() && host()->delegate())
+      host()->delegate()->SendScreenRects();
+  }
 
   const display::DisplayList new_display_list =
       display::Screen::GetScreen()->GetDisplayListNearestViewWithFallbacks(
@@ -613,7 +629,7 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
 }
 
 void RenderWidgetHostViewBase::GetScreenInfo(display::ScreenInfo* screen_info) {
-  DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
+  display::DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
 float RenderWidgetHostViewBase::GetDeviceScaleFactor() {

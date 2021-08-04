@@ -190,8 +190,8 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
-      override {
+      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices,
+      const download::DownloadItemRerouteInfo& reroute_info) override {
     // For history download only as history don't have auto resumption count
     // saved.
     int auto_resume_count = download::DownloadItemImpl::kMaxAutoResumeAttempts;
@@ -203,7 +203,7 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
         last_modified, received_bytes, total_bytes, auto_resume_count, hash,
         state, danger_type, interrupt_reason, false /* paused */,
         false /* allow_metered */, opened, last_access_time, transient,
-        received_slices, absl::nullopt /*download_schedule*/,
+        received_slices, reroute_info, absl::nullopt /*download_schedule*/,
         nullptr /* download_entry */);
   }
 
@@ -999,12 +999,14 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     return nullptr;
   }
 
+  download::DownloadItemRerouteInfo reroute_info;
+  // TODO(https://crbug.com/1203753) take |reroute_info| as an input arg.
   auto item = base::WrapUnique(item_factory_->CreatePersistedItem(
       this, guid, id, current_path, target_path, url_chain, referrer_url,
       site_url, tab_url, tab_refererr_url, request_initiator, mime_type,
       original_mime_type, start_time, end_time, etag, last_modified,
       received_bytes, total_bytes, hash, state, danger_type, interrupt_reason,
-      opened, last_access_time, transient, received_slices));
+      opened, last_access_time, transient, received_slices, reroute_info));
   if (in_progress_download) {
     // If a download is in both history DB and in-progress DB, we should
     // be able to remove the in-progress entry if the following 2 conditions
@@ -1029,10 +1031,10 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
   }
 #if defined(OS_ANDROID)
   if (target_path.IsContentUri()) {
-    base::FilePath display_name =
+    base::FilePath android_display_name =
         in_progress_manager_->GetDownloadDisplayName(target_path);
-    if (!display_name.empty())
-      item->SetDisplayName(display_name);
+    if (!android_display_name.empty())
+      item->SetDisplayName(android_display_name);
     else
       return nullptr;
   }
@@ -1382,23 +1384,33 @@ void DownloadManagerImpl::BeginDownloadInternal(
   auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
                                       params->render_frame_host_routing_id());
   bool content_initiated = params->content_initiated();
-  // If it's from the web, we don't trust it, so we push the throttle on.
-  if (rfh && content_initiated && delegate_) {
-    WebContents::Getter web_contents_getter = base::BindRepeating(
-        WebContents::FromFrameTreeNodeId, rfh->GetFrameTreeNodeId());
-    const GURL& url = params->url();
-    const std::string& method = params->method();
-    absl::optional<url::Origin> initiator = params->initiator();
-    base::OnceCallback<void(bool /* download allowed */)>
-        on_can_download_checks_done = base::BindOnce(
-            &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
-            weak_factory_.GetWeakPtr(), std::move(params),
-            std::move(blob_url_loader_factory), is_new_download, site_url);
-    delegate_->CheckDownloadAllowed(
-        std::move(web_contents_getter), url, method, std::move(initiator),
-        false /* from_download_cross_origin_redirect */, content_initiated,
-        std::move(on_can_download_checks_done));
-    return;
+
+  if (rfh && content_initiated) {
+    // Cancel downloads from non-active documents (e.g prerendered, bfcached).
+    if (rfh->IsInactiveAndDisallowActivation()) {
+      DropDownload();
+      return;
+    }
+
+    // Push the throttle on the web-initiated downloads before allowing them to
+    // proceed.
+    if (delegate_) {
+      WebContents::Getter web_contents_getter = base::BindRepeating(
+          WebContents::FromFrameTreeNodeId, rfh->GetFrameTreeNodeId());
+      const GURL& url = params->url();
+      const std::string& method = params->method();
+      absl::optional<url::Origin> initiator = params->initiator();
+      base::OnceCallback<void(bool /* download allowed */)>
+          on_can_download_checks_done = base::BindOnce(
+              &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
+              weak_factory_.GetWeakPtr(), std::move(params),
+              std::move(blob_url_loader_factory), is_new_download, site_url);
+      delegate_->CheckDownloadAllowed(
+          std::move(web_contents_getter), url, method, std::move(initiator),
+          false /* from_download_cross_origin_redirect */, content_initiated,
+          std::move(on_can_download_checks_done));
+      return;
+    }
   }
 
   BeginResourceDownloadOnChecksComplete(

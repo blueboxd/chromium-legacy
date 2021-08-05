@@ -562,15 +562,14 @@ TEST_P(
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
-#if defined(OS_CHROMEOS)
+// TODO(crbug.com/1194878) - Test is flaky on CrOS and Linux.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload \
   DISABLED_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload
 #else
 #define MAYBE_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload \
   WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload
 #endif
-
-// TODO(crbug.com/1194878) - Test is flaky on CrOS.
 TEST_P(StorageQueueTest,
        MAYBE_WriteIntoNewStorageQueueReopenWithMissingDataWriteMoreAndUpload) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
@@ -827,7 +826,16 @@ TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmations) {
   }
 }
 
-TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmationsAndReopen) {
+// Disable on Linux and Chrome OS due to flaky. crbug.com/1232644
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_WriteAndRepeatedlyUploadWithConfirmationsAndReopen \
+  DISABLED_WriteAndRepeatedlyUploadWithConfirmationsAndReopen
+#else
+#define MAYBE_WriteAndRepeatedlyUploadWithConfirmationsAndReopen \
+  WriteAndRepeatedlyUploadWithConfirmationsAndReopen
+#endif
+TEST_P(StorageQueueTest,
+       MAYBE_WriteAndRepeatedlyUploadWithConfirmationsAndReopen) {
   CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
 
   WriteStringOrDie(kData[0]);

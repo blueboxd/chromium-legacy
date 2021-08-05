@@ -568,6 +568,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Net.DNS.DnsConfig.AdditionalDnsQueryTypesEnabled"
+    enum="BooleanEnabled" expires_after="2022-08-14">
+  <owner>ericorth@chromium.org</owner>
+  <owner>dmcardle@chromium.org</owner>
+  <owner>src/net/OWNERS</owner>
+  <summary>
+    Whether or not `prefs::kAdditionalDnsQueryTypesEnabled` is enabled. Recorded
+    at startup if disabled or whenever Chrome is believed to be
+    enterprise-managed (per the same detection as the default disabling of DoH).
+    Measures whether or not enterprise admins are setting the disable,
+    potentially due to issues encoutered with HTTPS/INTEGRITY query experiments.
+  </summary>
+</histogram>
+
 <histogram name="Net.DNS.DnsConfig.Nsswitch.Compatible" enum="BooleanValid"
     expires_after="2022-01-15">
   <owner>ericorth@chromium.org</owner>
@@ -1586,8 +1600,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Net.DomainReliability.BeaconOutcome"
     enum="DomainReliabilityBeaconOutcome" expires_after="2021-12-11">
-  <owner>chlily@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
+  <owner>src/net/network_error_logging/OWNERS</owner>
   <summary>
     The outcome of a Domain Reliability beacon, logged upon destruction of the
     beacon.
@@ -2389,10 +2403,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Number of bytes read from the network on behalf of prefetch requests. This
     is prefilter, so before any decompression.
-  </summary>
-  <details>
+
     This applies to requests with RESOURCE_TYPE_PREFETCH.
-  </details>
+  </summary>
 </histogram>
 
 <histogram name="Net.ProxyScriptFetcher.FirstByteDuration" units="ms"
@@ -4862,7 +4875,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Net.RestrictedCookieManager.SiteForCookiesOK" enum="Boolean"
     expires_after="2021-12-12">
   <owner>morlovich@chromium.org</owner>
-  <owner>chlily@chromium.org</owner>
+  <owner>src/net/cookies/OWNERS</owner>
   <summary>
     Logged on any document.cookie or CookieStore API operation. True if the
     browser-side site_for_cookies and the render-provided value match.
@@ -4872,7 +4885,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Net.RestrictedCookieManager.TopFrameOriginOK" enum="Boolean"
     expires_after="2021-12-12">
   <owner>morlovich@chromium.org</owner>
-  <owner>chlily@chromium.org</owner>
+  <owner>src/net/cookies/OWNERS</owner>
   <summary>
     Logged on any document.cookie or CookieStore API operation. True if the
     browser-side top_frame_origin and the render-provided value match.

@@ -1149,6 +1149,14 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
   return false;
 }
 
+std::string WebContentsImpl::GetTitleForMediaControls() {
+  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::GetTitleForMediaControls");
+
+  if (!delegate_)
+    return std::string();
+  return delegate_->GetTitleForMediaControls(this);
+}
+
 // Returns the NavigationController for the primary FrameTree, i.e. the one
 // whose URL is shown in the omnibox. With MPArch we can have multiple
 // FrameTrees in one WebContents and each has its own NavigationController.
@@ -6066,14 +6074,18 @@ void WebContentsImpl::SavableResourceLinksResponse(
   OPTIONAL_TRACE_EVENT1("content",
                         "WebContentsImpl::SavableResourceLinksResponse",
                         "render_frame_host", source);
-  save_package_->SavableResourceLinksResponse(source, resources_list,
-                                              std::move(referrer), subframes);
+  if (save_package_) {
+    save_package_->SavableResourceLinksResponse(source, resources_list,
+                                                std::move(referrer), subframes);
+  }
 }
 
 void WebContentsImpl::SavableResourceLinksError(RenderFrameHostImpl* source) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::SavableResourceLinksError",
                         "render_frame_host", source);
-  save_package_->SavableResourceLinksError(source);
+  if (save_package_) {
+    save_package_->SavableResourceLinksError(source);
+  }
 }
 
 void WebContentsImpl::OnServiceWorkerAccessed(

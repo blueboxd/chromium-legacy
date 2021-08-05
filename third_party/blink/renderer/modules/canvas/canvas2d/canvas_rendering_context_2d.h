@@ -175,8 +175,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void ClearFilterReferences();
 
   // BaseRenderingContext2D implementation
-  void DidDraw2D(const SkIRect& dirty_rect,
-                 CanvasPerformanceMonitor::DrawType) final;
   bool OriginClean() const final;
   void SetOriginTainted() final;
   bool WouldTaintOrigin(CanvasImageSource* source) final {
@@ -195,10 +193,12 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   cc::PaintCanvas* GetOrCreatePaintCanvas() final;
   cc::PaintCanvas* GetPaintCanvas() const final;
+  cc::PaintCanvas* GetPaintCanvasForDraw(
+      const SkIRect& dirty_rect,
+      CanvasPerformanceMonitor::DrawType) final;
 
   scoped_refptr<StaticBitmapImage> GetImage() final;
 
-  bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final;
 
@@ -241,6 +241,10 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void SendContextLostEventIfNeeded() override;
 
+  bool IdentifiabilityEncounteredPartiallyDigestedImage() const override {
+    return identifiability_study_helper_.encountered_partially_digested_image();
+  }
+
  protected:
   // This reports CanvasColorParams to the CanvasRenderingContext interface.
   CanvasColorParams CanvasRenderingContextColorParams() const override {
@@ -273,7 +277,10 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   const Font& AccessFont();
 
-  void DrawFocusIfNeededInternal(const Path&, Element*);
+  void DrawFocusIfNeededInternal(
+      const Path&,
+      Element*,
+      IdentifiableToken path_hash = IdentifiableToken());
   bool FocusRingCallIsValid(const Path&, Element*);
   void DrawFocusRing(const Path&, Element*);
   void UpdateElementAccessibility(const Path&, Element*);
@@ -292,9 +299,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void SetIsInHiddenPage(bool) override;
   void SetIsBeingDisplayed(bool) override;
   void Stop() final;
-
-  bool IsTransformInvertible() const override;
-  TransformationMatrix GetTransform() const override;
 
   cc::Layer* CcLayer() const override;
   bool IsCanvas2DBufferValid() const override;

@@ -42,7 +42,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.BundleUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
@@ -318,7 +317,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private SnackbarManager mSnackbarManager;
 
     private UpdateNotificationController mUpdateNotificationController;
-    private StatusBarColorController mStatusBarColorController;
 
     // Timestamp in ms when initial layout inflation begins
     private long mInflateInitialLayoutBeginMs;
@@ -495,7 +493,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
                 new OneshotSupplierImpl<>(),
                 () -> null, mBrowserControlsManagerSupplier.get(), getWindowAndroid(),
-                new DummyJankTracker());
+                new DummyJankTracker(), getLifecycleDispatcher(), getLayoutManagerSupplier(),
+                 /* menuOrKeyboardActionController= */ this, this::getActivityThemeColor,
+                getModalDialogManagerSupplier(), /* appMenuBlocker= */ this,
+                this::supportsAppMenu, this::supportsFindInPage, mTabCreatorManagerSupplier,
+                getFullscreenManager(), mCompositorViewHolderSupplier,
+                getTabContentManagerSupplier(), getOverviewModeBehaviorSupplier(),
+                this::getSnackbarManager, getActivityType(), this::isInOverviewMode,
+                this::isWarmOnResume, /* appMenuDelegate= */ this,
+                /* statusBarColorProvider= */ this);
         // clang-format on
     }
 
@@ -516,9 +522,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         this::getSnackbarManager, mActivityTabProvider, getTabContentManager(),
                         getWindowAndroid(), mCompositorViewHolderSupplier, this,
                         this::getCurrentTabCreator, this::isCustomTab,
-                        getStatusBarColorController(), ScreenOrientationProvider.getInstance(),
-                        this::getNotificationManagerProxy, getTabContentManagerSupplier(),
-                        this::getActivityTabStartupMetricsTracker,
+                        mRootUiCoordinator.getStatusBarColorController(),
+                        ScreenOrientationProvider.getInstance(), this::getNotificationManagerProxy,
+                        getTabContentManagerSupplier(), this::getActivityTabStartupMetricsTracker,
                         /* CompositorViewHolder.Initializer */ this,
                         /* ChromeActivityNativeDelegate */ this, getModalDialogManagerSupplier(),
                         getBrowserControlsManager(), this::getSavedInstanceState,
@@ -532,9 +538,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         getLifecycleDispatcher(), this::getSnackbarManager, mActivityTabProvider,
                         getTabContentManager(), getWindowAndroid(), mCompositorViewHolderSupplier,
                         this, this::getCurrentTabCreator, this::isCustomTab,
-                        getStatusBarColorController(), ScreenOrientationProvider.getInstance(),
-                        this::getNotificationManagerProxy, getTabContentManagerSupplier(),
-                        this::getActivityTabStartupMetricsTracker,
+                        mRootUiCoordinator.getStatusBarColorController(),
+                        ScreenOrientationProvider.getInstance(), this::getNotificationManagerProxy,
+                        getTabContentManagerSupplier(), this::getActivityTabStartupMetricsTracker,
                         /* CompositorViewHolder.Initializer */ this,
                         /* ChromeActivityNativeDelegate */ this, getModalDialogManagerSupplier(),
                         getBrowserControlsManager(), this::getSavedInstanceState,
@@ -751,11 +757,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected void onInitialLayoutInflationComplete() {
         mInflateInitialLayoutEndMs = SystemClock.elapsedRealtime();
 
-        getStatusBarColorController().updateStatusBarColor();
+        mRootUiCoordinator.getStatusBarColorController().updateStatusBarColor();
 
         ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolderSupplier.set(
                 (CompositorViewHolder) findViewById(R.id.compositor_view_holder));
+
         // If the UI was inflated on a background thread, then the CompositorView may not have been
         // fully initialized yet as that may require the creation of a handler which is not allowed
         // outside the UI thread. This call should fully initialize the CompositorView if it hasn't
@@ -794,7 +801,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         mTabModelSelectorSupplier.set(tabModelSelector);
         mActivityTabProvider.setTabModelSelector(tabModelSelector);
-        getStatusBarColorController().setTabModelSelector(tabModelSelector);
+        mRootUiCoordinator.getStatusBarColorController().setTabModelSelector(tabModelSelector);
 
         Pair<? extends TabCreator, ? extends TabCreator> tabCreators = createTabCreators();
         mTabCreatorManagerSupplier.set(
@@ -1037,27 +1044,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return The {@link StatusBarColorController} that adjusts the status bar color.
-     */
-    public final StatusBarColorController getStatusBarColorController() {
-        // TODO(https://crbug.com/943371): Initialize in SystemUiCoordinator. This requires
-        // SystemUiCoordinator to be created before WebappActivty#onResume().
-        if (mStatusBarColorController == null) {
-            // Context is ready, but AsyncInitializationActivity#isTablet won't be ready until
-            // after #createComponent() is called. Using
-            // DeviceFormFactor.isNonMultiDisplayContextOnTablet(...) directly instead.
-            mStatusBarColorController = new StatusBarColorController(getWindow(),
-                    DeviceFormFactor.isNonMultiDisplayContextOnTablet(/* Context */ this),
-                    getResources(),
-                    /* StatusBarColorProvider */ this, getOverviewModeBehaviorSupplier(),
-                    getLifecycleDispatcher(), getActivityTabProvider(),
-                    mRootUiCoordinator.getTopUiThemeColorProvider());
-        }
-
-        return mStatusBarColorController;
-    }
-
-    /**
      * Returns theme color which should be used when:
      * - Web page does not provide a custom theme color.
      * AND
@@ -1148,7 +1134,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         ChromeSessionState.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
 
-        if (BuildInfo.isAtLeastS()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ensurePictureInPictureController();
         }
         if (mPictureInPictureController != null) {

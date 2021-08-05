@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
   MOCK_METHOD4(SetPolicy,
                void(::onc::ONCSource onc_source,
                     const std::string& userhash,
-                    const base::ListValue& network_configs_onc,
+                    const base::Value& network_configs_onc,
                     const base::DictionaryValue& global_network_config));
   MOCK_CONST_METHOD0(IsAnyPolicyApplicationRunning, bool());
   MOCK_CONST_METHOD3(
@@ -76,8 +76,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
   MOCK_CONST_METHOD2(CanRemoveNetworkConfig,
                      bool(const std::string& guid,
                           const std::string& profile_path));
-  MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToConnect, bool());
-  MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToConnectIfAvailable, bool());
+  MOCK_CONST_METHOD0(AllowOnlyPolicyWiFiToConnect, bool());
+  MOCK_CONST_METHOD0(AllowOnlyPolicyWiFiToConnectIfAvailable, bool());
   MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToAutoconnect, bool());
   MOCK_CONST_METHOD0(GetBlockedHexSSIDs, std::vector<std::string>());
 

@@ -1788,9 +1788,6 @@ extern const char kChromeShareLongScreenshotDescription[];
 extern const char kChromeShareScreenshotName[];
 extern const char kChromeShareScreenshotDescription[];
 
-extern const char kChromeSharingHubName[];
-extern const char kChromeSharingHubDescription[];
-
 extern const char kClipboardSuggestionContentHiddenName[];
 extern const char kClipboardSuggestionContentHiddenDescription[];
 
@@ -2146,9 +2143,6 @@ extern const char kEnableAccessibilityLiveCaptionDescription[];
 
 extern const char kEnableAccessibilityLiveCaptionSodaName[];
 extern const char kEnableAccessibilityLiveCaptionSodaDescription[];
-
-extern const char kCastMediaRouteProviderName[];
-extern const char kCastMediaRouteProviderDescription[];
 
 extern const char kCopyLinkToTextName[];
 extern const char kCopyLinkToTextDescription[];

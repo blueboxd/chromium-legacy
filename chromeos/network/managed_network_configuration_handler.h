@@ -19,7 +19,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }  // namespace base
 
 namespace chromeos {
@@ -127,7 +126,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void SetPolicy(
       ::onc::ONCSource onc_source,
       const std::string& userhash,
-      const base::ListValue& network_configs_onc,
+      const base::Value& network_configs_onc,
       const base::DictionaryValue& global_network_config) = 0;
 
   // Returns true if any policy application is currently running or pending.
@@ -170,12 +169,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
       const std::string& guid,
       const std::string& profile_path) const = 0;
 
-  // Return true if the AllowOnlyPolicyNetworksToConnect policy is enabled.
-  virtual bool AllowOnlyPolicyNetworksToConnect() const = 0;
+  // Return true if the AllowOnlyPolicyWiFiToConnect policy is enabled.
+  virtual bool AllowOnlyPolicyWiFiToConnect() const = 0;
 
-  // Return true if the AllowOnlyPolicyNetworksToConnectIfAvailable policy is
+  // Return true if the AllowOnlyPolicyWiFiToConnectIfAvailable policy is
   // enabled.
-  virtual bool AllowOnlyPolicyNetworksToConnectIfAvailable() const = 0;
+  virtual bool AllowOnlyPolicyWiFiToConnectIfAvailable() const = 0;
 
   // Return true if the AllowOnlyPolicyNetworksToAutoconnect policy is enabled.
   virtual bool AllowOnlyPolicyNetworksToAutoconnect() const = 0;

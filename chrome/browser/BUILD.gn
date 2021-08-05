@@ -18,6 +18,7 @@ import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/captive_portal/core/features.gni")
+import("//components/exo/buildflags.gni")
 import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
@@ -1870,7 +1871,7 @@ static_library("browser") {
     "//chrome/services/file_util/public/mojom",
     "//components/account_id",
     "//components/autofill/core/browser",
-    "//components/enterprise/common/proto:download_item_reroute_info_proto",
+    "//components/enterprise/common:download_item_reroute_info",
     "//components/nacl/common:buildflags",
     "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/page_info",
@@ -2183,6 +2184,7 @@ static_library("browser") {
     "//components/segmentation_platform/internal",
     "//components/segmentation_platform/public",
     "//components/send_tab_to_self",
+    "//components/services/app_service/public/cpp:crosapi_utils",
     "//components/services/app_service/public/cpp:intents",
     "//components/services/app_service/public/cpp:protocol_handling",
     "//components/services/app_service/public/cpp:types",
@@ -2364,6 +2366,7 @@ static_library("browser") {
     "//ui/webui/resources/cr_components/most_visited:mojom",
   ]
   if (is_chromeos_ash) {
+    testonly = enable_weston_test
     sources += [
       "apps/digital_goods/digital_goods_factory_impl.cc",
       "apps/digital_goods/digital_goods_factory_impl.h",
@@ -2987,6 +2990,8 @@ static_library("browser") {
       "download/android/available_offline_content_provider.h",
       "download/android/chrome_duplicate_download_infobar_delegate.cc",
       "download/android/chrome_duplicate_download_infobar_delegate.h",
+      "download/android/dangerous_download_dialog_bridge.cc",
+      "download/android/dangerous_download_dialog_bridge.h",
       "download/android/dangerous_download_infobar_delegate.cc",
       "download/android/dangerous_download_infobar_delegate.h",
       "download/android/download_controller.cc",
@@ -4012,6 +4017,11 @@ static_library("browser") {
       "search/background/ntp_background_service_observer.h",
       "search/background/ntp_backgrounds.cc",
       "search/background/ntp_backgrounds.h",
+      "search/background/ntp_custom_background_service.cc",
+      "search/background/ntp_custom_background_service.h",
+      "search/background/ntp_custom_background_service_factory.cc",
+      "search/background/ntp_custom_background_service_factory.h",
+      "search/background/ntp_custom_background_service_observer.h",
       "search/chrome_colors/chrome_colors_factory.cc",
       "search/chrome_colors/chrome_colors_factory.h",
       "search/chrome_colors/chrome_colors_service.cc",

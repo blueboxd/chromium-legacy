@@ -33802,8 +33802,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3711" label="BarcodeDetectorDetect"/>
   <int value="3712" label="FaceDetectorDetect"/>
   <int value="3713" label="TextDetectorDetect"/>
-  <int value="3714" label="LocalStorageFirstUsedBeforeFcp"/>
-  <int value="3715" label="LocalStorageFirstUsedAfterFcp"/>
+  <int value="3714" label="OBSOLETE_LocalStorageFirstUsedBeforeFcp"/>
+  <int value="3715" label="OBSOLETE_LocalStorageFirstUsedAfterFcp"/>
   <int value="3716" label="OBSOLETE_CSSPseudoHostCompoundList"/>
   <int value="3717" label="OBSOLETE_CSSPseudoHostContextCompoundList"/>
   <int value="3718" label="OBSOLETE_CSSPseudoHostDynamicSpecificity"/>
@@ -33885,8 +33885,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3790" label="WindowScreenChange"/>
   <int value="3791" label="XRWebGLDepthInformationTextureAttribute"/>
   <int value="3792" label="XRWebGLBindingGetDepthInformation"/>
-  <int value="3793" label="SessionStorageFirstUsedBeforeFcp"/>
-  <int value="3794" label="SessionStorageFirstUsedAfterFcp"/>
+  <int value="3793" label="OBSOLETE_SessionStorageFirstUsedBeforeFcp"/>
+  <int value="3794" label="OBSOLETE_SessionStorageFirstUsedAfterFcp"/>
   <int value="3795" label="GravitySensorConstructor"/>
   <int value="3796" label="ElementInternalsStates"/>
   <int value="3797" label="WebPImage"/>
@@ -45184,7 +45184,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LaunchMode">
-  <int value="1" label="LM_AS_WEBAPP_WINDOW">
+  <int value="1" label="(DEPRECATED) LM_AS_WEBAPP_WINDOW">
     Launched as an installed web application in a standalone window
   </int>
   <int value="2" label="LM_WITH_URLS">Launched with urls in the cmd line</int>
@@ -45248,6 +45248,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
   <int value="22" label="LM_UNKNOWN_WEBAPP">
     The requested web application was not installed
+  </int>
+  <int value="23" label="LM_AS_WEBAPP_WINDOW_BY_URL">
+    Launched installed web app in standalone window from command line, using
+    --app flag.
+  </int>
+  <int value="24" label="LM_AS_WEBAPP_WINDOW_BY_APP_ID">
+    Launched installed web app in standalone window from command line, using
+    --app-id flag.
+  </int>
+  <int value="25" label="LM_AS_WEBAPP_WINDOW_OTHER">
+    Launched installed web app in standalone window by any method other than
+    command line or a platform shortcut.
   </int>
 </enum>
 
@@ -68847,6 +68859,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="202" label="QUIC_TLS_CERTIFICATE_REQUIRED"/>
   <int value="203" label="QUIC_CONNECTION_ID_LIMIT_ERROR"/>
   <int value="204" label="QUIC_TOO_MANY_CONNECTION_ID_WAITING_TO_RETIRE"/>
+  <int value="205" label="QUIC_HTTP_RECEIVE_SERVER_PUSH"/>
 </enum>
 
 <enum name="QuicFailToSerializePacketLocation">
@@ -69549,6 +69562,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="RefcountOperation">
   <int value="0" label="Decrement"/>
   <int value="1" label="Increment"/>
+</enum>
+
+<enum name="RefineActionUsage">
+  <int value="0" label="Not used"/>
+  <int value="1" label="Used on Search Suggestion in zero-prefix context"/>
+  <int value="2" label="Used on Search Suggestion in non-zero-prefix context"/>
+  <int value="3" label="Used on Search Suggestion in both contexts"/>
 </enum>
 
 <enum name="RefreshTrigger">
@@ -81708,7 +81728,7 @@ Full version information for the fingerprint enum values:
   <int value="28" label="kSettingsResetPromptLastTriggeredForHomepage"/>
   <int value="29" label="kMediaStorageIdSalt"/>
   <int value="30" label="kModuleBlocklistCacheMD5Digest"/>
-  <int value="32" label="kMediaCdmOrigin"/>
+  <int value="32" label="kMediaCdmOriginData"/>
 </enum>
 
 <enum name="TranslateAssistContentResult">

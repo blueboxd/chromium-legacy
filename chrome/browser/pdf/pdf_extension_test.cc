@@ -1239,8 +1239,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, EnsureSameOriginRepliesAllowed) {
 }
 
 // TODO(crbug.com/1004425): Should be allowed?
-IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithoutUnseasonedOverride,
-                       EnsureOpaqueOriginRepliesBlocked) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, EnsureOpaqueOriginRepliesBlocked) {
   TestGetSelectedTextReply(
       embedded_test_server()->GetURL("/pdf/data_url_rectangles.html"), false);
 }
@@ -2242,14 +2241,17 @@ class PDFExtensionClipboardTest
   void DoActionAndCheckClipboard(base::OnceClosure action,
                                  ui::ClipboardBuffer clipboard_buffer,
                                  const std::string& expected) {
+    ASSERT_FALSE(clipboard_quit_closure_);
+
     ui::ClipboardMonitor::GetInstance()->AddObserver(this);
-    DCHECK(!clipboard_changed_);
-    DCHECK(!clipboard_quit_closure_);
+    EXPECT_FALSE(clipboard_changed_);
+    clipboard_changed_ = false;
 
     base::RunLoop run_loop;
     clipboard_quit_closure_ = run_loop.QuitClosure();
     std::move(action).Run();
     run_loop.Run();
+    EXPECT_FALSE(clipboard_quit_closure_);
 
     EXPECT_TRUE(clipboard_changed_);
     clipboard_changed_ = false;
@@ -3407,7 +3409,7 @@ class PDFExtensionPrerenderTest : public PDFExtensionTest {
   }
 
   void SetUpOnMainThread() override {
-    prerender_helper_->SetUpOnMainThread(embedded_test_server());
+    prerender_helper_->SetUp(embedded_test_server());
     PDFExtensionTest::SetUpOnMainThread();
   }
 

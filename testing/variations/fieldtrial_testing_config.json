@@ -175,13 +175,16 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20210713",
+                    "name": "EnabledWithInfobars_20210803",
                     "params": {
                         "max-number": "10",
                         "site-id": "78FakAwAN0tK1KeaPYj0PoiAHrrQ"
                     },
                     "enable_features": [
                         "ChromeSurveyNextAndroid"
+                    ],
+                    "disable_features": [
+                        "MessagesForAndroidChromeSurvey"
                     ]
                 }
             ]
@@ -5352,6 +5355,22 @@
             ]
         }
     ],
+    "OfflineMeasurementsBackgroundTask": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20210728",
+                    "enable_features": [
+                        "OfflineMeasurementsBackgroundTask"
+                    ],
+                    "min_os_version": "6.0.0"
+                }
+            ]
+        }
+    ],
     "OfflinePageServiceTurndown": [
         {
             "platforms": [
@@ -6353,8 +6372,7 @@
     "PowerScheduler2": [
         {
             "platforms": [
-                "android",
-                "android_webview"
+                "android"
             ],
             "experiments": [
                 {
@@ -9571,6 +9589,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebViewMeasureScreenCoverage"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebViewPowerScheduler2": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_ThrottleIdleAndNopAnimation",
+                    "params": {
+                        "include_charging": "false",
+                        "min_cputime_ratio": "0.5",
+                        "min_time_in_mode_ms": "500",
+                        "policy": "kThrottleIdleAndNopAnimation",
+                        "process_types": "browser,renderer"
+                    },
+                    "enable_features": [
+                        "PowerScheduler"
                     ]
                 }
             ]

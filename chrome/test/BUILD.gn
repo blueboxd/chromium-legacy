@@ -25,6 +25,7 @@ import("//chrome/test/include_js_tests.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//components/captive_portal/core/features.gni")
+import("//components/exo/buildflags.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
@@ -339,6 +340,10 @@ static_library("test_support") {
     data_deps += [
       "//chrome/test:test_ash_chrome(//build/toolchain/linux:ash_clang_x64)",
     ]
+  }
+
+  if (is_chromeos_ash && also_build_lacros_chrome) {
+    data_deps += [ "//chrome:chrome(//build/toolchain/linux:lacros_clang_x64)" ]
   }
 
   if (is_android) {
@@ -3141,12 +3146,12 @@ if (!is_android) {
         "../browser/ash/policy/handlers/device_system_wide_tracing_enabled_browsertest.cc",
         "../browser/ash/policy/handlers/minimum_version_policy_handler_browsertest.cc",
         "../browser/ash/policy/handlers/power_policy_browsertest.cc",
-        "../browser/ash/policy/handlers/restore_on_startup_browsertest_chromeos.cc",
+        "../browser/ash/policy/handlers/restore_on_startup_browsertest.cc",
         "../browser/ash/policy/handlers/site_isolation_flag_handling_browsertest.cc",
         "../browser/ash/policy/handlers/variations_service_policy_browsertest.cc",
         "../browser/ash/policy/login/blocking_login_browsertest.cc",
         "../browser/ash/policy/login/device_login_screen_policy_browsertest.cc",
-        "../browser/ash/policy/login/force_maximize_on_first_run_chromeos_browsertest.cc",
+        "../browser/ash/policy/login/force_maximize_on_first_run_browsertest.cc",
         "../browser/ash/policy/login/login_policy_test_base.cc",
         "../browser/ash/policy/login/login_policy_test_base.h",
         "../browser/ash/policy/login/login_screen_accessibility_policy_browsertest.cc",
@@ -5305,6 +5310,16 @@ test("unit_tests") {
     ]
   }
 
+  # TODO(crbug.com/931218): Ninja cannot handle certain characters appearing
+  # in filenames in depfiles, so temporarily exclude affected files.
+  if (is_fuchsia) {
+    excluded_files = [
+      "chrome/test/data/ie@cookie[1].txt",
+      "chrome/test/data/android/download/[large]wallpaper.dm",
+      "chrome/test/data/perf/frame_rate/content/googleblog/images/bse%e2%80%99s+solar+energy+development+center..jpg",
+    ]
+  }
+
   if (is_win || is_chromeos_ash || is_mac) {
     deps += [ "//chrome/browser/webshare:unit_tests" ]
   }
@@ -5618,6 +5633,7 @@ test("unit_tests") {
       "../browser/profile_resetter/reset_report_uploader_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_unittest.cc",
       "../browser/search/background/ntp_background_service_unittest.cc",
+      "../browser/search/background/ntp_custom_background_service_unittest.cc",
       "../browser/search/chrome_colors/chrome_colors_service_unittest.cc",
       "../browser/search/instant_service_unittest.cc",
       "../browser/search/instant_unittest_base.cc",
@@ -6222,6 +6238,7 @@ test("unit_tests") {
       "../browser/ui/ash/assistant/conversation_starters_parser_unittest.cc",
       "../browser/ui/ash/assistant/device_actions_unittest.cc",
       "../browser/ui/ash/assistant/search_and_assistant_enabled_checker_unittest.cc",
+      "../browser/ui/ash/calendar/calendar_keyed_service_unittest.cc",
       "../browser/ui/ash/holding_space/holding_space_keyed_service_unittest.cc",
       "../browser/ui/ash/ime_controller_client_impl_unittest.cc",
       "../browser/ui/ash/in_session_auth_dialog_client_unittest.cc",
@@ -8559,14 +8576,16 @@ source_set("sync_integration_test_support") {
   }
   if (is_chromeos_ash) {
     sources += [
-      "../browser/sync/test/integration/os_sync_test.cc",
-      "../browser/sync/test/integration/os_sync_test.h",
       "../browser/sync/test/integration/printers_helper.cc",
       "../browser/sync/test/integration/printers_helper.h",
       "../browser/sync/test/integration/sync_app_list_helper.cc",
       "../browser/sync/test/integration/sync_app_list_helper.h",
       "../browser/sync/test/integration/sync_arc_package_helper.cc",
       "../browser/sync/test/integration/sync_arc_package_helper.h",
+      "../browser/sync/test/integration/sync_consent_optional_sync_test.cc",
+      "../browser/sync/test/integration/sync_consent_optional_sync_test.h",
+      "../browser/sync/test/integration/sync_settings_categorization_sync_test.cc",
+      "../browser/sync/test/integration/sync_settings_categorization_sync_test.h",
       "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.h",
     ]
@@ -8753,8 +8772,11 @@ if (!is_android) {
       deps += [ "//ui/views" ]
     }
 
-    # This target should not require the Chrome executable to run.
-    assert_no_deps = [ "//chrome" ]
+    # This target should not require the Chrome executable to run
+    # except it wants to build lacros as a secondary toolchain.
+    if (!(is_chromeos_ash && also_build_lacros_chrome)) {
+      assert_no_deps = [ "//chrome" ]
+    }
   }
 
   # Executable to measure time to load libraries.
@@ -9401,7 +9423,9 @@ if (is_chromeos_ash) {
       "base/chromeos/test_chrome_main.cc",
     ]
     deps = [
+      "//ash:test_support",
       "//chromeos/services/machine_learning/public/cpp:stub",
+      "//ui/base:test_support",
 
       # On Linux, link the dependencies (libraries) that make up actual
       # Chromium functionality directly into the executable.
@@ -9446,13 +9470,20 @@ if (is_chromeos_ash) {
 }
 
 if (is_linux) {
-  group("variations_smoke_tests") {
-    testonly = true
+  script_test("variations_smoke_tests") {
+    run_under_python2 = true
+
+    script = "//testing/xvfb.py"
+    args = [ "@WrappedPath(" +
+             rebase_path("//testing/scripts/run_variations_smoke_tests.py",
+                         root_build_dir) + ")" ]
+
     data_deps = [
       "//chrome",
       "//chrome/test/chromedriver",
       "//testing:test_scripts_shared",
     ]
+
     data = [
       "//testing/scripts/run_variations_smoke_tests.py",
       "//testing/scripts/variations_smoke_test_data/",

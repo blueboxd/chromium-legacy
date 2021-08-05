@@ -3115,10 +3115,6 @@ const char kChromeShareScreenshotName[] = "Chrome Share Screenshots";
 const char kChromeShareScreenshotDescription[] =
     "Enables UI to edit and share screenshots";
 
-const char kChromeSharingHubName[] = "Chrome Sharing Hub";
-const char kChromeSharingHubDescription[] =
-    "Enables the Chrome Sharing Hub/custom share sheet for Android.";
-
 const char kClipboardSuggestionContentHiddenName[] =
     "Clipboard suggestion content hidden";
 const char kClipboardSuggestionContentHiddenDescription[] =
@@ -3766,11 +3762,6 @@ const char kEnableAccessibilityLiveCaptionSodaDescription[] =
     "If Live Caption (chrome://flags/#enable-accessibility-live-captions) is "
     "enabled, whether or not to use SODA for live captions instead of the web "
     "api. Turn on the feature in chrome://settings/accessibility.";
-
-const char kCastMediaRouteProviderName[] = "Cast Media Route Provider";
-const char kCastMediaRouteProviderDescription[] =
-    "Enables the native Cast Media Route Provider implementation to be used "
-    "instead of the implementation in the Media Router component extension.";
 
 const char kCopyLinkToTextName[] = "Copy Link To Text";
 const char kCopyLinkToTextDescription[] =

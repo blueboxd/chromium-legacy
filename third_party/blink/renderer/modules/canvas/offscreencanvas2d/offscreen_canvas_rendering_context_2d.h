@@ -118,11 +118,10 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   cc::PaintCanvas* GetOrCreatePaintCanvas() final;
   cc::PaintCanvas* GetPaintCanvas() const final;
+  cc::PaintCanvas* GetPaintCanvasForDraw(
+      const SkIRect& dirty_rect,
+      CanvasPerformanceMonitor::DrawType) final;
 
-  void DidDraw2D(const SkIRect& dirty_rect,
-                 CanvasPerformanceMonitor::DrawType) final;
-
-  bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final;
 
@@ -153,6 +152,10 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool IdentifiabilityEncounteredSensitiveOps() const override {
     return identifiability_study_helper_.encountered_sensitive_ops();
+  }
+
+  bool IdentifiabilityEncounteredPartiallyDigestedImage() const override {
+    return identifiability_study_helper_.encountered_partially_digested_image();
   }
 
  protected:

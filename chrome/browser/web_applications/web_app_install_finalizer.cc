@@ -388,6 +388,11 @@ void WebAppInstallFinalizer::Shutdown() {
   started_ = false;
 }
 
+void WebAppInstallFinalizer::SetRemoveSourceCallbackForTesting(
+    base::RepeatingCallback<void(const AppId&)> callback) {
+  install_source_removed_callback_for_testing_ = std::move(callback);
+}
+
 void WebAppInstallFinalizer::UninstallWebAppInternal(
     const AppId& app_id,
     webapps::WebappUninstallSource uninstall_source,
@@ -488,6 +493,8 @@ void WebAppInstallFinalizer::UninstallExternalWebAppOrRemoveSource(
     ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
     WebApp* app_to_update = update->UpdateApp(app_id);
     app_to_update->RemoveSource(source);
+    if (install_source_removed_callback_for_testing_)
+      install_source_removed_callback_for_testing_.Run(app_id);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
@@ -505,7 +512,7 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
 
   icon_manager_->WriteData(
       std::move(app_id), web_app_info.icon_bitmaps,
-      web_app_info.shortcuts_menu_icon_bitmaps,
+      web_app_info.shortcuts_menu_icon_bitmaps, web_app_info.other_icon_bitmaps,
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(commit_callback),
                      std::move(web_app)));

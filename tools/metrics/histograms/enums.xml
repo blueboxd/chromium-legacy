@@ -11046,6 +11046,7 @@ histogram as enum -->
   <int value="38" label="kAccountPasswordsSynced"/>
   <int value="39" label="kAccountCompromisedCredentials"/>
   <int value="40" label="kFaviconCacheExpiration"/>
+  <int value="41" label="kSecurePaymentConfirmationInstruments"/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">
@@ -28847,6 +28848,7 @@ Called by update_extension_histograms.py.-->
   <int value="1566" label="ACCESSIBILITY_PRIVATE_MAGNIFIERCENTERONPOINT"/>
   <int value="1567" label="STORAGE_SETACCESSLEVEL"/>
   <int value="1568" label="OS_TELEMETRY_GETOEMDATA"/>
+  <int value="1569" label="SCRIPTING_UNREGISTERCONTENTSCRIPTS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -47414,6 +47416,7 @@ from previous Chrome versions.
   <int value="-1456789591" label="MediaFoundationVideoCapture:enabled"/>
   <int value="-1456627355" label="EnableEmojiContextMenu:disabled"/>
   <int value="-1456538122" label="SCTAuditing:enabled"/>
+  <int value="-1456449932" label="PartitionedCookies:enabled"/>
   <int value="-1456004000" label="VrShell:disabled"/>
   <int value="-1455852875" label="WebAuthentication:disabled"/>
   <int value="-1455559065"
@@ -49314,6 +49317,7 @@ from previous Chrome versions.
       label="ChromeHomePersonalizedOmniboxSuggestions:enabled"/>
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
   <int value="87886288" label="DiagnosticsApp:enabled"/>
+  <int value="88249612" label="CalendarView:enabled"/>
   <int value="88437020" label="FeaturePolicy:enabled"/>
   <int value="89357752" label="PdfXfaSupport:enabled"/>
   <int value="89758831" label="FontAccessChooser:enabled"/>
@@ -50235,6 +50239,7 @@ from previous Chrome versions.
   <int value="835726069" label="NtpWebUI:disabled"/>
   <int value="836406476" label="EnableTouchableAppContextMenu:enabled"/>
   <int value="837350465" label="SystemProxyForSystemServices:enabled"/>
+  <int value="838300788" label="CalendarView:disabled"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
   <int value="839230937" label="AutofillEnableCardNicknameUpstream:disabled"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
@@ -51122,6 +51127,7 @@ from previous Chrome versions.
   <int value="1553422694" label="EnablePalmOnMaxTouchMajor:enabled"/>
   <int value="1553777815" label="enable-search-prefetch-service"/>
   <int value="1556554961" label="DriveFsBidirectionalNativeMessaging:enabled"/>
+  <int value="1557680135" label="PartitionedCookies:disabled"/>
   <int value="1558410842" label="FilesZipNoNaCl:disabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
@@ -64399,6 +64405,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PeerConnectionOfferExtmapAllowMixed">
+  <obsolete>
+    Removed as of 2021-07-30.
+  </obsolete>
   <int value="0" label="Default"/>
   <int value="1" label="Enabled"/>
   <int value="2" label="Disabled"/>
@@ -66320,6 +66329,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="kStop"/>
   <int value="25" label="kSslCertificateError"/>
   <int value="26" label="kLoginAuthRequested"/>
+  <int value="27" label="kUaChangeRequiresReload"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">

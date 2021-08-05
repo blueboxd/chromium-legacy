@@ -341,6 +341,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableIsolatedStorage;
 
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLaunchHandler;
+
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLinkCapturing;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableManifestId;
@@ -449,6 +451,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kDesktopPWAsSubApps;
 // When enabled, we report all JavaScript frameworks via a manual traversal to
 // detect the properties and attributes required.
 BLINK_COMMON_EXPORT extern const base::Feature kReportAllJavascriptFrameworks;
+
+// Suppresses console errors for CORS problems which report an associated
+// inspector issue anyway.
+BLINK_COMMON_EXPORT extern const base::Feature kCORSErrorsIssueOnly;
 
 }  // namespace features
 }  // namespace blink

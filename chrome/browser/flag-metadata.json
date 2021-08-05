@@ -542,6 +542,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "calendar-view",
+    "owners": ["jiamingc"],
+    "expiry_milestone" : 103
+  },
+  {
     "name": "camera-system-web-app",
     "owners": [ "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 92
@@ -4476,6 +4481,11 @@
     "name": "paint-preview-startup",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "partitioned-cookies",
+    "owners": [ "dylancutler" ],
+    "expiry_milestone": 100
   },
   {
     "name": "password-change-in-settings",

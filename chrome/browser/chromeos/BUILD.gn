@@ -440,6 +440,7 @@ source_set("chromeos") {
     "//printing",
     "//printing/mojom",
     "//remoting/host/chromeos:remoting_service",
+    "//remoting/protocol:errors",
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/cpp/usb",
@@ -2272,8 +2273,11 @@ source_set("chromeos") {
     "../ash/policy/off_hours/off_hours_proto_parser.h",
     "../ash/policy/remote_commands/affiliated_remote_commands_invalidator.cc",
     "../ash/policy/remote_commands/affiliated_remote_commands_invalidator.h",
+    "../ash/policy/remote_commands/crd_connection_observer.h",
     "../ash/policy/remote_commands/crd_host_delegate.cc",
     "../ash/policy/remote_commands/crd_host_delegate.h",
+    "../ash/policy/remote_commands/crd_lockout_strategy.cc",
+    "../ash/policy/remote_commands/crd_lockout_strategy.h",
     "../ash/policy/remote_commands/crd_logging.h",
     "../ash/policy/remote_commands/device_command_fetch_status_job.cc",
     "../ash/policy/remote_commands/device_command_fetch_status_job.h",
@@ -3285,11 +3289,6 @@ source_set("chromeos") {
       "printing/cups_proxy_service_manager.h",
       "printing/cups_proxy_service_manager_factory.cc",
       "printing/cups_proxy_service_manager_factory.h",
-      "printing/cups_wrapper.cc",
-      "printing/cups_wrapper.h",
-      "printing/cups_wrapper_impl.cc",
-      "printing/printer_error_codes.cc",
-      "printing/printer_error_codes.h",
       "printing/printer_info_cups.cc",
     ]
   } else {
@@ -4056,6 +4055,7 @@ source_set("unit_tests") {
     "../ash/policy/off_hours/off_hours_policy_applier_unittest.cc",
     "../ash/policy/off_hours/off_hours_proto_parser_unittest.cc",
     "../ash/policy/remote_commands/crd_host_delegate_unittest.cc",
+    "../ash/policy/remote_commands/crd_lockout_strategy_unittest.cc",
     "../ash/policy/remote_commands/device_command_get_available_routines_job_unittest.cc",
     "../ash/policy/remote_commands/device_command_get_routine_update_job_unittest.cc",
     "../ash/policy/remote_commands/device_command_remote_powerwash_job_unittest.cc",
@@ -4189,9 +4189,6 @@ source_set("unit_tests") {
     "../download/notification/download_item_notification_unittest.cc",
     "../extensions/api/enterprise_platform_keys/enterprise_platform_keys_api_unittest.cc",
     "../extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc",
-    "../extensions/api/printing/fake_print_job_controller.cc",
-    "../extensions/api/printing/fake_print_job_controller.h",
-    "../extensions/api/printing/printer_capabilities_provider_unittest.cc",
     "../extensions/updater/local_extension_cache_unittest.cc",
     "../memory/memory_kills_monitor_unittest.cc",
     "../metrics/chromeos_metrics_provider_unittest.cc",
@@ -4372,13 +4369,9 @@ source_set("unit_tests") {
   ]
   if (use_cups) {
     sources += [
-      "../extensions/api/printing/printing_api_handler_unittest.cc",
-      "../extensions/api/printing/printing_api_utils_unittest.cc",
       "extensions/printing_metrics/print_job_finished_event_dispatcher_unittest.cc",
       "extensions/printing_metrics/print_job_info_idl_conversions_unittest.cc",
       "extensions/printing_metrics/printing_metrics_api_unittest.cc",
-      "printing/test_cups_wrapper.cc",
-      "printing/test_cups_wrapper.h",
     ]
   }
 

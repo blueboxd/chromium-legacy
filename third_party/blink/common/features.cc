@@ -849,6 +849,11 @@ const base::Feature kLogUnexpectedIPCPostedToBackForwardCachedDocuments{
 const base::Feature kWebAppEnableIsolatedStorage{
     "WebAppEnableIsolatedStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the "launch_handler" manifest field for web apps.
+// Explainer: https://github.com/WICG/sw-launch/blob/main/launch_handler.md
+const base::Feature kWebAppEnableLaunchHandler{
+    "WebAppEnableLaunchHandler", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables declarative link capturing in web apps.
 // Explainer:
 // https://github.com/WICG/sw-launch/blob/master/declarative_link_capturing.md
@@ -1049,6 +1054,11 @@ const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
 // the properties and attributes required.
 const base::Feature kReportAllJavascriptFrameworks{
     "ReportAllJavaScriptFrameworks", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Suppresses console errors for CORS problems which report an associated
+// inspector issue anyway.
+const base::Feature kCORSErrorsIssueOnly{"CORSErrorsIssueOnly",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

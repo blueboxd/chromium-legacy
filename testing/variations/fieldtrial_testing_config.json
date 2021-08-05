@@ -5194,6 +5194,25 @@
             ]
         }
     ],
+    "MuteNotificationSnoozeAction": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MuteNotificationSnoozeAction"
+                    ]
+                }
+            ]
+        }
+    ],
     "MutingCompromisedCredentials": [
         {
             "platforms": [
@@ -8447,24 +8466,6 @@
             ]
         }
     ],
-    "UseNotificationCompatBuilder": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20210625",
-                    "enable_features": [
-                        "UseNotificationCompatBuilder"
-                    ],
-                    "disable_features": [
-                        "AllowRemoteContextForNotifications"
-                    ]
-                }
-            ]
-        }
-    ],
     "UseOzonePlatform": [
         {
             "platforms": [
@@ -8695,6 +8696,12 @@
                 "windows"
             ],
             "experiments": [
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "V8ScriptAblation"
+                    ]
+                },
                 {
                     "name": "DelayOnce50ms",
                     "params": {

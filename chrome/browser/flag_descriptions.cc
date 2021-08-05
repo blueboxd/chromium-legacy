@@ -2310,6 +2310,10 @@ const char kSamePartyCookiesConsideredFirstPartyDescription[] =
     "If enabled, SameParty cookies will not be blocked even if third-party "
     "cookies are blocked.";
 
+const char kPartitionedCookiesName[] = "Partitioned cookies";
+const char kPartitionedCookiesDescription[] =
+    "Controls if the Partitioned cookie attribute is enabled.";
+
 const char kSchemefulSameSiteName[] = "Schemeful Same-Site";
 const char kSchemefulSameSiteDescription[] =
     "Modify the same-site computation such that origins with the same "
@@ -4238,6 +4242,12 @@ const char kButtonARCNetworkDiagnosticsName[] = "ARC Network Tests Button";
 const char kButtonARCNetworkDiagnosticsDescription[] =
     "Enables the display of a button on the ARC Provisioning failure dialog "
     "that opens the connectivity section of the diagnostics app.";
+
+const char kCalendarViewName[] =
+    "Productivity experiment: Monthly Calendar View";
+const char kCalendarViewDescription[] =
+    "Show Monthly Calendar View with Google Calendar events to increase "
+    "productivity by helping users view their schedules more quickly.";
 
 const char kPreferConstantFrameRateName[] = "Prefer Constant Frame Rate";
 const char kPreferConstantFrameRateDescription[] =

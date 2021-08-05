@@ -10,8 +10,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -29,7 +29,7 @@ namespace web_app {
 
 // Forward declarations of generalized interfaces.
 class AppRegistryController;
-class AppIconManager;
+class WebAppIconManager;
 class PreinstalledWebAppManager;
 class InstallFinalizer;
 class ManifestUpdateManager;
@@ -114,7 +114,7 @@ class WebAppProvider : public KeyedService {
   WebAppAudioFocusIdMap& audio_focus_id_map();
 
   // Implements fetching of app icons.
-  AppIconManager& icon_manager();
+  WebAppIconManager& icon_manager();
 
   SystemWebAppManager& system_web_app_manager();
 
@@ -162,7 +162,7 @@ class WebAppProvider : public KeyedService {
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<AppRegistryController> registry_controller_;
   std::unique_ptr<PreinstalledWebAppManager> preinstalled_web_app_manager_;
-  std::unique_ptr<AppIconManager> icon_manager_;
+  std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<ManifestUpdateManager> manifest_update_manager_;
   std::unique_ptr<ExternallyManagedAppManager> externally_managed_app_manager_;

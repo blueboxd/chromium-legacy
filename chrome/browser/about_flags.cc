@@ -3097,6 +3097,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kButtonARCNetworkDiagnosticsName,
      flag_descriptions::kButtonARCNetworkDiagnosticsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kButtonARCNetworkDiagnostics)},
+    {"calendar-view", flag_descriptions::kCalendarViewName,
+     flag_descriptions::kCalendarViewDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCalendarView)},
     {"cellular-allow-per-network-roaming",
      flag_descriptions::kCellularAllowPerNetworkRoamingName,
      flag_descriptions::kCellularAllowPerNetworkRoamingDescription, kOsCrOS,
@@ -7657,6 +7660,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSamePartyCookiesConsideredFirstPartyDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(net::features::kSamePartyCookiesConsideredFirstParty)},
+
+    {"partitioned-cookies", flag_descriptions::kPartitionedCookiesName,
+     flag_descriptions::kPartitionedCookiesDescription, kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(net::features::kPartitionedCookies)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {kBorealisDiskManagementInternalName,

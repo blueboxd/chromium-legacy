@@ -13,6 +13,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/page_info/chrome_accuracy_tip_ui.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -21,9 +23,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/accuracy_tips/accuracy_service.h"
-#include "components/accuracy_tips/accuracy_tip_ui.h"
+#include "components/accuracy_tips/accuracy_tip_interaction.h"
 #include "components/accuracy_tips/features.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/site_engagement/content/site_engagement_score.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/events/base_event_utils.h"
@@ -33,8 +37,8 @@
 #include "ui/views/test/widget_test_api.h"
 
 namespace {
+using accuracy_tips::AccuracyTipInteraction;
 using accuracy_tips::AccuracyTipStatus;
-using accuracy_tips::AccuracyTipUI;
 
 bool IsUIShowing() {
   return PageInfoBubbleViewBase::BUBBLE_ACCURACY_TIP ==
@@ -90,6 +94,22 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, ShowOnBadUrl) {
       "Privacy.AccuracyTip.PageStatus", AccuracyTipStatus::kShowAccuracyTip, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest,
+                       DontShowOnBadUrlWithEngagement) {
+  auto* engagement_service =
+      site_engagement::SiteEngagementServiceFactory::GetForProfile(
+          browser()->profile());
+  engagement_service->AddPointsForTesting(
+      GetUrl("badurl.com"),
+      site_engagement::SiteEngagementScore::GetMediumEngagementBoundary());
+
+  ui_test_utils::NavigateToURL(browser(), GetUrl("badurl.com"));
+  EXPECT_FALSE(IsUIShowing());
+
+  histogram_tester()->ExpectUniqueSample(
+      "Privacy.AccuracyTip.PageStatus", AccuracyTipStatus::kHighEnagagement, 1);
+}
+
 IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, PressIgnoreButton) {
   ui_test_utils::NavigateToURL(browser(), GetUrl("badurl.com"));
   EXPECT_TRUE(IsUIShowing());
@@ -102,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, PressIgnoreButton) {
 
   histogram_tester()->ExpectUniqueSample(
       "Privacy.AccuracyTip.AccuracyTipInteraction",
-      AccuracyTipUI::Interaction::kClosed, 1);
+      AccuracyTipInteraction::kClosed, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, PressEsc) {
@@ -119,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, PressEsc) {
 
   histogram_tester()->ExpectUniqueSample(
       "Privacy.AccuracyTip.AccuracyTipInteraction",
-      AccuracyTipUI::Interaction::kClosed, 1);
+      AccuracyTipInteraction::kClosed, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, OptOut) {
@@ -139,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, OptOut) {
 
   histogram_tester()->ExpectUniqueSample(
       "Privacy.AccuracyTip.AccuracyTipInteraction",
-      AccuracyTipUI::Interaction::kOptOut, 1);
+      AccuracyTipInteraction::kOptOut, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, DisappearOnNavigate) {
@@ -155,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, DisappearOnNavigate) {
 
   histogram_tester()->ExpectUniqueSample(
       "Privacy.AccuracyTip.AccuracyTipInteraction",
-      AccuracyTipUI::Interaction::kNoAction, 1);
+      AccuracyTipInteraction::kNoAction, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, OpenLearnMoreLink) {
@@ -174,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, OpenLearnMoreLink) {
 
   histogram_tester()->ExpectUniqueSample(
       "Privacy.AccuracyTip.AccuracyTipInteraction",
-      AccuracyTipUI::Interaction::kLearnMore, 1);
+      AccuracyTipInteraction::kLearnMore, 1);
 }
 
 // Render test for accuracy tip ui.

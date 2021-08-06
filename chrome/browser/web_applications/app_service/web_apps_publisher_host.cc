@@ -31,20 +31,17 @@ namespace web_app {
 
 WebAppsPublisherHost::WebAppsPublisherHost(Profile* profile)
     : profile_(profile),
-      provider_(WebAppProvider::Get(profile)),
+      provider_(WebAppProvider::GetForWebApps(profile)),
       publisher_helper_(profile,
                         apps::mojom::AppType::kWeb,
                         this,
-                        /*observe_media_requests=*/true) {}
+                        /*observe_media_requests=*/true) {
+  DCHECK(provider_);
+}
 
 WebAppsPublisherHost::~WebAppsPublisherHost() = default;
 
 void WebAppsPublisherHost::Init() {
-  // Allow for web app migration tests.
-  if (!provider_->registrar().AsWebAppRegistrar()) {
-    return;
-  }
-
   if (!remote_publisher_) {
     auto* service = chromeos::LacrosService::Get();
     if (!service) {
@@ -73,7 +70,7 @@ void WebAppsPublisherHost::Shutdown() {
 }
 
 WebAppRegistrar& WebAppsPublisherHost::registrar() const {
-  return *provider_->registrar().AsWebAppRegistrar();
+  return provider_->registrar();
 }
 
 void WebAppsPublisherHost::SetPublisherForTesting(

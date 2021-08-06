@@ -5,13 +5,14 @@
 #ifndef COMPONENTS_ACCURACY_TIPS_ACCURACY_SERVICE_H_
 #define COMPONENTS_ACCURACY_TIPS_ACCURACY_SERVICE_H_
 
+#include <memory>
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "components/accuracy_tips/accuracy_tip_interaction.h"
 #include "components/accuracy_tips/accuracy_tip_status.h"
-#include "components/accuracy_tips/accuracy_tip_ui.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -43,8 +44,28 @@ class AccuracyService : public KeyedService {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // The site_engagement_service is currently not available on iOS
+  // (crbug.com/775390), so it is supplied through a delegate.
+  class Delegate {
+   public:
+    // Returns true if the engagement of this site is too high to show an
+    // accuracy tip.
+    virtual bool IsEngagementHigh(const GURL& url) = 0;
+
+    // Shows AccuracyTip UI using the specified information if it is not already
+    // showing. |close_callback| will be called when
+    // the dialog is closed; the argument indicates the action that the user
+    // took (if any) to close the dialog.
+    virtual void ShowAccuracyTip(
+        content::WebContents* web_contents,
+        AccuracyTipStatus type,
+        base::OnceCallback<void(AccuracyTipInteraction)> close_callback) = 0;
+
+    virtual ~Delegate() = default;
+  };
+
   AccuracyService(
-      std::unique_ptr<AccuracyTipUI> ui,
+      std::unique_ptr<Delegate> delegate,
       PrefService* pref_service,
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> sb_database,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
@@ -71,14 +92,17 @@ class AccuracyService : public KeyedService {
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
  private:
-  void OnAccuracyTipClosed(base::TimeTicks time_opened,
-                           AccuracyTipUI::Interaction interaction);
+  void OnAccuracyStatusReceived(const GURL& url,
+                                AccuracyCheckCallback callback,
+                                AccuracyTipStatus status);
 
-  std::unique_ptr<AccuracyTipUI> ui_;
+  void OnAccuracyTipClosed(base::TimeTicks time_opened,
+                           AccuracyTipInteraction interaction);
+
+  std::unique_ptr<Delegate> delegate_;
   PrefService* pref_service_ = nullptr;
   scoped_refptr<AccuracyTipSafeBrowsingClient> sb_client_;
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // Feature params:
   const GURL sample_url_;

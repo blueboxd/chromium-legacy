@@ -7,14 +7,11 @@
 #include <memory>
 
 #import "ios/chrome/browser/providers/chromium_logo_controller.h"
-#import "ios/chrome/browser/providers/chromium_spotlight_provider.h"
 #import "ios/chrome/browser/providers/chromium_voice_search_provider.h"
 #include "ios/chrome/browser/providers/signin/chromium_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
-#include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/overrides_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #include "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,21 +19,14 @@
 #endif
 
 ChromiumBrowserProvider::ChromiumBrowserProvider()
-    : app_distribution_provider_(std::make_unique<AppDistributionProvider>()),
-      signin_error_provider_(std::make_unique<ios::SigninErrorProvider>()),
-      signin_resources_provider_(
+    : signin_resources_provider_(
           std::make_unique<ChromiumSigninResourcesProvider>()),
       user_feedback_provider_(std::make_unique<UserFeedbackProvider>()),
       voice_search_provider_(std::make_unique<ChromiumVoiceSearchProvider>()),
-      spotlight_provider_(std::make_unique<ChromiumSpotlightProvider>()),
       overrides_provider_(std::make_unique<OverridesProvider>()),
       discover_feed_provider_(std::make_unique<DiscoverFeedProvider>()) {}
 
 ChromiumBrowserProvider::~ChromiumBrowserProvider() {}
-
-ios::SigninErrorProvider* ChromiumBrowserProvider::GetSigninErrorProvider() {
-  return signin_error_provider_.get();
-}
 
 ios::SigninResourcesProvider*
 ChromiumBrowserProvider::GetSigninResourcesProvider() {
@@ -72,15 +62,6 @@ id<LogoVendor> ChromiumBrowserProvider::CreateLogoVendor(
 
 UserFeedbackProvider* ChromiumBrowserProvider::GetUserFeedbackProvider() const {
   return user_feedback_provider_.get();
-}
-
-AppDistributionProvider* ChromiumBrowserProvider::GetAppDistributionProvider()
-    const {
-  return app_distribution_provider_.get();
-}
-
-SpotlightProvider* ChromiumBrowserProvider::GetSpotlightProvider() const {
-  return spotlight_provider_.get();
 }
 
 OverridesProvider* ChromiumBrowserProvider::GetOverridesProvider() const {

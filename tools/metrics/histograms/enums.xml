@@ -1152,9 +1152,9 @@ Unknown properties are collapsed to zero. -->
 <enum name="AccuracyTipStatus">
   <int value="0" label="kNone"/>
   <int value="1" label="kShowAccuracyTip"/>
-  <int value="2" label="kEligibleForTipButUiDisabled"/>
-  <int value="3" label="kRateLimited"/>
-  <int value="4" label="kOptOut"/>
+  <int value="2" label="kRateLimited"/>
+  <int value="3" label="kOptOut"/>
+  <int value="4" label="kHighEngagement"/>
 </enum>
 
 <enum name="ActionAfterDoubleTap">
@@ -34027,7 +34027,6 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3926" label="FontFaceSizeAdjust"/>
   <int value="3927" label="HiddenBackfaceWith3D"/>
   <int value="3928" label="MainFrameNonSecurePrivateAddressSpace"/>
-  <int value="3929" label="CSSSelectorPseudoHas"/>
   <int value="3930" label="HTMLMediaElementControlsListNoPlaybackRate"/>
   <int value="3931" label="DocumentTransition"/>
   <int value="3932" label="SpeculationRules"/>
@@ -34072,6 +34071,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3968" label="ClientHintsUAReduced"/>
   <int value="3969" label="SpeculationRulesPrerender"/>
   <int value="3970" label="ExecCommandWithTrustedTypes"/>
+  <int value="3971" label="CSSSelectorPseudoHasInSnapshotProfile"/>
+  <int value="3972" label="CSSSelectorPseudoHasInLiveProfile"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35952,6 +35953,11 @@ Called by update_permissions_policy_enum.py.-->
   <int value="6" label="Show sign in screen"/>
   <int value="7" label="Close sign in screen with sign in"/>
   <int value="8" label="Close sign in screen without sign in"/>
+  <int value="9" label="Show default browser screen"/>
+  <int value="10"
+      label="Close default browser screen with opening Settings.app"/>
+  <int value="11"
+      label="Close default browser screen without opening Settings.app"/>
 </enum>
 
 <enum name="FirstUserActionType">
@@ -56319,6 +56325,9 @@ Called by update_use_counter_css.py.-->
   <int value="11"
       label="The hostname failed spoof checks but didn't match a safe
              hostname. (e.g. whole-script-confusable IDN)"/>
+  <int value="12"
+      label="A navigation suggestion is found using a character swap match
+             against an engaged site."/>
 </enum>
 
 <enum name="NavigationURLScheme">
@@ -71282,6 +71291,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="AF_WASTE_NONE_UNSPEC">
     A new job was needed for this UNSPEC lookup. No waste.
   </int>
+</enum>
+
+<enum name="ResolveHostPurpose">
+  <int value="0" label="Not specified"/>
+  <int value="1" label="Preconnect"/>
 </enum>
 
 <enum name="ResourceHasClient">

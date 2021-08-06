@@ -592,11 +592,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "change-password-affiliation",
-    "owners": [ "vsemeniuk", "vasilii"],
-    "expiry_milestone": 90
-  },
-  {
     "name": "check-offline-capability",
     "owners": [ "asamidoi", "//content/browser/service_worker/OWNERS" ],
     "expiry_milestone": 93
@@ -824,7 +819,7 @@
   {
     "name": "cpu-affinity-restrict-to-little-cores",
     "owners": [ "eseckler", "skyostil" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 107
   },
   {
     "name": "cros-regions-mode",
@@ -839,7 +834,7 @@
   {
       "name": "cross-origin-embedder-policy-credentialless",
       "owners": ["arthursonzogni", "clamy", "mkwst"],
-      "expiry_milestone": 93
+      "expiry_milestone": 96
   },
   {
     "name": "crostini-container-install",
@@ -944,11 +939,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "decouple-sync-from-android-auto-sync",
-    "owners": [ "victorvianna@google.com", "treib@chromium.org" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "default-browser-fullscreen-promo-cta-experiment",
     "owners": [ "javierrobles", "bling-flags@google.com" ],
     "expiry_milestone": 93
@@ -967,11 +957,6 @@
     "name": "default-browser-promo-tailored",
     "owners": [ "javierrobles", "bling-flags@google.com" ],
     "expiry_milestone": 94
-  },
-  {
-    "name": "default-browser-setting",
-    "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 92
   },
   {
     "name": "deprecate-alt-based-six-pack",
@@ -1013,7 +998,7 @@
   {
     "name": "desktop-version-default",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 100
   },
   {
     "name": "destroy-profile-on-browser-close",
@@ -3005,8 +2990,8 @@
   },
   {
     "name": "expanded-tab-strip",
-    "owners": [ "mouraroberto@google.com", "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 92
+    "owners": [ "rkgibson@google.com", "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "expensive-background-timer-throttling",
@@ -3936,7 +3921,7 @@
   {
     "name": "mobile-google-srp",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 100
   },
   {
     "name": "mobile-identity-consistency",
@@ -5069,7 +5054,7 @@
   {
     "name": "send-tab-to-self-when-signed-in",
     "owners": ["victorvianna@google.com", "mastiz@chromium.org"],
-    "expiry_milestone": 92
+    "expiry_milestone": 98
   },
   {
     "name": "send-uma-cellular",
@@ -5106,7 +5091,7 @@
   {
     "name": "settings-refresh",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 95
   },
   {
     "name": "share-button-in-top-toolbar",
@@ -5779,7 +5764,7 @@
   {
     "name": "web-view-native-context-menu",
     "owners": ["gambard","bling-flags@google.com"],
-    "expiry_milestone": 92
+    "expiry_milestone": 100
   },
   {
     "name": "webid",

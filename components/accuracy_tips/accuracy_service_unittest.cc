@@ -17,8 +17,8 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "components/accuracy_tips/accuracy_tip_interaction.h"
 #include "components/accuracy_tips/accuracy_tip_status.h"
-#include "components/accuracy_tips/accuracy_tip_ui.h"
 #include "components/accuracy_tips/features.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/db/test_database_manager.h"
@@ -33,12 +33,16 @@ using testing::Return;
 
 namespace accuracy_tips {
 
-class MockAccuracyTipUI : public AccuracyTipUI {
+class MockAccuracyServiceDelegate : public AccuracyService::Delegate {
  public:
+  MockAccuracyServiceDelegate() = default;
+
+  MOCK_METHOD1(IsEngagementHigh, bool(const GURL&));
+
   MOCK_METHOD3(ShowAccuracyTip,
                void(content::WebContents*,
                     AccuracyTipStatus,
-                    base::OnceCallback<void(Interaction)>));
+                    base::OnceCallback<void(AccuracyTipInteraction)>));
 };
 
 class MockSafeBrowsingDatabaseManager
@@ -70,19 +74,18 @@ bool IsLocalMatchButNotOnList(
 }
 
 // Handler that simulates a click on the opt-out button.
-void OptOutClicked(
-    content::WebContents*,
-    AccuracyTipStatus,
-    base::OnceCallback<void(AccuracyTipUI::Interaction)> callback) {
-  std::move(callback).Run(AccuracyTipUI::Interaction::kOptOut);
+void OptOutClicked(content::WebContents*,
+                   AccuracyTipStatus,
+                   base::OnceCallback<void(AccuracyTipInteraction)> callback) {
+  std::move(callback).Run(AccuracyTipInteraction::kOptOut);
 }
 
 // Handler that simulates a click on the learn more button.
 void LearnMoreClicked(
     content::WebContents*,
     AccuracyTipStatus,
-    base::OnceCallback<void(AccuracyTipUI::Interaction)> callback) {
-  std::move(callback).Run(AccuracyTipUI::Interaction::kLearnMore);
+    base::OnceCallback<void(AccuracyTipInteraction)> callback) {
+  std::move(callback).Run(AccuracyTipInteraction::kLearnMore);
 }
 
 class AccuracyServiceTest : public ::testing::Test {
@@ -93,13 +96,16 @@ class AccuracyServiceTest : public ::testing::Test {
     SetUpFeatureList(feature_list_);
 
     AccuracyService::RegisterProfilePrefs(prefs_.registry());
-    auto ui = std::make_unique<testing::StrictMock<MockAccuracyTipUI>>();
-    ui_ = ui.get();
+    auto delegate =
+        std::make_unique<testing::StrictMock<MockAccuracyServiceDelegate>>();
+    delegate_ = delegate.get();
+    EXPECT_CALL(*delegate, IsEngagementHigh(_)).WillRepeatedly(Return(false));
+
     sb_database_ = base::MakeRefCounted<MockSafeBrowsingDatabaseManager>();
-    service_ =
-        std::make_unique<AccuracyService>(std::move(ui), &prefs_, sb_database_,
-                                          base::ThreadTaskRunnerHandle::Get(),
-                                          base::ThreadTaskRunnerHandle::Get());
+    service_ = std::make_unique<AccuracyService>(
+        std::move(delegate), &prefs_, sb_database_,
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get());
     clock_.SetNow(base::Time::Now());
     service_->SetClockForTesting(&clock_);
   }
@@ -117,7 +123,7 @@ class AccuracyServiceTest : public ::testing::Test {
   }
 
   AccuracyService* service() { return service_.get(); }
-  MockAccuracyTipUI* ui() { return ui_; }
+  MockAccuracyServiceDelegate* delegate() { return delegate_; }
   base::SimpleTestClock* clock() { return &clock_; }
   MockSafeBrowsingDatabaseManager* sb_database() { return sb_database_.get(); }
 
@@ -133,9 +139,9 @@ class AccuracyServiceTest : public ::testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   base::SimpleTestClock clock_;
 
-  std::unique_ptr<AccuracyService> service_;
-  MockAccuracyTipUI* ui_;
+  MockAccuracyServiceDelegate* delegate_;
   scoped_refptr<MockSafeBrowsingDatabaseManager> sb_database_;
+  std::unique_ptr<AccuracyService> service_;
 };
 
 TEST_F(AccuracyServiceTest, CheckAccuracyStatusForRandomSite) {
@@ -168,7 +174,7 @@ TEST_F(AccuracyServiceTest, CheckAccuracyStatusForLocalMatch) {
 }
 
 TEST_F(AccuracyServiceTest, ShowUI) {
-  EXPECT_CALL(*ui(), ShowAccuracyTip(_, _, _));
+  EXPECT_CALL(*delegate(), ShowAccuracyTip(_, _, _));
   service()->MaybeShowAccuracyTip(nullptr);
 }
 
@@ -179,7 +185,7 @@ TEST_F(AccuracyServiceTest, TimeBetweenPrompts) {
 
   // Show an accuracy tip.
   EXPECT_EQ(CheckAccuracyStatusSync(url), AccuracyTipStatus::kShowAccuracyTip);
-  EXPECT_CALL(*ui(), ShowAccuracyTip(_, _, _));
+  EXPECT_CALL(*delegate(), ShowAccuracyTip(_, _, _));
   service()->MaybeShowAccuracyTip(nullptr);
 
   // Future calls will return that the rate limit is active.
@@ -200,7 +206,8 @@ TEST_F(AccuracyServiceTest, OptOut) {
   EXPECT_EQ(CheckAccuracyStatusSync(url), AccuracyTipStatus::kShowAccuracyTip);
 
   // Clicking the opt-out button will disable future accuracy tips.
-  EXPECT_CALL(*ui(), ShowAccuracyTip(_, _, _)).WillOnce(Invoke(&OptOutClicked));
+  EXPECT_CALL(*delegate(), ShowAccuracyTip(_, _, _))
+      .WillOnce(Invoke(&OptOutClicked));
   service()->MaybeShowAccuracyTip(nullptr);
 
   clock()->Advance(base::TimeDelta::FromDays(1));
@@ -211,14 +218,27 @@ TEST_F(AccuracyServiceTest, OptOut) {
   EXPECT_EQ(CheckAccuracyStatusSync(url), AccuracyTipStatus::kOptOut);
 }
 
+TEST_F(AccuracyServiceTest, HighEngagement) {
+  auto url = GURL("https://example.com");
+  EXPECT_CALL(*sb_database(), CheckUrlForAccuracyTips(url, _))
+      .WillRepeatedly(Invoke(&IsOnList));
+
+  // Usually an accuracy tip is shown.
+  EXPECT_EQ(CheckAccuracyStatusSync(url), AccuracyTipStatus::kShowAccuracyTip);
+
+  // But not if the site has high engagement.
+  EXPECT_CALL(*delegate(), IsEngagementHigh(url)).WillRepeatedly(Return(true));
+  EXPECT_EQ(CheckAccuracyStatusSync(url), AccuracyTipStatus::kHighEnagagement);
+}
+
 TEST_F(AccuracyServiceTest, Histograms) {
   {
     base::HistogramTester t;
-    EXPECT_CALL(*ui(), ShowAccuracyTip(_, _, _))
+    EXPECT_CALL(*delegate(), ShowAccuracyTip(_, _, _))
         .WillOnce(Invoke(&LearnMoreClicked));
     service()->MaybeShowAccuracyTip(nullptr);
     t.ExpectUniqueSample("Privacy.AccuracyTip.AccuracyTipInteraction",
-                         AccuracyTipUI::Interaction::kLearnMore, 1);
+                         AccuracyTipInteraction::kLearnMore, 1);
     t.ExpectBucketCount("Privacy.AccuracyTip.NumDialogsShown", 1, 1);
     t.ExpectTotalCount("Privacy.AccuracyTip.AccuracyTipTimeOpen", 1);
     t.ExpectBucketCount("Privacy.AccuracyTip.NumDialogsShown.LearnMore", 1, 1);
@@ -227,11 +247,11 @@ TEST_F(AccuracyServiceTest, Histograms) {
 
   {
     base::HistogramTester t;
-    EXPECT_CALL(*ui(), ShowAccuracyTip(_, _, _))
+    EXPECT_CALL(*delegate(), ShowAccuracyTip(_, _, _))
         .WillOnce(Invoke(&OptOutClicked));
     service()->MaybeShowAccuracyTip(nullptr);
     t.ExpectUniqueSample("Privacy.AccuracyTip.AccuracyTipInteraction",
-                         AccuracyTipUI::Interaction::kOptOut, 1);
+                         AccuracyTipInteraction::kOptOut, 1);
     t.ExpectBucketCount("Privacy.AccuracyTip.NumDialogsShown", 2, 1);
     t.ExpectTotalCount("Privacy.AccuracyTip.AccuracyTipTimeOpen", 1);
     t.ExpectBucketCount("Privacy.AccuracyTip.NumDialogsShown.OptOut", 2, 1);
@@ -249,7 +269,7 @@ class AccuracyServiceDisabledUiTest : public AccuracyServiceTest {
 };
 
 TEST_F(AccuracyServiceDisabledUiTest, ShowWithUiDisabled) {
-  EXPECT_CALL(*ui(), ShowAccuracyTip(_, _, _)).Times(0);
+  EXPECT_CALL(*delegate(), ShowAccuracyTip(_, _, _)).Times(0);
   service()->MaybeShowAccuracyTip(nullptr);
 }
 

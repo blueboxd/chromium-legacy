@@ -50,10 +50,6 @@ void ChromeBrowserProvider::AppendSwitchesFromExperimentalSettings(
 
 void ChromeBrowserProvider::Initialize() const {}
 
-SigninErrorProvider* ChromeBrowserProvider::GetSigninErrorProvider() {
-  return nullptr;
-}
-
 SigninResourcesProvider* ChromeBrowserProvider::GetSigninResourcesProvider() {
   return nullptr;
 }
@@ -80,11 +76,6 @@ VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {
   return nullptr;
 }
 
-AppDistributionProvider* ChromeBrowserProvider::GetAppDistributionProvider()
-    const {
-  return nullptr;
-}
-
 id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
     Browser* browser,
     web::WebState* web_state) const {
@@ -96,10 +87,6 @@ OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
 }
 
 UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
-  return nullptr;
-}
-
-SpotlightProvider* ChromeBrowserProvider::GetSpotlightProvider() const {
   return nullptr;
 }
 

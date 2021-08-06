@@ -17,13 +17,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 
-class AppDistributionProvider;
 class BrowserURLRewriterProvider;
 class DiscoverFeedProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
 class OverridesProvider;
-class SpotlightProvider;
 class UserFeedbackProvider;
 class VoiceSearchProvider;
 
@@ -45,7 +43,6 @@ namespace ios {
 class ChromeBrowserProvider;
 class ChromeIdentityService;
 class ChromeTrustedVaultService;
-class SigninErrorProvider;
 class SigninResourcesProvider;
 
 // Getter and setter for the provider. The provider should be set early, before
@@ -94,8 +91,6 @@ class ChromeBrowserProvider {
   // This is called after web startup.
   virtual void Initialize() const;
 
-  // Returns an instance of a signing error provider.
-  virtual SigninErrorProvider* GetSigninErrorProvider();
   // Returns an instance of a signin resources provider.
   virtual SigninResourcesProvider* GetSigninResourcesProvider();
   // Sets the current instance of Chrome identity service. Used for testing.
@@ -114,9 +109,6 @@ class ChromeBrowserProvider {
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;
 
-  // Returns an instance of the app distribution provider.
-  virtual AppDistributionProvider* GetAppDistributionProvider() const;
-
   virtual id<LogoVendor> CreateLogoVendor(Browser* browser,
                                           web::WebState* web_state) const
       NS_RETURNS_RETAINED;
@@ -133,9 +125,6 @@ class ChromeBrowserProvider {
   // Logs if any modals created by this provider are still presented. It does
   // not dismiss them.
   virtual void LogIfModalViewsArePresented() const;
-
-  // Returns an instance of the spotlight provider.
-  virtual SpotlightProvider* GetSpotlightProvider() const;
 
   // Returns a valid non-null instance of the mailto handler provider.
   virtual MailtoHandlerProvider* GetMailtoHandlerProvider() const;

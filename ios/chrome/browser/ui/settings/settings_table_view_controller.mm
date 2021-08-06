@@ -51,6 +51,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
+#import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -102,7 +103,7 @@
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_presenter.h"
-#import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
+#import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -248,10 +249,6 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   // Passwords coordinator.
   PasswordsCoordinator* _passwordsCoordinator;
 
-  // Cached resized profile image.
-  UIImage* _resizedImage;
-  __weak UIImage* _oldImage;
-
   // Identity object and observer used for Account Item refresh.
   ChromeIdentity* _identity;
   std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
@@ -291,6 +288,9 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
 // YES if the sign-in is in progress.
 @property(nonatomic, assign) BOOL isSigninInProgress;
+
+// Cache for the avatar image.
+@property(nonatomic, strong) ResizedAvatarCache* avatarCache;
 
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a profile that is being killed.
@@ -394,6 +394,8 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
     _dispatcher = dispatcher;
 
+    _avatarCache = [[ResizedAvatarCache alloc] initWithDefaultTableView];
+
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
@@ -443,34 +445,33 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   // Defaults section.
   TableViewModel<TableViewItem*>* model = self.tableViewModel;
   if (@available(iOS 14, *)) {
-    if (base::FeatureList::IsEnabled(kDefaultBrowserSettings)) {
-      [model addSectionWithIdentifier:SettingsSectionIdentifierDefaults];
-      [model addItem:[self defaultBrowserCellItem]
-          toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
-    }
+    [model addSectionWithIdentifier:SettingsSectionIdentifierDefaults];
+    [model addItem:[self defaultBrowserCellItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
   }
 
-  // Basics section
-  [model addSectionWithIdentifier:SettingsSectionIdentifierBasics];
   // Show managed UI if default search engine is managed by policy.
   if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
       [self isDefaultSearchEngineManagedByPolicy]) {
-    [model addItem:[self managedSearchEngineItem]
-        toSectionWithIdentifier:SettingsSectionIdentifierBasics];
+    if (@available(iOS 14, *)) {
+      [model addItem:[self managedSearchEngineItem]
+          toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
+    } else {
+      [model addItem:[self managedSearchEngineItem]
+          toSectionWithIdentifier:SettingsSectionIdentifierBasics];
+    }
   } else {
     if (@available(iOS 14, *)) {
-      if (base::FeatureList::IsEnabled(kDefaultBrowserSettings)) {
-        [model addItem:[self searchEngineDetailItem]
-            toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
-      } else {
-        [model addItem:[self searchEngineDetailItem]
-            toSectionWithIdentifier:SettingsSectionIdentifierBasics];
-      }
+      [model addItem:[self searchEngineDetailItem]
+          toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
     } else {
       [model addItem:[self searchEngineDetailItem]
           toSectionWithIdentifier:SettingsSectionIdentifierBasics];
     }
   }
+
+  // Basics section
+  [model addSectionWithIdentifier:SettingsSectionIdentifierBasics];
   [model addItem:[self passwordsDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierBasics];
   [model addItem:[self autoFillCreditCardDetailItem]
@@ -1504,7 +1505,8 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     // cell will be replaced by the "Sign in" button.
     return;
   }
-  identityAccountItem.image = [self userAccountImage];
+  identityAccountItem.image =
+      [self.avatarCache resizedAvatarForIdentity:_identity];
   identityAccountItem.text = [_identity userFullName];
   identityAccountItem.detailText = _identity.userEmail;
 }
@@ -1760,40 +1762,6 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   // The Identity section may be added or removed depending on sign-in is
   // allowed. Reload all sections in the model to account for the change.
   [self.tableView reloadData];
-}
-
-#pragma mark - IdentityRefreshLogic
-
-// Image used for loggedin user account that supports caching.
-- (UIImage*)userAccountImage {
-  UIImage* image = ios::GetChromeBrowserProvider()
-                       .GetChromeIdentityService()
-                       ->GetCachedAvatarForIdentity(_identity);
-  if (!image) {
-    image = ios::GetChromeBrowserProvider()
-                .GetSigninResourcesProvider()
-                ->GetDefaultAvatar();
-    // No cached image, trigger a fetch, which will notify all observers
-    // (including the corresponding AccountViewBase).
-    ios::GetChromeBrowserProvider()
-        .GetChromeIdentityService()
-        ->GetAvatarForIdentity(_identity, nil);
-  }
-
-  // If the currently used image has already been resized, use it.
-  if (_resizedImage && _oldImage == image)
-    return _resizedImage;
-
-  _oldImage = image;
-
-  // Resize the profile image.
-  CGFloat dimension = kAccountProfilePhotoDimension;
-  if (image.size.width != dimension || image.size.height != dimension) {
-    image = ResizeImage(image, CGSizeMake(dimension, dimension),
-                        ProjectionMode::kAspectFit);
-  }
-  _resizedImage = image;
-  return _resizedImage;
 }
 
 #pragma mark - SearchEngineObserverBridge

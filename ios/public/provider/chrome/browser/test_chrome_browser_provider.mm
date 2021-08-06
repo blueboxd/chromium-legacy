@@ -8,14 +8,11 @@
 
 #include "base/check.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
-#include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/test_mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_trusted_vault_service.h"
-#include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
-#import "ios/public/provider/chrome/browser/spotlight/test_spotlight_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
@@ -27,14 +24,11 @@
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : app_distribution_provider_(std::make_unique<AppDistributionProvider>()),
-      omaha_service_provider_(std::make_unique<TestOmahaServiceProvider>()),
-      signin_error_provider_(std::make_unique<SigninErrorProvider>()),
+    : omaha_service_provider_(std::make_unique<TestOmahaServiceProvider>()),
       signin_resources_provider_(
           std::make_unique<TestSigninResourcesProvider>()),
       voice_search_provider_(std::make_unique<TestVoiceSearchProvider>()),
       user_feedback_provider_(std::make_unique<TestUserFeedbackProvider>()),
-      spotlight_provider_(std::make_unique<TestSpotlightProvider>()),
       mailto_handler_provider_(std::make_unique<TestMailtoHandlerProvider>()),
       discover_feed_provider_(std::make_unique<DiscoverFeedProvider>()) {}
 
@@ -55,10 +49,6 @@ void TestChromeBrowserProvider::SetChromeIdentityServiceForTesting(
     std::unique_ptr<ChromeIdentityService> service) {
   chrome_identity_service_ = std::move(service);
   FireChromeIdentityServiceDidChange(chrome_identity_service_.get());
-}
-
-SigninErrorProvider* TestChromeBrowserProvider::GetSigninErrorProvider() {
-  return signin_error_provider_.get();
 }
 
 ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
@@ -84,11 +74,6 @@ VoiceSearchProvider* TestChromeBrowserProvider::GetVoiceSearchProvider() const {
   return voice_search_provider_.get();
 }
 
-AppDistributionProvider* TestChromeBrowserProvider::GetAppDistributionProvider()
-    const {
-  return app_distribution_provider_.get();
-}
-
 OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
     const {
   return omaha_service_provider_.get();
@@ -97,10 +82,6 @@ OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
 UserFeedbackProvider* TestChromeBrowserProvider::GetUserFeedbackProvider()
     const {
   return user_feedback_provider_.get();
-}
-
-SpotlightProvider* TestChromeBrowserProvider::GetSpotlightProvider() const {
-  return spotlight_provider_.get();
 }
 
 MailtoHandlerProvider* TestChromeBrowserProvider::GetMailtoHandlerProvider()

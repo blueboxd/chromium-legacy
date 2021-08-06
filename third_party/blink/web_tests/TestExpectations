@@ -6043,7 +6043,6 @@ crbug.com/1120330 virtual/threaded/external/wpt/permissions-policy/experimental-
 crbug.com/1122582 external/wpt/html/cross-origin-opener-policy/coop-csp-sandbox-navigate.https.html [ Failure Pass ]
 
 # Mac11.0 rebaseline
-crbug.com/1122490 [ Mac11.0 ] virtual/text-antialias/mac-system-ui-trak.html [ Failure ]
 crbug.com/1123002 [ Mac11.0 ] external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs.html [ Failure ]
 
 # Sheriff 2020-09-09
@@ -6147,9 +6146,6 @@ crbug.com/1141206 scrollbars/overflow-scrollbar-combinations.html [ Failure Pass
 #Sheriff 2020-10-26
 crbug.com/1142877 [ Mac ] external/wpt/mediacapture-fromelement/capture.html [ Crash Failure Pass ]
 crbug.com/1142877 [ Debug Linux ] external/wpt/mediacapture-fromelement/capture.html [ Crash Failure Pass ]
-
-# Temporarily disabled to unblock https://crrev.com/c/3069289
-crbug.com/578269 inspector-protocol/debugger/message-channel-async-stack.js [ Failure Pass ]
 
 #Sheriff 2020-10-29
 crbug.com/1143720 [ Win7 ] external/wpt/media-source/mediasource-detach.html [ Failure Pass ]
@@ -7070,6 +7066,15 @@ crbug.com/1218431 [ Fuchsia ] virtual/file-system-access-access-handle/external/
 # Mac below 10.15 is not implemented yet.
 crbug.com/1218431 [ Mac ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Failure Pass ]
 crbug.com/1218431 [ Mac ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Failure Pass ]
+# Test expectations for incognito will be updated as each method is implemented.
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle-dedicated-worker.https.tentative.window.html [ Pass ]
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/local_FileSystemFileHandle-create-sync-access-handle-dedicated-worker-manual.https.tentative.html [ Pass ]
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-sync-access-handle-lock.https.tentative.worker.html [ Pass ]
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-read-write.https.tentative.worker.html [ Pass ]
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-flush.https.tentative.worker.html [ Skip ]
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Skip ]
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-getSize.https.tentative.worker.html [ Skip ]
+crbug.com/1225653 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Skip ]
 
 crbug.com/1017836 http/tests/devtools/network/warning-for-long-cookie.js [ Timeout ]
 
@@ -7238,3 +7243,11 @@ crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.j
 crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Timeout ]
 crbug.com/1237132 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-gradient.html [ Failure Pass Timeout ]
 crbug.com/1178292 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]
+
+# Upcoming DevTools roll
+crbug.com/1106746 http/tests/devtools/security/interstitial-sidebar.js [ Skip ]
+crbug.com/1106746 http/tests/devtools/security/mixed-content-sidebar.js [ Skip ]
+crbug.com/1106746 http/tests/devtools/security/origin-view-ct-compliance.js [ Skip ]
+crbug.com/1106746 http/tests/devtools/security/origin-view-noncryptographic-secure-origin.js [ Skip ]
+crbug.com/1106746 http/tests/devtools/security/origin-view-then-interstitial.js [ Skip ]
+crbug.com/1106746 http/tests/devtools/security/security-details-updated-with-security-state.js [ Skip ]

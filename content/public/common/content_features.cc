@@ -804,7 +804,7 @@ const base::Feature kSubresourceWebBundles{"SubresourceWebBundles",
 // is not same origin with the main frame.
 const base::Feature kSuppressDifferentOriginSubframeJSDialogs{
     "SuppressDifferentOriginSubframeJSDialogs",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Dispatch touch events to "SyntheticGestureController" for events from
 // Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
@@ -981,6 +981,10 @@ const base::Feature kWebPaymentsMinimalUI{"WebPaymentsMinimalUI",
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
     "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables code caching for scripts used on WebUI pages.
+const base::Feature kWebUICodeCache{"WebUICodeCache",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables report-only Trusted Types experiment on WebUIs
 const base::Feature kWebUIReportOnlyTrustedTypes{

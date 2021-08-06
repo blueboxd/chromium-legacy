@@ -2351,6 +2351,8 @@ static_library("ui") {
       "webui/chromeos/emoji/emoji_page_handler.h",
       "webui/chromeos/emoji/emoji_ui.cc",
       "webui/chromeos/emoji/emoji_ui.h",
+      "webui/chromeos/enterprise_casting/enterprise_casting_handler.cc",
+      "webui/chromeos/enterprise_casting/enterprise_casting_handler.h",
       "webui/chromeos/enterprise_casting/enterprise_casting_ui.cc",
       "webui/chromeos/enterprise_casting/enterprise_casting_ui.h",
       "webui/chromeos/image_source.cc",
@@ -2932,8 +2934,8 @@ static_library("ui") {
         ]
       }
       deps += [
+        "//ash/webui/sample_system_web_app_ui",
         "//chromeos/components/demo_mode_app_ui",
-        "//chromeos/components/sample_system_web_app_ui",
         "//chromeos/components/telemetry_extension_ui",
       ]
     }
@@ -4252,6 +4254,8 @@ static_library("ui") {
       "views/payments/profile_list_view_controller.h",
       "views/payments/secure_payment_confirmation_dialog_view.cc",
       "views/payments/secure_payment_confirmation_dialog_view.h",
+      "views/payments/secure_payment_confirmation_no_creds_dialog_view.cc",
+      "views/payments/secure_payment_confirmation_no_creds_dialog_view.h",
       "views/payments/secure_payment_confirmation_views_util.cc",
       "views/payments/secure_payment_confirmation_views_util.h",
       "views/payments/shipping_address_editor_view_controller.cc",

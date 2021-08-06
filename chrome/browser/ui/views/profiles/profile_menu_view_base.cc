@@ -587,7 +587,7 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
     const ui::ThemedVectorIcon& avatar_header_art) {
   constexpr int kBottomMargin = kDefaultMargin;
 
-  identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
+  identity_info_container_->RemoveAllChildViews();
   // The colored background fully bleeds to the edges of the menu and to achieve
   // that margin is set to 0. Further margins will be added by children views.
   identity_info_container_->SetLayoutManager(
@@ -655,7 +655,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
 
-  sync_info_container_->RemoveAllChildViews(/*delete_children=*/true);
+  sync_info_container_->RemoveAllChildViews();
   sync_info_container_->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetIgnoreDefaultMainAxisMargins(true)
@@ -727,7 +727,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
 void ProfileMenuViewBase::BuildSyncInfoWithoutCallToAction(
     const std::u16string& text,
     const base::RepeatingClosure& action) {
-  sync_info_container_->RemoveAllChildViews(/*delete_children=*/true);
+  sync_info_container_->RemoveAllChildViews();
   sync_info_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
   sync_info_container_->AddChildView(std::make_unique<SyncButton>(
       base::BindRepeating(&ProfileMenuViewBase::ButtonPressed,
@@ -798,8 +798,7 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
   profile_mgmt_heading_ = heading;
 
   // Add separator before heading.
-  profile_mgmt_separator_container_->RemoveAllChildViews(
-      /*delete_children=*/true);
+  profile_mgmt_separator_container_->RemoveAllChildViews();
   profile_mgmt_separator_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
   profile_mgmt_separator_container_->SetBorder(
@@ -808,8 +807,7 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
       std::make_unique<views::Separator>());
 
   // Initialize heading layout.
-  profile_mgmt_heading_container_->RemoveAllChildViews(
-      /*delete_children=*/true);
+  profile_mgmt_heading_container_->RemoveAllChildViews();
   profile_mgmt_heading_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
   profile_mgmt_heading_container_->SetBorder(
@@ -919,7 +917,7 @@ int ProfileMenuViewBase::GetMaxHeight() const {
 }
 
 void ProfileMenuViewBase::Reset() {
-  RemoveAllChildViews(/*delete_childen=*/true);
+  RemoveAllChildViews();
 
   auto components = std::make_unique<views::View>();
   components->SetLayoutManager(std::make_unique<views::FlexLayout>())

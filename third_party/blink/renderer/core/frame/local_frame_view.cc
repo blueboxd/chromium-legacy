@@ -2932,7 +2932,9 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode) {
     if (paint_controller_->ShouldForcePaintForBenchmark() ||
         GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint() ||
         visual_viewport_or_overlay_needs_repaint_) {
+      paint_controller_->ReserveCapacity();
       GraphicsContext graphics_context(*paint_controller_);
+
       if (Settings* settings = frame_->GetSettings()) {
         graphics_context.SetDarkModeEnabled(
             settings->GetForceDarkModeEnabled() &&
@@ -4381,6 +4383,15 @@ void LocalFrameView::CrossOriginToParentFrameChanged() {
   if (LayoutView* layout_view = GetLayoutView()) {
     if (PaintLayer* root_layer = layout_view->Layer())
       root_layer->SetNeedsCompositingInputsUpdate();
+  }
+}
+
+void LocalFrameView::SetViewportIntersection(
+    const mojom::blink::ViewportIntersectionState& intersection_state) {
+  if (frame_ && frame_->GetDocument()) {
+    PaintTiming::From(*frame_->GetDocument())
+        .SetFrameIsOutOfView(
+            intersection_state.viewport_intersection.IsEmpty());
   }
 }
 

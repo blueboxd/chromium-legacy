@@ -133,6 +133,7 @@
       'linux-lacros-code-coverage',
       'linux-lacros-tester-rel',
       'linux-lacros-tester-fyi-rel',
+      'linux-lacros-dbg-tests-fyi',
     ],
   },
   'angle_white_box_tests': {
@@ -1121,9 +1122,6 @@
       'Fuchsia ARM64',  # https://crbug.com/961457
       'Fuchsia x64', # https://crbug.com/961457
       'fuchsia-code-coverage',  # https://crbug.com/961457
-      'fuchsia-fyi-arm64-dbg',  # https://crbug.com/961457
-      'fuchsia-fyi-arm64-femu',  # https://crbug.com/961457
-      'fuchsia-fyi-x64-dbg',  # https://crbug.com/961457
       'ToTFuchsia x64',  # https://crbug.com/961457
       'ToTFuchsiaOfficial',  # https://crbug.com/961457
     ],

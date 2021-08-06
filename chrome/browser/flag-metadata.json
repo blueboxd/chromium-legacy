@@ -150,7 +150,7 @@
   {
     "name": "app-cache",
     "owners": [ "enne" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 95
   },
   {
     "name": "app-management-intent-settings",
@@ -583,8 +583,8 @@
   },
   {
     "name": "cellular-use-attach-apn",
-    "owners": [ "vpalatin", "ejcaruso", "chromeos-cellular-platform@google.com" ],
-    "expiry_milestone": 95
+    "owners": [ "andrewlassalle", "ejcaruso", "chromeos-cellular-platform@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "cellular-use-external-euicc",
@@ -610,7 +610,7 @@
   {
     "name": "chrome-labs",
     "owners": ["elainechien", "robliao"],
-    "expiry_milestone": 96
+    "expiry_milestone": 107
   },
   {
     "name": "chrome-share-highlights-android",
@@ -812,14 +812,9 @@
     "expiry_milestone": 94
   },
   {
-    "name": "conversion-measurement-api",
-    "owners": [ "//content/browser/conversions/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "conversion-measurement-debug-mode",
     "owners": [ "//content/browser/conversions/OWNERS" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 98
   },
   {
     "name": "copy-link-to-text",
@@ -1023,7 +1018,7 @@
   {
     "name": "destroy-profile-on-browser-close",
     "owners": [ "nicolaso" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 98
   },
   {
     "name": "detect-form-submission-on-form-clear",
@@ -1885,11 +1880,11 @@
   },
   {
     "name": "enable-experimental-cookie-features",
-    "owners": [ "chlily", "//net/cookies/OWNERS" ],
+    "owners": [ "bingler", "//net/cookies/OWNERS" ],
     // This should expire once all cookie handling changes have been enabled by
     // default. This is expected to take a while, and this expiry will probably
     // need to be extended.
-    "expiry_milestone": 95
+    "expiry_milestone": 110
   },
   {
     "name": "enable-experimental-fling-animation",
@@ -2620,8 +2615,8 @@
   },
   {
     "name": "enable-swipe-to-move-cursor",
-    "owners": [ "ctzsm", "changwan"],
-    "expiry_milestone": 90
+    "owners": [ "ctzsm" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-switch-access-point-scanning",
@@ -5013,8 +5008,8 @@
   },
   {
     "name": "scroll-unification",
-    "owners": [ "bokan@chromium.org", "input-dev@chromium.org" ],
-    "expiry_milestone": 93
+    "owners": [ "skobes@chromium.org", "input-dev@chromium.org" ],
+    "expiry_milestone": 100
   },
   {
     "name": "scrollable-tabstrip",
@@ -5084,7 +5079,7 @@
   {
     "name": "send-webui-javascript-error-reports",
     "owners": ["iby", "cros-telemetry@google.com"],
-    "expiry_milestone": 93
+    "expiry_milestone": 97
   },
   {
     "name": "service-worker-subresource-filter",

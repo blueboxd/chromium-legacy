@@ -4,11 +4,15 @@
 
 import 'chrome://scanning/scan_preview.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AppState} from 'chrome://scanning/scanning_app_types.js';
+import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {isVisible} from '../../test_util.m.js';
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+import {flushTasks, isVisible} from '../../test_util.m.js';
+
+import {TestScanningBrowserProxy} from './test_scanning_browser_proxy.js';
 
 export function scanPreviewTest() {
   /** @type {?ScanPreviewElement} */
@@ -30,6 +34,7 @@ export function scanPreviewTest() {
     scanPreview = /** @type {!ScanPreviewElement} */ (
         document.createElement('scan-preview'));
     assertTrue(!!scanPreview);
+    ScanningBrowserProxyImpl.instance_ = new TestScanningBrowserProxy();
     document.body.appendChild(scanPreview);
 
     helpOrProgress =
@@ -148,5 +153,98 @@ export function scanPreviewTest() {
     scanPreview.multiPageScanChecked = true;
     flush();
     assertFalse(scanPreview.$$('action-toolbar').hidden);
+  });
+
+  // Tests that the toolbar will get repositioned after subsequent scans.
+  test('positionActionToolbarOnSubsequentScans', () => {
+    scanPreview.multiPageScanChecked = true;
+    scanPreview.appState = AppState.MULTI_PAGE_SCANNING;
+    return flushTasks()
+        .then(() => {
+          // Before the image loads we expect the CSS variables to be unset.
+          assertEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-top'));
+          assertEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-left'));
+
+          scanPreview.objectUrls = ['svg/ready_to_scan.svg'];
+          scanPreview.appState = AppState.MULTI_PAGE_NEXT_ACTION;
+          return flushTasks();
+        })
+        .then(() => {
+          // After the image loads we expect the CSS variables to be set.
+          assertNotEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-top'));
+          assertNotEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-left'));
+
+          // Reset the CSS variabls and delete the image to simulate starting a
+          // new scan.
+          scanPreview.style.setProperty('--action-toolbar-top', '');
+          scanPreview.style.setProperty('--action-toolbar-left', '');
+          assertEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-top'));
+          assertEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-left'));
+          scanPreview.objectUrls = [];
+          scanPreview.appState = AppState.MULTI_PAGE_SCANNING;
+          return flushTasks();
+        })
+        .then(() => {
+          scanPreview.objectUrls = ['svg/ready_to_scan.svg'];
+          scanPreview.appState = AppState.MULTI_PAGE_NEXT_ACTION;
+          return flushTasks();
+        })
+        .then(() => {
+          // We expect the CSS variables to be set again.
+          assertNotEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-top'));
+          assertNotEquals(
+              '', scanPreview.style.getPropertyValue('--action-toolbar-left'));
+        });
+  });
+
+  // Tests that the remove page dialog opens and shows the correct page number.
+  test('removePageDialog', () => {
+    const pageNum = 5;
+    assertFalse(scanPreview.$$('#scanPreviewDialog').open);
+    scanPreview.$$('action-toolbar')
+        .dispatchEvent(
+            new CustomEvent('show-remove-page-dialog', {detail: pageNum}));
+
+    return flushTasks().then(() => {
+      assertTrue(scanPreview.$$('#scanPreviewDialog').open);
+      assertEquals(
+          'Remove page ' + pageNum,
+          scanPreview.$$('#dialogTitle').textContent.trim());
+      assertEquals(
+          'Remove page ' + pageNum,
+          scanPreview.$$('#actionButton').textContent.trim());
+      assertEquals(
+          loadTimeData.getStringF('removePageConfirmationText', pageNum),
+          scanPreview.$$('#dialogConfirmationText').textContent.trim());
+    });
+  });
+
+  // Tests that the rescan page dialog opens and shows the correct page number.
+  test('rescanPageDialog', () => {
+    const pageNum = 6;
+    assertFalse(scanPreview.$$('#scanPreviewDialog').open);
+    scanPreview.$$('action-toolbar')
+        .dispatchEvent(
+            new CustomEvent('show-rescan-page-dialog', {detail: pageNum}));
+
+    return flushTasks().then(() => {
+      assertTrue(scanPreview.$$('#scanPreviewDialog').open);
+      assertEquals(
+          'Rescan page ' + pageNum,
+          scanPreview.$$('#dialogTitle').textContent.trim());
+      assertEquals(
+          'Rescan page ' + pageNum,
+          scanPreview.$$('#actionButton').textContent.trim());
+      assertEquals(
+          loadTimeData.getStringF('rescanPageConfirmationText', pageNum),
+          scanPreview.$$('#dialogConfirmationText').textContent.trim());
+    });
   });
 }

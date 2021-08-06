@@ -1189,6 +1189,7 @@ if (!is_android) {
       "//components/services/app_service/public/cpp:app_url_handling",
       "//components/services/app_service/public/cpp:protocol_handling",
       "//components/services/language_detection/public/cpp",
+      "//components/services/language_detection/public/mojom",
       "//components/services/patch/content",
       "//components/services/patch/public/cpp",
       "//components/services/patch/public/mojom",
@@ -2247,8 +2248,8 @@ if (!is_android) {
 
         if (!is_official_build) {
           deps += [
+            "//ash/webui/sample_system_web_app_ui:browser_tests_js",
             "//chromeos/components/demo_mode_app_ui:browser_tests_js",
-            "//chromeos/components/sample_system_web_app_ui:browser_tests_js",
             "//chromeos/components/telemetry_extension_ui/test:browser_tests_js",
           ]
         }
@@ -2874,6 +2875,7 @@ if (!is_android) {
         "../browser/apps/app_service/intent_util_browsertest.cc",
         "../browser/apps/app_service/media_access_browsertest.cc",
         "../browser/apps/app_service/notifications_browsertest.cc",
+        "../browser/apps/app_service/webapk/webapk_policy_browsertest.cc",
         "../browser/apps/icon_standardizer_unittest.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
@@ -3395,8 +3397,8 @@ if (!is_android) {
           "../browser/ash/web_applications/telemetry_extension_integration_browsertest.cc",
         ]
         deps += [
+          "//ash/webui/sample_system_web_app_ui",
           "//chromeos/components/demo_mode_app_ui",
-          "//chromeos/components/sample_system_web_app_ui",
           "//chromeos/components/telemetry_extension_ui",
         ]
       }
@@ -5116,6 +5118,8 @@ test("unit_tests") {
     "//components/paint_preview/common/mojom",
     "//components/password_manager/content/browser",
     "//components/payments/content",
+    "//components/payments/content:test_support",
+    "//components/payments/content:utils",
     "//components/performance_manager",
     "//components/performance_manager/public/mojom",
     "//components/performance_manager/test_support:test_support_common",

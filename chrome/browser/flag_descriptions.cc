@@ -98,11 +98,6 @@ const char kContentLanguagesInLanguagePickerDescription[] =
     "Enables bringing user's content languages that are translatable to the "
     "top of the list with all languages shown in the translate menu";
 
-const char kConversionMeasurementApiName[] = "Conversion Measurement API";
-const char kConversionMeasurementApiDescription[] =
-    "Enables usage of the Conversion Measurement API. Requires "
-    "#enable-experimental-web-platform-features to be enabled.";
-
 const char kConversionMeasurementDebugModeName[] =
     "Conversion Measurement Debug Mode";
 const char kConversionMeasurementDebugModeDescription[] =
@@ -3118,6 +3113,10 @@ const char kChromeShareLongScreenshotDescription[] =
 const char kChromeShareScreenshotName[] = "Chrome Share Screenshots";
 const char kChromeShareScreenshotDescription[] =
     "Enables UI to edit and share screenshots";
+
+const char kChromeSharingHubName[] = "Chrome Sharing Hub";
+const char kChromeSharingHubDescription[] =
+    "Enables the Chrome Sharing Hub/custom share sheet for Android.";
 
 const char kClipboardSuggestionContentHiddenName[] =
     "Clipboard suggestion content hidden";

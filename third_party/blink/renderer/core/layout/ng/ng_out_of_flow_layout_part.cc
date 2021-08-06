@@ -83,9 +83,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
                             container_node.IsFixedContainer(),
                             container_node.Style(),
                             container_space,
-                            container_builder) {
-  can_traverse_fragments_ = container_node.CanTraversePhysicalFragments();
-}
+                            container_builder) {}
 
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     bool is_absolute_container,
@@ -301,6 +299,8 @@ void NGOutOfFlowLayoutPart::HandleFragmentation() {
                                      column_inline_progression);
     }
   }
+  for (auto& descendant : delayed_descendants_)
+    container_builder_->AddOutOfFlowFragmentainerDescendant(descendant);
 }
 
 // Retrieve the stored ContainingBlockInfo needed for placing positioned nodes.
@@ -992,6 +992,21 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
     // Sort the descendants by fragmentainer index in |descendants_to_layout|.
     // This will ensure that the descendants are laid out in the correct order.
     for (auto& descendant : *descendants) {
+      auto* containing_block = To<LayoutBox>(
+          descendant.containing_block.fragment->GetLayoutObject());
+      DCHECK(containing_block);
+
+      // We may try to lay out an OOF once we reach a column spanner. However,
+      // if the containing block has not finished lay out, we should wait to
+      // lay out the OOF in case its position is dependent on its containing
+      // block's final size.
+      if (containing_block
+              ->GetPhysicalFragment(containing_block->PhysicalFragmentCount() -
+                                    1)
+              ->BreakToken()) {
+        delayed_descendants_.push_back(descendant);
+        continue;
+      }
       NodeInfo node_info = SetupNodeInfo(descendant);
       NodeToLayout node_to_layout = {
           node_info, CalculateOffset(node_info, /* only_layout */ nullptr)};
@@ -1252,7 +1267,13 @@ NGOutOfFlowLayoutPart::OffsetInfo NGOutOfFlowLayoutPart::CalculateOffset(
   offset_info.offset.inline_offset += inset.inline_start;
   offset_info.offset.block_offset += inset.block_start;
 
-  if (!only_layout && !can_traverse_fragments_) {
+  if (!only_layout && !container_builder_->IsBlockFragmentationContextRoot()) {
+    // OOFs contained by an inline that's been split into continuations are
+    // special, as their offset is relative to a fragment that's not the same as
+    // their containing NG fragment; take a look inside
+    // AdjustOffsetForSplitInline() for further details. This doesn't apply if
+    // block fragmentation is involved, though, since all OOFs are then child
+    // fragments of the nearest fragmentainer.
     AdjustOffsetForSplitInline(node_info.node, container_builder_,
                                offset_info.offset);
   }

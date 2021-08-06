@@ -565,6 +565,11 @@ void PagedAppsGridView::MaybeStopPageFlip() {
   StopPageFlipTimer();
 }
 
+bool PagedAppsGridView::MaybeAutoScroll() {
+  // Paged view does not auto-scroll.
+  return false;
+}
+
 void PagedAppsGridView::RecordAppMovingTypeMetrics(AppListAppMovingType type) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppListAppMovingType", type,
                             kMaxAppListAppMovingType);
@@ -1017,9 +1022,13 @@ void PagedAppsGridView::AnimateCardifiedState() {
     entry_view->SetBoundsRect(target_bounds);
 
     // View bounds are currently |target_bounds|. Transform the view so it
-    // appears in |current_bounds|.
+    // appears in |current_bounds|. Note that bounds are flipped by views in
+    // RTL UI direction, which is not taken into account by
+    // `gfx::TransformBetweenRects()` - use mirrored rects to calculate
+    // transition transform when needed.
     gfx::Transform transform = gfx::TransformBetweenRects(
-        gfx::RectF(target_bounds), gfx::RectF(current_bounds));
+        gfx::RectF(items_container()->GetMirroredRect(target_bounds)),
+        gfx::RectF(items_container()->GetMirroredRect(current_bounds)));
     entry_view->layer()->SetTransform(transform);
 
     ui::ScopedLayerAnimationSettings animator(

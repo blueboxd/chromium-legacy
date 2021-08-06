@@ -593,12 +593,11 @@ void PDFiumEngine::PluginSizeUpdated(const gfx::Size& size) {
 void PDFiumEngine::ScrolledToXPosition(int position) {
   CancelPaints();
 
-  int old_x = position_.x();
+  gfx::Vector2d diff(position_.x() - position, 0);
   position_.set_x(position);
   CalculateVisiblePages();
 
-  gfx::Vector2d diff(position - old_x, 0);
-  client_->DidScroll(-diff);
+  client_->DidScroll(diff);
   caret_rect_ += diff;
   client_->CaretChanged(caret_rect_);
 
@@ -608,12 +607,11 @@ void PDFiumEngine::ScrolledToXPosition(int position) {
 void PDFiumEngine::ScrolledToYPosition(int position) {
   CancelPaints();
 
-  int old_y = position_.y();
+  gfx::Vector2d diff(0, position_.y() - position);
   position_.set_y(position);
   CalculateVisiblePages();
 
-  gfx::Vector2d diff(0, position - old_y);
-  client_->DidScroll(-diff);
+  client_->DidScroll(diff);
   caret_rect_ += diff;
   client_->CaretChanged(caret_rect_);
 
@@ -833,8 +831,9 @@ void PDFiumEngine::OnDocumentCanceled() {
 }
 
 void PDFiumEngine::FinishLoadingDocument() {
+  // Note that doc_loader_->IsDocumentComplete() may not be true here if
+  // called via `OnDocumentCanceled()`.
   DCHECK(doc());
-  DCHECK(doc_loader_->IsDocumentComplete());
 
   LoadBody();
 
@@ -2155,7 +2154,7 @@ void PDFiumEngine::InvalidateAllPages() {
   StopFind();
   DCHECK(document_loaded_);
   RefreshCurrentDocumentLayout();
-  client_->Invalidate(gfx::Rect(plugin_size_));
+  client_->Invalidate(gfx::Rect(plugin_size()));
 }
 
 std::string PDFiumEngine::GetSelectedText() {
@@ -2416,16 +2415,16 @@ void PDFiumEngine::ScrollBasedOnScrollAlignment(
   gfx::Vector2d scroll_offset = GetScreenRect(scroll_rect).OffsetFromOrigin();
   switch (horizontal_scroll_alignment) {
     case AccessibilityScrollAlignment::kRight:
-      scroll_offset.set_x(scroll_offset.x() - plugin_size_.width());
+      scroll_offset.set_x(scroll_offset.x() - plugin_size().width());
       break;
     case AccessibilityScrollAlignment::kCenter:
-      scroll_offset.set_x(scroll_offset.x() - (plugin_size_.width() / 2));
+      scroll_offset.set_x(scroll_offset.x() - (plugin_size().width() / 2));
       break;
     case AccessibilityScrollAlignment::kClosestToEdge: {
       scroll_offset.set_x((std::abs(scroll_offset.x()) <=
-                           std::abs(scroll_offset.x() - plugin_size_.width()))
+                           std::abs(scroll_offset.x() - plugin_size().width()))
                               ? scroll_offset.x()
-                              : scroll_offset.x() - plugin_size_.width());
+                              : scroll_offset.x() - plugin_size().width());
       break;
     }
     case AccessibilityScrollAlignment::kNone:
@@ -2440,16 +2439,16 @@ void PDFiumEngine::ScrollBasedOnScrollAlignment(
 
   switch (vertical_scroll_alignment) {
     case AccessibilityScrollAlignment::kBottom:
-      scroll_offset.set_y(scroll_offset.y() - plugin_size_.height());
+      scroll_offset.set_y(scroll_offset.y() - plugin_size().height());
       break;
     case AccessibilityScrollAlignment::kCenter:
-      scroll_offset.set_y(scroll_offset.y() - (plugin_size_.height() / 2));
+      scroll_offset.set_y(scroll_offset.y() - (plugin_size().height() / 2));
       break;
     case AccessibilityScrollAlignment::kClosestToEdge: {
       scroll_offset.set_y((std::abs(scroll_offset.y()) <=
-                           std::abs(scroll_offset.y() - plugin_size_.height()))
+                           std::abs(scroll_offset.y() - plugin_size().height()))
                               ? scroll_offset.y()
-                              : scroll_offset.y() - plugin_size_.height());
+                              : scroll_offset.y() - plugin_size().height());
       break;
     }
     case AccessibilityScrollAlignment::kNone:
@@ -2959,7 +2958,7 @@ void PDFiumEngine::CalculateVisiblePages() {
   doc_loader_->ClearPendingRequests();
 
   visible_pages_.clear();
-  gfx::Rect visible_rect(plugin_size_);
+  gfx::Rect visible_rect(plugin_size());
   for (int i = 0; i < static_cast<int>(pages_.size()); ++i) {
     // Check an entire PageScreenRect, since we might need to repaint side
     // borders and shadows even if the page itself is not visible.
@@ -3398,8 +3397,8 @@ gfx::Rect PDFiumEngine::GetVisibleRect() const {
   gfx::Rect rv;
   rv.set_x(static_cast<int>(position_.x() / current_zoom_));
   rv.set_y(static_cast<int>(position_.y() / current_zoom_));
-  rv.set_width(static_cast<int>(ceil(plugin_size_.width() / current_zoom_)));
-  rv.set_height(static_cast<int>(ceil(plugin_size_.height() / current_zoom_)));
+  rv.set_width(static_cast<int>(ceil(plugin_size().width() / current_zoom_)));
+  rv.set_height(static_cast<int>(ceil(plugin_size().height() / current_zoom_)));
   return rv;
 }
 
@@ -3660,7 +3659,7 @@ void PDFiumEngine::GetRegion(const gfx::Point& location,
                              void*& region,
                              int& stride) const {
   if (image_data.isNull()) {
-    DCHECK(plugin_size_.IsEmpty());
+    DCHECK(plugin_size().IsEmpty());
     stride = 0;
     region = nullptr;
     return;
@@ -3671,7 +3670,7 @@ void PDFiumEngine::GetRegion(const gfx::Point& location,
   gfx::Point offset_location = location + page_offset_;
   // TODO: update this when we support BIDI and scrollbars can be on the left.
   if (!buffer ||
-      !gfx::Rect(gfx::PointAtOffsetFromOrigin(page_offset_), plugin_size_)
+      !gfx::Rect(gfx::PointAtOffsetFromOrigin(page_offset_), plugin_size())
            .Contains(offset_location)) {
     region = nullptr;
     return;
@@ -3895,12 +3894,12 @@ void PDFiumEngine::ScrollAnnotationIntoView(FPDF_ANNOTATION annot,
   if (rect.y() < visible_rect.y() || rect.bottom() > visible_rect.bottom()) {
     // Scroll the viewport vertically to align the top of focus rect to
     // centre.
-    client_->ScrollToY(rect.y() * current_zoom_ - plugin_size_.height() / 2);
+    client_->ScrollToY(rect.y() * current_zoom_ - plugin_size().height() / 2);
   }
   if (rect.x() < visible_rect.x() || rect.right() > visible_rect.right()) {
     // Scroll the viewport horizontally to align the left of focus rect to
     // centre.
-    client_->ScrollToX(rect.x() * current_zoom_ - plugin_size_.width() / 2);
+    client_->ScrollToX(rect.x() * current_zoom_ - plugin_size().width() / 2);
   }
 }
 
@@ -3938,7 +3937,12 @@ void PDFiumEngine::OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot,
                         rect_screen.y() - position_.y(), rect_screen.width(),
                         rect_screen.height());
 
+    // The caret rect will be cached in `TextInputManager`.
     client_->CaretChanged(caret_rect_);
+    // We need to explicitly clear the selected text, otherwise the selection
+    // range will be an InvalidRange, which does not match the cache in
+    // `TextInputManager`.
+    client_->SetSelectedText("");
   }
 }
 

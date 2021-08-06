@@ -2786,8 +2786,10 @@
             ],
             "experiments": [
                 {
-                    "name": "RecipeTasksChromeCartImprovement_Enabled",
+                    "name": "RecipeTasksRuleBasedDiscountDrive_Enabled",
                     "params": {
+                        "NtpChromeCartModuleAbandonedCartDiscountParam": "true",
+                        "NtpChromeCartModuleAbandonedCartDiscountUseUtmParam": "true",
                         "NtpChromeCartModuleHeuristicsImprovementParam": "true",
                         "NtpModulesLoadTimeoutMillisecondsParam": "3000"
                     },
@@ -4228,33 +4230,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MetrickitCrashReport"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSReduceSessionSize": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled40_11",
-                    "params": {
-                        "session-size": "40"
-                    },
-                    "enable_features": [
-                        "ReduceSessionSize"
-                    ]
-                },
-                {
-                    "name": "Enabled50_11",
-                    "params": {
-                        "session-size": "50"
-                    },
-                    "enable_features": [
-                        "ReduceSessionSize"
                     ]
                 }
             ]
@@ -7836,6 +7811,64 @@
                     "name": "Enabled",
                     "enable_features": [
                         "StrictExtensionIsolation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SubframeShutdownDelay": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledConstant",
+                    "params": {
+                        "type": "constant"
+                    },
+                    "enable_features": [
+                        "SubframeShutdownDelay"
+                    ]
+                },
+                {
+                    "name": "EnabledConstantLong",
+                    "params": {
+                        "type": "constant-long"
+                    },
+                    "enable_features": [
+                        "SubframeShutdownDelay"
+                    ]
+                },
+                {
+                    "name": "EnabledHistoryBased",
+                    "params": {
+                        "type": "history-based"
+                    },
+                    "enable_features": [
+                        "SubframeShutdownDelay"
+                    ]
+                },
+                {
+                    "name": "EnabledHistoryBasedLong",
+                    "params": {
+                        "type": "history-based-long"
+                    },
+                    "enable_features": [
+                        "SubframeShutdownDelay"
+                    ]
+                },
+                {
+                    "name": "EnabledMemoryBased",
+                    "params": {
+                        "type": "memory-based"
+                    },
+                    "enable_features": [
+                        "SubframeShutdownDelay"
                     ]
                 }
             ]

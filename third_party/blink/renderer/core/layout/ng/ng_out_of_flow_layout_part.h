@@ -307,6 +307,10 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   const WritingMode writing_mode_;
   const WritingDirectionMode default_writing_direction_;
 
+  // Out-of-flow positioned nodes that we should lay out at a later time. For
+  // example, if the containing block has not finished layout.
+  Vector<NGLogicalOutOfFlowPositionedNode> delayed_descendants_;
+
   // Holds the children of an inner multicol if we are laying out OOF elements
   // inside a nested fragmentation context.
   Vector<MulticolChildInfo>* multicol_children_;
@@ -321,7 +325,6 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   bool is_fixed_container_ = false;
   bool allow_first_tier_oof_cache_ = false;
   bool has_block_fragmentation_ = false;
-  bool can_traverse_fragments_ = false;
   // A fixedpos containing block was found in an outer fragmentation context.
   bool outer_context_has_fixedpos_container_ = false;
 };

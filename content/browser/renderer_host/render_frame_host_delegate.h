@@ -147,7 +147,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) {}
 
-  // Called when blink.mojom.LocalFrameHost::DidFinishLoad() is invoked.
+  // Notifies the browser that a frame finished loading.
   virtual void OnDidFinishLoad(RenderFrameHostImpl* render_frame_host,
                                const GURL& url) {}
 
@@ -454,10 +454,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual base::android::ScopedJavaLocalRef<jobject>
   GetJavaRenderFrameHostDelegate();
 #endif
-
-  // Whether the delegate is being destroyed, in which case the RenderFrameHost
-  // should not be asked to create a RenderFrame.
-  virtual bool IsBeingDestroyed();
 
   // Notified that the render frame started loading a subresource.
   virtual void SubresourceResponseStarted() {}

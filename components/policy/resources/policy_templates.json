@@ -1155,6 +1155,7 @@
         'ArcLocationServiceEnabled',
         'AppRecommendationZeroStateEnabled',
         'DeviceArcDataSnapshotHours',
+        'ArcAppToWebAppSharingEnabled',
       ]
     },
     {
@@ -7145,7 +7146,7 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabled',
-      'owners': [ 'chlily@chromium.org', ],
+      'owners': [ 'bingler@chromium.org', 'file://net/cookies/OWNERS', ],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -7183,7 +7184,7 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabledForDomainList',
-      'owners': [ 'chlily@chromium.org', ],
+      'owners': [ 'bingler@chromium.org', 'file://net/cookies/OWNERS', ],
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -7236,6 +7237,33 @@
       'caption': '''Allow <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> camera assisted search''',
       'tags': [],
       'desc': '''Leaving the policy unset or setting it to Enabled allows users to search with their cameras using <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph>. Setting the policy to Disabled means users can't see the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> button in the search box when <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> camera assisted search is supported.''',
+    },
+    {
+      'name': 'LensRegionSearchEnabled',
+      'owners': [ 'juanmojica@google.com', 'benwgold@google.com', 'lens-chrome@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:94-', 'chrome_os:94-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search.',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 886,
+      'caption': '''Allow <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item to be shown in context menu if supported.''',
+      'tags': [],
+      'desc': '''Leaving the policy unset or setting it to Enabled allows users to view and use the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item in the context menu. Setting the policy to Disabled means users will not see the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item in the context menu when <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search is supported.''',
     },
     {
       'name': 'InsecurePrivateNetworkRequestsAllowed',
@@ -26875,6 +26903,35 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       Setting the policy specifies a list of extension IDs that are exempt from the restricted managed guest session clean-up procedure (see <ph name="RESTRICTED_MANAGED_GUEST_SESSION_ENABLED_POLICY_NAME">RestrictedManagedGuestSessionEnabled</ph>).
       Leaving the policy unset means no extensions are exempt from the reset procedure.''',
     },
+    {
+      'name': 'ArcAppToWebAppSharingEnabled',
+      'owners': ['tsergeant@chromium.org', 'chromeos-apps-foundation-team@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Android to Web App sharing.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Android to Web App sharing.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 887,
+      'caption': '''Enable sharing from Android apps to Web apps''',
+      'tags': ['google-sharing'],
+      'desc': '''Setting the policy to True enables sharing text/files from Android apps to supported Web Apps, using the built-in Android sharing system.
+      When enabled, this will send metadata for installed Web Apps to Google to generate and install a shim Android app.
+      Setting the policy to False disables this functionality.'''
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -27828,6 +27885,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 885,
+  'highest_id_currently_used': 887,
   'highest_atomic_group_id_currently_used': 41
 }

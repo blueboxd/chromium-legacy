@@ -6,6 +6,7 @@ module printing.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
+// Corresponds to `printing::PageMargins` in printing/page_setup.h.
 struct PageMargins {
   int32 header;
   int32 footer;
@@ -15,6 +16,7 @@ struct PageMargins {
   int32 bottom;
 };
 
+// Corresponds to `printing::PageSetup` in printing/page_setup.h.
 struct PageSetup {
   gfx.mojom.Size physical_size;
   gfx.mojom.Rect printable_area;
@@ -24,4 +26,10 @@ struct PageSetup {
   PageMargins requested_margins;
   bool forced_margins;
   int32 text_height;
+};
+
+// Corresponds to `printing::PageRange` in printing/page_range.h.
+struct PageRange {
+  uint32 from;
+  uint32 to;
 };

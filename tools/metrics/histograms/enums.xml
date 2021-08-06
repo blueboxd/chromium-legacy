@@ -25930,15 +25930,17 @@ Called by update_document_policy_enum.py.-->
   <int value="875" label="ReportDeviceNetworkConfiguration"/>
   <int value="876" label="ReportDeviceNetworkStatus"/>
   <int value="877" label="DataLeakPreventionClipboardCheckSizeLimit"/>
-  <int value="878" label="CrossOriginWebAssemblyModuleSharingAllowed"/>
+  <int value="878" label="CrossOriginWebAssemblyModuleSharingEnabled"/>
   <int value="879"
       label="RestrictedManagedGuestSessionExtensionCleanupExemptList"/>
-  <int value="880" label="DisplayCapturePermissionsPolicy"/>
+  <int value="880" label="DisplayCapturePermissionsPolicyEnabled"/>
   <int value="881" label="ScreenCaptureAllowedByOrigins"/>
   <int value="882" label="WindowCaptureAllowedByOrigins"/>
   <int value="883" label="TabCaptureAllowedByOrigins"/>
   <int value="884" label="SameOriginTabCaptureAllowedByOrigins"/>
   <int value="885" label="AssistantVoiceMatchEnabledDuringOobe"/>
+  <int value="886" label="LensRegionSearchEnabled"/>
+  <int value="887" label="ArcAppToWebAppSharingEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -61684,6 +61686,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Tether Details"/>
   <int value="7" label="Vpn Details"/>
   <int value="100" label="Bluetooth Devices"/>
+  <int value="101" label="Bluetooth Device Details"/>
   <int value="200" label="Multi Device Features"/>
   <int value="201" label="Smart Lock"/>
   <int value="202" label="Nearby Share"/>
@@ -73087,6 +73090,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="FAILED_BAD_SELECTOR"/>
 </enum>
 
+<enum name="ScrollAndClickStatus">
+  <int value="0" label="NO_SCROLL_NO_CLICK"/>
+  <int value="1" label="NO_SCROLL_CLICKED"/>
+  <int value="2" label="SCROLLED_NO_CLICK"/>
+  <int value="3" label="SCROLLED_CLICKED"/>
+</enum>
+
 <enum name="ScrollingThreadStatus">
   <int value="0" label="SCROLLING_ON_COMPOSITOR"/>
   <int value="1" label="SCROLLING_ON_COMPOSITOR_BLOCKED_ON_MAIN"/>
@@ -73606,6 +73616,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="FeatureNameHashNotFound"/>
   <int value="7" label="FeatureAggregationNotFound"/>
   <int value="8" label="FeatureTensorLengthInvalid"/>
+  <int value="9" label="FeatureNameHashDoesNotMatchName"/>
 </enum>
 
 <enum name="SelectedNewTabCreationOption">

@@ -14504,6 +14504,30 @@
       }
     ]
   },
+  "LensRegionSearchEnabled": {
+    "os": ["win", "linux", "mac", "chromeos_ash", "chromeos_lacros"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "LensRegionSearchEnabled": true },
+        "prefs": {
+          "policy.lens_region_search_enabled": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check default values (no policies set)",
+        "policies": { },
+        "prefs": {
+          "policy.lens_region_search_enabled": {
+            "location": "user_profile",
+            "default_value": true
+          }
+        }
+      }
+    ]
+  },
   "LensCameraAssistedSearchEnabled": {
     "os": [
       "android"
@@ -15526,6 +15550,41 @@
               "abcdefghijklmnopabcdefghijklmnop",
               "bcdefghijklmnopabcdefghijklmnopa"
             ]
+          }
+        }
+      }
+    ]
+  },
+  "ArcAppToWebAppSharingEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ArcAppToWebAppSharingEnabled": false
+        },
+        "prefs": {
+          "generated_webapks_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ArcAppToWebAppSharingEnabled": true
+        },
+        "prefs": {
+          "generated_webapks_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "generated_webapks_enabled": {
+            "default_value": true
           }
         }
       }

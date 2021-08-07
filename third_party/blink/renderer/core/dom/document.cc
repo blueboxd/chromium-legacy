@@ -2024,7 +2024,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     return;
   }
 
-#if DCHECK_IS_ON()
+#if EXPENSIVE_DCHECKS_ARE_ON()
   if (HTMLFrameOwnerElement* owner = LocalOwner()) {
     DCHECK(!owner->GetDocument()
                 .GetSlotAssignmentEngine()
@@ -2032,7 +2032,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     DCHECK(!owner->GetDocument().NeedsLayoutTreeUpdate());
     AssertLayoutTreeUpdated(owner->GetDocument());
   }
-#endif
+#endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
   SCOPED_UMA_AND_UKM_TIMER(View()->EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kStyle);
@@ -7198,11 +7198,13 @@ void Document::CancelAnimationFrame(int id) {
 }
 
 void Document::ServiceScriptedAnimations(
-    base::TimeTicks monotonic_animation_start_time) {
-  auto start_time = base::TimeTicks::Now();
+    base::TimeTicks monotonic_animation_start_time,
+    bool can_throttle) {
+  base::TimeTicks start_time =
+      can_throttle ? base::TimeTicks() : base::TimeTicks::Now();
   scripted_animation_controller_->ServiceScriptedAnimations(
-      monotonic_animation_start_time);
-  if (GetFrame()) {
+      monotonic_animation_start_time, can_throttle);
+  if (!can_throttle && GetFrame()) {
     GetFrame()->GetFrameScheduler()->AddTaskTime(base::TimeTicks::Now() -
                                                  start_time);
   }

@@ -49,7 +49,7 @@ namespace {
 
 GURL GetOriginOrURL(const WebFrame* frame) {
   url::Origin top_origin = url::Origin(frame->Top()->GetSecurityOrigin());
-  // The |top_origin| is unique ("null") e.g., for file:// URLs. Use the
+  // The `top_origin` is unique ("null") e.g., for file:// URLs. Use the
   // document URL as the primary URL in those cases.
   // TODO(alexmos): This is broken for --site-per-process, since top() can be a
   // WebRemoteFrame which does not have a document(), and the WebRemoteFrame's
@@ -202,8 +202,8 @@ void ContentSettingsAgentImpl::DidCommitProvisionalLoad(
     return;  // Not a top-level navigation.
 
   // Clear "block" flags for the new page. This needs to happen before any of
-  // |allowScript()|, |allowScriptFromSource()|, |allowImage()|, or
-  // |allowPlugins()| is called for the new page so that these functions can
+  // `allowScript()`, `allowScriptFromSource()`, `allowImage()`, or
+  // `allowPlugins()` is called for the new page so that these functions can
   // correctly detect that a piece of content flipped from "not blocked" to
   // "blocked".
   ClearBlockedContentSettings();
@@ -284,9 +284,9 @@ void ContentSettingsAgentImpl::AllowStorageAccess(
     return;
   }
 
-  // Passing the |cache_storage_permissions_| ref to the callback is safe here
-  // as the mojo::Remote is owned by |this| and won't invoke the callback if
-  // |this| (and in turn |cache_storage_permissions_|) is destroyed.
+  // Passing the `cache_storage_permissions_` ref to the callback is safe here
+  // as the mojo::Remote is owned by `this` and won't invoke the callback if
+  // `this` (and in turn `cache_storage_permissions_`) is destroyed.
   base::OnceCallback<void(bool)> new_cb = base::BindOnce(
       [](base::OnceCallback<void(bool)> original_cb, StoragePermissionsKey key,
          base::flat_map<StoragePermissionsKey, bool>& cache_map, bool result) {
@@ -297,8 +297,7 @@ void ContentSettingsAgentImpl::AllowStorageAccess(
 
   GetContentSettingsManager().AllowStorageAccess(
       routing_id(), ConvertToMojoStorageType(storage_type),
-      frame->GetSecurityOrigin(),
-      frame->GetDocument().SiteForCookies().RepresentativeUrl(),
+      frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
       frame->GetDocument().TopFrameOrigin(), std::move(new_cb));
 }
 
@@ -318,8 +317,7 @@ bool ContentSettingsAgentImpl::AllowStorageAccessSync(
   bool result = false;
   GetContentSettingsManager().AllowStorageAccess(
       routing_id(), ConvertToMojoStorageType(storage_type),
-      frame->GetSecurityOrigin(),
-      frame->GetDocument().SiteForCookies().RepresentativeUrl(),
+      frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
       frame->GetDocument().TopFrameOrigin(), &result);
   cached_storage_permissions_[key] = result;
   return result;

@@ -259,10 +259,7 @@ class PDFiumEngine : public PDFEngine,
   friend class PDFiumTestBase;
   friend class SelectionChangeInvalidator;
 
-  gfx::Size plugin_size() const {
-    // TODO(crbug.com/1237119): Enforce DCHECK(plugin_size_.has_value()).
-    return plugin_size_.value_or(gfx::Size());
-  }
+  const gfx::Size& plugin_size() const { return plugin_size_.value(); }
 
   // We finished getting the pdf file, so load it. This will complete
   // asynchronously (due to password fetching) and may be run multiple times.
@@ -291,7 +288,7 @@ class PDFiumEngine : public PDFEngine,
   // This should only be called after `doc_` has been loaded and the document is
   // fully downloaded.
   // If this has been run once, it will not notify the client again.
-  void FinishLoadingDocument();
+  void FinishLoadingDocument(int32_t /*unused_but_required*/);
 
   // Loads information about the pages in the document and performs layout.
   void LoadPageInfo();
@@ -683,6 +680,7 @@ class PDFiumEngine : public PDFEngine,
   PDFiumFormFiller form_filler_;
 
   std::unique_ptr<PDFiumDocument> document_;
+  bool document_pending_ = false;
   bool document_loaded_ = false;
 
   // The page(s) of the document.

@@ -17,6 +17,7 @@
 #include "media/base/android/media_url_interceptor.h"
 #include "net/base/auth.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/site_for_cookies.h"
 
 namespace storage {
 class FileSystemContext;
@@ -31,9 +32,9 @@ class ResourceContext;
 // asynchronously on the UI thread.
 class MediaResourceGetterImpl : public media::MediaResourceGetter {
  public:
-  // Construct a MediaResourceGetterImpl object. |browser_context| and
-  // |render_process_id| are passed to retrieve the CookieStore.
-  // |file_system_context| are used to get the platform path.
+  // Construct a MediaResourceGetterImpl object. `browser_context` and
+  // `render_process_id` are passed to retrieve the CookieStore.
+  // `file_system_context` are used to get the platform path.
   MediaResourceGetterImpl(BrowserContext* browser_context,
                           storage::FileSystemContext* file_system_context,
                           int render_process_id,
@@ -45,7 +46,7 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   void GetAuthCredentials(const GURL& url,
                           GetAuthCredentialsCB callback) override;
   void GetCookies(const GURL& url,
-                  const GURL& site_for_cookies,
+                  const net::SiteForCookies& site_for_cookies,
                   const url::Origin& top_frame_origin,
                   GetCookieCB callback) override;
   void GetPlatformPathFromURL(const GURL& url,

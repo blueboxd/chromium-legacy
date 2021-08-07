@@ -16,6 +16,7 @@
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/test/test_client.h"
 #include "pdf/test/test_document_loader.h"
+#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/environment.h"
@@ -64,6 +65,9 @@ std::unique_ptr<PDFiumEngine> PDFiumTestBase::InitializeEngine(
   InitializeEngineResult result =
       InitializeEngineWithoutLoading(client, pdf_name);
   if (result.engine) {
+    // Simulate initializing plugin geometry.
+    result.engine->PluginSizeUpdated({});
+
     // Incrementally read the PDF. To detect linearized PDFs, the first read
     // should be at least 1024 bytes.
     while (result.document_loader->SimulateLoadData(1024))

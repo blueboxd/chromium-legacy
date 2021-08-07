@@ -47,7 +47,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGTable;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
-BLINK_COMMON_EXPORT extern const base::Feature kNavigatorPluginsEmpty;
+BLINK_COMMON_EXPORT extern const base::Feature kNavigatorPluginsFixed;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
@@ -432,12 +432,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kDesktopPWAsSubApps;
 // When enabled, we report all JavaScript frameworks via a manual traversal to
 // detect the properties and attributes required.
 BLINK_COMMON_EXPORT extern const base::Feature kReportAllJavascriptFrameworks;
-
-// Whether to exclude out-of-view frames for paint timing, to make paint timing
-// actually measure user experience instead of depending on paint implementation
-// (e.g. whether to paint out-of-view frames) and arbitrary user actions (e.g.
-// scrolling a frame into view making it eligible for paint).
-BLINK_COMMON_EXPORT extern const base::Feature kPaintTimingNoOutOfViewFrames;
 
 // Suppresses console errors for CORS problems which report an associated
 // inspector issue anyway.

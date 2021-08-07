@@ -225,6 +225,8 @@ crbug.com/angleproject/4931 [ win nvidia angle-vulkan passthrough ] conformance/
 # Win / Intel / Vulkan / Passthrough command decoder
 # Technically flaky, but flake rate is too high for RetryOnFailure.
 crbug.com/angleproject/4922 [ win intel angle-vulkan passthrough ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
+# Bug where RelaxedPrecision applied to normalize() produces 0
+crbug.com/angleproject/6228 [ win intel angle-vulkan passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
 
 ####################
 # Fuchsia failures #
@@ -820,6 +822,16 @@ crbug.com/1099977 [ mac swiftshader-gl no-passthrough ] conformance/glsl/bugs/sa
 crbug.com/1099960 [ mac swiftshader-gl no-passthrough ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
 crbug.com/1099960 [ mac swiftshader-gl no-passthrough ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
 crbug.com/1099960 [ mac swiftshader-gl no-passthrough ] conformance/rendering/scissor-rect-repeated-rendering.html [ Failure ]
+
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/1237561 [ mac swiftshader-gl no-passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 
 # Mac. Vulkan backend.
 crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/canvas/canvas-test.html [ Failure ]

@@ -382,9 +382,6 @@ extern const char kDebugPackedAppDescription[];
 extern const char kDebugShortcutsName[];
 extern const char kDebugShortcutsDescription[];
 
-extern const char kDeviceDiscoveryNotificationsName[];
-extern const char kDeviceDiscoveryNotificationsDescription[];
-
 extern const char kDisallowDocWrittenScriptsUiName[];
 extern const char kDisallowDocWrittenScriptsUiDescription[];
 
@@ -488,9 +485,6 @@ extern const char kDesktopPWAsTabStripLinkCapturingDescription[];
 
 extern const char kDesktopPWAsTabStripSettingsName[];
 extern const char kDesktopPWAsTabStripSettingsDescription[];
-
-extern const char kDesktopPWAsRunOnOsLoginName[];
-extern const char kDesktopPWAsRunOnOsLoginDescription[];
 
 extern const char kDesktopPWAsSubAppsName[];
 extern const char kDesktopPWAsSubAppsDescription[];
@@ -973,12 +967,6 @@ extern const char kCanvas2DLayersDescription[];
 
 extern const char kNewCanvas2DAPIName[];
 extern const char kNewCanvas2DAPIDescription[];
-
-extern const char kSignInProfileCreationName[];
-extern const char kSignInProfileCreationDescription[];
-
-extern const char kSignInProfileCreationEnterpriseName[];
-extern const char kSignInProfileCreationEnterpriseDescription[];
 
 extern const char kSyncingCompromisedCredentialsName[];
 extern const char kSyncingCompromisedCredentialsDescription[];
@@ -1900,11 +1888,11 @@ extern const char kMessagesForAndroidAdsBlockedDescription[];
 extern const char kMessagesForAndroidChromeSurveyName[];
 extern const char kMessagesForAndroidChromeSurveyDescription[];
 
-extern const char kMessagesForAndroidGroupedPermissionName[];
-extern const char kMessagesForAndroidGroupedPermissionDescription[];
-
 extern const char kMessagesForAndroidInfrastructureName[];
 extern const char kMessagesForAndroidInfrastructureDescription[];
+
+extern const char kMessagesForAndroidNotificationBlockedName[];
+extern const char kMessagesForAndroidNotificationBlockedDescription[];
 
 extern const char kMessagesForAndroidPasswordsName[];
 extern const char kMessagesForAndroidPasswordsDescription[];
@@ -2233,6 +2221,9 @@ extern const char kOmniboxPedalsBatch3Description[];
 extern const char kOmniboxPedalsDefaultIconColoredName[];
 extern const char kOmniboxPedalsDefaultIconColoredDescription[];
 
+extern const char kOmniboxPedalsTranslationConsoleName[];
+extern const char kOmniboxPedalsTranslationConsoleDescription[];
+
 extern const char kOmniboxKeywordSearchButtonName[];
 extern const char kOmniboxKeywordSearchButtonDescription[];
 
@@ -2483,18 +2474,6 @@ extern const char kCrostiniUseDlcDescription[];
 extern const char kCrostiniResetLxdDbName[];
 extern const char kCrostiniResetLxdDbDescription[];
 
-extern const char kCryptAuthV2DeviceActivityStatusName[];
-extern const char kCryptAuthV2DeviceActivityStatusDescription[];
-
-extern const char kCryptAuthV2DeviceActivityStatusUseConnectivityName[];
-extern const char kCryptAuthV2DeviceActivityStatusUseConnectivityDescription[];
-
-extern const char kCryptAuthV2DeviceSyncName[];
-extern const char kCryptAuthV2DeviceSyncDescription[];
-
-extern const char kCryptAuthV2EnrollmentName[];
-extern const char kCryptAuthV2EnrollmentDescription[];
-
 extern const char kDisableBufferBWCompressionName[];
 extern const char kDisableBufferBWCompressionDescription[];
 
@@ -2506,9 +2485,6 @@ extern const char kForceSpectreVariant2MitigationDescription[];
 
 extern const char kDisableCancelAllTouchesName[];
 extern const char kDisableCancelAllTouchesDescription[];
-
-extern const char kDisableCryptAuthV1DeviceSyncName[];
-extern const char kDisableCryptAuthV1DeviceSyncDescription[];
 
 extern const char kDisableIdleSocketsCloseOnMemoryPressureName[];
 extern const char kDisableIdleSocketsCloseOnMemoryPressureDescription[];
@@ -3120,10 +3096,6 @@ extern const char kZeroCopyVideoCaptureDescription[];
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
-
-extern const char kDesktopInProductHelpSnoozeName[];
-extern const char kDesktopInProductHelpSnoozeDescription[];
-
 extern const char kDownloadShelfWebUI[];
 extern const char kDownloadShelfWebUIDescription[];
 

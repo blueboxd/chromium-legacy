@@ -238,11 +238,6 @@
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #endif
 
-#if defined(OS_WIN)
-#include "content/browser/media/dcomp_surface_registry_broker.h"
-#include "media/cdm/win/media_foundation_cdm.h"
-#endif  // defined(OS_WIN)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
@@ -6949,7 +6944,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   // URL which is not allowed in a WebUI process. As we are at the commit stage,
   // set |origin_isolation_request| to kNone.
   if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
-          this, UrlInfo(url, UrlInfo::OriginIsolationRequest::kNone, origin),
+          this, UrlInfo(UrlInfoInit(url).WithOrigin(origin)),
           /* is_renderer_initiated_check */ true)) {
     return CanCommitStatus::CANNOT_COMMIT_URL;
   }
@@ -6998,8 +6993,8 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   const CanCommitStatus can_commit_status = policy->CanCommitOriginAndUrl(
       GetProcess()->GetID(), GetSiteInstance()->GetIsolationContext(), origin,
-      UrlInfo(url, UrlInfo::OriginIsolationRequest::kNone, origin,
-              GetSiteInstance()->GetSiteInfo().storage_partition_config()),
+      UrlInfo(UrlInfoInit(url).WithOrigin(origin).WithStoragePartitionConfig(
+          GetSiteInstance()->GetSiteInfo().storage_partition_config())),
       GetSiteInstance()->GetWebExposedIsolationInfo());
   if (can_commit_status != CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL) {
     LogCanCommitOriginAndUrlFailureReason("cpspi_disallowed_commit");
@@ -8668,15 +8663,18 @@ void RenderFrameHostImpl::WillCreateURLLoaderFactory(
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
   if (g_allow_injecting_javascript)
     return true;
+
+  // TODO(https://crbug.com/1237360): This is just here to prove that previous
+  // code that checked for null is not needed. Remove GetAsWebContents().
+  DCHECK(delegate_->GetAsWebContents() != nullptr);
+
   return !frame_tree_node_->current_url().is_valid() ||
          frame_tree_node_->current_url().SchemeIs(kChromeDevToolsScheme) ||
          ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
              GetProcess()->GetID()) ||
          // It's possible to load about:blank in a Web UI renderer.
          // See http://crbug.com/42547
-         (frame_tree_node_->current_url().spec() == url::kAboutBlankURL) ||
-         // InterstitialPageImpl should be the only case matching this.
-         (delegate_->GetAsWebContents() == nullptr);
+         (frame_tree_node_->current_url().spec() == url::kAboutBlankURL);
 }
 
 // static
@@ -8989,17 +8987,6 @@ void RenderFrameHostImpl::BindMediaMetricsProviderReceiver(
           base::Unretained(this)),
       std::move(receiver));
 }
-
-#if defined(OS_WIN)
-void RenderFrameHostImpl::BindDCOMPSurfaceRegistry(
-    mojo::PendingReceiver<media::mojom::DCOMPSurfaceRegistry> receiver) {
-  if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption) &&
-      media::MediaFoundationCdm::IsAvailable()) {
-    mojo::MakeSelfOwnedReceiver(std::make_unique<DCOMPSurfaceRegistryBroker>(),
-                                std::move(receiver));
-  }
-}
-#endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 void RenderFrameHostImpl::BindMediaRemoterFactoryReceiver(
@@ -9508,11 +9495,11 @@ void RenderFrameHostImpl::SetLastCommittedSiteInfo(const GURL& url) {
   // be set to kNone.
   BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
   SiteInfo site_info =
-      url.is_empty() ? SiteInfo(browser_context)
-                     : SiteInfo::Create(
-                           GetSiteInstance()->GetIsolationContext(),
-                           UrlInfo(url, UrlInfo::OriginIsolationRequest::kNone),
-                           GetSiteInstance()->GetWebExposedIsolationInfo());
+      url.is_empty()
+          ? SiteInfo(browser_context)
+          : SiteInfo::Create(GetSiteInstance()->GetIsolationContext(),
+                             UrlInfo(UrlInfoInit(url)),
+                             GetSiteInstance()->GetWebExposedIsolationInfo());
 
   if (last_committed_site_info_ == site_info)
     return;

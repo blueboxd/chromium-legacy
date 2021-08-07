@@ -116,7 +116,7 @@ public class ContinuousSearchUiTest {
             mTabSupplier = new ObservableSupplierImpl<Tab>();
 
             mCoordinator = new ContinuousSearchListCoordinator(mStateProviderMock, mTabSupplier,
-                    this::updateVisibility, mThemeProviderMock, sActivity.getResources());
+                    this::updateVisibility, mThemeProviderMock, sActivity);
             mLayout = new LinearLayout(sActivity);
             mLayout.setLayoutParams(
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,

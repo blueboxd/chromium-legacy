@@ -244,7 +244,9 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
               (const base::Location&, ResultCallback, int32_t, base::TimeDelta),
               (override));
 
-  MOCK_METHOD(base::WeakPtr<PdfViewPluginBase>, GetWeakPtr, (), (override));
+  base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
 
   MOCK_METHOD(std::unique_ptr<UrlLoader>,
               CreateUrlLoaderInternal,
@@ -306,6 +308,8 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
 
  private:
   std::vector<base::Value> sent_messages_;
+
+  base::WeakPtrFactory<FakePdfViewPluginBase> weak_factory_{this};
 };
 
 base::Value CreateExpectedFormTextFieldFocusChangeResponse() {
@@ -425,7 +429,7 @@ base::Value CreateExpectedSaveToFileResponse(const std::string& token) {
 
 class PdfViewPluginBaseTest : public testing::Test {
  protected:
-  FakePdfViewPluginBase fake_plugin_;
+  testing::NiceMock<FakePdfViewPluginBase> fake_plugin_;
 };
 
 class PdfViewPluginBaseWithEngineTest : public PdfViewPluginBaseTest {

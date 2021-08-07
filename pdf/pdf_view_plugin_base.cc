@@ -1556,6 +1556,7 @@ void PdfViewPluginBase::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
   preview_client_ = std::make_unique<PreviewModeClient>(this);
   preview_engine_ = std::make_unique<PDFiumEngine>(
       preview_client_.get(), PDFiumFormFiller::ScriptOption::kNoJavaScript);
+  preview_engine_->PluginSizeUpdated({});
   preview_engine_->HandleDocumentLoad(std::move(loader), GetURL());
 }
 

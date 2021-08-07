@@ -35,8 +35,8 @@ namespace content {
 
 namespace {
 
-// Returns the cookie manager for the |browser_context| at the client end of the
-// mojo pipe. This will be restricted to the origin of |url|, and will apply
+// Returns the cookie manager for the `browser_context` at the client end of the
+// mojo pipe. This will be restricted to the origin of `url`, and will apply
 // policies from user and ContentBrowserClient to cookie operations.
 mojo::PendingRemote<network::mojom::RestrictedCookieManager>
 GetRestrictedCookieManagerForContext(
@@ -161,13 +161,12 @@ void MediaResourceGetterImpl::GetAuthCredentials(
                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void MediaResourceGetterImpl::GetCookies(const GURL& url,
-                                         const GURL& site_for_cookies_url,
-                                         const url::Origin& top_frame_origin,
-                                         GetCookieCB callback) {
+void MediaResourceGetterImpl::GetCookies(
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    const url::Origin& top_frame_origin,
+    GetCookieCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::SiteForCookies site_for_cookies =
-      net::SiteForCookies::FromUrl(site_for_cookies_url);
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();

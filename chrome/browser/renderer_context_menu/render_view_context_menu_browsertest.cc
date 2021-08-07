@@ -1494,6 +1494,11 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     return embedded_test_server()->GetURL(kImageSearchURL);
   }
 
+  GURL GetLensImageSearchURL() {
+    static const char kLensImageSearchURL[] = "/imagesearch?ep=ccm";
+    return embedded_test_server()->GetURL(kLensImageSearchURL);
+  }
+
  private:
   void SetupImageSearchEngine() {
     static const char16_t kShortName[] = u"test";
@@ -1576,8 +1581,15 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   ASSERT_TRUE(response_received);
 }
 
+// Flaky on Linux. http://crbug.com/1234671
+#if defined(OS_LINUX)
+#define MAYBE_LensImageSearchWithValidImage \
+  DISABLED_LensImageSearchWithValidImage
+#else
+#define MAYBE_LensImageSearchWithValidImage LensImageSearchWithValidImage
+#endif
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
-                       LensImageSearchWithValidImage) {
+                       MAYBE_LensImageSearchWithValidImage) {
   static const char kValidImage[] = "/image_search/valid.png";
   SetupAndLoadImagePage(kValidImage);
 
@@ -1587,7 +1599,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
   // The browser should open a new tab for an image search.
   content::WebContents* new_tab = add_tab.Wait();
   content::WaitForLoadStop(new_tab);
-  EXPECT_EQ(GetImageSearchURL(), new_tab->GetURL());
+  EXPECT_EQ(GetLensImageSearchURL(), new_tab->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,

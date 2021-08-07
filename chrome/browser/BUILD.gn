@@ -548,6 +548,8 @@ static_library("browser") {
     "gpu/gpu_mode_manager.cc",
     "gpu/gpu_mode_manager.h",
     "hang_monitor/hang_crash_dump.h",
+    "headless/headless_mode_util.cc",
+    "headless/headless_mode_util.h",
     "heavy_ad_intervention/heavy_ad_service_factory.cc",
     "heavy_ad_intervention/heavy_ad_service_factory.h",
     "history/chrome_history_backend_client.cc",
@@ -3662,6 +3664,8 @@ static_library("browser") {
       "enterprise/connectors/file_system/signin_dialog_delegate.h",
       "enterprise/connectors/file_system/signin_experience.cc",
       "enterprise/connectors/file_system/signin_experience.h",
+      "enterprise/connectors/file_system/uma_metrics_util.cc",
+      "enterprise/connectors/file_system/uma_metrics_util.h",
       "enterprise/connectors/reporting/reporting_service_settings.cc",
       "enterprise/connectors/reporting/reporting_service_settings.h",
       "enterprise/connectors/service_provider_config.cc",
@@ -4293,6 +4297,7 @@ static_library("browser") {
       "//chrome/browser/share/core:share_targets",
       "//chrome/browser/share/proto:proto",
       "//chrome/browser/ui/color:color_headers",
+      "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
       "//chrome/browser/web_applications",
       "//chrome/common/apps/platform_apps",
       "//chrome/common/cart:mojo_bindings",
@@ -4622,12 +4627,8 @@ static_library("browser") {
       "notifications/pwa_notifier_controller.h",
       "notifications/web_page_notifier_controller.cc",
       "notifications/web_page_notifier_controller.h",
-      "performance_manager/mechanisms/userspace_swap_chromeos.cc",
-      "performance_manager/mechanisms/userspace_swap_chromeos.h",
       "performance_manager/mechanisms/working_set_trimmer_chromeos.cc",
       "performance_manager/mechanisms/working_set_trimmer_chromeos.h",
-      "performance_manager/policies/userspace_swap_policy_chromeos.cc",
-      "performance_manager/policies/userspace_swap_policy_chromeos.h",
       "performance_manager/policies/working_set_trimmer_policy_arcvm.cc",
       "performance_manager/policies/working_set_trimmer_policy_arcvm.h",
       "performance_manager/policies/working_set_trimmer_policy_chromeos.cc",
@@ -4732,8 +4733,6 @@ static_library("browser") {
       "//chromeos/login/login_state",
       "//chromeos/login/session",
       "//chromeos/memory",
-      "//chromeos/memory/userspace_swap",
-      "//chromeos/memory/userspace_swap:mojom",
       "//chromeos/network",
       "//chromeos/services/assistant/public/cpp",
       "//chromeos/services/bluetooth_config",
@@ -4778,6 +4777,20 @@ static_library("browser") {
       "//chrome/browser/ash/crosapi",
       "//chrome/browser/chromeos",
     ]
+
+    if (target_cpu == "x64") {
+      sources += [
+        "performance_manager/mechanisms/userspace_swap_chromeos.cc",
+        "performance_manager/mechanisms/userspace_swap_chromeos.h",
+        "performance_manager/policies/userspace_swap_policy_chromeos.cc",
+        "performance_manager/policies/userspace_swap_policy_chromeos.h",
+      ]
+
+      deps += [
+        "//chromeos/memory/userspace_swap",
+        "//chromeos/memory/userspace_swap:mojom",
+      ]
+    }
 
     if (use_allocator == "tcmalloc") {
       deps += [ "//chrome/common/performance_manager/mojom" ]

@@ -97,6 +97,17 @@ struct UsageInfo {
   const std::string host;
   const blink::mojom::StorageType type;
   const int64_t usage;
+
+  bool operator==(const UsageInfo& that) const {
+    return std::tie(host, usage, type) ==
+           std::tie(that.host, that.usage, that.type);
+  }
+
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const UsageInfo& usage_info) {
+    return os << "{\"" << usage_info.host << "\", " << usage_info.type << ", "
+              << usage_info.usage << "}";
+  }
 };
 
 // Entry point into the Quota System
@@ -229,14 +240,24 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   //
   // Quota-managed storage backends should call this method when storage is
   // accessed. Used to maintain LRU ordering.
+  // TODO(crbug.com/1199417): Remove when all usages have updated to use
+  // NotifyBucketAccessed.
   void NotifyStorageAccessed(const blink::StorageKey& storage_key,
                              blink::mojom::StorageType type,
                              base::Time access_time);
 
   // Called by storage backends via proxy.
   //
+  // Quota-managed storage backends should call this method when a bucket is
+  // accessed. Used to maintain LRU ordering.
+  void NotifyBucketAccessed(BucketId bucket_id, base::Time access_time);
+
+  // Called by storage backends via proxy.
+  //
   // Quota-managed storage backends must call this method when they have made
   // any modifications that change the amount of data stored in their storage.
+  // TODO(crbug.com/1199417): Remove when all usages have updated to use
+  // NotifyBucketModified.
   void NotifyStorageModified(QuotaClientType client_id,
                              const blink::StorageKey& storage_key,
                              blink::mojom::StorageType type,
@@ -246,22 +267,20 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // Called by storage backends via proxy.
   //
+  // Quota-managed storage backends must call this method when they have made
+  // any modifications that change the amount of data stored in a bucket.
+  void NotifyBucketModified(QuotaClientType client_id,
+                            BucketId bucket_id,
+                            int64_t delta,
+                            base::Time modification_time,
+                            base::OnceClosure callback);
+
   // Client storage must call this method whenever they run into disk
   // write errors. Used as a hint to determine if the storage partition is out
   // of space, and trigger actions if deemed appropriate.
   //
   // This method is declared as virtual to allow test code to override it.
   virtual void NotifyWriteFailed(const blink::StorageKey& storage_key);
-
-  // Used to avoid evicting storage keys with open pages.
-  // A call to NotifyStorageKeyInUse must be balanced by a later call
-  // to NotifyStorageKeyNoLongerInUse.
-  void NotifyStorageKeyInUse(const blink::StorageKey& storage_key);
-  void NotifyStorageKeyNoLongerInUse(const blink::StorageKey& storage_key);
-  bool IsStorageKeyInUse(const blink::StorageKey& storage_key) const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return base::Contains(storage_keys_in_use_, storage_key);
-  }
 
   void SetUsageCacheEnabled(QuotaClientType client_id,
                             const blink::StorageKey& storage_key,
@@ -426,13 +445,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   //
   // Initialize() must be called after all quota clients are added to the
   // manager by RegisterClient().
-  void LazyInitialize();
-  void FinishLazyInitialize(bool is_database_bootstraped);
+  void EnsureDatabaseOpened();
+  void DidOpenDatabase(bool is_database_bootstraped);
   void BootstrapDatabaseForEviction(GetBucketCallback did_get_bucket_callback,
                                     int64_t unused_usage,
                                     int64_t unused_unlimited_usage);
-  void DidBootstrapDatabase(GetBucketCallback did_get_bucket_callback,
-                            bool success);
+  void DidBootstrapDatabaseForEviction(
+      GetBucketCallback did_get_bucket_callback,
+      bool success);
 
   // Called by clients via proxy.
   // Registers a quota client to the manager.
@@ -485,9 +505,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                                                int64_t unlimited_usage);
   void DidDumpBucketTableForHistogram(const BucketTableEntries& entries);
 
-  // Returns the list of storage keys that are currently in use and should be
-  // excluded from eviction.
-  std::set<blink::StorageKey> GetEvictionStorageKeyExceptions();
   // Returns the list of bucket ids that should be excluded from eviction due to
   // consistent errors after multiple attempts.
   std::set<BucketId> GetEvictionBucketExceptions();
@@ -580,7 +597,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   scoped_refptr<base::SequencedTaskRunner> db_runner_;
   mutable std::unique_ptr<QuotaDatabase> database_;
-  bool is_database_bootstrapped_ = false;
+  bool is_database_bootstrapped_for_eviction_ = false;
 
   GetQuotaSettingsFunc get_settings_function_;
   scoped_refptr<base::TaskRunner> get_settings_task_runner_;
@@ -600,6 +617,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // Keeps track of storage keys that have been accessed during an eviction task
   // so they can be filtered out from eviction.
   std::set<blink::StorageKey> access_notified_storage_keys_;
+  // Buckets that have been notified of access during LRU task to exclude from
+  // eviction.
+  std::set<BucketId> access_notified_buckets_;
 
   std::map<blink::StorageKey, QuotaOverride> devtools_overrides_;
   int next_override_handle_id_ = 0;
@@ -637,12 +657,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                    blink::mojom::QuotaStatusCode,
                    int64_t>
       persistent_host_quota_callbacks_;
-
-  // Map from storage key to count. This is only for the default bucket.
-  // TODO(crbug.com/1199417): Update to be `buckets_in_use_` when QuotaClient
-  // is migrated to operate on buckets and keep track for all buckets in use,
-  // not just default.
-  std::map<blink::StorageKey, int> storage_keys_in_use_;
 
   // Map from bucket id to eviction error count.
   std::map<BucketId, int> buckets_in_error_;

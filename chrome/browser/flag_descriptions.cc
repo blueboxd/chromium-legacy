@@ -630,11 +630,6 @@ const char kDetectTargetEmbeddingLookalikesDescription[] =
     "Shows a lookalike interstitial when navigating to target embedding domains"
     "(e.g. google.com.example.com).";
 
-const char kDeviceDiscoveryNotificationsName[] =
-    "Device Discovery Notifications";
-const char kDeviceDiscoveryNotificationsDescription[] =
-    "Device discovery notifications on local network.";
-
 const char kDisableProcessReuse[] = "Disable subframe process reuse";
 const char kDisableProcessReuseDescription[] =
     "Prevents out-of-process iframes from reusing compatible processes from "
@@ -823,11 +818,6 @@ const char kDesktopPWAsTabStripSettingsName[] =
     "Desktop PWA tab strips settings";
 const char kDesktopPWAsTabStripSettingsDescription[] =
     "Experimental UI for selecting whether a PWA should open in tabbed mode.";
-
-const char kDesktopPWAsRunOnOsLoginName[] = "Desktop PWAs run on OS login";
-const char kDesktopPWAsRunOnOsLoginDescription[] =
-    "Enable installed PWAs to be configured to automatically start when the OS "
-    "user logs in.";
 
 const char kDesktopPWAsSubAppsName[] = "Desktop PWA Sub Apps";
 const char kDesktopPWAsSubAppsDescription[] =
@@ -1665,15 +1655,6 @@ const char kNewCanvas2DAPIName[] = "Experimental canvas 2D API features";
 const char kNewCanvas2DAPIDescription[] =
     "Enables in-progress features for the canvas 2D API. See "
     "https://github.com/fserb/canvas2d.";
-
-const char kSignInProfileCreationName[] = "Profile creation flow with sign-in";
-const char kSignInProfileCreationDescription[] =
-    "Enables a new sign-in flow in profile creation";
-
-const char kSignInProfileCreationEnterpriseName[] =
-    "Profile creation flow support for enterprise sign-in";
-const char kSignInProfileCreationEnterpriseDescription[] =
-    "Enables smoother enterprise experience in signed-in profile creation flow";
 
 const char kSyncingCompromisedCredentialsName[] = "Syncing of Security Issues";
 const char kSyncingCompromisedCredentialsDescription[] =
@@ -3310,14 +3291,14 @@ const char kMessagesForAndroidChromeSurveyName[] = "Chrome Survey Messages UI";
 const char kMessagesForAndroidChromeSurveyDescription[] =
     "When enabled, survey prompt will use the new Messages UI.";
 
-const char kMessagesForAndroidGroupedPermissionName[] =
-    "Grouped Permission Messages UI";
-const char kMessagesForAndroidGroupedPermissionDescription[] =
-    "When enabled, grouped permission prompt will use the new Messages UI.";
-
 const char kMessagesForAndroidInfrastructureName[] = "Messages infrastructure";
 const char kMessagesForAndroidInfrastructureDescription[] =
     "When enabled, will initialize Messages UI infrastructure";
+
+const char kMessagesForAndroidNotificationBlockedName[] =
+    "Notification Blocked Messages UI";
+const char kMessagesForAndroidNotificationBlockedDescription[] =
+    "When enabled, notification blocked prompt will use the new Messages UI.";
 
 const char kMessagesForAndroidPasswordsName[] = "Passwords Messages UI";
 const char kMessagesForAndroidPasswordsDescription[] =
@@ -3894,6 +3875,12 @@ const char kOmniboxPedalsDefaultIconColoredDescription[] =
     "Enable a color version of the default icon shown on the button for most "
     "omnibox Pedals (aka Chrome Actions).";
 
+const char kOmniboxPedalsTranslationConsoleName[] =
+    "Omnibox Pedals Translation Console";
+const char kOmniboxPedalsTranslationConsoleDescription[] =
+    "Use translation strings sourced from Translation Console "
+    "for triggering some omnibox Pedals (aka Chrome Actions).";
+
 const char kOmniboxKeywordSearchButtonName[] = "Omnibox keyword search button";
 const char kOmniboxKeywordSearchButtonDescription[] =
     "Enable the omnibox keyword search button which offers a way to search "
@@ -4328,26 +4315,6 @@ const char kCrostiniResetLxdDbName[] = "Crostini Reset LXD DB on launch";
 const char kCrostiniResetLxdDbDescription[] =
     "Recreates the LXD database every time we launch it";
 
-const char kCryptAuthV2DeviceActivityStatusName[] =
-    "CryptAuth Device Activity Status";
-const char kCryptAuthV2DeviceActivityStatusDescription[] =
-    "Use the CryptAuth GetDevicesActivityStatus API to sort devices.";
-
-const char kCryptAuthV2DeviceActivityStatusUseConnectivityName[] =
-    "CryptAuth Device Activity Status: Use connectivity status";
-const char kCryptAuthV2DeviceActivityStatusUseConnectivityDescription[] =
-    "Utilize the connectivity status from the CryptAuth "
-    "GetDevicesActivityStatus API to sort devices.";
-
-const char kCryptAuthV2DeviceSyncName[] = "CryptAuth v2 DeviceSync";
-const char kCryptAuthV2DeviceSyncDescription[] =
-    "Use the CryptAuth v2 DeviceSync protocol. Note: v1 DeviceSync will "
-    "continue to run until the deprecation flag is flipped.";
-
-const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
-const char kCryptAuthV2EnrollmentDescription[] =
-    "Use the CryptAuth v2 Enrollment protocol.";
-
 const char kDisableBufferBWCompressionName[] =
     "Disable buffer bandwidth compression";
 const char kDisableBufferBWCompressionDescription[] =
@@ -4363,12 +4330,6 @@ const char kDisableCancelAllTouchesName[] = "Disable CancelAllTouches()";
 const char kDisableCancelAllTouchesDescription[] =
     "If enabled, a canceled touch will not force all other touches to be "
     "canceled.";
-
-const char kDisableCryptAuthV1DeviceSyncName[] =
-    "Disable CryptAuth v1 DeviceSync";
-const char kDisableCryptAuthV1DeviceSyncDescription[] =
-    "Disable the CryptAuth v1 DeviceSync protocol. The v2 DeviceSync flag "
-    "should be enabled before this flag is flipped.";
 
 const char kDisableIdleSocketsCloseOnMemoryPressureName[] =
     "Disable closing idle sockets on memory pressure";
@@ -5380,12 +5341,6 @@ const char kZeroCopyVideoCaptureDescription[] =
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
-
-const char kDesktopInProductHelpSnoozeName[] =
-    "Allow snooze on supported in-product help promos";
-const char kDesktopInProductHelpSnoozeDescription[] =
-    "Snoozing an in-product help promo closes it and schedules it to be shown "
-    "later. When enabled, this functionality is allowed on supported promos.";
 
 const char kDownloadShelfWebUI[] = "Download Shelf WebUI";
 const char kDownloadShelfWebUIDescription[] =

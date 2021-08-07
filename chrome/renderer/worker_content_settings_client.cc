@@ -25,7 +25,7 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
     is_unique_origin_ = true;
 
   document_origin_ = document.GetSecurityOrigin();
-  site_for_cookies_ = document.SiteForCookies().RepresentativeUrl();
+  site_for_cookies_ = document.SiteForCookies();
   top_frame_origin_ = document.TopFrameOrigin();
 
   content::ChildThread::Get()->BindHostReceiver(
@@ -141,7 +141,7 @@ bool WorkerContentSettingsClient::ShouldAutoupgradeMixedContent() {
 }
 
 void WorkerContentSettingsClient::EnsureContentSettingsManager() const {
-  // Lazily bind |content_settings_manager_| so it is bound on the right thread.
+  // Lazily bind `content_settings_manager_` so it is bound on the right thread.
   if (content_settings_manager_)
     return;
   DCHECK(pending_content_settings_manager_);

@@ -897,7 +897,6 @@
           'walleye',
         ],
         'additional_compile_targets': [
-          'validate_expectations',
           'monochrome_static_initializers',
           'weblayer_shell',
         ],
@@ -2894,6 +2893,7 @@
           'all',
         ],
         'mixins': [
+          'fuchsia-fvdl',
           'linux-bionic',
         ],
         'swarming': {
@@ -2915,6 +2915,7 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'linux',
         'mixins': [
+          'fuchsia-fvdl',
           'linux-bionic',
         ],
         'swarming': {
@@ -3305,7 +3306,7 @@
           'chrome',
         ],
         'test_suites': {
-          'gtest_tests': 'linux-lacros-version-skew-tests',
+          'gtest_tests': 'linux_lacros_version_skew_tests',
         },
       },
       'linux-perfetto-rel': {

@@ -1042,7 +1042,7 @@
       'linux-wpt-identity-fyi-rel': 'release_trybot',
       'linux-wpt-input-fyi-rel': 'release_trybot',
       'linux-webkit-msan-rel': 'msan_release_bot',
-      'linux-xenial-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
+      'linux-xenial-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
       'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
@@ -1494,6 +1494,7 @@
     'android_release_trybot_arm64_webview_google_expectations_fastbuild': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'android_fastbuild', 'webview_google', 'fail_on_android_expectations',
+      'no_secondary_abi',
     ],
 
     # TODO(crbug/1182468) Remove these android coverage expectations after
@@ -3370,7 +3371,7 @@
     },
 
     'lacros_on_linux': {
-      'gn_args': 'target_os="chromeos" use_ozone=true ozone_platform_wayland=true ozone_platform="wayland" use_gtk=false chromeos_is_browser_only=true'
+      'gn_args': 'target_os="chromeos" chromeos_is_browser_only=true'
     },
 
     'also_build_ash_chrome': {
@@ -3623,6 +3624,10 @@
 
     'strip_debug_info': {
       'gn_args': 'strip_debug_info=true',
+    },
+
+    'no_secondary_abi': {
+      'gn_args': 'skip_secondary_abi_for_cq=true',
     },
 
     'strip_absolute_paths_from_debug_symbols': {

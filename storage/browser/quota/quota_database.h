@@ -155,14 +155,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   bool DeleteBucketInfo(BucketId bucket_id);
 
   // Returns the BucketInfo for the least recently used bucket. Will exclude
-  // default buckets included in `storage_key_exceptions`, buckets with ids
-  // in `bucket_exceptions` and origins that have the special unlimited storage
-  // policy. Returns a QuotaError if the operation has failed.
-  // TODO(crbug.com/1199417): `storage_key_exceptions` should be removed once
-  // QuotaClient is migrated to operate per bucket.
+  // buckets with ids in `bucket_exceptions` and origins that have the special
+  // unlimited storage policy. Returns a QuotaError if the operation has failed.
   QuotaErrorOr<BucketInfo> GetLRUBucket(
       blink::mojom::StorageType type,
-      const std::set<blink::StorageKey>& storage_key_exceptions,
       const std::set<BucketId>& bucket_exceptions,
       SpecialStoragePolicy* special_storage_policy);
 
@@ -177,11 +173,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
       base::Time begin,
       base::Time end);
 
-  // Returns false if SetStorageKeyDatabaseBootstrapped has never
+  // Returns false if SetBootstrappedForEviction() has never
   // been called before, which means existing storage keys may not have been
   // registered.
-  bool IsStorageKeyDatabaseBootstrapped();
-  bool SetStorageKeyDatabaseBootstrapped(bool bootstrap_flag);
+  bool IsBootstrappedForEviction();
+  bool SetBootstrappedForEviction(bool bootstrap_flag);
 
  private:
   struct COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTableEntry {
@@ -189,6 +185,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
     blink::mojom::StorageType type = blink::mojom::StorageType::kUnknown;
     int64_t quota = 0;
   };
+  friend COMPONENT_EXPORT(STORAGE_BROWSER) bool operator==(
+      const QuotaTableEntry& lhs,
+      const QuotaTableEntry& rhs);
   friend COMPONENT_EXPORT(STORAGE_BROWSER) bool operator<(
       const QuotaTableEntry& lhs,
       const QuotaTableEntry& rhs);

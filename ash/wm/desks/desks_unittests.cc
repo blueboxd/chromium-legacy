@@ -299,6 +299,9 @@ class TestObserver : public DesksController::Observer {
   ~TestObserver() override = default;
 
   const std::vector<const Desk*>& desks() const { return desks_; }
+  int desk_name_changed_notify_counts() const {
+    return desk_name_changed_notify_counts_;
+  }
 
   // DesksController::Observer:
   void OnDeskAdded(const Desk* desk) override {
@@ -318,9 +321,15 @@ class TestObserver : public DesksController::Observer {
   void OnDeskSwitchAnimationFinished() override {
     EXPECT_FALSE(DesksController::Get()->AreDesksBeingModified());
   }
+  void OnDeskNameChanged(const Desk* desk,
+                         const std::u16string& new_name) override {
+    ++desk_name_changed_notify_counts_;
+  }
 
  private:
   std::vector<const Desk*> desks_;
+
+  int desk_name_changed_notify_counts_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -396,6 +405,24 @@ TEST_F(DesksTest, DesksCreationAndRemoval) {
   EXPECT_TRUE(controller->CanCreateDesks());
   EXPECT_TRUE(observer.desks().empty());
 
+  controller->RemoveObserver(&observer);
+}
+
+// Verifies that desk's name change notifies |DesksController::Observer|.
+TEST_F(DesksTest, OnDeskNameChanged) {
+  TestObserver observer;
+  auto* controller = DesksController::Get();
+  controller->AddObserver(&observer);
+
+  NewDesk();
+  controller->desks()[0]->SetName(u"test1", /*set_by_user=*/true);
+  controller->desks()[1]->SetName(u"test2", /*set_by_user=*/true);
+
+  // Verify that desk name change will trigger
+  // |TestObserver::OnDeskNameChanged()|. Notice when creating a new desk
+  // and setting its name, it also triggers the call. Thus
+  // |desk_name_changed_notify_counts_| is 3.
+  ASSERT_EQ(3, observer.desk_name_changed_notify_counts());
   controller->RemoveObserver(&observer);
 }
 
@@ -5769,11 +5796,11 @@ TEST_F(DesksMockTimeTest, WeeklyActiveDesks) {
                                      number_of_one_bucket_entries + 1);
 }
 
-class PersistentDesksBarTest : public AshTestBase {
+class PersistentDesksBarTest : public DesksTest {
  public:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kBentoBar);
-    AshTestBase::SetUp();
+    DesksTest::SetUp();
 
     desks_restore_util::SetPrimaryUserHasUsedDesksRecentlyForTesting(true);
     ASSERT_TRUE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
@@ -6203,6 +6230,54 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithFullscreenedWindow) {
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
   EXPECT_EQ(bounds, GetBarWidget()->GetWindowBoundsInScreen());
+}
+
+TEST_F(PersistentDesksBarTest, DisplayMetricsChanged) {
+  UpdateDisplay("800x600,400x500");
+  NewDesk();
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_EQ(GetBarWidget()->GetWindowBoundsInScreen().width(),
+            GetPrimaryDisplay().bounds().width());
+
+  // The bar should be recreated in the new primary display and with the same
+  // width as it.
+  const display::Display old_primary_display = GetPrimaryDisplay();
+  SwapPrimaryDisplay();
+  const display::Display new_primary_display = GetPrimaryDisplay();
+  ASSERT_NE(old_primary_display.id(), new_primary_display.id());
+  ASSERT_NE(old_primary_display.bounds().width(),
+            new_primary_display.bounds().width());
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_EQ(GetBarWidget()->GetWindowBoundsInScreen().width(),
+            new_primary_display.bounds().width());
+
+  // The bar should be recreated on display rotation to adapt the new display
+  // bounds.
+  SwapPrimaryDisplay();
+  const int display_width_before_rotate = GetPrimaryDisplay().bounds().width();
+  EXPECT_EQ(display_width_before_rotate,
+            GetBarWidget()->GetWindowBoundsInScreen().width());
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitSecondary);
+  const int display_width_after_rotate = GetPrimaryDisplay().bounds().width();
+  ASSERT_NE(display_width_before_rotate, display_width_after_rotate);
+  EXPECT_EQ(display_width_after_rotate,
+            GetBarWidget()->GetWindowBoundsInScreen().width());
+
+  // Scale up the display, the bar should have the same width as the display
+  // after scale up.
+  const int display_width_before_scale_up = display_width_after_rotate;
+  SendKey(ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  const int display_width_after_scale_up = GetPrimaryDisplay().bounds().width();
+  EXPECT_LE(display_width_before_scale_up, display_width_after_scale_up);
+  EXPECT_EQ(display_width_after_scale_up,
+            GetBarWidget()->GetWindowBoundsInScreen().width());
 }
 
 // TODO(afakhry): Add more tests:

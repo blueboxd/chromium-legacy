@@ -63,14 +63,7 @@ bool IsBrowserSigninAllowed() {
          policy::BrowserSigninMode::kDisabled;
 }
 
-bool IsSignInProfileCreationFlowSupported() {
-  return AccountConsistencyModeManager::IsDiceSignInAllowed() &&
-         base::FeatureList::IsEnabled(features::kSignInProfileCreation);
-}
-
 std::string GetManagedDeviceDisclaimer() {
-  if (!base::FeatureList::IsEnabled(features::kSignInProfileCreationEnterprise))
-    return std::string();
   absl::optional<std::string> device_manager =
       chrome::GetDeviceManagerIdentity();
   if (!device_manager)
@@ -167,7 +160,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
                           g_browser_process->local_state()->GetBoolean(
                               prefs::kBrowserShowProfilePickerOnStartup));
   html_source->AddBoolean("signInProfileCreationFlowSupported",
-                          IsSignInProfileCreationFlowSupported());
+                          AccountConsistencyModeManager::IsDiceSignInAllowed());
 
   html_source->AddString("minimumPickerSize",
                          base::StringPrintf("%ipx", kMinimumPickerSizePx));

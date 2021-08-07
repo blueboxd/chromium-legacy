@@ -210,6 +210,8 @@ class DeskSwitchAnimationObserver : public DesksController::Observer {
     std::move(complete_callback_).Run(/*success=*/true);
     delete this;
   }
+  void OnDeskNameChanged(const Desk* desk,
+                         const std::u16string& new_name) override {}
 
  private:
   base::OnceCallback<void(bool)> complete_callback_;
@@ -310,7 +312,12 @@ DesksController::~DesksController() {
 
 // static
 DesksController* DesksController::Get() {
-  return Shell::Get()->desks_controller();
+  // Sometimes it's necessary to get the instance even before the
+  // constructor is done. For example,
+  // |DesksController::NotifyDeskNameChanged())| could be called
+  // during the construction of |DesksController|, and at this point
+  // |Shell::desks_controller_| has not been assigned yet.
+  return static_cast<DesksController*>(DesksHelper::Get());
 }
 
 // static
@@ -734,6 +741,12 @@ void DesksController::NotifyAllDesksForContentChanged() {
     desk->NotifyContentChanged();
 }
 
+void DesksController::NotifyDeskNameChanged(const Desk* desk,
+                                            const std::u16string& new_name) {
+  for (auto& observer : observers_)
+    observer.OnDeskNameChanged(desk, new_name);
+}
+
 void DesksController::RevertDeskNameToDefault(Desk* desk) {
   DCHECK(HasDesk(desk));
   desk->SetName(GetDeskDefaultName(GetDeskIndex(desk)), /*set_by_user=*/false);
@@ -930,6 +943,8 @@ void DesksController::CreateAndActivateNewDeskForTemplate(
   NewDesk(DesksCreationRemovalSource::kLaunchTemplate);
   Desk* desk = desks().back().get();
   desk->SetName(desk_name, /*set_by_user=*/true);
+  // Force update user prefs because `SetName()` does not trigger it.
+  desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
   new DeskSwitchAnimationObserver(std::move(callback));
   ActivateDesk(desk, DesksSwitchSource::kLaunchTemplate);
   DCHECK(animation_);

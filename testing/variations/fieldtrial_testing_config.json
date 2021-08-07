@@ -7459,6 +7459,24 @@
             ]
         }
     ],
+    "SendTabToSelfV2": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SendTabToSelfV2"
+                    ]
+                }
+            ]
+        }
+    ],
     "ServiceManagerForBackgroundPrefetch": [
         {
             "platforms": [
@@ -7629,40 +7647,6 @@
                     },
                     "enable_features": [
                         "SharingMatchPulseInterval"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SignInProfileCreation": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SignInProfileCreation"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SignInProfileCreationEnterprise": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SignInProfileCreationEnterprise"
                     ]
                 }
             ]

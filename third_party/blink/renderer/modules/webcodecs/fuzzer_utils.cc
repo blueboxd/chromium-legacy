@@ -107,11 +107,11 @@ String ToAccelerationType(
     wc_fuzzer::ConfigureVideoEncoder_EncoderAccelerationPreference type) {
   switch (type) {
     case wc_fuzzer::ConfigureVideoEncoder_EncoderAccelerationPreference_ALLOW:
-      return "allow";
+      return "no-preference";
     case wc_fuzzer::ConfigureVideoEncoder_EncoderAccelerationPreference_DENY:
-      return "deny";
+      return "prefer-software";
     case wc_fuzzer::ConfigureVideoEncoder_EncoderAccelerationPreference_REQUIRE:
-      return "require";
+      return "prefer-hardware";
   }
 }
 
@@ -173,8 +173,11 @@ EncodedVideoChunk* MakeEncodedVideoChunk(
   auto* init = EncodedVideoChunkInit::Create();
   init->setTimestamp(proto.timestamp());
   init->setType(ToChunkType(proto.type()));
-  init->setDuration(proto.duration());
   init->setData(data);
+
+  if (proto.has_duration())
+    init->setDuration(proto.duration());
+
   return EncodedVideoChunk::Create(init);
 }
 
@@ -187,6 +190,10 @@ EncodedAudioChunk* MakeEncodedAudioChunk(
   init->setTimestamp(proto.timestamp());
   init->setType(ToChunkType(proto.type()));
   init->setData(data);
+
+  if (proto.has_duration())
+    init->setDuration(proto.duration());
+
   return EncodedAudioChunk::Create(init);
 }
 

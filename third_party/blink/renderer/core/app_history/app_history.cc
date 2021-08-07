@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/frame/history_util.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
@@ -34,7 +35,7 @@ class AppHistoryApiNavigation final
   AppHistoryApiNavigation(ScriptState* script_state,
                           AppHistoryNavigationOptions* options,
                           const String& key = String())
-      : info(options->getNavigateInfoOr(
+      : info(options->getInfoOr(
             ScriptValue(script_state->GetIsolate(),
                         v8::Undefined(script_state->GetIsolate())))),
         returned_promise(
@@ -361,9 +362,9 @@ ScriptPromise AppHistory::navigate(ScriptState* script_state,
 ScriptPromise AppHistory::navigate(ScriptState* script_state,
                                    AppHistoryNavigateOptions* options,
                                    ExceptionState& exception_state) {
-  if (!options->hasState() && !options->hasNavigateInfo()) {
+  if (!options->hasState() && !options->hasInfo()) {
     exception_state.ThrowTypeError(
-        "Must pass at least one of url, state, or navigateInfo to navigate()");
+        "Must pass at least one of url, state, or info to navigate()");
     return ScriptPromise();
   }
   return navigate(script_state, GetSupplementable()->Url(), options,
@@ -548,10 +549,12 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
                       EqualIgnoringFragmentIdentifier(url, current_url));
 
   init->setUserInitiated(involvement != UserNavigationInvolvement::kNone);
-  init->setFormData(form ? FormData::Create(form, ASSERT_NO_EXCEPTION)
-                         : nullptr);
+  if (form && form->Method() == FormSubmission::kPostMethod) {
+    init->setFormData(FormData::Create(form, ASSERT_NO_EXCEPTION));
+  }
   if (navigation)
     init->setInfo(navigation->info);
+  init->setSignal(MakeGarbageCollected<AbortSignal>(GetSupplementable()));
   auto* navigate_event = AppHistoryNavigateEvent::Create(
       GetSupplementable(), event_type_names::kNavigate, init);
   navigate_event->SetUrl(url);

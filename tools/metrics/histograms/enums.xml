@@ -1147,6 +1147,7 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="kOptOut"/>
   <int value="3" label="kClosed"/>
   <int value="4" label="kDisabledByExperiment"/>
+  <int value="5" label="kIgnore"/>
 </enum>
 
 <enum name="AccuracyTipStatus">
@@ -5494,6 +5495,13 @@ others/histograms.xml -->
   <int value="2" label="Denied"/>
   <int value="3" label="Ignored"/>
   <int value="4" label="NotShown, invalid legal message"/>
+</enum>
+
+<enum name="AutofillCreditCardMessage">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Denied"/>
+  <int value="3" label="Ignored"/>
 </enum>
 
 <enum name="AutofillCreditCardOfferSelection">
@@ -16850,6 +16858,14 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="2" label="Cancel selection"/>
 </enum>
 
+<enum name="CrosSelectToSpeakTtsEngineUsed">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="System default"/>
+  <int value="2" label="eSpeak"/>
+  <int value="3" label="Google local TTS"/>
+  <int value="4" label="Google network TTS"/>
+</enum>
+
 <enum name="CrosSettingsBrowserBannerInteraction">
   <obsolete>
     Removed as of 05/2020 (crbug/1072514).
@@ -24999,6 +25015,22 @@ Called by update_document_policy_enum.py.-->
 <enum name="EnterpriseExistingInstallAttributesLockType">
   <int value="0" label="Fresh lock"/>
   <int value="1" label="Reused lock"/>
+</enum>
+
+<enum name="EnterpriseFileSystemDownloadsRoutingDestination">
+  <int value="0" label="Download not routed"/>
+  <int value="1" label="Download routed to Box"/>
+</enum>
+
+<enum name="EnterpriseFileSystemDownloadsRoutingStatus">
+  <int value="0" label="Download routing success"/>
+  <int value="1" label="Download routing canceled"/>
+  <int value="2" label="Download routing failed due to browser error"/>
+  <int value="3" label="Download routing failed due to file error"/>
+  <int value="4" label="Download routing failed due to network error"/>
+  <int value="5" label="Download routing failed due to Service Provider error"/>
+  <int value="6"
+      label="Download routing failed due to Service Provider outage"/>
 </enum>
 
 <enum name="EnterpriseFilesystemUploadAttemptCount">
@@ -34073,6 +34105,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3970" label="ExecCommandWithTrustedTypes"/>
   <int value="3971" label="CSSSelectorPseudoHasInSnapshotProfile"/>
   <int value="3972" label="CSSSelectorPseudoHasInLiveProfile"/>
+  <int value="3973" label="NavigatorPdfViewerEnabled"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47181,8 +47214,6 @@ from previous Chrome versions.
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
   <int value="-1630332314" label="CellularForbidAttachApn:enabled"/>
-  <int value="-1629518055"
-      label="AdaptiveButtonInTopToolbarCustomization:enabled"/>
   <int value="-1626110605" label="WebBundles:disabled"/>
   <int value="-1625881240" label="FullscreenExitUI:disabled"/>
   <int value="-1625777277"
@@ -47543,7 +47574,6 @@ from previous Chrome versions.
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
   <int value="-1369613781" label="FileHandlingIcons:disabled"/>
   <int value="-1368913664" label="TabSearch:disabled"/>
-  <int value="-1368734981" label="IPH_DesktopSnoozeFeature:enabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
   <int value="-1367447724"
       label="IncognitoClearBrowsingDataDialogForDesktop:disabled"/>
@@ -47625,7 +47655,6 @@ from previous Chrome versions.
   <int value="-1308600417" label="NewNetErrorPageUI:disabled"/>
   <int value="-1308389775" label="PermissionChipGestureSensitive:enabled"/>
   <int value="-1308184869" label="MediaFeedsBackgroundFetching:enabled"/>
-  <int value="-1308102778" label="IPH_DesktopSnoozeFeature:disabled"/>
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
   <int value="-1304401930" label="CSSContainerQueries:enabled"/>
@@ -47782,6 +47811,8 @@ from previous Chrome versions.
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
   <int value="-1195034892" label="ContinuousSearch:disabled"/>
+  <int value="-1194794230"
+      label="MessagesForAndroidNotificationBlocked:disabled"/>
   <int value="-1194129602" label="ClientSideDetectionModelOnAndroid:disabled"/>
   <int value="-1192790333" label="ArcUseHighMemoryDalvikProfile:disabled"/>
   <int value="-1191671217" label="TabGroupsNewBadgePromo:disabled"/>
@@ -48261,6 +48292,7 @@ from previous Chrome versions.
   <int value="-803206774" label="TabbedAppOverflowMenuActionBar:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-802309777" label="ChromeTipsInMainMenu:disabled"/>
+  <int value="-800127303" label="OmniboxPedalsTranslationConsole:disabled"/>
   <int value="-799931058" label="UseMultiloginEndpoint:disabled"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>
   <int value="-797520931" label="ExtensionsToolbarMenu:disabled"/>
@@ -48281,7 +48313,6 @@ from previous Chrome versions.
   <int value="-787238455" label="OmniboxZeroSuggestionsOnSERP:disabled"/>
   <int value="-784199026" label="EnableFilesAppCopyImage:enabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
-  <int value="-779392840" label="MessagesForAndroidGroupedPermission:disabled"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-778098896" label="EnableAggregatedMlSearchRanking:disabled"/>
   <int value="-778047974" label="CrostiniUseBusterImage:disabled"/>
@@ -48918,7 +48949,6 @@ from previous Chrome versions.
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-250543540" label="DeferAllScript:enabled"/>
   <int value="-249415830" label="FilteringScrollPrediction:disabled"/>
-  <int value="-249332966" label="MessagesForAndroidGroupedPermission:enabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
   <int value="-247542772" label="CheckOfflineCapability:enabled"/>
   <int value="-245342115" label="PermissionChip:enabled"/>
@@ -49778,8 +49808,6 @@ from previous Chrome versions.
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="460136092" label="MidiManagerAndroid:disabled"/>
   <int value="460475728" label="wake-on-wifi-packet"/>
-  <int value="461306840"
-      label="AdaptiveButtonInTopToolbarCustomization:disabled"/>
   <int value="461523297"
       label="UsernameFirstFlowFallbackCrowdsourcing:enabled"/>
   <int value="461641589" label="WebAppWindowControlsOverlay:disabled"/>
@@ -50035,6 +50063,8 @@ from previous Chrome versions.
   <int value="654879464" label="WalletRequiresFirstSyncSetupComplete:enabled"/>
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="657832926" label="SwipeToMoveCursor:enabled"/>
+  <int value="659051425"
+      label="AdaptiveButtonInTopToolbarCustomizationV2:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
   <int value="659871291"
       label="ClearCrossSiteCrossBrowsingContextGroupWindowName:enabled"/>
@@ -50278,6 +50308,7 @@ from previous Chrome versions.
   <int value="857391671" label="BluetoothNextHandsfreeProfile:disabled"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="857716462" label="FeedInteractiveRefresh:enabled"/>
+  <int value="859220075" label="MessagesForAndroidNotificationBlocked:enabled"/>
   <int value="859449217" label="MagnifierPanningImprovements:enabled"/>
   <int value="859495772"
       label="UsernameFirstFlowFallbackCrowdsourcing:disabled"/>
@@ -50431,6 +50462,8 @@ from previous Chrome versions.
   <int value="1003081697" label="DesktopPWAsUnifiedInstall:enabled"/>
   <int value="1003612981"
       label="AutofillAutoTriggerManualFallbackForCards:enabled"/>
+  <int value="1004263091"
+      label="AdaptiveButtonInTopToolbarCustomizationV2:enabled"/>
   <int value="1004593833" label="LevelDBPerformRewrite:enabled"/>
   <int value="1004909189"
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>
@@ -51828,6 +51861,7 @@ from previous Chrome versions.
   <int value="2104788328" label="use-winrt-midi-api"/>
   <int value="2106798283" label="SafetyTip:disabled"/>
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
+  <int value="2110832901" label="OmniboxPedalsTranslationConsole:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114221139" label="EnableHostnameSetting:disabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
@@ -54885,7 +54919,7 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="ReaderMode"/>
   <int value="11" label="ChromeSurvey"/>
   <int value="12" label="SaveCard"/>
-  <int value="13" label="GroupedPermission"/>
+  <int value="13" label="NotificationBlocked"/>
   <int value="14" label="PermissionUpdate"/>
   <int value="15" label="AdsBlocked"/>
   <int value="16" label="DownloadProgress"/>
@@ -67459,7 +67493,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="An enterprise account is added and syncing"/>
   <int value="4" label="An enterprise account is added without sync"/>
   <int value="5"
-      label="An enterprise account is added with no link data consent"/>
+      label="An enterprise account is added with no link data consent
+             (deprecated)"/>
   <int value="6"
       label="An enterprise account is added with sync manually configured"/>
   <int value="7" label="An enterprise account is added but sync is disabled"/>
@@ -68968,6 +69003,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="19" label="QUIC_STREAM_ACKED_UNSENT_FIN"/>
   <int value="20" label="QUIC_STREAM_SEQUENCER_BUFFER"/>
   <int value="21" label="QUIC_CHROMIUM_CLIENT_SESSION_CLOSE_SESSION_ON_ERROR"/>
+</enum>
+
+<enum name="QuickAnswersExitPoint">
+  <int value="0" label="kUnspecified"/>
+  <int value="1" label="KContextMenuDismiss"/>
+  <int value="2" label="kContextMenuClick"/>
+  <int value="3" label="kQuickAnswersClick"/>
+  <int value="4" label="kSettingsButtonClick"/>
+  <int value="5" label="kReportQueryButtonClick"/>
 </enum>
 
 <enum name="QuickAnswersIntentType">

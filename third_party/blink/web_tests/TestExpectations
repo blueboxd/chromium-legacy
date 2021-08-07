@@ -98,16 +98,28 @@ crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-csp.htm
 crbug.com/901056 virtual/synchronous_html_parser/http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Timeout ]
 
 # Unknown media state problem (probably due to layout occuring earlier than expected)
-crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-cuechange.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-audio-constructor.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-not-in-document.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source.html [ Failure Pass ]
 crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document.html [ Failure ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-load.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-pause-networkState.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-pause.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document-networkState.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-not-in-document.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-source.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-src.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-selection-metadata.html [ Failure Pass ]
+crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-cuechange.html [ Failure ]
 crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Failure Pass ]
 crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-remove-insert-ready-state.html [ Failure Pass ]
-# These tests fail on the baseline parser, pass on the foreground, but foreground versions cannot be rebaselined due to path length restrictions.
+
 crbug.com/901056 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Failure ]
-crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Pass ]
 crbug.com/901056 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event.html [ Failure Pass ]
-crbug.com/901056 virtual/synchronous_html_parser/external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event.html [ Pass ]
 
 # Flaky - possible filter paint invalidation bug.
 crbug.com/1184773 virtual/synchronous_html_parser/svg/dynamic-updates/SVGFEComponentTransferElement-dom-intercept-attr.html [ Failure Pass ]
@@ -286,6 +298,10 @@ crbug.com/1106590 virtual/gpu/fast/canvas/canvas-path-non-invertible-transform.h
 
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Crash Pass ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Crash Pass ]
+
+crbug.com/1237275 fast/canvas/layers-lonebeginlayer.html [ Failure Pass ]
+crbug.com/1237275 fast/canvas/layers-unmatched-beginlayer.html [ Failure Pass ]
+crbug.com/1231615 fast/canvas/layers-nested.html [ Failure Pass ]
 
 # Subpixel differences due to compositing on Mac10.14+.
 crbug.com/997202 [ Mac10.14 ] external/wpt/svg/extensibility/foreignObject/foreign-object-scale-scroll.html [ Failure ]
@@ -2054,6 +2070,16 @@ crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/w
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-sub-frame-navigation.sub.html [ Skip ]
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-aux-frame-navigation.sub.html [ Skip ]
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-sub-frame-navigation.sub.html [ Skip ]
+
+crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/cross-document-traversal-cross-document-traversal.html [ Timeout ]
+crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/same-document-traversal-same-document-traversal-hashchange.html [ Timeout ]
+crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/same-document-traversal-same-document-traversal-pushstate.html [ Timeout ]
+
+# These two are like the above but some bots seem to give timeouts that count as failures according to the -expected.txt,
+# while other bots give actual timeouts.
+crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/cross-document-traversal-same-document-nav.html [ Timeout Failure ]
+crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/same-document-traversal-same-document-nav.html [ Timeout Failure ]
+
 
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
 
@@ -4908,6 +4934,17 @@ crbug.com/1207342 http/tests/devtools/sources/debugger-ui/debugger-inline-values
 crbug.com/1207342 http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/debugger/stop-on-debugger-from-detached-iframe.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/version-controller.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/components/throttler.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/stylesheet-source-mapping.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/console/console-linkify-message-location.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/elements/styles-1/edit-resource-referred-by-multiple-styletags.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/elements/styles-4/styles-live-locations-leak.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/sources/sourcemap-hot-reload.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/sources/debugger-breakpoints/breakpoints-in-ui-source-frame.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/sources/debugger-frameworks/frameworks-ignore-list-patterns.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/tracing/timeline-js/timeline-js-ignore-list.js [ Failure Pass ]
 
 # Sheriff 2018-04-13
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
@@ -7241,7 +7278,7 @@ crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.j
 
 # Sheriff 2021-08/05
 crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Timeout ]
-crbug.com/1237132 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-gradient.html [ Failure Pass Timeout ]
+crbug.com/1237132 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 crbug.com/1178292 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]
 
 # Upcoming DevTools roll
@@ -7251,3 +7288,7 @@ crbug.com/1106746 http/tests/devtools/security/origin-view-ct-compliance.js [ Sk
 crbug.com/1106746 http/tests/devtools/security/origin-view-noncryptographic-secure-origin.js [ Skip ]
 crbug.com/1106746 http/tests/devtools/security/origin-view-then-interstitial.js [ Skip ]
 crbug.com/1106746 http/tests/devtools/security/security-details-updated-with-security-state.js [ Skip ]
+
+# Sheriff 2021-08-06
+crbug.com/1237540 fast/dom/Window/mozilla-focus-blur.html [ Pass Failure ]
+crbug.com/1230534 external/wpt/webrtc/simulcast/basic.https.html [ Pass Timeout ]

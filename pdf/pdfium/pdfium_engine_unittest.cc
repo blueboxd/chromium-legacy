@@ -6,8 +6,12 @@
 
 #include <stdint.h>
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/hash/md5.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,6 +22,7 @@
 #include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_test_base.h"
+#include "pdf/ppapi_migration/callback.h"
 #include "pdf/test/test_client.h"
 #include "pdf/test/test_document_loader.h"
 #include "pdf/ui/thumbnail.h"
@@ -62,6 +67,13 @@ class MockTestClient : public TestClient {
               (const DocumentLayout& layout),
               (override));
   MOCK_METHOD(void, ScrollToPage, (int page), (override));
+  MOCK_METHOD(void,
+              ScheduleTaskOnMainThread,
+              (const base::Location& from_here,
+               ResultCallback callback,
+               int32_t result,
+               base::TimeDelta delay),
+              (override));
 };
 
 }  // namespace
@@ -95,6 +107,7 @@ class PDFiumEngineTest : public PDFiumTestBase {
     if (engine.GetNumberOfPages() == 0) {
       // This is not necessarily a test failure; it just indicates incremental
       // loading is not occurring.
+      engine.PluginSizeUpdated({});
       loaded_incrementally = false;
     } else {
       // Note: Plugin size chosen so all pages of the document are visible. The
@@ -427,6 +440,55 @@ TEST_F(PDFiumEngineTest, GetBadPdfVersion) {
 
   const DocumentMetadata& doc_metadata = engine->GetDocumentMetadata();
   EXPECT_EQ(PdfVersion::kUnknown, doc_metadata.version);
+}
+
+TEST_F(PDFiumEngineTest, PluginSizeUpdatedBeforeLoad) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  engine.PluginSizeUpdated({});
+  while (initialize_result.document_loader->SimulateLoadData(UINT32_MAX))
+    continue;
+
+  EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
+}
+
+TEST_F(PDFiumEngineTest, PluginSizeUpdatedDuringLoad) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  EXPECT_TRUE(initialize_result.document_loader->SimulateLoadData(1024));
+  engine.PluginSizeUpdated({});
+  while (initialize_result.document_loader->SimulateLoadData(UINT32_MAX))
+    continue;
+
+  EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
+}
+
+TEST_F(PDFiumEngineTest, PluginSizeUpdatedAfterLoad) {
+  NiceMock<MockTestClient> client;
+  InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(initialize_result.engine);
+  PDFiumEngine& engine = *initialize_result.engine;
+
+  ResultCallback callback;
+  EXPECT_CALL(client, ScheduleTaskOnMainThread).WillOnce(MoveArg<1>(&callback));
+
+  while (initialize_result.document_loader->SimulateLoadData(UINT32_MAX))
+    continue;
+  engine.PluginSizeUpdated({});
+
+  ASSERT_TRUE(callback);
+  std::move(callback).Run(0);
+
+  EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
 }
 
 TEST_F(PDFiumEngineTest, IncrementalLoadingFeatureDefault) {

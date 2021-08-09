@@ -17,6 +17,8 @@ type MojomNamespace = {
 declare const arc: MojomNamespace;
 declare const chromeosCamera: MojomNamespace;
 declare const cros: MojomNamespace;
+declare const gfx: MojomNamespace;
+declare const media: MojomNamespace;
 
 declare namespace chromeosCamera.mojom {
   export type CameraAppHelperRemote = any;
@@ -34,6 +36,14 @@ declare namespace cros.mojom {
   export type CaptureIntent = any;
   export type Effect = any;
   export type StreamType = any;
+}
+
+declare namespace gfx.mojom {
+  export type PointF = any;
+}
+
+declare namespace media.mojom {
+  export type Blob = any;
 }
 
 // TODO(b/172340451): Install @types/w3c-image-capture in third_party/node to
@@ -194,4 +204,44 @@ interface PropertyDefinition {
 
 declare namespace CSS {
   function registerProperty(definition: PropertyDefinition): void;
+}
+
+// File handling API: This is currently a Chrome only API.
+// https://github.com/WICG/file-handling/blob/main/explainer.md
+interface Window {
+  readonly launchQueue: LaunchQueue;
+}
+
+interface LaunchQueue {
+  setConsumer(consumer: LaunchConsumer): void;
+}
+
+type LaunchConsumer = (params: LaunchParams) => void;
+
+interface LaunchParams {
+  readonly files: ReadonlyArray<FileSystemHandle>;
+}
+
+// HTMLVideoElement.requestVideoFrameCallback, this is currently available in
+// Chrome and the spec is still in draft stage.
+// https://wicg.github.io/video-rvfc/
+interface VideoFrameMetadata {
+  expectedDisplayTime: DOMHighResTimeStamp;
+  height: number;
+  mediaTime: number;
+  presentationTime: DOMHighResTimeStamp;
+  presentedFrames: number;
+  width: number;
+  captureTime?: DOMHighResTimeStamp;
+  processingDuration?: number;
+  receiveTime?: DOMHighResTimeStamp;
+  rtpTimestamp?: number;
+}
+
+type VideoFrameRequestCallback =
+    (now: DOMHighResTimeStamp, metadata: VideoFrameMetadata) => void;
+
+interface HTMLVideoElement {
+  requestVideoFrameCallback(callback: VideoFrameRequestCallback): number;
+  cancelVideoFrameCallback(handle: number): undefined;
 }

@@ -938,9 +938,6 @@ extern const char kMobileIdentityConsistencyFREDescription[];
 extern const char kWipeDataOnChildAccountSigninName[];
 extern const char kWipeDataOnChildAccountSigninDescription[];
 
-extern const char kMobileIdentityConsistencyVarName[];
-extern const char kMobileIdentityConsistencyVarDescription[];
-
 extern const char kMobilePwaInstallUseBottomSheetName[];
 extern const char kMobilePwaInstallUseBottomSheetDescription[];
 
@@ -2870,12 +2867,6 @@ extern const char kLockScreenMediaControlsDescription[];
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 
-extern const char kMediaAppAnnotationName[];
-extern const char kMediaAppAnnotationDescription[];
-
-extern const char kMediaAppDisplayExifName[];
-extern const char kMediaAppDisplayExifDescription[];
-
 extern const char kMediaAppHandlesPdfName[];
 extern const char kMediaAppHandlesPdfDescription[];
 
@@ -2920,9 +2911,6 @@ extern const char kPhoneHubRecentAppsDescription[];
 
 extern const char kReduceDisplayNotificationsName[];
 extern const char kReduceDisplayNotificationsDescription[];
-
-extern const char kReleaseNotesNotificationName[];
-extern const char kReleaseNotesNotificationDescription[];
 
 extern const char kReleaseNotesNotificationAllChannelsName[];
 extern const char kReleaseNotesNotificationAllChannelsDescription[];

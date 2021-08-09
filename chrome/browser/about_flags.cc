@@ -480,21 +480,6 @@ const FeatureEntry::FeatureVariation
 };
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kHideDismissButton[] = {
-    {"dismiss_button", "hide"}};
-
-const FeatureEntry::FeatureParam kSuppressBottomSheet[] = {
-    {"consecutive_active_dismissal_limit", "3"}};
-
-const FeatureEntry::FeatureVariation kMobileIdentityConsistencyVariations[] = {
-    {"Hide Dismiss Button", kHideDismissButton, base::size(kHideDismissButton),
-     nullptr},
-    {"Suppress Bottom Sheet", kSuppressBottomSheet,
-     base::size(kSuppressBottomSheet), nullptr},
-};
-#endif  // OS_ANDROID
-
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::FeatureParam kForceDark_SimpleHsl[] = {
     {"inversion_method", "hsl_based"},
@@ -5584,12 +5569,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(signin::kMobileIdentityConsistency)},
-    {"mobile-identity-consistency-var",
-     flag_descriptions::kMobileIdentityConsistencyVarName,
-     flag_descriptions::kMobileIdentityConsistencyVarDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(signin::kMobileIdentityConsistencyVar,
-                                    kMobileIdentityConsistencyVariations,
-                                    "MobileIdentityConsistencyVar")},
     {"mobile-identity-consistency-fre",
      flag_descriptions::kMobileIdentityConsistencyFREName,
      flag_descriptions::kMobileIdentityConsistencyFREDescription, kOsAndroid,
@@ -6358,22 +6337,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHelpAppSearchServiceIntegrationName,
      flag_descriptions::kHelpAppSearchServiceIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppSearchServiceIntegration)},
-    {"media-app-annotation", flag_descriptions::kMediaAppAnnotationName,
-     flag_descriptions::kMediaAppAnnotationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kMediaAppAnnotation)},
-    {"media-app-display-exif", flag_descriptions::kMediaAppDisplayExifName,
-     flag_descriptions::kMediaAppDisplayExifDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kMediaAppAnnotation)},
     {"media-app-handles-pdf", flag_descriptions::kMediaAppHandlesPdfName,
      flag_descriptions::kMediaAppHandlesPdfDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppHandlesPdf)},
     {"media-app-multi-window", flag_descriptions::kMediaAppMultiWindowName,
      flag_descriptions::kMediaAppMultiWindowDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppMultiWindow)},
-    {"release-notes-notification",
-     flag_descriptions::kReleaseNotesNotificationName,
-     flag_descriptions::kReleaseNotesNotificationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kReleaseNotesNotification)},
     {"release-notes-notification-all-channels",
      flag_descriptions::kReleaseNotesNotificationAllChannelsName,
      flag_descriptions::kReleaseNotesNotificationAllChannelsDescription,

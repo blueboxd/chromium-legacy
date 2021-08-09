@@ -404,21 +404,18 @@ uint8_t PartitionBucket<thread_safe>::get_system_pages_per_slot_span() {
   // to using fewer system pages.
   double best_waste_ratio = 1.0f;
   uint16_t best_pages = 0;
-  if (slot_size > MaxSystemPagesPerSlotSpan() * SystemPageSize()) {
+  if (slot_size > MaxRegularSlotSpanSize()) {
     // TODO(ajwong): Why is there a DCHECK here for this?
     // http://crbug.com/776537
     PA_DCHECK(!(slot_size % SystemPageSize()));
-    best_pages = static_cast<uint16_t>(slot_size / SystemPageSize());
-    // TODO(ajwong): Should this be checking against
-    // MaxSystemPagesPerSlotSpan() or numeric_limits<uint8_t>::max?
-    // http://crbug.com/776537
-    PA_CHECK(best_pages < (1 << 8));
+    best_pages = static_cast<uint16_t>(slot_size >> SystemPageShift());
+    PA_CHECK(best_pages <= std::numeric_limits<uint8_t>::max());
     return static_cast<uint8_t>(best_pages);
   }
-  PA_DCHECK(slot_size <= MaxSystemPagesPerSlotSpan() * SystemPageSize());
+  PA_DCHECK(slot_size <= MaxRegularSlotSpanSize());
   for (uint16_t i = NumSystemPagesPerPartitionPage() - 1;
-       i <= MaxSystemPagesPerSlotSpan(); ++i) {
-    size_t page_size = SystemPageSize() * i;
+       i <= MaxSystemPagesPerRegularSlotSpan(); ++i) {
+    size_t page_size = i << SystemPageShift();
     size_t num_slots = page_size / slot_size;
     size_t waste = page_size - (num_slots * slot_size);
     // Leaving a page unfaulted is not free; the page will occupy an empty page
@@ -442,7 +439,7 @@ uint8_t PartitionBucket<thread_safe>::get_system_pages_per_slot_span() {
     }
   }
   PA_DCHECK(best_pages > 0);
-  PA_CHECK(best_pages <= MaxSystemPagesPerSlotSpan());
+  PA_CHECK(best_pages <= MaxSystemPagesPerRegularSlotSpan());
   return static_cast<uint8_t>(best_pages);
 }
 
@@ -474,7 +471,8 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
               PartitionPageSize()));
 
   size_t num_partition_pages = get_pages_per_slot_span();
-  size_t slot_span_reservation_size = PartitionPageSize() * num_partition_pages;
+  size_t slot_span_reservation_size = num_partition_pages
+                                      << PartitionPageShift();
   size_t slot_span_committed_size = get_bytes_per_span();
   PA_DCHECK(num_partition_pages <= NumPartitionPagesPerSuperPage());
   PA_DCHECK(slot_span_committed_size % SystemPageSize() == 0);

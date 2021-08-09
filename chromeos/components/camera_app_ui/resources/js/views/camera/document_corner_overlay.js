@@ -18,6 +18,11 @@ import {
 import * as util from '../../util.js';
 
 /**
+ * Base length of line without scaling in px.
+ */
+const BASE_LENGTH = 100;
+
+/**
  * Controller for placing line-like element.
  */
 class Line {
@@ -33,12 +38,12 @@ class Line {
   }
 
   /**
-   * @param {{position: (!Point|undefined), angle: (number|undefined), scale:
+   * @param {{position: (!Point|undefined), angle: (number|undefined), length:
    * (number|undefined)}} params 'position' is the x, y coordinates of start
-   * endpoint in px.  'angle' is the rotate angle in rad.  'scale' is the
-   * scaling ratio of line length.
+   * endpoint in px.  'angle' is the rotate angle in rad.  'length' is the
+   * length of the line.
    */
-  place({position, angle, scale}) {
+  place({position, angle, length}) {
     const transforms = [];
     if (position !== undefined) {
       transforms.push(new CSSTranslate(CSS.px(position.x), CSS.px(position.y)));
@@ -54,7 +59,12 @@ class Line {
       }
       transforms.push(new CSSRotate(CSS.rad(angle)));
     }
-    if (scale !== undefined) {
+    if (length !== undefined) {
+      // To prevent floating point precision error during transform scale
+      // calculation. Scale from a larger base length instead of from 1px. See
+      // b/194264574.
+      this.el_.attributeStyleMap.set('width', CSS.px(BASE_LENGTH));
+      const scale = length / BASE_LENGTH;
       transforms.push(new CSSScale(CSS.number(scale), CSS.number(1)));
     }
     this.el_.attributeStyleMap.set(
@@ -91,9 +101,9 @@ class Line {
  */
 class Corner {
   /**
-   * @param {!HTMLDivElement} overlay
+   * @param {!HTMLDivElement} container
    */
-  constructor(overlay) {
+  constructor(container) {
     const tpl = util.instantiateTemplate('#document-corner-template');
 
     /**
@@ -116,7 +126,7 @@ class Corner {
     this.nextLine_ =
         new Line(dom.getAllFrom(tpl, `div.line`, HTMLDivElement)[1]);
 
-    overlay.appendChild(tpl);
+    container.appendChild(tpl);
   }
 
   /**
@@ -161,6 +171,13 @@ export class DocumentCornerOverlay {
         dom.getFrom(this.overlay_, '.no-document-toast', HTMLDivElement);
 
     /**
+     * @const {!HTMLDivElement}
+     * @private
+     */
+    this.cornerContainer_ =
+        dom.getFrom(this.overlay_, '.corner-container', HTMLDivElement);
+
+    /**
      * @type {?string}
      * @private
      */
@@ -182,7 +199,7 @@ export class DocumentCornerOverlay {
         const tpl = util.instantiateTemplate('#document-side-template');
         const el = dom.getFrom(tpl, `div`, HTMLDivElement);
         lines.push(new Line(el));
-        this.overlay_.appendChild(tpl);
+        this.cornerContainer_.appendChild(tpl);
       }
       return lines;
     })();
@@ -194,7 +211,7 @@ export class DocumentCornerOverlay {
     this.corners_ = (() => {
       const corners = [];
       for (let i = 0; i < 4; i++) {
-        corners.push(new Corner(this.overlay_));
+        corners.push(new Corner(this.cornerContainer_));
       }
       return corners;
     })();
@@ -251,7 +268,7 @@ export class DocumentCornerOverlay {
             this.onNoCornerDetected_();
             return;
           }
-          const rect = this.overlay_.getBoundingClientRect();
+          const rect = this.cornerContainer_.getBoundingClientRect();
           const toOverlaySpace = (pt) =>
               new Point(rect.width * pt.x, rect.height * pt.y);
           this.onCornerDetected_(corners.map(toOverlaySpace));
@@ -354,12 +371,12 @@ export class DocumentCornerOverlay {
       line.place({
         position: startCorn,
         angle: startSide.cssRotateAngle(),
-        scale: startSide.length(),
+        length: startSide.length(),
       });
     });
 
     /** @suppress {suspiciousCode} */
-    this.overlay_.offsetParent;  // Force start state of transition.
+    this.cornerContainer_.offsetParent;  // Force start state of transition.
 
     // Set end of dot transition.
     corners.forEach((corn, i) => {
@@ -375,7 +392,7 @@ export class DocumentCornerOverlay {
       line.place({
         position: endCorn,
         angle: endSide.cssRotateAngle(),
-        scale: endSide.length(),
+        length: endSide.length(),
       });
     });
   }
@@ -395,8 +412,11 @@ export class DocumentCornerOverlay {
       const corn = corners[i];
       const corn2 = corners[(i + 1) % 4];
       const side = vectorFromPoints(corn2, corn);
-      line.place(
-          {position: corn, angle: side.cssRotateAngle(), scale: side.length()});
+      line.place({
+        position: corn,
+        angle: side.cssRotateAngle(),
+        length: side.length(),
+      });
     });
   }
 

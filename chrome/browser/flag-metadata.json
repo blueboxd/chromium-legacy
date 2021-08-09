@@ -844,7 +844,7 @@
   {
     "name": "crostini-disk-resizing",
     "owners": [ "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 110
   },
   {
     "name": "crostini-enable-dlc",
@@ -854,12 +854,12 @@
   {
     "name": "crostini-gpu-support",
     "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 110
   },
   {
     "name": "crostini-reset-lxd-db",
     "owners": [ "davidmunro@google.com", "nverne", "sidereal" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 110
   },
   {
     "name": "crostini-use-dlc",
@@ -2469,7 +2469,7 @@
   {
     "name": "enable-sharesheet-content-previews",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 96
   },
   {
     "name": "enable-shortcut-customization-app",
@@ -3659,16 +3659,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "media-app-annotation",
-    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
-    "expiry_milestone": 93
-  },
-  {
-    "name": "media-app-display-exif",
-    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "media-app-handles-pdf",
     "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
     "expiry_milestone": 96
@@ -4782,11 +4772,6 @@
     "expiry_milestone": 97
   },
   {
-    "name": "release-notes-notification",
-    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "release-notes-notification-all-channels",
     "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
     // This is required by test teams to verify functionality on dev/beta
@@ -5282,11 +5267,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "sync-compromised-credentials",
-    "owners": [ "vsemeniuk", "vasilii"],
-    "expiry_milestone": 91
-  },
-  {
     "name": "sync-setup-friendly-settings",
     "owners": [ "msalama" ],
     "expiry_milestone": 84
@@ -5563,11 +5543,6 @@
     "name": "use-notification-compat-builder",
     "owners": [ "knollr", "peter" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "use-of-hash-affiliation-fetcher",
-    "owners": [ "vsemeniuk", "vasilii"],
-    "expiry_milestone": 90
   },
   {
     "name": "use-ozone-platform",

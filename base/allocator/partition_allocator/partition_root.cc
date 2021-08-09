@@ -180,15 +180,16 @@ static size_t PartitionPurgeSlotSpan(
 
 #if defined(PAGE_ALLOCATOR_CONSTANTS_ARE_CONSTEXPR)
   constexpr size_t kMaxSlotCount =
-      (PartitionPageSize() * kMaxPartitionPagesPerSlotSpan) / SystemPageSize();
+      (PartitionPageSize() * kMaxPartitionPagesPerRegularSlotSpan) /
+      SystemPageSize();
 #elif defined(OS_APPLE)
   // It's better for slot_usage to be stack-allocated and fixed-size, which
   // demands that its size be constexpr. On OS_APPLE, PartitionPageSize() is
   // always SystemPageSize() << 2, so regardless of what the run time page size
   // is, kMaxSlotCount can always be simplified to this expression.
-  constexpr size_t kMaxSlotCount = 4 * kMaxPartitionPagesPerSlotSpan;
+  constexpr size_t kMaxSlotCount = 4 * kMaxPartitionPagesPerRegularSlotSpan;
   PA_CHECK(kMaxSlotCount ==
-           (PartitionPageSize() * kMaxPartitionPagesPerSlotSpan) /
+           (PartitionPageSize() * kMaxPartitionPagesPerRegularSlotSpan) /
                SystemPageSize());
 #endif
   PA_DCHECK(bucket_num_slots <= kMaxSlotCount);
@@ -673,8 +674,8 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
   // Make this check before comparing slot sizes, as even with equal or similar
   // slot sizes we can save a lot if the original allocation was heavily padded
   // for alignment.
-  if ((new_reservation_size / SystemPageSize()) * 5 <
-      (current_reservation_size / SystemPageSize()) * 4)
+  if ((new_reservation_size >> SystemPageShift()) * 5 <
+      (current_reservation_size >> SystemPageShift()) * 4)
     return false;
 
   // Note that the new size isn't a bucketed size; this function is called

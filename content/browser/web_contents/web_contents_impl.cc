@@ -1238,8 +1238,12 @@ RenderFrameHostImpl* WebContentsImpl::UnsafeFindFrameByFrameTreeNodeId(
                         "frame_tree_node_id", frame_tree_node_id);
   // Beware using this! The RenderFrameHost may have changed since the caller
   // obtained frame_tree_node_id.
-  FrameTreeNode* frame = frame_tree_.FindByID(frame_tree_node_id);
-  return frame ? frame->current_frame_host() : nullptr;
+  FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (!ftn)
+    return nullptr;
+  if (this != WebContents::FromRenderFrameHost(ftn->current_frame_host()))
+    return nullptr;
+  return ftn->current_frame_host();
 }
 
 void WebContentsImpl::ForEachFrame(
@@ -1449,7 +1453,7 @@ void WebContentsImpl::OnScreensChange(bool is_multi_screen_changed) {
   // that the RenderWidgetHostView is valid before sending an update.
   if (RenderWidgetHostViewBase* view =
           GetRenderViewHost()->GetWidget()->GetView()) {
-    view->UpdateScreenInfo(view->GetNativeView());
+    view->UpdateScreenInfo();
   }
 #endif  // !OS_MAC
 }
@@ -6744,9 +6748,6 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   // http://crbug.com/728276
   base::ScopedClosureRunner fullscreen_block = ForSecurityDropFullscreen();
 
-  if (delegate_)
-    delegate_->WillRunBeforeUnloadConfirm();
-
   auto callback =
       base::BindOnce(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
                      render_frame_host->GetProcess()->GetID(),
@@ -6764,8 +6765,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   javascript_dialog_dismiss_notifier_ =
       std::make_unique<JavaScriptDialogDismissNotifier>();
 
-  bool should_suppress = !render_frame_host->IsActive() ||
-                         (delegate_ && delegate_->ShouldSuppressDialogs(this));
+  bool should_suppress = delegate_ && delegate_->ShouldSuppressDialogs(this);
   bool has_non_devtools_handlers = delegate_ && dialog_manager_;
   bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
   if (should_suppress || !has_handlers) {
@@ -8641,6 +8641,13 @@ void WebContentsImpl::IsClipboardPasteContentAllowedWrapperCallback(
     ClipboardPasteContentAllowed allowed) {
   std::move(callback).Run(allowed);
   --suppress_unresponsive_renderer_count_;
+}
+
+void WebContentsImpl::BindScreenOrientation(
+    RenderFrameHost* rfh,
+    mojo::PendingAssociatedReceiver<device::mojom::ScreenOrientation>
+        receiver) {
+  screen_orientation_provider_->BindScreenOrientation(rfh, std::move(receiver));
 }
 
 bool WebContentsImpl::HasSeenRecentScreenOrientationChange() {

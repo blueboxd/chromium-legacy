@@ -89,7 +89,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/dump_accessibility_test_helper.h"
-#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/scoped_time_zone.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -1841,8 +1840,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, MultipleDomains) {
   EXPECT_EQ(2, CountPDFProcesses());
 }
 
-class PDFExtensionLinkClickTest
-    : public PDFExtensionTestWithoutUnseasonedOverride {
+class PDFExtensionLinkClickTest : public PDFExtensionTest {
  public:
   PDFExtensionLinkClickTest() : guest_contents_(nullptr) {}
   ~PDFExtensionLinkClickTest() override {}
@@ -1881,7 +1879,7 @@ class PDFExtensionLinkClickTest
   WebContents* guest_contents_;
 };
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlLeft) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, CtrlLeft) {
   LoadTestLinkPdfGetGuestContents();
 
   WebContents* web_contents = GetActiveWebContents();
@@ -1906,7 +1904,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlLeft) {
   EXPECT_EQ("http://www.example.com/", url.spec());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, Middle) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, Middle) {
   LoadTestLinkPdfGetGuestContents();
 
   WebContents* web_contents = GetActiveWebContents();
@@ -1931,7 +1929,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, Middle) {
   EXPECT_EQ("http://www.example.com/", url.spec());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlShiftLeft) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, CtrlShiftLeft) {
   LoadTestLinkPdfGetGuestContents();
 
   WebContents* web_contents = GetActiveWebContents();
@@ -1953,7 +1951,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlShiftLeft) {
   EXPECT_EQ("http://www.example.com/", url.spec());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftMiddle) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, ShiftMiddle) {
   LoadTestLinkPdfGetGuestContents();
 
   WebContents* web_contents = GetActiveWebContents();
@@ -1973,7 +1971,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftMiddle) {
   EXPECT_EQ("http://www.example.com/", url.spec());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, ShiftLeft) {
   LoadTestLinkPdfGetGuestContents();
 
   ASSERT_EQ(1U, chrome::GetTotalBrowserCount());
@@ -1999,7 +1997,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
 // the PDF is loaded and functional by clicking a link in the PDF. The link
 // click in the PDF opens a new tab. The main page handles the pageShow event
 // and updates the history state.
-IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
   // Navigate to the main page.
   GURL test_url(
       embedded_test_server()->GetURL("/pdf/pdf_href_replace_state.html"));
@@ -2063,7 +2061,7 @@ class FailOnNavigation : public content::WebContentsObserver {
 // If the PDF viewer can't navigate the tab using a tab id, make sure it doesn't
 // try to navigate the mime handler extension's frame.
 // Regression test for https://crbug.com/1158381
-IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, LinkClickInPdfInNonTab) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, LinkClickInPdfInNonTab) {
   // For ease of testing, we'll still load the PDF in a tab, but we clobber the
   // tab id in the viewer to make it think it's not in a tab.
   WebContents* guest_contents = LoadTestLinkPdfGetGuestContents();
@@ -2088,8 +2086,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, LinkClickInPdfInNonTab) {
   run_loop.Run();
 }
 
-class PDFExtensionInternalLinkClickTest
-    : public PDFExtensionTestWithoutUnseasonedOverride {
+class PDFExtensionInternalLinkClickTest : public PDFExtensionTest {
  public:
   PDFExtensionInternalLinkClickTest() : guest_contents_(nullptr) {}
   ~PDFExtensionInternalLinkClickTest() override {}
@@ -2115,7 +2112,7 @@ class PDFExtensionInternalLinkClickTest
   WebContents* guest_contents_;
 };
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionInternalLinkClickTest, CtrlLeft) {
   LoadTestLinkPdfGetGuestContents();
 
   WebContents* web_contents = GetActiveWebContents();
@@ -2141,7 +2138,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
   EXPECT_EQ("page=2&zoom=100,0,200", url.ref());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, Middle) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionInternalLinkClickTest, Middle) {
   LoadTestLinkPdfGetGuestContents();
 
   WebContents* web_contents = GetActiveWebContents();
@@ -2167,7 +2164,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, Middle) {
   EXPECT_EQ("page=2&zoom=100,0,200", url.ref());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionInternalLinkClickTest, ShiftLeft) {
   LoadTestLinkPdfGetGuestContents();
 
   ASSERT_EQ(1U, chrome::GetTotalBrowserCount());
@@ -2621,7 +2618,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
       embedder_contents,
       base::BindRepeating(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-  content::WaitForHitTestData(guest_contents);
 
   gfx::Point point_in_parent(250, 25);
   gfx::Point point_in_pdf(250, 250);
@@ -2675,7 +2671,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
       embedder_contents,
       base::BindRepeating(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-  content::WaitForHitTestData(guest_contents);
 
   // Get coords for mouse event.
   content::RenderWidgetHostView* guest_view =
@@ -3533,4 +3528,6 @@ INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFPluginDisabledTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionContentSettingJSTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionServiceWorkerJSTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionLinkClickTest);
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionInternalLinkClickTest);
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionPrerenderTest);

@@ -11,6 +11,7 @@
 
 #include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "pdf/pdf_accessibility_data_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace chrome_pdf {
+class PdfAccessibilityActionHandler;
 struct AccessibilityActionData;
 struct AccessibilityCharInfo;
 struct AccessibilityDocInfo;
@@ -40,13 +42,13 @@ class Transform;
 
 namespace pdf {
 
-class PdfAccessibilityActionHandler;
-
 class PdfAccessibilityTree : public content::PluginAXTreeSource,
-                             public content::RenderFrameObserver {
+                             public content::RenderFrameObserver,
+                             public chrome_pdf::PdfAccessibilityDataHandler {
  public:
-  PdfAccessibilityTree(content::RenderFrame* render_frame,
-                       PdfAccessibilityActionHandler* action_handler);
+  PdfAccessibilityTree(
+      content::RenderFrame* render_frame,
+      chrome_pdf::PdfAccessibilityActionHandler* action_handler);
   ~PdfAccessibilityTree() override;
 
   static bool IsDataFromPluginValid(
@@ -64,15 +66,17 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
     uint32_t annotation_index;
   };
 
+  // chrome_pdf::PdfAccessibilityDataHandler:
   void SetAccessibilityViewportInfo(
-      const chrome_pdf::AccessibilityViewportInfo& viewport_info);
+      const chrome_pdf::AccessibilityViewportInfo& viewport_info) override;
   void SetAccessibilityDocInfo(
-      const chrome_pdf::AccessibilityDocInfo& doc_info);
+      const chrome_pdf::AccessibilityDocInfo& doc_info) override;
   void SetAccessibilityPageInfo(
       const chrome_pdf::AccessibilityPageInfo& page_info,
       const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
       const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
-      const chrome_pdf::AccessibilityPageObjects& page_objects);
+      const chrome_pdf::AccessibilityPageObjects& page_objects) override;
+
   void HandleAction(const chrome_pdf::AccessibilityActionData& action_data);
   absl::optional<AnnotationInfo> GetPdfAnnotationInfoFromAXNode(
       int32_t ax_node_id) const;
@@ -146,7 +150,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   ui::AXTree tree_;
 
   // Unowned. Must outlive `this`.
-  PdfAccessibilityActionHandler* const action_handler_;
+  chrome_pdf::PdfAccessibilityActionHandler* const action_handler_;
 
   // `zoom_` signifies the zoom level set in for the browser content.
   // `scale_` signifies the scale level set by user. Scale is applied

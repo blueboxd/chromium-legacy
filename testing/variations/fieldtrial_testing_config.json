@@ -2269,6 +2269,21 @@
             ]
         }
     ],
+    "CompositingBasedThrottling": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "CompositingBasedThrottling",
+                    "enable_features": [
+                        "CompositingBasedThrottling"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContentCapture": [
         {
             "platforms": [
@@ -5930,6 +5945,22 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PageInfoDiscoverability"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageInfoHistory": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PageInfoHistory"
                     ]
                 }
             ]

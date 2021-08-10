@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/sharing/share_submenu_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
@@ -30,6 +31,10 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/vector2d.h"
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "chrome/browser/lens/region_search/lens_region_search_controller.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/context_menu_matcher.h"
@@ -340,6 +345,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase,
   std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
       send_tab_to_self_sub_menu_model_;
 
+  // Sharing submenu, if present.
+  std::unique_ptr<sharing::ShareSubmenuModel> share_submenu_model_;
+
   // Click to call menu observer.
   std::unique_ptr<ClickToCallContextMenuObserver>
       click_to_call_context_menu_observer_;
@@ -350,6 +358,17 @@ class RenderViewContextMenu : public RenderViewContextMenuBase,
 
   // The type of system app (if any) associated with the WebContents we're in.
   absl::optional<web_app::SystemAppType> system_app_type_;
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+  // Controller for Lens Region Search feature. This controller will be
+  // destroyed as soon as the RenderViewContextMenu object is destroyed. The
+  // RenderViewContextMenu is reset every time it is shown, but persists between
+  // uses so that it doesn't go out of scope before finishing work. This means
+  // that when another context menu opens, the Lens Region Search feature will
+  // close if active.
+  std::unique_ptr<lens::LensRegionSearchController>
+      lens_region_search_controller_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };

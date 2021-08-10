@@ -313,7 +313,7 @@ public class FeedSurfaceCoordinatorTest {
 
     @Test
     public void testGetTabIdFromLaunchOrigin_unknown() {
-        assertEquals(FeedSurfaceCoordinator.StreamTabId.FOR_YOU,
+        assertEquals(FeedSurfaceCoordinator.StreamTabId.DEFAULT,
                 mCoordinator.getTabIdFromLaunchOrigin(NewTabPageLaunchOrigin.UNKNOWN));
     }
 
@@ -355,7 +355,7 @@ public class FeedSurfaceCoordinatorTest {
                 NewTabPageLaunchOrigin.UNKNOWN, mPrivacyPreferencesManager,
                 ()
                         -> { return null; },
-                new FeedLaunchReliabilityLoggingState(SURFACE_TYPE, SURFACE_CREATION_TIME_NS),
-                null);
+                new FeedLaunchReliabilityLoggingState(SURFACE_TYPE, SURFACE_CREATION_TIME_NS), null,
+                false);
     }
 }

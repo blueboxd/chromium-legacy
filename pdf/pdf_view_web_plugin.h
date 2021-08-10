@@ -14,6 +14,7 @@
 #include "cc/paint/paint_image.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "pdf/mojom/pdf.mojom.h"
+#include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/post_message_receiver.h"
 #include "pdf/post_message_sender.h"
@@ -46,12 +47,15 @@ class MetafileSkia;
 
 namespace chrome_pdf {
 
+class PdfAccessibilityDataHandler;
+
 // Skeleton for a `blink::WebPlugin` to replace `OutOfProcessInstance`.
 class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public blink::WebPlugin,
                                public BlinkUrlLoader::Client,
                                public PostMessageReceiver::Client,
-                               public SkiaGraphics::Client {
+                               public SkiaGraphics::Client,
+                               public PdfAccessibilityActionHandler {
  public:
   class ContainerWrapper {
    public:
@@ -127,6 +131,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     // When you use this, you need to also update the rules for extracting known
     // actions in tools/metrics/actions/extract_actions.py.
     virtual void RecordComputedAction(const std::string& action) {}
+
+    // Creates an implementation of `PdfAccessibilityDataHandler` catered to the
+    // client.
+    virtual std::unique_ptr<PdfAccessibilityDataHandler>
+    CreateAccessibilityDataHandler(
+        PdfAccessibilityActionHandler* action_handler);
   };
 
   PdfViewWebPlugin(
@@ -221,6 +231,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // SkiaGraphics::Client:
   void UpdateSnapshot(sk_sp<SkImage> snapshot) override;
 
+  // PdfAccessibilityActionHandler:
+  void HandleAccessibilityAction(
+      const AccessibilityActionData& action_data) override;
+
   // Initializes the plugin using the `container_wrapper` provided by tests.
   bool InitializeForTesting(
       std::unique_ptr<ContainerWrapper> container_wrapper);
@@ -309,6 +323,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   PostMessageSender post_message_sender_;
 
   cc::PaintImage snapshot_;
+
+  // May be null in unit tests.
+  std::unique_ptr<PdfAccessibilityDataHandler> const
+      pdf_accessibility_data_handler_;
 
   // The metafile in which to save the printed output. Assigned a value only
   // between `PrintBegin()` and `PrintEnd()` calls.

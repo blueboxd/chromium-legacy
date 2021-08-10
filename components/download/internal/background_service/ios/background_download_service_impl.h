@@ -10,9 +10,12 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/time/clock.h"
+#include "components/download/internal/background_service/log_source.h"
 #include "components/download/internal/background_service/model_impl.h"
 #include "components/download/internal/background_service/service_config_impl.h"
+#include "components/download/internal/background_service/startup_status.h"
 #include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/task/download_task_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -22,12 +25,15 @@ namespace download {
 class BackgroundDownloadTaskHelper;
 class ClientSet;
 class FileMonitor;
+class Logger;
+class LogSink;
 class Model;
 struct Configuration;
 struct DownloadParams;
 struct SchedulingParams;
 
 class BackgroundDownloadServiceImpl : public BackgroundDownloadService,
+                                      public LogSource,
                                       public Model::Client {
  public:
   BackgroundDownloadServiceImpl(
@@ -36,6 +42,8 @@ class BackgroundDownloadServiceImpl : public BackgroundDownloadService,
       std::unique_ptr<BackgroundDownloadTaskHelper> download_helper,
       std::unique_ptr<FileMonitor> file_monitor,
       const base::FilePath& download_dir,
+      std::unique_ptr<Logger> logger,
+      LogSink* log_sink,
       base::Clock* clock);
   ~BackgroundDownloadServiceImpl() override;
 
@@ -67,10 +75,21 @@ class BackgroundDownloadServiceImpl : public BackgroundDownloadService,
                      DownloadClient client,
                      const std::string& guid) override;
 
+  // LogSource implementation.
+  Controller::State GetControllerState() override;
+  const StartupStatus& GetStartupStatus() override;
+  LogSource::EntryDetailsList GetServiceDownloads() override;
+  absl::optional<LogSource::EntryDetails> GetServiceDownload(
+      const std::string& guid) override;
+
+  void PruneDbRecords();
   void OnFileMonitorInitialized(bool success);
   void OnFilesPruned();
   void NotifyServiceUnavailable();
-
+  void InvokeStartCallback(DownloadClient client,
+                           const std::string& guid,
+                           DownloadParams::StartResult result,
+                           DownloadParams::StartCallback callback);
   void OnDownloadFinished(DownloadClient download_client,
                           const std::string& guid,
                           bool success,
@@ -88,7 +107,9 @@ class BackgroundDownloadServiceImpl : public BackgroundDownloadService,
   std::unique_ptr<Model> model_;
   std::unique_ptr<BackgroundDownloadTaskHelper> download_helper_;
   std::unique_ptr<FileMonitor> file_monitor_;
-  absl::optional<bool> init_success_;
+  std::unique_ptr<Logger> logger_;
+  LogSink* log_sink_;
+  StartupStatus startup_status_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
   base::Time update_time_;
   base::Clock* clock_;
@@ -97,6 +118,7 @@ class BackgroundDownloadServiceImpl : public BackgroundDownloadService,
   // pruned frequently.
   const base::FilePath download_dir_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<BackgroundDownloadServiceImpl> weak_ptr_factory_{this};
 };
 

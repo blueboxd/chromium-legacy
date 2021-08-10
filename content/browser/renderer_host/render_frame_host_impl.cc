@@ -180,6 +180,7 @@
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/schemeful_site.h"
+#include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
@@ -3912,6 +3913,10 @@ void RenderFrameHostImpl::DidFocusFrame() {
 }
 
 void RenderFrameHostImpl::DidCallFocus() {
+  // This should not occur for prerenders but may occur for pages in
+  // the BackForwardCache depending on timing.
+  if (!IsActive())
+    return;
   delegate_->DidCallFocus();
 }
 
@@ -4561,6 +4566,13 @@ void RenderFrameHostImpl::RunBeforeUnloadConfirm(
     RunBeforeUnloadConfirmCallback ipc_response_callback) {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnRunBeforeUnloadConfirm",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
+
+  // Inactive pages, such as prerendered pages, should not be able to put up a
+  // dialog.
+  if (!IsActive()) {
+    std::move(ipc_response_callback).Run(/*success=*/false);
+    return;
+  }
 
   // Allow at most one attempt to show a beforeunload dialog per navigation.
   RenderFrameHostImpl* beforeunload_initiator = GetBeforeUnloadInitiator();
@@ -5293,6 +5305,10 @@ void RenderFrameHostImpl::NotifyVirtualKeyboardOverlayRect(
 
 #if defined(OS_ANDROID)
 void RenderFrameHostImpl::UpdateUserGestureCarryoverInfo() {
+  // This should not occur for prerenders but may occur for pages in
+  // the BackForwardCache depending on timing.
+  if (!IsActive())
+    return;
   delegate_->UpdateUserGestureCarryoverInfo();
 }
 #endif
@@ -5851,7 +5867,7 @@ bool RenderFrameHostImpl::InsidePortal() {
 }
 
 void RenderFrameHostImpl::DidFinishDocumentLoad() {
-  dom_content_loaded_ = true;
+  document_associated_data_->dom_content_loaded_ = true;
   delegate_->DOMContentLoaded(this);
 }
 
@@ -7936,7 +7952,6 @@ void RenderFrameHostImpl::FailedNavigation(
   // TODO(crbug/1129537): support UKM source creation for failed navigations
   // too.
 
-  dom_content_loaded_ = false;
   has_committed_any_navigation_ = true;
   DCHECK(navigation_request && navigation_request->IsNavigationStarted() &&
          navigation_request->DidEncounterError());
@@ -8089,6 +8104,14 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
          mojo::PendingAssociatedReceiver<blink::mojom::ConversionHost>
              receiver) {
         ConversionHost::BindReceiver(std::move(receiver), impl);
+      },
+      base::Unretained(this)));
+
+  associated_registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<device::mojom::ScreenOrientation>
+             receiver) {
+        impl->delegate()->BindScreenOrientation(impl, std::move(receiver));
       },
       base::Unretained(this)));
 
@@ -10166,8 +10189,6 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   has_pagehide_handler_ = false;
   has_visibilitychange_handler_ = false;
 
-  dom_content_loaded_ = false;
-
   DCHECK(params.embedding_token.has_value());
   SetEmbeddingToken(params.embedding_token.value());
 
@@ -11707,7 +11728,7 @@ bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
 }
 
 bool RenderFrameHostImpl::IsDOMContentLoaded() {
-  return dom_content_loaded_;
+  return document_associated_data_->dom_content_loaded_;
 }
 
 void RenderFrameHostImpl::UpdateIsAdSubframe(bool is_ad_subframe) {

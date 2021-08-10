@@ -257,7 +257,6 @@
 #endif  // OS_WIN
 
 #if defined(TOOLKIT_VIEWS)
-#include "ui/views/animation/installable_ink_drop.h"
 #include "ui/views/views_features.h"
 #include "ui/views/views_switches.h"
 #endif  // defined(TOOLKIT_VIEWS)
@@ -1906,7 +1905,8 @@ const FeatureEntry::FeatureParam kCommercePriceTracking_PriceAlerts[] = {
 const FeatureEntry::FeatureParam
     kCommercePriceTracking_PriceAlerts_WithOptimizationGuide[] = {
         {"enable_price_tracking", "true"},
-        {"price_tracking_with_optimization_guide", "true"}};
+        {"price_tracking_with_optimization_guide", "true"},
+        {"enable_persisted_tab_data_maintenance", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
@@ -2617,6 +2617,20 @@ const FeatureEntry::FeatureVariation kSCTAuditingVariations[] = {
 };
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+// The variations of ContentLanguagesInLanguagePicker.
+const FeatureEntry::FeatureParam
+    kContentLanguagesInLanguagePickerDisableObservers[] = {
+        {language::kContentLanguagesDisableObserversParam, "true"}};
+
+const FeatureEntry::FeatureVariation
+    kContentLanguagesInLanguaePickerVariations[] = {
+        {"Without observers", kContentLanguagesInLanguagePickerDisableObservers,
+         base::size(kContentLanguagesInLanguagePickerDisableObservers),
+         nullptr},
+};
+#endif  // defined(OS_ANDROID)
+
 const FeatureEntry::FeatureParam kCheckOfflineCapabilityWarnOnly[] = {
     {"check_mode", "warn_only"}};
 const FeatureEntry::FeatureParam kCheckOfflineCapabilityEnforce[] = {
@@ -2704,13 +2718,18 @@ const FeatureEntry::FeatureParam kContinuousSearchOnReverseScroll[] = {
 const FeatureEntry::FeatureParam kContinuousSearchPermanentDismissal[] = {
     {"permanent_dismissal_threshold", "3"}};
 
+const FeatureEntry::FeatureParam kContinuousSearchDoubleRowChip[] = {
+    {"show_result_title", "true"}};
+
 const FeatureEntry::FeatureVariation kContinuousSearchFeatureVariations[] = {
     {"show after second SRP", kContinuousSearchAfterSecondSrp,
      base::size(kContinuousSearchAfterSecondSrp), nullptr},
     {"show on reverse scroll", kContinuousSearchOnReverseScroll,
      base::size(kContinuousSearchOnReverseScroll), nullptr},
     {"with permanent dismissal", kContinuousSearchPermanentDismissal,
-     base::size(kContinuousSearchPermanentDismissal), nullptr}};
+     base::size(kContinuousSearchPermanentDismissal), nullptr},
+    {"with double-row chips", kContinuousSearchDoubleRowChip,
+     base::size(kContinuousSearchDoubleRowChip), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -2972,9 +2991,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWasmLazyCompilationName,
      flag_descriptions::kEnableWasmLazyCompilationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyLazyCompilation)},
-    {"enable-webassembly-simd", flag_descriptions::kEnableWasmSimdName,
-     flag_descriptions::kEnableWasmSimdDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebAssemblySimd)},
     {"enable-webassembly-tiering", flag_descriptions::kEnableWasmTieringName,
      flag_descriptions::kEnableWasmTieringDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyTiering)},
@@ -3046,10 +3062,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWindowsFollowCursorName,
      flag_descriptions::kWindowsFollowCursorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kWindowsFollowCursor)},
-    {"ash-limit-alt-tab-to-active-desk",
-     flag_descriptions::kLimitAltTabToActiveDeskName,
-     flag_descriptions::kLimitAltTabToActiveDeskDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kLimitAltTabToActiveDesk)},
     {"ash-limit-shelf-items-to-active-desk",
      flag_descriptions::kLimitShelfItemsToActiveDeskName,
      flag_descriptions::kLimitShelfItemsToActiveDeskDescription, kOsCrOS,
@@ -4826,10 +4838,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpCacheOneGoogleBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kCacheOneGoogleBar)},
 
-    {"ntp-repeatable-queries", flag_descriptions::kNtpRepeatableQueriesName,
-     flag_descriptions::kNtpRepeatableQueriesDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kNtpRepeatableQueries)},
-
     {"ntp-modules", flag_descriptions::kNtpModulesName,
      flag_descriptions::kNtpModulesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kModules)},
@@ -5594,12 +5602,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFileHandlingIconsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kFileHandlingIcons)},
 
-#if defined(TOOLKIT_VIEWS)
-    {"installable-ink-drop", flag_descriptions::kInstallableInkDropName,
-     flag_descriptions::kInstallableInkDropDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(views::kInstallableInkDropFeature)},
-#endif  // defined(TOOLKIT_VIEWS)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-assistant-launcher-integration",
      flag_descriptions::kEnableAssistantLauncherIntegrationName,
@@ -5664,7 +5666,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-palm-tool-type-palm",
      flag_descriptions::kEnablePalmOnToolTypePalmName,
-     flag_descriptions::kEnablePalmOnToolTypePalmName, kOsCrOS,
+     flag_descriptions::kEnablePalmOnToolTypePalmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnablePalmOnToolTypePalm)},
 
     {"enable-pci-guard-ui", flag_descriptions::kEnablePciguardUiName,
@@ -6286,12 +6288,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          heavy_ad_intervention::features::kHeavyAdPrivacyMitigations)},
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-    {"enable-ftp", flag_descriptions::kEnableFtpName,
-     flag_descriptions::kEnableFtpDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kFtpProtocol)},
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"crosh-swa", flag_descriptions::kCroshSWAName,
      flag_descriptions::kCroshSWADescription, kOsCrOS,
@@ -6686,7 +6682,7 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"categorical-search", flag_descriptions::kCategoricalSearchName,
-     flag_descriptions::kCategoricalSearchName, kOsCrOS,
+     flag_descriptions::kCategoricalSearchDescription, kOsCrOS,
      FEATURE_WITH_PARAMS_VALUE_TYPE(app_list_features::kCategoricalSearch,
                                     kCategoricalSearchVariations,
                                     "LauncherCategoricalSearch")},
@@ -7256,8 +7252,11 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"content-languages-in-language-picker",
      flag_descriptions::kContentLanguagesInLanguagePickerName,
-     flag_descriptions::kContentLanguagesInLanguagePickerName, kOsAndroid,
-     FEATURE_VALUE_TYPE(language::kContentLanguagesInLanguagePicker)},
+     flag_descriptions::kContentLanguagesInLanguagePickerDescription,
+     kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(language::kContentLanguagesInLanguagePicker,
+                                    kContentLanguagesInLanguaePickerVariations,
+                                    "ContentLanguagesInLanguagePicker")},
 #endif
 
     {"filling-across-affiliated-websites",

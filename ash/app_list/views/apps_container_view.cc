@@ -56,6 +56,12 @@ namespace {
 constexpr float kSuggestionChipOpacityStartProgress = 0.66;
 constexpr float kSuggestionChipOpacityEndProgress = 1;
 
+// Range of the height of centerline above screen bottom that all apps should
+// change opacity. NOTE: this is used to change page switcher's opacity as
+// well.
+constexpr float kAppsOpacityChangeStart = 8.0f;
+constexpr float kAppsOpacityChangeEnd = 144.0f;
+
 // The app list transition progress value for fullscreen state.
 constexpr float kAppListFullscreenProgressValue = 2.0;
 
@@ -170,8 +176,10 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
     : contents_view_(contents_view) {
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
-  suggestion_chip_container_view_ = AddChildView(
-      std::make_unique<SuggestionChipContainerView>(contents_view));
+  if (!features::IsAppListBubbleEnabled()) {
+    suggestion_chip_container_view_ = AddChildView(
+        std::make_unique<SuggestionChipContainerView>(contents_view));
+  }
 
   AppListViewDelegate* view_delegate =
       contents_view_->GetAppListMainView()->view_delegate();
@@ -296,23 +304,29 @@ void AppsContainerView::UpdateControlVisibility(AppListViewState app_list_state,
   // being set to wrong value.
   page_switcher_->set_ignore_button_press(is_in_drag);
 
-  suggestion_chip_container_view_->SetVisible(
-      app_list_state == AppListViewState::kFullscreenAllApps ||
-      app_list_state == AppListViewState::kPeeking || is_in_drag);
+  if (suggestion_chip_container_view_) {
+    suggestion_chip_container_view_->SetVisible(
+        app_list_state == AppListViewState::kFullscreenAllApps ||
+        app_list_state == AppListViewState::kPeeking || is_in_drag);
+  }
 }
 
 void AppsContainerView::AnimateOpacity(float current_progress,
                                        AppListViewState target_view_state,
                                        const OpacityAnimator& animator) {
-  const bool target_suggestion_chip_visibility =
-      target_view_state == AppListViewState::kFullscreenAllApps ||
-      target_view_state == AppListViewState::kPeeking;
-  animator.Run(suggestion_chip_container_view_,
-               target_suggestion_chip_visibility);
+  if (suggestion_chip_container_view_) {
+    const bool target_suggestion_chip_visibility =
+        target_view_state == AppListViewState::kFullscreenAllApps ||
+        target_view_state == AppListViewState::kPeeking;
+    animator.Run(suggestion_chip_container_view_,
+                 target_suggestion_chip_visibility);
+  }
 
   if (!apps_grid_view_->layer()->GetAnimator()->IsAnimatingProperty(
           ui::LayerAnimationElement::OPACITY)) {
-    apps_grid_view_->UpdateOpacity(true /*restore_opacity*/);
+    apps_grid_view_->UpdateOpacity(true /*restore_opacity*/,
+                                   kAppsOpacityChangeStart,
+                                   kAppsOpacityChangeEnd);
     apps_grid_view_->layer()->SetOpacity(current_progress > 1.0f ? 1.0f : 0.0f);
   }
 
@@ -340,25 +354,25 @@ void AppsContainerView::AnimateYPosition(AppListViewState target_view_state,
       AppListView::GetTransitionProgressForState(target_view_state));
   const int offset = current_suggestion_chip_y - target_suggestion_chip_y;
 
-  suggestion_chip_container_view_->SetY(target_suggestion_chip_y);
-  animator.Run(offset, suggestion_chip_container_view_->layer());
+  if (suggestion_chip_container_view_) {
+    suggestion_chip_container_view_->SetY(target_suggestion_chip_y);
+    animator.Run(offset, suggestion_chip_container_view_->layer());
+  }
 
   if (features::IsLauncherAppSortEnabled()) {
     sort_button_container_->SetY(target_suggestion_chip_y);
     animator.Run(offset, sort_button_container_->layer());
   }
 
-  apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
-                        chip_grid_y_distance_);
+  apps_grid_view_->SetY(target_suggestion_chip_y + chip_grid_y_distance_);
   animator.Run(offset, apps_grid_view_->layer());
-
-  page_switcher_->SetY(suggestion_chip_container_view_->y() +
-                       chip_grid_y_distance_);
+  page_switcher_->SetY(target_suggestion_chip_y + chip_grid_y_distance_);
   animator.Run(offset, page_switcher_->layer());
 }
 
 void AppsContainerView::OnTabletModeChanged(bool started) {
-  suggestion_chip_container_view_->OnTabletModeChanged(started);
+  if (suggestion_chip_container_view_)
+    suggestion_chip_container_view_->OnTabletModeChanged(started);
   apps_grid_view_->OnTabletModeChanged(started);
   app_list_folder_view_->OnTabletModeChanged(started);
   page_switcher_->set_is_tablet_mode(started);
@@ -374,11 +388,16 @@ void AppsContainerView::Layout() {
   chip_container_rect.set_y(GetExpectedSuggestionChipY(
       contents_view_->app_list_view()->GetAppListTransitionProgress(
           AppListView::kProgressFlagNone)));
-  chip_container_rect.set_height(
-      GetAppListConfig().suggestion_chip_container_height());
-  chip_container_rect.Inset(GetAppListConfig().GetIdealHorizontalMargin(rect),
-                            0);
-  suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
+
+  if (suggestion_chip_container_view_) {
+    chip_container_rect.set_height(
+        GetAppListConfig().suggestion_chip_container_height());
+    chip_container_rect.Inset(GetAppListConfig().GetIdealHorizontalMargin(rect),
+                              0);
+    suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
+  } else {
+    chip_container_rect.set_height(0);
+  }
 
   // Set bounding box for the folder view - the folder may overlap with
   // suggestion chips, but not the search box.
@@ -417,8 +436,10 @@ void AppsContainerView::Layout() {
   // Record the distance of y position between suggestion chip container
   // and apps grid view to avoid duplicate calculation of apps grid view's
   // y position during dragging.
-  chip_grid_y_distance_ =
-      apps_grid_view_->y() - suggestion_chip_container_view_->y();
+  if (suggestion_chip_container_view_) {
+    chip_grid_y_distance_ =
+        apps_grid_view_->y() - suggestion_chip_container_view_->y();
+  }
 
   // Layout page switcher.
   const int page_switcher_width = page_switcher_->GetPreferredSize().width();
@@ -428,15 +449,15 @@ void AppsContainerView::Layout() {
   page_switcher_->SetBoundsRect(page_switcher_bounds);
 
   if (features::IsLauncherAppSortEnabled()) {
-    // Align `sort_button_container_` with `suggestion_chip_container_view_`
-    // horizontally; align `sort_button_container_` with `page_switcher_bounds`
-    // vertically on the right edge.
+    // Align `sort_button_container_` with the bottom of the
+    // `suggestion_chip_container_view_` horizontally; align
+    // `sort_button_container_` with `page_switcher_bounds` vertically on the
+    // right edge.
     const int sort_button_container_width =
         sort_button_container_->GetPreferredSize().width();
     gfx::Rect sort_button_container_rect(
         page_switcher_bounds.right() - sort_button_container_width,
-        suggestion_chip_container_view_->y(), sort_button_container_width,
-        chip_container_rect.height());
+        chip_container_rect.bottom(), sort_button_container_width, 20);
     sort_button_container_->SetBoundsRect(sort_button_container_rect);
   }
 
@@ -686,6 +707,9 @@ void AppsContainerView::OnAppListConfigUpdated() {
 }
 
 void AppsContainerView::UpdateSuggestionChips() {
+  if (!suggestion_chip_container_view_)
+    return;
+
   suggestion_chip_container_view_->SetResults(
       contents_view_->GetAppListMainView()
           ->view_delegate()
@@ -694,6 +718,9 @@ void AppsContainerView::UpdateSuggestionChips() {
 }
 
 base::ScopedClosureRunner AppsContainerView::DisableSuggestionChipsBlur() {
+  if (!suggestion_chip_container_view_)
+    return base::ScopedClosureRunner(base::DoNothing());
+
   ++suggestion_chips_blur_disabler_count_;
 
   if (suggestion_chips_blur_disabler_count_ == 1)
@@ -755,7 +782,8 @@ void AppsContainerView::UpdateContainerOpacityForState(AppListState state) {
 
 void AppsContainerView::UpdateContentsOpacity(float progress,
                                               bool restore_opacity) {
-  apps_grid_view_->UpdateOpacity(restore_opacity);
+  apps_grid_view_->UpdateOpacity(restore_opacity, kAppsOpacityChangeStart,
+                                 kAppsOpacityChangeEnd);
 
   // Updates the opacity of page switcher buttons. The same rule as all apps in
   // AppsGridView.
@@ -764,45 +792,49 @@ void AppsContainerView::UpdateContentsOpacity(float progress,
   gfx::Rect switcher_bounds = page_switcher_->GetBoundsInScreen();
   float centerline_above_work_area =
       std::max<float>(screen_bottom - switcher_bounds.CenterPoint().y(), 0.f);
-  const float start_px = GetAppListConfig().all_apps_opacity_start_px();
-  float opacity = std::min(
-      std::max((centerline_above_work_area - start_px) /
-                   (GetAppListConfig().all_apps_opacity_end_px() - start_px),
-               0.f),
-      1.0f);
+  float opacity =
+      std::min(std::max((centerline_above_work_area - kAppsOpacityChangeStart) /
+                            (kAppsOpacityChangeEnd - kAppsOpacityChangeStart),
+                        0.f),
+               1.0f);
   page_switcher_->layer()->SetOpacity(restore_opacity ? 1.0f : opacity);
 
-  // Changes the opacity of suggestion chips between 0 and 1 when app list
-  // transition progress changes between |kSuggestionChipOpacityStartProgress|
-  // and |kSuggestionChipOpacityEndProgress|.
-  float chips_opacity =
-      base::clamp((progress - kSuggestionChipOpacityStartProgress) /
-                      (kSuggestionChipOpacityEndProgress -
-                       kSuggestionChipOpacityStartProgress),
-                  0.0f, 1.0f);
-  suggestion_chip_container_view_->layer()->SetOpacity(
-      restore_opacity ? 1.0 : chips_opacity);
+  if (suggestion_chip_container_view_) {
+    // Changes the opacity of suggestion chips between 0 and 1 when app list
+    // transition progress changes between |kSuggestionChipOpacityStartProgress|
+    // and |kSuggestionChipOpacityEndProgress|.
+    float chips_opacity =
+        base::clamp((progress - kSuggestionChipOpacityStartProgress) /
+                        (kSuggestionChipOpacityEndProgress -
+                         kSuggestionChipOpacityStartProgress),
+                    0.0f, 1.0f);
+    suggestion_chip_container_view_->layer()->SetOpacity(
+        restore_opacity ? 1.0 : chips_opacity);
+  }
 }
 
 void AppsContainerView::UpdateContentsYPosition(float progress) {
-  suggestion_chip_container_view_->SetY(GetExpectedSuggestionChipY(progress));
-
-  apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
-                        chip_grid_y_distance_);
-  page_switcher_->SetY(suggestion_chip_container_view_->y() +
-                       chip_grid_y_distance_);
+  const int current_suggestion_chip_y = GetExpectedSuggestionChipY(progress);
+  if (suggestion_chip_container_view_)
+    suggestion_chip_container_view_->SetY(current_suggestion_chip_y);
+  apps_grid_view_->SetY(current_suggestion_chip_y + chip_grid_y_distance_);
+  page_switcher_->SetY(current_suggestion_chip_y + chip_grid_y_distance_);
 
   // If app list is in drag, reset transforms that might started animating in
   // AnimateYPosition().
   if (contents_view_->app_list_view()->is_in_drag()) {
-    suggestion_chip_container_view_->layer()->SetTransform(gfx::Transform());
+    if (suggestion_chip_container_view_)
+      suggestion_chip_container_view_->layer()->SetTransform(gfx::Transform());
     apps_grid_view_->layer()->SetTransform(gfx::Transform());
     page_switcher_->layer()->SetTransform(gfx::Transform());
   }
 }
 
 void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {
-  suggestion_chip_container_view_->DisableFocusForShowingActiveFolder(disabled);
+  if (suggestion_chip_container_view_) {
+    suggestion_chip_container_view_->DisableFocusForShowingActiveFolder(
+        disabled);
+  }
   apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
 
   // Ignore the page switcher in accessibility tree so that buttons inside it
@@ -816,6 +848,10 @@ int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
   const gfx::Rect search_box_bounds =
       contents_view_->GetSearchBoxExpectedBoundsForProgress(
           AppListState::kStateApps, progress);
+
+  if (!suggestion_chip_container_view_)
+    return search_box_bounds.bottom();
+
   return search_box_bounds.bottom() +
          GetAppListConfig().suggestion_chip_container_top_margin();
 }

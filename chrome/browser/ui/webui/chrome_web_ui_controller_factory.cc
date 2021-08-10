@@ -144,7 +144,6 @@
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 #include "chrome/browser/ui/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
-#include "chrome/browser/ui/webui/web_footer_experiment_ui.h"
 #include "media/base/media_switches.h"
 #endif  // defined(OS_ANDROID)
 
@@ -713,8 +712,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SyncFileSystemInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISystemInfoHost)
     return &NewWebUI<SystemInfoUI>;
-  if (url.host_piece() == chrome::kChromeUIWebFooterExperimentHost)
-    return &NewWebUI<WebFooterExperimentUI>;
   // Inline login UI is available on all platforms except Android.
   if (url.host_piece() == chrome::kChromeUIChromeSigninHost)
     return &NewWebUI<InlineLoginUI>;
@@ -850,7 +847,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       !profile->IsOffTheRecord()) {
     return &NewWebUI<nearby_share::NearbyShareDialogUI>;
   }
-  if (base::FeatureList::IsEnabled(ash::features::kProjector) &&
+  if (ash::features::IsProjectorEnabled() &&
       url.host_piece() == chromeos::kChromeUIProjectorAppHost) {
     return &NewWebUI<chromeos::TrustedProjectorUI>;
   }
@@ -920,8 +917,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       return &NewWebUI<chromeos::DemoModeAppUI>;
     }
   }
-  if (url.host_piece() == chromeos::kChromeUISampleSystemWebAppHost)
-    return &NewWebUI<chromeos::SampleSystemWebAppUI>;
+  if (url.host_piece() == ash::kChromeUISampleSystemWebAppHost)
+    return &NewWebUI<ash::SampleSystemWebAppUI>;
   if (url.host_piece() == chromeos::kChromeUITelemetryExtensionHost) {
     if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
       return &NewWebUI<chromeos::TelemetryExtensionUI>;

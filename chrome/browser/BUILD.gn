@@ -451,6 +451,8 @@ static_library("browser") {
     "download/drag_download_item.h",
     "download/mixed_content_download_blocking.cc",
     "download/mixed_content_download_blocking.h",
+    "download/notification/multi_profile_download_notifier.cc",
+    "download/notification/multi_profile_download_notifier.h",
     "download/offline_item_utils.cc",
     "download/offline_item_utils.h",
     "download/save_package_file_picker.cc",
@@ -4089,6 +4091,8 @@ static_library("browser") {
       "sharing/click_to_call/click_to_call_metrics.h",
       "sharing/click_to_call/click_to_call_ui_controller.cc",
       "sharing/click_to_call/click_to_call_ui_controller.h",
+      "sharing/share_submenu_model.cc",
+      "sharing/share_submenu_model.h",
       "sharing/shared_clipboard/remote_copy_message_handler.cc",
       "sharing/shared_clipboard/remote_copy_message_handler.h",
       "sharing/shared_clipboard/shared_clipboard_context_menu_observer.cc",
@@ -4878,6 +4882,8 @@ static_library("browser") {
       "lacros/lacros_url_handling.h",
       "lacros/metrics_reporting_observer.cc",
       "lacros/metrics_reporting_observer.h",
+      "lacros/move_to_desks_menu_delegate_lacros.cc",
+      "lacros/move_to_desks_menu_delegate_lacros.h",
       "lacros/snap_controller_lacros.cc",
       "lacros/snap_controller_lacros.h",
       "lacros/system_logs/lacros_system_log_fetcher.cc",
@@ -4904,6 +4910,7 @@ static_library("browser") {
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
+      "//chromeos/strings:strings_grit",
       "//chromeos/ui/frame",
       "//ui/platform_window",
     ]
@@ -5424,7 +5431,6 @@ static_library("browser") {
       "download/download_status_updater_linux.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
-      "icon_loader_auralinux.cc",
       "themes/theme_service_aura_linux.cc",
       "themes/theme_service_aura_linux.h",
       "upgrade_detector/directory_monitor.cc",
@@ -5438,9 +5444,13 @@ static_library("browser") {
     }
 
     if (is_chromeos_lacros) {
-      sources += [ "shell_integration_chromeos.cc" ]
+      sources += [
+        "icon_loader_chromeos.cc",
+        "shell_integration_chromeos.cc",
+      ]
     } else {
       sources += [
+        "icon_loader_auralinux.cc",
         "platform_util_linux.cc",
         "shell_integration_linux.cc",
         "shell_integration_linux.h",

@@ -754,6 +754,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnTextAutosizerPageInfoChanged(
       RenderFrameHostImpl* source,
       blink::mojom::TextAutosizerPageInfoPtr page_info) override;
+  void BindScreenOrientation(
+      RenderFrameHost* rfh,
+      mojo::PendingAssociatedReceiver<device::mojom::ScreenOrientation>
+          receiver) override;
   bool HasSeenRecentScreenOrientationChange() override;
   bool IsTransientAllowFullscreenActive() const override;
   bool IsBackForwardCacheSupported() override;
@@ -1368,6 +1372,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            CancelBeforeUnloadResetsURL);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            BeforeUnloadDialogSuppressedForDiscard);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           BeforeUnloadConfirmOnNonActive);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            PendingDialogMakesDiscardUnloadReturnFalse);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogNotifications);

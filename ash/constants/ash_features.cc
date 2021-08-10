@@ -677,11 +677,6 @@ const base::Feature kLauncherRemoveEmptySpace{
 const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Limits the windows listed in Alt-Tab to the ones in the currently active
-// desk.
-const base::Feature kLimitAltTabToActiveDesk{"LimitAltTabToActiveDesk",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Supports the feature to hide sensitive content in notifications on the lock
 // screen. This option is effective when |kLockScreenNotification| is enabled.
 const base::Feature kLockScreenHideSensitiveNotificationsSupport{
@@ -846,10 +841,10 @@ const base::Feature kPluginVmFullscreen{"PluginVmFullscreen",
 const base::Feature kPreferConstantFrameRate{"PreferConstantFrameRate",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable projector.
+// Controls whether to enable Projector.
 const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable projector in status tray.
+// Controls whether to enable Projector in status tray.
 const base::Feature kProjectorFeaturePod{"ProjectorFeaturePod",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1164,10 +1159,6 @@ bool IsAccountManagementFlowsV2Enabled() {
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
-}
-
-bool IsAltTabLimitedToActiveDesk() {
-  return base::FeatureList::IsEnabled(kLimitAltTabToActiveDesk);
 }
 
 bool IsAmbientModeDevUseProdEnabled() {

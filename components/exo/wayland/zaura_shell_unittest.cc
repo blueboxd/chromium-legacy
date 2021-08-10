@@ -108,6 +108,8 @@ class MockSurfaceDelegate : public SurfaceDelegate {
               SetAspectRatio,
               (const gfx::SizeF& aspect_ratio),
               (override));
+  MOCK_METHOD(void, MoveToDesk, (int desk_index), (override));
+  MOCK_METHOD(void, SetVisibleOnAllWorkspaces, (), (override));
 };
 
 }  // namespace
@@ -319,8 +321,6 @@ TEST_F(ZAuraSurfaceTest,
             ash::window_util::GetActiveWindow());
   EXPECT_EQ(0.0f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
-  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
-            aura_surface().last_sent_occlusion_state());
 }
 
 TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {

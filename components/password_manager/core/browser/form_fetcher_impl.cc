@@ -10,14 +10,13 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -107,7 +106,8 @@ void FormFetcherImpl::Fetch() {
     return;
   }
 
-  PasswordStore* password_store = client_->GetProfilePasswordStore();
+  PasswordStoreInterface* password_store =
+      client_->GetProfilePasswordStoreInterface();
   if (!password_store) {
     if (logger)
       logger->LogMessage(Logger::STRING_NO_STORE);
@@ -203,8 +203,9 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   return result;
 }
 
-void FormFetcherImpl::ProcessPasswordStoreResults(
+void FormFetcherImpl::FindMatchesAndNotifyConsumers(
     std::vector<std::unique_ptr<PasswordForm>> results) {
+  DCHECK_EQ(State::WAITING, state_);
   insecure_credentials_.clear();
   for (const auto& form : results) {
     for (const auto& issue : form->password_issues) {
@@ -214,22 +215,6 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
       insecure_credentials_.back().in_store = form->in_store;
     }
   }
-  if (client_->GetProfilePasswordStore()->affiliated_match_helper()) {
-    client_->GetProfilePasswordStore()
-        ->affiliated_match_helper()
-        ->InjectAffiliationAndBrandingInformation(
-            std::move(results),
-            AndroidAffiliationService::StrategyOnCacheMiss::FAIL,
-            base::BindOnce(&FormFetcherImpl::FindMatchesAndNotifyConsumers,
-                           weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    FindMatchesAndNotifyConsumers(std::move(results));
-  }
-}
-
-void FormFetcherImpl::FindMatchesAndNotifyConsumers(
-    std::vector<std::unique_ptr<PasswordForm>> results) {
-  DCHECK_EQ(State::WAITING, state_);
   state_ = State::NOT_WAITING;
   SplitResults(std::move(results));
 
@@ -285,11 +270,12 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
       form_digest_.url.SchemeIs(url::kHttpsScheme)) {
     http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
         url::Origin::Create(form_digest_.url),
-        client_->GetProfilePasswordStore(), client_->GetNetworkContext(), this);
+        client_->GetProfilePasswordStoreInterface(),
+        client_->GetNetworkContext(), this);
     return;
   }
 
-  ProcessPasswordStoreResults(std::move(results));
+  FindMatchesAndNotifyConsumers(std::move(results));
 }
 
 void FormFetcherImpl::OnGetSiteStatistics(
@@ -299,7 +285,7 @@ void FormFetcherImpl::OnGetSiteStatistics(
 
 void FormFetcherImpl::ProcessMigratedForms(
     std::vector<std::unique_ptr<PasswordForm>> forms) {
-  ProcessPasswordStoreResults(std::move(forms));
+  FindMatchesAndNotifyConsumers(std::move(forms));
 }
 
 }  // namespace password_manager

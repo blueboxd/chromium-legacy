@@ -25973,6 +25973,7 @@ Called by update_document_policy_enum.py.-->
   <int value="885" label="AssistantVoiceMatchEnabledDuringOobe"/>
   <int value="886" label="LensRegionSearchEnabled"/>
   <int value="887" label="ArcAppToWebAppSharingEnabled"/>
+  <int value="888" label="EnhancedNetworkVoicesInSelectToSpeakAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34106,6 +34107,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3971" label="CSSSelectorPseudoHasInSnapshotProfile"/>
   <int value="3972" label="CSSSelectorPseudoHasInLiveProfile"/>
   <int value="3973" label="NavigatorPdfViewerEnabled"/>
+  <int value="3974" label="CanvasRenderingContext2DContextLostEvent"/>
+  <int value="3975" label="CanvasRenderingContext2DContextRestoredEvent"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -53678,9 +53681,10 @@ Called by update_use_counter_css.py.-->
 
 <enum name="MatchResult">
   <int value="0" label="Valid match"/>
-  <int value="1" label="Invalid match"/>
-  <int value="2" label="Index Out of Bounds"/>
-  <int value="3" label="Native match dead"/>
+  <int value="1" label="Suggestion mismatch"/>
+  <int value="2" label="Result array size mismatch"/>
+  <int value="3" label="Native match dead (obsolete)"/>
+  <int value="4" label="Suggestion index out of bounds"/>
 </enum>
 
 <enum name="MayLaunchUrlType">
@@ -56362,6 +56366,9 @@ Called by update_use_counter_css.py.-->
   <int value="12"
       label="A navigation suggestion is found using a character swap match
              against an engaged site."/>
+  <int value="13"
+      label="A navigation suggestion is found using a character swap match
+             against a top 500 domain."/>
 </enum>
 
 <enum name="NavigationURLScheme">
@@ -56600,6 +56607,7 @@ Called by update_use_counter_css.py.-->
   <int value="8" label="WiFi Direct"/>
   <int value="9" label="WebRTC"/>
   <int value="10" label="No upgrade"/>
+  <int value="11" label="BLE L2CAP"/>
 </enum>
 
 <enum name="NearbyShareVisibility">
@@ -61578,6 +61586,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="701" label="Remove Play Store"/>
   <int value="702" label="Turn On Play Store"/>
   <int value="703" label="Restore Apps And Pages On Startup"/>
+  <int value="704" label="Do Not Disturb: On/Off"/>
   <int value="800" label="Set Up Crostini"/>
   <int value="801" label="Uninstall Crostini"/>
   <int value="802" label="Backup Linux Apps And Files"/>

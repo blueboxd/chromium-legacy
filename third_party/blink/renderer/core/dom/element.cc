@@ -868,7 +868,7 @@ void Element::SetElementArrayAttribute(
   // run the synchronization steps which modify the map invalidating any
   // outstanding iterators.
   HeapLinkedHashSet<WeakMember<Element>>* stored_elements =
-      element_attribute_map->at(name);
+      element_attribute_map->DeprecatedAtOrEmptyValue(name);
   if (!stored_elements) {
     stored_elements =
         MakeGarbageCollected<HeapLinkedHashSet<WeakMember<Element>>>();
@@ -2432,10 +2432,7 @@ void Element::ClassAttributeChanged(const AtomicString& new_class_string) {
 
 void Element::UpdateClassList(const AtomicString& old_class_string,
                               const AtomicString& new_class_string) {
-  if (!HasRareData())
-    return;
-  if (DOMTokenList* class_list = GetElementRareData()->GetClassList())
-    class_list->DidUpdateAttributeValue(old_class_string, new_class_string);
+  classList().DidUpdateAttributeValue(old_class_string, new_class_string);
 }
 
 // Returns true if the given attribute is an event handler.
@@ -2893,6 +2890,12 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     child_change = RecalcOwnStyle(change, style_recalc_context);
     if (GetStyleChangeType() == kSubtreeStyleChange)
       child_change = child_change.ForceRecalcDescendants();
+    ClearNeedsStyleRecalc();
+  } else if (GetForceReattachLayoutTree()) {
+    DCHECK(GetComputedStyle()) << "No need to force a layout tree reattach if "
+                                  "we had no computed style";
+    SetNeedsReattachLayoutTree();
+    child_change = child_change.ForceReattachLayoutTree();
     ClearNeedsStyleRecalc();
   }
 

@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
+#include "base/trace_event/typed_macros.h"
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -563,6 +564,14 @@ bool PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
     return false;
   }
 
+  // We don't check download_policy as it affects whether the download triggered
+  // by the NavigationRequest is allowed to proceed (or logs metrics) and
+  // doesn't affect the behaviour of the document created by a non-download
+  // navigation after commit (e.g. it doesn't affect future downloads in child
+  // frames). PrerenderNavigationThrottle has already ensured that the initial
+  // prerendering navigation isn't a download and as prerendering activation
+  // won't reach out to the network, it won't turn into a navigation as well.
+
   DCHECK(common_params_->base_url_for_data_url.is_empty());
   if (potential_activation.base_url_for_data_url !=
       common_params_->base_url_for_data_url) {
@@ -630,6 +639,15 @@ bool PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
     return false;
   }
 
+  // The spec mandates matching the referrer policy, and not the referrer URL
+  // itself, so we only compare the referrer policy here. Referrer policy is a
+  // more predictable value to match than referrer URL.
+  // https://jeremyroman.github.io/alternate-loading-modes/#navigate-activation
+  if (potential_activation.referrer->policy !=
+      common_params_->referrer->policy) {
+    return false;
+  }
+
   return true;
 }
 
@@ -683,6 +701,7 @@ void PrerenderHost::SetInitialNavigationId(int64_t navigation_id) {
 }
 
 void PrerenderHost::Cancel(FinalStatus status) {
+  TRACE_EVENT("navigation", "PrerenderHost::Cancel", "final_status", status);
   // Already cancelled.
   if (final_status_)
     return;

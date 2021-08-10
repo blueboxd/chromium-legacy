@@ -12,11 +12,11 @@ promise_test(async t => {
   i.contentWindow.appHistory.navigate("?1");
   await new Promise(resolve => {
     i.contentWindow.onunload = t.step_func(() => {
-      i.contentWindow.appHistory.navigate("#").catch(e => {
+      i.contentWindow.appHistory.navigate("#").catch(t.step_func(e => {
         assert_equals(e.constructor, i.contentWindow.DOMException);
         assert_equals(e.name, "InvalidStateError");
         resolve();
-      });
+      }));
     });
   });
   assert_equals(navigate_event_count, 1);

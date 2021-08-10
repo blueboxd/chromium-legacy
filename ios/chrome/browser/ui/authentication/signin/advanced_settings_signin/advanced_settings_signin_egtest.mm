@@ -30,7 +30,7 @@
 #endif
 
 using chrome_test_util::GoogleServicesSettingsView;
-using chrome_test_util::GoogleServicesSettingsButton;
+using chrome_test_util::GoogleSyncSettingsButton;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsLink;
@@ -53,12 +53,6 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
 @end
 
 @implementation AdvancedSettingsSigninTestCase
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(signin::kMobileIdentityConsistency);
-  return config;
-}
 
 - (void)setUp {
   [super setUp];
@@ -112,7 +106,7 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
   [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out and clear data from Sync settings.
-  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleSyncSettingsButton()];
   [[[EarlGrey selectElementWithMatcher:
                   grey_accessibilityLabel(l10n_util::GetNSString(
                       IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC))]
@@ -158,7 +152,7 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
   [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out and keep data from Sync settings.
-  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleSyncSettingsButton()];
   [[[EarlGrey selectElementWithMatcher:
                   grey_accessibilityLabel(l10n_util::GetNSString(
                       IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC))]
@@ -216,10 +210,13 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
   // Test the user is signed in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 
-  // Test the sync error message is visible.
-  [[EarlGrey selectElementWithMatcher:GoogleServicesSettingsButton()]
+  // Give the Sync state a chance to finish UI updates.
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:GoogleSyncSettingsButton()];
+  [[EarlGrey selectElementWithMatcher:GoogleSyncSettingsButton()]
       performAction:grey_tap()];
 
+  // Test the sync error message is visible.
   ConditionBlock condition = ^{
     NSError* error = nil;
     [[EarlGrey

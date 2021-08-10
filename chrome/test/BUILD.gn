@@ -2619,6 +2619,7 @@ if (!is_android && !is_fuchsia) {
       if (is_chromeos) {
         sources +=
             [ "../browser/extensions/clipboard_extension_apitest_chromeos.cc" ]
+        deps += [ "//chromeos/dbus/constants" ]
       }
 
       if (is_chromeos_ash) {
@@ -6852,6 +6853,9 @@ test("unit_tests") {
     ]
     if (is_linux) {
       sources += [ "../browser/shell_integration_linux_unittest.cc" ]
+      if (use_ozone) {
+        deps += [ "//ui/ozone" ]
+      }
     }
   }
 

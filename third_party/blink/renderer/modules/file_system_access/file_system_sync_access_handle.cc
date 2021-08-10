@@ -77,38 +77,24 @@ void FileSystemSyncAccessHandle::DispatchQueuedClose() {
   ScriptPromiseResolver* resolver = queued_close_resolver_;
   queued_close_resolver_ = nullptr;
 
-  worker_pool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      CrossThreadBindOnce(&DoClose, WrapCrossThreadPersistent(this),
-                          WrapCrossThreadPersistent(resolver),
-                          resolver_task_runner_));
-}
-
-// static
-void FileSystemSyncAccessHandle::DoClose(
-    CrossThreadPersistent<FileSystemSyncAccessHandle> access_handle,
-    CrossThreadPersistent<ScriptPromiseResolver> resolver,
-    scoped_refptr<base::SequencedTaskRunner> resolver_task_runner) {
-  DCHECK(access_handle->file_delegate_->IsValid())
+  // Access file delegate directly rather than through accessor method, which
+  // checks `io_pending_`.
+  DCHECK(file_delegate_->IsValid())
       << "file I/O operation queued after file closed";
-  access_handle->file_delegate_->Close();
 
-  PostCrossThreadTask(
-      *resolver_task_runner, FROM_HERE,
-      CrossThreadBindOnce(&FileSystemSyncAccessHandle::DidClose,
-                          std::move(access_handle), std::move(resolver)));
-}
+  file_delegate_->Close(WTF::Bind(
+      [](ScriptPromiseResolver* resolver,
+         FileSystemSyncAccessHandle* access_handle) {
+        ScriptState* script_state = resolver->GetScriptState();
+        if (!script_state->ContextIsValid())
+          return;
+        ScriptState::Scope scope(script_state);
 
-void FileSystemSyncAccessHandle::DidClose(
-    CrossThreadPersistent<ScriptPromiseResolver> resolver) {
-  ScriptState* script_state = resolver->GetScriptState();
-  if (!script_state->ContextIsValid())
-    return;
-  ScriptState::Scope scope(script_state);
-
-  access_handle_remote_->Close(
-      WTF::Bind([](ScriptPromiseResolver* resolver) { resolver->Resolve(); },
-                std::move(resolver)));
+        access_handle->access_handle_remote_->Close(WTF::Bind(
+            [](ScriptPromiseResolver* resolver) { resolver->Resolve(); },
+            WrapPersistent(resolver)));
+      },
+      WrapPersistent(resolver), WrapPersistent(this)));
 }
 
 ScriptPromise FileSystemSyncAccessHandle::flush(
@@ -248,39 +234,33 @@ ScriptPromise FileSystemSyncAccessHandle::truncate(
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  worker_pool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      CrossThreadBindOnce(&DoTruncate, WrapCrossThreadPersistent(this),
-                          WrapCrossThreadPersistent(resolver),
-                          resolver_task_runner_, size));
-  return resolver->Promise();
-}
+  ScriptPromise result = resolver->Promise();
 
-// static
-void FileSystemSyncAccessHandle::DoTruncate(
-    CrossThreadPersistent<FileSystemSyncAccessHandle> access_handle,
-    CrossThreadPersistent<ScriptPromiseResolver> resolver,
-    scoped_refptr<base::SequencedTaskRunner> resolver_task_runner,
-    uint64_t size) {
-  DCHECK(access_handle->file_delegate()->IsValid())
+  DCHECK(file_delegate()->IsValid())
       << "file I/O operation queued after file closed";
-  access_handle->file_delegate()->SetLength(size);
 
-  PostCrossThreadTask(
-      *resolver_task_runner, FROM_HERE,
-      CrossThreadBindOnce(&FileSystemSyncAccessHandle::DidTruncate,
-                          std::move(access_handle), std::move(resolver)));
-}
+  file_delegate()->SetLength(
+      base::checked_cast<int64_t>(size),
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver,
+             FileSystemSyncAccessHandle* access_handle, bool success) {
+            ScriptState* script_state = resolver->GetScriptState();
+            if (!script_state->ContextIsValid())
+              return;
+            ScriptState::Scope scope(script_state);
 
-void FileSystemSyncAccessHandle::DidTruncate(
-    CrossThreadPersistent<ScriptPromiseResolver> resolver) {
-  ScriptState* script_state = resolver->GetScriptState();
-  if (!script_state->ContextIsValid())
-    return;
-  ScriptState::Scope scope(script_state);
+            access_handle->ExitOperation();
+            if (!success) {
+              resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                  script_state->GetIsolate(),
+                  DOMExceptionCode::kInvalidStateError, "truncate failed"));
+              return;
+            }
+            resolver->Resolve(success);
+          },
+          WrapPersistent(resolver), WrapPersistent(this)));
 
-  ExitOperation();
-  resolver->Resolve();
+  return result;
 }
 
 uint64_t FileSystemSyncAccessHandle::read(

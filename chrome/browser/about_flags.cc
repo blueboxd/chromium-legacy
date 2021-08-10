@@ -1559,24 +1559,6 @@ const FeatureEntry::FeatureVariation kTabHoverCardImagesVariations[] = {
     {" alternate hover card format", kTabHoverCardImagesAlternateFormat,
      base::size(kTabHoverCardImagesAlternateFormat), nullptr}};
 
-const FeatureEntry::FeatureParam kPromoBrowserCommandUnknownCommandParam[] = {
-    {features::kPromoBrowserCommandIdParam, "0"}};
-const FeatureEntry::FeatureParam
-    kPromoBrowserCommandOpenSafetyCheckCommandParam[] = {
-        {features::kPromoBrowserCommandIdParam, "1"}};
-const FeatureEntry::FeatureParam
-    kPromoBrowserCommandOpenSafeBrowsingSettingsEnhancedProtectionCommandParam
-        [] = {{features::kPromoBrowserCommandIdParam, "2"}};
-const FeatureEntry::FeatureVariation kPromoBrowserCommandsVariations[] = {
-    {"- Unknown Command", kPromoBrowserCommandUnknownCommandParam,
-     base::size(kPromoBrowserCommandUnknownCommandParam), nullptr},
-    {"- Open Safety Check", kPromoBrowserCommandOpenSafetyCheckCommandParam,
-     base::size(kPromoBrowserCommandOpenSafetyCheckCommandParam), nullptr},
-    {"- Open Safe Browsing Enhanced Protection Settings",
-     kPromoBrowserCommandOpenSafeBrowsingSettingsEnhancedProtectionCommandParam,
-     base::size(
-         kPromoBrowserCommandOpenSafeBrowsingSettingsEnhancedProtectionCommandParam),
-     nullptr}};
 #if !defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kNtpChromeCartModuleFakeData[] = {
@@ -4814,11 +4796,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kProminentDarkModeActiveTabTitleDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kProminentDarkModeActiveTabTitle)},
 
-    {"promo-browser-commands", flag_descriptions::kPromoBrowserCommandsName,
-     flag_descriptions::kPromoBrowserCommandsDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kPromoBrowserCommands,
-                                    kPromoBrowserCommandsVariations,
-                                    "PromoBrowserCommands")},
 #if defined(OS_ANDROID)
     {"enable-reader-mode-in-cct", flag_descriptions::kReaderModeInCCTName,
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,
@@ -5512,11 +5489,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"app-service-adaptive-icon",
-     flag_descriptions::kAppServiceAdaptiveIconName,
-     flag_descriptions::kAppServiceAdaptiveIconDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kAppServiceAdaptiveIcon)},
-
     {"app-service-external-protocol",
      flag_descriptions::kAppServiceExternalProtocolName,
      flag_descriptions::kAppServiceExternalProtocolDescription, kOsCrOS,
@@ -6164,6 +6136,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-suggested-files", flag_descriptions::kEnableSuggestedFilesName,
      flag_descriptions::kEnableSuggestedFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedFiles)},
+
+    {"enable-suggested-drive-files",
+     flag_descriptions::kEnableSuggestedDriveFilesName,
+     flag_descriptions::kEnableSuggestedDriveFilesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableSuggestedDriveFiles)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"autofill-always-return-cloud-tokenized-card",

@@ -1175,9 +1175,6 @@ extern const char kSafetyCheckWeakPasswordsDescription[];
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
 
-extern const char kPromoBrowserCommandsName[];
-extern const char kPromoBrowserCommandsDescription[];
-
 extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];
 extern const char kPullToRefreshEnabledTouchscreen[];
@@ -2233,9 +2230,6 @@ extern const char kAllowScrollSettingsDescription[];
 extern const char kAppListBubbleName[];
 extern const char kAppListBubbleDescription[];
 
-extern const char kAppServiceAdaptiveIconName[];
-extern const char kAppServiceAdaptiveIconDescription[];
-
 extern const char kAppServiceExternalProtocolName[];
 extern const char kAppServiceExternalProtocolDescription[];
 
@@ -2550,6 +2544,9 @@ extern const char kEnableOAuthIppDescription[];
 
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];
+
+extern const char kEnableSuggestedDriveFilesName[];
+extern const char kEnableSuggestedDriveFilesDescription[];
 
 extern const char kExoGamepadVibrationName[];
 extern const char kExoGamepadVibrationDescription[];

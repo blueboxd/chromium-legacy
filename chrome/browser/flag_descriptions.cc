@@ -2058,10 +2058,6 @@ const char kProminentDarkModeActiveTabTitleDescription[] =
     "easier "
     "to identify.";
 
-const char kPromoBrowserCommandsName[] = "NTP Promo Browser Commands";
-const char kPromoBrowserCommandsDescription[] =
-    "Enables executing the browser commands sent by the NTP promos";
-
 const char kPullToRefreshName[] = "Pull-to-refresh gesture";
 const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
@@ -3903,10 +3899,6 @@ const char kAppServiceExternalProtocolName[] = "App Service External Protocol";
 const char kAppServiceExternalProtocolDescription[] =
     "Use the App Service to provide data for external protocol dialog.";
 
-const char kAppServiceAdaptiveIconName[] = "App Service Adaptive Icons";
-const char kAppServiceAdaptiveIconDescription[] =
-    "Provide adaptive icons through the App Service";
-
 const char kArcCustomTabsExperimentName[] =
     "Enable Custom Tabs experiment for ARC";
 const char kArcCustomTabsExperimentDescription[] =
@@ -4443,8 +4435,14 @@ const char kEnableOAuthIppDescription[] =
 
 const char kEnableSuggestedFilesName[] = "Enable Suggested Files";
 const char kEnableSuggestedFilesDescription[] =
-    "Enable Suggested Files feature in Launcher, which will show file "
-    "suggestions in the suggestion chips when the launcher is opened";
+    "Enable the Suggested Files feature in Launcher, which will show local "
+    "file suggestions in the suggestion chips when the launcher is opened.";
+
+const char kEnableSuggestedDriveFilesName[] = "Enable Suggested Drive Files";
+const char kEnableSuggestedDriveFilesDescription[] =
+    "Enable the Suggested Drive Files feature in Launcher, which will show "
+    "Drive file suggestions in the suggestion chips when the launcher is "
+    "opened.";
 
 const char kESimPolicyName[] = "Enable ESim Policy";
 const char kESimPolicyDescription[] =

@@ -25,7 +25,6 @@
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
-#import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -38,7 +37,6 @@
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -138,9 +136,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 @property(nonatomic, assign, readonly) BOOL shouldDisplaySync;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
-// ** Identity section.
-// Avatar cache.
-@property(nonatomic, strong) ResizedAvatarCache* resizedAvatarCache;
 // Account item.
 @property(nonatomic, strong) TableViewAccountItem* accountItem;
 // ** Sync section.
@@ -243,7 +238,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                    prefName:unified_consent::prefs::
                                 kUrlKeyedAnonymizedDataCollectionEnabled];
     _anonymizedDataCollectionPreference.observer = self;
-    _resizedAvatarCache = [[ResizedAvatarCache alloc] initWithDefaultTableView];
     _accountManagerService = accountManagerService;
   }
   return self;
@@ -326,7 +320,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       self.authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   DCHECK(identity);
   self.accountItem.image =
-      [self.resizedAvatarCache resizedAvatarForIdentity:identity];
+      self.accountManagerService->GetIdentityAvatarWithIdentity(
+          identity, IdentityAvatarSize::TableViewIcon);
   self.accountItem.text = identity.userFullName;
   if (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings ||
       self.isSyncSettingsConfirmed) {

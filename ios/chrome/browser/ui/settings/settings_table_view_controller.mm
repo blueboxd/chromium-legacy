@@ -51,7 +51,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
-#import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -84,7 +83,6 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 #import "ios/chrome/browser/ui/signin/signin_presenter.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
@@ -289,9 +287,6 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 // YES if the sign-in is in progress.
 @property(nonatomic, assign) BOOL isSigninInProgress;
 
-// Cache for the avatar image.
-@property(nonatomic, strong) ResizedAvatarCache* avatarCache;
-
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a profile that is being killed.
 - (void)stopBrowserStateServiceObservers;
@@ -393,8 +388,6 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
                                                      &_prefChangeRegistrar);
 
     _dispatcher = dispatcher;
-
-    _avatarCache = [[ResizedAvatarCache alloc] initWithDefaultTableView];
 
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
@@ -1506,7 +1499,8 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     return;
   }
   identityAccountItem.image =
-      [self.avatarCache resizedAvatarForIdentity:_identity];
+      self.accountManagerService->GetIdentityAvatarWithIdentity(
+          _identity, IdentityAvatarSize::TableViewIcon);
   identityAccountItem.text = [_identity userFullName];
   identityAccountItem.detailText = _identity.userEmail;
 }

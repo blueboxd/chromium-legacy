@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
-#import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/authentication/signout_action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -107,7 +106,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Whether the view controller is currently being dismissed and new dismiss
   // requests should be ignored.
   BOOL _isBeingDismissed;
-  ResizedAvatarCache* _avatarCache;
 
   // Enable lookup of item corresponding to a given identity GAIA ID string.
   NSDictionary<NSString*, TableViewItem*>* _identityMap;
@@ -159,7 +157,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
             IdentityManagerFactory::GetForBrowserState(
                 _browser->GetBrowserState()),
             self);
-    _avatarCache = [[ResizedAvatarCache alloc] initWithDefaultTableView];
     _accountManagerServiceObserver =
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, _accountManagerService);
@@ -359,7 +356,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updateAccountItem:(TableViewAccountItem*)item
              withIdentity:(ChromeIdentity*)identity {
-  item.image = [_avatarCache resizedAvatarForIdentity:identity];
+  item.image = self.accountManagerService->GetIdentityAvatarWithIdentity(
+      identity, IdentityAvatarSize::TableViewIcon);
   item.text = identity.userEmail;
   item.chromeIdentity = identity;
   item.accessibilityIdentifier = identity.userEmail;

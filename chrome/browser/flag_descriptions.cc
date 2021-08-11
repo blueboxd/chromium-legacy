@@ -177,11 +177,6 @@ const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[] =
     "a blob and the verification process of the signed exchange is skipped for "
     "the succeeding navigation.";
 
-const char kUpdatedCellularActivationUiName[] =
-    "Updated Cellular Activation UI";
-const char kUpdatedCellularActivationUiDescription[] =
-    "Enables the updated cellular activation UI.";
-
 const char kUseLookalikesForNavigationSuggestionsName[] =
     "Use lookalike URL suggestions for navigation suggestions";
 const char kUseLookalikesForNavigationSuggestionsDescription[] =
@@ -1199,11 +1194,6 @@ const char kEvDetailsInPageInfoName[] = "EV certificate details in Page Info.";
 const char kEvDetailsInPageInfoDescription[] =
     "Shows the EV certificate details in the Page Info bubble.";
 
-const char kExpensiveBackgroundTimerThrottlingName[] =
-    "Throttle expensive background timers";
-const char kExpensiveBackgroundTimerThrottlingDescription[] =
-    "Enables intervention to limit CPU usage of background timers to 1%.";
-
 const char kExperimentalAccessibilityLabelsName[] =
     "Experimental Accessibility Labels";
 const char kExperimentalAccessibilityLabelsDescription[] =
@@ -1409,6 +1399,12 @@ const char kIncognitoBrandConsistencyForAndroidName[] =
 const char kIncognitoBrandConsistencyForAndroidDescription[] =
     "When enabled, keeps Incognito UI consistent regardless of any selected "
     "theme.";
+
+const char kIncognitoReauthenticationForAndroidName[] =
+    "Enable device reauthentication for Incognito.";
+const char kIncognitoReauthenticationForAndroidDescription[] =
+    "When enabled, a setting appears in Settings > Privacy and Security, to "
+    "enable reauthentication for accessing your existing Incognito tabs.";
 
 const char kIncognitoBrandConsistencyForDesktopName[] =
     "Enable Incognito brand consistency in desktop.";

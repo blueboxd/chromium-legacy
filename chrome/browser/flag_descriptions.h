@@ -130,9 +130,6 @@ extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsName[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[];
 
-extern const char kUpdatedCellularActivationUiName[];
-extern const char kUpdatedCellularActivationUiDescription[];
-
 extern const char kUseLookalikesForNavigationSuggestionsName[];
 extern const char kUseLookalikesForNavigationSuggestionsDescription[];
 
@@ -691,9 +688,6 @@ extern const char kEnableWasmTieringDescription[];
 extern const char kEvDetailsInPageInfoName[];
 extern const char kEvDetailsInPageInfoDescription[];
 
-extern const char kExpensiveBackgroundTimerThrottlingName[];
-extern const char kExpensiveBackgroundTimerThrottlingDescription[];
-
 extern const char kExperimentalAccessibilityLabelsName[];
 extern const char kExperimentalAccessibilityLabelsDescription[];
 
@@ -813,6 +807,9 @@ extern const char kImpulseScrollAnimationsDescription[];
 
 extern const char kIncognitoBrandConsistencyForAndroidName[];
 extern const char kIncognitoBrandConsistencyForAndroidDescription[];
+
+extern const char kIncognitoReauthenticationForAndroidName[];
+extern const char kIncognitoReauthenticationForAndroidDescription[];
 
 extern const char kIncognitoBrandConsistencyForDesktopName[];
 extern const char kIncognitoBrandConsistencyForDesktopDescription[];

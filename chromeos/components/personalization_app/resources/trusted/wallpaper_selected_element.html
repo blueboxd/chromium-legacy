@@ -1,10 +1,12 @@
 <style include="common-style">
   #container {
+    border-bottom: 1px solid var(--cros-separator-color);
     box-sizing: border-box;
     display: flex;
     flex-flow: row nowrap;
     height: 100%;
-    padding: 0 8px 20px 8px;
+    margin: 0 8px;
+    padding-bottom: 20px;
   }
 
   #imageContainer {
@@ -77,10 +79,17 @@
 
   #wallpaperOptions > cr-button,
   #collectionOptions > cr-button {
-    padding: 16px;
-    margin-inline-end: 8px;
+    border-color: var(--cros-button-stroke-color-secondary);
     border-radius: 16px;
     box-shadow: none;
+    margin-inline-end: 8px;
+    padding: 16px;
+  }
+
+  #wallpaperOptions > cr-button[aria-selected='true'],
+  #collectionOptions > cr-button[aria-pressed='true'] {
+    background-color: var(--cros-highlight-color);
+    border: 0;
   }
 </style>
 <header id="container" tabindex="0" aria-label="[[getAriaLabel_(image_)]]"

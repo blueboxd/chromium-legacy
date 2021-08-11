@@ -19,6 +19,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/lite_video/lite_video_observer.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/predictors/loading_predictor.h"
@@ -46,6 +47,7 @@
 #include "content/public/browser/service_worker_version_base_info.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
@@ -94,6 +96,13 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"  // nogncheck
 #endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/printing/print_view_manager.h"
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
@@ -361,6 +370,27 @@ bool ChromeContentBrowserClient::BindAssociatedReceiverFromFrame(
             render_frame_host);
     return true;
   }
+  if (interface_name == chrome::mojom::NetworkDiagnostics::Name_) {
+    chrome_browser_net::NetErrorTabHelper::BindNetworkDiagnostics(
+        mojo::PendingAssociatedReceiver<chrome::mojom::NetworkDiagnostics>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name == chrome::mojom::NetworkEasterEgg::Name_) {
+    chrome_browser_net::NetErrorTabHelper::BindNetworkEasterEgg(
+        mojo::PendingAssociatedReceiver<chrome::mojom::NetworkEasterEgg>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name == chrome::mojom::NetErrorPageSupport::Name_) {
+    chrome_browser_net::NetErrorTabHelper::BindNetErrorPageSupport(
+        mojo::PendingAssociatedReceiver<chrome::mojom::NetErrorPageSupport>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
   if (interface_name ==
       chrome::mojom::OpenSearchDescriptionDocumentHandler::Name_) {
     SearchEngineTabHelper::BindOpenSearchDescriptionDocumentHandler(
@@ -450,6 +480,20 @@ bool ChromeContentBrowserClient::BindAssociatedReceiverFromFrame(
     return true;
   }
 #endif
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (interface_name == printing::mojom::PrintManagerHost::Name_) {
+    mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver(
+        std::move(*handle));
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+    printing::PrintViewManager::BindPrintManagerHost(std::move(receiver),
+                                                     render_frame_host);
+#else
+    printing::PrintViewManagerBasic::BindPrintManagerHost(std::move(receiver),
+                                                          render_frame_host);
+#endif
+    return true;
+  }
+#endif  // BUILDFLAG(ENABLE_PRINTING)
   if (interface_name ==
       security_interstitials::mojom::InterstitialCommands::Name_) {
     security_interstitials::SecurityInterstitialTabHelper::

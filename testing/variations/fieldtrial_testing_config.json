@@ -954,62 +954,20 @@
             ],
             "experiments": [
                 {
-                    "name": "AutofillFixFillableFieldTypes_2021-05-01",
-                    "enable_features": [
-                        "AutofillFixFillableFieldTypes"
-                    ],
-                    "disable_features": [
-                        "AutofillEnableDependentLocalityParsing",
-                        "AutofillEnableImportWhenMultiplePhoneNumbers",
-                        "AutofillSectionUponRedundantNameInfo",
-                        "AutofillUseAlternativeStateNameMap"
-                    ]
-                },
-                {
-                    "name": "EnableAutofillSectionUponRedundantNameInfo_2021-05-01",
-                    "enable_features": [
-                        "AutofillSectionUponRedundantNameInfo"
-                    ],
-                    "disable_features": [
-                        "AutofillEnableDependentLocalityParsing",
-                        "AutofillEnableImportWhenMultiplePhoneNumbers",
-                        "AutofillFixFillableFieldTypes",
-                        "AutofillUseAlternativeStateNameMap"
-                    ]
-                },
-                {
-                    "name": "AutofillUseAlternativeStateNameMap_2021-05-01",
+                    "name": "AutofillUseAlternativeStateNameMap",
                     "enable_features": [
                         "AutofillUseAlternativeStateNameMap"
                     ],
                     "disable_features": [
-                        "AutofillEnableDependentLocalityParsing",
-                        "AutofillEnableImportWhenMultiplePhoneNumbers",
-                        "AutofillFixFillableFieldTypes",
-                        "AutofillSectionUponRedundantNameInfo"
+                        "AutofillEnableImportWhenMultiplePhoneNumbers"
                     ]
                 },
                 {
-                    "name": "AutofillEnableImportWhenMultiplePhoneNumbers_2021-05-01",
+                    "name": "AutofillEnableImportWhenMultiplePhoneNumbers",
                     "enable_features": [
                         "AutofillEnableImportWhenMultiplePhoneNumbers"
                     ],
                     "disable_features": [
-                        "AutofillEnableDependentLocalityParsing",
-                        "AutofillFixFillableFieldTypes",
-                        "AutofillSectionUponRedundantNameInfo",
-                        "AutofillUseAlternativeStateNameMap"
-                    ]
-                },
-                {
-                    "name": "AutofillEnableDependentLocalityParsing_2021-05-01",
-                    "enable_features": [
-                        "AutofillEnableDependentLocalityParsing"
-                    ],
-                    "disable_features": [
-                        "AutofillEnableImportWhenMultiplePhoneNumbers",
-                        "AutofillFixFillableFieldTypes",
-                        "AutofillSectionUponRedundantNameInfo",
                         "AutofillUseAlternativeStateNameMap"
                     ]
                 }
@@ -1115,6 +1073,27 @@
                     "name": "EnableSupportForMoreStructureInNames",
                     "enable_features": [
                         "AutofillEnableSupportForMoreStructureInNames"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillFixFillableFieldTypes": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillFixFillableFieldTypes"
                     ]
                 }
             ]
@@ -2267,6 +2246,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CompositeAfterPaint"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CompositeBGColorAnimationExp4": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CompositeBGColorAnimation"
                     ]
                 }
             ]
@@ -4307,8 +4307,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "enable_features": [
+                    "name": "Disabled",
+                    "disable_features": [
                         "ScreenTimeIntegration"
                     ]
                 }
@@ -5432,7 +5432,6 @@
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
-                        "OmniboxTrendingZeroPrefixSuggestionsOnNTP",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "SearchSuggestChips"
                     ]
@@ -5758,6 +5757,25 @@
                     "disable_features": [
                         "IPH_MicToolbar",
                         "ToolbarMicIphAndroid"
+                    ]
+                },
+                {
+                    "name": "AssistantIntegration_ToolbarMic_20210810",
+                    "params": {
+                        "colorful_mic": "false",
+                        "experiment_id": "47736814",
+                        "min_agsa_version": "12.27"
+                    },
+                    "enable_features": [
+                        "AssistantIntentExperimentId",
+                        "OmniboxAssistantVoiceSearch",
+                        "VoiceButtonInTopToolbar",
+                        "VoiceSearchAudioCapturePolicy"
+                    ],
+                    "disable_features": [
+                        "AssistantIntentPageUrl",
+                        "AssistantIntentTranslateInfo",
+                        "TranslateIntent"
                     ]
                 },
                 {
@@ -6915,16 +6933,23 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "MVP_20210809",
                     "params": {
+                        "default_query_chip": "true",
+                        "default_query_max_width_sp": "115",
                         "language_allowlist": "en",
                         "needs_content": "true",
                         "needs_url": "true",
-                        "stamp": "1Rb"
+                        "stamp": "1Rs"
                     },
                     "enable_features": [
                         "RelatedSearches",
+                        "RelatedSearchesInBar",
                         "RelatedSearchesUi"
+                    ],
+                    "disable_features": [
+                        "RelatedSearchesAlternateUx",
+                        "RelatedSearchesSimplifiedUx"
                     ]
                 }
             ]
@@ -7132,6 +7157,21 @@
                     },
                     "enable_features": [
                         "RequestDesktopSiteForTablets"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RevertDSEAutomaticPermissions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RevertDSEAutomaticPermissions"
                     ]
                 }
             ]

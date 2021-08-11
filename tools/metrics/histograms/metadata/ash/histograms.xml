@@ -1077,6 +1077,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Records the number of tabs in a template when it is saved.</summary>
 </histogram>
 
+<histogram name="Ash.DeskTemplate.UserTemplateCount" units="count"
+    expires_after="2022-07-14">
+  <owner>richui@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Records the number of templates a user has saved when a template is saved or
+    deleted.
+  </summary>
+</histogram>
+
 <histogram name="Ash.DeskTemplate.WindowAndTabCount" units="count"
     expires_after="2022-07-14">
   <owner>richui@chromium.org</owner>
@@ -1406,6 +1416,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Maximum time between when the size of a window changes during an interactive
     window resize and the results are drawn (presented) on screen. This is
     recorded for each movement of the mouse/pointer that results in a resize.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Lacros.Launch.Mode" enum="LacrosLaunchMode"
+    expires_after="2022-09-01">
+  <owner>skuhne@chromium.org</owner>
+  <owner>lacros-team@google.com</owner>
+  <summary>
+    The Lacros operation mode. This will record if Ash is the only browser, both
+    browsers are running side by side or if Lacros is the only browser. It will
+    be emitted once when the system (Ash) starts.
   </summary>
 </histogram>
 

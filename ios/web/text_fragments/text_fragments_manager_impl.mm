@@ -29,8 +29,8 @@ namespace {
 // Returns a rgb hexadecimal color, suitable for processing in JavaScript
 std::string ToHexStringRGB(int color) {
   std::stringstream sstream;
-  sstream << "'" << std::setfill('0') << std::setw(6) << std::hex
-          << (color & 0x00FFFFFF) << "'";
+  sstream << std::setfill('0') << std::setw(6) << std::hex
+          << (color & 0x00FFFFFF);
   return sstream.str();
 }
 
@@ -79,8 +79,10 @@ void TextFragmentsManagerImpl::OnProcessingComplete(int success_count,
 }
 
 void TextFragmentsManagerImpl::OnClick() {
-  // TODO(crbug.com/1230576): Update URL to no longer display text fragment
-  GetJSFeature()->RemoveHighlights(web_state_);
+  // Remove the fragments that are visible on the page and update the URL.
+  GetJSFeature()->RemoveHighlights(web_state_,
+                                   shared_highlighting::RemoveTextFragments(
+                                       web_state_->GetLastCommittedURL()));
 }
 
 void TextFragmentsManagerImpl::DidFinishNavigation(

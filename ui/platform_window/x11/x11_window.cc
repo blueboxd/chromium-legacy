@@ -1211,6 +1211,8 @@ void X11Window::DispatchUiEvent(ui::Event* event, const x11::Event& xev) {
     last_motion = ui::BuildEventFromXEvent(last_xev);
     event = last_motion.get();
   }
+  if (!event)
+    return;
 
   // If |event| is a located event (mouse, touch, etc) and another X11 window
   // is set as the current located events grabber, the |event| must be
@@ -1238,22 +1240,20 @@ void X11Window::DispatchUiEvent(ui::Event* event, const x11::Event& xev) {
   // include mouse wheel events as well. Investigation showed that events on
   // Linux are checked with cmt-device path, and can include DT_CMT_SCROLL_
   // data. See more discussion in https://crrev.com/c/853953
-  if (event) {
-    UpdateWMUserTime(event);
-    bool event_dispatched = false;
+  UpdateWMUserTime(event);
+  bool event_dispatched = false;
 #if defined(USE_OZONE)
-    if (features::IsUsingOzonePlatform()) {
-      event_dispatched = true;
-      DispatchEventFromNativeUiEvent(
-          event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                                base::Unretained(platform_window_delegate())));
-    }
+  if (features::IsUsingOzonePlatform()) {
+    event_dispatched = true;
+    DispatchEventFromNativeUiEvent(
+        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                              base::Unretained(platform_window_delegate())));
+  }
 #endif
 #if defined(USE_X11)
-    if (!event_dispatched)
-      platform_window_delegate_->DispatchEvent(event);
+  if (!event_dispatched)
+    platform_window_delegate_->DispatchEvent(event);
 #endif
-  }
 }
 
 void X11Window::OnXWindowStateChanged() {
@@ -1750,8 +1750,7 @@ bool X11Window::IsActive() const {
   // a window is topmost iff it has focus, just use the focus state to determine
   // if a window is active.  Note that Activate() and Deactivate() change the
   // stacking order in addition to changing the focus state.
-  return (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_ &&
-         !IsMinimized();
+  return (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
 }
 
 bool X11Window::IsMinimized() const {
@@ -1869,7 +1868,9 @@ void X11Window::AfterActivationStateChanged() {
   if (had_pointer_capture && !has_pointer_capture)
     OnXWindowLostCapture();
 
-  bool is_active = IsActive();
+  // A window can be both minimized and active from x11's perspective.
+  // But we treat a minimized window as inactive for platform consistency.
+  bool is_active = IsActive() && !IsMinimized();
   if (!was_active_ && is_active)
     SetFlashFrameHint(false);
 

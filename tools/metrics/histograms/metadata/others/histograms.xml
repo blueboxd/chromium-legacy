@@ -3879,6 +3879,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Conversions.Storage.Sql.InitStatus"
     enum="ConversionStorageSqlInitStatus" expires_after="2021-12-12">
+  <obsolete>
+    Replaced in 2021-08 with Conversions.Storage.Sql.InitStatus2. Due to a bug,
+    this metric would not properly record kFailedToInitializeSchema.
+  </obsolete>
+  <owner>johnidel@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records initialisation statuses of ConversionStorageSql. Note: currently
+    ConversionStorageSql is initialised lazily.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.Storage.Sql.InitStatus2"
+    enum="ConversionStorageSqlInitStatus" expires_after="2021-12-12">
   <owner>johnidel@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -12362,7 +12376,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.BodySize" units="bytes"
-    expires_after="M94">
+    expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -12373,7 +12387,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.BodySizeTotal" units="bytes"
-    expires_after="M94">
+    expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -12385,7 +12399,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.Count" units="count"
-    expires_after="M94">
+    expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -12397,7 +12411,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.HeadersSizeTotal" units="bytes"
-    expires_after="M94">
+    expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -14732,6 +14746,9 @@ should be kept until we remove incident reporting. -->
 
 <histogram name="Setup.Install.DeleteAppLauncherClientsKey"
     enum="BooleanDeletedOrNot" expires_after="2021-03-22">
+  <obsolete>
+    Removed in M94.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <owner>src/chrome/installer/OWNERS</owner>
   <summary>
@@ -14742,6 +14759,9 @@ should be kept until we remove incident reporting. -->
 
 <histogram name="Setup.Install.DeleteBinariesClientsKey"
     enum="BooleanDeletedOrNot" expires_after="2021-03-22">
+  <obsolete>
+    Removed in M94.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <owner>src/chrome/installer/OWNERS</owner>
   <summary>
@@ -14752,6 +14772,9 @@ should be kept until we remove incident reporting. -->
 
 <histogram name="Setup.Install.DeleteIExecuteCommandClassKey"
     enum="BooleanDeletedOrNot" expires_after="2021-03-22">
+  <obsolete>
+    Removed in M94.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <owner>src/chrome/installer/OWNERS</owner>
   <summary>
@@ -14763,6 +14786,9 @@ should be kept until we remove incident reporting. -->
 
 <histogram name="Setup.Install.DeleteInstallExtensionCommand"
     enum="BooleanDeletedOrNot" expires_after="2021-03-22">
+  <obsolete>
+    Removed in M94.
+  </obsolete>
   <owner>grt@chromium.org</owner>
   <owner>src/chrome/installer/OWNERS</owner>
   <summary>
@@ -14938,7 +14964,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.CertificateFetch.CacheHit"
-    enum="BooleanCacheHit" expires_after="M94">
+    enum="BooleanCacheHit" expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -14949,7 +14975,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.CertVerificationResult" enum="NetErrorCodes"
-    expires_after="M94">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -14959,7 +14985,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.CTVerificationResult" enum="CTComplianceStatus"
-    expires_after="M94">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -14969,7 +14995,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.FallbackRedirectLoop" enum="BooleanDetected"
-    expires_after="M94">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -14983,7 +15009,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.LoadResult2" enum="SignedExchangeLoadResult"
-    expires_after="2022-01-02">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -14994,7 +15020,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.OCSPResponseStatus" enum="OCSPResponseStatus"
-    expires_after="M94">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15005,7 +15031,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.OCSPRevocationStatus"
-    enum="OCSPRevocationStatus" expires_after="M94">
+    enum="OCSPRevocationStatus" expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15017,7 +15043,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.Prefetch.LoadResult2"
-    enum="SignedExchangeLoadResult" expires_after="M94">
+    enum="SignedExchangeLoadResult" expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15028,7 +15054,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.Prefetch.Precision.30Seconds"
-    enum="BooleanUsage" expires_after="M94">
+    enum="BooleanUsage" expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15041,7 +15067,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.Prefetch.Recall.30Seconds" enum="BooleanUsage"
-    expires_after="M94">
+    expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15053,7 +15079,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.SignatureVerificationError.Expired"
-    units="seconds" expires_after="M94">
+    units="seconds" expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15064,7 +15090,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.SignatureVerificationError.NotYetValid"
-    units="seconds" expires_after="M94">
+    units="seconds" expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15075,7 +15101,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.SignatureVerificationResult"
-    enum="SignedExchangeSignatureVerificationResult" expires_after="2021-10-31">
+    enum="SignedExchangeSignatureVerificationResult" expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15086,7 +15112,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.Time.CertificateFetch.Failure" units="ms"
-    expires_after="M94">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15097,7 +15123,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.Time.CertificateFetch.Success" units="ms"
-    expires_after="M94">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15108,7 +15134,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.Time.SignatureVerify" units="ms"
-    expires_after="M94">
+    expires_after="M99">
   <owner>ksakamoto@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15119,7 +15145,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.TimeUntilExpiration" units="seconds"
-    expires_after="M94">
+    expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15131,7 +15157,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.ValidityPingDuration" units="ms"
-    expires_after="M94">
+    expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -15142,7 +15168,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.ValidityPingResult"
-    enum="SignedExchangeValidityPingResult" expires_after="M94">
+    enum="SignedExchangeValidityPingResult" expires_after="M99">
   <owner>kinuko@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <owner>horo@chromium.org</owner>
@@ -16200,7 +16226,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SubresourceWebBundles.ContentLength" units="bytes"
-    expires_after="M94">
+    expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -16210,14 +16236,14 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SubresourceWebBundles.LoadResult"
-    enum="SubresourceWebBundleLoadResult" expires_after="M94">
+    enum="SubresourceWebBundleLoadResult" expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>The result of loading subresource web bundles.</summary>
 </histogram>
 
 <histogram name="SubresourceWebBundles.MaxMemoryUsagePerProcess" units="bytes"
-    expires_after="M94">
+    expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -16228,7 +16254,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SubresourceWebBundles.ReceivedSize" units="bytes"
-    expires_after="M94">
+    expires_after="M99">
   <owner>horo@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>

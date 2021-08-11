@@ -315,9 +315,11 @@ void V8CodeCache::SetCacheTimeStamp(
 scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
     ScriptState* script_state,
     const String& script_string,
-    const String& file_name,
+    const KURL& source_url,
     const WTF::TextEncoding& encoding,
     OpaqueMode opaque_mode) {
+  const String file_name = source_url.GetString();
+
   constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
   TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compile", "fileName",
                      file_name.Utf8());
@@ -327,7 +329,7 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
   // v8::TryCatch is needed to suppress all exceptions thrown during the code
   // cache generation.
   v8::TryCatch block(isolate);
-  ReferrerScriptInfo referrer_info;
+  auto referrer_info = ReferrerScriptInfo::CreateNoReferencingScript();
   v8::ScriptOrigin origin(
       isolate, V8String(isolate, file_name),
       0,                                      // line_offset
@@ -338,7 +340,7 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
       opaque_mode == OpaqueMode::kOpaque,     // is_opaque
       false,                                  // is_wasm
       false,                                  // is_module
-      referrer_info.ToV8HostDefinedOptions(isolate));
+      referrer_info.ToV8HostDefinedOptions(isolate, source_url));
   v8::Local<v8::String> code(V8String(isolate, script_string));
   v8::ScriptCompiler::Source source(code, origin);
   scoped_refptr<CachedMetadata> cached_metadata;

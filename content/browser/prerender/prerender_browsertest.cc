@@ -2750,38 +2750,23 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DownloadInSubframe) {
 
 // End: Tests for feature restrictions in prerendered pages ====================
 
-// Tests prerendering for low-end devices.
-class PrerenderLowMemoryBrowserTest : public PrerenderBrowserTest {
- public:
-  PrerenderLowMemoryBrowserTest() {
-    // Set the value of memory threshold more than the physical memory.  The
-    // test will expect that prerendering does not occur.
-    std::string memory_threshold =
-        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB() + 1);
-    feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kPrerender2,
-          {{blink::features::kPrerender2MemoryThresholdParamName,
-            memory_threshold}}}},
-        {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Tests that prerendering doesn't run for low-end devices.
-IN_PROC_BROWSER_TEST_F(PrerenderLowMemoryBrowserTest, NoPrerender) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, LowEndDevice) {
   base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+
+  // Set low-end device mode.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableLowEndDeviceMode);
 
   // Attempt to prerender.
   test::PrerenderHostRegistryObserver observer(*web_contents_impl());
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
   AddPrerenderAsync(kPrerenderingUrl);
-  observer.WaitForTrigger(kPrerenderingUrl);
 
   // It should fail.
+  observer.WaitForTrigger(kPrerenderingUrl);
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus",
@@ -2902,6 +2887,58 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TitleWhilePrerendering) {
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), kPrerenderingUrl);
   // The title should be updated with the activated page.
   EXPECT_EQ(shell()->web_contents()->GetTitle(), kPrerenderingTitle);
+}
+
+// Tests that WebContentsObserver::TitleWasSet is not dispatched when title is
+// set during prerendering, but is later dispatched after activation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TitleWasSetWithPrerendering) {
+  const GURL kInitialUrl = GetUrl("/title2.html");
+  const GURL kPrerenderingUrlWithTitle = GetUrl("/simple_page.html");
+  const GURL kPrerenderingUrlWithoutTitle = GetUrl("/title1.html");
+  const std::u16string kInitialTitle(u"Title Of Awesomeness");
+  const std::u16string kPrerenderingTitle(u"OK");
+
+  // Navigate to an initial page; TitleWasSet should be called when page sets
+  // its title.
+  {
+    testing::NiceMock<MockWebContentsObserver> mock_observer(
+        shell()->web_contents());
+    EXPECT_CALL(mock_observer, TitleWasSet(testing::_));
+    ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+    EXPECT_EQ(shell()->web_contents()->GetTitle(), kInitialTitle);
+  }
+
+  // Prerender a page; TitleWasSet should not be called despite the page setting
+  // a title.
+  {
+    testing::NiceMock<MockWebContentsObserver> mock_observer(
+        shell()->web_contents());
+    EXPECT_CALL(mock_observer, TitleWasSet(testing::_)).Times(0);
+    ASSERT_NE(AddPrerender(kPrerenderingUrlWithTitle),
+              RenderFrameHost::kNoFrameTreeNodeId);
+  }
+
+  // Activate prerendered page; TitleWasSet should now be called.
+  {
+    testing::NiceMock<MockWebContentsObserver> mock_observer(
+        shell()->web_contents());
+    EXPECT_CALL(mock_observer, TitleWasSet(testing::_))
+        .WillOnce(testing::Invoke([kPrerenderingTitle](NavigationEntry* entry) {
+          EXPECT_EQ(entry->GetTitleForDisplay(), kPrerenderingTitle);
+        }));
+    NavigatePrimaryPage(kPrerenderingUrlWithTitle);
+  }
+
+  // Prerender a page without a title and then activate it; TitleWasSet should
+  // not be called.
+  {
+    testing::NiceMock<MockWebContentsObserver> mock_observer(
+        shell()->web_contents());
+    EXPECT_CALL(mock_observer, TitleWasSet(testing::_)).Times(0);
+    ASSERT_NE(AddPrerender(kPrerenderingUrlWithoutTitle),
+              RenderFrameHost::kNoFrameTreeNodeId);
+    NavigatePrimaryPage(kPrerenderingUrlWithoutTitle);
+  }
 }
 
 // Ensures WebContents::OpenURL targeting a frame in a prerendered host will

@@ -164,6 +164,23 @@ std::string GetTriggerName(DeepScanningRequest::DeepScanTrigger trigger) {
   }
 }
 
+bool ResultIsRetriable(BinaryUploadService::Result result) {
+  switch (result) {
+    case BinaryUploadService::Result::UNKNOWN:
+    case BinaryUploadService::Result::SUCCESS:
+    case BinaryUploadService::Result::UNAUTHORIZED:
+    case BinaryUploadService::Result::FILE_TOO_LARGE:
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+    case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
+      return false;
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+    case BinaryUploadService::Result::TIMEOUT:
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+    case BinaryUploadService::Result::TOO_MANY_REQUESTS:
+      return true;
+  }
+}
+
 }  // namespace
 
 /* static */
@@ -205,6 +222,14 @@ DeepScanningRequest::DeepScanningRequest(
 
 DeepScanningRequest::~DeepScanningRequest() {
   item_->RemoveObserver(this);
+}
+
+void DeepScanningRequest::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DeepScanningRequest::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DeepScanningRequest::Start() {
@@ -306,14 +331,21 @@ void DeepScanningRequest::OnScanComplete(
         "SBClientDownload.MalwareDeepScanResult." + GetTriggerName(trigger_),
         download_result);
   } else if (trigger_ == DeepScanTrigger::TRIGGER_APP_PROMPT &&
+             ResultIsRetriable(result) &&
              MaybeShowDeepScanFailureModalDialog(
                  base::BindOnce(&DeepScanningRequest::Start,
                                 weak_ptr_factory_.GetWeakPtr()),
                  base::BindOnce(&DeepScanningRequest::FinishRequest,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 DownloadCheckResult::UNKNOWN),
+                 base::BindOnce(&DeepScanningRequest::FinishRequest,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                DownloadCheckResult::UNKNOWN),
                  base::BindOnce(&DeepScanningRequest::OpenDownload,
                                 weak_ptr_factory_.GetWeakPtr()))) {
+    for (auto& observer : observers_)
+      observer.OnModalShown(this);
+
     return;
   } else if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
     if (analysis_settings_.block_large_files)
@@ -331,17 +363,29 @@ void DeepScanningRequest::OnScanComplete(
       content::DownloadItemUtils::GetBrowserContext(item_));
   if (profile && trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
     std::string raw_digest_sha256 = item_->GetHash();
+    std::string sha256 =
+        base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size());
     MaybeReportDeepScanningVerdict(
         profile, item_->GetURL(), item_->GetTargetFilePath().AsUTF8Unsafe(),
-        base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-        item_->GetMimeType(),
+        sha256, item_->GetMimeType(),
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
         DeepScanAccessPoint::DOWNLOAD, item_->GetTotalBytes(), result, response,
         GetEventResult(download_result, profile));
 
-    item_->SetUserData(
-        enterprise_connectors::ScanResult::kKey,
-        std::make_unique<enterprise_connectors::ScanResult>(response));
+    auto metadata = enterprise_connectors::FileMetadata(
+        item_->GetTargetFilePath().AsUTF8Unsafe(), sha256, item_->GetMimeType(),
+        item_->GetTotalBytes(), response);
+    enterprise_connectors::ScanResult* stored_result =
+        static_cast<enterprise_connectors::ScanResult*>(
+            item_->GetUserData(enterprise_connectors::ScanResult::kKey));
+    if (stored_result) {
+      stored_result->file_metadata.push_back(std::move(metadata));
+    } else {
+      auto result = std::make_unique<enterprise_connectors::ScanResult>(
+          std::move(metadata));
+      item_->SetUserData(enterprise_connectors::ScanResult::kKey,
+                         std::move(result));
+    }
   }
 
   FinishRequest(download_result);
@@ -353,6 +397,9 @@ void DeepScanningRequest::OnDownloadDestroyed(
 }
 
 void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
+  for (auto& observer : observers_)
+    observer.OnFinish(this);
+
   callback_.Run(result);
   weak_ptr_factory_.InvalidateWeakPtrs();
   item_->RemoveObserver(this);
@@ -363,6 +410,7 @@ void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
 bool DeepScanningRequest::MaybeShowDeepScanFailureModalDialog(
     base::OnceClosure accept_callback,
     base::OnceClosure cancel_callback,
+    base::OnceClosure close_callback,
     base::OnceClosure open_now_callback) {
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item_));
@@ -377,7 +425,7 @@ bool DeepScanningRequest::MaybeShowDeepScanFailureModalDialog(
   DeepScanningFailureModalDialog::ShowForWebContents(
       browser->tab_strip_model()->GetActiveWebContents(),
       std::move(accept_callback), std::move(cancel_callback),
-      std::move(open_now_callback));
+      std::move(close_callback), std::move(open_now_callback));
   return true;
 }
 

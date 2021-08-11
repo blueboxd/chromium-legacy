@@ -11,7 +11,7 @@
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-nexus-6 android-nexus-9
 #             android-pixel-2 android-pixel-4 android-shield-android-tv
-#         chromeos-board-amd64-generic chromeos-board-kevin
+#         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
@@ -149,6 +149,9 @@ crbug.com/1154047 [ fuchsia ] GpuCrash_InfoForHardwareGpu [ Skip ]
 # Flaky hangs on Mac Debug NVIDIA, stalling the test suite for 40 minutes
 crbug.com/1161570 [ mac nvidia debug ] GpuCrash_InfoForHardwareGpu [ Skip ]
 crbug.com/1161570 [ mac nvidia debug ] GpuCrash_InfoForDualHardwareGpus [ Skip ]
+
+# Flaky tab crash on Win10 x64 Debug (NVIDIA)
+crbug.com/1238162 [ win10 nvidia-0x1cb3 debug ] GpuCrash_InfoForHardwareGpu [ RetryOnFailure ]
 
 # Flaky for LaCrOS
 crbug.com/1205899 [ linux display-server-wayland ] ContextLost_WebGLBlockedAfterJSNavigation [ RetryOnFailure ]

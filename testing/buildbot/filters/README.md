@@ -71,16 +71,23 @@ $ out/android/bin/run_content_browsertests \
 
 ### Multiple filter files
 
-We are in the process of unifying behavior across all test runners, but the
-current status is Work in Progress.
+We are in the process of unifying the way multiple filter files are passed
+across all test runners.
 
-#### Gtest and Android
+Though our standard for passing multiple filter files is to pass each one in its
+own flag, we still support ';' for passing multiple filter files on Android for
+legacy reasons and haven't implemented multiple filter flags in Gtest. Gtest's
+current problematic behavior leads to users passing 2 flags, but only the latter
+being respected.
+
+
+#### Gtest
 
 Multiple filter files should be separated by a ';', passed with one flag.
 
-#### Web tests
+#### Web tests and Android
 
-Multiple filter files should be passed with multiple flags.
+Multiple filter files should be passed with multiple filter flags.
 
 
 ## Applicability
@@ -108,4 +115,4 @@ When adding a new filter file, you will need to:
     to the desired test suite(s) in `test_suites.pyl`.
 -   Run `testing/buildbot/generate_buildbot_json.py` to update .json files.
 
-[gtest_filter]: https://github.com/google/googletest/blob/master/googletest/docs/advanced.md#running-a-subset-of-the-tests
+[gtest_filter]: https://github.com/google/googletest/blob/master/docs/advanced.md#running-a-subset-of-the-tests

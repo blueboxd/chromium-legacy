@@ -4737,14 +4737,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="Media.VideoHeight.Initial" units="pixels"
-    expires_after="2021-08-22">
+<histogram name="Media.VideoHeight.Initial.{PlaybackType}" units="pixels"
+    expires_after="2022-08-22">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
-    The height of the first video frame in an HTML5 video. Reported when the
-    first video frame is available.
+    The height of the first video frame in an HTML5 video for {PlaybackType}
+    playbacks. Reported when the first video frame is available.
   </summary>
+  <token key="PlaybackType">
+    <variant name="All" summary="all"/>
+    <variant name="EME"/>
+    <variant name="MSE"/>
+    <variant name="SRC"/>
+  </token>
 </histogram>
 
 <histogram name="Media.VideoPersistence.AttemptResult"
@@ -5604,10 +5610,38 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>openscreen-eng@google.com</owner>
   <summary>
     Counts the number of devices known and populated to the Media Router dialog
-    three seconds after the dialog loads. Always expected to be non-negative.
-    This includes data recorded from Clank, which uses Android's MediaRouter
-    framework.
+    (or the Global Media Controls' device picker) three seconds after the dialog
+    loads. Always expected to be non-negative. This includes data recorded from
+    Clank, which uses Android's MediaRouter framework.
   </summary>
+</histogram>
+
+<histogram name="MediaRouter.Ui.Device.Count.{Ui}.{Trigger}.{Mrp}.{State}"
+    units="units" expires_after="2022-02-01">
+  <owner>takumif@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Counts the number of {Mrp} devices that are shown as {State} in the {Ui} UI
+    three seconds after the UI was opened via {Trigger}. Always expected to be
+    non-negative.
+  </summary>
+  <token key="Ui">
+    <variant name="CastHarmony"/>
+    <variant name="GlobalMediaControls"/>
+  </token>
+  <token key="Trigger">
+    <variant name="BrowserUi"/>
+    <variant name="PresentationApi"/>
+  </token>
+  <token key="Mrp">
+    <variant name="CAST"/>
+    <variant name="DIAL"/>
+    <variant name="WIRED_DISPLAY"/>
+  </token>
+  <token key="State">
+    <variant name="Available"/>
+    <variant name="Unavailable"/>
+  </token>
 </histogram>
 
 <histogram name="MediaRouter.Ui.Dialog.ActivationLocationAndCastMode"

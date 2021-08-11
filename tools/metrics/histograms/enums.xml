@@ -3625,6 +3625,14 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Account check failed"/>
 </enum>
 
+<enum name="ArcAuthAndroidIdSource">
+  <summary>Defines the source of AndroidId during provisioning of ARC.</summary>
+  <int value="0" label="Missing"/>
+  <int value="1" label="Cached"/>
+  <int value="2" label="GService flag"/>
+  <int value="3" label="GmsProxy api"/>
+</enum>
+
 <enum name="ArcAuthMainAccountResolutionStatus">
   <int value="0" label="No hash code no account"/>
   <int value="1" label="No hash code for single account"/>
@@ -44439,6 +44447,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="BO"/>
 </enum>
 
+<enum name="LacrosLaunchMode">
+  <int value="0" label="Only Ash browser"/>
+  <int value="1" label="Ash and Lacros browser available"/>
+  <int value="2" label="Lacros browser is primary"/>
+  <int value="3" label="Only Lacros browser"/>
+</enum>
+
 <enum name="LanguageDetectionModelState">
   <int value="0" label="Unknown"/>
   <int value="1" label="Model File Invalid"/>
@@ -45395,6 +45410,20 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Disabled"/>
   <int value="10" label="Error: additional web context malformed (nonfatal)"/>
   <int value="11" label="Success: Image is translatable"/>
+</enum>
+
+<enum name="LensRegionSearchAspectRatio">
+  <summary>
+    Enum describing the aspect ratio of the captured region. The aspect ratios
+    are defined arbitrarly as follows: SQUARE: [0.8, 1.2] WIDE: (1.2, 1.7]
+    VERY_WIDE: (1.7, infinity] TALL: [0.3, 0.8) VERY_TALL: [0, 0.3)
+  </summary>
+  <int value="0" label="Undefined Aspect Ratio"/>
+  <int value="1" label="Square Aspect Ratio"/>
+  <int value="2" label="Wide Aspect Ratio"/>
+  <int value="3" label="Very Wide Aspect Ratio"/>
+  <int value="4" label="Tall Aspect Ratio"/>
+  <int value="5" label="Very Tall Aspect Ratio"/>
 </enum>
 
 <enum name="LensRegionSearchCaptureResult">
@@ -49145,6 +49174,7 @@ from previous Chrome versions.
   <int value="-78035185" label="custom_summary"/>
   <int value="-77872983" label="BookmarkAppsMac:disabled"/>
   <int value="-77789682" label="SharingPreferVapid:disabled"/>
+  <int value="-77328559" label="IncognitoReauthenticationForAndroid:enabled"/>
   <int value="-77230883"
       label="OmniboxOnFocusSuggestionsContextualWebAllowSRP:enabled"/>
   <int value="-77084779" label="ExperimentalFlingAnimation:enabled"/>
@@ -50232,6 +50262,7 @@ from previous Chrome versions.
   <int value="779703052" label="ChromeOSAmbientMode:enabled"/>
   <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
   <int value="780743733" label="QueryTilesLocalOrdering:disabled"/>
+  <int value="781085897" label="IncognitoReauthenticationForAndroid:disabled"/>
   <int value="781573553" label="UnifiedPasswordManagerAndroid:enabled"/>
   <int value="781785788" label="ClipboardSuggestionContentHidden:disabled"/>
   <int value="782167080" label="enable-new-qp-input-view"/>

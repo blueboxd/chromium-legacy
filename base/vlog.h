@@ -10,6 +10,8 @@
 
 #include "base/base_export.h"
 #include "base/strings/string_piece.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 
 namespace logging {
 
@@ -54,7 +56,8 @@ class BASE_EXPORT VlogInfo {
   // VmodulePattern holds all the information for each pattern parsed
   // from |vmodule_switch|.
   struct VmodulePattern;
-  std::vector<VmodulePattern> vmodule_levels_;
+  base::Lock vmodule_levels_lock_;
+  std::vector<VmodulePattern> vmodule_levels_ GUARDED_BY(vmodule_levels_lock_);
   int* min_log_level_;
 };
 

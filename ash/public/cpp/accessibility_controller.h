@@ -168,9 +168,16 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
                                       base::OnceClosure on_close_callback) {}
 
   // Updates the enabled state and tooltip of the dictation button in the status
-  // tray when SODA download state changes.
-  virtual void UpdateDictationButtonOnSodaChanged(
-      bool soda_download_in_progress) = 0;
+  // tray when speech recognition file download state changes.
+  virtual void UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
+      bool download_in_progress) = 0;
+
+  // Shows a notification card in the message center informing the user that
+  // speech recognition files have either downloaded successfully or failed.
+  // Specific to the Dictation feature.
+  virtual void ShowSpeechRecognitionDownloadNotificationForDictation(
+      bool succeeded,
+      const std::u16string& display_language) = 0;
 
  protected:
   AccessibilityController();

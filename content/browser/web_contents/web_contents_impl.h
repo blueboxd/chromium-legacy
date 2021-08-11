@@ -953,7 +953,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderWidgetHostImpl* render_widget_host,
       base::RepeatingClosure hang_monitor_restarter) override;
   void RendererResponsive(RenderWidgetHostImpl* render_widget_host) override;
-  void SubframeCrashed(blink::mojom::FrameVisibility visibility) override;
   void RequestToLockMouse(RenderWidgetHostImpl* render_widget_host,
                           bool user_gesture,
                           bool last_unlocked_by_target,
@@ -1798,6 +1797,23 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Called when the process hosting the primary main RenderFrameHost is known
   // to be alive.
   void NotifyPrimaryMainFrameProcessIsAlive();
+
+  // If |entry| is null, this method updates the WebContents' fallback title for
+  // when there is no navigation entry (i.e. when GetNavigationEntryForTitle()
+  // returns nullptr), otherwise updates |entry|'s title. If defined, |entry|
+  // must belong to the WebContents' primary NavigationController. Returns true
+  // if the title (entry's or fallback) was changed, false otherwise.
+  bool UpdateTitleForEntryImpl(NavigationEntryImpl* entry,
+                               const std::u16string& title);
+  // Dispatches WebContentsObserver::TitleWasSet and also notifies the delegate
+  // of a title change if |entry| is the entry whose title is being used as the
+  // display title.
+  void NotifyTitleUpdateForEntry(NavigationEntryImpl* entry);
+  // Returns the navigation entry whose title is used as the display title for
+  // this WebContents (i.e. for WebContents::GetTitle()). This value can be
+  // null, in which case a fallback title is used (see
+  // |page_title_when_no_navigation_entry_|).
+  NavigationEntry* GetNavigationEntryForTitle();
 
   // Data for core operation ---------------------------------------------------
 

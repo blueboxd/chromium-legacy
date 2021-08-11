@@ -153,13 +153,6 @@
     # MM emulator CQ builder currently has limited capacity so some composition
     # test suites cannot be fullly enabled at once.
     'android_marshmallow_emulator_limited_capacity_gtests': {
-      # Tests from android_specific_chromium_gtests
-      'android_sync_integration_tests': {
-        'args': [
-          '--test-launcher-batch-limit=1',
-        ],
-      },
-
       # Tests from chromium_gtests
       'webkit_unit_tests':{
         'test': 'blink_unittests',
@@ -3953,7 +3946,7 @@
         'name': 'webgpu_blink_web_tests_with_backend_validation',
         'args': [
           # crbug.com/953991 Ensure WebGPU is ready before running tests
-          '--initialize-webgpu-adapter-at-startup',
+          '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
           '--additional-driver-flag=--enable-dawn-backend-validation',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
@@ -3997,7 +3990,7 @@
         'name': 'webgpu_blink_web_tests',
         'args': [
           # crbug.com/953991 Ensure WebGPU is ready before running tests
-          '--initialize-webgpu-adapter-at-startup',
+          '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
           # We need this flag to initialize ANGLE so that we can explicitly tell
@@ -4040,7 +4033,7 @@
         'name': 'webgpu_blink_web_tests_with_backend_validation',
         'args': [
           # crbug.com/953991 Ensure WebGPU is ready before running tests
-          '--initialize-webgpu-adapter-at-startup',
+          '--initialize-webgpu-adapter-at-startup-timeout-ms=60000',
           '--additional-driver-flag=--enable-dawn-backend-validation=partial',
           # Make Dawn allow "Unsafe APIs" so they can be tested with the WebGPU CTS.
           '--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis',
@@ -4336,28 +4329,6 @@
     'linux_lacros_chrome_browsertests_version_skew': {
       'lacros_chrome_browsertests': { },
       'lacros_chrome_browsertests_run_in_series': { },
-    },
-
-    'linux_lacros_cq_gtests': {
-      'browser_tests': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'chromeos_unittests': {},
-      'components_unittests': {},
-      'extensions_browsertests': {},
-      'interactive_ui_tests': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      'lacros_chrome_browsertests': {},
-      'lacros_chrome_browsertests_run_in_series': {},
-      'lacros_chrome_unittests': {},
-      'sync_integration_tests': {},
-      'ui_base_unittests': {},
-      'unit_tests': {},
     },
 
     'linux_lacros_specific_gtests': {
@@ -5725,7 +5696,7 @@
 
       'android_modern_smoke_tests',
       'android_smoke_tests',
-      #'android_specific_chromium_gtests',  # Already includes gl_gtests.
+      'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'android_wpr_record_replay_tests',
       #'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
@@ -5742,7 +5713,6 @@
     # android_marshmallow_emulator_gtests)
     # is android_wpr_record_replay_tests
     'android_marshmallow_emulator_non_cq_gtests': [
-      'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
       'weblayer_android_gtests',
       'weblayer_gtests',

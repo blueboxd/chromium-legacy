@@ -34,6 +34,11 @@
           'shards': 2,
         },
       },
+      'android-marshmallow-x86-rel': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'android-pie-arm64-rel': {
         'args': [
           '--gtest_filter=-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode', # https://crbug.com/1034001
@@ -64,8 +69,6 @@
       # Remove from CQ bots due to capacity.
       'android-marshmallow-arm64-rel',
       'android-lollipop-arm-rel',
-
-      'android-marshmallow-x86-rel-non-cq', # runs on MM-x86-rel already
    ],
   },
   'android_webview_unittests': {
@@ -718,11 +721,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
         ],
       },
-      'linux-lacros-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
-        ],
-      },
       'linux-lacros-tester-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.browser_tests.filter',
@@ -1168,12 +1166,6 @@
         ],
       },
       # https://crbug.com/1111979,
-      'linux-lacros-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter',
-        ],
-      },
-      # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.components_unittests.filter',
@@ -1399,10 +1391,12 @@
           '--timeout-scale=2.0',
         ],
       },
-      'android-marshmallow-x86-rel-non-cq': {
+      'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.content_shell_test_apk.filter',
         ],
+        #TODO(crbug.com/1127110): Enable this on CQ
+        'ci_only': True,
       },
       'android-pie-x86-rel': {
         'args': [
@@ -1522,11 +1516,6 @@
           '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
         ],
       },
-      'linux-lacros-rel': {
-        'args': [
-          '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
-        ],
-      },
       'linux-lacros-tester-rel': {
         'args': [
           '--gtest_filter=-BluetoothShellApiTest.ApiSanityCheck:BluetoothSocketApiTest.Listen:BluetoothSocketApiTest.PermissionDenied',
@@ -1642,7 +1631,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.gl_tests.filter',
         ],
       },
-      'android-marshmallow-x86-rel-non-cq': {
+      'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',
         ],
@@ -1824,12 +1813,6 @@
       },
       # https://crbug.com/1111979
       'linux-lacros-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
-        ],
-      },
-      # https://crbug.com/1111979
-      'linux-lacros-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
         ],
@@ -2664,11 +2647,6 @@
            '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
         ]
       },
-      'linux-lacros-rel': {
-        'args': [
-           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
-        ]
-      },
       'linux-lacros-tester-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.sync_integration_tests.filter',
@@ -2844,7 +2822,6 @@
       # There's no need to run unit_tests on both lollipop and marshmallow
       # on the CQ. https://crbug.com/1026487.
       'android-marshmallow-arm64-rel',
-      'android-marshmallow-x86-rel-non-cq', # runs on MM-x86-rel already
       'android-pie-arm64-rel',  # https://crbug.com/1010211
     ],
     'modifications': {
@@ -2906,12 +2883,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter',
-        ],
-      },
-      # https://crbug.com/1111979,
-      'linux-lacros-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.unit_tests.filter',
         ],
@@ -3321,6 +3292,13 @@
           # TODO(crbug.com/1189746) Enable this test once the issue is fixed.
           '--gtest_filter=-org.chromium.net.NetworkChangeNotifierTest.testNetworkChangeNotifierJavaObservers',
         ],
+      },
+      'android-marshmallow-x86-rel': {
+        #TODO(crbug.com/1127110): Enable this on CQ
+        'ci_only': True,
+        'swarming': {
+          'shards': 9,
+        },
       },
       'android-pie-arm64-rel': {
         'swarming': {

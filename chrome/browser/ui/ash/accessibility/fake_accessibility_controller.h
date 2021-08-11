@@ -58,8 +58,11 @@ class FakeAccessibilityController : ash::AccessibilityController {
   bool IsAccessibilityFeatureVisibleInTrayMenu(
       const std::string& path) override;
   void DisableSwitchAccessDisableConfirmationDialogTesting() override;
-  void UpdateDictationButtonOnSodaChanged(
-      bool soda_download_in_progress) override;
+  void UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
+      bool download_in_progress) override;
+  void ShowSpeechRecognitionDownloadNotificationForDictation(
+      bool succeeded,
+      const std::u16string& display_language) override;
 
  private:
   bool was_client_set_ = false;

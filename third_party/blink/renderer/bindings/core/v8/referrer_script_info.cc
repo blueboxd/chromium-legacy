@@ -21,13 +21,49 @@ enum HostDefinedOptionsIndex : size_t {
   kLength
 };
 
+static_assert(HostDefinedOptionsIndex::kLength != 1,
+              "We use an array of length 1 to represent ReferrerScriptInfo "
+              "with default value, kLength should be different from 1");
+
 }  // namespace
+
+ReferrerScriptInfo ReferrerScriptInfo::CreateNoReferencingScript() {
+  return ReferrerScriptInfo();
+}
+
+ReferrerScriptInfo ReferrerScriptInfo::CreateWithReferencingScript(
+    const KURL& base_url,
+    const ScriptFetchOptions& options) {
+  return ReferrerScriptInfo(base_url, options.CredentialsMode(),
+                            options.Nonce(), options.ParserState(),
+                            options.GetReferrerPolicy());
+}
+
+bool ReferrerScriptInfo::HasReferencingScriptWithDefaultValue(
+    const KURL& script_origin_resource_name) const {
+  if (!HasReferencingScript())
+    return false;
+
+  // TODO(https://crbug.com/1235205): `referrer_policy_` should be checked.
+  return BaseURL() == script_origin_resource_name &&
+         credentials_mode_ == network::mojom::CredentialsMode::kSameOrigin &&
+         nonce_.IsEmpty() && parser_state_ == kNotParserInserted;
+}
 
 ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
     v8::Local<v8::Context> context,
-    v8::Local<v8::PrimitiveArray> host_defined_options) {
-  if (host_defined_options.IsEmpty() || !host_defined_options->Length()) {
-    return ReferrerScriptInfo();
+    v8::Local<v8::PrimitiveArray> host_defined_options,
+    const KURL& script_origin_resource_name) {
+  if (host_defined_options.IsEmpty() || !host_defined_options->Length())
+    return ReferrerScriptInfo::CreateNoReferencingScript();
+
+  if (host_defined_options->Length() == 1) {
+    ReferrerScriptInfo referrer_info =
+        ReferrerScriptInfo::CreateWithReferencingScript(
+            script_origin_resource_name, ScriptFetchOptions());
+    DCHECK(referrer_info.HasReferencingScriptWithDefaultValue(
+        script_origin_resource_name));
+    return referrer_info;
   }
 
   v8::Isolate* isolate = context->GetIsolate();
@@ -38,6 +74,8 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
       ToCoreString(v8::Local<v8::String>::Cast(base_url_value));
   KURL base_url = base_url_string.IsEmpty() ? KURL() : KURL(base_url_string);
   DCHECK(base_url.IsNull() || base_url.IsValid());
+  // Even if base URL is null, do not defer to `script_origin_resource_name`,
+  // because there are cases where the original base URL is already null.
 
   v8::Local<v8::Primitive> credentials_mode_value =
       host_defined_options->Get(isolate, kCredentialsMode);
@@ -71,13 +109,20 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
 }
 
 v8::Local<v8::PrimitiveArray> ReferrerScriptInfo::ToV8HostDefinedOptions(
-    v8::Isolate* isolate) const {
-  if (IsDefaultValue())
+    v8::Isolate* isolate,
+    const KURL& script_origin_resource_name) const {
+  if (!HasReferencingScript())
     return v8::Local<v8::PrimitiveArray>();
+
+  if (HasReferencingScriptWithDefaultValue(script_origin_resource_name))
+    return v8::PrimitiveArray::New(isolate, 1);
 
   v8::Local<v8::PrimitiveArray> host_defined_options =
       v8::PrimitiveArray::New(isolate, HostDefinedOptionsIndex::kLength);
 
+  // Even when the original `base_url_` is `script_origin_resource_name`, the
+  // original `base_url_` is stored here, to ditinguish `base_url_` ==
+  // `script_origin_resource_name` and `base_url_` is null.
   v8::Local<v8::Primitive> base_url_value =
       V8String(isolate, base_url_.GetString());
   host_defined_options->Set(isolate, HostDefinedOptionsIndex::kBaseURL,

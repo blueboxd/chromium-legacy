@@ -110,6 +110,7 @@ base::StringPiece GetModule(base::StringPiece file) {
 }  // namespace
 
 int VlogInfo::GetVlogLevel(base::StringPiece file) {
+  base::AutoLock lock(vmodule_levels_lock_);
   if (!vmodule_levels_.empty()) {
     base::StringPiece module(GetModule(file));
     for (size_t i = 0; i < vmodule_levels_.size(); i++) {

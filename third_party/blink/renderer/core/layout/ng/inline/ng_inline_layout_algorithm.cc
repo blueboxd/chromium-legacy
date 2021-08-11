@@ -471,6 +471,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
   container_builder_.SetBfcBlockOffset(block_offset);
+  container_builder_.SetLineBoxBfcBlockOffset(block_offset);
 }
 
 void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
@@ -616,6 +617,7 @@ void NGInlineLayoutAlgorithm::PlaceBlockInInline(
   container_builder_.SetBaseDirection(line_info.BaseDirection());
   if (absl::optional<LayoutUnit> block_offset = result.BfcBlockOffset()) {
     container_builder_.SetBfcBlockOffset(*block_offset);
+    container_builder_.SetLineBoxBfcBlockOffset(*block_offset);
     container_builder_.SetEndMarginStrut(result.EndMarginStrut());
     container_builder_.SetAdjoiningObjectTypes(result.AdjoiningObjectTypes());
     const NGConstraintSpace& space = ConstraintSpace();
@@ -655,8 +657,6 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     NGLogicalLineItems* line_box) {
   DCHECK(line_info.IsEmptyLine() || !line_box_metrics.IsEmpty())
       << "Non-empty lines must have a valid set of linebox metrics.";
-
-  bool is_empty_inline = Node().IsEmptyInline();
 
   // All children within the linebox are positioned relative to the baseline,
   // then shifted later using NGLineBoxFragmentBuilder::MoveInBlockDirection.
@@ -711,8 +711,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
       // If we are an empty-inline we may not have the correct BFC block-offset
       // yet. Due to this we need to mark this node as having adjoining
       // objects, and perform a re-layout if our position shifts.
-      if (is_empty_inline)
-        container_builder_.AddAdjoiningObjectTypes(kAdjoiningInlineOutOfFlow);
+      container_builder_.AddAdjoiningObjectTypes(kAdjoiningInlineOutOfFlow);
     } else {
       // A block-level OOF element positions itself on the "next" line. However
       // only shifts down if there is preceding inline-level content.
@@ -1063,7 +1062,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
   // layout_object may be null in certain cases, e.g. if it's a kBidiControl.
   if (layout_object && layout_object->IsBR()) {
     const LayoutUnit line_box_bfc_block_offset =
-        ContainerBfcOffset().block_offset;
+        *container_builder_.LineBoxBfcBlockOffset();
     NGBfcOffset bfc_offset = {LayoutUnit(),
                               line_box_bfc_block_offset + content_size};
     AdjustToClearance(

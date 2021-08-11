@@ -46,6 +46,7 @@ _CONFIG = [
             'base::JobHandle',
             'base::PostJob',
             'base::File',
+            'base::FileErrorOr',
             'base::FilePath',
             'base::GetUniqueIdForProcess',
             "base::i18n::TextDirection",
@@ -1035,7 +1036,9 @@ _CONFIG = [
             'third_party/blink/renderer/modules/mediasource/',
         ],
         'allowed': [
+            'base::CommandLine',
             'media::.+',
+            'switches::kLacrosEnablePlatformEncryptedHevc',
         ]
     },
     {

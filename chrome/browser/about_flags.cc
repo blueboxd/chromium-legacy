@@ -3104,10 +3104,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableOfficeEditingComponentAppName,
      flag_descriptions::kDisableOfficeEditingComponentAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableOfficeEditingComponentApp)},
-    {"updated_cellular_activation_ui",
-     flag_descriptions::kUpdatedCellularActivationUiName,
-     flag_descriptions::kUpdatedCellularActivationUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kUpdatedCellularActivationUi)},
     {"use_messages_staging_url", flag_descriptions::kUseMessagesStagingUrlName,
      flag_descriptions::kUseMessagesStagingUrlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesStagingUrl)},
@@ -4233,10 +4229,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableGenericSensorExtraClassesName,
      flag_descriptions::kEnableGenericSensorExtraClassesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kGenericSensorExtraClasses)},
-    {"expensive-background-timer-throttling",
-     flag_descriptions::kExpensiveBackgroundTimerThrottlingName,
-     flag_descriptions::kExpensiveBackgroundTimerThrottlingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {ui_devtools::switches::kEnableUiDevTools,
@@ -6751,6 +6743,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIncognitoBrandConsistencyForAndroidDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(features::kIncognitoBrandConsistencyForAndroid)},
+
+    {"incognito-reauthentication-for-android",
+     flag_descriptions::kIncognitoReauthenticationForAndroidName,
+     flag_descriptions::kIncognitoReauthenticationForAndroidDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kIncognitoReauthenticationForAndroid)},
 #endif
 
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \

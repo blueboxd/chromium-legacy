@@ -2041,11 +2041,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-ios-managed-settings-ui",
-    "owners": [ "tinazwang", "rohitrao", "bling-flags@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-javascript-harmony",
     "owners": [ "adamk", "hablich" ],
     // This flag is used by web developers to test upcoming javascript features.
@@ -2954,11 +2949,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "expensive-background-timer-throttling",
-    "owners": [ "altimin" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "explore-sites",
     "owners": [ "chili", "dewittj" ],
     "expiry_milestone": 95
@@ -3407,6 +3397,11 @@
   {
     "name": "incognito-ntp-revamp",
     "owners": [ "sideyilmaz", "chrome-incognito@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "incognito-reauthentication-for-android",
+    "owners": [ "roagarwal", "rhalavati", "chrome-incognito@google.com" ],
     "expiry_milestone": 100
   },
   {
@@ -4370,7 +4365,7 @@
     // TODO(b/172341945): Fix this asap.
     "name": "overscroll-history-navigation",
     "owners": [ "mohsen", "jinsukkim" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 105
   },
   {
     "name": "page-info-discoverability",
@@ -5215,8 +5210,8 @@
   },
   {
     "name": "split-settings-sync",
-    "owners": [ "jamescook", "cros-system-services@google.com" ],
-    "expiry_milestone": 92
+    "owners": [ "rsorokin", "cros-oac@google.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "start-surface",

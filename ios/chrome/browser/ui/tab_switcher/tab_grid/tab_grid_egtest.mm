@@ -1194,7 +1194,14 @@ id<GREYMatcher> SelectAllButton() {
 }
 
 // Tests sharing multiple tabs from the tab grid edit mode.
-- (void)testTabGridBulkActionShare {
+// TODO(crbug.com/1238501): The pasteboard is "not available at this time" when
+// running on device.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testTabGridBulkActionShare testTabGridBulkActionShare
+#else
+#define MAYBE_testTabGridBulkActionShare DISABLED_testTabGridBulkActionShare
+#endif
+- (void)MAYBE_testTabGridBulkActionShare {
   if (!base::ios::IsRunningOnIOS14OrLater()) {
     EARL_GREY_TEST_SKIPPED(
         @"Bulk actions are only supported on iOS 14 and later.");

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/accuracy_tips/features.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -40,6 +41,7 @@ constexpr char kHatsSurveyTriggerTrustSafetyPrivacySettings[] =
 constexpr char kHatsSurveyTriggerTrustSafetyTrustedSurface[] =
     "ts-trusted-surface";
 constexpr char kHatsSurveyTriggerTrustSafetyTransactions[] = "ts-transactions";
+constexpr char kHatsSurveyTriggerAccuracyTips[] = "accuracy-tips";
 
 constexpr char kHatsNextSurveyTriggerIDTesting[] =
     "HLpeYy5Av0ugnJ3q1cK0XzzA8UHv";
@@ -159,6 +161,11 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
       features::kTrustSafetySentimentSurveyTransactionsTriggerId.Get(),
       std::vector<std::string>{"Saved password"});
 
+  // Accuracy tips survey.
+  survey_configs.emplace_back(
+      &accuracy_tips::features::kAccuracyTipsSurveyFeature,
+      kHatsSurveyTriggerAccuracyTips);
+
   return survey_configs;
 }
 
@@ -168,11 +175,16 @@ HatsService::SurveyConfig::SurveyConfig(
     const base::Feature* feature,
     const std::string& trigger,
     const absl::optional<std::string>& presupplied_trigger_id,
-    const std::vector<std::string>& product_specific_data_fields)
+    const std::vector<std::string>& product_specific_bits_data_fields,
+    const std::vector<std::string>& product_specific_string_data_fields)
     : trigger(trigger),
-      product_specific_data_fields(product_specific_data_fields) {
-  DCHECK(product_specific_data_fields.size() <= 3)
-      << "A maximum of 3 survey specific data fields is supported";
+      product_specific_bits_data_fields(product_specific_bits_data_fields),
+      product_specific_string_data_fields(product_specific_string_data_fields) {
+  DCHECK_LE(product_specific_bits_data_fields.size() +
+                product_specific_string_data_fields.size(),
+            3u)
+      << "A maximum of 3 survey specific data fields (bits and string data "
+         "together) is supported";
 
   enabled = base::FeatureList::IsEnabled(*feature);
   if (!enabled)
@@ -211,10 +223,12 @@ HatsService::DelayedSurveyTask::DelayedSurveyTask(
     HatsService* hats_service,
     const std::string& trigger,
     content::WebContents* web_contents,
-    const std::map<std::string, bool>& product_specific_data)
+    const SurveyBitsData& product_specific_bits_data,
+    const SurveyStringData& product_specific_string_data)
     : hats_service_(hats_service),
       trigger_(trigger),
-      product_specific_data_(product_specific_data) {
+      product_specific_bits_data_(product_specific_bits_data),
+      product_specific_string_data_(product_specific_string_data) {
   Observe(web_contents);
 }
 
@@ -227,20 +241,14 @@ HatsService::DelayedSurveyTask::GetWeakPtr() {
 
 void HatsService::DelayedSurveyTask::Launch() {
   hats_service_->LaunchSurveyForWebContents(trigger_, web_contents(),
-                                            product_specific_data_);
+                                            product_specific_bits_data_,
+                                            product_specific_string_data_);
   hats_service_->RemoveTask(*this);
 }
 
 void HatsService::DelayedSurveyTask::WebContentsDestroyed() {
   hats_service_->RemoveTask(*this);
 }
-
-struct SurveyIdentifiers {
-  const base::Feature* feature;
-  const char* trigger;
-  const char* trigger_id;
-  std::vector<std::string> product_specific_data_fields;
-};
 
 HatsService::HatsService(Profile* profile) : profile_(profile) {
   auto surveys = GetSurveyConfigs();
@@ -262,8 +270,9 @@ HatsService::HatsService(Profile* profile) : profile_(profile) {
   default_survey.probability = 1.0f;
   default_survey.trigger = kHatsSurveyTriggerTesting;
   default_survey.trigger_id = kHatsNextSurveyTriggerIDTesting;
-  default_survey.product_specific_data_fields = {"Test Field 1", "Test Field 2",
-                                                 "Test Field 3"};
+  default_survey.product_specific_bits_data_fields = {"Test Field 1",
+                                                      "Test Field 2"};
+  default_survey.product_specific_string_data_fields = {"Test Field 3"};
   survey_configs_by_triggers_.emplace(kHatsSurveyTriggerTesting,
                                       default_survey);
 }
@@ -282,26 +291,29 @@ void HatsService::LaunchSurvey(
     const std::string& trigger,
     base::OnceClosure success_callback,
     base::OnceClosure failure_callback,
-    const std::map<std::string, bool>& product_specific_data) {
+    const SurveyBitsData& product_specific_bits_data,
+    const SurveyStringData& product_specific_string_data) {
   if (!ShouldShowSurvey(trigger)) {
     std::move(failure_callback).Run();
     return;
   }
 
-  LaunchSurveyForBrowser(chrome::FindLastActiveWithProfile(profile_), trigger,
-                         std::move(success_callback),
-                         std::move(failure_callback), product_specific_data);
+  LaunchSurveyForBrowser(
+      chrome::FindLastActiveWithProfile(profile_), trigger,
+      std::move(success_callback), std::move(failure_callback),
+      product_specific_bits_data, product_specific_string_data);
 }
 
 bool HatsService::LaunchDelayedSurvey(
     const std::string& trigger,
     int timeout_ms,
-    const std::map<std::string, bool>& product_specific_data) {
+    const SurveyBitsData& product_specific_bits_data,
+    const SurveyStringData& product_specific_string_data) {
   return base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&HatsService::LaunchSurvey, weak_ptr_factory_.GetWeakPtr(),
                      trigger, base::DoNothing::Once(), base::DoNothing::Once(),
-                     product_specific_data),
+                     product_specific_bits_data, product_specific_string_data),
       base::TimeDelta::FromMilliseconds(timeout_ms));
 }
 
@@ -309,12 +321,14 @@ bool HatsService::LaunchDelayedSurveyForWebContents(
     const std::string& trigger,
     content::WebContents* web_contents,
     int timeout_ms,
-    const std::map<std::string, bool>& product_specific_data) {
+    const SurveyBitsData& product_specific_bits_data,
+    const SurveyStringData& product_specific_string_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_contents)
     return false;
   auto result = pending_tasks_.emplace(this, trigger, web_contents,
-                                       product_specific_data);
+                                       product_specific_bits_data,
+                                       product_specific_string_data);
   if (!result.second)
     return false;
   auto success = base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -452,12 +466,14 @@ bool HatsService::HasPendingTasks() {
 void HatsService::LaunchSurveyForWebContents(
     const std::string& trigger,
     content::WebContents* web_contents,
-    const std::map<std::string, bool>& product_specific_data) {
+    const SurveyBitsData& product_specific_bits_data,
+    const SurveyStringData& product_specific_string_data) {
   if (ShouldShowSurvey(trigger) && web_contents &&
       web_contents->GetVisibility() == content::Visibility::VISIBLE) {
     LaunchSurveyForBrowser(chrome::FindBrowserWithWebContents(web_contents),
                            trigger, base::DoNothing(), base::DoNothing(),
-                           product_specific_data);
+                           product_specific_bits_data,
+                           product_specific_string_data);
   }
 }
 
@@ -466,7 +482,8 @@ void HatsService::LaunchSurveyForBrowser(
     const std::string& trigger,
     base::OnceClosure success_callback,
     base::OnceClosure failure_callback,
-    const std::map<std::string, bool>& product_specific_data) {
+    const SurveyBitsData& product_specific_bits_data,
+    const SurveyStringData& product_specific_string_data) {
   if (!browser ||
       (!browser->is_type_normal() && !browser->is_type_devtools()) ||
       !profiles::IsRegularOrGuestSession(browser)) {
@@ -489,7 +506,8 @@ void HatsService::LaunchSurveyForBrowser(
   // we check it at the last.
   CheckSurveyStatusAndMaybeShow(browser, trigger, std::move(success_callback),
                                 std::move(failure_callback),
-                                product_specific_data);
+                                product_specific_bits_data,
+                                product_specific_string_data);
 }
 
 bool HatsService::CanShowSurvey(const std::string& trigger) const {
@@ -649,7 +667,8 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
     const std::string& trigger,
     base::OnceClosure success_callback,
     base::OnceClosure failure_callback,
-    const std::map<std::string, bool>& product_specific_data) {
+    const SurveyBitsData& product_specific_bits_data,
+    const SurveyStringData& product_specific_string_data) {
   // Check the survey status in profile first.
   // We record the survey's over capacity information in user profile to avoid
   // duplicated checks since the survey won't change once it is full.
@@ -662,19 +681,30 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
     return;
   }
 
-  DCHECK(survey_configs_by_triggers_.find(trigger) !=
-         survey_configs_by_triggers_.end());
+  CHECK(survey_configs_by_triggers_.find(trigger) !=
+        survey_configs_by_triggers_.end());
   auto survey_config = survey_configs_by_triggers_[trigger];
 
-  // Check that the |product_specific_data| matches the fields for this trigger.
-  // If fields are set for a trigger, they must be provided.
-  DCHECK_EQ(product_specific_data.size(),
-            survey_config.product_specific_data_fields.size());
-  for (auto field_value : product_specific_data) {
-    DCHECK(std::find(survey_config.product_specific_data_fields.begin(),
-                     survey_config.product_specific_data_fields.end(),
-                     field_value.first) !=
-           survey_config.product_specific_data_fields.end());
+  // Check that the |product_specific_bits_data| matches the fields for this
+  // trigger. If fields are set for a trigger, they must be provided.
+  CHECK_EQ(product_specific_bits_data.size(),
+           survey_config.product_specific_bits_data_fields.size());
+  for (auto field_value : product_specific_bits_data) {
+    CHECK(std::find(survey_config.product_specific_bits_data_fields.begin(),
+                    survey_config.product_specific_bits_data_fields.end(),
+                    field_value.first) !=
+          survey_config.product_specific_bits_data_fields.end());
+  }
+
+  // Check that the |product_specific_string_data| matches the fields for this
+  // trigger. If fields are set for a trigger, they must be provided.
+  CHECK_EQ(product_specific_string_data.size(),
+           survey_config.product_specific_string_data_fields.size());
+  for (auto field_value : product_specific_string_data) {
+    CHECK(std::find(survey_config.product_specific_string_data_fields.begin(),
+                    survey_config.product_specific_string_data_fields.end(),
+                    field_value.first) !=
+          survey_config.product_specific_string_data_fields.end());
   }
 
   // As soon as the HaTS Next dialog is created it will attempt to contact
@@ -687,6 +717,6 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
   browser->window()->ShowHatsDialog(
       survey_configs_by_triggers_[trigger].trigger_id,
       std::move(success_callback), std::move(failure_callback),
-      product_specific_data);
+      product_specific_bits_data, product_specific_string_data);
   hats_next_dialog_exists_ = true;
 }

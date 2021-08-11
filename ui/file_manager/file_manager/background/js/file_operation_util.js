@@ -1152,9 +1152,6 @@ fileOperationUtil.ZipTask = class extends fileOperationUtil.Task {
   constructor(taskId, sourceEntries, targetDirEntry, zipBaseDirEntry) {
     super(taskId, util.FileOperationType.ZIP, sourceEntries, targetDirEntry);
     this.zipBaseDirEntry = zipBaseDirEntry;
-
-    /** @type {boolean} */
-    this.zip = true;
   }
 
 
@@ -1181,13 +1178,7 @@ fileOperationUtil.ZipTask = class extends fileOperationUtil.Task {
   run(entryChangedCallback, progressCallback, successCallback, errorCallback) {
     const f = async () => {
       try {
-        // TODO(fdegros) Per-entry zip progress update with accurate byte count.
-        // For now just set processedBytes to 0 so that it is not full until
-        // the zip operation is done.
-        this.processedBytes = 0;
-        progressCallback();
-
-        // TODO(fdegros) Localize the name.
+        // TODO(crbug.com/1238237) Localize the name.
         let destName = 'Archive';
 
         // If there is only one entry to zip, use this entry's name for the ZIP
@@ -1201,22 +1192,47 @@ fileOperationUtil.ZipTask = class extends fileOperationUtil.Task {
         const destPath = await fileOperationUtil.deduplicatePath(
             this.targetDirEntry, destName + '.zip');
 
-        this.cancelCallback_ = () => {
-          console.log('Cancelling ZIP task...');
-          chrome.fileManagerPrivate.cancelZip(this.zipBaseDirEntry, destPath);
-        };
-
-        const success = await new Promise(
-            resolve => chrome.fileManagerPrivate.zipSelection(
+        // Start ZIP operation.
+        const {zipId, totalBytes} = await new Promise(
+            (resolve, reject) => chrome.fileManagerPrivate.zipSelection(
                 assert(this.sourceEntries), this.zipBaseDirEntry, destPath,
-                resolve));
+                (zipId, totalBytes) => chrome.runtime.lastError ?
+                    reject(chrome.runtime.lastError) :
+                    resolve({zipId, totalBytes})));
 
-        if (!success) {
-          // Cannot create ZIP archive.
-          throw util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR);
+        this.totalBytes = totalBytes;
+        this.speedometer_.setTotalBytes(this.totalBytes);
+
+        // Set up cancellation callback.
+        this.cancelCallback_ = () => chrome.fileManagerPrivate.cancelZip(zipId);
+
+        // Monitor progress.
+        while (true) {
+          const {result, bytes} = await new Promise(
+              (resolve, reject) => chrome.fileManagerPrivate.getZipProgress(
+                  zipId, (result, bytes) => {
+                    if (chrome.runtime.lastError) {
+                      reject(chrome.runtime.lastError);
+                    } else {
+                      resolve({result, bytes});
+                    }
+                  }));
+
+          // Check for error.
+          if (result > 0) {
+            throw util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR);
+          }
+
+          // Report progress.
+          this.processedBytes = bytes;
+          this.speedometer_.update(this.processedBytes);
+          progressCallback();
+
+          // Check for success.
+          if (result == 0) {
+            break;
+          }
         }
-
-        this.processedBytes = this.totalBytes;
       } catch (error) {
         // Don't display any error message if the task was cancelled.
         if (!this.cancelRequested_) {

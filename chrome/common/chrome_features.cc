@@ -548,6 +548,10 @@ const base::Feature kIncognitoReauthenticationForAndroid{
     "IncognitoReauthenticationForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// When enabled, users will see updated UI in Incognito NTP
+const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 // When enabled, removes any theme or background customization done by the user
@@ -768,7 +772,7 @@ const base::FeatureParam<std::string> kPrivacySandboxSettingsURL{
 
 // Enables additional control set 2 on the privacy sandbox settings page.
 const base::Feature kPrivacySandboxSettings2{"PrivacySandboxSettings2",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::FeatureParam<std::string> kPrivacySandboxSettings2FlocURL{
     &kPrivacySandboxSettings2, "floc-website-url",
     "https://privacysandbox.com/proposals/floc"};

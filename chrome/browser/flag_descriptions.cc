@@ -2209,12 +2209,6 @@ const char kSidePanelDragAndDropName[] = "Side panel drag and drop";
 const char kSidePanelDragAndDropDescription[] =
     "Enables drag and drop of bookmarks within the side panel.";
 
-const char kServiceWorkerSubresourceFilterName[] =
-    "ServiceWorker subresource filter";
-const char kServiceWorkerSubresourceFilterDescription[] =
-    "Enables an experimental API to specify subresource URLs that bypass "
-    "service workers";
-
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
 const char kSharedClipboardUIDescription[] =
@@ -4469,12 +4463,6 @@ const char kExperimentalAccessibilityDictationExtensionName[] =
     "Experimental accessibility dictation extension.";
 const char kExperimentalAccessibilityDictationExtensionDescription[] =
     "Enables the JavaScript dictation extension.";
-
-const char kExperimentalAccessibilityDictationListeningName[] =
-    "Experimental accessibility dictation listening duration and behavior.";
-const char kExperimentalAccessibilityDictationListeningDescription[] =
-    "Enables longer listening with network recognition and listening after "
-    "finalized speech for the accessibility dictation feature.";
 
 const char kExperimentalAccessibilityDictationOfflineName[] =
     "Experimental accessibility dictation offline.";

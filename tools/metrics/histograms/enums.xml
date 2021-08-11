@@ -2467,6 +2467,7 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Check for updates"/>
   <int value="3" label="Refresh the crash list"/>
   <int value="4" label="About WebView DevTools"/>
+  <int value="5" label="Components"/>
 </enum>
 
 <enum name="AndroidWebViewDevUiMetricsTransmission">
@@ -4399,6 +4400,13 @@ others/histograms.xml -->
   <int value="13" label="VOICE_MATCH_ENROLLMENT_DONE"/>
   <int value="14" label="VOICE_MATCH_ENROLLMENT_SKIPPED"/>
   <int value="15" label="VOICE_MATCH_ENROLLMENT_ERROR"/>
+  <int value="16" label="RELATED_INFO_SHOWN"/>
+  <int value="17" label="RELATED_INFO_ACCEPTED"/>
+  <int value="18" label="RELATED_INFO_SKIPPED"/>
+  <int value="19" label="ACTIVITY_CONTROL_DA_ACCEPTED"/>
+  <int value="20" label="ACTIVITY_CONTROL_DA_SKIPPED"/>
+  <int value="21" label="ACTIVITY_CONTROL_WAA_ACCEPTED"/>
+  <int value="22" label="ACTIVITY_CONTROL_WAA_SKIPPED"/>
 </enum>
 
 <enum name="AssistantQueryResponseType">
@@ -28876,7 +28884,7 @@ Called by update_extension_histograms.py.-->
   <int value="1552" label="AUTOTESTPRIVATE_ISSYSTEMWEBAPPOPENFUNCTION"/>
   <int value="1553" label="TTSENGINE_SENDTTSAUDIO"/>
   <int value="1554" label="AUTOTESTPRIVATE_ACTIVATEAPPWINDOW"/>
-  <int value="1555" label="FILEMANAGERPRIVATEINTERNAL_CANCELZIP"/>
+  <int value="1555" label="FILEMANAGERPRIVATE_CANCELZIP"/>
   <int value="1556"
       label="ACCESSIBILITY_PRIVATE_GETLOCALIZEDDOMKEYSTRINGFORKEYCODE"/>
   <int value="1557" label="SCRIPTING_REGISTERCONTENTSCRIPTS"/>
@@ -28892,6 +28900,7 @@ Called by update_extension_histograms.py.-->
   <int value="1567" label="STORAGE_SETACCESSLEVEL"/>
   <int value="1568" label="OS_TELEMETRY_GETOEMDATA"/>
   <int value="1569" label="SCRIPTING_UNREGISTERCONTENTSCRIPTS"/>
+  <int value="1570" label="FILEMANAGERPRIVATE_GETZIPPROGRESS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34026,7 +34035,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3884" label="WebAppManifestProtocolHandlers"/>
   <int value="3885" label="RTCPeerConnectionOfferAllowExtmapMixedFalse"/>
   <int value="3886" label="NewCanvas2DAPI"/>
-  <int value="3887" label="ServiceWorkerSubresourceFilter"/>
+  <int value="3887" label="ServiceWorkerSubresourceFilterBypassedRequest"/>
   <int value="3888" label="WebGPU"/>
   <int value="3889" label="CSSFilterColorMatrix"/>
   <int value="3890" label="HTMLFencedFrameElement"/>
@@ -67954,6 +67963,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="loadSignIn"/>
   <int value="4" label="loadForceSignIn"/>
   <int value="5" label="profileSwitch"/>
+  <int value="6" label="accountSelectionLacros"/>
 </enum>
 
 <enum name="ProfileResetRequestOriginEnum">
@@ -69395,6 +69405,15 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="WRITE_STATUS_BLOCKED"/>
   <int value="2" label="WRITE_STATUS_ERROR"/>
   <int value="3" label="WRITE_STATUS_MSG_TOO_BIG"/>
+</enum>
+
+<enum name="QuotaDatabaseResetReason">
+  <int value="0" label="Failed to open database for directory path"/>
+  <int value="1" label="Failed to create in-memory database"/>
+  <int value="2" label="Failed to create schema"/>
+  <int value="3" label="Database migration failed"/>
+  <int value="4" label="Database version is too new"/>
+  <int value="5" label="Failed to initialize meta table"/>
 </enum>
 
 <enum name="QuotaOriginTypes">

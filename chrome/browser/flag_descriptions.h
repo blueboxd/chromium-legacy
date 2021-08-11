@@ -1261,9 +1261,6 @@ extern const char kSidePanelDragAndDropFlagId[];
 extern const char kSidePanelDragAndDropName[];
 extern const char kSidePanelDragAndDropDescription[];
 
-extern const char kServiceWorkerSubresourceFilterName[];
-extern const char kServiceWorkerSubresourceFilterDescription[];
-
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
 
@@ -2559,9 +2556,6 @@ extern const char kExoLockNotificationDescription[];
 
 extern const char kExperimentalAccessibilityDictationExtensionName[];
 extern const char kExperimentalAccessibilityDictationExtensionDescription[];
-
-extern const char kExperimentalAccessibilityDictationListeningName[];
-extern const char kExperimentalAccessibilityDictationListeningDescription[];
 
 extern const char kExperimentalAccessibilityDictationOfflineName[];
 extern const char kExperimentalAccessibilityDictationOfflineDescription[];

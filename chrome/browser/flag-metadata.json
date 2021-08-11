@@ -1798,11 +1798,6 @@
     "expiry_milestone": 96
   },
   {
-    "name": "enable-experimental-accessibility-dictation-listening",
-    "owners": [ "akihiroota", "katie" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "enable-experimental-accessibility-dictation-offline",
     "owners": [ "akihiroota", "katie" ],
     "expiry_milestone": 96
@@ -4990,11 +4985,6 @@
     "name": "send-webui-javascript-error-reports",
     "owners": ["iby", "cros-telemetry@google.com"],
     "expiry_milestone": 97
-  },
-  {
-    "name": "service-worker-subresource-filter",
-    "owners": [ "noahlemen@fb.com", "browsers@fb.com" ],
-    "expiry_milestone": 95
   },
   {
     "name": "set-market-url-for-testing",

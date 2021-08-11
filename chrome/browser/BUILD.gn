@@ -937,8 +937,8 @@ static_library("browser") {
     "optimization_guide/blink/blink_optimization_guide_inquirer.h",
     "optimization_guide/blink/blink_optimization_guide_web_contents_observer.cc",
     "optimization_guide/blink/blink_optimization_guide_web_contents_observer.h",
-    "optimization_guide/optimization_guide_hints_manager.cc",
-    "optimization_guide/optimization_guide_hints_manager.h",
+    "optimization_guide/chrome_hints_manager.cc",
+    "optimization_guide/chrome_hints_manager.h",
     "optimization_guide/optimization_guide_keyed_service.cc",
     "optimization_guide/optimization_guide_keyed_service.h",
     "optimization_guide/optimization_guide_keyed_service_factory.cc",
@@ -2453,6 +2453,8 @@ static_library("browser") {
     ]
     if (!is_official_build) {
       deps += [
+        "//ash/webui/sample_system_web_app_ui",
+        "//ash/webui/sample_system_web_app_ui/mojom",
         "//chromeos/components/demo_mode_app_ui",
         "//chromeos/components/telemetry_extension_ui",
         "//chromeos/components/telemetry_extension_ui/mojom",
@@ -3330,7 +3332,6 @@ static_library("browser") {
       "//components/content_settings/android",
       "//components/crash/android:crash_android",
       "//components/device_reauth",
-      "//components/embedder_support/android:browser_context",
       "//components/embedder_support/android:context_menu",
       "//components/embedder_support/android:simple_factory_key",
       "//components/embedder_support/android:util",
@@ -3384,6 +3385,7 @@ static_library("browser") {
       "//components/viz/common",
       "//components/webapk:proto",
       "//components/webauthn/android",
+      "//content/public/browser",
       "//device/fido:cablev2_registration",
       "//ipc:param_traits",
       "//media/mojo/clients",

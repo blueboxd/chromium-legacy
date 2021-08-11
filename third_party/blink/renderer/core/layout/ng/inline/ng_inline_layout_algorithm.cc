@@ -627,8 +627,10 @@ void NGInlineLayoutAlgorithm::PlaceBlockInInline(
     container_builder_.SetInlineSize(fragment.InlineSize());
     // Block-in-inline is wrapped in an anonymous block that has no margins.
     DCHECK(layout_object->IsAnonymous());
-    container_builder_.SetMetrics(fragment.BaselineMetrics(
-        /* margins */ NGLineBoxStrut(), baseline_type_));
+    const FontHeight metrics = fragment.BaselineMetrics(
+        /* margins */ NGLineBoxStrut(), baseline_type_);
+    container_builder_.SetMetrics(metrics);
+    line_box->MoveInBlockDirection(metrics.ascent);
 
     // If a spanner was found inside the child, we need to finish up and
     // propagate the spanner to the column layout algorithm, so that it can take
@@ -1252,6 +1254,12 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       // Margins should collapse across "certain zero-height line boxes".
       // https://drafts.csswg.org/css2/box.html#collapsing-margins
       container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
+
+      // Finally respect the forced BFC block-offset if present.
+      if (auto bfc_block_offset = ConstraintSpace().ForcedBfcBlockOffset()) {
+        container_builder_.SetBfcBlockOffset(*bfc_block_offset);
+        container_builder_.SetLineBoxBfcBlockOffset(*bfc_block_offset);
+      }
     } else {
       // A <br clear=both> will strech the line-box height, such that the
       // block-end edge will clear any floats.

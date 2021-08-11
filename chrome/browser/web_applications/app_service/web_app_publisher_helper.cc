@@ -19,13 +19,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
@@ -485,13 +485,15 @@ content::WebContents* WebAppPublisherHelper::Launch(
 
 content::WebContents* WebAppPublisherHelper::LaunchAppWithFiles(
     const std::string& app_id,
-    apps::mojom::LaunchContainer container,
     int32_t event_flags,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::FilePathsPtr file_paths) {
-  apps::AppLaunchParams params(
-      app_id, container, ui::DispositionFromEventFlags(event_flags),
-      apps::GetAppLaunchSource(launch_source), display::kDefaultDisplayId);
+  DisplayMode display_mode = registrar().GetAppEffectiveDisplayMode(app_id);
+  apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
+      app_id, event_flags, apps::GetAppLaunchSource(launch_source),
+      display::kDefaultDisplayId,
+      /*fallback_container=*/
+      ConvertDisplayModeToAppLaunchContainer(display_mode));
   if (file_paths) {
     for (const auto& file_path : file_paths->file_paths) {
       params.launch_files.push_back(file_path);

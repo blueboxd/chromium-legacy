@@ -1763,6 +1763,7 @@ crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass
 crbug.com/987138 [ Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Timeout ]
 crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck-cors-import.https.html [ Pass Timeout ]
 crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
 crbug.com/666993 [ Debug ] external/wpt/requestidlecallback/callback-idle-periods.html [ Pass Timeout ]
 
@@ -6786,9 +6787,6 @@ crbug.com/1190905 [ Win ] http/tests/devtools/indexeddb/live-update-indexeddb-li
 # Sheriff 2021-03-23
 crbug.com/1182689 [ Mac ] external/wpt/editing/run/delete.html?6001-last [ Failure ]
 
-# Sheriff 2021-03-24
-crbug.com/1192215 [ Linux ] external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure Pass ]
-
 # Sheriff 2021-03-31
 # Failing tests because of enabling scroll unification flag
 crbug.com/1194446 virtual/scroll-unification/fast/events/platform-wheelevent-paging-x-in-scrolling-div.html [ Crash Failure Pass Timeout ]
@@ -7399,18 +7397,11 @@ crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-sys
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-flush.https.tentative.worker.html [ Skip ]
 crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-flush.https.tentative.worker.html [ Pass ]
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 [ Win ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 [ Linux ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 [ Fuchsia ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
+crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Pass ]
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-getSize.https.tentative.worker.html [ Skip ]
 crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-getSize.https.tentative.worker.html [ Pass ]
 crbug.com/1218431 external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Skip ]
-crbug.com/1218431 [ Win ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 [ Linux ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
-crbug.com/1218431 [ Fuchsia ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
-# Mac below 10.15 is not implemented yet.
-crbug.com/1218431 [ Mac ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-close.https.tentative.worker.html [ Failure Pass ]
-crbug.com/1218431 [ Mac ] virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Failure Pass ]
+crbug.com/1218431 virtual/file-system-access-access-handle/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass ]
 
 # Sheriff 2021-06-30
 crbug.com/1216587 [ Win7 ] accessibility/scroll-window-sends-notification.html [ Failure Pass ]
@@ -7471,8 +7462,8 @@ crbug.com/996511 virtual/plz-service-worker/external/wpt/service-workers/cache-s
 crbug.com/996511 virtual/plz-service-worker/external/wpt/service-workers/service-worker/getregistrations.https.html [ Crash Failure Pass Skip Timeout ]
 crbug.com/996511 virtual/plz-service-worker/http/tests/inspector-protocol/fetch/fetch-cors-preflight-sw.js [ Crash Failure Pass Skip Timeout ]
 
-# Expected to time out.
-crbug.com/1218540 storage/shared_storage/unimplemented-worklet-operations.html [ Timeout ]
+# Expected to time out, but NOT crash.
+crbug.com/1218540 storage/shared_storage/unimplemented-worklet-operations.html [ Crash Timeout ]
 
 # Sheriff 2021-07-14
 crbug.com/1229039 [ Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Pass Timeout ]
@@ -7577,26 +7568,30 @@ crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pa
 crbug.com/1237132 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 crbug.com/1178292 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]
 
-# Sheriff 2021-08-09
-crbug.com/1237909 [ Linux ] external/wpt/webrtc-svc/RTCRtpParameters-scalability.html [ Failure Pass Crash ]
-
 # Sheriff 2021-08-10
 crbug.com/1238266 [ Mac ] virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/sandboxed_FileSystemSyncAccessHandle-truncate.https.tentative.worker.html [ Pass Failure ]
 crbug.com/1233840 external/wpt/html/cross-origin-opener-policy/historical/coep-navigate-popup-unsafe-inherit.https.html [ Pass Timeout ]
 crbug.com/1230534 external/wpt/webrtc/simulcast/basic.https.html [ Pass Timeout ]
 crbug.com/1230534 external/wpt/webrtc/simulcast/setParameters-active.https.html [ Failure Pass Timeout ]
-crbug.com/1237909 [ Mac ] external/wpt/webrtc-svc/RTCRtpParameters-scalability.html [ Pass Timeout ]
 
-# Sheriff 2021-08-11
-crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-001.html [ Failure ]
-crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-001.html [ Failure ]
-crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Failure ]
-crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Failure ]
-crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-003.html [ Failure ]
-crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-003.html [ Failure ]
-crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-004.html [ Failure ]
-crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-004.html [ Failure ]
-crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-005.html [ Failure ]
-crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-005.html [ Failure ]
-crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-006.html [ Failure ]
-crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-006.html [ Failure ]
+# Sheriff 2021-08-12
+crbug.com/1237640 http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Pass Timeout ]
+crbug.com/1239175 http/tests/navigation/same-and-different-back.html [ Failure Pass ]
+crbug.com/1239164 http/tests/inspector-protocol/network/navigate-iframe-in2in.js [ Failure Pass ]
+crbug.com/1192932 http/tests/inspector-protocol/network/xhr-interception.js [ Failure Pass ]
+crbug.com/1238845 [ Win ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-001.html [ Failure Pass ]
+crbug.com/1238845 [ Mac ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-001.html [ Failure Pass ]
+crbug.com/1238845 [ Win ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Failure Pass ]
+crbug.com/1238845 [ Mac ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Failure Pass ]
+crbug.com/1238845 [ Win ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-003.html [ Failure Pass ]
+crbug.com/1238845 [ Mac ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-003.html [ Failure Pass ]
+crbug.com/1238845 [ Win ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-004.html [ Failure Pass ]
+crbug.com/1238845 [ Mac ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-004.html [ Failure Pass ]
+crbug.com/1238845 [ Win ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-005.html [ Failure Pass ]
+crbug.com/1238845 [ Mac ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-005.html [ Failure Pass ]
+crbug.com/1238845 [ Win ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-006.html [ Failure Pass ]
+crbug.com/1238845 [ Mac ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-006.html [ Failure Pass ]
+crbug.com/1192215 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure Pass ]
+crbug.com/1237909 external/wpt/webrtc-svc/RTCRtpParameters-scalability.html [ Crash Failure Pass Timeout ]
+crbug.com/1239161 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_noopener.html [ Failure Pass ]
+crbug.com/1239139 virtual/prerender/wpt_internal/prerender/restriction-prompt-by-before-unload.html [ Crash Pass ]

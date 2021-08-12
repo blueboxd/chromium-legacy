@@ -47203,6 +47203,7 @@ from previous Chrome versions.
   <int value="-1731997767" label="SharingHubDesktopAppMenu:enabled"/>
   <int value="-1731267886" label="AutofillEnableStickyPaymentsBubble:enabled"/>
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
+  <int value="-1730755478" label="ClosedTabCache:disabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
   <int value="-1729808721" label="SubresourceRedirect:enabled"/>
   <int value="-1728605240" label="UseXpsForPrintingFromPdf:enabled"/>
@@ -50652,6 +50653,7 @@ from previous Chrome versions.
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
   <int value="1065547630" label="EnableInputNoiseCancellationUi:disabled"/>
+  <int value="1065553214" label="ClosedTabCache:enabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1067990299" label="enable-ui-devtools"/>
   <int value="1069325321" label="CrostiniGpuSupport:enabled"/>
@@ -70677,6 +70679,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Remove - If the credentials was removed."/>
   <int value="2" label="The site was marked as legitimate."/>
   <int value="3" label="Update Sync - If the credentials was updated via Sync"/>
+</enum>
+
+<enum name="RendererSchedulerDeadlineMode">
+  <int value="0" label="None. Synchronous Compositor Only."/>
+  <int value="1" label="Immediate."/>
+  <int value="2" label="Regular."/>
+  <int value="3" label="Late."/>
+  <int value="4" label="Blocked. Synchronous Compositor Only."/>
 </enum>
 
 <enum name="RendererSchedulerFrameOriginType">

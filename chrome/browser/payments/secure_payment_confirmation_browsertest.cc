@@ -150,13 +150,8 @@ class SecurePaymentConfirmationTestWithParameter
 
 INSTANTIATE_TEST_SUITE_P(APIVersion,
                          SecurePaymentConfirmationTestWithParameter,
-// TODO(https://crbug.com/1237550): Instrument Android no-credentials UI.
-#if defined(OS_ANDROID)
-                         testing::Values(APIVersion::kApiV2),
-#else
                          testing::Values(APIVersion::kApiV2,
                                          APIVersion::kApiV3),
-#endif  // OS_ANDROID
                          APIVersionToString);
 
 IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
@@ -183,14 +178,15 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
                             "getSecurePaymentConfirmationStatus()"));
 }
 
-IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
+IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
                        CheckInstrumentInStorageAfterCanMakePayment) {
   test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
+  close_dialog_on_error_ = true;
 
   // EvalJs waits for JavaScript promise to resolve.
   EXPECT_EQ(
-      "The payment method \"secure-payment-confirmation\" is not supported.",
+      GetNotSupportedError(GetParam()),
       content::EvalJs(
           GetActiveWebContents(),
           base::StringPrintf(
@@ -273,7 +269,17 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
 // Intentionally do not enable the "SecurePaymentConfirmation" Blink runtime
 // feature or the browser-side Finch flag.
 class SecurePaymentConfirmationDisabledTest
-    : public PaymentRequestPlatformBrowserTestBase {};
+    : public PaymentRequestPlatformBrowserTestBase {
+ public:
+  SecurePaymentConfirmationDisabledTest() {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kSecurePaymentConfirmation});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDisabledTest,
                        PaymentMethodNotSupported) {
@@ -300,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDisabledTest,
                          "securePaymentConfirmationHasEnrolledInstrument()"));
 }
 
-// Test that the feature can be disabled by the browser-side Finch flag.
+// Test that the feature can be disabled by the browser-side Finch flag, even if
+// the Blink runtime feature is enabled.
 class SecurePaymentConfirmationDisabledByFinchTest
     : public PaymentRequestPlatformBrowserTestBase {
  public:
@@ -539,31 +546,12 @@ class SecurePaymentConfirmationCreationTest
   std::unique_ptr<autofill::EventWaiter<Event>> event_waiter_;
 };
 
-IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest, UserCancel) {
-  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
-  NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/false);
-
-  EXPECT_EQ("AbortError: Request has been aborted.",
-            content::EvalJs(GetActiveWebContents(),
-                            content::JsReplace("createPaymentCredential($1)",
-                                               GetDefaultIconURL())));
-  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          1);
-  ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kCanceled, 1);
-  ExpectNoEnrollSystemPromptResult();
-  ExpectNoFunnelCount();
-  ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
-}
-
 class SecurePaymentConfirmationCreationTestWithParameter
     : public SecurePaymentConfirmationCreationTest,
       public testing::WithParamInterface<APIVersion> {
  public:
   SecurePaymentConfirmationCreationTestWithParameter() {
-    std::vector<base::Feature> enabled_features = {
-        features::kSecurePaymentConfirmation};
+    std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features;
     switch (GetParam()) {
       case APIVersion::kApiV2:
@@ -585,6 +573,40 @@ INSTANTIATE_TEST_SUITE_P(APIVersion,
                          testing::Values(APIVersion::kApiV2,
                                          APIVersion::kApiV3),
                          APIVersionToString);
+
+IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+                       UserCancelsBrowserEnrollmentDialog) {
+  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
+  NavigateTo("a.com", "/secure_payment_confirmation.html");
+
+  // Browser enrollment dialog is removed in APIV3, so the test can simulate
+  // user cancelling the browser enrollment dialog only in APIV2.
+  RespondToFutureEnrollments(/*confirm=*/false);
+  bool is_api_v3 = GetParam() == APIVersion::kApiV3;
+  std::string expected_response =
+      is_api_v3 ? "OK" : "AbortError: Request has been aborted.";
+
+  EXPECT_EQ(expected_response,
+            content::EvalJs(GetActiveWebContents(),
+                            content::JsReplace("createPaymentCredential($1)",
+                                               GetDefaultIconURL())));
+
+  ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
+                          is_api_v3 ? 0 : 1);
+  ExpectEnrollDialogResult(
+      SecurePaymentConfirmationEnrollDialogResult::kCanceled,
+      is_api_v3 ? 0 : 1);
+
+  if (is_api_v3) {
+    ExpectEnrollSystemPromptResult(
+        SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
+  } else {
+    ExpectNoEnrollSystemPromptResult();
+  }
+
+  ExpectNoFunnelCount();
+  ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
+}
 
 // Closing the page while the browser enrollment dialog is opened should not
 // crash.

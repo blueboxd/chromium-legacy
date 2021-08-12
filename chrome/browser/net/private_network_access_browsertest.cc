@@ -49,9 +49,7 @@ namespace {
 
 using blink::mojom::WebFeature;
 using testing::ElementsAre;
-using testing::Gt;
 using testing::IsEmpty;
-using testing::Optional;
 using testing::Pair;
 
 // We use a custom page that explicitly disables its own favicon (by providing
@@ -904,21 +902,6 @@ class PrivateNetworkAccessAutoReloadBrowserTest
 
     error_page::NetErrorAutoReloader::CreateForWebContents(web_contents());
   }
-
- protected:
-  error_page::NetErrorAutoReloader* GetAutoReloader() {
-    return error_page::NetErrorAutoReloader::FromWebContents(web_contents());
-  }
-
-  absl::optional<base::TimeDelta> GetCurrentAutoReloadDelay() {
-    const absl::optional<base::OneShotTimer>& timer =
-        GetAutoReloader()->next_reload_timer_for_testing();
-    if (!timer.has_value()) {
-      return absl::nullopt;
-    }
-
-    return timer->GetCurrentDelay();
-  }
 };
 
 // This test verifies that when a document in the `local` address space fails to
@@ -936,9 +919,6 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessAutoReloadBrowserTest,
     NetErrorInterceptor interceptor(url, net::ERR_UNEXPECTED);
 
     EXPECT_FALSE(content::NavigateToURL(web_contents(), url));
-
-    // The auto-reloader should be waiting a non-zero amount of time.
-    EXPECT_THAT(GetCurrentAutoReloadDelay(), Optional(Gt(base::TimeDelta())));
   }
 
   // Observe second navigation, which succeeds.

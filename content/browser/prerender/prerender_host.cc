@@ -67,6 +67,30 @@ struct ActivateResult {
   std::unique_ptr<StoredPage> page;
 };
 
+bool AreHttpRequestHeadersCompatible(
+    const std::string& potential_activation_headers_str,
+    const std::string& prerender_headers_str) {
+  net::HttpRequestHeaders prerender_headers;
+  prerender_headers.AddHeadersFromString(prerender_headers_str);
+
+  net::HttpRequestHeaders potential_activation_headers;
+  potential_activation_headers.AddHeadersFromString(
+      potential_activation_headers_str);
+
+  // `potential_activation_headers` are observed before the User-Agent override
+  // while `prerender_headers` are observed after. As a workaround, remove
+  // User-Agent matching from consideration so that activation works with
+  // DevTools mobile emulation.
+  // TODO(https://crbug.com/1238578): Adjust when the headers are observed so we
+  // don't need this workaround.
+  prerender_headers.RemoveHeader(net::HttpRequestHeaders::kUserAgent);
+  potential_activation_headers.RemoveHeader(
+      net::HttpRequestHeaders::kUserAgent);
+
+  return prerender_headers.ToString() ==
+         potential_activation_headers.ToString();
+}
+
 }  // namespace
 
 class PrerenderHost::PageHolder : public FrameTree::Delegate,
@@ -168,6 +192,8 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
 
   WebContents* GetWebContents() { return &web_contents_; }
 
+  FrameTree* GetPrimaryFrameTree() { return web_contents_.GetFrameTree(); }
+
   ActivateResult Activate(NavigationRequest& navigation_request) {
     // There should be no ongoing main-frame navigation during activation.
     // TODO(https://crbug.com/1190644): Make sure sub-frame navigations are
@@ -191,9 +217,10 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
             .GetEntryWithUniqueID(page->render_frame_host->nav_entry_id())
             ->CloneWithoutSharing(context.get());
 
-    navigation_request.SetPrerenderNavigationEntry(std::move(nav_entry));
+    navigation_request.SetPrerenderActivationNavigationState(
+        std::move(nav_entry), frame_tree_->root()->current_replication_state());
 
-    FrameTree* target_frame_tree = web_contents_.GetFrameTree();
+    FrameTree* target_frame_tree = GetPrimaryFrameTree();
     DCHECK_EQ(target_frame_tree,
               navigation_request.frame_tree_node()->frame_tree());
 
@@ -443,6 +470,41 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   return std::move(result.page);
 }
 
+// Ensure that the frame policies are compatible between primary main frame and
+// prerendering main frame:
+// a) primary main frame's pending_frame_policy would normally apply to the new
+// document during its creation. However, for prerendering we can't apply it as
+// the document is already created.
+// b) prerender main frame's pending_frame_policy can't be transferred to the
+// primary main frame, we should not activate if it's non-zero.
+// c) Existing  document can't change the frame_policy it is affected by, so we
+// can't transfer RenderFrameHosts between FrameTreeNodes with different frame
+// policies.
+//
+// Usually frame policy for the main frame is empty as in the most common case a
+// parent document sets a policy on the child iframe.
+bool PrerenderHost::IsFramePolicyCompatibleWithPrimaryFrameTree() {
+  FrameTreeNode* prerender_root_ftn = page_holder_->frame_tree()->root();
+  FrameTreeNode* primary_root_ftn = page_holder_->GetPrimaryFrameTree()->root();
+
+  // Ensure that the pending frame policy is not set on the main frames, as it
+  // is usually set on frames by their parent frames.
+  if (prerender_root_ftn->pending_frame_policy() != blink::FramePolicy()) {
+    return false;
+  }
+
+  if (primary_root_ftn->pending_frame_policy() != blink::FramePolicy()) {
+    return false;
+  }
+
+  if (prerender_root_ftn->current_replication_state().frame_policy !=
+      primary_root_ftn->current_replication_state().frame_policy) {
+    return false;
+  }
+
+  return true;
+}
+
 bool PrerenderHost::AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
     NavigationRequest& navigation_request) {
   // TODO(crbug.com/1181763): compare the rest of the navigation parameters. We
@@ -484,10 +546,22 @@ bool PrerenderHost::AreBeginNavigationParamsCompatibleWithNavigation(
     return false;
   }
 
-  if (potential_activation.headers != begin_params_->headers) {
+  if (!AreHttpRequestHeadersCompatible(potential_activation.headers,
+                                       begin_params_->headers)) {
     return false;
   }
 
+  // Don't activate a prerendered page if the potential activation request
+  // requires validation or bypass of the browser cache, as the prerendered page
+  // is a kind of caches.
+  // TODO(https://crbug.com/1213299): Instead of checking the load flags on
+  // activation, we should cancel prerendering when the prerender initial
+  // navigation has the flags.
+  int cache_load_flags = net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE |
+                         net::LOAD_DISABLE_CACHE;
+  if (potential_activation.load_flags & cache_load_flags) {
+    return false;
+  }
   if (potential_activation.load_flags != begin_params_->load_flags) {
     return false;
   }

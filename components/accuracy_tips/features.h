@@ -29,6 +29,9 @@ extern const base::FeatureParam<base::TimeDelta> kTimeBetweenPrompts;
 // opt-out.
 extern const base::FeatureParam<int> kNumIgnorePrompts;
 
+// Amount of site-enagegement score that would suppress an accuracy tip.
+extern const base::FeatureParam<int> kMaxSiteEngagementScore;
+
 // Controls whether accuracy tips survey should be enabled.
 extern const base::Feature kAccuracyTipsSurveyFeature;
 
@@ -39,6 +42,9 @@ extern const base::FeatureParam<base::TimeDelta> kMinTimeToShowSurvey;
 // A maximal amount of time, that passed after showing accuracy tip, during
 // which we can show a survey.
 extern const base::FeatureParam<base::TimeDelta> kMaxTimeToShowSurvey;
+
+// A minimal count of accuracy tips shown, after which survey might be shown.
+extern const base::FeatureParam<int> kMinPromptCountRequiredForSurvey;
 
 }  // namespace features
 }  // namespace accuracy_tips

@@ -1643,6 +1643,65 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelOnPreferredSizeChanged) {
       PrerenderHost::FinalStatus::kDestroyed, 1);
 }
 
+// Tests that prerendering cannot request the browser to create a popup widget.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, NoPopupWidget) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/title1.html");
+
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  int host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHostWrapper prerender_main_frame(
+      GetPrerenderedMainFrameHost(host_id));
+
+  std::string create_element_script = R"(
+    const widgetElement = document.createElement('input');
+    widgetElement.type = 'color';
+    widgetElement.id = 'chooser';
+    widgetElement.value = '#000000';
+    document.body.appendChild(widgetElement);
+  )";
+
+  EXPECT_TRUE(ExecJs(prerender_main_frame.get(), create_element_script,
+                     EvalJsOptions::EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  std::string click_element_script = R"(
+    const element = document.getElementById('chooser');
+    element.click();
+  )";
+
+  // Executing this script with the EXECUTE_SCRIPT_NO_USER_GESTURE flag, to
+  // simulate a realistic scenario of executing `element.click()` in
+  // prerendering pages. It should be ignored because prerendering page do not
+  // have user gestures.
+  EXPECT_TRUE(ExecJs(prerender_main_frame.get(), click_element_script,
+                     EvalJsOptions::EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // Give the test a chance to fail if the click() is not ignored.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl));
+
+  // On Android, color chooser does not create popup widgets. See
+  // ColorChooserUIController::OpenUI().
+#if !defined(OS_ANDROID)
+  // Prerendering page cannot request a popup widget because it has no user
+  // gesture. If browser receives such a request from prerendering pages, it
+  // will terminate the corresponding process by calling ReportBadMessage().
+  // Executing this script without EXECUTE_SCRIPT_NO_USER_GESTURE specified
+  // brings the prerendering page an unexpected user gesture and the renderer
+  // should be terminated.
+  {
+    ScopedAllowRendererCrashes allow_renderer_crashes(
+        prerender_main_frame.get());
+    test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+    ignore_result(ExecJs(prerender_main_frame.get(), click_element_script));
+    prerender_main_frame.WaitUntilRenderFrameDeleted();
+    EXPECT_TRUE(prerender_main_frame.IsRenderFrameDeleted());
+    host_observer.WaitForDestroyed();
+    EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
+  }
+#endif
+}
+
 class MojoCapabilityControlTestContentBrowserClient
     : public TestContentBrowserClient,
       mojom::TestInterfaceForDefer,
@@ -3235,6 +3294,138 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
     EXPECT_CALL(observer,
                 DidFinishLoad(child_frame, child_frame->GetLastCommittedURL()));
+  }
+  NavigatePrimaryPage(kPrerenderingUrl);
+  EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl);
+}
+
+// Test that WebContentsObserver::DOMContentLoaded is not invoked while
+// prerendering but it is deferred and invoked on prerender activation for both
+// main and sub-frames.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DOMContentLoadedInvokedAfterActivationWithSubframes) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Initialize a MockWebContentsObserver and ensure that DOMContentLoaded is
+  // not invoked while prerendering.
+  testing::NiceMock<MockWebContentsObserver> observer(shell()->web_contents());
+  EXPECT_CALL(observer, DOMContentLoaded(testing::_)).Times(0);
+
+  // Start a prerender.
+  int prerender_host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHost* prerender_main_frame_host =
+      GetPrerenderedMainFrameHost(prerender_host_id);
+  RenderFrameHost* child_frame = ChildFrameAt(prerender_main_frame_host, 0);
+  EXPECT_EQ(prerender_main_frame_host->GetFramesInSubtree().size(), 2u);
+  ASSERT_NE(prerender_host_id, RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Verify and clear all expectations on the mock observer before setting new
+  // ones.
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  testing::InSequence s;
+
+  // Activate the prerendered page. This should result in invoking
+  // DOMContentLoaded twice once for root and once for child RenderFrameHost.
+  {
+    // Verify that DidFinishNavigation is invoked before DOMContentLoaded on
+    // activation.
+    EXPECT_CALL(observer, DidFinishNavigation(testing::_));
+
+    EXPECT_CALL(observer, DOMContentLoaded(prerender_main_frame_host)).Times(1);
+
+    EXPECT_CALL(observer, DOMContentLoaded(child_frame)).Times(1);
+  }
+  NavigatePrimaryPage(kPrerenderingUrl);
+  EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl);
+}
+
+// Test that WebContentsObserver::DocumentOnLoadCompletedInMainFrame is not
+// invoked when the page gets loaded while prerendering but it is deferred and
+// invoked on prerender activation.
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    DocumentOnLoadCompletedInMainFrameInvokedAfterActivation) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Initialize a MockWebContentsObserver and ensure that
+  // DocumentOnLoadCompletedInMainFrame is not invoked while prerendering.
+  testing::NiceMock<MockWebContentsObserver> observer(shell()->web_contents());
+  EXPECT_CALL(observer, DocumentOnLoadCompletedInMainFrame(testing::_))
+      .Times(0);
+
+  // Start a prerender.
+  int prerender_host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHost* prerender_frame_host =
+      GetPrerenderedMainFrameHost(prerender_host_id);
+  EXPECT_EQ(prerender_frame_host->GetFramesInSubtree().size(), 2u);
+  ASSERT_NE(prerender_host_id, RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Verify and clear all expectations on the mock observer before setting new
+  // ones.
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  testing::InSequence s;
+
+  // Activate the prerendered page. This should result in invoking
+  // DocumentOnLoadCompletedInMainFrame only for main RenderFrameHost.
+  {
+    // Verify that DidFinishNavigation is invoked before
+    // DocumentOnLoadCompletedInMainFrame on activation.
+    EXPECT_CALL(observer, DidFinishNavigation(testing::_));
+
+    EXPECT_CALL(observer,
+                DocumentOnLoadCompletedInMainFrame(prerender_frame_host))
+        .Times(1);
+  }
+  NavigatePrimaryPage(kPrerenderingUrl);
+  EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl);
+}
+
+// Test the dispatch order of various load events on prerender activation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OrderingOfDifferentLoadEvents) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/simple_page.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Initialize a MockWebContentsObserver to check order of different load
+  // events.
+  testing::NiceMock<MockWebContentsObserver> observer(shell()->web_contents());
+
+  // Start a prerender.
+  int prerender_host_id = AddPrerender(kPrerenderingUrl);
+  ASSERT_NE(prerender_host_id, RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Verify and clear all expectations on the mock observer before setting new
+  // ones.
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  testing::InSequence s;
+
+  // Activate the prerendered page. This should result in invoking various
+  // WebContentsObserver events in the following order.
+  {
+    EXPECT_CALL(observer, DidStartLoading()).Times(1);
+
+    // Verify that DidFinishNavigation is invoked before any finish load events
+    // are dispatched.
+    EXPECT_CALL(observer, DidFinishNavigation(testing::_)).Times(1);
+
+    EXPECT_CALL(observer, DOMContentLoaded(testing::_)).Times(1);
+
+    EXPECT_CALL(observer, DocumentOnLoadCompletedInMainFrame(testing::_))
+        .Times(1);
+
+    EXPECT_CALL(observer, DidFinishLoad(testing::_, testing::_)).Times(1);
+
+    EXPECT_CALL(observer, DidStopLoading()).Times(1);
   }
   NavigatePrimaryPage(kPrerenderingUrl);
   EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl);

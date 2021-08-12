@@ -38,6 +38,7 @@
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_options.h"
 #include "storage/browser/file_system/file_system_quota_client.h"
+#include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/file_system/isolated_file_system_backend.h"
 #include "storage/browser/file_system/mount_points.h"
@@ -51,6 +52,8 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -406,7 +409,7 @@ ExternalFileSystemBackend* FileSystemContext::external_backend() const {
       GetFileSystemBackend(kFileSystemTypeExternal));
 }
 
-void FileSystemContext::OpenFileSystem(const url::Origin& origin,
+void FileSystemContext::OpenFileSystem(const blink::StorageKey& storage_key,
                                        FileSystemType type,
                                        OpenFileSystemMode mode,
                                        OpenFileSystemCallback callback) {
@@ -428,7 +431,7 @@ void FileSystemContext::OpenFileSystem(const url::Origin& origin,
   }
 
   backend->ResolveURL(
-      CreateCrackedFileSystemURL(origin, type, base::FilePath()), mode,
+      CreateCrackedFileSystemURL(storage_key, type, base::FilePath()), mode,
       std::move(callback));
 }
 
@@ -562,13 +565,10 @@ FileSystemURL FileSystemContext::CrackURLInFirstPartyContext(
 }
 
 FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     FileSystemType type,
     const base::FilePath& path) const {
-  // TODO(https://crbug.com/1221308): function will have StorageKey param in
-  // future CL; conversion from url::Origin is temporary
-  return CrackFileSystemURL(
-      FileSystemURL(blink::StorageKey(origin), type, path));
+  return CrackFileSystemURL(FileSystemURL(storage_key, type, path));
 }
 
 bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {

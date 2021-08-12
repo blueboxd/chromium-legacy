@@ -1814,6 +1814,10 @@ void RenderProcessHostImpl::SetDomStorageBinderForTesting(
   GetDomStorageBinder() = std::move(binder);
 }
 
+bool RenderProcessHostImpl::HasDomStorageBinderForTesting() {
+  return !GetDomStorageBinder().is_null();
+}
+
 // static
 void RenderProcessHostImpl::SetBadMojoMessageCallbackForTesting(
     BadMojoMessageCallbackForTesting callback) {
@@ -5039,6 +5043,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // Pass bits of global renderer state to the renderer.
   GetRendererInterface()->SetUserAgent(
       GetContentClient()->browser()->GetUserAgent());
+  GetRendererInterface()->SetReducedUserAgent(
+      GetContentClient()->browser()->GetReducedUserAgent());
   GetRendererInterface()->SetUserAgentMetadata(
       GetContentClient()->browser()->GetUserAgentMetadata());
   GetRendererInterface()->SetCorsExemptHeaderList(

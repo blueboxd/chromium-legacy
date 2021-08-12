@@ -94,33 +94,93 @@ class SecurePaymentConfirmationTest
       ASSERT_TRUE(test_controller()->ConfirmPayment());
   }
 
+  void OnErrorDisplayed() override {
+    PaymentRequestPlatformBrowserTestBase::OnErrorDisplayed();
+    if (close_dialog_on_error_)
+      ASSERT_TRUE(test_controller()->CloseDialog());
+  }
+
   bool database_write_responded_ = false;
   bool confirm_payment_ = false;
+  bool close_dialog_on_error_ = false;
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, NoAuthenticator) {
-  test_controller()->SetHasAuthenticator(false);
-  NavigateTo("a.com", "/secure_payment_confirmation.html");
+enum class APIVersion {
+  kApiV2,
+  kApiV3,
+};
 
-  // EvalJs waits for JavaScript promise to resolve.
-  EXPECT_EQ(
-      "The payment method \"secure-payment-confirmation\" is not supported.",
-      content::EvalJs(GetActiveWebContents(),
-                      "getSecurePaymentConfirmationStatus()"));
+std::string GetNotSupportedError(APIVersion api_version) {
+  return api_version == APIVersion::kApiV3
+             ? "The operation either timed out or was not allowed. See: "
+               "https://www.w3.org/TR/webauthn-2/"
+               "#sctn-privacy-considerations-client."
+             : "The payment method \"secure-payment-confirmation\" is not "
+               "supported.";
 }
 
-IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, NoInstrumentInStorage) {
-  test_controller()->SetHasAuthenticator(true);
+std::string APIVersionToString(const testing::TestParamInfo<APIVersion>& info) {
+  return APIVersion::kApiV2 == info.param ? "APIV2" : "APIV3";
+}
+
+class SecurePaymentConfirmationTestWithParameter
+    : public SecurePaymentConfirmationTest,
+      public testing::WithParamInterface<APIVersion> {
+ public:
+  SecurePaymentConfirmationTestWithParameter() {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    switch (GetParam()) {
+      case APIVersion::kApiV2:
+        disabled_features.push_back(features::kSecurePaymentConfirmationAPIV3);
+        break;
+      case APIVersion::kApiV3:
+        enabled_features.push_back(features::kSecurePaymentConfirmationAPIV3);
+        break;
+    }
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(APIVersion,
+                         SecurePaymentConfirmationTestWithParameter,
+// TODO(https://crbug.com/1237550): Instrument Android no-credentials UI.
+#if defined(OS_ANDROID)
+                         testing::Values(APIVersion::kApiV2),
+#else
+                         testing::Values(APIVersion::kApiV2,
+                                         APIVersion::kApiV3),
+#endif  // OS_ANDROID
+                         APIVersionToString);
+
+IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
+                       NoAuthenticator) {
+  test_controller()->SetHasAuthenticator(false);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
+  close_dialog_on_error_ = true;
 
   // EvalJs waits for JavaScript promise to resolve.
-  EXPECT_EQ(
-      "The payment method \"secure-payment-confirmation\" is not supported.",
-      content::EvalJs(GetActiveWebContents(),
-                      "getSecurePaymentConfirmationStatus()"));
+  EXPECT_EQ(GetNotSupportedError(GetParam()),
+            content::EvalJs(GetActiveWebContents(),
+                            "getSecurePaymentConfirmationStatus()"));
+}
+
+IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
+                       NoInstrumentInStorage) {
+  test_controller()->SetHasAuthenticator(true);
+  NavigateTo("a.com", "/secure_payment_confirmation.html");
+  close_dialog_on_error_ = true;
+
+  // EvalJs waits for JavaScript promise to resolve.
+  EXPECT_EQ(GetNotSupportedError(GetParam()),
+            content::EvalJs(GetActiveWebContents(),
+                            "getSecurePaymentConfirmationStatus()"));
 }
 
 IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
@@ -497,15 +557,6 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest, UserCancel) {
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
-enum class APIVersion {
-  kApiV2,
-  kApiV3,
-};
-
-std::string APIVersionToString(const testing::TestParamInfo<APIVersion>& info) {
-  return APIVersion::kApiV2 == info.param ? "APIV2" : "APIV3";
-}
-
 class SecurePaymentConfirmationCreationTestWithParameter
     : public SecurePaymentConfirmationCreationTest,
       public testing::WithParamInterface<APIVersion> {
@@ -678,15 +729,44 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
           GetActiveWebContents(),
           "createPublicKeyCredentialWithPaymentExtensionAndReturnItsId()")
           .ExtractString();
-  ASSERT_EQ(std::string::npos, first_credential_identifier.find("Error"));
+  if (GetParam() == APIVersion::kApiV2) {
+    EXPECT_EQ(
+        "NotReadableError: Failed to save the credential identifier for the "
+        "'payment' extension.",
+        first_credential_identifier);
+    return;
+  }
+  ASSERT_EQ(std::string::npos, first_credential_identifier.find("Error"))
+      << first_credential_identifier;
 
   std::string second_credential_identifier =
       content::EvalJs(
           GetActiveWebContents(),
           "createPublicKeyCredentialWithPaymentExtensionAndReturnItsId()")
           .ExtractString();
-  ASSERT_EQ(std::string::npos, second_credential_identifier.find("Error"));
+  ASSERT_EQ(std::string::npos, second_credential_identifier.find("Error"))
+      << second_credential_identifier;
   ASSERT_NE(first_credential_identifier, second_credential_identifier);
+
+  NavigateTo("b.com", "/get_challenge.html");
+  test_controller()->SetHasAuthenticator(true);
+  confirm_payment_ = true;
+  std::string expected_result =
+      base::FeatureList::IsEnabled(features::kSecurePaymentConfirmationAPIV3)
+          ? "0.01"
+          : "The payment method \"secure-payment-confirmation\" is not "
+            "supported.";
+
+  EXPECT_EQ(expected_result,
+            content::EvalJs(
+                GetActiveWebContents(),
+                content::JsReplace("getTotalAmountFromClientData($1, $2);",
+                                   first_credential_identifier, "0.01")));
+  EXPECT_EQ(expected_result,
+            content::EvalJs(
+                GetActiveWebContents(),
+                content::JsReplace("getTotalAmountFromClientData($1, $2);",
+                                   second_credential_identifier, "0.01")));
 }
 
 // b.com cannot create a credential with RP = "a.com".

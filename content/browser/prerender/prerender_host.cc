@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -197,6 +198,16 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
               navigation_request.frame_tree_node()->frame_tree());
 
     page->render_frame_host->SetFrameTreeNode(*(target_frame_tree->root()));
+    // Copy frame name into the replication state of the primary main frame to
+    // ensure that the replication state of the primary main frame after
+    // activation matches the replication state stored in the renderer.
+    // TODO(https://crbug.com/1237091): Copying frame name here is suboptimal
+    // and ideally we'd do this at the same time when transferring the proxies
+    // from the StoredPage into RenderFrameHostManager. However, this is a
+    // temporary solution until we move this into BrowsingInstanceFrameState,
+    // along with RenderFrameHostProxy.
+    page->render_frame_host->frame_tree_node()->set_frame_name_for_activation(
+        frame_tree_->root()->unique_name(), frame_tree_->root()->frame_name());
     for (auto& it : page->proxy_hosts) {
       it.second->set_frame_tree_node(*(target_frame_tree->root()));
     }
@@ -357,25 +368,30 @@ bool PrerenderHost::StartPrerendering() {
 }
 
 void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
-  // Observe navigation only in the prerendering main frame.
-  if (navigation_handle->GetFrameTreeNodeId() != frame_tree_node_id_)
+  auto* navigation_request = NavigationRequest::From(navigation_handle);
+  // Observe navigation only in the prerendering frame tree.
+  if (navigation_request->frame_tree_node()->frame_tree() !=
+      page_holder_->frame_tree()) {
     return;
+  }
 
-  // Stop observing the events about the prerendered contents.
-  Observe(nullptr);
+  const bool is_prerender_main_frame =
+      navigation_request->GetFrameTreeNodeId() == frame_tree_node_id_;
 
   // Cancel prerendering on navigation request failure.
   //
   // Check net::Error here rather than PrerenderNavigationThrottle as CSP
   // blocking occurs before NavigationThrottles so cannot be observed in
   // NavigationThrottle::WillFailRequest().
-  net::Error net_error = navigation_handle->GetNetErrorCode();
+  net::Error net_error = navigation_request->GetNetErrorCode();
   absl::optional<FinalStatus> status;
   if (net_error == net::Error::ERR_BLOCKED_BY_CSP) {
     status = FinalStatus::kNavigationRequestBlockedByCsp;
-  } else if (net_error != net::Error::OK) {
+  } else if (net_error == net::Error::ERR_BLOCKED_BY_CLIENT) {
+    status = FinalStatus::kBlockedByClient;
+  } else if (is_prerender_main_frame && net_error != net::Error::OK) {
     status = FinalStatus::kNavigationRequestNetworkError;
-  } else if (!navigation_handle->HasCommitted()) {
+  } else if (is_prerender_main_frame && !navigation_request->HasCommitted()) {
     status = FinalStatus::kNavigationNotCommitted;
   }
   if (status.has_value()) {
@@ -385,8 +401,25 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
   // The prerendered contents are considered ready for activation when the
   // main frame navigation reaches DidFinishNavigation.
-  DCHECK(!is_ready_for_activation_);
-  is_ready_for_activation_ = true;
+  if (is_prerender_main_frame) {
+    DCHECK(!is_ready_for_activation_ || navigation_request->IsSameDocument());
+    is_ready_for_activation_ = true;
+  }
+}
+
+void PrerenderHost::ResourceLoadComplete(
+    RenderFrameHost* render_frame_host,
+    const GlobalRequestID& request_id,
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
+  // Observe resource loads only in the prerendering frame tree.
+  if (&render_frame_host->GetPage() !=
+      &GetPrerenderedMainFrameHost()->GetPage()) {
+    return;
+  }
+
+  if (resource_load_info.net_error == net::Error::ERR_BLOCKED_BY_CLIENT) {
+    Cancel(FinalStatus::kBlockedByClient);
+  }
 }
 
 std::unique_ptr<StoredPage> PrerenderHost::Activate(

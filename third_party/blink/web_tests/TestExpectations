@@ -1465,6 +1465,8 @@ crbug.com/1220149 external/wpt/css/css-variables/variable-supports-57.html [ Fai
 
 # ====== Style team owned tests to here ======
 
+# XML nodes aren't match by .class selectors:
+crbug.com/649444 external/wpt/css/selectors/xml-class-selector.xml [ Failure ]
 
 # Bug in <select multiple> tap behavior:
 crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
@@ -3127,7 +3129,7 @@ crbug.com/626703 [ Win10.1909 ] external/wpt/webrtc-encoded-transform/sframe-key
 crbug.com/626703 [ Mac10.14 ] external/wpt/websockets/stream/tentative/backpressure-send.any.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/shared-workers.html [ Failure Timeout ]
 crbug.com/626703 [ Win10.1909 ] external/wpt/html/cross-origin-embedder-policy/cross-origin-isolated-permission.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/parsing/background-image-computed.sub.html [ Crash Pass ]
+crbug.com/626703 [ Mac10.15 ] virtual/threaded/external/wpt/css/css-backgrounds/parsing/background-image-computed.sub.html [ Crash Pass ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-encoded-transform/sframe-transform-buffer-source.html [ Crash Failure Timeout ]
 crbug.com/626703 external/wpt/websockets/stream/tentative/close.any.worker.html?wpt_flags=h2 [ Failure Timeout ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Failure Pass ]
@@ -3960,21 +3962,21 @@ crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-creden
 crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection.html [ Skip ]
 
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-left-radius-010.xht [ Failure Pass ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/border-bottom-left-radius-010.xht [ Failure Pass ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/border-bottom-left-radius-010.xht [ Failure Pass ]
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-bottom-right-radius-010.xht [ Failure Pass ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/border-bottom-right-radius-010.xht [ Failure Pass ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/border-bottom-right-radius-010.xht [ Failure Pass ]
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure Pass ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure Pass ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/border-radius-clip-001.html [ Failure Pass ]
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Failure Pass ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Failure Pass ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/border-radius-clip-002.htm [ Failure Pass ]
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-left-radius-010.xht [ Failure Pass ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/border-top-left-radius-010.xht [ Failure Pass ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/border-top-left-radius-010.xht [ Failure Pass ]
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/border-top-right-radius-010.xht [ Failure Pass ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/border-top-right-radius-010.xht [ Failure Pass ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/border-top-right-radius-010.xht [ Failure Pass ]
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/box-shadow-radius-000.html [ Failure ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/box-shadow-radius-000.html [ Failure ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/box-shadow-radius-000.html [ Failure ]
-crbug.com/1160916 virtual/composite-bgcolor-animation/external/wpt/css/css-backgrounds/box-shadow-radius-001.html [ Failure ]
+crbug.com/1160916 virtual/threaded/external/wpt/css/css-backgrounds/box-shadow-radius-001.html [ Failure ]
 crbug.com/1160916 external/wpt/css/css-backgrounds/box-shadow-radius-001.html [ Failure ]
 
 # [css-grid]
@@ -4110,11 +4112,13 @@ crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-justify-001.h
 crbug.com/618969 external/wpt/css/css-grid/subgrid/* [ Skip ]
 
 ### Tests failing with SVGTextNG enabled:
+crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-match-svg.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/smallFonts.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textFeatures.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
+crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-match-highlight.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/visibility-collapse.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-dom-lengthAdjust-attr.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-svgdom-lengthAdjust-prop.html [ Failure ]
@@ -5258,6 +5262,7 @@ crbug.com/1207342 http/tests/devtools/unit/datagrid-editable-longtext.js [ Failu
 crbug.com/1207342 http/tests/devtools/unit/datagrid-items-attached-to-dom.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/unit/viewport-datagrid-items-attached-to-dom.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/unit/viewport-datagrid-items-expandable-attached-to-dom.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/webaudio/graphview-test.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/websocket/har-websocket.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/websocket/network-preserve-selection-on-frame-receive.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/console-cd-completions.js [ Failure Pass ]
@@ -7581,3 +7586,17 @@ crbug.com/1233840 external/wpt/html/cross-origin-opener-policy/historical/coep-n
 crbug.com/1230534 external/wpt/webrtc/simulcast/basic.https.html [ Pass Timeout ]
 crbug.com/1230534 external/wpt/webrtc/simulcast/setParameters-active.https.html [ Failure Pass Timeout ]
 crbug.com/1237909 [ Mac ] external/wpt/webrtc-svc/RTCRtpParameters-scalability.html [ Pass Timeout ]
+
+# Sheriff 2021-08-11
+crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-001.html [ Failure ]
+crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-001.html [ Failure ]
+crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Failure ]
+crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Failure ]
+crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-003.html [ Failure ]
+crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-003.html [ Failure ]
+crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-004.html [ Failure ]
+crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-004.html [ Failure ]
+crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-005.html [ Failure ]
+crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-005.html [ Failure ]
+crbug.com/1238845 [ Win7 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-006.html [ Failure ]
+crbug.com/1238845 [ Mac11.0 ] external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-006.html [ Failure ]

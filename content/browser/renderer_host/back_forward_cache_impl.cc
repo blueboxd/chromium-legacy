@@ -245,6 +245,7 @@ BlockListedFeatures GetDisallowedFeatures(
       WebSchedulerTrackedFeature::kWebRTC,
       WebSchedulerTrackedFeature::kWebShare,
       WebSchedulerTrackedFeature::kWebSocket,
+      WebSchedulerTrackedFeature::kWebTransport,
       WebSchedulerTrackedFeature::kWebXR,
       WebSchedulerTrackedFeature::kMediaSessionImplOnServiceCreated);
 
@@ -632,6 +633,17 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
   if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
     result.No(
         BackForwardCacheMetrics::NotRestoredReason::kSchemeNotHTTPOrHTTPS);
+  }
+
+  // Do not store if activation navigations are disabled by the
+  // NavigatorDelegate as a workaround for the following bug.
+  // TODO(https://crbug.com/1234857): Remove this when the bug is fixed.
+  if (rfh->frame_tree_node()
+          ->navigator()
+          .GetDelegate()
+          ->IsActivationNavigationDisallowedForBug1234857()) {
+    result.No(BackForwardCacheMetrics::NotRestoredReason::
+                  kActivationNavigationsDisallowedForBug1234857);
   }
 
   // We should not cache pages with Cache-control: no-store. Note that

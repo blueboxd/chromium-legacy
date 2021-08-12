@@ -27,10 +27,12 @@
 #include "content/public/common/content_client.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using content::BrowserContext;
@@ -153,7 +155,7 @@ SyncFileSystemRequestFileSystemFunction::Run() {
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, BindOnce(&storage::FileSystemContext::OpenFileSystem,
                           GetFileSystemContext(),
-                          url::Origin::Create(source_url().GetOrigin()),
+                          blink::StorageKey(url::Origin::Create(source_url())),
                           storage::kFileSystemTypeSyncable,
                           storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                           base::BindOnce(&self::DidOpenFileSystem, this)));

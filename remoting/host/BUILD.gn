@@ -86,6 +86,7 @@ source_set("host_main_headers") {
     "//remoting/host/linux:remoting_native_messaging_host",
     "//remoting/host/mac:remoting_native_messaging_host",
     "//remoting/host/mac:remoting_native_messaging_host_executable",
+    "//remoting/host/security_key:remote_security_key_main_headers",
     "//remoting/host/win:remoting_console",
     "//remoting/host/win:remoting_core",
     "//remoting/host/win:remoting_desktop",
@@ -98,7 +99,10 @@ source_set("host_main_headers") {
 }
 
 source_set("common_headers") {
-  visibility = [ ":base" ]
+  visibility = [
+    ":base",
+    "//remoting/host/security_key:security_key",
+  ]
   sources = [
     "action_executor.h",
     "audio_capturer.h",
@@ -261,6 +265,8 @@ static_library("common") {
     "config_watcher.h",
     "continue_window.cc",
     "continue_window.h",
+    "crash_process.cc",
+    "crash_process.h",
     "current_process_stats_agent.cc",
     "current_process_stats_agent.h",
     "curtain_mode.h",

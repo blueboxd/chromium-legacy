@@ -3270,22 +3270,7 @@
     "owners": [ "//chrome/browser/ui/hats/OWNERS" ],
     // A debugging and demo flag to allow UI/dev/testing team to always show the UI
     // components for the survey without being limited by the triggering mechanism.
-    "expiry_milestone": 97
-  },
-  {
-    "name": "happiness-tracking-surveys-for-desktop-privacy-sandbox",
-    "owners": [ "sauski", "chrome-friendly-settings@google.com" ],
-    "expiry_milestone": 94
-  },
-  {
-    "name": "happiness-tracking-surveys-for-desktop-settings",
-    "owners": [ "msramek", "chrome-friendly-settings@google.com" ],
-    "expiry_milestone": 93
-  },
-  {
-    "name": "happiness-tracking-surveys-for-desktop-settings-privacy",
-    "owners": [ "msramek", "chrome-friendly-settings@google.com" ],
-    "expiry_milestone": 93
+    "expiry_milestone": 99
   },
   {
     "name": "hardware-media-key-handling",
@@ -3408,16 +3393,6 @@
     "name": "infobar-overlay-ui",
     "owners": [ "sczs", "bling-flags@google.com" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "infobar-ui-reboot",
-    "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
-    "name": "infobar-ui-reboot-only-ios13",
-    "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
-    "expiry_milestone": 84
   },
   {
     "name": "inherit-native-theme-from-parent-widget",
@@ -3720,26 +3695,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "messages-block-popup-infobars",
-    "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
-    "expiry_milestone": 85
-  },
-  {
-    "name": "messages-confirm-infobars",
-    "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
-    "name": "messages-crash-restore-infobars",
-    "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
-    "name": "messages-download-infobar",
-    "owners": [ "sczs", "bling-flags@google.com" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "messages-for-android-ads-blocked",
     "owners": [ "pavely", "aishwaryarj" ],
     "expiry_milestone": 99
@@ -3793,16 +3748,6 @@
     "name": "messages-for-android-update-password",
     "owners": [ "pavely", "lazzzis" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "messages-save-card-infobar",
-    "owners": [ "sczs", "thegreenfrog", "bling-flags@google.com" ],
-    "expiry_milestone": 83
-  },
-  {
-    "name": "messages-translate-infobar",
-    "owners": [ "thegreenfrog", "sczs", "bling-flags@google.com" ],
-    "expiry_milestone": 83
   },
   {
     "name": "metal",

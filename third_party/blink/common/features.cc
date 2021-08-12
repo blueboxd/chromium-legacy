@@ -203,7 +203,7 @@ const base::FeatureParam<int>
     kSharedStorageURLSelectionOperationInputURLSizeLimit{
         &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 5};
 
-// Enable the prerender2. https://crbug.com/1126305.
+// Enables the Prerender2 feature: https://crbug.com/1126305
 // Note that default enabling this does not enable the Prerender2 features
 // because kSetOnlyIfOverridden is used for setting WebRuntimeFeatures'
 // Prerender2. To enable this feature, we need to force-enable this feature
@@ -217,6 +217,10 @@ const base::Feature kPrerender2 {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+const base::Feature kPrerender2MemoryControls{"Prerender2MemoryControls",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+const char kPrerender2MemoryThresholdParamName[] = "memory_threshold_in_mb";
 
 bool IsPrerender2Enabled() {
   return base::FeatureList::IsEnabled(blink::features::kPrerender2);
@@ -639,20 +643,6 @@ const base::FeatureParam<int> kFontPreloadingDelaysRenderingParam{
 
 const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kDelayAsyncScriptExecution{
-    "DelayAsyncScriptExecution", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::FeatureParam<DelayAsyncScriptDelayType>::Option
-    delay_async_script_execution_delay_types[] = {
-        {DelayAsyncScriptDelayType::kFinishedParsing, "finished_parsing"},
-        {DelayAsyncScriptDelayType::kFirstPaintOrFinishedParsing,
-         "first_paint_or_finished_parsing"},
-        {DelayAsyncScriptDelayType::kUseOptimizationGuide,
-         "use_optimization_guide"}};
-const base::FeatureParam<DelayAsyncScriptDelayType>
-    kDelayAsyncScriptExecutionDelayParam{
-        &kDelayAsyncScriptExecution, "delay_type",
-        DelayAsyncScriptDelayType::kFinishedParsing,
-        &delay_async_script_execution_delay_types};
 
 // The AppCache feature is a kill-switch for the entire AppCache feature,
 // both backend and API.  If disabled, then it will turn off the backend and

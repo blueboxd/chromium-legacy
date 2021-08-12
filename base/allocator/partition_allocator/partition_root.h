@@ -183,16 +183,7 @@ struct BASE_EXPORT PartitionRoot {
   bool allow_cookies;
   bool allow_ref_count;
 
-  // Lazy commit should only be enabled on Windows, because commit charge is
-  // only meaningful and limited on Windows. It affects performance on other
-  // platforms and is simply not needed there due to OS supporting overcommit.
-#if defined(OS_WIN)
   bool use_lazy_commit = true;
-  static constexpr bool never_used_lazy_commit = false;
-#else
-  static constexpr bool use_lazy_commit = false;
-  static constexpr bool never_used_lazy_commit = true;
-#endif
 
 #if !defined(PA_EXTRAS_REQUIRED)
   // Teach the compiler that code can be optimized in builds that use no extras.
@@ -221,14 +212,21 @@ struct BASE_EXPORT PartitionRoot {
   // - total_size_of_committed_pages - total committed pages for slots (doesn't
   //     include metadata, bitmaps (if any), or any data outside or regions
   //     described in #1 and #2)
-  // Invariant: total_size_of_committed_pages <
+  // Invariant: total_size_of_allocated_bytes <=
+  //            total_size_of_committed_pages <
   //                total_size_of_super_pages +
   //                total_size_of_direct_mapped_pages.
-  // Since all operations on these atomic variables have relaxed semantics, we
-  // don't check this invariant with DCHECKs.
+  // Invariant: total_size_of_committed_pages <= max_size_of_committed_pages.
+  // Invariant: total_size_of_allocated_bytes <= max_size_of_allocated_bytes.
+  // Invariant: max_size_of_allocated_bytes <= max_size_of_committed_pages.
+  // Since all operations on the atomic variables have relaxed semantics, we
+  // don't check these invariants with DCHECKs.
   std::atomic<size_t> total_size_of_committed_pages{0};
+  std::atomic<size_t> max_size_of_committed_pages{0};
   std::atomic<size_t> total_size_of_super_pages{0};
   std::atomic<size_t> total_size_of_direct_mapped_pages{0};
+  size_t total_size_of_allocated_bytes GUARDED_BY(lock_) = 0;
+  size_t max_size_of_allocated_bytes GUARDED_BY(lock_) = 0;
 
   char* next_super_page = nullptr;
   char* next_partition_page = nullptr;
@@ -273,12 +271,28 @@ struct BASE_EXPORT PartitionRoot {
       size_t length,
       PageAccessibilityDisposition accessibility_disposition)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  // Commits or recommits pages for user data (i.e. inside of slot spans) and
+  // updates relevant stats.
+  // If committing for the first time |accessibility_disposition| must be
+  // PageUpdatePermissions, otherwise must be PageKeepPermissionsIfPossible.
   ALWAYS_INLINE void RecommitSystemPagesForData(
+      internal::SlotSpanMetadata<thread_safe>* slot_span,
       void* address,
       size_t length,
       PageAccessibilityDisposition accessibility_disposition)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   ALWAYS_INLINE bool TryRecommitSystemPagesForData(
+      internal::SlotSpanMetadata<thread_safe>* slot_span,
+      void* address,
+      size_t length,
+      PageAccessibilityDisposition accessibility_disposition);
+
+  void UpdateNumPreviouslyCommittedSystemPagesIfNeeded(
+      internal::SlotSpanMetadata<thread_safe>* slot_span,
+      size_t length,
+      PageAccessibilityDisposition accessibility_disposition);
+  void AssertNumPreviouslyCommittedSystemPages(
+      internal::SlotSpanMetadata<thread_safe>* slot_span,
       void* address,
       size_t length,
       PageAccessibilityDisposition accessibility_disposition);
@@ -354,11 +368,18 @@ struct BASE_EXPORT PartitionRoot {
                  bool is_light_dump,
                  PartitionStatsDumper* partition_stats_dumper);
 
+  void ResetBookkeepingForTesting();
+
   static uint16_t SizeToBucketIndex(size_t size);
+
+  ALWAYS_INLINE internal::DeferredUnmap FreeSlotSpan(void* slot_start,
+                                                     SlotSpan* slot_span)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Frees memory, with |slot_start| as returned by |RawAlloc()|.
   ALWAYS_INLINE void RawFree(void* slot_start);
-  ALWAYS_INLINE void RawFree(void* slot_start, SlotSpan* slot_span);
+  ALWAYS_INLINE void RawFree(void* slot_start, SlotSpan* slot_span)
+      LOCKS_EXCLUDED(lock_);
 
   ALWAYS_INLINE void RawFreeWithThreadCache(void* slot_start,
                                             SlotSpan* slot_span);
@@ -368,6 +389,21 @@ struct BASE_EXPORT PartitionRoot {
   }
   size_t get_total_size_of_committed_pages() const {
     return total_size_of_committed_pages.load(std::memory_order_relaxed);
+  }
+  size_t get_max_size_of_committed_pages() const {
+    return max_size_of_committed_pages.load(std::memory_order_relaxed);
+  }
+
+  size_t get_total_size_of_allocated_bytes() const {
+    // Since this is only used for bookkeeping, we don't care if the value is
+    // stale, so no need to get a lock here.
+    return TS_UNCHECKED_READ(total_size_of_allocated_bytes);
+  }
+
+  size_t get_max_size_of_allocated_bytes() const {
+    // Since this is only used for bookkeeping, we don't care if the value is
+    // stale, so no need to get a lock here.
+    return TS_UNCHECKED_READ(max_size_of_allocated_bytes);
   }
 
   internal::pool_handle ChooseGigaCagePool(bool is_direct_map) const {
@@ -837,6 +873,9 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
     *usable_size = slot_span->GetUsableSize(this);
   }
   PA_DCHECK(slot_span->GetUtilizedSlotSize() <= slot_span->bucket->slot_size);
+  total_size_of_allocated_bytes += slot_span->GetSizeForBookkeeping();
+  max_size_of_allocated_bytes =
+      std::max(max_size_of_allocated_bytes, total_size_of_allocated_bytes);
   return slot_start;
 }
 
@@ -1001,6 +1040,14 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
 }
 
 template <bool thread_safe>
+ALWAYS_INLINE internal::DeferredUnmap PartitionRoot<thread_safe>::FreeSlotSpan(
+    void* slot_start,
+    SlotSpan* slot_span) {
+  total_size_of_allocated_bytes -= slot_span->GetSizeForBookkeeping();
+  return slot_span->Free(slot_start);
+}
+
+template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFree(void* slot_start) {
   SlotSpan* slot_span = SlotSpan::FromSlotStartPtr(slot_start);
   RawFree(slot_start, slot_span);
@@ -1044,7 +1091,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFree(void* slot_start,
   internal::DeferredUnmap deferred_unmap;
   {
     ScopedGuard guard{lock_};
-    deferred_unmap = slot_span->Free(slot_start);
+    deferred_unmap = FreeSlotSpan(slot_start, slot_span);
   }
   deferred_unmap.Run();
 }
@@ -1076,7 +1123,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeWithThreadCache(
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeLocked(void* slot_start) {
   SlotSpan* slot_span = SlotSpan::FromSlotStartPtr(slot_start);
-  auto deferred_unmap = slot_span->Free(slot_start);
+  auto deferred_unmap = FreeSlotSpan(slot_start, slot_span);
   // Only used with bucketed allocations.
   PA_DCHECK(!deferred_unmap.reservation_start);
   deferred_unmap.Run();
@@ -1120,7 +1167,19 @@ PartitionRoot<thread_safe>::FromPointerInNormalBuckets(char* ptr) {
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::IncreaseCommittedPages(
     size_t len) {
-  total_size_of_committed_pages.fetch_add(len, std::memory_order_relaxed);
+  const auto old_total =
+      total_size_of_committed_pages.fetch_add(len, std::memory_order_relaxed);
+
+  const auto new_total = old_total + len;
+
+  // This function is called quite frequently; to avoid performance problems, we
+  // don't want to hold a lock here, so we use compare and exchange instead.
+  size_t expected = max_size_of_committed_pages.load(std::memory_order_relaxed);
+  size_t desired;
+  do {
+    desired = std::max(expected, new_total);
+  } while (!max_size_of_committed_pages.compare_exchange_weak(
+      expected, desired, std::memory_order_relaxed, std::memory_order_relaxed));
 }
 
 template <bool thread_safe>
@@ -1139,24 +1198,81 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::DecommitSystemPagesForData(
 }
 
 template <bool thread_safe>
-ALWAYS_INLINE void PartitionRoot<thread_safe>::RecommitSystemPagesForData(
+void PartitionRoot<thread_safe>::
+    UpdateNumPreviouslyCommittedSystemPagesIfNeeded(
+        internal::SlotSpanMetadata<thread_safe>* slot_span,
+        size_t length,
+        PageAccessibilityDisposition accessibility_disposition) {
+  if (accessibility_disposition == PageUpdatePermissions &&
+      !slot_span->bucket->is_direct_mapped()) {
+    // It is the caller's responsibility to use PageUpdatePermissions only on
+    // pages that have never been committed in the past. This requirement
+    // doesn't apply to direct map and single-slot spans.
+    slot_span->IncreasePreviouslyCommittedSize(length);
+#if DCHECK_IS_ON()
+    size_t num_uncommitted_slots =
+        use_lazy_commit ? slot_span->num_unprovisioned_slots : 0;
+    size_t num_committed_slots =
+        slot_span->bucket->get_slots_per_span() - num_uncommitted_slots;
+    PA_DCHECK(slot_span->GetPreviouslyCommittedSize() ==
+              bits::AlignUp(num_committed_slots * slot_span->bucket->slot_size,
+                            SystemPageSize()));
+#endif
+  }
+}
+
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::AssertNumPreviouslyCommittedSystemPages(
+    internal::SlotSpanMetadata<thread_safe>* slot_span,
     void* address,
     size_t length,
     PageAccessibilityDisposition accessibility_disposition) {
+#if DCHECK_IS_ON()
+  if (slot_span->bucket->is_direct_mapped())
+    return;
+
+  char* base = reinterpret_cast<char*>(
+      internal::SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(slot_span));
+  size_t previously_committed_size = slot_span->GetPreviouslyCommittedSize();
+  char* previously_committed_watermark = base + previously_committed_size;
+  if (accessibility_disposition == PageUpdatePermissions) {
+    PA_DCHECK(address == previously_committed_watermark);
+  } else {
+    PA_DCHECK(address <= previously_committed_watermark - length);
+  }
+#endif  // DCHECK_IS_ON()
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionRoot<thread_safe>::RecommitSystemPagesForData(
+    internal::SlotSpanMetadata<thread_safe>* slot_span,
+    void* address,
+    size_t length,
+    PageAccessibilityDisposition accessibility_disposition) {
+  AssertNumPreviouslyCommittedSystemPages(slot_span, address, length,
+                                          accessibility_disposition);
   RecommitSystemPages(address, length, PageReadWrite,
                       accessibility_disposition);
   IncreaseCommittedPages(length);
+  UpdateNumPreviouslyCommittedSystemPagesIfNeeded(slot_span, length,
+                                                  accessibility_disposition);
 }
 
 template <bool thread_safe>
 ALWAYS_INLINE bool PartitionRoot<thread_safe>::TryRecommitSystemPagesForData(
+    internal::SlotSpanMetadata<thread_safe>* slot_span,
     void* address,
     size_t length,
     PageAccessibilityDisposition accessibility_disposition) {
+  AssertNumPreviouslyCommittedSystemPages(slot_span, address, length,
+                                          accessibility_disposition);
   bool ok = TryRecommitSystemPages(address, length, PageReadWrite,
                                    accessibility_disposition);
-  if (ok)
+  if (ok) {
     IncreaseCommittedPages(length);
+    UpdateNumPreviouslyCommittedSystemPagesIfNeeded(slot_span, length,
+                                                    accessibility_disposition);
+  }
 
   return ok;
 }

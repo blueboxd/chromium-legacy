@@ -70,6 +70,11 @@ PaymentRequestDialog* TestContentPaymentRequestDelegate::GetDialogForTesting() {
   return nullptr;
 }
 
+SecurePaymentConfirmationNoCreds*
+TestContentPaymentRequestDelegate::GetNoMatchingCredentialsDialogForTesting() {
+  return nullptr;
+}
+
 autofill::PersonalDataManager*
 TestContentPaymentRequestDelegate::GetPersonalDataManager() {
   return core_delegate_.GetPersonalDataManager();
@@ -147,5 +152,9 @@ const base::WeakPtr<PaymentUIObserver>
 TestContentPaymentRequestDelegate::GetPaymentUIObserver() const {
   return nullptr;
 }
+
+void TestContentPaymentRequestDelegate::ShowNoMatchingPaymentCredentialDialog(
+    const std::u16string& merchant_name,
+    base::OnceClosure response_callback) {}
 
 }  // namespace payments

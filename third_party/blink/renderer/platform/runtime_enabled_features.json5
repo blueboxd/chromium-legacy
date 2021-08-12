@@ -785,12 +785,6 @@
       status: "stable",
     },
     {
-      name: "DelayAsyncScriptExecutionUntilFinishedParsing",
-    },
-    {
-      name: "DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsing",
-    },
-    {
       name: "DelegatedInkTrails",
       status: "stable",
     },
@@ -2219,6 +2213,10 @@
       status: "experimental",
     },
     {
+      name: "URLPatternCompareComponent",
+      status: "experimental",
+    },
+    {
       name: "UserActivationSameOriginVisibility",
     },
     {
@@ -2228,7 +2226,6 @@
     {
       name: "UserAgentReduction",
       origin_trial_feature_name: "UserAgentReduction",
-      status: "experimental",
     },
     {
       name: "UUID",
@@ -2453,8 +2450,7 @@
     },
     {
       name: "WebScheduler",
-      origin_trial_feature_name: "WebScheduler",
-      status: "experimental",
+      status: "stable",
     },
     // WebShare is enabled by default on Android.
     {

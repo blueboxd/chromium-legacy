@@ -1641,7 +1641,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/no_best_effort_tasks_during_startup_browsertest.cc",
       "../browser/notifications/scheduler/notification_schedule_service_browsertest.cc",
       "../browser/ntp_tiles/ntp_tiles_browsertest.cc",
-      "../browser/optimization_guide/blink/blink_optimization_guide_browsertest.cc",
       "../browser/optimization_guide/browser_test_util.cc",
       "../browser/optimization_guide/browser_test_util.h",
       "../browser/optimization_guide/hints_fetcher_browsertest.cc",
@@ -6309,6 +6308,7 @@ test("unit_tests") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/resources/vector_icons",
       "//ash/strings",
+      "//chrome/browser/ash/system_extensions:unit_tests",
       "//chrome/browser/chromeos:test_support",
       "//chrome/browser/nearby_sharing/certificates:test_support",
       "//chrome/browser/nearby_sharing/certificates:unit_tests",
@@ -7027,13 +7027,18 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/navigation_throttle_unittest.cc",
       "../browser/enterprise/connectors/device_trust/signal_reporter_unittest.cc",
     ]
+
+    deps += [
+      "../browser/enterprise/connectors/device_trust/attestation/common",
+      "../browser/enterprise/connectors/device_trust/attestation/common:test_support",
+    ]
   }
 
   if (is_linux || is_mac || is_win) {
     sources += [
-      "../browser/enterprise/connectors/device_trust/attestation_service_unittest.cc",
-      "../browser/enterprise/connectors/device_trust/device_trust_key_pair_unittest.cc",
-      "../browser/enterprise/connectors/device_trust/ec_signing_key_unittest.cc",
+      "../browser/enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_service_unittest.cc",
+      "../browser/enterprise/connectors/device_trust/attestation/desktop/ec_signing_key_unittest.cc",
+      "../browser/enterprise/connectors/device_trust/attestation/desktop/signing_key_pair_unittest.cc",
     ]
   }
 

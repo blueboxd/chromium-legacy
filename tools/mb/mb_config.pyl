@@ -2003,7 +2003,7 @@
     # Lacros uses different gn args to build for chromeOS device vs. Linux. For
     # simplicity, we only generate codesearch x-refs for lacros on Linux.
     'codesearch_gen_chromium_lacros_bot': [
-      'codesearch', 'lacros_on_linux', 'static',
+      'codesearch', 'lacros_on_linux',
     ],
 
     'codesearch_gen_chromium_bot': [
@@ -2680,7 +2680,6 @@
 
     'release_bot_fuchsia': [
       'release_bot', 'fuchsia', 'blink_disable_generated_code_formatting',
-      'dcheck_always_on',
     ],
 
     'release_bot_fuchsia_cast': [

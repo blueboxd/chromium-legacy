@@ -18,6 +18,7 @@
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_quota_client.h"
 #include "storage/browser/file_system/file_system_usage_cache.h"
+#include "storage/browser/file_system/file_system_util.h"
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/async_file_test_helper.h"
@@ -126,7 +127,8 @@ class FileSystemQuotaClientTest : public testing::Test {
                                  const std::string& origin_url,
                                  FileSystemType type) {
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(GURL(origin_url)), type, file_path);
+        blink::StorageKey::CreateFromStringForTesting(origin_url), type,
+        file_path);
 
     base::File::Error result =
         AsyncFileTestHelper::CreateDirectory(file_system_context_.get(), url);
@@ -141,7 +143,8 @@ class FileSystemQuotaClientTest : public testing::Test {
       return false;
 
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-        url::Origin::Create(GURL(origin_url)), type, file_path);
+        blink::StorageKey::CreateFromStringForTesting(origin_url), type,
+        file_path);
 
     base::File::Error result =
         AsyncFileTestHelper::CreateFile(file_system_context_.get(), url);

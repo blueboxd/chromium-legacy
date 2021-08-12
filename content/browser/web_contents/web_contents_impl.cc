@@ -567,7 +567,7 @@ WebContents* WebContents::FromRenderViewHost(RenderViewHost* rvh) {
                         rvh);
   if (!rvh)
     return nullptr;
-  return rvh->GetDelegate()->GetAsWebContents();
+  return static_cast<WebContentsImpl*>(rvh->GetDelegate());
 }
 
 WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
@@ -576,7 +576,9 @@ WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
                         rfh);
   if (!rfh)
     return nullptr;
-  return static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
+  RenderFrameHostDelegate* delegate =
+      static_cast<RenderFrameHostImpl*>(rfh)->delegate();
+  return static_cast<WebContentsImpl*>(delegate);
 }
 
 WebContents* WebContents::FromFrameTreeNodeId(int frame_tree_node_id) {
@@ -1229,6 +1231,23 @@ RenderFrameHostImpl* WebContentsImpl::GetFocusedFrame() {
   if (!focused_node)
     return nullptr;
   return focused_node->current_frame_host();
+}
+
+bool WebContentsImpl::IsPrerenderedFrame(int frame_tree_node_id) {
+  if (!blink::features::IsPrerender2Enabled())
+    return false;
+
+  if (frame_tree_node_id == RenderFrameHost::kNoFrameTreeNodeId)
+    return false;
+
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (!frame_tree_node)
+    return false;
+
+  // TODO(1196715, 1232528): We should also consider inner frame trees in a
+  // prerender.
+  return frame_tree_node->frame_tree()->type() == FrameTree::Type::kPrerender;
 }
 
 RenderFrameHostImpl* WebContentsImpl::UnsafeFindFrameByFrameTreeNodeId(
@@ -2197,6 +2216,18 @@ void WebContentsImpl::WriteIntoTrace(perfetto::TracedValue context) {
   dict.Add("root_frame_tree_node_id", frame_tree_.root()->frame_tree_node_id());
 }
 
+void WebContentsImpl::DisallowActivationNavigationsForBug1234857() {
+  disallow_activation_navigations_ = true;
+
+  // Flush any inactive frames since they will never be activated.
+  ForEachRenderFrameHost(base::BindRepeating([](RenderFrameHostImpl* rfh) {
+    // Just look at main frames since we only need to call
+    // IsInactiveAndDisallowActivation() on the main frame.
+    if (!rfh->GetParent())
+      rfh->IsInactiveAndDisallowActivation();
+  }));
+}
+
 #if defined(OS_ANDROID)
 void WebContentsImpl::SetPrimaryMainFrameImportance(
     ChildProcessImportance importance) {
@@ -2287,7 +2318,7 @@ void WebContentsImpl::AttachInnerWebContents(
   DCHECK(!inner_web_contents_impl->node_.outer_web_contents());
   auto* render_frame_host_impl =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
-  DCHECK_EQ(this, render_frame_host_impl->delegate()->GetAsWebContents());
+  DCHECK_EQ(this, WebContents::FromRenderFrameHost(render_frame_host_impl));
   DCHECK(render_frame_host_impl->GetParent());
 
   RenderFrameHostManager* inner_render_manager =
@@ -6846,10 +6877,6 @@ void WebContentsImpl::RunFileChooser(
     listener->FileSelectionCanceled();
 }
 
-WebContents* WebContentsImpl::GetAsWebContents() {
-  return this;
-}
-
 #if !defined(OS_ANDROID)
 double WebContentsImpl::GetPendingPageZoomLevel() {
   NavigationEntry* pending_entry = GetController().GetPendingEntry();
@@ -7341,6 +7368,10 @@ void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
   }
 }
 
+bool WebContentsImpl::IsActivationNavigationDisallowedForBug1234857() {
+  return disallow_activation_navigations_;
+}
+
 void WebContentsImpl::DidChangeName(RenderFrameHostImpl* render_frame_host,
                                     const std::string& name) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::DidChangeName",
@@ -7586,7 +7617,7 @@ void WebContentsImpl::OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {
   // RenderFrameProxyHost represents an inner WebContents, the outer WebContents
   // needs to focus the inner WebContents.
   if (GetOuterWebContents() &&
-      GetOuterWebContents() == source_rfh->delegate()->GetAsWebContents() &&
+      GetOuterWebContents() == WebContents::FromRenderFrameHost(source_rfh) &&
       GetFocusedWebContents() == GetOuterWebContents()) {
     SetAsFocusedWebContentsIfNecessary();
   }
@@ -7684,6 +7715,10 @@ void WebContentsImpl::FocusOwningWebContents(
        focused_widget->delegate() != render_widget_host->delegate())) {
     SetAsFocusedWebContentsIfNecessary();
   }
+}
+
+WebContents* WebContentsImpl::GetAsWebContents() {
+  return this;
 }
 
 void WebContentsImpl::OnIgnoredUIEvent() {

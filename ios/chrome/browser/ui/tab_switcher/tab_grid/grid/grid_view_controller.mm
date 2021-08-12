@@ -473,6 +473,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - UICollectionViewDragDelegate
 
+- (void)collectionView:(UICollectionView*)collectionView
+    dragSessionWillBegin:(id<UIDragSession>)session {
+  [self.delegate gridViewControllerDragSessionWillBegin:self];
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+     dragSessionDidEnd:(id<UIDragSession>)session {
+  [self.delegate gridViewControllerDragSessionDidEnd:self];
+}
+
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
            itemsForBeginningDragSession:(id<UIDragSession>)session
                             atIndexPath:(NSIndexPath*)indexPath {
@@ -1091,7 +1101,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     } else {
       self.collectionView.dragInteractionEnabled = YES;
     }
-    [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+    [UIView performWithoutAnimation:^{
+      [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+    }];
   }
 
   [self.delegate gridViewController:self didSelectItemWithID:itemID];

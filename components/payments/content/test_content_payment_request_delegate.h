@@ -45,6 +45,8 @@ class TestContentPaymentRequestDelegate : public ContentPaymentRequestDelegate {
   bool SkipUiForBasicCard() const override;
   std::string GetTwaPackageName() const override;
   PaymentRequestDialog* GetDialogForTesting() override;
+  SecurePaymentConfirmationNoCreds* GetNoMatchingCredentialsDialogForTesting()
+      override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
   bool IsOffTheRecord() const override;
@@ -68,6 +70,9 @@ class TestContentPaymentRequestDelegate : public ContentPaymentRequestDelegate {
   void DelayFullCardRequestCompletion();
   void CompleteFullCardRequest();
   const base::WeakPtr<PaymentUIObserver> GetPaymentUIObserver() const override;
+  void ShowNoMatchingPaymentCredentialDialog(
+      const std::u16string& merchant_name,
+      base::OnceClosure response_callback) override;
 
  private:
   TestPaymentRequestDelegate core_delegate_;

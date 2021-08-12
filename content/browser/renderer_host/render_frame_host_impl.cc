@@ -5719,7 +5719,7 @@ void RenderFrameHostImpl::EnterFullscreen(
     }
   }
 
-  if (!delegate_->CanEnterFullscreenMode()) {
+  if (!IsActive() || !delegate_->CanEnterFullscreenMode()) {
     std::move(callback).Run(/*granted=*/false);
     return;
   }
@@ -8663,10 +8663,6 @@ bool RenderFrameHostImpl::CanExecuteJavaScript() {
   if (g_allow_injecting_javascript)
     return true;
 
-  // TODO(https://crbug.com/1237360): This is just here to prove that previous
-  // code that checked for null is not needed. Remove GetAsWebContents().
-  DCHECK(delegate_->GetAsWebContents() != nullptr);
-
   return !frame_tree_node_->current_url().is_valid() ||
          frame_tree_node_->current_url().SchemeIs(kChromeDevToolsScheme) ||
          ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
@@ -9122,7 +9118,7 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
     mojo::PendingReceiver<blink::mojom::SpeechSynthesis> receiver) {
   if (!speech_synthesis_impl_) {
     speech_synthesis_impl_ = std::make_unique<SpeechSynthesisImpl>(
-        GetProcess()->GetBrowserContext(), delegate_->GetAsWebContents());
+        GetProcess()->GetBrowserContext(), this);
   }
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
 
@@ -10435,6 +10431,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
   IncreaseCommitNavigationCounter();
   mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host;
   mojom::CookieManagerInfoPtr cookie_manager_info;
+  mojom::StorageInfoPtr storage_info;
   if (base::FeatureList::IsEnabled(
           features::kNavigationThreadingOptimizations)) {
     CreateCodeCacheHostWithIsolationKey(
@@ -10458,6 +10455,30 @@ void RenderFrameHostImpl::SendCommitNavigation(
           cookie_manager_info->cookie_manager.InitWithNewPipeAndPassReceiver(),
           navigation_request->isolation_info_for_subresources(),
           origin_to_commit);
+
+      // Some tests need the StorageArea interfaces to come through DomStorage,
+      // so ignore the optimizations in those cases.
+      if (!RenderProcessHostImpl::HasDomStorageBinderForTesting()) {
+        storage_info = mojom::StorageInfo::New();
+        // Bind local storage and session storage areas.
+        auto* partition =
+            static_cast<StoragePartitionImpl*>(GetStoragePartition());
+        int process_id = GetProcess()->GetID();
+        partition->OpenLocalStorageForProcess(
+            process_id, commit_params->storage_key,
+            storage_info->local_storage_area.InitWithNewPipeAndPassReceiver());
+
+        // Session storage must match the default namespace.
+        const std::string& namespace_id =
+            frame_tree()
+                ->controller()
+                .GetSessionStorageNamespace(GetSiteInstance()->GetSiteInfo())
+                ->id();
+        partition->BindSessionStorageAreaForProcess(
+            process_id, commit_params->storage_key, namespace_id,
+            storage_info->session_storage_area
+                .InitWithNewPipeAndPassReceiver());
+      }
     }
   }
   navigation_client->CommitNavigation(
@@ -10468,7 +10489,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(controller), std::move(container_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       std::move(policy_container), std::move(code_cache_host),
-      std::move(cookie_manager_info),
+      std::move(cookie_manager_info), std::move(storage_info),
       BuildCommitNavigationCallback(navigation_request));
 }
 

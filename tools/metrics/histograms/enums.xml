@@ -6650,6 +6650,12 @@ others/histograms.xml -->
   <int value="10" label="HonorificPrefix"/>
 </enum>
 
+<enum name="AutofillSilentUpdatesProfileImportType">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="SilentUpdateForIncompleteProfile"/>
+  <int value="2" label="UnusableIncompleteProfile"/>
+</enum>
+
 <enum name="AutofillSubmissionSource">
   <int value="0" label="Same document navigation"/>
   <int value="1" label="XHR succeeded"/>
@@ -7728,7 +7734,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="10" label="CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED"/>
   <int value="11"
       label="CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP"/>
-  <int value="12" label="CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP"/>
+  <int value="12" label="CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP_OBSOLETE"/>
   <int value="13" label="CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM"/>
   <int value="14" label="CPMD_BAD_ORIGIN_PRERENDERING"/>
 </enum>
@@ -18944,6 +18950,20 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="4" label="Thursday"/>
   <int value="5" label="Friday"/>
   <int value="6" label="Saturday"/>
+</enum>
+
+<enum name="DBusResult">
+<!-- Declared in //device/bluetooth/dbus/bluetooth_metrics_helper.cc -->
+
+  <int value="0" label="Success"/>
+  <int value="1" label="Error - No Reply"/>
+  <int value="2" label="Error - Timeout"/>
+  <int value="3" label="Error - Timed Out"/>
+  <int value="4" label="Error - Not Supported"/>
+  <int value="5" label="Error - Access Denied"/>
+  <int value="6" label="Error - Disconnected"/>
+  <int value="7" label="Error - Response Missing"/>
+  <int value="8" label="Error - Unknown"/>
 </enum>
 
 <enum name="DCLayerResult">
@@ -30454,7 +30474,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="454" label="WebkitEditableContentChangedOnNotNodeObsolete"/>
   <int value="455" label="OBSOLETE_HTMLImports"/>
   <int value="456" label="OBSOLETE_ElementCreateShadowRoot"/>
-  <int value="457" label="DocumentRegisterElement"/>
+  <int value="457" label="OBSOLETE_DocumentRegisterElement"/>
   <int value="458" label="EditingAppleInterchangeNewline"/>
   <int value="459" label="EditingAppleConvertedSpace"/>
   <int value="460" label="EditingApplePasteAsQuotation"/>
@@ -34285,6 +34305,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="17" label="Chrome Labs"/>
   <int value="18" label="Bento Bar"/>
   <int value="19" label="Quick Answers"/>
+  <int value="20" label="What's New"/>
 </enum>
 
 <enum name="FeedControlsActions">
@@ -40269,6 +40290,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2048378466" label="Sqlite.Vfs_Events"/>
   <int value="-2021219906"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.NotCellular"/>
+  <int value="-1978833012" label="DevTools.ActionTaken"/>
+  <int value="-1972896220"
+      label="V8.GC.Event.MainThread.Full.Incremental.Sweep.Cpp"/>
   <int value="-1952208361"
       label="Autofill.FieldPredictionQuality.ByFieldType.Overall"/>
   <int value="-1910305783"
@@ -40287,6 +40311,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1459119846"
       label="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
   <int value="-1433928548" label="WebCore.FindInPage.TaskDuration"/>
+  <int value="-1419490329" label="ActivityTracker.Record.Event"/>
   <int value="-1390672863"
       label="DataUse.MessageSize.AllServices.Upstream.Background.NotCellular"/>
   <int value="-1345388508" label="Renderer4.IdealContentsScale"/>
@@ -40296,6 +40321,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
   <int value="-1277093818"
       label="Net.URLLoaderThrottleExecutionTime.WillStartRequest"/>
+  <int value="-1267842531"
+      label="PasswordManager.BulkCheck.PasswordCheckReferrer"/>
   <int value="-1189959109" label="RendererScheduler.TaskCountPerQueueType"/>
   <int value="-983723378" label="RendererScheduler.TaskDurationPerThreadType"/>
   <int value="-970685679"
@@ -40310,32 +40337,42 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-763978419"
       label="DocumentEventTiming.BeforeUnloadDialogDuration.ByNavigation"/>
   <int value="-742109866" label="Stability.BrowserExitCodes"/>
+  <int value="-703422025"
+      label="Scheduler.Experimental.Renderer.TotalTime.Wall.MainThread.Negative"/>
   <int value="-657514887" label="DataUse.MessageSize.AllServices"/>
   <int value="-535820174"
       label="DataUse.MessageSize.AllServices.Downstream.Background.NotCellular"/>
   <int value="-453454441" label="Bluetooth.MacOS.Errors.DidWriteValue"/>
   <int value="-436781330"
       label="Net.URLLoaderThrottleExecutionTime.BeforeWillProcessResponse"/>
+  <int value="-424393552" label="DirectWrite.Fonts.Gfx.InitializeLoopCount"/>
   <int value="-412157817"
       label="Autofill.FieldPredictionQuality.ByFieldType.Server"/>
   <int value="-404962476" label="Blink.ForcedStyleAndLayout.UpdateTime"/>
   <int value="-355731177" label="UMA.SamplingRatePerMille"/>
   <int value="-343220158" label="Compositing.Renderer.LayersUpdateTime"/>
+  <int value="-334673303"
+      label="UMA.PersistentAllocator.BrowserMetrics.Errors"/>
   <int value="-141990989" label="DataUse.AllServices.Background"/>
   <int value="-132932440" label="DataUse.ContentType.Services"/>
   <int value="-48200749" label="DiskCache.0.TotalIOTime"/>
   <int value="0" label="Missing hash value"/>
   <int value="19727358" label="DataUse.BytesReceived2.Delegate"/>
   <int value="37726187" label="BlinkGC.CommittedSize"/>
+  <int value="54100976" label="Extensions.BadMessageFunctionName"/>
   <int value="61486329" label="RendererScheduler.TaskCountPerFrameType"/>
   <int value="76333534" label="WorkerThread.Task.Time"/>
   <int value="149985012"
       label="DataUse.MessageSize.AllServices.Upstream.Unknown.Cellular"/>
+  <int value="182499697" label="DevTools.PanelShown"/>
   <int value="192918458"
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.Cellular"/>
+  <int value="294030175" label="V8.GC.Event.MainThread.Full.Incremental.Cpp"/>
   <int value="424952287"
       label="Network.Shill.Wifi.LinkMonitorResponseTimeSample"/>
   <int value="433324211" label="Extensions.FunctionCalls"/>
+  <int value="513321612"
+      label="V8.GC.Event.MainThread.Full.Incremental.Mark.Cpp"/>
   <int value="536258327" label="Blink.UseCounter.SVGImage.Features"/>
   <int value="560548778"
       label="Autofill.FieldPredictionQuality.ByFieldType.Server.BasedOnAutocomplete"/>
@@ -40355,22 +40392,30 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="761823979" label="Crashpad.HandlerLifetimeMilestone"/>
   <int value="873338882"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic"/>
+  <int value="910415681" label="DevTools.ExperimentEnabledAtLaunch"/>
   <int value="1096524200" label="DevTools.IssueCreated"/>
   <int value="1126499749"
       label="Autofill.FieldPredictionQuality.ByFieldType.Overall.NoSubmission"/>
   <int value="1193017729" label="Compositing.ResourcePoolMemoryUsage.Renderer"/>
   <int value="1225311979" label="Blink.UseCounter.Extensions.Features"/>
+  <int value="1241018167"
+      label="UMA.PersistentHistograms.HistogramsInStartupFile"/>
+  <int value="1260803669" label="UMA.PersistentHistograms.InitResult"/>
   <int value="1264664660" label="DataUse.PageTransition.UserTraffic"/>
   <int value="1295093746" label="Net.SSL_Connection_Latency_TLS13Experiment"/>
   <int value="1370064090"
       label="DataUse.MessageSize.AllServices.Upstream.Background.Cellular"/>
   <int value="1386149670" label="Navigation.StartToCommit.NewNavigation"/>
+  <int value="1404054418" label="DevTools.DeveloperResourceScheme"/>
   <int value="1488162221" label="Blink.UseCounter.File.Features"/>
   <int value="1507345292"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic.BasedOnAutocomplete"/>
   <int value="1514844119" label="DataUse.Sync.Upload.Bytes"/>
   <int value="1525608243"
       label="PasswordManager.Android.PasswordCredentialEntry.Username"/>
+  <int value="1535329700" label="Blink.Style.UpdateTime.PreFCP"/>
+  <int value="1596011936"
+      label="Compositing.Renderer.LayerUpdateSkippedDueToBackface"/>
   <int value="1632894016"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic.NoSubmission"/>
   <int value="1721222685" label="Blink.UseCounter.MainFrame.Features"/>
@@ -40379,9 +40424,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1857977303"
       label="TaskQueueSelector.TaskServicedPerSelectorLogic"/>
   <int value="1864392953" label="AsyncDNS.HostsNotifyInterval"/>
+  <int value="1880204153"
+      label="Scheduler.Experimental.Renderer.TotalTime.Wall.MainThread.Positive"/>
   <int value="1977321258"
       label="DataUse.MessageSize.AllServices.Downstream.Background.Cellular"/>
   <int value="2006926569" label="Arc.OOMKills.Score"/>
+  <int value="2057863428"
+      label="UMA.PersistentAllocator.BrowserMetrics.UsedPct"/>
   <int value="2060836318"
       label="Bluetooth.MacOS.Errors.DidDisconnectPeripheral"/>
   <int value="2147480259" label="Sqlite.Vfs_Fetch"/>
@@ -45024,6 +45073,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="13" label="Remove language from 'Always Translate' list"/>
   <int value="14" label="Add language to 'Always Translate' list"/>
   <int value="15" label="Remove site from 'Never translate sites' list"/>
+  <int value="16" label="Restart Chrome for split install"/>
 </enum>
 
 <enum name="LanguageSettingsAppLanguagePromptAction">
@@ -45047,6 +45097,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="View Always Translate Languages">Android only</int>
   <int value="10" label="Always Translate Add Language"/>
   <int value="11" label="View Never Translate Sites"/>
+</enum>
+
+<enum name="LanguageSettingsSplitInstallStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Already Installed"/>
+  <int value="2" label="Canceled"/>
+  <int value="3" label="Downloaded">
+    Downloaded but not installed. Split Compat most likely not available.
+  </int>
+  <int value="4" label="Failed"/>
+  <int value="5" label="Unexpected status">
+    Not a final split install session status.
+  </int>
 </enum>
 
 <enum name="LanguageUsage.UI.Android.Availability">
@@ -51131,6 +51194,7 @@ from previous Chrome versions.
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
   <int value="1482245628" label="OmniboxNativeVoiceSuggestProvider:enabled"/>
   <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
+  <int value="1483827594" label="webview-selective-image-inversion-darkening"/>
   <int value="1483980996" label="MacSyscallSandbox:enabled"/>
   <int value="1486092162"
       label="AutofillEnableOffersInClankKeyboardAccessory:enabled"/>
@@ -63120,6 +63184,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="kExplicitlyTriggeredForMultiplePasswordsInSettings">
     The user explicitly asked to move multiple passwords at once in Settings.
   </int>
+  <int value="3" label="kUserOptedInAfterSavingLocally">
+    After saving a password locally, the user opted in to saving this and future
+    passwords in the account.
+  </int>
 </enum>
 
 <enum name="PasswordManager.ReauthResult">
@@ -66193,6 +66261,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="27" label="Prefetch Not Eligible: Retry-After not elasped"/>
   <int value="28" label="Connecting to the prefetch proxy previously failed"/>
   <int value="29" label="Decoy request"/>
+  <int value="30" label="Stale prefetch"/>
+  <int value="31" label="Stale prefetch with NSP"/>
+  <int value="32" label="Stale prefetch, NSP attempt denied"/>
+  <int value="33" label="Stale prefetch, NSP not started"/>
 </enum>
 
 <enum name="PrefetchRedirect">
@@ -66427,6 +66499,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="25" label="kSslCertificateError"/>
   <int value="26" label="kLoginAuthRequested"/>
   <int value="27" label="kUaChangeRequiresReload"/>
+  <int value="28" label="kBlockedByClient"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
@@ -68054,6 +68127,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Unknown Command"/>
   <int value="1" label="Open Safety Check"/>
   <int value="2" label="Open SafeBrowsing Enhanced Protection"/>
+  <int value="3" label="Open Chrome feedback form"/>
 </enum>
 
 <enum name="ProtectorError">
@@ -69408,12 +69482,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="QuotaDatabaseResetReason">
-  <int value="0" label="Failed to open database for directory path"/>
+  <int value="0" label="Failed to open/create database for path"/>
   <int value="1" label="Failed to create in-memory database"/>
   <int value="2" label="Failed to create schema"/>
   <int value="3" label="Database migration failed"/>
   <int value="4" label="Database version is too new"/>
   <int value="5" label="Failed to initialize meta table"/>
+  <int value="6" label="Failed to create directory"/>
 </enum>
 
 <enum name="QuotaOriginTypes">
@@ -83377,6 +83452,7 @@ Full version information for the fingerprint enum values:
   <int value="2" label="University user on unmanaged device"/>
   <int value="3" label="Nonprofit user on unmanaged device"/>
   <int value="4" label="Enterprise user on unmanaged device"/>
+  <int value="65534" label="Kiosk app on unmanaged device"/>
 <!--
     There is no value for Managed Guest Session on Unmanaged device because that
     combination cannot occur.
@@ -83387,12 +83463,14 @@ Full version information for the fingerprint enum values:
   <int value="65538" label="University user on education device"/>
   <int value="65539" label="Nonprofit user on education device"/>
   <int value="65540" label="Enterprise user on education device"/>
+  <int value="131070" label="Kiosk app on an education device"/>
   <int value="131071" label="Managed guest session on an education device"/>
   <int value="131072" label="Unmanaged user on enterprise device"/>
   <int value="131073" label="K12 user on enterprise device"/>
   <int value="131074" label="University user on enterprise device"/>
   <int value="131075" label="Nonprofit user on enterprise device"/>
   <int value="131076" label="Enterprise user on enterprise device"/>
+  <int value="196606" label="Kiosk app on an enterprise device"/>
   <int value="196607" label="Managed guest session on an enterprise device"/>
 </enum>
 
@@ -86112,6 +86190,11 @@ others/histograms.xml -->
   <int value="11" label="Notification pressed"/>
   <int value="12" label="User unselected linking checkbox during QR scan"/>
   <int value="13" label="USB transaction was successful"/>
+  <int value="14"
+      label="Activity stopped while awaiting tunnel server connection"/>
+  <int value="15" label="Activity stopped while awaiting handshake"/>
+  <int value="16" label="Activity stopped while awaiting request"/>
+  <int value="17" label="Activity stopped in GMS Core request"/>
 </enum>
 
 <enum name="WebAuthenticationCableV2MobileResult">

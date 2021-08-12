@@ -95,7 +95,8 @@ export class PrefsManager {
 
         if (voice.voiceName) {
           this.extensionForVoice_.set(voice.voiceName, voice.extensionId || '');
-          if (voice.extensionId !== PrefsManager.ENHANCED_TTS_EXTENSION_ID) {
+          if ((voice.extensionId !== PrefsManager.ENHANCED_TTS_EXTENSION_ID) &&
+              !voice.remote) {
             // Don't consider network voices when computing default.
             this.validVoiceNames_.add(voice.voiceName);
           }
@@ -343,25 +344,13 @@ export class PrefsManager {
   }
 
   /**
-   * Generates the basic speech options for Select-to-Speak based on user
-   * preferences. Call for each chrome.tts.speak.
-   * @param {boolean} enhancedVoicesFlag whether enhanced voices are enabled.
-   * @return {!chrome.tts.TtsOptions} options The TTS options.
+   * Get the voice name of the user's preferred local voice.
+   * @return {string|undefined} Name of preferred local voice.
    */
-  speechOptions(enhancedVoicesFlag) {
-    const options = /** @type {!chrome.tts.TtsOptions} */ ({});
-    const useEnhancedVoices = enhancedVoicesFlag &&
-        this.enhancedNetworkVoicesEnabled() && navigator.onLine;
-
-    // If network voices are enabled, use them.
-    if (useEnhancedVoices) {
-      options['voiceName'] = this.enhancedVoiceName_;
-      return options;
-    }
-
+  getLocalVoice() {
     // To use the default (system) voice: don't specify options['voiceName'].
     if (this.voiceNameFromPrefs_ === PrefsManager.SYSTEM_VOICE) {
-      return options;
+      return undefined;
     }
 
     // Pick the voice name from prefs first, or the one that matches
@@ -371,13 +360,35 @@ export class PrefsManager {
     // anyway if possible.
     if (this.voiceNameFromPrefs_ &&
         this.validVoiceNames_.has(this.voiceNameFromPrefs_)) {
-      options['voiceName'] = this.voiceNameFromPrefs_;
+      return this.voiceNameFromPrefs_;
     } else if (
         this.voiceNameFromLocale_ &&
         this.validVoiceNames_.has(this.voiceNameFromLocale_)) {
-      options['voiceName'] = this.voiceNameFromLocale_;
+      return this.voiceNameFromLocale_;
     }
 
+    return undefined;
+  }
+
+  /**
+   * Generates the basic speech options for Select-to-Speak based on user
+   * preferences. Call for each chrome.tts.speak.
+   * @param {boolean} enhancedVoicesFlag whether enhanced voices are enabled.
+   * @return {!chrome.tts.TtsOptions} options The TTS options.
+   */
+  getSpeechOptions(enhancedVoicesFlag) {
+    const options = /** @type {!chrome.tts.TtsOptions} */ ({});
+    const useEnhancedVoices = enhancedVoicesFlag &&
+        this.enhancedNetworkVoicesEnabled_ && navigator.onLine;
+
+    if (useEnhancedVoices) {
+      options['voiceName'] = this.enhancedVoiceName_;
+    } else {
+      const localVoice = this.getLocalVoice();
+      if (localVoice !== undefined) {
+        options['voiceName'] = localVoice;
+      }
+    }
     return options;
   }
 
@@ -390,6 +401,14 @@ export class PrefsManager {
     return this.extensionForVoice_.get(voiceName) || '';
   }
 
+  /**
+   * Checks if the voice is an enhanced network TTS voice.
+   * @returns {boolean} True if the voice is an enhanced network TTS voice.
+   */
+  isNetworkVoice(voiceName) {
+    return this.ttsExtensionForVoice(voiceName) ===
+        PrefsManager.ENHANCED_TTS_EXTENSION_ID;
+  }
   /**
    * Gets the user's word highlighting enabled preference.
    * @return {boolean} True if word highlighting is enabled.

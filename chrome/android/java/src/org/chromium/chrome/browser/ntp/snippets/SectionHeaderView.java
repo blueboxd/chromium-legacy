@@ -86,6 +86,8 @@ public class SectionHeaderView extends LinearLayout {
 
     private @Nullable SectionHeaderTabListener mTabListener;
     private boolean mAnimatePaddingWhenDisabled;
+    private @Nullable View mDivider;
+    private @Nullable LinearLayout mContent;
 
     // Cached the indicator drawables for easy swapping.
     private Drawable mEnabledIndicatorDrawable;
@@ -115,6 +117,8 @@ public class SectionHeaderView extends LinearLayout {
         mMenuView = findViewById(R.id.header_menu);
         mLeadingStatusIndicator = findViewById(R.id.status_indicator);
         mTabLayout = findViewById(R.id.tab_list_view);
+        mDivider = findViewById(R.id.divider);
+        mContent = findViewById(R.id.main_content);
 
         if (mTabLayout != null) {
             mTabListener = new SectionHeaderTabListener();
@@ -190,11 +194,13 @@ public class SectionHeaderView extends LinearLayout {
                             R.string.accessibility_ntp_following_unread_content));
                 }
                 mBadge.setVisible(true);
+                tab.setTag(mBadge);
 
                 BadgeUtils.attachBadgeDrawable(mBadge, tab.getCustomView());
             } else {
                 if (mBadge != null) {
                     mBadge.setVisible(false);
+                    tab.setTag(null);
                     BadgeUtils.detachBadgeDrawable(mBadge, tab.getCustomView());
                 }
             }
@@ -288,6 +294,10 @@ public class SectionHeaderView extends LinearLayout {
                 setTextsEnabled(true);
             }
 
+            if (mDivider != null) {
+                mDivider.setVisibility(VISIBLE);
+            }
+
             ValueAnimator animator = ValueAnimator.ofInt(getPaddingLeft(), finalHorizontalPadding);
             animator.addUpdateListener((ValueAnimator animation) -> {
                 int horizontalPadding = (Integer) animation.getAnimatedValue();
@@ -328,6 +338,9 @@ public class SectionHeaderView extends LinearLayout {
                         mTabLayout.setSelectedTabIndicator(mNoIndicatorDrawable);
                         setTextsEnabled(false);
                     }
+                    if (mDivider != null) {
+                        mDivider.setVisibility(INVISIBLE);
+                    }
                 }
             });
             animator.setDuration(ANIMATION_DURATION_MS);
@@ -343,12 +356,13 @@ public class SectionHeaderView extends LinearLayout {
      * @param hasBackground true to set background; false to clear background.
      */
     private void setMaterialCardBackground(boolean hasBackground) {
+        LinearLayout layout = mContent == null ? this : mContent;
         if (!hasBackground) {
-            setBackgroundResource(0);
+            layout.setBackgroundResource(0);
             return;
         }
-        setBackgroundResource(R.drawable.card_with_corners_background);
-        GradientDrawable gradientDrawable = (GradientDrawable) getBackground();
+        layout.setBackgroundResource(R.drawable.card_with_corners_background);
+        GradientDrawable gradientDrawable = (GradientDrawable) layout.getBackground();
         gradientDrawable.setColor(
                 ChromeColors.getSurfaceColor(getContext(), R.dimen.card_elevation));
     }
@@ -358,6 +372,9 @@ public class SectionHeaderView extends LinearLayout {
             TabLayout.Tab tab = mTabLayout.getTabAt(i);
             tab.view.setClickable(enabled);
             tab.view.setEnabled(enabled);
+            if (tab.getTag() != null) {
+                mBadge.setVisible(enabled);
+            }
         }
         mTitleView.setEnabled(enabled);
     }
@@ -408,8 +425,14 @@ public class SectionHeaderView extends LinearLayout {
                         .setViewRectProvider(rectProvider)
                         // Set clipChildren is important to make sure the bubble does not get
                         // clipped. Set back for better performance during layout.
-                        .setOnShowCallback(() -> setClipChildren(false))
-                        .setOnDismissCallback(() -> setClipChildren(true))
+                        .setOnShowCallback(() -> {
+                            mContent.setClipChildren(false);
+                            mContent.setClipToPadding(false);
+                        })
+                        .setOnDismissCallback(() -> {
+                            mContent.setClipChildren(true);
+                            mContent.setClipToPadding(true);
+                        })
                         .setHighlightParams(params)
                         .build());
     }

@@ -2750,23 +2750,39 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DownloadInSubframe) {
 
 // End: Tests for feature restrictions in prerendered pages ====================
 
+// Tests prerendering for low-end devices.
+class PrerenderLowMemoryBrowserTest : public PrerenderBrowserTest {
+ public:
+  PrerenderLowMemoryBrowserTest() {
+    // Set the value of memory threshold more than the physical memory.  The
+    // test will expect that prerendering does not occur.
+    std::string memory_threshold =
+        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB() + 1);
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kPrerender2, {}},
+         {blink::features::kPrerender2MemoryControls,
+          {{blink::features::kPrerender2MemoryThresholdParamName,
+            memory_threshold}}}},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Tests that prerendering doesn't run for low-end devices.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, LowEndDevice) {
+IN_PROC_BROWSER_TEST_F(PrerenderLowMemoryBrowserTest, NoPrerender) {
   base::HistogramTester histogram_tester;
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
-
-  // Set low-end device mode.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableLowEndDeviceMode);
 
   // Attempt to prerender.
   test::PrerenderHostRegistryObserver observer(*web_contents_impl());
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
   AddPrerenderAsync(kPrerenderingUrl);
+  observer.WaitForTrigger(kPrerenderingUrl);
 
   // It should fail.
-  observer.WaitForTrigger(kPrerenderingUrl);
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus",
@@ -4325,5 +4341,38 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_EQ(web_contents()->GetLastCommittedURL(), kPrerenderingUrl);
   theme_change_waiter.Wait();
 }
+
+// Check that the prerendered page window.name is maintained after activation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       VerifyFrameNameMaintainedAfterActivation) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/title1.html");
+
+  // 1. Load initiator page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // 2. Load prerender.
+  int host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHostImpl* prerendered_render_frame_host =
+      GetPrerenderedMainFrameHost(host_id);
+
+  // 3. Set window.name.
+  ASSERT_TRUE(
+      ExecJs(prerendered_render_frame_host, "window.name = 'prerender_page'"));
+
+  EXPECT_EQ(prerendered_render_frame_host->GetFrameName(), "prerender_page");
+  EXPECT_EQ(current_frame_host()->GetFrameName(), "");
+
+  // 4. Activate prerender.
+  TestNavigationManager activation_manager(web_contents(), kPrerenderingUrl);
+  NavigatePrimaryPage(kPrerenderingUrl);
+  activation_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(activation_manager.was_prerendered_page_activation());
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), kPrerenderingUrl);
+
+  // 5. Ensure that the window.name is preserved.
+  EXPECT_EQ(current_frame_host()->GetFrameName(), "prerender_page");
+}
+
 }  // namespace
 }  // namespace content

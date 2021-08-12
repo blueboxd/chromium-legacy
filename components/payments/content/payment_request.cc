@@ -641,15 +641,14 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
       base::FeatureList::IsEnabled(::features::kSecurePaymentConfirmation) &&
       base::FeatureList::IsEnabled(
           ::features::kSecurePaymentConfirmationAPIV3)) {
-    std::unique_ptr<SecurePaymentConfirmationNoCreds> no_creds_ui =
-        SecurePaymentConfirmationNoCreds::Create();
-    no_creds_ui->ShowDialog(
-        web_contents(),
+    delegate_->ShowNoMatchingPaymentCredentialDialog(
         url_formatter::FormatUrlForSecurityDisplay(
             state_->GetTopOrigin(),
             url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
         base::BindOnce(&PaymentRequest::OnUserCancelled,
                        weak_ptr_factory_.GetWeakPtr()));
+    if (observer_for_testing_)
+      observer_for_testing_->OnErrorDisplayed();
     return;
   }
 

@@ -1349,8 +1349,8 @@ void StoragePartitionImpl::Initialize(
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kFledgeInterestGroups)) {
-    interest_group_manager_ =
-        std::make_unique<InterestGroupManager>(path, is_in_memory());
+    interest_group_manager_ = std::make_unique<InterestGroupManager>(
+        path, is_in_memory(), GetURLLoaderFactoryForBrowserProcess());
   }
 
   GeneratedCodeCacheSettings settings =
@@ -2862,6 +2862,31 @@ void StoragePartitionImpl::OnLocalTrustTokenFulfillerConnectionError() {
   for (auto& key_and_callback : pending_trust_token_issuance_callbacks_)
     std::move(key_and_callback.second).Run(not_found_answer.Clone());
   pending_trust_token_issuance_callbacks_.clear();
+}
+
+void StoragePartitionImpl::OpenLocalStorageForProcess(
+    int process_id,
+    const blink::StorageKey& storage_key,
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  DCHECK(initialized_);
+  DCHECK(ChildProcessSecurityPolicyImpl::GetInstance()
+             ->CreateHandle(process_id)
+             .CanAccessDataForOrigin(storage_key.origin()));
+  dom_storage_context_->OpenLocalStorage(storage_key, std::move(receiver));
+}
+
+void StoragePartitionImpl::BindSessionStorageAreaForProcess(
+    int process_id,
+    const blink::StorageKey& storage_key,
+    const std::string& namespace_id,
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  DCHECK(initialized_);
+  auto handle =
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(process_id);
+  DCHECK(handle.CanAccessDataForOrigin(storage_key.origin()));
+  dom_storage_context_->BindStorageArea(std::move(handle), storage_key,
+                                        namespace_id, base::DoNothing(),
+                                        std::move(receiver));
 }
 
 void StoragePartitionImpl::

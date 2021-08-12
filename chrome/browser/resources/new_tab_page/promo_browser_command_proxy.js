@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './promo_browser_command.mojom-lite.js';
+import {CommandHandlerFactory, CommandHandlerRemote} from './promo_browser_command.mojom-webui.js';
 
 /**
  * @fileoverview This file provides a class that exposes the Mojo handler
@@ -25,7 +25,10 @@ export class PromoBrowserCommandProxy {
   }
 
   constructor() {
-    /** @type {!promoBrowserCommand.mojom.CommandHandlerRemote} */
-    this.handler = promoBrowserCommand.mojom.CommandHandler.getRemote();
+    /** @type {!CommandHandlerRemote} */
+    this.handler = new CommandHandlerRemote();
+    const factory = CommandHandlerFactory.getRemote();
+    factory.createBrowserCommandHandler(
+        this.handler.$.bindNewPipeAndPassReceiver());
   }
 }

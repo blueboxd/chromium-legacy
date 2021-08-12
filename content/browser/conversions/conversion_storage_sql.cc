@@ -363,43 +363,47 @@ void ConversionStorageSql::StoreImpression(
 // one should be stored.
 ConversionStorageSql::MaybeReplaceLowerPriorityReportResult
 ConversionStorageSql::MaybeReplaceLowerPriorityReport(
-    const StorableImpression& impression,
+    const ConversionReport& report,
     int num_conversions,
-    int64_t conversion_priority,
-    base::Time report_time) {
-  DCHECK(impression.impression_id().has_value());
+    int64_t conversion_priority) {
+  DCHECK(report.impression.impression_id().has_value());
   DCHECK_GE(num_conversions, 0);
 
   // If there's already capacity for the new report, there's nothing to do.
-  if (num_conversions <
-      delegate_->GetMaxConversionsPerImpression(impression.source_type())) {
+  if (num_conversions < delegate_->GetMaxConversionsPerImpression(
+                            report.impression.source_type())) {
     return ConversionStorageSql::MaybeReplaceLowerPriorityReportResult::
         kAddNewReport;
   }
 
   // Prioritization is scoped within report windows.
-  // This is reasonably optimized as is, because we only store a ~small number
-  // of reports per impression_id.
+  // This is reasonably optimized as is because we only store a ~small number
+  // of reports per impression_id. Selects the conversion with lowest priority,
+  // and uses the greatest conversion_time to break ties. This favors sending
+  // reports for conversions closer to the impression time.
   static constexpr char kMinPrioritySql[] =
-      "SELECT MIN(priority),conversion_id "
+      "SELECT priority,conversion_id "
       "FROM conversions "
-      "WHERE impression_id = ? AND report_time = ?";
+      "WHERE impression_id = ? AND report_time = ? "
+      "ORDER BY priority ASC, conversion_time DESC "
+      "LIMIT 1";
   sql::Statement min_priority_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kMinPrioritySql));
-  min_priority_statement.BindInt64(0, *impression.impression_id());
-  min_priority_statement.BindTime(1, report_time);
-  if (!min_priority_statement.Step()) {
+  min_priority_statement.BindInt64(0, *report.impression.impression_id());
+  min_priority_statement.BindTime(1, report.report_time);
+
+  const bool has_matching_report = min_priority_statement.Step();
+  if (!min_priority_statement.Succeeded())
     return ConversionStorageSql::MaybeReplaceLowerPriorityReportResult::kError;
-  }
 
   // Deactivate the impression as a new report will never be generated in the
   // future.
-  if (min_priority_statement.GetColumnType(0) == sql::ColumnType::kNull) {
+  if (!has_matching_report) {
     static constexpr char kDeactivateSql[] =
         "UPDATE impressions SET active = 0 WHERE impression_id = ?";
     sql::Statement deactivate_statement(
         db_->GetCachedStatement(SQL_FROM_HERE, kDeactivateSql));
-    deactivate_statement.BindInt64(0, *impression.impression_id());
+    deactivate_statement.BindInt64(0, *report.impression.impression_id());
     return deactivate_statement.Run()
                ? ConversionStorageSql::MaybeReplaceLowerPriorityReportResult::
                      kDropNewReport
@@ -411,8 +415,11 @@ ConversionStorageSql::MaybeReplaceLowerPriorityReport(
   int64_t conversion_id_with_min_priority =
       min_priority_statement.ColumnInt64(1);
 
-  // If the new report's priority is less than or equal to all existing ones,
-  // drop it.
+  // If the new report's priority is less than all existing ones, or if its
+  // priority is equal to the minimum existing one and it is more recent, drop
+  // it. We could explicitly check the conversion time here, but it would only
+  // be relevant in the case of an ill-behaved clock, in which case the rest of
+  // the attribution functionality would probably also break.
   if (conversion_priority <= min_priority) {
     return ConversionStorageSql::MaybeReplaceLowerPriorityReportResult::
         kDropNewReport;
@@ -514,9 +521,9 @@ bool ConversionStorageSql::MaybeCreateAndStoreConversionReport(
     return false;
 
   const auto maybe_replace_lower_priority_report_result =
-      MaybeReplaceLowerPriorityReport(
-          report.impression, impression_to_attribute->num_conversions,
-          conversion.priority(), report.report_time);
+      MaybeReplaceLowerPriorityReport(report,
+                                      impression_to_attribute->num_conversions,
+                                      conversion.priority());
   if (maybe_replace_lower_priority_report_result ==
       ConversionStorageSql::MaybeReplaceLowerPriorityReportResult::kError) {
     return false;
@@ -728,8 +735,8 @@ bool ConversionStorageSql::DeleteExpiredImpressions() {
 
   // Delete all impressions that have no associated conversions and are
   // inactive. This is done in a separate statement from
-  // |kDeleteExpiredImpressionsSql| so that each query is optimized by an index.
-  // Optimized by |kConversionUrlIndexSql|.
+  // |kSelectExpiredImpressionsSql| so that each query is optimized by an index.
+  // Optimized by |kConversionDestinationIndexSql|.
   static constexpr char kSelectInactiveImpressionsSql[] =
       "SELECT impression_id FROM impressions WHERE active = 0 AND "
       "impression_id NOT IN(SELECT impression_id FROM conversions)"
@@ -750,7 +757,6 @@ bool ConversionStorageSql::DeleteConversion(int64_t conversion_id) {
 }
 
 bool ConversionStorageSql::DeleteConversionInternal(int64_t conversion_id) {
-  // Delete the row identified by |conversion_id|.
   static constexpr char kDeleteSentConversionSql[] =
       "DELETE FROM conversions WHERE conversion_id = ?";
   sql::Statement statement(
@@ -980,7 +986,7 @@ void ConversionStorageSql::ClearAllDataAllTime() {
 
 bool ConversionStorageSql::HasCapacityForStoringImpression(
     const std::string& serialized_origin) {
-  // Optimized by impression_origin_idx.
+  // Optimized by `kImpressionOriginIndexSql`..
   static constexpr char kCountImpressionsSql[] =
       "SELECT COUNT(impression_origin)FROM impressions WHERE "
       "impression_origin = ?";
@@ -1018,10 +1024,10 @@ bool ConversionStorageSql::IsReportAlreadyStored(
 
 bool ConversionStorageSql::HasCapacityForStoringConversion(
     const std::string& serialized_origin) {
-  // This query should be reasonably optimized via conversion_destination_idx.
-  // The conversion origin is the second column in a multi-column index where
-  // the first column is just a boolean. Therefore the second column in the
-  // index should be very well-sorted.
+  // This query should be reasonably optimized via
+  // `kConversionDestinationIndexSql`. The conversion origin is the second
+  // column in a multi-column index where the first column is just a boolean.
+  // Therefore the second column in the index should be very well-sorted.
   //
   // Note: to take advantage of this, we need to hint to the query planner that
   // |active| is a boolean, so include it in the conditional.
@@ -1276,7 +1282,8 @@ bool ConversionStorageSql::CreateSchema() {
   // during calls to `MaybeCreateAndStoreConversionReport()`,
   // `StoreImpression()`, `DeleteExpiredImpressions()`. Impressions and
   // conversions are considered matching if they share this pair. These calls
-  // only look at active conversions, so include |active| in the index.
+  // need to distinguish between active and inactive conversions, so include
+  // |active| in the index.
   static constexpr char kConversionDestinationIndexSql[] =
       "CREATE INDEX IF NOT EXISTS conversion_destination_idx "
       "ON impressions(active,conversion_destination,reporting_origin)";
@@ -1333,14 +1340,14 @@ bool ConversionStorageSql::CreateSchema() {
   if (!db_->Execute(kConversionReportTimeIndexSql))
     return false;
 
-  // Want to optimize conversion look up by click id. This allows us to
+  // Want to optimize conversion look up by impression id. This allows us to
   // quickly know if an expired impression can be deleted safely if it has no
   // corresponding pending conversions during calls to
-  // DeleteExpiredImpressions().
-  static constexpr char kConversionClickIdIndexSql[] =
+  // `DeleteExpiredImpressions()`.
+  static constexpr char kConversionImpressionIdIndexSql[] =
       "CREATE INDEX IF NOT EXISTS conversion_impression_id_idx "
       "ON conversions(impression_id)";
-  if (!db_->Execute(kConversionClickIdIndexSql))
+  if (!db_->Execute(kConversionImpressionIdIndexSql))
     return false;
 
   if (!rate_limit_table_.CreateTable(db_.get()))

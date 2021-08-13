@@ -171,7 +171,7 @@ preprocess_if_expr("preprocess") {
   } else {
     if (!is_chromeos_lacros) {
       in_files += [
-        "default_browser_page/default_browser_browser_proxy.js",
+        "default_browser_page/default_browser_browser_proxy.ts",
         "system_page/system_page_browser_proxy.ts",
       ]
     }
@@ -288,8 +288,8 @@ preprocess_if_expr("preprocess_generated") {
     "search_page/search_page.ts",
     "settings_main/settings_main.js",
     "settings_page/settings_animated_pages.js",
-    "settings_page/settings_section.js",
-    "settings_page/settings_subpage.js",
+    "settings_page/settings_section.ts",
+    "settings_page/settings_subpage.ts",
     "settings_ui/settings_ui.js",
     "settings_page_css.ts",
     "settings_shared_css.ts",
@@ -338,7 +338,7 @@ preprocess_if_expr("preprocess_generated") {
 
   if (!is_chromeos) {
     in_files += [
-      "default_browser_page/default_browser_page.js",
+      "default_browser_page/default_browser_page.ts",
       "system_page/system_page.ts",
     ]
   }
@@ -395,10 +395,6 @@ group("closure_compile") {
 
   if (!is_chromeos_ash) {
     deps += [ "languages_page:closure_compile" ]
-  }
-
-  if (!is_chromeos) {
-    deps += [ "default_browser_page:closure_compile" ]
   }
 
   if (is_win) {
@@ -486,7 +482,6 @@ js_library("global_scroll_target_mixin") {
 }
 
 js_library("hats_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("lazy_load") {
@@ -525,11 +520,9 @@ js_library("lifetime_browser_proxy") {
 }
 
 js_library("metrics_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("open_window_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("page_visibility") {
@@ -795,8 +788,8 @@ ts_library("build_ts") {
     "settings_page_css.ts",
     "settings_page/main_page_mixin.js",
     "settings_page/settings_animated_pages.js",
-    "settings_page/settings_section.js",
-    "settings_page/settings_subpage.js",
+    "settings_page/settings_section.ts",
+    "settings_page/settings_subpage.ts",
     "settings_routes.js",
     "settings_shared_css.ts",
     "settings_ui/settings_ui.js",
@@ -856,8 +849,8 @@ ts_library("build_ts") {
   } else {
     if (!is_chromeos_lacros) {
       in_files += [
-        "default_browser_page/default_browser_browser_proxy.js",
-        "default_browser_page/default_browser_page.js",
+        "default_browser_page/default_browser_browser_proxy.ts",
+        "default_browser_page/default_browser_page.ts",
         "system_page/system_page_browser_proxy.ts",
         "system_page/system_page.ts",
       ]

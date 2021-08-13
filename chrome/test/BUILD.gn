@@ -1015,7 +1015,6 @@ if (!is_android && !is_fuchsia) {
       "//base:i18n",
       "//base/allocator:buildflags",
       "//base/test:test_support",
-      "//base/util/memory_pressure:test_support",
       "//build:branding_buildflags",
       "//build:chromeos_buildflags",
       "//chrome:packed_resources",
@@ -1123,6 +1122,8 @@ if (!is_android && !is_fuchsia) {
       "//components/live_caption:constants",
       "//components/lookalikes/core",
       "//components/lookalikes/core:features",
+      "//components/memory_pressure",
+      "//components/memory_pressure:test_support",
       "//components/metrics:content",
       "//components/metrics/demographics",
       "//components/metrics/demographics:test_support",
@@ -3414,8 +3415,8 @@ if (!is_android && !is_fuchsia) {
         sources += [
           "../browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher_apitest.cc",
           "../browser/chromeos/extensions/printing_metrics/printing_metrics_apitest.cc",
-          "../browser/extensions/api/printing/fake_print_job_controller_ash.cc",
-          "../browser/extensions/api/printing/fake_print_job_controller_ash.h",
+          "../browser/extensions/api/printing/fake_print_job_controller.cc",
+          "../browser/extensions/api/printing/fake_print_job_controller.h",
           "../browser/extensions/api/printing/printing_apitest.cc",
         ]
         deps += [ "//printing:test_support" ]
@@ -4790,15 +4791,6 @@ test("unit_tests") {
       "chromeos/printing/fake_local_printer_chromeos.cc",
       "chromeos/printing/fake_local_printer_chromeos.h",
     ]
-
-    if (use_cups) {
-      sources += [
-        "../browser/chromeos/printing/test_cups_wrapper.cc",
-        "../browser/chromeos/printing/test_cups_wrapper.h",
-        "../browser/extensions/api/printing/fake_print_job_controller.cc",
-        "../browser/extensions/api/printing/fake_print_job_controller.h",
-      ]
-    }
   }
 
   if (is_chromeos_ash) {
@@ -5010,7 +5002,6 @@ test("unit_tests") {
     ":test_support_unit",
     "//base:base_stack_sampling_profiler_test_util",
     "//base/test:test_support",
-    "//base/util/memory_pressure:test_support",
     "//build:chromeos_buildflags",
     "//chrome:browser_dependencies",
     "//chrome:child_dependencies",
@@ -5118,6 +5109,7 @@ test("unit_tests") {
     "//components/leveldb_proto:test_support",
     "//components/live_caption:constants",
     "//components/lookalikes/core:features",
+    "//components/memory_pressure:test_support",
     "//components/mirroring:mirroring_tests",
     "//components/nacl/common:buildflags",
     "//components/no_state_prefetch/browser",
@@ -6790,13 +6782,6 @@ test("unit_tests") {
       ]
     }
 
-    if (is_chromeos && use_cups) {
-      sources += [
-        "../browser/extensions/api/printing/printing_api_handler_unittest.cc",
-        "../browser/extensions/api/printing/printing_api_utils_unittest.cc",
-      ]
-    }
-
     if (is_chromeos_ash) {
       sources += [
         "../browser/ash/login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
@@ -7421,12 +7406,14 @@ test("unit_tests") {
       "../browser/ui/views/relaunch_notification/relaunch_required_timer_internal_unittest.cc",
       "../browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl_unittest.cc",
       "../browser/ui/views/send_tab_to_self/send_tab_to_self_toolbar_bubble_view_unittest.cc",
+      "../browser/ui/views/sharing_hub/screenshot/screenshot_captured_bubble_unittest.cc",
       "../browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views_unittest.cc",
       "../browser/ui/views/tabs/color_picker_view_unittest.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.h",
       "../browser/ui/views/tabs/overflow_view_unittest.cc",
       "../browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc",
+      "../browser/ui/views/tabs/tab_hover_card_bubble_view_unittest.cc",
       "../browser/ui/views/tabs/tab_hover_card_controller_unittest.cc",
       "../browser/ui/views/tabs/tab_hover_card_metrics_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_layout_unittest.cc",

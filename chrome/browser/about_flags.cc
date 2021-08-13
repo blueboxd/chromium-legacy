@@ -2578,6 +2578,14 @@ const FeatureEntry::FeatureVariation kContinuousSearchFeatureVariations[] = {
      base::size(kContinuousSearchPermanentDismissal), nullptr},
     {"with double-row chips", kContinuousSearchDoubleRowChip,
      base::size(kContinuousSearchDoubleRowChip), nullptr}};
+
+const FeatureEntry::FeatureParam kReadLaterUseRootBookmarkAsDefault[] = {
+    {"use_root_bookmark_as_default", "true"}};
+
+const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
+    {"(use root bookmark as default)", kReadLaterUseRootBookmarkAsDefault,
+     base::size(kReadLaterUseRootBookmarkAsDefault), nullptr}};
+
 #endif  // defined(OS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -3379,6 +3387,9 @@ const FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
+    {"in-product-help-snooze", flag_descriptions::kInProductHelpSnoozeName,
+     flag_descriptions::kInProductHelpSnoozeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(feature_engagement::kIPHSnooze)},
     {"disable-threaded-scrolling", flag_descriptions::kThreadedScrollingName,
      flag_descriptions::kThreadedScrollingDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(blink::switches::kDisableThreadedScrolling)},
@@ -4569,9 +4580,17 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kQuickSettingsPWANotifications)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#ifdef OS_ANDROID
     {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
-     flag_descriptions::kReadLaterDescription, kOsDesktop | kOsAndroid,
+     flag_descriptions::kReadLaterDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(reading_list::switches::kReadLater,
+                                    kReadLaterVariations,
+                                    flag_descriptions::kReadLaterName)},
+#else
+    {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
+     flag_descriptions::kReadLaterDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(reading_list::switches::kReadLater)},
+#endif
 
     {"read-later-new-badge-promo",
      flag_descriptions::kReadLaterNewBadgePromoName,
@@ -5224,6 +5243,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-quick-answers-v2", flag_descriptions::kEnableQuickAnswersV2Name,
      flag_descriptions::kEnableQuickAnswersV2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersV2)},
+
+    {"disable-quick-answers-v2-translation",
+     flag_descriptions::kDisableQuickAnswersV2TranslationName,
+     flag_descriptions::kDisableQuickAnswersV2TranslationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kDisableQuickAnswersV2Translation)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_ANDROID)
@@ -7461,6 +7485,20 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillFillMerchantPromoCodeFieldsDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillFillMerchantPromoCodeFields)},
+
+    {"passwords-account-storage-revised-opt-in-flow",
+     flag_descriptions::kPasswordsAccountStorageRevisedOptInFlowName,
+     flag_descriptions::kPasswordsAccountStorageRevisedOptInFlowDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kPasswordsAccountStorageRevisedOptInFlow)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"traffic-counters-settings-ui",
+     flag_descriptions::kTrafficCountersSettingsUiName,
+     flag_descriptions::kTrafficCountersSettingsUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kTrafficCountersSettingsUi)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

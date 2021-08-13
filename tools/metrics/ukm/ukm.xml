@@ -144,6 +144,39 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AccuracyTipDialog">
+  <owner>dullweber@chromium.org</owner>
+  <owner>eokoyomon@chromium.org</owner>
+  <summary>
+    Recorded when an action on the accuracy tip dialog is taken.
+  </summary>
+  <metric name="Interaction" enum="AccuracyTipInteraction">
+    <summary>
+      Records an enum value representing which action in the accuracy tip was
+      taken.
+    </summary>
+  </metric>
+  <metric name="TimeSpent">
+    <summary>
+      The amount of time spent on the dialog until it was closed. In seconds.
+    </summary>
+  </metric>
+</event>
+
+<event name="AccuracyTipStatus">
+  <owner>dullweber@chromium.org</owner>
+  <owner>eokoyomon@chromium.org</owner>
+  <summary>
+    Recorded on each page load when the AccuracyService determines whether an
+    accuracy tip should be shown or the reason why it was not shown.
+  </summary>
+  <metric name="Status" enum="AccuracyTipStatus">
+    <summary>
+      The accuracy tip status that was determined for a pageload.
+    </summary>
+  </metric>
+</event>
+
 <event name="AdFrameLoad">
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
@@ -6710,6 +6743,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6724,6 +6760,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6736,6 +6775,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6750,6 +6792,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6763,6 +6808,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6776,6 +6824,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -6789,6 +6840,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <quantiles type="std-percentiles"/>
         </statistics>
@@ -7982,6 +8036,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Layout.DisplayCutout.StateChanged">
+  <obsolete>
+    Obsolete as of 08/2021.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -9292,7 +9349,6 @@ be describing additional metrics about the same event.
 
 <event name="Media.WebAudio.AudioContext.AudibleTime">
   <owner>hongchan@chromium.org</owner>
-  <owner>rtoy@chromium.org</owner>
   <owner>webaudio-dev@chromium.org</owner>
   <summary>
     Records the AudioContext audible time information.

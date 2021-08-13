@@ -647,7 +647,7 @@
 <translation id="3282497668470633863">名義人名を追加</translation>
 <translation id="3286372614333682499">縦向き</translation>
 <translation id="3287510313208355388">オンライン時にダウンロード</translation>
-<translation id="3288238092761586174"><ph name="URL" /> でお客様のお支払い情報を確認するには、追加の手順が必要となる場合があります</translation>
+<translation id="3288238092761586174">お客様のお支払い情報を検証するため、<ph name="URL" /> は追加の手順を必要とする場合があります</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> ポリシーの詳細</translation>
 <translation id="3295444047715739395">Chrome の設定でパスワードを表示、管理する</translation>
 <translation id="3303855915957856445">一致する結果は見つかりませんでした</translation>
@@ -1618,7 +1618,6 @@
 <translation id="6689249931105087298">相対的（黒点の補正あり）</translation>
 <translation id="6689271823431384964">ログインしている場合は、その Google アカウントにカードを保存できます。この動作は設定で変更できます。カード名義人はアカウントから取得されます。</translation>
 <translation id="6698381487523150993">作成:</translation>
-<translation id="6699188552522342100">ウェブサイトの情報は正確ですか？</translation>
 <translation id="6702919718839027939">プレゼンテーション</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
@@ -2325,7 +2324,6 @@
 <translation id="961663415146723894">製本（下綴じ）</translation>
 <translation id="962484866189421427">このコンテンツを表示すると、詐欺的なアプリ（他のものに成りすましたり、ユーザーの追跡などに使用可能なデータを収集したりするアプリ）のインストールが試行される可能性があります。<ph name="BEGIN_LINK" />危険性を理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Official Build</translation>
-<translation id="973473557718930265">終了</translation>
 <translation id="973773823069644502">配達先住所を追加</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{なし}=1{1 件のアイテム}other{# 件のアイテム}}</translation>
 <translation id="981121421437150478">オフライン</translation>

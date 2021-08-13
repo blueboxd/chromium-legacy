@@ -844,15 +844,14 @@ void AuthenticatorCommon::MakeCredential(
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
 
+  WebAuthRequestSecurityChecker::RequestType request_type =
+      options->is_payment_credential_creation
+          ? WebAuthRequestSecurityChecker::RequestType::kMakePaymentCredential
+          : WebAuthRequestSecurityChecker::RequestType::kMakeCredential;
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
-      security_checker_->ValidateAncestorOrigins(
-          caller_origin,
-          options->is_payment_credential_creation
-              ? WebAuthRequestSecurityChecker::RequestType::
-                    kMakePaymentCredential
-              : WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
-          &is_cross_origin);
+      security_checker_->ValidateAncestorOrigins(caller_origin, request_type,
+                                                 &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteMakeCredentialRequest(status);
     return;
@@ -873,8 +872,8 @@ void AuthenticatorCommon::MakeCredential(
     // If the delegate didn't override RP ID selection then apply standard
     // rules.
     rp_id = std::move(options->relying_party.id);
-    status = security_checker_->ValidateDomainAndRelyingPartyID(caller_origin,
-                                                                *rp_id);
+    status = security_checker_->ValidateDomainAndRelyingPartyID(
+        caller_origin, *rp_id, request_type);
     if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
       CompleteMakeCredentialRequest(status);
       return;
@@ -1098,6 +1097,7 @@ void AuthenticatorCommon::MakeCredential(
 void AuthenticatorCommon::GetAssertion(
     url::Origin caller_origin,
     blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
+    blink::mojom::PaymentOptionsPtr payment,
     blink::mojom::Authenticator::GetAssertionCallback callback) {
   if (request_) {
     if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
@@ -1118,12 +1118,21 @@ void AuthenticatorCommon::GetAssertion(
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
 
+  WebAuthRequestSecurityChecker::RequestType request_type =
+      payment.is_null()
+          ? WebAuthRequestSecurityChecker::RequestType::kGetAssertion
+          : WebAuthRequestSecurityChecker::RequestType::
+                kGetPaymentCredentialAssertion;
+  if (!payment.is_null() && options->allow_credentials.empty()) {
+    CompleteGetAssertionRequest(
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    NOTREACHED();
+    return;
+  }
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
-      security_checker_->ValidateAncestorOrigins(
-          caller_origin,
-          WebAuthRequestSecurityChecker::RequestType::kGetAssertion,
-          &is_cross_origin);
+      security_checker_->ValidateAncestorOrigins(caller_origin, request_type,
+                                                 &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteGetAssertionRequest(status);
     return;
@@ -1144,7 +1153,7 @@ void AuthenticatorCommon::GetAssertion(
     // If the delegate didn't override RP ID selection then apply standard
     // rules.
     status = security_checker_->ValidateDomainAndRelyingPartyID(
-        caller_origin, options->relying_party_id);
+        caller_origin, options->relying_party_id, request_type);
     if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
       CompleteGetAssertionRequest(status);
       return;
@@ -1168,7 +1177,7 @@ void AuthenticatorCommon::GetAssertion(
     client_data_json_ = BuildClientDataJson(
         ClientDataRequestType::kU2fSign, options->relying_party_id,
         options->challenge, /*is_cross_origin=*/false);
-  } else if (options->payment) {
+  } else if (payment) {
     auto* web_contents = WebContents::FromRenderFrameHost(GetRenderFrameHost());
     if (!web_contents) {
       CompleteGetAssertionRequest(
@@ -1179,7 +1188,7 @@ void AuthenticatorCommon::GetAssertion(
         url::Origin::Create(web_contents->GetLastCommittedURL());
     client_data_json_ = BuildClientDataJson(
         ClientDataRequestType::kPaymentGet, caller_origin_.Serialize(),
-        options->challenge, is_cross_origin, std::move(options->payment),
+        options->challenge, is_cross_origin, std::move(payment),
         relying_party_id_, top_origin.Serialize());
   } else {
     client_data_json_ = BuildClientDataJson(

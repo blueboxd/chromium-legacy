@@ -838,6 +838,9 @@ extern const char kInheritNativeThemeFromParentWidgetDescription[];
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
+extern const char kInProductHelpSnoozeName[];
+extern const char kInProductHelpSnoozeDescription[];
+
 extern const char kInstalledAppsInCbdName[];
 extern const char kInstalledAppsInCbdDescription[];
 
@@ -1111,6 +1114,9 @@ extern const char kPasswordChangeDescription[];
 
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
+
+extern const char kPasswordsAccountStorageRevisedOptInFlowName[];
+extern const char kPasswordsAccountStorageRevisedOptInFlowDescription[];
 
 extern const char kPasswordScriptsFetchingName[];
 extern const char kPasswordScriptsFetchingDescription[];
@@ -2507,6 +2513,9 @@ extern const char kEnableQuickAnswersTranslationCloudAPIDescription[];
 extern const char kEnableQuickAnswersV2Name[];
 extern const char kEnableQuickAnswersV2Description[];
 
+extern const char kDisableQuickAnswersV2TranslationName[];
+extern const char kDisableQuickAnswersV2TranslationDescription[];
+
 extern const char kESimPolicyName[];
 extern const char kESimPolicyDescription[];
 
@@ -2832,6 +2841,9 @@ extern const char kTetherDescription[];
 
 extern const char kTouchscreenCalibrationName[];
 extern const char kTouchscreenCalibrationDescription[];
+
+extern const char kTrafficCountersSettingsUiName[];
+extern const char kTrafficCountersSettingsUiDescription[];
 
 extern const char kUiDevToolsName[];
 extern const char kUiDevToolsDescription[];

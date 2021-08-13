@@ -59,9 +59,6 @@
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -177,8 +174,9 @@ WebString WebDocument::ContentAsTextForTesting() const {
   return document_element->innerText();
 }
 
-WebElementCollection WebDocument::All() {
-  return WebElementCollection(Unwrap<Document>()->all());
+WebElementCollection WebDocument::All() const {
+  return WebElementCollection(
+      const_cast<Document*>(ConstUnwrap<Document>())->all());
 }
 
 WebVector<WebFormElement> WebDocument::Forms() const {

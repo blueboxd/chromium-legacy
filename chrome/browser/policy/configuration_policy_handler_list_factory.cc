@@ -1279,6 +1279,18 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
+#if defined(OS_WIN) || defined(OS_MAC)
+  { key::kPrintPdfAsImageAvailability,
+    prefs::kPrintPdfAsImageAvailability,
+    base::Value::Type::BOOLEAN },
+#endif  // defined(OS_WIN) || defined(OS_MAC)
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+    { key::kPrintRasterizePdfDpi,
+      prefs::kPrintRasterizePdfDpi,
+      base::Value::Type::INTEGER },
+#endif  // BUILDFLAGS(ENABLE_PRINT_PREVIEW)
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   { key::kNativeMessagingUserLevelHosts,
     extensions::pref_names::kNativeMessagingUserLevelHosts,
@@ -1731,11 +1743,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kAttestationExtensionAllowlist,
       prefs::kAttestationExtensionAllowlist, false));
-#if defined(USE_CUPS)
-  handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
-      key::kPrintingAPIExtensionsAllowlist,
-      prefs::kPrintingAPIExtensionsAllowlist, /*allow_wildcards=*/false));
-#endif  // defined(USE_CUPS)
 #else  // defined(OS_CHROMEOS)
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
       signin_legacy_policies;
@@ -2002,6 +2009,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<LacrosAvailabilityPolicyHandler>());
+#if defined(USE_CUPS)
+  handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
+      key::kPrintingAPIExtensionsAllowlist,
+      prefs::kPrintingAPIExtensionsAllowlist, /*allow_wildcards=*/false));
+#endif  // defined(USE_CUPS)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // On most platforms, there is a legacy policy

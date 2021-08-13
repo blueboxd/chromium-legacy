@@ -1171,7 +1171,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   crash_keys::SetCrashKeysFromCommandLine(command_line);
 
 #if BUILDFLAG(ENABLE_PDF)
-  MaybeInitializeGDI();
+  MaybePatchGdiGetFontData();
 #endif
 }
 

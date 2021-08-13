@@ -100,20 +100,29 @@ void AXRelationCache::UpdateReverseRelations(const AXObject* relation_source,
   }
 }
 
+// ContainsCycle() should:
+// * Return true when a cycle is an authoring error, but not an error in Blink.
+// * CHECK(false) when Blink should have caught this error earlier ... we should
+// have never gotten into this state.
+//
+// For example, if a web page specifies that grandchild owns it's grandparent,
+// what should happen is the ContainsCycle will start at the grandchild and go
+// up, finding that it's grandparent is already in the ancestor chain, and
+// return false, thus disallowing the relation. However, if on the way to the
+// root, it discovers that any other two objects are repeated in the ancestor
+// chain, this is unexpected, and results in the CHECK(false) condition.
 static bool ContainsCycle(AXObject* owner, AXObject* child) {
-  int num_loops = 0;
-  constexpr int kMaxLoops = 500;
+  HashSet<AXID> visited;
   // Walk up the parents of the owner object, make sure that this child
   // doesn't appear there, as that would create a cycle.
-  for (AXObject* parent = owner; parent;
-       parent = parent->CachedParentObject()) {
-    if (++num_loops > kMaxLoops) {
-      CHECK(false) << "Cycle in unexpected place:\n"
-                   << "* Owner = " << owner->ToString(true, true)
-                   << "* Child = " << child->ToString(true, true);
-    }
-    if (parent == child)
+  for (AXObject* ancestor = owner; ancestor;
+       ancestor = ancestor->CachedParentObject()) {
+    if (ancestor == child)
       return true;
+    CHECK(visited.insert(ancestor->AXObjectID()).is_new_entry)
+        << "Cycle in unexpected place:\n"
+        << "* Owner = " << owner->ToString(true, true)
+        << "* Child = " << child->ToString(true, true);
   }
   return false;
 }
@@ -386,9 +395,11 @@ void AXRelationCache::UpdateAriaOwnerToChildrenMappingWithCleanLayout(
 
   // Compare this to the current list of owned children, and exit early if
   // there are no changes.
-  Vector<AXID> previously_owned_child_ids =
-      aria_owner_to_children_mapping_.DeprecatedAtOrEmptyValue(
-          owner->AXObjectID());
+  Vector<AXID> previously_owned_child_ids;
+  auto it = aria_owner_to_children_mapping_.find(owner->AXObjectID());
+  if (it != aria_owner_to_children_mapping_.end()) {
+    previously_owned_child_ids = it->value;
+  }
 
   // Only force the refresh if there was or will be owned children; otherwise,
   // there is nothing to refresh even for a new AXObject replacing an old owner.

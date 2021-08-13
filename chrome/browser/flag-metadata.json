@@ -1118,6 +1118,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "disable-quick-answers-v2-translation",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "disable-threaded-scrolling",
     "owners": [ "bokan", "input-dev" ],
     // This flag is a useful debugging control when investigating scrolling
@@ -3355,6 +3360,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "in-product-help-snooze",
+    "owners": [ "shaktisahu", "haileywang" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "incognito-brand-consistency-for-android",
     "owners": [ "sideyilmaz", "rhalavati", "chrome-incognito@google.com" ],
     "expiry_milestone": 95
@@ -4379,14 +4389,9 @@
     "expiry_milestone": 95
   },
   {
-    "name": "passwords-account-storage",
+    "name": "passwords-account-storage-revised-opt-in-flow",
     "owners": [ "mamir", "treib" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "passwords-account-storage-iph",
-    "owners": [ "mamir", "treib" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "pdf-unseasoned",
@@ -5326,6 +5331,11 @@
     "name": "trace-upload-url",
     "owners": [ "oysteine" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "traffic-counters-settings-ui",
+    "owners": ["khegde", "stevenjb"],
+    "expiry_milestone": 95
   },
   {
     "name": "translate-assist-content",

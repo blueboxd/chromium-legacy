@@ -331,6 +331,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickAnswersTranslationCloudAPI;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kQuickAnswersV2;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kDisableQuickAnswersV2Translation;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickAnswersOnEditableText;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickAnswersStandaloneSettings;
@@ -389,6 +391,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSystemProxyForSystemServices;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTabClusterUI;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTelemetryExtension;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kTrafficCountersSettingsUi;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTrilinearFiltering;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kUseBluetoothSystemInAsh;
@@ -405,7 +409,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kUseWallpaperStagingUrl;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kUserActivityPrediction;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kVerticalSplitScreen;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kVerticalSnapState;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kVirtualKeyboardApi;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -524,6 +528,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersOnEditableTextEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersTranslationCloudAPIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersTranslationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersV2Enabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickAnswersV2TranslationDisabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsReduceDisplayNotificationsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsReverseScrollGesturesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -544,7 +549,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemLatinPhysicalTypingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabClusterUIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTrilinearFilteringEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUseStorkSmdsServerAddressEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsVerticalSplitScreenEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsVerticalSnapStateEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWallpaperWebUIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWebUITabStripTabDragIntegrationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWifiSyncAndroidEnabled();

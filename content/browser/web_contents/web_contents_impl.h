@@ -287,23 +287,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
 #endif  // !defined(OS_ANDROID)
 
-  // Adds a new receiver set to the WebContents. Returns a closure which may be
-  // used to remove the receiver set at any time. The closure is safe to call
-  // even after WebContents destruction.
-  //
-  // |receiver_set| is not owned and must either outlive this WebContents or be
-  // explicitly removed before being destroyed.
-  base::OnceClosure AddReceiverSet(const std::string& interface_name,
-                                   WebContentsReceiverSet* receiver_set);
-
-  // Accesses a WebContentsReceiverSet for a specific interface on this
-  // WebContents. Returns null of there is no registered binder for the
-  // interface.
-  WebContentsReceiverSet* GetReceiverSet(const std::string& interface_name);
-
-  // Removes a WebContentsReceiverSet so that it can be overridden for testing.
-  void RemoveReceiverSetForTesting(const std::string& interface_name);
-
   // Returns the focused WebContents.
   // If there are multiple inner/outer WebContents (when embedding <webview>,
   // <guestview>, ...) returns the single one containing the currently focused
@@ -342,6 +325,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetDelegate(WebContentsDelegate* delegate) override;
   NavigationControllerImpl& GetController() override;
   BrowserContext* GetBrowserContext() override;
+  base::WeakPtr<WebContents> GetWeakPtr() override;
   const GURL& GetURL() override;
   const GURL& GetVisibleURL() override;
   const GURL& GetLastCommittedURL() override;
@@ -580,10 +564,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;
-  void OnAssociatedInterfaceRequest(
-      RenderFrameHostImpl* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedInterfaceEndpointHandle handle) override;
   void OnInterfaceRequest(
       RenderFrameHostImpl* render_frame_host,
       const std::string& interface_name,
@@ -1305,6 +1285,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     show_poup_menu_callback_ = std::move(callback);
   }
 
+  // Sets the value in tests to ensure expected ordering and correctness.
+  void set_minimum_delay_between_loading_updates_for_testing(
+      base::TimeDelta duration) {
+    minimum_delay_between_loading_updates_ms_ = duration;
+  }
+
  private:
   using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree*)>;
 
@@ -1851,9 +1837,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // the observer list then.
   WebContentsObserverList observers_;
 
-  // Associated interface receiver sets attached to this WebContents.
-  std::map<std::string, WebContentsReceiverSet*> receiver_sets_;
-
   // True if this tab was opened by another tab. This is not unset if the opener
   // is closed.
   bool created_with_opener_;
@@ -1901,6 +1884,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   base::TimeTicks load_info_timestamp_;
 
   base::TimeTicks loading_last_progress_update_;
+
+  // Default value is set to 100ms between LoadProgressChanged events.
+  base::TimeDelta minimum_delay_between_loading_updates_ms_ =
+      base::TimeDelta::FromMilliseconds(100);
 
   // Upload progress, for displaying in the status bar.
   // Set to zero when there is no significant upload happening.

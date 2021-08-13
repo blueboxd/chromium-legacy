@@ -124,7 +124,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -193,8 +192,6 @@ namespace {
 // The window which we dobounce load info updates in.
 constexpr auto kUpdateLoadStatesInterval =
     base::TimeDelta::FromMilliseconds(250);
-
-const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 
 using LifecycleState = RenderFrameHost::LifecycleState;
 using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
@@ -930,9 +927,6 @@ WebContentsImpl::~WebContentsImpl() {
 
   rwh_input_event_router_.reset();
 
-  for (auto& entry : receiver_sets_)
-    entry.second->CloseAllReceivers();
-
   WebContentsImpl* outermost = GetOutermostWebContents();
   if (this != outermost && ContainsOrIsFocusedWebContents()) {
     // If the current WebContents is in focus, unset it.
@@ -1001,9 +995,6 @@ WebContentsImpl::~WebContentsImpl() {
     save_package_->ClearPage();
 
   observers_.NotifyObservers(&WebContentsObserver::WebContentsDestroyed);
-  if (display_cutout_host_impl_)
-    display_cutout_host_impl_->WebContentsDestroyed();
-
   observers_.NotifyObservers(&WebContentsObserver::ResetWebContents);
   SetDelegate(nullptr);
 }
@@ -1169,6 +1160,10 @@ NavigationControllerImpl& WebContentsImpl::GetController() {
 
 BrowserContext* WebContentsImpl::GetBrowserContext() {
   return GetController().GetBrowserContext();
+}
+
+base::WeakPtr<WebContents> WebContentsImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 const GURL& WebContentsImpl::GetURL() {
@@ -1650,34 +1645,6 @@ void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
 }
 #endif  // !defined(OS_ANDROID)
 
-base::OnceClosure WebContentsImpl::AddReceiverSet(
-    const std::string& interface_name,
-    WebContentsReceiverSet* receiver_set) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::AddReceiverSet",
-                        "interface_name", interface_name);
-  auto result =
-      receiver_sets_.insert(std::make_pair(interface_name, receiver_set));
-  DCHECK(result.second);
-  return base::BindOnce(&WebContentsImpl::RemoveReceiverSet,
-                        weak_factory_.GetWeakPtr(), interface_name);
-}
-
-WebContentsReceiverSet* WebContentsImpl::GetReceiverSet(
-    const std::string& interface_name) {
-  auto it = receiver_sets_.find(interface_name);
-  if (it == receiver_sets_.end())
-    return nullptr;
-  return it->second;
-}
-
-void WebContentsImpl::RemoveReceiverSetForTesting(
-    const std::string& interface_name) {
-  OPTIONAL_TRACE_EVENT1("content",
-                        "WebContentsImpl::RemoveReceiverSetForTesting",
-                        "interface_name", interface_name);
-  RemoveReceiverSet(interface_name);
-}
-
 std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
   std::vector<WebContentsImpl*> all_contents(1, this);
 
@@ -1875,7 +1842,9 @@ bool WebContentsImpl::IsLoading() {
 }
 
 double WebContentsImpl::GetLoadProgress() {
-  return frame_tree_.load_progress();
+  // TODO(crbug.com/1199682): Make this MPArch friendly considering primary
+  // frame tree and its descendants.
+  return frame_tree_.GetLoadProgress();
 }
 
 bool WebContentsImpl::IsLoadingToDifferentDocument() {
@@ -6408,17 +6377,17 @@ NavigationEntry* WebContentsImpl::GetNavigationEntryForTitle() {
 
 void WebContentsImpl::SendChangeLoadProgress() {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::SendChangeLoadProgress",
-                        "load_progress", frame_tree_.load_progress());
+                        "load_progress", GetLoadProgress());
   loading_last_progress_update_ = base::TimeTicks::Now();
 
   SCOPED_UMA_HISTOGRAM_TIMER("WebContentsObserver.LoadProgressChanged");
   observers_.NotifyObservers(&WebContentsObserver::LoadProgressChanged,
-                             frame_tree_.load_progress());
+                             GetLoadProgress());
 }
 
 void WebContentsImpl::ResetLoadProgressState() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ResetLoadProgressState");
-  frame_tree_.ResetLoadProgress();
+  GetPrimaryPage().set_load_progress(0.0);
   loading_weak_factory_.InvalidateWeakPtrs();
   loading_last_progress_update_ = base::TimeTicks();
 }
@@ -6545,18 +6514,6 @@ void WebContentsImpl::NotifyNavigationEntriesDeleted() {
                         "WebContentsImpl::NotifyNavigationEntriesDeleted");
   SCOPED_UMA_HISTOGRAM_TIMER("WebContentsObserver.NavigationEntryDeleted");
   observers_.NotifyObservers(&WebContentsObserver::NavigationEntriesDeleted);
-}
-
-void WebContentsImpl::OnAssociatedInterfaceRequest(
-    RenderFrameHostImpl* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  OPTIONAL_TRACE_EVENT2(
-      "content", "WebContentsImpl::OnAssociatedInterfaceRequest",
-      "render_frame_host", render_frame_host, "interface_name", interface_name);
-  auto it = receiver_sets_.find(interface_name);
-  if (it != receiver_sets_.end())
-    it->second->OnReceiverForFrame(render_frame_host, std::move(handle));
 }
 
 void WebContentsImpl::OnInterfaceRequest(
@@ -7274,14 +7231,13 @@ void WebContentsImpl::DidChangeLoadProgress() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DidChangeLoadProgress");
   if (IsBeingDestroyed())
     return;
-  double load_progress = frame_tree_.load_progress();
+  double load_progress = GetLoadProgress();
 
   // The delegate is notified immediately for the first and last updates. Also,
   // since the message loop may be pretty busy when a page is loaded, it might
   // not execute a posted task in a timely manner so the progress report is sent
   // immediately if enough time has passed.
-  base::TimeDelta min_delay =
-      base::TimeDelta::FromMilliseconds(kMinimumDelayBetweenLoadingUpdatesMS);
+  base::TimeDelta min_delay = minimum_delay_between_loading_updates_ms_;
   bool delay_elapsed =
       loading_last_progress_update_.is_null() ||
       base::TimeTicks::Now() - loading_last_progress_update_ > min_delay;
@@ -7302,11 +7258,15 @@ void WebContentsImpl::DidChangeLoadProgress() {
   if (loading_weak_factory_.HasWeakPtrs())
     return;
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&WebContentsImpl::SendChangeLoadProgress,
-                     loading_weak_factory_.GetWeakPtr()),
-      min_delay);
+  if (min_delay == base::TimeDelta::FromMilliseconds(0)) {
+    SendChangeLoadProgress();
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&WebContentsImpl::SendChangeLoadProgress,
+                       loading_weak_factory_.GetWeakPtr()),
+        min_delay);
+  }
 }
 
 bool WebContentsImpl::IsHidden() {
@@ -8801,14 +8761,6 @@ void WebContentsImpl::SetJavaScriptDialogManagerForTesting(
   OPTIONAL_TRACE_EVENT0(
       "content", "WebContentsImpl::SetJavaScriptDialogManagerForTesting");
   dialog_manager_ = dialog_manager;
-}
-
-void WebContentsImpl::RemoveReceiverSet(const std::string& interface_name) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RemoveReceiverSet",
-                        "interface_name", interface_name);
-  auto it = receiver_sets_.find(interface_name);
-  if (it != receiver_sets_.end())
-    receiver_sets_.erase(it);
 }
 
 void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded(PageImpl& page) {

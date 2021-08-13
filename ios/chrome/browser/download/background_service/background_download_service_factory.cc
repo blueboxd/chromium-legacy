@@ -61,6 +61,14 @@ std::unique_ptr<KeyedService>
 BackgroundDownloadServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   auto clients = std::make_unique<download::DownloadClientMap>();
+  // Clients should be registered here.
+  return BuildServiceWithClients(context, std::move(clients));
+}
+
+std::unique_ptr<KeyedService>
+BackgroundDownloadServiceFactory::BuildServiceWithClients(
+    web::BrowserState* context,
+    std::unique_ptr<download::DownloadClientMap> clients) const {
   auto client_set = std::make_unique<download::ClientSet>(std::move(clients));
   base::FilePath storage_dir =
       context->GetStatePath().Append(kDownloadServiceStorageDir);
@@ -76,10 +84,12 @@ BackgroundDownloadServiceFactory::BuildServiceInstanceFor(
   auto file_monitor = std::make_unique<download::FileMonitorImpl>(
       files_storage_dir, background_task_runner);
   auto logger = std::make_unique<download::LoggerImpl>();
-  auto* log_sink = logger.get();
-  return std::make_unique<download::BackgroundDownloadServiceImpl>(
+  auto* logger_ptr = logger.get();
+  auto service = std::make_unique<download::BackgroundDownloadServiceImpl>(
       std::move(client_set), std::move(model),
       download::BackgroundDownloadTaskHelper::Create(), std::move(file_monitor),
-      files_storage_dir, std::move(logger), log_sink,
+      files_storage_dir, std::move(logger), logger_ptr,
       base::DefaultClock::GetInstance());
+  logger_ptr->SetLogSource(service.get());
+  return service;
 }

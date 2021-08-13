@@ -7784,10 +7784,16 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="BatteryStatusNumberBatteries">
+  <obsolete>
+    Removed 2021-08-11. https://crbug.com/1165237
+  </obsolete>
   <int value="5" label="5+"/>
 </enum>
 
 <enum name="BatteryStatusNumberBatteriesWin">
+  <obsolete>
+    Removed 2021-08-11. https://crbug.com/1165237
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="0"/>
   <int value="2" label="1+"/>
@@ -11059,7 +11065,7 @@ histogram as enum -->
   <int value="25" label="kExploreSites"/>
   <int value="26" label="kLegacyStrikes"/>
   <int value="27" label="kWebrtcEventLogs"/>
-  <int value="28" label="kDrmLicenses"/>
+  <int value="28" label="kCdmLicenses"/>
   <int value="29" label="kHostCache"/>
   <int value="30" label="kTpmAttestationKeys"/>
   <int value="31" label="kStrikes"/>
@@ -26010,6 +26016,8 @@ Called by update_document_policy_enum.py.-->
   <int value="886" label="LensRegionSearchEnabled"/>
   <int value="887" label="ArcAppToWebAppSharingEnabled"/>
   <int value="888" label="EnhancedNetworkVoicesInSelectToSpeakAllowed"/>
+  <int value="889" label="PrintPdfAsImageAvailability"/>
+  <int value="890" label="PrintRasterizePdfDpi"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -40690,6 +40698,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="kShowInFolder"/>
   <int value="5" label="kUnpin"/>
   <int value="6" label="kRemove"/>
+  <int value="7" label="kCancel"/>
+  <int value="8" label="kPause"/>
+  <int value="9" label="kResume"/>
 </enum>
 
 <enum name="HoldingSpaceItemType">
@@ -46775,6 +46786,8 @@ from previous Chrome versions.
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
   <int value="-2056351013" label="AutofillUpdatedCardUnmaskPromptUi:enabled"/>
   <int value="-2056198604" label="InterestFeedV2Hearts:disabled"/>
+  <int value="-2054871630"
+      label="PasswordsAccountStorageRevisedOptInFlow:enabled"/>
   <int value="-2054612904" label="BuiltInModuleInfra:enabled"/>
   <int value="-2053860791" label="XGEOVisibleNetworks:enabled"/>
   <int value="-2048927838" label="AutoplayWhitelistSettings:enabled"/>
@@ -46836,6 +46849,8 @@ from previous Chrome versions.
   <int value="-2012449550" label="OmniboxMostVisitedTiles:enabled"/>
   <int value="-2012266745"
       label="OmniboxLocalZeroSuggestFrecencyRanking:disabled"/>
+  <int value="-2011908446"
+      label="PasswordsAccountStorageRevisedOptInFlow:disabled"/>
   <int value="-2011532551" label="SignedExchangeSubresourcePrefetch:disabled"/>
   <int value="-2011428140" label="RelatedSearchesAlternateUx:disabled"/>
   <int value="-2010634516" label="OmniboxLocalEntitySuggestions:disabled"/>
@@ -49445,6 +49460,7 @@ from previous Chrome versions.
   <int value="65245449" label="FilesBannerFramework:enabled"/>
   <int value="66897259" label="ModalPermissionDialogView:enabled"/>
   <int value="67639499" label="stop-loading-in-background:disabled"/>
+  <int value="72558615" label="TrafficCountersSettingsUi:enabled"/>
   <int value="73929836" label="VrBrowsingInCustomTab:enabled"/>
   <int value="75207621" label="enable-stylus-virtual-keyboard:enabled"/>
   <int value="75237697" label="ash-enable-new-overview-ui"/>
@@ -49880,6 +49896,7 @@ from previous Chrome versions.
   <int value="426199960" label="Commander:enabled"/>
   <int value="426540253" label="PowerScheduler:disabled"/>
   <int value="427184788" label="WebFeed:enabled"/>
+  <int value="427807224" label="IPH_Snooze:disabled"/>
   <int value="427945554" label="StrictExtensionIsolation:enabled"/>
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
@@ -49979,6 +49996,7 @@ from previous Chrome versions.
   <int value="505561325" label="OpenXR:disabled"/>
   <int value="506680761" label="WebNFC:disabled"/>
   <int value="508272289" label="SharedHighlightingAmp:disabled"/>
+  <int value="509602783" label="TrafficCountersSettingsUi:disabled"/>
   <int value="510066229"
       label="AutofillEnforceMinRequiredFieldsForQuery:enabled"/>
   <int value="510814146" label="OfflineBookmarks:enabled"/>
@@ -50018,6 +50036,7 @@ from previous Chrome versions.
   <int value="541667888" label="ContentLanguagesInLanguagePicker:disabled"/>
   <int value="542930298" label="WebAppEnableLinkCapturing:disabled"/>
   <int value="542960889" label="HeavyAdIntervention:enabled"/>
+  <int value="543210543" label="DisableQuickAnswersV2Translation:disabled"/>
   <int value="544443920" label="QuickAnswers:disabled"/>
   <int value="546043947" label="ImplicitRootScroller:enabled"/>
   <int value="546464390" label="LiveCaption:enabled"/>
@@ -50061,6 +50080,7 @@ from previous Chrome versions.
   <int value="576701073" label="WebPaymentsJustInTimePaymentApp:disabled"/>
   <int value="576878329" label="enable-background-blur"/>
   <int value="578695119" label="ImprovedCookieControls:disabled"/>
+  <int value="578894559" label="IPH_Snooze:enabled"/>
   <int value="581118445" label="enable-eol-notification"/>
   <int value="581355159" label="ContentSuggestionsCategoryRanker:disabled"/>
   <int value="582187448" label="DontPrefetchLibraries:enabled"/>
@@ -50439,6 +50459,7 @@ from previous Chrome versions.
   <int value="877238334" label="WebUITabStripTabDragIntegration:enabled"/>
   <int value="877257918"
       label="InterestFeedV2ClickAndViewActionsConditionalUpload:enabled"/>
+  <int value="877432034" label="DisableQuickAnswersV2Translation:enabled"/>
   <int value="877907263" label="StrictExtensionIsolation:disabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
@@ -88245,6 +88266,16 @@ Called by update_scheduler_enums.py.-->
   <int value="1" label="From non-ad script and ad frame"/>
   <int value="2" label="From ad script and non-ad frame"/>
   <int value="3" label="From non-ad script and non-ad frame"/>
+</enum>
+
+<enum name="WindowsDriveType">
+  <int value="0" label="DRIVE_UNKNOWN"/>
+  <int value="1" label="DRIVE_NO_ROOT_DIR"/>
+  <int value="2" label="DRIVE_REMOVABLE"/>
+  <int value="3" label="DRIVE_FIXED"/>
+  <int value="4" label="DRIVE_REMOTE"/>
+  <int value="5" label="DRIVE_CDROM"/>
+  <int value="6" label="DRIVE_RAMDISK"/>
 </enum>
 
 <enum name="WindowsExitCode">

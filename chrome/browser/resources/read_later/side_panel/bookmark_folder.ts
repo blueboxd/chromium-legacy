@@ -73,8 +73,24 @@ export class BookmarkFolderElement extends PolymerElement {
   openFolders: string[];
   private bookmarksApi_: BookmarksApiProxy = BookmarksApiProxy.getInstance();
 
+  static get observers() {
+    return [
+      'onChildrenLengthChanged_(folder.children.length)',
+    ];
+  }
+
+  private getAriaExpanded_(): string|undefined {
+    if (!this.folder.children || this.folder.children.length === 0) {
+      // Remove the attribute for empty folders that cannot be expanded.
+      return undefined;
+    }
+
+    return this.open_ ? 'true' : 'false';
+  }
+
   private onBookmarkClick_(event: RepeaterMouseEvent) {
     event.preventDefault();
+    event.stopPropagation();
     this.bookmarksApi_.openBookmark(event.model.item.url!, this.depth, {
       middleButton: event.type === 'auxclick',
       altKey: event.altKey,
@@ -86,12 +102,14 @@ export class BookmarkFolderElement extends PolymerElement {
 
   private onBookmarkContextMenu_(event: RepeaterMouseEvent) {
     event.preventDefault();
+    event.stopPropagation();
     this.bookmarksApi_.showContextMenu(
         event.model.item.id, event.clientX, event.clientY);
   }
 
   private onFolderContextMenu_(event: MouseEvent) {
     event.preventDefault();
+    event.stopPropagation();
     this.bookmarksApi_.showContextMenu(
         this.folder.id, event.clientX, event.clientY);
   }
@@ -100,13 +118,21 @@ export class BookmarkFolderElement extends PolymerElement {
     return getFaviconForPageURL(url, false);
   }
 
+  private onChildrenLengthChanged_() {
+    this.style.setProperty(
+        '--child-count', this.folder.children!.length.toString());
+  }
+
   private onDepthChanged_() {
     this.childDepth_ = this.depth + 1;
     this.style.setProperty('--node-depth', `${this.depth}`);
-    this.$.children.style.setProperty('--node-depth', `${this.childDepth_}`);
+    this.style.setProperty('--child-depth', `${this.childDepth_}`);
   }
 
-  private onFolderClick_() {
+  private onFolderClick_(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     if (!this.folder.children || this.folder.children.length === 0) {
       // No reason to open if there are no children to show.
       return;

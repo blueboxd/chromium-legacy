@@ -110,15 +110,9 @@ void SecurePaymentConfirmationApp::InvokePaymentApp(
   options->allow_credentials = std::move(credentials);
 
   options->challenge = request_->challenge;
-  options->payment = blink::mojom::PaymentOptions::New(
+  authenticator_->SetPaymentOptions(blink::mojom::PaymentOptions::New(
       spec_->GetTotal(/*selected_app=*/this)->amount.Clone(),
-      request_->instrument.Clone());
-
-  // We are nullifying the security check by design, and the origin that created
-  // the credential isn't saved anywhere.
-  authenticator_->SetEffectiveOrigin(url::Origin::Create(
-      GURL(base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator,
-                         effective_relying_party_identity_}))));
+      request_->instrument.Clone()));
 
   authenticator_->GetAssertion(
       std::move(options),

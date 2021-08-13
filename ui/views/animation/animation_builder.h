@@ -13,7 +13,7 @@
 #include "base/types/pass_key.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
-#include "ui/views/animation/animation_sequence.h"
+#include "ui/views/animation/animation_key.h"
 #include "ui/views/animation/animation_sequence_block.h"
 #include "ui/views/views_export.h"
 
@@ -48,22 +48,41 @@ class VIEWS_EXPORT AnimationBuilder {
   // Called when the animation is scheduled.
   AnimationBuilder& OnScheduled(base::OnceClosure callback);
 
-  // Adds `sequence` for `target`.
-  void AddLayerAnimationSequence(
-      base::PassKey<AnimationSequence>,
-      ui::LayerOwner* target,
-      std::unique_ptr<ui::LayerAnimationSequence> sequence);
+  // Adds an animation element `element` for `key` at `start` to `values`.
+  void AddLayerAnimationElement(
+      base::PassKey<AnimationSequenceBlock>,
+      AnimationKey key,
+      base::TimeDelta start,
+      std::unique_ptr<ui::LayerAnimationElement> element);
+
+  // Called when a block ends.  Ensures all animations in the sequence will run
+  // until at least `end`.
+  void BlockEndedAt(base::PassKey<AnimationSequenceBlock>, base::TimeDelta end);
+
+  // Called when the sequence is ended. Converts `values_` to
+  // `layer_animation_sequences_`.
+  void TerminateSequence(base::PassKey<AnimationSequenceBlock>);
 
  private:
   class Observer;
+  struct Value;
 
-  AnimationSequenceBlock NewSequence(bool repeating);
   Observer* GetObserver();
 
+  // Resets data for the current sequence as necessary, creates and returns the
+  // initial block.
+  AnimationSequenceBlock NewSequence();
+
+  // Data for all sequences.
   std::multimap<ui::LayerOwner*, std::unique_ptr<ui::LayerAnimationSequence>>
       layer_animation_sequences_;
-  std::vector<AnimationSequence> animation_sequences_;
   std::unique_ptr<Observer> animation_observer_;
+
+  // Data for the current sequence.
+  bool repeating_;
+  base::TimeDelta end_;
+  // Each vector is kept in sorted order.
+  std::map<AnimationKey, std::vector<Value>> values_;
 };
 }  // namespace views
 

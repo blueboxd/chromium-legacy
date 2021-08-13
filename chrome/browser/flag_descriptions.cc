@@ -1455,6 +1455,10 @@ const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";
 
+const char kInProductHelpSnoozeName[] = "In-Product Help Snooze";
+const char kInProductHelpSnoozeDescription[] =
+    "Enables the snooze button on In-Product Help.";
+
 const char kInstalledAppsInCbdName[] = "Installed Apps in Clear Browsing Data";
 const char kInstalledAppsInCbdDescription[] =
     "Adds the installed apps warning dialog to the clear browsing data flow "
@@ -1950,6 +1954,12 @@ const char kPasswordChangeDescription[] =
 const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
+
+const char kPasswordsAccountStorageRevisedOptInFlowName[] =
+    "Revised opt-in flow for account-scoped passwore storage";
+const char kPasswordsAccountStorageRevisedOptInFlowDescription[] =
+    "Enables the revised opt-in flow for the account-scoped passwords storage "
+    "during first-time save.";
 
 const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
@@ -4390,6 +4400,11 @@ const char kEnableQuickAnswersV2Name[] = "Enable Quick Answers V2 features";
 const char kEnableQuickAnswersV2Description[] =
     "Enable Quick Answers V2 features.";
 
+const char kDisableQuickAnswersV2TranslationName[] =
+    "Disable Quick Answers Translation";
+const char kDisableQuickAnswersV2TranslationDescription[] =
+    "Disable translation services of the Quick Answers.";
+
 const char kTrimOnMemoryPressureName[] = "Trim Working Set on memory pressure";
 const char kTrimOnMemoryPressureDescription[] =
     "Trim Working Set periodically on memory pressure";
@@ -4919,6 +4934,10 @@ const char kTouchscreenCalibrationName[] =
 const char kTouchscreenCalibrationDescription[] =
     "If enabled, the user can calibrate the touch screen displays in "
     "chrome://settings/display.";
+
+const char kTrafficCountersSettingsUiName[] = "Traffic Counters Settings UI";
+const char kTrafficCountersSettingsUiDescription[] =
+    "If enabled, the SettingsUI will show data usage for cellular networks";
 
 const char kUseFakeDeviceForMediaStreamName[] = "Use fake video capture device";
 const char kUseFakeDeviceForMediaStreamDescription[] =

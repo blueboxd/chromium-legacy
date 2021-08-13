@@ -43,6 +43,7 @@ class MockAuthenticator : public autofill::InternalAuthenticator {
   ~MockAuthenticator() override = default;
 
   MOCK_METHOD1(SetEffectiveOrigin, void(const url::Origin&));
+  MOCK_METHOD1(SetPaymentOptions, void(blink::mojom::PaymentOptionsPtr));
   MOCK_METHOD2(
       MakeCredential,
       void(blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
@@ -151,9 +152,6 @@ TEST_F(SecurePaymentConfirmationAppTest, Smoke) {
       /*Icon=*/std::make_unique<SkBitmap>(), label_, std::move(credential_id),
       url::Origin::Create(GURL("https://merchant.example")), spec_->AsWeakPtr(),
       MakeRequest(), std::move(authenticator));
-
-  EXPECT_CALL(*mock_authenticator, SetEffectiveOrigin(Eq(url::Origin::Create(
-                                       GURL("https://effective_rp.example")))));
 
   std::vector<uint8_t> expected_bytes = std::vector<uint8_t>(
       network_data_bytes_.begin(), network_data_bytes_.end());

@@ -153,6 +153,24 @@
             ]
         }
     ],
+    "AndroidElasticOverscroll": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "type": "transform"
+                    },
+                    "enable_features": [
+                        "ElasticOverscroll"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidHatsNext": [
         {
             "platforms": [
@@ -3222,7 +3240,7 @@
                 {
                     "name": "EnabledLaunch",
                     "params": {
-                        "DisabledProviders": "Quad9Secure",
+                        "DisabledProviders": "Cox,Quad9Secure",
                         "ShowUi": "true"
                     },
                     "enable_features": [
@@ -4934,6 +4952,32 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MediaSessionWebRTC"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MeetDevicesMojoServices": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Hotlog-Experiment",
+                    "params": {
+                        "CommandLoggerEnabled": "true",
+                        "CommandLoggerFrequencySeconds": "30",
+                        "CrosHealthdProducerFrequencySeconds": "60",
+                        "DiagnosticsLoggerEnabled": "true",
+                        "ProcessLoggerEnabled": "true",
+                        "SystemLoggerEnabled": "true",
+                        "SystemLoggerFrequencySeconds": "30"
+                    },
+                    "enable_features": [
+                        "EncryptedReportingPipeline",
+                        "MeetDevicesCloudLogger",
+                        "MeetDevicesMojoServices"
                     ]
                 }
             ]

@@ -13,6 +13,8 @@ copy("copy_audio") {
     "audio_player.ts",
     "device_page.ts",
     "device_table.ts",
+    "feedback_page.ts",
+    "input_page.ts",
     "output_page.ts",
     "page.ts",
   ]
@@ -41,6 +43,8 @@ ts_library("build_ts") {
     "audio.mojom-webui.js",
     "device_table.ts",
     "device_page.ts",
+    "feedback_page.ts",
+    "input_page.ts",
     "output_page.ts",
     "page.ts",
   ]

@@ -12,6 +12,7 @@
 #include "chrome/common/pref_font_webkit_names.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "printing/buildflags/buildflags.h"
 
 namespace prefs {
 
@@ -1304,12 +1305,6 @@ const char kProfileUsingGAIAAvatar[] = "profile.using_gaia_avatar";
 // The supervised user ID.
 const char kSupervisedUserId[] = "profile.managed_user_id";
 
-// Boolean specifying if the user has accepted account management. This enables
-// the browser to fetch profile policies even if they have not consented to
-// sync.
-extern const char kUserAcceptedAccountManagement[] =
-    "profile.user_accepted_account_management";
-
 // Integer that specifies the number of times that we have shown the upgrade
 // tutorial card in the avatar menu bubble.
 const char kProfileAvatarTutorialShown[] =
@@ -1347,6 +1342,19 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 // selection in the Print Preview. See DefaultPrinterSelection policy.
 const char kPrintPreviewDefaultDestinationSelectionRules[] =
     "printing.default_destination_selection_rules";
+
+#if defined(OS_WIN) || defined(OS_MAC)
+// Boolean controlling whether the "Print as image" option should be available
+// in Print Preview when printing a PDF.
+const char kPrintPdfAsImageAvailability[] =
+    "printing.print_pdf_as_image_availability";
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+// An integer resolution to use for DPI when rasterizing PDFs with "Print to
+// image".
+const char kPrintRasterizePdfDpi[] = "printing.rasterize_pdf_dpi";
+#endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
 // An integer pref that holds the rasterization mode to use when printing.

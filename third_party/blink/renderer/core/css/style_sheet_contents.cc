@@ -316,7 +316,8 @@ void StyleSheetContents::ParserAddNamespace(const AtomicString& prefix,
 
 const AtomicString& StyleSheetContents::NamespaceURIFromPrefix(
     const AtomicString& prefix) const {
-  return namespaces_.DeprecatedAtOrEmptyValue(prefix);
+  auto it = namespaces_.find(prefix);
+  return it != namespaces_.end() ? it->value : WTF::g_null_atom;
 }
 
 void StyleSheetContents::ParseAuthorStyleSheet(
@@ -487,6 +488,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
         break;
       case StyleRuleBase::kContainer:
       case StyleRuleBase::kMedia:
+      case StyleRuleBase::kLayerBlock:
         if (ChildRulesHaveFailedOrCanceledSubresources(
                 To<StyleRuleGroup>(rule)->ChildRules()))
           return true;
@@ -500,6 +502,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kProperty:
       case StyleRuleBase::kKeyframes:
       case StyleRuleBase::kKeyframe:
+      case StyleRuleBase::kLayerStatement:
       case StyleRuleBase::kScrollTimeline:
       case StyleRuleBase::kSupports:
       case StyleRuleBase::kViewport:

@@ -575,9 +575,6 @@
           'idempotent': False,  # https://crbug.com/549140
           'shards': 6,
         },
-        'resultdb': {
-          'enable': True,
-        },
       },
       'skia_renderer_telemetry_unittests': {
         'isolate_name': 'telemetry_unittests',
@@ -594,9 +591,6 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 24,
-        },
-        'resultdb': {
-          'enable': True,
         },
       },
       'telemetry_perf_unittests': {
@@ -3442,37 +3436,6 @@
       },
     },
 
-    # TODO(crbug.com/1202958): Remove this when SkiaRenderer is fully shipped
-    # on Chrome OS.
-    'gpu_skia_renderer_webgl_conformance_telemetry_tests': {
-      'gl_renderer_webgl_conformance': {
-        'telemetry_test_name': 'webgl_conformance',
-        'chromeos_args': [
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-        ],
-        'args': [
-          # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--enable-features=UseSkiaRenderer --force_high_performance_gpu',
-          # The current working directory when run via isolate is
-          # out/Debug or out/Release. Reference this file relatively to
-          # it.
-          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-        'android_swarming': {
-          'shards': 12,
-        },
-        'chromeos_swarming': {
-          'shards': 18,
-        },
-      },
-    },
-
     'gpu_swiftshader_gtests': {
       'swiftshader_unittests': {
       },
@@ -4384,12 +4347,13 @@
     # TODO(crbug.com/1202958): Remove this when SkiaRenderer is fully shipped
     # on Chrome OS.
     'linux_chromeos_skia_renderer_specific_gtests': {
-      'skia_renderer_ash_unittests': {
-        'test': 'ash_unittests',
-        'args': [
-          '--enable-features=UseSkiaRenderer',
-        ],
-      },
+      # TODO(b/195938162): Re-enable this when animation tests are deflaked.
+      # 'skia_renderer_ash_unittests': {
+      #   'test': 'ash_unittests',
+      #   'args': [
+      #     '--enable-features=UseSkiaRenderer',
+      #   ],
+      # },
       'skia_renderer_aura_unittests': {
         'test': 'aura_unittests',
         'args': [
@@ -6346,7 +6310,6 @@
     ],
 
     'gpu_chromeos_telemetry_tests': [
-      'gpu_skia_renderer_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 

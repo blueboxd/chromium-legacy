@@ -353,6 +353,10 @@ const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
 const base::Feature kDisableOfficeEditingComponentApp{
     "DisableOfficeEditingComponentApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Disables translation services of the Quick Answers V2.
+const base::Feature kDisableQuickAnswersV2Translation{
+    "DisableQuickAnswersV2Translation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables indicators to hint where displays are connected.
 const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1036,6 +1040,10 @@ const base::Feature kTabClusterUI{"TabClusterUI",
 const base::Feature kTelemetryExtension{"TelemetryExtension",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Settings UI to show data usage for cellular networks.
+const base::Feature kTrafficCountersSettingsUi{
+    "TrafficCountersSettingsUi", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables trilinear filtering.
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1077,11 +1085,11 @@ const base::Feature kUseWallpaperStagingUrl{"UseWallpaperStagingUrl",
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables vertical split screen for clamshell mode. This allows users to snap
+// Enables vertical snap state for clamshell mode. This allows users to snap
 // top and bottom when the screen is in portrait orientation, while snap left
 // and right when the screen is in landscape orientation.
-const base::Feature kVerticalSplitScreen{"VerticalSplitScreen",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kVerticalSnapState{"VerticalSnapState",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable the Virtual Keyboard API.
 const base::Feature kVirtualKeyboardApi{"VirtualKeyboardApi",
@@ -1514,6 +1522,10 @@ bool IsQuickAnswersV2Enabled() {
   return base::FeatureList::IsEnabled(kQuickAnswersV2);
 }
 
+bool IsQuickAnswersV2TranslationDisabled() {
+  return base::FeatureList::IsEnabled(kDisableQuickAnswersV2Translation);
+}
+
 bool IsReduceDisplayNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kReduceDisplayNotifications);
 }
@@ -1587,8 +1599,8 @@ bool IsUseStorkSmdsServerAddressEnabled() {
   return base::FeatureList::IsEnabled(kUseStorkSmdsServerAddress);
 }
 
-bool IsVerticalSplitScreenEnabled() {
-  return base::FeatureList::IsEnabled(kVerticalSplitScreen);
+bool IsVerticalSnapStateEnabled() {
+  return base::FeatureList::IsEnabled(kVerticalSnapState);
 }
 
 bool IsWallpaperWebUIEnabled() {

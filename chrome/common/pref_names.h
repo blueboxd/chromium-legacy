@@ -424,7 +424,6 @@ extern const char kProfileName[];
 extern const char kProfileUsingDefaultAvatar[];
 extern const char kProfileUsingGAIAAvatar[];
 extern const char kSupervisedUserId[];
-extern const char kUserAcceptedAccountManagement[];
 
 extern const char kProfileAvatarTutorialShown[];
 
@@ -438,6 +437,14 @@ extern const char kPrintingEnabled[];
 extern const char kPrintHeaderFooter[];
 extern const char kPrintPreviewDisabled[];
 extern const char kPrintPreviewDefaultDestinationSelectionRules[];
+
+#if defined(OS_WIN) || defined(OS_MAC)
+extern const char kPrintPdfAsImageAvailability[];
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+extern const char kPrintRasterizePdfDpi[];
+#endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
 extern const char kPrintRasterizationMode[];

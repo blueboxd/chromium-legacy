@@ -18,8 +18,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/animation_key.h"
-#include "ui/views/animation/animation_sequence.h"
 
 namespace views {
 
@@ -27,7 +27,7 @@ using PassKey = base::PassKey<AnimationSequenceBlock>;
 
 AnimationSequenceBlock::AnimationSequenceBlock(
     base::PassKey<AnimationBuilder> builder_key,
-    AnimationSequence* owner,
+    AnimationBuilder* owner,
     base::TimeDelta start)
     : builder_key_(builder_key), owner_(owner), start_(start) {}
 
@@ -133,9 +133,9 @@ AnimationSequenceBlock& AnimationSequenceBlock::AddAnimation(AnimationKey key,
 }
 
 void AnimationSequenceBlock::TerminateBlock() {
+  const auto duration = duration_.value_or(base::TimeDelta());
   for (auto& pair : elements_) {
     std::unique_ptr<ui::LayerAnimationElement> element;
-    const auto duration = duration_.value_or(base::TimeDelta());
     switch (pair.first.property) {
       case ui::LayerAnimationElement::TRANSFORM:
         element = ui::LayerAnimationElement::CreateInterpolatedTransformElement(
@@ -178,9 +178,11 @@ void AnimationSequenceBlock::TerminateBlock() {
       default:
         NOTREACHED();
     }
-    owner_->AddElement(PassKey(), pair.first, start_, std::move(element));
+    owner_->AddLayerAnimationElement(PassKey(), pair.first, start_,
+                                     std::move(element));
   }
 
+  owner_->BlockEndedAt(PassKey(), start_ + duration);
   elements_.clear();
 }
 

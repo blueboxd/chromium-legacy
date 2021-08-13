@@ -592,7 +592,7 @@ const base::Feature kKernelnextVMs{"KernelnextVMs",
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 const base::Feature kLinkDoctorDeprecationAndroid{
-    "LinkDoctorDeprecationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LinkDoctorDeprecationAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 // Enables LiteVideos, a data-saving optimization that throttles media requests
@@ -733,6 +733,16 @@ const base::FeatureParam<double> kPermissionPredictionsHoldbackChance(
     &kPermissionPredictions,
     "holdback_chance",
     0.0);
+
+// Enables using the prediction service for geolocation permission prompts.
+const base::Feature kPermissionGeolocationPredictions{
+    "PermissionGeolocationPredictions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<double>
+    kPermissionGeolocationPredictionsHoldbackChance(
+        &kPermissionGeolocationPredictions,
+        "holdback_chance",
+        0.0);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for "Plugin VMs" on Chrome OS.

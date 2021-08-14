@@ -2082,8 +2082,8 @@ crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-naviga
 
 # These two are like the above but some bots seem to give timeouts that count as failures according to the -expected.txt,
 # while other bots give actual timeouts.
-crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/cross-document-traversal-same-document-nav.html [ Timeout Failure ]
-crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/same-document-traversal-same-document-nav.html [ Timeout Failure ]
+crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/cross-document-traversal-same-document-nav.html [ Failure Timeout ]
+crbug.com/1236768 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/tentative/same-document-traversal-same-document-nav.html [ Failure Timeout ]
 
 
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
@@ -2664,6 +2664,21 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-fonts/system-ui-zh.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-07.html [ Failure ]
+crbug.com/626703 external/wpt/css/selectors/nesting.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-fonts/system-ui-ur.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-fonts/system-ui-ur.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-fonts/system-ui-ur.html [ Failure ]
+crbug.com/626703 [ Mac11.0 ] external/wpt/css/css-fonts/system-ui-ur.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-fonts/system-ui-ur.html [ Failure Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/system-ui-ar.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-fonts/system-ui-ja-vs-zh.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-fonts/system-ui-ja.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-fonts/system-ui-ur-vs-ar.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
+crbug.com/626703 [ Win10.1909 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Mac10.14 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/valid-image-after-load.https.html [ Failure ]
 crbug.com/626703 [ Mac11.0 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-2.https.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-paint-error.https.html [ Failure ]
@@ -4111,13 +4126,11 @@ crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-justify-001.h
 crbug.com/618969 external/wpt/css/css-grid/subgrid/* [ Skip ]
 
 ### Tests failing with SVGTextNG enabled:
-crbug.com/1179585 virtual/layout_ng_svg_text/paint/invalidation/svg/text-match-svg.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/smallFonts.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textDecoration2.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textFeatures.svg [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/batik/text/textProperties.svg [ Failure ]
-crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/text-match-highlight.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/custom/visibility-collapse.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-dom-lengthAdjust-attr.html [ Failure ]
 crbug.com/1179585 virtual/layout_ng_svg_text/svg/dynamic-updates/SVGTextElement-svgdom-lengthAdjust-prop.html [ Failure ]
@@ -5579,6 +5592,11 @@ crbug.com/1207342 http/tests/devtools/indexeddb/delete-entry.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/indexeddb/resources-panel.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/indexeddb/track-valid-origin.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/indexeddb/upgrade-events.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/editor/text-editor-toggle-tab-moves-focus.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/unit/binary-resource-view.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/unit/source-frame-pretty-print.js [ Failure Pass ]
+crbug.com/1207342 http/tests/devtools/portals/portals-sources-activate.js [ Failure Pass Timeout ]
+crbug.com/1207342 http/tests/devtools/webaudio/audio-context-selector-test.js [ Failure Pass ]
 
 
 # First party DevTools issues only work in the first-party-sets virtual suite
@@ -7841,7 +7859,7 @@ crbug.com/1235685 [ Mac10.14 ] virtual/scroll-unification/plugins/focus-change-4
 crbug.com/1215390 [ Linux ] external/wpt/pointerevents/pointerevent_pointerId_scope.html [ Failure Pass ]
 
 # Sheriff 2021-08-04
-crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.js [ Failure Pass Crash Timeout ]
+crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.js [ Crash Failure Pass Timeout ]
 
 # Sheriff 2021-08/05
 crbug.com/1230534 external/wpt/webrtc/simulcast/getStats.https.html [ Failure Pass Timeout ]
@@ -7857,8 +7875,10 @@ crbug.com/1230534 external/wpt/webrtc/simulcast/setParameters-active.https.html 
 crbug.com/1237640 http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Pass Timeout ]
 crbug.com/1239175 http/tests/navigation/same-and-different-back.html [ Failure Pass ]
 crbug.com/1239164 http/tests/inspector-protocol/network/navigate-iframe-in2in.js [ Failure Pass ]
-crbug.com/1192932 http/tests/inspector-protocol/network/xhr-interception.js [ Failure Pass ]
 crbug.com/1192215 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure Pass ]
 crbug.com/1237909 external/wpt/webrtc-svc/RTCRtpParameters-scalability.html [ Crash Failure Pass Timeout ]
 crbug.com/1239161 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_noopener.html [ Failure Pass ]
 crbug.com/1239139 virtual/prerender/wpt_internal/prerender/restriction-prompt-by-before-unload.html [ Crash Pass ]
+
+# Sheriff 2021-08-13
+crbug.com/1239485 [ Mac ] fast/frames/iframe-plugin-load-remove-document-crash.html [ Failure Pass ]

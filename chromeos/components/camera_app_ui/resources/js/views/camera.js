@@ -37,6 +37,7 @@ import {
   ErrorLevel,
   ErrorType,
   Facing,
+  MimeType,
   Mode,
   Resolution,
   ViewName,
@@ -260,12 +261,6 @@ export class Camera extends View {
     this.take_ = null;
 
     /**
-     * @type {!HTMLElement}
-     * @private
-     */
-    this.banner_ = dom.get('#banner', HTMLElement);
-
-    /**
      * @type {!HTMLButtonElement}
      */
     this.openPTZPanel_ = dom.get('#open-ptz-panel', HTMLButtonElement);
@@ -342,11 +337,6 @@ export class Camera extends View {
       onLabel: I18nString.RECORD_VIDEO_RESUME_BUTTON,
       offLabel: I18nString.RECORD_VIDEO_PAUSE_BUTTON,
     });
-
-    dom.get('#banner-close', HTMLButtonElement)
-        .addEventListener('click', () => {
-          animate.cancel(this.banner_);
-        });
 
     this.initOpenPTZPanel_();
 
@@ -593,13 +583,7 @@ export class Camera extends View {
    */
   focus() {
     (async () => {
-      const shown = localStorage.getBool('isFolderChangeMsgShown');
       await this.configuring_;
-      if (!shown) {
-        localStorage.set('isFolderChangeMsgShown', true);
-        await animate.play(this.banner_);
-        return;
-      }
 
       // Check the view is still on the top after await.
       if (!nav.isTopMostView(ViewName.CAMERA)) {
@@ -720,8 +704,22 @@ export class Camera extends View {
   /**
    * @override
    */
-  async handleResultDocument({blob, resolution}, name) {
-    // TODO(b/190689433): Send metrics event for counting usage.
+  async handleResultDocument({blob, resolution, mimeType}, name) {
+    let docResult;
+    if (mimeType === MimeType.JPEG) {
+      docResult = metrics.DocResultType.SAVE_AS_PHOTO;
+    } else if (mimeType === MimeType.PDF) {
+      docResult = metrics.DocResultType.SAVE_AS_PDF;
+    } else {
+      throw new Error(`Unrecognized document mimeType: ${mimeType}`);
+    }
+
+    metrics.sendCaptureEvent({
+      facing: this.facingMode_,
+      resolution,
+      shutterType: this.shutterType_,
+      docResult,
+    });
     try {
       await this.resultSaver_.savePhoto(blob, name);
     } catch (e) {
@@ -731,14 +729,28 @@ export class Camera extends View {
   }
 
   /**
+   * @override
+   */
+  handleCancelDocument({resolution}) {
+    metrics.sendCaptureEvent({
+      facing: this.facingMode_,
+      resolution,
+      shutterType: this.shutterType_,
+      docResult: metrics.DocResultType.CANCELED,
+    });
+  }
+
+  /**
    * @return {!Promise}
    * @private
    */
   async restorePreviewInScannerMode_() {
     assert(this.constraints_ !== null);
+    await this.modes_.prepareDevice(Mode.SCANNER);
     await this.preview_.open(this.constraints_);
     const scannerMode = assertInstanceof(this.modes_.current, Scanner);
     scannerMode.updatePreview(this.preview_.stream);
+    await this.scannerOptions_.attachPreview(this.preview_.video);
   }
 
   /**
@@ -747,6 +759,7 @@ export class Camera extends View {
   async setReviewDocument(blob) {
     this.constraints_ = this.preview_.getConstraits();
     await this.preview_.close();
+    await this.scannerOptions_.detachPreview();
     try {
       await this.reviewDocumentView_.setReviewDocument(blob);
     } catch (e) {
@@ -896,9 +909,11 @@ export class Camera extends View {
         if (this.isSuspended()) {
           throw new CameraSuspendedError();
         }
-        const factory = this.modes_.getModeFactory(mode);
+        this.modes_.setCaptureOption(constraints, captureR);
+
         try {
-          await factory.prepareDevice(constraints, captureR);
+          await this.modes_.prepareDevice(mode);
+          const factory = this.modes_.getModeFactory(mode);
 
           // Sets 2500 ms delay between screen resumed and open camera preview.
           // TODO(b/173679752): Removes this workaround after fix delay on
@@ -942,7 +957,6 @@ export class Camera extends View {
           nav.close(ViewName.WARNING, WarningType.NO_CAMERA);
           return true;
         } catch (e) {
-          await factory.clear();
           await this.stopStreams_();
 
           let errorToReport = e;

@@ -3864,6 +3864,7 @@ if (!is_android && !is_fuchsia) {
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
       sources += [
         "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_integration_browsertest_mac_win_linux.cc",
         "../browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_browsertest.cc",
       ]
     }
@@ -7413,7 +7414,6 @@ test("unit_tests") {
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.h",
       "../browser/ui/views/tabs/overflow_view_unittest.cc",
       "../browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc",
-      "../browser/ui/views/tabs/tab_hover_card_bubble_view_unittest.cc",
       "../browser/ui/views/tabs/tab_hover_card_controller_unittest.cc",
       "../browser/ui/views/tabs/tab_hover_card_metrics_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_layout_unittest.cc",
@@ -8751,6 +8751,10 @@ if (!is_android && !is_fuchsia) {
         "../browser/sync/test/integration/two_client_printers_sync_test.cc",
       ]
       deps += [ "//chromeos" ]
+    }
+
+    if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
+      sources += [ "../browser/sync/test/integration/two_client_web_apps_integration_sync_test_mac_win_linux.cc" ]
     }
 
     if (toolkit_views) {

@@ -112,7 +112,13 @@
           'skia_gold_test',
         ],
         'test': 'chrome_public_test_apk',
-      }
+      },
+      'chrome_public_unit_test_apk': {
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
     },
 
     'android_incremental_tests': {
@@ -178,6 +184,12 @@
         'swarming': {
           'shards': 5,
         },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
+      'chrome_public_unit_test_apk': {
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
@@ -325,6 +337,16 @@
         ],
         'test': 'chrome_public_test_apk',
       },
+      'bf_cache_chrome_public_unit_test_apk': {
+        'args': [
+          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+        ],
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+        'test': 'chrome_public_unit_test_apk',
+      },
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
@@ -432,6 +454,12 @@
         'swarming': {
           'shards': 20,
         },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
+      'chrome_public_unit_test_apk': {
         'mixins': [
           'chrome-gold-service-account',
           'skia_gold_test',
@@ -799,7 +827,6 @@
         'use_isolated_scripts_api': True,
       },
       'base_unittests': {},
-      'base_util_unittests': {},
       'blink_common_unittests': {},
       'blink_heap_unittests': {},
       'blink_platform_unittests': {},
@@ -1485,9 +1512,6 @@
         'mixins': ['fuchsia_runner_logs'],
       },
       'base_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'base_util_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
       'blink_common_unittests': {
@@ -4664,7 +4688,6 @@
         'use_isolated_scripts_api': True,
       },
       'base_unittests': {},
-      'base_util_unittests': {},
       'blink_common_unittests': {},
       'blink_heap_unittests': {},
       'blink_platform_unittests': {},
@@ -4842,6 +4865,16 @@
           'has_native_resultdb_integration',
         ],
         'test': 'chrome_public_test_apk',
+      },
+      'site_per_process_chrome_public_unit_test_apk': {
+        'args': [
+          '--site-per-process',
+        ],
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+        'test': 'chrome_public_unit_test_apk',
       },
       'site_per_process_components_browsertests': {
         'args': [
@@ -5722,7 +5755,7 @@
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'weblayer_android_gtests',
       'weblayer_gtests',
-      'webview_cts_tests_gtest',
+      'webview_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
@@ -6449,7 +6482,7 @@
       # TODO(crbug.com/1080424): Try enabling these again once some of the
       # existing CrOS WebGL issues are resolved.
       # 'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      # 'gpu_webgl2_conformance_validating_telemetry_tests',
+      'gpu_webgl2_conformance_validating_telemetry_tests',
       # 'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 

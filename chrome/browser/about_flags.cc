@@ -4306,9 +4306,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsName,
      flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
-    {"omnibox-pedals-batch2", flag_descriptions::kOmniboxPedalsBatch2Name,
-     flag_descriptions::kOmniboxPedalsBatch2Description, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch2)},
     {"omnibox-pedals-batch2-nonenglish",
      flag_descriptions::kOmniboxPedalsBatch2NonEnglishName,
      flag_descriptions::kOmniboxPedalsBatch2NonEnglishDescription, kOsDesktop,
@@ -4316,10 +4313,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-pedals-batch3", flag_descriptions::kOmniboxPedalsBatch3Name,
      flag_descriptions::kOmniboxPedalsBatch3Description, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch3)},
-    {"omnibox-pedals-default-icon-colored",
-     flag_descriptions::kOmniboxPedalsDefaultIconColoredName,
-     flag_descriptions::kOmniboxPedalsDefaultIconColoredDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsDefaultIconColored)},
     {"omnibox-pedals-translation-console",
      flag_descriptions::kOmniboxPedalsTranslationConsoleName,
      flag_descriptions::kOmniboxPedalsTranslationConsoleDescription, kOsDesktop,
@@ -5034,10 +5027,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDisableProcessReuse)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-app-data-search", flag_descriptions::kEnableAppDataSearchName,
-     flag_descriptions::kEnableAppDataSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableAppDataSearch)},
-
     {"enable-app-grid-ghost", flag_descriptions::kEnableAppGridGhostName,
      flag_descriptions::kEnableAppGridGhostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppGridGhost)},
@@ -7504,6 +7493,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTrafficCountersSettingsUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kTrafficCountersSettingsUi)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"extensions-menu-access-control",
+     flag_descriptions::kExtensionsMenuAccessControlName,
+     flag_descriptions::kExtensionsMenuAccessControlDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kExtensionsMenuAccessControl)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

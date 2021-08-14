@@ -181,6 +181,10 @@ void WaylandWindow::SetPointerFocus(bool focus) {
     UpdateCursorShape(cursor_);
 }
 
+void WaylandWindow::RemoveEnteredOutput(uint32_t output_id) {
+  root_surface_->RemoveEnteredOutput(output_id);
+}
+
 bool WaylandWindow::StartDrag(const ui::OSExchangeData& data,
                               int operation,
                               gfx::NativeCursor cursor,
@@ -354,8 +358,8 @@ gfx::Rect WaylandWindow::GetRestoredBoundsInPixels() const {
 }
 
 bool WaylandWindow::ShouldWindowContentsBeTransparent() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  // Wayland compositors always support translucency.
+  return true;
 }
 
 void WaylandWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {

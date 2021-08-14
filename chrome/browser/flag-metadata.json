@@ -344,8 +344,8 @@
   },
   {
     "name": "autofill-enable-offer-notification",
-    "owners": [ "siyua", "manasverma@google.com" ],
-    "expiry_milestone": 95
+    "owners": [ "siyua", "jsaul@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "autofill-enable-offer-notification-cross-tab-tracking",
@@ -1331,11 +1331,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-app-data-search",
-    "owners": [ "jennyz", "kaznacheev" ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "enable-app-grid-ghost",
     "owners": [ "mmourgos" ],
     "expiry_milestone": 88
@@ -1422,8 +1417,8 @@
   },
   {
     "name": "enable-autofill-credit-card-authentication",
-    "owners": [ "jsaul@google.com", "manasverma@google.com" ],
-    "expiry_milestone": 94
+    "owners": [ "jsaul@google.com", "siyua" ],
+    "expiry_milestone": 97
   },
   {
     "name": "enable-autofill-credit-card-upload",
@@ -2982,6 +2977,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "extensions-menu-access-control",
+    "owners": [ "emiliapaz" ],
+    "expiry_milestone":  100
+  },
+  {
     "name": "extensions-on-chrome-urls",
     "owners": [ "//extensions/OWNERS" ],
     // This enables the use of extensions on chrome:// URLs. This is useful for
@@ -4147,11 +4147,6 @@
     "expiry_milestone": 97
   },
   {
-    "name": "omnibox-pedals-batch2",
-    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "omnibox-pedals-batch2-nonenglish",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 97
@@ -4160,11 +4155,6 @@
     "name": "omnibox-pedals-batch3",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 98
-  },
-  {
-    "name": "omnibox-pedals-default-icon-colored",
-    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
   },
   {
     "name": "omnibox-pedals-translation-console",
@@ -5053,7 +5043,7 @@
   },
   {
     "name": "shimless-rma-flow",
-    "owners": [ "joonbug", "cros-peripherals@google.com" ],
+    "owners": [ "zentaro", "cros-peripherals@google.com" ],
     "expiry_milestone": 98
   },
   {

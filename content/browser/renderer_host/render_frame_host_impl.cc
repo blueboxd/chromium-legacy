@@ -4752,6 +4752,7 @@ void RenderFrameHostImpl::DownloadURL(
                                           GetProcess()->GetID(), GetRoutingID(),
                                           traffic_annotation));
   parameters->set_content_initiated(!blink_parameters->is_context_menu_save);
+  parameters->set_has_user_gesture(blink_parameters->has_user_gesture);
   parameters->set_suggested_name(
       blink_parameters->suggested_name.value_or(std::u16string()));
   parameters->set_prompt(blink_parameters->is_context_menu_save);
@@ -6975,7 +6976,8 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
 
   // Verify that if this RenderFrameHost is for a WebUI it is not committing a
   // URL which is not allowed in a WebUI process. As we are at the commit stage,
-  // set |origin_isolation_request| to kNone.
+  // set OriginIsolationRequest to kNone (this is implicitly done by the
+  // UrlInfoInit constructor).
   if (!Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
           this, UrlInfo(UrlInfoInit(url).WithOrigin(origin)),
           /* is_renderer_initiated_check */ true)) {
@@ -9528,8 +9530,8 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
 }
 
 void RenderFrameHostImpl::SetLastCommittedSiteInfo(const GURL& url) {
-  // Since |url| has already committed, |origin_isolation_request| below should
-  // be set to kNone.
+  // Since |url| has already committed, OriginIsolationRequest should be set to
+  // kNone: this is done implicitly in the UrlInfoInit constructor.
   BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
   SiteInfo site_info =
       url.is_empty()

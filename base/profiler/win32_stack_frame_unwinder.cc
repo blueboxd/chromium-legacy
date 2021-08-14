@@ -43,7 +43,7 @@ Win32UnwindFunctions::~Win32UnwindFunctions() {}
 PRUNTIME_FUNCTION Win32UnwindFunctions::LookupFunctionEntry(
     DWORD64 program_counter,
     PDWORD64 image_base) {
-#ifdef _WIN64
+#if defined(ARCH_CPU_64_BITS)
   return ::RtlLookupFunctionEntry(program_counter, image_base, nullptr);
 #else
   NOTREACHED();
@@ -55,7 +55,7 @@ void Win32UnwindFunctions::VirtualUnwind(DWORD64 image_base,
                                          DWORD64 program_counter,
                                          PRUNTIME_FUNCTION runtime_function,
                                          CONTEXT* context) {
-#ifdef _WIN64
+#if defined(ARCH_CPU_64_BITS)
   void* handler_data = nullptr;
   ULONG64 establisher_frame;
   KNONVOLATILE_CONTEXT_POINTERS nvcontext = {};
@@ -90,16 +90,16 @@ bool Win32StackFrameUnwinder::TryUnwind(
     // LookupFunctionEntry and VirtualUnwind calls, resulting in crashes
     // accessing unwind information from the unloaded module.
     const ModuleCache::Module* module) {
-#ifdef _WIN64
+#if defined(ARCH_CPU_64_BITS)
   // Ensure we found a valid module for the program counter.
   DCHECK(module);
-  ULONG64 image_base;
+  ULONG64 image_base = 0;
   // Try to look up unwind metadata for the current function.
   PRUNTIME_FUNCTION runtime_function =
       unwind_functions_->LookupFunctionEntry(ContextPC(context), &image_base);
-  DCHECK_EQ(module->GetBaseAddress(), image_base);
 
   if (runtime_function) {
+    DCHECK_EQ(module->GetBaseAddress(), image_base);
     unwind_functions_->VirtualUnwind(image_base, ContextPC(context),
                                      runtime_function, context);
     return true;

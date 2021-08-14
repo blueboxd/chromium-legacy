@@ -17,16 +17,19 @@
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/assistant/app_list_bubble_assistant_page.h"
+#include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/point.h"
@@ -74,6 +77,19 @@ void AddSearchResult(const std::string& id, const std::u16string& title) {
   search_result->set_title(title);
   Shell::Get()->app_list_controller()->GetSearchModel()->results()->Add(
       std::move(search_result));
+}
+
+void AddRecentApps(int num_apps) {
+  auto* search_model = Shell::Get()->app_list_controller()->GetSearchModel();
+  for (int i = 0; i < num_apps; i++) {
+    auto result = std::make_unique<TestSearchResult>();
+    result->set_result_id(base::NumberToString(i));
+    result->set_result_type(AppListSearchResultType::kInstalledApp);
+    // TODO(crbug.com/1216662): Replace with a real display type after the ML
+    // team gives us a way to query directly for recent apps.
+    result->set_display_type(SearchResultDisplayType::kChip);
+    search_model->results()->Add(std::move(result));
+  }
 }
 
 AppListBubblePresenter* GetBubblePresenter() {
@@ -128,6 +144,20 @@ class AppListBubbleViewTest : public AshTestBase {
 
   base::test::ScopedFeatureList scoped_features_;
 };
+
+TEST_F(AppListBubbleViewTest, LayerConfiguration) {
+  ShowAppList();
+
+  // Verify that nothing has changed the layer configuration.
+  ui::Layer* layer = GetBubblePresenter()->bubble_view_for_test()->layer();
+  ASSERT_TRUE(layer);
+  EXPECT_FALSE(layer->fills_bounds_opaquely());
+  EXPECT_TRUE(layer->is_fast_rounded_corner());
+  EXPECT_EQ(layer->background_blur(), kUnifiedMenuBackgroundBlur);
+  EXPECT_EQ(layer->background_color(),
+            AshColorProvider::Get()->GetBaseLayerColor(
+                AshColorProvider::BaseLayerType::kTransparent80));
+}
 
 TEST_F(AppListBubbleViewTest, BubbleOpensInBottomLeftForBottomShelf) {
   GetPrimaryShelf()->SetAlignment(ShelfAlignment::kBottom);
@@ -349,8 +379,32 @@ TEST_F(AppListBubbleViewTest, DownArrowMovesFocusToApps) {
   EXPECT_FALSE(app_item->HasFocus());
 }
 
+TEST_F(AppListBubbleViewTest, DownArrowSelectsRecentsThenApps) {
+  // Create enough apps to require scrolling.
+  AddAppItems(50);
+  // Create enough recent apps that the recents section will show.
+  const int kNumRecentApps = 5;
+  AddRecentApps(kNumRecentApps);
+  ShowAppList();
+
+  // Pressing down arrow moves focus through the recent apps. It does not
+  // trigger ScrollView scrolling.
+  auto* recent_apps = GetAppListTestHelper()->GetBubbleRecentAppsView();
+  auto* focus_manager = GetAppsPage()->GetFocusManager();
+  for (int i = 0; i < kNumRecentApps; i++) {
+    PressAndReleaseKey(ui::VKEY_DOWN);
+    EXPECT_TRUE(recent_apps->Contains(focus_manager->GetFocusedView()));
+  }
+
+  // Pressing down arrow again moves focus into the apps grid.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  auto* apps_grid = GetAppListTestHelper()->GetScrollableAppsGridView();
+  EXPECT_TRUE(apps_grid->Contains(focus_manager->GetFocusedView()));
+}
+
 TEST_F(AppListBubbleViewTest, BubbleSizedForDisplay) {
-  UpdateDisplay("800x800");
+  const int default_bubble_height = 688;
+  UpdateDisplay("800x900");
   AppListBubblePresenter* presenter = GetBubblePresenter();
   presenter->Show(GetPrimaryDisplay().id());
 
@@ -358,7 +412,7 @@ TEST_F(AppListBubbleViewTest, BubbleSizedForDisplay) {
 
   // Check that the AppListBubble has the initial default bounds.
   EXPECT_EQ(640, client_view->bounds().width());
-  EXPECT_EQ(688, client_view->bounds().height());
+  EXPECT_EQ(default_bubble_height, client_view->bounds().height());
 
   // Check that the space between the top of the AppListBubble and the top of
   // the screen is greater than the shelf size.
@@ -375,6 +429,32 @@ TEST_F(AppListBubbleViewTest, BubbleSizedForDisplay) {
   // AppListBubble and the top of the screen is greater than the shelf size.
   EXPECT_GE(client_view->GetBoundsInScreen().y(),
             ShelfConfig::Get()->shelf_size());
+  // The bubble height should be smaller than the default bubble height.
+  EXPECT_LT(client_view->bounds().height(), default_bubble_height);
+
+  // Change the display height so that the work area is slightly smaller than
+  // twice the default bubble height.
+  UpdateDisplay("800x1470");
+  presenter->Dismiss();
+  presenter->Show(GetPrimaryDisplay().id());
+  client_view = presenter->bubble_view_for_test()->parent();
+
+  // The bubble height should still be the default.
+  EXPECT_EQ(client_view->bounds().height(), default_bubble_height);
+
+  // Change the display height so that the work area is slightly bigger than
+  // twice the default bubble height. Add apps so the bubble height grows to its
+  // maximum possible height.
+  UpdateDisplay("800x1490");
+  presenter->Dismiss();
+  AddAppItems(50);
+  presenter->Show(GetPrimaryDisplay().id());
+  client_view = presenter->bubble_view_for_test()->parent();
+
+  // The bubble height should be slightly larger than the default bubble height,
+  // but less than half the display height.
+  EXPECT_GT(client_view->bounds().height(), default_bubble_height);
+  EXPECT_LT(client_view->bounds().height(), 1490 / 2);
 }
 
 // Test that the AppListBubbleView scales up with more apps on a larger display.

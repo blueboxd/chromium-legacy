@@ -2309,6 +2309,7 @@ i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="3432227430032737297">Suprimeix totes les que es mostren</translation>
 <translation id="3432762828853624962">Treballadors compartits</translation>
 <translation id="3433621910545056227">El sistema no ha pogut establir el bloqueig dels atributs del temps d'instal·lació del dispositiu.</translation>
+<translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3434272557872943250">Si l'opció Activitat al web i en aplicacions addicional està activada per al teu fill, és possible que aquestes dades es desin al seu Compte de Google. Per obtenir més informació sobre aquestes opcions de configuració i sobre com pots modificar-les, ves a families.google.com.</translation>
 <translation id="3435541101098866721">Afegeix un telèfon nou</translation>
 <translation id="3435688026795609344">"<ph name="EXTENSION_NAME" />" sol·licita el teu codi <ph name="CODE_TYPE" /></translation>
@@ -5385,7 +5386,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6809470175540814047">Obre en una finestra d'incògnit</translation>
 <translation id="6809656734323672573">Si ho acceptes, l'Assistent de Google es quedarà en mode d'espera per detectar "Hey Google" i pot reconèixer la teva veu amb Voice Match.
     <ph name="BR" />
-    Voice Match permet a l'Assistent identificar-te i distingir-te d'altres persones. L'Assistent grava fragments de la teva veu per crear un model de veu únic, que només s'emmagatzema al teu dispositiu. És possible que el teu model de veu s'enviï a Google temporalment per poder identificar millor la teva veu.
+    Voice Match permet a l'Assistent identificar-te i distingir-te d'altres persones. L'Assistent utilitza clips de la teva veu per crear un model de veu únic, que només s'emmagatzema al teu dispositiu. És possible que el teu model de veu s'enviï a Google temporalment per poder identificar millor la teva veu.
     <ph name="BR" />
     Si més tard decideixes que no t'agrada Voice Match, pots suprimir-lo a la configuració de l'Assistent. Per veure o suprimir els clips d'àudio que graves durant la configuració de Voice Match, ves a <ph name="VOICE_MATCH_SETTINGS_URL" />.
     <ph name="BR" />

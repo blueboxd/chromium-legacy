@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
@@ -117,6 +118,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   const View* contents() const { return contents_; }
   View* contents() { return contents_; }
 
+  // `layer_type` specifies the kind of layer used if scroll with layers is
+  // enabled. This function should be called before SetContents().
+  void SetContentsLayerType(ui::LayerType layer_type);
+
   // Sets the header, deleting the previous header.
   template <typename T>
   T* SetHeader(std::unique_ptr<T> a_header) {
@@ -162,6 +167,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetVerticalScrollBarMode(ScrollBarMode vertical_scroll_bar_mode);
   void SetTreatAllScrollEventsAsHorizontal(
       bool treat_all_scroll_events_as_horizontal);
+
+  // Gets/Sets whether the keyboard arrow keys attempt to scroll the view.
+  bool GetAllowKeyboardScrolling() const { return allow_keyboard_scrolling_; }
+  void SetAllowKeyboardScrolling(bool allow_keyboard_scrolling);
 
   bool GetDrawOverflowIndicator() const { return draw_overflow_indicator_; }
   void SetDrawOverflowIndicator(bool draw_overflow_indicator);
@@ -365,6 +374,12 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Set to true if the scroll with layers feature is enabled.
   const bool scroll_with_layers_enabled_;
 
+  // Whether the left/right/up/down arrow keys attempt to scroll the view.
+  bool allow_keyboard_scrolling_ = true;
+
+  // The layer type used for content view when scroll by layers is enabled.
+  ui::LayerType layer_type_ = ui::LAYER_TEXTURED;
+
   base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollView);
@@ -372,7 +387,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ScrollView, View)
 VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Contents)
+VIEW_BUILDER_PROPERTY(ui::LayerType, ContentsLayerType)
 VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Header)
+VIEW_BUILDER_PROPERTY(bool, AllowKeyboardScrolling)
 VIEW_BUILDER_PROPERTY(absl::optional<ui::NativeTheme::ColorId>,
                       BackgroundThemeColorId)
 VIEW_BUILDER_PROPERTY(ScrollView::ScrollBarMode, HorizontalScrollBarMode)

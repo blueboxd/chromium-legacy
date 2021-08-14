@@ -240,10 +240,6 @@
     "label": "//base:base_unittests",
     "type": "console_test_launcher",
   },
-  "base_util_unittests": {
-    "label": "//base/util:base_util_unittests",
-    "type": "console_test_launcher",
-  },
   "blink_common_unittests": {
     "label": "//third_party/blink/common:blink_common_unittests",
     "type": "console_test_launcher",
@@ -309,9 +305,6 @@
     "type": "console_test_launcher",
   },
   "browser_tests": {
-    "args": [
-      "--enable-high-dpi-support-for-testing",
-    ],
     "label": "//chrome/test:browser_tests",
     "type": "windowed_test_launcher",
   },
@@ -493,12 +486,17 @@
     "label": "//chrome/android:chrome_public_smoke_test",
     "type": "console_test_launcher",
   },
+  # TODO(crbug.com/1238057): Rename to chrome_public_integration_test_apk
   "chrome_public_test_apk": {
     "label": "//chrome/android:chrome_public_test_apk",
     "type": "console_test_launcher",
   },
   "chrome_public_test_vr_apk": {
     "label": "//chrome/android:chrome_public_test_vr_apk",
+    "type": "console_test_launcher",
+  },
+  "chrome_public_unit_test_apk": {
+    "label": "//chrome/android:chrome_public_unit_test_apk",
     "type": "console_test_launcher",
   },
   "chrome_public_wpt": {
@@ -974,7 +972,6 @@
   },
   "interactive_ui_tests": {
     "args": [
-      "--enable-high-dpi-support-for-testing",
       "--snapshot-output-dir=${ISOLATED_OUTDIR}",
     ],
     "label": "//chrome/test:interactive_ui_tests",

@@ -1535,10 +1535,6 @@ component("net") {
       "ftp/ftp_transaction_factory.h",
       "ftp/ftp_util.cc",
       "ftp/ftp_util.h",
-      "url_request/ftp_protocol_handler.cc",
-      "url_request/ftp_protocol_handler.h",
-      "url_request/url_request_ftp_job.cc",
-      "url_request/url_request_ftp_job.h",
     ]
   }
 
@@ -4409,7 +4405,6 @@ test("net_unittests") {
     "url_request/url_fetcher_impl_unittest.cc",
     "url_request/url_fetcher_response_writer_unittest.cc",
     "url_request/url_request_context_builder_unittest.cc",
-    "url_request/url_request_context_unittest.cc",
     "url_request/url_request_filter_unittest.cc",
     "url_request/url_request_http_job_unittest.cc",
     "url_request/url_request_job_factory_unittest.cc",
@@ -4695,7 +4690,6 @@ test("net_unittests") {
       "ftp/ftp_directory_listing_parser_windows_unittest.cc",
       "ftp/ftp_network_transaction_unittest.cc",
       "ftp/ftp_util_unittest.cc",
-      "url_request/url_request_ftp_job_unittest.cc",
     ]
   }
 
@@ -5261,22 +5255,6 @@ if (!disable_ftp_support) {
     ]
 
     # TODO(https://crbug.com/921297): Re-enable once source of timeout is
-    # understood (probably just needs to restrict maximum input size).
-    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
-  }
-
-  fuzzer_test("net_url_request_ftp_fuzzer") {
-    sources = [ "url_request/url_request_ftp_fuzzer.cc" ]
-    deps = [
-      ":net_fuzzer_test_support",
-      ":test_support",
-      "//base",
-      "//net",
-    ]
-    dict = "data/fuzzer_dictionaries/net_url_request_ftp_fuzzer.dict"
-    seed_corpus = "data/fuzzer_data/net_url_request_ftp_fuzzer/"
-
-    # TODO(https://crbug.com/962087): Re-enable once source of timeout is
     # understood (probably just needs to restrict maximum input size).
     additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
   }

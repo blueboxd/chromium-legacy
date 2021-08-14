@@ -258,7 +258,7 @@
       </div>
     </div>
   </cr-toast>
-  <cr-dialog id="scanFailedDialog">
+  <cr-dialog id="scanFailedDialog" on-cancel="onScanFailedDialogOkClick_">
     <div slot="title">
       <iron-icon id="dialogInfoIcon" icon="cr:info-outline" aria-hidden="true">
       </iron-icon>
@@ -268,11 +268,12 @@
       [[i18n(scanFailedDialogTextKey_)]]
     </div>
     <div slot="button-container">
-      <cr-button class="cancel-button" on-click="onDialogGetHelpClick_">
+      <cr-button class="cancel-button"
+          on-click="onScanFailedDialogGetHelpClick_">
         [[i18n('getHelpLinkText')]]
       </cr-button>
       <cr-button id="okButton" class="action-button"
-          on-click="onDialogOkClick_">
+          on-click="onScanFailedDialogOkClick_">
         [[i18n('okButtonLabel')]]
       </cr-button>
     </div>

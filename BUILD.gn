@@ -76,7 +76,6 @@ group("gn_all") {
     ":gn_visibility",
     "//base:base_perftests",
     "//base:base_unittests",
-    "//base/util:base_util_unittests",
     "//chrome/installer",
     "//chrome/updater",
     "//codelabs",
@@ -419,6 +418,7 @@ group("gn_all") {
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
+        "//chrome/android:chrome_public_unit_test_apk",
         "//chrome/browser/android/examples/custom_tabs_client:custom_tabs_client_example_apk",
         "//chrome/browser/android/examples/partner_browser_customizations_provider:partner_browser_customizations_example_apk",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
@@ -702,6 +702,7 @@ group("gn_all") {
 
     if (!is_fuchsia) {
       deps += [ "//chromecast:cast_shell" ]
+      deps += [ "//chromecast/cast_core:core_runtime_simple" ]
     }
     if (enable_extensions && use_aura) {
       deps += [ "//chrome/browser/resources/chromeos/accessibility:build" ]

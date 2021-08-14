@@ -232,7 +232,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '3b51863bc25492549a8bf96ff67ce481b1a3337b',
+  'v8_revision': 'a1f172ed2e60ae56a6e9b4921116b819f8a25b2b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -240,7 +240,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '201960e4aa83b532bd21166d133aa73883dac9be',
+  'angle_revision': '1fb846cbed194e990c76bd475987665c37009c1a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'wapweqY3T9FEHpjaWRsHugloyn-WT9pGg45FvDUjXwUC',
+          'version': 'p0L7eN9bWW4O3XD2JbDaImIE5Zd8Ovam3Q1pckH-zpsC',
       },
     ],
     'condition': 'checkout_android',
@@ -1582,7 +1582,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '978003f36a3bc1e9fdeafae26dbfe825684b0a25',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@89745c68aa1236038af3a7a35b3995b3eeeed896',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d290f2a21c8dd8b03ec455ee82fa72141038c4cf',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
@@ -1621,7 +1621,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '45b9cd139f6ea2b9c2f88a1497d4709c3d7c3600',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a7d32e3dcb4c86223c951643e4ae2159dcbfa8fb',
+    Var('webrtc_git') + '/src.git' + '@' + '10ee27e80f895d40822df3b0eb66b4608084acdd',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

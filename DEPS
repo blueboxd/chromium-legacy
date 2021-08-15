@@ -228,7 +228,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'abe39f5cb932e1d230c37335bbd66088820de5b6',
+  'skia_revision': 'b1f34bf3c2cb488947800549724d3bae28126895',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -240,7 +240,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1fb846cbed194e990c76bd475987665c37009c1a',
+  'angle_revision': 'd20afde45f071e0d45c4730f94a7a6361fc4d5ce',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'p0L7eN9bWW4O3XD2JbDaImIE5Zd8Ovam3Q1pckH-zpsC',
+          'version': 'v5A41FDtUTUgWmjkgJS42X4yMcKx2zbPp8fWod32rhsC',
       },
     ],
     'condition': 'checkout_android',
@@ -1582,7 +1582,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '978003f36a3bc1e9fdeafae26dbfe825684b0a25',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d290f2a21c8dd8b03ec455ee82fa72141038c4cf',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@510c98092bc097dfc2a1d8a52e35cfb030306c76',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
@@ -1701,7 +1701,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'YyjGhweE5AdSF1jeiAS5q2BNI_nCL6TXyAl0_n0yC3cC',
+        'version': 'aACLDf9mcaiQBfbDGiRZqpUOo11i3viW_dm8BI3c62cC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

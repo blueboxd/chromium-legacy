@@ -30,7 +30,8 @@ namespace {
 
 // List of file or directory prefixes that are known to be modified during an
 // Incognito session.
-// TODO(http://crbug.com/1234755): Audit why these files are changed.
+// TODO(http://crbug.com/1234755): Add audit message (or fix the issue) for all
+// paths that do not have a comment.
 constexpr std::array<const char*, 10> kAllowListPrefixesForAllPlatforms = {
     "/Default/data_reduction_proxy_leveldb",
     "/Default/Extension State",
@@ -48,7 +49,11 @@ constexpr std::array<const char*, 2> kAllowListPrefixesForPlatform = {
 #elif defined(OS_WIN)
 constexpr std::array<const char*, 5> kAllowListPrefixesForPlatform = {
     "/Default/heavy_ad_intervention_opt_out.db", "/Default/Shortcuts",
-    "/Default/Top Sites", "/GrShaderCache/old_GPUCache", "/Last Browser"};
+    "/Default/Top Sites", "/GrShaderCache/old_GPUCache",
+
+    // This file only contains the path to the latest executable of Chrome,
+    // therefore it's safe to be written in Incognito.
+    "/Last Browser"};
 #elif defined(OS_CHROMEOS)
 constexpr std::array<const char*, 7> kAllowListPrefixesForPlatform = {
     "/test-user/.variations-list.txt",
@@ -200,12 +205,12 @@ class IncognitoProfileContainmentBrowserTest : public InProcessBrowserTest {
 // Open a page in a separate session to ensure all files that are created
 // because of the regular profile start up are already created.
 IN_PROC_BROWSER_TEST_F(IncognitoProfileContainmentBrowserTest,
-                       PRE_SimplePageLoadDoesNotModifyProfileFolder) {
+                       PRE_StoringDataDoesNotModifyProfileFolder) {
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/empty.html"));
 }
 
-// Test that Opening a simple page in Incognito does not modify regular profile
+// Test that calling several data storage APIs does not modify regular profile
 // directory.
 // If you are storing from a "regular" (non off-the-record) profile and your CL
 // breaks this test, please first check if it is intended to change profile
@@ -213,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoProfileContainmentBrowserTest,
 // so, please add the file to the allow_list at the top and file a bug to follow
 // up.
 IN_PROC_BROWSER_TEST_F(IncognitoProfileContainmentBrowserTest,
-                       SimplePageLoadDoesNotModifyProfileFolder) {
+                       StoringDataDoesNotModifyProfileFolder) {
   // Take a snapshot of regular profile.
   Snapshot before_incognito;
   GetUserDirectorySnapshot(before_incognito, /*compute_file_hashes=*/true);
@@ -221,8 +226,22 @@ IN_PROC_BROWSER_TEST_F(IncognitoProfileContainmentBrowserTest,
   // Run an Incognito session.
   Browser* browser = chrome::FindLastActive();
   EXPECT_TRUE(browser->profile()->IsOffTheRecord());
-  ui_test_utils::NavigateToURL(browser,
-                               embedded_test_server()->GetURL("/hello.html"));
+  ui_test_utils::NavigateToURL(
+      browser, embedded_test_server()->GetURL("/browsing_data/site_data.html"));
+
+  const std::vector<std::string> kStorageTypes{
+      "CacheStorage", "Cookie",        "FileSystem",    "IndexedDb",
+      "LocalStorage", "ServiceWorker", "SessionCookie", "WebSql"};
+
+  for (const std::string& type : kStorageTypes) {
+    bool data = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        browser->tab_strip_model()->GetActiveWebContents(), "set" + type + "()",
+        &data));
+
+    ASSERT_TRUE(data) << "Couldn't create data for: " << type;
+  }
+
   CloseBrowserSynchronously(browser);
 
   // Take another snapshot of regular profile and ensure it is not changed.

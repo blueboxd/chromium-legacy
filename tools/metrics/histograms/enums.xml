@@ -7166,7 +7166,13 @@ others/histograms.xml -->
       label="Unload handler exists in a sub frame, and the current
              experimental config doesn't permit it to be BFCached."/>
   <int value="52" label="ServiceWorker is unregistered"/>
-  <int value="53" label="No valid HTTP response header"/>
+  <int value="53" label="CacheControlNoStore is present"/>
+  <int value="54"
+      label="CacheControlNoStore is present and cookie is modified"/>
+  <int value="55"
+      label="CacheControlNoStore is present and HTTPOnly cookie is modified"/>
+  <int value="56" label="No valid HTTP response header"/>
+  <int value="57" label="Disallow activation navigations for Bug1234857"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -7721,21 +7727,22 @@ Called by update_bad_message_reasons.py.-->
 <!-- Generated from components/password_manager/content/browser/bad_message.h.
 Called by update_bad_message_reasons.py.-->
 
-  <int value="1" label="CPMD_BAD_ORIGIN_FORMS_PARSED"/>
-  <int value="2" label="CPMD_BAD_ORIGIN_FORMS_RENDERED"/>
+  <int value="1" label="CPMD_BAD_ORIGIN_FORMS_PARSED_OBSOLETE"/>
+  <int value="2" label="CPMD_BAD_ORIGIN_FORMS_RENDERED_OBSOLETE"/>
   <int value="3" label="CPMD_BAD_ORIGIN_FORM_SUBMITTED"/>
   <int value="4" label="CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND_OBSOLETE"/>
-  <int value="5" label="CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION"/>
+  <int value="5" label="CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION_OBSOLETE"/>
   <int value="6" label="CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED"/>
   <int value="7" label="CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD"/>
   <int value="8"
-      label="CPMD_BAD_ORIGIN_SAVE_GENERATION_FIELD_DETECTED_BY_CLASSIFIER"/>
-  <int value="9" label="CPMD_BAD_ORIGIN_UPON_USER_INPUT_CHANGE"/>
+      label="CPMD_BAD_ORIGIN_SAVE_GENERATION_FIELD_DETECTED_BY_CLASSIFIER_OBSOLETE"/>
+  <int value="9" label="CPMD_BAD_ORIGIN_UPON_USER_INPUT_CHANGE_OBSOLETE"/>
   <int value="10" label="CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED"/>
   <int value="11"
       label="CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP"/>
   <int value="12" label="CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP_OBSOLETE"/>
-  <int value="13" label="CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM"/>
+  <int value="13"
+      label="CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM_OBSOLETE"/>
   <int value="14" label="CPMD_BAD_ORIGIN_PRERENDERING"/>
 </enum>
 
@@ -26025,6 +26032,7 @@ Called by update_document_policy_enum.py.-->
   <int value="888" label="EnhancedNetworkVoicesInSelectToSpeakAllowed"/>
   <int value="889" label="PrintPdfAsImageAvailability"/>
   <int value="890" label="PrintRasterizePdfDpi"/>
+  <int value="891" label="DeviceTargetVersionSelector"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -49396,6 +49404,7 @@ from previous Chrome versions.
   <int value="6523501" label="lacros-availability-ignore"/>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
+  <int value="7642326" label="hdrnet-override"/>
   <int value="8891567" label="CaptionSettings:enabled"/>
   <int value="9609535" label="BrowsingDataLifetimeManager:disabled"/>
   <int value="10405060" label="BluetoothSessionizedMetrics:disabled"/>
@@ -71687,6 +71696,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Always restore"/>
   <int value="2" label="Ask every time"/>
   <int value="3" label="Do not restore"/>
+</enum>
+
+<enum name="RestoreTabResult">
+  <int value="0" label="Tabs can be restored"/>
+  <int value="1" label="No restored tabs"/>
+  <int value="2" label="Write error"/>
 </enum>
 
 <enum name="ReusedPasswordType">

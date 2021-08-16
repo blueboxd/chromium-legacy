@@ -682,7 +682,7 @@
               "inspector-protocol/css/container-queries",
               "inspector-protocol/dom/container-queries",
               "inspector-protocol/overlay/overlay-container-query.js"],
-    "args": ["--enable-blink-features=CSSContainerQueries"]
+    "args": ["--enable-blink-features=CSSContainerQueries,CSSIsolatedAnimationUpdates"]
   },
   {
     "prefix": "isolated-animation-updates",
@@ -723,11 +723,6 @@
     "prefix": "css-modules",
     "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/css-module"],
     "args": ["--enable-blink-features=CSSModules", "--js-flags=--harmony-import-assertions"]
-  },
-  {
-    "prefix":"css-calc-infinity-and-nan",
-    "bases": ["external/wpt/css/css-values/"],
-    "args": ["--enable-blink-features=CSSCalcInfinityAndNaN"]
   },
   {
     "prefix": "import-assertions",
@@ -1096,11 +1091,6 @@
     "prefix": "webrtc-extensions-senderCaptureTimeOffset",
     "bases": ["external/wpt/webrtc-extensions/RTCRtpSynchronizationSource-senderCaptureTimeOffset.html"],
     "args": ["--force-fieldtrials=WebRTC-IncludeCaptureClockOffset/Enabled/"]
-  },
-  {
-    "prefix": "early-hints",
-    "bases": ["wpt_internal/resource-timing"],
-    "args": ["--enable-features=EarlyHintsPreloadForNavigation"]
   },
   {
     "prefix": "disable-ua-ch-platform-feature",

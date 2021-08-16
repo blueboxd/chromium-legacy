@@ -894,7 +894,7 @@ bool IsAXSetter(SEL selector) {
 }
 
 - (NSNumber*)AXInsertionPointLineNumber {
-  // Multiline is not supported on views.
+  // TODO: multiline is not supported on views.
   return @0;
 }
 
@@ -902,7 +902,7 @@ bool IsAXSetter(SEL selector) {
 
 - (id)AXLineForIndex:(id)parameter {
   DCHECK([parameter isKindOfClass:[NSNumber class]]);
-  // Multiline is not supported on views.
+  // TODO: multiline is not supported on views.
   return @0;
 }
 
@@ -946,12 +946,14 @@ bool IsAXSetter(SEL selector) {
 
 - (id)AXStyleRangeForIndex:(id)parameter {
   DCHECK([parameter isKindOfClass:[NSNumber class]]);
-  NOTIMPLEMENTED();
-  return nil;
+  // TODO(https://crbug.com/958811): Implement this for real.
+  return [NSValue
+      valueWithRange:NSMakeRange(0, [self accessibilityNumberOfCharacters])];
 }
 
 - (id)AXAttributedStringForRange:(id)parameter {
   DCHECK([parameter isKindOfClass:[NSValue class]]);
+  // TODO(https://crbug.com/958811): Implement this for real.
   base::scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc]
           initWithString:[self AXStringForRange:parameter]]);
@@ -1111,14 +1113,14 @@ bool IsAXSetter(SEL selector) {
 // the old API as well).
 
 - (NSInteger)accessibilityInsertionPointLineNumber {
-  return 0;
+  return [[self AXInsertionPointLineNumber] integerValue];
 }
 
 - (NSInteger)accessibilityNumberOfCharacters {
   if (!_node)
     return 0;
 
-  return [[self getAXValueAsString] length];
+  return [[self AXNumberOfCharacters] integerValue];
 }
 
 - (NSString*)accessibilityPlaceholderValue {
@@ -1155,57 +1157,55 @@ bool IsAXSetter(SEL selector) {
   if (!_node)
     return NSMakeRange(0, 0);
 
-  return NSMakeRange(0, [self accessibilityNumberOfCharacters]);
+  return [[self AXVisibleCharacterRange] rangeValue];
 }
 
 - (NSString*)accessibilityStringForRange:(NSRange)range {
   if (!_node)
     return nil;
 
-  return [[self getAXValueAsString] substringWithRange:range];
+  return (NSString*)[self AXStringForRange:[NSValue valueWithRange:range]];
 }
 
 - (NSAttributedString*)accessibilityAttributedStringForRange:(NSRange)range {
   if (!_node)
     return nil;
 
-  // TODO(https://crbug.com/958811): Implement this for real.
-  base::scoped_nsobject<NSAttributedString> attributedString(
-      [[NSAttributedString alloc]
-          initWithString:[self accessibilityStringForRange:range]]);
-  return attributedString.autorelease();
+  return [self AXAttributedStringForRange:[NSValue valueWithRange:range]];
 }
 
 - (NSInteger)accessibilityLineForIndex:(NSInteger)index {
-  // Views textfields are single-line.
-  return 0;
+  if (!_node)
+    return 0;
+
+  return
+      [[self AXLineForIndex:[NSNumber numberWithInteger:index]] integerValue];
 }
 
 - (NSRange)accessibilityRangeForIndex:(NSInteger)index {
-  NOTIMPLEMENTED();
-  return NSMakeRange(0, 0);
+  if (!_node)
+    return NSMakeRange(0, 0);
+
+  return [[self AXRangeForIndex:[NSNumber numberWithInteger:index]] rangeValue];
 }
 
 - (NSRange)accessibilityStyleRangeForIndex:(NSInteger)index {
   if (!_node)
     return NSMakeRange(0, 0);
 
-  // TODO(https://crbug.com/958811): Implement this for real.
-  return NSMakeRange(0, [self accessibilityNumberOfCharacters]);
+  return [[self AXStyleRangeForIndex:[NSNumber numberWithInteger:index]]
+      rangeValue];
 }
 
 - (NSRange)accessibilityRangeForLine:(NSInteger)line {
   if (!_node)
     return NSMakeRange(0, 0);
 
-  if (line != 0)
-    NOTIMPLEMENTED() << "Views textfields are single-line.";
-  return NSMakeRange(0, [self accessibilityNumberOfCharacters]);
+  return [[self AXRangeForLine:[NSNumber numberWithInteger:line]] rangeValue];
 }
 
 - (NSRange)accessibilityRangeForPosition:(NSPoint)point {
-  NOTIMPLEMENTED();
-  return NSMakeRange(0, 0);
+  return [[self AXRangeForPosition:[NSValue valueWithPoint:point]] rangeValue];
 }
 
 @end

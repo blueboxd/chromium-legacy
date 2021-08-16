@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
@@ -437,6 +438,8 @@ bool AddCSSPaintArgument(
     Vector<scoped_refptr<CSSVariableData>>* const variable_data,
     const CSSParserContext& context) {
   CSSParserTokenRange token_range(tokens);
+  if (CSSVariableParser::ContainsValidVariableReferences(token_range))
+    return false;
   if (!token_range.AtEnd()) {
     // TODO(crbug.com/661854): Pass through the original string when we have it.
     scoped_refptr<CSSVariableData> unparsed_css_variable_data =
@@ -944,12 +947,10 @@ CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
   return ConsumeLengthOrPercent(range, context, value_range, unitless);
 }
 
-CSSPrimitiveValue* ConsumeAngle(
+static CSSPrimitiveValue* ConsumeNumericLiteralAngle(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    absl::optional<WebFeature> unitless_zero_feature,
-    double minimum_value,
-    double maximum_value) {
+    absl::optional<WebFeature> unitless_zero_feature) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kDimensionToken) {
     switch (token.GetUnitType()) {
@@ -971,34 +972,71 @@ CSSPrimitiveValue* ConsumeAngle(
     return CSSNumericLiteralValue::Create(
         0, CSSPrimitiveValue::UnitType::kDegrees);
   }
+  return nullptr;
+}
+
+static CSSPrimitiveValue* ConsumeMathFunctionAngle(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    double minimum_value,
+    double maximum_value) {
   MathFunctionParser math_parser(range, context, kValueRangeAll);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
     if (calculation->Category() != kCalcAngle)
       return nullptr;
-    if (CSSMathFunctionValue* result = math_parser.ConsumeValue()) {
-      if (RuntimeEnabledFeatures::CSSCalcInfinityAndNaNEnabled())
-        return result;
-      if (result->ComputeDegrees() < minimum_value) {
-        return CSSNumericLiteralValue::Create(
-            minimum_value, CSSPrimitiveValue::UnitType::kDegrees);
-      }
-      if (result->ComputeDegrees() > maximum_value) {
-        return CSSNumericLiteralValue::Create(
-            maximum_value, CSSPrimitiveValue::UnitType::kDegrees);
-      }
-      return result;
+  }
+  if (CSSMathFunctionValue* result = math_parser.ConsumeValue()) {
+    if (result->ComputeDegrees() < minimum_value) {
+      return CSSNumericLiteralValue::Create(
+          minimum_value, CSSPrimitiveValue::UnitType::kDegrees);
     }
+    if (result->ComputeDegrees() > maximum_value) {
+      return CSSNumericLiteralValue::Create(
+          maximum_value, CSSPrimitiveValue::UnitType::kDegrees);
+    }
+    return result;
   }
   return nullptr;
+}
+
+static CSSPrimitiveValue* ConsumeMathFunctionAngle(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context) {
+  if (RuntimeEnabledFeatures::CSSCalcInfinityAndNaNEnabled()) {
+    MathFunctionParser math_parser(range, context, kValueRangeAll);
+    if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
+      if (calculation->Category() != kCalcAngle)
+        return nullptr;
+    }
+    return math_parser.ConsumeValue();
+  }
+  return ConsumeMathFunctionAngle(range, context,
+                                  std::numeric_limits<double>::lowest(),
+                                  std::numeric_limits<double>::max());
+}
+
+CSSPrimitiveValue* ConsumeAngle(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    absl::optional<WebFeature> unitless_zero_feature,
+    double minimum_value,
+    double maximum_value) {
+  if (auto* result =
+          ConsumeNumericLiteralAngle(range, context, unitless_zero_feature))
+    return result;
+
+  return ConsumeMathFunctionAngle(range, context, minimum_value, maximum_value);
 }
 
 CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     absl::optional<WebFeature> unitless_zero_feature) {
-  return ConsumeAngle(range, context, std::move(unitless_zero_feature),
-                      std::numeric_limits<double>::lowest(),
-                      std::numeric_limits<double>::max());
+  if (auto* result =
+          ConsumeNumericLiteralAngle(range, context, unitless_zero_feature))
+    return result;
+
+  return ConsumeMathFunctionAngle(range, context);
 }
 
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange& range,

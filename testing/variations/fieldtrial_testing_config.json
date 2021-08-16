@@ -8095,27 +8095,6 @@
             ]
         }
     ],
-    "SyncTriggerFullKeystoreMigration": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncTriggerFullKeystoreMigration"
-                    ]
-                }
-            ]
-        }
-    ],
     "TabHoverCardImages": [
         {
             "platforms": [
@@ -8737,6 +8716,26 @@
                     "name": "UserAgentClientHintRollout",
                     "enable_features": [
                         "UserAgentClientHint"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UsernameFirstFlow": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UsernameFirstFlow"
                     ]
                 }
             ]

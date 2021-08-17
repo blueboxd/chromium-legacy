@@ -20596,7 +20596,16 @@
               ]
             },
             'create_desktop_shortcut': { 'type': 'boolean' },
-            'fallback_app_name': { 'type': 'string' }
+            'fallback_app_name': { 'type': 'string' },
+            'custom_name': { 'type': 'string' },
+            'custom_icon': {
+              'type': 'object',
+              'properties': {
+                'url': { 'type': 'string'},
+                'hash': { 'type': 'string' },
+              },
+              'required': ['url', 'hash']
+            },
           },
           'required': ['url']
         }
@@ -20606,6 +20615,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'max_size': 1048576,
       'example_value': [{
         'url': 'https://www.google.com/maps',
         'default_launch_container': 'window',
@@ -20617,6 +20627,16 @@
         'url': 'https://docs.google.com/editor',
         'default_launch_container': 'window',
         'fallback_app_name': 'Editor'
+      }, {
+        'url': 'https://docs.google.com/sheets',
+        'default_launch_container': 'window',
+        'custom_name': 'Spreadsheets'
+      }, {
+        'url': 'https://weather.example.com',
+        'custom_icon': {
+          'url': 'https://mydomain.example.com/sunny_icon.png',
+          'hash': 'c28f469c450e9ab2b86ea47038d2b324c6ad3b1e9a4bd8960da13214afd0ca38'
+        }
       }],
       'id': 468,
       'caption': '''Configure list of force-installed Web Apps''',
@@ -20626,7 +20646,7 @@
       Each list item of the policy is an object with a mandatory member:
       <ph name="URL_LABEL">url</ph> (the URL of the web app to install)
 
-      and 3 optional members:
+      and 5 optional members:
       - <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL">default_launch_container</ph>
       (for how the web app opens—a new tab is the default)
 
@@ -20639,7 +20659,22 @@
       allows you to override the app name if it is not a
       Progressive Web App (PWA), or the app name that is temporarily
       installed if it is a PWA but authentication is required before the
-      installation can be completed.)
+      installation can be completed. If both
+      <ph name="CUSTOM_NAME_LABEL">custom_name</ph> and
+      <ph name="FALLBACK_APP_NAME_LABEL">fallback_app_name</ph> are provided,
+      the latter will be ignored.)
+
+      - <ph name="OVERRIDE_APP_NAME_LABEL">custom_name</ph>
+      (Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      version 96, allows you to permanently override the app name for all web
+      apps and PWAs.)
+
+      - <ph name="CUSTOM_ICON_LABEL">custom_icon</ph>
+      (Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      version 96, allows you to override the app icon of installed apps. The
+      icons have to be square, maximal 1 MB in size, and in one of the following
+      formats: jpeg, png, gif, webp, ico. The hash value has to be the SHA256
+      hash of the icon file.)
 
       See <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME">PinnedLauncherApps</ph> for pinning apps to the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.''',
       'label': '''URLs for Web Apps to be silently installed.''',
@@ -25805,7 +25840,8 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['igorcov@chromium.org', 'okalitova@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:88-'],
+      'supported_on': ['chrome_os:88-95'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -25826,7 +25862,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'default_for_enterprise_users': False,
       'caption': '''Allow usage of <ph name="LACROS_NAME">Lacros</ph>''',
       'tags': [],
-      'desc': '''This setting allows users to use the <ph name="LACROS_NAME">Lacros</ph> browser.
+      'desc': '''This setting is deprecated. Use <ph name="LACROS_AVAILABILITY_POLICY_NAME">LacrosAvailability</ph> instead.
 
       If this policy is set to Disabled or unset, the user cannot use <ph name="LACROS_NAME">Lacros</ph>.
 
@@ -25920,13 +25956,13 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''This setting provides several availability options for the <ph name="LACROS_NAME">Lacros</ph> browser.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph>, the user can enable <ph name="LACROS_NAME">Lacros</ph> and make it primary. <ph name="LACROS_NAME">Lacros</ph> can still be disallowed with <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph>, the user can enable <ph name="LACROS_NAME">Lacros</ph> and make it primary.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph>, the user cannot use <ph name="LACROS_NAME">Lacros</ph>. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph>, the user cannot use <ph name="LACROS_NAME">Lacros</ph>.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_SIDE_BY_SIDE_VALUE">side_by_side</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled but is not the primary browser. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_SIDE_BY_SIDE_VALUE">side_by_side</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled but is not the primary browser.
 
-      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_PRIMARY_VALUE">lacros_primary</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled and is the primary browser. <ph name="LACROS_ALLOWED_POLICY_NAME">LacrosAllowed</ph> policy is ignored.
+      If the policy is set to <ph name="LACROS_AVAILABILITY_LACROS_PRIMARY_VALUE">lacros_primary</ph>, <ph name="LACROS_NAME">Lacros</ph> is enabled and is the primary browser.
 
       If the policy is unset, the default is <ph name="LACROS_AVAILABILITY_LACROS_DISALLOWED_VALUE">lacros_disallowed</ph> for enterprise-managed users and <ph name="LACROS_AVAILABILITY_USER_CHOICE_VALUE">user_choice</ph> for non-managed users.
 
@@ -27199,6 +27235,36 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
 
           If this policy is set to true or unset, the enhanced network text-to-speech voices feature in Select-to-speak can be enabled or disabled by the user.''',
     },
+    {
+      'name': 'ChromeAppsEnabled',
+      'owners': ['mattm@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome.win', 'chrome.mac', 'chrome.linux'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Chrome Apps will be allowed to run on these platforms.',
+        },
+        {
+          'value': False,
+          'caption': 'Chrome Apps may not be allowed to run, depending on the status of the deprecation rollout.',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 892,
+      'tags': [],
+      'caption': '''Extend support for Chrome Apps on Windows, Mac, and Linux.''',
+      'desc': '''Chrome Apps are deprecated on Windows, Mac, and Linux.
+      If this policy is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will continue to allow Chrome Apps to be run on these platforms until the final date when Chrome Apps support is removed on all platforms, June 2022.
+      If this policy is disabled or unset, Chrome Apps may not be allowed to run, depending on the status of the deprecation rollout.
+      In either case, Chrome Apps that are force installed by policy will continue to be allowed.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -28153,6 +28219,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 891,
+  'highest_id_currently_used': 892,
   'highest_atomic_group_id_currently_used': 41
 }

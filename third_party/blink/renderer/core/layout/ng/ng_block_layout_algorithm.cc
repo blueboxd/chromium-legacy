@@ -56,8 +56,10 @@ bool HasLineEvenIfEmpty(LayoutBox* box) {
     //  - false: all children are block then remove all, <div><p></p></div>
     return block_flow->HasLineIfEmpty();
   }
-  if (AreNGBlockFlowChildrenInline(block_flow))
-    return NGInlineNode(block_flow).HasLineEvenIfEmpty();
+  if (AreNGBlockFlowChildrenInline(block_flow)) {
+    return block_flow->HasLineIfEmpty() &&
+           NGInlineNode(block_flow).IsBlockLevel();
+  }
   if (const auto* const flow_thread = block_flow->MultiColumnFlowThread()) {
     DCHECK(!flow_thread->ChildrenInline());
     for (const auto* child = flow_thread->FirstChild(); child;
@@ -644,6 +646,13 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       DCHECK(!container_builder_.FoundColumnSpanner());
       DCHECK(!child_break_token);
       container_builder_.SetColumnSpanner(To<NGBlockNode>(child));
+
+      // In order to properly collapse column spanner margins, we need to know
+      // if the column spanner's parent was empty, for example, in the case that
+      // the only child content of the parent since the last spanner is an OOF
+      // that will get positioned outside the multicol.
+      container_builder_.SetIsEmptySpannerParent(
+          container_builder_.Children().IsEmpty() && is_resuming_);
       // After the spanner(s), we are going to resume inside this block. If
       // there's a subsequent sibling that's not a spanner, we're resume right
       // in front of that one. Otherwise we'll just resume after all the
@@ -1969,6 +1978,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       DCHECK(container_builder_.HasInflowChildBreakInside() ||
              !physical_fragment.IsBox());
       container_builder_.SetColumnSpanner(spanner_node);
+      container_builder_.SetIsEmptySpannerParent(
+          layout_result->IsEmptySpannerParent());
     }
   } else {
     DCHECK(!layout_result->ColumnSpanner());

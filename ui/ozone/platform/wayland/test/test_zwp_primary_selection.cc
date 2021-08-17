@@ -14,7 +14,7 @@
 
 // ZwpPrimarySelection* classes contain protocol-specific implementation of
 // TestSelection*::Delegate interfaces, such that primary selection test
-// cases may be set-up and run againts test wayland compositor.
+// cases may be set-up and run against test wayland compositor.
 
 namespace wl {
 

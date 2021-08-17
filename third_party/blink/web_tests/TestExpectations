@@ -1181,7 +1181,6 @@ virtual/layout_ng_block_frag/fast/multicol/vertical-rl/nested-columns.html [ Pas
 
 ### Tests failing with LayoutNGBlockFragmentation enabled:
 crbug.com/1225630 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/large-actual-column-count.html [ Skip ]
-crbug.com/1151880 virtual/layout_ng_block_frag/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/float-margin-at-row-boundary-fixed-multicol-height.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/forced-break-in-nested-columns.html [ Failure ]
@@ -2646,6 +2645,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-fonts/generic-family-keywords-002.html [ Failure Timeout ]
 crbug.com/626703 virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
 crbug.com/626703 virtual/synchronous_html_parser/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
@@ -6288,8 +6288,6 @@ crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transfo
 crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-fixpos.html [ Failure ]
 crbug.com/943503 virtual/transform-interop-disabled/external/wpt/css/css-transforms/perspective-children-only-inline.html [ Failure ]
 
-crbug.com/1219750 external/wpt/app-history/navigate/goTo-detach-in-onnavigate.html [ Timeout ]
-
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-screeny.html [ Crash Timeout ]
@@ -7747,6 +7745,8 @@ crbug.com/1228246 http/tests/inspector-protocol/network/webbundle.js [ Crash Fai
 
 # linux_layout_tests_layout_ng_disabled needs its own baselines.
 crbug.com/1231699 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-composite.html [ Failure Pass ]
+crbug.com/1231699 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-text-alignment.html [ Failure Pass ]
+crbug.com/1231699 [ Linux ] virtual/gpu/fast/canvas/canvas-text-alignment.html [ Failure Pass ]
 
 # Other devtools flaky tests outside of http/tests/inspector-protocol/network.
 crbug.com/1228261 http/tests/devtools/console/console-context-selector.js [ Crash Failure Pass Skip Timeout ]
@@ -7886,3 +7886,10 @@ crbug.com/1239139 virtual/prerender/wpt_internal/prerender/restriction-prompt-by
 
 # Sheriff 2021-08-13
 crbug.com/1239485 [ Mac ] fast/frames/iframe-plugin-load-remove-document-crash.html [ Failure Pass ]
+
+# Sheriff 2021-08-16
+crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-errors.js [ Pass Timeout ]
+crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-details.js [ Pass Timeout ]
+crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-unslotted-elements.js [ Pass Timeout ]
+crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce.js [ Pass Timeout ]
+crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style.js [ Pass Timeout ]

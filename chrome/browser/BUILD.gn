@@ -3282,6 +3282,7 @@ static_library("browser") {
       "//chrome/browser/password_entry_edit/android",
       "//chrome/browser/password_manager/android:jni_headers",
       "//chrome/browser/payments/android:jni_headers",
+      "//chrome/browser/policy/android:android",
       "//chrome/browser/policy/android:jni_headers",
       "//chrome/browser/privacy:jni_headers",
       "//chrome/browser/privacy_sandbox/android:jni_headers",
@@ -4874,6 +4875,8 @@ static_library("browser") {
       "lacros/crosapi_pref_observer.h",
       "lacros/download_controller_client_lacros.cc",
       "lacros/download_controller_client_lacros.h",
+      "lacros/drivefs_cache.cc",
+      "lacros/drivefs_cache.h",
       "lacros/feedback_util.cc",
       "lacros/feedback_util.h",
       "lacros/immersive_context_lacros.cc",
@@ -5395,7 +5398,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_linux || is_win || is_mac || is_fuchsia) {
+  if (is_linux || is_win || is_mac) {
     sources += [
       "enterprise/connectors/device_trust/attestation/desktop/crypto_utility.cc",
       "enterprise/connectors/device_trust/attestation/desktop/crypto_utility.h",

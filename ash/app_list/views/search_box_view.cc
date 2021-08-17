@@ -18,7 +18,6 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_result_base_view.h"
-#include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
@@ -236,6 +235,18 @@ void SearchBoxView::UpdateSearchBoxBorder() {
 }
 
 void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
+  if (is_app_list_bubble_) {
+    // When the search box is focused, paint a vertical focus bar along the left
+    // edge, vertically aligned with the search icon.
+    if (search_box()->HasFocus() && search_box()->GetText().empty()) {
+      gfx::Point icon_origin;
+      views::View::ConvertPointToTarget(search_icon(), this, &icon_origin);
+      PaintFocusBar(canvas, gfx::Point(0, icon_origin.y()),
+                    /*height=*/kSearchBoxIconSize);
+    }
+    return;
+  }
+
   // Paints the focus ring if the search box is focused.
   if (search_box()->HasFocus() && !is_search_box_active() &&
       view_delegate_->KeyboardTraversalEngaged()) {
@@ -392,9 +403,7 @@ int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
 
 SkColor SearchBoxView::GetBackgroundColorForState(AppListState state) const {
   if (state == AppListState::kStateSearchResults) {
-    // Search box background is transparent when search results are shown.
-    if (features::IsDarkLightModeEnabled() &&
-        contents_view_->search_result_page_view()->GetVisible())
+    if (features::IsDarkLightModeEnabled())
       return SK_ColorTRANSPARENT;
     return AppListColorProvider::Get()->GetSearchBoxCardBackgroundColor();
   }

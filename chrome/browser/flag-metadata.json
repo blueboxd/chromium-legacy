@@ -826,7 +826,7 @@
   {
     "name": "continuous-search",
     "owners": [ "//chrome/browser/continuous_search/OWNERS" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 98
   },
   {
     "name": "conversion-measurement-debug-mode",
@@ -5047,6 +5047,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "shopping-list",
+    "owners": [ "mdjones", "chrome-shopping-eng@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "show-autofill-type-predictions",
     "owners": [ "ftirelo", "mathp" ],
     // This is used by autofill devs to debug on Android.
@@ -5597,7 +5602,7 @@
   {
     "name": "wallpaper-webui",
     "owners": [ "cowmoo@google.com", "croissant-eng@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 96
   },
   {
     "name": "web-apps-crosapi",
@@ -5678,6 +5683,11 @@
     "name": "webui-tab-strip",
     "owners": [ "tluk", "collinbaker", "johntlee" ],
     "expiry_milestone": 99
+  },
+  {
+    "name" : "webui-tab-strip-context-menu-after-tap",
+    "owners": [ "romanarora", "tluk", "yuhengh" ],
+    "expiry_milestone" : 99
   },
   {
     "name": "webui-tab-strip-ntb-in-tab-strip",

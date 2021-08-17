@@ -203,6 +203,13 @@ void ReadLaterPageHandler::OpenURL(
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
   browser->OpenURL(params);
 
+  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+  if (entry) {
+    base::RecordAction(base::UserMetricsAction(
+        entry->IsRead() ? "DesktopReadingList.Navigation.FromReadList"
+                        : "DesktopReadingList.Navigation.FromUnreadList"));
+  }
+
   if (mark_as_read && !side_panel_enabled)
     reading_list_model_->SetReadStatus(url, true);
 
@@ -217,6 +224,9 @@ void ReadLaterPageHandler::OpenURL(
 
 void ReadLaterPageHandler::UpdateReadStatus(const GURL& url, bool read) {
   reading_list_model_->SetReadStatus(url, read);
+  base::RecordAction(
+      base::UserMetricsAction(read ? "DesktopReadingList.MarkAsRead"
+                                   : "DesktopReadingList.MarkAsUnread"));
 }
 
 void ReadLaterPageHandler::AddCurrentTab() {
@@ -234,6 +244,7 @@ void ReadLaterPageHandler::AddCurrentTab() {
 
 void ReadLaterPageHandler::RemoveEntry(const GURL& url) {
   reading_list_model_->RemoveEntryByURL(url);
+  base::RecordAction(base::UserMetricsAction("DesktopReadingList.RemoveItem"));
 }
 
 void ReadLaterPageHandler::ShowContextMenuForURL(const GURL& url,
@@ -371,17 +382,17 @@ void ReadLaterPageHandler::UpdateCurrentPageActionButton() {
   if (!url.has_value())
     return;
 
-  if (!reading_list_model_->IsUrlSupported(url.value())) {
-    current_page_action_button_state_ =
-        read_later::mojom::CurrentPageActionButtonState::kDisabled;
-  } else if (reading_list_model_->GetEntryByURL(url.value()) &&
-             !reading_list_model_->GetEntryByURL(url.value())->IsRead()) {
-    current_page_action_button_state_ =
-        read_later::mojom::CurrentPageActionButtonState::kRemove;
+  read_later::mojom::CurrentPageActionButtonState new_state;
+  if (!reading_list_model_->IsUrlSupported(url.value()) ||
+      (reading_list_model_->GetEntryByURL(url.value()) &&
+       !reading_list_model_->GetEntryByURL(url.value())->IsRead())) {
+    new_state = read_later::mojom::CurrentPageActionButtonState::kDisabled;
   } else {
-    current_page_action_button_state_ =
-        read_later::mojom::CurrentPageActionButtonState::kAdd;
+    new_state = read_later::mojom::CurrentPageActionButtonState::kAdd;
   }
-  page_->CurrentPageActionButtonStateChanged(current_page_action_button_state_,
-                                             url.value());
+  if (current_page_action_button_state_ != new_state) {
+    current_page_action_button_state_ = new_state;
+    page_->CurrentPageActionButtonStateChanged(
+        current_page_action_button_state_);
+  }
 }

@@ -1491,7 +1491,7 @@ bool ChromeContentBrowserClient::ShouldUseMobileFlingCurve() {
 #if defined(OS_ANDROID)
   return true;
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  return ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode();
+  return ash::TabletMode::IsInTabletMode();
 #else
   return false;
 #endif  // defined(OS_ANDROID)
@@ -3256,16 +3256,18 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       // WebContents.
       Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
       if (browser && browser->app_controller()) {
+        web_app::WebAppProvider* const web_app_provider =
+            web_app::WebAppProvider::GetForLocalApps(profile);
         const web_app::AppId& app_id = browser->app_controller()->app_id();
         const web_app::WebAppRegistrar& registrar =
-            web_app::WebAppProvider::Get(profile)->registrar();
+            web_app_provider->registrar();
         if (registrar.IsLocallyInstalled(app_id))
           web_prefs->web_app_scope = registrar.GetAppScope(app_id);
 
         if (browser->app_controller()->is_for_system_web_app()) {
           auto system_app_type = browser->app_controller()->system_app_type();
           const web_app::SystemWebAppManager& system_web_app_manager =
-              web_app::WebAppProvider::Get(profile)->system_web_app_manager();
+              web_app_provider->system_web_app_manager();
           web_prefs->allow_scripts_to_close_windows =
               system_web_app_manager.AllowScriptsToCloseWindows(
                   system_app_type.value());
@@ -5656,8 +5658,9 @@ bool ChromeContentBrowserClient::ShouldLoadExtraIcuDataFile(
 #if defined(OS_ANDROID)
   *split_name = "extra_icu";
   return extra_icu::ModuleProvider::IsModuleInstalled();
-#endif
+#else
   return false;
+#endif
 }
 
 bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(

@@ -73,6 +73,7 @@
 <translation id="2429317896000329049">Google Chrome не може да ги синхронизира вашите податоци затоа што Sync не е достапен за вашиот домен.</translation>
 <translation id="2467438592969358367">Google Chrome сака да ги извезе вашите лозинки. Внесете ја лозинката за Windows за да го дозволите ова.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="2518751521812750372">Кога ќе го затворите Chrome, автоматски ќе ги избрише колачињата и податоците од сајтот за посетените страници</translation>
 <translation id="2534507159460261402">Google Pay (копирана во Chrome)</translation>
 <translation id="2574930892358684005">Корисникот <ph name="EXISTING_USER" /> веќе е најавен на овој профил на Chrome. За да прелистувате одделно, Chrome може да создаде одделен профил за вас.</translation>
 <translation id="2580411288591421699">Не може да се инсталира истата верзија на Google Chrome што работи во моментов. Затворете го Google Chrome и обидете се повторно.</translation>
@@ -278,6 +279,7 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="8008534537613507642">Преинсталирај го Chrome</translation>
 <translation id="8013993649590906847">Ако сликата нема корисен опис, Chrome ќе се обиде да ви обезбеди опис. За да се создаваат описи, сликите се испраќаат до Google.</translation>
 <translation id="8129812357326543296">За &amp;Google Chrome</translation>
+<translation id="822971176939352383">Следниве сметки не се најавени на ниту еден профил на Chrome. Ако сакате да користите сметка на друг профил, прво отстранете го профилот.</translation>
 <translation id="8255190535488645436">Google Chrome ги користи камерата и микрофонот.</translation>
 <translation id="8286862437124483331">Google Chrome се обидува да покаже лозинки. Впишете ја лозинката за Windows за да се дозволи ова.</translation>
 <translation id="828798499196665338">Родителот ги исклучил „Дозволите за сајтови, апликации и екстензии“ за Chrome. Не е дозволено овозможувањето на оваа<ph name="EXTENSION_TYPE_PARAMETER" />.</translation>

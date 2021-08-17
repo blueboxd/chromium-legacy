@@ -26033,6 +26033,7 @@ Called by update_document_policy_enum.py.-->
   <int value="889" label="PrintPdfAsImageAvailability"/>
   <int value="890" label="PrintRasterizePdfDpi"/>
   <int value="891" label="DeviceTargetVersionSelector"/>
+  <int value="892" label="ChromeAppsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -34170,6 +34171,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3973" label="NavigatorPdfViewerEnabled"/>
   <int value="3974" label="CanvasRenderingContext2DContextLostEvent"/>
   <int value="3975" label="CanvasRenderingContext2DContextRestoredEvent"/>
+  <int value="3976" label="ClientHintsViewportHeight"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34278,6 +34280,7 @@ Called by update_permissions_policy_enum.py.-->
   <int value="86" label="WindowPlacement"/>
   <int value="87" label="ClientHintUABitness"/>
   <int value="88" label="ClientHintUAReduced"/>
+  <int value="89" label="ClientHintViewportHeight"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -40338,6 +40341,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1419490329" label="ActivityTracker.Record.Event"/>
   <int value="-1390672863"
       label="DataUse.MessageSize.AllServices.Upstream.Background.NotCellular"/>
+  <int value="-1363801537" label="Crashpad.CrashUpload.Skipped"/>
   <int value="-1345388508" label="Renderer4.IdealContentsScale"/>
   <int value="-1321341911"
       label="DataUse.BackgroundToDataRecievedPerByte.User"/>
@@ -40348,6 +40352,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1267842531"
       label="PasswordManager.BulkCheck.PasswordCheckReferrer"/>
   <int value="-1189959109" label="RendererScheduler.TaskCountPerQueueType"/>
+  <int value="-1096730224" label="Crashpad.CrashReportPending"/>
+  <int value="-1026485441"
+      label="UMA.PersistentAllocator.CrashpadMetrics.Errors"/>
   <int value="-983723378" label="RendererScheduler.TaskDurationPerThreadType"/>
   <int value="-970685679"
       label="Bluetooth.MacOS.Errors.DidDiscoverDescriptors"/>
@@ -40367,6 +40374,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-535820174"
       label="DataUse.MessageSize.AllServices.Downstream.Background.NotCellular"/>
   <int value="-453454441" label="Bluetooth.MacOS.Errors.DidWriteValue"/>
+  <int value="-445016785" label="Crashpad.ExceptionEncountered"/>
   <int value="-436781330"
       label="Net.URLLoaderThrottleExecutionTime.BeforeWillProcessResponse"/>
   <int value="-424393552" label="DirectWrite.Fonts.Gfx.InitializeLoopCount"/>
@@ -40377,8 +40385,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-343220158" label="Compositing.Renderer.LayersUpdateTime"/>
   <int value="-334673303"
       label="UMA.PersistentAllocator.BrowserMetrics.Errors"/>
+  <int value="-297026085" label="Crashpad.ExceptionCode.Win"/>
   <int value="-141990989" label="DataUse.AllServices.Background"/>
   <int value="-132932440" label="DataUse.ContentType.Services"/>
+  <int value="-94832417" label="Crashpad.CrashReportSize"/>
   <int value="-48200749" label="DiskCache.0.TotalIOTime"/>
   <int value="0" label="Missing hash value"/>
   <int value="19727358" label="DataUse.BytesReceived2.Delegate"/>
@@ -40392,9 +40402,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="192918458"
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.Cellular"/>
   <int value="294030175" label="V8.GC.Event.MainThread.Full.Incremental.Cpp"/>
+  <int value="410893025" label="Crashpad.CrashUpload.AttemptSuccessful"/>
   <int value="424952287"
       label="Network.Shill.Wifi.LinkMonitorResponseTimeSample"/>
   <int value="433324211" label="Extensions.FunctionCalls"/>
+  <int value="480662546" label="ActivityTracker.CollectCrash.Event"/>
   <int value="513321612"
       label="V8.GC.Event.MainThread.Full.Incremental.Mark.Cpp"/>
   <int value="536258327" label="Blink.UseCounter.SVGImage.Features"/>
@@ -40416,6 +40428,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="761823979" label="Crashpad.HandlerLifetimeMilestone"/>
   <int value="873338882"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic"/>
+  <int value="902803399"
+      label="UMA.PersistentAllocator.CrashpadMetrics.UsedPct"/>
   <int value="910415681" label="DevTools.ExperimentEnabledAtLaunch"/>
   <int value="1096524200" label="DevTools.IssueCreated"/>
   <int value="1126499749"
@@ -40442,6 +40456,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Compositing.Renderer.LayerUpdateSkippedDueToBackface"/>
   <int value="1632894016"
       label="Autofill.FieldPredictionQuality.ByFieldType.Heuristic.NoSubmission"/>
+  <int value="1716628481" label="ActivityTracker.CollectCrash.Status"/>
   <int value="1721222685" label="Blink.UseCounter.MainFrame.Features"/>
   <int value="1753226325"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
@@ -48482,6 +48497,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentShowSuggestionFavicons:enabled"/>
   <int value="-757379927" label="Canvas2DImageChromium:enabled"/>
   <int value="-757282194" label="EnableFilesystemInIncognito:enabled"/>
+  <int value="-754726495" label="WebUITabStripContextMenuAfterTap:enabled"/>
   <int value="-752321357" label="AutofillEnableGoogleIssuedCard:enabled"/>
   <int value="-750175757" label="ClientLoFi:enabled"/>
   <int value="-749048160" label="enable-panels"/>
@@ -49124,6 +49140,7 @@ from previous Chrome versions.
   <int value="-215580565"
       label="OmniboxEnableClipboardProviderImageSuggestions:disabled"/>
   <int value="-215534141" label="NativeWindowNavButtons:enabled"/>
+  <int value="-215103767" label="ShoppingList:disabled"/>
   <int value="-214618160" label="ESimPolicy:enabled"/>
   <int value="-213518852" label="protect-sync-credential:enabled"/>
   <int value="-213214894" label="enable-chromevox-arc-support"/>
@@ -50270,6 +50287,7 @@ from previous Chrome versions.
   <int value="701766325" label="PerNavigationMojoInterface:enabled"/>
   <int value="701795774" label="WebAppEnableUrlHandlers:enabled"/>
   <int value="702060507" label="SafetyCheckWeakPasswords:disabled"/>
+  <int value="703122112" label="ShoppingList:enabled"/>
   <int value="703469777" label="AndroidNightModeTabReparenting:enabled"/>
   <int value="703621694" label="UseSodaForLiveCaption:disabled"/>
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
@@ -50871,6 +50889,7 @@ from previous Chrome versions.
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
   <int value="1198839129" label="OfflinePagesLivePageSharing:enabled"/>
+  <int value="1200407724" label="WebUITabStripContextMenuAfterTap:disabled"/>
   <int value="1201008500"
       label="EnableAmbientAuthenticationInIncognito:enabled"/>
   <int value="1203795051" label="PassiveMixedContentWarning:enabled"/>
@@ -83068,6 +83087,14 @@ Full version information for the fingerprint enum values:
 
 <enum name="UninstallCounterReasonEnum">
   <int value="0" label="User"/>
+</enum>
+
+<enum name="UninstallSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Uninstall by the user from the App List (Launcher)"/>
+  <int value="2" label="Uninstall by the user from the App Management page"/>
+  <int value="3" label="Uninstall by the user from the Shelf"/>
+  <int value="4" label="Uninstall by app migration."/>
 </enum>
 
 <enum name="UnlockType">

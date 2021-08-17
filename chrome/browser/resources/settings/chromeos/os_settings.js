@@ -71,6 +71,7 @@ import './os_apps_page/app_notifications_page/mojo_interface_provider.js';
 import './os_apps_page/os_apps_page.m.js';
 import './os_bluetooth_page/os_bluetooth_devices_subpage.js';
 import './os_bluetooth_page/os_bluetooth_device_detail_subpage.js';
+import './os_bluetooth_page/os_bluetooth_change_device_name_dialog.js';
 import './os_bluetooth_page/os_bluetooth_page.js';
 import './os_bluetooth_page/os_bluetooth_summary.js';
 import './os_bluetooth_page/os_paired_bluetooth_list.js';
@@ -123,7 +124,7 @@ export {SwitchAccessSubpageBrowserProxy, SwitchAccessSubpageBrowserProxyImpl} fr
 export {TtsSubpageBrowserProxy, TtsSubpageBrowserProxyImpl} from './os_a11y_page/tts_subpage_browser_proxy.m.js';
 export {AboutPageBrowserProxyImpl, BrowserChannel, UpdateStatus} from './os_about_page/about_page_browser_proxy.js';
 export {DeviceNameBrowserProxy, DeviceNameBrowserProxyImpl} from './os_about_page/device_name_browser_proxy.js';
-export {DeviceNameState} from './os_about_page/device_name_util.js';
+export {DeviceNameState, SetDeviceNameResult} from './os_about_page/device_name_util.js';
 export {AndroidAppsBrowserProxyImpl} from './os_apps_page/android_apps_browser_proxy.m.js';
 export {addApp, changeApp, removeApp, updateSelectedAppId} from './os_apps_page/app_management_page/actions.m.js';
 export {BrowserProxy} from './os_apps_page/app_management_page/browser_proxy.m.js';

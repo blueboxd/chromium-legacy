@@ -2130,7 +2130,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Canvas.TextMetrics.SetFont2" units="microseconds"
-    expires_after="2022-01-31">
+    expires_after="M93">
+  <obsolete>
+    Retired in M94.
+  </obsolete>
   <owner>yiyix@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -11057,7 +11060,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OffscreenCanvas.TextMetrics.SetFont2" units="microseconds"
-    expires_after="2022-01-31">
+    expires_after="M93">
+  <obsolete>
+    Retired in M94.
+  </obsolete>
   <owner>yiyix@chromium.org</owner>
   <owner>fserb@chromium.org</owner>
   <summary>
@@ -16318,6 +16324,16 @@ should be kept until we remove incident reporting. -->
   <owner>futhark@chromium.org</owner>
   <summary>
     Microseconds spent in RecalcStyle called from Document::UpdateStyle.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceWebBundles.BundleFetchErrorCode"
+    enum="NetErrorCodes" expires_after="M99">
+  <owner>ksakamoto@chromium.org</owner>
+  <owner>webpackage-dev@chromium.org</owner>
+  <summary>
+    The net error code recorded when request for a subresource web bundle was
+    failed.
   </summary>
 </histogram>
 

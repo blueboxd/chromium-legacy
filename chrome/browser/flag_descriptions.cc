@@ -1442,11 +1442,6 @@ const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
     "removed for iOS and Desktop. An educative placeholder will be shown for "
     "Android history page.";
 
-const char kIncognitoNtpRealBoxName[] =
-    "Incognito New Tab Page Real Search Box";
-const char kIncognitoNtpRealBoxDescription[] =
-    "When enabled, Incognito New Tap Page will display a Real Search Box.";
-
 const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
 const char kIncognitoNtpRevampDescription[] =
     "When enabled, Incognito new tab page will have an updated UI";
@@ -4656,10 +4651,6 @@ const char kCrosLanguageSettingsImeOptionsInSettingsName[] =
     "Ime settings in settings";
 const char kCrosLanguageSettingsImeOptionsInSettingsDescription[] =
     "Adds IME settings to the settings menu";
-
-const char kIntentHandlingSharingName[] = "Intent handling for sharing";
-const char kIntentHandlingSharingDescription[] =
-    "Support sharing in Chrome OS intent handling.";
 
 const char kIntentPickerPWAPersistenceName[] = "Intent picker PWA Persistence";
 const char kIntentPickerPWAPersistenceDescription[] =

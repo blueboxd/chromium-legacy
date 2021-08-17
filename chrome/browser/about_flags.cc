@@ -5381,10 +5381,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIntentPickerPWAPersistenceName,
      flag_descriptions::kIntentPickerPWAPersistenceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kIntentPickerPWAPersistence)},
-
-    {"intent-handling-sharing", flag_descriptions::kIntentHandlingSharingName,
-     flag_descriptions::kIntentHandlingSharingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kIntentHandlingSharing)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
@@ -6843,10 +6839,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillEnablePasswordInfoBarAccountIndicationFooter)},
-
-    {"incognito-ntp-realbox", flag_descriptions::kIncognitoNtpRealBoxName,
-     flag_descriptions::kIncognitoNtpRealBoxDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kIncognitoNtpRealBox)},
 
     {"incognito-screenshot", flag_descriptions::kIncognitoScreenshotName,
      flag_descriptions::kIncognitoScreenshotDescription, kOsAndroid,

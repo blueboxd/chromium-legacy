@@ -850,7 +850,7 @@ const base::Feature kWebAppNoteTaking{"WebAppNoteTaking",
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
 const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Makes freezing of frame-associated task queues happen even when KeepActive is
 // true.
@@ -1019,6 +1019,11 @@ const base::Feature kReportAllJavascriptFrameworks{
 // inspector issue anyway.
 const base::Feature kCORSErrorsIssueOnly{"CORSErrorsIssueOnly",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables deprecating warnings (in Issues tab of DevTools) for third party
+// context use of WebSQL (`DOMWindowWebDatabase::openDatabase`).
+const base::Feature kDeprecateThirdPartyContextWebSQL{
+    "DeprecateThirdPartyContextWebSQL", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

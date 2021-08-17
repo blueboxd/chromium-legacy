@@ -3403,11 +3403,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "incognito-ntp-realbox",
-    "owners": [ "sideyilmaz", "chrome-incognito@google.com"],
-    "expiry_milestone": 100
-  },
-  {
     "name": "incognito-ntp-revamp",
     "owners": [ "sideyilmaz", "chrome-incognito@google.com" ],
     "expiry_milestone": 100
@@ -3456,11 +3451,6 @@
     "name": "intensive-wake-up-throttling",
     "owners": [ "fdoray" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "intent-handling-sharing",
-    "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 93
   },
   {
     "name": "intent-picker-pwa-persistence",

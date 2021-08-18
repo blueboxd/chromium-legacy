@@ -588,12 +588,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "chrome-cleanup-scan-completed-notification",
-    "owners": ["rainhard", "msramek",
-      "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 92
-  },
-  {
     "name": "chrome-labs",
     "owners": ["elainechien", "robliao"],
     "expiry_milestone": 107
@@ -691,7 +685,7 @@
   {
     "name": "colr-v1-fonts",
     "owners": [ "drott", "layout-dev@chromium.org" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 102
   },
   {
     "name": "commander",
@@ -720,15 +714,6 @@
     "name": "content-languages-in-language-picker",
     "owners": [ "basiaz@google.com", "chrome-language@google.com" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "content-settings-redesign",
-    "owners": [
-      "harrisonsean",
-      "msramek",
-      "chrome-friendly-settings@google.com"
-    ],
-    "expiry_milestone": 93
   },
   {
     "name": "context-menu-google-lens-chip",
@@ -3059,11 +3044,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "files-zip-mount",
-    "owners": [ "fdegros", "jboulic"],
-    "expiry_milestone": 95
-  },
-  {
     "name": "files-zip-pack",
     "owners": [ "fdegros", "jboulic"],
     "expiry_milestone": 100
@@ -4772,15 +4752,6 @@
       "chrome-safebrowsing-core@google.com"
     ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "safety-check-chrome-cleaner-child",
-    "owners": [
-      "rainhard",
-      "msramek",
-      "chrome-friendly-settings@google.com"
-    ],
-    "expiry_milestone": 94
   },
   {
     "name": "safety-tips",

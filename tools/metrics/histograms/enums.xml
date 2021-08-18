@@ -28957,6 +28957,7 @@ Called by update_extension_histograms.py.-->
   <int value="1569" label="SCRIPTING_UNREGISTERCONTENTSCRIPTS"/>
   <int value="1570" label="FILEMANAGERPRIVATE_GETZIPPROGRESS"/>
   <int value="1571" label="CRYPTOTOKENPRIVATE_CANMAKEU2FAPIREQUEST"/>
+  <int value="1572" label="OS_DIAGNOSTICS_RUNBATTERYCAPACITYROUTINE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -34189,6 +34190,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3980" label="V8NavigatorManagedData_GetAnnotatedAssetId_Method"/>
   <int value="3981" label="V8NavigatorManagedData_GetAnnotatedLocation_Method"/>
   <int value="3982" label="UserDataFieldFilledPreviously"/>
+  <int value="3983" label="TableCollapsedBorderDifferentToVisual"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -52408,6 +52410,11 @@ from previous Chrome versions.
   <int value="0" label="OK"/>
   <int value="1" label="MODEL_INTERPRETATION_ERROR"/>
   <int value="2" label="MEMORY_ALLOCATION_ERROR"/>
+</enum>
+
+<enum name="MachineLearningServiceDocumentScannerResultEvent">
+  <int value="0" label="OK"/>
+  <int value="1" label="ERROR"/>
 </enum>
 
 <enum name="MachineLearningServiceExecuteResultEvent">

@@ -24,14 +24,11 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1184931
   "health.ProbeBatteryMetrics",
 
-  # crbug.com/1185030
-  "inputs.VirtualKeyboardJapaneseInputs.stable",
-
-  # crbug.com/1212788
-  "apps.LaunchGallery.stable",
-
   # crbug.com/1182538
   "policy.URLCheck.allowlist",
   "policy.URLCheck.blocklist",
   "policy.URLCheck.whitelist",  # nocheck
+
+  # b/196705842
+  "apps.LaunchGalleryLanguage",
 ]

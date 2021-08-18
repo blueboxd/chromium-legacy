@@ -107,20 +107,11 @@ const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
-#if defined(OS_WIN)
-const base::Feature kChromeCleanupScanCompletedNotification{
-    "ChromeCleanupScanCompletedNotification",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kConsolidatedSiteStorageControls{
     "ConsolidatedSiteStorageControls", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 const base::Feature kContinuousSearch{"ContinuousSearch",
@@ -824,11 +815,6 @@ const base::Feature kRemoveSupervisedUsersOnStartup{
 #if defined(OS_ANDROID)
 const base::Feature kRequestDesktopSiteForTablets{
     "RequestDesktopSiteForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if defined(OS_WIN)
-const base::Feature kSafetyCheckChromeCleanerChild{
-    "SafetyCheckChromeCleanerChild", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

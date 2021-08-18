@@ -92,8 +92,9 @@ struct SameSizeAsLayoutText : public LayoutObject {
   DOMNodeId node_id;
   float widths[4];
   String text;
-  void* pointers[2];
+  Member<void*> members[2];
   PhysicalOffset previous_starting_point;
+  wtf_size_t first_fragment_item_index_;
 };
 
 ASSERT_SIZE(LayoutText, SameSizeAsLayoutText);
@@ -185,6 +186,11 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
   // removed.
   GetSecureTextTimers();
   GetSelectionDisplayItemClientMap();
+}
+
+void LayoutText::Trace(Visitor* visitor) const {
+  visitor->Trace(text_boxes_);
+  LayoutObject::Trace(visitor);
 }
 
 LayoutText* LayoutText::CreateEmptyAnonymous(
@@ -662,6 +668,8 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     if (!MapDOMOffsetToTextContentOffset(*mapping, &start, &end))
       return;
 
+    const auto* const text_combine = DynamicTo<LayoutNGTextCombine>(Parent());
+
     // We don't want to add collapsed (i.e., start == end) quads from text
     // fragments that intersect [start, end] only at the boundary, unless they
     // are the only quads found. For example, when we have
@@ -702,6 +710,8 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
           continue;
         rect = item.LocalRect();
       }
+      if (UNLIKELY(text_combine))
+        rect = text_combine->AdjustRectForBoundingBox(rect);
       rect.Move(cursor.CurrentOffsetInBlockFlow());
       const FloatQuad quad = LocalRectToAbsoluteQuad(rect);
       if (!is_collapsed) {
@@ -2250,7 +2260,8 @@ void LayoutText::DirtyLineBoxes() {
 
 InlineTextBox* LayoutText::CreateTextBox(int start, uint16_t length) {
   NOT_DESTROYED();
-  return new InlineTextBox(LineLayoutItem(this), start, length);
+  return MakeGarbageCollected<InlineTextBox>(LineLayoutItem(this), start,
+                                             length);
 }
 
 InlineTextBox* LayoutText::CreateInlineTextBox(int start, uint16_t length) {

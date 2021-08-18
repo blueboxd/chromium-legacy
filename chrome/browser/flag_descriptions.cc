@@ -2121,10 +2121,6 @@ const char kAbusiveNotificationPermissionRevocationDescription[] =
     "permission requests or content will have the notification permission "
     "revoked.";
 
-const char kContentSettingsRedesignName[] = "Content settings page redesign";
-const char kContentSettingsRedesignDescription[] =
-    "Enables a new content settings page UI.";
-
 const char kReadLaterNewBadgePromoName[] = "Reading list 'New' badge promo";
 const char kReadLaterNewBadgePromoDescription[] =
     "Causes a 'New' badge to appear on the entry point for adding to the "
@@ -3719,12 +3715,6 @@ const char kCalculateNativeWinOcclusionDescription[] =
     "Calculate window occlusion on Windows will be used in the future "
     "to throttle and potentially unload foreground tabs in occluded windows";
 
-const char kChromeCleanupScanCompletedNotificationName[] =
-    "Chrome cleanup scan completion notification";
-const char kChromeCleanupScanCompletedNotificationDescription[] =
-    "Allows you to be notified when a Chrome cleaner scan you started "
-    "completes.";
-
 const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
@@ -3751,11 +3741,6 @@ const char kRunVideoCaptureServiceInBrowserProcessName[] =
     "Run video capture service in browser";
 const char kRunVideoCaptureServiceInBrowserProcessDescription[] =
     "Run the video capture service in the browser process.";
-
-const char kSafetyCheckChromeCleanerChildName[] =
-    "Chrome Cleanup Tool in safety check";
-const char kSafetyCheckChromeCleanerChildDescription[] =
-    "Enables the Chrome Cleanup Tool child in safety check.";
 
 const char kUseAngleName[] = "Choose ANGLE graphics backend";
 const char kUseAngleDescription[] =
@@ -4516,10 +4501,7 @@ const char kFilesTrashName[] = "Enable Files Trash.";
 const char kFilesTrashDescription[] =
     "Enable trash for My files volume in Files App.";
 
-const char kFilesZipMountName[] = "New ZIP mounting in Files App";
-const char kFilesZipMountDescription[] =
-    "Enable new ZIP archive mounting system in File Manager.";
-
+// TODO(crbug.com/1201052) Remove these lines when removing ZipArchiver.
 const char kFilesZipPackName[] = "New ZIP packing in Files App";
 const char kFilesZipPackDescription[] =
     "Enable new ZIP archive creation system in File Manager.";

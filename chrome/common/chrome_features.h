@@ -324,6 +324,12 @@ extern const base::Feature kHappinessTrackingSystem;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSystemOnboarding;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSystemUnlock;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSystemSmartLock;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -538,9 +544,6 @@ extern const base::Feature kRequestDesktopSiteForTablets;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSafetyCheckChromeCleanerChild;
 #endif
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSafetyCheckWeakPasswords;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -43,7 +43,7 @@ FileManagerPrivateAddMountFunction::FileManagerPrivateAddMountFunction() =
 
 ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
   using file_manager_private::AddMount::Params;
-  const std::unique_ptr<Params> params = Params::Create(*args_);
+  const std::unique_ptr<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
@@ -94,7 +94,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
 
 ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
   using file_manager_private::RemoveMount::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
@@ -155,7 +155,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetVolumeMetadataListFunction::Run() {
-  if (args_->GetSize())
+  if (!args().empty())
     return RespondNow(Error("Invalid arguments"));
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());

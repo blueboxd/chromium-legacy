@@ -1407,7 +1407,7 @@ TEST_F(NetworkContextTest, P2PHostResolution) {
         host_resolver.CreateRequest(kHostPortPair, other_nik,
                                     net::NetLogWithSource(), params);
     net::TestCompletionCallback callback2;
-    int result = request2->Start(callback2.callback());
+    result = request2->Start(callback2.callback());
     EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback2.GetResult(result));
   }
 }
@@ -3834,10 +3834,11 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
       net::MockDnsClientRule::Result(
           net::BuildTestDnsAddressResponse(kQueryHostname, result)),
       false /* delay */);
-  rules.emplace_back(
-      kQueryHostname, net::dns_protocol::kTypeAAAA, false /* secure */,
-      net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
-      false /* delay */);
+  rules.emplace_back(kQueryHostname, net::dns_protocol::kTypeAAAA,
+                     false /* secure */,
+                     net::MockDnsClientRule::Result(
+                         net::MockDnsClientRule::ResultType::kEmpty),
+                     false /* delay */);
   auto mock_dns_client = std::make_unique<net::MockDnsClient>(
       base_configuration, std::move(rules));
   mock_dns_client->SetInsecureEnabled(/*enabled=*/true,

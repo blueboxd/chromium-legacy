@@ -28,6 +28,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "ipc/ipc_message.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_database.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
@@ -475,11 +476,20 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // Sets the Blob UUIDs whose ownership is being transferred to the renderer.
   void SetTransferredBlobUUIDs(const std::vector<std::string>& blob_uuids);
 
+  bool has_args() const { return args_.has_value(); }
+
+  const std::vector<base::Value>& args() const {
+    DCHECK(args_);
+    return *args_;
+  }
+
+  std::vector<base::Value>& mutable_args() {
+    DCHECK(args_);
+    return *args_;
+  }
+
   // The extension that called this function.
   scoped_refptr<const extensions::Extension> extension_;
-
-  // The arguments to the API. Only non-null if argument were specified.
-  std::unique_ptr<base::ListValue> args_;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -498,6 +508,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // The callback for mojom::Renderer::TransferBlobs().
   void OnTransferBlobsAck(int process_id,
                           const std::vector<std::string>& blob_uuids);
+
+  // The arguments to the API. Only non-null if arguments were specified.
+  absl::optional<std::vector<base::Value>> args_;
 
   base::ElapsedTimer timer_;
 

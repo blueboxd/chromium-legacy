@@ -99,6 +99,7 @@
 #include "components/lens/lens_features.h"
 #include "components/lookalikes/core/features.h"
 #include "components/messages/android/messages_feature.h"
+#include "components/mirroring/service/mirroring_features.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -2585,14 +2586,6 @@ const FeatureEntry::FeatureVariation kContinuousSearchFeatureVariations[] = {
      base::size(kContinuousSearchPermanentDismissal), nullptr},
     {"with double-row chips", kContinuousSearchDoubleRowChip,
      base::size(kContinuousSearchDoubleRowChip), nullptr}};
-
-const FeatureEntry::FeatureParam kReadLaterUseRootBookmarkAsDefault[] = {
-    {"use_root_bookmark_as_default", "true"}};
-
-const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
-    {"(use root bookmark as default)", kReadLaterUseRootBookmarkAsDefault,
-     base::size(kReadLaterUseRootBookmarkAsDefault), nullptr}};
-
 #endif  // defined(OS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -2943,12 +2936,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCompositingBasedThrottling,
      flag_descriptions::kCompositingBasedThrottlingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCompositingBasedThrottling)},
-    {"bluetooth-aggressive-appearance-filter",
-     flag_descriptions::kBluetoothAggressiveAppearanceFilterName,
-     flag_descriptions::kBluetoothAggressiveAppearanceFilterDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kBluetoothAggressiveAppearanceFilter)},
     {"bluetooth-fix-a2dp-packet-size",
      flag_descriptions::kBluetoothFixA2dpPacketSizeName,
      flag_descriptions::kBluetoothFixA2dpPacketSizeDescription, kOsCrOS,
@@ -3654,7 +3641,13 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(web_app::kMigrateDefaultChromeAppToWebAppsNonGSuite)},
+
+    {"enable-openscreen-cast-streaming-session",
+     flag_descriptions::kOpenscreenCastStreamingSessionName,
+     flag_descriptions::kOpenscreenCastStreamingSessionDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(mirroring::features::kOpenscreenCastStreamingSession)},
 #endif  // !OS_ANDROID
+
 #if defined(OS_ANDROID)
     {"autofill-keyboard-accessory-view",
      flag_descriptions::kAutofillAccessoryViewName,
@@ -4593,17 +4586,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kQuickSettingsPWANotifications)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#ifdef OS_ANDROID
     {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
-     flag_descriptions::kReadLaterDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(reading_list::switches::kReadLater,
-                                    kReadLaterVariations,
-                                    flag_descriptions::kReadLaterName)},
-#else
-    {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
-     flag_descriptions::kReadLaterDescription, kOsDesktop,
+     flag_descriptions::kReadLaterDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(reading_list::switches::kReadLater)},
-#endif
 
     {"read-later-new-badge-promo",
      flag_descriptions::kReadLaterNewBadgePromoName,
@@ -6404,6 +6389,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"nearby-sharing", flag_descriptions::kNearbySharingName,
      flag_descriptions::kNearbySharingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharing)},
+    {"nearby-sharing-arc", flag_descriptions::kNearbySharingArcName,
+     flag_descriptions::kNearbySharingArcDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShare)},
     {"nearby-sharing-background-scanning",
      flag_descriptions::kNearbySharingBackgroundScanningName,
      flag_descriptions::kNearbySharingBackgroundScanningDescription, kOsCrOS,
@@ -6921,11 +6909,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSwipeToMoveCursorDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kSwipeToMoveCursor)},
 #endif  // defined(OS_ANDROID)
-
-    {"safety-check-weak-passwords",
-     flag_descriptions::kSafetyCheckWeakPasswordsName,
-     flag_descriptions::kSafetyCheckWeakPasswordsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSafetyCheckWeakPasswords)},
 
 #if !defined(OS_ANDROID)
     {"settings-landing-page-redesign",

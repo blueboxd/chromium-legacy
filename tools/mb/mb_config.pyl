@@ -778,6 +778,7 @@
       'mac10.14-blink-rel': 'release_bot_blink_minimal_symbols',
       'mac10.15-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
       'mac11.0-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac11.0.arm64-blink-rel': 'release_bot_blink_minimal_symbols',
       'win7-blink-rel': 'release_bot_blink_x86_minimal_symbols',
       'win10-blink-rel': 'release_bot_blink_x86_minimal_symbols',
       'win10.20h2-blink-rel': 'release_bot_blink_x86_minimal_symbols',
@@ -2929,17 +2930,12 @@
       'gn_args': 'build_angle_deqp_tests=true',
     },
 
-    'angle_gles1_conform_tests': {
-      'gn_args': 'build_angle_gles1_conform_tests=true',
-    },
-
     'angle_specific_tests': {
-      'mixins': ['angle_gles1_conform_tests', 'angle_deqp_tests',
-                 'angle_trace_perf_tests', 'disable_nacl'],
+      'mixins': ['angle_deqp_tests', 'angle_trace_perf_tests', 'disable_nacl'],
     },
 
     'angle_specific_no_trace_tests': {
-      'mixins': ['angle_gles1_conform_tests', 'angle_deqp_tests'],
+      'mixins': ['angle_deqp_tests'],
     },
 
     'angle_trace_perf_tests': {
@@ -3305,7 +3301,7 @@
     },
 
     'internal_gles_conform_tests': {
-      'gn_args': 'internal_gles2_conform_tests=true build_angle_gles1_conform_tests=true',
+      'gn_args': 'internal_gles2_conform_tests=true',
     },
 
     'invert_fieldtrials': {

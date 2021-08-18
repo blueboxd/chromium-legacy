@@ -212,7 +212,7 @@ ExtensionFunction::ResponseAction FontSettingsClearFontFunction::Run() {
     return RespondNow(Error(kSetFromIncognitoError));
 
   std::unique_ptr<fonts::ClearFont::Params> params(
-      fonts::ClearFont::Params::Create(*args_));
+      fonts::ClearFont::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
@@ -228,7 +228,7 @@ ExtensionFunction::ResponseAction FontSettingsClearFontFunction::Run() {
 
 ExtensionFunction::ResponseAction FontSettingsGetFontFunction::Run() {
   std::unique_ptr<fonts::GetFont::Params> params(
-      fonts::GetFont::Params::Create(*args_));
+      fonts::GetFont::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
@@ -267,7 +267,7 @@ ExtensionFunction::ResponseAction FontSettingsSetFontFunction::Run() {
     return RespondNow(Error(kSetFromIncognitoError));
 
   std::unique_ptr<fonts::SetFont::Params> params(
-      fonts::SetFont::Params::Create(*args_));
+      fonts::SetFont::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
@@ -364,11 +364,11 @@ ExtensionFunction::ResponseAction SetFontPrefExtensionFunction::Run() {
   if (profile->IsOffTheRecord())
     return RespondNow(Error(kSetFromIncognitoError));
 
-  base::DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
-
-  base::Value* value;
-  EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  EXTENSION_FUNCTION_VALIDATE(args()[0].is_dict());
+  const base::Value& details = args()[0];
+  const base::Value* value = details.FindKey(GetKey());
+  EXTENSION_FUNCTION_VALIDATE(value);
 
   PreferenceAPI::Get(profile)->SetExtensionControlledPref(
       extension_id(), GetPrefName(), kExtensionPrefsScopeRegular,

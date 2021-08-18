@@ -1343,6 +1343,13 @@ const char kGlobalMediaControlsOverlayControlsDescription[] =
     "Allowing controls to be dragged out from Global Media Controls dialog. "
     "Requires #global-media-controls to also be enabled.";
 
+const char kOpenscreenCastStreamingSessionName[] =
+    "Enable Open Screen Library (libcast) as the Mirroring Service's Cast "
+    "Streaming implementation.";
+const char kOpenscreenCastStreamingSessionDescription[] =
+    "Enables Open Screen Library's (libcast) Cast Streaming implementation to "
+    "be used for negotiating and executing mirroring and remoting sessions";
+
 const char kGoogleLensSdkIntentName[] =
     "Enable the use of the Lens SDK when starting intent into Lens.";
 const char kGoogleLensSdkIntentDescription[] =
@@ -2058,10 +2065,6 @@ const char kSafeBrowsingPerProfileNetworkContextsName[] =
 const char kSafeBrowsingPerProfileNetworkContextsDescription[] =
     "Keys the Safe Browsing network context by the profile initiating the "
     "request";
-
-const char kSafetyCheckWeakPasswordsName[] = "Safety check for weak passwords";
-const char kSafetyCheckWeakPasswordsDescription[] =
-    "If weak passwords were found, show them in safety check.";
 
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
@@ -3965,12 +3968,6 @@ const char kBluetoothAdvertisementMonitoringDescription[] =
     "scanners that filter low energy advertisements in a power-efficient "
     "manner.";
 
-const char kBluetoothAggressiveAppearanceFilterName[] =
-    "Aggressive Bluetooth device filtering";
-const char kBluetoothAggressiveAppearanceFilterDescription[] =
-    "Enables a more aggressive Bluetooth filter in the UI to hide devices that "
-    "likely cannot be connected to.";
-
 const char kBluetoothFixA2dpPacketSizeName[] = "Bluetooth fix A2DP packet size";
 const char kBluetoothFixA2dpPacketSizeDescription[] =
     "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
@@ -4759,6 +4756,10 @@ const char kNearbyKeepAliveFixDescription[] =
 const char kNearbySharingName[] = "Nearby Sharing";
 const char kNearbySharingDescription[] =
     "Enables Nearby Sharing for sharing content between devices.";
+
+const char kNearbySharingArcName[] = "ARC Nearby Sharing";
+const char kNearbySharingArcDescription[] =
+    "Enables Nearby Sharing from ARC apps.";
 
 const char kNearbySharingBackgroundScanningName[] =
     "Nearby Sharing Background Scanning";

@@ -69,8 +69,6 @@ _log = logging.getLogger(__name__)
 # Path relative to the build directory.
 CONTENT_SHELL_FONTS_DIR = "test_fonts"
 
-ALL_TESTS_BY_DIRECTORIES = "AllTestsByDirectories.json"
-
 FONT_FILES = [
     [[CONTENT_SHELL_FONTS_DIR], 'Ahem.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Arimo-Bold.ttf', None],
@@ -255,6 +253,7 @@ class Port(object):
         self._test_configuration = None
         self._results_directory = None
         self._virtual_test_suites = None
+        self._used_expectation_files = None
 
     def __str__(self):
         return 'Port{name=%s, version=%s, architecture=%s, test_configuration=%s}' % (
@@ -899,14 +898,6 @@ class Port(object):
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
-    def read_all_tests_by_directories(self):
-        """Load directory->tests mapping from AllTestsByDirectories.json.
-        """
-        path = self._filesystem.join(self.web_tests_dir(), ALL_TESTS_BY_DIRECTORIES)
-        content = self._filesystem.read_text_file(path)
-        tests_by_dir = json.loads(content)
-        return tests_by_dir
-
     def tests(self, paths=None):
         """Returns all tests or tests matching supplied paths.
 
@@ -920,10 +911,9 @@ class Port(object):
             for instance a file path test.any.js could correspond to two test
             names: test.any.html and test.any.worker.html.
         """
+        tests = self.real_tests(paths)
 
         if paths:
-            tests = self.real_tests(paths)
-
             tests.extend(self._virtual_tests_matching_paths(paths))
             if (any(wpt_path in path for wpt_path in self.WPT_DIRS
                     for path in paths)
@@ -931,45 +921,35 @@ class Port(object):
                     or any('external' in path for path in paths)):
                 tests.extend(self._wpt_test_urls_matching_paths(paths))
         else:
-            if self.get_option('use_checkedin_list', False):
-                tests_by_dir = self.read_all_tests_by_directories()
-                tests = self.real_tests_from_dict(tests_by_dir)
-            else:
-                tests = self.real_tests(paths)
-                # '/' is used instead of filesystem.sep as the WPT manifest always
-                # uses '/' for paths (it is not OS dependent).
-                wpt_tests = [
-                    wpt_path + '/' + test for wpt_path in self.WPT_DIRS
-                    for test in self.wpt_manifest(wpt_path).all_urls()
-                ]
-                tests_by_dir = defaultdict(list)
-                for test in tests + wpt_tests:
-                    dirname = os.path.dirname(test) + '/'
-                    tests_by_dir[dirname].append(test)
-                tests.extend(wpt_tests)
+            # '/' is used instead of filesystem.sep as the WPT manifest always
+            # uses '/' for paths (it is not OS dependent).
+            wpt_tests = [
+                wpt_path + '/' + test for wpt_path in self.WPT_DIRS
+                for test in self.wpt_manifest(wpt_path).all_urls()
+            ]
+            tests_by_dir = defaultdict(list)
+            for test in tests + wpt_tests:
+                dirname = os.path.dirname(test) + '/'
+                tests_by_dir[dirname].append(test)
 
             tests.extend(self._all_virtual_tests(tests_by_dir))
+            tests.extend(wpt_tests)
         return tests
 
-    def real_tests_from_dict(self, tests_by_dir, paths=None):
+    def real_tests_from_dict(self, paths, tests_by_dir):
         """Find all real tests in paths, using results saved in dict."""
-        tests = []
-        if paths:
-            for path in paths:
-                if self._has_supported_extension_for_all(path):
-                    tests.append(path)
-                    continue
-                path = path + '/' if path[-1] != '/' else path
-                for key, value in tests_by_dir.items():
-                    if key.startswith(path):
-                        tests.extend(value)
-            return tests
-        else:
-            for _, v in tests_by_dir.items():
-                tests.extend(v)
-            return tests
+        files = []
+        for path in paths:
+            if self._has_supported_extension_for_all(path):
+                files.append(path)
+                continue
+            path = path + '/' if path[-1] != '/' else path
+            for key, value in tests_by_dir.items():
+                if key.startswith(path):
+                    files.extend(value)
+        return files
 
-    def real_tests(self, paths=None):
+    def real_tests(self, paths):
         """Find all real tests in paths except WPT."""
         # When collecting test cases, skip these directories.
         skipped_directories = set([
@@ -1698,24 +1678,29 @@ class Port(object):
         # updated to know about the ordered dict.
         expectations = collections.OrderedDict()
 
-        if not self.get_option('ignore_default_expectations', False):
-            for path in self.expectations_files():
-                if self._filesystem.exists(path):
+        default_expectations_files = set(self.default_expectations_files())
+        ignore_default = self.get_option('ignore_default_expectations', False)
+        for path in self.used_expectations_files():
+            is_default = path in default_expectations_files
+            if ignore_default and is_default:
+                continue
+            path_exists = self._filesystem.exists(path)
+            if is_default:
+                if path_exists:
                     expectations[path] = self._filesystem.read_text_file(path)
-
-        for path in self.get_option('additional_expectations', []):
-            expanded_path = self._filesystem.expanduser(path)
-            if self._filesystem.exists(expanded_path):
-                _log.debug("reading additional_expectations from path '%s'",
-                           path)
-                expectations[path] = self._filesystem.read_text_file(
-                    expanded_path)
             else:
-                # TODO(rmhasan): Fix additional expectation paths for
-                # not_site_per_process_blink_web_tests, then change this back
-                # to raising exceptions for incorrect expectation paths.
-                _log.warning(
-                    "additional_expectations path '%s' does not exist", path)
+                if path_exists:
+                    _log.debug(
+                        "reading additional_expectations from path '%s'", path)
+                    expectations[path] = self._filesystem.read_text_file(path)
+                else:
+                    # TODO(rmhasan): Fix additional expectation paths for
+                    # not_site_per_process_blink_web_tests, then change this
+                    # back to raising exceptions for incorrect expectation
+                    # paths.
+                    _log.warning(
+                        "additional_expectations path '%s' does not exist",
+                        path)
         return expectations
 
     def all_expectations_dict(self):
@@ -1767,7 +1752,7 @@ class Port(object):
         _log.warning("Unexpected ignore mode: '%s'.", ignore_mode)
         return {}
 
-    def expectations_files(self):
+    def default_expectations_files(self):
         """Returns a list of paths to expectations files that apply by default.
 
         There are other "test expectations" files that may be applied if
@@ -1780,9 +1765,21 @@ class Port(object):
             self._filesystem.join(self.web_tests_dir(), 'NeverFixTests'),
             self._filesystem.join(self.web_tests_dir(),
                                   'StaleTestExpectations'),
-            self._filesystem.join(self.web_tests_dir(), 'SlowTests'),
-            self._flag_specific_expectations_path()
+            self._filesystem.join(self.web_tests_dir(), 'SlowTests')
         ])
+
+    def used_expectations_files(self):
+        """Returns a list of paths to expectation files that are used."""
+        if self._used_expectation_files is None:
+            self._used_expectation_files = list(
+                self.default_expectations_files())
+            flag_specific = self._flag_specific_expectations_path()
+            if flag_specific:
+                self._used_expectation_files.append(flag_specific)
+            for path in self.get_option('additional_expectations', []):
+                expanded_path = self._filesystem.expanduser(path)
+                self._used_expectation_files.append(expanded_path)
+        return self._used_expectation_files
 
     def extra_expectations_files(self):
         """Returns a list of paths to test expectations not loaded by default.
@@ -2002,7 +1999,7 @@ class Port(object):
         for suite in self.virtual_test_suites():
             if suite.bases:
                 tests.extend(map(lambda x: suite.full_prefix + x,
-                             self.real_tests_from_dict(tests_by_dir, suite.bases)))
+                             self.real_tests_from_dict(suite.bases, tests_by_dir)))
         return tests
 
     def _get_bases_for_suite_with_paths(self, suite, paths):

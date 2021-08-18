@@ -139,6 +139,7 @@ class SkiaOutputSurfaceImplOnGpu
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
           output_surface_plane);
   void SwapBuffers(OutputSurfaceFrame frame, bool release_frame_buffer);
+  void ReleaseFrameBuffers(int n);
 
   void SetDependenciesResolvedTimings(base::TimeTicks task_ready);
   void SetDrawTimings(base::TimeTicks task_ready);
@@ -270,6 +271,15 @@ class SkiaOutputSurfaceImplOnGpu
     return !!dawn_context_provider_ &&
            gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn;
   }
+
+  // Helper for `CopyOutput()` method, handles the RGBA format.
+  void CopyOutputRGBA(SkSurface* surface,
+                      copy_output::RenderPassGeometry geometry,
+                      const gfx::ColorSpace& color_space,
+                      const SkIRect& src_rect,
+                      SkSurface::RescaleMode rescale_mode,
+                      bool is_downscale_or_identity_in_both_dimensions,
+                      std::unique_ptr<CopyOutputRequest> request);
 
   // Schedules a task to check if any skia readback requests have completed
   // after a short delay. Will not schedule a task if there is already a

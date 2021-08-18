@@ -371,6 +371,15 @@ class ArcVmClientAdapterTest : public testing::Test,
   void ExpectFalse(bool result) { EXPECT_FALSE(result); }
 
  protected:
+  enum class UpstartOperationType { START, STOP };
+
+  struct UpstartOperation {
+    std::string name;
+    std::vector<std::string> env;
+    UpstartOperationType type;
+  };
+  using UpstartOperations = std::vector<UpstartOperation>;
+
   void SetValidUserInfo() { SetUserInfo(kUserIdHash, kSerialNumber); }
 
   void SetUserInfo(const std::string& hash, const std::string& serial) {
@@ -492,13 +501,15 @@ class ArcVmClientAdapterTest : public testing::Test,
     upstart_client->set_start_job_cb(
         base::BindLambdaForTesting([this](const std::string& job_name,
                                           const std::vector<std::string>& env) {
-          upstart_operations_.emplace_back(job_name, true);
+          upstart_operations_.push_back(
+              {job_name, env, UpstartOperationType::START});
           return true;
         }));
     upstart_client->set_stop_job_cb(
         base::BindLambdaForTesting([this](const std::string& job_name,
                                           const std::vector<std::string>& env) {
-          upstart_operations_.emplace_back(job_name, false);
+          upstart_operations_.push_back(
+              {job_name, env, UpstartOperationType::STOP});
           return true;
         }));
   }
@@ -561,7 +572,7 @@ class ArcVmClientAdapterTest : public testing::Test,
     return is_system_shutdown_;
   }
   void reset_is_system_shutdown() { is_system_shutdown_ = absl::nullopt; }
-  const std::vector<std::pair<std::string, bool>>& upstart_operations() const {
+  const UpstartOperations& upstart_operations() const {
     return upstart_operations_;
   }
   TestConciergeClient* GetTestConciergeClient() {
@@ -610,7 +621,7 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   // List of upstart operations recorded. When it's "start" the boolean is set
   // to true.
-  std::vector<std::pair<std::string, bool>> upstart_operations_;
+  UpstartOperations upstart_operations_;
 
   std::unique_ptr<TestArcVmBootNotificationServer> boot_server_;
 
@@ -696,15 +707,17 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_JobRestart) {
 
   const auto& ops = upstart_operations();
   // Find the STOP operation for the job.
-  auto it = std::find(
-      ops.begin(), ops.end(),
-      std::make_pair(std::string(kArcVmPreLoginServicesJobName), false));
+  auto it =
+      std::find_if(ops.begin(), ops.end(), [](const UpstartOperation& op) {
+        return op.type == UpstartOperationType::STOP &&
+               kArcVmPreLoginServicesJobName == op.name;
+      });
   ASSERT_NE(ops.end(), it);
   ++it;
   ASSERT_NE(ops.end(), it);
   // The next operation must be START for the job.
-  EXPECT_EQ(it->first, kArcVmPreLoginServicesJobName);
-  EXPECT_TRUE(it->second);  // true means START.
+  EXPECT_EQ(it->name, kArcVmPreLoginServicesJobName);
+  EXPECT_EQ(UpstartOperationType::START, it->type);
 }
 
 // Tests that StopArcInstance() eventually notifies the observer.
@@ -929,6 +942,46 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmPostLoginServicesFailure) {
   UpgradeArcWithParamsAndStopVmCount(false, {}, /*run_until_stop_vm_count=*/3);
 
   ExpectArcStopped(/*stale_full_vm_stopped=*/true);
+}
+
+// Tests that StartMiniArc()'s JOB_STOP_AND_START for
+// |kArcVmPreLoginServicesJobName| does not have DISABLE_UREADAHEAD variable
+// by default.
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_UreadaheadByDefault) {
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartRecordingUpstartOperations();
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& ops = upstart_operations();
+  const auto it =
+      std::find_if(ops.begin(), ops.end(), [](const UpstartOperation& op) {
+        return op.type == UpstartOperationType::START &&
+               kArcVmPreLoginServicesJobName == op.name;
+      });
+  ASSERT_NE(ops.end(), it);
+  EXPECT_TRUE(it->env.empty());
+}
+
+// Tests that StartMiniArc()'s JOB_STOP_AND_START for
+// |kArcVmPreLoginServicesJobName| has DISABLE_UREADAHEAD variable.
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_DisableUreadahead) {
+  StartParams start_params(GetPopulatedStartParams());
+  start_params.disable_ureadahead = true;
+  SetValidUserInfo();
+  StartRecordingUpstartOperations();
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& ops = upstart_operations();
+  const auto it =
+      std::find_if(ops.begin(), ops.end(), [](const UpstartOperation& op) {
+        return op.type == UpstartOperationType::START &&
+               kArcVmPreLoginServicesJobName == op.name;
+      });
+  ASSERT_NE(ops.end(), it);
+  const auto it_ureadahead =
+      std::find(it->env.begin(), it->env.end(), "DISABLE_UREADAHEAD=1");
+  EXPECT_NE(it->env.end(), it_ureadahead);
 }
 
 // Tests that StartMiniArc() handles arcvm-post-vm-start-services stop failures
@@ -2010,6 +2063,49 @@ TEST_F(ArcVmClientAdapterTest, OnConnectionReady_MakeRtVcpuFailureNullReply) {
   WaitForInstanceReady(arc_bridge_service()->app());
 
   EXPECT_EQ(1, GetTestConciergeClient()->make_rt_vcpu_call_count());
+}
+
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_EnableArcNearbyShare_Default) {
+  SetValidUserInfo();
+  StartMiniArc();
+  EXPECT_EQ(boot_notification_server()->connection_count(), 1);
+  EXPECT_TRUE(boot_notification_server()->received_data().empty());
+
+  UpgradeArcWithParams(/*expect_success=*/true, GetPopulatedUpgradeParams());
+  EXPECT_EQ(boot_notification_server()->connection_count(), 2);
+  EXPECT_FALSE(boot_notification_server()->received_data().empty());
+  EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
+                             "ro.boot.enable_arc_nearby_share=0"));
+}
+
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_EnableArcNearbyShare_Enabled) {
+  SetValidUserInfo();
+  StartMiniArc();
+  EXPECT_EQ(boot_notification_server()->connection_count(), 1);
+  EXPECT_TRUE(boot_notification_server()->received_data().empty());
+
+  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
+  upgrade_params.enable_arc_nearby_share = true;
+  UpgradeArcWithParams(/*expect_success=*/true, upgrade_params);
+  EXPECT_EQ(boot_notification_server()->connection_count(), 2);
+  EXPECT_FALSE(boot_notification_server()->received_data().empty());
+  EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
+                             "ro.boot.enable_arc_nearby_share=1"));
+}
+
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_EnableArcNearbyShare_Disabled) {
+  SetValidUserInfo();
+  StartMiniArc();
+  EXPECT_EQ(boot_notification_server()->connection_count(), 1);
+  EXPECT_TRUE(boot_notification_server()->received_data().empty());
+
+  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
+  upgrade_params.enable_arc_nearby_share = false;
+  UpgradeArcWithParams(/*expect_success=*/true, upgrade_params);
+  EXPECT_EQ(boot_notification_server()->connection_count(), 2);
+  EXPECT_FALSE(boot_notification_server()->received_data().empty());
+  EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
+                             "ro.boot.enable_arc_nearby_share=0"));
 }
 
 struct DalvikMemoryProfileTestParam {

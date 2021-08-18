@@ -278,8 +278,10 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_private_key.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -4924,8 +4926,8 @@ void ChromeContentBrowserClient::CreateWebSocket(
 
   DCHECK(web_request_api);
   web_request_api->ProxyWebSocket(frame, std::move(factory), url,
-                                  site_for_cookies.RepresentativeUrl(),
-                                  user_agent, std::move(handshake_client));
+                                  site_for_cookies, user_agent,
+                                  std::move(handshake_client));
 #endif
 }
 

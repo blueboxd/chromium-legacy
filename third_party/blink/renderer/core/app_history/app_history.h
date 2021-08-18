@@ -83,7 +83,7 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(navigatesuccess, kNavigatesuccess)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(navigateerror, kNavigateerror)
 
-  enum class DispatchResult { kContinue, kAbort, kRespondWith };
+  enum class DispatchResult { kContinue, kAbort, kTransitionWhile };
   DispatchResult DispatchNavigateEvent(const KURL& url,
                                        HTMLFormElement* form,
                                        NavigateEventType,
@@ -122,6 +122,8 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
   void PerformSharedNavigationChecks(
       ExceptionState&,
       const String& method_name_for_error_message);
+
+  void CleanupApiNavigation(AppHistoryApiNavigation&);
 
   scoped_refptr<SerializedScriptValue> SerializeState(const ScriptValue&,
                                                       ExceptionState&);

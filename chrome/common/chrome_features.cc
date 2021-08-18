@@ -504,6 +504,12 @@ const base::Feature kHappinessTrackingSystem{"HappinessTrackingSystem",
 // Enables or disables the Happiness Tracking System for Onboarding Experience.
 const base::Feature kHappinessTrackingSystemOnboarding{
     "HappinessTrackingOnboardingExperience", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for Unlock.
+const base::Feature kHappinessTrackingSystemUnlock{
+    "HappinessTrackingUnlock", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for Smart Lock.
+const base::Feature kHappinessTrackingSystemSmartLock{
+    "HappinessTrackingSmartLock", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -824,9 +830,6 @@ const base::Feature kRequestDesktopSiteForTablets{
 const base::Feature kSafetyCheckChromeCleanerChild{
     "SafetyCheckChromeCleanerChild", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
-
-const base::Feature kSafetyCheckWeakPasswords{"SafetyCheckWeakPasswords",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.

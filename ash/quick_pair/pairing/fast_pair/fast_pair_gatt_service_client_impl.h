@@ -30,8 +30,16 @@ class BluetoothRemoteGattService;
 
 }  // namespace device
 
+namespace {
+
+constexpr int kBlockByteSize = 16;
+
+}  // namespace
+
 namespace ash {
 namespace quick_pair {
+
+class FastPairDataEncryptor;
 
 // This class is responsible for connecting to the Fast Pair GATT service for a
 // device and invoking a callback when ready, or when an error is discovered
@@ -67,6 +75,13 @@ class FastPairGattServiceClientImpl : public FastPairGattServiceClient {
                          uint8_t flags,
                          const std::string& provider_address,
                          const std::string& seekers_address,
+                         FastPairDataEncryptor* fast_pair_data_encryptor,
+                         base::OnceCallback<void(std::vector<uint8_t>,
+                                                 absl::optional<PairFailure>)>
+                             write_response_callback) override;
+
+  void WritePasskeyAsync(uint8_t message_type,
+                         uint32_t passkey,
                          base::OnceCallback<void(std::vector<uint8_t>,
                                                  absl::optional<PairFailure>)>
                              write_response_callback) override;
@@ -81,11 +96,14 @@ class FastPairGattServiceClientImpl : public FastPairGattServiceClient {
   FastPairGattServiceClientImpl& operator=(
       const FastPairGattServiceClientImpl&) = delete;
 
-  // Creates a data vector based on request information.
-  std::vector<uint8_t> CreateRequest(uint8_t message_type,
-                                     uint8_t flags,
-                                     const std::string& provider_address,
-                                     const std::string& seekers_address);
+  // Creates a data vector based on parameter information.
+  const std::array<uint8_t, kBlockByteSize> CreateRequest(
+      uint8_t message_type,
+      uint8_t flags,
+      const std::string& provider_address,
+      const std::string& seekers_address);
+  std::vector<uint8_t> CreatePasskeyBlock(uint8_t message_type,
+                                          uint32_t passkey);
 
   // Callback from the adapter's call to create GATT connection.
   void OnGattConnection(
@@ -98,7 +116,8 @@ class FastPairGattServiceClientImpl : public FastPairGattServiceClient {
 
   // Invokes the write response callback with the proper PairFailure on a
   // write error.
-  void NotifyWriteError(PairFailure failure);
+  void NotifyWriteRequestError(PairFailure failure);
+  void NotifyWritePasskeyError(PairFailure failure);
 
   void ClearCurrentState();
 
@@ -125,22 +144,22 @@ class FastPairGattServiceClientImpl : public FastPairGattServiceClient {
 
   // BluetoothRemoteGattCharacteristic WriteRemoteCharacteristic callbacks
   void OnWriteRequest();
-  void OnWriteRequestError(PairFailure failure,
-                           device::BluetoothGattService::GattErrorCode error);
-
-  void OnWriteTimeout(
-      PairFailure failure,
-      device::BluetoothRemoteGattCharacteristic* characteristic);
+  void OnWriteRequestError(device::BluetoothGattService::GattErrorCode error);
+  void OnWritePasskey();
+  void OnWritePasskeyError(device::BluetoothGattService::GattErrorCode error);
 
   base::OneShotTimer gatt_service_discovery_timer_;
   base::OneShotTimer passkey_notify_session_timer_;
   base::OneShotTimer keybased_notify_session_timer_;
-  base::OneShotTimer write_request_timer_;
+  base::OneShotTimer key_based_write_request_timer_;
+  base::OneShotTimer passkey_write_request_timer_;
 
   base::OnceCallback<void(absl::optional<PairFailure>)>
       on_initialized_callback_;
   base::OnceCallback<void(std::vector<uint8_t>, absl::optional<PairFailure>)>
       key_based_write_response_callback_;
+  base::OnceCallback<void(std::vector<uint8_t>, absl::optional<PairFailure>)>
+      passkey_write_response_callback_;
 
   std::string device_address_;
   bool is_initialized_ = false;

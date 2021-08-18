@@ -2694,10 +2694,11 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.14 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-overflow-hidden.https.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-fonts/generic-family-keywords-002.html [ Failure Timeout ]
-crbug.com/626703 virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
-crbug.com/626703 external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
-crbug.com/626703 virtual/synchronous_html_parser/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
+crbug.com/1240701 virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
+crbug.com/1240701 external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
+crbug.com/1240701 virtual/synchronous_html_parser/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/nesting.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
@@ -7672,15 +7673,19 @@ crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/workle
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-before-start.https.html [ Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-set-timing.https.html [ Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure Pass ]
-crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-overflow-hidden.https.html [ Failure Pass ]
-crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure Pass ]
-crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-cancel.https.html [ Failure Pass ]
 crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-get-timing-on-worklet-thread.https.html [ Failure Pass ]
 crbug.com/1233781 http/tests/serviceworker/window-close-during-registration.html [ Failure Pass ]
 crbug.com/1233792 virtual/synchronous_html_parser/http/tests/inspector-protocol/runtime/eval-await-navigation-paused-message-order.js [ Failure Pass ]
 crbug.com/1234057 [ Mac ] external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure Pass ]
 crbug.com/1234302 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Pass ]
+
+# Temporarily disabling progress based worklet animation tests.
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/inactive-timeline.https.html [ Timeout ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/scroll-timeline-writing-modes.https.html [ Failure ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Timeout ]
+crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure ]
+crbug.com/1238130 virtual/threaded-no-composited-antialiasing/animations/animationworklet/playback-rate-scroll-timeline-accelerated-property.html [ Timeout ]
 
 # Sheriff 2021-07-29
 crbug.com/626703 http/tests/security/cross-frame-access-put.html [ Failure Pass ]
@@ -7727,9 +7732,6 @@ crbug.com/1239164 http/tests/inspector-protocol/network/navigate-iframe-in2in.js
 crbug.com/1237909 external/wpt/webrtc-svc/RTCRtpParameters-scalability.html [ Crash Failure Pass Timeout ]
 crbug.com/1239161 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_noopener.html [ Failure Pass ]
 crbug.com/1239139 virtual/prerender/wpt_internal/prerender/restriction-prompt-by-before-unload.html [ Crash Pass ]
-
-# Sheriff 2021-08-13
-crbug.com/1239485 [ Mac ] fast/frames/iframe-plugin-load-remove-document-crash.html [ Failure Pass ]
 
 # Sheriff 2021-08-16
 crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-errors.js [ Pass Timeout ]

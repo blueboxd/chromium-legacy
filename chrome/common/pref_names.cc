@@ -780,6 +780,24 @@ const char kHatsOnboardingSurveyCycleEndTs[] =
 const char kHatsOnboardingDeviceIsSelected[] =
     "hats_onboarding_device_is_selected";
 
+// An int64 pref. This is the timestamp that indicates the end of the most
+// recent Unlock Experience survey cycle.
+const char kHatsUnlockSurveyCycleEndTs[] = "hats_unlock_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the HaTS Unlock
+// Experience survey
+const char kHatsUnlockDeviceIsSelected[] = "hats_unlock_device_is_selected";
+
+// An int64 pref. This is the timestamp that indicates the end of the most
+// recent Smart Lock Experience survey cycle.
+const char kHatsSmartLockSurveyCycleEndTs[] =
+    "hats_smartlock_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the HaTS Smart Lock
+// Experience survey
+const char kHatsSmartLockDeviceIsSelected[] =
+    "hats_smartlock_device_is_selected";
+
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
 const char kPinUnlockFeatureNotificationShown[] =
@@ -2902,6 +2920,11 @@ const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
 // A boolean value, controlling whether Chrome renderer processes have the CIG
 // mitigation enabled.
 const char kRendererCodeIntegrityEnabled[] = "renderer_code_integrity_enabled";
+
+// A boolean that controls whether the Browser process has
+// ProcessExtensionPointDisablePolicy enabled.
+const char kBlockBrowserLegacyExtensionPoints[] =
+    "block_browser_legacy_extension_points";
 #endif  // defined(OS_WIN)
 
 // An integer that keeps track of prompt waves for the settings reset

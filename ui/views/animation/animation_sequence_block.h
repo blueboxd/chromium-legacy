@@ -8,7 +8,7 @@
 #include <map>
 #include <memory>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -55,36 +55,79 @@ class VIEWS_EXPORT AnimationSequenceBlock {
 
   // Adds animation elements to this block.  Each (target, property) pair may be
   // added at most once.
-  AnimationSequenceBlock& SetBounds(ui::LayerOwner* target,
-                                    const gfx::Rect& bounds);
-  AnimationSequenceBlock& SetBrightness(ui::LayerOwner* target,
-                                        float brightness);
-  AnimationSequenceBlock& SetClipRect(ui::LayerOwner* target,
-                                      const gfx::Rect& clip_rect);
-  AnimationSequenceBlock& SetColor(ui::LayerOwner* target, SkColor color);
-  AnimationSequenceBlock& SetGrayscale(ui::LayerOwner* target, float grayscale);
-  AnimationSequenceBlock& SetOpacity(ui::LayerOwner* target, float opacity);
+  AnimationSequenceBlock& SetBounds(
+      ui::LayerOwner* target,
+      const gfx::Rect& bounds,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
+  AnimationSequenceBlock& SetBrightness(
+      ui::LayerOwner* target,
+      float brightness,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
+  AnimationSequenceBlock& SetClipRect(
+      ui::LayerOwner* target,
+      const gfx::Rect& clip_rect,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
+  AnimationSequenceBlock& SetColor(
+      ui::LayerOwner* target,
+      SkColor color,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
+  AnimationSequenceBlock& SetGrayscale(
+      ui::LayerOwner* target,
+      float grayscale,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
+  AnimationSequenceBlock& SetOpacity(
+      ui::LayerOwner* target,
+      float opacity,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
   AnimationSequenceBlock& SetInterpolatedTransform(
       ui::LayerOwner* target,
-      std::unique_ptr<ui::InterpolatedTransform> interpolated_transform);
+      std::unique_ptr<ui::InterpolatedTransform> interpolated_transform,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
   AnimationSequenceBlock& SetRoundedCorners(
       ui::LayerOwner* target,
-      const gfx::RoundedCornersF& rounded_corners);
-  AnimationSequenceBlock& SetVisibility(ui::LayerOwner* target, bool visible);
+      const gfx::RoundedCornersF& rounded_corners,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
+  AnimationSequenceBlock& SetVisibility(
+      ui::LayerOwner* target,
+      bool visible,
+      gfx::Tween::Type tween_type = gfx::Tween::LINEAR);
 
   // Creates a new block.
   AnimationSequenceBlock At(base::TimeDelta since_sequence_start);
   AnimationSequenceBlock Offset(base::TimeDelta since_last_block_start);
   AnimationSequenceBlock Then();
 
+  // Called when the animation starts for this sequence block.
+  AnimationSequenceBlock& OnStarted(base::OnceClosure callback);
+  // Called when the animation ends. Not called if animation is aborted.
+  AnimationSequenceBlock& OnEnded(base::OnceClosure callback);
+  // Called when a sequence repetition ends and will repeat. Not called if
+  // sequence is aborted.
+  AnimationSequenceBlock& OnWillRepeat(base::RepeatingClosure callback);
+  // Called if animation is aborted for any reason. Should never do anything
+  // that may cause another animation to be started.
+  AnimationSequenceBlock& OnAborted(base::OnceClosure callback);
+  // Called when the animation is scheduled.
+  AnimationSequenceBlock& OnScheduled(base::OnceClosure callback);
+
  private:
+  using AnimationValue =
+      absl::variant<gfx::Rect,
+                    float,
+                    SkColor,
+                    std::unique_ptr<ui::InterpolatedTransform>,
+                    gfx::RoundedCornersF,
+                    bool>;
+
   // Data for the animation of a given AnimationKey.
-  using Element = absl::variant<gfx::Rect,
-                                float,
-                                SkColor,
-                                std::unique_ptr<ui::InterpolatedTransform>,
-                                gfx::RoundedCornersF,
-                                bool>;
+  struct Element {
+    Element(AnimationValue animation_value, gfx::Tween::Type tween_type);
+    ~Element();
+    Element(Element&&);
+    Element& operator=(Element&&);
+    AnimationValue animation_value_;
+    gfx::Tween::Type tween_type_;
+  };
 
   AnimationSequenceBlock& AddAnimation(AnimationKey key, Element element);
 

@@ -24,6 +24,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
@@ -184,7 +185,6 @@ class URLRequestQuicTest
   static const NetLogSource FindPushUrlSource(
       const std::vector<NetLogEntry>& entries,
       const std::string& push_url) {
-    std::string entry_push_url;
     for (const auto& entry : entries) {
       if (entry.phase == NetLogEventPhase::BEGIN &&
           entry.source.type ==

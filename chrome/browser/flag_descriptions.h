@@ -769,6 +769,9 @@ extern const char kGlobalMediaControlsModernUIDescription[];
 extern const char kGlobalMediaControlsOverlayControlsName[];
 extern const char kGlobalMediaControlsOverlayControlsDescription[];
 
+extern const char kOpenscreenCastStreamingSessionName[];
+extern const char kOpenscreenCastStreamingSessionDescription[];
+
 extern const char kGoogleLensSdkIntentName[];
 extern const char kGoogleLensSdkIntentDescription[];
 
@@ -1177,9 +1180,6 @@ extern const char kPrivacySandboxSettings2Description[];
 
 extern const char kSafeBrowsingPerProfileNetworkContextsName[];
 extern const char kSafeBrowsingPerProfileNetworkContextsDescription[];
-
-extern const char kSafetyCheckWeakPasswordsName[];
-extern const char kSafetyCheckWeakPasswordsDescription[];
 
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
@@ -2271,9 +2271,6 @@ extern const char kAshEnableUnifiedDesktopDescription[];
 extern const char kBluetoothAdvertisementMonitoringName[];
 extern const char kBluetoothAdvertisementMonitoringDescription[];
 
-extern const char kBluetoothAggressiveAppearanceFilterName[];
-extern const char kBluetoothAggressiveAppearanceFilterDescription[];
-
 extern const char kBluetoothFixA2dpPacketSizeName[];
 extern const char kBluetoothFixA2dpPacketSizeDescription[];
 
@@ -2744,6 +2741,9 @@ extern const char kNearbyKeepAliveFixDescription[];
 
 extern const char kNearbySharingName[];
 extern const char kNearbySharingDescription[];
+
+extern const char kNearbySharingArcName[];
+extern const char kNearbySharingArcDescription[];
 
 extern const char kNearbySharingBackgroundScanningName[];
 extern const char kNearbySharingBackgroundScanningDescription[];

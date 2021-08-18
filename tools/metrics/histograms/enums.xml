@@ -10722,6 +10722,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="4" label="Power Menu"/>
   <int value="5" label="Snip Key"/>
   <int value="6" label="Full Screenshot Accelerator"/>
+  <int value="7" label="Projector app"/>
 </enum>
 
 <enum name="CapturePixelFormat">
@@ -14029,6 +14030,7 @@ Called by update_net_error_codes.py.-->
   <int value="77" label="Federated identity sharing"/>
   <int value="78" label="Federated identity request"/>
   <int value="79" label="Javascript JIT"/>
+  <int value="80" label="Formfill metadata"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -18219,6 +18221,13 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="1" label="Dialog confirmed"/>
   <int value="2" label="Dialog canceled"/>
   <int value="3" label="Dialog dismissed"/>
+</enum>
+
+<enum name="DangerousDownloadInfobarEvent">
+  <int value="0" label="Infobar shown"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Canceled"/>
+  <int value="3" label="Dismissed"/>
 </enum>
 
 <enum name="DangerousFile.Reason">
@@ -24665,6 +24674,7 @@ Called by update_document_policy_enum.py.-->
   <int value="14" label="Failed video encoder initialization"/>
   <int value="15" label="Audio encoding error"/>
   <int value="16" label="Video encoding error"/>
+  <int value="17" label="Projector transcription error"/>
 </enum>
 
 <enum name="EnhancedBookmarkViewMode">
@@ -26034,6 +26044,7 @@ Called by update_document_policy_enum.py.-->
   <int value="890" label="PrintRasterizePdfDpi"/>
   <int value="891" label="DeviceTargetVersionSelector"/>
   <int value="892" label="ChromeAppsEnabled"/>
+  <int value="893" label="BrowserLegacyExtensionPointsBlocked"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -33551,10 +33562,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3376" label="SecurePaymentConfirmation"/>
   <int value="3377" label="OBSOLETE_CSSInvalidVariableUnset"/>
   <int value="3378" label="ElementInternalsShadowRoot"/>
-  <int value="3379" label="AnyPiiFieldDetected_PredictedTypeMatch"/>
-  <int value="3380" label="EmailFieldDetected_PredictedTypeMatch"/>
-  <int value="3381" label="PhoneFieldDetected_PredictedTypeMatch"/>
-  <int value="3382" label="EmailFieldDetected_PatternMatch"/>
+  <int value="3379" label="AnyUserDataFieldFilled_PredictedTypeMatch"/>
+  <int value="3380" label="EmailFieldFilled_PredictedTypeMatch"/>
+  <int value="3381" label="PhoneFieldFilled_PredictedTypeMatch"/>
+  <int value="3382" label="EmailFieldFilled_PatternMatch"/>
   <int value="3383" label="LastLetterSpacingAffectsRendering"/>
   <int value="3384" label="V8FontMetadata_GetTables_Method"/>
   <int value="3385" label="V8FontMetadata_Blob_Method"/>
@@ -34172,6 +34183,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3974" label="CanvasRenderingContext2DContextLostEvent"/>
   <int value="3975" label="CanvasRenderingContext2DContextRestoredEvent"/>
   <int value="3976" label="ClientHintsViewportHeight"/>
+  <int value="3977" label="V8NavigatorManagedData_GetDirectoryId_Method"/>
+  <int value="3978" label="V8NavigatorManagedData_GetHostname_Method"/>
+  <int value="3979" label="V8NavigatorManagedData_GetSerialNumber_Method"/>
+  <int value="3980" label="V8NavigatorManagedData_GetAnnotatedAssetId_Method"/>
+  <int value="3981" label="V8NavigatorManagedData_GetAnnotatedLocation_Method"/>
+  <int value="3982" label="UserDataFieldFilledPreviously"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46772,6 +46789,7 @@ from previous Chrome versions.
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
   <int value="-2098610409" label="disable-lcd-text"/>
   <int value="-2098243118" label="OmniboxTailSuggestions:disabled"/>
+  <int value="-2097906903" label="ArcNearbySharing:disabled"/>
   <int value="-2097895488" label="NotificationScrollBar:enabled"/>
   <int value="-2097515669" label="disable-cast"/>
   <int value="-2095519429" label="FtpProtocol:enabled"/>
@@ -47043,6 +47061,7 @@ from previous Chrome versions.
       label="OmniboxKeywordSpaceTriggeringSetting:disabled"/>
   <int value="-1898386671" label="PasswordCheck:enabled"/>
   <int value="-1898229093" label="WebApkGenerator:enabled"/>
+  <int value="-1897800883" label="OpenscreenCastStreamingSession:enabled"/>
   <int value="-1896871201" label="CrossOriginOpenerPolicyReporting:enabled"/>
   <int value="-1896733769" label="CheckOfflineCapability:disabled"/>
   <int value="-1896394207" label="PasswordChange:disabled"/>
@@ -49497,6 +49516,7 @@ from previous Chrome versions.
   <int value="65245449" label="FilesBannerFramework:enabled"/>
   <int value="66897259" label="ModalPermissionDialogView:enabled"/>
   <int value="67639499" label="stop-loading-in-background:disabled"/>
+  <int value="71290103" label="ArcNearbySharing:enabled"/>
   <int value="72558615" label="TrafficCountersSettingsUi:enabled"/>
   <int value="73929836" label="VrBrowsingInCustomTab:enabled"/>
   <int value="75207621" label="enable-stylus-virtual-keyboard:enabled"/>
@@ -51976,6 +51996,7 @@ from previous Chrome versions.
   <int value="2068193488" label="SharedClipboardUI:disabled"/>
   <int value="2069999572"
       label="AllowSignedHTTPExchangeCertsWithoutExtension:disabled"/>
+  <int value="2070207131" label="OpenscreenCastStreamingSession:disabled"/>
   <int value="2071229145" label="BloatedRendererDetection:enabled"/>
   <int value="2071340353" label="progress-bar-completion"/>
   <int value="2071461362" label="disable-credit-card-scan"/>
@@ -60160,11 +60181,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Invalid"/>
   <int value="1" label="No internet"/>
   <int value="2" label="Server error"/>
-  <int value="3" label="Not validated"/>
-  <int value="4" label="Validated with no content"/>
-  <int value="5" label="Validated with OK, but zero content length"/>
-  <int value="6" label="Validated with OK, but no content length"/>
-  <int value="7" label="Cancelled"/>
+  <int value="3" label="Unexpected response"/>
+  <int value="4" label="Validated"/>
+  <int value="5" label="Cancelled"/>
+  <int value="6" label="Multiple HttpURLConnections open, probe failed"/>
 </enum>
 
 <enum name="OfflineMeasurementsUserState">
@@ -76560,7 +76580,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="History push state or replace state"/>
   <int value="1" label="Same document backward or forward"/>
   <int value="2" label="Other fragment navigation"/>
-  <int value="3" label="AppHistory navigate event respondWith"/>
+  <int value="3" label="AppHistory navigate event transitionWhile"/>
 </enum>
 
 <enum name="SiteEngagementLevel">
@@ -79028,6 +79048,17 @@ would be helpful to identify which type is being sent.
   <int value="25" label="Incognito-mode clear browsing data"/>
   <int value="26" label="Close Incognito windows"/>
   <int value="27" label="Play Chrome Dino game"/>
+  <int value="28" label="Find my phone"/>
+  <int value="29" label="Manage Google privacy"/>
+  <int value="30" label="Manage Google ad settings"/>
+  <int value="31" label="Manage Chrome settings"/>
+  <int value="32" label="Manage Chrome downloads"/>
+  <int value="33" label="View Chrome history"/>
+  <int value="34" label="Share this page"/>
+  <int value="35" label="Manage Chrome accessibility"/>
+  <int value="36" label="Customize Chrome fonts"/>
+  <int value="37" label="Manage Chrome themes"/>
+  <int value="38" label="Customize search engines"/>
 </enum>
 
 <enum name="SuggestionsResponseState">

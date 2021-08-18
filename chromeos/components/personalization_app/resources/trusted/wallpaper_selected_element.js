@@ -163,12 +163,6 @@ export class WallpaperSelected extends WithPersonalizationStore {
         computed: 'computeCenterIcon_(image_)',
       },
 
-      /** @private */
-      textContainerClass_: {
-        type: String,
-        computed: 'computeTextContainerClass_(image_, path)',
-      },
-
       /**
        * @private
        */
@@ -227,21 +221,6 @@ export class WallpaperSelected extends WithPersonalizationStore {
     // Specifically check === false to avoid undefined case while component is
     // initializing.
     return loading === false && !!image;
-  }
-
-  /**
-   * @param {?chromeos.personalizationApp.mojom.CurrentWallpaper} image
-   * @param {string} path
-   * @return {string}
-   * @private
-   */
-  computeTextContainerClass_(image, path) {
-    let className = 'text-container';
-    if (this.computeShowWallpaperOptions_(image, path) ||
-        this.computeShowCollectionOptions_(path)) {
-      return className + ' options';
-    }
-    return className;
   }
 
   /**
@@ -429,6 +408,9 @@ export class WallpaperSelected extends WithPersonalizationStore {
   }
 
   /**
+   * Determine whether there is an error in showing selected image. An error
+   * happens when there is no previously loaded image and either no new image
+   * is being loaded or there is an error from upstream.
    * @param {?chromeos.personalizationApp.mojom.CurrentWallpaper} image
    * @param {boolean} loading
    * @param {?string} error
@@ -469,8 +451,8 @@ export class WallpaperSelected extends WithPersonalizationStore {
    * @return {boolean}
    * @private
    */
-  isLoadingPlaceholderHidden_(loading, showImage) {
-    return showImage || !loading;
+  showPlaceholders_(loading, showImage) {
+    return loading || !showImage;
   }
 
   /**

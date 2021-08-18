@@ -20,6 +20,8 @@ class BluetoothDevice;
 namespace ash {
 namespace quick_pair {
 
+class FastPairDataEncryptor;
+
 // This class fakes FastPairGattServiceClient and permits setting which
 // PairFailure, if any, is run with the callback.
 class FakeFastPairGattServiceClient : public FastPairGattServiceClient {
@@ -37,6 +39,13 @@ class FakeFastPairGattServiceClient : public FastPairGattServiceClient {
                          uint8_t flags,
                          const std::string& provider_address,
                          const std::string& seekers_address,
+                         FastPairDataEncryptor* fast_pair_data_encryptor,
+                         base::OnceCallback<void(std::vector<uint8_t>,
+                                                 absl::optional<PairFailure>)>
+                             write_response_callback) override;
+
+  void WritePasskeyAsync(uint8_t message_type,
+                         uint32_t passkey,
                          base::OnceCallback<void(std::vector<uint8_t>,
                                                  absl::optional<PairFailure>)>
                              write_response_callback) override;
@@ -49,6 +58,8 @@ class FakeFastPairGattServiceClient : public FastPairGattServiceClient {
       on_initialized_callback_;
   base::OnceCallback<void(std::vector<uint8_t>, absl::optional<PairFailure>)>
       key_based_write_response_callback_;
+  base::OnceCallback<void(std::vector<uint8_t>, absl::optional<PairFailure>)>
+      passkey_write_response_callback_;
 };
 
 }  // namespace quick_pair

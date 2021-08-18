@@ -282,6 +282,10 @@ extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
 extern const char kHatsOnboardingSurveyCycleEndTs[];
 extern const char kHatsOnboardingDeviceIsSelected[];
+extern const char kHatsUnlockDeviceIsSelected[];
+extern const char kHatsUnlockSurveyCycleEndTs[];
+extern const char kHatsSmartLockDeviceIsSelected[];
+extern const char kHatsSmartLockSurveyCycleEndTs[];
 extern const char kEolStatus[];
 extern const char kEndOfLifeDate[];
 extern const char kEolNotificationDismissed[];
@@ -1002,6 +1006,7 @@ extern const char kThirdPartyBlockingEnabled[];
 // Windows mitigation policies.
 #if defined(OS_WIN)
 extern const char kRendererCodeIntegrityEnabled[];
+extern const char kBlockBrowserLegacyExtensionPoints[];
 #endif  // defined(OS_WIN)
 
 extern const char kSettingsResetPromptPromptWave[];

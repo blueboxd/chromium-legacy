@@ -7472,6 +7472,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="FocusWebContentsPane">
+  <owner>pbos@chromium.org</owner>
+  <description>
+    Called when a keyboard shortcut is used to put keyboard focus directly on
+    browser web contents.
+  </description>
+</action>
+
 <action name="FontName">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -13934,14 +13942,6 @@ should be able to be added at any place in this file.
   <description>
     Action indicating that the selected bookmark entries were deleted from the
     bookmark manager.
-  </description>
-</action>
-
-<action name="MobileBookmarkManagerReopenBookmarksInSameSession">
-  <owner>wylieb@chromium.org</owner>
-  <owner>clank-app-team@google.com</owner>
-  <description>
-    Tracks the bookmark manager being reopened while clank was running.
   </description>
 </action>
 

@@ -166,6 +166,8 @@ std::vector<std::string> GenerateUpgradeProps(
                          upgrade_params.skip_gms_core_cache),
       base::StringPrintf("%s.arc_demo_mode=%d", prefix.c_str(),
                          upgrade_params.is_demo_session),
+      base::StringPrintf("%s.enable_arc_nearby_share=%d", prefix.c_str(),
+                         upgrade_params.enable_arc_nearby_share),
       base::StringPrintf(
           "%s.supervision.transition=%d", prefix.c_str(),
           static_cast<int>(upgrade_params.management_transition)),
@@ -747,6 +749,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
                    bool is_dev_mode) {
     is_dev_mode_ = is_dev_mode;
+    std::vector<std::string> enviroment;
+    if (start_params_.disable_ureadahead)
+      enviroment.emplace_back("DISABLE_UREADAHEAD=1");
     std::deque<JobDesc> jobs{
         // Note: the first Upstart job is a task, and the callback for the start
         // request won't be called until the task finishes. When the callback is
@@ -757,8 +762,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
             kArcVmPostVmStartServicesJobName, UpstartOperation::JOB_STOP, {}},
         JobDesc{kArcVmPostLoginServicesJobName, UpstartOperation::JOB_STOP, {}},
         JobDesc{kArcVmPreLoginServicesJobName,
-                UpstartOperation::JOB_STOP_AND_START,
-                {}},
+                UpstartOperation::JOB_STOP_AND_START, std::move(enviroment)},
     };
     ConfigureUpstartJobs(
         std::move(jobs),

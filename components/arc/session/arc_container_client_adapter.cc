@@ -16,6 +16,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
 
 namespace arc {
@@ -136,6 +137,10 @@ class ArcContainerClientAdapter
         break;
     }
 
+    // TODO(b:196390269): Enable handling after arc.proto is uprev-ed.
+    if (IsUreadaheadDisabled())
+      LOG(ERROR) << "Disabling ureadahead is not supported in container yet.";
+
     chromeos::SessionManagerClient::Get()->StartArcMiniContainer(
         request, std::move(callback));
   }
@@ -155,6 +160,7 @@ class ArcContainerClientAdapter
     request.set_is_demo_session(params.is_demo_session);
     request.set_demo_session_apps_path(params.demo_session_apps_path.value());
     request.set_locale(params.locale);
+    request.set_enable_arc_nearby_share(params.enable_arc_nearby_share);
     for (const auto& language : params.preferred_languages)
       request.add_preferred_languages(language);
     request.set_management_transition(

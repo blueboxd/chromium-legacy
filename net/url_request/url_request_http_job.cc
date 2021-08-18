@@ -63,6 +63,7 @@
 #include "net/http/http_transaction.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_values.h"
@@ -1112,10 +1113,10 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
 
   std::unique_ptr<SourceStream> upstream = URLRequestJob::SetUpSourceStream();
   HttpResponseHeaders* headers = GetResponseHeaders();
-  std::string type;
   std::vector<SourceStream::SourceType> types;
   size_t iter = 0;
-  while (headers->EnumerateHeader(&iter, "Content-Encoding", &type)) {
+  for (std::string type;
+       headers->EnumerateHeader(&iter, "Content-Encoding", &type);) {
     SourceStream::SourceType source_type =
         FilterSourceStream::ParseEncodingType(type);
     switch (source_type) {

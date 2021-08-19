@@ -25,7 +25,9 @@ Basically equivalent to the [same version of original Chromium](https://chromest
 
 As noted above, the daily build is built twice a day.  
 You can download the latest build with commands like:  
-`curl -s https://api.github.com/repos/blueboxd/chromium-legacy/releases/latest|grep 'browser_download_url'|grep xz|awk -F '"' '{print $4}'|xargs curl -L|tar xvf -`  
+```bash
+curl -s https://api.github.com/repos/blueboxd/chromium-legacy/releases/latest|grep 'browser_download_url'|grep xz|awk -F '"' '{print $4}'|xargs curl -L|tar xvf -
+```  
 Or, you can [use a downloader](https://github.com/blueboxd/chromium-legacy/discussions/25) by [@Wowfunhappy](https://github.com/Wowfunhappy).
 
 ### nearest build to Chrome stable channel

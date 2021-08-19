@@ -19,6 +19,20 @@ It's recommended to find and use a stable build for daily use. (The same is true
 
 Basically equivalent to the [same version of original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see below).
 
+## versions
+
+### daily
+
+As noted above, the daily build is built twice a day.  
+You can download the latest build with commands like:  
+`curl -s https://api.github.com/repos/blueboxd/chromium-legacy/releases/latest|grep 'browser_download_url'|grep xz|awk -F '"' '{print $4}'|xargs curl -L|tar xvf -`  
+Or, you can [use a downloader](https://github.com/blueboxd/chromium-legacy/discussions/25) by [@Wowfunhappy](https://github.com/Wowfunhappy).
+
+### stable (nearest build to Chrome stable channel)
+
+Currently, [r885361](../../releases/tag/885361) is the nearest.  
+You can [find the branch position](https://omahaproxy.appspot.com/all?os=mac&channel=stable) of the current Chrome stable channel.
+
 ## limitations
 
 - UI

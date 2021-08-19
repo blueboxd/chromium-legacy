@@ -370,6 +370,9 @@ extern const char kDisallowDocWrittenScriptsUiDescription[];
 extern const char kDocumentTransitionName[];
 extern const char kDocumentTransitionDescription[];
 
+extern const char kDocumentTransitionSlowdownFactorName[];
+extern const char kDocumentTransitionSlowdownFactorDescription[];
+
 extern const char kEnableAudioFocusEnforcementName[];
 extern const char kEnableAudioFocusEnforcementDescription[];
 
@@ -1156,6 +1159,9 @@ extern const char kPermissionPredictionsDescription[];
 
 extern const char kPermissionQuietChipName[];
 extern const char kPermissionQuietChipDescription[];
+
+extern const char kPersistentQuotaIsTemporaryQuotaName[];
+extern const char kPersistentQuotaIsTemporaryQuotaDescription[];
 
 extern const char kPlaybackSpeedButtonName[];
 extern const char kPlaybackSpeedButtonDescription[];

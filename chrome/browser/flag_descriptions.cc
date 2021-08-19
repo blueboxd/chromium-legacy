@@ -614,6 +614,12 @@ const char kDocumentTransitionName[] = "documentTransition API";
 const char kDocumentTransitionDescription[] =
     "Controls the availability of the documentTransition JavaScript API.";
 
+const char kDocumentTransitionSlowdownFactorName[] =
+    "documentTransition API Duration Control";
+const char kDocumentTransitionSlowdownFactorDescription[] =
+    "Slows down animations triggered by documentTransition JavaScript API for "
+    "debugging.";
+
 const char kEnableAudioFocusEnforcementName[] = "Audio Focus Enforcement";
 const char kEnableAudioFocusEnforcementDescription[] =
     "Enables enforcement of a single media session having audio focus at "
@@ -2031,6 +2037,12 @@ const char kPermissionQuietChipDescription[] =
     "instead of the right-hand side address bar icon for quiet permission "
     "prompts. Requires chrome://flags/#quiet-notification-prompts to be "
     "enabled.";
+
+const char kPersistentQuotaIsTemporaryQuotaName[] =
+    "window.PERSISTENT is temporary quota.";
+const char kPersistentQuotaIsTemporaryQuotaDescription[] =
+    "Causes the window.PERSISTENT quota type to have the same semantics as "
+    "window.TEMPORARY.";
 
 const char kPlaybackSpeedButtonName[] = "Playback Speed Button";
 const char kPlaybackSpeedButtonDescription[] =

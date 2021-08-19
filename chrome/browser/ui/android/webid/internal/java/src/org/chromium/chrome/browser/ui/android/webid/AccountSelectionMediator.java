@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.browser.ui.android.webid;
 
+import android.os.Handler;
+
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties;
+import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AutoSignInCancelButtonProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.ContinueButtonProperties;
+import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.DataSharingConsentProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties;
+import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.HeaderType;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.ItemType;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -45,6 +50,10 @@ class AccountSelectionMediator {
     private final BottomSheetController mBottomSheetController;
     private final BottomSheetContent mBottomSheetContent;
     private final BottomSheetObserver mBottomSheetObserver;
+    private final Handler mAutoSignInTaskHandler = new Handler();
+    // TODO(yigu): Increase the time after adding a continue button for users to
+    // proceed. Eventually this should be specified by IDPs.
+    private static final int AUTO_SIGN_IN_CANCELLATION_TIMER_MS = 5000;
 
     AccountSelectionMediator(AccountSelectionComponent.Delegate delegate, ModelList sheetItems,
             BottomSheetController bottomSheetController, BottomSheetContent bottomSheetContent,
@@ -76,17 +85,25 @@ class AccountSelectionMediator {
         };
     }
 
-    void showAccounts(String url, List<Account> accounts) {
+    void showAccounts(String url, List<Account> accounts, boolean isAutoSignIn) {
         mSheetItems.clear();
+
+        HeaderType headerType;
+        if (isAutoSignIn) {
+            headerType = HeaderType.AUTO_SIGN_IN;
+        } else {
+            headerType =
+                    accounts.size() == 1 ? HeaderType.SINGLE_ACCOUNT : HeaderType.MULTIPLE_ACCOUNT;
+        }
+        String site_url =
+                UrlFormatter.formatUrlForSecurityDisplay(url, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
 
         // We remove the HTTPS from URL since it is the only protocol that is
         // allowed with WebID.
         mSheetItems.add(new ListItem(ItemType.HEADER,
                 new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                        .with(HeaderProperties.SINGLE_ACCOUNT, accounts.size() == 1)
-                        .with(HeaderProperties.FORMATTED_URL,
-                                UrlFormatter.formatUrlForSecurityDisplay(
-                                        url, SchemeDisplay.OMIT_HTTP_AND_HTTPS))
+                        .with(HeaderProperties.TYPE, headerType)
+                        .with(HeaderProperties.FORMATTED_URL, site_url)
                         .build()));
 
         for (Account account : accounts) {
@@ -94,8 +111,25 @@ class AccountSelectionMediator {
             mSheetItems.add(new ListItem(ItemType.ACCOUNT, model));
             requestIconOrFallbackImage(model);
             requestAvatarImage(model);
-            // If there is only a single account we need to show the continue button.
-            if (accounts.size() == 1) {
+        }
+
+        if (accounts.size() == 1) {
+            Account account = accounts.get(0);
+            // Only show the user data sharing consent text for sign up.
+            if (!account.isSignIn()) {
+                String provider_url = UrlFormatter.formatUrlForSecurityDisplay(
+                        account.getOriginUrl(), SchemeDisplay.OMIT_HTTP_AND_HTTPS);
+                mSheetItems.add(new ListItem(
+                        ItemType.DATA_SHARING_CONSENT, createDataSharingConsentItem(provider_url)));
+            }
+            if (isAutoSignIn) {
+                assert account.isSignIn();
+                final PropertyModel cancelBtnModel = createAutoSignInCancelBtnItem();
+                mSheetItems.add(new ListItem(ItemType.AUTO_SIGN_IN_CANCEL_BUTTON, cancelBtnModel));
+
+                mAutoSignInTaskHandler.postDelayed(
+                        () -> onAccountSelected(account), AUTO_SIGN_IN_CANCELLATION_TIMER_MS);
+            } else {
                 final PropertyModel continueBtnModel = createContinueBtnItem(account);
                 mSheetItems.add(new ListItem(ItemType.CONTINUE_BUTTON, continueBtnModel));
             }
@@ -163,6 +197,7 @@ class AccountSelectionMediator {
     }
 
     void onAccountSelected(Account account) {
+        if (!mVisible) return;
         hideContent();
         mDelegate.onAccountSelected(account);
     }
@@ -170,6 +205,11 @@ class AccountSelectionMediator {
     void onDismissed(@StateChangeReason int reason) {
         hideContent();
         mDelegate.onDismissed();
+    }
+
+    void onAutoSignInCancelled() {
+        hideContent();
+        mDelegate.onAutoSignInCancelled();
     }
 
     private PropertyModel createAccountItem(Account account) {
@@ -183,6 +223,19 @@ class AccountSelectionMediator {
         return new PropertyModel.Builder(ContinueButtonProperties.ALL_KEYS)
                 .with(ContinueButtonProperties.ACCOUNT, account)
                 .with(ContinueButtonProperties.ON_CLICK_LISTENER, this::onAccountSelected)
+                .build();
+    }
+
+    private PropertyModel createAutoSignInCancelBtnItem() {
+        return new PropertyModel.Builder(AutoSignInCancelButtonProperties.ALL_KEYS)
+                .with(AutoSignInCancelButtonProperties.ON_CLICK_LISTENER,
+                        this::onAutoSignInCancelled)
+                .build();
+    }
+
+    private PropertyModel createDataSharingConsentItem(String provider) {
+        return new PropertyModel.Builder(DataSharingConsentProperties.ALL_KEYS)
+                .with(DataSharingConsentProperties.PROVIDER_URL, provider)
                 .build();
     }
 }

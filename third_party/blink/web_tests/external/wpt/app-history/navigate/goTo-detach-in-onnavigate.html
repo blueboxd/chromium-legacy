@@ -7,7 +7,7 @@ promise_test(async t => {
   await new Promise(resolve => window.onload = resolve);
   let iframe_constructor = i.contentWindow.DOMException;
   let i_win = i.contentWindow;
-  i.contentWindow.history.pushState(1, "", "#1");
+  await i.contentWindow.appHistory.navigate("#1");
   assert_equals(i.contentWindow.appHistory.entries().length, 2);
   let key = i.contentWindow.appHistory.entries()[0].key;
 
@@ -15,6 +15,7 @@ promise_test(async t => {
   let onnavigateerror_error;
   i.contentWindow.appHistory.onnavigate = t.step_func(() => i.remove());
   i.contentWindow.appHistory.onnavigateerror = t.step_func(e => {
+    assert_false(onnavigateerror_called);
     onnavigateerror_called = true;
     onnavigateerror_error = e.error;
     assert_equals(e.filename, location.href);

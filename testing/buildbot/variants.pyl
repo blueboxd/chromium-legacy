@@ -381,7 +381,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.8',
+          'revision': 'version:94.0.4606.12',
         }
       ],
     },
@@ -405,7 +405,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.50',
+          'revision': 'version:93.0.4577.53',
         }
       ],
     },
@@ -453,7 +453,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.8',
+          'revision': 'version:94.0.4606.12',
         }
       ],
     },
@@ -477,7 +477,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.50',
+          'revision': 'version:93.0.4577.53',
         }
       ],
     },
@@ -525,7 +525,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.8',
+          'revision': 'version:94.0.4606.12',
         }
       ],
     },
@@ -549,7 +549,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.50',
+          'revision': 'version:93.0.4577.53',
         }
       ],
     },

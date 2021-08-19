@@ -1563,20 +1563,6 @@ UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {
   return self_item->BidiLevel();
 }
 
-NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxFragment::BorderWidths() const {
-  PhysicalBoxSides sides = SidesToInclude();
-  NGPhysicalBoxStrut borders = Borders();
-  if (!sides.top)
-    borders.top = LayoutUnit();
-  if (!sides.right)
-    borders.right = LayoutUnit();
-  if (!sides.bottom)
-    borders.bottom = LayoutUnit();
-  if (!sides.left)
-    borders.left = LayoutUnit();
-  return borders.SnapToDevicePixels();
-}
-
 #if DCHECK_IS_ON()
 NGPhysicalBoxFragment::AllowPostLayoutScope::AllowPostLayoutScope() {
   ++allow_count_;
@@ -1606,6 +1592,8 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK_EQ(sub_type_, other.sub_type_);
   DCHECK_EQ(style_variant_, other.style_variant_);
   DCHECK_EQ(is_hidden_for_paint_, other.is_hidden_for_paint_);
+  DCHECK_EQ(is_opaque_, other.is_opaque_);
+  DCHECK_EQ(is_block_in_inline_, other.is_block_in_inline_);
   DCHECK_EQ(is_math_fraction_, other.is_math_fraction_);
   DCHECK_EQ(is_math_operator_, other.is_math_operator_);
 

@@ -142,11 +142,17 @@ inline constexpr sandbox::policy::SandboxType MapToSandboxType(
       return sandbox::policy::SandboxType::kMediaFoundationCdm;
     case sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges:
       return sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges;
+    case sandbox::mojom::Sandbox::kPdfConversion:
+      return sandbox::policy::SandboxType::kPdfConversion;
     case sandbox::mojom::Sandbox::kProxyResolver:
       return sandbox::policy::SandboxType::kProxyResolver;
     case sandbox::mojom::Sandbox::kXrCompositing:
       return sandbox::policy::SandboxType::kXrCompositing;
 #endif  // OS_WIN
+#if defined(OS_MAC)
+    case sandbox::mojom::Sandbox::kMirroring:
+      return sandbox::policy::SandboxType::kMirroring;
+#endif  // defined(OS_MAC)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kIme:
       return sandbox::policy::SandboxType::kIme;

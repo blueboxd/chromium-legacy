@@ -11,8 +11,6 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.base.test.util.CriteriaHelper.pollUiThread;
-import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.FORMATTED_URL;
-import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.SINGLE_ACCOUNT;
 
 import static java.util.Arrays.asList;
 
@@ -35,8 +33,11 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties;
+import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AutoSignInCancelButtonProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.ContinueButtonProperties;
+import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.DataSharingConsentProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties;
+import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.HeaderType;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -60,15 +61,16 @@ import java.util.Collections;
 public class AccountSelectionViewTest {
     private static final GURL TEST_PROFILE_PIC = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
 
-    private static final Account ANA =
-            new Account("Ana", "S3cr3t", "Ana Doe", "Ana", TEST_PROFILE_PIC, GURL.emptyGURL());
-    private static final Account NO_ONE = new Account("", "***", "No Subject", "", TEST_PROFILE_PIC,
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1));
-    private static final Account BOB = new Account("Bob", "***", "Bob", "", TEST_PROFILE_PIC,
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2));
+    private static final Account ANA = new Account(
+            "Ana", "ana@email.example", "Ana Doe", "Ana", TEST_PROFILE_PIC, GURL.emptyGURL(), true);
+    private static final Account NO_ONE = new Account("", "", "No Subject", "", TEST_PROFILE_PIC,
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1), true);
+    private static final Account BOB = new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC,
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2), true);
 
     @Mock
     private Callback<Account> mAccountCallback;
+    private Runnable mAutoSignInCancelCallback;
 
     private DummyUiActivity mActivity;
     private ModelList mSheetItems;
@@ -97,8 +99,8 @@ public class AccountSelectionViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSheetItems.add(new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                            .with(SINGLE_ACCOUNT, true)
-                            .with(FORMATTED_URL, "www.example.org")
+                            .with(HeaderProperties.TYPE, HeaderType.SINGLE_ACCOUNT)
+                            .with(HeaderProperties.FORMATTED_URL, "www.example.org")
                             .build()));
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
@@ -116,8 +118,8 @@ public class AccountSelectionViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSheetItems.add(new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                            .with(SINGLE_ACCOUNT, false)
-                            .with(FORMATTED_URL, "www.example.org")
+                            .with(HeaderProperties.TYPE, HeaderType.MULTIPLE_ACCOUNT)
+                            .with(HeaderProperties.FORMATTED_URL, "www.example.org")
                             .build()));
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
@@ -185,6 +187,61 @@ public class AccountSelectionViewTest {
         waitForEvent(mAccountCallback).onResult(eq(ANA));
     }
 
+    @Test
+    @MediumTest
+    public void testAutoSignInCancellButtonDisplayed() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Create an account with no callback to ensure the button callback
+            // is the one that gets invoked.
+            final MVCListAdapter.ListItem account_without_callback =
+                    new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.ACCOUNT,
+                            new PropertyModel.Builder(AccountProperties.ALL_KEYS)
+                                    .with(AccountProperties.ACCOUNT, ANA)
+                                    .with(AccountProperties.ON_CLICK_LISTENER, null)
+                                    .build());
+
+            mSheetItems.addAll(asList(account_without_callback, buildCancelButton()));
+        });
+        pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
+
+        assertNotNull(getAccounts().getChildAt(0));
+        assertNotNull(getAccounts().getChildAt(1));
+    }
+
+    @Test
+    @MediumTest
+    public void testHeaderDisplayedForAutoSignIn() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSheetItems.add(new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.HEADER,
+                    new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
+                            .with(HeaderProperties.TYPE, HeaderType.AUTO_SIGN_IN)
+                            .with(HeaderProperties.FORMATTED_URL, "www.example.org")
+                            .build()));
+        });
+        pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
+        TextView title = mContentView.findViewById(R.id.account_selection_sheet_title);
+
+        assertEquals("Incorrect title",
+                mActivity.getString(R.string.auto_sign_in_sheet_title, "www.example.org"),
+                title.getText());
+    }
+
+    @Test
+    @MediumTest
+    public void testDataSharingConsentDisplayed() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSheetItems.addAll(
+                    Collections.singletonList(buildDataSharingConsentItem("www.example.org")));
+        });
+        pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
+        assertNotNull(getAccounts().getChildAt(0));
+        TextView consent = mContentView.findViewById(R.id.user_data_sharing_consent);
+        assertEquals("Incorrect data sharing consent text",
+                mActivity.getString(
+                        R.string.account_selection_data_sharing_consent, "www.example.org"),
+                consent.getText());
+    }
+
     private RecyclerView getAccounts() {
         return mContentView.findViewById(R.id.sheet_item_list);
     }
@@ -215,6 +272,22 @@ public class AccountSelectionViewTest {
                 new PropertyModel.Builder(ContinueButtonProperties.ALL_KEYS)
                         .with(ContinueButtonProperties.ACCOUNT, account)
                         .with(ContinueButtonProperties.ON_CLICK_LISTENER, mAccountCallback)
+                        .build());
+    }
+
+    private MVCListAdapter.ListItem buildCancelButton() {
+        return new MVCListAdapter.ListItem(
+                AccountSelectionProperties.ItemType.AUTO_SIGN_IN_CANCEL_BUTTON,
+                new PropertyModel.Builder(AutoSignInCancelButtonProperties.ALL_KEYS)
+                        .with(AutoSignInCancelButtonProperties.ON_CLICK_LISTENER,
+                                mAutoSignInCancelCallback)
+                        .build());
+    }
+
+    private MVCListAdapter.ListItem buildDataSharingConsentItem(String provider) {
+        return new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.DATA_SHARING_CONSENT,
+                new PropertyModel.Builder(DataSharingConsentProperties.ALL_KEYS)
+                        .with(DataSharingConsentProperties.PROVIDER_URL, provider)
                         .build());
     }
 }

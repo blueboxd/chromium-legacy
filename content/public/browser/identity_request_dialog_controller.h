@@ -20,21 +20,6 @@ extern const char CONTENT_EXPORT kSecWebIdCsrfHeader[];
 // Represents a federated user account which is used when displaying an account
 // selector.
 struct CONTENT_EXPORT IdentityRequestAccount {
-  IdentityRequestAccount(const std::string& sub,
-                         const std::string& email,
-                         const std::string& name,
-                         const std::string& given_name,
-                         const GURL& picture);
-  IdentityRequestAccount(const IdentityRequestAccount&);
-  ~IdentityRequestAccount();
-
-  // sub, short for subject, is the unique identifier.
-  std::string sub;
-  std::string email;
-  std::string name;
-  std::string given_name;
-  GURL picture;
-
   enum class LoginState {
     // This is a returning user signing in with RP/IDP in this browser.
     kSignIn,
@@ -47,6 +32,23 @@ struct CONTENT_EXPORT IdentityRequestAccount {
     // user when using it to customize the UI.
     kSignUp,
   };
+
+  IdentityRequestAccount(const std::string& sub,
+                         const std::string& email,
+                         const std::string& name,
+                         const std::string& given_name,
+                         const GURL& picture,
+                         LoginState login_state = LoginState::kSignUp);
+  IdentityRequestAccount(const IdentityRequestAccount&);
+  ~IdentityRequestAccount();
+
+  // sub, short for subject, is the unique identifier.
+  std::string sub;
+  std::string email;
+  std::string name;
+  std::string given_name;
+  GURL picture;
+
   // The account login state. Unlike the other fields this one is not populated
   // by the IDP but instead by the browser based on its stored permission
   // grants.
@@ -103,11 +105,13 @@ class CONTENT_EXPORT IdentityRequestDialogController {
       InitialApprovalCallback approval_callback);
 
   // Shows and accounts selections for the given IDP. The |on_selected| callback
-  // is called with the selected account id or empty string otherwise.
+  // is called with the selected account id or empty string otherwise. The bool
+  // |is_auto_sign_in| represents whether this is an auto sign in flow.
   virtual void ShowAccountsDialog(content::WebContents* rp_web_contents,
                                   content::WebContents* idp_web_contents,
                                   const GURL& idp_signin_url,
                                   AccountList accounts,
+                                  bool is_auto_sign_in,
                                   AccountSelectionCallback on_selected) {}
 
   // Shows the identity provider sign-in page at the given URL using the

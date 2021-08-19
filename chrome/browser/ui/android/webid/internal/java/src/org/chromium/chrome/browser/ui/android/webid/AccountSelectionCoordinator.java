@@ -90,9 +90,15 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
         adapter.registerType(AccountSelectionProperties.ItemType.ACCOUNT,
                 AccountSelectionCoordinator::buildAccountView,
                 AccountSelectionViewBinder::bindAccountView);
+        adapter.registerType(AccountSelectionProperties.ItemType.DATA_SHARING_CONSENT,
+                AccountSelectionCoordinator::buildDataSharingConsentView,
+                AccountSelectionViewBinder::bindDataSharingConsentView);
         adapter.registerType(AccountSelectionProperties.ItemType.CONTINUE_BUTTON,
                 AccountSelectionCoordinator::buildContinueButtonView,
                 AccountSelectionViewBinder::bindContinueButtonView);
+        adapter.registerType(AccountSelectionProperties.ItemType.AUTO_SIGN_IN_CANCEL_BUTTON,
+                AccountSelectionCoordinator::buildAutoSignInCancelButtonView,
+                AccountSelectionViewBinder::bindAutoSignInCancelButtonView);
         sheetItemListView.setAdapter(adapter);
 
         return contentView;
@@ -108,13 +114,23 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
                 .inflate(R.layout.account_selection_account_item, parent, false);
     }
 
+    static View buildDataSharingConsentView(ViewGroup parent) {
+        return LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.account_selection_data_sharing_consent_item, parent, false);
+    }
+
     static View buildContinueButtonView(ViewGroup parent) {
         return LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.account_selection_continue_button, parent, false);
     }
 
+    static View buildAutoSignInCancelButtonView(ViewGroup parent) {
+        return LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.auto_sign_in_cancel_button, parent, false);
+    }
+
     @Override
-    public void showAccounts(String url, List<Account> accounts) {
-        mMediator.showAccounts(url, accounts);
+    public void showAccounts(String url, List<Account> accounts, boolean isAutoSignIn) {
+        mMediator.showAccounts(url, accounts, isAutoSignIn);
     }
 }

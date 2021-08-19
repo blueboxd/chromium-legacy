@@ -2152,6 +2152,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/importer/ie_importer_browsertest_win.cc",
         "../browser/policy/test/locale_policy_browsertest.cc",
         "../browser/process_singleton_browsertest.cc",
+        "../browser/profiles/profile_shortcut_manager_browsertest_win.cc",
         "../browser/safe_browsing/chrome_cleaner/reporter_runner_browsertest_win.cc",
         "../browser/ui/startup/startup_browser_creator_corrupt_profiles_browsertest_win.cc",
         "../browser/ui/startup/startup_browser_creator_triggered_reset_browsertest_win.cc",
@@ -7041,6 +7042,7 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/signals:test_support",
       "../browser/enterprise/connectors/device_trust/signals/decorators/common",
       "../browser/enterprise/connectors/device_trust/signals/decorators/common:test_support",
+      "../browser/enterprise/connectors/device_trust/signals/decorators/common:unit_tests",
     ]
   }
 
@@ -9545,7 +9547,7 @@ if (is_chromeos_ash) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_win) {
   script_test("variations_smoke_tests") {
     run_under_python2 = true
 

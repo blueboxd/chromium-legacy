@@ -75,14 +75,28 @@ class AccountSelectionProperties {
      * sheet.
      */
     static class HeaderProperties {
-        static final PropertyModel.ReadableBooleanPropertyKey SINGLE_ACCOUNT =
-                new PropertyModel.ReadableBooleanPropertyKey("single_account");
+        public enum HeaderType { SINGLE_ACCOUNT, MULTIPLE_ACCOUNT, AUTO_SIGN_IN }
+        static final PropertyModel.ReadableObjectPropertyKey<HeaderType> TYPE =
+                new PropertyModel.ReadableObjectPropertyKey<>("type");
         static final PropertyModel.ReadableObjectPropertyKey<String> FORMATTED_URL =
                 new PropertyModel.ReadableObjectPropertyKey<>("formatted_url");
 
-        static final PropertyKey[] ALL_KEYS = {SINGLE_ACCOUNT, FORMATTED_URL};
+        static final PropertyKey[] ALL_KEYS = {TYPE, FORMATTED_URL};
 
         private HeaderProperties() {}
+    }
+
+    /**
+     * Properties defined here reflect the state of the continue button in the AccountSelection
+     * sheet.
+     */
+    static class DataSharingConsentProperties {
+        static final PropertyModel.ReadableObjectPropertyKey<String> PROVIDER_URL =
+                new PropertyModel.ReadableObjectPropertyKey<>("provider_url");
+
+        static final PropertyKey[] ALL_KEYS = {PROVIDER_URL};
+
+        private DataSharingConsentProperties() {}
     }
 
     /**
@@ -100,7 +114,20 @@ class AccountSelectionProperties {
         private ContinueButtonProperties() {}
     }
 
-    @IntDef({ItemType.HEADER, ItemType.ACCOUNT, ItemType.CONTINUE_BUTTON})
+    /**
+     * Properties defined here reflect the state of the cancel button used for auto sign in.
+     */
+    static class AutoSignInCancelButtonProperties {
+        static final PropertyModel.ReadableObjectPropertyKey<Runnable> ON_CLICK_LISTENER =
+                new PropertyModel.ReadableObjectPropertyKey<>("on_click_listener");
+
+        static final PropertyKey[] ALL_KEYS = {ON_CLICK_LISTENER};
+
+        private AutoSignInCancelButtonProperties() {}
+    }
+
+    @IntDef({ItemType.HEADER, ItemType.ACCOUNT, ItemType.DATA_SHARING_CONSENT,
+            ItemType.CONTINUE_BUTTON, ItemType.AUTO_SIGN_IN_CANCEL_BUTTON})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         /**
@@ -114,9 +141,20 @@ class AccountSelectionProperties {
         int ACCOUNT = 2;
 
         /**
+         * The user data sharing consent text when there is only one account and it is a sign-up
+         * moment.
+         */
+        int DATA_SHARING_CONSENT = 3;
+
+        /**
          * The continue button at the end of the sheet when there is only one account.
          */
-        int CONTINUE_BUTTON = 3;
+        int CONTINUE_BUTTON = 4;
+
+        /**
+         * The cancel button at the end of the sheet with auto sign in.
+         */
+        int AUTO_SIGN_IN_CANCEL_BUTTON = 5;
     }
 
     private AccountSelectionProperties() {}

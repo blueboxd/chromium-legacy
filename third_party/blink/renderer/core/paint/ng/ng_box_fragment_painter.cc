@@ -60,13 +60,6 @@ namespace blink {
 
 namespace {
 
-LayoutRectOutsets BoxStrutToLayoutRectOutsets(
-    const NGPixelSnappedPhysicalBoxStrut& box_strut) {
-  return LayoutRectOutsets(
-      LayoutUnit(box_strut.top), LayoutUnit(box_strut.right),
-      LayoutUnit(box_strut.bottom), LayoutUnit(box_strut.left));
-}
-
 inline bool HasSelection(const LayoutObject* layout_object) {
   return layout_object->GetSelectionState() != SelectionState::kNone;
 }
@@ -1217,13 +1210,17 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundForBlockInInline(
     NGInlineCursor* children,
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
-  for (; *children; children->MoveToNext()) {
+  while (*children) {
     const NGFragmentItem* item = children->Current().Item();
-    if (item->Type() != NGFragmentItem::kBox)
-      continue;
-    const NGPhysicalBoxFragment* fragment = item->BoxFragment();
-    if (fragment && fragment->IsBlockInInline())
-      PaintBoxItem(*item, *fragment, *children, paint_info, paint_offset);
+    if (const NGPhysicalBoxFragment* fragment = item->BoxFragment()) {
+      if (fragment->HasSelfPaintingLayer()) {
+        children->MoveToNextSkippingChildren();
+        continue;
+      }
+      if (fragment->IsBlockInInline())
+        PaintBoxItem(*item, *fragment, *children, paint_info, paint_offset);
+    }
+    children->MoveToNext();
   }
 }
 
@@ -1797,11 +1794,11 @@ PhysicalRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
 LayoutRectOutsets NGBoxFragmentPainter::ComputeBorders() const {
   if (box_fragment_.GetLayoutObject()->IsTableCellLegacy())
     return To<LayoutBox>(box_fragment_.GetLayoutObject())->BorderBoxOutsets();
-  return BoxStrutToLayoutRectOutsets(PhysicalFragment().BorderWidths());
+  return PhysicalFragment().Borders().ToLayoutRectOutsets();
 }
 
 LayoutRectOutsets NGBoxFragmentPainter::ComputePadding() const {
-  return BoxStrutToLayoutRectOutsets(PhysicalFragment().PixelSnappedPadding());
+  return PhysicalFragment().Padding().ToLayoutRectOutsets();
 }
 
 BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(

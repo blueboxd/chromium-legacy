@@ -34,6 +34,7 @@
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -69,15 +70,6 @@ using ui_test_utils::BrowserChangeObserver;
 namespace web_app {
 
 namespace {
-
-void WaitUntilReady(WebAppProvider* provider) {
-  if (provider->on_registry_ready().is_signaled())
-    return;
-
-  base::RunLoop run_loop;
-  provider->on_registry_ready().Post(FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
-}
 
 // Waits for |browser| to be removed from BrowserList and then calls |callback|.
 class BrowserRemovedWaiter final : public BrowserListObserver {
@@ -155,9 +147,9 @@ AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
   AppId app_id;
   base::RunLoop run_loop;
 
-  auto* provider = WebAppProvider::Get(browser->profile());
+  auto* provider = WebAppProvider::GetForTest(browser->profile());
   DCHECK(provider);
-  WaitUntilReady(provider);
+  test::WaitUntilReady(provider);
   provider->install_manager().InstallWebAppFromManifestWithFallback(
       browser->tab_strip_model()->GetActiveWebContents(),
       /*force_shortcut_app=*/false,
@@ -184,9 +176,9 @@ AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
   AppId app_id;
   base::RunLoop run_loop;
 
-  auto* provider = WebAppProvider::Get(browser->profile());
+  auto* provider = WebAppProvider::GetForTest(browser->profile());
   DCHECK(provider);
-  WaitUntilReady(provider);
+  test::WaitUntilReady(provider);
   provider->install_manager().InstallWebAppFromManifestWithFallback(
       browser->tab_strip_model()->GetActiveWebContents(),
       /*force_shortcut_app=*/false,
@@ -227,7 +219,7 @@ Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
 // Launches the app, waits for the app url to load.
 Browser* LaunchWebAppBrowserAndWait(Profile* profile, const AppId& app_id) {
   ui_test_utils::UrlLoadObserver url_observer(
-      WebAppProvider::Get(profile)->registrar().GetAppLaunchUrl(app_id),
+      WebAppProvider::GetForTest(profile)->registrar().GetAppLaunchUrl(app_id),
       content::NotificationService::AllSources());
   Browser* const app_browser = LaunchWebAppBrowser(profile, app_id);
   url_observer.Wait();
@@ -269,9 +261,9 @@ InstallResultCode ExternallyManagedAppManagerInstall(
     Profile* profile,
     ExternalInstallOptions install_options) {
   DCHECK(profile);
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForTest(profile);
   DCHECK(provider);
-  WaitUntilReady(provider);
+  test::WaitUntilReady(provider);
   base::RunLoop run_loop;
   InstallResultCode result_code;
 
@@ -377,7 +369,7 @@ bool IsBrowserOpen(const Browser* test_browser) {
 }
 
 void UninstallWebApp(Profile* profile, const AppId& app_id) {
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForTest(profile);
   DCHECK(provider);
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
   provider->install_finalizer().UninstallWebApp(
@@ -387,7 +379,7 @@ void UninstallWebApp(Profile* profile, const AppId& app_id) {
 void UninstallWebAppWithCallback(Profile* profile,
                                  const AppId& app_id,
                                  UninstallWebAppCallback callback) {
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForTest(profile);
   DCHECK(provider);
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
   provider->install_finalizer().UninstallWebApp(
@@ -401,7 +393,7 @@ SkColor ReadAppIconPixel(Profile* profile,
                          int y) {
   SkColor result;
   base::RunLoop run_loop;
-  WebAppProvider::Get(profile)->icon_manager().ReadIcons(
+  WebAppProvider::GetForTest(profile)->icon_manager().ReadIcons(
       app_id, IconPurpose::ANY, {size},
       base::BindLambdaForTesting(
           [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {

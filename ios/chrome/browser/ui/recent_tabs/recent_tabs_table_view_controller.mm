@@ -173,7 +173,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)dealloc {
-  [_signinPromoViewMediator signinPromoViewIsRemoved];
+  [self.signinPromoViewMediator disconnect];
+  self.signinPromoViewMediator = nil;
 }
 
 - (void)viewDidLoad {
@@ -776,8 +777,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   self.sessionState = newSessionState;
 
   if (self.sessionState != SessionsSyncUserState::USER_SIGNED_OUT) {
-    [self.signinPromoViewMediator signinPromoViewIsRemoved];
-    self.signinPromoViewMediator.consumer = nil;
+    [self.signinPromoViewMediator disconnect];
     self.signinPromoViewMediator = nil;
   }
 }
@@ -1356,8 +1356,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     // exist anymore. The mediator should not be removed each time the section
     // is removed since the section is replaced at each reload.
     // Metrics would be recorded too often.
-    [self.signinPromoViewMediator signinPromoViewIsRemoved];
-    self.signinPromoViewMediator.consumer = nil;
+    [self.signinPromoViewMediator disconnect];
     self.signinPromoViewMediator = nil;
     return;
   }

@@ -1612,17 +1612,6 @@ void TrimStringVectorForIPC(std::vector<std::u16string>* strings) {
   }
 }
 
-// Helper function that strips any authentication data, as well as query and
-// ref portions of URL.
-GURL StripAuthAndParams(const GURL& gurl) {
-  GURL::Replacements rep;
-  rep.ClearUsername();
-  rep.ClearPassword();
-  rep.ClearQuery();
-  rep.ClearRef();
-  return gurl.ReplaceComponents(rep);
-}
-
 // Build a map from entries in |form_control_renderer_ids| to their indices,
 // for more efficient lookup.
 base::flat_map<FieldRendererId, size_t> BuildRendererIdToIndex(
@@ -1807,11 +1796,6 @@ GURL GetCanonicalActionForForm(const WebFormElement& form) {
     action = WebString("");  // missing 'action' attribute implies current URL.
   GURL full_action(form.GetDocument().CompleteURL(action));
   return StripAuthAndParams(full_action);
-}
-
-GURL GetCanonicalOriginForDocument(const WebDocument& document) {
-  GURL full_origin(document.Url());
-  return StripAuthAndParams(full_origin);
 }
 
 GURL GetDocumentUrlWithoutAuth(const WebDocument& document) {
@@ -2100,20 +2084,10 @@ bool WebFormElementToFormData(
   form->name = GetFormIdentifier(form_element);
   form->unique_renderer_id =
       FormRendererId(form_element.UniqueRendererFormId());
-  if (base::FeatureList::IsEnabled(features::kAutofillAugmentFormsInRenderer))
-    form->url = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
   form->is_action_empty =
       form_element.Action().IsNull() || form_element.Action().IsEmpty();
-  if (frame->Top()) {
-    if (base::FeatureList::IsEnabled(features::kAutofillAugmentFormsInRenderer))
-      form->main_frame_origin = frame->Top()->GetSecurityOrigin();
-    else
-      form->main_frame_origin = url::Origin();
-  } else {
-    form->main_frame_origin = url::Origin();
-    NOTREACHED();
-  }
+  form->main_frame_origin = url::Origin();
   // If the completed URL is not valid, just use the action we get from
   // WebKit.
   if (!form->action.is_valid())
@@ -2203,14 +2177,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     return false;
 
   form->unique_renderer_id = FormRendererId();
-  if (base::FeatureList::IsEnabled(features::kAutofillAugmentFormsInRenderer))
-    form->url = GetCanonicalOriginForDocument(document);
-  if (base::FeatureList::IsEnabled(features::kAutofillAugmentFormsInRenderer) &&
-      frame->Top()) {
-    form->main_frame_origin = frame->Top()->GetSecurityOrigin();
-  } else {
-    form->main_frame_origin = url::Origin();
-  }
+  form->main_frame_origin = url::Origin();
 
   form->is_form_tag = false;
 

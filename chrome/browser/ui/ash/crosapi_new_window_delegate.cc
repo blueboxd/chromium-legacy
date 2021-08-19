@@ -20,14 +20,11 @@ void CrosapiNewWindowDelegate::NewTab() {
 
 void CrosapiNewWindowDelegate::NewTabWithUrl(const GURL& url,
                                              bool from_user_interaction) {
-  // TODO(crbug.com/1188020): Forward to register browser via crosapi.
-  LOG(WARNING)
-      << "CrosapiNewWindowDelegate::NewTabWithUrl is currently forwarded "
-      << "to ash-chrome";
-  delegate_->NewTabWithUrl(url, from_user_interaction);
+  crosapi::BrowserManager::Get()->OpenUrl(url);
 }
 
-void CrosapiNewWindowDelegate::NewWindow(bool incognito) {
+void CrosapiNewWindowDelegate::NewWindow(bool incognito,
+                                         bool should_trigger_session_restore) {
   crosapi::BrowserManager::Get()->NewWindow(incognito);
 }
 

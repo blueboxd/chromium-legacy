@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -41,10 +42,17 @@ constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
 
 namespace web_app {
 
-WebAppBrowserController::WebAppBrowserController(Browser* browser)
+WebAppBrowserController::WebAppBrowserController(
+    WebAppProvider& provider,
+    Browser* browser,
+    AppId app_id,
+    absl::optional<SystemAppType> system_app_type,
+    bool has_tab_strip)
     : AppBrowserController(browser,
-                           GetAppIdFromApplicationName(browser->app_name())),
-      provider_(*WebAppProvider::GetForLocalApps(browser->profile())) {
+                           std::move(app_id),
+                           std::move(system_app_type),
+                           has_tab_strip),
+      provider_(provider) {
   registrar_observation_.Observe(&provider_.registrar());
   PerformDigitalAssetLinkVerification(browser);
 }
@@ -79,6 +87,23 @@ void WebAppBrowserController::ToggleWindowControlsOverlayEnabled() {
 
   provider_.registry_controller().SetAppWindowControlsOverlayEnabled(
       app_id(), !registrar().GetWindowControlsOverlayEnabled(app_id()));
+}
+
+gfx::Rect WebAppBrowserController::GetDefaultBounds() const {
+  if (system_app_type().has_value()) {
+    return provider_.system_web_app_manager().GetDefaultBounds(
+        system_app_type().value(), browser());
+  }
+
+  return gfx::Rect();
+}
+
+bool WebAppBrowserController::HasReloadButton() const {
+  if (!system_app_type())
+    return true;
+
+  return provider_.system_web_app_manager().ShouldHaveReloadButtonInMinimalUi(
+      system_app_type().value());
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -136,9 +161,9 @@ ui::ImageModel WebAppBrowserController::GetWindowAppIcon() const {
 #endif
 
   if (provider_.icon_manager().HasSmallestIcon(app_id(), {IconPurpose::ANY},
-                                               web_app::kWebAppIconSmall)) {
+                                               kWebAppIconSmall)) {
     provider_.icon_manager().ReadSmallestIconAny(
-        app_id(), web_app::kWebAppIconSmall,
+        app_id(), kWebAppIconSmall,
         base::BindOnce(&WebAppBrowserController::OnReadIcon,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -241,12 +266,12 @@ bool WebAppBrowserController::IsInstalled() const {
 
 void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
   AppBrowserController::OnTabInserted(contents);
-  web_app::SetAppPrefsForWebContents(contents);
+  SetAppPrefsForWebContents(contents);
 }
 
 void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
   AppBrowserController::OnTabRemoved(contents);
-  web_app::ClearAppPrefsForWebContents(contents);
+  ClearAppPrefsForWebContents(contents);
 }
 
 const WebAppRegistrar& WebAppBrowserController::registrar() const {
@@ -257,7 +282,7 @@ void WebAppBrowserController::LoadAppIcon(bool allow_placeholder_icon) const {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->LoadIcon(proxy->AppRegistryCache().GetAppType(app_id()), app_id(),
-                  apps::mojom::IconType::kStandard, web_app::kWebAppIconSmall,
+                  apps::mojom::IconType::kStandard, kWebAppIconSmall,
                   allow_placeholder_icon,
                   base::BindOnce(&WebAppBrowserController::OnLoadIcon,
                                  weak_ptr_factory_.GetWeakPtr()));

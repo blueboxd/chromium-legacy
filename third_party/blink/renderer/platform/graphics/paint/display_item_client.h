@@ -8,17 +8,12 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-
-enum class RasterEffectOutset : uint8_t {
-  kNone,
-  kHalfPixel,
-  kWholePixel,
-};
 
 // The class for objects that can be associated with display items. A
 // DisplayItemClient object should live at least longer than the document cycle
@@ -30,24 +25,14 @@ class PLATFORM_EXPORT DisplayItemClient {
   DisplayItemClient()
       : paint_invalidation_reason_(
             static_cast<uint8_t>(PaintInvalidationReason::kJustCreated)),
-        marked_for_validation_(0) {
-#if DCHECK_IS_ON()
-    OnCreate();
-#endif
-  }
+        marked_for_validation_(0) {}
   DisplayItemClient(const DisplayItemClient&) = delete;
   DisplayItemClient& operator=(const DisplayItemClient&) = delete;
-  virtual ~DisplayItemClient() {
-#if DCHECK_IS_ON()
-    OnDestroy();
-#endif
-  }
+  virtual ~DisplayItemClient() = default;
 
-#if DCHECK_IS_ON()
-  // Tests if this DisplayItemClient object has been created and has not been
-  // deleted yet.
-  bool IsAlive() const;
-#endif
+  DisplayItemClientId Id() const {
+    return reinterpret_cast<DisplayItemClientId>(this);
+  }
 
   virtual String DebugName() const = 0;
 

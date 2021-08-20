@@ -98,8 +98,8 @@ std::unique_ptr<ash::DeskTemplate> CaptureActiveDeskAndSaveTemplate() {
   std::unique_ptr<ash::DeskTemplate> desk_template;
   DesksClient::Get()->CaptureActiveDeskAndSaveTemplate(
       base::BindLambdaForTesting(
-          [&](bool success,
-              std::unique_ptr<ash::DeskTemplate> captured_desk_template) {
+          [&](std::unique_ptr<ash::DeskTemplate> captured_desk_template,
+              std::string error_string) {
             run_loop.Quit();
             ASSERT_TRUE(captured_desk_template);
             desk_template = std::move(captured_desk_template);
@@ -112,7 +112,8 @@ void DeleteDeskTemplate(const base::GUID uuid) {
   base::RunLoop run_loop;
   DesksClient::Get()->DeleteDeskTemplate(
       uuid.AsLowercaseString(),
-      base::BindLambdaForTesting([&](bool success) { run_loop.Quit(); }));
+      base::BindLambdaForTesting(
+          [&](std::string error_string) { run_loop.Quit(); }));
   run_loop.Run();
 }
 
@@ -273,7 +274,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureBrowserUrlsTest) {
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
@@ -304,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureIncognitoBrowserTest) {
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
   ASSERT_TRUE(desk_template);
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
@@ -350,7 +353,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
   EXPECT_EQ(desk_template->template_name(),
             desks_helper->GetDeskName(desks_helper->GetActiveDeskIndex()));
 
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 2u);
 
@@ -533,8 +537,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemAppExisting) {
   std::unique_ptr<ash::DeskTemplate> desk_template;
   DesksClient::Get()->CaptureActiveDeskAndSaveTemplate(
       base::BindLambdaForTesting(
-          [&](bool success,
-              std::unique_ptr<ash::DeskTemplate> captured_desk_template) {
+          [&](std::unique_ptr<ash::DeskTemplate> captured_desk_template,
+              std::string error_string) {
             run_loop.Quit();
             ASSERT_TRUE(captured_desk_template);
             desk_template = std::move(captured_desk_template);
@@ -715,7 +719,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
       CaptureActiveDeskAndSaveTemplate();
   ASSERT_TRUE(desk_template);
 
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 2u);
 
@@ -863,7 +868,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithPWA) {
       CaptureActiveDeskAndSaveTemplate();
 
   // Find |pwa_browser| window's app restore data.
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
   ASSERT_TRUE(restore_data->HasAppTypeBrowser());
@@ -911,7 +917,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithPWAInBrowser) {
       CaptureActiveDeskAndSaveTemplate();
 
   // Test that |pwa_browser| restore data can be found.
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
@@ -963,7 +970,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientMultiProfileTest, MultiProfileTest) {
   // Capture the active desk, which contains the browser windows.
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
-  full_restore::RestoreData* restore_data = desk_template->desk_restore_data();
+  const full_restore::RestoreData* restore_data =
+      desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
 
@@ -971,8 +979,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientMultiProfileTest, MultiProfileTest) {
     base::RunLoop run_loop;
     int templates_num = 0;
     DesksClient::Get()->GetDeskTemplates(base::BindLambdaForTesting(
-        [&](bool success,
-            const std::vector<ash::DeskTemplate*>& desk_templates) {
+        [&](const std::vector<ash::DeskTemplate*>& desk_templates,
+            std::string error_string) {
           templates_num = desk_templates.size();
           run_loop.Quit();
         }));

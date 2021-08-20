@@ -15,7 +15,7 @@
   var scope1 = 'http://127.0.0.1:8000/devtools/service-workers/resources/scope1/'; // with trailing '/'
   var scope2 = 'http://127.0.0.1:8000/devtools/service-workers/resources/scope2';  // without trailing '/'
   var step = 0;
-  Resources.ServiceWorkersView.noThrottle = true;
+  Resources.ServiceWorkersView.setThrottleDisabledForDebugging(true);
 
   TestRunner.addSniffer(Resources.ServiceWorkersView.prototype, 'updateRegistration', updateRegistration, true);
   function updateRegistration(registration) {

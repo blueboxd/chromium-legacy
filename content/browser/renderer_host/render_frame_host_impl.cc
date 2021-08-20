@@ -3262,6 +3262,7 @@ void RenderFrameHostImpl::PropagateEmbeddingTokenToParentFrame() {
 void RenderFrameHostImpl::OnAudibleStateChanged(bool is_audible) {
   DCHECK_NE(is_audible_, is_audible);
   if (is_audible) {
+    DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kPrerendering);
     GetProcess()->OnMediaStreamAdded();
   } else {
     GetProcess()->OnMediaStreamRemoved();
@@ -3288,7 +3289,7 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
   // Pass through log severity only on builtin components pages to limit console
   // spew.
   const bool is_builtin_component =
-      HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL()) ||
+      HasWebUIScheme(GetMainFrame()->GetLastCommittedURL()) ||
       GetContentClient()->browser()->IsBuiltinComponent(
           GetProcess()->GetBrowserContext(), GetLastCommittedOrigin());
   const bool is_off_the_record =
@@ -6706,7 +6707,7 @@ void RenderFrameHostImpl::CreateNewPopupWidget(
 void RenderFrameHostImpl::GetKeepAliveHandleFactory(
     mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (GetProcess()->IsKeepAliveRefCountDisabled())
+  if (GetProcess()->IsWorkerAndKeepAliveRefCountDisabled())
     return;
 
   if (base::FeatureList::IsEnabled(network::features::kDisableKeepaliveFetch)) {
@@ -6980,7 +6981,8 @@ void RenderFrameHostImpl::HandleAXLocationChanges(
 
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
 RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback() {
-  return delegate_->GetRecordAggregateWatchTimeCallback();
+  return delegate_->GetRecordAggregateWatchTimeCallback(
+      GetMainFrame()->GetLastCommittedURL());
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

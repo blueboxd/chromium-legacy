@@ -17,7 +17,7 @@
   let step = 0;
   let firstVersionId = -1;
   let secondVersionId = -1;
-  Resources.ServiceWorkersView.noThrottle = true;
+  Resources.ServiceWorkersView.setThrottleDisabledForDebugging(true);
 
   TestRunner.addSniffer(Resources.ServiceWorkersView.prototype, 'updateRegistration', updateRegistration, true);
   function updateRegistration(registration) {

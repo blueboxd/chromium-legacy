@@ -776,6 +776,11 @@
           'shards': 4,
         },
       },
+      'fuchsia-fyi-arm64-dbg': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.cc_unittests.filter',
+        ],
+      },
     },
   },
   'check_static_initializers': {
@@ -1146,6 +1151,15 @@
       },
     },
   },
+  'compositor_unittests': {
+    'modifications': {
+      'fuchsia-fyi-arm64-dbg': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.compositor_unittests.filter',
+        ],
+      },
+    },
+  },
   'content_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
@@ -1368,8 +1382,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.content_shell_test_apk.filter',
         ],
-        #TODO(crbug.com/1127110): Enable this on CQ
-        'ci_only': True,
       },
       'android-pie-x86-rel': {
         'args': [
@@ -1725,7 +1737,6 @@
     },
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
-      'Mac10.13 Tests', # https://crbug.com/1204424
     ],
   },
   'info_collection_tests': {
@@ -1996,6 +2007,11 @@
         'swarming': {
           'shards': 3,
         },
+      },
+      'fuchsia-fyi-arm64-dbg': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.media_unittests.filter',
+        ],
       },
     },
   },
@@ -2644,6 +2660,15 @@
       },
     },
   },
+  'snapshot_unittests': {
+    'modifications': {
+      'fuchsia-fyi-arm64-dbg': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.snapshot_unittests.filter',
+        ],
+      },
+    },
+  },
   'swiftshader_unittests': {
     'remove_from': [
       # Save capacity on the hardware where we have only a few machines.
@@ -2974,6 +2999,11 @@
   },
   'views_unittests': {
     'modifications': {
+      'fuchsia-fyi-arm64-dbg': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.views_unittests.filter',
+        ],
+      },
       # https://crbug.com/1111979,
       'linux-lacros-code-coverage': {
         'args': [
@@ -3039,6 +3069,11 @@
       'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
+        ],
+      },
+      'fuchsia-fyi-arm64-dbg': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.viz_unittests.filter',
         ],
       },
     },

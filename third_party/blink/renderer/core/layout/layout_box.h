@@ -1556,8 +1556,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return false;
   }
 
-  bool HasUnsplittableScrollingOverflow() const;
-
   // Page / column breakability inside block-level objects.
   enum PaginationBreakability {
     kAllowAnyBreaks,  // No restrictions on breaking. May examine children to
@@ -1587,6 +1585,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return GetPaginationBreakability(kNGFragmentationEngine);
   }
+
+  bool HasUnsplittableScrollingOverflow(FragmentationEngine) const;
 
   LayoutRect LocalCaretRect(
       const InlineBox*,
@@ -2069,6 +2069,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Issues a paint invalidation on the layout viewport's vertical scrollbar
   // (which is responsible for painting the tickmarks).
   void InvalidatePaintForTickmarks();
+
+  // Returns which of the border box space and contents space (maybe both)
+  // the backgrounds should be painted into, if the LayoutBox is composited.
+  // The caller may adjust the value by considering LCD-text etc. if needed and
+  // call SetBackgroundPaintLocation() with the value to be used for painting.
+  BackgroundPaintLocation ComputeBackgroundPaintLocationIfComposited() const;
 
  protected:
   ~LayoutBox() override;

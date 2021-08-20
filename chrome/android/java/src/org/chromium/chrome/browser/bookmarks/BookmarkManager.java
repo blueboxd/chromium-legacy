@@ -89,7 +89,7 @@ public class BookmarkManager
                     && node.getId().equals(mStateStack.peek().mFolder)) {
                 if (mBookmarkModel.getTopLevelFolderIDs(true, true).contains(
                         node.getId())) {
-                    openFolder(mBookmarkModel.getDefaultFolder());
+                    openFolder(mBookmarkModel.getDefaultFolderViewLocation());
                 } else {
                     openFolder(parent.getId());
                 }
@@ -217,7 +217,7 @@ public class BookmarkManager
 
         mToolbar = (BookmarkActionBar) mSelectableListLayout.initializeToolbar(
                 R.layout.bookmark_action_bar, mSelectionDelegate, 0, R.id.normal_menu_group,
-                R.id.selection_mode_menu_group, null, false, isDialogUi);
+                R.id.selection_mode_menu_group, null, isDialogUi);
         mToolbar.initializeSearchView(
                 this, R.string.bookmark_action_bar_search, R.id.search_menu_id);
 
@@ -392,8 +392,8 @@ public class BookmarkManager
      */
     private void setState(BookmarkUIState state) {
         if (!state.isValid(mBookmarkModel)) {
-            state = BookmarkUIState.createFolderState(mBookmarkModel.getDefaultFolder(),
-                    mBookmarkModel);
+            state = BookmarkUIState.createFolderState(
+                    mBookmarkModel.getDefaultFolderViewLocation(), mBookmarkModel);
         }
 
         if (!mStateStack.isEmpty() && mStateStack.peek().equals(state)) return;

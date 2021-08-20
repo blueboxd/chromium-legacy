@@ -8,8 +8,10 @@
 // #import 'chrome://os-settings/strings.m.js';
 
 // #import {flush, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {assertTrue} from '../../../chai_assert.js';
+// #import {assertTrue, assertEquals} from '../../../chai_assert.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {createDefaultBluetoothDevice} from './fake_bluetooth_config.m.js';
+// #import {Router, Route, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // clang-format on
 
 suite('OsPairedBluetoothListItemTest', function() {
@@ -39,20 +41,8 @@ suite('OsPairedBluetoothListItemTest', function() {
     return flushAsync();
   }
 
-  /**
-   * @param {boolean} isLowBattery
-   * @param {boolean} batteryIconRange
-   */
-  function assertBatteryUIState(isLowBattery, batteryIconRange) {
-    assertEquals(pairedBluetoothListItem.isLowBattery_, isLowBattery);
-    assertEquals(
-        pairedBluetoothListItem.shadowRoot.querySelector('#batteryIcon').icon,
-        'os-settings:battery-' + batteryIconRange);
-  }
-
   test(
-      'Device name, type, battery percentage and a11y labels',
-      async function() {
+      'Device name, type, battery info and a11y labels', async function() {
         // Device with no nickname, battery info and unknown device type.
         const publicName = 'BeatsX';
         const device = createDefaultBluetoothDevice(
@@ -69,9 +59,9 @@ suite('OsPairedBluetoothListItemTest', function() {
         const getDeviceName = () => {
           return pairedBluetoothListItem.$.deviceName;
         };
-        const getBatteryPercentage = () => {
+        const getBatteryInfo = () => {
           return pairedBluetoothListItem.shadowRoot.querySelector(
-              '#batteryPercentage');
+              'os-settings-bluetooth-device-battery-info');
         };
         const getDeviceTypeIcon = () => {
           return pairedBluetoothListItem.$.deviceTypeIcon;
@@ -85,7 +75,7 @@ suite('OsPairedBluetoothListItemTest', function() {
         };
         assertTrue(!!getDeviceName());
         assertEquals(getDeviceName().innerText, publicName);
-        assertFalse(!!getBatteryPercentage());
+        assertFalse(!!getBatteryInfo());
         assertTrue(!!getDeviceTypeIcon());
         assertEquals(getDeviceTypeIcon().icon, 'os-settings:bluetooth');
         assertEquals(
@@ -112,12 +102,8 @@ suite('OsPairedBluetoothListItemTest', function() {
 
         assertTrue(!!getDeviceName());
         assertEquals(getDeviceName().innerText, nickname);
-        assertTrue(!!getBatteryPercentage());
-        assertEquals(
-            getBatteryPercentage().innerText.trim(),
-            pairedBluetoothListItem.i18n(
-                'bluetoothPairedDeviceItemBatteryPercentage',
-                batteryPercentage));
+        assertTrue(!!getBatteryInfo());
+        assertEquals(getBatteryInfo().device, pairedBluetoothListItem.device);
         assertEquals(
             getDeviceTypeIcon().icon, 'os-settings:bluetooth-computer');
         assertEquals(
@@ -131,54 +117,63 @@ suite('OsPairedBluetoothListItemTest', function() {
                 'bluetoothPairedDeviceItemSubpageButtonA11yLabel', nickname));
       });
 
-  test('Battery icon and color', async function() {
+  test('Battery percentage out of bounds', async function() {
     const device = createDefaultBluetoothDevice(
         /*id=*/ '123456789', /*publicName=*/ 'BeatsX', /*connected=*/ true);
     pairedBluetoothListItem.device = device;
 
-    const getBatteryContainer = () => {
+    const getBatteryInfo = () => {
       return pairedBluetoothListItem.shadowRoot.querySelector(
-          '#batteryContainer');
+          'os-settings-bluetooth-device-battery-info');
     };
 
-    // Battery percentage out of bounds, should not be visible.
     await setBatteryPercentage(-10);
-    assertFalse(!!getBatteryContainer());
+    assertFalse(!!getBatteryInfo());
 
-    // Lower bound edge case.
-    await setBatteryPercentage(0);
-    assertBatteryUIState(/*isLowBattery=*/ true, /*batteryIconRange=*/ '0-7');
-
-    await setBatteryPercentage(3);
-    assertBatteryUIState(
-        /*isLowBattery=*/ true,
-        /*batteryIconRange=*/ '0-7');
-
-    // Maximum 'low battery' percentage.
-    await setBatteryPercentage(24);
-    assertBatteryUIState(
-        /*isLowBattery=*/ true,
-        /*batteryIconRange=*/ '22-28');
-
-    // Minimum non-'low battery' percentage.
-    await setBatteryPercentage(25);
-    assertBatteryUIState(
-        /*isLowBattery=*/ false,
-        /*batteryIconRange=*/ '22-28');
-
-    await setBatteryPercentage(94);
-    assertBatteryUIState(
-        /*isLowBattery=*/ false,
-        /*batteryIconRange=*/ '93-100');
-
-    // Upper bound edge case.
-    await setBatteryPercentage(100);
-    assertBatteryUIState(
-        /*isLowBattery=*/ false,
-        /*batteryIconRange=*/ '93-100');
-
-    // Battery percentage out of bounds, should not be visible.
     await setBatteryPercentage(101);
-    assertFalse(!!getBatteryContainer());
+    assertFalse(!!getBatteryInfo());
+  });
+
+  test('Selecting item routes to detail subpage', async function() {
+    const id = '123456789';
+    const device = createDefaultBluetoothDevice(
+        id, /*publicName=*/ 'BeatsX', /*connected=*/ true);
+    pairedBluetoothListItem.device = device;
+    await flushAsync();
+
+    const getItemContainer = () => {
+      return pairedBluetoothListItem.shadowRoot.querySelector('.list-item');
+    };
+    const assertInDetailSubpage = async () => {
+      await flushAsync();
+      assertEquals(
+          Router.getInstance().getCurrentRoute(),
+          settings.routes.BLUETOOTH_DEVICE_DETAIL);
+      assertEquals(
+          id, settings.Router.getInstance().getQueryParameters().get('id'));
+
+      settings.Router.getInstance().resetRouteForTesting();
+      assertEquals(
+          Router.getInstance().getCurrentRoute(), settings.routes.BASIC);
+    };
+
+    // Simulate clicking item.
+    assertEquals(Router.getInstance().getCurrentRoute(), settings.routes.BASIC);
+    getItemContainer().click();
+    await assertInDetailSubpage();
+
+    // Simulate pressing enter on the item.
+    getItemContainer().dispatchEvent(
+        new KeyboardEvent('keydown', {'key': 'Enter'}));
+    await assertInDetailSubpage();
+
+    // Simulate pressing space on the item.
+    getItemContainer().dispatchEvent(
+        new KeyboardEvent('keydown', {'key': ' '}));
+    await assertInDetailSubpage();
+
+    // Simulate clicking the item's subpage button.
+    pairedBluetoothListItem.$.subpageButton.click();
+    await assertInDetailSubpage();
   });
 });

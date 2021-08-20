@@ -995,6 +995,22 @@ static_library("browser_tests_runner") {
 }
 
 if (!is_android && !is_fuchsia) {
+  static_library("webrtc_browser_tests_base") {
+    testonly = true
+
+    sources = [
+      "../browser/media/webrtc/test_stats_dictionary.cc",
+      "../browser/media/webrtc/test_stats_dictionary.h",
+      "../browser/media/webrtc/webrtc_browsertest_base.cc",
+      "../browser/media/webrtc/webrtc_browsertest_base.h",
+      "../browser/media/webrtc/webrtc_browsertest_common.cc",
+      "../browser/media/webrtc/webrtc_browsertest_common.h",
+    ]
+    deps = [ ":test_support" ]
+  }
+}
+
+if (!is_android && !is_fuchsia) {
   test("browser_tests") {
     use_xvfb = use_xvfb_in_this_config
 
@@ -1012,6 +1028,7 @@ if (!is_android && !is_fuchsia) {
       ":sync_integration_test_support",
       ":test_support",
       ":test_support_ui",
+      ":webrtc_browser_tests_base",
       "//base",
       "//base:i18n",
       "//base/allocator:buildflags",
@@ -1120,6 +1137,7 @@ if (!is_android && !is_fuchsia) {
       "//components/javascript_dialogs",
       "//components/language/core/browser",
       "//components/language/core/common",
+      "//components/live_caption",
       "//components/live_caption:constants",
       "//components/lookalikes/core",
       "//components/lookalikes/core:features",
@@ -1550,15 +1568,9 @@ if (!is_android && !is_fuchsia) {
       "../browser/media/webrtc/capture_handle_browsertest.cc",
       "../browser/media/webrtc/media_stream_devices_controller_browsertest.cc",
       "../browser/media/webrtc/media_stream_permission_browsertest.cc",
-      "../browser/media/webrtc/test_stats_dictionary.cc",
-      "../browser/media/webrtc/test_stats_dictionary.h",
       "../browser/media/webrtc/test_stats_dictionary_unittest.cc",
       "../browser/media/webrtc/webrtc_apprtc_browsertest.cc",
       "../browser/media/webrtc/webrtc_browsertest.cc",
-      "../browser/media/webrtc/webrtc_browsertest_base.cc",
-      "../browser/media/webrtc/webrtc_browsertest_base.h",
-      "../browser/media/webrtc/webrtc_browsertest_common.cc",
-      "../browser/media/webrtc/webrtc_browsertest_common.h",
       "../browser/media/webrtc/webrtc_browsertest_perf.cc",
       "../browser/media/webrtc/webrtc_browsertest_perf.h",
       "../browser/media/webrtc/webrtc_browsertest_perf_unittest.cc",
@@ -1567,7 +1579,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/media/webrtc/webrtc_getdisplaymedia_browsertest.cc",
       "../browser/media/webrtc/webrtc_internals_integration_browsertest.cc",
       "../browser/media/webrtc/webrtc_internals_perf_browsertest.cc",
-      "../browser/media/webrtc/webrtc_mediadevices_browsertest.cc",
       "../browser/media/webrtc/webrtc_pan_tilt_zoom_browsertest.cc",
       "../browser/media/webrtc/webrtc_stats_perf_browsertest.cc",
       "../browser/media/webrtc/webrtc_video_display_perf_browsertest.cc",
@@ -3934,6 +3945,7 @@ if (is_chromeos_lacros) {
     data = [ "data/media/" ]
 
     data_deps = [
+      "//build/lacros:lacros_version_metadata",
       "//chrome:packed_resources",
       "//testing/buildbot/filters:lacros_chrome_browsertests_filters",
     ]
@@ -3972,6 +3984,7 @@ if (is_chromeos_lacros) {
     ]
 
     data_deps = [
+      "//build/lacros:lacros_version_metadata",
       "//chrome:packed_resources",
       "//testing/buildbot/filters:lacros_chrome_browsertests_filters",
     ]
@@ -6300,6 +6313,7 @@ test("unit_tests") {
       "../browser/ui/ash/network/tether_notification_presenter_unittest.cc",
       "../browser/ui/ash/notification_badge_color_cache_unittest.cc",
       "../browser/ui/ash/session_controller_client_impl_unittest.cc",
+      "../browser/ui/ash/sharesheet/sharesheet_bubble_view_unittest.cc",
       "../browser/ui/ash/shelf/arc_app_shelf_id_unittest.cc",
       "../browser/ui/ash/shelf/chrome_shelf_controller_unittest.cc",
       "../browser/ui/ash/shelf/shelf_context_menu_unittest.cc",
@@ -7923,6 +7937,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/extensions/omnibox_focus_interactive_test.cc",
       "../browser/extensions/window_open_interactive_apitest.cc",
       "../browser/focus_ring_browsertest.cc",
+      "../browser/media/webrtc/webrtc_mediadevices_interactive_uitest.cc",
       "../browser/mouse_events_interactive_uitest.cc",
       "../browser/notifications/platform_notification_service_interactive_uitest.cc",
       "../browser/password_manager/password_generation_interactive_uitest.cc",
@@ -8031,6 +8046,7 @@ if (!is_android && !is_fuchsia) {
     deps = [
       ":test_support",
       ":test_support_ui",
+      ":webrtc_browser_tests_base",
       "//build:chromeos_buildflags",
       "//chrome:packed_resources",
       "//chrome:resources",

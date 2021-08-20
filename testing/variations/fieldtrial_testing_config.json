@@ -606,6 +606,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "use_followup_button_text": "true"
+                    },
                     "enable_features": [
                         "MessagesForAndroidUpdatePassword"
                     ]
@@ -1659,8 +1662,7 @@
     "CanvasOutOfProcessRasterization": [
         {
             "platforms": [
-                "mac",
-                "android"
+                "mac"
             ],
             "experiments": [
                 {
@@ -5506,10 +5508,12 @@
                     },
                     "enable_features": [
                         "OmniboxClobberTriggersContextualWebZeroSuggest",
+                        "OmniboxDocumentProviderAso",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxKeywordSearchButton",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
+                        "OmniboxPreserveLongerShortcutsText",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
@@ -5622,6 +5626,21 @@
                     },
                     "enable_features": [
                         "IPH_UpdatedConnectionSecurityIndicators"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OnDemandAT": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OnDemandAccessibilityEvents"
                     ]
                 }
             ]
@@ -8010,25 +8029,6 @@
             ]
         }
     ],
-    "StrictExtensionIsolation": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "StrictExtensionIsolation"
-                    ]
-                }
-            ]
-        }
-    ],
     "SubframeShutdownDelay": [
         {
             "platforms": [
@@ -8771,7 +8771,6 @@
     "UseVideoFrameSinkBundle": [
         {
             "platforms": [
-                "android",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -8868,7 +8867,8 @@
                 "mac",
                 "chromeos_lacros",
                 "chromeos",
-                "ios"
+                "ios",
+                "android_webview"
             ],
             "experiments": [
                 {

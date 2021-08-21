@@ -238,6 +238,9 @@ extern const char kBorealisDiskManagementDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
+extern const char kCanvasOopRasterizationName[];
+extern const char kCanvasOopRasterizationDescription[];
+
 extern const char kCheckOfflineCapabilityName[];
 extern const char kCheckOfflineCapabilityDescription[];
 
@@ -1243,9 +1246,6 @@ extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
 extern const char kPartitionedCookiesName[];
 extern const char kPartitionedCookiesDescription[];
 
-extern const char kSchemefulSameSiteName[];
-extern const char kSchemefulSameSiteDescription[];
-
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
@@ -1686,9 +1686,6 @@ extern const char kChimeAndroidSdkName[];
 extern const char kContinuousSearchName[];
 extern const char kContinuousSearchDescription[];
 
-extern const char kChromeShareHighlightsAndroidName[];
-extern const char kChromeShareHighlightsAndroidDescription[];
-
 extern const char kChromeShareLongScreenshotName[];
 extern const char kChromeShareLongScreenshotDescription[];
 
@@ -1724,6 +1721,9 @@ extern const char kContextualSearchLongpressResolveDescription[];
 
 extern const char kContextualSearchMlTapSuppressionName[];
 extern const char kContextualSearchMlTapSuppressionDescription[];
+
+extern const char KContextualSearchNewSettingsName[];
+extern const char KContextualSearchNewSettingsDescription[];
 
 extern const char kContextualSearchRankerQueryName[];
 extern const char kContextualSearchRankerQueryDescription[];
@@ -2531,6 +2531,9 @@ extern const char kEnableNetworkingInDiagnosticsAppDescription[];
 
 extern const char kEnableOAuthIppName[];
 extern const char kEnableOAuthIppDescription[];
+
+extern const char kEnableRevenLogSourceName[];
+extern const char kEnableRevenLogSourceDescription[];
 
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];

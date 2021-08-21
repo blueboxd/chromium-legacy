@@ -11,6 +11,11 @@
 
 namespace messages {
 
+MessageWrapper::MessageWrapper(MessageIdentifier message_identifier)
+    : MessageWrapper(message_identifier,
+                     base::NullCallback(),
+                     base::NullCallback()) {}
+
 MessageWrapper::MessageWrapper(MessageIdentifier message_identifier,
                                base::OnceClosure action_callback,
                                DismissCallback dismiss_callback)
@@ -144,6 +149,14 @@ void MessageWrapper::SetDuration(long customDuration) {
   Java_MessageWrapper_setDuration(env, java_message_wrapper_, customDuration);
 }
 
+void MessageWrapper::SetActionClick(base::OnceClosure callback) {
+  action_callback_ = std::move(callback);
+}
+
+void MessageWrapper::SetDismissCallback(DismissCallback callback) {
+  dismiss_callback_ = std::move(callback);
+}
+
 void MessageWrapper::HandleActionClick(JNIEnv* env) {
   if (!action_callback_.is_null())
     std::move(action_callback_).Run();
@@ -171,8 +184,10 @@ const base::android::JavaRef<jobject>& MessageWrapper::GetJavaMessageWrapper()
   return java_message_wrapper_;
 }
 
-void MessageWrapper::SetMessageEnqueued() {
+void MessageWrapper::SetMessageEnqueued(
+    const base::android::JavaRef<jobject>& java_window_android) {
   message_enqueued_ = true;
+  java_window_android_ = java_window_android;
 }
 
 }  // namespace messages

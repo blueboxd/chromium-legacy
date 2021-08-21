@@ -878,6 +878,19 @@ try_.chromium_chromiumos_builder(
 )
 
 try_.chromium_chromiumos_builder(
+    name = "linux-lacros-rel-rts",
+    builderless = False,
+    cores = 16,
+    ssd = True,
+    goma_jobs = goma.jobs.J300,
+    main_list_view = "try",
+    os = os.LINUX_BIONIC_REMOVE,
+    tryjob = try_.job(
+        experiment_percentage = 1,
+    ),
+)
+
+try_.chromium_chromiumos_builder(
     name = "linux-chromeos-dbg",
 )
 
@@ -2152,6 +2165,12 @@ try_.chromium_mac_ios_builder(
 try_.infra_builder(
     name = "linux-bootstrap",
     bootstrap = True,
+)
+
+try_.infra_builder(
+    name = "win-bootstrap",
+    bootstrap = True,
+    os = os.WINDOWS_10,
 )
 
 # Errors that this builder would catch would go unnoticed until a project is set

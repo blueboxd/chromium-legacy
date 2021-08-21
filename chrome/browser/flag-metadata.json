@@ -543,6 +543,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "canvas-oop-rasterization",
+    "owners": [ "junov", "vasilyt" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "categorical-search",
     "owners": [ "tby", "thanhdng", "wrong" ],
     "expiry_milestone": 100
@@ -777,6 +782,11 @@
     "name": "contextual-search-ml-tap-suppression",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "contextual-search-new-settings",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
+    "expiry_milestone": 99
   },
   {
     "name": "contextual-search-ranker-query",
@@ -2455,6 +2465,11 @@
     "name": "enable-restricted-web-apis",
     "owners": [ "anqing", "apotapchuk" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "enable-reven-log-source",
+    "owners": [ "xiangdongkong", "cros-feedback-app@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-safe-browsing-per-profile-network-contexts",
@@ -4806,10 +4821,6 @@
     // modify the command line, so a flag is the publicly documented mechanism
     // exposed to users.
     "expiry_milestone": -1
-  },
-  {"name": "schemeful-same-site",
-    "owners": [ "bingler", "chlily" ],
-    "expiry_milestone": 92
   },
   {
     "name": "screen-capture-android",

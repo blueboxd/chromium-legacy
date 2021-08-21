@@ -2770,6 +2770,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchMlTapSuppressionDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchMlTapSuppression)},
+    {"contextual-search-new-settings",
+     flag_descriptions::KContextualSearchNewSettingsName,
+     flag_descriptions::KContextualSearchNewSettingsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::KContextualSearchNewSettings)},
     {"contextual-search-ranker-query",
      flag_descriptions::kContextualSearchRankerQueryName,
      flag_descriptions::kContextualSearchRankerQueryDescription, kOsAndroid,
@@ -3378,10 +3382,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShareButtonInTopToolbarName,
      flag_descriptions::kShareButtonInTopToolbarDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kShareButtonInTopToolbar)},
-    {"chrome-share-highlights-android",
-     flag_descriptions::kChromeShareHighlightsAndroidName,
-     flag_descriptions::kChromeShareHighlightsAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeShareHighlightsAndroid)},
     {"chrome-share-long-screenshot",
      flag_descriptions::kChromeShareLongScreenshotName,
      flag_descriptions::kChromeShareLongScreenshotDescription, kOsAndroid,
@@ -5524,6 +5524,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePalmOnToolTypePalmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnablePalmOnToolTypePalm)},
 
+    {"enable-reven-log-source", flag_descriptions::kEnableRevenLogSourceName,
+     flag_descriptions::kEnableRevenLogSourceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kRevenLogSource)},
+
     {"enable-pci-guard-ui", flag_descriptions::kEnablePciguardUiName,
      flag_descriptions::kEnablePciguardUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnablePciguardUi)},
@@ -6552,10 +6556,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kChromeOSSharingHub)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"schemeful-same-site", flag_descriptions::kSchemefulSameSiteName,
-     flag_descriptions::kSchemefulSameSiteDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kSchemefulSameSite)},
-
     {"enable-bluetooth-spp-in-serial-api",
      flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiName,
      flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiDescription,
@@ -7512,6 +7512,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPersistentQuotaIsTemporaryQuotaName,
      flag_descriptions::kPersistentQuotaIsTemporaryQuotaDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPersistentQuotaIsTemporaryQuota)},
+
+    {"canvas-oop-rasterization", flag_descriptions::kCanvasOopRasterizationName,
+     flag_descriptions::kCanvasOopRasterizationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kCanvasOopRasterization)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

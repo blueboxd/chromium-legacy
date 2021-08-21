@@ -376,13 +376,13 @@ ScriptPromise AppHistory::goTo(ScriptState* script_state,
   if (key == current()->key())
     return ScriptPromise::CastUndefined(script_state);
 
-  auto previous_navigation = ongoing_traversals_.find(key);
-  if (previous_navigation != ongoing_traversals_.end())
+  auto previous_navigation = upcoming_traversals_.find(key);
+  if (previous_navigation != upcoming_traversals_.end())
     return previous_navigation->value->returned_promise;
 
   AppHistoryApiNavigation* ongoing_navigation =
       MakeGarbageCollected<AppHistoryApiNavigation>(script_state, options, key);
-  ongoing_traversals_.insert(key, ongoing_navigation);
+  upcoming_traversals_.insert(key, ongoing_navigation);
 
   AppHistoryEntry* destination = entries_[keys_to_indices_.at(key)];
 
@@ -486,6 +486,20 @@ String DetermineNavigationType(WebFrameLoadType type) {
   return String();
 }
 
+void AppHistory::PromoteUpcomingNavigationToOngoing(const String& key) {
+  DCHECK(!ongoing_navigation_);
+  if (!key.IsNull()) {
+    DCHECK(!upcoming_non_traversal_navigation_);
+    auto iter = upcoming_traversals_.find(key);
+    if (iter != upcoming_traversals_.end()) {
+      ongoing_navigation_ = iter->value;
+      upcoming_traversals_.erase(iter);
+    }
+  } else {
+    ongoing_navigation_ = upcoming_non_traversal_navigation_.Release();
+  }
+}
+
 AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
     const KURL& url,
     HTMLFormElement* form,
@@ -500,16 +514,17 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
   // The main case were that would be a problem (browser-initiated back/forward)
   // is not implemented yet. Move this once it is implemented.
   InformAboutCanceledNavigation();
-  if (upcoming_non_traversal_navigation_) {
-    ongoing_non_traversal_navigation_ =
-        upcoming_non_traversal_navigation_.Release();
-  }
+
+  const KURL& current_url = GetSupplementable()->Url();
+  const String& key =
+      destination_item ? destination_item->GetAppHistoryKey() : String();
+  PromoteUpcomingNavigationToOngoing(key);
 
   if (!GetSupplementable()->GetFrame()->Loader().HasLoadedNonEmptyDocument()) {
-    if (ongoing_non_traversal_navigation_) {
+    if (ongoing_navigation_) {
       if (event_type != NavigateEventType::kCrossDocument)
-        ongoing_non_traversal_navigation_->resolver->Resolve();
-      CleanupApiNavigation(*ongoing_non_traversal_navigation_);
+        ongoing_navigation_->resolver->Resolve();
+      CleanupApiNavigation(*ongoing_navigation_);
     }
     return DispatchResult::kContinue;
   }
@@ -518,30 +533,19 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
       ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
   ScriptState::Scope scope(script_state);
 
-  const KURL& current_url = GetSupplementable()->Url();
-
-  AppHistoryApiNavigation* navigation = nullptr;
-  if (destination_item && !destination_item->GetAppHistoryKey().IsNull()) {
-    auto iter = ongoing_traversals_.find(destination_item->GetAppHistoryKey());
-    navigation = iter == ongoing_traversals_.end() ? nullptr : iter->value;
-  } else {
-    navigation = ongoing_non_traversal_navigation_;
-  }
-
   auto* init = AppHistoryNavigateEventInit::Create();
   init->setNavigationType(DetermineNavigationType(type));
 
   SerializedScriptValue* destination_state = nullptr;
   if (destination_item)
     destination_state = destination_item->GetAppHistoryState();
-  else if (navigation && navigation->serialized_state)
-    destination_state = navigation->serialized_state.get();
+  else if (ongoing_navigation_ && ongoing_navigation_->serialized_state)
+    destination_state = ongoing_navigation_->serialized_state.get();
   AppHistoryDestination* destination =
       MakeGarbageCollected<AppHistoryDestination>(
           url, event_type != NavigateEventType::kCrossDocument,
           destination_state);
   if (type == WebFrameLoadType::kBackForward) {
-    const String& key = destination_item->GetAppHistoryKey();
     auto iter = keys_to_indices_.find(key);
     int index = iter == keys_to_indices_.end() ? 0 : iter->value;
     destination->SetTraverseProperties(key, destination_item->GetAppHistoryId(),
@@ -564,8 +568,8 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
   if (form && form->Method() == FormSubmission::kPostMethod) {
     init->setFormData(FormData::Create(form, ASSERT_NO_EXCEPTION));
   }
-  if (navigation)
-    init->setInfo(navigation->info);
+  if (ongoing_navigation_)
+    init->setInfo(ongoing_navigation_->info);
   init->setSignal(MakeGarbageCollected<AbortSignal>(GetSupplementable()));
   auto* navigate_event = AppHistoryNavigateEvent::Create(
       GetSupplementable(), event_type_names::kNavigate, init);
@@ -580,7 +584,7 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
 
   if (navigate_event->defaultPrevented()) {
     if (!navigate_event->signal()->aborted())
-      FinalizeWithAbortedNavigationError(script_state, navigation);
+      FinalizeWithAbortedNavigationError(script_state, ongoing_navigation_);
     return DispatchResult::kAbort;
   }
 
@@ -603,12 +607,12 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
       event_type != NavigateEventType::kCrossDocument) {
     NavigateReaction::React(script_state,
                             ScriptPromise::All(script_state, promise_list),
-                            navigation, navigate_event->signal());
-  } else if (navigation) {
-    navigation->serialized_state.reset();
+                            ongoing_navigation_, navigate_event->signal());
+  } else if (ongoing_navigation_) {
+    ongoing_navigation_->serialized_state.reset();
     // The spec assumes it's ok to leave a promise permanently unresolved, but
     // ScriptPromiseResolver requires either resolution or explicit detach.
-    navigation->resolver->Detach();
+    ongoing_navigation_->resolver->Detach();
   }
 
   return promise_list.IsEmpty() ? DispatchResult::kContinue
@@ -620,33 +624,26 @@ void AppHistory::InformAboutCanceledNavigation() {
     auto* script_state =
         ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
     ScriptState::Scope scope(script_state);
-    AppHistoryApiNavigation* navigation = ongoing_non_traversal_navigation_;
-    if (!navigation && ongoing_navigate_event_) {
-      auto it = ongoing_traversals_.find(
-          ongoing_navigate_event_->destination()->key());
-      if (it != ongoing_traversals_.end())
-        navigation = it->value;
-    }
-    FinalizeWithAbortedNavigationError(script_state, navigation);
+    FinalizeWithAbortedNavigationError(script_state, ongoing_navigation_);
   }
 
   // If this function is being called as part of frame detach, also cleanup any
-  // ongoing_traversals_.
+  // upcoming_traversals_.
   //
   // This function may be called when a v8 context hasn't been initialized.
-  // ongoing_traversals_ being non-empty requires a v8 context, so check that so
-  // that we don't unnecessarily try to initialize one below.
-  if (!ongoing_traversals_.IsEmpty() && GetSupplementable()->GetFrame() &&
+  // upcoming_traversals_ being non-empty requires a v8 context, so check that
+  // so that we don't unnecessarily try to initialize one below.
+  if (!upcoming_traversals_.IsEmpty() && GetSupplementable()->GetFrame() &&
       !GetSupplementable()->GetFrame()->IsAttached()) {
     auto* script_state =
         ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
     ScriptState::Scope scope(script_state);
 
     HeapVector<Member<AppHistoryApiNavigation>> traversals;
-    CopyValuesToVector(ongoing_traversals_, traversals);
+    CopyValuesToVector(upcoming_traversals_, traversals);
     for (auto& traversal : traversals)
       FinalizeWithAbortedNavigationError(script_state, traversal);
-    DCHECK(ongoing_traversals_.IsEmpty());
+    DCHECK(upcoming_traversals_.IsEmpty());
   }
 }
 
@@ -670,12 +667,12 @@ void AppHistory::RejectPromiseAndFireNavigateErrorEvent(
 }
 
 void AppHistory::CleanupApiNavigation(AppHistoryApiNavigation& navigation) {
-  if (navigation.key.IsNull()) {
-    if (&navigation == ongoing_non_traversal_navigation_)
-      ongoing_non_traversal_navigation_ = nullptr;
+  if (&navigation == ongoing_navigation_) {
+    ongoing_navigation_ = nullptr;
   } else {
-    DCHECK(ongoing_traversals_.Contains(navigation.key));
-    ongoing_traversals_.erase(navigation.key);
+    DCHECK(!navigation.key.IsNull());
+    DCHECK(upcoming_traversals_.Contains(navigation.key));
+    upcoming_traversals_.erase(navigation.key);
   }
 }
 
@@ -715,8 +712,8 @@ void AppHistory::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(entries_);
-  visitor->Trace(ongoing_non_traversal_navigation_);
-  visitor->Trace(ongoing_traversals_);
+  visitor->Trace(ongoing_navigation_);
+  visitor->Trace(upcoming_traversals_);
   visitor->Trace(upcoming_non_traversal_navigation_);
   visitor->Trace(ongoing_navigate_event_);
   visitor->Trace(ongoing_navigation_signal_);

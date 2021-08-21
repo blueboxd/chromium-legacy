@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_owner.h"
@@ -51,11 +52,39 @@ class AnimationBuilderTest : public testing::Test {
     elapsed_ += duration;
   }
 
+ protected:
+  void SetUp() override {
+    testing::Test::SetUp();
+    AnimationBuilder::SetObserverDeletedCallbackForTesting(base::BindRepeating(
+        [](int* deleted_count) { ++(*deleted_count); }, &deleted_observers_));
+  }
+
+  void TearDown() override {
+    testing::Test::TearDown();
+    // Delete the layer owners and animator controllers here to ensure any
+    // lingering animations are aborted and all the observers are destroyed.
+    layer_owners_.clear();
+    animator_controllers_.clear();
+    AnimationBuilder::SetObserverDeletedCallbackForTesting(
+        base::NullCallback());
+    if (expected_observers_deleted_)
+      EXPECT_EQ(expected_observers_deleted_.value(), deleted_observers_);
+  }
+
+  // Call this function to also ensure any implicitly created observers have
+  // also been properly cleaned up. One observer is created per
+  // AnimationSequenceBlock which sets callbacks.
+  void set_expected_observers_deleted(int expected_observers_deleted) {
+    expected_observers_deleted_ = expected_observers_deleted;
+  }
+
  private:
   std::vector<std::unique_ptr<TestAnimatibleLayerOwner>> layer_owners_;
   std::vector<std::unique_ptr<ui::LayerAnimatorTestController>>
       animator_controllers_;
   base::TimeDelta elapsed_;
+  absl::optional<int> expected_observers_deleted_;
+  int deleted_observers_ = 0;
 };
 
 // This test builds two animation sequences and checks that the properties are
@@ -146,6 +175,10 @@ TEST_F(AnimationBuilderTest, CheckStartEndCallbacks) {
         .SetOpacity(second_animating_view, 0.9f);
   }
 
+  // Only one Observer should have been created in the above block. Make sure
+  // it has been cleaned up.
+  set_expected_observers_deleted(1);
+
   EXPECT_TRUE(first_animating_view->layer()->GetAnimator()->is_animating());
 
   EXPECT_TRUE(started);
@@ -201,6 +234,51 @@ TEST_F(AnimationBuilderTest, TwoKeyFrame) {
   EXPECT_FLOAT_EQ(delegate->GetOpacityForAnimation(), 0.4f);
   Step(kDuration);
   EXPECT_FLOAT_EQ(delegate->GetOpacityForAnimation(), 0.9f);
+}
+
+// This test checks that repeat callbacks are called after each sequence
+// repetition and callbacks from one sequence do not affect calls from another
+// sequence.
+TEST_F(AnimationBuilderTest, CheckOnWillRepeatCallbacks) {
+  int first_repeat_count = 0;
+  int second_repeat_count = 0;
+
+  TestAnimatibleLayerOwner* first_animating_view = CreateTestLayerOwner();
+  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  gfx::RoundedCornersF first_rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
+  gfx::RoundedCornersF second_rounded_corners(5.0f, 5.0f, 5.0f, 5.0f);
+
+  {
+    AnimationBuilder b;
+    b.Repeatedly()
+        .SetDuration(kDelay)
+        .OnWillRepeat(
+            base::BindRepeating([](int& repeat) { repeat = repeat + 1; },
+                                std::ref(first_repeat_count)))
+        .SetOpacity(first_animating_view, 0.4f)
+        .Then()
+        .SetDuration(kDelay)
+        .SetOpacity(first_animating_view, 0.9f);
+
+    b.Repeatedly()
+        .SetDuration(kDelay)
+        .OnWillRepeat(
+            base::BindRepeating([](int& repeat) { repeat = repeat + 1; },
+                                std::ref(second_repeat_count)))
+        .SetRoundedCorners(first_animating_view, first_rounded_corners)
+        .Then()
+        .SetDuration(kDelay)
+        .SetRoundedCorners(first_animating_view, second_rounded_corners);
+  }
+
+  set_expected_observers_deleted(2);
+
+  Step(kDelay * 2);
+  EXPECT_EQ(first_repeat_count, 1);
+  EXPECT_EQ(second_repeat_count, 1);
+  Step(kDelay * 2);
+  EXPECT_EQ(first_repeat_count, 2);
+  EXPECT_EQ(second_repeat_count, 2);
 }
 
 }  // namespace views

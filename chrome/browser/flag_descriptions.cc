@@ -16,6 +16,12 @@ const char kAccelerated2dCanvasDescription[] =
     "Enables the use of the GPU to perform 2d canvas rendering instead of "
     "using software rendering.";
 
+const char kCanvasOopRasterizationName[] =
+    "Out-of-process 2D canvas rasterization.";
+const char kCanvasOopRasterizationDescription[] =
+    "The rasterization of 2d canvas contents is performed in the GPU process. "
+    "Requires that out-of-process rasterization be enabled.";
+
 const char kAcceleratedVideoDecodeName[] = "Hardware-accelerated video decode";
 const char kAcceleratedVideoDecodeDescription[] =
     "Hardware-accelerated video decode where available.";
@@ -1866,7 +1872,7 @@ const char kEnableSearchPrefetchDescription[] =
     "Allow the default search engine to specify prefetch behavior for "
     "suggestions to search results pages.";
 
-const char kOopRasterizationName[] = "Out of process rasterization";
+const char kOopRasterizationName[] = "Out-of-process rasterization";
 const char kOopRasterizationDescription[] =
     "Perform Ganesh raster in the GPU Process instead of the renderer.  "
     "Must also enable GPU rasterization";
@@ -2181,12 +2187,6 @@ const char kSamePartyCookiesConsideredFirstPartyDescription[] =
 const char kPartitionedCookiesName[] = "Partitioned cookies";
 const char kPartitionedCookiesDescription[] =
     "Controls if the Partitioned cookie attribute is enabled.";
-
-const char kSchemefulSameSiteName[] = "Schemeful Same-Site";
-const char kSchemefulSameSiteDescription[] =
-    "Modify the same-site computation such that origins with the same "
-    "registrable domain but different schemes are considered cross-site. This "
-    "change only applies to cookies with the 'SameSite' attribute.";
 
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
@@ -2939,11 +2939,6 @@ const char kContinuousSearchDescription[] =
     "Enables caching of search results to permit a more seamless search "
     "experience.";
 
-const char kChromeShareHighlightsAndroidName[] =
-    "Chrome Share text highlights on Android";
-const char kChromeShareHighlightsAndroidDescription[] =
-    "Enables UI to generate and share link to text highlights on Android";
-
 const char kChromeShareLongScreenshotName[] = "Chrome Share Long Screenshots";
 const char kChromeShareLongScreenshotDescription[] =
     "Enables UI to edit and share long screenshots on Android";
@@ -3013,6 +3008,12 @@ const char kContextualSearchMlTapSuppressionDescription[] =
     "Enables tap gestures to be suppressed to improve CTR by applying machine "
     "learning.  The \"Contextual Search Ranker prediction\" flag must also be "
     "enabled!";
+
+const char KContextualSearchNewSettingsName[] =
+    "Contextual Search new settings";
+const char KContextualSearchNewSettingsDescription[] =
+    "Adds a toggle to Settings page to specifically control Contextual Search "
+    "opt-in state, and update Opt-in messages.";
 
 const char kContextualSearchRankerQueryName[] =
     "Contextual Search Ranker prediction";
@@ -4412,6 +4413,11 @@ const char kEnableOAuthIppName[] =
     "Enable OAuth when printing via the IPP protocol";
 const char kEnableOAuthIppDescription[] =
     "Enable OAuth when printing via the IPP protocol";
+
+const char kEnableRevenLogSourceName[] =
+    "Enable Reven Log Source on chrome://system and feedback logs";
+const char kEnableRevenLogSourceDescription[] =
+    "Enable Reven Log Source on chrome://system and feedback logs";
 
 const char kEnableSuggestedFilesName[] = "Enable Suggested Files";
 const char kEnableSuggestedFilesDescription[] =

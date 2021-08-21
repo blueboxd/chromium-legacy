@@ -92,6 +92,7 @@ NearbyShareSessionImpl::~NearbyShareSessionImpl() {
 
 void NearbyShareSessionImpl::OnNearbyShareClosed(
     views::Widget::ClosedReason reason) {
+  DCHECK(session_finished_callback_);
   DCHECK(session_instance_);
 
   session_instance_->OnNearbyShareViewClosed();
@@ -102,6 +103,17 @@ void NearbyShareSessionImpl::OnNearbyShareClosed(
     // If share is not continuing after sharesheet closes (e.g. cancel, esc key,
     // lost focus, etc.), we will clean up the current session including files.
     OnCleanupSession();
+  }
+
+  // The Nearby Share bubble is not visible. Delete the current session object
+  // if |file_handler_| is null. |file_handler_| is null if there were no files
+  // shared or |OnCleanupSession| was called.
+  if (!file_handler_) {
+    // Delete the current session object by using the task ID associated with
+    // it.
+    VLOG(1) << "OnNearbyShareClosed: Deleting session with task_id "
+            << task_id_;
+    std::move(session_finished_callback_).Run(task_id_);
   }
 }
 
@@ -141,6 +153,8 @@ void NearbyShareSessionImpl::OnArcWindowFound(aura::Window* const arc_window) {
   DCHECK(arc_window);
   DCHECK(profile_);
 
+  DVLOG(1) << __func__;
+
   if (share_info_->files.has_value()) {
     // File sharing.
     base::FilePath cache_base_path;
@@ -152,7 +166,6 @@ void NearbyShareSessionImpl::OnArcWindowFound(aura::Window* const arc_window) {
         profile_, share_info_.get(), arc_nearby_share_directory,
         backend_task_runner_);
 
-    VLOG(1) << "Starting PrepareDirectoryTask";
     prepare_directory_task_ = std::make_unique<webshare::PrepareDirectoryTask>(
         arc_nearby_share_directory, file_handler_->GetTotalSizeOfFiles());
     prepare_directory_task_->StartWithCallback(
@@ -211,12 +224,13 @@ void NearbyShareSessionImpl::OnPreparedDirectory(aura::Window* const arc_window,
   DCHECK(arc_window);
   DCHECK_GT(file_handler_->GetTotalSizeOfFiles(), 0);
 
+  DVLOG(1) << __func__;
+
   // TODO(b/191232168): Figure out why PrepareDirectoryTask is flaky. Ignoring
   // the error seem to always work otherwise will sometimes return error.
   PLOG_IF(WARNING, result != base::File::FILE_OK)
       << "Prepare Directory was not successful";
 
-  VLOG(1) << "Preparing files and start streaming from ARC virtual filesystem";
   file_handler_->StartPreparingFiles(
       base::BindOnce(&NearbyShareSessionImpl::ShowNearbyShareBubbleInArcWindow,
                      weak_ptr_factory_.GetWeakPtr(), arc_window),
@@ -256,6 +270,8 @@ void NearbyShareSessionImpl::ShowNearbyShareBubbleInArcWindow(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(arc_window);
 
+  DVLOG(1) << __func__;
+
   // Only applicable if sharing files.
   if (result.has_value() && result.value() != base::File::FILE_OK) {
     LOG(ERROR) << "Failed to complete file streaming with error: "
@@ -280,7 +296,6 @@ void NearbyShareSessionImpl::ShowNearbyShareBubbleInArcWindow(
     return;
   }
 
-  VLOG(1) << "Calling ShowNearbyShareBubbleForArc";
   sharesheet_service->ShowNearbyShareBubbleForArc(
       arc_window, std::move(intent),
       sharesheet::SharesheetMetrics::LaunchSource::kArcNearbyShare,
@@ -305,13 +320,16 @@ void NearbyShareSessionImpl::OnTimerFired() {
 }
 
 void NearbyShareSessionImpl::OnProgressBarUpdate(double value) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // TODO(b/191705289): Add UI integration with views::ProgressBar.
-  VLOG(1) << "Called OnProgressBarUpdate with value: " << value;
+  DVLOG(1) << "Called OnProgressBarUpdate with value: " << value;
 }
 
 void NearbyShareSessionImpl::OnSessionDisconnected() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  DVLOG(1) << __func__;
   aura::Window* const arc_window = GetArcWindow(task_id_);
   if (!arc_window) {
     LOG(ERROR) << "Unable to close sharesheet bubble. No ARC window found for "
@@ -320,7 +338,6 @@ void NearbyShareSessionImpl::OnSessionDisconnected() {
     return;
   }
 
-  VLOG(1) << "Getting Sharesheet service";
   sharesheet::SharesheetService* sharesheet_service =
       sharesheet::SharesheetServiceFactory::GetForProfile(profile_);
   if (!sharesheet_service) {
@@ -329,14 +346,21 @@ void NearbyShareSessionImpl::OnSessionDisconnected() {
     OnCleanupSession();
     return;
   }
-  sharesheet_service->CloseBubble(arc_window,
-                                  sharesheet::SharesheetResult::kCancel);
+  sharesheet::SharesheetController* sharsheet_controller =
+      sharesheet_service->GetSharesheetController(arc_window);
+  if (!sharsheet_controller) {
+    LOG(ERROR) << "Unable to close sharesheet bubble. Cannot find the "
+                  "sharesheet controller";
+    OnCleanupSession();
+    return;
+  }
+  sharsheet_controller->CloseBubble(sharesheet::SharesheetResult::kCancel);
 }
 
 void NearbyShareSessionImpl::OnCleanupSession() {
   DCHECK(session_finished_callback_);
 
-  VLOG(1) << "Called OnCleanupSession";
+  DVLOG(1) << __func__;
   // PrepareDirectoryTask must first relinquish ownership of |share_path|.
   prepare_directory_task_.reset();
   if (file_handler_) {
@@ -352,8 +376,42 @@ void NearbyShareSessionImpl::OnCleanupSession() {
           base::BindOnce(base::GetDeletePathRecursivelyCallback(), share_path));
     }
   }
-  // Delete the current session object by using the task ID associated with it.
-  std::move(session_finished_callback_).Run(task_id_);
+
+  // All temp files have been deleted. If the Nearby Share bubble is not
+  // visible, delete the session object.
+  if (!IsNearbyShareBubbleVisible()) {
+    // Delete the current session object by using the task ID associated with
+    // it.
+    VLOG(1) << "OnCleanupSession: Deleting session with task_id " << task_id_;
+    std::move(session_finished_callback_).Run(task_id_);
+  }
+}
+
+bool NearbyShareSessionImpl::IsNearbyShareBubbleVisible() const {
+  DVLOG(1) << __func__;
+  aura::Window* const arc_window = GetArcWindow(task_id_);
+  if (!arc_window) {
+    LOG(ERROR) << "IsNearbyShareBubbleVisible: Unable to close sharesheet "
+                  "bubble. No ARC window found for task ID: "
+               << task_id_;
+    return false;
+  }
+  DVLOG(1) << "IsNearbyShareBubbleVisible: Getting Sharesheet service";
+  sharesheet::SharesheetService* sharesheet_service =
+      sharesheet::SharesheetServiceFactory::GetForProfile(profile_);
+  if (!sharesheet_service) {
+    LOG(ERROR) << "IsNearbyShareBubbleVisible: Cannot find sharesheet service.";
+    return false;
+  }
+
+  sharesheet::SharesheetController* sharesheet_controller =
+      sharesheet_service->GetSharesheetController(arc_window);
+  if (!sharesheet_controller) {
+    LOG(ERROR) << "IsNearbyShareBubbleVisible: Cannot find sharesheet "
+                  "controller.";
+    return false;
+  }
+  return sharesheet_controller->IsBubbleVisible();
 }
 
 }  // namespace arc

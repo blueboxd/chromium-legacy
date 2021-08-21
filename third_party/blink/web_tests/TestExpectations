@@ -1206,6 +1206,7 @@ virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-float-0
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-at-outer-boundary-as-fieldset.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Pass ]
+virtual/layout_ng_block_frag/external/wpt/css/css-multicol/orthogonal-writing-mode-spanner.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/overflow-unsplittable-001.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/overflow-unsplittable-002.html [ Pass ]
 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/overflow-unsplittable-003.html [ Pass ]
@@ -1789,13 +1790,16 @@ crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pa
 
 # crbug.com/1095379: These fail with a timeout, even when they're given extra time (via SlowTests)
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002.html [ Pass Timeout ]
+crbug.com/1135405 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Pass Timeout ]
 crbug.com/1097094 external/wpt/window-segments/getWindowSegments-iframes.tentative.sub.html [ Pass Timeout ]
 crbug.com/1018064 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
 crbug.com/1105957 [ Debug Linux ] fast/dom/cssTarget-crash.html [ Pass Timeout ]
 crbug.com/915903 http/tests/security/inactive-document-with-empty-security-origin.html [ Pass Timeout ]
+crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inline-values.js [ Pass Timeout ]
 crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/987138 [ Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
+crbug.com/1122742 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Pass Timeout ]
 crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Timeout ]
 crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
 crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck-cors-import.https.html [ Pass Timeout ]
@@ -2695,6 +2699,7 @@ crbug.com/958381 [ Mac ] external/wpt/css/CSS2/tables/table-anonymous-objects-20
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-sizing/aspect-ratio/replaced-element-003.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-fonts/generic-family-keywords-002.html [ Failure Timeout ]
@@ -3901,6 +3906,7 @@ crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure
 crbug.com/829028 external/wpt/css/css-multicol/nested-at-outer-boundary-as-fieldset.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/non-adjacent-spanners-000.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/orthogonal-writing-mode-spanner.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/overflow-unsplittable-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/overflow-unsplittable-002.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/overflow-unsplittable-003.html [ Failure ]
@@ -4244,6 +4250,11 @@ crbug.com/683800 [ Debug Win7 ] external/wpt/selection/* [ Failure Pass ]
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Pass Timeout ]
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.https.html [ Failure Timeout ]
+
+# Test timing out when SharedArrayBuffer is disabled by default.
+# See https://crbug.com/1194557
+crbug.com/1194557 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Timeout ]
+crbug.com/1194557 virtual/shared_array_buffer_on_desktop/http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Pass ]
 
 # Test output varies depending on the bot. A single expectation file doesn't
 # work.
@@ -4589,6 +4600,9 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 crbug.com/794338 media/video-rotation.html [ Failure Pass ]
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
+crbug.com/806645 [ Win7 ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
+crbug.com/806645 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
+
 # MHT works only when loaded from local FS (file://..).
 crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
 
@@ -4646,7 +4660,6 @@ crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger/source-frame-breakpoint-decorations.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger/live-edit.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger/sources-panel-content-scripts.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/sources/debugger/source-frame-inline-breakpoint-decorations.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/sources/dont-diverge-script-evaluated-twice.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Failure Pass ]
@@ -4655,7 +4668,6 @@ crbug.com/1207342 http/tests/devtools/sources/debugger-ui/debugger-expand-scope.
 crbug.com/1207342 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-breakpoints/debugger-disable-add-breakpoint.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-breakpoints/set-logpoint.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint-while-blocking-main-thread.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-breakpoints/set-conditional-breakpoint.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-breakpoints/possible-breakpoints.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/sources/debugger-async/async-await/async-callstack-async-await1.js [ Failure Pass ]
@@ -4671,16 +4683,13 @@ crbug.com/1207342 http/tests/devtools/network/network-filter-updated-requests.js
 crbug.com/1207342 http/tests/devtools/network/json-preview.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/service-workers/service-worker-pause.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/a11y-axe-core/sources/threads-a11y-test.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/cache-storage/cache-names.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/oopif/oopif-elements-navigate-out.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/tracing/timeline-network/timeline-network-resource-navigation.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/tracing/timeline-network/timeline-network-resource-navigation-sgx.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/runtime/evaluate-without-side-effects.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/runtime/evaluate-timeout.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/resource-har-conversion.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/debugger/fetch-breakpoints.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/bindings/ignore-listed-sourcemap-detach.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/domdebugger/domdebugger-getEventListeners.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/resource-har-headers.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/profiler/cpu-profiler-calculate-time.js [ Failure Pass ]
@@ -4698,15 +4707,8 @@ crbug.com/1207342 http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Fail
 crbug.com/1207342 http/tests/devtools/elements/event-listeners-framework-with-service-worker.js [ Failure Pass ]
 crbug.com/1207342 http/tests/inspector-protocol/cpu-profiler/record-cpu-profile-with-cpu-throttling.js [ Failure Pass ]
 crbug.com/1207342 http/tests/inspector-protocol/page/frameScheduledNavigation.js [ Failure Pass ]
-crbug.com/1207342 crbug.com/1135652 http/tests/devtools/sources/debugger-pause/debugger-pause-infinite-loop.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/elements/styles-2/pseudo-elements.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/debugger/stop-on-debugger-from-detached-iframe.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/version-controller.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/sources/sourcemap-hot-reload.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-containment-show-all.js [ Failure Pass Timeout ]
-crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-containment-show-next.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-containment-shown-node-count-preserved-when-sorting.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Failure Pass Timeout ]
 crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot.js [ Failure Pass ]
@@ -4767,7 +4769,6 @@ crbug.com/1207342 http/tests/devtools/sources/debugger-ui/show-function-definiti
 crbug.com/1207342 http/tests/devtools/device-mode/device-mode-responsive.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/device-mode/device-mode-toolbar.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/throttling/mobile-throttling.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/profiler/cpu-profiler-flame-chart-overview.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-comparison-dom-groups-change.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-comparison-show-next.js [ Failure Pass ]
@@ -4793,7 +4794,6 @@ crbug.com/1207342 http/tests/devtools/storage-panel-dom-storage.js [ Failure Pas
 crbug.com/1207342 http/tests/devtools/a11y-axe-core/performance/network-flamechart-a11y-test.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/a11y-axe-core/performance/panel-right-toolbar-a11y-test.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/a11y-axe-core/performance/panel-toolbar-a11y-test.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/components/cookies-table.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/components/datagrid-autosize.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/components/viewport-datagrid.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/console/console-table.js [ Failure Pass ]
@@ -4837,7 +4837,6 @@ crbug.com/1207342 http/tests/devtools/editor/text-editor-goto-matching-bracket.j
 crbug.com/1207342 http/tests/devtools/editor/text-editor-home-button.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/editor/text-editor-smart-braces.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/elements/classes-pane-widget.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/navigate-styles-sidebar-with-arrow-keys.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/elements/css-variables/resolve-inherited-css-variables.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/elements/edit/edit-after-model-changed.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/elements/highlight/highlight-dom-updates.js [ Failure Pass ]
@@ -4862,6 +4861,10 @@ crbug.com/1207342 http/tests/devtools/background-services/background-services-pa
 crbug.com/1207342 http/tests/devtools/indexeddb/database-names.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/indexeddb/delete-entry.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Failure Pass ]
+
+# Failing tests after DevTools underscore migration
+crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-containment-show-next.js [ Failure Pass Timeout ]
+crbug.com/1207342 http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Failure Pass Timeout ]
 
 # First party DevTools issues only work in the first-party-sets virtual suite
 crbug.com/1179186 http/tests/inspector-protocol/network/blocked-cookie-same-party-issue.js [ Skip ]
@@ -5007,6 +5010,9 @@ crbug.com/911782 [ Mac ] paint/invalidation/forms/submit-focus-by-mouse-then-key
 
 # Sheriff 2018-12-06
 crbug.com/912793 crbug.com/899087 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Crash Failure Pass Timeout ]
+
+# Sheriff 2018-12-07
+crbug.com/912821 [ Mac ] http/tests/devtools/tracing/user-timing.js [ Failure Pass ]
 
 # Sheriff 2018-12-13
 crbug.com/910452 media/controls/buttons-after-reset.html [ Failure Pass ]
@@ -5247,6 +5253,7 @@ crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-implicit.
 crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-negative.html [ Failure ]
 crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-without-codecs-parameter.html [ Failure ]
 
+crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Crash Pass ]
 
 # Sheriff 2019-06-26
 crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-markers.html [ Failure Pass ]
@@ -6009,6 +6016,7 @@ crbug.com/1126709 [ Mac ] virtual/threaded/external/wpt/animation-worklet/workle
 crbug.com/1126709 [ Win ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-1.https.html [ Failure Pass ]
 
 # Sheriff 2020-09-17
+crbug.com/1129347 [ Debug Mac10.13 ] http/tests/devtools/persistence/persistence-external-change-breakpoints.js [ Failure Pass ]
 ### virtual/scroll-unification/fast/scrolling/scrollbars/
 virtual/scroll-unification/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
@@ -6132,6 +6140,7 @@ crbug.com/1130020 virtual/scroll-unification/fast/scrolling/scrollbars/scrollbar
 crbug.com/1130020 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-mousedown-move-mouseup.html [ Failure Pass Timeout ]
 
 # Sheriff 2020-11-16
+crbug.com/1149734 http/tests/devtools/sources/debugger-ui/debugger-inline-values-frames.js [ Failure Pass Timeout ]
 crbug.com/1149734 http/tests/devtools/sources/debugger-ui/reveal-execution-line.js [ Failure Pass Timeout ]
 crbug.com/1149987 external/wpt/websockets/Create-blocked-port.any.html [ Pass Timeout ]
 crbug.com/1149987 external/wpt/websockets/Create-blocked-port.any.worker.html [ Pass Timeout ]
@@ -6298,6 +6307,9 @@ crbug.com/1179461 external/wpt/webxr/depth-sensing/gpu/depth_sensing_gpu_inactiv
 crbug.com/1179461 external/wpt/webxr/depth-sensing/gpu/depth_sensing_gpu_incorrectUsage.https.html [ Failure ]
 crbug.com/1179461 external/wpt/webxr/depth-sensing/gpu/depth_sensing_gpu_staleView.https.html [ Failure ]
 
+# Sheriff 2021-02-17
+crbug.com/1179117 [ Linux ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
+
 # Ecosystem-Infra Sheriff 2021-02-17
 crbug.com/1179219 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-currentSrc.html [ Failure ]
 
@@ -6404,7 +6416,6 @@ crbug.com/476553 virtual/scroll-unification/fast/scroll-snap/animate-fling-to-sn
 crbug.com/1167679 accessibility/aom-focus-action.html [ Crash Failure Pass Timeout ]
 # More failing tests because of enabling scroll unification flag
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-active-state-hidden-iframe.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification/http/tests/misc/iframe-script-modify-attr.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification-synchronous_html_parser/external/wpt/dom/events/scrolling/overscroll-event-fired-to-scrolled-element.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/autoscroll-should-not-stop-on-keypress.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-scrolled.html [ Crash Failure Pass Timeout ]
@@ -6873,10 +6884,12 @@ crbug.com/1213322 [ Mac ] external/wpt/html/browsers/the-window-object/named-acc
 
 # Do not retry slow tests that also timeouts
 crbug.com/1210687 [ Mac10.15 ] fast/events/open-window-from-another-frame.html [ Pass Timeout ]
+crbug.com/1210687 [ Mac10.15 ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
 crbug.com/1210687 [ Mac10.15 ] http/tests/permissions/chromium/test-request-worker.html [ Pass Timeout ]
 crbug.com/1210687 [ Mac10.15 ] storage/websql/sql-error-codes.html [ Pass Timeout ]
 crbug.com/1210687 [ Mac10.15 ] external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Pass Timeout ]
 crbug.com/1210687 [ Win ] virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Pass Timeout ]
+crbug.com/1210687 [ Win ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
 
 # Sheriff 2021-06-02
 crbug.com/1215575 [ Mac11.0 ] fast/peerconnection/RTCPeerConnection-applyConstraints-remoteVideoTrack.html [ Pass Timeout ]
@@ -7118,7 +7131,7 @@ crbug.com/1233766 [ Mac ] virtual/threaded/external/wpt/animation-worklet/workle
 crbug.com/1233781 http/tests/serviceworker/window-close-during-registration.html [ Failure Pass ]
 crbug.com/1233792 virtual/synchronous_html_parser/http/tests/inspector-protocol/runtime/eval-await-navigation-paused-message-order.js [ Failure Pass ]
 crbug.com/1234057 [ Mac ] external/wpt/css/css-paint-api/no-op-animation.https.html [ Failure Pass ]
-crbug.com/1234302 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Pass ]
+crbug.com/1234302 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-image.https.html [ Failure Pass Crash ]
 
 # Temporarily disabling progress based worklet animation tests.
 crbug.com/1238130 virtual/threaded/external/wpt/animation-worklet/inactive-timeline.https.html [ Timeout ]
@@ -7153,11 +7166,8 @@ crbug.com/1178292 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-
 
 crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-1-crash.html [ Crash ]
 crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-2-crash.html [ Crash ]
-crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-3-crash.html [ Crash ]
 crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-4-crash.html [ Crash ]
 crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-5-crash.html [ Crash ]
-crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-6-crash.html [ Crash ]
-crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-7-crash.html [ Crash ]
 crbug.com/1236774 external/wpt/css/css-contain/content-visibility/slot-content-visibility-8-crash.html [ Crash ]
 
 # Sheriff 2021-08-10
@@ -7184,10 +7194,10 @@ crbug.com/1240252 [ Linux ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-
 crbug.com/1234315 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-overflow-hidden.https.html [ Failure ]
 
 # Sheriff 2021-08-20
-crbug.com/912821 [ Mac ] http/tests/devtools/tracing/user-timing.js [ Pass Failure ]
 crbug.com/1241778 [ Mac10.13 ] virtual/web-bluetooth-new-permissions-backend/wpt_internal/bluetooth/requestDevice/filter-does-not-match.https.html [ Pass Timeout ]
 crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-errors.js [ Pass Timeout ]
 crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-details.js [ Pass Timeout ]
 crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce-unslotted-elements.js [ Pass Timeout ]
 crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce.js [ Pass Timeout ]
 crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style.js [ Pass Timeout ]
+crbug.com/1194498 http/tests/misc/iframe-script-modify-attr.html [ Crash Failure Pass Timeout ]

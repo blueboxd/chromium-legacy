@@ -123,6 +123,7 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
       ExceptionState&,
       const String& method_name_for_error_message);
 
+  void PromoteUpcomingNavigationToOngoing(const String& key);
   void CleanupApiNavigation(AppHistoryApiNavigation&);
 
   scoped_refptr<SerializedScriptValue> SerializeState(const ScriptValue&,
@@ -132,8 +133,8 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
   HashMap<String, int> keys_to_indices_;
   int current_index_ = -1;
 
-  Member<AppHistoryApiNavigation> ongoing_non_traversal_navigation_;
-  HeapHashMap<String, Member<AppHistoryApiNavigation>> ongoing_traversals_;
+  Member<AppHistoryApiNavigation> ongoing_navigation_;
+  HeapHashMap<String, Member<AppHistoryApiNavigation>> upcoming_traversals_;
   Member<AppHistoryApiNavigation> upcoming_non_traversal_navigation_;
 
   Member<AppHistoryNavigateEvent> ongoing_navigate_event_;

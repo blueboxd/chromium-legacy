@@ -41325,6 +41325,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="14" label="CLEAR_SERVER_NETWORK_STATS"/>
 </enum>
 
+<enum name="HttpsFirstModeNavigationEvent">
+  <int value="0" label="kUpgradeAttempted">Upgrade attempted</int>
+  <int value="1" label="kUpgradeSucceeded">Upgrade succeeded</int>
+  <int value="2" label="kUpgradeFailed">Upgrade failed (for any reason)</int>
+  <int value="3" label="kUpgradeCertError">
+    Upgrade failed due to cert error
+  </int>
+  <int value="4" label="kUpgradeNetError">Upgrade failed due to net error</int>
+  <int value="5" label="kUpgradeTimedOut">Upgrade failed due to timing out</int>
+</enum>
+
 <enum name="HttpsImageCompressionInfoBarAction">
   <int value="0" label="Infobar shown"/>
   <int value="1" label="Infobar dismissed by user"/>
@@ -47849,6 +47860,7 @@ from previous Chrome versions.
   <int value="-1324634193" label="EnablePalmOnMaxTouchMajor:disabled"/>
   <int value="-1324029365" label="EnableTLS13EarlyData:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
+  <int value="-1322830330" label="ContextualSearchNewSettings:enabled"/>
   <int value="-1321935621" label="WebAppsCrosapi:enabled"/>
   <int value="-1321640296"
       label="AutofillDownstreamCvcPromptUseGooglePayLogo:enabled"/>
@@ -48745,6 +48757,7 @@ from previous Chrome versions.
   <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
+  <int value="-609747087" label="CanvasOopRasterization:enabled"/>
   <int value="-609034895" label="QuickActionSearchWidgetAndroid:enabled"/>
   <int value="-608775184" label="PasswordsWeaknessCheck:enabled"/>
   <int value="-608065163" label="PermissionChipRequestTypeSensitive:disabled"/>
@@ -48805,8 +48818,10 @@ from previous Chrome versions.
   <int value="-556662059" label="AuraWindowSubtreeCapture:enabled"/>
   <int value="-556218705" label="SlowDCTimerInterruptsWin:enabled"/>
   <int value="-555341956" label="AutofillSaveAndFillVPA:enabled"/>
+  <int value="-552407626" label="ContextualSearchNewSettings:disabled"/>
   <int value="-551434067"
       label="QuickActionSearchWidgetAndroidDinoVariant:enabled"/>
+  <int value="-549837954" label="RevenLogSource:enabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
   <int value="-545419529" label="LauncherAppSort:disabled"/>
@@ -49498,6 +49513,7 @@ from previous Chrome versions.
   <int value="15614295" label="Portals:enabled"/>
   <int value="19629326" label="OmniboxExperimentalKeywordMode:enabled"/>
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
+  <int value="20946908" label="CanvasOopRasterization:disabled"/>
   <int value="21055794" label="OpenXR:enabled"/>
   <int value="22142588" label="OptimizationGuidePushNotifications:disabled"/>
   <int value="23121136" label="MobileIdentityConsistencyVar:enabled"/>
@@ -50415,6 +50431,7 @@ from previous Chrome versions.
   <int value="741219332" label="ShareByDefaultInCCT:enabled"/>
   <int value="741760108" label="SidePanelPrototype:enabled"/>
   <int value="742083923" label="MimeHandlerViewInCrossProcessFrame:disabled"/>
+  <int value="742354263" label="RevenLogSource:disabled"/>
   <int value="743714331" label="HelpAppLauncherSearch:enabled"/>
   <int value="744342941" label="SafetyCheckChromeCleanerChild:enabled"/>
   <int value="745541471" label="PaintHolding:disabled"/>

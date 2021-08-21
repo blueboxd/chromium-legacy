@@ -6656,6 +6656,7 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -7229,6 +7230,7 @@
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json",
           "--remote=variable_chromeos_device_hostname"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],

@@ -64,7 +64,7 @@ repack("web_engine_pak") {
 
   # TODO(crbug.com/1092804): Move this into ${target_gen_dir} and have a
   # GN SDK fuchsia_resource() rule map it into place in the web_engine package.
-  output = "$root_gen_dir/common_resources.pak"
+  output = "$root_gen_dir/web_engine_common_resources.pak"
   visibility = [ ":*" ]
 }
 
@@ -173,7 +173,7 @@ component("web_engine_core") {
   # package.
   deps += [ ":web_engine_pak" ]
 
-  data = [ "$root_gen_dir/common_resources.pak" ]
+  data = [ "$root_gen_dir/web_engine_common_resources.pak" ]
   foreach(locale, locales_with_pseudolocales) {
     deps += [ ":web_engine_locale_${locale}_pak" ]
     data += [ "$root_gen_dir/locales/${locale}.pak" ]
@@ -240,6 +240,8 @@ component("web_engine_core") {
     "browser/web_engine_content_browser_client.h",
     "browser/web_engine_devtools_controller.cc",
     "browser/web_engine_devtools_controller.h",
+    "browser/web_engine_memory_inspector.cc",
+    "browser/web_engine_memory_inspector.h",
     "browser/web_engine_net_log_observer.cc",
     "browser/web_engine_net_log_observer.h",
     "browser/web_engine_permission_delegate.cc",

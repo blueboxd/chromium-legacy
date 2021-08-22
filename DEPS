@@ -240,7 +240,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b196eec017ee24b69b639b229a0ddd265741a1b9',
+  'angle_revision': '2f45d93d5be7731488c47bb597834e665b9ed1a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -391,7 +391,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libcxxabi_revision':    'e4b161d43b8b2388448e4d59a3582596fbe74a5b',
+  'libcxxabi_revision':    'ffda0347a44022f81ded519cc779e5f71b7b57da',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'nGK8fXxa_ZksDoGYhJDcsWX8Q4HqCBHyKXCeSPGLPkgC',
+          'version': 'vZq6FiDMq5v6uNoMqZMUAEyFtJnmowf62X-tJODiMFoC',
       },
     ],
     'condition': 'checkout_android',
@@ -1671,7 +1671,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@da572a71d0981146b7d9ba6f50c1de3e3c45517f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ae5a55e99c8dc3fb6992f3ded35ece86e2779684',
     'condition': 'checkout_src_internal',
   },
 
@@ -1690,7 +1690,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'D5yDd9h7OoITi4A8jM9H6IvVP6y0MhBb_Yfj6FE5ukoC',
+        'version': '1lohddnhRFFq6qsCuuqFv25S4gSWpjIT7fgy2g-Y_8EC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1701,7 +1701,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'D5_5bBTBCsS8jQuYq6L0h9TPvVnYjbzUVWGmAG4SA6QC',
+        'version': 'TZNfd_5V0vO8PuBBhdE_kV0niuEO_dm1BVFRR6Mjl9wC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

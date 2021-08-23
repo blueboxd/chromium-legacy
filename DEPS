@@ -240,7 +240,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '2f45d93d5be7731488c47bb597834e665b9ed1a6',
+  'angle_revision': '8c05fd4fe56a42fb8e8d91b928e89a808da0557e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -767,7 +767,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'vZq6FiDMq5v6uNoMqZMUAEyFtJnmowf62X-tJODiMFoC',
+          'version': 'g6-6wSKUpdGP-mvC_kka1z6h4HUrm4xubRElg7Xf3uoC',
       },
     ],
     'condition': 'checkout_android',
@@ -1571,7 +1571,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '978003f36a3bc1e9fdeafae26dbfe825684b0a25',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@266a84ee7fc648b4574eb21382a3cada0375e853',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@eb757871493af30a24bd80c1951891c3f83bb2b4',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
@@ -1671,7 +1671,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ae5a55e99c8dc3fb6992f3ded35ece86e2779684',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@794f10d99918c01376c8e4a7040b3bc858c467ca',
     'condition': 'checkout_src_internal',
   },
 
@@ -1701,7 +1701,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'TZNfd_5V0vO8PuBBhdE_kV0niuEO_dm1BVFRR6Mjl9wC',
+        'version': 'ge0u1OlUydgkxhSHoqB3vkfLHG2YtT_nmf2NaKYkS2IC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

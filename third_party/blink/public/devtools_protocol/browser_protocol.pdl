@@ -7211,6 +7211,12 @@ domain Page
     returns
       optional binary primaryIcon
 
+  # Returns the unique (PWA) app id.
+  experimental command getAppId
+    returns
+      # Only returns a value if the feature flag 'WebAppEnableManifestId' is enabled
+      optional string appId
+
   # Returns all browser cookies. Depending on the backend support, will return detailed cookie
   # information in the `cookies` field.
   experimental deprecated command getCookies
@@ -7897,17 +7903,33 @@ domain Page
       OutstandingNetworkRequestDirectSocket
       IsolatedWorldScript
       InjectedStyleSheet
-      # Disabled for render frame host reasons
       MediaSessionImplOnServiceCreated
-      SecurityHandler
-      WebAuthenticationAPI
-      FileChooser
-      Serial
-      FileSystemAccess
-      MediaDevicesDispatcherHost
-      WebBluetooth
-      WebUSB
-      MediaSession
+      # Disabled for render frame host reasons
+      ContentMediaSessionImplOnServiceCreated
+      ContentSecurityHandler
+      ContentWebAuthenticationAPI
+      ContentFileChooser
+      ContentSerial
+      ContentFileSystemAccess
+      ContentMediaDevicesDispatcherHost
+      ContentWebBluetooth
+      ContentWebUSB
+      ContentMediaSession
+      EmbedderPopupBlockerTabHelper
+      EmbedderSafeBrowsingTriggeredPopupBlocker
+      EmbedderSafeBrowsingThreatDetails
+      EmbedderAppBannerManager
+      EmbedderDomDistillerViewerSource
+      EmbedderDomDistillerSelfDeletingRequestDelegate
+      EmbedderOomInterventionTabHelper
+      EmbedderOfflinePage
+      EmbedderChromePasswordManagerClientBindCredentialManager
+      EmbedderPermissionRequestManager
+      EmbedderModalDialog
+      EmbedderExtensions
+      EmbedderExtensionMessaging
+      EmbedderExtensionMessagingForOpenPort
+      EmbedderExtensionSentMessageToCachedFrame
 
   # Types of not restored reasons for back-forward cache.
   experimental type BackForwardCacheNotRestoredReasonType extends string

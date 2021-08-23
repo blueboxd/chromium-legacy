@@ -152,15 +152,34 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (NSString*)autocompleteText {
   if (self.autocompleteTextLength > 0) {
-    return [self.text
-        substringFromIndex:(self.text.length - self.autocompleteTextLength)];
+    // In crbug.com/1237851, sometimes self.autocompleteTextLength is greater
+    // than self.text.length, causing the subtraction below to overflow,
+    // breaking
+    // |-substringToIndex:|. This shouldn't happen, so use the DCHECK to catch
+    // it to help debug and default to the end of the string if an overflow
+    // would occur.
+    DCHECK(self.text.length >= self.autocompleteTextLength);
+    NSUInteger userTextEndIndex =
+        self.text.length >= self.autocompleteTextLength
+            ? self.text.length - self.autocompleteTextLength
+            : self.text.length;
+    return [self.text substringFromIndex:userTextEndIndex];
   }
   return @"";
 }
 
 - (NSString*)userText {
-  return [self.text
-      substringToIndex:(self.text.length - self.autocompleteTextLength)];
+  // In crbug.com/1237851, sometimes self.autocompleteTextLength is greater than
+  // self.text.length, causing the subtraction below to overflow, breaking
+  // |-substringToIndex:|. This shouldn't happen, so use the DCHECK to catch it
+  // to help debug and default to the end of the string if an overflow would
+  // occur.
+  DCHECK(self.text.length >= self.autocompleteTextLength);
+  NSUInteger userTextEndIndex =
+      self.text.length >= self.autocompleteTextLength
+          ? self.text.length - self.autocompleteTextLength
+          : self.text.length;
+  return [self.text substringToIndex:userTextEndIndex];
 }
 
 - (NSString*)markedText {
@@ -422,6 +441,11 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (CGRect)editingRectForBounds:(CGRect)bounds {
   CGRect editRect = [super editingRectForBounds:bounds];
   return editRect;
+}
+
+- (CGRect)caretRectForPosition:(UITextPosition*)position {
+  return ([self hasAutocompleteText]) ? CGRectZero
+                                      : [super caretRectForPosition:position];
 }
 
 #pragma mark - UITextInput

@@ -1499,6 +1499,9 @@ crbug.com/1220148 external/wpt/css/css-variables/variable-supports-37.html [ Fai
 crbug.com/1220148 external/wpt/css/css-variables/variable-supports-39.html [ Failure ]
 crbug.com/1220149 external/wpt/css/css-variables/variable-supports-57.html [ Failure ]
 
+# css-nesting
+crbug.com/1095675 external/wpt/css/selectors/nesting.html [ Failure ]
+
 # ====== Style team owned tests to here ======
 
 # XML nodes aren't match by .class selectors:
@@ -2706,7 +2709,6 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-fonts/generic-family-keywords
 crbug.com/1240701 virtual/dialogfocus-old-behavior/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
 crbug.com/1240701 external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
 crbug.com/1240701 virtual/synchronous_html_parser/external/wpt/html/semantics/interactive-elements/the-dialog-element/modal-dialog-display-contents.html [ Failure ]
-crbug.com/626703 external/wpt/css/selectors/nesting.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
 crbug.com/626703 [ Win10.1909 ] external/wpt/resize-observer/iframe-same-origin.html [ Crash ]
@@ -3081,7 +3083,6 @@ crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDa
 crbug.com/626703 [ Mac11.0 ] external/wpt/webrtc/simplecall-no-ssrcs.https.html [ Timeout ]
 crbug.com/626703 [ Mac11.0 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/dtls-fingerprint-validation.html [ Timeout ]
 crbug.com/1209223 external/wpt/css/css-images/image-set/webkit-image-set.tentative.html [ Failure ]
-crbug.com/1209223 external/wpt/html/rendering/replaced-elements/attributes-for-embedded-content-and-images/canvas-aspect-ratio.html [ Failure ]
 crbug.com/1209223 external/wpt/html/syntax/xmldecl/xmldecl-2.html [ Failure ]
 crbug.com/626703 [ Mac ] editing/pasteboard/drag-selected-image-to-contenteditable.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/webrtc-encoded-transform/idlharness.https.window.html [ Crash Failure ]
@@ -5125,9 +5126,6 @@ crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Fa
 crbug.com/946335 [ Linux ] fast/filesystem/file-writer-abort-depth.html [ Crash Pass ]
 crbug.com/946335 [ Mac ] fast/filesystem/file-writer-abort-depth.html [ Crash Pass ]
 
-# Sheriff 2019-04-15
-crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Failure Pass ]
-
 # The postMessage() calls intended to complete the test are blocked due to being
 # cross-origin between the portal and the host..
 crbug.com/1220891 virtual/portals/external/wpt/portals/csp/frame-src.sub.html [ Timeout ]
@@ -6277,6 +6275,11 @@ crbug.com/1045052 [ Linux ] virtual/split-http-cache-not-site-per-process/http/t
 crbug.com/1045052 [ Linux ] virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Failure Pass Timeout ]
 crbug.com/1181857 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Failure Pass ]
 
+# Temporarily disabled to unblock https://crrev.com/c/3109528
+crbug.com/1228674 http/tests/devtools/compiler-script-mapping.js [ Skip ]
+crbug.com/1228674 http/tests/devtools/elements/styles-4/styles-rerequest-sourcemap-on-watchdog.js [ Skip ]
+crbug.com/1228674 http/tests/devtools/inline-source-map-loading.js [ Skip ]
+
 # Sheriff 2021-02-25
 crbug.com/1182673 [ Win7 ] http/tests/devtools/profiler/live-line-level-heap-profile.js [ Timeout ]
 crbug.com/1182675 [ Linux ] dom/attr/id-update-map-crash.html [ Failure Pass ]
@@ -7143,3 +7146,7 @@ crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-
 crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style-with-pierce.js [ Pass Timeout ]
 crbug.com/1241787 [ Mac10.15 ] inspector-protocol/dom/dom-get-nodes-for-subtree-by-style.js [ Pass Timeout ]
 crbug.com/1194498 http/tests/misc/iframe-script-modify-attr.html [ Crash Failure Pass Timeout ]
+
+# Sheriff 2021-08-23
+crbug.com/1242243 external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure Pass ]
+crbug.com/1242243 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure Pass ]

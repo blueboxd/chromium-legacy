@@ -175,18 +175,15 @@ class CookieSettings : public CookieSettingsBase,
 
   base::ThreadChecker thread_checker_;
   base::ObserverList<Observer> observers_;
-  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  const scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
       content_settings_observation_{this};
   PrefChangeRegistrar pref_change_registrar_;
   const bool is_incognito_;
   const char* extension_scheme_;  // Weak.
 
-  // Used around accesses to |block_third_party_cookies_| to guarantee thread
-  // safety.
   mutable base::Lock lock_;
-
-  bool block_third_party_cookies_;
+  bool block_third_party_cookies_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(CookieSettings);
 };

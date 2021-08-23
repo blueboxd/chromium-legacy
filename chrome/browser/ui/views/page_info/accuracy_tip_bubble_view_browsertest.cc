@@ -36,10 +36,12 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/site_engagement/content/site_engagement_score.h"
 #include "components/site_engagement/content/site_engagement_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/test/button_test_api.h"
@@ -202,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewBrowserTest, PressEsc) {
   LocationBarView* location_bar_view = browser_view->GetLocationBarView();
   EXPECT_TRUE(location_bar_view->location_icon_view()->ShouldShowLabel());
   EXPECT_EQ(location_bar_view->location_icon_view()->GetText(),
-            u"Accuracy check");
+            l10n_util::GetStringUTF16(IDS_ACCURACY_CHECK_VERBOSE_STATE));
 
   auto* view = PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
   views::test::WidgetDestroyedWaiter waiter(view->GetWidget());
@@ -420,7 +422,8 @@ IN_PROC_BROWSER_TEST_F(AccuracyTipBubbleViewHttpBrowserTest,
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   LocationBarView* location_bar_view = browser_view->GetLocationBarView();
   EXPECT_TRUE(location_bar_view->location_icon_view()->ShouldShowLabel());
-  EXPECT_EQ(location_bar_view->location_icon_view()->GetText(), u"Not secure");
+  EXPECT_EQ(location_bar_view->location_icon_view()->GetText(),
+            l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
 }
 
 // Render test for accuracy tip ui.

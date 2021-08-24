@@ -82,6 +82,10 @@ extern const char kCrashpadIOSDescription[];
 extern const char kCollectionsCardPresentationStyleName[];
 extern const char kCollectionsCardPresentationStyleDescription[];
 
+// Title and description for the flag to enable context menu actions refresh.
+extern const char kContextMenuActionsRefreshName[];
+extern const char kContextMenuActionsRefreshDescription[];
+
 #if defined(DCHECK_IS_CONFIGURABLE)
 // Title and description for the flag to enable configurable DCHECKs.
 extern const char kDcheckIsFatalName[];
@@ -289,10 +293,6 @@ extern const char kMICEWebSignInDescription[];
 // mobile mode by default.
 extern const char kMobileGoogleSRPName[];
 extern const char kMobileGoogleSRPDescription[];
-
-// Title and description for the flag to enable mobile identity consistency.
-extern const char kMobileIdentityConsistencyName[];
-extern const char kMobileIdentityConsistencyDescription[];
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.

@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_family.h"
 
 #include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -67,12 +68,14 @@ String FontFamily::ToString() const {
 
 /*static*/ FontFamily::Type FontFamily::InferredTypeFor(
     const AtomicString& family_name) {
-  // TODO(crbug.com/1065468): Add system-ui.
   return (family_name == font_family_names::kCursive ||
           family_name == font_family_names::kFantasy ||
           family_name == font_family_names::kMonospace ||
           family_name == font_family_names::kSansSerif ||
-          family_name == font_family_names::kSerif)
+          family_name == font_family_names::kSerif ||
+          family_name == font_family_names::kSystemUi ||
+          (RuntimeEnabledFeatures::CSSFontFamilyMathEnabled() &&
+           family_name == font_family_names::kMath))
              ? Type::kGenericFamily
              : Type::kFamilyName;
 }

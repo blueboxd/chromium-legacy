@@ -2362,6 +2362,21 @@
             ]
         }
     ],
+    "ContextMenuActionsRefresh": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextMenuActionsRefresh",
+                    "enable_features": [
+                        "ContextMenuActionsRefresh"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContextMenuGoogleLensChip": [
         {
             "platforms": [
@@ -6378,6 +6393,7 @@
                         "PartitionAllocPCScanBrowserOnly"
                     ],
                     "disable_features": [
+                        "PartitionAllocPCScanEagerClearing",
                         "PartitionAllocPCScanImmediateFreeing"
                     ]
                 }

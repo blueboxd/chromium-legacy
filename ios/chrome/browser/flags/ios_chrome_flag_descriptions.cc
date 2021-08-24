@@ -85,6 +85,10 @@ const char kCollectionsCardPresentationStyleDescription[] =
     "When enabled collections are presented using the new iOS13 card "
     "style.";
 
+const char kContextMenuActionsRefreshName[] = "Context menu actions refresh";
+const char kContextMenuActionsRefreshDescription[] =
+    "When enabled, context menu actions are updated";
+
 const char kCrashpadIOSName[] = "Use Crashpad for crash collection.";
 const char kCrashpadIOSDescription[] =
     "When enabled use Crashpad to generate crash reports crash collection. "
@@ -342,10 +346,6 @@ const char kMobileGoogleSRPName[] = "Mobile version of Google SRP by default";
 const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
     "is requested by default.";
-
-const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
-const char kMobileIdentityConsistencyDescription[] =
-    "Enables identity consistency on mobile by decoupling sync and sign-in.";
 
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =

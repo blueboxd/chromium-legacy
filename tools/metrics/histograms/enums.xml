@@ -34220,6 +34220,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3983" label="TableCollapsedBorderDifferentToVisual"/>
   <int value="3984" label="HighlightAPIRegisterHighlight"/>
   <int value="3985" label="ReadOrWriteWebDatabaseThirdPartyContext"/>
+  <int value="3986" label="FontSelectorCSSFontFamilyWebKitPrefixPictograph"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46967,7 +46968,6 @@ from previous Chrome versions.
   <int value="-2003354337"
       label="enable-search-button-in-omnibox-for-str-or-iip"/>
   <int value="-2002461806" label="ShoppingAssist:enabled"/>
-  <int value="-2002453030" label="UseOzonePlatform:disabled"/>
   <int value="-2001869199" label="ShillSandboxing:enabled"/>
   <int value="-2000567059" label="SimplifyHttpsIndicator:enabled"/>
   <int value="-1999892428" label="force-ui-direction"/>
@@ -47212,6 +47212,7 @@ from previous Chrome versions.
   <int value="-1836412886" label="UseChimeAndroidSdk:disabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835905702" label="FilesZipNoNaCl:enabled"/>
+  <int value="-1835844760" label="ArcVmBalloonPolicy:disabled"/>
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
   <int value="-1834841895" label="CrostiniWebUIUpgrader:enabled"/>
   <int value="-1834151268" label="OmniboxDynamicMaxAutocomplete:disabled"/>
@@ -48272,6 +48273,7 @@ from previous Chrome versions.
   <int value="-1010588306" label="SlideTopChromeWithPageScrolls:disabled"/>
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
   <int value="-1007961880" label="PrivacySandboxSettings:enabled"/>
+  <int value="-1005937042" label="ArcVmBalloonPolicy:enabled"/>
   <int value="-1005164075" label="ContextualSearchTranslations:enabled"/>
   <int value="-1002537430" label="HudDisplayForPerformanceMetrics:disabled"/>
   <int value="-1001837588" label="EnableAppReinstallZeroState:enabled"/>
@@ -48997,7 +48999,6 @@ from previous Chrome versions.
   <int value="-405380243" label="enable-encryption-migration"/>
   <int value="-403701720" label="DirectActions:enabled"/>
   <int value="-403649153" label="WebViewBrotliSupport:disabled"/>
-  <int value="-402700953" label="UseOzonePlatform:enabled"/>
   <int value="-402038055"
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:enabled"/>
   <int value="-401170566"
@@ -53744,6 +53745,7 @@ Called by update_use_counter_css.py.-->
   <int value="697" label="container-name"/>
   <int value="698" label="container-type"/>
   <int value="699" label="container"/>
+  <int value="700" label="font-synthesis-weight"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -65985,6 +65987,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PostOperationState">
+  <obsolete>
+    Removed in M95.
+  </obsolete>
   <int value="0" label="Succeeded">The operation succeeded</int>
   <int value="1" label="Failed: file not found">
     The operation failed and the file operated on is not found.
@@ -74690,6 +74695,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Accessibility"/>
   <int value="7" label="Volume"/>
   <int value="8" label="Brightness"/>
+</enum>
+
+<enum name="SettingsInputsShortcutReminderState">
+  <int value="0" label="No shortcuts"/>
+  <int value="1" label="Last used IME shortcut"/>
+  <int value="2" label="Next IME shortcut"/>
+  <int value="3" label="Last used IME shortcut and next IME shortcut"/>
 </enum>
 
 <enum name="SettingsInteractionConcludeReason">

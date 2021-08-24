@@ -534,6 +534,8 @@
 #include "chrome/browser/ash/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/ash/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
+// TODO(b/195975836): Support Lacros as well.
+#include "chrome/browser/ui/ash/projector/projector_navigation_throttle.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -3291,7 +3293,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
       if (browser && browser->app_controller()) {
         web_app::WebAppProvider* const web_app_provider =
-            web_app::WebAppProvider::GetForLocalApps(profile);
+            web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
         const web_app::AppId& app_id = browser->app_controller()->app_id();
         const web_app::WebAppRegistrar& registrar =
             web_app_provider->registrar();
@@ -3919,6 +3921,10 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   MaybeAddThrottle(
       ash::WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
+  // TODO(b/195975836): Support Lacros as well.
+  MaybeAddThrottle(
+      ash::ProjectorNavigationThrottle::MaybeCreateThrottleFor(handle),
       &throttles);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

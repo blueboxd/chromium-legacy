@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/web_applications/share_target_utils.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -41,6 +40,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -99,7 +99,7 @@ content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
     bool is_kiosk = user_manager && user_manager->IsLoggedInAsAnyKioskApp();
     AppBrowserController* app_controller = browser->app_controller();
     WebAppProvider* web_app_provider =
-        WebAppProvider::GetForLocalApps(browser->profile());
+        WebAppProvider::GetForLocalAppsUnchecked(browser->profile());
     TRACE_EVENT_INSTANT(
         "system_apps", "BadNavigate", [&](perfetto::EventContext ctx) {
           auto* bad_navigate =
@@ -230,7 +230,8 @@ content::WebContents* NavigateWebApplicationWindow(
 }
 
 WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
-    : profile_(profile), provider_(WebAppProvider::GetForLocalApps(profile)) {}
+    : profile_(profile),
+      provider_(WebAppProvider::GetForLocalAppsUnchecked(profile)) {}
 
 WebAppLaunchManager::~WebAppLaunchManager() = default;
 
@@ -478,7 +479,7 @@ void WebAppLaunchManager::LaunchWebApplication(
 }
 
 void RecordAppWindowLaunch(Profile* profile, const std::string& app_id) {
-  WebAppProvider* provider = WebAppProvider::GetForLocalApps(profile);
+  WebAppProvider* provider = WebAppProvider::GetForLocalAppsUnchecked(profile);
   if (!provider)
     return;
 

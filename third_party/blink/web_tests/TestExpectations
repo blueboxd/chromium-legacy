@@ -706,6 +706,8 @@ crbug.com/1204827 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-002
 crbug.com/1204827 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-004.html [ Failure ]
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-025.html [ Failure ]
 crbug.com/1164135 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
+crbug.com/970201 external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
+crbug.com/970201 external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-002.html [ Failure ]
 crbug.com/1008951 external/wpt/css/css-text-decor/text-decoration-subelements-003.html [ Failure ]
@@ -3399,8 +3401,6 @@ crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip 
 crbug.com/983503 [ Mac ] external/wpt/css/css-contain/contain-size-select-elem-002.html [ Failure ]
 crbug.com/1004760 [ Mac ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-sizing/slice-intrinsic-size.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
@@ -4787,14 +4787,7 @@ crbug.com/1207342 http/tests/devtools/tracing/timeline-misc/timeline-user-timing
 crbug.com/1207342 http/tests/devtools/persistence/persistence-go-to-file-dialog.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/quick-open/command-menu.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/editor/text-editor-smart-braces.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/classes-pane-widget.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/css-variables/resolve-inherited-css-variables.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/edit/edit-after-model-changed.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/elements/highlight/highlight-dom-updates.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/styles-1/filter-matched-styles.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/styles-4/styles-keyframes.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/styles-4/styles-update-links-1.js [ Failure Pass ]
-crbug.com/1207342 http/tests/devtools/elements/styles-4/styles-update-links-2.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/console-show-all-messages.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/a11y-axe-core/console/console-error-a11y-test.js [ Failure Pass ]
 crbug.com/1207342 http/tests/devtools/console-sidebar/console-filter-sidebar.js [ Failure Pass ]
@@ -7151,3 +7144,6 @@ crbug.com/1194498 http/tests/misc/iframe-script-modify-attr.html [ Crash Failure
 # Sheriff 2021-08-23
 crbug.com/1242243 external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure Pass ]
 crbug.com/1242243 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure Pass ]
+
+# Sheriff 2021-08-24
+crbug.com/1244896 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]

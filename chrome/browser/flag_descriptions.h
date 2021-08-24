@@ -2259,6 +2259,9 @@ extern const char kArcRtVcpuQuadCoreDesc[];
 extern const char kArcUseHighMemoryDalvikProfileName[];
 extern const char kArcUseHighMemoryDalvikProfileDesc[];
 
+extern const char kArcVmBalloonPolicyName[];
+extern const char kArcVmBalloonPolicyDesc[];
+
 extern const char kArcWebAppShareName[];
 extern const char kArcWebAppShareDescription[];
 
@@ -3009,11 +3012,6 @@ extern const char kUserDataSnapshotDescription[];
 extern const char kWebShareName[];
 extern const char kWebShareDescription[];
 #endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
-
-#if defined(OS_LINUX) && defined(USE_OZONE)
-extern const char kUseOzonePlatformName[];
-extern const char kUseOzonePlatformDescription[];
-#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
 // Feature flags --------------------------------------------------------------
 

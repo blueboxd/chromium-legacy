@@ -343,7 +343,7 @@ class PsmHelper {
     base::UmaHistogramEnumeration(kUMAPsmResult + uma_suffix_, psm_result);
 
     // Records the PSM execution as an error in local_state, so that value will
-    // be used in the DeviceRegisterRequest while performing manual enrollment.
+    // be used in the DeviceRegisterRequest during the enrollment flow.
     local_state_->SetInteger(prefs::kEnrollmentPsmResult,
                              em::DeviceRegisterRequest::PSM_RESULT_ERROR);
     local_state_->CommitPendingWrite();
@@ -551,7 +551,7 @@ class PsmHelper {
         // the device reboots before completing OOBE.
         // Also, record the PSM determination timestamp and its execution
         // result in local state. Because both values will be used in the
-        // DeviceRegisterRequest while performing manual enrollment.
+        // DeviceRegisterRequest during the enrollment flow.
         local_state_->SetBoolean(prefs::kShouldRetrieveDeviceState,
                                  membership_result);
         local_state_->SetTime(prefs::kEnrollmentPsmDeterminationTime,
@@ -1230,6 +1230,10 @@ bool AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+
   bool progress = false;
   const em::DeviceAutoEnrollmentResponse& enrollment_response =
       response.auto_enrollment_response();
@@ -1366,6 +1370,10 @@ bool AutoEnrollmentClientImpl::IsIdHashInProtobuf(
 }
 
 void AutoEnrollmentClientImpl::UpdateBucketDownloadTimingHistograms() {
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+
   // These values determine bucketing of the histogram, they should not be
   // changed.
   // The minimum time can't be 0, must be at least 1.
@@ -1397,6 +1405,10 @@ void AutoEnrollmentClientImpl::UpdateBucketDownloadTimingHistograms() {
 }
 
 void AutoEnrollmentClientImpl::RecordHashDanceSuccessTimeHistogram() {
+  // This method should only be called when the client has been created for FRE
+  // use case.
+  DCHECK(!IsClientForInitialEnrollment());
+
   // These values determine bucketing of the histogram, they should not be
   // changed.
   static const base::TimeDelta kMin = base::TimeDelta::FromMilliseconds(1);

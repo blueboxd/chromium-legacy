@@ -3949,6 +3949,12 @@ const char kArcUseHighMemoryDalvikProfileDesc[] =
     "Allow Android to use high-memory dalvik profile when applicable for "
     "high-memory devices.";
 
+const char kArcVmBalloonPolicyName[] =
+    "Enable ARCVM limit cache balloon policy";
+const char kArcVmBalloonPolicyDesc[] =
+    "Trigger reclaim in ARCVM to reduce memory use when ChromeOS is running "
+    "low on memory.";
+
 const char kArcWebAppShareName[] = "Enable sharing to Web Apps from ARC";
 const char kArcWebAppShareDescription[] =
     "Allow Android apps to send shared text and files to web apps. When "
@@ -5187,12 +5193,6 @@ const char kWebShareDescription[] =
     "Enables the Web Share (navigator.share) APIs on experimentally supported "
     "platforms.";
 #endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
-
-#if defined(OS_LINUX) && defined(USE_OZONE)
-const char kUseOzonePlatformName[] = "Use ozone.";
-const char kUseOzonePlatformDescription[] =
-    "Use the Ozone/X11 platform implementation on X11.";
-#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
 // Feature flags --------------------------------------------------------------
 

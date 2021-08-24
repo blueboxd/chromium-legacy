@@ -140,12 +140,17 @@
     //
     // font-family (<generic-family> in CSS 2.1)
     //
+    // If you modify this list, please make sure you update css_parsing_utils's
+    // ConsumeGenericFamily, ComputedStyleUtils::IdentifierForFamily and
+    // FontFamily::InferredTypeFor accordingly.
     "serif",
     "sans-serif",
     "cursive",
     "fantasy",
     "monospace",
+    "system-ui",
     "-webkit-body",
+    "math",
 
     //
     // font-display
@@ -447,7 +452,7 @@
     "table",
     "flex",
     "grid",
-    "math",
+    //"math",
     // The order must match the order found in IsDisplayBox().
     "contents",
     //none

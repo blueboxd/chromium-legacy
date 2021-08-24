@@ -63,6 +63,7 @@ import './os_apps_page/app_management_page/borealis_page/borealis_detail_view.m.
 import './os_apps_page/app_management_page/pwa_detail_view.m.js';
 import './os_apps_page/app_management_page/shared_style.m.js';
 import './os_apps_page/app_management_page/shared_vars.m.js';
+import './os_apps_page/app_management_page/supported_links_dialog.m.js';
 import './os_apps_page/app_management_page/supported_links_item.m.js';
 import './os_apps_page/app_management_page/toggle_row.m.js';
 import './os_apps_page/app_management_page/uninstall_button.m.js';
@@ -84,7 +85,7 @@ import './os_search_page/os_search_page.js';
 import './os_settings_main/os_settings_main.m.js';
 import './os_settings_page/os_settings_page.m.js';
 import './os_settings_page/settings_idle_load.m.js';
-import './os_settings_menu/os_settings_menu.m.js';
+import './os_settings_menu/os_settings_menu.js';
 import './os_settings_ui/os_settings_ui.m.js';
 import './os_settings_icons_css.m.js';
 import './os_settings_search_box/os_search_result_row.js';

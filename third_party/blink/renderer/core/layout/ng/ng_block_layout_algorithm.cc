@@ -1967,29 +1967,10 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       child.IsInline() ? To<NGInlineBreakToken>(physical_fragment.BreakToken())
                        : nullptr;
 
-  // If a spanner was found inside the child, we need to finish up and propagate
-  // the spanner to the column layout algorithm, so that it can take care of it.
-  if (UNLIKELY(ConstraintSpace().IsInColumnBfc())) {
-    if (NGBlockNode spanner_node = layout_result->ColumnSpanner()) {
-      DCHECK(container_builder_.HasInflowChildBreakInside() ||
-             !physical_fragment.IsBox());
-      container_builder_.SetColumnSpanner(spanner_node);
-      container_builder_.SetIsEmptySpannerParent(
-          layout_result->IsEmptySpannerParent());
-    }
-  } else {
-    DCHECK(!layout_result->ColumnSpanner());
-  }
-
   // Update |lines_until_clamp_| from the LayoutResult.
   if (lines_until_clamp_) {
-    if (const auto* line_box =
-            DynamicTo<NGPhysicalLineBoxFragment>(physical_fragment)) {
-      if (!line_box->IsEmptyLineBox())
-        lines_until_clamp_ = *lines_until_clamp_ - 1;
-    } else {
-      lines_until_clamp_ = layout_result->LinesUntilClamp();
-    }
+    lines_until_clamp_ = layout_result->LinesUntilClamp();
+
     if (lines_until_clamp_ <= 0 &&
         !intrinsic_block_size_when_clamped_.has_value()) {
       // If line-clamping occurred save the intrinsic block-size, as this
@@ -2640,11 +2621,9 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     LayoutUnit child_clearance_offset =
         exclusion_space_.ClearanceOffset(child_style.Clear(Style()));
     clearance_offset = std::max(clearance_offset, child_clearance_offset);
-
-    // |PositionListMarker()| requires a baseline.
-    builder.SetBaselineAlgorithmType(ConstraintSpace().BaselineAlgorithmType());
   }
   builder.SetClearanceOffset(clearance_offset);
+  builder.SetBaselineAlgorithmType(ConstraintSpace().BaselineAlgorithmType());
 
   if (!is_new_fc) {
     builder.SetMarginStrut(child_data.margin_strut);

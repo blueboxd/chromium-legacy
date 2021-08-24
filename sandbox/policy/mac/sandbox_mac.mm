@@ -226,7 +226,6 @@ std::string GetSandboxProfile(SandboxType sandbox_type) {
       profile += kSeatbeltPolicyString_renderer;
       break;
     case SandboxType::kNoSandbox:
-    case SandboxType::kVideoCapture:
       CHECK(false);
       break;
   }

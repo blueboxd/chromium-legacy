@@ -228,6 +228,13 @@ bool ReportingTestBase::SetEndpointInCache(
   return endpoint.is_valid();
 }
 
+void ReportingTestBase::SetV1EndpointInCache(
+    const ReportingEndpointGroupKey& group_key,
+    const base::UnguessableToken& reporting_source,
+    const GURL& url) {
+  cache()->SetV1EndpointForTesting(group_key, reporting_source, url);
+}
+
 bool ReportingTestBase::EndpointExistsInCache(
     const ReportingEndpointGroupKey& group_key,
     const GURL& url) {
@@ -317,6 +324,7 @@ TestReportingService::~TestReportingService() = default;
 
 void TestReportingService::QueueReport(
     const GURL& url,
+    const absl::optional<base::UnguessableToken>& reporting_source,
     const NetworkIsolationKey& network_isolation_key,
     const std::string& user_agent,
     const std::string& group,

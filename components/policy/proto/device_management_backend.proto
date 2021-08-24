@@ -1372,6 +1372,19 @@ message SmbiosInfo {
   optional string bios_version = 4;
 }
 
+// Information about the parameters passed to the kernel.
+message KernelParameters {
+  // True if cros_efi was passed to the kernel.
+  // Used to know if the device was booted via EFI.
+  optional bool cros_efi = 1;
+}
+
+// Information about the device's EFI Variables from efivarfs.
+message EFIVars {
+  // True if Secure Boot is enabled on the device.
+  optional bool secure_boot = 1;
+}
+
 // Information about how the OS was booted. This is information
 // such as boot method and other bios settings
 message BootInfo {
@@ -1382,7 +1395,7 @@ message BootInfo {
     CROS_LEGACY = 3;
   }
   optional BootMethod boot_method = 1;
-  optional bool SecureBoot = 2;
+  optional bool secure_boot = 2;
 }
 
 // Report device level status.
@@ -1508,7 +1521,14 @@ message DeviceStatusReportRequest {
   // Information from the device's SMBIOS.
   optional SmbiosInfo smbios_info = 41;
 
-  // KernelParameters(42) and EFIVars(43) were refactored into BootInfo(44).
+  // Information about the parameters passed to the kernel.
+  optional KernelParameters kernel_parameters = 42;
+
+  // Information about the device's EFI Variables from efivarfs.
+  optional EFIVars efi_vars = 43;
+
+  // KernelParameters(42) and EFIVars(43) are deprecated
+  // and rolled into BootInfo(44)
 
   // Information about how the os was booted.
   optional BootInfo boot_info = 44;
@@ -2583,7 +2603,8 @@ message RemoteCommand {
   // the names should also be updated:
   // - components/policy/core/common/cloud/enterprise_metrics.cc;
   // - components/policy/core/common/remote_commands/remote_commands_service.cc;
-  // - Enterprise.RemoteCommandType in tools/metrics/histograms/histograms.xml;
+  // - Enterprise.RemoteCommandType in
+  //     tools/metrics/histograms/metadata/enterprise/histograms.xml;
   enum Type {
     // Simple echo command for testing, will be ignored in production code.
     COMMAND_ECHO_TEST = -1;
@@ -2627,6 +2648,10 @@ message RemoteCommand {
 
     // Clear the cache and cookies associated with a given profile.
     BROWSER_CLEAR_BROWSING_DATA = 12;
+
+    // Reset the cellular EUICC (Embedded Universal Integrated Circuit Card) on
+    // the device.
+    DEVICE_RESET_EUICC = 13;
 
     // Please update metrics after adding a new item - see the comment above.
   }

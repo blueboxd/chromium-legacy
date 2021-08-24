@@ -1701,6 +1701,11 @@ const blink::LocalFrameToken& RenderFrameHostImpl::GetFrameToken() {
   return frame_token_;
 }
 
+const base::UnguessableToken& RenderFrameHostImpl::GetReportingSource() {
+  DCHECK(!document_associated_data_->reporting_source.is_empty());
+  return document_associated_data_->reporting_source;
+}
+
 ui::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
   return ax_tree_id();
 }
@@ -2788,6 +2793,15 @@ void RenderFrameHostImpl::RenderProcessExited(
   if (base::FeatureList::IsEnabled(features::kCrashReporting))
     MaybeGenerateCrashReport(info.status, info.exit_code);
 
+  // Reporting API: Send any queued reports and mark the reporting source as
+  // expired so that the reporting configuration in the network service can be
+  // removed. This is done here, rather than in the destructor, as it needs the
+  // mojo pipe to the network service.
+  GetProcess()
+      ->GetStoragePartition()
+      ->GetNetworkContext()
+      ->SendReportsAndRemoveSource(GetReportingSource());
+
   // When a frame's process dies, its RenderFrame no longer exists, which means
   // that its child frames must be cleaned up as well.
   ResetChildren();
@@ -3476,12 +3490,13 @@ void RenderFrameHostImpl::DidNavigate(
   if (did_create_new_document)
     DidCommitNewDocument(params, navigation_request);
 
-  // Set up reporting endpoints for this document.
-  DCHECK(frame_token_.value());
+  // Reporting API: If a Reporting-Endpoints header was received with this
+  // document, send it to the network service to configure the endpoints in the
+  // reporting cache.
   if (!reporting_endpoints_.empty()) {
     GetStoragePartition()->GetNetworkContext()->SetDocumentReportingEndpoints(
-        params.origin, isolation_info_.network_isolation_key(),
-        reporting_endpoints_);
+        GetReportingSource(), params.origin,
+        isolation_info_.network_isolation_key(), reporting_endpoints_);
   }
 
   // When the frame hosts a different document, its state must be replicated
@@ -6518,7 +6533,7 @@ void RenderFrameHostImpl::CreateNewWindow(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
             params->referrer->url, new_main_rfh->cross_origin_opener_policy(),
-            frame_token_.value(), isolation_info_.network_isolation_key()));
+            GetReportingSource(), isolation_info_.network_isolation_key()));
   }
 
   mojo::PendingAssociatedRemote<mojom::Frame> pending_frame_remote;
@@ -9410,7 +9425,7 @@ void RenderFrameHostImpl::GetFileSystemAccessManager(
   auto* manager = storage_partition->GetFileSystemAccessManager();
   manager->BindReceiver(
       FileSystemAccessManagerImpl::BindingContext(
-          GetLastCommittedOrigin(), GetLastCommittedURL(), GetGlobalId()),
+          storage_key(), GetLastCommittedURL(), GetGlobalId()),
       std::move(receiver));
 }
 
@@ -9519,7 +9534,7 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
         GetProcess()->GetStoragePartition(), url,
         cross_origin_embedder_policy_.reporting_endpoint,
         cross_origin_embedder_policy_.report_only_reporting_endpoint,
-        frame_token_.value(), isolation_info.network_isolation_key());
+        GetReportingSource(), isolation_info.network_isolation_key());
   }
   std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info;
   if (is_same_document && web_bundle_handle_ &&
@@ -10142,6 +10157,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     if (lifecycle_state() != LifecycleStateImpl::kPendingCommit &&
         !committed_speculative_rfh_before_navigation_commit_) {
       DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kSpeculative);
+      // The old Reporting API configuration is no longer valid, as a new
+      // document is being loaded into the frame. Inform the network service
+      // of this, so that it can send any queued reports and mark the source
+      // as expired.
+      GetStoragePartition()->GetNetworkContext()->SendReportsAndRemoveSource(
+          GetReportingSource());
+
       // Clear all document-associated data for the non-pending commit
       // RenderFrameHosts because the navigation has created a new document.
       // Make sure the data doesn't get cleared for the cases when the
@@ -10495,7 +10517,8 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
   // Send the crash report to the Reporting API.
   GetProcess()->GetStoragePartition()->GetNetworkContext()->QueueReport(
       /*type=*/"crash", /*group=*/"default", last_committed_url_,
-      isolation_info_.network_isolation_key(), absl::nullopt, std::move(body));
+      GetReportingSource(), isolation_info_.network_isolation_key(),
+      absl::nullopt /* user_agent */, std::move(body));
 }
 
 void RenderFrameHostImpl::SendCommitNavigation(
@@ -12295,6 +12318,7 @@ RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
     DCHECK(page_delegate);
     owned_page = std::make_unique<PageImpl>(document, *page_delegate);
   }
+  reporting_source = base::UnguessableToken::Create();
 }
 RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() =
     default;

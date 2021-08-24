@@ -99,6 +99,10 @@ const base::Feature kAppListBubble{"AppListBubble",
 const base::Feature kArcAdbSideloadingFeature{
     "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable support for ARC Input Overlay.
+const base::Feature kArcInputOverlay{"ArcInputOverlay",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable support for ARC ADB sideloading for managed
 // accounts and/or devices.
 const base::Feature kArcManagedAdbSideloadingSupport{
@@ -974,6 +978,11 @@ const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
 const base::Feature kShowBluetoothDebugLogToggle{
     "ShowBluetoothDebugLogToggle", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether to show domain-related questionnaire in feedback report UI
+// (crbug/1241169).
+const base::Feature kShowFeedbackReportQuestionnaire{
+    "FeedbackReportQuestionnaire", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the system tray to show date in sufficiently large screen.
 const base::Feature kShowDateInTrayButton{"ShowDateInTrayButton",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1200,6 +1209,10 @@ bool IsAppListBubbleEnabled() {
 
 bool IsAppNotificationsPageEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsAppNotificationsPage);
+}
+
+bool IsArcInputOverlayEnabled() {
+  return base::FeatureList::IsEnabled(kArcInputOverlay);
 }
 
 bool IsArcResizeLockEnabled() {

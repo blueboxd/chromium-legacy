@@ -204,6 +204,11 @@
     "expiry_milestone": 97
   },
   {
+    "name": "arc-input-overlay",
+    "owners": [ "cuicuiruan@google.com", "arc-gaming@google.com" ],
+    "expiry_milestone": 99
+  },
+  {
     "name": "arc-keyboard-shortcut-helper-integration",
     "owners": [ "tetsui" ],
     "expiry_milestone": 97
@@ -513,6 +518,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "bookmarks-refresh",
+    "owners": ["wylieb", "fgorski", "mdjones"],
+    "expiry_milestone": 100
+  },
+  {
     "name": "borealis-disk-management",
     "owners": [ "danielng" ],
     "expiry_milestone": 96
@@ -586,6 +596,12 @@
     "name": "check-offline-capability",
     "owners": [ "asamidoi", "//content/browser/service_worker/OWNERS" ],
     "expiry_milestone": 93
+  },
+  {
+    "name": "chrome-cleanup-scan-completed-notification",
+    "owners": ["rainhard", "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 92
   },
   {
     "name": "chrome-labs",
@@ -3145,7 +3161,7 @@
   {
     "name": "force-spectre-v2-mitigation",
     "owners": [ "chromeos-security@google.com" ],
-    "expiry_milestone": 92
+    "expiry_milestone": 98
   },
   {
     "name": "force-startup-signin-promo",
@@ -4779,6 +4795,15 @@
     "expiry_milestone": 95
   },
   {
+    "name": "safety-check-chrome-cleaner-child",
+    "owners": [
+      "rainhard",
+      "msramek",
+      "chrome-friendly-settings@google.com"
+    ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "safety-tips",
     "owners": [ "jdeblasio", "estark", "meacer" ],
     "expiry_milestone": 89
@@ -5037,6 +5062,11 @@
     // caused by specific hardware, noisy environments, etc. Thus, it should not
     // expire.
     "expiry_milestone": -1
+  },
+  {
+    "name": "show-feedback-report-questionnaire",
+    "owners": ["sonnysasaka"],
+    "expiry_milestone": 98
   },
   {
     "name": "show-metered-toggle",
@@ -5705,11 +5735,6 @@
     "name": "win-10-tab-search-caption-button",
     "owners": [ "tluk@google.com", "chrome-cros@google.com" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "window-naming",
-    "owners": [ "ellyjones" ],
-    "expiry_milestone": 92
   },
   {
     "name": "wipe-data-on-child-account-signin",

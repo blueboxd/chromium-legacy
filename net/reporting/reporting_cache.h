@@ -11,13 +11,16 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "net/base/net_export.h"
 #include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_report.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -55,17 +58,23 @@ class NET_EXPORT ReportingCache {
 
   // Adds a report to the cache.
   //
-  // All parameters correspond to the desired values for the relevant fields in
-  // ReportingReport.
-  virtual void AddReport(const NetworkIsolationKey& network_isolation_key,
-                         const GURL& url,
-                         const std::string& user_agent,
-                         const std::string& group_name,
-                         const std::string& type,
-                         std::unique_ptr<const base::Value> body,
-                         int depth,
-                         base::TimeTicks queued,
-                         int attempts) = 0;
+  // |reporting_source| and |network_isolation_key| will be used when the
+  // report is delivered, to determine which endpoints are eligible to receive
+  // this report, and which other reports this report can be batched with.
+  //
+  // All other parameters correspond to the desired values for the relevant
+  // fields in ReportingReport.
+  virtual void AddReport(
+      const absl::optional<base::UnguessableToken>& reporting_source,
+      const NetworkIsolationKey& network_isolation_key,
+      const GURL& url,
+      const std::string& user_agent,
+      const std::string& group_name,
+      const std::string& type,
+      std::unique_ptr<const base::Value> body,
+      int depth,
+      base::TimeTicks queued,
+      int attempts) = 0;
 
   // Gets all reports in the cache. The returned pointers are valid as long as
   // either no calls to |RemoveReports| have happened or the reports' |pending|
@@ -86,6 +95,15 @@ class NET_EXPORT ReportingCache {
   // as the reports are still pending.
   virtual std::vector<const ReportingReport*> GetReportsToDeliver() = 0;
 
+  // Gets all reports in the cache which are eligible for delivery, which were
+  // queued for a single `reporting_source`, and marks returned reports as
+  // pending in preparation for a delivery attempt. The returned pointers are
+  // valid as long as the reports are still pending. This method is used when a
+  // reporting source is being destroyed, to trigger delivery of any remaining
+  // outstanding reports.
+  virtual std::vector<const ReportingReport*> GetReportsToDeliverForSource(
+      const base::UnguessableToken& reporting_source) = 0;
+
   // Unmarks a set of reports as pending. |reports| must be previously marked as
   // pending.
   virtual void ClearReportsPending(
@@ -102,6 +120,17 @@ class NET_EXPORT ReportingCache {
       const GURL& url,
       int reports_delivered,
       bool successful) = 0;
+
+  // Marks a `reporting_source` as expired, when the source (document or
+  // worker) has beed destroyed. The endpoint configuration for the source will
+  // be removed by the garbage collector once all outstanding reports have been
+  // delivered or expired.
+  virtual void SetExpiredSource(
+      const base::UnguessableToken& reporting_source) = 0;
+
+  // Gets the current set of expired reporting sources.
+  virtual const base::flat_set<base::UnguessableToken>& GetExpiredSources()
+      const = 0;
 
   // Removes a set of reports. Any reports that are pending will not be removed
   // immediately, but rather marked doomed and removed once they are no longer
@@ -120,6 +149,10 @@ class NET_EXPORT ReportingCache {
   // ones.
   virtual size_t GetFullReportCountForTesting() const = 0;
 
+  // Gets the count of reports in the cache with a specific `status`.
+  virtual size_t GetReportCountWithStatusForTesting(
+      ReportingReport::Status status) const = 0;
+
   virtual bool IsReportPendingForTesting(
       const ReportingReport* report) const = 0;
 
@@ -133,6 +166,19 @@ class NET_EXPORT ReportingCache {
       const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       std::vector<ReportingEndpointGroup> parsed_header) = 0;
+
+  // Adds named endpoints for |reporting_source| to the cache, based on the
+  // received Reporting-Endpoints header.
+  // |reporting_source| is the token identifying the document or worker with
+  // which this header was received, and may not be empty.
+  // |origin| is the origin of the document or worker represented by
+  // |reporting_source|, and |network_isolation_key| is the appropriate NIK for
+  // that source. These two parameters are currently needed because the new
+  // Reporting API currently shares the cache, delivery agent and
+  // ReportingEndpoint struct with the old API.
+  virtual void OnParsedReportingEndpointsHeader(
+      const base::UnguessableToken& reporting_source,
+      std::vector<ReportingEndpoint> parsed_header) = 0;
 
   // Gets all the origins of clients in the cache.
   virtual std::set<url::Origin> GetAllOrigins() const = 0;
@@ -159,6 +205,12 @@ class NET_EXPORT ReportingCache {
   // when a delivery returns 410 Gone. May cause deletion of groups/clients if
   // they become empty.
   virtual void RemoveEndpointsForUrl(const GURL& url) = 0;
+
+  // Remove `reporting_source` from the cache, including any configured
+  // endpoints. There should be no non-doomed reports in the cache for
+  // `reporting_source` when this is called.
+  virtual void RemoveSourceAndEndpoints(
+      const base::UnguessableToken& reporting_source) = 0;
 
   // Insert endpoints and endpoint groups that have been loaded from the store.
   //
@@ -202,6 +254,14 @@ class NET_EXPORT ReportingCache {
   // Flush the contents of the cache to disk, if applicable.
   virtual void Flush() = 0;
 
+  // Returns the endpoint named |endpoint_name| for the reporting source, if it
+  // was configured with the Reporting-Endpoints header, otherwise returns an
+  // invalid ReportingEndpoint.
+  // |reporting_source| must not be empty.
+  virtual ReportingEndpoint GetV1EndpointForTesting(
+      const base::UnguessableToken& reporting_source,
+      const std::string& endpoint_name) const = 0;
+
   // Finds an endpoint for the given |group_key| and |url|, otherwise returns an
   // invalid ReportingEndpoint.
   virtual ReportingEndpoint GetEndpointForTesting(
@@ -226,18 +286,29 @@ class NET_EXPORT ReportingCache {
   // Returns number of endpoint groups.
   virtual size_t GetClientCountForTesting() const = 0;
 
+  // Returns number of reporting source tokens associated with endpoints.
+  virtual size_t GetReportingSourceCountForTesting() const = 0;
+
   // Sets an endpoint with the given properties in a group with the given
   // properties, bypassing header parsing. Note that the endpoint is not
   // guaranteed to exist in the cache after calling this function, if endpoint
   // eviction is triggered. Unlike the AddOrUpdate*() methods used in header
   // parsing, this method inserts or updates a single endpoint while leaving the
-  // exiting configuration for that origin intact.
+  // existing configuration for that origin intact.
   virtual void SetEndpointForTesting(const ReportingEndpointGroupKey& group_key,
                                      const GURL& url,
                                      OriginSubdomains include_subdomains,
                                      base::Time expires,
                                      int priority,
                                      int weight) = 0;
+
+  // Sets a V1 named endpoint with the given key for |reporting_source|,
+  // bypassing header parsing. This method inserts a single endpoint while
+  // leaving the existing configuration for that source intact.
+  virtual void SetV1EndpointForTesting(
+      const ReportingEndpointGroupKey& group_key,
+      const base::UnguessableToken& reporting_source,
+      const GURL& url) = 0;
 };
 
 // Persistent storage for Reporting reports and clients.

@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -219,10 +220,16 @@ bool ExecutionContext::SharedArrayBufferTransferAllowed() const {
     return true;
   }
 
-  if (SecurityPolicy::IsSharedArrayBufferAlwaysAllowedForOrigin(
-          GetSecurityOrigin())) {
+  // Check if the SharedArrayBuffer is always allowed for this origin. For
+  // worklets use the origin of the main document (consistent with how origin is
+  // verified in origin trials).
+  const SecurityOrigin* origin;
+  if (auto* worklet_scope = DynamicTo<WorkletGlobalScope>(this))
+    origin = worklet_scope->DocumentSecurityOrigin();
+  else
+    origin = GetSecurityOrigin();
+  if (SecurityPolicy::IsSharedArrayBufferAlwaysAllowedForOrigin(origin))
     return true;
-  }
 
 #if defined(OS_ANDROID)
   return false;
@@ -236,25 +243,6 @@ bool ExecutionContext::SharedArrayBufferTransferAllowed() const {
 #endif
 }
 
-namespace {
-mojom::blink::InspectorIssueInfoPtr CreateSharedArrayBufferIssue(
-    const SourceLocation* source_location) {
-  auto details = mojom::blink::InspectorIssueDetails::New();
-  auto issue_details = mojom::blink::SharedArrayBufferIssueDetails::New();
-  auto affected_location = mojom::blink::AffectedLocation::New();
-  affected_location->url = source_location->Url();
-  affected_location->line = source_location->LineNumber() - 1;
-  affected_location->column = source_location->ColumnNumber();
-  affected_location->script_id =
-      WTF::String::Number(source_location->ScriptId());
-  issue_details->affected_location = std::move(affected_location);
-  details->sab_issue_details = std::move(issue_details);
-  return mojom::blink::InspectorIssueInfo::New(
-      mojom::blink::InspectorIssueCode::kSharedArrayBufferIssue,
-      std::move(details));
-}
-}  // namespace
-
 bool ExecutionContext::CheckSharedArrayBufferTransferAllowedAndReport() {
   const bool allowed = SharedArrayBufferTransferAllowed();
   // File an issue if the transfer is prohibited, or if it will be prohibited
@@ -267,12 +255,8 @@ bool ExecutionContext::CheckSharedArrayBufferTransferAllowedAndReport() {
        !SchemeRegistry::ShouldTreatURLSchemeAsAllowingSharedArrayBuffers(
            GetSecurityOrigin()->Protocol()))) {
     has_filed_shared_array_buffer_transfer_issue_ = true;
-    auto source_location = SourceLocation::Capture(this);
-    auto issue = CreateSharedArrayBufferIssue(source_location.get());
-    issue->details->sab_issue_details->is_warning = allowed;
-    issue->details->sab_issue_details->type =
-        mojom::blink::SharedArrayBufferIssueType::kTransferIssue;
-    AddInspectorIssue(std::move(issue));
+    AuditsIssue::ReportSharedArrayBufferIssue(
+        this, allowed, SharedArrayBufferIssueType::kTransferIssue);
   }
   return allowed;
 }
@@ -282,13 +266,9 @@ void ExecutionContext::FileSharedArrayBufferCreationIssue() {
   if (has_filed_shared_array_buffer_creation_issue_)
     return;
   has_filed_shared_array_buffer_creation_issue_ = true;
-  auto source_location = SourceLocation::Capture(this);
-  auto issue = CreateSharedArrayBufferIssue(source_location.get());
   // In enforced mode, the SAB constructor isn't available.
-  issue->details->sab_issue_details->is_warning = true;
-  issue->details->sab_issue_details->type =
-      mojom::blink::SharedArrayBufferIssueType::kCreationIssue;
-  AddInspectorIssue(std::move(issue));
+  AuditsIssue::ReportSharedArrayBufferIssue(
+      this, true, SharedArrayBufferIssueType::kCreationIssue);
 }
 
 void ExecutionContext::ReportNavigatorUserAgentAccess() {

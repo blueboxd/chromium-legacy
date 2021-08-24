@@ -2060,6 +2060,11 @@ const char kPointerLockOptionsDescription[] =
     "to true, pointer movements wil not be affected by the underlying platform "
     "modications such as mouse accelaration.";
 
+const char kBookmarksRefreshName[] =
+    "Enables the a visual refresh for bookmarks";
+const char kBookmarksRefreshDescription[] =
+    "Changes the bookmark list visuals.";
+
 const char kPrerender2Name[] = "Prerender2";
 const char kPrerender2Description[] =
     "Enables the new prerenderer implementation for "
@@ -2773,10 +2778,6 @@ const char kWebXrRuntimeChoiceOpenXR[] = "OpenXR";
 const char kWebXrIncubationsName[] = "WebXR Incubations";
 const char kWebXrIncubationsDescription[] =
     "Enables experimental features for WebXR.";
-
-const char kWindowNamingName[] = "Window Naming";
-const char kWindowNamingDescription[] =
-    "Whether the window naming UI is enabled.";
 
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
@@ -3728,6 +3729,12 @@ const char kCalculateNativeWinOcclusionDescription[] =
     "Calculate window occlusion on Windows will be used in the future "
     "to throttle and potentially unload foreground tabs in occluded windows";
 
+const char kChromeCleanupScanCompletedNotificationName[] =
+    "Chrome cleanup scan completion notification";
+const char kChromeCleanupScanCompletedNotificationDescription[] =
+    "Allows you to be notified when a Chrome cleaner scan you started "
+    "completes.";
+
 const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
@@ -3754,6 +3761,11 @@ const char kRunVideoCaptureServiceInBrowserProcessName[] =
     "Run video capture service in browser";
 const char kRunVideoCaptureServiceInBrowserProcessDescription[] =
     "Run the video capture service in the browser process.";
+
+const char kSafetyCheckChromeCleanerChildName[] =
+    "Chrome Cleanup Tool in safety check";
+const char kSafetyCheckChromeCleanerChildDescription[] =
+    "Enables the Chrome Cleanup Tool child in safety check.";
 
 const char kUseAngleName[] = "Choose ANGLE graphics backend";
 const char kUseAngleDescription[] =
@@ -4806,10 +4818,16 @@ const char kArcGhostWindowDescription[] =
     "Enables the pre-load app window for "
     "ARC++ app during ARCVM booting stage on full restore process";
 
+const char kArcInputOverlayName[] = "Enable ARC Input Overlay";
+const char kArcInputOverlayDescription[] =
+    "Enables the input overlay feature for some Android game apps, "
+    "so it can play with a keyboard and a mouse instead of touch screen";
+
 const char kArcResizeLockName[] = "Resize Lock for Android apps";
 const char kArcResizeLockDescription[] =
-    "Enable compatibility mode for Android apps that are not optimized for "
-    "large screens, and impose restrictions on resizing the apps";
+    "Enable keyboard and mouse input compatibility mode for Android games "
+    "that are designed to only support touch input. This mode is only "
+    "available on games for which there is an input overlay configuration.";
 
 const char kScanAppMediaLinkName[] = "Show Media app link in Scan app";
 const char kScanAppMediaLinkDescription[] =
@@ -4864,6 +4882,11 @@ const char kShowBluetoothDebugLogToggleName[] =
 const char kShowBluetoothDebugLogToggleDescription[] =
     "Enables a toggle which can enable debug (i.e., verbose) logs for "
     "Bluetooth";
+
+const char kShowFeedbackReportQuestionnaireName[] =
+    "Show feedback report questionnaire";
+const char kShowFeedbackReportQuestionnaireDescription[] =
+    "Show domain-related questionnaire in feedback report UI";
 
 const char kBluetoothSessionizedMetricsName[] =
     "Enable Bluetooth sessionized metrics";

@@ -67,7 +67,6 @@
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -165,8 +164,9 @@ using testing::Return;
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
 #endif
 
-using testing::_;
 using extensions::Extension;
+using testing::_;
+using web_app::WebAppProvider;
 
 namespace {
 
@@ -207,7 +207,7 @@ Browser* OpenNewBrowser(Profile* profile) {
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl creator(base::FilePath(), dummy,
                                     chrome::startup::IS_FIRST_RUN);
-  creator.Launch(profile, std::vector<GURL>(), false, nullptr);
+  creator.Launch(profile, false, nullptr);
   return chrome::FindBrowserWithProfile(profile);
 }
 
@@ -1630,7 +1630,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorRestartTest,
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl creator(base::FilePath(), dummy,
                                     chrome::startup::IS_NOT_FIRST_RUN);
-  creator.Launch(test_profile, std::vector<GURL>(), false, nullptr);
+  creator.Launch(test_profile, false, nullptr);
   restore_waiter.Wait();
 
   // We expect a browser to open, but we should NOT get a duplicate app.
@@ -1687,9 +1687,7 @@ class StartupBrowserWithWebAppTest : public StartupBrowserCreatorTest {
       command_line->AppendSwitchASCII(switches::kProfileDirectory, "Default");
     }
   }
-  web_app::WebAppProvider& provider() {
-    return *web_app::WebAppProvider::GetForTest(profile());
-  }
+  WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
 };
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
@@ -1738,8 +1736,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
 
   // Install a web app that we will launch from the command line in
   // the PRE test.
-  web_app::WebAppProvider* const provider =
-      web_app::WebAppProvider::GetForTest(browser()->profile());
+  WebAppProvider* const provider =
+      WebAppProvider::GetForTest(browser()->profile());
   web_app::WebAppInstallFinalizer& web_app_finalizer =
       provider->install_finalizer();
 
@@ -1834,9 +1832,7 @@ class StartupBrowserWithRealWebAppTest : public StartupBrowserCreatorTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {}
 
-  web_app::WebAppProvider& provider() {
-    return *web_app::WebAppProvider::GetForTest(profile());
-  }
+  WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
 };
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserWithRealWebAppTest,
@@ -1968,8 +1964,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithRealWebAppTest,
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy,
                                    chrome::startup::IS_NOT_FIRST_RUN);
   // Fake |process_startup| true.
-  EXPECT_TRUE(launch.Launch(profile1, std::vector<GURL>(),
-                            /* process_startup */ true, nullptr));
+  EXPECT_TRUE(launch.Launch(profile1, /* process_startup */ true, nullptr));
 
   // We should get two windows from profile1.
   ASSERT_EQ(3u, BrowserList::GetInstance()->size());
@@ -1981,8 +1976,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithRealWebAppTest,
   }
 
   // Since there's one app being restored, ensure the provider is ready.
-  web_app::WebAppProvider* provider =
-      web_app::WebAppProviderFactory::GetForProfile(profile1);
+  WebAppProvider* provider = WebAppProvider::GetForTest(profile1);
   ASSERT_TRUE(provider->on_registry_ready().is_signaled());
 
   // The last open sessions should be restored.
@@ -2419,8 +2413,8 @@ class StartupBrowserWebAppProtocolHandlingTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  web_app::WebAppProvider* provider() {
-    return web_app::WebAppProvider::GetForTest(browser()->profile());
+  WebAppProvider* provider() {
+    return WebAppProvider::GetForTest(browser()->profile());
   }
 
   // Install a web app with protocol_handlers then register it with the
@@ -2700,8 +2694,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTab) {
 
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
                                    chrome::startup::IS_FIRST_RUN);
-  ASSERT_TRUE(
-      launch.Launch(browser()->profile(), std::vector<GURL>(), false, nullptr));
+  ASSERT_TRUE(launch.Launch(browser()->profile(), false, nullptr));
 
   // This should have created a new browser window.
   Browser* new_browser = FindOneOtherBrowser(browser());
@@ -2758,8 +2751,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
                                    chrome::startup::IS_FIRST_RUN);
-  ASSERT_TRUE(
-      launch.Launch(browser()->profile(), std::vector<GURL>(), true, nullptr));
+  ASSERT_TRUE(launch.Launch(browser()->profile(), true, nullptr));
 
   // This should have created a new browser window.
   Browser* new_browser = FindOneOtherBrowser(browser());
@@ -2805,8 +2797,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
                                    chrome::startup::IS_FIRST_RUN);
-  ASSERT_TRUE(
-      launch.Launch(browser()->profile(), std::vector<GURL>(), true, nullptr));
+  ASSERT_TRUE(launch.Launch(browser()->profile(), true, nullptr));
 
   // This should have created a new browser window.
   Browser* new_browser = FindOneOtherBrowser(browser());
@@ -3021,7 +3012,7 @@ class StartupBrowserCreatorInfobarsTest
     Profile* profile = browser()->profile();
     StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
                                      chrome::startup::IS_NOT_FIRST_RUN);
-    EXPECT_TRUE(launch.Launch(profile, std::vector<GURL>(), true, nullptr));
+    EXPECT_TRUE(launch.Launch(profile, true, nullptr));
 
     // This should have created a new browser window.
     Browser* new_browser = FindOneOtherBrowser(browser());
@@ -3131,7 +3122,7 @@ class StartupBrowserCreatorInfobarsKioskTest : public InProcessBrowserTest {
     command_line.AppendSwitch(extra_switch);
     StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
                                      chrome::startup::IS_NOT_FIRST_RUN);
-    EXPECT_TRUE(launch.Launch(profile, std::vector<GURL>(), true, nullptr));
+    EXPECT_TRUE(launch.Launch(profile, true, nullptr));
 
     // This should have created a new browser window.
     Browser* new_browser = FindOneOtherBrowser(browser());

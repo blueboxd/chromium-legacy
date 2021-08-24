@@ -711,6 +711,8 @@ crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-012.html [ Fail
 crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-013.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-014.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-038.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-039.html [ Failure ]
 
 # White space, absolute position and paint timing failures from June 5, 2020
 crbug.com/591099 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-visibility.html [ Failure ]
@@ -1253,6 +1255,9 @@ crbug.com/591099 external/wpt/webcodecs/video-decoder.https.any.worker.html [ Fa
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.any.worker.html?h264_annexb [ Failure Timeout ]
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.any.worker.html?h264_avc [ Failure Timeout ]
 
+# Flaky only in legacy layout
+crbug.com/1231658 transforms/transformed-caret.html [ Pass Failure ]
+
 crbug.com/591099 fast/forms/time/time-appearance-basic.html [ Failure ]
 crbug.com/591099 virtual/prerender/wpt_internal/prerender/restriction-encrypted-media.https.html [ Failure ]
 crbug.com/591099 virtual/prerender/wpt_internal/prerender/restriction-media-auto-play-attribute.html [ Failure ]
@@ -1274,3 +1279,6 @@ crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-029.
 crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-030.html [ Failure ]
 crbug.com/591099 http/tests/devtools/webaudio/graphview-test.js [ Failure ]
 crbug.com/591099 virtual/shared_array_buffer_on_desktop/http/tests/devtools/webaudio/graphview-test.js [ Failure ]
+
+#unblock wpt-importer
+crbug.com/591099 external/wpt/css/css-overflow/scrollable-overflow-input-001.html [ Failure ]

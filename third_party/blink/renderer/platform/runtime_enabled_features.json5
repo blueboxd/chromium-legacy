@@ -1072,6 +1072,10 @@
       // No status, as the web platform runtime enabled feature is controlled by
       // a Chromium level feature.
     },
+    {
+      name: "FontSynthesis",
+      status: "test",
+    },
     // For simulating Android's overlay fullscreen video in web tests on Linux.
     {
       name: "ForcedColors",
@@ -1159,8 +1163,7 @@
     },
     {
       name: "IdleDetection",
-      origin_trial_feature_name: "IdleDetection",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ImplicitRootScroller",
@@ -1962,12 +1965,13 @@
     },
     {
       name: "SecurePaymentConfirmation",
-      origin_trial_feature_name: "SecurePaymentConfirmationV2",
-      origin_trial_os: ["mac", "win", "android"],
-      status: "experimental",
+      status: "test",
     },
     {
       name: "SecurePaymentConfirmationAPIV3",
+    },
+    {
+      name: "SecurePaymentConfirmationCredential",
     },
     {
       name: "SecurePaymentConfirmationDebug",
@@ -2245,6 +2249,8 @@
     {
       name: "UserAgentReduction",
       origin_trial_feature_name: "UserAgentReduction",
+      origin_trial_allows_third_party: true,
+      status: "experimental",
     },
     {
       name: "UUID",

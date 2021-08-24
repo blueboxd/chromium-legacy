@@ -107,6 +107,12 @@ const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
+#if defined(OS_WIN)
+const base::Feature kChromeCleanupScanCompletedNotification{
+    "ChromeCleanupScanCompletedNotification",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -817,6 +823,11 @@ const base::Feature kRequestDesktopSiteForTablets{
     "RequestDesktopSiteForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_WIN)
+const base::Feature kSafetyCheckChromeCleanerChild{
+    "SafetyCheckChromeCleanerChild", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.
 const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
@@ -1099,9 +1110,6 @@ const base::Feature kUserTypeByDeviceTypeMetricsProvider{
 const base::Feature kWin10AcceleratedDefaultBrowserFlow{
     "Win10AcceleratedDefaultBrowserFlow", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
-
-const base::Feature kWindowNaming{"WindowNaming",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables writing basic system profile to the persistent histograms files
 // earlier.

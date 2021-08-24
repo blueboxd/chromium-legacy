@@ -374,30 +374,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="AddSupervisionDialog.EnrollmentCompletedUserTime" units="ms"
-    expires_after="2021-09-08">
+    expires_after="2022-08-23">
   <owner>tobyhuang@chromium.org</owner>
   <owner>michaelpg@chromium.org</owner>
   <owner>danan@chromium.org</owner>
   <summary>
     Measures the amount of time in milliseconds for users to successfully enroll
-    in supervision.
+    in supervision. Elapsed time is measured starting from when the Add
+    Supervision dialog was first opened.
   </summary>
 </histogram>
 
 <histogram name="AddSupervisionDialog.EnrollmentNotCompletedUserTime"
-    units="ms" expires_after="2021-09-08">
+    units="ms" expires_after="2021-08-23">
   <owner>tobyhuang@chromium.org</owner>
   <owner>michaelpg@chromium.org</owner>
   <owner>danan@chromium.org</owner>
   <summary>
     Measures the amount of time in milliseconds for users to exit the Add
     Supervision dialog without enrollment. This can happen if the user closes
-    the Add Supervision dialog or signs out to switch accounts.
+    the Add Supervision dialog or signs out to switch accounts. Elapsed time is
+    measured starting from when the Add Supervision dialog was first opened.
   </summary>
 </histogram>
 
 <histogram name="AddSupervisionDialog.SignoutCompletedUserTime" units="ms"
-    expires_after="2021-09-08">
+    expires_after="2021-08-23">
   <owner>tobyhuang@chromium.org</owner>
   <owner>michaelpg@chromium.org</owner>
   <owner>danan@chromium.org</owner>
@@ -10267,7 +10269,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ManagedUsers.SafetyFilter"
-    enum="SupervisedUserSafetyFilterResult" expires_after="2021-09-27">
+    enum="SupervisedUserSafetyFilterResult" expires_after="2022-08-19">
   <owner>agawronska@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
@@ -10275,7 +10277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     includes the outcome of the filter (i.e. allowed, blocked, or unknown) and
     the page transition type (how the user got there, e.g. typed URL, clicked
     link). This only includes URL requests that were handled by the SafeSites
-    filter (both online and the static blacklist).
+    filter (both online and the static blocklist).
   </summary>
 </histogram>
 

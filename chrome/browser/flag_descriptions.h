@@ -1139,6 +1139,9 @@ extern const char kPdfUnseasonedDescription[];
 extern const char kPdfXfaFormsName[];
 extern const char kPdfXfaFormsDescription[];
 
+extern const char kBookmarksRefreshName[];
+extern const char kBookmarksRefreshDescription[];
+
 extern const char kForceWebContentsDarkModeName[];
 extern const char kForceWebContentsDarkModeDescription[];
 
@@ -1583,9 +1586,6 @@ extern const char kWebXrIncubationsDescription[];
 
 extern const char kWindowsFollowCursorName[];
 extern const char kWindowsFollowCursorDescription[];
-
-extern const char kWindowNamingName[];
-extern const char kWindowNamingDescription[];
 
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
@@ -2126,6 +2126,9 @@ extern const char kSCTAuditingDescription[];
 extern const char kCalculateNativeWinOcclusionName[];
 extern const char kCalculateNativeWinOcclusionDescription[];
 
+extern const char kChromeCleanupScanCompletedNotificationName[];
+extern const char kChromeCleanupScanCompletedNotificationDescription[];
+
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
 
@@ -2140,6 +2143,9 @@ extern const char kRawAudioCaptureDescription[];
 
 extern const char kRunVideoCaptureServiceInBrowserProcessName[];
 extern const char kRunVideoCaptureServiceInBrowserProcessDescription[];
+
+extern const char kSafetyCheckChromeCleanerChildName[];
+extern const char kSafetyCheckChromeCleanerChildDescription[];
 
 extern const char kUseAngleName[];
 extern const char kUseAngleDescription[];
@@ -2769,6 +2775,9 @@ extern const char kReleaseNotesNotificationAllChannelsDescription[];
 extern const char kArcGhostWindowName[];
 extern const char kArcGhostWindowDescription[];
 
+extern const char kArcInputOverlayName[];
+extern const char kArcInputOverlayDescription[];
+
 extern const char kArcResizeLockName[];
 extern const char kArcResizeLockDescription[];
 
@@ -2806,6 +2815,9 @@ extern const char kChromeOSSharingHubDescription[];
 
 extern const char kShowBluetoothDebugLogToggleName[];
 extern const char kShowBluetoothDebugLogToggleDescription[];
+
+extern const char kShowFeedbackReportQuestionnaireName[];
+extern const char kShowFeedbackReportQuestionnaireDescription[];
 
 extern const char kBluetoothSessionizedMetricsName[];
 extern const char kBluetoothSessionizedMetricsDescription[];

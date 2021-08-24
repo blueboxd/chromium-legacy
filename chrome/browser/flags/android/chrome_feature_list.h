@@ -45,6 +45,7 @@ extern const base::Feature kCCTRemoveRemoteViewIds;
 extern const base::Feature kCCTReportParallelRequestStatus;
 extern const base::Feature kCCTResizableForFirstParties;
 extern const base::Feature kCCTResizableForThirdParties;
+extern const base::Feature kCCTResizable90MaximumHeight;
 extern const base::Feature kCCTResourcePrefetch;
 extern const base::Feature kDontAutoHideBrowserControls;
 extern const base::Feature kChromeShareLongScreenshot;
@@ -106,6 +107,7 @@ extern const base::Feature kNewWindowAppMenu;
 extern const base::Feature kOfflineIndicatorV2;
 extern const base::Feature kOfflineMeasurementsBackgroundTask;
 extern const base::Feature kPageAnnotationsService;
+extern const base::Feature kBookmarksRefresh;
 extern const base::Feature kProbabilisticCryptidRenderer;
 extern const base::Feature kQuickActionSearchWidgetAndroid;
 extern const base::Feature kReachedCodeProfiler;
@@ -160,6 +162,7 @@ extern const base::Feature kVoiceButtonInTopToolbar;
 extern const base::Feature kVrBrowsingFeedback;
 extern const base::Feature kWebOtpCrossDeviceSimpleString;
 extern const base::Feature kWebApkInstallCompleteNotification;
+extern const base::Feature kWebApkTrampolineOnInitialIntent;
 
 }  // namespace android
 }  // namespace chrome

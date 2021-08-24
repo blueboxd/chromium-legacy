@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/memory/ref_counted.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
@@ -35,8 +36,11 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
  public:
   ReportingServiceProxyImpl(
       int render_process_id,
+      base::RepeatingCallback<const base::UnguessableToken&()>
+          reporting_source_cb,
       const net::NetworkIsolationKey& network_isolation_key)
       : render_process_id_(render_process_id),
+        reporting_source_cb_(reporting_source_cb),
         network_isolation_key_(network_isolation_key) {}
 
   ReportingServiceProxyImpl(const ReportingServiceProxyImpl&) = delete;
@@ -175,14 +179,14 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
     auto* rph = RenderProcessHost::FromID(render_process_id_);
     if (!rph)
       return;
-
     rph->GetStoragePartition()->GetNetworkContext()->QueueReport(
-        type, group, url, network_isolation_key_,
+        type, group, url, reporting_source_cb_.Run(), network_isolation_key_,
         /*user_agent=*/absl::nullopt,
         base::Value::FromUniquePtrValue(std::move(body)));
   }
 
   const int render_process_id_;
+  base::RepeatingCallback<const base::UnguessableToken&()> reporting_source_cb_;
   const net::NetworkIsolationKey network_isolation_key_;
 };
 
@@ -192,10 +196,13 @@ void CreateReportingServiceProxyForFrame(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::ReportingServiceProxy> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  mojo::MakeSelfOwnedReceiver(std::make_unique<ReportingServiceProxyImpl>(
-                                  render_frame_host->GetProcess()->GetID(),
-                                  render_frame_host->GetNetworkIsolationKey()),
-                              std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ReportingServiceProxyImpl>(
+          render_frame_host->GetProcess()->GetID(),
+          base::BindRepeating(&RenderFrameHost::GetReportingSource,
+                              base::Unretained(render_frame_host)),
+          render_frame_host->GetNetworkIsolationKey()),
+      std::move(receiver));
 }
 
 void CreateReportingServiceProxyForServiceWorker(
@@ -205,6 +212,8 @@ void CreateReportingServiceProxyForServiceWorker(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<ReportingServiceProxyImpl>(
           service_worker_host->worker_process_id(),
+          base::BindRepeating(&ServiceWorkerHost::GetReportingSource,
+                              base::Unretained(service_worker_host)),
           service_worker_host->GetNetworkIsolationKey()),
       std::move(receiver));
 }
@@ -213,10 +222,13 @@ void CreateReportingServiceProxyForSharedWorker(
     SharedWorkerHost* shared_worker_host,
     mojo::PendingReceiver<blink::mojom::ReportingServiceProxy> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  mojo::MakeSelfOwnedReceiver(std::make_unique<ReportingServiceProxyImpl>(
-                                  shared_worker_host->GetProcessHost()->GetID(),
-                                  shared_worker_host->GetNetworkIsolationKey()),
-                              std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ReportingServiceProxyImpl>(
+          shared_worker_host->GetProcessHost()->GetID(),
+          base::BindRepeating(&SharedWorkerHost::GetReportingSource,
+                              base::Unretained(shared_worker_host)),
+          shared_worker_host->GetNetworkIsolationKey()),
+      std::move(receiver));
 }
 
 void CreateReportingServiceProxyForDedicatedWorker(
@@ -226,6 +238,8 @@ void CreateReportingServiceProxyForDedicatedWorker(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<ReportingServiceProxyImpl>(
           dedicated_worker_host->GetProcessHost()->GetID(),
+          base::BindRepeating(&DedicatedWorkerHost::GetReportingSource,
+                              base::Unretained(dedicated_worker_host)),
           dedicated_worker_host->GetNetworkIsolationKey()),
       std::move(receiver));
 }

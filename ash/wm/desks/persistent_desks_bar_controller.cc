@@ -88,7 +88,7 @@ void PersistentDesksBarController::OnSessionStateChanged(
     DestroyBarWidget();
 }
 
-void PersistentDesksBarController::OnOverviewModeWillStart() {
+void PersistentDesksBarController::OnOverviewModeStarting() {
   DestroyBarWidget();
 }
 
@@ -230,6 +230,31 @@ void PersistentDesksBarController::DestroyBarWidget() {
       ->SetPersistentDeskBarHeight(0);
 }
 
+void PersistentDesksBarController::UpdateBarOnWindowStateChanges(
+    aura::Window* window) {
+  if (window->GetRootWindow() != Shell::GetPrimaryRootWindow())
+    return;
+
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
+  if (std::find(windows.begin(), windows.end(), window) == windows.end())
+    return;
+
+  if (WindowState::Get(window)->IsFullscreen())
+    DestroyBarWidget();
+  else
+    MaybeInitBarWidget();
+}
+
+void PersistentDesksBarController::UpdateBarOnWindowDestroying(
+    aura::Window* window) {
+  if (!WindowState::Get(window)->IsFullscreen() ||
+      window->GetRootWindow() != Shell::GetPrimaryRootWindow()) {
+    return;
+  }
+  MaybeInitBarWidget();
+}
+
 bool PersistentDesksBarController::ShouldPersistentDesksBarBeCreated() const {
   if (!desks_restore_util::HasPrimaryUserUsedDesksRecently())
     return false;
@@ -244,6 +269,12 @@ bool PersistentDesksBarController::ShouldPersistentDesksBarBeCreated() const {
   if (TabletMode::Get()->InTabletMode() ||
       shell->overview_controller()->InOverviewSession() ||
       DesksController::Get()->desks().size() == 1) {
+    return false;
+  }
+
+  // Do not create the bar in non-active user session.
+  if (shell->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
     return false;
   }
 

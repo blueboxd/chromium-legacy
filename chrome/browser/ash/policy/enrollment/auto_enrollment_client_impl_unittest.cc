@@ -197,10 +197,10 @@ class AutoEnrollmentClientImplTest
           progress_callback, service_.get(), local_state_,
           shared_url_loader_factory_, kStateKey, power_initial, power_limit);
     } else {
-      // PSM RLWE testing client factory has to be always non-null whenever
-      // creating a client for initial enrollment when PSM is enabled.
-      DCHECK(psm_rlwe_test_client_factory_ ||
-             GetPsmState() == PsmState::kDisabled);
+      // PSM has to be enabled whenever creating a client for initial
+      // enrollment.
+      DCHECK_EQ(GetPsmState(), PsmState::kEnabled);
+      DCHECK(psm_rlwe_test_client_factory_);
 
       client_ =
           AutoEnrollmentClientImpl::FactoryImpl().CreateForInitialEnrollment(
@@ -1462,12 +1462,11 @@ class PsmHelperTest : public AutoEnrollmentClientImplTest {
   }
 
   void SetUp() override {
-    // Verify that PsmState has value kEnabled, then enable PSM switch
-    // prefs::kEnterpriseEnablePsm.
+    // Verify that PSM is enabled by default (i.e. PSM switch
+    // prefs::kEnterpriseEnablePsm is enabled). And the PsmState has value
+    // kEnable.
     ASSERT_EQ(GetPsmState(), PsmState::kEnabled);
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        chromeos::switches::kEnterpriseEnablePsm,
-        ash::AutoEnrollmentController::kEnablePsmAlways);
+    EXPECT_TRUE(ash::AutoEnrollmentController::IsPsmEnabled());
 
     // Verify that all PSM prefs have not been set before.
     ASSERT_EQ(local_state_->GetUserPref(prefs::kShouldRetrieveDeviceState),
@@ -1480,8 +1479,8 @@ class PsmHelperTest : public AutoEnrollmentClientImplTest {
     // PSM RLWE testing client factory.
     CreatePsmTestCase();
 
-    // Set up the base class AutoEnrollmentClientImplTest after the private set
-    // membership has been enabled.
+    // Set up the base class AutoEnrollmentClientImplTest after creating the PSM
+    // RLWE client factory for testing in |psm_rlwe_test_client_factory_|.
     AutoEnrollmentClientImplTest::SetUp();
 
     // Override the stored PSM ID in the client.
@@ -1489,8 +1488,7 @@ class PsmHelperTest : public AutoEnrollmentClientImplTest {
   }
 
   void CreatePsmTestCase() {
-    // Verify that PSM is enabled, and the test case index is valid.
-    EXPECT_TRUE(ash::AutoEnrollmentController::IsPsmEnabled());
+    // Verify PSM test case index is valid.
     ASSERT_GE(GetPsmTestCaseIndex(), 0);
 
     // Retrieve the PSM test case.
@@ -1666,25 +1664,6 @@ class PsmHelperTest : public AutoEnrollmentClientImplTest {
     histogram_tester_.ExpectBucketCount(
         kUMAPsmNetworkErrorCode + GetAutoEnrollmentProtocolUmaSuffix(),
         network_error, /*expected_count=*/1);
-  }
-
-  // Expects a sample for kUMAPsmHashDanceComparison to be recorded once with
-  // value |comparison|.
-  void ExpectPsmHashDanceComparisonRecorded(
-      PsmHashDanceComparison comparison) const {
-    histogram_tester_.ExpectUniqueSample(kUMAPsmHashDanceComparison, comparison,
-                                         /*expected_count=*/1);
-  }
-
-  // Expects a sample for kUMAPsmHashDanceDifferentResultsComparison to be
-  // recorded once with value |different_results_comparison|.
-  void ExpectPsmHashDanceDifferentResultsComparisonRecorded(
-      PsmHashDanceDifferentResultsComparison different_results_comparison)
-      const {
-    histogram_tester_.ExpectUniqueSample(
-        kUMAPsmHashDanceDifferentResultsComparison,
-        different_results_comparison,
-        /*expected_count=*/1);
   }
 
   void VerifyPsmLastRequestJobType() const {

@@ -11,7 +11,6 @@
 #include <array>
 #include <limits>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -330,7 +329,7 @@ void MediaStreamAudioProcessor::Stop() {
   if (!audio_processing_.get())
     return;
 
-  StopEchoCancellationDump(audio_processing_.get());
+  media::StopEchoCancellationDump(audio_processing_.get());
   worker_queue_.reset(nullptr);
 
   if (playout_data_source_) {
@@ -369,10 +368,10 @@ void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
           CreateWebRtcTaskQueue(rtc::TaskQueue::Priority::LOW));
     }
     // Here tasks will be posted on the |worker_queue_|. It must be
-    // kept alive until StopEchoCancellationDump is called or the
+    // kept alive until media::StopEchoCancellationDump is called or the
     // webrtc::AudioProcessing instance is destroyed.
-    StartEchoCancellationDump(audio_processing_.get(), std::move(dump_file),
-                              worker_queue_.get());
+    media::StartEchoCancellationDump(audio_processing_.get(),
+                                     std::move(dump_file), worker_queue_.get());
   } else {
     // Post the file close to avoid blocking the main thread.
     worker_pool::PostTask(
@@ -384,7 +383,7 @@ void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
 void MediaStreamAudioProcessor::OnStopDump() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (audio_processing_)
-    StopEchoCancellationDump(audio_processing_.get());
+    media::StopEchoCancellationDump(audio_processing_.get());
 
   // Note that deleting an rtc::TaskQueue has to be done from the
   // thread that created it.
@@ -522,13 +521,11 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   absl::optional<int> agc_startup_min_volume =
       Platform::Current()->GetAgcStartupMinimumVolume();
-  absl::optional<std::string> audio_processing_platform_config_json =
-      Platform::Current()->GetWebRTCAudioProcessingConfiguration();
 
-  audio_processing_ = CreateWebRtcAudioProcessingModule(
+  audio_processing_ = media::CreateWebRtcAudioProcessingModule(
       properties.ToAudioProcessingSettings(
           use_capture_multi_channel_processing_),
-      audio_processing_platform_config_json, agc_startup_min_volume);
+      agc_startup_min_volume);
 
   // Register as a listener for the echo cancellation playout reference signal.
   if (playout_data_source_) {

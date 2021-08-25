@@ -34244,6 +34244,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3984" label="HighlightAPIRegisterHighlight"/>
   <int value="3985" label="ReadOrWriteWebDatabaseThirdPartyContext"/>
   <int value="3986" label="FontSelectorCSSFontFamilyWebKitPrefixPictograph"/>
+  <int value="3987" label="FontSelectorCSSFontFamilyWebKitPrefixStandard"/>
+  <int value="3988" label="FontSelectorCSSFontFamilyWebKitPrefixBody"/>
+  <int value="3989" label="FontBuilderCSSFontFamilyWebKitPrefixBody"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -50529,6 +50532,7 @@ from previous Chrome versions.
   <int value="792307132"
       label="KeyboardBasedDisplayArrangementInSettings:enabled"/>
   <int value="792884862" label="EnableSharedImageForWebview:enabled"/>
+  <int value="793287900" label="VerifyDidCommitParams:disabled"/>
   <int value="793816915" label="MessagesForAndroidPopupBlocked:disabled"/>
   <int value="798696013" label="ImeInputLogicMozc:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
@@ -51842,6 +51846,7 @@ from previous Chrome versions.
   <int value="1856270952" label="AutofillAssistantProactiveHelp:disabled"/>
   <int value="1857000695" label="SendWebUIJavaScriptErrorReports:disabled"/>
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>
+  <int value="1858523835" label="VerifyDidCommitParams:enabled"/>
   <int value="1858919054" label="SplitSettingsSync:disabled"/>
   <int value="1860597983" label="AndroidSpellChecker:disabled"/>
   <int value="1860955818" label="PowerScheduler:enabled"/>
@@ -53777,6 +53782,7 @@ Called by update_use_counter_css.py.-->
   <int value="698" label="container-type"/>
   <int value="699" label="container"/>
   <int value="700" label="font-synthesis-weight"/>
+  <int value="701" label="font-synthesis-style"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -74761,6 +74767,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Restart later"/>
   <int value="4" label="Open custom spell check"/>
   <int value="5" label="Open 'Manage Google Account language'"/>
+  <int value="6" label="Open 'Learn more' link about web languages"/>
 </enum>
 
 <enum name="SettingsLanguagesSupportPage">

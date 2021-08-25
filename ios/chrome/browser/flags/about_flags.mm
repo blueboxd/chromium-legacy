@@ -1046,27 +1046,40 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
 void MonitorExperimentalSettingsChanges() {
   // Startup values for settings to be observed.
   __block NSString* hash = TestingPoliciesHash();
+  static std::atomic_bool pending_check(false);
 
   auto monitor = ^(NSNotification* notification) {
-    // Check if observed settings have changed. Since source and destination
-    // are both user defaults, this is required to avoid cycling back here.
-    NSString* newHash = TestingPoliciesHash();
-    if (![newHash isEqualToString:hash]) {
-      hash = newHash;
+    bool has_pending_check = pending_check.exchange(true);
+    if (has_pending_check)
+      return;
 
-      // Publish update.
-      NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-      NSMutableDictionary* testing_policies =
-          CreateExperimentalTestingPolicies();
-      [defaults setValue:testing_policies
-                  forKey:kPolicyLoaderIOSConfigurationKey];
-    }
+    // Can be called from any thread from where the notification was sent,
+    // but since it may change standardUserDefaults, and that has to be on main
+    // thread, dispatch to main thread.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      // Check if observed settings have changed. Since source and destination
+      // are both user defaults, this is required to avoid cycling back here.
+      NSString* newHash = TestingPoliciesHash();
+      if (![newHash isEqualToString:hash]) {
+        hash = newHash;
+
+        // Publish update.
+        NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+        NSMutableDictionary* testing_policies =
+            CreateExperimentalTestingPolicies();
+        NSDictionary* registration_defaults =
+            @{kPolicyLoaderIOSConfigurationKey : testing_policies};
+        [defaults registerDefaults:registration_defaults];
+      }
+
+      pending_check.store(false);
+    });
   };
 
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center addObserverForName:NSUserDefaultsDidChangeNotification
                       object:nil
-                       queue:[NSOperationQueue mainQueue]
+                       queue:nil
                   usingBlock:monitor];
 }
 

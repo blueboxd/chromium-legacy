@@ -873,6 +873,24 @@ URLValueForLoadDataWithBaseURL CategorizeURLValueForLoadDataWithBaseURL(
   return URLValueForLoadDataWithBaseURL::kOther;
 }
 
+bool IsDocumentToCommitAnonymous(FrameTreeNode* frame,
+                                 bool is_synchronous_about_blank_navigation) {
+  RenderFrameHostImpl* current_document = frame->current_frame_host();
+  RenderFrameHostImpl* parent_document = frame->parent();
+
+  // The synchronous about:blank navigation preserves the state of the initial
+  // empty document.
+  // TODO(https://github.com/whatwg/html/issues/6863): Remove the synchronous
+  // about:blank navigation.
+  if (is_synchronous_about_blank_navigation)
+    return current_document->anonymous();
+
+  // The document to commit will be anonymous if either the iframe element
+  // has the 'anonymous' attribute set or the parent document is anonymous.
+  bool parent_anonymous = parent_document && parent_document->anonymous();
+  return parent_anonymous || frame->anonymous();
+}
+
 }  // namespace
 
 NavigationRequest::PrerenderActivationNavigationState::
@@ -1291,12 +1309,8 @@ NavigationRequest::NavigationRequest(
       initiator_frame_token_(begin_params_->initiator_frame_token),
       initiator_process_id_(initiator_process_id),
       was_opener_suppressed_(was_opener_suppressed),
-      // The document to commit will be anonymous if either the iframe element
-      // has the 'anonymous' attribute set or the parent document is anonymous.
-      anonymous_(frame_tree_node->anonymous() ||
-                 (frame_tree_node->parent()
-                      ? frame_tree_node->parent()->anonymous()
-                      : false)),
+      anonymous_(IsDocumentToCommitAnonymous(frame_tree_node,
+                                             is_synchronous_renderer_commit)),
       previous_page_ukm_source_id_(
           frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
@@ -4154,7 +4168,7 @@ void NavigationRequest::CommitNavigation() {
   // instead of creating one from a URL which lacks opacity information.
   isolation_info_for_subresources_ =
       render_frame_host_->ComputeIsolationInfoForSubresourcesForPendingCommit(
-          origin);
+          origin, anonymous());
   DCHECK(!isolation_info_for_subresources_.IsEmpty());
 
   // TODO(https://crbug.com/1199077): Initialize the StorageKey also with the
@@ -6208,7 +6222,7 @@ net::IsolationInfo NavigationRequest::GetIsolationInfo() {
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   return frame_tree_node_->current_frame_host()
-      ->ComputeIsolationInfoForNavigation(common_params_->url);
+      ->ComputeIsolationInfoForNavigation(common_params_->url, anonymous());
 }
 
 bool NavigationRequest::HasSubframeNavigationEntryCommitted() {

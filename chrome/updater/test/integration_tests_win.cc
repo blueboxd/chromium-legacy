@@ -28,8 +28,6 @@
 #include "chrome/updater/external_constants_builder.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/test/integration_tests_impl.h"
-#include "chrome/updater/test/test_app/constants.h"
-#include "chrome/updater/test/test_app/test_app_version.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -52,13 +50,6 @@ base::FilePath GetInstallerPath() {
   if (!base::PathService::Get(base::FILE_EXE, &test_executable))
     return base::FilePath();
   return test_executable.DirName().AppendASCII("UpdaterSetup_test.exe");
-}
-
-base::FilePath GetTestAppExecutablePath() {
-  base::FilePath test_executable;
-  if (!base::PathService::Get(base::FILE_EXE, &test_executable))
-    return base::FilePath();
-  return test_executable.DirName().AppendASCII(TEST_APP_FULLNAME_STRING ".exe");
 }
 
 // Returns the root directory where the updater product is installed. This
@@ -87,14 +78,36 @@ std::wstring GetAppClientStateKey(const std::string& id) {
   return base::StrCat({CLIENT_STATE_KEY, base::ASCIIToWide(id)});
 }
 
-bool RegKeyExists(HKEY root, REGSAM regsam, const std::wstring& path) {
-  return base::win::RegKey(root, path.c_str(), KEY_QUERY_VALUE | regsam)
+bool RegKeyExists(HKEY root, const std::wstring& path) {
+  return base::win::RegKey(root, path.c_str(), Wow6432(KEY_QUERY_VALUE))
       .Valid();
 }
 
-bool DeleteRegKey(HKEY root, REGSAM regsam, const std::wstring& path) {
+bool RegKeyExistsCOM(HKEY root, const std::wstring& path) {
+  return base::win::RegKey(root, path.c_str(), KEY_QUERY_VALUE).Valid();
+}
+
+bool DeleteRegKey(HKEY root, const std::wstring& path) {
   LONG result =
-      base::win::RegKey(root, L"", regsam | KEY_READ).DeleteKey(path.c_str());
+      base::win::RegKey(root, L"", Wow6432(KEY_READ)).DeleteKey(path.c_str());
+  return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
+}
+
+bool DeleteRegKeyCOM(HKEY root, const std::wstring& path) {
+  LONG result = base::win::RegKey(root, L"", KEY_READ).DeleteKey(path.c_str());
+  return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
+}
+
+bool DeleteRegValue(HKEY root,
+                    const std::wstring& path,
+                    const std::wstring& value) {
+  if (!base::win::RegKey(root, path.c_str(), Wow6432(KEY_QUERY_VALUE))
+           .Valid()) {
+    return true;
+  }
+
+  LONG result = base::win::RegKey(root, path.c_str(), Wow6432(KEY_WRITE))
+                    .DeleteValue(value.c_str());
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
@@ -140,8 +153,8 @@ bool DeleteService(const wchar_t* const service_name) {
 
     ::CloseServiceHandle(service);
   }
-  base::win::RegKey(HKEY_LOCAL_MACHINE, UPDATER_KEY, KEY_WRITE)
-      .DeleteValue(service_name);
+
+  DeleteRegValue(HKEY_LOCAL_MACHINE, UPDATER_KEY, service_name);
 
   ::CloseServiceHandle(scm);
 
@@ -152,24 +165,24 @@ void Clean(UpdaterScope scope) {
   const HKEY root =
       scope == UpdaterScope::kSystem ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   for (const wchar_t* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
-    EXPECT_TRUE(DeleteRegKey(root, KEY_WOW64_32KEY, key));
+    EXPECT_TRUE(DeleteRegKey(root, key));
   }
   for (const wchar_t* key : {kRegKeyCompanyCloudManagement,
                              kRegKeyCompanyEnrollment, UPDATER_POLICIES_KEY}) {
-    EXPECT_TRUE(DeleteRegKey(HKEY_LOCAL_MACHINE, 0, key));
+    EXPECT_TRUE(DeleteRegKey(HKEY_LOCAL_MACHINE, key));
   }
 
   for (const CLSID& clsid :
        JoinVectors(GetSideBySideServers(scope), GetActiveServers(scope))) {
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComServerClsidRegistryPath(clsid)));
+    EXPECT_TRUE(DeleteRegKeyCOM(root, GetComServerClsidRegistryPath(clsid)));
     if (scope == UpdaterScope::kSystem)
-      EXPECT_TRUE(DeleteRegKey(root, 0, GetComServerAppidRegistryPath(clsid)));
+      EXPECT_TRUE(DeleteRegKeyCOM(root, GetComServerAppidRegistryPath(clsid)));
   }
 
   for (const IID& iid :
        JoinVectors(GetSideBySideInterfaces(), GetActiveInterfaces())) {
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComIidRegistryPath(iid)));
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComTypeLibRegistryPath(iid)));
+    EXPECT_TRUE(DeleteRegKeyCOM(root, GetComIidRegistryPath(iid)));
+    EXPECT_TRUE(DeleteRegKeyCOM(root, GetComTypeLibRegistryPath(iid)));
   }
 
   if (scope == UpdaterScope::kSystem) {
@@ -213,7 +226,7 @@ bool IsServiceGone(const wchar_t* const service_name) {
   ::CloseServiceHandle(scm);
 
   return is_service_gone &&
-         !base::win::RegKey(HKEY_LOCAL_MACHINE, UPDATER_KEY, KEY_READ)
+         !base::win::RegKey(HKEY_LOCAL_MACHINE, UPDATER_KEY, Wow6432(KEY_READ))
               .HasValue(service_name);
 }
 
@@ -222,24 +235,24 @@ void ExpectClean(UpdaterScope scope) {
   const HKEY root =
       scope == UpdaterScope::kSystem ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   for (const wchar_t* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
-    EXPECT_FALSE(RegKeyExists(root, KEY_WOW64_32KEY, key));
+    EXPECT_FALSE(RegKeyExists(root, key));
   }
   for (const wchar_t* key : {kRegKeyCompanyCloudManagement,
                              kRegKeyCompanyEnrollment, UPDATER_POLICIES_KEY}) {
-    EXPECT_FALSE(RegKeyExists(HKEY_LOCAL_MACHINE, 0, key));
+    EXPECT_FALSE(RegKeyExists(HKEY_LOCAL_MACHINE, key));
   }
 
   for (const CLSID& clsid :
        JoinVectors(GetSideBySideServers(scope), GetActiveServers(scope))) {
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComServerClsidRegistryPath(clsid)));
+    EXPECT_FALSE(RegKeyExistsCOM(root, GetComServerClsidRegistryPath(clsid)));
     if (scope == UpdaterScope::kSystem)
-      EXPECT_FALSE(RegKeyExists(root, 0, GetComServerAppidRegistryPath(clsid)));
+      EXPECT_FALSE(RegKeyExistsCOM(root, GetComServerAppidRegistryPath(clsid)));
   }
 
   for (const IID& iid :
        JoinVectors(GetSideBySideInterfaces(), GetActiveInterfaces())) {
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComIidRegistryPath(iid)));
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComTypeLibRegistryPath(iid)));
+    EXPECT_FALSE(RegKeyExistsCOM(root, GetComIidRegistryPath(iid)));
+    EXPECT_FALSE(RegKeyExistsCOM(root, GetComTypeLibRegistryPath(iid)));
   }
 
   if (scope == UpdaterScope::kSystem) {
@@ -308,16 +321,6 @@ void ExpectActiveUpdater(UpdaterScope scope) {
     EXPECT_TRUE(base::PathExists(*path));
 }
 
-void RegisterTestApp(UpdaterScope scope) {
-  const base::FilePath path = GetTestAppExecutablePath();
-  ASSERT_FALSE(path.empty());
-  base::CommandLine command_line(path);
-  command_line.AppendSwitch(kRegisterUpdaterSwitch);
-  int exit_code = -1;
-  ASSERT_TRUE(Run(scope, command_line, &exit_code));
-  EXPECT_EQ(exit_code, 0);
-}
-
 void Install(UpdaterScope scope) {
   const base::FilePath path = GetInstallerPath();
   ASSERT_FALSE(path.empty());
@@ -351,7 +354,7 @@ void SetActive(UpdaterScope /*scope*/, const std::string& id) {
   // TODO(crbug.com/1159498): Standardize registry access.
   base::win::RegKey key;
   ASSERT_EQ(key.Create(HKEY_CURRENT_USER, GetAppClientStateKey(id).c_str(),
-                       KEY_WRITE | KEY_WOW64_32KEY),
+                       Wow6432(KEY_WRITE)),
             ERROR_SUCCESS);
   EXPECT_EQ(key.WriteValue(kDidRun, L"1"), ERROR_SUCCESS);
 }
@@ -360,7 +363,7 @@ void ExpectActive(UpdaterScope /*scope*/, const std::string& id) {
   // TODO(crbug.com/1159498): Standardize registry access.
   base::win::RegKey key;
   ASSERT_EQ(key.Open(HKEY_CURRENT_USER, GetAppClientStateKey(id).c_str(),
-                     KEY_READ | KEY_WOW64_32KEY),
+                     Wow6432(KEY_READ)),
             ERROR_SUCCESS);
   std::wstring value;
   ASSERT_EQ(key.ReadValue(kDidRun, &value), ERROR_SUCCESS);
@@ -371,7 +374,7 @@ void ExpectNotActive(UpdaterScope /*scope*/, const std::string& id) {
   // TODO(crbug.com/1159498): Standardize registry access.
   base::win::RegKey key;
   if (key.Open(HKEY_CURRENT_USER, GetAppClientStateKey(id).c_str(),
-               KEY_READ | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
+               Wow6432(KEY_READ)) == ERROR_SUCCESS) {
     std::wstring value;
     if (key.ReadValue(kDidRun, &value) == ERROR_SUCCESS)
       EXPECT_EQ(value, L"0");

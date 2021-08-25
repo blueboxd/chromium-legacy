@@ -905,6 +905,7 @@ ci.android_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 4 * time.hour,
+    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
     os = os.LINUX_BIONIC_REMOVE,
@@ -2022,7 +2023,9 @@ ci.cipd_builder(
         short_name = "avd",
     ),
     executable = "recipe:android/avd_packager",
-    schedule = "0 7 * * 0 *",
+    # Triggered manually through the scheduler UI
+    # https://luci-scheduler.appspot.com/jobs/chromium/android-avd-packager
+    schedule = "triggered",
     triggered_by = [],
     os = os.LINUX_BIONIC_REMOVE,
     properties = {

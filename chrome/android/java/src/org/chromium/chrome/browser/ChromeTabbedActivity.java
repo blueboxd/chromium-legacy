@@ -650,7 +650,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         try (TraceEvent e = TraceEvent.scoped(
                      "ChromeTabbedActivity.setupCompositorContentPreNativeForPhone")) {
-            CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
+            CompositorViewHolder compositorViewHolder = getCompositorViewHolderSupplier().get();
 
             // TODO(1169205): Remove all GTS enabled checks after M5 is default.
             if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(this)) {
@@ -678,8 +678,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mContentContainer,
                     mStartSurfaceSupplier.get(), getTabContentManagerSupplier(),
                     () -> {
-                        if (getCompositorViewHolder() == null) return null;
-                        return getCompositorViewHolder().getLayerTitleCache();
+                        if (!getCompositorViewHolderSupplier().hasValue()) return null;
+                        return getCompositorViewHolderSupplier().get().getLayerTitleCache();
                     },
                     mOverviewModeBehaviorSupplier,
                     mRootUiCoordinator::getTopUiThemeColorProvider, mJankTracker);
@@ -695,11 +695,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         try (TraceEvent e = TraceEvent.scoped(
                      "ChromeTabbedActivity.setupCompositorContentPreNativeForTablet")) {
             // clang-format off
-            mLayoutManager = new LayoutManagerChromeTablet(getCompositorViewHolder(),
+            mLayoutManager = new LayoutManagerChromeTablet(getCompositorViewHolderSupplier().get(),
                     mContentContainer, getTabContentManagerSupplier(),
                     () -> {
-                        if (getCompositorViewHolder() == null) return null;
-                        return getCompositorViewHolder().getLayerTitleCache();
+                        if (!getCompositorViewHolderSupplier().hasValue()) return null;
+                        return getCompositorViewHolderSupplier().get().getLayerTitleCache();
                     },
                     mOverviewModeBehaviorSupplier,
                     mRootUiCoordinator::getTopUiThemeColorProvider, mJankTracker);
@@ -786,7 +786,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             getToolbarManager().initializeWithNative(mLayoutManager, tabSwitcherClickHandler,
                     newTabClickHandler, bookmarkClickHandler, null, showStartSurfaceSupplier);
 
-            if (!TabUiFeatureUtilities.supportInstantStart(isTablet())) {
+            if (!TabUiFeatureUtilities.supportInstantStart(isTablet(), this)) {
                 assert !(mOverviewModeController != null
                         && mOverviewModeController.overviewVisible());
             }
@@ -900,7 +900,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         super.finishNativeInitialization();
 
         // TODO(jinsukkim): Let these classes handle the registration by themselves.
-        mCompositorViewHolder = getCompositorViewHolder();
+        mCompositorViewHolder = getCompositorViewHolderSupplier().get();
         mOverviewListLayout = (OverviewListLayout) mLayoutManager.getOverviewListLayout();
         getTabObscuringHandler().addObserver(mCompositorViewHolder);
         getTabObscuringHandler().addObserver(mOverviewListLayout);
@@ -1324,11 +1324,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private void onAccessibilityTabSwitcherModeChanged() {
         if (!mUIWithNativeInitialized) return;
 
-        boolean accessibilityTabSwitcherEnabled = DeviceClassManager.enableAccessibilityLayout();
+        boolean accessibilityTabSwitcherEnabled =
+                DeviceClassManager.enableAccessibilityLayout(this);
         if (mOverviewModeController != null && mOverviewModeController.overviewVisible()
                 && (mIsAccessibilityTabSwitcherEnabled == null
                         || mIsAccessibilityTabSwitcherEnabled
-                                != DeviceClassManager.enableAccessibilityLayout())) {
+                                != DeviceClassManager.enableAccessibilityLayout(this))) {
             /**
              * If Start surface homepage is showing and launching NTP will show the Start surface
              * again, skips the calls of hideOverview() and launchNTP(). We need to check
@@ -1722,7 +1723,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // initialized. The {@link prepareToShowStartPagePreNative()} is only called in a cold
         // start.
         if (ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()
-                && TabUiFeatureUtilities.supportInstantStart(isTablet()) && !hadWarmStart()) {
+                && TabUiFeatureUtilities.supportInstantStart(isTablet(), this) && !hadWarmStart()) {
             prepareToShowStartPagePreNative();
         }
     }
@@ -1732,15 +1733,16 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      * an LayoutManagerChrome object, add overview mode observer and so on.
      */
     private void prepareToShowStartPagePreNative() {
-        assert TabUiFeatureUtilities.supportInstantStart(isTablet() && !hadWarmStart());
+        assert TabUiFeatureUtilities.supportInstantStart(isTablet() && !hadWarmStart(), this);
         try (TraceEvent e =
                         TraceEvent.scoped("ChromeTabbedActivity.prepareToShowStartPagePreNative")) {
             setupCompositorContentPreNativeForPhone();
-            getCompositorViewHolder().setLayoutManager(mLayoutManager);
+            getCompositorViewHolderSupplier().get().setLayoutManager(mLayoutManager);
 
             if (shouldShowTabSwitcherOnStart()) {
                 mLayoutManager.setTabModelSelector(mTabModelSelector);
-                mIsAccessibilityTabSwitcherEnabled = DeviceClassManager.enableAccessibilityLayout();
+                mIsAccessibilityTabSwitcherEnabled =
+                        DeviceClassManager.enableAccessibilityLayout(this);
                 assert !mHasDeterminedOverviewStateForCurrentSession;
                 setInitialOverviewState();
             }
@@ -1838,7 +1840,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     /* ChromeActivityNativeDelegate */ this, /* isCustomTab= */ false,
                     getBrowserControlsManager(), getFullscreenManager(),
                     /* TabCreatorManager */ this, getTabModelSelectorSupplier(),
-                    this::getCompositorViewHolder, getModalDialogManagerSupplier(),
+                    getCompositorViewHolderSupplier(), getModalDialogManagerSupplier(),
                     this::getSnackbarManager, getBrowserControlsManager(), getActivityTabProvider(),
                     getLifecycleDispatcher(), getWindowAndroid(), this::getLastUserInteractionTime,
                     this::hadWarmStart, mJankTracker, getToolbarManager()::getToolbar);
@@ -1978,7 +1980,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         } else if (id == R.id.all_bookmarks_menu_id) {
             // Note that 'currentTab' could be null in overview mode when start surface is
             // enabled.
-            getCompositorViewHolder().hideKeyboard(() -> {
+            getCompositorViewHolderSupplier().get().hideKeyboard(() -> {
                 BookmarkUtils.showBookmarkManager(
                         ChromeTabbedActivity.this, getCurrentTabModel().isIncognito());
             });
@@ -2324,7 +2326,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         if (mOverviewModeController.overviewVisible()) {
             if (didFinishNativeInitialization()) {
-                getCompositorViewHolder().hideKeyboard(() -> {});
+                getCompositorViewHolderSupplier().get().hideKeyboard(() -> {});
             }
             return;
         }
@@ -2334,7 +2336,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (currentTab == null) {
             mOverviewModeController.showOverview(false);
         } else {
-            getCompositorViewHolder().hideKeyboard(
+            getCompositorViewHolderSupplier().get().hideKeyboard(
                     () -> mOverviewModeController.showOverview(true));
             updateAccessibilityState(false);
             TasksUma.recordTabLaunchType(getCurrentTabModel());
@@ -2372,7 +2374,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             ReturnToChromeExperimentsUtil.handleLoadUrlFromStartSurfaceAsNewTab(null,
                     PageTransition.AUTO_TOPLEVEL, incognito, parentTab, getCurrentTabModel(),
                     emptyTabCloseCallback);
-        } else if (TabUiFeatureUtilities.supportInstantStart(isTablet())
+        } else if (TabUiFeatureUtilities.supportInstantStart(isTablet(), this)
                 || (getTabModelSelector().isTabStateInitialized() && isLayoutManagerCreated())) {
             showOverview(StartSurfaceState.SHOWING_HOMEPAGE, launchOrigin);
         }
@@ -2536,12 +2538,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @VisibleForTesting
     public View getTabsView() {
-        return getCompositorViewHolder();
+        return getCompositorViewHolderSupplier().get();
     }
 
     @VisibleForTesting
     public LayoutManagerChrome getLayoutManager() {
-        return (LayoutManagerChrome) getCompositorViewHolder().getLayoutManager();
+        return (LayoutManagerChrome) getCompositorViewHolderSupplier().get().getLayoutManager();
     }
 
     @VisibleForTesting

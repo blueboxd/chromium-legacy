@@ -778,6 +778,9 @@ extern const char kGlobalMediaControlsOverlayControlsDescription[];
 extern const char kOpenscreenCastStreamingSessionName[];
 extern const char kOpenscreenCastStreamingSessionDescription[];
 
+extern const char kCastStreamingVp9Name[];
+extern const char kCastStreamingVp9Description[];
+
 extern const char kGoogleLensSdkIntentName[];
 extern const char kGoogleLensSdkIntentDescription[];
 
@@ -2126,9 +2129,6 @@ extern const char kSCTAuditingDescription[];
 extern const char kCalculateNativeWinOcclusionName[];
 extern const char kCalculateNativeWinOcclusionDescription[];
 
-extern const char kChromeCleanupScanCompletedNotificationName[];
-extern const char kChromeCleanupScanCompletedNotificationDescription[];
-
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
 
@@ -2143,9 +2143,6 @@ extern const char kRawAudioCaptureDescription[];
 
 extern const char kRunVideoCaptureServiceInBrowserProcessName[];
 extern const char kRunVideoCaptureServiceInBrowserProcessDescription[];
-
-extern const char kSafetyCheckChromeCleanerChildName[];
-extern const char kSafetyCheckChromeCleanerChildDescription[];
 
 extern const char kUseAngleName[];
 extern const char kUseAngleDescription[];
@@ -3012,6 +3009,11 @@ extern const char kUserDataSnapshotDescription[];
 extern const char kWebShareName[];
 extern const char kWebShareDescription[];
 #endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
+
+#if defined(OS_LINUX) && defined(USE_OZONE)
+extern const char kUseOzonePlatformName[];
+extern const char kUseOzonePlatformDescription[];
+#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
 // Feature flags --------------------------------------------------------------
 

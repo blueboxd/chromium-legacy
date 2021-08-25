@@ -822,9 +822,11 @@ enum class VerifyDidCommitParamsDifference {
 };
 
 bool ValidateCSPAttribute(const std::string& value) {
+  static const size_t kMaxLengthCSPAttribute = 4096;
   if (!base::IsStringASCII(value))
     return false;
-  if (value.find('\n') != std::string::npos ||
+  if (value.length() > kMaxLengthCSPAttribute ||
+      value.find('\n') != std::string::npos ||
       value.find('\r') != std::string::npos) {
     return false;
   }
@@ -1530,6 +1532,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   // 1) Their opener in RenderFrameHostImpl::CreateNewWindow().
   // 2) Their navigation in RenderFrameHostImpl::DidCommitNavigationInternal().
   virtual_browsing_context_group_ =
+      CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
+  soap_by_default_virtual_browsing_context_group_ =
       CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
 
   // IdleManager should be unique per RenderFrame to provide proper isolation
@@ -6483,6 +6487,10 @@ void RenderFrameHostImpl::CreateNewWindow(
       params->opener_suppressed
           ? CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup()
           : top_level_opener->virtual_browsing_context_group();
+  int popup_soap_by_default_virtual_browsing_context_group =
+      params->opener_suppressed
+          ? CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup()
+          : top_level_opener->soap_by_default_virtual_browsing_context_group();
 
   // If the opener is suppressed or script access is disallowed, we should
   // open the window in a new BrowsingInstance, and thus a new process. That
@@ -6524,6 +6532,8 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   new_main_rfh->virtual_browsing_context_group_ =
       popup_virtual_browsing_context_group;
+  new_main_rfh->soap_by_default_virtual_browsing_context_group_ =
+      popup_soap_by_default_virtual_browsing_context_group;
 
   // If inheriting coop (checking this via |opener_suppressed|) and the original
   // coop page has a reporter we make sure the the newly created popup also has
@@ -10331,6 +10341,9 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   coop_reporter_ = navigation_request->coop_status().TakeCoopReporter();
   virtual_browsing_context_group_ =
       navigation_request->coop_status().virtual_browsing_context_group();
+  soap_by_default_virtual_browsing_context_group_ =
+      navigation_request->coop_status()
+          .soap_by_default_virtual_browsing_context_group();
 
   // Store the required CSP (it will be used by the AncestorThrottle if
   // this frame embeds a subframe when that subframe navigates).

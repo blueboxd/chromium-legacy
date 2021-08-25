@@ -1518,7 +1518,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/federated_learning/floc_id_provider_browsertest.cc",
       "../browser/federated_learning/floc_internals_browsertest.cc",
       "../browser/federated_learning/floc_origin_trial_browsertest.cc",
-      "../browser/file_system_access/chrome_file_system_access_permission_context_browsertest.cc",
       "../browser/file_system_access/file_system_access_tab_helper_browsertest.cc",
       "../browser/first_run/first_run_browsertest.cc",
       "../browser/font_access/font_access_context_browsertest.cc",
@@ -2271,8 +2270,8 @@ if (!is_android && !is_fuchsia) {
         if (!is_official_build) {
           deps += [
             "//ash/webui/sample_system_web_app_ui:browser_tests_js",
+            "//ash/webui/telemetry_extension_ui/test:browser_tests_js",
             "//chromeos/components/demo_mode_app_ui:browser_tests_js",
-            "//chromeos/components/telemetry_extension_ui/test:browser_tests_js",
           ]
         }
       }
@@ -3111,6 +3110,8 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/login/test/offline_login_test_mixin.h",
         "../browser/ash/login/test/oobe_base_test.cc",
         "../browser/ash/login/test/oobe_base_test.h",
+        "../browser/ash/login/test/oobe_screens_utils.cc",
+        "../browser/ash/login/test/oobe_screens_utils.h",
         "../browser/ash/login/test/oobe_window_visibility_waiter.cc",
         "../browser/ash/login/test/oobe_window_visibility_waiter.h",
         "../browser/ash/login/test/user_adding_screen_utils.cc",
@@ -3419,8 +3420,8 @@ if (!is_android && !is_fuchsia) {
         ]
         deps += [
           "//ash/webui/sample_system_web_app_ui",
+          "//ash/webui/telemetry_extension_ui",
           "//chromeos/components/demo_mode_app_ui",
-          "//chromeos/components/telemetry_extension_ui",
         ]
       }
       if (use_dbus) {
@@ -4647,6 +4648,7 @@ test("unit_tests") {
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
     "../browser/visibility_timer_tab_helper_unittest.cc",
     "../browser/vr/vr_tab_helper_unittest.cc",
+    "../browser/webid/federated_identity_active_session_permission_context_unittest.cc",
     "../browser/webid/federated_identity_request_permission_context_unittest.cc",
     "../browser/webid/federated_identity_sharing_permission_context_unittest.cc",
     "../common/chrome_content_client_unittest.cc",
@@ -7049,6 +7051,7 @@ test("unit_tests") {
     ]
 
     deps += [
+      "../browser/enterprise/connectors/device_trust:test_support",
       "../browser/enterprise/connectors/device_trust/attestation/common",
       "../browser/enterprise/connectors/device_trust/attestation/common:test_support",
       "../browser/enterprise/connectors/device_trust/signals:test_support",
@@ -7064,6 +7067,8 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/attestation/desktop/ec_signing_key_unittest.cc",
       "../browser/enterprise/connectors/device_trust/attestation/desktop/signing_key_pair_unittest.cc",
     ]
+
+    deps += [ "../browser/enterprise/connectors/device_trust/signals/decorators/browser:unit_tests" ]
   }
 
   if (enable_plugins) {

@@ -1357,10 +1357,16 @@ const char kGlobalMediaControlsOverlayControlsDescription[] =
 
 const char kOpenscreenCastStreamingSessionName[] =
     "Enable Open Screen Library (libcast) as the Mirroring Service's Cast "
-    "Streaming implementation.";
+    "Streaming implementation";
 const char kOpenscreenCastStreamingSessionDescription[] =
     "Enables Open Screen Library's (libcast) Cast Streaming implementation to "
-    "be used for negotiating and executing mirroring and remoting sessions";
+    "be used for negotiating and executing mirroring and remoting sessions.";
+
+const char kCastStreamingVp9Name[] =
+    "Enable VP9 codec video encoding in Cast mirroring sessions";
+const char kCastStreamingVp9Description[] =
+    "Enables the inclusion of VP9 codec video encoding in Cast mirroring "
+    "session negotiations.";
 
 const char kGoogleLensSdkIntentName[] =
     "Enable the use of the Lens SDK when starting intent into Lens.";
@@ -3729,12 +3735,6 @@ const char kCalculateNativeWinOcclusionDescription[] =
     "Calculate window occlusion on Windows will be used in the future "
     "to throttle and potentially unload foreground tabs in occluded windows";
 
-const char kChromeCleanupScanCompletedNotificationName[] =
-    "Chrome cleanup scan completion notification";
-const char kChromeCleanupScanCompletedNotificationDescription[] =
-    "Allows you to be notified when a Chrome cleaner scan you started "
-    "completes.";
-
 const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
 const char kD3D11VideoDecoderDescription[] =
     "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
@@ -3761,11 +3761,6 @@ const char kRunVideoCaptureServiceInBrowserProcessName[] =
     "Run video capture service in browser";
 const char kRunVideoCaptureServiceInBrowserProcessDescription[] =
     "Run the video capture service in the browser process.";
-
-const char kSafetyCheckChromeCleanerChildName[] =
-    "Chrome Cleanup Tool in safety check";
-const char kSafetyCheckChromeCleanerChildDescription[] =
-    "Enables the Chrome Cleanup Tool child in safety check.";
 
 const char kUseAngleName[] = "Choose ANGLE graphics backend";
 const char kUseAngleDescription[] =
@@ -5193,6 +5188,12 @@ const char kWebShareDescription[] =
     "Enables the Web Share (navigator.share) APIs on experimentally supported "
     "platforms.";
 #endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
+
+#if defined(OS_LINUX) && defined(USE_OZONE)
+const char kUseOzonePlatformName[] = "Use ozone.";
+const char kUseOzonePlatformDescription[] =
+    "Use the Ozone/X11 platform implementation on X11.";
+#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
 // Feature flags --------------------------------------------------------------
 

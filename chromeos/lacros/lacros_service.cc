@@ -138,11 +138,6 @@ LacrosService::LacrosService()
       observer_list_(
           base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>()) {
   DCHECK(init_params_);
-  if (disable_crosapi_for_testing_) {
-    // Enable Account Manager in tests (use Ash Account Manager as a source of
-    // truth for accounts).
-    init_params_->use_new_account_manager = true;
-  }
   if (init_params_->idle_info) {
     // Presence of initial |idle_info| indicates that ash-chrome can stream
     // idle info updates, so instantiate under Streaming mode, using
@@ -352,6 +347,13 @@ bool LacrosService::IsAccountManagerAvailable() const {
              Crosapi::MethodMinVersions::kBindAccountManagerMinVersion;
 }
 
+bool LacrosService::IsBrowserCdmFactoryAvailable() const {
+  absl::optional<uint32_t> version = CrosapiVersion();
+  return version &&
+         version.value() >=
+             Crosapi::MethodMinVersions::kBindBrowserCdmFactoryMinVersion;
+}
+
 bool LacrosService::IsMediaSessionAudioFocusAvailable() const {
   absl::optional<uint32_t> version = CrosapiVersion();
   return version &&
@@ -421,6 +423,14 @@ void LacrosService::BindAudioFocusManagerDebug(
       mojo::PendingReceiver<media_session::mojom::AudioFocusManagerDebug>,
       &crosapi::mojom::Crosapi::BindMediaSessionAudioFocusDebug>(
       std::move(remote));
+}
+
+void LacrosService::BindBrowserCdmFactory(
+    mojo::GenericPendingReceiver receiver) {
+  DCHECK(IsBrowserCdmFactoryAvailable());
+  BindPendingReceiverOrRemote<mojo::GenericPendingReceiver,
+                              &crosapi::mojom::Crosapi::BindBrowserCdmFactory>(
+      std::move(receiver));
 }
 
 void LacrosService::BindMachineLearningService(

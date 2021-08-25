@@ -41,7 +41,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledTextBubble",
+                    "name": "EnabledTextBubble_20210819",
                     "params": {
                         "availability": ">=0",
                         "event_1": "name:add_to_homescreen_text_bubble_iph_trigger;comparator:==0;window:15;storage:90",
@@ -1368,7 +1368,6 @@
                     },
                     "enable_features": [
                         "BackForwardCache",
-                        "FreezeWhileKeepActive",
                         "LoadingTasksUnfreezable"
                     ]
                 }
@@ -1404,7 +1403,6 @@
                     },
                     "enable_features": [
                         "BackForwardCache",
-                        "FreezeWhileKeepActive",
                         "LoadingTasksUnfreezable"
                     ]
                 }
@@ -3263,9 +3261,9 @@
             ],
             "experiments": [
                 {
-                    "name": "AllowFileBufferSizeControl",
+                    "name": "EnabledBufferSize512k",
                     "params": {
-                        "download_file_buffer_size": "1048576"
+                        "download_file_buffer_size": "524288"
                     },
                     "enable_features": [
                         "AllowFileBufferSizeControl"
@@ -4287,21 +4285,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "InterestFeedNoticeCardAutoDismiss"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSFullPageScreenshot": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableFullPageScreenshot"
                     ]
                 }
             ]
@@ -8676,8 +8659,8 @@
             ],
             "experiments": [
                 {
-                    "name": "PreseedDisabled",
-                    "disable_features": [
+                    "name": "Enabled",
+                    "enable_features": [
                         "PreloadMediaEngagementData"
                     ]
                 }
@@ -9442,21 +9425,6 @@
             ]
         }
     ],
-    "WebNotesStylize": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebNotesStylize"
-                    ]
-                }
-            ]
-        }
-    ],
     "WebOtpBackendAuto": [
         {
             "platforms": [
@@ -9978,6 +9946,21 @@
                     },
                     "enable_features": [
                         "WebViewZeroCopyVideo"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebnotesStylize": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebNotesStylize"
                     ]
                 }
             ]

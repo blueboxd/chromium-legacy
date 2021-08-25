@@ -603,12 +603,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "chrome-cleanup-scan-completed-notification",
-    "owners": ["rainhard", "msramek",
-      "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 92
-  },
-  {
     "name": "chrome-labs",
     "owners": ["elainechien", "robliao"],
     "expiry_milestone": 107
@@ -1503,6 +1497,11 @@
     "name": "enable-browsing-data-lifetime-manager",
     "owners": ["ydago"],
     "expiry_milestone": 91
+  },
+  {
+    "name": "enable-cast-streaming-vp9",
+    "owners": [ "jophba@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "enable-close-all-tabs-confirmation",
@@ -4805,15 +4804,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "safety-check-chrome-cleaner-child",
-    "owners": [
-      "rainhard",
-      "msramek",
-      "chrome-friendly-settings@google.com"
-    ],
-    "expiry_milestone": 94
-  },
-  {
     "name": "safety-tips",
     "owners": [ "jdeblasio", "estark", "meacer" ],
     "expiry_milestone": 89
@@ -5504,6 +5494,11 @@
     "name": "use-notification-compat-builder",
     "owners": [ "knollr", "peter" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "use-ozone-platform",
+    "owners": [ "rjkroege", "thomasanderson", "msisov@igalia.com", "nickdiego@igalia.com", "adunaev@igalia.com" ],
+    "expiry_milestone": 98
   },
   {
     "name": "use-passthrough-command-decoder",

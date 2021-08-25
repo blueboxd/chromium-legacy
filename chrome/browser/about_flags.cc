@@ -3679,6 +3679,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOpenscreenCastStreamingSessionName,
      flag_descriptions::kOpenscreenCastStreamingSessionDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(mirroring::features::kOpenscreenCastStreamingSession)},
+
+    {"enable-cast-streaming-vp9", flag_descriptions::kCastStreamingVp9Name,
+     flag_descriptions::kCastStreamingVp9Description, kOsDesktop,
+     FEATURE_VALUE_TYPE(mirroring::features::kCastStreamingVp9)},
+
 #endif  // !OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -6529,21 +6534,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClientStorageAccessContextAuditingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClientStorageAccessContextAuditing)},
 
-#if defined(OS_WIN)
-    {"safety-check-chrome-cleaner-child",
-     flag_descriptions::kSafetyCheckChromeCleanerChildName,
-     flag_descriptions::kSafetyCheckChromeCleanerChildDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kSafetyCheckChromeCleanerChild)},
-#endif  // !defined(OS_WIN)
-
-#if defined(OS_WIN)
-    {"chrome-cleanup-scan-completed-notification",
-     flag_descriptions::kChromeCleanupScanCompletedNotificationName,
-     flag_descriptions::kChromeCleanupScanCompletedNotificationDescription,
-     kOsWin,
-     FEATURE_VALUE_TYPE(features::kChromeCleanupScanCompletedNotification)},
-#endif  // !defined(OS_WIN)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"productivity-launcher", flag_descriptions::kAppListBubbleName,
      flag_descriptions::kAppListBubbleDescription, kOsCrOS,
@@ -7169,6 +7159,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBluetoothSessionizedMetricsName,
      flag_descriptions::kBluetoothSessionizedMetricsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(metrics::structured::kBluetoothSessionizedMetrics)},
+#endif
+
+#if defined(OS_LINUX) && defined(USE_OZONE)
+    {"use-ozone-platform", flag_descriptions::kUseOzonePlatformName,
+     flag_descriptions::kUseOzonePlatformDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(features::kUseOzonePlatform)},
 #endif
 
     {"subframe-shutdown-delay", flag_descriptions::kSubframeShutdownDelayName,

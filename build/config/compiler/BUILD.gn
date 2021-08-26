@@ -1718,7 +1718,7 @@ config("chromium_code") {
       # TODO(1066980): Use -Wunreachable-code-aggressive on all platforms.
       if (target_os == "android" || is_fuchsia || is_ios || is_linux ||
           is_mac || is_win) {
-        cflags += [ "-Wunreachable-code-aggressive" ]
+#       cflags += [ "-Wunreachable-code-aggressive" ]
       } else {
 #       cflags += [ "-Wunreachable-code" ]
       }

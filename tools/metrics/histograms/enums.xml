@@ -19987,6 +19987,91 @@ Called by update_debug_scenarios.py.-->
   <int value="105" label="layers.right"/>
 </enum>
 
+<enum name="DevToolsLanguage">
+  <int value="1" label="af - Afrikaans"/>
+  <int value="2" label="am - Amharic"/>
+  <int value="3" label="ar - Arabic"/>
+  <int value="4" label="as - Assamese"/>
+  <int value="5" label="az - Azerbaijani"/>
+  <int value="6" label="be - Belarusian"/>
+  <int value="7" label="bg - Bulgarian"/>
+  <int value="8" label="bn - Bangla"/>
+  <int value="9" label="bs - Bosnian"/>
+  <int value="10" label="ca - Catalan"/>
+  <int value="11" label="cs - Czech"/>
+  <int value="12" label="cy - Welsh"/>
+  <int value="13" label="da - Danish"/>
+  <int value="14" label="de - German"/>
+  <int value="15" label="el - Greek"/>
+  <int value="16" label="en-GB - British English"/>
+  <int value="17" label="en-US - American English"/>
+  <int value="18" label="es-419 - Latin American Spanish"/>
+  <int value="19" label="es - Spanish"/>
+  <int value="20" label="et - Estonian"/>
+  <int value="21" label="eu - Basque"/>
+  <int value="22" label="fa - Persian"/>
+  <int value="23" label="fi - Finnish"/>
+  <int value="24" label="fil - Filipino"/>
+  <int value="25" label="fr-CA - Canadian French"/>
+  <int value="26" label="fr - French"/>
+  <int value="27" label="gl - Galician"/>
+  <int value="28" label="gu - Gujarati"/>
+  <int value="29" label="he - Hebrew"/>
+  <int value="30" label="hi - Hindi"/>
+  <int value="31" label="hr - Croatian"/>
+  <int value="32" label="hu - Hungarian"/>
+  <int value="33" label="hy - Armenian"/>
+  <int value="34" label="id - Indonesian"/>
+  <int value="35" label="is - Icelandic"/>
+  <int value="36" label="it - Italian"/>
+  <int value="37" label="ja - Japanese"/>
+  <int value="38" label="ka - Georgian"/>
+  <int value="39" label="kk - Kazakh"/>
+  <int value="40" label="km - Khmer"/>
+  <int value="41" label="kn - Kannada"/>
+  <int value="42" label="ko - Korean"/>
+  <int value="43" label="ky - Kyrgyz"/>
+  <int value="44" label="lo - Lao"/>
+  <int value="45" label="lt - Lithuanian"/>
+  <int value="46" label="lv - Latvian"/>
+  <int value="47" label="mk - Macedonian"/>
+  <int value="48" label="ml - Malayalam"/>
+  <int value="49" label="mn - Mongolian"/>
+  <int value="50" label="mr - Marathi"/>
+  <int value="51" label="ms - Malay"/>
+  <int value="52" label="my - Burmese"/>
+  <int value="53" label="ne - Nepali"/>
+  <int value="54" label="nl - Dutch"/>
+  <int value="55" label="no - Norwegian"/>
+  <int value="56" label="or - Odia"/>
+  <int value="57" label="pa - Punjabi"/>
+  <int value="58" label="pl - Polish"/>
+  <int value="59" label="pt-PT - European Portuguese"/>
+  <int value="60" label="pt - Portuguese"/>
+  <int value="61" label="ro - Romanian"/>
+  <int value="62" label="ru - Russian"/>
+  <int value="63" label="si - Sinhala"/>
+  <int value="64" label="sk - Slovak"/>
+  <int value="65" label="sl - Slovenian"/>
+  <int value="66" label="sq - Albanian"/>
+  <int value="67" label="sr-Latn - Serbian (Latin)"/>
+  <int value="68" label="sr - Serbian"/>
+  <int value="69" label="sv - Swedish"/>
+  <int value="70" label="sw - Swahili"/>
+  <int value="71" label="ta - Tamil"/>
+  <int value="72" label="te - Telugu"/>
+  <int value="73" label="th - Thai"/>
+  <int value="74" label="tr - Turkish"/>
+  <int value="75" label="uk - Ukrainian"/>
+  <int value="76" label="ur - Urdu"/>
+  <int value="77" label="uz - Uzbek"/>
+  <int value="78" label="vi - Vietnamese"/>
+  <int value="79" label="zh - Chinese"/>
+  <int value="80" label="zh-HK - Chinese (Hong Kong)"/>
+  <int value="81" label="zh-TW - Chinese (Taiwan)"/>
+  <int value="82" label="zu - Zulu"/>
+</enum>
+
 <enum name="DevToolsLinearMemoryInspectorRevealedFrom">
   <int value="0" label="Context menu"/>
   <int value="1" label="Memory icon"/>
@@ -47036,6 +47121,7 @@ from previous Chrome versions.
   <int value="-1977496883" label="ViewPasswords:enabled"/>
   <int value="-1975719988" label="GlobalMediaControlsSeamlessTransfer:enabled"/>
   <int value="-1973722176" label="VoiceSearchOnLocalNtp:enabled"/>
+  <int value="-1973559591" label="AppDiscoveryForOobe:enabled"/>
   <int value="-1972383451" label="disable-pinch"/>
   <int value="-1972312724" label="OfflinePagesLoadSignalCollecting:enabled"/>
   <int value="-1972219399" label="NTPSaveToOffline:enabled"/>
@@ -47059,6 +47145,7 @@ from previous Chrome versions.
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1959563554" label="ChromeOSAccountManager:enabled"/>
+  <int value="-1958364669" label="QueryTilesSegmentation:enabled"/>
   <int value="-1958315092" label="EnableGamepadButtonAxisEvents:disabled"/>
   <int value="-1957328398" label="MacSystemShareMenu:disabled"/>
   <int value="-1956747298" label="LayeredAPI:enabled"/>
@@ -49281,6 +49368,7 @@ from previous Chrome versions.
   <int value="-205975637" label="WebUIDarkMode:enabled"/>
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-203968600" label="SyncSupportSecondaryAccount:disabled"/>
+  <int value="-203058505" label="QueryTilesSegmentation:disabled"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
   <int value="-201633741" label="DisplayAlignAssist:enabled"/>
   <int value="-200805659" label="ContextualSuggestionsButton:enabled"/>
@@ -51115,6 +51203,7 @@ from previous Chrome versions.
   <int value="1261620998" label="IntentPickerPWAPersistence:disabled"/>
   <int value="1261713150" label="ChromeHomeOptOutSnackbar:disabled"/>
   <int value="1262469513" label="GesturePropertiesDBusService:disabled"/>
+  <int value="1265587614" label="AppDiscoveryForOobe:disabled"/>
   <int value="1265666387" label="DesktopPWAsAppIconShortcutsMenu:disabled"/>
   <int value="1266156008" label="IdentityDisc:disabled"/>
   <int value="1266525177"
@@ -51732,6 +51821,7 @@ from previous Chrome versions.
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1767411597" label="DisallowUnsafeHttpDownloads:enabled"/>
   <int value="1768759000" label="AutofillProfileServerValidation:disabled"/>
+  <int value="1769483213" label="AudioUrl:disabled"/>
   <int value="1770189877" label="ConfirmNtpSuggestionRemovals:enabled"/>
   <int value="1771548551" label="DisableKeepaliveFetch:enabled"/>
   <int value="1772454319" label="enable-storage-manager"/>
@@ -52217,6 +52307,7 @@ from previous Chrome versions.
   <int value="2135408204" label="OverscrollHistoryNavigation:disabled"/>
   <int value="2137113620"
       label="ProcessSharingWithStrictSiteInstances:enabled"/>
+  <int value="2137143068" label="AudioUrl:enabled"/>
   <int value="2137294324" label="zero-copy-video-capture"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137554806"

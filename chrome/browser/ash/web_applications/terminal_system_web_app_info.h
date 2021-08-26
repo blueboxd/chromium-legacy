@@ -23,7 +23,11 @@ class TerminalSystemAppDelegate : public web_app::SystemWebAppDelegate {
   std::unique_ptr<WebApplicationInfo> GetWebAppInfo() const override;
   bool ShouldBeSingleWindow() const override;
   bool ShouldHaveTabStrip() const override;
+  bool HasTitlebarTerminalSelectNewTabButton() const override;
   gfx::Rect GetDefaultBounds(Browser* browser) const override;
+  bool HasCustomTabMenuModel() const override;
+  std::unique_ptr<ui::SimpleMenuModel> GetTabMenuModel(
+      ui::SimpleMenuModel::Delegate* delegate) const override;
   bool ShouldShowTabContextMenuShortcut(Profile* profile,
                                         int command_id) const override;
 };

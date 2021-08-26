@@ -3295,6 +3295,10 @@ const char kQueryTilesMoreTrendingDescription[] =
 const char kQueryTilesRankTilesName[] = "Query Tiles - rank tiles on server";
 const char kQueryTilesRankTilesDescription[] =
     "Rank tiles on server based on client context";
+const char kQueryTilesSegmentationName[] =
+    "Query Tiles - use segmentation rules";
+const char kQueryTilesSegmentationDescription[] =
+    "enable segmentation rules to decide whether to show query tiles";
 const char kQueryTilesSwapTrendingName[] =
     "Query Tiles - Swap trending queries";
 const char kQueryTilesSwapTrendingDescription[] =
@@ -3881,6 +3885,11 @@ const char kAllowScrollSettingsDescription[] =
     "Shows settings to enable/disable scroll acceleration and to adjust the "
     "sensitivity for scrolling.";
 
+extern const char kAppDiscoveryForOobeName[] =
+    "OOBE app recommendations with App Discovery Service.";
+extern const char kAppDiscoveryForOobeDescription[] =
+    "Use the App Discovery Service to request recommended apps for OOBE.";
+
 extern const char kAppListBubbleName[] =
     "Productivity experiment: App Launcher";
 extern const char kAppListBubbleDescription[] =
@@ -3973,6 +3982,11 @@ const char kAshEnableUnifiedDesktopName[] = "Unified desktop mode";
 const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
+
+const char kAudioUrlName[] = "Enable chrome://audio";
+const char kAudioUrlDescription[] =
+    "Enable chrome://audio that is designed for debugging ChromeOS audio "
+    "issues";
 
 const char kBluetoothAdvertisementMonitoringName[] =
     "Bluetooth Advertisement Monitoring";

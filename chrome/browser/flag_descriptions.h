@@ -1885,6 +1885,8 @@ extern const char kQueryTilesMoreTrendingName[];
 extern const char kQueryTilesMoreTrendingDescription[];
 extern const char kQueryTilesRankTilesName[];
 extern const char kQueryTilesRankTilesDescription[];
+extern const char kQueryTilesSegmentationName[];
+extern const char kQueryTilesSegmentationDescription[];
 extern const char kQueryTilesSwapTrendingName[];
 extern const char kQueryTilesSwapTrendingDescription[];
 
@@ -2220,6 +2222,9 @@ extern const char kAllowRepeatedUpdatesDescription[];
 extern const char kAllowScrollSettingsName[];
 extern const char kAllowScrollSettingsDescription[];
 
+extern const char kAppDiscoveryForOobeName[];
+extern const char kAppDiscoveryForOobeDescription[];
+
 extern const char kAppListBubbleName[];
 extern const char kAppListBubbleDescription[];
 
@@ -2270,6 +2275,9 @@ extern const char kAshEnablePipRoundedCornersDescription[];
 
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
+
+extern const char kAudioUrlName[];
+extern const char kAudioUrlDescription[];
 
 extern const char kBluetoothAdvertisementMonitoringName[];
 extern const char kBluetoothAdvertisementMonitoringDescription[];

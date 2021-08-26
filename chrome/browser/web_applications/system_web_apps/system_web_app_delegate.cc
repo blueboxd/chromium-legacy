@@ -108,10 +108,25 @@ gfx::Rect SystemWebAppDelegate::GetDefaultBounds(Browser* browser) const {
   return {};
 }
 
+bool SystemWebAppDelegate::HasCustomTabMenuModel() const {
+  return false;
+}
+
+std::unique_ptr<ui::SimpleMenuModel> SystemWebAppDelegate::GetTabMenuModel(
+    ui::SimpleMenuModel::Delegate* delegate) const {
+  return nullptr;
+}
+
 bool SystemWebAppDelegate::ShouldShowTabContextMenuShortcut(
     Profile* profile,
     int command_id) const {
   return true;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool SystemWebAppDelegate::HasTitlebarTerminalSelectNewTabButton() const {
+  return false;
+}
+#endif
 
 }  // namespace web_app

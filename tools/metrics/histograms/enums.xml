@@ -14660,6 +14660,12 @@ Called by update_net_error_codes.py.-->
   <int value="15" label="UI button shown"/>
 </enum>
 
+<enum name="ConversionPostSendReportDeleteEvent">
+  <int value="0" label="Started"/>
+  <int value="1" label="Succeeded"/>
+  <int value="2" label="Failed"/>
+</enum>
+
 <enum name="ConversionReportStatus">
   <int value="0" label="OK"/>
   <int value="1" label="Internal network error"/>
@@ -26072,7 +26078,6 @@ Called by update_document_policy_enum.py.-->
   <int value="869" label="JavaScriptJitBlockedForSites"/>
   <int value="870" label="HttpsOnlyMode"/>
   <int value="871" label="DesktopSharingHubEnabled"/>
-  <int value="872" label="RestrictedManagedGuestSessionEnabled"/>
   <int value="873" label="ReportDeviceAudioStatus"/>
   <int value="874" label="DeviceHostnameUserConfigurable"/>
   <int value="875" label="ReportDeviceNetworkConfiguration"/>
@@ -26095,6 +26100,7 @@ Called by update_document_policy_enum.py.-->
   <int value="891" label="DeviceTargetVersionSelector"/>
   <int value="892" label="ChromeAppsEnabled"/>
   <int value="893" label="BrowserLegacyExtensionPointsBlocked"/>
+  <int value="894" label="DeviceRestrictedManagedGuestSessionEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27359,6 +27365,7 @@ Called by update_extension_histograms.py.-->
   <int value="477" label="ACCESSIBILITY_PRIVATE_ON_SHOW_CHROMEVOX_TUTORIAL"/>
   <int value="478" label="STORAGE_SESSION_ON_CHANGE"/>
   <int value="479" label="ACCESSIBILITY_PRIVATE_ON_TOGGLE_DICTATION"/>
+  <int value="480" label="WEB_AUTHENTICATION_PROXY_ON_ISUVPAA_REQUEST"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -29008,6 +29015,7 @@ Called by update_extension_histograms.py.-->
   <int value="1570" label="FILEMANAGERPRIVATE_GETZIPPROGRESS"/>
   <int value="1571" label="CRYPTOTOKENPRIVATE_CANMAKEU2FAPIREQUEST"/>
   <int value="1572" label="OS_DIAGNOSTICS_RUNBATTERYCAPACITYROUTINE"/>
+  <int value="1573" label="WEB_AUTHENTICATION_PROXY_COMPLETE_ISUVPAA_REQUEST"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -29629,6 +29637,7 @@ Called by update_extension_permission.py.-->
   <int value="229" label="kTabGroups"/>
   <int value="230" label="kScripting"/>
   <int value="231" label="kWmDesksPrivate"/>
+  <int value="232" label="kWebAuthenticationProxy"/>
 </enum>
 
 <enum name="ExtensionPointEnableState">
@@ -33613,7 +33622,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3376" label="SecurePaymentConfirmation"/>
   <int value="3377" label="OBSOLETE_CSSInvalidVariableUnset"/>
   <int value="3378" label="ElementInternalsShadowRoot"/>
-  <int value="3379" label="AnyUserDataFieldFilled_PredictedTypeMatch"/>
+  <int value="3379" label="UserDataFieldFilled_PredictedTypeMatch"/>
   <int value="3380" label="EmailFieldFilled_PredictedTypeMatch"/>
   <int value="3381" label="PhoneFieldFilled_PredictedTypeMatch"/>
   <int value="3382" label="EmailFieldFilled_PatternMatch"/>
@@ -34247,6 +34256,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3987" label="FontSelectorCSSFontFamilyWebKitPrefixStandard"/>
   <int value="3988" label="FontSelectorCSSFontFamilyWebKitPrefixBody"/>
   <int value="3989" label="FontBuilderCSSFontFamilyWebKitPrefixBody"/>
+  <int value="3990" label="CapabilityDelegationOfPaymentRequest"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47963,6 +47973,7 @@ from previous Chrome versions.
   <int value="-1269093329" label="AndroidOmniboxPreviewsBadge:disabled"/>
   <int value="-1269084216" label="ash-md"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
+  <int value="-1268452697" label="CastStreamingAv1:disabled"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
   <int value="-1265627803" label="WebAppEnableManifestId:enabled"/>
   <int value="-1262730949" label="EnableDspHotword:enabled"/>
@@ -48065,6 +48076,7 @@ from previous Chrome versions.
   <int value="-1198304634"
       label="ProcessSharingWithDefaultSiteInstances:disabled"/>
   <int value="-1197916855" label="WindowNaming:enabled"/>
+  <int value="-1197817692" label="CrostiniBullseyeUpgrade:enabled"/>
   <int value="-1197245070" label="CookieDeprecationMessages:disabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
@@ -48525,6 +48537,7 @@ from previous Chrome versions.
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
   <int value="-825747847"
       label="AutofillEnableSupportForMoreStructureInAddresses:enabled"/>
+  <int value="-825312041" label="CastStreamingAv1:enabled"/>
   <int value="-824199802" label="ContextualSearchSimplifiedServer:enabled"/>
   <int value="-823394398" label="TargetEmbeddingLookalikes:enabled"/>
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
@@ -51474,6 +51487,7 @@ from previous Chrome versions.
   <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>
   <int value="1562855415" label="WebRtcUseMinMaxVEADimensions:disabled"/>
   <int value="1563255033" label="memlog-stack-mode"/>
+  <int value="1567695310" label="CrostiniBullseyeUpgrade:disabled"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
   <int value="1568172566"

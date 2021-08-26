@@ -1362,6 +1362,12 @@ const char kOpenscreenCastStreamingSessionDescription[] =
     "Enables Open Screen Library's (libcast) Cast Streaming implementation to "
     "be used for negotiating and executing mirroring and remoting sessions.";
 
+const char kCastStreamingAv1Name[] =
+    "Enable AV1 codec video encoding in Cast mirroring sessions";
+const char kCastStreamingAv1Description[] =
+    "Enables the inclusion of AV1 codec video encoding in Cast mirroring "
+    "session negotiations.";
+
 const char kCastStreamingVp9Name[] =
     "Enable VP9 codec video encoding in Cast mirroring sessions";
 const char kCastStreamingVp9Description[] =
@@ -4072,6 +4078,10 @@ const char kCrosRegionsModeDescription[] =
 const char kCrosRegionsModeDefault[] = "Default";
 const char kCrosRegionsModeOverride[] = "Override VPD values.";
 const char kCrosRegionsModeHide[] = "Hide VPD values.";
+
+const char kCrostiniBullseyeUpgradeName[] = "Upgrade Crostini to Bullseye";
+const char kCrostiniBullseyeUpgradeDescription[] =
+    "Offer to upgrade Crostini containers on older versions to bullseye.";
 
 const char kCrostiniDiskResizingName[] = "Allow resizing Crostini disks";
 const char kCrostiniDiskResizingDescription[] =

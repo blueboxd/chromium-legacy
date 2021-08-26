@@ -11,7 +11,7 @@ import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 import {assertDeepEquals, assertEquals, assertGT, assertNotEquals} from '../chai_assert.js';
-import {flushTasks} from '../test_util.m.js';
+import {flushTasks, waitAfterNextRender} from '../test_util.m.js';
 
 import {TestCommanderBrowserProxy} from './test_commander_browser_proxy.js';
 
@@ -65,19 +65,6 @@ suite('CommanderWebUIBrowserTest', () => {
     app = document.createElement('commander-app');
     document.body.appendChild(app);
     await flushTasks();
-  });
-
-  test('input is focused when invoked', () => {
-    assertEquals(getDeepActiveElement(), app.$.input);
-  });
-
-  test('input is focused when reinitialized', async () => {
-    app.$.input.blur();
-    await flushTasks();
-    assertNotEquals(getDeepActiveElement(), app.$.input);
-    webUIListenerCallback('initialize');
-    await flushTasks();
-    assertEquals(getDeepActiveElement(), app.$.input);
   });
 
   test('esc dismisses', () => {

@@ -12432,6 +12432,18 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric
+      name="PaintTiming.NavigationToLargestContentfulPaint2.CrossSiteSubFrame">
+    <summary>
+      Similar to PaintTiming.NavigationToLargestContentfulPaint2, this measures
+      the time in milliseconds from the navigation start of the top-level frame
+      to the time when the page first paints the largest content (text or image)
+      in the cross-site subframe which is the top candidate of largest
+      contentful paint. This metric is computed separately from the page-level
+      LCP, it's recorded even in page loads where the page-level LCP is not that
+      cross-site LCP.
+    </summary>
+  </metric>
   <metric name="PaintTiming.NavigationToLargestContentfulPaint2.MainFrame">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
@@ -17837,7 +17849,7 @@ be describing additional metrics about the same event.
   <summary>
     Features of a web app recorded at most once per day if a user interacted
     with the web app. Recorded for installed and/or promotable (installable) web
-    apps unless noted otherwise on the metric.
+    apps unless noted otherwise on the metric. Keyed by start_url of the app.
   </summary>
   <metric name="BackgroundDuration">
     <summary>

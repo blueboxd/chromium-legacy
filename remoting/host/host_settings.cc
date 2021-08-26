@@ -17,14 +17,19 @@
 #include "remoting/host/linux/file_path_util.h"
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_WIN)
+#include "remoting/host/host_settings_win.h"
+#endif  // defined (OS_WIN)
+
 namespace remoting {
 
 namespace {
 
 class EmptyHostSettings : public HostSettings {
  public:
-  std::string GetString(const HostSettingKey key) const override {
-    return std::string();
+  std::string GetString(const HostSettingKey key,
+                        const std::string& default_value) const override {
+    return default_value;
   }
 
   void SetString(const HostSettingKey key, const std::string& value) override {}
@@ -51,6 +56,8 @@ HostSettings* HostSettings::GetInstance() {
 #elif defined(OS_LINUX)
   static base::NoDestructor<FileHostSettings> instance(base::FilePath(
       GetConfigDirectoryPath().Append(GetHostHash() + ".settings.json")));
+#elif defined(OS_WIN)
+  static base::NoDestructor<HostSettingsWin> instance;
 #else
   // HostSettings is currently neither implemented nor used on other platforms.
   static base::NoDestructor<EmptyHostSettings> instance;

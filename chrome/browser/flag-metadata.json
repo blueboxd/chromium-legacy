@@ -864,6 +864,11 @@
       "expiry_milestone": 96
   },
   {
+    "name": "crostini-bullseye-upgrade",
+    "owners": [ "sidereal@google.com", "clumptini@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "crostini-container-install",
     "owners": [ "davidmunro@google.com", "clumptini@google.com" ],
     "expiry_milestone": 109
@@ -1497,6 +1502,11 @@
     "name": "enable-browsing-data-lifetime-manager",
     "owners": ["ydago"],
     "expiry_milestone": 91
+  },
+  {
+    "name": "enable-cast-streaming-av1",
+    "owners": [ "jophba@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "enable-cast-streaming-vp9",
@@ -4368,12 +4378,12 @@
   {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 96
   },
   {
     "name": "paint-preview-startup",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 96
   },
   {
     "name": "partitioned-cookies",
@@ -4424,7 +4434,7 @@
   {
     "name": "pdf-xfa-forms",
     "owners": [ "carlosil", "tsepez" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 99
   },
   {
     "name": "percent-based-scrolling",
@@ -4977,22 +4987,22 @@
   {
     "name": "shared-highlighting-amp",
     "owners": ["cheickcisse@google.com"],
-    "expiry_milestone": 95
+    "expiry_milestone": 97
   },
   {
     "name": "shared-highlighting-ios",
     "owners": ["tmartino"],
-    "expiry_milestone": 94
+    "expiry_milestone": 97
   },
   {
     "name": "shared-highlighting-use-blocklist",
     "owners": ["tmartino"],
-    "expiry_milestone": 94
+    "expiry_milestone": 97
   },
   {
     "name": "shared-highlighting-v2",
     "owners": ["kmilka"],
-    "expiry_milestone": 94
+    "expiry_milestone": 97
   },
   {
     "name": "sharing-desktop-screenshots",

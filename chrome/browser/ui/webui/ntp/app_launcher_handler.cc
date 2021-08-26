@@ -312,6 +312,13 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
       "kioskMode",
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode));
 
+  bool is_deprecated_app = false;
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+  is_deprecated_app = extensions::IsExtensionUnsupportedDeprecatedApp(
+      extension_service_->GetBrowserContext(), extension->id());
+#endif
+  value->SetBoolean("is_deprecated_app", is_deprecated_app);
+
   // The Extension class 'helpfully' wraps bidi control characters that
   // impede our ability to determine directionality.
   std::u16string short_name = base::UTF8ToUTF16(extension->short_name());
@@ -323,6 +330,8 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
 
   std::u16string name = base::UTF8ToUTF16(extension->name());
   base::i18n::UnadjustStringForLocaleDirection(&name);
+  if (is_deprecated_app)
+    name = l10n_util::GetStringFUTF16(IDS_APPS_PAGE_DEPRECATED_APP_TITLE, name);
   NewTabUI::SetFullNameAndDirection(name, value);
 
   bool enabled = extension_service_->IsExtensionEnabled(extension->id()) &&
@@ -427,51 +436,51 @@ void AppLauncherHandler::RegisterProfilePrefs(
 }
 
 void AppLauncherHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getApps", base::BindRepeating(&AppLauncherHandler::HandleGetApps,
                                      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "launchApp", base::BindRepeating(&AppLauncherHandler::HandleLaunchApp,
                                        base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setLaunchType",
       base::BindRepeating(&AppLauncherHandler::HandleSetLaunchType,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "uninstallApp",
       base::BindRepeating(&AppLauncherHandler::HandleUninstallApp,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "createAppShortcut",
       base::BindRepeating(&AppLauncherHandler::HandleCreateAppShortcut,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "installAppLocally",
       base::BindRepeating(&AppLauncherHandler::HandleInstallAppLocally,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "showAppInfo", base::BindRepeating(&AppLauncherHandler::HandleShowAppInfo,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "reorderApps", base::BindRepeating(&AppLauncherHandler::HandleReorderApps,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setPageIndex",
       base::BindRepeating(&AppLauncherHandler::HandleSetPageIndex,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "saveAppPageName",
       base::BindRepeating(&AppLauncherHandler::HandleSaveAppPageName,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "generateAppForLink",
       base::BindRepeating(&AppLauncherHandler::HandleGenerateAppForLink,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "pageSelected",
       base::BindRepeating(&AppLauncherHandler::HandlePageSelected,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "runOnOsLogin",
       base::BindRepeating(&AppLauncherHandler::HandleRunOnOsLogin,
                           base::Unretained(this)));

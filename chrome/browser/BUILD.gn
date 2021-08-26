@@ -1945,7 +1945,6 @@ static_library("browser") {
     "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/profiling_host",
-    "//chrome/browser/promo_browser_command:mojo_bindings",
     "//chrome/browser/push_messaging:budget_proto",
     "//chrome/browser/resource_coordinator:mojo_bindings",
     "//chrome/browser/resource_coordinator:tab_manager_features",
@@ -2377,6 +2376,7 @@ static_library("browser") {
     "//ui/webui",
     "//ui/webui/resources/cr_components/customize_themes:mojom",
     "//ui/webui/resources/cr_components/most_visited:mojom",
+    "//ui/webui/resources/js/browser_command:mojo_bindings",
   ]
   if (is_chromeos_ash) {
     testonly = enable_weston_test
@@ -3999,8 +3999,6 @@ static_library("browser") {
       "renderer_context_menu/spelling_menu_observer.h",
       "repost_form_warning_controller.cc",
       "repost_form_warning_controller.h",
-      "resource_coordinator/background_tab_navigation_throttle.cc",
-      "resource_coordinator/background_tab_navigation_throttle.h",
       "resource_coordinator/decision_details.cc",
       "resource_coordinator/decision_details.h",
       "resource_coordinator/discard_metrics_lifecycle_unit_observer.cc",
@@ -5439,20 +5437,17 @@ static_library("browser") {
       "enterprise/connectors/device_trust/attestation/desktop/crypto_utility.h",
       "enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_service.cc",
       "enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_service.h",
-      "enterprise/connectors/device_trust/attestation/desktop/ec_signing_key.cc",
-      "enterprise/connectors/device_trust/attestation/desktop/ec_signing_key.h",
       "enterprise/connectors/device_trust/attestation/desktop/google_keys.cc",
       "enterprise/connectors/device_trust/attestation/desktop/google_keys.h",
-      "enterprise/connectors/device_trust/attestation/desktop/signing_key_pair.cc",
-      "enterprise/connectors/device_trust/attestation/desktop/signing_key_pair.h",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.cc",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.h",
     ]
-    deps += [
+    public_deps += [
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common/proto:attestation_ca_proto",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common/proto:google_key_proto",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common/proto:interface_proto",
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common/proto:keystore_proto",
+      "//chrome/browser/enterprise/connectors/device_trust/attestation/desktop:elevated_command_support",
     ]
   }
 

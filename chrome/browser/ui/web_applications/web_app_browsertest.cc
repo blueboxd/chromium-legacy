@@ -78,6 +78,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -621,6 +622,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Tests that app windows are correctly restored.
 IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest, RestoreAppWindow) {
   const GURL app_url = GetSecureAppURL();
@@ -643,6 +645,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest, RestoreAppWindow) {
 
   EXPECT_TRUE(restored_browser->is_type_app());
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Test navigating to an out of scope url on the same origin causes the url
 // to be shown to the user.
@@ -666,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, UpgradeWithoutCustomTabBar) {
   const GURL secure_app_url =
-      https_server()->GetURL("app.site.com", "/empty.html");
+      https_server()->GetURL("app.site.test", "/empty.html");
   GURL::Replacements rep;
   rep.SetSchemeStr(url::kHttpScheme);
   const GURL app_url = secure_app_url.ReplaceComponents(rep);
@@ -1013,7 +1016,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutIconCorrectColor) {
   SkColor icon_pixel_color = GetIconTopLeftColor(shortcut_path);
   EXPECT_TRUE(std::find(expected_pixel_colors.begin(),
                         expected_pixel_colors.end(),
-                        icon_pixel_color) != expected_pixel_colors.end());
+                        icon_pixel_color) != expected_pixel_colors.end())
+      << "Actual color (RGB) is: "
+      << color_utils::SkColorToRgbString(icon_pixel_color);
 }
 #endif
 
@@ -1228,7 +1233,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
                        WebAppWindowTitleForEmptyAndSimpleWebContentTitles) {
   // Ensure web app windows show the expected title when the contents have an
   // empty or simple title.
-  const GURL app_url = https_server()->GetURL("app.site.com", "/empty.html");
+  const GURL app_url = https_server()->GetURL("app.site.test", "/empty.html");
   const std::u16string app_title = u"A Web App";
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = app_url;
@@ -1246,7 +1251,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
               app_browser->GetWindowTitleForCurrentTab(false));
   }
   NavigateToURLAndWait(app_browser,
-                       https_server()->GetURL("app.site.com", "/simple.html"));
+                       https_server()->GetURL("app.site.test", "/simple.html"));
   if (ExpectPrefixInTitle()) {
     EXPECT_EQ(u"A Web App - OK",
               app_browser->GetWindowTitleForCurrentTab(false));
@@ -1281,7 +1286,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_PrefixInTitle,
     EXPECT_EQ(u"Google", app_browser->GetWindowTitleForCurrentTab(false));
   }
   NavigateToURLAndWait(app_browser,
-                       https_server()->GetURL("app.site.com", "/simple.html"));
+                       https_server()->GetURL("app.site.test", "/simple.html"));
 
   // When we are off scope, show the app title.
   EXPECT_EQ(app_title, app_browser->GetWindowTitleForCurrentTab(false));
@@ -1296,7 +1301,7 @@ INSTANTIATE_TEST_SUITE_P(WebAppBrowserTestTitlePrefix,
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InScopeHttpUrlsDisplayAppTitle) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL app_url =
-      embedded_test_server()->GetURL("app.site.com", "/simple.html");
+      embedded_test_server()->GetURL("app.site.test", "/simple.html");
   const std::u16string app_title = u"A Web App";
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();

@@ -2483,21 +2483,6 @@
             ]
         }
     ],
-    "CrOSAutoSelect": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CrOSAutoSelect"
-                    ]
-                }
-            ]
-        }
-    ],
     "CrOSEnforceSystemAecNsAgc": [
         {
             "platforms": [
@@ -7043,19 +7028,15 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithoutBottomSheet",
+                    "name": "EnabledContextMenuWithRootAsDefault",
+                    "params": {
+                        "use_root_bookmark_as_default": "true"
+                    },
                     "enable_features": [
                         "ReadLater"
                     ],
                     "disable_features": [
                         "BookmarkBottomSheet"
-                    ]
-                },
-                {
-                    "name": "EnabledWithBottomSheet",
-                    "enable_features": [
-                        "BookmarkBottomSheet",
-                        "ReadLater"
                     ]
                 }
             ]
@@ -8683,23 +8664,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UpdateHistoryEntryPointsInIncognito"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UploadBrowserDeviceIdentifier": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UploadBrowserDeviceIdentifier"
                     ]
                 }
             ]

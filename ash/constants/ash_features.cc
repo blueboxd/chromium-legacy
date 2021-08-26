@@ -154,6 +154,10 @@ const base::Feature kAssistPersonalInfoName{"AssistPersonalInfoName",
 const base::Feature kAssistPersonalInfoPhoneNumber{
     "AssistPersonalInfoPhoneNumber", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the Audio URL that is designed to help user debug or troubleshoot
+// common issues on ChromeOS.
+const base::Feature kAudioUrl{"AudioUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the Auto Night Light feature which sets the default schedule type to
 // sunset-to-sunrise until the user changes it to something else. This feature
 // is not exposed to the end user, and is enabled only via cros_config for
@@ -277,6 +281,10 @@ const base::Feature kContextualNudges{"ContextualNudges",
 // Enables or disables Crosh System Web App. When enabled, crosh (Chrome OS
 // Shell) will run as a tabbed System Web App rather than a normal browser tab.
 const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables upgrading the crostini container to debian bullseye.
+const base::Feature kCrostiniBullseyeUpgrade{"CrostiniBullseyeUpgrade",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Crostini Disk Resizing.
 const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",

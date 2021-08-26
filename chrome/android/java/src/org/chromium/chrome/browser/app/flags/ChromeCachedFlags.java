@@ -75,6 +75,9 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.CCT_INCOGNITO);
                 add(ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY);
                 add(ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS);
+                add(ChromeFeatureList.CCT_RESIZABLE_90_MAXIMUM_HEIGHT);
+                add(ChromeFeatureList.CCT_RESIZABLE_FOR_FIRST_PARTIES);
+                add(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES);
                 add(ChromeFeatureList.CLIPBOARD_SUGGESTION_CONTENT_HIDDEN);
                 add(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS);
                 add(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA);
@@ -106,6 +109,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.THEME_REFACTOR_ANDROID);
                 add(ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW);
                 add(ChromeFeatureList.USE_CHIME_ANDROID_SDK);
+                add(ChromeFeatureList.WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT);
             }
         };
         CachedFeatureFlags.cacheNativeFlags(featuresToCache);

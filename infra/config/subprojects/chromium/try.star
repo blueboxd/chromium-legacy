@@ -241,7 +241,6 @@ try_.blink_mac_builder(
 
 try_.blink_mac_builder(
     name = "mac11.0.arm64-blink-rel",
-    builderless = False,
 )
 
 try_.chromium_builder(
@@ -1301,10 +1300,9 @@ try_.chromium_linux_builder(
         "compilator": "linux-rel-compilator",
     },
     service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-    # TODO (kimstephanie): Turn back on when Aug 9 pending tasks go back down
-    #tryjob = try_.job(
-    #    experiment_percentage = 100,
-    #),
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
 )
 
 try_.chromium_linux_builder(
@@ -2243,6 +2241,14 @@ def chrome_internal_verifier(
         ],
         **kwargs
     )
+
+chrome_internal_verifier(
+    builder = "android-internal-binary-size",
+)
+
+chrome_internal_verifier(
+    builder = "android-internal-rel",
+)
 
 chrome_internal_verifier(
     builder = "chromeos-betty-chrome",

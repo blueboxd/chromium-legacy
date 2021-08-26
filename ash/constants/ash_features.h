@@ -73,6 +73,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAssistPersonalInfoName;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAssistPersonalInfoPhoneNumber;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAudioUrl;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAutoNightLight;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -114,6 +115,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCompositingBasedThrottling;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kContextualNudges;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCroshSWA;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kCrostiniBullseyeUpgrade;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniUseDlc;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDiagnosticsApp;

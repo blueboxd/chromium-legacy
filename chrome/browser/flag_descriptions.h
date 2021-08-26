@@ -778,6 +778,9 @@ extern const char kGlobalMediaControlsOverlayControlsDescription[];
 extern const char kOpenscreenCastStreamingSessionName[];
 extern const char kOpenscreenCastStreamingSessionDescription[];
 
+extern const char kCastStreamingAv1Name[];
+extern const char kCastStreamingAv1Description[];
+
 extern const char kCastStreamingVp9Name[];
 extern const char kCastStreamingVp9Description[];
 
@@ -2327,6 +2330,9 @@ extern const char kCrosRegionsModeDescription[];
 extern const char kCrosRegionsModeDefault[];
 extern const char kCrosRegionsModeOverride[];
 extern const char kCrosRegionsModeHide[];
+
+extern const char kCrostiniBullseyeUpgradeName[];
+extern const char kCrostiniBullseyeUpgradeDescription[];
 
 extern const char kCrostiniDiskResizingName[];
 extern const char kCrostiniDiskResizingDescription[];

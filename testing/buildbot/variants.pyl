@@ -62,16 +62,16 @@
   },
   'LACROS_VERSION_SKEW_DEV': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v94.0.4606.12/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v94.0.4606.18/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 94.0.4606.12',
+    'identifier': 'Lacros version skew testing ash 94.0.4606.18',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v94.0.4606.12',
-          'revision': 'version:94.0.4606.12',
+          'location': 'lacros_version_skew_tests_v94.0.4606.18',
+          'revision': 'version:94.0.4606.18',
         },
       ],
     },
@@ -381,7 +381,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.19',
+          'revision': 'version:94.0.4606.21',
         }
       ],
     },
@@ -405,7 +405,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.60',
+          'revision': 'version:93.0.4577.61',
         }
       ],
     },
@@ -453,7 +453,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.19',
+          'revision': 'version:94.0.4606.21',
         }
       ],
     },
@@ -477,7 +477,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.60',
+          'revision': 'version:93.0.4577.61',
         }
       ],
     },
@@ -525,7 +525,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.19',
+          'revision': 'version:94.0.4606.21',
         }
       ],
     },
@@ -549,7 +549,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.60',
+          'revision': 'version:93.0.4577.61',
         }
       ],
     },
@@ -581,49 +581,49 @@
   'CROS_ATLAS_TOT': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R94-14140.0.0',
+      'cros_img': 'atlas-release/R96-14161.0.0',
     },
     'identifier': 'ATLAS_TOT',
   },
   'CROS_ATLAS_TOT-1': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R93-14092.19.0',
+      'cros_img': 'atlas-release/R94-14150.7.0',
     },
     'identifier': 'ATLAS_TOT-1',
   },
   'CROS_ATLAS_TOT-2': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R92-13982.69.0',
+      'cros_img': 'atlas-release/R93-14092.35.0',
     },
     'identifier': 'ATLAS_TOT-2',
   },
   'CROS_EVE_TOT': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R94-14140.0.0',
+      'cros_img': 'eve-release/R96-14161.0.0',
     },
     'identifier': 'EVE_TOT',
   },
   'CROS_EVE_TOT-1': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R93-14092.13.0',
+      'cros_img': 'eve-release/R94-14150.7.0',
     },
     'identifier': 'EVE_TOT-1',
   },
   'CROS_EVE_TOT-2': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R92-13982.69.0',
+      'cros_img': 'eve-release/R93-14092.35.0',
     },
     'identifier': 'EVE_TOT-2',
   },
   'CROS_KEVIN_TOT': {
     'skylab': {
       'cros_board': 'kevin',
-      'cros_img': 'kevin-release/R94-14140.0.0',
+      'cros_img': 'kevin-release/R96-14161.0.0',
     },
     'identifier': 'KEVIN_TOT',
   },

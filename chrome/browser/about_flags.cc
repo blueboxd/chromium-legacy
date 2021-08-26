@@ -620,6 +620,16 @@ const FeatureEntry::FeatureParam kWebNoteStylizeRandomizeParam[] = {
 const FeatureEntry::FeatureVariation kWebNoteStylizeVariations[] = {
     {"With Randomized Order", kWebNoteStylizeRandomizeParam,
      base::size(kWebNoteStylizeRandomizeParam), nullptr}};
+
+const FeatureEntry::FeatureParam kSharingHubLinkToggle_ImageEnabled[] = {
+    {"image_enabled", "true"}};
+const FeatureEntry::FeatureParam kSharingHubLinkToggle_ScreenshotEnabled[] = {
+    {"screenshot_enabled", "true"}};
+const FeatureEntry::FeatureVariation kSharingHubLinkToggleVariations[] = {
+    {"image enabled by default", kSharingHubLinkToggle_ImageEnabled,
+     base::size(kSharingHubLinkToggle_ImageEnabled), nullptr},
+    {"screenshot enabled by default", kSharingHubLinkToggle_ScreenshotEnabled,
+     base::size(kSharingHubLinkToggle_ScreenshotEnabled), nullptr}};
 #endif  // OS_ANDROID
 
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
@@ -3405,7 +3415,9 @@ const FeatureEntry kFeatureEntries[] = {
                                     "WebNotesStylize")},
     {"sharing-hub-link-toggle", flag_descriptions::kSharingHubLinkToggleName,
      flag_descriptions::kSharingHubLinkToggleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kSharingHubLinkToggle)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kSharingHubLinkToggle,
+                                    kSharingHubLinkToggleVariations,
+                                    "SharingHubLinkToggle")},
     {"webnotes-publish", flag_descriptions::kWebNotesPublishName,
      flag_descriptions::kWebNotesPublishDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(content_creation::kWebNotesPublish)},
@@ -3444,6 +3456,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kLockScreenNotifications)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"crostini-bullseye-upgrade",
+     flag_descriptions::kCrostiniBullseyeUpgradeName,
+     flag_descriptions::kCrostiniBullseyeUpgradeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniBullseyeUpgrade)},
     {"crostini-use-dlc", flag_descriptions::kCrostiniUseDlcName,
      flag_descriptions::kCrostiniUseDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseDlc)},
@@ -3679,6 +3695,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOpenscreenCastStreamingSessionName,
      flag_descriptions::kOpenscreenCastStreamingSessionDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(mirroring::features::kOpenscreenCastStreamingSession)},
+
+    {"enable-cast-streaming-av1", flag_descriptions::kCastStreamingAv1Name,
+     flag_descriptions::kCastStreamingAv1Description, kOsDesktop,
+     FEATURE_VALUE_TYPE(mirroring::features::kCastStreamingAv1)},
 
     {"enable-cast-streaming-vp9", flag_descriptions::kCastStreamingVp9Name,
      flag_descriptions::kCastStreamingVp9Description, kOsDesktop,

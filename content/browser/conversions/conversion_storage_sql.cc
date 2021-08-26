@@ -747,7 +747,7 @@ bool ConversionStorageSql::DeleteExpiredImpressions() {
 
   auto delete_impressions_from_paged_select =
       [this](sql::Statement& statement)
-          VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT -> bool {
+          VALID_CONTEXT_REQUIRED(sequence_checker_) -> bool {
     while (true) {
       std::vector<StorableImpression::Id> impression_ids;
       while (statement.Step()) {
@@ -805,10 +805,8 @@ bool ConversionStorageSql::DeleteConversion(
     ConversionReport::Id conversion_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
-    return false;
-  if (!DeleteConversionInternal(conversion_id))
-    return false;
-  return db_->GetLastChangeCount() > 0;
+    return true;
+  return DeleteConversionInternal(conversion_id);
 }
 
 bool ConversionStorageSql::DeleteConversionInternal(

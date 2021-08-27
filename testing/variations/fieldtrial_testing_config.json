@@ -34,6 +34,23 @@
             ]
         }
     ],
+    "AccountPoliciesLoadedWithoutSync": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "AccountPoliciesLoadedWithoutSync",
+                    "enable_features": [
+                        "AccountPoliciesLoadedWithoutSync"
+                    ]
+                }
+            ]
+        }
+    ],
     "AddToHomescreenIPH": [
         {
             "platforms": [
@@ -603,7 +620,7 @@
                 {
                     "name": "Enabled_2021-06-21",
                     "params": {
-                        "autodismiss_duration_ms": "10000"
+                        "save_password_message_dismiss_duration_ms": "10000"
                     },
                     "enable_features": [
                         "MessagesForAndroidInfrastructure",
@@ -2070,6 +2087,21 @@
             ]
         }
     ],
+    "ClankAppFlowsLoggingStudy": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FeedReliabilityLogging"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClankDetailedLanguageSettings": [
         {
             "platforms": [
@@ -3035,26 +3067,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DetectFormSubmissionOnFormClear"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DetectedSourceLanguageOption": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DetectedSourceLanguageOption"
                     ]
                 }
             ]
@@ -7265,22 +7277,10 @@
     "ReportCertificateErrors": [
         {
             "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ShowAndPossiblySend",
-                    "params": {
-                        "sendingThreshold": "1.0"
-                    }
-                },
-                {
-                    "name": "DontShowAndDontSend"
-                }
-            ]
-        },
-        {
-            "platforms": [
+                "linux",
+                "mac",
+                "windows",
+                "android",
                 "chromeos"
             ],
             "experiments": [
@@ -7289,45 +7289,6 @@
                     "params": {
                         "sendingThreshold": "1.0"
                     }
-                },
-                {
-                    "name": "ShowAndPossiblySend",
-                    "params": {
-                        "sendingThreshold": "-1.0"
-                    }
-                },
-                {
-                    "name": "ShowAndPossiblySend",
-                    "params": {
-                        "sendingThreshold": "0.0"
-                    }
-                },
-                {
-                    "name": "ShowAndPossiblySend",
-                    "params": {
-                        "sendingThreshold": "abcdef"
-                    }
-                },
-                {
-                    "name": "DontShowAndDontSend"
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "ShowAndPossiblySend",
-                    "params": {
-                        "sendingThreshold": "1.0"
-                    }
-                },
-                {
-                    "name": "DontShowAndDontSend"
                 }
             ]
         }
@@ -9383,6 +9344,23 @@
             ]
         }
     ],
+    "WebGPUOriginTrial": [
+        {
+            "platforms": [
+                "chromeos",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebGPUService"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebOtpBackendAuto": [
         {
             "platforms": [
@@ -9934,6 +9912,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebviewAccelerateSmallCanvases"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WhatsNewPageExperiment": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeWhatsNewUI"
                     ]
                 }
             ]

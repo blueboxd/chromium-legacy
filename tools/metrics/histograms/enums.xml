@@ -29993,6 +29993,12 @@ Called by update_extension_permission.py.-->
   <int value="2" label="Only allow Certain Sites"/>
 </enum>
 
+<enum name="FamilyUserDenylistSource">
+  <int value="0" label="None"/>
+  <int value="1" label="Denylist"/>
+  <int value="2" label="Old Denylist"/>
+</enum>
+
 <enum name="FamilyUserLogSegment">
   <summary>Filters family user metrics into categories of interest.</summary>
   <int value="0" label="Other"/>
@@ -49572,6 +49578,7 @@ from previous Chrome versions.
   <int value="-43980455" label="MobileIdentityConsistencyFRE:enabled"/>
   <int value="-43650386" label="WindowsFollowCursor:enabled"/>
   <int value="-43428597" label="ClickToCallDetectionV2:enabled"/>
+  <int value="-42175674" label="ShareUsageRankingFixedMore:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-37966026" label="PermissionPredictions:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
@@ -50060,6 +50067,8 @@ from previous Chrome versions.
   <int value="358493847" label="BackgroundLoader:disabled"/>
   <int value="359601954" label="CrostiniUsbSupport:enabled"/>
   <int value="359896413" label="SplitPartiallyOccludedQuads:disabled"/>
+  <int value="359918746"
+      label="AutofillEnableVirtualCardsRiskBasedAuthentication:disabled"/>
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="361984896"
@@ -51347,6 +51356,8 @@ from previous Chrome versions.
   <int value="1369649674" label="ChromeShareScreenshot:enabled"/>
   <int value="1370797930" label="ShowBluetoothDeviceBattery:enabled"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>
+  <int value="1371190773"
+      label="AutofillEnableVirtualCardsRiskBasedAuthentication:enabled"/>
   <int value="1371344350" label="MediaSessionWebRTC:disabled"/>
   <int value="1371907429" label="enable-wallet-card-import"/>
   <int value="1372680885" label="enable-mtp-write-support"/>
@@ -51922,6 +51933,7 @@ from previous Chrome versions.
   <int value="1834968807" label="OmniboxAutocompleteTitles:enabled"/>
   <int value="1835075399" label="PostQuantumCECPQ2:disabled"/>
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
+  <int value="1835931933" label="ShareUsageRankingFixedMore:enabled"/>
   <int value="1837330563" label="WebPaymentsMinimalUI:disabled"/>
   <int value="1837847580" label="MutingCompromisedCredentials:disabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
@@ -75079,6 +75091,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SetupInstallResult">
+  <summary>
+    Return status of the Windows installer. The values in this enum must be kept
+    in sync with the InstallStatus enum in
+    //chrome/installer/util/util_constants.h.
+  </summary>
   <int value="0" label="First install of Chrome succeeded."/>
   <int value="1" label="Same version reinstalled for repair."/>
   <int value="2" label="Chrome successfully updated to new version."/>
@@ -75133,6 +75150,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="56" label="Autoupdates could not be enabled."/>
   <int value="57"
       label="Unpacking the (possibly patched) uncompressed archive failed."/>
+  <int value="71" label="Rotation of the device trust key failed."/>
+  <int value="72" label="Rotation of the device trust key succeeded."/>
 </enum>
 
 <enum name="SetupInstallServiceInstallResult">

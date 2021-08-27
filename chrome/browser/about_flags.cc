@@ -7227,6 +7227,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableOfferNotificationCrossTabTracking)},
 
+    {"autofill-enable-virtual-cards-risk-based-authentication",
+     flag_descriptions::kAutofillEnableVirtualCardsRiskBasedAuthenticationName,
+     flag_descriptions::
+         kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableVirtualCardsRiskBasedAuthentication)},
+
     {"autofill-fix-offer-in-incognito",
      flag_descriptions::kAutofillFixOfferInIncognitoName,
      flag_descriptions::kAutofillFixOfferInIncognitoDescription, kOsAll,
@@ -7518,6 +7527,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"share-usage-ranking", flag_descriptions::kShareUsageRankingName,
      flag_descriptions::kShareUsageRankingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kShareUsageRanking)},
+    {"share-usage-ranking-fixed-more",
+     flag_descriptions::kShareUsageRankingFixedMoreName,
+     flag_descriptions::kShareUsageRankingFixedMoreDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kShareUsageRankingFixedMore)},
 #endif
 
     {"enable-safe-browsing-per-profile-network-contexts",

@@ -190,6 +190,10 @@ extern const char kAutofillEnableToolbarStatusChipDescription[];
 extern const char kAutofillEnableVirtualCardName[];
 extern const char kAutofillEnableVirtualCardDescription[];
 
+extern const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[];
+extern const char
+    kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription[];
+
 extern const char kAutofillFillMerchantPromoCodeFieldsName[];
 extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
 
@@ -1927,6 +1931,8 @@ extern const char kRelatedSearchesUiDescription[];
 
 extern const char kShareUsageRankingName[];
 extern const char kShareUsageRankingDescription[];
+extern const char kShareUsageRankingFixedMoreName[];
+extern const char kShareUsageRankingFixedMoreDescription[];
 
 extern const char kSingleTouchSelectName[];
 extern const char kSingleTouchSelectDescription[];

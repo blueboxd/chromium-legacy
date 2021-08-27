@@ -18,6 +18,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 struct wl_cursor;
@@ -147,16 +148,12 @@ class WaylandConnection {
     return xdg_output_manager_.get();
   }
 
+  // TODO(crbug.com/1211874): Drop once SerialTracker migration is complete.
   void set_serial(uint32_t serial, EventType event_type) {
     serial_ = {serial, event_type};
   }
   uint32_t serial() const { return serial_.serial; }
   EventSerial event_serial() const { return serial_; }
-
-  void set_pointer_enter_serial(uint32_t serial) {
-    pointer_enter_serial_ = serial;
-  }
-  uint32_t pointer_enter_serial() const { return pointer_enter_serial_; }
 
   void SetPlatformCursor(wl_cursor* cursor_data, int buffer_scale);
 
@@ -274,6 +271,8 @@ class WaylandConnection {
       const {
     return available_globals_;
   }
+
+  wl::SerialTracker& serial_tracker() { return serial_tracker_; }
 
  private:
   friend class WaylandConnectionTestApi;
@@ -418,7 +417,7 @@ class WaylandConnection {
 
   EventSerial serial_;
 
-  uint32_t pointer_enter_serial_ = 0;
+  wl::SerialTracker serial_tracker_{this};
 
   // Global Wayland interfaces available in the current session, with their
   // versions.

@@ -393,6 +393,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "autofill-enable-virtual-cards-risk-based-authentication",
+    "owners": [ "siyua", "jsaul@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "autofill-fill-merchant-promo-code-fields",
     "owners": [ "jsaul@google.com", "payments-autofill-team@google.com" ],
     "expiry_milestone": 99
@@ -661,7 +666,7 @@
   {
     "name": "chromeos-sharing-hub",
     "owners": [ "kristipark", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 98
   },
   {
     "name": "clear-cross-site-cross-browsing-context-group-window-name",
@@ -4388,12 +4393,12 @@
   {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 96
   },
   {
     "name": "paint-preview-startup",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 96
   },
   {
     "name": "partitioned-cookies",
@@ -4992,7 +4997,12 @@
   {
     "name": "share-usage-ranking",
     "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 96
+  },
+  {
+    "name": "share-usage-ranking-fixed-more",
+    "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 96
   },
   {
     "name": "shared-clipboard-ui",
@@ -5027,12 +5037,12 @@
   {
     "name": "sharing-hub-desktop-app-menu",
     "owners": [ "kristipark", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 98
   },
   {
     "name": "sharing-hub-desktop-omnibox",
     "owners": [ "kristipark", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 98
   },
   {
     "name": "sharing-hub-link-toggle",

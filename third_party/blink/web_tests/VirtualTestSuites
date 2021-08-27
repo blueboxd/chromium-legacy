@@ -315,6 +315,12 @@
     "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
+    "prefix": "layout_ng_flex_frag",
+    "bases": ["external/wpt/css/css-break/flexbox",
+              "fast/multicol/flexbox"],
+    "args": ["--enable-blink-features=LayoutNGFlexFragmentation"]
+  },
+  {
     "prefix": "layout_ng_printing",
     "bases": ["printing"],
     "args": ["--enable-blink-features=LayoutNGPrinting"]
@@ -552,16 +558,9 @@
     "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
   },
   {
-    "prefix": "site-isolated-code-cache",
-    "bases": ["http/tests/devtools/isolated-code-cache"],
-    "args": ["--enable-features=IsolatedCodeCache",
-             "--site-per-process"]
-  },
-  {
     "prefix": "wasm-site-isolated-code-cache",
     "bases": ["http/tests/devtools/wasm-isolated-code-cache"],
-    "args": ["--enable-features=IsolatedCodeCache",
-             "--disable-features=WebAssemblyBaseline",
+    "args": ["--disable-features=WebAssemblyBaseline",
              "--site-per-process"]
   },
   {

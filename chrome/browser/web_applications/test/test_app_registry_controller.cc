@@ -40,11 +40,6 @@ void TestAppRegistryController::SetAppIsDisabled(const AppId& app_id,
                                                  bool is_disabled) {}
 void TestAppRegistryController::UpdateAppsDisableMode() {}
 
-void TestAppRegistryController::SetExperimentalTabbedWindowMode(
-    const AppId& app_id,
-    bool enabled,
-    bool is_user_action) {}
-
 void TestAppRegistryController::SetAppIsLocallyInstalled(
     const AppId& app_id,
     bool is_locally_installed) {}
@@ -64,9 +59,5 @@ void TestAppRegistryController::SetAppRunOnOsLoginMode(const AppId& app_id,
 void TestAppRegistryController::SetAppWindowControlsOverlayEnabled(
     const AppId& app_id,
     bool enabled) {}
-
-WebAppSyncBridge* TestAppRegistryController::AsWebAppSyncBridge() {
-  return nullptr;
-}
 
 }  // namespace web_app

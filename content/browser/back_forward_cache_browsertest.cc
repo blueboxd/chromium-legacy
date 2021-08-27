@@ -9476,7 +9476,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CoopReporter) {
   // Navigate to a document that set RenderFrameHostImpl::coop_reporter().
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
-  EXPECT_TRUE(rfh_a->coop_reporter());
+  EXPECT_TRUE(rfh_a->coop_access_report_manager()->coop_reporter());
 
   // Navigate away and back using the BackForwardCache. The
   // RenderFrameHostImpl::coop_reporter() must still be there.
@@ -9487,7 +9487,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CoopReporter) {
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
 
-  EXPECT_TRUE(rfh_a->coop_reporter());
+  EXPECT_TRUE(rfh_a->coop_access_report_manager()->coop_reporter());
 }
 
 // RenderFrameHostImpl::cross_origin_embedder_policy() must be preserved when
@@ -11275,8 +11275,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   shell->Close();
 }
 
+// Fails under address-sanitizer.  http://crbug.com/1243159
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DoNotCacheIfMediaSessionPlaybackStateChanged \
+  DISABLED_DoNotCacheIfMediaSessionPlaybackStateChanged
+#else
+#define MAYBE_DoNotCacheIfMediaSessionPlaybackStateChanged \
+  DoNotCacheIfMediaSessionPlaybackStateChanged
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoNotCacheIfMediaSessionPlaybackStateChanged) {
+                       MAYBE_DoNotCacheIfMediaSessionPlaybackStateChanged) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to a page using MediaSession.
@@ -12169,7 +12177,6 @@ class BackForwardCacheBrowserTestRestoreCacheControlNoStoreUnlessCookieChange
 #define MAYBE_PagesWithCacheControlNoStoreRestoreFromBackForwardCache \
   PagesWithCacheControlNoStoreRestoreFromBackForwardCache
 #endif
-
 
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // and gets restored if cookies do not change.

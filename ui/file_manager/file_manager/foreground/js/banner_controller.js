@@ -11,6 +11,7 @@ import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {DirectoryModel} from './directory_model.js';
+import {TAG_NAME as DriveWelcomeBannerTagName} from './ui/banners/drive_welcome_banner.js';
 import {TAG_NAME as LocalDiskLowSpaceBannerTagName} from './ui/banners/local_disk_low_space_banner.js';
 
 /**
@@ -117,11 +118,13 @@ export class BannerController extends EventTarget {
      * Bind the onDirectorySizeChanged_ method to this instance once.
      * @private {!function(!chrome.fileManagerPrivate.FileWatchEvent)}
      */
-    this.onDirectorySizeChanged_ = this.onDirectorySizeChanged_.bind(this);
+    this.onDirectorySizeChangedBound_ = async event =>
+        this.onDirectorySizeChanged_(event);
 
-    xfm.storage.onChanged.addListener(this.onStorageChanged_.bind(this));
+    xfm.storage.onChanged.addListener(
+        (changes, areaName) => this.onStorageChanged_(changes, areaName));
     this.directoryModel_.addEventListener(
-        'directory-changed', this.onDirectoryChanged_.bind(this));
+        'directory-changed', event => this.onDirectoryChanged_(event));
   }
 
   /**
@@ -134,6 +137,7 @@ export class BannerController extends EventTarget {
       // Banners are initialized in their priority order. The order of the array
       // denotes the priority of the banner, 0th index is highest priority.
       this.setWarningBannersInOrder([LocalDiskLowSpaceBannerTagName]);
+      this.setEducationalBannersInOrder([DriveWelcomeBannerTagName]);
     }
 
     for (const banner of this.warningBanners_) {
@@ -214,10 +218,12 @@ export class BannerController extends EventTarget {
     // Check if the banner has exceeded the maximum number of times it can be
     // shown over multiple Files app sessions.
     const showLimit = banner.showLimit();
-    const timesShown =
-        this.localStorageCache_[`${banner.tagName}_${VIEW_COUNTER_SUFFIX}`];
-    if (showLimit && timesShown >= showLimit) {
-      return false;
+    if (showLimit) {
+      const timesShown =
+          this.localStorageCache_[`${banner.tagName}_${VIEW_COUNTER_SUFFIX}`];
+      if (timesShown >= showLimit && !banner.isConnected) {
+        return false;
+      }
     }
 
     // Check if the threshold has been breached for the banner to be shown.
@@ -252,14 +258,16 @@ export class BannerController extends EventTarget {
    * @private
    */
   async showBanner_(banner) {
-    if (banner.parentElement !== this.container_) {
+    if (!banner.isConnected) {
       this.container_.appendChild(/** @type {Node} */ (banner));
 
       // Views are set when the banner is first appended to the DOM. This
       // denotes a new app session.
-      const localStorageKey = `${banner.tagName}_${VIEW_COUNTER_SUFFIX}`;
-      await this.setLocalStorage_(
-          localStorageKey, this.localStorageCache_[localStorageKey] + 1);
+      if (banner.showLimit()) {
+        const localStorageKey = `${banner.tagName}_${VIEW_COUNTER_SUFFIX}`;
+        await this.setLocalStorage_(
+            localStorageKey, this.localStorageCache_[localStorageKey] + 1);
+      }
     }
 
     banner.removeAttribute('hidden');
@@ -313,7 +321,7 @@ export class BannerController extends EventTarget {
       banner.setAttribute('aria-hidden', 'true');
       banner.addEventListener(
           Banner.Event.BANNER_DISMISSED,
-          this.onBannerDismissedClick_.bind(this));
+          event => this.onBannerDismissedClick_(event));
       this.warningBanners_.push(banner);
     }
   }
@@ -329,8 +337,8 @@ export class BannerController extends EventTarget {
       banner.toggleAttribute('hidden', true);
       banner.setAttribute('aria-hidden', 'true');
       banner.addEventListener(
-          Banner.Event.BANNER_DISMISSED,
-          this.onBannerDismissedClick_.bind(this));
+          Banner.Event.BANNER_DISMISSED_FOREVER,
+          event => this.onBannerDismissedClick_(event));
       this.educationalBanners_.push(banner);
     }
   }
@@ -368,11 +376,20 @@ export class BannerController extends EventTarget {
    */
   onBannerDismissedClick_(event) {
     if (!event.detail || !event.detail.banner) {
-      console.warn(
-          `${Banner.Event.BANNER_DISMISSED} event missing banner detail`);
+      console.warn('Banner dismiss event missing banner detail');
       return;
     }
     const banner = event.detail.banner;
+
+    // If the banner has been dismissed forever (in the case of educational
+    // banners) set the view counter to the max limit to ensure it is not
+    // shown again.
+    if (event.type === Banner.Event.BANNER_DISMISSED_FOREVER) {
+      this.setLocalStorage_(
+          `${banner.tagName}_${VIEW_COUNTER_SUFFIX}`, banner.showLimit());
+      this.hideBannerIfShown_(banner);
+      return;
+    }
 
     // Reset the view counter so that after the dismiss duration elapses the
     // banner can be shown for the showLimit again.
@@ -420,7 +437,7 @@ export class BannerController extends EventTarget {
     if (!this.currentVolume_ ||
         !this.volumeSizeObservers_[this.currentVolume_.volumeType]) {
       chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
-          this.onDirectorySizeChanged_);
+          this.onDirectorySizeChangedBound_);
       return;
     }
 
@@ -429,7 +446,7 @@ export class BannerController extends EventTarget {
     if (!isSubscribedByPreviousVolume &&
         this.volumeSizeObservers_[this.currentVolume_.volumeType]) {
       chrome.fileManagerPrivate.onDirectoryChanged.addListener(
-          this.onDirectorySizeChanged_);
+          this.onDirectorySizeChangedBound_);
     }
   }
 

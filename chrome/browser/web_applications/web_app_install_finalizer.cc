@@ -212,12 +212,6 @@ void WebAppInstallFinalizer::FinalizeInstall(
   UpdateIntWebAppPref(profile_->GetPrefs(), app_id, kLatestWebAppInstallSource,
                       static_cast<int>(options.install_source));
 
-  // TODO(crbug.com/897314): Store this as a display mode on WebApp to
-  // participate in the DB transactional model.
-  registry_controller().SetExperimentalTabbedWindowMode(
-      app_id, web_app_info.enable_experimental_tabbed_window,
-      /*is_user_action=*/false);
-
   file_handlers_helper_->WillInstallApp(web_app_info);
 
   CommitCallback commit_callback = base::BindOnce(
@@ -452,7 +446,7 @@ void WebAppInstallFinalizer::UninstallWebAppInternal(
     UninstallWebAppCallback callback) {
   // If the app is already uninstalling then avoid triggering another uninstall.
   {
-    ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
+    ScopedRegistryUpdate update(sync_bridge_);
     WebApp* app = update->UpdateApp(app_id);
     if (!app || app->is_uninstalling()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -513,7 +507,7 @@ void WebAppInstallFinalizer::OnUninstallOsHooks(
   RemoveAppIsolationState(profile_->GetPrefs(),
                           url::Origin::Create(web_app->scope()));
 
-  ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
+  ScopedRegistryUpdate update(sync_bridge_);
   update->DeleteApp(app_id);
 
   icon_manager_->DeleteData(
@@ -541,7 +535,7 @@ void WebAppInstallFinalizer::UninstallExternalWebAppOrRemoveSource(
         ConvertSourceTypeToWebAppUninstallSource(source);
     UninstallWebAppInternal(app_id, uninstall_source, std::move(callback));
   } else {
-    ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
+    ScopedRegistryUpdate update(sync_bridge_);
     WebApp* app_to_update = update->UpdateApp(app_id);
     app_to_update->RemoveSource(source);
     if (install_source_removed_callback_for_testing_)
@@ -586,8 +580,7 @@ void WebAppInstallFinalizer::OnIconsDataWritten(
 
   AppId app_id = web_app->app_id();
 
-  std::unique_ptr<WebAppRegistryUpdate> update =
-      registry_controller().AsWebAppSyncBridge()->BeginUpdate();
+  std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge_->BeginUpdate();
 
   WebApp* app_to_override = update->UpdateApp(app_id);
   if (app_to_override)
@@ -595,8 +588,7 @@ void WebAppInstallFinalizer::OnIconsDataWritten(
   else
     update->CreateApp(std::move(web_app));
 
-  registry_controller().AsWebAppSyncBridge()->CommitUpdate(
-      std::move(update), std::move(commit_callback));
+  sync_bridge_->CommitUpdate(std::move(update), std::move(commit_callback));
 }
 
 void WebAppInstallFinalizer::OnIconsDataDeletedAndWebAppUninstalled(

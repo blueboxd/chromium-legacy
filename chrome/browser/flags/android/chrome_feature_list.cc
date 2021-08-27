@@ -147,7 +147,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAdaptiveButtonInTopToolbarCustomizationV2,
     &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
-    &kAllowRemoteContextForNotifications,
     &kAndroidLayoutChangeTabReparenting,
     &kAndroidPartnerCustomizationPhenotype,
     &kAndroidSearchEngineChoiceNotification,
@@ -376,9 +375,6 @@ const base::Feature kAllowNewIncognitoTabIntents{
 const base::Feature kFocusOmniboxInIncognitoTabIntents{
     "FocusOmniboxInIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAllowRemoteContextForNotifications{
-    "AllowRemoteContextForNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kAndroidPartnerCustomizationPhenotype{
     "AndroidPartnerCustomizationPhenotype", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -584,6 +580,9 @@ const base::Feature kDynamicColorAndroid{"DynamicColorAndroid",
 
 const base::Feature kEnableDangerousDownloadDialog{
     "EnableDangerousDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableDuplicateDownloadDialog{
+    "EnableDuplicateDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnhancedProtectionPromoCard{
     "EnhancedProtectionPromoCard", base::FEATURE_DISABLED_BY_DEFAULT};

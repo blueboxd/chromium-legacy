@@ -34,4 +34,7 @@ CREATE INDEX rate_limit_conversion_time_idx ON rate_limits(conversion_time);
 
 CREATE INDEX rate_limit_impression_id_idx ON rate_limits(impression_id);
 
+INSERT INTO rate_limits VALUES
+  (1, 0, 11, 'https://a.example', 'https://a.a.example', 'https://b.example', 'https://b.b.example', 7);
+
 COMMIT;

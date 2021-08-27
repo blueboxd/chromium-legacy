@@ -649,8 +649,8 @@ UIWindow* GetAnyKeyWindow();
 // can, open multiple windows.
 - (BOOL)areMultipleWindowsSupported;
 
-// Returns whether the Close All Tabs Confirmation feature is enabled.
-- (BOOL)isCloseAllTabsConfirmationEnabled;
+// Returns whether the ContextMenuActionsRefresh feature is enabled.
+- (BOOL)isContextMenuActionsRefreshEnabled;
 
 #pragma mark - Popup Blocking
 

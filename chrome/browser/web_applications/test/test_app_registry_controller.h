@@ -31,9 +31,6 @@ class TestAppRegistryController : public WebAppSyncBridge {
                              bool is_user_action) override;
   void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
   void UpdateAppsDisableMode() override;
-  void SetExperimentalTabbedWindowMode(const AppId& app_id,
-                                       bool enabled,
-                                       bool is_user_action) override;
   void SetAppIsLocallyInstalled(const AppId& app_id,
                                 bool is_locally_installed) override;
   void SetAppLastBadgingTime(const AppId& app_id,
@@ -45,8 +42,6 @@ class TestAppRegistryController : public WebAppSyncBridge {
                               RunOnOsLoginMode mode) override;
   void SetAppWindowControlsOverlayEnabled(const AppId& app_id,
                                           bool enabled) override;
-
-  WebAppSyncBridge* AsWebAppSyncBridge() override;
 
  private:
   std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;

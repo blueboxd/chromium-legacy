@@ -177,6 +177,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "media/render_frame_audio_output_stream_factory.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
@@ -1531,10 +1532,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   // group. Then, they can inherit from:
   // 1) Their opener in RenderFrameHostImpl::CreateNewWindow().
   // 2) Their navigation in RenderFrameHostImpl::DidCommitNavigationInternal().
-  virtual_browsing_context_group_ =
-      CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
+  virtual_browsing_context_group_ = CrossOriginOpenerPolicyAccessReportManager::
+      NextVirtualBrowsingContextGroup();
   soap_by_default_virtual_browsing_context_group_ =
-      CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
+      CrossOriginOpenerPolicyAccessReportManager::
+          NextVirtualBrowsingContextGroup();
 
   // IdleManager should be unique per RenderFrame to provide proper isolation
   // of overrides.
@@ -3340,6 +3342,11 @@ void RenderFrameHostImpl::RendererDidActivateForPrerendering() {
   // does not have Mojo capability control applied.
   if (broker_.GetMojoBinderPolicyApplier())
     broker_.ReleaseMojoBinderPolicies();
+}
+
+void RenderFrameHostImpl::SetCrossOriginOpenerPolicyReporter(
+    std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter) {
+  coop_access_report_manager_.set_coop_reporter(std::move(coop_reporter));
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(
@@ -5695,12 +5702,9 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
 
   if (!in_back_forward_cache) {
     TRACE_EVENT0("navigation", "BackForwardCache_EvictAfterDocumentRestored");
-    // TODO(carlscab): We should no longer get into this branch thanks to
-    // https://crrev.com/c/2563674. Lets keep this old code for now just in case
-    // and replace with a CHECK once we are confident that is the case.
-    SCOPED_CRASH_KEY_NUMBER("BFCache", "EvictAfterRestoreReasons",
-                            can_store.not_stored_reasons().ToEnumBitmask());
-    base::debug::DumpWithoutCrashing();
+    // TODO(crbug.com/1163843): We should no longer get into this branch thanks
+    // to https://crrev.com/c/2563674 but we do. We should eventually replace
+    // this with a CHECK.
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
         BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::
             kByJavaScript);
@@ -6497,11 +6501,13 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   int popup_virtual_browsing_context_group =
       params->opener_suppressed
-          ? CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup()
+          ? CrossOriginOpenerPolicyAccessReportManager::
+                NextVirtualBrowsingContextGroup()
           : top_level_opener->virtual_browsing_context_group();
   int popup_soap_by_default_virtual_browsing_context_group =
       params->opener_suppressed
-          ? CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup()
+          ? CrossOriginOpenerPolicyAccessReportManager::
+                NextVirtualBrowsingContextGroup()
           : top_level_opener->soap_by_default_virtual_browsing_context_group();
 
   // If the opener is suppressed or script access is disallowed, we should
@@ -6550,8 +6556,9 @@ void RenderFrameHostImpl::CreateNewWindow(
   // If inheriting coop (checking this via |opener_suppressed|) and the original
   // coop page has a reporter we make sure the the newly created popup also has
   // a reporter.
-  if (!params->opener_suppressed && GetMainFrame()->coop_reporter()) {
-    new_main_rfh->set_coop_reporter(
+  if (!params->opener_suppressed &&
+      GetMainFrame()->coop_access_report_manager()->coop_reporter()) {
+    new_main_rfh->SetCrossOriginOpenerPolicyReporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
             params->referrer->url, new_main_rfh->cross_origin_opener_policy(),
@@ -8992,8 +8999,24 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
       BrowserMainLoop::GetInstance()->audio_system();
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
-  audio_service_audio_output_stream_factory_.emplace(
-      this, audio_system, media_stream_manager, std::move(receiver));
+
+  // This message can be received before navigation commit, because the renderer
+  // requests this when initializing the main frame of RenderView which happens
+  // before commit. Use FrameTree::is_prerendering() rather than
+  // lifecycle_state() because prerendering lifecycle state only is set after
+  // navigation commit.
+  bool restricted_mode = frame_tree()->is_prerendering();
+  if (restricted_mode) {
+    audio_service_audio_output_stream_factory_.emplace(
+        this, audio_system, media_stream_manager, std::move(receiver),
+        base::BindOnce(
+            &RenderFrameHostImpl::CancelPrerendering, base::Unretained(this),
+            PrerenderHost::FinalStatus::kAudioOutputDeviceRequested));
+  } else {
+    audio_service_audio_output_stream_factory_.emplace(
+        this, audio_system, media_stream_manager, std::move(receiver),
+        /*restricted_callback=*/absl::nullopt);
+  }
 }
 
 void RenderFrameHostImpl::GetFeatureObserver(
@@ -9050,6 +9073,9 @@ void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
 void RenderFrameHostImpl::RendererWillActivateForPrerendering() {
   DCHECK(blink::features::IsPrerender2Enabled());
 
+  if (audio_service_audio_output_stream_factory_) {
+    audio_service_audio_output_stream_factory_->ReleaseRestriction();
+  }
   // Loosen the policies of the Mojo capability control during dispatching the
   // prerenderingchange event in Blink, because the page may start legitimately
   // using controlled interfaces once prerenderingchange is dispatched. We
@@ -10333,7 +10359,7 @@ void RenderFrameHostImpl::DidCommitNewDocument(
     }
   }
 
-  CrossOriginOpenerPolicyReporter::InstallAccessMonitorsIfNeeded(
+  CrossOriginOpenerPolicyAccessReportManager::InstallAccessMonitorsIfNeeded(
       frame_tree_node_);
 
   // Reset the salt so that media device IDs are reset for the new document
@@ -10350,7 +10376,8 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
     NavigationRequest* navigation_request) {
   is_error_page_ = navigation_request->DidEncounterError();
 
-  coop_reporter_ = navigation_request->coop_status().TakeCoopReporter();
+  SetCrossOriginOpenerPolicyReporter(
+      navigation_request->coop_status().TakeCoopReporter());
   virtual_browsing_context_group_ =
       navigation_request->coop_status().virtual_browsing_context_group();
   soap_by_default_virtual_browsing_context_group_ =

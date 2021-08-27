@@ -1873,6 +1873,7 @@ Unknown properties are collapsed to zero. -->
   <int value="11" label="OFFLINE_INDICATOR"/>
   <int value="12" label="OFFLINE_CONTENT_NOTIFICATION"/>
   <int value="13" label="DOWNLOAD_PROGRESS_MESSAGE"/>
+  <int value="14" label="DUPLICATE_DOWNLOAD_DIALOG"/>
 </enum>
 
 <enum name="AndroidEnhancedProtectionPromoAction">
@@ -66830,6 +66831,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="26" label="kLoginAuthRequested"/>
   <int value="27" label="kUaChangeRequiresReload"/>
   <int value="28" label="kBlockedByClient"/>
+  <int value="29" label="kAudioOutputDeviceRequested"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">

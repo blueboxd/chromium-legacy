@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/apps/app_service/browser_app_instance.h"
+#include "chrome/browser/apps/app_service/browser_app_instance_set.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -24,6 +25,8 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 class Browser;
 class Profile;
@@ -40,6 +43,7 @@ class BrowserAppInstanceObserver;
 class BrowserAppInstanceTracker : public TabStripModelObserver,
                                   public BrowserTabStripTrackerDelegate,
                                   public aura::WindowObserver,
+                                  public wm::ActivationChangeObserver,
                                   public AppRegistryCache::Observer,
                                   public BrowserListObserver {
  public:
@@ -79,11 +83,13 @@ class BrowserAppInstanceTracker : public TabStripModelObserver,
   const BrowserAppInstance* GetChromeInstance(Browser* browser) const;
 
   void AddObserver(BrowserAppInstanceObserver* observer) {
-    observers_.AddObserver(observer);
+    app_instances_.AddObserver(observer);
+    chrome_instances_.AddObserver(observer);
   }
 
   void RemoveObserver(BrowserAppInstanceObserver* observer) {
-    observers_.RemoveObserver(observer);
+    app_instances_.RemoveObserver(observer);
+    chrome_instances_.RemoveObserver(observer);
   }
 
   // TabStripModelObserver overrides:
@@ -98,10 +104,13 @@ class BrowserAppInstanceTracker : public TabStripModelObserver,
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
+  // wm::ActivationChangeObserver overrides:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+
   // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserSetLastActive(Browser* browser) override;
-  void OnBrowserNoLongerActive(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 
   // apps::AppRegistryCache::Observer:
@@ -164,12 +173,6 @@ class BrowserAppInstanceTracker : public TabStripModelObserver,
   // Removes the browser instance, if it exists, and notifies observers.
   void RemoveChromeInstanceIfExists(Browser* browser);
 
-  template <typename KeyT>
-  void CreateInstance(
-      std::map<KeyT, std::unique_ptr<BrowserAppInstance>>& instances,
-      const KeyT& key,
-      std::unique_ptr<BrowserAppInstance> instance);
-
   // Updates the instance (app or browser) with the new attributes and notifies
   // observers, if it was updated.
   void MaybeUpdateInstance(BrowserAppInstance& instance,
@@ -178,13 +181,7 @@ class BrowserAppInstanceTracker : public TabStripModelObserver,
 
   bool IsBrowserTracked(Browser* browser) const;
   bool IsWindowTracked(aura::Window* window) const;
-
-  // Removes the instance given a map (app or browser), if it exists, and
-  // notifies observers.
-  template <typename KeyT>
-  void RemoveInstanceIfExists(
-      std::map<KeyT, std::unique_ptr<BrowserAppInstance>>& instances,
-      const KeyT& key);
+  bool IsActivationClientTracked(wm::ActivationClient* client) const;
 
   Profile* profile_;
 
@@ -199,6 +196,11 @@ class BrowserAppInstanceTracker : public TabStripModelObserver,
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       browser_window_observations_{this};
 
+  // A set of observed activation clients for all browser's windows.
+  base::ScopedMultiSourceObservation<wm::ActivationClient,
+                                     wm::ActivationChangeObserver>
+      activation_client_observations_{this};
+
   BrowserTabStripTracker browser_tab_strip_tracker_;
 
 #if DCHECK_IS_ON()
@@ -207,14 +209,11 @@ class BrowserAppInstanceTracker : public TabStripModelObserver,
   std::set<content::WebContents*> tabs_in_transit_;
 #endif
 
-  // A map of all apps running in either tabs or windows.
-  std::map<content::WebContents*, std::unique_ptr<BrowserAppInstance>>
-      app_instances_;
+  // A set of all apps running in either tabs or windows.
+  BrowserAppInstanceSet<content::WebContents*> app_instances_;
 
-  // A map of Chrome browser windows.
-  std::map<Browser*, std::unique_ptr<BrowserAppInstance>> chrome_instances_;
-
-  base::ObserverList<BrowserAppInstanceObserver, true>::Unchecked observers_;
+  // Chrome browser window "apps".
+  BrowserAppInstanceSet<Browser*> chrome_instances_;
 };
 
 }  // namespace apps

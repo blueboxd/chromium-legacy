@@ -769,6 +769,8 @@ static_library("browser") {
     "memory/enterprise_memory_limit_evaluator.h",
     "memory/enterprise_memory_limit_pref_observer.cc",
     "memory/enterprise_memory_limit_pref_observer.h",
+    "memory/memory_ablation_study.cc",
+    "memory/memory_ablation_study.h",
     "memory_details.cc",
     "memory_details.h",
     "metrics/bluetooth_available_utility.cc",
@@ -2465,6 +2467,7 @@ static_library("browser") {
         "//ash/webui/telemetry_extension_ui",
         "//ash/webui/telemetry_extension_ui/mojom",
         "//chromeos/components/demo_mode_app_ui",
+        "//chromeos/components/demo_mode_app_ui/mojom",
       ]
     }
 
@@ -5893,6 +5896,7 @@ static_library("browser") {
     deps += [
       "//chrome/common/printing",
       "//components/printing/browser",
+      "//components/printing/browser/print_to_pdf",
       "//components/printing/common:mojo_interfaces",
       "//components/services/print_compositor/public/cpp",
       "//components/services/print_compositor/public/mojom",
@@ -6704,8 +6708,6 @@ static_library("browser") {
       "supervised_user/supervised_user_denylist.h",
       "supervised_user/supervised_user_features.cc",
       "supervised_user/supervised_user_features.h",
-      "supervised_user/supervised_user_filtering_switches.cc",
-      "supervised_user/supervised_user_filtering_switches.h",
       "supervised_user/supervised_user_google_auth_navigation_throttle.cc",
       "supervised_user/supervised_user_google_auth_navigation_throttle.h",
       "supervised_user/supervised_user_interstitial.cc",

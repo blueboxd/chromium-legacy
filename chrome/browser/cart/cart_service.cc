@@ -378,7 +378,7 @@ void CartService::OnGetDiscountURL(
   }
   auto& cart_proto = proto_pairs[0].second;
   if (!IsCartDiscountEnabled() ||
-      cart_proto.discount_info().discount_info().empty()) {
+      cart_proto.discount_info().rule_discount_info().empty()) {
     std::move(callback).Run(default_cart_url);
     CartDiscountMetricCollector::RecordClickedOnDiscount(false);
     return;
@@ -748,14 +748,18 @@ void CartService::OnAddCart(const std::string& domain,
       proto.set_merchant_cart_url(*fallback_url);
     }
   }
+
+  // Skip extracting the block list.
   if (RE2::FullMatch(re2::StringPiece(domain),
                      GetSkipCartExtractionPattern())) {
     proto.clear_product_image_urls();
+    proto.clear_product_infos();
     cart_db_->AddCart(domain, std::move(proto),
                       base::BindOnce(&CartService::OnOperationFinished,
                                      weak_ptr_factory_.GetWeakPtr()));
     return;
   }
+
   if (proto_pairs.size() == 0) {
     cart_db_->AddCart(domain, std::move(proto),
                       base::BindOnce(&CartService::OnOperationFinished,
@@ -768,37 +772,43 @@ void CartService::OnAddCart(const std::string& domain,
   if (existing_proto.is_removed()) {
     return;
   }
-  // If the new proto has product images, we can add it to the database without
-  // worrying about overwriting as it reflects the latest state; if not, we keep
-  // the existing proto while updating timestamp, hidden status and product
-  // information if any.
+
+  bool has_product_image = false;
+  // If the new proto has product images, we can copy the product images to the
+  // existing proto without worrying about overwriting as it reflects the latest
+  // state.
   if (proto.product_image_urls().size()) {
-    cart_db_->AddCart(domain, std::move(proto),
-                      base::BindOnce(&CartService::OnOperationFinished,
-                                     weak_ptr_factory_.GetWeakPtr()));
-    return;
+    *(existing_proto.mutable_product_image_urls()) =
+        std::move(proto.product_image_urls());
+    has_product_image = true;
   }
   existing_proto.set_is_hidden(false);
   existing_proto.set_timestamp(proto.timestamp());
   if (cart_url) {
     existing_proto.set_merchant_cart_url(cart_url->spec());
   }
-  // If no product images, this addition comes from AddToCart detection and
-  // should have only one product (if any). Add this product to the existing
-  // cart if not included already.
+
   if (proto.product_infos().size()) {
-    DCHECK_EQ(1, proto.product_infos().size());
-    auto new_product_info = std::move(proto.product_infos().at(0));
-    bool is_included = false;
-    for (auto product_proto : existing_proto.product_infos()) {
-      is_included |=
-          (product_proto.product_id() == new_product_info.product_id());
-      if (is_included)
-        break;
-    }
-    if (!is_included) {
-      auto* added_product = existing_proto.add_product_infos();
-      *added_product = std::move(new_product_info);
+    // If no product images, this addition comes from AddToCart detection and
+    // should have only one product (if any). Add this product to the existing
+    // cart if not included already.
+    if (!has_product_image) {
+      DCHECK_EQ(1, proto.product_infos().size());
+      auto new_product_info = std::move(proto.product_infos().at(0));
+      bool is_included = false;
+      for (auto product_proto : existing_proto.product_infos()) {
+        is_included |=
+            (product_proto.product_id() == new_product_info.product_id());
+        if (is_included)
+          break;
+      }
+      if (!is_included) {
+        auto* added_product = existing_proto.add_product_infos();
+        *added_product = std::move(new_product_info);
+      }
+    } else {
+      *(existing_proto.mutable_product_infos()) =
+          std::move(proto.product_infos());
     }
   }
   cart_db_->AddCart(domain, std::move(existing_proto),
@@ -816,20 +826,20 @@ void CartService::UpdateDiscounts(const GURL& cart_url,
   }
 
   if (new_proto.has_discount_info() &&
-      !new_proto.discount_info().discount_info().empty()) {
-    // Filter used discounts.
-    std::vector<cart_db::DiscountInfoProto> discount_info_protos;
-    for (const cart_db::DiscountInfoProto& proto :
-         new_proto.discount_info().discount_info()) {
+      !new_proto.discount_info().rule_discount_info().empty()) {
+    // Filter used rule_based discounts.
+    std::vector<cart_db::RuleDiscountInfoProto> rule_discount_info_protos;
+    for (const cart_db::RuleDiscountInfoProto& proto :
+         new_proto.discount_info().rule_discount_info()) {
       if (is_tester || !IsDiscountUsed(proto.rule_id())) {
-        discount_info_protos.emplace_back(proto);
+        rule_discount_info_protos.emplace_back(proto);
       }
     }
-    if (discount_info_protos.empty()) {
+    if (rule_discount_info_protos.empty()) {
       new_proto.clear_discount_info();
     } else {
-      *new_proto.mutable_discount_info()->mutable_discount_info() = {
-          discount_info_protos.begin(), discount_info_protos.end()};
+      *new_proto.mutable_discount_info()->mutable_rule_discount_info() = {
+          rule_discount_info_protos.begin(), rule_discount_info_protos.end()};
     }
   }
 
@@ -866,12 +876,12 @@ bool CartService::IsDiscountUsed(const std::string& rule_id) {
 void CartService::CacheUsedDiscounts(
     const cart_db::ChromeCartContentProto& proto) {
   if (!proto.has_discount_info() ||
-      proto.discount_info().discount_info().empty()) {
-    NOTREACHED() << "Empty discounts";
+      proto.discount_info().rule_discount_info().empty()) {
+    VLOG(1) << "Empty rule based discounts, cache nothing";
     return;
   }
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kCartUsedDiscounts);
-  for (auto discount_info : proto.discount_info().discount_info()) {
+  for (auto discount_info : proto.discount_info().rule_discount_info()) {
     update->SetBoolKey(discount_info.rule_id(), true);
   }
 }
@@ -886,7 +896,11 @@ void CartService::CleanUpDiscounts(cart_db::ChromeCartContentProto proto) {
     return;
   }
 
-  proto.clear_discount_info();
+  // Clean up the rule-based discounts.
+  if (!proto.discount_info().rule_discount_info().empty()) {
+    proto.clear_discount_info();
+  }
+
   cart_db_->AddCart(eTLDPlusOne(GURL(proto.merchant_cart_url())), proto,
                     base::BindOnce(&CartService::OnOperationFinished,
                                    weak_ptr_factory_.GetWeakPtr()));

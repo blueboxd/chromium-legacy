@@ -16,6 +16,7 @@
 #include "chrome/browser/endpoint_fetcher/endpoint_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/search/ntp_features.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -30,23 +31,30 @@ const char kFetchDiscountsEndpoint[] =
     "https://memex-pa.googleapis.com/v1/shopping/cart/discounts";
 const int64_t kTimeoutMs = 30000;
 
-struct DiscountInfo {
-  std::vector<cart_db::DiscountInfoProto> discount_list;
+const char kCartDiscountFetcherEndpointParam[] =
+    "CartDiscountFetcherEndpointParam";
+
+constexpr base::FeatureParam<std::string> kDiscountFetcherServerConfigEndpoint{
+    &ntp_features::kNtpChromeCartModule, kCartDiscountFetcherEndpointParam,
+    kFetchDiscountsEndpoint};
+
+struct RuleDiscountInfo {
+  std::vector<cart_db::RuleDiscountInfoProto> discount_list;
   int highest_amount_off;
   int highest_percent_off;
 
-  DiscountInfo(std::vector<cart_db::DiscountInfoProto> discount_list,
-               int highest_amount_off,
-               int highest_percent_off)
+  RuleDiscountInfo(std::vector<cart_db::RuleDiscountInfoProto> discount_list,
+                   int highest_amount_off,
+                   int highest_percent_off)
       : discount_list(std::move(discount_list)),
         highest_amount_off(highest_amount_off),
         highest_percent_off(highest_percent_off) {}
 
-  ~DiscountInfo() = default;
-  DiscountInfo(const DiscountInfo& other) = delete;
-  DiscountInfo& operator=(const DiscountInfo& other) = delete;
-  DiscountInfo(DiscountInfo&& other) = default;
-  DiscountInfo& operator=(DiscountInfo&& other) = default;
+  ~RuleDiscountInfo() = default;
+  RuleDiscountInfo(const RuleDiscountInfo& other) = delete;
+  RuleDiscountInfo& operator=(const RuleDiscountInfo& other) = delete;
+  RuleDiscountInfo(RuleDiscountInfo&& other) = default;
+  RuleDiscountInfo& operator=(RuleDiscountInfo&& other) = default;
 };
 
 // TODO(crbug.com/1207197): Consolidate to one util method to get string.
@@ -91,12 +99,13 @@ std::string GetStringFromDict(const base::Value* dict,
   return value->GetString();
 }
 
-DiscountInfo CovertToRuleDiscountInfo(const base::Value* rule_discount_list) {
-  std::vector<cart_db::DiscountInfoProto> cart_discounts;
+RuleDiscountInfo CovertToRuleDiscountInfo(
+    const base::Value* rule_discount_list) {
+  std::vector<cart_db::RuleDiscountInfoProto> cart_discounts;
 
   if (!rule_discount_list || !rule_discount_list->is_list()) {
-    return DiscountInfo(cart_discounts, 0 /*highest_amount_off*/,
-                        0 /*highest_percent_off*/);
+    return RuleDiscountInfo(cart_discounts, 0 /*highest_amount_off*/,
+                            0 /*highest_percent_off*/);
   }
 
   cart_discounts.reserve(rule_discount_list->GetList().size());
@@ -104,7 +113,7 @@ DiscountInfo CovertToRuleDiscountInfo(const base::Value* rule_discount_list) {
   int highest_percent_off = 0;
   int64_t highest_amount_off = 0;
   for (const auto& rule_discount : rule_discount_list->GetList()) {
-    cart_db::DiscountInfoProto discount_proto;
+    cart_db::RuleDiscountInfoProto discount_proto;
 
     // Parse ruleId
     const base::Value* rule_id_value = rule_discount.FindKey("ruleId");
@@ -196,8 +205,8 @@ DiscountInfo CovertToRuleDiscountInfo(const base::Value* rule_discount_list) {
     cart_discounts.emplace_back(std::move(discount_proto));
   }
 
-  return DiscountInfo(std::move(cart_discounts), highest_amount_off,
-                      highest_percent_off);
+  return RuleDiscountInfo(std::move(cart_discounts), highest_amount_off,
+                          highest_percent_off);
 }
 
 bool ValidateResponse(const absl::optional<base::Value>& response) {
@@ -224,10 +233,10 @@ bool ValidateResponse(const absl::optional<base::Value>& response) {
 
 MerchantIdAndDiscounts::MerchantIdAndDiscounts(
     std::string merchant_id,
-    std::vector<cart_db::DiscountInfoProto> discount_list,
+    std::vector<cart_db::RuleDiscountInfoProto> rule_discount_list,
     std::string discount_string)
     : merchant_id(std::move(merchant_id)),
-      discount_list(std::move(discount_list)),
+      rule_discount_list(std::move(rule_discount_list)),
       highest_discount_string(std::move(discount_string)) {}
 
 MerchantIdAndDiscounts::MerchantIdAndDiscounts(
@@ -321,7 +330,8 @@ std::unique_ptr<EndpointFetcher> CartDiscountFetcher::CreateEndpointFetcher(
   const std::vector<std::string> headers{kAcceptLanguageKey, std::move(fetch_for_locale)};
 
   return std::make_unique<EndpointFetcher>(
-      GURL(kFetchDiscountsEndpoint), kPostMethod, kContentType, kTimeoutMs,
+      GURL(kDiscountFetcherServerConfigEndpoint.Get()), kPostMethod,
+      kContentType, kTimeoutMs,
       generatePostData(proto_pairs, base::Time::Now()), headers,
       traffic_annotation,
       network::SharedURLLoaderFactory::Create(std::move(pending_factory)),

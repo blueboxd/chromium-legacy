@@ -11,8 +11,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/pickle.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -27,6 +29,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -113,11 +116,11 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
   // pointer event (touch or mouse) has already been released. In this case,
   // make sure the flow bails earlier, otherwise the drag loop keeps running,
   // causing hangs as observerd in crbug.com/1209269.
-  //
-  // TODO(crbug.com/1211874): Improve serial tracking so that it can be used for
-  // this validatation, covering both mouse and touch-triggered drags.
-  if (!pointer_delegate_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON) &&
-      !touch_delegate_->GetActiveTouchPointIds().size()) {
+  auto serial = connection_->serial_tracker().GetSerial(
+      {wl::SerialType::kTouchPress, wl::SerialType::kMousePress});
+  if (!serial.has_value() ||
+      (!pointer_delegate_->IsPointerButtonPressed(EF_LEFT_MOUSE_BUTTON) &&
+       touch_delegate_->GetActiveTouchPointIds().empty())) {
     return false;
   }
 
@@ -142,7 +145,7 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
 
   // Starts the wayland drag session setting |this| object as delegate.
   state_ = State::kStarted;
-  data_device_->StartDrag(*data_source_, *origin_window_,
+  data_device_->StartDrag(*data_source_, *origin_window_, serial->value,
                           icon_surface_ ? icon_surface_->surface() : nullptr,
                           this);
 
@@ -335,6 +338,32 @@ void WaylandDataDragController::Offer(const OSExchangeData& data,
     const std::string mime_type =
         base::StrCat({kMimeTypeOctetStream, ";name=\"", filename, "\""});
     mime_types.push_back(mime_type);
+  }
+  if (data.HasCustomFormat(ui::ClipboardFormatType::WebCustomDataType())) {
+    base::Pickle pickle;
+    data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType(), &pickle);
+    base::PickleIterator iter(pickle);
+    uint32_t entry_count = 0;
+    if (iter.ReadUInt32(&entry_count)) {
+      for (uint32_t i = 0; i < entry_count; ++i) {
+        base::StringPiece16 type;
+        base::StringPiece16 data;
+        if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data))
+          break;
+
+        // TODO(https://crbug.com/1236708): This logic duplicates the logic in
+        // tab_strip_ui::IsDraggedTab(). Factor it out to a common place.
+        const std::u16string kWebUITabIdDataType =
+            u"application/vnd.chromium.tab";
+        const std::u16string kWebUITabGroupIdDataType =
+            u"application/vnd.chromium.tabgroup";
+        if (type == kWebUITabIdDataType) {
+          mime_types.push_back(base::UTF16ToASCII(kWebUITabIdDataType));
+        } else if (type == kWebUITabGroupIdDataType) {
+          mime_types.push_back(base::UTF16ToASCII(kWebUITabIdDataType));
+        }
+      }
+    }
   }
 
   DCHECK(!mime_types.empty());

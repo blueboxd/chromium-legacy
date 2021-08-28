@@ -1190,6 +1190,12 @@ const char kEnableSubresourceRedirectName[] =
 const char kEnableSubresourceRedirectDescription[] =
     "Allow subresource compression for data savings";
 
+const char kEnableWebAuthenticationAssertionTransportName[] =
+    "Web Authentication Assertion Transport support";
+const char kEnableWebAuthenticationAssertionTransportDescription[] =
+    "Enable Web Authentication to provide the Assertion Transport value on "
+    "authentication success.";
+
 const char kEnableWebAuthenticationCableV2SupportName[] =
     "Web Authentication caBLE v2 support";
 const char kEnableWebAuthenticationCableV2SupportDescription[] =
@@ -3514,12 +3520,6 @@ const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
 const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
     "Inline Update Error: Install Failed";
 
-const char kUseNotificationCompatBuilderName[] =
-    "Use NotificationCompat.Builder for Web Notifications";
-const char kUseNotificationCompatBuilderDescription[] =
-    "This enables using NotificationCompat.Builder instead of "
-    "Notification.Builder to create Web Notifications.";
-
 const char kUserMediaScreenCapturingName[] = "Screen Capture API";
 const char kUserMediaScreenCapturingDescription[] =
     "Allows sites to request a video stream of your screen.";
@@ -4164,13 +4164,6 @@ const char kDisplayAlignmentAssistanceDescription[] =
     "Show indicators on shared edges of the displays when user is "
     "attempting to move their mouse over to another display. Show preview "
     "indicators when the user is moving a display in display layouts.";
-
-const char kDisplayIdentificationName[] =
-    "Enable display identification highlight";
-const char kDisplayIdentificationDescription[] =
-    "Shows a blue highlight around the edges of the display that is selected "
-    "in the Displays Settings page. Only shown when the Displays Settings page "
-    "is open.";
 
 const char kFastPairName[] = "Enable Fast Pair";
 const char kFastPairDescription[] =

@@ -1635,6 +1635,9 @@
       'events_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
+      'extensions_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'fuchsia_mojo_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
@@ -1776,9 +1779,6 @@
       'content_browsertests': {
         'mixins': ['fuchsia_runner_logs'],
       },
-      'extensions_unittests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
       'jingle_unittests': {
         'mixins': ['fuchsia_runner_logs'],
         'args': [
@@ -1799,9 +1799,6 @@
       },
       'zlib_unittests': {
         'mixins': ['fuchsia_runner_logs'],
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.zlib_unittests.filter',
-        ],
       },
     },
 

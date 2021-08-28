@@ -614,13 +614,9 @@ void X11Window::ToggleFullscreen() {
   // See https://crbug.com/361408
   gfx::Rect new_bounds_px = GetBounds();
   if (fullscreen) {
-    display::Screen* screen = display::Screen::GetScreen();
-    const display::Display display = screen->GetDisplayMatching(new_bounds_px);
     SetRestoredBoundsInPixels(new_bounds_px);
-    new_bounds_px =
-        gfx::Rect(gfx::ScaleToFlooredPoint(display.bounds().origin(),
-                                           display.device_scale_factor()),
-                  display.GetSizeInPixel());
+    if (x11_extension_delegate_)
+      new_bounds_px = x11_extension_delegate_->GetGuessedFullScreenSizeInPx();
   } else {
     // Exiting "browser fullscreen mode", but the X11 window is not necessarily
     // in fullscreen state (e.g: a WM keybinding might have been used to toggle
@@ -1161,6 +1157,14 @@ bool X11Window::HandleAsAtkEvent(const x11::Event& x11_event, bool transient) {
 }
 
 void X11Window::OnEvent(const x11::Event& xev) {
+  auto event_type = ui::EventTypeFromXEvent(xev);
+  if (event_type != ET_UNKNOWN) {
+    // If this event can be translated, it will be handled in ::DispatchEvent.
+    // Otherwise, we end up processing XEvents twice that could lead to unwanted
+    // behaviour like loosing activation during tab drag and etc.
+    return;
+  }
+
   auto* prop = xev.As<x11::PropertyNotifyEvent>();
   auto* target_current_context = drag_drop_client_->target_current_context();
   if (prop && target_current_context &&

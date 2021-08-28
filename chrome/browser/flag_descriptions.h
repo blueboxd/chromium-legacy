@@ -683,6 +683,9 @@ extern const char kEnableUseZoomForDsfChoiceDefault[];
 extern const char kEnableUseZoomForDsfChoiceEnabled[];
 extern const char kEnableUseZoomForDsfChoiceDisabled[];
 
+extern const char kEnableWebAuthenticationAssertionTransportName[];
+extern const char kEnableWebAuthenticationAssertionTransportDescription[];
+
 extern const char kEnableWebAuthenticationCableV2SupportName[];
 extern const char kEnableWebAuthenticationCableV2SupportDescription[];
 
@@ -1999,9 +2002,6 @@ extern const char kUpdateMenuTypeInlineUpdateDownloadFailed[];
 extern const char kUpdateMenuTypeInlineUpdateDownloadCanceled[];
 extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 
-extern const char kUseNotificationCompatBuilderName[];
-extern const char kUseNotificationCompatBuilderDescription[];
-
 extern const char kUserMediaScreenCapturingName[];
 extern const char kUserMediaScreenCapturingDescription[];
 
@@ -2383,9 +2383,6 @@ extern const char kDisableExplicitDmaFencesDescription[];
 
 extern const char kDisplayAlignmentAssistanceName[];
 extern const char kDisplayAlignmentAssistanceDescription[];
-
-extern const char kDisplayIdentificationName[];
-extern const char kDisplayIdentificationDescription[];
 
 extern const char kFastPairName[];
 extern const char kFastPairDescription[];

@@ -34349,6 +34349,13 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3988" label="FontSelectorCSSFontFamilyWebKitPrefixBody"/>
   <int value="3989" label="FontBuilderCSSFontFamilyWebKitPrefixBody"/>
   <int value="3990" label="CapabilityDelegationOfPaymentRequest"/>
+  <int value="3991" label="ConditionalFocus"/>
+  <int value="3992" label="CredentialManagerGetFederatedCredential"/>
+  <int value="3993" label="CredentialManagerGetPasswordCredential"/>
+  <int value="3994" label="CredentialManagerStoreFederatedCredential"/>
+  <int value="3995" label="CredentialManagerStorePasswordCredential"/>
+  <int value="3996" label="CredentialManagerCreateFederatedCredential"/>
+  <int value="3997" label="CredentialManagerCreatePasswordCredential"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47461,6 +47468,7 @@ from previous Chrome versions.
   <int value="-1730755478" label="ClosedTabCache:disabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
   <int value="-1729808721" label="SubresourceRedirect:enabled"/>
+  <int value="-1729264718" label="WebAuthenticationAssertionTransport:enabled"/>
   <int value="-1728605240" label="UseXpsForPrintingFromPdf:enabled"/>
   <int value="-1727530898" label="LookalikeUrlNavigationSuggestionsUI:enabled"/>
   <int value="-1727173228" label="OmniboxZeroSuggestionsOnNTP:enabled"/>
@@ -49876,6 +49884,8 @@ from previous Chrome versions.
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
   <int value="196103097" label="PaintPreviewShowOnStartup:disabled"/>
+  <int value="196578182"
+      label="AutofillEnableAugmentedPhoneCountryCode:disabled"/>
   <int value="198719062" label="WebAssemblyLazyCompilation:disabled"/>
   <int value="198762155" label="SharingPeerConnectionSender:enabled"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
@@ -50056,6 +50066,8 @@ from previous Chrome versions.
       label="DesktopPWAsLocalUpdatingThrottlePersistence:enabled"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="349469694" label="WebGPUService:disabled"/>
+  <int value="350362421"
+      label="AutofillEnableAugmentedPhoneCountryCode:enabled"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
   <int value="350635266" label="TabGroupsContinuationAndroid:enabled"/>
   <int value="351005753" label="enable-experimental-accessibility-autoclick"/>
@@ -50486,6 +50498,7 @@ from previous Chrome versions.
   <int value="669097106" label="NtpRealboxMatchOmniboxTheme:disabled"/>
   <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
   <int value="674627327" label="MagnifierNewFocusFollowing:enabled"/>
+  <int value="674777894" label="WebAuthenticationAssertionTransport:disabled"/>
   <int value="674788251" label="EnableNewBadgeOnMenuItems:enabled"/>
   <int value="677866592" label="ClickToCallUI:disabled"/>
   <int value="677883800" label="DiagnosticsAppNavigation:disabled"/>
@@ -51771,6 +51784,8 @@ from previous Chrome versions.
   <int value="1707873180"
       label="OmniboxOnFocusSuggestionsContextualWebAllowSRP:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
+  <int value="1709898387"
+      label="AutofillUseUnassociatedListedElements:enabled"/>
   <int value="1710630380"
       label="AutofillEnableSupportForMoreStructureInNames:enabled"/>
   <int value="1711286384" label="ContextMenuCopyImage:disabled"/>
@@ -51813,6 +51828,8 @@ from previous Chrome versions.
       label="AutofillSuggestVirtualCardsOnIncompleteForm:disabled"/>
   <int value="1742398600"
       label="OmniboxUIExperimentBoldUserTextOnSearchSuggestions:enabled"/>
+  <int value="1743062852"
+      label="AutofillUseUnassociatedListedElements:disabled"/>
   <int value="1745053254" label="ClickToCallOpenDialerDirectly:enabled"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
@@ -62096,6 +62113,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1705" label="Report an Issue"/>
   <int value="1706" label="View Terms of Service"/>
   <int value="1707" label="Open Diagnostics App"/>
+  <int value="1708" label="Change Device Name"/>
   <int value="1800" label="Add Kerberos Ticket V2"/>
   <int value="1801" label="Remove Kerberos Ticket V2"/>
   <int value="1802" label="Set Active Kerberos Ticket V2"/>
@@ -73361,6 +73379,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Has user gesture"/>
   <int value="2" label="Has referrer visit"/>
   <int value="3" label="Has both user gesture and referrer visit"/>
+  <int value="4" label="Has bypassed download warnings before"/>
 </enum>
 
 <enum name="SBClientMalwareSentReports">
@@ -84677,6 +84696,17 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Should append headers."/>
   <int value="4" label="Rejected: Neither http, nor https."/>
   <int value="5" label="Rejected: Is a Google domain, but not https."/>
+</enum>
+
+<enum name="VariationsInvalidStudyReason">
+  <int value="0" label="Invalid min_version"/>
+  <int value="1" label="Invalid max_version"/>
+  <int value="2" label="Invalid min_os_version"/>
+  <int value="3" label="Invalid max_os_version"/>
+  <int value="4" label="Experiment without a name"/>
+  <int value="5" label="Repeated experiment name"/>
+  <int value="6" label="Total probability overflow"/>
+  <int value="7" label="Missing experiment entry for default experient"/>
 </enum>
 
 <enum name="VariationsPermanentConsistencyCountryResult">

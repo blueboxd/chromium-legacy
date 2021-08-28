@@ -353,6 +353,8 @@ public abstract class ChromeFeatureList {
     public static final String EXPERIMENTS_FOR_AGSA = "ExperimentsForAgsa";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
+    public static final String FEED_IMAGE_MEMORY_CACHE_SIZE_PERCENTAGE =
+            "FeedImageMemoryCacheSizePercentage";
     public static final String FEED_INTERACTIVE_REFRESH = "FeedInteractiveRefresh";
     public static final String FEED_RELIABILITY_LOGGING = "FeedReliabilityLogging";
     public static final String FILLING_PASSWORDS_FROM_ANY_ORIGIN = "FillingPasswordsFromAnyOrigin";
@@ -540,7 +542,6 @@ public abstract class ChromeFeatureList {
     public static final String UPDATE_HISTORY_ENTRY_POINTS_IN_INCOGNITO =
             "UpdateHistoryEntryPointsInIncognito";
     public static final String USE_CHIME_ANDROID_SDK = "UseChimeAndroidSdk";
-    public static final String USE_NOTIFICATION_COMPAT_BUILDER = "UseNotificationCompatBuilder";
     public static final String VOICE_SEARCH_AUDIO_CAPTURE_POLICY = "VoiceSearchAudioCapturePolicy";
     public static final String VOICE_BUTTON_IN_TOP_TOOLBAR = "VoiceButtonInTopToolbar";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";

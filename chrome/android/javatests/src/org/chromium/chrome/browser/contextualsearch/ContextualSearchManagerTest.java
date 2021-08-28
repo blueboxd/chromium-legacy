@@ -125,9 +125,11 @@ import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
@@ -327,6 +329,8 @@ public class ContextualSearchManagerTest {
         mLatestSlowResolveSearch = null;
         if (mActionTester != null) mActionTester.tearDown();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> forgetHistograms());
+        FeatureList.setTestFeatures(null);
+        CompositorAnimationHandler.setTestingMode(false);
     }
 
     private class ContextualSearchManagerTestHost implements ContextualSearchTestHost {
@@ -3971,6 +3975,7 @@ public class ContextualSearchManagerTest {
 
     @Test
     @SmallTest
+    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/1240342")
     @Feature({"ContextualSearch"})
     public void testRelatedSearchesItemNotSelected() throws Exception {
         mPolicy.overrideAllowSendingPageUrlForTesting(true);
@@ -3992,6 +3997,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1182040")
+    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/1240342")
     public void testRelatedSearchesItemSelected() throws Exception {
         mFakeServer.reset();
         FakeResolveSearch fakeSearch = simulateResolveSearch("intelligence");
@@ -4076,6 +4082,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "https://crbug.com/1244089")
     public void testRelatedSearchesInBarWithDefaultQuery_HighlightDefaultQuery() throws Exception {
         FeatureList.TestValues testValues = new FeatureList.TestValues();
         testValues.setFeatureFlagsOverride(ENABLE_RELATED_SEARCHES_IN_BAR);
@@ -4136,6 +4143,38 @@ public class ContextualSearchManagerTest {
         // Close the panel
         closePanel();
         // TODO(donnd): Validate UMA metrics once we log in-bar selections.
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testRelatedSearchesInBarForDefinitionCard() throws Exception {
+        CompositorAnimationHandler.setTestingMode(true);
+        FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
+        mFakeServer.reset();
+        // Do a normal search without Related Searches or Definition cards.
+        simulateResolveSearch("search");
+        float normalHeight = mPanel.getHeight();
+
+        // Simulate a response that includes both a definition and Related Searches
+        List<String> inBarSuggestions = new ArrayList<String>();
+        inBarSuggestions.add("Related Suggestion 1");
+        inBarSuggestions.add("Related Suggestion 2");
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mPanel.onSearchTermResolved("obscure · əbˈskyo͝or", null, null,
+                                QuickActionCategory.NONE, CardTag.CT_DEFINITION, inBarSuggestions,
+                                false /* showDefaultSearchInBar */,
+                                null /* relatedSearchesInContent */,
+                                false /* showDefaultSearchInContent */));
+        boolean didPanelGetTaller = mPanel.getHeight() > normalHeight;
+        Assert.assertTrue(
+                "Related Searches should show in a taller Bar when there's a definition card, "
+                        + "but they did not!",
+                didPanelGetTaller);
+        // Clean up
+        closePanel();
+        CompositorAnimationHandler.setTestingMode(false);
     }
 
     // --------------------------------------------------------------------------------------------

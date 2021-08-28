@@ -1591,6 +1591,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/media_galleries/fileapi/media_file_validator_browsertest.cc",
       "../browser/media_galleries/media_galleries_dialog_controller_mock.cc",
       "../browser/media_galleries/media_galleries_dialog_controller_mock.h",
+      "../browser/memory/memory_ablation_study_unittest.cc",
       "../browser/metrics/cloned_install_client_id_reset_browsertest.cc",
       "../browser/metrics/desktop_session_duration/audible_contents_tracker_browsertest.cc",
       "../browser/metrics/metrics_reporting_state_browsertest.cc",
@@ -2109,6 +2110,11 @@ if (!is_android && !is_fuchsia) {
 
     if (safe_browsing_mode != 0) {
       deps += [ "//components/safe_browsing/content/common/proto:download_file_types_proto" ]
+    }
+
+    if (enable_basic_printing) {
+      sources +=
+          [ "../browser/devtools/protocol/devtools_printtopdf_browsertest.cc" ]
     }
 
     if (is_mac) {
@@ -3298,7 +3304,8 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/assistant/assistant_context_browsertest.cc",
         "../browser/ui/ash/back_gesture_browsertest.cc",
-        "../browser/ui/ash/capture_mode_browsertest.cc",
+        "../browser/ui/ash/capture_mode/capture_mode_browsertest.cc",
+        "../browser/ui/ash/capture_mode/recording_service_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/clipboard_history_browsertest.cc",
         "../browser/ui/ash/desks_client_browsertest.cc",
@@ -3308,7 +3315,6 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/ash/multi_user/test_multi_user_window_manager.h",
         "../browser/ui/ash/projector/projector_client_impl_browsertest.cc",
         "../browser/ui/ash/projector/projector_navigation_throttle_browsertest.cc",
-        "../browser/ui/ash/recording_service_browsertest.cc",
         "../browser/ui/ash/screen_orientation_delegate_chromeos_browsertest.cc",
         "../browser/ui/ash/sharesheet/sharesheet_bubble_view_browsertest.cc",
         "../browser/ui/ash/shelf/app_service/app_service_app_window_browsertest.cc",

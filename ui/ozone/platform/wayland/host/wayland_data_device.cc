@@ -34,6 +34,7 @@ WaylandDataDevice::~WaylandDataDevice() = default;
 
 void WaylandDataDevice::StartDrag(const WaylandDataSource& data_source,
                                   const WaylandWindow& origin_window,
+                                  uint32_t serial,
                                   wl_surface* icon_surface,
                                   DragDelegate* delegate) {
   DCHECK(delegate);
@@ -42,7 +43,7 @@ void WaylandDataDevice::StartDrag(const WaylandDataSource& data_source,
 
   wl_data_device_start_drag(data_device_.get(), data_source.data_source(),
                             origin_window.root_surface()->surface(),
-                            icon_surface, connection()->serial());
+                            icon_surface, serial);
   drag_delegate_->DrawIcon();
   connection()->ScheduleFlush();
 }
@@ -73,9 +74,13 @@ void WaylandDataDevice::RequestData(WaylandDataOffer* offer,
 }
 
 void WaylandDataDevice::SetSelectionSource(WaylandDataSource* source) {
+  auto serial = GetSerialForSelection();
+  if (!serial.has_value()) {
+    LOG(ERROR) << "Failed to set selection. No serial found.";
+    return;
+  }
   auto* data_source = source ? source->data_source() : nullptr;
-  wl_data_device_set_selection(data_device_.get(), data_source,
-                               connection()->serial());
+  wl_data_device_set_selection(data_device_.get(), data_source, serial->value);
   connection()->ScheduleFlush();
 }
 

@@ -4920,6 +4920,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
 
+    {"enable-web-authentication-assertion-transport",
+     flag_descriptions::kEnableWebAuthenticationAssertionTransportName,
+     flag_descriptions::kEnableWebAuthenticationAssertionTransportDescription,
+     kOsAll, FEATURE_VALUE_TYPE(features::kWebAuthAssertionTransport)},
+
     {"enable-web-authentication-cable-v2-support",
      flag_descriptions::kEnableWebAuthenticationCableV2SupportName,
      flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
@@ -5632,10 +5637,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWifiSyncAndroidDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kWifiSyncAndroid)},
 
-    {"display-identification", flag_descriptions::kDisplayIdentificationName,
-     flag_descriptions::kDisplayIdentificationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kDisplayIdentification)},
-
     {"display-alignment-assistance",
      flag_descriptions::kDisplayAlignmentAssistanceName,
      flag_descriptions::kDisplayAlignmentAssistanceDescription, kOsCrOS,
@@ -5944,11 +5945,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid, MULTI_VALUE_TYPE(kNotificationSchedulerChoices)},
 
 #if defined(OS_ANDROID)
-
-    {"use-notification-compat-builder",
-     flag_descriptions::kUseNotificationCompatBuilderName,
-     flag_descriptions::kUseNotificationCompatBuilderDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kUseNotificationCompatBuilder)},
 
     {"debug-chime-notification",
      flag_descriptions::kChimeAlwaysShowNotificationName,
@@ -7678,14 +7674,6 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
 
   if (!strcmp(kWebAppsCrosapiInternalName, entry.internal_name)) {
     return !crosapi::browser_util::IsLacrosAllowedToBeEnabled(channel);
-  }
-
-  // wallpaper-webui is only available for Unknown/Canary/Dev channels.
-  if (!strcmp(kWallpaperWebUIInternalName, entry.internal_name) &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
   }
 
   // Leave the feature only for ARCVM.

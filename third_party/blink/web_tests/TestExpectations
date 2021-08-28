@@ -6343,7 +6343,6 @@ crbug.com/1207851 virtual/plz-dedicated-worker/external/wpt/service-workers/idlh
 # Sheriff 2021-05-10
 crbug.com/1207709 [ Mac10.13 ] external/wpt/resource-timing/document-domain-no-impact-opener.html [ Failure Pass ]
 crbug.com/1207709 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/resource-timing/document-domain-no-impact-opener.html [ Failure Pass ]
-crbug.com/1207709 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Failure Pass ]
 
 # Will be passed when compositing-after-paint is used by default 2021-05-13
 crbug.com/1208213 external/wpt/css/css-transforms/add-child-in-empty-layer.html [ Failure ]
@@ -6984,4 +6983,3 @@ crbug.com/1243707 [ Debug Linux ] http/tests/inspector-protocol/target/auto-atta
 
 # Sheriff 2021-08-26
 crbug.com/1243933 [ Win7 ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/elements/accessibility/edit-aria-attributes.js [ Failure ]
-crbug.com/1243978 [ Mac ] wpt_internal/webcodecs/temporal_svc.https.any.worker.html [ Timeout ]

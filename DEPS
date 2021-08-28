@@ -228,15 +228,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b42c3834afed2fe58092586821430a3e5f45fad9',
+  'skia_revision': '494eb3e877e63ba1f189985b20fcce7371dfdd08',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7593edb5b98818ab27140bbc79166c9f83dcbc5b',
+  'v8_revision': 'd429ea695cc92da8773c2e748811ecccc9805389',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '82423ad1388702883b6557d868fd81303bf5ad84',
+  'angle_revision': '58bb11ca62765dfe28b5b6d0a965a0d44ef2c01e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -244,7 +244,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '6d4d9ca36cf7a227fa8ec61bed28dfc3dd0da520',
+  'pdfium_revision': 'b784a028ca1ccb71c2818ba98c542e59c689ffec',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -303,7 +303,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '90e2c0b29be6ca110b75b090464259520029836f',
+  'devtools_frontend_revision': 'abe4dc267ca5415d42fcf8f7aa8cec2e6cafef0b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1152,7 +1152,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '18e09b9197a3b1d771c077c530d1a4ebad04c167',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'a38aef9142ace942a8bf166020c569f4cda0f8d3',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'ece15d049f2d360721716089372e3749fb89e0f4',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1473,7 +1473,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'oGv3yTl6dFNfI8UFd1J4dLV7QgFxe8HeuXPcvvBqsygC'
+              'version': 'ddSGEd1PA5UG-ur2YFNiaY2SuddaJRHJB8HprZVuD68C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@103cb920a80b04be29a3ea50e3e6d11b716ca324',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@381c8a6bc4aae3aff77d1f5342b20f29ef391d98',
     'condition': 'checkout_src_internal',
   },
 

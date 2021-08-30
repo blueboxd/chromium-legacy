@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APPS_BASE_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APPS_BASE_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APPS_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APPS_H_
 
 #include <memory>
 #include <string>
@@ -11,14 +11,17 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -27,6 +30,12 @@ namespace webapps {
 enum class WebappUninstallSource;
 }  // namespace webapps
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+namespace apps {
+class InstanceRegistry;
+}
+#endif
+
 namespace web_app {
 
 class WebApp;
@@ -34,21 +43,26 @@ class WebAppProvider;
 class WebAppRegistrar;
 
 // An app publisher (in the App Service sense) of Web Apps.
-class WebAppsBase : public apps::PublisherBase,
-                    public WebAppPublisherHelper::Delegate,
-                    public base::SupportsWeakPtr<WebAppsBase> {
+class WebApps : public apps::PublisherBase,
+                public WebAppPublisherHelper::Delegate,
+                public base::SupportsWeakPtr<WebApps> {
  public:
-  WebAppsBase(const mojo::Remote<apps::mojom::AppService>& app_service,
-              Profile* profile);
-  WebAppsBase(const WebAppsBase&) = delete;
-  WebAppsBase& operator=(const WebAppsBase&) = delete;
-  ~WebAppsBase() override;
+  WebApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+          apps::InstanceRegistry* instance_registry,
+#endif
+          Profile* profile);
+  WebApps(const WebApps&) = delete;
+  WebApps& operator=(const WebApps&) = delete;
+  ~WebApps() override;
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Uninstall for web apps on Chrome.
   static void UninstallImpl(WebAppProvider* provider,
                             const std::string& app_id,
                             apps::mojom::UninstallSource uninstall_source,
                             gfx::NativeWindow parent_window);
+#endif
 
   virtual void Shutdown();
 
@@ -112,6 +126,38 @@ class WebAppsBase : public apps::PublisherBase,
   void StartPublishingWebApps(
       mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // apps::mojom::Publisher overrides.
+  void Uninstall(const std::string& app_id,
+                 apps::mojom::UninstallSource uninstall_source,
+                 bool clear_site_data,
+                 bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApp(const std::string& app_id) override;
+  void GetMenuModel(const std::string& app_id,
+                    apps::mojom::MenuType menu_type,
+                    int64_t display_id,
+                    GetMenuModelCallback callback) override;
+  void GetMenuModelFromWebAppProvider(const std::string& app_id,
+                                      apps::mojom::MenuType menu_type,
+                                      apps::mojom::MenuItemsPtr menu_items,
+                                      GetMenuModelCallback callback);
+  // menu_type is stored as |shortcut_id|.
+  void ExecuteContextMenuCommand(const std::string& app_id,
+                                 int command_id,
+                                 const std::string& shortcut_id,
+                                 int64_t display_id) override;
+  void SetWindowMode(const std::string& app_id,
+                     apps::mojom::WindowMode window_mode) override;
+
+  void OnShortcutsMenuIconsRead(
+      const std::string& app_id,
+      apps::mojom::MenuType menu_type,
+      apps::mojom::MenuItemsPtr menu_items,
+      GetMenuModelCallback callback,
+      ShortcutsMenuIconBitmaps shortcuts_menu_icon_bitmaps);
+#endif
+
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* const profile_;
@@ -125,9 +171,13 @@ class WebAppsBase : public apps::PublisherBase,
   // are serving from Lacros, and the app type is kWeb for all other cases.
   const apps::mojom::AppType app_type_;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  apps::InstanceRegistry* const instance_registry_;
+#endif
+
   WebAppPublisherHelper publisher_helper_;
 };
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APPS_BASE_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_APP_SERVICE_WEB_APPS_H_

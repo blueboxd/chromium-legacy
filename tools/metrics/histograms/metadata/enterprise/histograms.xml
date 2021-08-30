@@ -712,7 +712,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.DeviceSettings.MissingPolicyMitigated"
-    units="BooleanSuccess" expires_after="2021-10-04">
+    units="BooleanSuccess" expires_after="2022-10-04">
   <owner>poromov@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
   <summary>
@@ -723,7 +723,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Enterprise.DeviceSettings.UpdatedStatus"
-    enum="DeviceSettingsStatus" expires_after="2021-10-04">
+    enum="DeviceSettingsStatus" expires_after="2022-10-04">
   <owner>poromov@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
   <summary>
@@ -761,6 +761,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Recorded when DataTransferController is initialized, meaning that all
     clipboard and drag-n-drop operations will be affected by Data Leak
     Prevention checks.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.DataTransferReportingTimeDiff" units="ms"
+    expires_after="2022-03-01">
+  <owner>jkopanski@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Time difference between current and the latest sent Data Leak Prevention
+    reporting events for data transfers for which sources and destinations are
+    the same.
   </summary>
 </histogram>
 

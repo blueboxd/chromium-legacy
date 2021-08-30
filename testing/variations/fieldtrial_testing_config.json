@@ -1,24 +1,4 @@
 {
-    "AbusiveOriginNotificationPermissionRevocation": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_1",
-                    "enable_features": [
-                        "AbusiveOriginNotificationPermissionRevocation"
-                    ]
-                }
-            ]
-        }
-    ],
     "AccountManagementFlowsV2": [
         {
             "platforms": [
@@ -3303,7 +3283,7 @@
             ],
             "experiments": [
                 {
-                    "name": "DownloadMobileconfigFileEnabled",
+                    "name": "Enabled",
                     "enable_features": [
                         "DownloadMobileconfigFile"
                     ]
@@ -8153,6 +8133,24 @@
             ]
         }
     ],
+    "SyncTrustedVaultPassphraseRecovery": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncTrustedVaultPassphraseRecovery"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabHoverCardImages": [
         {
             "platforms": [
@@ -8430,28 +8428,6 @@
                     "enable_features": [
                         "TranslateRankerEnforcement",
                         "TranslateRankerQuery"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TreatNewPasswordHeuristicsAsReliable": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TreatNewPasswordHeuristicsAsReliable"
                     ]
                 }
             ]
@@ -8737,28 +8713,6 @@
             ]
         }
     ],
-    "UserAgentClientHintRollout": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "UserAgentClientHintRollout",
-                    "enable_features": [
-                        "UserAgentClientHint"
-                    ]
-                }
-            ]
-        }
-    ],
     "UsernameFirstFlow": [
         {
             "platforms": [
@@ -8774,6 +8728,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UsernameFirstFlow"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UsernameFirstFlowFilling": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UsernameFirstFlowFilling"
                     ]
                 }
             ]
@@ -8825,54 +8799,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "V8TurboFastApiCalls"
-                    ]
-                }
-            ]
-        }
-    ],
-    "V8OffThreadFinalization": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledOffThreadFinalizationAndSmallScripts",
-                    "enable_features": [
-                        "SmallScriptStreaming",
-                        "V8OffThreadFinalization"
-                    ]
-                },
-                {
-                    "name": "EnabledOffThreadFinalization",
-                    "enable_features": [
-                        "V8OffThreadFinalization"
-                    ],
-                    "disable_features": [
-                        "SmallScriptStreaming"
-                    ]
-                },
-                {
-                    "name": "EnabledSmallScripts",
-                    "enable_features": [
-                        "SmallScriptStreaming"
-                    ],
-                    "disable_features": [
-                        "V8OffThreadFinalization"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "SmallScriptStreaming",
-                        "V8OffThreadFinalization"
                     ]
                 }
             ]
@@ -9588,22 +9514,6 @@
             "experiments": [
                 {
                     "name": "2_V1"
-                }
-            ]
-        }
-    ],
-    "WebRTC-VP8VariableFramerateScreenshare": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
                 }
             ]
         }

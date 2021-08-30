@@ -228,15 +228,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5c4463ee0e27faee56c7bebcd461109717afa124',
+  'skia_revision': '91b781e7f670afedac062678f1bea59dfffe7042',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '062778b5e1bbbc972e652418971b443a437fd6e7',
+  'v8_revision': '44eaf739ccf750963ef831c27cfc4161ae328673',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'bc89eda7bb6e5ecb753c60bc71f8f93686fb5605',
+  'angle_revision': '4811896c4c213bfc1a95a4088b6f057042d5d710',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -303,7 +303,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b4bcbd9484235c18e872315f71d515a596583f93',
+  'devtools_frontend_revision': '9d2e021fcda9b277f640948789e9d13541b9be04',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -343,11 +343,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'ea487972d16ea1684d289adb929a05636d1f1d41',
+  'dawn_revision': '52ad8f67684dae9b8b3b762c5e3542a15aa626fe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '380b9972c3f1e72b5e769fc429eb4222e8cdef03',
+  'quiche_revision': '6d4ba6db3626519136734c87c48f3c8a3c4ec281',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -686,7 +686,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'ymS-VJj9cua3dFdv7dbsgzkiCv4ks44bGZrO-lMgz3EC',
+          'version': 'O-E5154ARzh0dlttO125veLldgiyJyBvkfFCXgZsmXsC',
         },
       ],
       'dep_type': 'cipd',
@@ -697,7 +697,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'VccLaOnulV3XGyxjEA3Hw3S9qlzPJmcZAxZavu0-e9MC',
+          'version': 'OeIkPAZ6M_wl8sFfZAmgyhN-k6CZ-W_8L5xME5mQQuQC',
         },
       ],
       'dep_type': 'cipd',
@@ -708,7 +708,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'ZDpoTIsnEfRFmxx80snZnPCm9xU2lRewTsPmNs1rWecC',
+          'version': 'Ko56TkGUUbbXh0P87XX1BqKPKi_TTMydbDFDStRAeRgC',
         },
       ],
       'dep_type': 'cipd',
@@ -1009,7 +1009,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'bd0674c0d0920b9d88ae11ced057e5f4a426fa37',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2df329edea5b361737280c90fc78bd9c6f691cad',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1498,7 +1498,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'version:2@3.1.16',
+              'version': 'dvPOJ_8iAF6OHGO79d86VbJjyKj7Xn0SFxlVVC9LHdcC',
           },
       ],
       'condition': 'checkout_android',
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c8f86615fafffe150446f4b74b00fa15498ad044',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6da2fddd343c051abb7098ddb19343dc0035a106',
     'condition': 'checkout_src_internal',
   },
 
@@ -1682,7 +1682,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'oAYL7IRuMR5Adao8IYedGigaFo7Q2TimrPXepHQ-UD8C',
+        'version': 'rtAYcUWxpyJcdahj_wYtPD6UHxdJxddb-tZyegWxUKEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

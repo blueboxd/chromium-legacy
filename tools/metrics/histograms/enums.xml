@@ -19587,6 +19587,9 @@ Called by update_debug_scenarios.py.-->
 </enum>
 
 <enum name="DevToolsColorPickerFixedColor">
+  <obsolete>
+    Removed in M95.
+  </obsolete>
   <int value="0" label="AA"/>
   <int value="1" label="AAA"/>
   <int value="2" label="APCA"/>
@@ -29102,6 +29105,10 @@ Called by update_extension_histograms.py.-->
   <int value="1571" label="CRYPTOTOKENPRIVATE_CANMAKEU2FAPIREQUEST"/>
   <int value="1572" label="OS_DIAGNOSTICS_RUNBATTERYCAPACITYROUTINE"/>
   <int value="1573" label="WEB_AUTHENTICATION_PROXY_COMPLETE_ISUVPAA_REQUEST"/>
+  <int value="1574" label="LOGIN_LAUNCHSHAREDMANAGEDGUESTSESSION"/>
+  <int value="1575" label="LOGIN_ENTERSHAREDSESSION"/>
+  <int value="1576" label="LOGIN_UNLOCKSHAREDSESSION"/>
+  <int value="1577" label="LOGIN_ENDSHAREDSESSION"/>
 </enum>
 
 <enum name="ExtensionIconState">

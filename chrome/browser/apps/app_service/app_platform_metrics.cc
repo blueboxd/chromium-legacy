@@ -41,6 +41,7 @@
 #include "extensions/common/extension.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "ui/aura/window.h"
 
 namespace {
 
@@ -207,6 +208,14 @@ bool IsBrowser(aura::Window* window) {
     return false;
   }
   return true;
+}
+
+// Returns true if the app with |app_id| is opened as a tab in a browser window.
+// Otherwise, return false;
+bool IsAppOpenedInTab(apps::AppTypeName app_type_name,
+                      const std::string& app_id) {
+  return app_type_name == apps::AppTypeName::kChromeBrowser &&
+         app_id != extension_misc::kChromeAppId;
 }
 
 // Determines what app type a web app should be logged as based on |window|. In
@@ -531,6 +540,12 @@ void RecordAppLaunchMetrics(Profile* profile,
   }
 }
 
+AppPlatformMetrics::BrowserToTab::BrowserToTab(
+    const Instance::InstanceKey& browser_key,
+    const Instance::InstanceKey& tab_key)
+    : browser_key(Instance::InstanceKey(browser_key)),
+      tab_key(Instance::InstanceKey(tab_key)) {}
+
 AppPlatformMetrics::AppPlatformMetrics(
     Profile* profile,
     apps::AppRegistryCache& app_registry_cache,
@@ -738,6 +753,27 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
       return;
     }
 
+    apps::InstanceState kInActivated = static_cast<apps::InstanceState>(
+        apps::InstanceState::kVisible | apps::InstanceState::kRunning);
+
+    // For the browser window, if a tab of the browser is activated, we don't
+    // need to calculate the browser window running time.
+    if (app_id == extension_misc::kChromeAppId &&
+        HasActivatedTab(update.InstanceKey())) {
+      SetWindowInActivated(app_id, update.InstanceKey(), kInActivated);
+      return;
+    }
+
+    // For web apps open in tabs, set the top browser window as inactive to stop
+    // calculating the browser window running time.
+    if (IsAppOpenedInTab(app_type_name, app_id)) {
+      RemoveActivatedTab(update.InstanceKey());
+      auto browser_key = Instance::InstanceKey::ForWindowBasedApp(window);
+      AddActivatedTab(browser_key, update.InstanceKey());
+      SetWindowInActivated(extension_misc::kChromeAppId, browser_key,
+                           kInActivated);
+    }
+
     AppTypeNameV2 app_type_name_v2 =
         GetAppTypeNameV2(profile_, app_type, app_id, window);
 
@@ -746,12 +782,94 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
     return;
   }
 
+  AppTypeName app_type_name = AppTypeName::kUnknown;
+  auto it = running_start_time_.find(update.InstanceKey());
+  if (it != running_start_time_.end()) {
+    app_type_name = it->second.app_type_name;
+  }
+
+  if (IsAppOpenedInTab(app_type_name, app_id)) {
+    UpdateBrowserWindowStatus(update.InstanceKey());
+  }
+
   SetWindowInActivated(app_id, update.InstanceKey(), update.State());
 }
 
 void AppPlatformMetrics::OnInstanceRegistryWillBeDestroyed(
     apps::InstanceRegistry* cache) {
   apps::InstanceRegistry::Observer::Observe(nullptr);
+}
+
+void AppPlatformMetrics::UpdateBrowserWindowStatus(
+    const Instance::InstanceKey& tab_key) {
+  auto* browser_window = GetBrowserWindow(tab_key);
+  if (!browser_window) {
+    return;
+  }
+
+  // Remove `instance_key` from `active_browser_to_tabs_`.
+  RemoveActivatedTab(tab_key);
+
+  // If there are other activated web app tab, we don't need to set the browser
+  // window as activated.
+  auto browser_key = Instance::InstanceKey::ForWindowBasedApp(browser_window);
+  if (HasActivatedTab(browser_key)) {
+    return;
+  }
+
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  DCHECK(proxy);
+  auto state = proxy->InstanceRegistry().GetState(browser_key);
+  if (state & InstanceState::kActive) {
+    // The browser window is activated, start calculating the browser window
+    // running time.
+    SetWindowActivated(apps::mojom::AppType::kExtension,
+                       AppTypeName::kChromeBrowser,
+                       AppTypeNameV2::kChromeBrowser,
+                       extension_misc::kChromeAppId, browser_key);
+  }
+}
+
+bool AppPlatformMetrics::HasActivatedTab(
+    const Instance::InstanceKey& browser_key) {
+  for (const auto& it : active_browsers_to_tabs_) {
+    if (it.browser_key == browser_key) {
+      return true;
+    }
+  }
+  return false;
+}
+
+aura::Window* AppPlatformMetrics::GetBrowserWindow(
+    const Instance::InstanceKey& tab_key) const {
+  for (const auto& it : active_browsers_to_tabs_) {
+    if (it.tab_key == tab_key) {
+      return it.browser_key.GetEnclosingAppWindow();
+    }
+  }
+  return nullptr;
+}
+
+void AppPlatformMetrics::AddActivatedTab(
+    const Instance::InstanceKey& browser_key,
+    const Instance::InstanceKey& tab_key) {
+  bool found = false;
+  for (const auto& it : active_browsers_to_tabs_) {
+    if (it.browser_key == browser_key && it.tab_key == tab_key) {
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    active_browsers_to_tabs_.push_back(BrowserToTab(browser_key, tab_key));
+  }
+}
+
+void AppPlatformMetrics::RemoveActivatedTab(
+    const Instance::InstanceKey& tab_key) {
+  active_browsers_to_tabs_.remove_if(
+      [&tab_key](const BrowserToTab& item) { return item.tab_key == tab_key; });
 }
 
 void AppPlatformMetrics::SetWindowActivated(

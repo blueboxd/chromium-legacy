@@ -228,7 +228,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '494eb3e877e63ba1f189985b20fcce7371dfdd08',
+  'skia_revision': '5c4463ee0e27faee56c7bebcd461109717afa124',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -236,7 +236,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '58bb11ca62765dfe28b5b6d0a965a0d44ef2c01e',
+  'angle_revision': 'bc89eda7bb6e5ecb753c60bc71f8f93686fb5605',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -773,7 +773,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'bw1Vy5SDq2TSr4kHdeKbafwCtq9wvEvw2WcG7AevGPYC',
+          'version': 'x9o7x8fRlR8zQXP11VlJc1MALGYwl_2RT3Own8BxvSwC',
       },
     ],
     'condition': 'checkout_android',
@@ -1577,7 +1577,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'bdf3dd3f284ebbd2a6fa16f12284d7ac8b3ad8b8',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@f80b808fe5e03dc63bd19315e2e89d16223dafdb',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@4c030a49cdb9ab46f9fd19bb6adcc9c3b4be93e3',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'f67d7fa397e83060b76a1ec53579116a0bbdff7a',
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@73152a6ca9b92b00703229c134847c056e54577d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c8f86615fafffe150446f4b74b00fa15498ad044',
     'condition': 'checkout_src_internal',
   },
 
@@ -1704,7 +1704,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'Akk5UZdmgTDGFQ9UejpqjRuI3l3yXb_gZMktLuUrcE4C',
+        'version': 'xrJg5DZ_Nbeln6zh3M0E04e3AaIV1n7H5Hcw5oucDbYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -2533,6 +2533,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-secure-payment-confirmation-android",
+    "owners": [ "maxlg", "web-payments-team@google.com" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "enable-sharesheet",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 92
@@ -2652,7 +2657,7 @@
   {
     "name": "enable-system-notifications",
     "owners": [ "peter", "finnur", "knollr" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 98
   },
   {
     "name": "enable-system-proxy-for-system-services",

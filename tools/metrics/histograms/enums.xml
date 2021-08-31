@@ -3768,6 +3768,13 @@ Unknown properties are collapsed to zero. -->
   <int value="48" label="tel:// Device selected"/>
 </enum>
 
+<enum name="ArcFileSystemWatcherExceedLimitState">
+  <int value="0"
+      label="inotify exceeds its limit when ArcFileSystemWatcher is started"/>
+  <int value="1"
+      label="inotify exceeds its limit while processing a filesystem change"/>
+</enum>
+
 <enum name="ArchivemountError">
   <int value="0" label="Success">EXIT_SUCCESS</int>
   <int value="1" label="Failure">EXIT_FAILURE</int>
@@ -7423,6 +7430,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="2" label="PMF_INVALID_INITIATOR_ORIGIN"/>
   <int value="3" label="RFH_INVALID_WEB_UI_CONTROLLER"/>
   <int value="4" label="RFH_DISPLAY_CAPTURE_PERMISSION_MISSING"/>
+  <int value="5" label="MSFD_MULTIPLE_CLOSURES_OF_FOCUSABILITY_WINDOW"/>
 </enum>
 
 <enum name="BadMessageReasonContent">
@@ -13463,6 +13471,13 @@ Called by update_net_error_codes.py.-->
 <enum name="ConcerningHeaderPresent">
   <int value="0" label="Header not present"/>
   <int value="1" label="Header present"/>
+</enum>
+
+<enum name="ConditionalFocusDecision">
+  <int value="0" label="kExplicitFocusCapturedSurface"/>
+  <int value="1" label="kExplicitNoFocusChange"/>
+  <int value="2" label="kMicrotaskClosedWindow"/>
+  <int value="3" label="kBrowserSideTimerClosedWindow"/>
 </enum>
 
 <enum name="ConfigParsingEvent">
@@ -49488,6 +49503,7 @@ from previous Chrome versions.
   <int value="-127666141" label="TabGroups:disabled"/>
   <int value="-127231994" label="VrBrowsingNativeAndroidUi:disabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
+  <int value="-121563330" label="SecurePaymentConfirmationBrowser:disabled"/>
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-120091289" label="CrostiniAppSearch:enabled"/>
   <int value="-119055644" label="GenericSensor:enabled"/>
@@ -50945,6 +50961,7 @@ from previous Chrome versions.
   <int value="1044210009" label="SharingPeerConnectionReceiver:disabled"/>
   <int value="1044928476"
       label="AllowDownloadResumptionWithoutStrongValidators:enabled"/>
+  <int value="1045152062" label="SecurePaymentConfirmationBrowser:enabled"/>
   <int value="1046878091" label="PasswordForceSaving:enabled"/>
   <int value="1046981538" label="OfflinePagesShowAlternateDinoPage:disabled"/>
   <int value="1047110483" label="ShelfHotseat:disabled"/>

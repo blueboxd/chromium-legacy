@@ -195,7 +195,6 @@ class AutoEnrollmentClientImplTest
               progress_callback, service_.get(), local_state_,
               shared_url_loader_factory_, kSerialNumber, kBrandCode,
               power_initial, power_limit,
-
               psm_rlwe_test_client_factory_.get());
     }
   }
@@ -212,7 +211,7 @@ class AutoEnrollmentClientImplTest
   }
 
   void ServerWillReply(int64_t modulus, bool with_hashes, bool with_id_hash) {
-    // This function should be called only when the client has been created for
+    // This method should be called only when the client has been created for
     // FRE use case.
     ASSERT_EQ(GetAutoEnrollmentProtocol(), AutoEnrollmentProtocol::kFRE);
 
@@ -367,10 +366,18 @@ class AutoEnrollmentClientImplTest
   }
 
   bool HasCachedDecision() {
+    // This method should be called only when the client has been created for
+    // FRE use case.
+    EXPECT_EQ(GetAutoEnrollmentProtocol(), AutoEnrollmentProtocol::kFRE);
+
     return local_state_->GetUserPref(prefs::kShouldAutoEnroll);
   }
 
   void VerifyCachedResult(bool should_enroll, int power_limit) {
+    // This method should be called only when the client has been created for
+    // FRE use case.
+    EXPECT_EQ(GetAutoEnrollmentProtocol(), AutoEnrollmentProtocol::kFRE);
+
     base::Value value_should_enroll(should_enroll);
     base::Value value_power_limit(power_limit);
     EXPECT_EQ(value_should_enroll,
@@ -492,6 +499,10 @@ class AutoEnrollmentClientImplTest
   // Expects one sample for |kUMAHashDanceNetworkErrorCode| which has value of
   // |network_error|.
   void ExpectHashDanceNetworkErrorHistogram(int network_error) const {
+    // This method should be called only when the client has been created for
+    // FRE use case.
+    EXPECT_EQ(GetAutoEnrollmentProtocol(), AutoEnrollmentProtocol::kFRE);
+
     histogram_tester_.ExpectBucketCount(
         kUMAHashDanceNetworkErrorCode + GetAutoEnrollmentProtocolUmaSuffix(),
         network_error, /*expected_count=*/1);
@@ -501,6 +512,10 @@ class AutoEnrollmentClientImplTest
   // |dm_status_count|.
   void ExpectHashDanceRequestStatusHistogram(DeviceManagementStatus dm_status,
                                              int dm_status_count) const {
+    // This method should be called only when the client has been created for
+    // FRE use case.
+    EXPECT_EQ(GetAutoEnrollmentProtocol(), AutoEnrollmentProtocol::kFRE);
+
     histogram_tester_.ExpectBucketCount(
         kUMAHashDanceRequestStatus + GetAutoEnrollmentProtocolUmaSuffix(),
         dm_status, dm_status_count);
@@ -514,6 +529,10 @@ class AutoEnrollmentClientImplTest
   void ExpectHashDanceExecutionTimeHistogram(
       base::TimeDelta expected_time_recorded,
       bool success_time_recorded) const {
+    // This method should be called only when the client has been created for
+    // FRE use case.
+    EXPECT_EQ(GetAutoEnrollmentProtocol(), AutoEnrollmentProtocol::kFRE);
+
     histogram_tester_.ExpectUniqueTimeSample(
         kUMAHashDanceProtocolTimeStr + kUMASuffixInitialEnrollment,
         expected_time_recorded, /*expected_count=*/1);
@@ -1408,11 +1427,8 @@ class PsmHelperTest : public AutoEnrollmentClientImplTest {
   }
 
   void SetUp() override {
-    // Verify that PSM is enabled by default (i.e. PSM switch
-    // prefs::kEnterpriseEnablePsm is enabled). And the PsmState has value
-    // kEnable.
+    // Verify that PSM is enabled (i.e. PsmState has value kEnable).
     ASSERT_EQ(GetPsmState(), PsmState::kEnabled);
-    EXPECT_TRUE(ash::AutoEnrollmentController::IsPsmEnabled());
 
     // Verify that all PSM prefs have not been set before.
     ASSERT_EQ(local_state_->GetUserPref(prefs::kShouldRetrieveDeviceState),

@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
 #include "chrome/browser/ash/crosapi/resource_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -100,6 +102,7 @@
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+using MojoOptionalBool = crosapi::mojom::DeviceSettings::OptionalBool;
 using user_manager::User;
 using version_info::Channel;
 
@@ -237,6 +240,72 @@ mojom::DevicePropertiesPtr GetDeviceProperties() {
         ash::DeviceSettingsService::Get()->policy_data()->request_token();
   } else {
     result->device_dm_token = "";
+  }
+
+  return result;
+}
+
+// Returns the device policy data needed for Lacros.
+mojom::DeviceSettingsPtr GetDeviceSettings() {
+  mojom::DeviceSettingsPtr result = mojom::DeviceSettings::New();
+
+  result->attestation_for_content_protection_enabled = MojoOptionalBool::kUnset;
+  if (ash::CrosSettings::IsInitialized()) {
+    // It's expected that the CrosSettings values are trusted. The only
+    // theoretical exception is when device ownership is taken on consumer
+    // device. Then there's no settings to be passed to Lacros anyway.
+    auto trusted_result =
+        ash::CrosSettings::Get()->PrepareTrustedValues(base::DoNothing());
+    if (trusted_result == ash::CrosSettingsProvider::TRUSTED) {
+      const auto* cros_settings = ash::CrosSettings::Get();
+      bool attestation_enabled = false;
+      if (cros_settings->GetBoolean(
+              ash::kAttestationForContentProtectionEnabled,
+              &attestation_enabled)) {
+        result->attestation_for_content_protection_enabled =
+            attestation_enabled ? MojoOptionalBool::kTrue
+                                : MojoOptionalBool::kFalse;
+      }
+
+      const base::ListValue* usb_detachable_allow_list;
+      if (cros_settings->GetList(ash::kUsbDetachableAllowlist,
+                                 &usb_detachable_allow_list)) {
+        mojom::UsbDetachableAllowlistPtr allow_list =
+            mojom::UsbDetachableAllowlist::New();
+        for (const auto& entry : usb_detachable_allow_list->GetList()) {
+          mojom::UsbDeviceIdPtr usb_device_id = mojom::UsbDeviceId::New();
+          absl::optional<int> vid =
+              entry.FindIntKey(ash::kUsbDetachableAllowlistKeyVid);
+          if (vid) {
+            usb_device_id->has_vendor_id = true;
+            usb_device_id->vendor_id = vid.value();
+          }
+          absl::optional<int> pid =
+              entry.FindIntKey(ash::kUsbDetachableAllowlistKeyPid);
+          if (pid) {
+            usb_device_id->has_product_id = true;
+            usb_device_id->product_id = pid.value();
+          }
+          allow_list->usb_device_ids.push_back(std::move(usb_device_id));
+        }
+        result->usb_detachable_allow_list = std::move(allow_list);
+      }
+    } else {
+      LOG(WARNING) << "Unexpected crossettings trusted values status: "
+                   << trusted_result;
+    }
+  }
+
+  result->device_system_wide_tracing_enabled = MojoOptionalBool::kUnset;
+  auto* local_state = g_browser_process->local_state();
+  if (local_state) {
+    auto* pref = local_state->FindPreference(
+        ash::prefs::kDeviceSystemWideTracingEnabled);
+    if (pref && pref->IsManaged()) {
+      result->device_system_wide_tracing_enabled =
+          pref->GetValue()->GetBool() ? MojoOptionalBool::kTrue
+                                      : MojoOptionalBool::kFalse;
+    }
   }
 
   return result;
@@ -624,7 +693,7 @@ base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
 
 mojom::BrowserInitParamsPtr GetBrowserInitParams(
     EnvironmentProvider* environment_provider,
-    crosapi::mojom::InitialBrowserAction initial_browser_action) {
+    InitialBrowserAction initial_browser_action) {
   auto params = mojom::BrowserInitParams::New();
   params->crosapi_version = crosapi::mojom::Crosapi::Version_;
   params->deprecated_ash_metrics_enabled_has_value = true;
@@ -663,17 +732,22 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->native_theme_info = NativeThemeServiceAsh::GetNativeThemeInfo();
 
   params->is_incognito_deprecated =
-      initial_browser_action ==
+      initial_browser_action.action ==
       crosapi::mojom::InitialBrowserAction::kOpenIncognitoWindow;
   params->restore_last_session_deprecated =
-      initial_browser_action ==
+      initial_browser_action.action ==
       crosapi::mojom::InitialBrowserAction::kRestoreLastSession;
-  params->initial_browser_action = initial_browser_action;
+  params->initial_browser_action = initial_browser_action.action;
+  if (initial_browser_action.action ==
+      crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls) {
+    params->startup_urls = std::move(initial_browser_action.urls);
+  }
 
   params->web_apps_enabled =
       base::FeatureList::IsEnabled(features::kWebAppsCrosapi);
   params->standalone_browser_is_primary = IsLacrosPrimaryBrowser();
   params->device_properties = GetDeviceProperties();
+  params->device_settings = GetDeviceSettings();
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kOndeviceHandwritingSwitch)) {
@@ -713,11 +787,32 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   return params;
 }
 
-base::ScopedFD CreateStartupData(
-    EnvironmentProvider* environment_provider,
-    crosapi::mojom::InitialBrowserAction initial_browser_action) {
-  auto data =
-      GetBrowserInitParams(environment_provider, initial_browser_action);
+InitialBrowserAction::InitialBrowserAction(
+    crosapi::mojom::InitialBrowserAction action)
+    : action(action) {
+  // kOpnWindowWIthUrls should take the argument, so the ctor below should be
+  // used.
+  DCHECK_NE(action, crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls);
+}
+
+InitialBrowserAction::InitialBrowserAction(
+    crosapi::mojom::InitialBrowserAction action,
+    std::vector<GURL> urls)
+    : action(action), urls(std::move(urls)) {
+  // Currently, only kOpenWindowWithUrls can take the URLs as its argument.
+  DCHECK_EQ(action, crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls);
+}
+
+InitialBrowserAction::InitialBrowserAction(InitialBrowserAction&&) = default;
+InitialBrowserAction& InitialBrowserAction::operator=(InitialBrowserAction&&) =
+    default;
+
+InitialBrowserAction::~InitialBrowserAction() = default;
+
+base::ScopedFD CreateStartupData(EnvironmentProvider* environment_provider,
+                                 InitialBrowserAction initial_browser_action) {
+  auto data = GetBrowserInitParams(environment_provider,
+                                   std::move(initial_browser_action));
   std::vector<uint8_t> serialized =
       crosapi::mojom::BrowserInitParams::Serialize(&data);
 

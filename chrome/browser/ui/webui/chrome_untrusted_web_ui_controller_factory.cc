@@ -22,11 +22,11 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "ash/webui/help_app_ui/help_app_kids_magazine_untrusted_ui.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_untrusted_ui_config.h"
 #include "chrome/browser/ash/web_applications/media_app/media_app_guest_ui_config.h"
 #include "chrome/browser/ash/web_applications/terminal_ui.h"
 #include "chromeos/components/eche_app_ui/untrusted_eche_app_ui.h"
-#include "chromeos/components/help_app_ui/help_app_kids_magazine_untrusted_ui.h"
 #include "chromeos/components/personalization_app/untrusted_personalization_app_ui_config.h"
 #include "chromeos/components/projector_app/untrusted_projector_ui_config.h"
 #if !defined(OFFICIAL_BUILD)
@@ -73,8 +73,7 @@ WebUIConfigList CreateConfigs() {
   if (ash::features::IsProjectorEnabled())
     register_config(std::make_unique<chromeos::UntrustedProjectorUIConfig>());
 #if !defined(OFFICIAL_BUILD)
-  register_config(
-      std::make_unique<chromeos::TelemetryExtensionUntrustedUIConfig>());
+  register_config(std::make_unique<ash::TelemetryExtensionUntrustedUIConfig>());
   register_config(std::make_unique<ash::UntrustedSampleSystemWebAppUIConfig>());
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

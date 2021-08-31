@@ -59,5 +59,15 @@ void FakeAssistantClient::OnDisplayRequest(
 void FakeAssistantClient::AddDisplayEventObserver(
     GrpcServicesObserver<OnAssistantDisplayEventRequest>* observer) {}
 
+void FakeAssistantClient::ResumeCurrentStream() {}
+
+void FakeAssistantClient::PauseCurrentStream() {}
+
+void FakeAssistantClient::SetExternalPlaybackState(
+    const MediaStatus& status_proto) {}
+
+void FakeAssistantClient::AddDeviceStateEventObserver(
+    GrpcServicesObserver<OnDeviceStateEventRequest>* observer) {}
+
 }  // namespace libassistant
 }  // namespace chromeos

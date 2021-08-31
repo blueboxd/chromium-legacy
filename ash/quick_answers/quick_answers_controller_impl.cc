@@ -4,6 +4,8 @@
 
 #include "ash/quick_answers/quick_answers_controller_impl.h"
 
+#include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
+#include "ash/components/quick_answers/quick_answers_notice.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/quick_answers/quick_answers_state.h"
@@ -12,8 +14,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
-#include "chromeos/components/quick_answers/quick_answers_notice.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -57,6 +57,18 @@ bool IsProcessedRequest(const QuickAnswersRequest& request) {
           chromeos::quick_answers::IntentType::kUnknown);
 }
 
+bool ShouldShowQuickAnswers() {
+  if (!ash::QuickAnswersState::Get()->is_eligible())
+    return false;
+
+  bool should_show_consent =
+      ash::QuickAnswersState::Get()->consent_status() ==
+      chromeos::quick_answers::prefs::ConsentStatus::kUnknown;
+  bool settings_enabled = ash::QuickAnswersState::Get()->settings_enabled();
+
+  return should_show_consent || settings_enabled;
+}
+
 }  // namespace
 
 namespace ash {
@@ -79,9 +91,8 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
     const gfx::Rect& anchor_bounds,
     const std::string& title,
     const Context& context) {
-  if (!QuickAnswersState::Get()->is_eligible()) {
+  if (!ShouldShowQuickAnswers())
     return;
-  }
 
   if (visibility_ == QuickAnswersVisibility::kClosed)
     return;

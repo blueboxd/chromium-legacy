@@ -9,6 +9,7 @@ import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakeP
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
 import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
 import {setNetworkHealthProviderForTesting, setSystemRoutineControllerForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {TestSuiteStatus} from 'chrome://diagnostics/routine_list_executor.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks, isVisible} from '../../test_util.m.js';
@@ -118,6 +119,24 @@ export function connectivityCardTestSuite() {
     routineSection.runTestsAutomatically = true;
   }
 
+  /**
+   * @param {string} guid
+   * @return {!Promise}
+   */
+  function changeActiveGuid(guid) {
+    connectivityCardElement.activeGuid = guid;
+    return flushTasks();
+  }
+
+  /**
+   * @suppress {visibility} // access private method for testing.
+   * @return {!Promise}
+   */
+  function stopTests() {
+    connectivityCardElement.getRoutineSectionElem_().stopTests();
+    return flushTasks();
+  }
+
   test('CardTitleEthernetOnlineInitializedCorrectly', () => {
     return initializeConnectivityCard('ethernetGuid').then(() => {
       dx_utils.assertElementContainsText(
@@ -151,7 +170,10 @@ export function connectivityCardTestSuite() {
 
   test('TestsRunAutomaticallyWhenPageIsActive', () => {
     return initializeConnectivityCard('ethernetGuid', true)
-        .then(() => assertTrue(connectivityCardElement.isTestRunning));
+        .then(
+            () => assertEquals(
+                TestSuiteStatus.kRunning,
+                connectivityCardElement.testSuiteStatus));
   });
 
   test(
@@ -181,5 +203,24 @@ export function connectivityCardTestSuite() {
       assertFalse(routines.includes(RoutineType.kSignalStrength));
       assertFalse(routines.includes(RoutineType.kHasSecureWiFiConnection));
     });
+  });
+
+  test('TestsRestartWhenGuidChanges', () => {
+    provider.setFakeNetworkState('wifiGuid', [fakeWifiNetwork]);
+    return initializeConnectivityCard('ethernetGuid', true)
+        .then(
+            () => assertEquals(
+                TestSuiteStatus.kRunning,
+                connectivityCardElement.testSuiteStatus))
+        .then(() => stopTests())
+        .then(
+            () => assertEquals(
+                TestSuiteStatus.kNotRunning,
+                connectivityCardElement.testSuiteStatus))
+        .then(() => changeActiveGuid('wifiGuid'))
+        .then(
+            () => assertEquals(
+                TestSuiteStatus.kRunning,
+                connectivityCardElement.testSuiteStatus));
   });
 }

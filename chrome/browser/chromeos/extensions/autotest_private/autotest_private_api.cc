@@ -12,6 +12,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accelerators.h"
@@ -98,6 +99,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/default_pinned_apps.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
@@ -120,7 +122,6 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -3557,6 +3558,27 @@ void AutotestPrivateSetOverviewModeStateFunction::OnOverviewModeChanged(
   } else {
     Respond(std::move(arg));
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetDefaultPinnedAppIdsFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetDefaultPinnedAppIdsFunction::
+    AutotestPrivateGetDefaultPinnedAppIdsFunction() = default;
+
+AutotestPrivateGetDefaultPinnedAppIdsFunction::
+    ~AutotestPrivateGetDefaultPinnedAppIdsFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetDefaultPinnedAppIdsFunction::Run() {
+  std::vector<std::string> default_pinned_app_ids;
+  for (const char* default_app_id : GetDefaultPinnedAppsForFormFactor())
+    default_pinned_app_ids.emplace_back(default_app_id);
+
+  return RespondNow(ArgumentList(
+      api::autotest_private::GetDefaultPinnedAppIds::Results::Create(
+          default_pinned_app_ids)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -17,6 +17,7 @@ import './reimaging_firmware_update_page.js';
 import './reimaging_provisioning_page.js';
 import './shimless_rma_shared_css.js';
 import './wrapup_repair_complete_page.js';
+import './wrapup_restock_page.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -116,7 +117,6 @@ const StateComponentMapping = {
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.VISIBLE,
   },
-  // TODO(gavindodd): kRestock
   [RmaState.kUpdateDeviceInformation]: {
     componentIs: 'reimaging-device-information-page',
     btnNext: ButtonState.VISIBLE,
@@ -138,6 +138,12 @@ const StateComponentMapping = {
     btnBack: ButtonState.VISIBLE,
   },
   // TODO(gavindodd): kWaitForManualWpEnable
+  [RmaState.kRestock]: {
+    componentIs: 'wrapup-restock-page',
+    btnNext: ButtonState.VISIBLE,
+    btnCancel: ButtonState.HIDDEN,
+    btnBack: ButtonState.VISIBLE,
+  },
   [RmaState.kRepairComplete]: {
     componentIs: 'wrapup-repair-complete-page',
     buttonNext: ButtonState.VISIBLE,
@@ -196,16 +202,42 @@ export class ShimlessRmaElement extends PolymerElement {
   }
 
   /** @override */
+  constructor() {
+    super();
+
+    /**
+     * The loadNextState callback is used by page elements to trigger loading
+     * the next page without using the 'Next' button.
+     * @private {?Function}
+     */
+    this.loadNextStateCallback_ = (e) => {
+      this.processStateResult_(e.detail)
+    };
+  }
+
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+
+    window.addEventListener('load-next-state', this.loadNextStateCallback_);
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    window.removeEventListener('load-next-state', this.loadNextStateCallback_);
+  }
+
+  /** @override */
   ready() {
     super.ready();
     this.shimlessRmaService_ = getShimlessRmaService();
 
     // Get the initial state.
     this.fetchState_().then((stateResult) => {
-      // TODO(gavindodd): Handle stateResult.error
-      this.errorMessage_ = rmadErrorString(stateResult.error);
       this.initialState_ = stateResult.state;
-      this.loadState_(stateResult.state);
+      this.processStateResult_(stateResult);
     });
   }
 
@@ -222,6 +254,24 @@ export class ShimlessRmaElement extends PolymerElement {
   /** @private */
   fetchPrevState_() {
     return this.shimlessRmaService_.transitionPreviousState();
+  }
+
+  /**
+   * @private
+   * @param {!StateResult} stateResult
+   */
+  processStateResult_(stateResult) {
+    this.handleError_(stateResult.error);
+    this.loadState_(stateResult.state);
+  }
+
+  /**
+   * @private
+   * @param {!RmadErrorCode} error
+   */
+  handleError_(error) {
+    // TODO(gavindodd): Handle error appropriately
+    this.errorMessage_ = rmadErrorString(error);
   }
 
   /**
@@ -299,10 +349,8 @@ export class ShimlessRmaElement extends PolymerElement {
 
   /** @protected */
   onBackButtonClicked_() {
-    this.fetchPrevState_().then((stateResult) => {
-      this.errorMessage_ = rmadErrorString(stateResult.error);
-      this.loadState_(stateResult.state);
-    });
+    this.fetchPrevState_().then(
+        (stateResult) => this.processStateResult_(stateResult));
   }
 
   /** @protected */
@@ -315,15 +363,11 @@ export class ShimlessRmaElement extends PolymerElement {
         page.onNextButtonClick || (() => Promise.resolve(undefined));
     assert(typeof prepPageAdvance === 'function');
 
-    // TODO(gavindodd): Handle stateResult.error
     prepPageAdvance.call(page)
         .then(
             (stateResult) => !!stateResult ? Promise.resolve(stateResult) :
                                              this.fetchNextState_())
-        .then((stateResult) => {
-          this.errorMessage_ = rmadErrorString(stateResult.error);
-          this.loadState_(stateResult.state);
-        })
+        .then((stateResult) => this.processStateResult_(stateResult))
         .catch((err) => void 0);
   }
 

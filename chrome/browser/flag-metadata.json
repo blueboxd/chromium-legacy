@@ -59,6 +59,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "add-passwords-in-settings",
+    "owners": [ "vidhanj", "mamir" ],
+    "expiry_milestone": 100
+  },
+  {
     "name": "add-to-homescreen-iph",
     "owners": [ "shaktisahu" ],
     "expiry_milestone": 96
@@ -684,8 +689,8 @@
   },
   {
     "name": "clipboard-custom-formats",
-    "owners": ["huangdarwin", "snianu@microsoft.com"],
-    "expiry_milestone": 94
+    "owners": ["mek", "snianu@microsoft.com"],
+    "expiry_milestone": 96
   },
   {
     "name": "closed-tab-cache",
@@ -2916,6 +2921,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "enable-wireguard",
+    "owners": [ "taoyl", "jiejiang", "cros-networking@google.com" ],
+    "expiry_milestone": 104
+  },
+  {
     "name": "enable-zero-copy",
     "owners": [ "ccameron", "chrome-gpu@google.com" ],
     // This flag is commonly used when asking users to help gather debug info.
@@ -3352,22 +3362,22 @@
   },
   {
     "name": "help-app-background-page",
-    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
     "expiry_milestone": 97
   },
   {
     "name": "help-app-discover-tab",
-    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
     "expiry_milestone": 97
   },
   {
     "name": "help-app-launcher-search",
-    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
     "expiry_milestone": 97
   },
   {
     "name": "help-app-search-service-integration",
-    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
     "expiry_milestone": 94
   },
   {
@@ -4761,7 +4771,7 @@
   },
   {
     "name": "release-notes-notification-all-channels",
-    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
     // This is required by test teams to verify functionality on dev/beta
     // channels on devices which have no access to commandline flags.
     "expiry_milestone": -1
@@ -5640,7 +5650,7 @@
   {
     "name": "wallpaper-webui",
     "owners": [ "cowmoo@google.com", "croissant-eng@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 98
   },
   {
     "name": "web-apps-crosapi",

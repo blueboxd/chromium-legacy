@@ -4987,7 +4987,7 @@
                         "CrosHealthdProducerFrequencySeconds": "60",
                         "DiagnosticsLoggerEnabled": "true",
                         "ProcessLoggerEnabled": "true",
-                        "SystemLoggerEnabled": "true",
+                        "SystemLoggerEnabled": "false",
                         "SystemLoggerFrequencySeconds": "30"
                     },
                     "enable_features": [
@@ -6571,6 +6571,26 @@
                     },
                     "enable_features": [
                         "PersistentHistograms"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PlzServiceWorker": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "linux",
+                "chromeos",
+                "chromeos_lacros",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PlzServiceWorker"
                     ]
                 }
             ]
@@ -8677,12 +8697,7 @@
     "UseSkiaRenderer": [
         {
             "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
+                "chromeos"
             ],
             "experiments": [
                 {
@@ -8697,6 +8712,7 @@
     "UseVideoFrameSinkBundle": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -9825,27 +9841,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ChromeWhatsNewUI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WheelEventRegions": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20201211",
-                    "enable_features": [
-                        "WheelEventRegions"
                     ]
                 }
             ]

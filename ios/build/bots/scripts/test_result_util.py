@@ -4,13 +4,14 @@
 """Test result related classes."""
 
 from collections import OrderedDict
-import os
 import shard_util
 import time
 
 from result_sink_util import ResultSinkClient
 
-_VALID_TEST_STATUSES = ['PASS', 'FAIL', 'CRASH', 'ABORT', 'SKIP']
+_VALID_RESULT_COLLECTION_INIT_KWARGS = set(['test_results', 'crashed'])
+_VALID_TEST_RESULT_INIT_KWARGS = set(['expected_status', 'test_log'])
+_VALID_TEST_STATUSES = set(['PASS', 'FAIL', 'CRASH', 'ABORT', 'SKIP'])
 
 
 class TestStatus:
@@ -24,6 +25,12 @@ class TestStatus:
   CRASH = 'CRASH'
   ABORT = 'ABORT'
   SKIP = 'SKIP'
+
+
+def _validate_kwargs(kwargs, valid_args_set):
+  """Validates if keywords in kwargs are accepted."""
+  diff = set(kwargs.keys()) - valid_args_set
+  assert len(diff) == 0, 'Invalid keyword argument(s) in %s passed in!' % diff
 
 
 def _validate_test_status(status):
@@ -58,6 +65,7 @@ class TestResult(object):
       expected_status: (str) Expected test outcome for the run.
       test_log: (str) Logs of the test.
     """
+    _validate_kwargs(kwargs, _VALID_TEST_RESULT_INIT_KWARGS)
     self.name = name
     _validate_test_status(status)
     self.status = status
@@ -114,6 +122,7 @@ class ResultCollection(object):
       crashed: (bool) Whether the ResultCollection is of a crashed test launch.
       test_results: (list) A list of test_results to initialize the collection.
     """
+    _validate_kwargs(kwargs, _VALID_RESULT_COLLECTION_INIT_KWARGS)
     self._test_results = []
     self._crashed = kwargs.get('crashed', False)
     self._crash_message = ''
@@ -138,6 +147,11 @@ class ResultCollection(object):
   def crash_message(self):
     """Logs from crashes in collection which are unrelated to single tests."""
     return self._crash_message
+
+  @crash_message.setter
+  def crash_message(self, value):
+    """Sets crash_message value."""
+    self._crash_message = value
 
   @property
   def test_results(self):
@@ -193,8 +207,23 @@ class ResultCollection(object):
     for test_name in test_names:
       self.add_test_result(TestResult(test_name, test_status, **kwargs))
 
+  def add_and_report_test_names_status(self, test_names, test_status, **kwargs):
+    """Adds a list of test names with status and report these to ResultSink.
+
+    Args:
+      test_names: (list) A list of names of tests to add.
+      test_status: (str) The test outcome of the tests to add.
+      **kwargs: See possible **kwargs in TestResult.__init__ docstring.
+    """
+    another_collection = ResultCollection()
+    another_collection.add_test_names_status(test_names, test_status, **kwargs)
+    another_collection.report_to_result_sink()
+    self.add_result_collection(another_collection)
+
   def append_crash_message(self, message):
     """Appends crash message str to current."""
+    if not message:
+      return
     if self._crash_message:
       self._crash_message += '\n'
     self._crash_message += message
@@ -309,8 +338,8 @@ class ResultCollection(object):
             'is_unexpected': not test_result.expected()
         }
       else:
-        tests[test_name]['actual'] += ' ' + _to_standard_json_literal(
-            test_result.status)
+        tests[test_name]['actual'] += (
+            ' ' + _to_standard_json_literal(test_result.status))
         # This means there are both expected & unexpected results for the test.
         # Thus, the overall status would be expected (is_unexpected = False)
         # and the test is regarded flaky.

@@ -155,6 +155,8 @@
 #include "ash/webui/diagnostics_ui/url_constants.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
 #include "ash/webui/file_manager/url_constants.h"
+#include "ash/webui/help_app_ui/help_app_ui.h"
+#include "ash/webui/help_app_ui/url_constants.h"
 #include "ash/webui/os_feedback_ui/os_feedback_ui.h"
 #include "ash/webui/os_feedback_ui/url_constants.h"
 #include "ash/webui/scanning/scanning_ui.h"
@@ -234,8 +236,6 @@
 #include "chromeos/components/eche_app_ui/eche_app_manager.h"
 #include "chromeos/components/eche_app_ui/eche_app_ui.h"
 #include "chromeos/components/eche_app_ui/url_constants.h"
-#include "chromeos/components/help_app_ui/help_app_ui.h"
-#include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/media_app_ui.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
@@ -380,6 +380,12 @@ WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
 template <>
 WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
   return new chromeos::OobeUI(web_ui, url);
+}
+
+template <>
+WebUIController* NewWebUI<chromeos::TrustedProjectorUI>(WebUI* web_ui,
+                                                        const GURL& url) {
+  return new chromeos::TrustedProjectorUI(web_ui, url);
 }
 
 void BindPrintManagement(
@@ -925,9 +931,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == ash::kChromeUISampleSystemWebAppHost)
     return &NewWebUI<ash::SampleSystemWebAppUI>;
-  if (url.host_piece() == chromeos::kChromeUITelemetryExtensionHost) {
-    if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
-      return &NewWebUI<chromeos::TelemetryExtensionUI>;
+  if (url.host_piece() == ash::kChromeUITelemetryExtensionHost) {
+    if (base::FeatureList::IsEnabled(ash::features::kTelemetryExtension)) {
+      return &NewWebUI<ash::TelemetryExtensionUI>;
     }
   }
 #endif  // !defined(OFFICIAL_BUILD)

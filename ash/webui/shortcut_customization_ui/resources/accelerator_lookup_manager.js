@@ -4,7 +4,8 @@
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
-import {AcceleratorConfig, AcceleratorInfo, LayoutInfo, LayoutInfoList} from './shortcut_types.js';
+import {fakeActionNames} from './fake_data.js';
+import {AcceleratorConfig, AcceleratorInfo, AcceleratorKeys, LayoutInfo, LayoutInfoList} from './shortcut_types.js';
 
 /**
  * A singleton class that manages the fetched accelerators and layout
@@ -36,6 +37,27 @@ export class AcceleratorLookupManager {
      * @private
      */
     this.acceleratorLayoutLookup_ = new Map();
+
+    /**
+     * A map with the string key formatted as `${source_id}-${action_id}` and
+     * the value as the string corresponding to the accelerator's name.
+     * @type {!Map<string, string>}
+     * @private
+     */
+    this.acceleratorNameLookup_ = new Map();
+
+    /**
+     * A map with the key as a stringified version of AcceleratorKey and the
+     * value as the unique string identifier `${source_id}-${action_id}`. Note
+     * that Javascript Maps uses the SameValueZero algorithm to compare keys,
+     * meaning objects are compared by their references instead of their
+     * intrinsic values, therefore this uses a stringified version of
+     * AcceleratorKey as the key instead of the object itself. This is used to
+     * perform a reverse lookup to detect if a given shortcut is already
+     * bound to an accelerator.
+     * @type {!Map<string, string>}
+     */
+    this.reverseAcceleratorLookup_ = new Map();
   }
 
   /**
@@ -65,6 +87,25 @@ export class AcceleratorLookupManager {
     return this.acceleratorLayoutLookup_.get(category);
   }
 
+  /**
+   * @param {number} source
+   * @param {number} action
+   * @return {string}
+   */
+  getAcceleratorName(source, action) {
+    const uuid = `${source}-${action}`;
+    return this.acceleratorNameLookup_.get(uuid);
+  }
+
+  /**
+   * @param {string} keys
+   * @return {string|undefined} Returns the uuid of an accelerator if the
+   * accelerator exists. Otherwise returns `undefined`.
+   */
+  getAcceleratorFromKeys(keys) {
+    return this.reverseAcceleratorLookup_.get(keys);
+  }
+
   /** @param {!AcceleratorConfig} acceleratorConfig */
   setAcceleratorLookup(acceleratorConfig) {
     for (const [source, accelInfoMap] of acceleratorConfig.entries()) {
@@ -75,6 +116,8 @@ export class AcceleratorLookupManager {
         }
         accelInfos.forEach((info) => {
           this.acceleratorLookup_.get(id).push(info);
+          const accelKeys = info.accelerator;
+          this.reverseAcceleratorLookup_.set(JSON.stringify(accelKeys), id);
         });
       }
     }
@@ -94,6 +137,12 @@ export class AcceleratorLookupManager {
       this.acceleratorLayoutLookup_.get(entry.category)
           .get(entry.sub_category)
           .push(entry);
+
+      // Add the entry to the AcceleratorNameLookup.
+      const uuid = `${entry.source}-${entry.action}`;
+      // TODO(jimmyxgong): Use real name lookup instead of using fake_data.js.
+      this.acceleratorNameLookup_.set(
+          uuid, fakeActionNames.get(entry.description));
     }
   }
 

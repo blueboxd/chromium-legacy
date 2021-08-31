@@ -19,7 +19,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {PowerRoutineResult, RoutineType, StandardRoutineResult, SystemRoutineControllerInterface} from './diagnostics_types.js';
 import {getSystemRoutineController} from './mojo_interface_provider.js';
-import {ExecutionProgress, RoutineListExecutor} from './routine_list_executor.js';
+import {ExecutionProgress, RoutineListExecutor, TestSuiteStatus} from './routine_list_executor.js';
 import {getRoutineType, getSimpleResult} from './routine_result_entry.js';
 import {BadgeType} from './text_badge.js';
 
@@ -95,9 +95,10 @@ Polymer({
       value: '',
     },
 
-    /** @type {boolean} */
-    isTestRunning: {
-      type: Boolean,
+    /** @type {!TestSuiteStatus} */
+    testSuiteStatus: {
+      type: Number,
+      value: TestSuiteStatus.kNotRunning,
       notify: true,
     },
 
@@ -178,12 +179,6 @@ Polymer({
     },
 
     /** @type {boolean} */
-    runTestsAutomatically: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @type {boolean} */
     hideRoutineStatus: {
       type: Boolean,
       value: false,
@@ -205,7 +200,7 @@ Polymer({
   observers: [
     'routineStatusChanged_(executionStatus_, currentTestName_,' +
         'additionalMessage)',
-    'onActivePageChanged_(isActive, routines.length)',
+    'onActivePageChanged_(isActive)'
   ],
 
   /**
@@ -223,13 +218,12 @@ Polymer({
         this.$$('routine-result-list'));
   },
 
-  /** @private */
-  runTests_() {
+  runTests() {
     // Do not attempt to run tests when no routines available to run.
     if (this.routines.length === 0) {
       return;
     }
-    this.isTestRunning = true;
+    this.testSuiteStatus = TestSuiteStatus.kRunning;
     this.hasTestFailure_ = false;
 
     this.systemRoutineController_ = getSystemRoutineController();
@@ -285,7 +279,9 @@ Polymer({
               })
           .then((/** @type {!ExecutionProgress} */ status) => {
             this.executionStatus_ = status;
-            this.isTestRunning = false;
+            this.testSuiteStatus = status === ExecutionProgress.kCancelled ?
+                TestSuiteStatus.kNotRunning :
+                TestSuiteStatus.kCompleted;
             this.routineStartTimeMs_ = -1;
             this.runTestsButtonText =
                 loadTimeData.getString('runAgainButtonText');
@@ -318,8 +314,7 @@ Polymer({
     this.systemRoutineController_ = null;
   },
 
-  /** @protected */
-  stopTests_() {
+  stopTests() {
     if (this.executor_) {
       this.executor_.cancel();
     }
@@ -460,8 +455,16 @@ Polymer({
    * @protected
    * @return {boolean}
    */
+  isTestRunning_() {
+    return this.testSuiteStatus === TestSuiteStatus.kRunning;
+  },
+
+  /**
+   * @protected
+   * @return {boolean}
+   */
   isRunTestsButtonHidden_() {
-    return this.isTestRunning &&
+    return this.isTestRunning_() &&
         this.executionStatus_ === ExecutionProgress.kRunning;
   },
 
@@ -478,7 +481,7 @@ Polymer({
    * @return {boolean}
    */
   isRunTestsButtonDisabled_() {
-    return this.isTestRunning || this.additionalMessage != '';
+    return this.isTestRunning_() || this.additionalMessage != '';
   },
 
   /**
@@ -533,13 +536,9 @@ Polymer({
    */
   onActivePageChanged_() {
     if (!this.isActive) {
-      this.stopTests_();
+      this.stopTests();
       this.resetRoutineState_();
       return;
-    }
-
-    if (this.runTestsAutomatically && !this.isTestRunning) {
-      this.runTests_();
     }
   },
 

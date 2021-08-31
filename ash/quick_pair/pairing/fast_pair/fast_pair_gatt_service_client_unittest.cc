@@ -256,6 +256,21 @@ class FakeFastPairDataEncryptor : public FastPairDataEncryptor {
     return encrypted_bytes_;
   }
 
+  const absl::optional<std::array<uint8_t, 64>>& GetPublicKey() override {
+    static absl::optional<std::array<uint8_t, 64>> val = absl::nullopt;
+    return val;
+  }
+
+  void ParseDecryptedResponse(
+      const std::vector<uint8_t>& encrypted_response_bytes,
+      base::OnceCallback<void(const absl::optional<DecryptedResponse>&)>
+          callback) override {}
+
+  void ParseDecryptedPasskey(
+      const std::vector<uint8_t>& encrypted_passkey_bytes,
+      base::OnceCallback<void(const absl::optional<DecryptedPasskey>&)>
+          callback) override {}
+
   void SetEncryptedBytes(std::array<uint8_t, kBlockSizeBytes> encrypted_bytes) {
     encrypted_bytes_ = std::move(encrypted_bytes);
   }

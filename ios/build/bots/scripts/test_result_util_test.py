@@ -9,7 +9,7 @@ import mock
 import unittest
 
 import test_result_util
-from test_result_util import TestResult, TestStatus, ResultCollection, _to_standard_json_literal
+from test_result_util import TestResult, TestStatus, ResultCollection
 import test_runner_test
 
 PASSED_RESULT = TestResult('passed/test', TestStatus.PASS, test_log='Logs')
@@ -31,13 +31,24 @@ ABORTED_RESULT = TestResult('aborted/test', TestStatus.ABORT)
 class UtilTest(test_runner_test.TestCase):
   """Tests util methods in test_result_util module."""
 
+  def test_validate_kwargs(self):
+    """Tests _validate_kwargs."""
+    with self.assertRaises(AssertionError) as context:
+      TestResult('name', TestStatus.PASS, unknown='foo')
+    expected_message = (
+        'Invalid keyword argument(s) in set([\'unknown\']) passed in!')
+    self.assertTrue(expected_message in str(context.exception))
+    with self.assertRaises(AssertionError) as context:
+      ResultCollection(test_log='foo')
+    expected_message = (
+        'Invalid keyword argument(s) in set([\'test_log\']) passed in!')
+    self.assertTrue(expected_message in str(context.exception))
+
   def test_validate_test_status(self):
     """Tests exception raised from validation."""
     with self.assertRaises(TypeError) as context:
       test_result_util._validate_test_status('TIMEOUT')
-    expected_message = (
-        "Invalid test status: TIMEOUT. "
-        "Should be one of ['PASS', 'FAIL', 'CRASH', 'ABORT', 'SKIP'].")
+    expected_message = ('Invalid test status: TIMEOUT. Should be one of')
     self.assertTrue(expected_message in str(context.exception))
 
   def test_to_standard_json_literal(self):
@@ -198,6 +209,23 @@ class ResultCollectionTest(test_runner_test.TestCase):
     self.assertEqual(unexpected_skipped, set(['test1', 'test2', 'test3']))
     self.assertEqual(collection.disabled_tests(),
                      set(['test4', 'test5', 'test6']))
+
+  @mock.patch('test_result_util.TestResult.report_to_result_sink')
+  @mock.patch('result_sink_util.ResultSinkClient.close')
+  @mock.patch('result_sink_util.ResultSinkClient.__init__', return_value=None)
+  def test_add_and_report_test_names_status(self, mock_sink_init,
+                                            mock_sink_close, mock_report):
+    """Tests add_test_names_status."""
+    test_names = ['test1', 'test2', 'test3']
+    collection = ResultCollection(test_results=[PASSED_RESULT])
+    collection.add_and_report_test_names_status(test_names, TestStatus.SKIP)
+    self.assertEqual(collection.test_results[0], PASSED_RESULT)
+    unexpected_skipped = collection.tests_by_expression(
+        lambda t: not t.expected() and t.status == TestStatus.SKIP)
+    self.assertEqual(unexpected_skipped, set(['test1', 'test2', 'test3']))
+    self.assertEqual(1, len(mock_sink_init.mock_calls))
+    self.assertEqual(3, len(mock_report.mock_calls))
+    self.assertEqual(1, len(mock_sink_close.mock_calls))
 
   def testappend_crash_message(self):
     """Tests append_crash_message."""

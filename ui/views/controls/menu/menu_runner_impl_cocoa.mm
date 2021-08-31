@@ -4,6 +4,8 @@
 
 #import "ui/views/controls/menu/menu_runner_impl_cocoa.h"
 
+#include <dispatch/dispatch.h>
+
 #include "base/i18n/rtl.h"
 #include "base/mac/mac_util.h"
 #import "base/message_loop/message_pump_mac.h"
@@ -182,6 +184,7 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
 
 @interface NSMenu ()
 - (NSCarbonMenuImpl*)_menuImpl;
+- (CGRect)_boundsIfOpen;
 @end
 
 // --- Private API end ---
@@ -233,6 +236,7 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
 
 @interface MenuControllerDelegate : NSObject <MenuControllerCocoaDelegate> {
   NSMutableArray* _menuObservers;
+  gfx::Rect _anchorRect;
 }
 @end
 
@@ -252,6 +256,10 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
   [_menuObservers release];
 
   [super dealloc];
+}
+
+- (void)setAnchorRect:(gfx::Rect)rect {
+  _anchorRect = rect;
 }
 
 - (void)controllerWillAddItem:(NSMenuItem*)menuItem
@@ -299,18 +307,69 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
 
   if (alerted_index >= 0 || ![element_ids ids].empty()) {
     auto shown_callback = ^(NSNotification* note) {
+      NSMenu* const menu_obj = note.object;
       if (alerted_index >= 0) {
         if ([menu respondsToSelector:@selector(_menuImpl)]) {
-          NSCarbonMenuImpl* menuImpl = [menu _menuImpl];
+          NSCarbonMenuImpl* menuImpl = [menu_obj _menuImpl];
           if ([menuImpl respondsToSelector:@selector(highlightItemAtIndex:)]) {
             [menuImpl highlightItemAtIndex:alerted_index];
           }
         }
       }
-      for (ui::ElementIdentifier element_id : [element_ids ids]) {
-        ui::ElementTrackerMac::GetInstance()->NotifyMenuItemShown(menu,
-                                                                  element_id);
-      }
+
+      // This situation is broken.
+      //
+      // First, NSMenuDidBeginTrackingNotification is the best way to get called
+      // right before the menu is shown, but at the moment of the call, the menu
+      // isn't open yet. Second, to make things worse, the implementation of
+      // -_boundsIfOpen *tries* to return an NSZeroRect if the menu isn't open
+      // yet but fails to detect it correctly, and instead falls over and
+      // returns a bogus bounds. Fortunately, those bounds are broken in a
+      // predictable way, so that situation can be detected. Don't even bother
+      // trying to make the -_boundsIfOpen call on the notification; there's no
+      // point.
+      //
+      // However, it takes just one trip through the main loop for the menu to
+      // appear and the -_boundsIfOpen call to work.
+      dispatch_after(
+          dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
+          dispatch_get_main_queue(), ^{
+            // Since we can't get bounds on all platforms, we should have a
+            // reasonable fallback. This is intentionally twice as wide as it
+            // should be because even though we could check the RTL bit and
+            // guess whether the menu should appear to the left or right of the
+            // anchor, if the anchor is near one side of the screen the menu
+            // could end up on the other side.
+            //
+            // TODO(dfried): When 10.12 is the earliest version of MacOS we
+            // support, remove this code and always use the _boundsIfOpen call
+            // (assuming the call isn't deprecated in a future version of
+            // MacOS).
+            gfx::Rect screen_rect = _anchorRect;
+            CGSize menu_size = [menu_obj size];
+            screen_rect.Inset(gfx::Insets(0, -menu_size.width,
+                                          -menu_size.height, -menu_size.width));
+            if ([menu_obj respondsToSelector:@selector(_boundsIfOpen)]) {
+              CGRect bounds = [menu_obj _boundsIfOpen];
+              // A broken bounds for a menu that isn't
+              // actually yet open looks like: {{zeroish,
+              // main display height}, {zeroish, zeroish}}.
+              auto is_zeroish = [](CGFloat f) { return f >= 0 && f < 0.00001; };
+              if (is_zeroish(bounds.origin.x) && bounds.origin.y > 300 &&
+                  is_zeroish(bounds.size.width) &&
+                  is_zeroish(bounds.size.height)) {
+                // FYI, this never actually happens.
+                LOG(ERROR) << "Get menu bounds failed.";
+              } else {
+                screen_rect = gfx::ScreenRectFromNSRect(bounds);
+              }
+            }
+
+            for (ui::ElementIdentifier element_id : [element_ids ids]) {
+              ui::ElementTrackerMac::GetInstance()->NotifyMenuItemShown(
+                  menu_obj, element_id, screen_rect);
+            }
+          });
     };
 
     [_menuObservers
@@ -323,10 +382,23 @@ NSMutableAttributedString* MutableAttributedStringForMenuItemTitleString(
 
   if (![element_ids ids].empty()) {
     auto hidden_callback = ^(NSNotification* note) {
-      for (ui::ElementIdentifier element_id : [element_ids ids]) {
-        ui::ElementTrackerMac::GetInstance()->NotifyMenuItemHidden(menu,
-                                                                   element_id);
-      }
+      NSMenu* const menu_obj = note.object;
+      // We expect to see the following order of events:
+      // - element shown
+      // - element activated (optional)
+      // - element hidden
+      // However, the code that detects menu item activation is called *after*
+      // the current callback. To make sure the events happen in the right order
+      // we'll defer processing of element hidden events until the end of the
+      // current system event queue.
+      dispatch_after(
+          dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
+          dispatch_get_main_queue(), ^{
+            for (ui::ElementIdentifier element_id : [element_ids ids]) {
+              ui::ElementTrackerMac::GetInstance()->NotifyMenuItemHidden(
+                  menu_obj, element_id);
+            }
+          });
     };
 
     [_menuObservers
@@ -500,6 +572,7 @@ void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
   DCHECK(parent);
   closing_event_time_ = base::TimeTicks();
   running_ = true;
+  [menu_delegate_ setAnchorRect:bounds];
 
   // Ensure the UI can update while the menu is fading out.
   base::ScopedPumpMessagesInPrivateModes pump_private;

@@ -16,6 +16,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/views/animation/animation_abort_handle.h"
 #include "ui/views/animation/animation_key.h"
 #include "ui/views/animation/animation_sequence_block.h"
 #include "ui/views/views_export.h"
@@ -24,7 +25,7 @@
 // used within ui/views/examples/.
 
 namespace ui {
-class LayerOwner;
+class Layer;
 }
 
 namespace views {
@@ -42,6 +43,12 @@ class VIEWS_EXPORT AnimationBuilder {
   AnimationSequenceBlock Once();
   AnimationSequenceBlock Repeatedly();
 
+  // Returns a handle that can be destroyed later to abort all running
+  // animations.
+  // Caveat: ALL properties will be aborted, including those not initiated
+  // by the builder.
+  std::unique_ptr<AnimationAbortHandle> GetAbortHandle();
+
   // Adds an animation element `element` for `key` at `start` to `values`.
   void AddLayerAnimationElement(
       base::PassKey<AnimationSequenceBlock>,
@@ -58,11 +65,16 @@ class VIEWS_EXPORT AnimationBuilder {
   void TerminateSequence(base::PassKey<AnimationSequenceBlock>);
 
   // Called through the corresponding functions on AnimationSequenceBlock.
-  void SetOnStarted(base::OnceClosure callback);
-  void SetOnEnded(base::OnceClosure callback);
-  void SetOnWillRepeat(base::RepeatingClosure callback);
-  void SetOnAborted(base::OnceClosure callback);
-  void SetOnScheduled(base::OnceClosure callback);
+  void SetOnStarted(base::PassKey<AnimationSequenceBlock>,
+                    base::OnceClosure callback);
+  void SetOnEnded(base::PassKey<AnimationSequenceBlock>,
+                  base::OnceClosure callback);
+  void SetOnWillRepeat(base::PassKey<AnimationSequenceBlock>,
+                       base::RepeatingClosure callback);
+  void SetOnAborted(base::PassKey<AnimationSequenceBlock>,
+                    base::OnceClosure callback);
+  void SetOnScheduled(base::PassKey<AnimationSequenceBlock>,
+                      base::OnceClosure callback);
 
   static void SetObserverDeletedCallbackForTesting(
       base::RepeatingClosure deleted_closure);
@@ -78,7 +90,7 @@ class VIEWS_EXPORT AnimationBuilder {
   AnimationSequenceBlock NewSequence();
 
   // Data for all sequences.
-  std::multimap<ui::LayerOwner*, std::unique_ptr<ui::LayerAnimationSequence>>
+  std::multimap<ui::Layer*, std::unique_ptr<ui::LayerAnimationSequence>>
       layer_animation_sequences_;
   std::unique_ptr<Observer> animation_observer_;
   absl::optional<ui::LayerAnimator::PreemptionStrategy> preemption_strategy_;
@@ -88,6 +100,8 @@ class VIEWS_EXPORT AnimationBuilder {
   base::TimeDelta end_;
   // Each vector is kept in sorted order.
   std::map<AnimationKey, std::vector<Value>> values_;
+
+  AnimationAbortHandle* abort_handle_ = nullptr;
 
   // Callback used for testing.
   static base::NoDestructor<base::RepeatingClosure> on_observer_deleted_;

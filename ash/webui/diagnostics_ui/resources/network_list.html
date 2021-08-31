@@ -27,9 +27,9 @@
 </style>
 <div id="networkListContainer" class="diagnostics-cards-container">
   <div class="diagnostics-cards-container">
-    <template is="dom-if" if="[[activeGuid_]]">
+    <template is="dom-if" if="[[activeGuid_]]" restamp>
       <connectivity-card class="card-width" active-guid="[[activeGuid_]]"
-          is-test-running="{{isTestRunning}}"
+          test-suite-status="{{testSuiteStatus}}"
           is-active="[[isActive]]">
       </connectivity-card>
     </template>

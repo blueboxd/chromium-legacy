@@ -39,7 +39,7 @@ def CipdInstall(pkg_name, ref, directory):
     if not os.path.exists(os.path.join(directory, '.cipd')):
       subprocess.check_call(['cipd', 'init', '-force'], cwd=directory)
     subprocess.check_call(
-        ['cipd', 'install', pkg_name, ref],
+        ['cipd', 'install', '-force', pkg_name, ref],
         cwd=directory)
 
 def RbeProjectFromEnv():
@@ -89,9 +89,11 @@ def main():
         wcedir = os.path.join(THIS_DIR, 'win-cross-experiments', toolchain)
         if not os.path.exists(wcedir):
           os.makedirs(wcedir, mode=0o755)
-        for cfg in glob.glob(os.path.join(THIS_DIR, toolchain, '*.cfg')):
+        for cfg in glob.glob(os.path.join(THIS_DIR, toolchain,
+                                          'win-cross-experiments', '*.cfg')):
           fname = os.path.join(wcedir, os.path.basename(cfg))
           if os.path.exists(fname):
+            os.chmod(fname, 0o777)
             os.remove(fname)
           print('Copy from %s to %s...' % (cfg, fname))
           shutil.copy(cfg, fname)

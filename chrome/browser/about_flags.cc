@@ -6757,7 +6757,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIncognitoReauthenticationForAndroidName,
      flag_descriptions::kIncognitoReauthenticationForAndroidDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kIncognitoReauthenticationForAndroid)},
+     FEATURE_VALUE_TYPE(chrome::android::kIncognitoReauthenticationForAndroid)},
 #endif
 
 #if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
@@ -7278,12 +7278,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBluetoothSessionizedMetricsName,
      flag_descriptions::kBluetoothSessionizedMetricsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(metrics::structured::kBluetoothSessionizedMetrics)},
-#endif
-
-#if defined(OS_LINUX) && defined(USE_OZONE)
-    {"use-ozone-platform", flag_descriptions::kUseOzonePlatformName,
-     flag_descriptions::kUseOzonePlatformDescription, kOsLinux,
-     FEATURE_VALUE_TYPE(features::kUseOzonePlatform)},
 #endif
 
     {"subframe-shutdown-delay", flag_descriptions::kSubframeShutdownDelayName,

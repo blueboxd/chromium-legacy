@@ -87,9 +87,11 @@ class TestAnimationEffect : public AnimationEffect {
     event_delegate_->Reset();
     AnimationEffect::UpdateInheritedTime(AnimationTimeDelta::FromSecondsD(time),
                                          /*inherited_phase*/ absl::nullopt,
+                                         /* inherited_playback_rate */ 1.0,
                                          reason);
   }
 
+  bool Affects(const PropertyHandle&) const override { return false; }
   void UpdateChildrenAndEffects() const override {}
   void WillDetach() {}
   TestAnimationEffectEventDelegate* EventDelegate() {

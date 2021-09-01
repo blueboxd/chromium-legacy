@@ -1218,6 +1218,18 @@ void NearbySharingServiceImpl::OnEnabledChanged(bool enabled) {
   InvalidateSurfaceState();
 }
 
+void NearbySharingServiceImpl::OnFastInitiationNotificationEnabledChanged(
+    bool enabled) {
+  if (!IsBackgroundScanningFeatureEnabled()) {
+    return;
+  }
+  // Runs through a series of checks to determine if background scanning should
+  // be started or stopped.
+  InvalidateReceiveSurfaceState();
+  NS_LOG(VERBOSE) << __func__ << ": Fast Initiation Notification "
+                  << (enabled ? "enabled" : "disabled");
+}
+
 void NearbySharingServiceImpl::OnDeviceNameChanged(
     const std::string& device_name) {
   NS_LOG(INFO) << __func__ << ": Nearby sharing device name changed";
@@ -2098,6 +2110,14 @@ void NearbySharingServiceImpl::InvalidateFastInitiationScanning() {
   // Nothing to do if we're shutting down the profile.
   if (!profile_)
     return;
+
+  if (!settings_.GetFastInitiationNotificationEnabled()) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping background scanning fast initiation "
+                       "notification is disabled";
+    StopFastInitiationScanning();
+    return;
+  }
 
   if (power_client_->IsSuspended()) {
     NS_LOG(VERBOSE)

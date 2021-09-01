@@ -47,6 +47,7 @@ class AnimationEffectOwner;
 class EffectTiming;
 class ComputedEffectTiming;
 class OptionalEffectTiming;
+class PropertyHandle;
 class WorkletAnimation;
 
 enum TimingUpdateReason {
@@ -82,6 +83,8 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
 
   virtual bool IsKeyframeEffect() const { return false; }
   virtual bool IsInertEffect() const { return false; }
+
+  virtual bool Affects(const PropertyHandle&) const = 0;
 
   Timing::Phase GetPhase() const { return EnsureCalculated().phase; }
   bool IsCurrent() const { return EnsureCalculated().is_current; }
@@ -143,11 +146,12 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
  protected:
   explicit AnimationEffect(const Timing&, EventDelegate* = nullptr);
 
-  // When AnimationEffect receives a new inherited time via updateInheritedTime
+  // When AnimationEffect receives a new inherited time via UpdateInheritedTime
   // it will (if necessary) recalculate timings and (if necessary) call
-  // updateChildrenAndEffects.
+  // UpdateChildrenAndEffects.
   void UpdateInheritedTime(absl::optional<AnimationTimeDelta> inherited_time,
                            absl::optional<TimelinePhase> inherited_phase,
+                           double inherited_playback_rate,
                            TimingUpdateReason) const;
   void Invalidate() const { needs_update_ = true; }
   void InvalidateAndNotifyOwner() const;

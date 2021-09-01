@@ -18,12 +18,12 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
@@ -222,16 +222,6 @@ class WebAppInstallManagerTest
   }
   ExternallyInstalledWebAppPrefs& externally_installed_app_prefs() {
     return *externally_installed_app_prefs_;
-  }
-
-  std::unique_ptr<WebApplicationInfo> CreateWebAppInfo(const GURL& url) {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->start_url = url;
-    apps::IconInfo icon_info;
-    icon_info.url = GURL(kIconUrl);
-    icon_info.square_size_px = icon_size::k256;
-    web_app_info->icon_infos.push_back(std::move(icon_info));
-    return web_app_info;
   }
 
   std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,

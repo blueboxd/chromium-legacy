@@ -33,10 +33,13 @@ export class DriveWelcomeBanner extends EducationalBanner {
 
   /**
    * Only show the banner when the user has navigated to the Drive volume type.
-   * @returns {!Array<!Banner.AllowedVolumeType>}
+   * @returns {!Array<!Banner.AllowedVolume>}
    */
-  allowedVolumeTypes() {
-    return [{type: VolumeManagerCommon.VolumeType.DRIVE}];
+  allowedVolumes() {
+    return [{
+      type: VolumeManagerCommon.VolumeType.DRIVE,
+      root: VolumeManagerCommon.RootType.DRIVE,
+    }];
   }
 }
 
